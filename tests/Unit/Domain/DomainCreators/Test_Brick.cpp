@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -18,6 +17,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Brick.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"
@@ -39,7 +39,7 @@ void test_brick_construction(
     const std::array<double, 3>& upper_bound,
     const std::vector<std::array<size_t, 3>>& expected_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
-    const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>&
+    const std::vector<DirectionMap<3, BlockNeighbor<3>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<3>>>&
         expected_external_boundaries) {
@@ -70,23 +70,23 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
   const DomainCreators::Brick<Frame::Inertial> brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, false, false}},
       refinement_level[0], grid_points[0]};
-  test_brick_construction(
-      brick, lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{{}},
-      std::vector<std::unordered_set<Direction<3>>>{
-          {{Direction<3>::lower_xi()},
-           {Direction<3>::upper_xi()},
-           {Direction<3>::lower_eta()},
-           {Direction<3>::upper_eta()},
-           {Direction<3>::lower_zeta()},
-           {Direction<3>::upper_zeta()}}});
+  test_brick_construction(brick, lower_bound, upper_bound, grid_points,
+                          refinement_level,
+                          std::vector<DirectionMap<3, BlockNeighbor<3>>>{{}},
+                          std::vector<std::unordered_set<Direction<3>>>{
+                              {{Direction<3>::lower_xi()},
+                               {Direction<3>::upper_xi()},
+                               {Direction<3>::lower_eta()},
+                               {Direction<3>::upper_eta()},
+                               {Direction<3>::lower_zeta()},
+                               {Direction<3>::upper_zeta()}}});
 
   const DomainCreators::Brick<Frame::Inertial> periodic_x_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, false, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
       periodic_x_brick, lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_xi(), {0, aligned_orientation}},
            {Direction<3>::upper_xi(), {0, aligned_orientation}}}},
       std::vector<std::unordered_set<Direction<3>>>{
@@ -100,7 +100,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
       refinement_level[0], grid_points[0]};
   test_brick_construction(
       periodic_y_brick, lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_eta(), {0, aligned_orientation}},
            {Direction<3>::upper_eta(), {0, aligned_orientation}}}},
       std::vector<std::unordered_set<Direction<3>>>{
@@ -114,7 +114,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
       refinement_level[0], grid_points[0]};
   test_brick_construction(
       periodic_z_brick, lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_zeta(), {0, aligned_orientation}},
            {Direction<3>::upper_zeta(), {0, aligned_orientation}}}},
       std::vector<std::unordered_set<Direction<3>>>{
@@ -129,7 +129,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
   test_brick_construction(
       periodic_xy_brick, lower_bound, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_xi(), {0, aligned_orientation}},
            {Direction<3>::upper_xi(), {0, aligned_orientation}},
            {Direction<3>::lower_eta(), {0, aligned_orientation}},
@@ -143,7 +143,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
   test_brick_construction(
       periodic_yz_brick, lower_bound, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_eta(), {0, aligned_orientation}},
            {Direction<3>::upper_eta(), {0, aligned_orientation}},
            {Direction<3>::lower_zeta(), {0, aligned_orientation}},
@@ -159,7 +159,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
   test_brick_construction(
       periodic_xz_brick, lower_bound, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_xi(), {0, aligned_orientation}},
            {Direction<3>::upper_xi(), {0, aligned_orientation}},
            {Direction<3>::lower_zeta(), {0, aligned_orientation}},
@@ -173,7 +173,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
   test_brick_construction(
       periodic_xyz_brick, lower_bound, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_xi(), {0, aligned_orientation}},
            {Direction<3>::upper_xi(), {0, aligned_orientation}},
            {Direction<3>::lower_eta(), {0, aligned_orientation}},
@@ -213,7 +213,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick.Factory",
   test_brick_construction(
       *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
       {{{2, 3, 2}}},
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::lower_xi(), {0, {}}},
            {Direction<3>::upper_xi(), {0, {}}},
            {Direction<3>::lower_zeta(), {0, {}}},

@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -17,6 +16,7 @@
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/DomainCreators/Shell.hpp"
@@ -52,32 +52,31 @@ void test_shell_construction(
       std::array<Direction<3>, 3>{{Direction<3>::upper_eta(),
                                    Direction<3>::lower_xi(),
                                    Direction<3>::upper_zeta()}});
-  std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      expected_block_neighbors{
-          {{Direction<3>::upper_xi(), {4, quarter_turn_ccw_about_zeta}},
-           {Direction<3>::upper_eta(), {2, aligned_orientation}},
-           {Direction<3>::lower_xi(), {5, quarter_turn_cw_about_zeta}},
-           {Direction<3>::lower_eta(), {3, aligned_orientation}}},
-          {{Direction<3>::upper_xi(), {4, quarter_turn_cw_about_zeta}},
-           {Direction<3>::upper_eta(), {3, aligned_orientation}},
-           {Direction<3>::lower_xi(), {5, quarter_turn_ccw_about_zeta}},
-           {Direction<3>::lower_eta(), {2, aligned_orientation}}},
-          {{Direction<3>::upper_xi(), {4, half_turn_about_zeta}},
-           {Direction<3>::upper_eta(), {1, aligned_orientation}},
-           {Direction<3>::lower_xi(), {5, half_turn_about_zeta}},
-           {Direction<3>::lower_eta(), {0, aligned_orientation}}},
-          {{Direction<3>::upper_xi(), {4, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}},
-           {Direction<3>::lower_xi(), {5, aligned_orientation}},
-           {Direction<3>::lower_eta(), {1, aligned_orientation}}},
-          {{Direction<3>::upper_xi(), {2, half_turn_about_zeta}},
-           {Direction<3>::upper_eta(), {0, quarter_turn_cw_about_zeta}},
-           {Direction<3>::lower_xi(), {3, aligned_orientation}},
-           {Direction<3>::lower_eta(), {1, quarter_turn_ccw_about_zeta}}},
-          {{Direction<3>::upper_xi(), {3, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, quarter_turn_ccw_about_zeta}},
-           {Direction<3>::lower_xi(), {2, half_turn_about_zeta}},
-           {Direction<3>::lower_eta(), {1, quarter_turn_cw_about_zeta}}}};
+  std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{
+      {{Direction<3>::upper_xi(), {4, quarter_turn_ccw_about_zeta}},
+       {Direction<3>::upper_eta(), {2, aligned_orientation}},
+       {Direction<3>::lower_xi(), {5, quarter_turn_cw_about_zeta}},
+       {Direction<3>::lower_eta(), {3, aligned_orientation}}},
+      {{Direction<3>::upper_xi(), {4, quarter_turn_cw_about_zeta}},
+       {Direction<3>::upper_eta(), {3, aligned_orientation}},
+       {Direction<3>::lower_xi(), {5, quarter_turn_ccw_about_zeta}},
+       {Direction<3>::lower_eta(), {2, aligned_orientation}}},
+      {{Direction<3>::upper_xi(), {4, half_turn_about_zeta}},
+       {Direction<3>::upper_eta(), {1, aligned_orientation}},
+       {Direction<3>::lower_xi(), {5, half_turn_about_zeta}},
+       {Direction<3>::lower_eta(), {0, aligned_orientation}}},
+      {{Direction<3>::upper_xi(), {4, aligned_orientation}},
+       {Direction<3>::upper_eta(), {0, aligned_orientation}},
+       {Direction<3>::lower_xi(), {5, aligned_orientation}},
+       {Direction<3>::lower_eta(), {1, aligned_orientation}}},
+      {{Direction<3>::upper_xi(), {2, half_turn_about_zeta}},
+       {Direction<3>::upper_eta(), {0, quarter_turn_cw_about_zeta}},
+       {Direction<3>::lower_xi(), {3, aligned_orientation}},
+       {Direction<3>::lower_eta(), {1, quarter_turn_ccw_about_zeta}}},
+      {{Direction<3>::upper_xi(), {3, aligned_orientation}},
+       {Direction<3>::upper_eta(), {0, quarter_turn_ccw_about_zeta}},
+       {Direction<3>::lower_xi(), {2, half_turn_about_zeta}},
+       {Direction<3>::lower_eta(), {1, quarter_turn_cw_about_zeta}}}};
   std::vector<std::unordered_set<Direction<3>>> expected_external_boundaries{
       {{Direction<3>::upper_zeta()}, {Direction<3>::lower_zeta()}},
       {{Direction<3>::upper_zeta()}, {Direction<3>::lower_zeta()}},

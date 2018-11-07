@@ -9,12 +9,12 @@
 #include <cstddef>
 #include <memory>
 #include <ostream>
-#include <unordered_map>
 #include <unordered_set>
 
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"                 // IWYU pragma: keep
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
-#include "Domain/Direction.hpp"  // IWYU pragma: keep
+#include "Domain/Direction.hpp"                     // IWYU pragma: keep
+#include "Domain/DirectionMap.hpp"
 
 /// \cond
 namespace Frame {
@@ -48,8 +48,7 @@ class Block {
   Block(std::unique_ptr<
             CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>&& map,
         size_t id,
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>
-            neighbors) noexcept;
+        DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors) noexcept;
 
   Block() = default;
   ~Block() = default;
@@ -69,8 +68,8 @@ class Block {
   size_t id() const noexcept { return id_; }
 
   /// Information about the neighboring Blocks.
-  const std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>&
-  neighbors() const noexcept {
+  const DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>& neighbors() const
+      noexcept {
     return neighbors_;
   }
 
@@ -87,7 +86,7 @@ class Block {
   std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>
       map_;
   size_t id_{0};
-  std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>> neighbors_;
+  DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;
   std::unordered_set<Direction<VolumeDim>> external_boundaries_;
 };
 

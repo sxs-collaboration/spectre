@@ -7,7 +7,6 @@
 #include <boost/rational.hpp>
 #include <cstddef>
 #include <memory>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -23,6 +22,8 @@ class CoordinateMapBase;
 class DataVector;
 template <size_t VolumeDim>
 class Direction;
+template <size_t VolumeDim, typename T>
+class DirectionMap;
 template <size_t VolumeDim, typename TargetFrame>
 class Domain;
 template <size_t VolumeDim>
@@ -33,8 +34,7 @@ class ElementId;
 template <size_t VolumeDim, typename Fr = Frame::Inertial>
 void test_domain_construction(
     const Domain<VolumeDim, Fr>& domain,
-    const std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>&
+    const std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,

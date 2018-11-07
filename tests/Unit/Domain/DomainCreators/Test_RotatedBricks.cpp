@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -18,6 +17,7 @@
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/DomainCreators/RotatedBricks.hpp"
@@ -33,7 +33,7 @@ void test_rotated_bricks_construction(
     const std::array<double, 3>& upper_bound,
     const std::vector<std::array<size_t, 3>>& expected_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
-    const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>&
+    const std::vector<DirectionMap<3, BlockNeighbor<3>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<3>>>&
         expected_external_boundaries) noexcept {
@@ -146,7 +146,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks",
   test_rotated_bricks_construction(
       rotated_bricks, lower_bound, midpoint, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::upper_xi(), {1, rotation_F}},
            {Direction<3>::upper_eta(), {2, rotation_R}},
            {Direction<3>::upper_zeta(), {4, rotation_U}}},
@@ -203,7 +203,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks",
   test_rotated_bricks_construction(
       rotated_periodic_bricks, lower_bound, midpoint, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::upper_xi(), {1, rotation_F}},
            {Direction<3>::upper_eta(), {2, rotation_R}},
            {Direction<3>::upper_zeta(), {4, rotation_U}},
@@ -305,7 +305,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks.Factory",
        {{0, 2, 1}},
        {{1, 0, 2}},
        {{2, 1, 0}}},
-      std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
+      std::vector<DirectionMap<3, BlockNeighbor<3>>>{
           {{Direction<3>::upper_xi(), {1, rotation_F}},
            {Direction<3>::upper_eta(), {2, rotation_R}},
            {Direction<3>::upper_zeta(), {4, rotation_U}}},

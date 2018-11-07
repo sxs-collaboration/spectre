@@ -5,11 +5,9 @@
 
 #include <array>
 #include <cstddef>
-#include <functional>
 #include <memory>
 #include <pup.h>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -21,6 +19,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
@@ -57,11 +56,11 @@ void test_1d_domains() {
     const OrientationMap<1> unaligned_orientation{{{Direction<1>::lower_xi()}},
                                                   {{Direction<1>::upper_xi()}}};
 
-    const std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>
-        expected_neighbors{{{Direction<1>::upper_xi(),
-                             BlockNeighbor<1>{1, unaligned_orientation}}},
-                           {{Direction<1>::upper_xi(),
-                             BlockNeighbor<1>{0, unaligned_orientation}}}};
+    const std::vector<DirectionMap<1, BlockNeighbor<1>>> expected_neighbors{
+        {{Direction<1>::upper_xi(),
+          BlockNeighbor<1>{1, unaligned_orientation}}},
+        {{Direction<1>::upper_xi(),
+          BlockNeighbor<1>{0, unaligned_orientation}}}};
 
     const std::vector<std::unordered_set<Direction<1>>> expected_boundaries{
         {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}};
@@ -124,7 +123,7 @@ void test_1d_domains() {
     const auto expected_neighbors = []() {
       OrientationMap<1> orientation{{{Direction<1>::lower_xi()}},
                                     {{Direction<1>::lower_xi()}}};
-      return std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>{
+      return std::vector<DirectionMap<1, BlockNeighbor<1>>>{
           {{Direction<1>::lower_xi(), BlockNeighbor<1>{0, orientation}},
            {Direction<1>::upper_xi(), BlockNeighbor<1>{0, orientation}}}};
     }();
@@ -143,11 +142,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
         {}, {}, {{false}}, {}, true);
     const OrientationMap<1> aligned{};
-    std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>
-        expected_block_neighbors{{{Direction<1>::upper_xi(), {1, aligned}}},
-                                 {{Direction<1>::lower_xi(), {0, aligned}},
-                                  {Direction<1>::upper_xi(), {2, aligned}}},
-                                 {{Direction<1>::lower_xi(), {1, aligned}}}};
+    std::vector<DirectionMap<1, BlockNeighbor<1>>> expected_block_neighbors{
+        {{Direction<1>::upper_xi(), {1, aligned}}},
+        {{Direction<1>::lower_xi(), {0, aligned}},
+         {Direction<1>::upper_xi(), {2, aligned}}},
+        {{Direction<1>::lower_xi(), {1, aligned}}}};
     const std::vector<std::unordered_set<Direction<1>>>
         expected_external_boundaries{
             {{Direction<1>::lower_xi()}}, {}, {{Direction<1>::upper_xi()}}};
@@ -169,12 +168,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
         {}, std::vector<OrientationMap<1>>{aligned, antialigned, aligned},
         {{false}}, {}, true);
-    std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>
-        expected_block_neighbors{
-            {{Direction<1>::upper_xi(), {1, antialigned}}},
-            {{Direction<1>::lower_xi(), {2, antialigned}},
-             {Direction<1>::upper_xi(), {0, antialigned}}},
-            {{Direction<1>::lower_xi(), {1, antialigned}}}};
+    std::vector<DirectionMap<1, BlockNeighbor<1>>> expected_block_neighbors{
+        {{Direction<1>::upper_xi(), {1, antialigned}}},
+        {{Direction<1>::lower_xi(), {2, antialigned}},
+         {Direction<1>::upper_xi(), {0, antialigned}}},
+        {{Direction<1>::lower_xi(), {1, antialigned}}}};
     const std::vector<std::unordered_set<Direction<1>>>
         expected_external_boundaries{
             {{Direction<1>::lower_xi()}}, {}, {{Direction<1>::upper_xi()}}};
@@ -208,16 +206,15 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear2D", "[Domain][Unit]") {
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
       {}, orientations_of_all_blocks);
-  std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>
-      expected_block_neighbors{
-          {{Direction<2>::upper_xi(), {1, half_turn}},
-           {Direction<2>::upper_eta(), {2, quarter_turn_cw}}},
-          {{Direction<2>::upper_xi(), {0, half_turn}},
-           {Direction<2>::lower_eta(), {3, quarter_turn_cw}}},
-          {{Direction<2>::upper_xi(), {0, quarter_turn_ccw}},
-           {Direction<2>::upper_eta(), {3, half_turn}}},
-          {{Direction<2>::lower_xi(), {1, quarter_turn_ccw}},
-           {Direction<2>::upper_eta(), {2, half_turn}}}};
+  std::vector<DirectionMap<2, BlockNeighbor<2>>> expected_block_neighbors{
+      {{Direction<2>::upper_xi(), {1, half_turn}},
+       {Direction<2>::upper_eta(), {2, quarter_turn_cw}}},
+      {{Direction<2>::upper_xi(), {0, half_turn}},
+       {Direction<2>::lower_eta(), {3, quarter_turn_cw}}},
+      {{Direction<2>::upper_xi(), {0, quarter_turn_ccw}},
+       {Direction<2>::upper_eta(), {3, half_turn}}},
+      {{Direction<2>::lower_xi(), {1, quarter_turn_ccw}},
+       {Direction<2>::upper_eta(), {2, half_turn}}}};
   const std::vector<std::unordered_set<Direction<2>>>
       expected_external_boundaries{
           {{Direction<2>::lower_xi(), Direction<2>::lower_eta()}},
@@ -249,10 +246,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear3D", "[Domain][Unit]") {
       std::array<std::vector<double>, 3>{
           {{0.0, 1.0, 2.0}, {0.0, 1.0}, {0.0, 1.0}}},
       {}, orientations_of_all_blocks);
-  std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      expected_block_neighbors{
-          {{Direction<3>::upper_xi(), {1, quarter_turn_cw_xi}}},
-          {{Direction<3>::lower_xi(), {0, quarter_turn_cw_xi.inverse_map()}}}};
+  std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{
+      {{Direction<3>::upper_xi(), {1, quarter_turn_cw_xi}}},
+      {{Direction<3>::lower_xi(), {0, quarter_turn_cw_xi.inverse_map()}}}};
   const std::vector<std::unordered_set<Direction<3>>>
       expected_external_boundaries{
           {{Direction<3>::lower_xi(), Direction<3>::lower_eta(),

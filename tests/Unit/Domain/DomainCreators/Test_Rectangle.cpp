@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -18,6 +17,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/DomainCreators/Rectangle.hpp"
@@ -38,7 +38,7 @@ void test_rectangle_construction(
     const std::array<double, 2>& upper_bound,
     const std::vector<std::array<size_t, 2>>& expected_extents,
     const std::vector<std::array<size_t, 2>>& expected_refinement_level,
-    const std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>&
+    const std::vector<DirectionMap<2, BlockNeighbor<2>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<2>>>&
         expected_external_boundaries) {
@@ -68,7 +68,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
       rectangle, lower_bound, upper_bound, grid_points, refinement_level,
-      std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{{}},
+      std::vector<DirectionMap<2, BlockNeighbor<2>>>{{}},
       std::vector<std::unordered_set<Direction<2>>>{
           {{Direction<2>::lower_xi()},
            {Direction<2>::upper_xi()},
@@ -81,7 +81,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
   test_rectangle_construction(
       periodic_x_rectangle, lower_bound, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
+      std::vector<DirectionMap<2, BlockNeighbor<2>>>{
           {{Direction<2>::lower_xi(), {0, aligned_orientation}},
            {Direction<2>::upper_xi(), {0, aligned_orientation}}}},
       std::vector<std::unordered_set<Direction<2>>>{
@@ -93,7 +93,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
   test_rectangle_construction(
       periodic_y_rectangle, lower_bound, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
+      std::vector<DirectionMap<2, BlockNeighbor<2>>>{
           {{Direction<2>::lower_eta(), {0, aligned_orientation}},
            {Direction<2>::upper_eta(), {0, aligned_orientation}}}},
       std::vector<std::unordered_set<Direction<2>>>{
@@ -105,7 +105,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
   test_rectangle_construction(
       periodic_xy_rectangle, lower_bound, upper_bound, grid_points,
       refinement_level,
-      std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
+      std::vector<DirectionMap<2, BlockNeighbor<2>>>{
           {{Direction<2>::lower_xi(), {0, aligned_orientation}},
            {Direction<2>::upper_xi(), {0, aligned_orientation}},
            {Direction<2>::lower_eta(), {0, aligned_orientation}},
@@ -144,7 +144,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle.Factory",
           domain_creator.get());
   test_rectangle_construction(
       *rectangle_creator, {{0., 0.}}, {{1., 2.}}, {{{3, 4}}}, {{{2, 3}}},
-      std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>{
+      std::vector<DirectionMap<2, BlockNeighbor<2>>>{
           {{Direction<2>::lower_xi(), {0, {}}},
            {Direction<2>::upper_xi(), {0, {}}}}},
       std::vector<std::unordered_set<Direction<2>>>{

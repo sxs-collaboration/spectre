@@ -24,6 +24,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
@@ -272,8 +273,8 @@ void set_cartesian_periodic_boundaries(
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
-    gsl::not_null<std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
+    gsl::not_null<
+        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks) noexcept {
   ASSERT(orientations_of_all_blocks.size() == corners_of_all_blocks.size(),
          "Each block must have an OrientationMap relative to an edifice.");
@@ -368,12 +369,12 @@ template <size_t VolumeDim>
 void set_internal_boundaries(
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    gsl::not_null<std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
+    gsl::not_null<
+        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks) noexcept {
   for (size_t block1_index = 0; block1_index < corners_of_all_blocks.size();
        block1_index++) {
-    std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>> neighbor;
+    DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbor;
     for (size_t block2_index = 0; block2_index < corners_of_all_blocks.size();
          block2_index++) {
       if (block1_index != block2_index and
@@ -400,8 +401,8 @@ void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    gsl::not_null<std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
+    gsl::not_null<
+        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks) noexcept {
   for (const auto& pair : identifications) {
     const auto& face1 = pair.first;
@@ -953,8 +954,7 @@ Domain<VolumeDim, TargetFrame> rectilinear_domain(
     corners_of_all_blocks[i] =
         discrete_rotation(rotations_of_all_blocks[i], corners_of_all_blocks[i]);
   }
-  std::vector<
-      std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>
+  std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>
       neighbors_of_all_blocks;
   set_internal_boundaries<VolumeDim>(corners_of_all_blocks,
                                      &neighbors_of_all_blocks);
@@ -1001,37 +1001,31 @@ ShellWedges create_from_yaml<ShellWedges>::create(const Option& options) {
 
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>*>
+    gsl::not_null<std::vector<DirectionMap<1, BlockNeighbor<1>>>*>
         neighbors_of_all_blocks) noexcept;
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>*>
+    gsl::not_null<std::vector<DirectionMap<2, BlockNeighbor<2>>>*>
         neighbors_of_all_blocks) noexcept;
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>*>
+    gsl::not_null<std::vector<DirectionMap<3, BlockNeighbor<3>>>*>
         neighbors_of_all_blocks) noexcept;
 
 template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<1>, BlockNeighbor<1>>>*>
+    gsl::not_null<std::vector<DirectionMap<1, BlockNeighbor<1>>>*>
         neighbors_of_all_blocks) noexcept;
 template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>*>
+    gsl::not_null<std::vector<DirectionMap<2, BlockNeighbor<2>>>*>
         neighbors_of_all_blocks) noexcept;
 template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
-    gsl::not_null<
-        std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>*>
+    gsl::not_null<std::vector<DirectionMap<3, BlockNeighbor<3>>>*>
         neighbors_of_all_blocks) noexcept;
 template std::vector<std::array<size_t, 2>> corners_for_rectilinear_domains(
     const Index<1>& domain_extents,

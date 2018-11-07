@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <typeinfo>
+#include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
@@ -14,7 +15,8 @@
 #include "Domain/BlockNeighbor.hpp"          // IWYU pragma: keep
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Direction.hpp"
-#include "Domain/Domain.hpp"  // IWYU pragma: keep
+#include "Domain/DirectionMap.hpp"  // IWYU pragma: keep
+#include "Domain/Domain.hpp"        // IWYU pragma: keep
 #include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/InitialElementIds.hpp"
@@ -283,8 +285,7 @@ double physical_separation(
 template <size_t VolumeDim, typename Fr>
 void test_domain_construction(
     const Domain<VolumeDim, Fr>& domain,
-    const std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>&
+    const std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
@@ -374,8 +375,7 @@ tnsr::i<DataVector, SpatialDim, Fr> euclidean_basis_vector(
 #define INSTANTIATE2(_, data)                                                  \
   template void test_domain_construction<DIM(data)>(                           \
       const Domain<DIM(data), FRAME(data)>& domain,                            \
-      const std::vector<                                                       \
-          std::unordered_map<Direction<DIM(data)>, BlockNeighbor<DIM(data)>>>& \
+      const std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>&    \
           expected_block_neighbors,                                            \
       const std::vector<std::unordered_set<Direction<DIM(data)>>>&             \
           expected_external_boundaries,                                        \

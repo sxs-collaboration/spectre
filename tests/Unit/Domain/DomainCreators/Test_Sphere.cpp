@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -21,6 +20,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Domain/DomainCreators/Sphere.hpp"
@@ -68,49 +68,47 @@ void test_sphere_construction(
                                    Direction<3>::upper_zeta(),
                                    Direction<3>::lower_xi()}});
 
-  const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      expected_block_neighbors{
-          {{Direction<3>::upper_xi(), {4, quarter_turn_ccw_about_zeta}},
-           {Direction<3>::upper_eta(), {2, aligned_orientation}},
-           {Direction<3>::lower_xi(), {5, quarter_turn_cw_about_zeta}},
-           {Direction<3>::lower_eta(), {3, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {6, aligned_orientation}}},
-          {{Direction<3>::upper_xi(), {4, quarter_turn_cw_about_zeta}},
-           {Direction<3>::upper_eta(), {3, aligned_orientation}},
-           {Direction<3>::lower_xi(), {5, quarter_turn_ccw_about_zeta}},
-           {Direction<3>::lower_eta(), {2, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {6, center_relative_to_minus_z}}},
-          {{Direction<3>::upper_xi(), {4, half_turn_about_zeta}},
-           {Direction<3>::upper_eta(), {1, aligned_orientation}},
-           {Direction<3>::lower_xi(), {5, half_turn_about_zeta}},
-           {Direction<3>::lower_eta(), {0, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {6, center_relative_to_plus_y}}},
-          {{Direction<3>::upper_xi(), {4, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, aligned_orientation}},
-           {Direction<3>::lower_xi(), {5, aligned_orientation}},
-           {Direction<3>::lower_eta(), {1, aligned_orientation}},
-           {Direction<3>::lower_zeta(), {6, center_relative_to_minus_y}}},
-          {{Direction<3>::upper_xi(), {2, half_turn_about_zeta}},
-           {Direction<3>::upper_eta(), {0, quarter_turn_cw_about_zeta}},
-           {Direction<3>::lower_xi(), {3, aligned_orientation}},
-           {Direction<3>::lower_eta(), {1, quarter_turn_ccw_about_zeta}},
-           {Direction<3>::lower_zeta(), {6, center_relative_to_plus_x}}},
-          {{Direction<3>::upper_xi(), {3, aligned_orientation}},
-           {Direction<3>::upper_eta(), {0, quarter_turn_ccw_about_zeta}},
-           {Direction<3>::lower_xi(), {2, half_turn_about_zeta}},
-           {Direction<3>::lower_eta(), {1, quarter_turn_cw_about_zeta}},
-           {Direction<3>::lower_zeta(), {6, center_relative_to_minus_x}}},
-          {{Direction<3>::upper_zeta(), {0, aligned_orientation}},
-           {Direction<3>::lower_zeta(),
-            {1, center_relative_to_minus_z.inverse_map()}},
-           {Direction<3>::upper_eta(),
-            {2, center_relative_to_plus_y.inverse_map()}},
-           {Direction<3>::lower_eta(),
-            {3, center_relative_to_minus_y.inverse_map()}},
-           {Direction<3>::upper_xi(),
-            {4, center_relative_to_plus_x.inverse_map()}},
-           {Direction<3>::lower_xi(),
-            {5, center_relative_to_minus_x.inverse_map()}}}};
+  const std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{
+      {{Direction<3>::upper_xi(), {4, quarter_turn_ccw_about_zeta}},
+       {Direction<3>::upper_eta(), {2, aligned_orientation}},
+       {Direction<3>::lower_xi(), {5, quarter_turn_cw_about_zeta}},
+       {Direction<3>::lower_eta(), {3, aligned_orientation}},
+       {Direction<3>::lower_zeta(), {6, aligned_orientation}}},
+      {{Direction<3>::upper_xi(), {4, quarter_turn_cw_about_zeta}},
+       {Direction<3>::upper_eta(), {3, aligned_orientation}},
+       {Direction<3>::lower_xi(), {5, quarter_turn_ccw_about_zeta}},
+       {Direction<3>::lower_eta(), {2, aligned_orientation}},
+       {Direction<3>::lower_zeta(), {6, center_relative_to_minus_z}}},
+      {{Direction<3>::upper_xi(), {4, half_turn_about_zeta}},
+       {Direction<3>::upper_eta(), {1, aligned_orientation}},
+       {Direction<3>::lower_xi(), {5, half_turn_about_zeta}},
+       {Direction<3>::lower_eta(), {0, aligned_orientation}},
+       {Direction<3>::lower_zeta(), {6, center_relative_to_plus_y}}},
+      {{Direction<3>::upper_xi(), {4, aligned_orientation}},
+       {Direction<3>::upper_eta(), {0, aligned_orientation}},
+       {Direction<3>::lower_xi(), {5, aligned_orientation}},
+       {Direction<3>::lower_eta(), {1, aligned_orientation}},
+       {Direction<3>::lower_zeta(), {6, center_relative_to_minus_y}}},
+      {{Direction<3>::upper_xi(), {2, half_turn_about_zeta}},
+       {Direction<3>::upper_eta(), {0, quarter_turn_cw_about_zeta}},
+       {Direction<3>::lower_xi(), {3, aligned_orientation}},
+       {Direction<3>::lower_eta(), {1, quarter_turn_ccw_about_zeta}},
+       {Direction<3>::lower_zeta(), {6, center_relative_to_plus_x}}},
+      {{Direction<3>::upper_xi(), {3, aligned_orientation}},
+       {Direction<3>::upper_eta(), {0, quarter_turn_ccw_about_zeta}},
+       {Direction<3>::lower_xi(), {2, half_turn_about_zeta}},
+       {Direction<3>::lower_eta(), {1, quarter_turn_cw_about_zeta}},
+       {Direction<3>::lower_zeta(), {6, center_relative_to_minus_x}}},
+      {{Direction<3>::upper_zeta(), {0, aligned_orientation}},
+       {Direction<3>::lower_zeta(),
+        {1, center_relative_to_minus_z.inverse_map()}},
+       {Direction<3>::upper_eta(),
+        {2, center_relative_to_plus_y.inverse_map()}},
+       {Direction<3>::lower_eta(),
+        {3, center_relative_to_minus_y.inverse_map()}},
+       {Direction<3>::upper_xi(), {4, center_relative_to_plus_x.inverse_map()}},
+       {Direction<3>::lower_xi(),
+        {5, center_relative_to_minus_x.inverse_map()}}}};
 
   const std::vector<std::unordered_set<Direction<3>>>
       expected_external_boundaries{{{Direction<3>::upper_zeta()}},
