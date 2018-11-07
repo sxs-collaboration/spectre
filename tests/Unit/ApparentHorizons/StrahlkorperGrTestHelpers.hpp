@@ -48,23 +48,6 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature_sphere(
 namespace Kerr {
 /*!
  * \ingroup TestingFrameworkGroup
- * \brief Radius of Kerr horizon in Kerr-Schild coordinates
- *
- * \details
- * Computes the radius of a Kerr black hole with mass `mass`
- * and dimensionless spin `spin`. The input
- * argument `theta_phi` is the output of the
- * `theta_phi_points()` method of a `YlmSpherepack` object;
- * i.e., it is typically a std::array of two DataVectors containing
- * the values of theta and phi at each point on a Strahlkorper.
- */
-template <typename DataType>
-Scalar<DataType> horizon_radius(const std::array<DataType, 2>& theta_phi,
-                                const double& mass,
-                                const std::array<double, 3>& spin) noexcept;
-
-/*!
- * \ingroup TestingFrameworkGroup
  * \brief Kerr (Kerr-Schild) horizon ricci scalar (spin on z axis)
  *
  * \details

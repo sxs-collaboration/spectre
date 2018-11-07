@@ -19,6 +19,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"   // IWYU prgma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
@@ -528,7 +529,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.Expansion",
   const std::array<double, 3> spin{{0.3, 0.4, 0.5}};
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
 
-  const auto horizon_radius = TestHelpers::Kerr::horizon_radius(
+  const auto horizon_radius = gr::Solutions::kerr_horizon_radius(
       Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
@@ -595,7 +596,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
   // Eq. (26.84a) of Thorne and Blandford
   const double expected_area = 8.0 * M_PI * mass * kerr_horizon_radius;
 
-  const auto horizon_radius = TestHelpers::Kerr::horizon_radius(
+  const auto horizon_radius = gr::Solutions::kerr_horizon_radius(
       Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
@@ -616,7 +617,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SpinFunction",
   const std::array<double, 3> spin{{0.4, 0.33, 0.22}};
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
 
-  const auto horizon_radius = TestHelpers::Kerr::horizon_radius(
+  const auto horizon_radius = gr::Solutions::kerr_horizon_radius(
       Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
@@ -660,7 +661,7 @@ SPECTRE_TEST_CASE(
   const double aligned_l_max = 12;
   const std::array<double, 3> aligned_dimensionless_spin = {
       {0.0, 0.0, expected_dimensionless_spin_magnitude}};
-  const auto aligned_horizon_radius = TestHelpers::Kerr::horizon_radius(
+  const auto aligned_horizon_radius = gr::Solutions::kerr_horizon_radius(
       Strahlkorper<Frame::Inertial>(aligned_l_max, aligned_l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
@@ -679,7 +680,7 @@ SPECTRE_TEST_CASE(
       magnitude(generic_dimensionless_spin);
   const double expected_generic_spin_magnitude =
       expected_generic_dimensionless_spin_magnitude * square(mass);
-  const auto generic_horizon_radius = TestHelpers::Kerr::horizon_radius(
+  const auto generic_horizon_radius = gr::Solutions::kerr_horizon_radius(
       Strahlkorper<Frame::Inertial>(generic_l_max, generic_l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
@@ -689,7 +690,7 @@ SPECTRE_TEST_CASE(
 
   // Create rotated horizon radius, Strahlkorper, with same spin magnitude
   // but with spin on the z axis
-  const auto rotated_horizon_radius = TestHelpers::Kerr::horizon_radius(
+  const auto rotated_horizon_radius = gr::Solutions::kerr_horizon_radius(
       Strahlkorper<Frame::Inertial>(generic_l_max, generic_l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
@@ -712,7 +713,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SpinVector",
   const auto spin_magnitude = magnitude(spin);
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
 
-  const auto horizon_radius = TestHelpers::Kerr::horizon_radius(
+  const auto horizon_radius = gr::Solutions::kerr_horizon_radius(
       Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
           .ylm_spherepack()
           .theta_phi_points(),
@@ -721,7 +722,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SpinVector",
       Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
 
   const auto horizon_radius_with_spin_on_z_axis =
-      TestHelpers::Kerr::horizon_radius(
+      gr::Solutions::kerr_horizon_radius(
           Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
               .ylm_spherepack()
               .theta_phi_points(),
