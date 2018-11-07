@@ -86,8 +86,6 @@ struct EvolutionMetavars {
       dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   using limiter = OptionTags::SlopeLimiterParams<
       SlopeLimiters::Minmod<3, system::variables_tag::tags_list>>;
-  using variable_fixer =
-      OptionTags::VariableFixerParams<VariableFixing::FixConservatives>;
   using step_choosers =
       tmpl::list<StepChoosers::Register::Cfl<3, Frame::Inertial>,
                  StepChoosers::Register::Constant,
@@ -119,7 +117,7 @@ struct EvolutionMetavars {
                           tmpl::list<>>,
       Actions::UpdateU, SlopeLimiters::Actions::SendData<EvolutionMetavars>,
       SlopeLimiters::Actions::Limit<EvolutionMetavars>,
-      VariableFixing::Actions::FixVariables<EvolutionMetavars>,
+      VariableFixing::Actions::FixVariables<VariableFixing::FixConservatives>,
       Actions::UpdatePrimitives>>;
 
   struct EvolvePhaseStart;

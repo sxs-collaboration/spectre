@@ -54,7 +54,7 @@ SlopeLimiterParams:
   # Recommended value from minmod papers:
   TvbmConstant: 50.0
 
-VariableFixerParams:
+FixConservatives:
   MinimumValueOfD: 1.0e-12
   SafetyFactorForB: 1.0e-12
   SafetyFactorForS: 1.0e-12
