@@ -21,19 +21,16 @@ class ConstGlobalCache;
 
 namespace Actions {
 /// \ingroup ActionsGroup
-/// \brief Compute the primitive variables from the conservative variables
-///
-/// \note `Metavariables` must specify an
-/// `ordered_list_of_primitive_recovery_schemes`.
+/// \brief Compute the conservative variables from the primitive variables
 ///
 /// Uses:
-/// - DataBox: Items in system::primitive_from_conservative::argument_tags
+/// - DataBox: Items in system::conservative_from_primitive::argument_tags
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
-/// - Modifies: Metavariables::system::primitive_from_conservative::return_tags
-struct UpdatePrimitives {
+/// - Modifies: Metavariables::system::conservative_from_primitive::return_tags
+struct UpdateConservatives {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
@@ -44,12 +41,11 @@ struct UpdatePrimitives {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using PrimFromCon =
-        typename Metavariables::system::template primitive_from_conservative<
-            typename Metavariables::ordered_list_of_primitive_recovery_schemes>;
-    db::mutate_apply<typename PrimFromCon::return_tags,
-                     typename PrimFromCon::argument_tags>(PrimFromCon{},
-                                                          make_not_null(&box));
+    using system = typename Metavariables::system;
+    db::mutate_apply<
+        typename system::conservative_from_primitive::return_tags,
+        typename system::conservative_from_primitive::argument_tags>(
+        typename system::conservative_from_primitive{}, make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
 };
