@@ -53,6 +53,12 @@ class YlmSpherepack {
       const size_t l_max, const size_t m_max) noexcept {
     return (l_max + 1) * (2 * m_max + 1);
   }
+  /// \note `spectral_size` is the size of the buffer that holds the
+  /// coefficients; it is not the number of coefficients (which is
+  /// \f$m_{\rm max}^2+(l_{\rm max}-m_{\rm max})(2m_{\rm max}+1)\f$).
+  /// To simplify its internal indexing, SPHEREPACK uses a buffer with
+  /// more space than necessary. See SpherepackIterator for
+  /// how to index the coefficients in the buffer.
   SPECTRE_ALWAYS_INLINE static constexpr size_t spectral_size(
       const size_t l_max, const size_t m_max) noexcept {
     return 2 * (l_max + 1) * (m_max + 1);

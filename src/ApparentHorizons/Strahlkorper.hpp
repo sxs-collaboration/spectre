@@ -55,6 +55,20 @@ class Strahlkorper {
 
   /// Construct a Strahlkorper from a DataVector containing the radius
   /// at the collocation points.
+  ///
+  /// \note The collocation points of the constructed Strahlkorper
+  /// will not be exactly `radius_at_collocation_points`.  Instead,
+  /// the constructed Strahlkorper will match the shape given by
+  /// `radius_at_collocation_points` only to order (`l_max`,`m_max`).
+  /// This is because the YlmSpherepack representation of the
+  /// Strahlkorper has more collocation points than spectral
+  /// coefficients.  Specifically, `radius_at_collocation_points` has
+  /// \f$(l_{\rm max} + 1) (2 m_{\rm max} + 1)\f$ degrees of freedom,
+  /// but because there are only
+  /// \f$m_{\rm max}^2+(l_{\rm max}-m_{\rm max})(2m_{\rm max}+1)\f$
+  /// spectral coefficients, it is not possible to choose spectral
+  /// coefficients to exactly match all points in
+  /// `radius_at_collocation_points`.
   Strahlkorper(size_t l_max, size_t m_max,
                const DataVector& radius_at_collocation_points,
                std::array<double, 3> center) noexcept;
