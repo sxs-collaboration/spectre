@@ -35,9 +35,10 @@ namespace VariableFixing {
 /// \brief Fix conservative variables using method developed by Foucart.
 ///
 /// Adjusts the conservative variables as follows:
-/// - Increases \f${\tilde D}\f$, the generalized mass-energy density, such
-///   that the product of the rest mass density \f$\rho\f$ and the Lorentz
-///   factor \f$W\f$ exceeds the option `MinimumValueOfD`.
+/// - Changes \f${\tilde D}\f$, the generalized mass-energy density, such
+///   that \f$D\f$, the product of the rest mass density \f$\rho\f$ and the
+///   Lorentz factor \f$W\f$, is set to value of the option `MinimumValueOfD`,
+///   whenever \f$D\f$ is below the value of the option `CutoffD`.
 /// - Increases \f${\tilde \tau}\f$, the generalized internal energy density,
 ///   such that
 ///   \f${\tilde B}^2 \leq 2 \sqrt{\gamma} (1 - \epsilon_B) {\tilde \tau}\f$,
@@ -61,32 +62,42 @@ class FixConservatives {
   /// \brief Minimum value of rest-mass density times lorentz factor
   struct MinimumValueOfD {
     using type = double;
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
     static constexpr OptionString help = {
         "Minimum value of rest-mass density times lorentz factor"};
   };
+  /// \brief Cutoff below which \f$D = \rho W\f$ is set to MinimumValueOfD
+  struct CutoffD {
+    using type = double;
+    static type lower_bound() noexcept { return 0.0; }
+    static constexpr OptionString help = {
+        "Cutoff below which D is set to MinimumValueOfD"};
+  };
+
   /// \brief Safety factor \f$\epsilon_B\f$.
   struct SafetyFactorForB {
     using type = double;
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
     static constexpr OptionString help = {
         "Safety factor for magnetic field bound."};
   };
   /// \brief Safety factor \f$\epsilon_S\f$.
   struct SafetyFactorForS {
     using type = double;
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
     static constexpr OptionString help = {
         "Safety factor for momentum density bound."};
   };
   using options =
-      tmpl::list<MinimumValueOfD, SafetyFactorForB, SafetyFactorForS>;
+      tmpl::list<MinimumValueOfD, CutoffD, SafetyFactorForB, SafetyFactorForS>;
   static constexpr OptionString help = {
       "Variable fixing used in Foucart's thesis.\n"};
 
   FixConservatives(double minimum_rest_mass_density_times_lorentz_factor,
+                   double rest_mass_density_times_lorentz_factor_cutoff,
                    double safety_factor_for_magnetic_field,
-                   double safety_factor_for_momentum_density) noexcept;
+                   double safety_factor_for_momentum_density,
+                   const OptionContext& context = {});
 
   FixConservatives() = default;
   FixConservatives(const FixConservatives& /*rhs*/) = default;
@@ -120,6 +131,8 @@ class FixConservatives {
                          const FixConservatives& rhs) noexcept;
 
   double minimum_rest_mass_density_times_lorentz_factor_{
+      std::numeric_limits<double>::signaling_NaN()};
+  double rest_mass_density_times_lorentz_factor_cutoff_{
       std::numeric_limits<double>::signaling_NaN()};
   double one_minus_safety_factor_for_magnetic_field_{
       std::numeric_limits<double>::signaling_NaN()};

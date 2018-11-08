@@ -55,6 +55,7 @@ SlopeLimiterParams:
   TvbmConstant: 50.0
 
 FixConservatives:
+  CutoffD: 1.0e-12
   MinimumValueOfD: 1.0e-12
   SafetyFactorForB: 1.0e-12
   SafetyFactorForS: 1.0e-12
