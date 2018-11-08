@@ -17,13 +17,24 @@ namespace VariableFixing {
 
 template <size_t ThermodynamicDim>
 FixToAtmosphere<ThermodynamicDim>::FixToAtmosphere(
-    const double density_of_atmosphere) noexcept
-    : density_of_atmosphere_(density_of_atmosphere) {}
+    const double density_of_atmosphere, const double density_cutoff,
+    const OptionContext& context)
+    : density_of_atmosphere_(density_of_atmosphere),
+      density_cutoff_(density_cutoff) {
+  if (density_of_atmosphere_ > density_cutoff_) {
+    PARSE_ERROR(context, "The cutoff density ("
+                             << density_cutoff_
+                             << ") must be greater than or equal to the "
+                                "density value in the atmosphere ("
+                             << density_of_atmosphere_ << ')');
+  }
+}
 
 // clang-tidy: google-runtime-references
 template <size_t ThermodynamicDim>
 void FixToAtmosphere<ThermodynamicDim>::pup(PUP::er& p) noexcept {  // NOLINT
   p | density_of_atmosphere_;
+  p | density_cutoff_;
 }
 
 template <>
@@ -37,7 +48,7 @@ void FixToAtmosphere<1>::operator()(
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state) const
     noexcept {
   for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
-    if (UNLIKELY(rest_mass_density->get()[i] < density_of_atmosphere_)) {
+    if (UNLIKELY(rest_mass_density->get()[i] < density_cutoff_)) {
       rest_mass_density->get()[i] = density_of_atmosphere_;
       for (size_t d = 0; d < 3; ++d) {
         spatial_velocity->get(d)[i] = 0.0;
@@ -66,7 +77,7 @@ void FixToAtmosphere<2>::operator()(
     const EquationsOfState::EquationOfState<true, 2>& equation_of_state) const
     noexcept {
   for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
-    if (UNLIKELY(rest_mass_density->get()[i] < density_of_atmosphere_)) {
+    if (UNLIKELY(rest_mass_density->get()[i] < density_cutoff_)) {
       rest_mass_density->get()[i] = density_of_atmosphere_;
       specific_internal_energy->get()[i] = 0.0;
       for (size_t d = 0; d < 3; ++d) {
@@ -88,7 +99,8 @@ void FixToAtmosphere<2>::operator()(
 template <size_t LocalThermodynamicDim>
 bool operator==(const FixToAtmosphere<LocalThermodynamicDim>& lhs,
                 const FixToAtmosphere<LocalThermodynamicDim>& rhs) noexcept {
-  return lhs.density_of_atmosphere_ == rhs.density_of_atmosphere_;
+  return lhs.density_of_atmosphere_ == rhs.density_of_atmosphere_ and
+         lhs.density_cutoff_ == rhs.density_cutoff_;
 }
 
 template <size_t ThermodynamicDim>
