@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
+#include "Options/Options.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 
 class DataVector;
@@ -53,19 +54,69 @@ struct ConstraintGamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() noexcept { return "ConstraintGamma2"; }
 };
+
+/*!
+ * \brief Gauge source function for the generalized harmonic system.
+ *
+ * \details In the generalized / damped harmonic gauge, unlike the simple
+ * harmonic gauge, the right hand side of the gauge equation
+ * \f$ \square x_a = H_a\f$ is sourced by non-vanishing functions. This variable
+ * stores those functions \f$ H_a\f$.
+ */
 template <size_t Dim, typename Frame>
 struct GaugeH : db::SimpleTag {
   using type = tnsr::a<DataVector, Dim, Frame>;
   static std::string name() noexcept { return "GaugeH"; }
 };
+
+/*!
+ * \brief Spacetime derivatives of the gauge source function for the
+ * generalized harmonic system.
+ *
+ * \details In the generalized / damped harmonic gauge, the right hand side of
+ * the gauge equation \f$ \square x_a = H_a\f$ is sourced by non-vanishing
+ * functions \f$ H_a\f$. This variable stores their spacetime derivatives
+ * \f$ \partial_b H_a\f$.
+ */
 template <size_t Dim, typename Frame>
 struct SpacetimeDerivGaugeH : db::SimpleTag {
   using type = tnsr::ab<DataVector, Dim, Frame>;
   static std::string name() noexcept { return "SpacetimeDerivGaugeH"; }
 };
 
+/*!
+ * \brief Initial value of the gauge source function for the generalized
+ * harmonic system.
+ *
+ * \details In the generalized / damped harmonic gauge, unlike the simple
+ * harmonic gauge, the right hand side of the gauge equation
+ * \f$ \square x_a = H_a\f$ is sourced by non-vanishing functions. This variable
+ * stores the initial or starting value of those functions \f$ H_a\f$, which
+ * are set by the user (based on the choice of initial data) to begin evolution.
+ */
+template <size_t Dim, typename Frame>
+struct InitialGaugeH : db::SimpleTag {
+  using type = tnsr::a<DataVector, Dim, Frame>;
+  static std::string name() noexcept { return "InitialGaugeH"; }
+};
+
+/*!
+ * \brief Initial spacetime derivatives of the gauge source function
+ * for the generalized harmonic system.
+ *
+ * \details In the generalized / damped harmonic gauge, the right hand side of
+ * the gauge equation \f$ \square x_a = H_a\f$ is sourced by non-vanishing
+ * functions \f$ H_a\f$. This variable stores the initial or starting value of
+ * the spacetime derivatives of those functions \f$ \partial_b H_a\f$, which
+ * are set by the user (based on the choice of initial data) to begin evolution.
+ */
+template <size_t Dim, typename Frame>
+struct SpacetimeDerivInitialGaugeH : db::SimpleTag {
+  using type = tnsr::ab<DataVector, Dim, Frame>;
+  static std::string name() noexcept { return "SpacetimeDerivInitialGaugeH"; }
+};
+
 // @{
-/// \ingroup GeneralizedHarmonicGroup
 /// \brief Tags corresponding to the characteristic fields of the generalized
 /// harmonic system.
 ///
@@ -116,4 +167,59 @@ struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
   }
 };
 }  // namespace Tags
+
+namespace OptionTags {
+/*!
+ * \ingroup OptionTagsGroup
+ * \brief Gauge control parameter determining when to start rolling-on the
+ * evolution gauge.
+ *
+ * \details The evolution gauge is gradually transitioned to (or
+ * *rolled-on* to) at the beginning of an evolution. This parameter sets
+ * the coordinate time at which roll-on begins.
+ */
+struct GaugeHRollOnStartTime : db::SimpleTag {
+  using type = double;
+  static std::string name() noexcept { return "GaugeHRollOnStartT"; }
+  static constexpr OptionString help{
+      "Simulation time to start rolling-on evolution gauge"};
+};
+
+/*!
+ * \ingroup OptionTagsGroup
+ * \brief Gauge control parameter determining how long the transition to
+ * the evolution gauge should take at the start of an evolution.
+ *
+ * \details The evolution gauge is gradually transitioned to (or
+ * *rolled-on* to) at the beginning of an evolution. This parameter sets
+ * the width of the coordinate time window during which roll-on happens.
+ */
+struct GaugeHRollOnTimeWindow : db::SimpleTag {
+  using type = double;
+  static std::string name() noexcept { return "GaugeHRollOnTWindow"; }
+  static constexpr OptionString help{
+      "Duration of gauge roll-on in simulation time"};
+};
+
+/*!
+ * \ingroup OptionTagsGroup
+ * \brief Gauge control parameter to specify the spatial weighting function
+ * that enters damped harmonic gauge source function.
+ *
+ * \details The evolution gauge source function is multiplied by a spatial
+ * weight function which controls where and how much it sources the damped
+ * harmonic gauge equation. The weight function is:
+ * \f$ W(x^i) = \exp[-(r/\sigma_r)^2] \f$.
+ * This weight function can be written with an extra factor inside the exponent
+ * in literature, e.g. \cite Deppe2018uye. We will absorb it here in
+ * \f$\sigma_r\f$. The parameter this tag tags is \f$ \sigma_r \f$.
+ */
+template <typename Frame>
+struct GaugeHSpatialWeightDecayWidth : db::SimpleTag {
+  using type = double;
+  static std::string name() noexcept { return "GaugeHDecayWidth"; }
+  static constexpr OptionString help{
+      "Spatial width of weighting factor in evolution gauge"};
+};
+}  // namespace OptionTags
 }  // namespace GeneralizedHarmonic
