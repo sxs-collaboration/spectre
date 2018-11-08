@@ -197,7 +197,17 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
     static type lower_bound() noexcept { return 0.0; }
     static constexpr OptionString help = {"TVBM constant 'm'"};
   };
-  using options = tmpl::list<Type, TvbmConstant>;
+  /// \brief Turn the limiter off
+  ///
+  /// This option exists to temporarily disable the limiter for debugging
+  /// purposes. For problems where limiting is not needed, the preferred
+  /// approach is to not compile the limiter into the executable.
+  struct DisableForDebugging {
+    using type = bool;
+    static type default_value() noexcept { return false; }
+    static constexpr OptionString help = {"Disable the limiter"};
+  };
+  using options = tmpl::list<Type, TvbmConstant, DisableForDebugging>;
   static constexpr OptionString help = {
       "A minmod-based slope limiter.\n"
       "The different types of minmod are more or less aggressive in trying\n"
@@ -209,9 +219,14 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   ///
   /// \param minmod_type The type of Minmod slope limiter.
   /// \param tvbm_constant The value of the TVBM constant (default: 0).
+  /// \param disable_for_debugging Switch to turn the limiter off (default:
+  //         false).
   explicit Minmod(const MinmodType minmod_type,
-                  const double tvbm_constant = 0.0) noexcept
-      : minmod_type_(minmod_type), tvbm_constant_(tvbm_constant) {
+                  const double tvbm_constant = 0.0,
+                  const bool disable_for_debugging = false) noexcept
+      : minmod_type_(minmod_type),
+        tvbm_constant_(tvbm_constant),
+        disable_for_debugging_(disable_for_debugging) {
     ASSERT(tvbm_constant >= 0.0, "The TVBM constant must be non-negative.");
   }
 
@@ -226,10 +241,14 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   void pup(PUP::er& p) noexcept {  // NOLINT
     p | minmod_type_;
     p | tvbm_constant_;
+    p | disable_for_debugging_;
   }
 
   const MinmodType& minmod_type() const noexcept { return minmod_type_; }
   const double& tvbm_constant() const noexcept { return tvbm_constant_; }
+  const bool& disable_for_debugging() const noexcept {
+    return disable_for_debugging_;
+  }
 
   /// \brief Data to send to neighbor elements.
   struct PackagedData {
@@ -266,6 +285,11 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
                     const std::array<double, VolumeDim>& element_size,
                     const OrientationMap<VolumeDim>& orientation_map) const
       noexcept {
+    if (disable_for_debugging_) {
+      // Do not initialize packaged_data
+      return;
+    }
+
     const auto wrap_compute_means =
         [&mesh, &packaged_data ](auto tag, const auto& tensor) noexcept {
       for (size_t i = 0; i < tensor.size(); ++i) {
@@ -322,6 +346,11 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
           boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
           neighbor_data) const noexcept {
+    if (disable_for_debugging_) {
+      // Do not modify input tensors
+      return false;
+    }
+
     bool limiter_activated = false;
     const auto wrap_limit_one_tensor = [
       this, &limiter_activated, &element, &mesh, &logical_coords, &element_size,
@@ -383,6 +412,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
  private:
   MinmodType minmod_type_;
   double tvbm_constant_;
+  bool disable_for_debugging_;
 };
 
 template <size_t VolumeDim, typename TagList>
@@ -390,7 +420,8 @@ SPECTRE_ALWAYS_INLINE bool operator==(
     const Minmod<VolumeDim, TagList>& lhs,
     const Minmod<VolumeDim, TagList>& rhs) noexcept {
   return lhs.minmod_type() == rhs.minmod_type() and
-         lhs.tvbm_constant() == rhs.tvbm_constant();
+         lhs.tvbm_constant() == rhs.tvbm_constant() and
+         lhs.disable_for_debugging() == rhs.disable_for_debugging();
 }
 
 template <size_t VolumeDim, typename TagList>

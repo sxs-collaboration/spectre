@@ -79,6 +79,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.Options",
       "  Type: LambdaPiN");
   test_creation<SlopeLimiters::Minmod<3, tmpl::list<scalar, vector<3>>>>(
       "  Type: LambdaPiN");
+
+  test_creation<SlopeLimiters::Minmod<3, tmpl::list<scalar>>>(
+      "  Type: LambdaPiN\n  DisableForDebugging: True");
 }
 
 // [[OutputRegex, Failed to convert "BadType" to MinmodType]]
