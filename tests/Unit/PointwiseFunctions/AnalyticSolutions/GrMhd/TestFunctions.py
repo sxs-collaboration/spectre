@@ -71,10 +71,15 @@ def alfven_spatial_velocity(x, t, wavenumber, pressure, rest_mass_density,
     rho_zero_times_h = \
      (rest_mass_density + pressure *
       (adiabatic_index)/(adiabatic_index - 1.0))
-    alfven_speed = background_mag_field / \
-     np.sqrt(rho_zero_times_h + background_mag_field ** 2)
+    aux_speed_b0 = background_mag_field / \
+     np.sqrt(rho_zero_times_h + background_mag_field ** 2 + \
+     perturbation_size**2)
+    aux_speed_b1 = perturbation_size * aux_speed_b0 / background_mag_field
+    one_over_speed_denominator = 1.0 / np.sqrt( \
+     0.5 * (1.0 + np.sqrt(1.0 - 4.0 * aux_speed_b0**2 * aux_speed_b1**2)))
+    alfven_speed = aux_speed_b0 * one_over_speed_denominator
     phase = wavenumber * (x[2] - alfven_speed * t)
-    fluid_velocity = -perturbation_size * alfven_speed / background_mag_field
+    fluid_velocity = -aux_speed_b1 * one_over_speed_denominator
     return np.array([fluid_velocity * np.cos(phase), \
      fluid_velocity * np.sin(phase), 0.0])
 
@@ -113,10 +118,14 @@ def alfven_magnetic_field(x, t, wavenumber, pressure, rest_mass_density,
     rho_zero_times_h = \
      (rest_mass_density + pressure *
       (adiabatic_index)/(adiabatic_index - 1.0))
-    alfven_speed = background_mag_field / \
-     np.sqrt(rho_zero_times_h + background_mag_field ** 2)
+    aux_speed_b0 = background_mag_field / \
+     np.sqrt(rho_zero_times_h + background_mag_field ** 2 + \
+     perturbation_size**2)
+    aux_speed_b1 = perturbation_size * aux_speed_b0 / background_mag_field
+    one_over_speed_denominator = 1.0 / np.sqrt( \
+     0.5 * (1.0 + np.sqrt(1.0 - 4.0 * aux_speed_b0**2 * aux_speed_b1 **2)))
+    alfven_speed = aux_speed_b0 * one_over_speed_denominator
     phase = wavenumber * (x[2] - alfven_speed * t)
-    fluid_velocity = -perturbation_size * alfven_speed / background_mag_field
     return np.array([perturbation_size * np.cos(phase), \
      perturbation_size * np.sin(phase), background_mag_field])
 

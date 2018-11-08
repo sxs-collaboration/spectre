@@ -35,13 +35,19 @@ namespace Solutions {
  * fluid \f$\rho_0\f$, the adiabatic index for the ideal fluid equation of
  * state \f$\gamma\f$, the background magnetic field strength \f$B_0\f$,
  * and the strength of the perturbation of the magnetic field \f$B_1\f$.
- * The Alfv&eacute;n wave phase speed is then given by:
  *
- * \f[v_A = \frac{B_0}{\sqrt{\rho_0 h + B_0^2}}\f]
+ * We define the auxiliary velocities:
+ * \f[v_{B0} = \frac{B_0}{\sqrt{\rho_0 h + B_0^2 + B_1^2}}\f]
+ * \f[v_{B1} = \frac{B_1}{\sqrt{\rho_0 h + B_0^2 + B_1^2}}\f]
+ *
+ * The Alfv&eacute;n wave phase speed that solves the grmhd equations, even for
+ * finite amplitudes \ref alfven_ref "[1]", is given by:
+ *
+ * \f[v_A = \frac{v_{B0}}{\frac{1}{2}(1 + \sqrt{1 - (2 v_{B0}v_{B1})^2})}\f]
  *
  * The amplitude of the fluid velocity is given by:
  *
- * \f[v_f = \frac{-B_1}{\sqrt{\rho_0 h + B_0^2}}\f]
+ * \f[v_f = \frac{v_{B1}}{\frac{1}{2}(1 + \sqrt{1 - (2 v_{B0}v_{B1})^2})}\f]
  *
  * In Cartesian coordinates \f$(x, y, z)\f$, and using
  * dimensionless units, the primitive quantities at a given time \f$t\f$ are
@@ -49,8 +55,8 @@ namespace Solutions {
  *
  * \f{align*}
  * \rho(\vec{x},t) &= \rho_0 \\
- * v_x(\vec{x},t) &= v_f \cos(k_z(z - v_A t))\\
- * v_y(\vec{x},t) &= v_f \sin(k_z(z - v_A t))\\
+ * v_x(\vec{x},t) &= -v_f \cos(k_z(z - v_A t))\\
+ * v_y(\vec{x},t) &= -v_f \sin(k_z(z - v_A t))\\
  * v_z(\vec{x},t) &= 0\\
  * P(\vec{x},t) &= P, \\
  * \epsilon(\vec{x}, t) &= \frac{P}{(\gamma - 1)\rho_0}\\
@@ -58,6 +64,23 @@ namespace Solutions {
  * B_y(\vec{x},t) &= B_1 \sin(k_z(z - v_A t))\\
  * B_z(\vec{x},t) &= B_0
  * \f}
+ *
+ * Note that the phase speed is not the characteristic Alfv&eacute;n speed
+ * \f$c_A\f$, which is the speed in the case where the magnetic field is
+ * parallel to the direction of propagation \ref alfven_ref "[1]":
+ *
+ * \f[c_A = \frac{b}{\sqrt{\rho_0 h + b^2}}\f]
+ *
+ * Where \f$b^2\f$ is the invariant quantity \f$B^2 - E^2\f$, given by:
+ *
+ * \f[b^2 = B_0^2 + B_1^2 - B_0^2 v_f^2\f]
+ *
+ * \anchor alfven_ref [1]
+ * L. Del Zanna, O. Zanotti, N. Bucciantini, P. Londrillo, ECHO: an Eulerian
+ * Conservative High Order scheme for general relativistic magnetohydrodynamics
+ * and magnetodynamics. Astronomy & Astrophysics,
+ * [473(1):11–30, 2007](https://arxiv.org/pdf/0704.3206.pdf)
+ *
  */
 class AlfvenWave {
  public:
@@ -106,8 +129,6 @@ class AlfvenWave {
     using type = double;
     static constexpr OptionString help = {
         "The perturbation amplitude of the magnetic field."};
-    static type lower_bound() noexcept { return -1.0; }
-    static type upper_bound() noexcept { return 1.0; }
   };
 
   using options =

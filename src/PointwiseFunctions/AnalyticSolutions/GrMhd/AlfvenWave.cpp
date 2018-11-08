@@ -32,11 +32,18 @@ AlfvenWave::AlfvenWave(const WaveNumber::type wavenumber,
       background_mag_field_(background_mag_field),
       perturbation_size_(perturbation_size),
       equation_of_state_{adiabatic_index_} {
-  alfven_speed_ = background_mag_field /
-                  sqrt((rest_mass_density_ + pressure_ * adiabatic_index_ /
-                                                 (adiabatic_index_ - 1.0)) +
-                       square(background_mag_field));
-  fluid_speed_ = -perturbation_size * alfven_speed_ / background_mag_field;
+  const double auxiliary_speed_b0 =
+      background_mag_field /
+      sqrt((rest_mass_density_ +
+            pressure_ * adiabatic_index_ / (adiabatic_index_ - 1.0)) +
+           square(background_mag_field) + square(perturbation_size));
+  const double auxiliary_speed_b1 =
+      perturbation_size * auxiliary_speed_b0 / background_mag_field;
+  const double one_over_speed_denominator =
+      1.0 / sqrt(0.5 * (1.0 + sqrt(1.0 - 4.0 * square(auxiliary_speed_b0 *
+                                                      auxiliary_speed_b1))));
+  alfven_speed_ = auxiliary_speed_b0 * one_over_speed_denominator;
+  fluid_speed_ = -auxiliary_speed_b1 * one_over_speed_denominator;
 }
 
 void AlfvenWave::pup(PUP::er& p) noexcept {
