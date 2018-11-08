@@ -193,8 +193,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// See `SlopeLimiters::Minmod` documentation for details.
   struct TvbmConstant {
     using type = double;
-    static type default_value() { return 0.0; }
-    static type lower_bound() { return 0.0; }
+    static type default_value() noexcept { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
     static constexpr OptionString help = {"TVBM constant 'm'"};
   };
   using options = tmpl::list<Type, TvbmConstant>;
