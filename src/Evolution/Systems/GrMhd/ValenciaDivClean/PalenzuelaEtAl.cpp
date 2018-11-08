@@ -3,7 +3,9 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 
+#include <boost/none.hpp>
 #include <cmath>
+#include <exception>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PrimitiveRecoveryData.hpp"
@@ -119,11 +121,16 @@ boost::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
                                     magnetic_field_squared,
                                     rest_mass_density_times_lorentz_factor,
                                     equation_of_state};
-
-  const double specific_enthalpy_times_lorentz_factor =
-      // NOLINTNEXTLINE(clang-analyzer-core)
-      RootFinder::toms748(f_of_x, lower_bound, upper_bound, absolute_tolerance_,
-                          relative_tolerance_, max_iterations_);
+  double specific_enthalpy_times_lorentz_factor;
+  try {
+    specific_enthalpy_times_lorentz_factor =
+        // NOLINTNEXTLINE(clang-analyzer-core)
+        RootFinder::toms748(f_of_x, lower_bound, upper_bound,
+                            absolute_tolerance_, relative_tolerance_,
+                            max_iterations_);
+  } catch (std::exception& exception) {
+    return boost::none;
+  }
   const double lorentz_factor =
       f_of_x.lorentz_factor(specific_enthalpy_times_lorentz_factor);
   const double rest_mass_density =
