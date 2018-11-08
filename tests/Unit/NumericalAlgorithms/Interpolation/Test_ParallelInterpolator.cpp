@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <cmath>
 #include <cstddef>
 #include <pup.h>
 #include <random>
@@ -29,6 +30,7 @@
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTargetKerrHorizon.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetLineSegment.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatorReceivePoints.hpp"  // IWYU pragma: keep
@@ -54,6 +56,10 @@ namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
 }  // namespace Parallel
+namespace StrahlkorperTags {
+template <typename Frame>
+struct Strahlkorper;
+}  // namespace StrahlkorperTags
 /// \endcond
 
 namespace {
@@ -142,6 +148,25 @@ struct TestFunction {
   }
 };
 
+struct TestKerrHorizonIntegral {
+  template <typename DbTags, typename Metavariables>
+  static void apply(
+      const db::DataBox<DbTags>& box,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const typename Metavariables::temporal_id& /*temporal_id*/) noexcept {
+    const auto& interpolation_result = get<Tags::Square>(box);
+    const auto& strahlkorper =
+        get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
+    const double integral = strahlkorper.ylm_spherepack().definite_integral(
+        make_not_null(get(interpolation_result).data()));
+    const double expected_integral = 608.0 * M_PI / 3.0;  // by hand
+    // The interpolation is not perfect because I use too few grid points.
+    Approx custom_approx = Approx::custom().epsilon(1.e-4).scale(1.0);
+    CHECK(integral == custom_approx(expected_integral));
+    ++num_test_function_calls;
+  }
+};
+
 template <typename Metavariables, typename InterpolationTargetTag>
 struct mock_interpolation_target {
   using metavariables = Metavariables;
@@ -192,16 +217,28 @@ struct MockMetavariables {
         TestFunction<InterpolationTargetB, Tags::Negate>;
     using type = typename compute_target_points::options_type;
   };
+  struct InterpolationTargetC {
+    using compute_items_on_source = tmpl::list<>;
+    using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
+    using compute_items_on_target = tmpl::list<Tags::SquareComputeItem>;
+    using compute_target_points =
+        intrp::Actions::KerrHorizon<InterpolationTargetC, ::Frame::Inertial>;
+    using post_interpolation_callback = TestKerrHorizonIntegral;
+    // This `type` is so this tag can be used to read options.
+    using type = typename compute_target_points::options_type;
+  };
 
   using interpolator_source_vars = tmpl::list<Tags::TestSolution>;
   using interpolation_target_tags =
-      tmpl::list<InterpolationTargetA, InterpolationTargetB>;
+      tmpl::list<InterpolationTargetA, InterpolationTargetB,
+                 InterpolationTargetC>;
   using temporal_id = Time;
   using domain_frame = Frame::Inertial;
   static constexpr size_t domain_dim = 3;
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
       mock_interpolation_target<MockMetavariables, InterpolationTargetB>,
+      mock_interpolation_target<MockMetavariables, InterpolationTargetC>,
       mock_interpolator<MockMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialize, Exit };
@@ -222,6 +259,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   using MockDistributedObjectsTagTargetB =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           mock_interpolation_target<metavars, metavars::InterpolationTargetB>>;
+  using MockDistributedObjectsTagTargetC =
+      typename MockRuntimeSystem::template MockDistributedObjectsTag<
+          mock_interpolation_target<metavars, metavars::InterpolationTargetC>>;
   using MockDistributedObjectsTagInterpolator =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           mock_interpolator<metavars>>;
@@ -233,18 +273,26 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
       .emplace(0,
                ActionTesting::MockDistributedObject<mock_interpolation_target<
                    metavars, metavars::InterpolationTargetB>>{});
+  tuples::get<MockDistributedObjectsTagTargetC>(dist_objects)
+      .emplace(0,
+               ActionTesting::MockDistributedObject<mock_interpolation_target<
+                   metavars, metavars::InterpolationTargetC>>{});
   tuples::get<MockDistributedObjectsTagInterpolator>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<
                       mock_interpolator<metavars>>{});
 
-  // Options for LineSegment for all InterpolationTargets.
+  // Options for all InterpolationTargets.
   intrp::OptionHolders::LineSegment<3> line_segment_opts_A(
       {{1.0, 1.0, 1.0}}, {{2.4, 2.4, 2.4}}, 15);
   intrp::OptionHolders::LineSegment<3> line_segment_opts_B(
       {{1.1, 1.1, 1.1}}, {{2.5, 2.5, 2.5}}, 17);
+  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(
+      10, {{0.0, 0.0, 0.0}}, 1.0, {{0.0, 0.0, 0.0}});
   tuples::TaggedTuple<metavars::InterpolationTargetA,
-                      metavars::InterpolationTargetB>
-      tuple_of_opts(line_segment_opts_A, line_segment_opts_B);
+                      metavars::InterpolationTargetB,
+                      metavars::InterpolationTargetC>
+      tuple_of_opts(line_segment_opts_A, line_segment_opts_B,
+                    kerr_horizon_opts_C);
 
   MockRuntimeSystem runner{tuple_of_opts, std::move(dist_objects)};
 
@@ -259,6 +307,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
       mock_interpolation_target<metavars, metavars::InterpolationTargetB>,
       ::intrp::Actions::InitializeInterpolationTarget<
           metavars::InterpolationTargetB>>(0, domain_creator.create_domain());
+  runner.simple_action<
+      mock_interpolation_target<metavars, metavars::InterpolationTargetC>,
+      ::intrp::Actions::InitializeInterpolationTarget<
+          metavars::InterpolationTargetC>>(0, domain_creator.create_domain());
   runner.simple_action<mock_interpolator<metavars>,
                        ::intrp::Actions::InitializeInterpolator>(0);
 
@@ -292,6 +344,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
       mock_interpolation_target<metavars, metavars::InterpolationTargetB>,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<
           metavars::InterpolationTargetB>>(0, std::vector<Time>{temporal_id});
+  runner.simple_action<
+      mock_interpolation_target<metavars, metavars::InterpolationTargetC>,
+      intrp::Actions::AddTemporalIdsToInterpolationTarget<
+          metavars::InterpolationTargetC>>(0, std::vector<Time>{temporal_id});
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {
@@ -334,6 +390,6 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   }
 
   // Check whether test function was called.
-  CHECK(num_test_function_calls == 2);
+  CHECK(num_test_function_calls == 3);
 }
 }  // namespace
