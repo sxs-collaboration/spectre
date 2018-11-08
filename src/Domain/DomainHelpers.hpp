@@ -80,10 +80,10 @@ void set_identified_boundaries(
 /// to selectively exclude blocks from the resulting domain. This allows
 /// for the creation of non-trivial shapes such as the net for a tesseract.
 template <size_t VolumeDim>
-std::vector<std::array<size_t, two_to_the(VolumeDim)>>
-corners_for_rectilinear_domains(const Index<VolumeDim>& domain_extents,
-                                const std::vector<Index<VolumeDim>>&
-                                    block_indices_to_exclude = {}) noexcept;
+auto corners_for_rectilinear_domains(
+    const Index<VolumeDim>& domain_extents,
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {}) noexcept
+    -> std::vector<std::array<size_t, two_to_the(VolumeDim)>>;
 
 /// \ingroup ComputationalDomainGroup
 /// The number of wedges to include in the Shell domain.
@@ -112,14 +112,16 @@ enum class ShellWedges {
 /// value of one. When the argument `use_logarithmic_map` is set to `true`,
 /// the radial gridpoints of the wedge map are set to be spaced logarithmically.
 template <typename TargetFrame>
-std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
-wedge_coordinate_maps(double inner_radius, double outer_radius,
-                      double inner_sphericity, double outer_sphericity,
-                      bool use_equiangular_map,
-                      double x_coord_of_shell_center = 0.0,
-                      bool use_half_wedges = false, double aspect_ratio = 1.0,
-                      bool use_logarithmic_map = false,
-                      ShellWedges which_wedges = ShellWedges::All) noexcept;
+auto wedge_coordinate_maps(double inner_radius, double outer_radius,
+                           double inner_sphericity, double outer_sphericity,
+                           bool use_equiangular_map,
+                           double x_coord_of_shell_center = 0.0,
+                           bool use_half_wedges = false,
+                           double aspect_ratio = 1.0,
+                           bool use_logarithmic_map = false,
+                           ShellWedges which_wedges = ShellWedges::All) noexcept
+    -> std::vector<
+        std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// These are the ten Frustums used in the DomainCreators for binary compact
@@ -127,9 +129,10 @@ wedge_coordinate_maps(double inner_radius, double outer_radius,
 /// `length_inner_cube`. The ten frustums also make up a cube of their own,
 /// of side length `length_outer_cube`.
 template <typename TargetFrame>
-std::vector<std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
-frustum_coordinate_maps(double length_inner_cube, double length_outer_cube,
-                        bool use_equiangular_map) noexcept;
+auto frustum_coordinate_maps(double length_inner_cube, double length_outer_cube,
+                             bool use_equiangular_map) noexcept
+    -> std::vector<
+        std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The corners for a domain with radial layers.
@@ -186,15 +189,15 @@ std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
 ///
 /// Allows for both Affine and Equiangular maps.
 template <typename TargetFrame, size_t VolumeDim>
-std::vector<
-    std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
-maps_for_rectilinear_domains(
+auto maps_for_rectilinear_domains(
     const Index<VolumeDim>& domain_extents,
     const std::array<std::vector<double>, VolumeDim>& block_demarcations,
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {},
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks =
         {},
-    bool use_equiangular_map = false) noexcept;
+    bool use_equiangular_map = false) noexcept
+    -> std::vector<std::unique_ptr<
+        CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief Create a rectilinear Domain of multicubes.
