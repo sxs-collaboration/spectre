@@ -145,6 +145,8 @@ void FixConservatives::operator()(
     if (s_tilde_squared > one_minus_safety_factor_for_momentum_density_ *
                               simple_upper_bound_for_s_tilde_squared) {
       // Find root of Equation B.34 of Foucart
+      // NOTE: This assumes minimum specific enthalpy is 1.
+      // SpEC implements a more complicated formula (B.32) which is equivalent
       // Bounds on root are given by Equation  B.40 of Foucart
       const auto f_of_lorentz_factor = FunctionOfLorentzFactor{
           b_squared_over_d, tau_over_d, normalized_s_dot_b};

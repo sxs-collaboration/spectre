@@ -52,6 +52,8 @@ namespace VariableFixing {
 ///   sufficient conditions for a set of conservative variables to satisfy the
 ///   inequality, which can be used to avoid root finding at most points.
 ///
+/// \note The routine currently assumes the minimum specific enthalpy is one.
+///
 /// For more details see Appendix B from the [thesis of Francois
 /// Foucart](https://ecommons.cornell.edu/handle/1813/30652)
 class FixConservatives {
