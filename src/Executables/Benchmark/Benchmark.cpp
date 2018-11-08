@@ -1,7 +1,10 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wredundant-decls"
 #include <benchmark/benchmark.h>
+#pragma GCC diagnostic pop
 #include <string>
 #include <vector>
 
@@ -15,7 +18,7 @@
 #include "Domain/Element.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"
 
@@ -100,9 +103,7 @@ void bench_all_gradient(benchmark::State& state) {  // NOLINT
     benchmark::DoNotOptimize(partial_derivatives<VarTags>(vars, mesh, inv_jac));
   }
 }
-BENCHMARK(bench_all_gradient);
+BENCHMARK(bench_all_gradient);  // NOLINT
 }  // namespace
 
-BENCHMARK_MAIN()
-
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+BENCHMARK_MAIN();
