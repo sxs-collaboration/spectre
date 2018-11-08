@@ -60,5 +60,9 @@ FixConservatives:
   SafetyFactorForB: 1.0e-12
   SafetyFactorForS: 1.0e-12
 
+FixToAtmosphere:
+  DensityOfAtmosphere: 1.0e-12
+  DensityCutoff: 1.0e-12
+
 ObserveNSlabs: 1000
 ObserveAtT0: false
