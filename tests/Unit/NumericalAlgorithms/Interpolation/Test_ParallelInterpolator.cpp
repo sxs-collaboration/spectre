@@ -25,7 +25,6 @@
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
-#include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
@@ -42,6 +41,7 @@
 #include "Time/Time.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -57,7 +57,6 @@ class ConstGlobalCache;
 /// \endcond
 
 namespace {
-
 // Simple DataBoxItems for test.
 namespace Tags {
 struct TestSolution : db::SimpleTag {
@@ -319,53 +318,19 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
         0, temporal_id, element_id, mesh, std::move(output_vars));
   }
 
-  // Now there should be queued actions. Run them.
-  auto remaining_simple_actions = [&runner]() noexcept {
-    const std::vector<bool> queue_not_empty{
-        {not runner
-                 .is_simple_action_queue_empty<mock_interpolator<metavars>>(
-                     0),
-         not runner.is_simple_action_queue_empty<mock_interpolation_target<
-             metavars, metavars::InterpolationTargetA>>(0),
-         not runner.is_simple_action_queue_empty<mock_interpolation_target<
-             metavars, metavars::InterpolationTargetB>>(0)}};
-    size_t count = 0;
-    for (const auto& not_empty : queue_not_empty) {
-      if (not_empty) {
-        ++count;
-      }
-    }
-    return std::pair<size_t, std::vector<bool>>(count, queue_not_empty);
-  };
-
   // Invoke remaining actions in random order.
   std::random_device r;
   const auto seed = r();
   std::mt19937 generator(seed);
   CAPTURE(seed);
-  std::uniform_int_distribution<size_t> ran(0, 2);
-  auto simple_actions_remain = remaining_simple_actions();
-  while (simple_actions_remain.first > 0) {
-    const size_t index = ran(generator);
-    if (not simple_actions_remain.second[index]) {
-      continue;
-    }
-    switch (index) {
-      case 0:
-        runner.invoke_queued_simple_action<mock_interpolator<metavars>>(0);
-        break;
-      case 1:
-        runner.invoke_queued_simple_action<mock_interpolation_target<
-            metavars, metavars::InterpolationTargetA>>(0);
-        break;
-      case 2:
-        runner.invoke_queued_simple_action<mock_interpolation_target<
-            metavars, metavars::InterpolationTargetB>>(0);
-        break;
-      default:
-        ERROR("How can we get another index here?");
-    }
-    simple_actions_remain = remaining_simple_actions();
+
+  auto index_map = ActionTesting::indices_of_components_with_queued_actions<
+      metavars::component_list>(make_not_null(&runner), 0_st);
+  while (not index_map.empty()) {
+    ActionTesting::invoke_random_queued_action<metavars::component_list>(
+        make_not_null(&runner), make_not_null(&generator), index_map, 0_st);
+    index_map = ActionTesting::indices_of_components_with_queued_actions<
+        metavars::component_list>(make_not_null(&runner), 0_st);
   }
 
   // Check whether test function was called.

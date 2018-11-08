@@ -4,14 +4,24 @@
 #pragma once
 
 #include <algorithm>
+#include <array>
 #include <boost/preprocessor/control/if.hpp>
+#include <boost/preprocessor/logical/compl.hpp>
 #include <boost/preprocessor/logical/not.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
+#include <boost/preprocessor/repetition/repeat.hpp>
+#include <cstddef>
 #include <deque>
+#include <exception>
+#include <lrtslock.h>
 #include <memory>
+#include <ostream>
+#include <random>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/Assert.hpp"
@@ -21,15 +31,28 @@
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/SimpleActionVisitation.hpp"
+#include "Utilities/BoostHelpers.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/NoSuchType.hpp"
+#include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+/// \cond
+// IWYU pragma: no_forward_declare db::DataBox
+namespace PUP {
+class er;
+}  // namespace PUP
+namespace Parallel {
+template <class ChareType>
+struct get_array_index;
+}  // namespace Parallel
+/// \endcond
 
 namespace ActionTesting {
 namespace detail {
@@ -121,7 +144,7 @@ class MockDistributedObject {
   class InvokeThreadedAction : public InvokeActionBase {
    public:
     InvokeThreadedAction(MockDistributedObject* local_alg,
-                       std::tuple<Args...> args)
+                         std::tuple<Args...> args)
         : local_algorithm_(local_alg), args_(std::move(args)) {}
 
     explicit InvokeThreadedAction(MockDistributedObject* local_alg)
@@ -227,9 +250,7 @@ class MockDistributedObject {
     algorithm_step_ = next_action_id;
   }
 
-  size_t get_next_action_index() const noexcept {
-    return algorithm_step_;
-  }
+  size_t get_next_action_index() const noexcept { return algorithm_step_; }
 
   template <size_t... Is>
   void next_action(std::index_sequence<Is...> /*meta*/) noexcept;
@@ -773,23 +794,22 @@ class MockRuntimeSystem {
                              TupleOfMockDistributedObjects local_algorithms)
       : cache_(std::move(cache_contents)),
         local_algorithms_(std::move(local_algorithms)) {
-    tmpl::for_each<typename Metavariables::component_list>(
-        [this](auto component) {
-          using Component = tmpl::type_from<decltype(component)>;
-          Parallel::get_parallel_component<Component>(cache_).set_data(
-              &tuples::get<MockDistributedObjectsTag<Component>>(
-                  local_algorithms_),
-              &tuples::get<InboxesTag<Component>>(inboxes_));
+    tmpl::for_each<typename Metavariables::component_list>([this](
+                                                               auto component) {
+      using Component = tmpl::type_from<decltype(component)>;
+      Parallel::get_parallel_component<Component>(cache_).set_data(
+          &tuples::get<MockDistributedObjectsTag<Component>>(local_algorithms_),
+          &tuples::get<InboxesTag<Component>>(inboxes_));
 
-          for (auto& local_alg_pair : this->template algorithms<Component>()) {
-            const auto& index = local_alg_pair.first;
-            auto& local_alg = local_alg_pair.second;
-            local_alg.set_index(index);
-            local_alg.set_cache(&cache_);
-            local_alg.set_inboxes(
-                &(tuples::get<InboxesTag<Component>>(inboxes_)[index]));
-          }
-        });
+      for (auto& local_alg_pair : this->template algorithms<Component>()) {
+        const auto& index = local_alg_pair.first;
+        auto& local_alg = local_alg_pair.second;
+        local_alg.set_index(index);
+        local_alg.set_cache(&cache_);
+        local_alg.set_inboxes(
+            &(tuples::get<InboxesTag<Component>>(inboxes_)[index]));
+      }
+    });
   }
 
   // @{
@@ -926,4 +946,60 @@ class MockRuntimeSystem {
   Inboxes inboxes_;
   TupleOfMockDistributedObjects local_algorithms_;
 };
+
+/// Returns a vector of all the indices of the Components
+/// in the ComponentList that have queued actions.
+template <typename ComponentList, typename MockRuntimeSystem,
+          typename ArrayIndex>
+std::vector<size_t> indices_of_components_with_queued_actions(
+    const gsl::not_null<MockRuntimeSystem*> runner,
+    const ArrayIndex& array_index) noexcept {
+  std::vector<size_t> result{};
+  size_t i = 0;
+  tmpl::for_each<ComponentList>([&](auto tag) noexcept {
+    using Tag = typename decltype(tag)::type;
+    if (not runner->template is_simple_action_queue_empty<Tag>(array_index)) {
+      result.push_back(i);
+    }
+    ++i;
+  });
+  return result;
+}
+
+/// \cond
+namespace detail {
+// Helper function used in invoke_queued_simple_action.
+template <typename ComponentList, typename MockRuntimeSystem,
+          typename ArrayIndex, size_t... Is>
+void invoke_queued_action(const gsl::not_null<MockRuntimeSystem*> runner,
+                          const size_t component_to_invoke,
+                          const ArrayIndex& array_index,
+                          std::index_sequence<Is...> /*meta*/) noexcept {
+  const auto helper =
+      [ component_to_invoke, &runner, &array_index ](auto I) noexcept {
+    if (I.value == component_to_invoke) {
+      runner->template invoke_queued_simple_action<
+          tmpl::at_c<ComponentList, I.value>>(array_index);
+    }
+  };
+  EXPAND_PACK_LEFT_TO_RIGHT(helper(std::integral_constant<size_t, Is>{}));
+}
+}  // namespace detail
+/// \endcond
+
+/// Invokes the next queued action on a random Component.
+/// `index_map` is the thing returned by
+/// `indices_of_components_with_queued_actions`
+template <typename ComponentList, typename MockRuntimeSystem,
+          typename Generator, typename ArrayIndex>
+void invoke_random_queued_action(const gsl::not_null<MockRuntimeSystem*> runner,
+                                 const gsl::not_null<Generator*> generator,
+                                 const std::vector<size_t>& index_map,
+                                 const ArrayIndex& array_index) noexcept {
+  std::uniform_int_distribution<size_t> ran(0, index_map.size() - 1);
+  const size_t component_to_invoke = index_map.at(ran(*generator));
+  detail::invoke_queued_action<ComponentList>(
+      runner, component_to_invoke, array_index,
+      std::make_index_sequence<tmpl::size<ComponentList>::value>{});
+}
 }  // namespace ActionTesting
