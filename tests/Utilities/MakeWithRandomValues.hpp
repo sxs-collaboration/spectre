@@ -163,7 +163,6 @@ ReturnType make_with_random_values(
   return result;
 }
 
-// {@
 /// \ingroup TestingFrameworkGroup
 /// \brief Make a fixed-size data structure and fill with random values
 ///
@@ -174,26 +173,11 @@ ReturnType make_with_random_values(
 /// Used as
 /// `make_with_random_values<Type>(make_not_null(&gen),make_not_null(&dist))`
 template <typename T, typename UniformRandomBitGenerator,
-          typename RandomNumberDistribution,
-          Requires<cpp17::is_floating_point_v<tt::get_fundamental_type_t<T>>> =
-              nullptr>
+          typename RandomNumberDistribution>
 T make_with_random_values(
     const gsl::not_null<UniformRandomBitGenerator*> generator,
     const gsl::not_null<RandomNumberDistribution*> distribution) noexcept {
-  T result{std::numeric_limits<tt::get_fundamental_type_t<T>>::signaling_NaN()};
+  T result{};
   fill_with_random_values(make_not_null(&result), generator, distribution);
   return result;
 }
-
-template <
-    typename T, typename UniformRandomBitGenerator,
-    typename RandomNumberDistribution,
-    Requires<cpp17::is_integral_v<tt::get_fundamental_type_t<T>>> = nullptr>
-T make_with_random_values(
-    const gsl::not_null<UniformRandomBitGenerator*> generator,
-    const gsl::not_null<RandomNumberDistribution*> distribution) noexcept {
-  T result{std::numeric_limits<tt::get_fundamental_type_t<T>>::max()};
-  fill_with_random_values(make_not_null(&result), generator, distribution);
-  return result;
-}
-// @}
