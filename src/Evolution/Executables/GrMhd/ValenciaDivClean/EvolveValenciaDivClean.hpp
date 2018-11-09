@@ -19,7 +19,9 @@
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Initialize.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Observe.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/Actions.hpp"
@@ -94,7 +96,8 @@ struct EvolutionMetavars {
                  StepChoosers::Register::Constant,
                  StepChoosers::Register::Increase>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<
-      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>;
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
 
   // hack this has to be synchronized with the Observe action :(
   using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,
