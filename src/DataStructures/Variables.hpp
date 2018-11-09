@@ -11,7 +11,9 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -829,3 +831,63 @@ struct Subitems<TagList, Tag,
   }
 };
 }  // namespace db
+
+namespace Tags {
+template <size_t N, typename T>
+struct TempTensor {
+  using type = T;
+  static std::string name() noexcept {
+    return std::string("TempTensor") + std::to_string(N);
+  }
+};
+
+// @{
+/// \ingroup PeoGroup
+/// Variables Tags for temporary tensors inside a function.
+template <size_t N>
+using TempScalar = TempTensor<N, Scalar<DataVector>>;
+
+// Rank 1
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using Tempa = TempTensor<N, tnsr::a<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using TempA = TempTensor<N, tnsr::A<DataVector, SpatialDim, Fr>>;
+
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using Tempi = TempTensor<N, tnsr::i<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using TempI = TempTensor<N, tnsr::I<DataVector, SpatialDim, Fr>>;
+
+// Rank 2
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using Tempab = TempTensor<N, tnsr::ab<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using TempaB = TempTensor<N, tnsr::aB<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using TempAb = TempTensor<N, tnsr::Ab<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using TempAB = TempTensor<N, tnsr::AB<DataVector, SpatialDim, Fr>>;
+
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using Tempij = TempTensor<N, tnsr::ij<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using TempiJ = TempTensor<N, tnsr::iJ<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using TempIj = TempTensor<N, tnsr::Ij<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using TempIJ = TempTensor<N, tnsr::IJ<DataVector, SpatialDim, Fr>>;
+
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using Tempia = TempTensor<N, tnsr::ia<DataVector, SpatialDim, Fr>>;
+
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using Tempaa = TempTensor<N, tnsr::aa<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using TempAA = TempTensor<N, tnsr::AA<DataVector, SpatialDim, Fr>>;
+
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using Tempii = TempTensor<N, tnsr::ii<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
+using TempII = TempTensor<N, tnsr::II<DataVector, SpatialDim, Fr>>;
+// @}
+}  // namespace Tags
