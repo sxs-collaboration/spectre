@@ -15,6 +15,7 @@ if [ $SPECTRE_CONTAINER ]; then
     spack load brigand
     spack load blaze
     spack load gsl
+    spack load libsharp
     spack load libxsmm
     spack load yaml-cpp
     spack load benchmark

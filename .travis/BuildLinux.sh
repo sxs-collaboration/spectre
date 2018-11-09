@@ -12,8 +12,8 @@ spack load blaze
 spack load brigand
 spack load catch
 spack load gsl
+spack load libsharp
 spack load libxsmm
-spack load pkg-config
 spack load yaml-cpp
 export PATH=$PATH:/work/texlive/bin/x86_64-linux
 
@@ -63,8 +63,7 @@ if [ -z "${RUN_CLANG_TIDY}" ] \
 
     if [[ ${TRAVIS_BUILD_STAGE_NAME} = \
           "Build and run tests, clangtidy, iwyu, and doxygen" ]]; then
-        make test-executables \
-             $([ $BUILD_TYPE = Release ] && echo Benchmark) -j2
+        make test-executables -j2
         ctest --output-on-failure -j2
 
         # Build test coverage

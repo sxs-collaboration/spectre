@@ -33,8 +33,8 @@ if [ $# == 0 ]; then
     spack load brigand
     spack load catch
     spack load gsl
+    spack load libsharp
     spack load libxsmm
-    spack load pkg-config
     spack load yaml-cpp
 
     SOURCE_DIR="/work/spectre/"

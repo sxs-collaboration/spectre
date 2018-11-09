@@ -20,12 +20,13 @@ ARG PARALLEL_MAKE_ARG=-j2
 # Install required packages for SpECTRE
 RUN apt-get update -y && \
     apt-get install -y gcc g++ gfortran gcc-6 g++-6 gfortran-6 gdb git cmake \
-                       libopenblas-dev liblapack-dev libhdf5-dev \
+                       libopenblas-dev liblapack-dev libhdf5-dev hdf5-tools \
                        libgsl0-dev \
                        clang-5.0 clang-format-5.0 clang-tidy-5.0 \
                        libclang-5.0-dev wget libncurses-dev \
                        lcov cppcheck \
-                       libboost-all-dev
+                       libboost-all-dev \
+                       libssl-dev
 
 # Update is needed to get libc++ correctly
 # Install jemalloc
@@ -58,7 +59,7 @@ WORKDIR /work/spack
 # Since spack/develop is rather unstable, we check out a commit we
 # know is stable. This should be updated periodically to update
 # installed packages.
-RUN git checkout v0.11.1
+RUN git checkout 470a45c51659156e7d154ea890e798ce32b8767d
 WORKDIR /work
 
 # Spack needs to be pointed to the system OpenSSL to work properly, we add this
@@ -79,15 +80,16 @@ RUN echo "export PATH=\$PATH:/work/spack/bin" >> /root/.bashrc && \
     /root/.spack/linux/compilers.yaml && \
     sed -i 's@f77: null@f77: /usr/bin/gfortran@' \
     /root/.spack/linux/compilers.yaml
-RUN /work/spack/bin/spack install --no-checksum catch@2.1.0 && \
+RUN /work/spack/bin/spack install cmake && \
+    /work/spack/bin/spack install --no-checksum catch@2.1.0 && \
     /work/spack/bin/spack install brigand@master && \
     /work/spack/bin/spack install blaze && \
-    /work/spack/bin/spack install gsl%gcc@6.4.0
-RUN /work/spack/bin/spack install libxsmm%gcc@6.4.0
+    /work/spack/bin/spack install gsl%gcc@6.4.0 && \
+    /work/spack/bin/spack install libsharp -openmp -mpi && \
+    /work/spack/bin/spack install libxsmm%gcc@6.4.0
 # On 09/03/2017 CMake 3.9.0 failed to build with spack
-RUN /work/spack/bin/spack install cmake@3.8.0%gcc@6.4.0
-RUN /work/spack/bin/spack install yaml-cpp@develop%gcc@6.4.0 ^cmake@3.8.0%gcc@6.4.0
-RUN /work/spack/bin/spack install benchmark%gcc@6.4.0 ^cmake@3.8.0%gcc@6.4.0
+RUN /work/spack/bin/spack install yaml-cpp@develop%gcc@6.4.0
+RUN /work/spack/bin/spack install benchmark%gcc@6.4.0
 
 # Install include-what-you-use
 # We patch it to allow cyclic includes in boost
@@ -132,6 +134,7 @@ RUN echo 'spack load catch' >> /root/.bashrc && \
     echo 'spack load brigand' >> /root/.bashrc && \
     echo 'spack load blaze' >> /root/.bashrc && \
     echo 'spack load gsl' >> /root/.bashrc && \
+    echo 'spack load libsharp' >> /root/.bashrc && \
     echo 'spack load libxsmm' >> /root/.bashrc && \
     echo 'spack load yaml-cpp' >> /root/.bashrc && \
     echo 'spack load benchmark' >> /root/.bashrc
