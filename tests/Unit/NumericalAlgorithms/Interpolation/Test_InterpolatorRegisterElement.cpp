@@ -28,7 +28,7 @@ struct NumberOfElements;
 
 namespace {
 
-template <typename Metavariables, size_t VolumeDim>
+template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -36,8 +36,8 @@ struct mock_interpolator {
   using const_global_cache_tag_list = tmpl::list<>;
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
-      typename ::intrp::Actions::InitializeInterpolator<
-          VolumeDim>::template return_tag_list<Metavariables>>;
+      typename ::intrp::Actions::InitializeInterpolator::
+          template return_tag_list<Metavariables>>;
 };
 
 struct MockMetavariables {
@@ -46,10 +46,11 @@ struct MockMetavariables {
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
   using temporal_id = Time;
+  static constexpr size_t domain_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolatorTargetA>;
 
-  using component_list = tmpl::list<mock_interpolator<MockMetavariables, 3>>;
+  using component_list = tmpl::list<mock_interpolator<MockMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialize, Exit };
 };
@@ -63,29 +64,29 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
   TupleOfMockDistributedObjects dist_objects{};
   using MockDistributedObjectsTag =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          mock_interpolator<metavars, 3>>;
+          mock_interpolator<metavars>>;
   tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(0, ActionTesting::MockDistributedObject<
-                      mock_interpolator<metavars, 3>>{});
+                      mock_interpolator<metavars>>{});
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
-  runner.simple_action<mock_interpolator<metavars, 3>,
-                       ::intrp::Actions::InitializeInterpolator<3>>(0);
+  runner.simple_action<mock_interpolator<metavars>,
+                       ::intrp::Actions::InitializeInterpolator>(0);
 
   const auto& box =
-      runner.template algorithms<mock_interpolator<metavars, 3>>()
+      runner.template algorithms<mock_interpolator<metavars>>()
           .at(0)
           .template get_databox<
-              typename mock_interpolator<metavars, 3>::initial_databox>();
+              typename mock_interpolator<metavars>::initial_databox>();
 
   CHECK(db::get<::intrp::Tags::NumberOfElements>(box) == 0);
 
-  runner.simple_action<mock_interpolator<metavars, 3>,
+  runner.simple_action<mock_interpolator<metavars>,
                        ::intrp::Actions::RegisterElement>(0);
 
   CHECK(db::get<::intrp::Tags::NumberOfElements>(box) == 1);
 
-  runner.simple_action<mock_interpolator<metavars, 3>,
+  runner.simple_action<mock_interpolator<metavars>,
                        ::intrp::Actions::RegisterElement>(0);
 
   CHECK(db::get<::intrp::Tags::NumberOfElements>(box) == 2);

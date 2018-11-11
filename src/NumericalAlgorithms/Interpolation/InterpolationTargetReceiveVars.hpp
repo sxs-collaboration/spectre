@@ -21,13 +21,12 @@
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox
 namespace intrp {
-template <class Metavariables, size_t VolumeDim>
+template <class Metavariables>
 struct Interpolator;
-template <typename Metavariables, typename InterpolationTargetTag,
-          size_t VolumeDim>
+template <typename Metavariables, typename InterpolationTargetTag>
 class InterpolationTarget;
 namespace Actions {
-template <typename InterpolationTargetTag, size_t VolumeDim>
+template <typename InterpolationTargetTag>
 struct CleanUpInterpolator;
 }  // namespace Actions
 namespace Tags {
@@ -48,7 +47,7 @@ namespace InterpolationTarget_detail {
 /// Calls the callback function, tells interpolators to clean up the current
 /// temporal_id, and then if there are more temporal_ids to be interpolated,
 /// starts the next one.
-template <typename InterpolationTargetTag, size_t VolumeDim,
+template <typename InterpolationTargetTag,
           typename DbTags, typename Metavariables>
 void callback_and_cleanup(
     const gsl::not_null<db::DataBox<DbTags>*> box,
@@ -77,18 +76,16 @@ void callback_and_cleanup(
   // Tell interpolators to clean up at this temporal_id for this
   // InterpolationTargetTag.
   auto& interpolator_proxy =
-      Parallel::get_parallel_component<Interpolator<Metavariables, VolumeDim>>(
-          *cache);
-  Parallel::simple_action<
-      Actions::CleanUpInterpolator<InterpolationTargetTag, VolumeDim>>(
+      Parallel::get_parallel_component<Interpolator<Metavariables>>(*cache);
+  Parallel::simple_action<Actions::CleanUpInterpolator<InterpolationTargetTag>>(
       interpolator_proxy, temporal_id);
 
   // If there are further temporal_ids, begin interpolation for
   // the next one.
   const auto& temporal_ids = db::get<Tags::TemporalIds<Metavariables>>(*box);
   if (not temporal_ids.empty()) {
-    auto& my_proxy = Parallel::get_parallel_component<InterpolationTarget<
-        Metavariables, InterpolationTargetTag, VolumeDim>>(*cache);
+    auto& my_proxy = Parallel::get_parallel_component<
+        InterpolationTarget<Metavariables, InterpolationTargetTag>>(*cache);
     Parallel::simple_action<
         typename InterpolationTargetTag::compute_target_points>(
         my_proxy, temporal_ids.front());
@@ -106,7 +103,7 @@ namespace Actions {
 /// - Calls `InterpolationTargetTag::post_interpolation_callback`
 /// - Tells `Interpolator`s that the interpolation is complete
 ///  (by calling
-///  `Actions::CleanUpInterpolator<InterpolationTargetTag,VolumeDim>`)
+///  `Actions::CleanUpInterpolator<InterpolationTargetTag>`)
 /// - Removes the first `temporal_id` from `Tags::TemporalIds<Metavariables>`
 /// - If there are more `temporal_id`s, begins interpolation at the next
 ///  `temporal_id` (by calling `InterpolationTargetTag::compute_target_points`)
@@ -128,7 +125,7 @@ namespace Actions {
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 ///
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
-template <typename InterpolationTargetTag, size_t VolumeDim>
+template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars {
   /// For requirements on Metavariables, see InterpolationTarget
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -192,8 +189,7 @@ struct InterpolationTargetReceiveVars {
             box)
             .number_of_grid_points()) {
       // All the points have been interpolated.
-      InterpolationTarget_detail::callback_and_cleanup<InterpolationTargetTag,
-                                                       VolumeDim>(
+      InterpolationTarget_detail::callback_and_cleanup<InterpolationTargetTag>(
           make_not_null(&box), make_not_null(&cache));
     }
   }

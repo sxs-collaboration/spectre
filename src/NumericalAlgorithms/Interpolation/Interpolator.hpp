@@ -15,15 +15,15 @@ namespace intrp {
 /// `Element`s and interpolating it onto `InterpolationTarget`s.
 ///
 /// For requirements on Metavariables, see InterpolationTarget
-template <class Metavariables, size_t VolumeDim>
+template <class Metavariables>
 struct Interpolator {
   using chare_type = Parallel::Algorithms::Group;
   using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox =
-      db::compute_databox_type<typename Actions::InitializeInterpolator<
-          VolumeDim>:: template return_tag_list<Metavariables>>;
+      db::compute_databox_type<typename Actions::InitializeInterpolator::
+                                   template return_tag_list<Metavariables>>;
   using options = tmpl::list<>;
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache);
@@ -32,8 +32,8 @@ struct Interpolator {
                                      Metavariables>& /*global_cache*/){};
 };
 
-template <class Metavariables, size_t VolumeDim>
-void Interpolator<Metavariables, VolumeDim>::initialize(
+template <class Metavariables>
+void Interpolator<Metavariables>::initialize(
     Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
   auto& my_proxy = Parallel::get_parallel_component<Interpolator>(
       *(global_cache.ckLocalBranch()));

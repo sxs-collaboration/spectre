@@ -35,8 +35,8 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   - `Tags::VolumeVarsInfo<Metavariables,VolumeDim>`
-///   - `Tags::InterpolatedVarsHolders<Metavariables,VolumeDim>`
+///   - `Tags::VolumeVarsInfo<Metavariables>`
+///   - `Tags::InterpolatedVarsHolders<Metavariables>`
 struct InterpolatorReceiveVolumeData {
   template <
       typename DbTags, typename... InboxTags, typename Metavariables,
@@ -54,32 +54,32 @@ struct InterpolatorReceiveVolumeData {
       const ElementId<VolumeDim>& element_id, const ::Mesh<VolumeDim>& mesh,
       Variables<typename Metavariables::interpolator_source_vars>&&
           vars) noexcept {
-    db::mutate<Tags::VolumeVarsInfo<Metavariables, VolumeDim>>(
+    db::mutate<Tags::VolumeVarsInfo<Metavariables>>(
         make_not_null(&box),
         [&temporal_id, &element_id, &mesh,
          &vars ](const gsl::not_null<
-                 db::item_type<Tags::VolumeVarsInfo<Metavariables, VolumeDim>>*>
+                 db::item_type<Tags::VolumeVarsInfo<Metavariables>>*>
                      container) noexcept {
           if (container->find(temporal_id) == container->end()) {
             container->emplace(
                 temporal_id,
                 std::unordered_map<ElementId<VolumeDim>,
                                    typename Tags::VolumeVarsInfo<
-                                       Metavariables, VolumeDim>::Info>{});
+                                       Metavariables>::Info>{});
           }
           container->at(temporal_id)
               .emplace(std::make_pair(
                   element_id,
-                  typename Tags::VolumeVarsInfo<Metavariables, VolumeDim>::Info{
+                  typename Tags::VolumeVarsInfo<Metavariables>::Info{
                       mesh, std::move(vars)}));
         });
 
     // Try to interpolate data for all InterpolationTargets.
     tmpl::for_each<typename Metavariables::interpolation_target_tags>(
-        [&box, &cache, &temporal_id](auto x) noexcept {
+        [&box, &cache, &temporal_id ](auto x) noexcept {
           using tag = typename decltype(x)::type;
-          try_to_interpolate<tag, VolumeDim>(
-              make_not_null(&box), make_not_null(&cache), temporal_id);
+          try_to_interpolate<tag>(make_not_null(&box), make_not_null(&cache),
+                                  temporal_id);
         });
   }
 };

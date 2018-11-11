@@ -22,9 +22,9 @@ class ConstGlobalCache;
 namespace intrp {
 namespace Tags {
 struct NumberOfElements;
-template <typename Metavariables, size_t VolumeDim>
+template <typename Metavariables>
 struct InterpolatedVarsHolders;
-template <typename Metavariables, size_t VolumeDim>
+template <typename Metavariables>
 struct VolumeVarsInfo;
 }  // namespace Tags
 }  // namespace intrp
@@ -41,17 +41,16 @@ namespace Actions {
 /// DataBox changes:
 /// - Adds:
 ///   - `Tags::NumberOfElements`
-///   - `Tags::VolumeVarsInfo<Metavariables,VolumeDim>`
-///   - `Tags::InterpolatedVarsHolders<Metavariables,VolumeDim>`
+///   - `Tags::VolumeVarsInfo<Metavariables>`
+///   - `Tags::InterpolatedVarsHolders<Metavariables>`
 /// - Removes: nothing
 /// - Modifies: nothing
-template <size_t VolumeDim>
 struct InitializeInterpolator {
   template <typename Metavariables>
   using return_tag_list =
       tmpl::list<Tags::NumberOfElements,
-                 Tags::VolumeVarsInfo<Metavariables, VolumeDim>,
-                 Tags::InterpolatedVarsHolders<Metavariables, VolumeDim>>;
+                 Tags::VolumeVarsInfo<Metavariables>,
+                 Tags::InterpolatedVarsHolders<Metavariables>>;
   template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
@@ -63,9 +62,9 @@ struct InitializeInterpolator {
     return std::make_tuple(
         db::create<db::get_items<return_tag_list<Metavariables>>>(
             0_st,
-            db::item_type<Tags::VolumeVarsInfo<Metavariables, VolumeDim>>{},
+            db::item_type<Tags::VolumeVarsInfo<Metavariables>>{},
             db::item_type<
-                Tags::InterpolatedVarsHolders<Metavariables, VolumeDim>>{}));
+                Tags::InterpolatedVarsHolders<Metavariables>>{}));
   }
 };
 

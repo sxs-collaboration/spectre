@@ -62,23 +62,26 @@ namespace intrp {
 ///                               `InterpolationTargetTag`s.
 /// - temporal_id:                the type held by ::intrp::Tags::TemporalIds.
 /// - domain_frame:               The `::Frame` of the Domain.
-template <class Metavariables, typename InterpolationTargetTag,
-          size_t VolumeDim>
+/// `Metavariables` must contain the following static constexpr members:
+/// - size_t domain_dim:    The dimension of the Domain.
+template <class Metavariables, typename InterpolationTargetTag>
 struct InterpolationTarget {
   using chare_type = ::Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<
-      typename Actions::InitializeInterpolationTarget<InterpolationTargetTag>::
-          template return_tag_list<Metavariables, VolumeDim>>;
+  using initial_databox =
+      db::compute_databox_type<typename Actions::InitializeInterpolationTarget<
+          InterpolationTargetTag>::template return_tag_list<Metavariables>>;
   using options = tmpl::list<::OptionTags::DomainCreator<
-      VolumeDim, typename Metavariables::domain_frame>>;
+      Metavariables::domain_dim,
+      typename Metavariables::domain_frame>>;
   using const_global_cache_tag_list = tmpl::list<>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache,
       std::unique_ptr<
-          DomainCreator<VolumeDim, typename Metavariables::domain_frame>>
+          DomainCreator<Metavariables::domain_dim,
+                        typename Metavariables::domain_frame>>
           domain_creator) noexcept;
   static void execute_next_phase(
       typename metavariables::Phase /*next_phase*/,
@@ -87,11 +90,11 @@ struct InterpolationTarget {
 };
 
 template <class Metavariables, typename InterpolationTargetTag>
-template <size_t VolumeDim>
 void InterpolationTarget<Metavariables, InterpolationTargetTag>::initialize(
     Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache,
     std::unique_ptr<
-        DomainCreator<VolumeDim, typename Metavariables::domain_frame>>
+        DomainCreator<Metavariables::domain_dim,
+                      typename Metavariables::domain_frame>>
         domain_creator) noexcept {
   auto& my_proxy = Parallel::get_parallel_component<InterpolationTarget>(
       *(global_cache.ckLocalBranch()));

@@ -43,7 +43,7 @@ struct mock_interpolation_target {
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<
       typename ::intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables, 3>>;
+          InterpolationTargetTag>::template return_tag_list<Metavariables>>;
 };
 
 struct MockMetavariables {
@@ -53,6 +53,7 @@ struct MockMetavariables {
   };
   using temporal_id = Time;
   using domain_frame = Frame::Inertial;
+  static constexpr size_t domain_dim = 3;
 
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>>;
