@@ -20,7 +20,8 @@
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
+namespace {
+void test_main() {
   DataVector a{2};
   CHECK(a.size() == 2);
   DataVector b{2, 10.0};
@@ -59,8 +60,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
   CHECK(t_move_constructor.is_owning());
 }
 
-SPECTRE_TEST_CASE("Unit.Serialization.DataVector",
-                  "[DataStructures][Unit][Serialization]") {
+void test_serialization() {
   const size_t npts = 10;
   DataVector t(npts), tgood(npts);
   std::iota(t.begin(), t.end(), 1.2);
@@ -76,8 +76,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.DataVector",
   CHECK(t.is_owning());
 }
 
-SPECTRE_TEST_CASE("Unit.Serialization.DataVector_Ref",
-                  "[DataStructures][Unit][Serialization]") {
+void test_serialization_ref() {
   const size_t npts = 10;
   DataVector t(npts);
   std::iota(t.begin(), t.end(), 4.3);
@@ -100,8 +99,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.DataVector_Ref",
   CHECK_FALSE(t2.is_owning());
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
-                  "[DataStructures][Unit]") {
+void test_datavector_ref() {
   DataVector data{1.43, 2.83, 3.94, 7.85};
   DataVector t;
   t.set_data_ref(&data);
@@ -156,44 +154,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector_Ref",
   }
 }
 
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.ref_diff_size",
-                               "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  DataVector data{1.43, 2.83, 3.94, 7.85};
-  DataVector data_ref;
-  data_ref.set_data_ref(&data);
-  DataVector data2{1.43, 2.83, 3.94};
-  data_ref = data2;
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.DataVector.move_ref_diff_size",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  DataVector data{1.43, 2.83, 3.94, 7.85};
-  DataVector data_ref;
-  data_ref.set_data_ref(&data);
-  DataVector data2{1.43, 2.83, 3.94};
-  data_ref = std::move(data2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-namespace {
 template <typename T1, typename T2>
 void check_vectors(const T1& t1, const T2& t2) {
   CHECK_ITERABLE_APPROX(t1, t2);
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MathAfterMove",
-                  "[Unit][DataStructures]") {
+void test_datavector_math_after_move() {
   DataVector m0(10, 3.0), m1(10, 9.0);
   {
     DataVector a(10, 2.0);
@@ -240,8 +206,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MathAfterMove",
     check_vectors(a, DataVector(10, 12.0));
   }
 }
-
-namespace {
 enum class UseRefWrap { None, Cref, Ref };
 
 template <UseRefWrap Wrap, class T,
@@ -561,10 +525,8 @@ void test_datavector_array_math() noexcept {
   const auto magnitude_d3 = magnitude(d3);
   CHECK_ITERABLE_APPROX(expected_d3, magnitude_d3);
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
-                  "[Unit][DataStructures]") {
+void test_datavector_math() {
   test_datavector_math<UseRefWrap::Cref, UseRefWrap::Cref>();
   test_datavector_math<UseRefWrap::Cref, UseRefWrap::Ref>();
   test_datavector_math<UseRefWrap::Cref, UseRefWrap::None>();
@@ -577,6 +539,16 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
 
   test_datavector_array_math();
 }
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
+  test_main();
+  test_serialization();
+  test_serialization_ref();
+  test_datavector_ref();
+  test_datavector_math_after_move();
+  test_datavector_math();
+}
 
 // [[OutputRegex, Must copy into same size]]
 [[noreturn]] SPECTRE_TEST_CASE(
@@ -588,6 +560,35 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   DataVector one_ref(one.data(), one.size());
   DataVector one_b(2, 1.0);
   one_ref = (one_b * one_b);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Must copy into same size]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.ref_diff_size",
+                               "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  DataVector data{1.43, 2.83, 3.94, 7.85};
+  DataVector data_ref;
+  data_ref.set_data_ref(&data);
+  DataVector data2{1.43, 2.83, 3.94};
+  data_ref = data2;
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Must copy into same size]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.DataVector.move_ref_diff_size",
+    "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  DataVector data{1.43, 2.83, 3.94, 7.85};
+  DataVector data_ref;
+  data_ref.set_data_ref(&data);
+  DataVector data2{1.43, 2.83, 3.94};
+  data_ref = std::move(data2);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

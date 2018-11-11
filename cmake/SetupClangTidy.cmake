@@ -2,6 +2,8 @@
 # See LICENSE.txt for details.
 
 # Remove the checks because:
+# -cppcoreguidelines-no-malloc: we want to use malloc with unique_ptr because
+#                               not initializing the memory is faster.
 # -llvm-header-guard: We use pragma once instead of include guards
 # -google-runtime-int: specifying int32_t and int64_t instead of just int
 # -readability-else-after-return: style choice, discussed in issue #145
@@ -17,7 +19,7 @@
 #                      a lot of annoying warnings about moving trivially
 #                      copyable types, it warns about moving const objects,
 #                      which can have severe performance impacts.
-set(CLANG_TIDY_IGNORE_CHECKS "*,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-noexcept-move,-hicpp-no-assembler,-android-*,-cert-err58-cpp,-google-default-arguments,-fuchsia-*,-performance-noexcept-move-constructor")
+set(CLANG_TIDY_IGNORE_CHECKS "*,-cppcoreguidelines-no-malloc,-llvm-header-guard,-google-runtime-int,-readability-else-after-return,-misc-noexcept-move-constructor,-misc-unconventional-assign-operator,-cppcoreguidelines-c-copy-assignment-signature,-modernize-raw-string-literal,-hicpp-noexcept-move,-hicpp-no-assembler,-android-*,-cert-err58-cpp,-google-default-arguments,-fuchsia-*,-performance-noexcept-move-constructor")
 
 if(NOT CMAKE_CXX_CLANG_TIDY AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   string(

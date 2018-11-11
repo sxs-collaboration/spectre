@@ -10,7 +10,15 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
+/// \cond
+namespace gsl {
+template <class>
+class not_null;
+}  // namespace gsl
+/// \endcond
+
 namespace gr {
+// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes Christoffel symbol of the first kind from derivative of
@@ -22,6 +30,12 @@ namespace gr {
  * where \f$g_{bc}\f$ is either a spatial or spacetime metric
  */
 template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
+void christoffel_first_kind(
+    gsl::not_null<tnsr::abb<DataType, SpatialDim, Frame, Index>*> christoffel,
+    const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric) noexcept;
+
+template <size_t SpatialDim, typename Frame, IndexType Index, typename DataType>
 tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
-    const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric);
+    const tnsr::abb<DataType, SpatialDim, Frame, Index>& d_metric) noexcept;
+// @}
 } // namespace gr

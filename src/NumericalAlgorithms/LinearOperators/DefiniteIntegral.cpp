@@ -3,6 +3,7 @@
 
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 
+#include <array>  // Used for mesh.slices
 #include <ostream>
 
 #include "DataStructures/DataVector.hpp"
@@ -11,32 +12,17 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Blas.hpp"
 
-namespace {
-
-template <size_t Dim>
-DataVector integrate_over_last_dimension(const DataVector& integrand,
-                                         const Mesh<Dim>& mesh) noexcept {
-  static_assert(Dim > 1, "Expect dimension to be at least 2.");
-  const DataVector& weights =
-      Spectral::quadrature_weights(mesh.slice_through(Dim - 1));
-  const size_t reduced_size = mesh.slice_away(Dim - 1).number_of_grid_points();
-  DataVector integrated_data(reduced_size, 0.);
-  dgemv_('N', reduced_size, mesh.extents(Dim - 1), 1., integrand.data(),
-         reduced_size, weights.data(), 1, 0., integrated_data.data(), 1);
-  return integrated_data;
-}
-}  // namespace
-
-template <size_t Dim>
-double definite_integral(const DataVector& integrand,
-                         const Mesh<Dim>& mesh) noexcept {
-  const size_t num_grid_points = mesh.number_of_grid_points();
-  ASSERT(integrand.size() == num_grid_points,
-         "num_grid_points = " << num_grid_points
-                              << ", integrand size = " << integrand.size());
-  return definite_integral(integrate_over_last_dimension(integrand, mesh),
-                           mesh.slice_away(Dim - 1));
-}
+/// \cond
+// The 2D and 3D definite integrals have been optimized and are up to 2x faster
+// than the previous implementation. The main differences are
+//
+// - No memory allocations are required
+// - Manual loop unrolling (this will be somewhat hardware specific on the
+//   ~decade time scale).
+// - Pointers to avoid any potential overhead from indexing
+//
+// Note: The inner loop is over x because the memory layout used by SpECTRE is
+//       x-varies-fastest.
 
 template <>
 double definite_integral<1>(const DataVector& integrand,
@@ -49,9 +35,76 @@ double definite_integral<1>(const DataVector& integrand,
   return ddot_(num_grid_points, weights.data(), 1, integrand.data(), 1);
 }
 
-/// \cond
-template double definite_integral<2>(const DataVector&,
-                                     const Mesh<2>&) noexcept;
-template double definite_integral<3>(const DataVector&,
-                                     const Mesh<3>&) noexcept;
+template <>
+double definite_integral<2>(const DataVector& integrand,
+                            const Mesh<2>& mesh) noexcept {
+  ASSERT(integrand.size() == mesh.number_of_grid_points(),
+         "num_grid_points = " << mesh.number_of_grid_points()
+                              << ", integrand size = " << integrand.size());
+  const auto sliced_meshes = mesh.slices();
+  const size_t x_size = sliced_meshes[0].number_of_grid_points();
+  const size_t x_last_unrolled = x_size - x_size % 2;
+  const size_t y_size = sliced_meshes[1].number_of_grid_points();
+  const double* const w_x =
+      Spectral::quadrature_weights(sliced_meshes[0]).data();
+  const double* const w_y =
+      Spectral::quadrature_weights(sliced_meshes[1]).data();
+
+  double result = 0.0;
+  for (size_t j = 0; j < y_size; ++j) {
+    const size_t offset = j * x_size;
+    for (size_t i = 0; i < x_last_unrolled; i += 2) {
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+      result += w_y[j] * w_x[i] * integrand[i + offset] +
+                w_y[j] * w_x[i + 1] * integrand[i + 1 + offset];  // NOLINT
+    }
+    for (size_t i = x_last_unrolled; i < x_size; ++i) {
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+      result += w_y[j] * w_x[i] * integrand[i + offset];
+    }
+  }
+  return result;
+}
+
+template <>
+double definite_integral<3>(const DataVector& integrand,
+                            const Mesh<3>& mesh) noexcept {
+  ASSERT(integrand.size() == mesh.number_of_grid_points(),
+         "num_grid_points = " << mesh.number_of_grid_points()
+                              << ", integrand size = " << integrand.size());
+  const auto sliced_meshes = mesh.slices();
+  const size_t x_size = sliced_meshes[0].number_of_grid_points();
+  const size_t x_last_unrolled = x_size - x_size % 2;
+  const size_t y_size = sliced_meshes[1].number_of_grid_points();
+  const size_t z_size = sliced_meshes[2].number_of_grid_points();
+  const double* const w_x =
+      Spectral::quadrature_weights(sliced_meshes[0]).data();
+  const double* const w_y =
+      Spectral::quadrature_weights(sliced_meshes[1]).data();
+  const double* const w_z =
+      Spectral::quadrature_weights(sliced_meshes[2]).data();
+
+  double result = 0.0;
+  for (size_t k = 0; k < z_size; ++k) {
+    for (size_t j = 0; j < y_size; ++j) {
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+      const double prod = w_z[k] * w_y[j];
+      const size_t offset = x_size * (j + y_size * k);
+      // Unrolling at 2 gives better performance on AVX machines (the most
+      // common in 2018). The stride will probably need to be updated as
+      // hardware changes. Note: using a single loop is ~15% faster when
+      // x_size == 3, and both loop styles are comparable for x_size == 2.
+      for (size_t i = 0; i < x_last_unrolled; i += 2) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        result += prod * w_x[i] * integrand[i + offset] +
+                  prod * w_x[i + 1] * integrand[i + 1 + offset];  // NOLINT
+      }
+      for (size_t i = x_last_unrolled; i < x_size; ++i) {
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+        result += prod * w_x[i] * integrand[i + offset];
+      }
+    }
+  }
+  return result;
+}
 /// \endcond

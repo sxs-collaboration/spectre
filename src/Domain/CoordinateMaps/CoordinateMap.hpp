@@ -583,8 +583,8 @@ bool operator!=(
 /// \ingroup ComputationalDomainGroup
 /// \brief Creates a `CoordinateMap` of `maps...`
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
-constexpr CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>
-make_coordinate_map(Maps&&... maps) {
+constexpr auto make_coordinate_map(Maps&&... maps)
+    -> CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...> {
   return CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>(
       std::forward<Maps>(maps)...);
 }
@@ -592,10 +592,10 @@ make_coordinate_map(Maps&&... maps) {
 /// \ingroup ComputationalDomainGroup
 /// \brief Creates a `std::unique_ptr<CoordinateMapBase>` of `maps...`
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
-std::unique_ptr<CoordinateMapBase<
-    SourceFrame, TargetFrame,
-    CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>::dim>>
-make_coordinate_map_base(Maps&&... maps) noexcept {
+auto make_coordinate_map_base(Maps&&... maps) noexcept
+    -> std::unique_ptr<CoordinateMapBase<
+        SourceFrame, TargetFrame,
+        CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>::dim>> {
   return std::make_unique<
       CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>>(
       std::forward<Maps>(maps)...);
@@ -607,10 +607,10 @@ make_coordinate_map_base(Maps&&... maps) noexcept {
 /// argument passed in.
 template <typename SourceFrame, typename TargetFrame, typename Arg0,
           typename... Args>
-std::vector<std::unique_ptr<
-    CoordinateMapBase<SourceFrame, TargetFrame, std::decay_t<Arg0>::dim>>>
-make_vector_coordinate_map_base(Arg0&& arg_0,
-                                Args&&... remaining_args) noexcept {
+auto make_vector_coordinate_map_base(Arg0&& arg_0,
+                                     Args&&... remaining_args) noexcept
+    -> std::vector<std::unique_ptr<
+        CoordinateMapBase<SourceFrame, TargetFrame, std::decay_t<Arg0>::dim>>> {
   std::vector<std::unique_ptr<
       CoordinateMapBase<SourceFrame, TargetFrame, std::decay_t<Arg0>::dim>>>
       return_vector;
@@ -632,9 +632,10 @@ make_vector_coordinate_map_base(Arg0&& arg_0,
 /// passed in.
 template <typename SourceFrame, typename TargetFrame, size_t Dim, typename Map,
           typename... Maps>
-std::vector<std::unique_ptr<CoordinateMapBase<SourceFrame, TargetFrame, Dim>>>
-make_vector_coordinate_map_base(std::vector<Map> maps,
-                                const Maps&... remaining_maps) noexcept {
+auto make_vector_coordinate_map_base(std::vector<Map> maps,
+                                     const Maps&... remaining_maps) noexcept
+    -> std::vector<
+        std::unique_ptr<CoordinateMapBase<SourceFrame, TargetFrame, Dim>>> {
   std::vector<std::unique_ptr<CoordinateMapBase<SourceFrame, TargetFrame, Dim>>>
       return_vector;
   return_vector.reserve(sizeof...(Maps) + 1);

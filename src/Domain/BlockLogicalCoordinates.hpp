@@ -33,7 +33,8 @@ class IdPair;
 /// returned only once, and is considered to belong to the `Block`
 /// with the smaller `BlockId`.
 template <size_t Dim, typename Frame>
-std::vector<
-    IdPair<domain::BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>>
-block_logical_coordinates(const Domain<Dim, Frame>& domain,
-                          const tnsr::I<DataVector, Dim, Frame>& x) noexcept;
+auto block_logical_coordinates(
+    const Domain<Dim, Frame>& domain,
+    const tnsr::I<DataVector, Dim, Frame>& x) noexcept
+    -> std::vector<IdPair<domain::BlockId,
+                          tnsr::I<double, Dim, typename ::Frame::Logical>>>;

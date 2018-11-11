@@ -33,7 +33,7 @@ class Mesh;
  * \param mesh the Mesh of the manifold on which f is located.
  */
 template <size_t Dim>
-double mean_value(const DataVector& f, const Mesh<Dim>& mesh) {
+double mean_value(const DataVector& f, const Mesh<Dim>& mesh) noexcept {
   return definite_integral(f, mesh) / two_to_the(Dim);
 }
 
@@ -53,4 +53,4 @@ double mean_value(const DataVector& f, const Mesh<Dim>& mesh) {
  */
 template <size_t Dim>
 double mean_value_on_boundary(const DataVector& f, const Mesh<Dim>& mesh,
-                              size_t d, Side side);
+                              size_t d, Side side) noexcept;

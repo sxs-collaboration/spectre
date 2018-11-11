@@ -35,6 +35,13 @@ struct ComovingMagneticField : db::SimpleTag {
   }
 };
 
+/// The square of the comoving magnetic field, \f$b^\mu b_\mu\f$
+template <typename DataType>
+struct ComovingMagneticFieldSquared : db::SimpleTag {
+  using type = Scalar<DataType>;
+  static std::string name() noexcept { return "ComovingMagneticFieldSquared"; }
+};
+
 /// The divergence-cleaning field \f$\Phi\f$.
 template <typename DataType>
 struct DivergenceCleaningField : db::SimpleTag {
@@ -68,6 +75,33 @@ struct MagneticField : db::SimpleTag {
   static std::string name() noexcept {
     return Frame::prefix<Fr>() + "MagneticField";
   }
+};
+
+/// The magnetic field dotted into the spatial velocity, \f$B^iv_i\f$ where
+/// \f$v_i\f$ is the spatial velocity oneform.
+template <typename DataType>
+struct MagneticFieldDotSpatialVelocity : db::SimpleTag {
+  using type = Scalar<DataType>;
+  static std::string name() noexcept {
+    return "MagneticFieldDotSpatialVelocity";
+  }
+};
+
+/// The oneform of the magnetic field.
+/// \see hydro::Tags::MagneticField
+template <typename DataType, size_t Dim, typename Fr>
+struct MagneticFieldOneForm : db::SimpleTag {
+  using type = tnsr::i<DataType, Dim, Fr>;
+  static std::string name() noexcept {
+    return Frame::prefix<Fr>() + "MagneticFieldOneForm";
+  }
+};
+
+/// The square of the magnetic field, \f$B^iB_i\f$
+template <typename DataType>
+struct MagneticFieldSquared : db::SimpleTag {
+  using type = Scalar<DataType>;
+  static std::string name() noexcept { return "MagneticFieldSquared"; }
 };
 
 /// The magnetic pressure \f$p_m\f$.

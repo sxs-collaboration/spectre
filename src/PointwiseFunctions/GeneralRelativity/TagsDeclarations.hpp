@@ -40,6 +40,9 @@ template <size_t Dim, typename Frame = Frame::Inertial,
 struct SpacetimeChristoffelSecondKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
+struct SpatialChristoffelFirstKind;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
 struct SpatialChristoffelSecondKind;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>

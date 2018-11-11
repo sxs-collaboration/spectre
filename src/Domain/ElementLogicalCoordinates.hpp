@@ -85,9 +85,9 @@ struct ElementLogicalCoordHolder {
 /// will be returned only once, and will be considered to belong to
 /// the first `Element` in the list of `ElementId`s.
 template <size_t Dim>
-std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>
-element_logical_coordinates(
+auto element_logical_coordinates(
     const std::vector<ElementId<Dim>>& element_ids,
     const std::vector<
         IdPair<domain::BlockId, tnsr::I<double, Dim, typename Frame::Logical>>>&
-        block_coord_holders) noexcept;
+        block_coord_holders) noexcept
+    -> std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>>;

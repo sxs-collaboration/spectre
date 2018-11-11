@@ -59,6 +59,11 @@ struct SpacetimeChristoffelSecondKind : db::SimpleTag {
   static std::string name() noexcept { return "SpactimeChristoffelSecondKind"; }
 };
 template <size_t Dim, typename Frame, typename DataType>
+struct SpatialChristoffelFirstKind : db::SimpleTag {
+  using type = tnsr::ijj<DataType, Dim, Frame>;
+  static std::string name() noexcept { return "SpatialChristoffelFirstKind"; }
+};
+template <size_t Dim, typename Frame, typename DataType>
 struct SpatialChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::Ijj<DataType, Dim, Frame>;
   static std::string name() noexcept { return "SpatialChristoffelSecondKind"; }

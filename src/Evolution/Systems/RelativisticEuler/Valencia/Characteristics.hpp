@@ -10,6 +10,10 @@
 
 /// \cond
 class DataVector;
+namespace gsl {
+template <class>
+class not_null;
+}  // namespace gsl
 /// \endcond
 
 // IWYU pragma: no_forward_declare Tensor
@@ -44,6 +48,15 @@ namespace Valencia {
  * where \f$v^2 = \gamma_{ij}v^iv^j\f$ is the magnitude squared of the spatial
  * velocity, and \f$c_s\f$ is the sound speed.
  */
+template <size_t Dim>
+void characteristic_speeds(
+    gsl::not_null<std::array<DataVector, Dim + 2>*> char_speeds,
+    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,
+    const tnsr::I<DataVector, Dim>& spatial_velocity,
+    const Scalar<DataVector>& spatial_velocity_squared,
+    const Scalar<DataVector>& sound_speed_squared,
+    const tnsr::i<DataVector, Dim>& normal) noexcept;
+
 template <size_t Dim>
 std::array<DataVector, Dim + 2> characteristic_speeds(
     const Scalar<DataVector>& lapse, const tnsr::I<DataVector, Dim>& shift,

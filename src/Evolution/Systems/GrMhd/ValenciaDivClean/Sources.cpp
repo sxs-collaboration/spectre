@@ -3,12 +3,12 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp"
 
-#include <algorithm>
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
@@ -22,53 +22,76 @@
 
 /// \cond
 namespace {
-tnsr::II<DataVector, 3, Frame::Inertial> densitized_stress(
+void densitized_stress(
+    const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*> result,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        temp_buffer_for_3_scalars,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        temp_mag_field_one_form_buffer,
+    const gsl::not_null<DataVector*> temp_buffer_for_magnetic_field_squared,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& lorentz_factor,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const Scalar<DataVector>& pressure) noexcept {
-  auto result = inv_spatial_metric;
+  raise_or_lower_index(temp_mag_field_one_form_buffer, magnetic_field,
+                       spatial_metric);
+  const auto& magnetic_field_oneform = *temp_mag_field_one_form_buffer;
 
-  const auto magnetic_field_oneform =
-      raise_or_lower_index(magnetic_field, spatial_metric);
-  const auto magnetic_field_dot_spatial_velocity =
-      dot_product(magnetic_field_oneform, spatial_velocity);
+  Scalar<DataVector> magnetic_field_dot_spatial_velocity{};
+  get(magnetic_field_dot_spatial_velocity)
+      .set_data_ref(&get<2>(*temp_buffer_for_3_scalars));
+  dot_product(make_not_null(&magnetic_field_dot_spatial_velocity),
+              magnetic_field_oneform, spatial_velocity);
   // not const to save an allocation below
-  auto magnetic_field_squared =
-      dot_product(magnetic_field, magnetic_field_oneform);
+  Scalar<DataVector>  magnetic_field_squared{};
+  get(magnetic_field_squared)
+      .set_data_ref(temp_buffer_for_magnetic_field_squared);
+  dot_product(make_not_null(&magnetic_field_squared), magnetic_field,
+              magnetic_field_oneform);
 
-  const DataVector one_over_w_squared = 1.0 / square(get(lorentz_factor));
+  DataVector& one_over_w_squared = get<0>(*temp_buffer_for_3_scalars);
+  one_over_w_squared = 1.0 / square(get(lorentz_factor));
   // p_star = p + p_m = p + b^2/2 = p + ((B^n v_n)^2 + (B^n B_n)/W^2)/2
-  const DataVector p_star =
+  DataVector& p_star = get<1>(*temp_buffer_for_3_scalars);
+  p_star =
       get(pressure) + 0.5 * (square(get(magnetic_field_dot_spatial_velocity)) +
                              get(magnetic_field_squared) * one_over_w_squared);
 
-  Scalar<DataVector> h_rho_w_squared_plus_b_squared =
-      std::move(magnetic_field_squared);
+  Scalar<DataVector> h_rho_w_squared_plus_b_squared{};
+  get(h_rho_w_squared_plus_b_squared)
+      .set_data_ref(temp_buffer_for_magnetic_field_squared);
   get(h_rho_w_squared_plus_b_squared) += get(rest_mass_density) *
                                          get(specific_enthalpy) *
                                          square(get(lorentz_factor));
 
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = i; j < 3; ++j) {
-      result.get(i, j) *= p_star;
-      result.get(i, j) +=
+      result->get(i, j) *= p_star;
+      result->get(i, j) +=
           get(h_rho_w_squared_plus_b_squared) * spatial_velocity.get(i) *
               spatial_velocity.get(j) -
           get(magnetic_field_dot_spatial_velocity) *
               (magnetic_field.get(i) * spatial_velocity.get(j) +
                magnetic_field.get(j) * spatial_velocity.get(i)) -
           magnetic_field.get(i) * magnetic_field.get(j) * one_over_w_squared;
-      result.get(i, j) *= get(sqrt_det_spatial_metric);
+      result->get(i, j) *= get(sqrt_det_spatial_metric);
     }
   }
-  return result;
 }
+
+struct MagneticFieldOneForm {
+  using type = tnsr::i<DataVector, 3, Frame::Inertial>;
+};
+struct TildeSUp {
+  using type = tnsr::I<DataVector, 3, Frame::Inertial>;
+};
+struct DensitizedStress {
+  using type = tnsr::II<DataVector, 3, Frame::Inertial>;
+};
 }  // namespace
 
 namespace grmhd {
@@ -97,11 +120,26 @@ void ComputeSources::apply(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
     const double constraint_damping_parameter) noexcept {
-  const auto tilde_s_M = raise_or_lower_index(tilde_s, inv_spatial_metric);
-  const auto tilde_s_MN =
-      densitized_stress(rest_mass_density, specific_enthalpy, lorentz_factor,
-                        spatial_velocity, magnetic_field, spatial_metric,
-                        inv_spatial_metric, sqrt_det_spatial_metric, pressure);
+  Variables<tmpl::list<
+      TildeSUp, DensitizedStress, MagneticFieldOneForm,
+      gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial, DataVector>,
+      gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>,
+      gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
+                                                  DataVector>>>
+      temp_tensors(get<0>(tilde_s).size());
+  auto& tilde_s_MN = get<DensitizedStress>(temp_tensors);
+  tilde_s_MN = inv_spatial_metric;
+  densitized_stress(
+      &tilde_s_MN, &get<TildeSUp>(temp_tensors),
+      &get<MagneticFieldOneForm>(temp_tensors),
+      &get<0, 0, 0>(
+          get<gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial,
+                                                    DataVector>>(temp_tensors)),
+      rest_mass_density, specific_enthalpy, lorentz_factor, spatial_velocity,
+      magnetic_field, spatial_metric, sqrt_det_spatial_metric, pressure);
+
+  auto& tilde_s_M = get<TildeSUp>(temp_tensors);
+  raise_or_lower_index(make_not_null(&tilde_s_M), tilde_s, inv_spatial_metric);
 
   // unroll contributions from m=0 and n=0 to avoid initializing
   // source_tilde_tau to zero
@@ -131,11 +169,24 @@ void ComputeSources::apply(
     }
   }
 
-  const auto trace_of_christoffel_second_kind = trace_last_indices(
-      raise_or_lower_first_index(gr::christoffel_first_kind(d_spatial_metric),
-                                 inv_spatial_metric),
-      inv_spatial_metric);
-  *source_tilde_b = raise_or_lower_index(d_lapse, inv_spatial_metric);
+  auto& spatial_christoffel_first_kind = get<
+      gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial, DataVector>>(
+      temp_tensors);
+  gr::christoffel_first_kind(make_not_null(&spatial_christoffel_first_kind),
+                             d_spatial_metric);
+  auto& spatial_christoffel_second_kind = get<
+      gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>>(
+      temp_tensors);
+  raise_or_lower_first_index(make_not_null(&spatial_christoffel_second_kind),
+                             spatial_christoffel_first_kind,
+                             inv_spatial_metric);
+  auto& trace_of_christoffel_second_kind =
+      get<gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
+                                                      DataVector>>(
+          temp_tensors);
+  trace_last_indices(make_not_null(&trace_of_christoffel_second_kind),
+                     spatial_christoffel_second_kind, inv_spatial_metric);
+  raise_or_lower_index(source_tilde_b, d_lapse, inv_spatial_metric);
   for (size_t i = 0; i < 3; ++i) {
     source_tilde_b->get(i) *= get(tilde_phi);
     source_tilde_b->get(i) -=
@@ -145,10 +196,9 @@ void ComputeSources::apply(
     }
   }
 
-  get(*source_tilde_phi) =
-      (-get(trace(extrinsic_curvature, inv_spatial_metric)) -
-       constraint_damping_parameter) *
-      get(lapse) * get(tilde_phi);
+  trace(source_tilde_phi, extrinsic_curvature, inv_spatial_metric);
+  get(*source_tilde_phi) += constraint_damping_parameter;
+  get(*source_tilde_phi) *= -1.0 * get(lapse) * get(tilde_phi);
   for (size_t m = 0; m < 3; ++m) {
     get(*source_tilde_phi) += tilde_b.get(m) * d_lapse.get(m);
   }

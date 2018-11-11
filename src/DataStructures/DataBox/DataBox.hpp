@@ -549,11 +549,19 @@ class DataBox<tmpl::list<Tags...>>
   // Adding compute items
   template <typename ParentTag>
   SPECTRE_ALWAYS_INLINE constexpr void add_sub_compute_item_tags_to_box(
-      tmpl::list<> /*meta*/) noexcept {}
+      tmpl::list<> /*meta*/, std::false_type /*meta*/) noexcept {}
+  template <typename ParentTag>
+  SPECTRE_ALWAYS_INLINE constexpr void add_sub_compute_item_tags_to_box(
+      tmpl::list<> /*meta*/, std::true_type /*meta*/) noexcept {}
 
   template <typename ParentTag, typename... Subtags>
   SPECTRE_ALWAYS_INLINE constexpr void add_sub_compute_item_tags_to_box(
-      tmpl::list<Subtags...> /*meta*/) noexcept;
+      tmpl::list<Subtags...> /*meta*/,
+      std::false_type /*has_return_type_member*/) noexcept;
+  template <typename ParentTag, typename... Subtags>
+  SPECTRE_ALWAYS_INLINE constexpr void add_sub_compute_item_tags_to_box(
+      tmpl::list<Subtags...> /*meta*/,
+      std::true_type /*has_return_type_member*/) noexcept;
 
   template <typename ComputeItem, typename FullTagList,
             typename... ComputeItemArgumentsTags>
@@ -703,7 +711,8 @@ template <typename... Tags>
 template <typename ParentTag, typename... Subtags>
 SPECTRE_ALWAYS_INLINE constexpr void
 DataBox<tmpl::list<Tags...>>::add_sub_compute_item_tags_to_box(
-    tmpl::list<Subtags...> /*meta*/) noexcept {
+    tmpl::list<Subtags...> /*meta*/,
+    std::false_type /*has_return_type_member*/) noexcept {
   const auto helper = [lazy_function = get_deferred<ParentTag>()](
                           auto tag) noexcept->decltype(auto) {
     return Subitems<tmpl::list<Tags...>, ParentTag>::
@@ -713,6 +722,23 @@ DataBox<tmpl::list<Tags...>>::add_sub_compute_item_tags_to_box(
       (get_deferred<Subtags>() =
            make_deferred_for_subitem<decltype(helper(Subtags{}))>(helper,
                                                                   Subtags{})));
+}
+
+template <typename... Tags>
+template <typename ParentTag, typename... Subtags>
+SPECTRE_ALWAYS_INLINE constexpr void
+DataBox<tmpl::list<Tags...>>::add_sub_compute_item_tags_to_box(
+    tmpl::list<Subtags...> /*meta*/,
+    std::true_type /*has_return_type_member*/) noexcept {
+  const auto helper = [lazy_function = get_deferred<ParentTag>()](
+      const auto result, auto tag) noexcept {
+    Subitems<tmpl::list<Tags...>, ParentTag>::template create_compute_item<
+        decltype(tag)>(result, lazy_function.get());
+  };
+  EXPAND_PACK_LEFT_TO_RIGHT(
+      (get_deferred<Subtags>() =
+           make_deferred_for_subitem<db::item_type<Subtags>>(helper,
+                                                             Subtags{})));
 }
 
 namespace DataBox_detail {
@@ -769,7 +795,9 @@ db::DataBox<tmpl::list<Tags...>>::add_compute_item_to_box() noexcept {
                       tmpl::bind<DataBox_detail::first_matching_tag,
                                  tmpl::pin<tmpl::list<Tags...>>, tmpl::_1>>{});
   add_sub_compute_item_tags_to_box<Tag>(
-      typename Subitems<tmpl::list<Tags...>, Tag>::type{});
+      typename Subitems<tmpl::list<Tags...>, Tag>::type{},
+      typename DataBox_detail::has_return_type_member<
+          Subitems<tmpl::list<Tags...>, Tag>>::type{});
 }
 // End adding compute items
 
@@ -980,7 +1008,9 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
     get_deferred<tag>().pack_unpack_lazy_function(p);
     if (p.isUnpacking()) {
       add_sub_compute_item_tags_to_box<tag>(
-          typename Subitems<tmpl::list<Tags...>, tag>::type{});
+          typename Subitems<tmpl::list<Tags...>, tag>::type{},
+          typename DataBox_detail::has_return_type_member<
+              Subitems<tmpl::list<Tags...>, tag>>::type{});
     }
   };
   (void)pup_compute_item;  // Silence GCC warning about unused variable

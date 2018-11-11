@@ -173,11 +173,9 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
         valid_entries_in_aitken_pressure = 2;
       }
     }
-    if (fabs(current_pressure - previous_pressure) <
-        relative_tolerance_ * (current_pressure + previous_pressure)) {
-      converged = true;
-      // note primitives are recomputed above before being returned
-    }
+    // note primitives are recomputed above before being returned
+    converged = fabs(current_pressure - previous_pressure) <
+                relative_tolerance_ * (current_pressure + previous_pressure);
   }  // while loop
 }
 }  // namespace PrimitiveRecoverySchemes

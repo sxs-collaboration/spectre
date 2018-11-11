@@ -18,6 +18,8 @@ struct AlfvenSpeedSquared;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct ComovingMagneticField;
 template <typename DataType>
+struct ComovingMagneticFieldSquared;
+template <typename DataType>
 struct DivergenceCleaningField;
 struct EquationOfStateBase;
 template <typename EquationOfStateType>
@@ -28,6 +30,12 @@ template <typename DataType, size_t Dim, typename Fr>
 struct LorentzFactorCompute;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct MagneticField;
+template <typename DataType>
+struct MagneticFieldDotSpatialVelocity;
+template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+struct MagneticFieldOneForm;
+template <typename DataType>
+struct MagneticFieldSquared;
 template <typename DataType>
 struct MagneticPressure;
 template <typename DataType>
