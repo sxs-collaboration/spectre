@@ -11,6 +11,8 @@
 /// \cond
 class DataVector;
 class YlmSpherepack;
+template <typename Frame>
+class Strahlkorper;
 template <typename X, typename Symm, typename IndexList>
 class Tensor;
 /// \endcond
@@ -161,6 +163,19 @@ Scalar<DataVector> area_element(
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const DataVector& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
+
+/*!
+ * \ingroup SurfacesGroup
+ * \brief Surface integral of a scalar on a 2D `Strahlkorper`
+ *
+ * \details Computes the surface integral \f$\oint dA f\f$ for a scalar \f$f\f$
+ * on a `Strahlkorper` with area element \f$dA\f$. The area element can be
+ * computed via `StrahlkorperGr::area_element()`.
+ */
+template <typename Frame>
+double surface_integral_of_scalar(
+    const Scalar<DataVector>& area_element, const Scalar<DataVector>& scalar,
+    const Strahlkorper<Frame>& strahlkorper) noexcept;
 
 /*!
  * \ingroup SurfacesGroup

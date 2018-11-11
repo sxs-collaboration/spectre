@@ -23,8 +23,10 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
+// IWYU pragma: no_forward_declare Strahlkorper
 // IWYU pragma: no_forward_declare Tensor
 
+/// \cond
 // Functions used by StrahlkorperGr::dimensionful_spin_magnitude
 namespace {
 // Find the 2D surface metric by inserting the tangents \f$\partial_\theta\f$
@@ -523,6 +525,14 @@ Scalar<DataVector> area_element(
 }
 
 template <typename Frame>
+double surface_integral_of_scalar(
+    const Scalar<DataVector>& area_element, const Scalar<DataVector>& scalar,
+    const Strahlkorper<Frame>& strahlkorper) noexcept {
+  const DataVector integrand = get(area_element) * get(scalar);
+  return strahlkorper.ylm_spherepack().definite_integral(integrand.data());
+}
+
+template <typename Frame>
 Scalar<DataVector> spin_function(
     const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& tangents,
     const YlmSpherepack& ylm,
@@ -691,6 +701,10 @@ template Scalar<DataVector> StrahlkorperGr::area_element<Frame::Inertial>(
     const DataVector& radius,
     const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat) noexcept;
 
+template double StrahlkorperGr::surface_integral_of_scalar(
+    const Scalar<DataVector>& area_element, const Scalar<DataVector>& scalar,
+    const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept;
+
 template Scalar<DataVector> StrahlkorperGr::spin_function<Frame::Inertial>(
     const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame::Inertial>&
         tangents,
@@ -714,3 +728,4 @@ template std::array<double, 3> StrahlkorperGr::spin_vector<Frame::Inertial>(
     const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat,
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function, const YlmSpherepack& ylm) noexcept;
+/// \endcond
