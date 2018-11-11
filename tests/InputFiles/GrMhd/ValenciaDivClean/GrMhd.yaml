@@ -48,8 +48,11 @@ NumericalFluxParams:
 DampingParameter: 0.0
 
 SlopeLimiterParams:
+  # Uncomment line below to turn off the limiter:
+  # DisableForDebugging: True
   Type: LambdaPiN
-  TvbmConstant: 1000
+  # Recommended value from minmod papers:
+  TvbmConstant: 50.0
 
 VariableFixerParams:
   MinimumValueOfD: 1.0e-12
