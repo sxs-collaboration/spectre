@@ -36,7 +36,8 @@ RUN apt-get update -y && apt-get install -y libc++-dev libc++1 libc++abi-dev \
 # Install ccache to cache compilations for reduced compile time, Doxygen
 # and coverxygen to check documentation coverage
 RUN apt-get install -y ccache doxygen python-pip && pip install coverxygen \
-    && pip install numpy && pip install scipy
+        && pip install numpy && pip install scipy \
+        && pip install --upgrade autopep8 flake8
 
 # Add ruby gems and install coveralls using gem
 RUN apt-get update -y && apt-get install -y rubygems && \
