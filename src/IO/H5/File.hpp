@@ -302,7 +302,10 @@ template <AccessType Access_t>
 template <typename ObjectType>
 std::tuple<bool, detail::OpenGroup, std::string>
 H5File<Access_t>::check_if_object_exists(const std::string& path) const {
-  std::string name_only = file_system::get_file_name(path);
+  std::string name_only = "/";
+  if (path != "/") {
+    name_only = file_system::get_file_name(path);
+  }
   const std::string name_with_extension = name_only + ObjectType::extension();
   detail::OpenGroup group(file_id_, file_system::get_parent_path(path),
                           Access_t);

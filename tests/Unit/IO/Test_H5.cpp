@@ -14,6 +14,8 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "IO/Connectivity.hpp"
 #include "IO/H5/AccessType.hpp"
@@ -27,6 +29,7 @@
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/TMPL.hpp"
 
 SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   const std::string h5_file_name("Unit.IO.H5.File.h5");
@@ -449,6 +452,24 @@ SPECTRE_TEST_CASE("Unit.IO.H5.DatRead", "[Unit][IO][H5]") {
   }
 }
 
+// Check that we can insert and open subfiles at the '/' level
+SPECTRE_TEST_CASE("Unit.IO.H5.check_if_object_exists", "[Unit][IO][H5]") {
+  const std::string h5_file_name("Unit.IO.H5.ObjectCheck.h5");
+  {
+    h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+    auto& error_file = my_file.insert<h5::Header>("/");
+  }
+
+  // Reopen the file to check that the subfile '/' can be opened
+  h5::H5File<h5::AccessType::ReadWrite> reopened_file(h5_file_name, true);
+  const auto& sample_data =
+      reopened_file.get<h5::Header>("/");
+  CHECK(file_system::check_if_file_exists(h5_file_name) == true);
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.IO.H5.contains_attribute_false", "[Unit][IO][H5]") {
   const std::string file_name("Unit.IO.H5.contains_attribute_false.h5");
   const hid_t file_id =
@@ -458,7 +479,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.contains_attribute_false", "[Unit][IO][H5]") {
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
 }
 
-/// [[OutputRegex, could not open dataset 'no_dataset']]
+/// [[OutputRegex, Failed HDF5 operation: Failed to open dataset 'no_dataset']]
 SPECTRE_TEST_CASE("Unit.IO.H5.read_data_error", "[Unit][IO][H5]") {
   ERROR_TEST();
   const std::string file_name("Unit.IO.H5.read_data_error.h5");
