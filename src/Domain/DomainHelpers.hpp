@@ -11,7 +11,6 @@
 #include <iosfwd>
 #include <limits>
 #include <memory>
-#include <unordered_map>
 #include <vector>
 
 #include "DataStructures/Index.hpp"
@@ -27,6 +26,8 @@ template <size_t VolumeDim>
 class BlockNeighbor;
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
+template <size_t VolumeDim, typename T>
+class DirectionMap;
 template <size_t VolumeDim, typename TargetFrame>
 class Domain;
 template <size_t VolumeDim>
@@ -54,8 +55,8 @@ template <size_t VolumeDim>
 void set_internal_boundaries(
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    gsl::not_null<std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
+    gsl::not_null<
+        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks) noexcept;
 
 /// \ingroup ComputationalDomainGroup
@@ -67,8 +68,8 @@ void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    gsl::not_null<std::vector<
-        std::unordered_map<Direction<VolumeDim>, BlockNeighbor<VolumeDim>>>*>
+    gsl::not_null<
+        std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks) noexcept;
 
 /// \ingroup ComputationalDomainGroup

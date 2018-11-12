@@ -68,6 +68,9 @@
   { include: ["\"DataStructures/Tensor/Structure.hpp\"", private,
               "\"DataStructures/Tensor/Tensor.hpp\"", public]},
 
+  { include: ["\"DataStructures/FixedHashMap.hpp\"", public,
+              "\"Domain/DirectionMap.hpp\"", public]},
+
   { include: ["\"NumericalAlgorithms/LinearOperators/Divergence.hpp\"",
               public,
               "\"NumericalAlgorithms/LinearOperators/Divergence.tpp\"",

@@ -8,7 +8,6 @@
 #include <functional>
 #include <map>
 #include <sstream>
-#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -16,6 +15,7 @@
 #include "Domain/Amr/Flag.hpp"
 #include "Domain/Amr/UpdateAmrDecision.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"
@@ -83,7 +83,7 @@ Element<1> make_element(
     const ElementId<1>& element_id,
     const std::unordered_set<ElementId<1>>& lower_xi_neighbor_ids,
     const std::unordered_set<ElementId<1>>& upper_xi_neighbor_ids) noexcept {
-  std::unordered_map<Direction<1>, Neighbors<1>> neighbors;
+  DirectionMap<1, Neighbors<1>> neighbors;
   if (not lower_xi_neighbor_ids.empty()) {
     neighbors.emplace(Direction<1>::lower_xi(),
                       Neighbors<1>{{lower_xi_neighbor_ids}, {}});
@@ -101,7 +101,7 @@ Element<2> make_element(
     const std::unordered_set<ElementId<2>>& upper_xi_neighbor_ids,
     const std::unordered_set<ElementId<2>>& lower_eta_neighbor_ids,
     const std::unordered_set<ElementId<2>>& upper_eta_neighbor_ids) noexcept {
-  std::unordered_map<Direction<2>, Neighbors<2>> neighbors;
+  DirectionMap<2, Neighbors<2>> neighbors;
   if (not lower_xi_neighbor_ids.empty()) {
     neighbors.emplace(Direction<2>::lower_xi(),
                       Neighbors<2>{{lower_xi_neighbor_ids}, {}});

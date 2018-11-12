@@ -8,7 +8,6 @@
 #include <memory>
 #include <pup.h>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -24,6 +23,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
@@ -38,8 +38,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
                   "[Domain][Unit]") {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
-  std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      neighbors_of_all_blocks;
+  std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
   set_internal_boundaries<3>(corners_of_all_blocks, &neighbors_of_all_blocks);
 
   const OrientationMap<3> aligned{};
@@ -54,11 +53,11 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
   CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
         aligned);
 
-  const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      expected_block_neighbors{{{Direction<3>::upper_xi(), {0, aligned}},
-                                {Direction<3>::lower_xi(), {0, aligned}},
-                                {Direction<3>::lower_zeta(), {1, aligned}}},
-                               {{Direction<3>::upper_zeta(), {0, aligned}}}};
+  const std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{
+      {{Direction<3>::upper_xi(), {0, aligned}},
+       {Direction<3>::lower_xi(), {0, aligned}},
+       {Direction<3>::lower_zeta(), {1, aligned}}},
+      {{Direction<3>::upper_zeta(), {0, aligned}}}};
 
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
 }
@@ -67,8 +66,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.DifferentBlocks",
                   "[Domain][Unit]") {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
       {{0, 1, 2, 3, 4, 5, 6, 7}}, {{8, 9, 10, 11, 0, 1, 2, 3}}};
-  std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      neighbors_of_all_blocks;
+  std::vector<DirectionMap<3, BlockNeighbor<3>>> neighbors_of_all_blocks;
   set_internal_boundaries<3>(corners_of_all_blocks, &neighbors_of_all_blocks);
 
   const OrientationMap<3> aligned{};
@@ -82,11 +80,11 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.DifferentBlocks",
                                &neighbors_of_all_blocks);
   CHECK(neighbors_of_all_blocks[0][Direction<3>::upper_xi()].orientation() ==
         aligned);
-  const std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      expected_block_neighbors{{{Direction<3>::upper_xi(), {1, aligned}},
-                                {Direction<3>::lower_zeta(), {1, aligned}}},
-                               {{Direction<3>::lower_xi(), {0, aligned}},
-                                {Direction<3>::upper_zeta(), {0, aligned}}}};
+  const std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{
+      {{Direction<3>::upper_xi(), {1, aligned}},
+       {Direction<3>::lower_zeta(), {1, aligned}}},
+      {{Direction<3>::lower_xi(), {0, aligned}},
+       {Direction<3>::upper_zeta(), {0, aligned}}}};
 
   CHECK(neighbors_of_all_blocks == expected_block_neighbors);
 }
@@ -1357,24 +1355,23 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries3",
       {}, orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {},
       false);
 
-  std::vector<std::unordered_map<Direction<2>, BlockNeighbor<2>>>
-      expected_block_neighbors{
-          {{Direction<2>::upper_xi(), {1, flipped}},
-           {Direction<2>::upper_eta(), {2, quarter_turn_cw}},
-           {Direction<2>::lower_xi(), {1, flipped}},
-           {Direction<2>::lower_eta(), {2, quarter_turn_cw}}},
-          {{Direction<2>::upper_xi(), {0, flipped}},
-           {Direction<2>::lower_eta(), {3, quarter_turn_cw}},
-           {Direction<2>::lower_xi(), {0, flipped}},
-           {Direction<2>::upper_eta(), {3, quarter_turn_cw}}},
-          {{Direction<2>::upper_xi(), {0, quarter_turn_ccw}},
-           {Direction<2>::upper_eta(), {3, flipped}},
-           {Direction<2>::lower_xi(), {0, quarter_turn_ccw}},
-           {Direction<2>::lower_eta(), {3, flipped}}},
-          {{Direction<2>::lower_xi(), {1, quarter_turn_ccw}},
-           {Direction<2>::upper_eta(), {2, flipped}},
-           {Direction<2>::upper_xi(), {1, quarter_turn_ccw}},
-           {Direction<2>::lower_eta(), {2, flipped}}}};
+  std::vector<DirectionMap<2, BlockNeighbor<2>>> expected_block_neighbors{
+      {{Direction<2>::upper_xi(), {1, flipped}},
+       {Direction<2>::upper_eta(), {2, quarter_turn_cw}},
+       {Direction<2>::lower_xi(), {1, flipped}},
+       {Direction<2>::lower_eta(), {2, quarter_turn_cw}}},
+      {{Direction<2>::upper_xi(), {0, flipped}},
+       {Direction<2>::lower_eta(), {3, quarter_turn_cw}},
+       {Direction<2>::lower_xi(), {0, flipped}},
+       {Direction<2>::upper_eta(), {3, quarter_turn_cw}}},
+      {{Direction<2>::upper_xi(), {0, quarter_turn_ccw}},
+       {Direction<2>::upper_eta(), {3, flipped}},
+       {Direction<2>::lower_xi(), {0, quarter_turn_ccw}},
+       {Direction<2>::lower_eta(), {3, flipped}}},
+      {{Direction<2>::lower_xi(), {1, quarter_turn_ccw}},
+       {Direction<2>::upper_eta(), {2, flipped}},
+       {Direction<2>::upper_xi(), {1, quarter_turn_ccw}},
+       {Direction<2>::lower_eta(), {2, flipped}}}};
   std::vector<std::unordered_set<Direction<2>>> expected_external_boundaries{
       {}, {}, {}, {}};
   for (size_t i = 0; i < domain.blocks().size(); i++) {

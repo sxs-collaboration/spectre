@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -21,6 +20,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainCreators/Cylinder.hpp"
 #include "Domain/DomainCreators/DomainCreator.hpp"
@@ -49,28 +49,26 @@ void test_cylinder_construction(
   const OrientationMap<3> quarter_turn_cw(std::array<Direction<3>, 3>{
       {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
        Direction<3>::upper_zeta()}});
-  std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>
-      expected_block_neighbors{};
+  std::vector<DirectionMap<3, BlockNeighbor<3>>> expected_block_neighbors{};
   std::vector<std::unordered_set<Direction<3>>> expected_external_boundaries{};
   if (not is_periodic_in_z) {
-    expected_block_neighbors =
-        std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-            {{Direction<3>::lower_eta(), {3, aligned_orientation}},
-             {Direction<3>::upper_eta(), {1, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, aligned_orientation}}},
-            {{Direction<3>::lower_eta(), {0, aligned_orientation}},
-             {Direction<3>::upper_eta(), {2, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, quarter_turn_cw}}},
-            {{Direction<3>::lower_eta(), {1, aligned_orientation}},
-             {Direction<3>::upper_eta(), {3, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, half_turn}}},
-            {{Direction<3>::lower_eta(), {2, aligned_orientation}},
-             {Direction<3>::upper_eta(), {0, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, quarter_turn_ccw}}},
-            {{Direction<3>::upper_xi(), {0, aligned_orientation}},
-             {Direction<3>::upper_eta(), {1, quarter_turn_ccw}},
-             {Direction<3>::lower_xi(), {2, half_turn}},
-             {Direction<3>::lower_eta(), {3, quarter_turn_cw}}}};
+    expected_block_neighbors = std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        {{Direction<3>::lower_eta(), {3, aligned_orientation}},
+         {Direction<3>::upper_eta(), {1, aligned_orientation}},
+         {Direction<3>::lower_xi(), {4, aligned_orientation}}},
+        {{Direction<3>::lower_eta(), {0, aligned_orientation}},
+         {Direction<3>::upper_eta(), {2, aligned_orientation}},
+         {Direction<3>::lower_xi(), {4, quarter_turn_cw}}},
+        {{Direction<3>::lower_eta(), {1, aligned_orientation}},
+         {Direction<3>::upper_eta(), {3, aligned_orientation}},
+         {Direction<3>::lower_xi(), {4, half_turn}}},
+        {{Direction<3>::lower_eta(), {2, aligned_orientation}},
+         {Direction<3>::upper_eta(), {0, aligned_orientation}},
+         {Direction<3>::lower_xi(), {4, quarter_turn_ccw}}},
+        {{Direction<3>::upper_xi(), {0, aligned_orientation}},
+         {Direction<3>::upper_eta(), {1, quarter_turn_ccw}},
+         {Direction<3>::lower_xi(), {2, half_turn}},
+         {Direction<3>::lower_eta(), {3, quarter_turn_cw}}}};
     expected_external_boundaries =
         std::vector<std::unordered_set<Direction<3>>>{
             {{Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
@@ -83,34 +81,33 @@ void test_cylinder_construction(
               Direction<3>::lower_zeta()}},
             {Direction<3>::upper_zeta(), Direction<3>::lower_zeta()}};
   } else {
-    expected_block_neighbors =
-        std::vector<std::unordered_map<Direction<3>, BlockNeighbor<3>>>{
-            {{Direction<3>::lower_eta(), {3, aligned_orientation}},
-             {Direction<3>::upper_eta(), {1, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, aligned_orientation}},
-             {Direction<3>::upper_zeta(), {0, aligned_orientation}},
-             {Direction<3>::lower_zeta(), {0, aligned_orientation}}},
-            {{Direction<3>::lower_eta(), {0, aligned_orientation}},
-             {Direction<3>::upper_eta(), {2, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, quarter_turn_cw}},
-             {Direction<3>::upper_zeta(), {1, aligned_orientation}},
-             {Direction<3>::lower_zeta(), {1, aligned_orientation}}},
-            {{Direction<3>::lower_eta(), {1, aligned_orientation}},
-             {Direction<3>::upper_eta(), {3, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, half_turn}},
-             {Direction<3>::upper_zeta(), {2, aligned_orientation}},
-             {Direction<3>::lower_zeta(), {2, aligned_orientation}}},
-            {{Direction<3>::lower_eta(), {2, aligned_orientation}},
-             {Direction<3>::upper_eta(), {0, aligned_orientation}},
-             {Direction<3>::lower_xi(), {4, quarter_turn_ccw}},
-             {Direction<3>::upper_zeta(), {3, aligned_orientation}},
-             {Direction<3>::lower_zeta(), {3, aligned_orientation}}},
-            {{Direction<3>::upper_xi(), {0, aligned_orientation}},
-             {Direction<3>::upper_eta(), {1, quarter_turn_ccw}},
-             {Direction<3>::lower_xi(), {2, half_turn}},
-             {Direction<3>::lower_eta(), {3, quarter_turn_cw}},
-             {Direction<3>::upper_zeta(), {4, aligned_orientation}},
-             {Direction<3>::lower_zeta(), {4, aligned_orientation}}}};
+    expected_block_neighbors = std::vector<DirectionMap<3, BlockNeighbor<3>>>{
+        {{Direction<3>::lower_eta(), {3, aligned_orientation}},
+         {Direction<3>::upper_eta(), {1, aligned_orientation}},
+         {Direction<3>::lower_xi(), {4, aligned_orientation}},
+         {Direction<3>::upper_zeta(), {0, aligned_orientation}},
+         {Direction<3>::lower_zeta(), {0, aligned_orientation}}},
+        {{Direction<3>::lower_eta(), {0, aligned_orientation}},
+         {Direction<3>::upper_eta(), {2, aligned_orientation}},
+         {Direction<3>::lower_xi(), {4, quarter_turn_cw}},
+         {Direction<3>::upper_zeta(), {1, aligned_orientation}},
+         {Direction<3>::lower_zeta(), {1, aligned_orientation}}},
+        {{Direction<3>::lower_eta(), {1, aligned_orientation}},
+         {Direction<3>::upper_eta(), {3, aligned_orientation}},
+         {Direction<3>::lower_xi(), {4, half_turn}},
+         {Direction<3>::upper_zeta(), {2, aligned_orientation}},
+         {Direction<3>::lower_zeta(), {2, aligned_orientation}}},
+        {{Direction<3>::lower_eta(), {2, aligned_orientation}},
+         {Direction<3>::upper_eta(), {0, aligned_orientation}},
+         {Direction<3>::lower_xi(), {4, quarter_turn_ccw}},
+         {Direction<3>::upper_zeta(), {3, aligned_orientation}},
+         {Direction<3>::lower_zeta(), {3, aligned_orientation}}},
+        {{Direction<3>::upper_xi(), {0, aligned_orientation}},
+         {Direction<3>::upper_eta(), {1, quarter_turn_ccw}},
+         {Direction<3>::lower_xi(), {2, half_turn}},
+         {Direction<3>::lower_eta(), {3, quarter_turn_cw}},
+         {Direction<3>::upper_zeta(), {4, aligned_orientation}},
+         {Direction<3>::lower_zeta(), {4, aligned_orientation}}}};
 
     expected_external_boundaries =
         std::vector<std::unordered_set<Direction<3>>>{

@@ -6,7 +6,6 @@
 #include <functional>
 #include <memory>
 #include <pup.h>
-#include <unordered_map>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Block.hpp"
@@ -15,6 +14,7 @@
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/Neighbors.hpp"
@@ -25,8 +25,7 @@
 namespace {
 void test_create_initial_element(
     const ElementId<2>& element_id, const Block<2, Frame::Inertial>& block,
-    const std::unordered_map<Direction<2>, Neighbors<2>>&
-        expected_neighbors) noexcept {
+    const DirectionMap<2, Neighbors<2>>& expected_neighbors) noexcept {
   const auto created_element = create_initial_element(element_id, block);
   const Element<2> expected_element{element_id, expected_neighbors};
   CHECK(created_element == expected_element);
