@@ -20,6 +20,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /// \cond
 namespace Parallel {
@@ -106,6 +107,23 @@ struct InitialValue : db::PrefixTag, db::SimpleTag {
 
 /// Self-start actions
 namespace Actions {
+namespace detail {
+template <typename System, bool HasPrimitives>
+struct vars_to_save_impl {
+  using type = tmpl::list<typename System::variables_tag>;
+};
+
+template <typename System>
+struct vars_to_save_impl<System, true> {
+  using type = tmpl::list<typename System::variables_tag,
+                          typename System::primitive_variables_tag>;
+};
+
+template <typename System>
+using vars_to_save = typename vars_to_save_impl<
+    System, System::has_primitive_and_conservative_vars>::type;
+}  // namespace detail
+
 /// \ingroup ActionsGroup
 /// \ingroup TimeGroup
 /// Prepares the evolution for time-stepper self-starting.
@@ -134,14 +152,33 @@ namespace Actions {
 ///   - Tags::TimeId
 ///   - Tags::TimeStep
 ///   - variables_tag
+///   - primitive_variables_tag if the system has primitives
 ///
 /// DataBox changes:
 /// - Adds:
 ///   - SelfStart::Tags::InitialValue<Tags::TimeStep>
 ///   - SelfStart::Tags::InitialValue<variables_tag>
+///   - SelfStart::Tags::InitialValue<primitive_variables_tag> if the system
+///     has primitives
 /// - Removes: nothing
 /// - Modifies: Tags::TimeStep
 struct Initialize {
+ private:
+  template <typename TagsToSave>
+  struct StoreInitialValues;
+
+  template <typename... TagsToSave>
+  struct StoreInitialValues<tmpl::list<TagsToSave...>> {
+    template <typename Box>
+    static auto apply(Box box) noexcept {
+      return db::create_from<
+          db::RemoveTags<>,
+          db::AddSimpleTags<Tags::InitialValue<TagsToSave>...>>(
+          std::move(box), std::make_tuple(db::get<TagsToSave>(box))...);
+    }
+  };
+
+ public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -151,7 +188,7 @@ struct Initialize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using variables_tag = typename Metavariables::system::variables_tag;
+    using system = typename Metavariables::system;
 
     const TimeDelta initial_step = db::get<::Tags::TimeStep>(box);
     // The slab number increments each time a new point is generated
@@ -160,20 +197,18 @@ struct Initialize {
         -db::get<::Tags::Next<::Tags::TimeId>>(box).slab_number();
     const TimeDelta self_start_step = initial_step / (values_needed + 1);
 
+    auto new_box = StoreInitialValues<tmpl::push_back<
+        detail::vars_to_save<system>, ::Tags::TimeStep>>::apply(std::move(box));
+
     db::mutate<::Tags::TimeStep>(
-        make_not_null(&box), [&self_start_step](
-                                 const gsl::not_null<
-                                     db::item_type<::Tags::TimeStep>*>
-                                     time_step) noexcept {
+        make_not_null(&new_box), [&self_start_step](
+                                     const gsl::not_null<
+                                         db::item_type<::Tags::TimeStep>*>
+                                         time_step) noexcept {
           *time_step = self_start_step;
         });
 
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<Tags::InitialValue<::Tags::TimeStep>,
-                                          Tags::InitialValue<variables_tag>>>(
-            std::move(box), std::make_tuple(initial_step),
-            std::make_tuple(db::get<variables_tag>(box))));
+    return std::make_tuple(std::move(new_box));
   }
 };
 
@@ -289,11 +324,16 @@ struct CheckForOrderIncrease {
 /// - DataBox:
 ///   - Tags::Next<Tags::TimeId>
 ///   - SelfStart::Tags::InitialValue<variables_tag>
+///   - SelfStart::Tags::InitialValue<primitive_variables_tag> if the system
+///     has primitives
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
-/// - Modifies: variables_tag if there is an order increase
+/// - Modifies:
+///   - variables_tag if there is an order increase
+///   - primitive_variables_tag if there is an order increase and the system
+///     has primitives
 template <typename RestartTag>
 struct StartNextOrderIfReady {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -305,7 +345,7 @@ struct StartNextOrderIfReady {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using variables_tag = typename Metavariables::system::variables_tag;
+    using system = typename Metavariables::system;
 
     constexpr size_t restart_index =
         tmpl::index_of<ActionList, ::Actions::Label<RestartTag>>::value + 1;
@@ -316,14 +356,17 @@ struct StartNextOrderIfReady {
         db::get<::Tags::Next<::Tags::TimeId>>(box).is_at_slab_boundary();
 
     if (done_with_order) {
-      db::mutate<variables_tag>(
-          make_not_null(&box),
-          [](const gsl::not_null<db::item_type<variables_tag>*> variables,
-             const db::item_type<Tags::InitialValue<variables_tag>>&
-                 initial_variables) noexcept {
-            *variables = get<0>(initial_variables);
-          },
-          db::get<Tags::InitialValue<variables_tag>>(box));
+      tmpl::for_each<detail::vars_to_save<system>>([&box](auto tag) noexcept {
+        using Tag = tmpl::type_from<decltype(tag)>;
+        db::mutate<Tag>(
+            make_not_null(&box),
+            [](const gsl::not_null<db::item_type<Tag>*> value,
+               const db::item_type<Tags::InitialValue<Tag>>&
+                   initial_value) noexcept {
+              *value = get<0>(initial_value);
+            },
+            db::get<Tags::InitialValue<Tag>>(box));
+      });
     }
 
     return std::tuple<db::DataBox<DbTags>&&, bool, size_t>(
@@ -346,10 +389,14 @@ struct StartNextOrderIfReady {
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes:
-///   - SelfStart::Tags::InitialValue<Tags::TimeStep>
-///   - SelfStart::Tags::InitialValue<variables_tag>
+///   - All SelfStart::Tags::InitialValue tags
 /// - Modifies: Tags::TimeStep
 struct Cleanup {
+ private:
+  template <typename T>
+  struct is_a_initial_value : tt::is_a<Tags::InitialValue, T> {};
+
+ public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -359,7 +406,6 @@ struct Cleanup {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using variables_tag = typename Metavariables::system::variables_tag;
     using initial_step_tag = Tags::InitialValue<::Tags::TimeStep>;
 
     // Reset the time step to the value requested by the user.  The
@@ -372,10 +418,8 @@ struct Cleanup {
         },
         db::get<initial_step_tag>(box));
 
-    return std::make_tuple(
-        db::create_from<db::RemoveTags<initial_step_tag,
-                                       Tags::InitialValue<variables_tag>>>(
-            std::move(box)));
+    using remove_tags = tmpl::filter<DbTags, is_a_initial_value<tmpl::_1>>;
+    return std::make_tuple(db::create_from<remove_tags>(std::move(box)));
   }
 };
 }  // namespace Actions
