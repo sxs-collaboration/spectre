@@ -4,12 +4,16 @@
 #include "IO/H5/Helpers.hpp"
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
+#include <numeric>
 #include <ostream>
 #include <string>
-#include <type_traits>
 
+#include "DataStructures/BoostMultiArray.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "ErrorHandling/StaticAssert.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/OpenGroup.hpp"
@@ -19,30 +23,133 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/StdHelpers.hpp" // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TypeTraits.hpp"
+
+// IWYU pragma: no_include <boost/multi_array.hpp>
+// IWYU pragma: no_include <boost/multi_array/base.hpp>
+// IWYU pragma: no_include <boost/multi_array/extent_gen.hpp>
+
+namespace {
+// Converts input data (either a std::vector or DataVector) to a T. Depending
+// on the rank of the input data, the following outputs T are allowed:
+// rank 0: double or int
+// rank 1: DataVector or std::vector
+// rank 2,3: DataVector or boost::multiarray
+template <size_t Rank, typename T>
+struct VectorTo;
+
+template <typename T>
+struct VectorTo<0, T> {
+  static T apply(std::vector<T> raw_data,
+                 const std::array<hsize_t, 0>& /*size*/) noexcept {
+    return raw_data[0];
+  }
+};
+
+template <typename T>
+struct VectorTo<1, T> {
+  static T apply(T raw_data, const std::array<hsize_t, 1>& /*size*/) noexcept {
+    return raw_data;
+  }
+};
+
+template <>
+struct VectorTo<2, DataVector> {
+  static DataVector apply(DataVector raw_data,
+                          const std::array<hsize_t, 2>& /*size*/) noexcept {
+    return raw_data;
+  }
+};
+
+template <typename T>
+struct VectorTo<2, boost::multi_array<T, 2>> {
+  static boost::multi_array<T, 2> apply(
+      const std::vector<T>& raw_data,
+      const std::array<hsize_t, 2>& size) noexcept {
+    DEBUG_STATIC_ASSERT(cpp17::is_fundamental_v<T>,
+                        "VectorTo is optimized for fundamentals. Need to "
+                        "use move semantics for handling generic data types.");
+    boost::multi_array<T, 2> temp(boost::extents[size[0]][size[1]]);
+    for (size_t i = 0; i < size[0]; ++i) {
+      for (size_t j = 0; j < size[1]; ++j) {
+        temp[i][j] = raw_data[j + i * size[1]];
+      }
+    }
+    return temp;
+  }
+};
+
+template <>
+struct VectorTo<3, DataVector> {
+  static DataVector apply(DataVector raw_data,
+                          const std::array<hsize_t, 3>& /*size*/) noexcept {
+    return raw_data;
+  }
+};
+
+template <typename T>
+struct VectorTo<3, boost::multi_array<T, 3>> {
+  static boost::multi_array<T, 3> apply(
+      const std::vector<T>& raw_data,
+      const std::array<hsize_t, 3>& size) noexcept {
+    DEBUG_STATIC_ASSERT(cpp17::is_fundamental_v<T>,
+                        "VectorTo is optimized for fundamentals. Need to "
+                        "use move semantics for handling generic data types.");
+    boost::multi_array<T, 3> temp(boost::extents[size[0]][size[1]][size[2]]);
+    for (size_t i = 0; i < size[0]; ++i) {
+      for (size_t j = 0; j < size[1]; ++j) {
+        for (size_t k = 0; k < size[2]; ++k) {
+          temp[i][j][k] = raw_data[k + j * size[2] + i * size[2] * size[1]];
+        }
+      }
+    }
+    return temp;
+  }
+};
+}  // namespace
+
+namespace {
+// Implementation of 'write_data'. Common to both DataVector and std::vector
+template <typename T>
+void write_data_impl(const hid_t group_id, const T& data,
+                     const std::vector<size_t>& extents,
+                     const std::string& name) noexcept {
+  const std::vector<hsize_t> dims(extents.begin(), extents.end());
+  const hid_t space_id = H5Screate_simple(dims.size(), dims.data(), nullptr);
+  CHECK_H5(space_id, "Failed to create dataspace");
+  const hid_t contained_type =
+      h5::h5_type<tt::get_fundamental_type_t<T>>();
+  const hid_t dataset_id =
+      H5Dcreate2(group_id, name.c_str(), contained_type, space_id,
+                 h5::h5p_default(), h5::h5p_default(), h5::h5p_default());
+  CHECK_H5(dataset_id, "Failed to create dataset");
+  CHECK_H5(H5Dwrite(dataset_id, contained_type, h5::h5s_all(), h5::h5s_all(),
+                    h5::h5p_default(), static_cast<const void*>(data.data())),
+           "Failed to write data to dataset");
+  CHECK_H5(H5Sclose(space_id), "Failed to close dataspace");
+  CHECK_H5(H5Dclose(dataset_id), "Failed to close dataset");
+}
+} // namespace
 
 namespace h5 {
 void write_data(const hid_t group_id, const DataVector& data,
                 const std::vector<size_t>& extents,
                 const std::string& name) noexcept {
-  // Write a DataVector into the group
-  const std::vector<hsize_t> dims(extents.begin(), extents.end());
-  const hid_t space_id = H5Screate_simple(dims.size(), dims.data(), nullptr);
-  CHECK_H5(space_id, "Failed to create dataspace");
-  const hid_t contained_type = h5::h5_type<std::decay_t<decltype(data[0])>>();
-  const hid_t dataset_id =
-      H5Dcreate2(group_id, name.c_str(), contained_type, space_id,
-                 h5p_default(), h5p_default(), h5p_default());
-  CHECK_H5(dataset_id, "Failed to create dataset");
-  CHECK_H5(H5Dwrite(dataset_id, contained_type, h5s_all(), h5s_all(),
-                    h5p_default(), static_cast<const void*>(data.data())),
-           "Failed to write data to dataset");
-  CHECK_H5(H5Sclose(space_id), "Failed to close dataspace");
-  CHECK_H5(H5Dclose(dataset_id), "Failed to close dataset");
+  write_data_impl(group_id, data, extents, name);
+}
+
+template <typename T>
+void write_data(const hid_t group_id, const std::vector<T>& data,
+                const std::vector<size_t>& extents,
+                const std::string& name) noexcept {
+  write_data_impl(group_id, data, extents, name);
 }
 
 template <size_t Dim>
 void write_data(const hid_t group_id, const DataVector& data,
-                const Index<Dim>& extents, const std::string& name) {
+                const Index<Dim>& extents, const std::string& name) noexcept {
   // Write a DataVector into the group
   const std::array<hsize_t, Dim> dims = make_array<hsize_t, Dim>(extents);
   const hid_t space_id = H5Screate_simple(Dim, dims.data(), nullptr);
@@ -339,24 +446,62 @@ bool contains_attribute(const hid_t file_id, const std::string& group_name,
          std::end(names);
 }
 
-DataVector read_data(const hid_t group_id, const std::string& dataset_name) {
-  // Read a DataVector from the group
-  const hid_t dataset_id =
-      H5Dopen2(group_id, dataset_name.c_str(), h5p_default());
-  CHECK_H5(dataset_id, "could not open dataset '" << dataset_name << "'");
-  // Get the number of points. These do not need a "close" call.
-  const hid_t space_id = H5Dget_space(dataset_id);
-  CHECK_H5(space_id, "Failed to open dataspace");
-  const hid_t number_of_points = H5Sget_simple_extent_npoints(space_id);
-  CHECK_H5(number_of_points, "Failed to get number of points");
-  H5Sclose(space_id);
-  // Load the data
-  DataVector data(static_cast<size_t>(number_of_points));
-  CHECK_H5(H5Dread(dataset_id, h5_type<double>(), h5s_all(), h5s_all(),
-                   h5p_default(), static_cast<void*>(data.data())),
-           "Failed to read data");
+hid_t open_dataset(const hid_t group_id,
+                   const std::string& dataset_name) noexcept {
+  const hid_t dataset_id = H5Dopen2(
+                           group_id, dataset_name.c_str(), h5p_default());
+  CHECK_H5(dataset_id, "Failed to open dataset '" << dataset_name << "'");
+  return dataset_id;
+}
+
+void close_dataset(const hid_t dataset_id) noexcept {
   CHECK_H5(H5Dclose(dataset_id), "Failed to close dataset");
-  return data;
+}
+
+hid_t open_dataspace(const hid_t dataset_id) noexcept {
+  const hid_t dataspace_id = H5Dget_space(dataset_id);
+  CHECK_H5(dataspace_id, "Failed to open dataspace");
+  return dataspace_id;
+}
+
+void close_dataspace(const hid_t dataspace_id) noexcept {
+  CHECK_H5(H5Sclose(dataspace_id), "Failed to close dataspace");
+}
+
+template <size_t Rank, typename T>
+T read_data(const hid_t group_id, const std::string& dataset_name) noexcept {
+  const hid_t dataset_id = open_dataset(group_id, dataset_name);
+  const hid_t dataspace_id = open_dataspace(dataset_id);
+  std::array<hsize_t, Rank> size{}, max_size{};
+  if (static_cast<int>(Rank) !=
+      H5Sget_simple_extent_dims(dataspace_id, nullptr, nullptr)) {
+    ERROR("Incorrect rank in get_data(). Expected rank = "
+          << Rank << " but received array with rank = "
+          << H5Sget_simple_extent_dims(dataspace_id, nullptr,
+                                       nullptr));
+  }
+  H5Sget_simple_extent_dims(dataspace_id, size.data(), max_size.data());
+  close_dataspace(dataspace_id);
+
+  // Load data from the H5 file by passing a pointer to 'data' to H5Dread
+  // The type of 'data' is determined by the template parameter 'T'
+  const size_t total_number_of_components = std::accumulate(
+      size.begin(), size.end(), static_cast<size_t>(1), std::multiplies<>());
+  if (UNLIKELY(total_number_of_components == 0)) {
+    ERROR("At least one element in 'size' is 0. Expected data along "
+          << Rank << " dimensions. size = " << size);
+  }
+  tmpl::conditional_t<
+      cpp17::is_same_v<T, DataVector>, DataVector,
+      std::vector<tt::get_fundamental_type_t<T>>>
+      data(total_number_of_components);
+
+  CHECK_H5(H5Dread(dataset_id,
+                     h5_type<tt::get_fundamental_type_t<T>>(),
+                     h5s_all(), h5s_all(), h5p_default(), data.data()),
+             "Failed to read dataset: '" << dataset_name << "'");
+  close_dataset(dataset_id);
+  return VectorTo<Rank, T>::apply(std::move(data), size);
 }
 
 template <size_t Dim>
@@ -372,6 +517,8 @@ Index<Dim> read_extents(const hid_t group_id, const std::string& extents_name) {
 }
 
 // Explicit instantiations
+template void write_data<0>(const hid_t group_id, const DataVector& data,
+                            const Index<0>& extents, const std::string& name);
 template void write_data<1>(const hid_t group_id, const DataVector& data,
                             const Index<1>& extents, const std::string& name);
 template void write_data<2>(const hid_t group_id, const DataVector& data,
@@ -394,23 +541,76 @@ template Index<3> read_extents<3>(const hid_t group_id,
                                   const std::string& extents_name);
 
 #define TYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define RANK(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, DATA)                                         \
-  template void write_to_attribute<TYPE(DATA)>(                      \
-      const hid_t group_id, const std::string& name,                 \
-      const std::vector<TYPE(DATA)>& data) noexcept;                 \
-  template void write_to_attribute<TYPE(DATA)>(                      \
-      const hid_t location_id, const std::string& name,              \
-      const TYPE(DATA) & value) noexcept;                            \
-  template TYPE(DATA) read_value_attribute<TYPE(DATA)>(              \
-      const hid_t location_id, const std::string& name) noexcept;    \
-  template std::vector<TYPE(DATA)> read_rank1_attribute<TYPE(DATA)>( \
+#define INSTANTIATE_WRITE_DATA(_, DATA)                            \
+  template void write_data<TYPE(DATA)>(                            \
+      const hid_t group_id, const std::vector<TYPE(DATA)>& data,   \
+      const std::vector<size_t>& extents,                          \
+      const std::string& name) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_WRITE_DATA,
+                       (double, int, unsigned int, long, unsigned long,
+                         long long, unsigned long long))
+
+#define INSTANTIATE_ATTRIBUTE(_, DATA)                                 \
+  template void write_to_attribute<TYPE(DATA)>(                        \
+      const hid_t group_id, const std::string& name,                   \
+      const std::vector<TYPE(DATA)>& data) noexcept;                   \
+  template void write_to_attribute<TYPE(DATA)>(                        \
+      const hid_t location_id, const std::string& name,                \
+      const TYPE(DATA) & value) noexcept;                              \
+  template TYPE(DATA) read_value_attribute<TYPE(DATA)>(                \
+      const hid_t location_id, const std::string& name) noexcept;      \
+  template std::vector<TYPE(DATA)> read_rank1_attribute<TYPE(DATA)>(   \
       const hid_t group_id, const std::string& name) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (double, unsigned int, unsigned long, int))
+GENERATE_INSTANTIATIONS(INSTANTIATE_ATTRIBUTE,
+                        (double, unsigned int, unsigned long, int))
 
-#undef INSTANTIATE
+#define INSTANTIATE_READ_SCALAR(_, DATA)                 \
+  template TYPE(DATA) read_data<RANK(DATA), TYPE(DATA)>( \
+      const hid_t group_id, const std::string& dataset_name) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_READ_SCALAR,
+                        (double, int, unsigned int, long, unsigned long,
+                         long long, unsigned long long),
+                        (0))
+
+#define INSTANTIATE_READ_VECTOR(_, DATA)          \
+  template std::vector<TYPE(DATA)>                \
+  read_data<RANK(DATA), std::vector<TYPE(DATA)>>( \
+      const hid_t group_id, const std::string& dataset_name) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR,
+                        (double, int, unsigned int, long, unsigned long,
+                         long long, unsigned long long),
+                        (1))
+
+#define INSTANTIATE_READ_MULTIARRAY(_, DATA)                         \
+  template boost::multi_array<TYPE(DATA), RANK(DATA)>                \
+  read_data<RANK(DATA), boost::multi_array<TYPE(DATA), RANK(DATA)>>( \
+      const hid_t group_id, const std::string& dataset_name) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_READ_MULTIARRAY,
+                        (double, int, unsigned int, long, unsigned long,
+                         long long, unsigned long long),
+                        (2, 3))
+
+#define INSTANTIATE_READ_DATAVECTOR(_, DATA)             \
+  template TYPE(DATA) read_data<RANK(DATA), TYPE(DATA)>( \
+      const hid_t group_id, const std::string& dataset_name) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_READ_DATAVECTOR, (DataVector), (1, 2, 3))
+
+#undef INSTANTIATE_ATTRIBUTE
+#undef INSTANTIATE_WRITE_DATA
+#undef INSTANTIATE_READ_SCALAR
+#undef INSTANTIATE_READ_VECTOR
+#undef INSTANTIATE_READ_MULTIARRAY
+#undef INSTANTIATE_READ_DATAVECTOR
 #undef TYPE
+#undef RANK
 }  // namespace h5
 
 namespace h5 {

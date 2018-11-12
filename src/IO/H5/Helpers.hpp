@@ -12,8 +12,11 @@
 #include <string>
 #include <vector>
 
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
+
+/// \cond
+class DataVector;
+/// \endcond
 
 namespace h5 {
 /*!
@@ -22,7 +25,17 @@ namespace h5 {
  */
 template <size_t Dim>
 void write_data(hid_t group_id, const DataVector& data,
-                const Index<Dim>& extents, const std::string& name = "scalar");
+                const Index<Dim>& extents,
+                const std::string& name = "scalar") noexcept;
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Write a std::vector named `name` to the group `group_id`
+ */
+template <typename T>
+void write_data(hid_t group_id, const std::vector<T>& data,
+                const std::vector<size_t>& extents,
+                const std::string& name = "scalar") noexcept;
 
 /*!
  * \ingroup HDF5Group
@@ -113,9 +126,41 @@ bool contains_attribute(hid_t file_id, const std::string& group_name,
 
 /*!
  * \ingroup HDF5Group
- * \brief Read a DataVector from a dataset in a group
+ * \brief Open an HDF5 dataset
  */
-DataVector read_data(hid_t group_id, const std::string& dataset_name);
+hid_t open_dataset(hid_t group_id,
+                   const std::string& dataset_name) noexcept;
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Close an HDF5 dataset
+ */
+void close_dataset(hid_t dataset_id) noexcept;
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Open an HDF5 dataspace
+ */
+hid_t open_dataspace(hid_t dataset_id) noexcept;
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Close an HDF5 dataspace
+ */
+void close_dataspace(hid_t dataspace_id) noexcept;
+
+/*!
+ * \ingroup HDF5Group
+ * \brief Read an array of rank 0-3 into an object.
+ *
+ * For each rank, the data can be read into objects of the following types:
+ * rank 0: double or int
+ * rank 1: std::vector or DataVector
+ * rank 2: boost::multiarray or DataVector
+ * rank 3: boost::multiarray or DataVector
+ */
+template <size_t Rank, typename T>
+T read_data(hid_t group_id, const std::string& dataset_name) noexcept;
 
 /*!
  * \ingroup HDF5Group
