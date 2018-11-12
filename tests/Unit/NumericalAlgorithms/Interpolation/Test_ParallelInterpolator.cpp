@@ -37,7 +37,6 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Options/Options.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
@@ -182,10 +181,7 @@ struct MockMetavariables {
         intrp::Actions::LineSegment<InterpolationTargetA, 3>;
     using post_interpolation_callback =
         TestFunction<InterpolationTargetA, Tags::Square>;
-    // This tag is also an OptionsTag. The type and help string below
-    // refer to the options that are read from the input file.
     using type = typename compute_target_points::options_type;
-    static constexpr OptionString help = {"Options for InterpolationTargetA"};
   };
   struct InterpolationTargetB {
     using compute_items_on_source = tmpl::list<Tags::SquareComputeItem>;
@@ -195,10 +191,7 @@ struct MockMetavariables {
         intrp::Actions::LineSegment<InterpolationTargetB, 3>;
     using post_interpolation_callback =
         TestFunction<InterpolationTargetB, Tags::Negate>;
-    // This tag is also an OptionsTag. The type and help string below
-    // refer to the options that are read from the input file.
     using type = typename compute_target_points::options_type;
-    static constexpr OptionString help = {"Options for InterpolationTargetB"};
   };
 
   using interpolator_source_vars = tmpl::list<Tags::TestSolution>;
