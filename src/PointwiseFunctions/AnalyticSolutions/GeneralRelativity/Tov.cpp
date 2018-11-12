@@ -3,6 +3,9 @@
 
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 
+// Need Boost MultiArray because it is used internally by ODEINT
+#include "DataStructures/BoostMultiArray.hpp" // IWYU pragma: keep
+
 #include <algorithm>
 #include <array>
 #include <boost/numeric/odeint.hpp>  // IWYU pragma: keep
