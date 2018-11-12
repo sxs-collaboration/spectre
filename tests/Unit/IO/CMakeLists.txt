@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Observers/Test_TypeOfObservation.cpp
   Observers/Test_VolumeObserver.cpp
   Test_H5.cpp
+  Test_StellarCollapseEos.cpp
   Test_VolumeData.cpp
   )
 
