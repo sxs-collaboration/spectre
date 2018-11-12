@@ -1056,6 +1056,11 @@ then typically look as follows:
  */
 
 /*!
+ * \defgroup PeoGroup Performance, Efficiency, and Optimizations
+ * \brief Classes and functions useful for performance optimizations.
+ */
+
+/*!
  * \defgroup PrettyTypeGroup Pretty Type
  * \brief Pretty printing of types
  */
