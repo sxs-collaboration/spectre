@@ -2976,7 +2976,7 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
           GeneralizedHarmonic::OptionTags::GaugeHSpatialWeightDecayWidth<
               Frame::Inertial>>,
       db::AddComputeTags<
-          ::Tags::Time,
+          ::Tags::SubstepTime,
           GeneralizedHarmonic::DampedHarmonicHCompute<3, Frame::Inertial>,
           GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<
               3, Frame::Inertial>>>(

@@ -34,7 +34,7 @@ namespace Frame {
 struct Inertial;
 }  // namespace Frame
 namespace Tags {
-struct Time;
+struct SubstepTime;
 }  // namespace Tags
 /// \endcond
 
@@ -120,7 +120,8 @@ class ObserveErrorNorms<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
-  using argument_tags = tmpl::list<::Tags::Time, coordinates_tag, Tensors...>;
+  using argument_tags =
+      tmpl::list<::Tags::SubstepTime, coordinates_tag, Tensors...>;
 
   template <typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>

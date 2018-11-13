@@ -26,7 +26,7 @@ class not_null;
 class Time;
 /// \endcond
 
-// IWYU pragma: no_forward_declare Tags::Time
+// IWYU pragma: no_forward_declare Tags::SubstepTime
 // IWYU pragma: no_forward_declare Tags::Coordinates
 // IWYU pragma: no_forward_declare Tags::deriv
 // IWYU pragma: no_forward_declare Tensor
@@ -53,7 +53,8 @@ struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
       Tags::InitialGaugeH<SpatialDim, Frame>, ::gr::Tags::Lapse<DataVector>,
       ::gr::Tags::Shift<SpatialDim, Frame, DataVector>,
       ::gr::Tags::SqrtDetSpatialMetric<DataVector>,
-      ::gr::Tags::SpacetimeMetric<SpatialDim, Frame, DataVector>, ::Tags::Time,
+      ::gr::Tags::SpacetimeMetric<SpatialDim, Frame, DataVector>,
+      ::Tags::SubstepTime,
       OptionTags::GaugeHRollOnStartTime, OptionTags::GaugeHRollOnTimeWindow,
       ::Tags::Coordinates<SpatialDim, Frame>,
       OptionTags::GaugeHSpatialWeightDecayWidth<Frame>>;
@@ -163,7 +164,8 @@ struct SpacetimeDerivDampedHarmonicHCompute
       ::gr::Tags::SqrtDetSpatialMetric<DataVector>,
       ::gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
       ::gr::Tags::SpacetimeMetric<SpatialDim, Frame, DataVector>,
-      Tags::Pi<SpatialDim, Frame>, Tags::Phi<SpatialDim, Frame>, ::Tags::Time,
+      Tags::Pi<SpatialDim, Frame>, Tags::Phi<SpatialDim, Frame>,
+      ::Tags::SubstepTime,
       OptionTags::GaugeHRollOnStartTime, OptionTags::GaugeHRollOnTimeWindow,
       ::Tags::Coordinates<SpatialDim, Frame>,
       OptionTags::GaugeHSpatialWeightDecayWidth<Frame>>;

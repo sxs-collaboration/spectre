@@ -253,7 +253,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   const auto box = db::create<
       db::AddSimpleTags<Tags::TimeId,
                         Tags::Variables<typename decltype(vars)::tags_list>>,
-      db::AddComputeTags<Tags::Time>>(
+      db::AddComputeTags<Tags::SubstepTime>>(
       TimeId(true, 0, Slab(0., observation_time).end()), vars);
 
   observe->run(box, runner.cache(), array_index,

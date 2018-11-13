@@ -260,7 +260,7 @@ struct CheckForCompletion {
 /// - ConstGlobalCache: nothing
 /// - DataBox:
 ///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
-///   - Tags::Time
+///   - Tags::SubstepTime
 ///   - Tags::TimeId
 ///   - Tags::TimeStep
 ///
@@ -280,7 +280,7 @@ struct CheckForOrderIncrease {
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     using variables_tag = typename Metavariables::system::variables_tag;
 
-    const auto& time = db::get<::Tags::Time>(box);
+    const auto& time = db::get<::Tags::SubstepTime>(box);
     const auto& time_step = db::get<::Tags::TimeStep>(box);
     const auto& history = db::get<::Tags::HistoryEvolvedVariables<
         variables_tag, db::add_tag_prefix<::Tags::dt, variables_tag>>>(box);

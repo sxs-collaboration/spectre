@@ -206,7 +206,7 @@ struct component {
       mortar_data_tag<flux_comm_types>>;
 
   using compute_tags = db::AddComputeTags<
-      Tags::Time, Tags::BoundaryDirectionsInterior<Dim>,
+      Tags::SubstepTime, Tags::BoundaryDirectionsInterior<Dim>,
       boundary_compute_tag<Tags::Direction<Dim>>,
       boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
       boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,

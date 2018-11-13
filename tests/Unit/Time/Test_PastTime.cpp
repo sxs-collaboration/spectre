@@ -36,7 +36,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.PastTime", "[Unit][Time]") {
                                      const bool time_runs_forward,
                                      const bool expected) noexcept {
     auto box = db::create<db::AddSimpleTags<Tags::TimeId>,
-                          db::AddComputeTags<Tags::Time>>(
+                          db::AddComputeTags<Tags::SubstepTime>>(
         TimeId(time_runs_forward, 0, time));
     CHECK(sent_trigger->is_triggered(box) == expected);
     db::mutate<Tags::TimeId>(

@@ -48,7 +48,7 @@ struct Component {
   using const_global_cache_tag_list = tmpl::list<>;
   using simple_tags = db::AddSimpleTags<Tags::TimeId, variables_tag,
                                         dt_variables_tag, history_tag>;
-  using compute_tags = db::AddComputeTags<Tags::Time>;
+  using compute_tags = db::AddComputeTags<Tags::SubstepTime>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

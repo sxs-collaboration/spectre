@@ -43,7 +43,7 @@ namespace Frame {
 struct Inertial;
 }  // namespace Frame
 namespace Tags {
-struct Time;
+struct SubstepTime;
 }  // namespace Tags
 /// \endcond
 
@@ -160,7 +160,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
   }
 
   using argument_tags =
-      tmpl::list<::Tags::Time, ::Tags::Mesh<VolumeDim>, coordinates_tag,
+      tmpl::list<::Tags::SubstepTime, ::Tags::Mesh<VolumeDim>, coordinates_tag,
                  AnalyticSolutionTensors..., NonSolutionTensors...>;
 
   template <typename Metavariables, typename ParallelComponent>

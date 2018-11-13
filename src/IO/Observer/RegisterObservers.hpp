@@ -21,7 +21,7 @@ struct RegisterObservers {
                 const ArrayIndex& /*array_index*/) noexcept {
     return {observers::TypeOfObservation::ReductionAndVolume,
             observers::ObservationId{
-                static_cast<double>(db::get<::Tags::Time>(box).value()),
+                static_cast<double>(db::get<::Tags::SubstepTime>(box).value()),
                 ObsType{}}};
   }
 };

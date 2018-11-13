@@ -90,7 +90,7 @@ struct Evolution {
                                  System::is_in_flux_conservative_form>
   struct ComputeTags {
     using type = db::AddComputeTags<
-        ::Tags::Time,
+        ::Tags::SubstepTime,
         ::Tags::DerivCompute<
             variables_tag,
             ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
@@ -101,7 +101,7 @@ struct Evolution {
   template <typename System>
   struct ComputeTags<System, true> {
     using type = db::AddComputeTags<
-        ::Tags::Time,
+        ::Tags::SubstepTime,
         ::Tags::DivCompute<
             db::add_tag_prefix<::Tags::Flux, variables_tag, tmpl::size_t<dim>,
                                Frame::Inertial>,

@@ -17,7 +17,7 @@
 
 /// \cond
 namespace Tags {
-struct Time;
+struct SubstepTime;
 struct TimeId;
 }  // namespace Tags
 /// \endcond
@@ -51,7 +51,7 @@ class PastTime : public Trigger<TriggerRegistrars> {
   explicit PastTime(const double trigger_time) noexcept
       : trigger_time_(trigger_time) {}
 
-  using argument_tags = tmpl::list<Tags::Time, Tags::TimeId>;
+  using argument_tags = tmpl::list<Tags::SubstepTime, Tags::TimeId>;
 
   bool operator()(const Time& time, const TimeId& time_id) const noexcept {
     if (not time_id.is_at_slab_boundary()) {

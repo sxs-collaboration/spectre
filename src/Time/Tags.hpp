@@ -46,9 +46,9 @@ struct TimeStep : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Tag for compute item for current ::Time (from TimeId)
-struct Time : db::ComputeTag {
-  static std::string name() noexcept { return "Time"; }
+/// \brief Tag for compute item for ::Time of the current substep (from TimeId)
+struct SubstepTime : db::ComputeTag {
+  static std::string name() noexcept { return "SubstepTime"; }
   static auto function(const ::TimeId& id) noexcept { return id.time(); }
   using argument_tags = tmpl::list<TimeId>;
 };

@@ -127,7 +127,7 @@ struct Component {
       db::add_tag_prefix<Tags::dt,
                          typename metavariables::system::variables_tag>,
       history_tag, Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>>;
-  using compute_tags = db::AddComputeTags<Tags::Time>;
+  using compute_tags = db::AddComputeTags<Tags::SubstepTime>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
 
@@ -298,7 +298,7 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
             not_self_start_action>(make_not_null(&runner));
         CHECK(not jumped);
         CHECK(abs(ActionTesting::get_databox_tag<Component<Metavariables<>>,
-                                                 Tags::Time>(runner, 0) -
+                                                 Tags::SubstepTime>(runner, 0) -
                   initial_time) < abs(initial_time_step));
         const auto next_time =
             ActionTesting::get_databox_tag<Component<Metavariables<>>,
