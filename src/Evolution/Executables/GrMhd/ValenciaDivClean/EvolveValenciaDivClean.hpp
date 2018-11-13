@@ -8,7 +8,7 @@
 #include "Domain/DomainCreators/RegisterDerivedWithCharm.cpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Evolution/Actions/ComputeVolumeDuDt.hpp"
+#include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"
 #include "Evolution/Actions/ComputeVolumeSources.hpp"
 #include "Evolution/Conservative/UpdateConservatives.hpp"
@@ -29,8 +29,8 @@
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
@@ -110,11 +110,12 @@ struct EvolutionMetavars {
   using compute_rhs = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-      Actions::ComputeVolumeSources, Actions::ComputeVolumeDuDt,
+      Actions::ComputeVolumeSources,
+      Actions::ComputeTimeDerivative,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
-                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>,
+                          dg::Actions::ApplyFluxes>,
       Actions::RecordTimeStepperData>>;
 
   using update_variables = tmpl::flatten<tmpl::list<

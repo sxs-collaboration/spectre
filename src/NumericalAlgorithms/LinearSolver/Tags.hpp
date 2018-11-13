@@ -24,15 +24,6 @@ namespace LinearSolver {
 namespace Tags {
 
 /*!
- * \brief Holds an `IterationId` that identifies a step in the linear solver
- * algorithm
- */
-struct IterationId : db::SimpleTag {
-  static std::string name() noexcept { return "IterationId"; }
-  using type = LinearSolver::IterationId;
-};
-
-/*!
  * \brief The operand that the local linear operator \f$A\f$ is applied to
  *
  * \details The result of the operation should be wrapped in
@@ -57,6 +48,17 @@ struct OperatorAppliedTo : db::PrefixTag, db::SimpleTag {
   }
   using type = typename Tag::type;
   using tag = Tag;
+};
+
+/*!
+ * \brief Holds an `IterationId` that identifies a step in the linear solver
+ * algorithm
+ */
+struct IterationId : db::SimpleTag {
+  static std::string name() noexcept { return "IterationId"; }
+  using type = LinearSolver::IterationId;
+  template <typename Tag>
+  using step_prefix = OperatorAppliedTo<Tag>;
 };
 
 /*!

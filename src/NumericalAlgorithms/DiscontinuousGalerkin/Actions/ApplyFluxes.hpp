@@ -31,25 +31,40 @@ struct Mesh;
 
 namespace dg {
 namespace Actions {
-/// \ingroup ActionsGroup
-/// \ingroup DiscontinuousGalerkinGroup
-/// \brief Compute boundary contribution to the time derivative for
-/// use in global time stepping.
-///
-/// Uses:
-/// - ConstGlobalCache: Metavariables::normal_dot_numerical_flux
-/// - DataBox:
-///   - Tags::Mesh<volume_dim>
-///   - Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>
-///   - Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>
-///
-/// DataBox changes:
-/// - Adds: nothing
-/// - Removes: nothing
-/// - Modifies:
-///   db::add_tag_prefix<Tags::dt, variables_tag>,
-///   FluxCommunicationTypes<Metavariables>::mortar_data_tag
-struct ApplyBoundaryFluxesGlobalTimeStepping {
+/*!
+ * \ingroup ActionsGroup
+ * \ingroup DiscontinuousGalerkinGroup
+ * \brief Compute element boundary contributions to the temporal step of the
+ * variables
+ *
+ * This action invokes the numerical flux operator for each mortar of the
+ * element, lifts the data to the volume and adds it to the temporal step
+ * variables. These would be the time derivatives `Tags::dt` of the system
+ * variables for an evolution system, for instance.
+ *
+ * With:
+ * - `flux_comm_types = dg::FluxCommunicationTypes<Metavariables>`
+ *
+ * Uses:
+ * - All items used by `flux_comm_types`
+ * - Metavariables:
+ *   - `temporal_id::step_prefix`
+ * - System:
+ *   - `volume_dim`
+ *   - `variables_tag`
+ * - ConstGlobalCache:
+ *   - `Metavariables::normal_dot_numerical_flux`
+ * - DataBox:
+ *   - `Tags::Mesh<volume_dim>`
+ *   - `Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>`
+ *   - `Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>`
+ *
+ * DataBox changes:
+ * - Modifies:
+ *   - `db::add_tag_prefix<step_prefix, variables_tag>`
+ *   - `flux_comm_types::mortar_data_tag`
+ */
+struct ApplyFluxes {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -59,17 +74,14 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    static_assert(not Metavariables::local_time_stepping,
-                  "ApplyBoundaryFluxesGlobalTimeStepping cannot be used with "
-                  "local time-stepping.");
-
     using system = typename Metavariables::system;
     constexpr size_t volume_dim = system::volume_dim;
     using variables_tag = typename system::variables_tag;
-    using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
+    using dt_variables_tag =
+        db::add_tag_prefix<Metavariables::temporal_id::template step_prefix,
+                           variables_tag>;
 
     using flux_comm_types = FluxCommunicationTypes<Metavariables>;
-
     using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
     db::mutate<dt_variables_tag, mortar_data_tag>(
         make_not_null(&box),
@@ -77,9 +89,8 @@ struct ApplyBoundaryFluxesGlobalTimeStepping {
             const gsl::not_null<db::item_type<dt_variables_tag>*> dt_vars,
             const gsl::not_null<db::item_type<mortar_data_tag>*> mortar_data,
             const db::item_type<Tags::Mesh<volume_dim>>& mesh,
-            const db::item_type<
-                Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>&
-                mortar_meshes,
+            const db::item_type<Tags::Mortars<Tags::Mesh<volume_dim - 1>,
+                                              volume_dim>>& mortar_meshes,
             const db::item_type<
                 Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>&
                 mortar_sizes) noexcept {

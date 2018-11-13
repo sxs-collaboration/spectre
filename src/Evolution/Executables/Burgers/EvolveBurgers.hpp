@@ -9,8 +9,8 @@
 #include "Domain/DomainCreators/RegisterDerivedWithCharm.cpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Evolution/Actions/ComputeVolumeDuDt.hpp"  // IWYU pragma: keep
-#include "Evolution/Actions/ComputeVolumeFluxes.hpp"  // IWYU pragma: keep
+#include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
+#include "Evolution/Actions/ComputeVolumeFluxes.hpp"    // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
@@ -18,8 +18,8 @@
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
 #include "Evolution/Systems/Burgers/System.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
@@ -29,15 +29,15 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
-#include "Time/Actions/ChangeStepSize.hpp"  // IWYU pragma: keep
-#include "Time/Actions/FinalTime.hpp"  // IWYU pragma: keep
+#include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
+#include "Time/Actions/ChangeStepSize.hpp"         // IWYU pragma: keep
+#include "Time/Actions/FinalTime.hpp"              // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
-#include "Time/Actions/SelfStartActions.hpp"  // IWYU pragma: keep
-#include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
-#include "Time/StepChoosers/Cfl.hpp"  // IWYU pragma: keep
-#include "Time/StepChoosers/Constant.hpp"  // IWYU pragma: keep
-#include "Time/StepChoosers/Increase.hpp"  // IWYU pragma: keep
+#include "Time/Actions/SelfStartActions.hpp"       // IWYU pragma: keep
+#include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
+#include "Time/StepChoosers/Cfl.hpp"               // IWYU pragma: keep
+#include "Time/StepChoosers/Constant.hpp"          // IWYU pragma: keep
+#include "Time/StepChoosers/Increase.hpp"          // IWYU pragma: keep
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
@@ -79,11 +79,11 @@ struct EvolutionMetavars {
   using compute_rhs = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-      Actions::ComputeVolumeDuDt,
+      Actions::ComputeTimeDerivative,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
-                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>,
+                          dg::Actions::ApplyFluxes>,
       Actions::RecordTimeStepperData>>;
   using update_variables = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<local_time_stepping,

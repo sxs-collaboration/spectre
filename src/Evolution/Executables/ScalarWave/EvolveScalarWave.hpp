@@ -10,17 +10,17 @@
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Evolution/Actions/ComputeVolumeDuDt.hpp"  // IWYU pragma: keep
+#include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/Actions.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
 #include "Evolution/Systems/ScalarWave/System.hpp"
-#include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Actions.hpp"            // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
-#include "IO/Observer/Tags.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
@@ -94,11 +94,11 @@ struct EvolutionMetavars {
   using compute_rhs = tmpl::flatten<tmpl::list<
       dg::Actions::ComputeNonconservativeBoundaryFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-      Actions::ComputeVolumeDuDt,
+      Actions::ComputeTimeDerivative,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
-                          dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>,
+                          dg::Actions::ApplyFluxes>,
       Actions::RecordTimeStepperData>>;
   using update_variables = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<local_time_stepping,

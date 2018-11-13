@@ -397,8 +397,27 @@
  * \details Actions and parallel components may require an elliptic system to
  * expose the following types:
  *
+ * - `volume_dim`: The number of spatial dimensions
  * - `fields_tag`: A \ref DataBoxGroup tag that represents the fields being
  * solved for.
+ * - `variables_tag`: The variables to compute DG volume contributions and
+ * fluxes for. Use `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
+ * unless you have a reason not to.
+ * - `compute_operator_action`: A struct that computes the bulk contribution to
+ * the DG operator. Must expose a `tmpl::list` of `argument_tags` and a static
+ * `apply` function that takes the following arguments in this order:
+ *   - First, the types of the tensors in
+ * `db::add_tag_prefix<Metavariables::temporal_id::step_prefix, variables_tag>`
+ * (which represent the linear operator applied to the variables) as not-null
+ * pointers.
+ *   - Followed by the types of the `argument_tags` as constant references.
+ *
+ * Actions and parallel components may also require the Metavariables to expose
+ * the following types:
+ *
+ * - `system`: See above.
+ * - `temporal_id`: A DataBox tag that identifies steps in the algorithm.
+ * Generally use `LinearSolver::Tags::IterationId`.
  */
 
 /*!
@@ -418,7 +437,30 @@
 
 /*!
  * \defgroup EvolutionSystemsGroup Evolution Systems
- * \brief Contains the namespaces of all the available evolution systems.
+ * \brief All available evolution systems and information on how to implement
+ * evolution systems
+ *
+ * \details Actions and parallel components may require an evolution system to
+ * expose the following types:
+ *
+ * - `volume_dim`: The number of spatial dimensions
+ * - `variables_tag`: The evolved variables to compute DG volume contributions
+ * and fluxes for.
+ * - `compute_time_derivative`: A struct that computes the bulk contribution to
+ * the DG discretization of the time derivative. Must expose a `tmpl::list` of
+ * `argument_tags` and a static `apply` function that takes the following
+ * arguments in this order:
+ *   - First, the types of the tensors in
+ * `db::add_tag_prefix<Metavariables::temporal_id::step_prefix, variables_tag>`
+ * (which represent the time derivatives of the variables) as not-null pointers.
+ *   - The types of the `argument_tags` as constant references.
+ *
+ * Actions and parallel components may also require the Metavariables to expose
+ * the following types:
+ *
+ * - `system`: See above.
+ * - `temporal_id`: A DataBox tag that identifies steps in the algorithm.
+ * Generally use `Tags::TimeId`.
  */
 
 /*!

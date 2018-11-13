@@ -29,6 +29,6 @@ struct System {
   using variables_tag = Tags::Variables<tmpl::list<Pi, Phi<Dim>, Psi>>;
   using gradients_tags = tmpl::list<Pi, Phi<Dim>, Psi>;
 
-  using du_dt = ComputeDuDt<Dim>;
+  using compute_time_derivative = ComputeDuDt<Dim>;
 };
 }  // namespace CurvedScalarWave

@@ -24,6 +24,7 @@
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_forward_declare Tags::deriv
 // IWYU pragma: no_forward_declare Tags::div
 
 SPECTRE_TEST_CASE("Unit.Burgers.Fluxes", "[Unit][Burgers]") {
@@ -56,6 +57,7 @@ SPECTRE_TEST_CASE("Unit.Burgers.Fluxes", "[Unit][Burgers]") {
   Burgers::Fluxes::apply(&get<flux_tag>(flux), get<Burgers::Tags::U>(vars));
   const auto div_flux = divergence(flux, mesh, identity);
   auto dudt = make_with_value<Scalar<DataVector>>(coords, 0.);
-  Burgers::System::du_dt::apply(&dudt, get<Tags::div<flux_tag>>(div_flux));
+  Burgers::System::compute_time_derivative::apply(
+      &dudt, get<Tags::div<flux_tag>>(div_flux));
   CHECK_ITERABLE_APPROX(dudt, dudt_expected);
 }
