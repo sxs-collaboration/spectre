@@ -17,6 +17,7 @@
 .vscode
 compile_commands.json
 .cquery_cached_index
+.ycm_extra_conf.py
 
 # TeX products
 *.aux
