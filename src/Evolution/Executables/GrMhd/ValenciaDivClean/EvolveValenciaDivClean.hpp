@@ -11,6 +11,7 @@
 #include "Evolution/Actions/ComputeVolumeDuDt.hpp"
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"
 #include "Evolution/Actions/ComputeVolumeSources.hpp"
+#include "Evolution/Conservative/UpdateConservatives.hpp"
 #include "Evolution/Conservative/UpdatePrimitives.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
@@ -18,10 +19,13 @@
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Initialize.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Observe.hpp"
+#include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/Actions.hpp"
+#include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -74,6 +78,7 @@ struct EvolutionMetavars {
 
   using system = grmhd::ValenciaDivClean::System<
       typename analytic_solution::equation_of_state_type>;
+  static constexpr size_t thermodynamic_dim = system::thermodynamic_dim;
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = false;
   using analytic_solution_tag = OptionTags::AnalyticSolution<analytic_solution>;
@@ -86,14 +91,13 @@ struct EvolutionMetavars {
       dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   using limiter = OptionTags::SlopeLimiterParams<
       SlopeLimiters::Minmod<3, system::variables_tag::tags_list>>;
-  using variable_fixer =
-      OptionTags::VariableFixerParams<VariableFixing::FixConservatives>;
   using step_choosers =
       tmpl::list<StepChoosers::Register::Cfl<3, Frame::Inertial>,
                  StepChoosers::Register::Constant,
                  StepChoosers::Register::Increase>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<
-      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin>;
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
+      grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
 
   // hack this has to be synchronized with the Observe action :(
   using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,
@@ -119,7 +123,7 @@ struct EvolutionMetavars {
                           tmpl::list<>>,
       Actions::UpdateU, SlopeLimiters::Actions::SendData<EvolutionMetavars>,
       SlopeLimiters::Actions::Limit<EvolutionMetavars>,
-      VariableFixing::Actions::FixVariables<EvolutionMetavars>,
+      VariableFixing::Actions::FixVariables<VariableFixing::FixConservatives>,
       Actions::UpdatePrimitives>>;
 
   struct EvolvePhaseStart;
@@ -129,8 +133,14 @@ struct EvolutionMetavars {
       DgElementArray<
           EvolutionMetavars, grmhd::ValenciaDivClean::Actions::Initialize<3>,
           tmpl::flatten<tmpl::list<
+              VariableFixing::Actions::FixVariables<
+                  VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
+              Actions::UpdateConservatives,
               SelfStart::self_start_procedure<compute_rhs, update_variables>,
               Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
+              VariableFixing::Actions::FixVariables<
+                  VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
+              Actions::UpdateConservatives,
               grmhd::ValenciaDivClean::Actions::Observe, Actions::FinalTime,
               tmpl::conditional_t<local_time_stepping,
                                   Actions::ChangeStepSize<step_choosers>,

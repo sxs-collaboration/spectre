@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <ostream>
 #include <pup.h>  // IWYU pragma: keep
 
 #include "DataStructures/DataVector.hpp"
@@ -52,18 +53,33 @@ class FunctionOfLorentzFactor {
 namespace VariableFixing {
 FixConservatives::FixConservatives(
     const double minimum_rest_mass_density_times_lorentz_factor,
+    const double rest_mass_density_times_lorentz_factor_cutoff,
     const double safety_factor_for_magnetic_field,
-    const double safety_factor_for_momentum_density) noexcept
+    const double safety_factor_for_momentum_density,
+    const OptionContext& context)
     : minimum_rest_mass_density_times_lorentz_factor_(
           minimum_rest_mass_density_times_lorentz_factor),
+      rest_mass_density_times_lorentz_factor_cutoff_(
+          rest_mass_density_times_lorentz_factor_cutoff),
       one_minus_safety_factor_for_magnetic_field_(
           1.0 - safety_factor_for_magnetic_field),
       one_minus_safety_factor_for_momentum_density_(
-          1.0 - safety_factor_for_momentum_density) {}
+          1.0 - safety_factor_for_momentum_density) {
+  if (minimum_rest_mass_density_times_lorentz_factor_ >
+      rest_mass_density_times_lorentz_factor_cutoff_) {
+    PARSE_ERROR(context,
+                "The minimum value of D (a.k.a. rest mass density times "
+                "Lorentz factor) ("
+                    << minimum_rest_mass_density_times_lorentz_factor_
+                    << ") must be less than or equal to the cutoff value of D ("
+                    << rest_mass_density_times_lorentz_factor_cutoff_ << ')');
+  }
+}
 
 // clang-tidy: google-runtime-references
 void FixConservatives::pup(PUP::er& p) noexcept {  // NOLINT
   p | minimum_rest_mass_density_times_lorentz_factor_;
+  p | rest_mass_density_times_lorentz_factor_cutoff_;
   p | one_minus_safety_factor_for_magnetic_field_;
   p | one_minus_safety_factor_for_momentum_density_;
 }
@@ -101,7 +117,7 @@ void FixConservatives::operator()(
     double& d_tilde = get(*tilde_d)[s];
     const double sqrt_det_g = get(sqrt_det_spatial_metric)[s];
     if (rest_mass_density_times_lorentz_factor[s] <
-        minimum_rest_mass_density_times_lorentz_factor_) {
+        rest_mass_density_times_lorentz_factor_cutoff_) {
       d_tilde = minimum_rest_mass_density_times_lorentz_factor_ * sqrt_det_g;
     }
 
@@ -145,6 +161,8 @@ void FixConservatives::operator()(
     if (s_tilde_squared > one_minus_safety_factor_for_momentum_density_ *
                               simple_upper_bound_for_s_tilde_squared) {
       // Find root of Equation B.34 of Foucart
+      // NOTE: This assumes minimum specific enthalpy is 1.
+      // SpEC implements a more complicated formula (B.32) which is equivalent
       // Bounds on root are given by Equation  B.40 of Foucart
       const auto f_of_lorentz_factor = FunctionOfLorentzFactor{
           b_squared_over_d, tau_over_d, normalized_s_dot_b};
@@ -183,6 +201,8 @@ bool operator==(const FixConservatives& lhs,
                 const FixConservatives& rhs) noexcept {
   return lhs.minimum_rest_mass_density_times_lorentz_factor_ ==
              rhs.minimum_rest_mass_density_times_lorentz_factor_ and
+         lhs.rest_mass_density_times_lorentz_factor_cutoff_ ==
+             rhs.rest_mass_density_times_lorentz_factor_cutoff_ and
          lhs.one_minus_safety_factor_for_magnetic_field_ ==
              rhs.one_minus_safety_factor_for_magnetic_field_ and
          lhs.one_minus_safety_factor_for_momentum_density_ ==

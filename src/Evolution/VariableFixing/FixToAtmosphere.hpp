@@ -36,34 +36,43 @@ namespace VariableFixing {
 /// \ingroup VariableFixingGroup
 /// \brief Fix the primitive variables to an atmosphere in low density regions
 ///
-/// If the rest mass density is below the specified value, it is
-/// raised to the specified value, and the pressure, specific internal
-/// energy (for one-dimensional equations of state), and specific
-/// enthalpy are adjusted to satisfy the equation of state.  For a
-/// two-dimensional equation of state, the specific internal energy is
-/// set to zero. In addition, the spatial velocity is set to zero, and
-/// the Lorentz factor is set to one.
+/// If the rest mass density is below  \f$\rho_{\textrm{cutoff}}\f$
+/// (DensityCutoff), it is set to \f$\rho_{\textrm{atm}}\f$
+/// (DensityOfAtmosphere), and the pressure, specific internal energy (for
+/// one-dimensional equations of state), and specific enthalpy are adjusted to
+/// satisfy the equation of state.  For a two-dimensional equation of state, the
+/// specific internal energy is set to zero. In addition, the spatial velocity
+/// is set to zero, and the Lorentz factor is set to one.
 template <size_t ThermodynamicDim>
 class FixToAtmosphere {
  public:
   /// \brief Rest mass density of the atmosphere
   struct DensityOfAtmosphere {
     using type = double;
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
     static constexpr OptionString help = {"Density of atmosphere"};
   };
+  /// \brief Rest mass density at which to impose the atmosphere. Should be
+  /// greater than or equal to the density of the atmosphere.
+  struct DensityCutoff {
+    using type = double;
+    static type lower_bound() noexcept { return 0.0; }
+    static constexpr OptionString help = {
+        "Density to impose atmosphere at. Must be >= rho_atm"};
+  };
 
-  using options = tmpl::list<DensityOfAtmosphere>;
+  using options = tmpl::list<DensityOfAtmosphere, DensityCutoff>;
   static constexpr OptionString help = {
-      "If the rest mass density is below the specified value, it is raised\n"
-      "to the specified value, and the pressure, specific internal energy\n"
+      "If the rest mass density is below DensityCutoff, it is set\n"
+      "to DensityOfAtmosphere, and the pressure, specific internal energy\n"
       "(for one-dimensional equations of state), and specific enthalpy are\n"
       "adjusted to satisfy the equation of state. For a two-dimensional\n"
       "equation of state, the specific internal energy is set to zero.\n"
       "In addition, the spatial velocity is set to zero, and the Lorentz\n"
       "factor is set to one.\n"};
 
-  explicit FixToAtmosphere(double density_of_atmosphere) noexcept;
+  FixToAtmosphere(double density_of_atmosphere, double density_cutoff,
+                  const OptionContext& context = {});
 
   FixToAtmosphere() = default;
   FixToAtmosphere(const FixToAtmosphere& /*rhs*/) = default;
@@ -102,6 +111,7 @@ class FixToAtmosphere {
       const FixToAtmosphere<LocalThermodynamicDim>& rhs) noexcept;
 
   double density_of_atmosphere_{std::numeric_limits<double>::signaling_NaN()};
+  double density_cutoff_{std::numeric_limits<double>::signaling_NaN()};
 };
 
 template <size_t ThermodynamicDim>

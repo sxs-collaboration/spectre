@@ -29,7 +29,7 @@ void test_variable_fixer(
   // [2]:  tilde_S is too big, so it is lowered
   // [3]:  all values are good, no changes
 
-  Scalar<DataVector> tilde_d{DataVector{1.e-13, 1.0, 1.0, 1.0}};
+  Scalar<DataVector> tilde_d{DataVector{2.e-12, 1.0, 1.0, 1.0}};
   Scalar<DataVector> tilde_tau{DataVector{4.5, 1.5, 4.5, 4.5}};
   auto tilde_s =
       make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
@@ -69,13 +69,14 @@ void test_variable_fixer(
 
 SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
                   "[VariableFixing][Unit]") {
-  VariableFixing::FixConservatives variable_fixer{1.e-12, 0.0, 0.0};
+  VariableFixing::FixConservatives variable_fixer{1.e-12, 1.0e-11, 0.0, 0.0};
   test_variable_fixer(variable_fixer);
   test_serialization(variable_fixer);
 
   const auto fixer_from_options =
       test_creation<VariableFixing::FixConservatives>(
           "  MinimumValueOfD: 1.0e-12\n"
+          "  CutoffD: 1.0e-11\n"
           "  SafetyFactorForB: 0.0\n"
           "  SafetyFactorForS: 0.0\n");
   test_variable_fixer(fixer_from_options);

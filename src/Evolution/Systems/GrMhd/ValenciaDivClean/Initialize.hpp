@@ -77,7 +77,7 @@ struct Initialize {
 
       VariableFixing::FixToAtmosphere<decltype(
           equation_of_state)::thermodynamic_dim>
-          fixer{1.e-12};
+          fixer{1.e-12, 1.e-12};
       fixer(
           &get<hydro::Tags::RestMassDensity<DataVector>>(primitive_vars),
           &get<hydro::Tags::SpecificInternalEnergy<DataVector>>(primitive_vars),

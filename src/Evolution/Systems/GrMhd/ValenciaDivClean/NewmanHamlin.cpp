@@ -174,7 +174,7 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
       }
     }
     // note primitives are recomputed above before being returned
-    converged = fabs(current_pressure - previous_pressure) <
+    converged = fabs(current_pressure - previous_pressure) <=
                 relative_tolerance_ * (current_pressure + previous_pressure);
   }  // while loop
 }

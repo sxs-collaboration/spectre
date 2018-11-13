@@ -15,8 +15,6 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/RadiallyFallingFloor.hpp"
-#include "Evolution/VariableFixing/Tags.hpp"
-#include "Parallel/ParallelComponentHelpers.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -31,8 +29,8 @@ struct mock_component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using action_list =
-      tmpl::list<VariableFixing::Actions::FixVariables<Metavariables>>;
+  using action_list = tmpl::list<VariableFixing::Actions::FixVariables<
+      VariableFixing::RadiallyFallingFloor<3>>>;
   using const_global_cache_tag_list =
       Parallel::get_const_global_cache_tags<action_list>;
   using initial_databox = db::compute_databox_type<
@@ -44,8 +42,6 @@ struct mock_component {
 struct Metavariables {
   using component_list = tmpl::list<mock_component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using variable_fixer =
-      OptionTags::VariableFixerParams<VariableFixing::RadiallyFallingFloor<3>>;
   enum class Phase { Initialize, Exit };
 };
 }  // namespace

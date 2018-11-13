@@ -42,6 +42,8 @@ struct System {
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = true;
   static constexpr size_t volume_dim = 3;
+  static constexpr size_t thermodynamic_dim =
+      EquationOfStateType::thermodynamic_dim;
 
   using primitive_variables_tag = ::Tags::Variables<tmpl::list<
       hydro::Tags::RestMassDensity<DataVector>,

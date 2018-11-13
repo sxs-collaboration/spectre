@@ -7,6 +7,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "Evolution/VariableFixing/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -38,13 +39,14 @@ namespace Actions {
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies: Metavariables::variable_fixer::return_tags
-template <typename Metavariables>
+template <typename VariableFixer>
 struct FixVariables {
   using const_global_cache_tags =
-      tmpl::list<typename Metavariables::variable_fixer>;
+      tmpl::list<OptionTags::VariableFixerParams<VariableFixer>>;
 
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
             Requires<tmpl::size<DbTagsList>::value != 0> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -53,10 +55,9 @@ struct FixVariables {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     const auto& variable_fixer =
-        get<typename Metavariables::variable_fixer>(cache);
-    db::mutate_apply<
-        typename Metavariables::variable_fixer::type::return_tags,
-        typename Metavariables::variable_fixer::type::argument_tags>(
+        get<OptionTags::VariableFixerParams<VariableFixer>>(cache);
+    db::mutate_apply<typename VariableFixer::return_tags,
+                     typename VariableFixer::argument_tags>(
         variable_fixer, make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
