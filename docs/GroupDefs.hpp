@@ -1025,6 +1025,16 @@ The `receive_data` function always takes a `ReceiveTag`, which is set in the
 actions `inbox_tags` type alias as described above.  The first argument is the
 temporal identifier, and the second is the data to be sent.
 
+Normally when remote functions are invoked they go through the Charm++ runtime
+system, which adds some overhead. The `receive_data` function tries to elide
+the call to the Charm++ RTS for calls into array components. Charm++ refers to
+these types of remote calls as "inline entry methods". With the Charm++ method
+of eliding the RTS, the code becomes susceptible to stack overflows because
+of infinite recursion. The `receive_data` function is limited to at most 64 RTS
+elided calls, though in practice reaching this limit is rare. When the limit is
+reached the remote method invocation is done through the RTS instead of being
+elided.
+
 #### 3. Reduction %Actions
 
 Finally, there are reduction actions which are used when reducing data over an
