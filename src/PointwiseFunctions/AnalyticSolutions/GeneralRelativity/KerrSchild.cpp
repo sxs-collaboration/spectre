@@ -4,7 +4,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 
 #include <cmath>
-#include <cstddef>
+#include <cstdlib>
 #include <numeric>
 #include <ostream>
 #include <pup.h>
@@ -14,18 +14,118 @@
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
 
 /// \cond
 namespace gr {
 namespace Solutions {
+
+namespace {
+template <typename DataType>
+struct KerrSchildBuffer;
+
+template <>
+struct KerrSchildBuffer<double> {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-member-init)
+  explicit KerrSchildBuffer(const size_t /*size*/) noexcept {}
+
+  tnsr::I<double, 3> x_minus_center;
+  double a_dot_x;
+  double a_dot_x_squared;
+  double half_xsq_minus_asq;
+  double r_squared;
+  double a_dot_x_over_rsquared;
+  double deriv_log_r_denom;
+  tnsr::i<double, 3> deriv_log_r;
+  double H_denom;
+  double temp1;
+  double temp2;
+  tnsr::i<double, 3> a_cross_x;
+  double denom;
+  double r;
+
+  double H;
+  tnsr::i<double, 3> deriv_H;
+  tnsr::i<double, 3> null_form;
+  tnsr::ij<double, 3> deriv_null_form;
+  double null_vector_0 = -1.0;
+  double lapse_squared;
+};
+
+template <>
+struct KerrSchildBuffer<DataVector> {
+  private:
+   // We make one giant allocation so that we don't thrash the heap. This is
+   // important if we call Kerr-Schild frequently such as when applying analytic
+   // boundary conditions.
+   Variables<tmpl::list<
+       ::Tags::TempI<0, 3>, ::Tags::TempScalar<1>, ::Tags::TempScalar<2>,
+       ::Tags::TempScalar<3>, ::Tags::TempScalar<4>, ::Tags::TempScalar<5>,
+       ::Tags::TempScalar<6>, ::Tags::Tempi<7, 3>, ::Tags::TempScalar<8>,
+       ::Tags::TempScalar<9>, ::Tags::TempScalar<10>, ::Tags::TempScalar<11>,
+       ::Tags::Tempi<12, 3>, ::Tags::TempScalar<13>, ::Tags::TempScalar<14>,
+       ::Tags::Tempi<15, 3>, ::Tags::Tempi<16, 3>, ::Tags::Tempij<17, 3>,
+       ::Tags::TempScalar<18>>>
+       temp_buffer_;
+
+  public:
+   explicit KerrSchildBuffer(const size_t size) noexcept
+       : temp_buffer_(size),
+         x_minus_center(get<::Tags::TempI<0, 3>>(temp_buffer_)),
+         a_dot_x(get(get<::Tags::TempScalar<1>>(temp_buffer_))),
+         a_dot_x_squared(get(get<::Tags::TempScalar<2>>(temp_buffer_))),
+         half_xsq_minus_asq(get(get<::Tags::TempScalar<3>>(temp_buffer_))),
+         r_squared(get(get<::Tags::TempScalar<4>>(temp_buffer_))),
+         a_dot_x_over_rsquared(get(get<::Tags::TempScalar<5>>(temp_buffer_))),
+         deriv_log_r_denom(get(get<::Tags::TempScalar<6>>(temp_buffer_))),
+         deriv_log_r(get<::Tags::Tempi<7, 3>>(temp_buffer_)),
+         H(get(get<::Tags::TempScalar<9>>(temp_buffer_))),
+         H_denom(get(get<::Tags::TempScalar<8>>(temp_buffer_))),
+         temp1(get(get<::Tags::TempScalar<10>>(temp_buffer_))),
+         temp2(get(get<::Tags::TempScalar<11>>(temp_buffer_))),
+         a_cross_x(get<::Tags::Tempi<12, 3>>(temp_buffer_)),
+         denom(get(get<::Tags::TempScalar<13>>(temp_buffer_))),
+         r(get(get<::Tags::TempScalar<14>>(temp_buffer_))),
+         deriv_H(get<::Tags::Tempi<15, 3>>(temp_buffer_)),
+         null_form(get<::Tags::Tempi<16, 3>>(temp_buffer_)),
+         deriv_null_form(get<::Tags::Tempij<17, 3>>(temp_buffer_)),
+         lapse_squared(get(get<::Tags::TempScalar<18>>(temp_buffer_))) {}
+
+   tnsr::I<DataVector, 3>& x_minus_center;
+   DataVector& a_dot_x;
+   DataVector& a_dot_x_squared;
+   DataVector& half_xsq_minus_asq;
+   DataVector& r_squared;
+   DataVector& a_dot_x_over_rsquared;
+   DataVector& deriv_log_r_denom;
+   tnsr::i<DataVector, 3>& deriv_log_r;
+   DataVector& H;
+   DataVector& H_denom;
+   DataVector& temp1;
+   DataVector& temp2;
+   tnsr::i<DataVector, 3>& a_cross_x;
+   DataVector& denom;
+   DataVector& r;
+   tnsr::i<DataVector, 3>& deriv_H;
+   tnsr::i<DataVector, 3>& null_form;
+   tnsr::ij<DataVector, 3>& deriv_null_form;
+   double null_vector_0 = -1.0;
+   DataVector& lapse_squared;
+};
+}  // namespace
 
 KerrSchild::KerrSchild(const double mass,
                        KerrSchild::Spin::type dimensionless_spin,
@@ -59,161 +159,147 @@ template <typename DataType>
 tuples::tagged_tuple_from_typelist<KerrSchild::tags<DataType>>
 KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
                       tags<DataType> /*meta*/) const noexcept {
-  // Input spin is dimensionless spin.  But below we use `spin` = the
+  // Input spin is dimensionless spin.  But below we use `spin_a` = the
   // Kerr spin parameter `a`, which is `J/M` where `J` is the angular
-  // momentum.  So compute `spin=a` here.
-  auto spin = dimensionless_spin_;
-  for (auto& s : spin) {
-    s *= mass_;
-  }
+  // momentum.
+  const auto spin_a = dimensionless_spin_ * mass_;
 
   const auto a_squared =
-      std::inner_product(spin.begin(), spin.end(), spin.begin(), 0.);
+      std::inner_product(spin_a.begin(), spin_a.end(), spin_a.begin(), 0.);
 
-  const auto x_minus_center = [&x, this ]() noexcept {
-    auto l_x_minus_center = x;
-    for (size_t d = 0; d < 3; ++d) {
-      l_x_minus_center.get(d) -= gsl::at(center_, d);
-    }
-    return l_x_minus_center;
+  KerrSchildBuffer<DataType> buffer(get_size(get<0>(x)));
+
+  buffer.x_minus_center = x;
+  for (size_t d = 0; d < 3; ++d) {
+    buffer.x_minus_center.get(d) -= gsl::at(center_, d);
   }
-  ();
 
-  const DataType a_dot_x = spin[0] * get<0>(x_minus_center) +
-                           spin[1] * get<1>(x_minus_center) +
-                           spin[2] * get<2>(x_minus_center);
-  const DataType a_dot_x_squared = square(a_dot_x);
-  const DataType half_xsq_minus_asq =
-      0.5 * (square(get<0>(x_minus_center)) + square(get<1>(x_minus_center)) +
-             square(get<2>(x_minus_center)) - a_squared);
-  const DataType r_squared =
-      half_xsq_minus_asq + sqrt(square(half_xsq_minus_asq) + a_dot_x_squared);
-  const DataType a_dot_x_over_rsquared = a_dot_x / r_squared;
+  buffer.a_dot_x = spin_a[0] * get<0>(buffer.x_minus_center) +
+                   spin_a[1] * get<1>(buffer.x_minus_center) +
+                   spin_a[2] * get<2>(buffer.x_minus_center);
+  buffer.a_dot_x_squared = square(buffer.a_dot_x);
+  buffer.half_xsq_minus_asq =
+      0.5 * (square(get<0>(buffer.x_minus_center)) +
+             square(get<1>(buffer.x_minus_center)) +
+             square(get<2>(buffer.x_minus_center)) - a_squared);
 
-  const DataType deriv_log_r_denom = 0.5 / (r_squared - half_xsq_minus_asq);
+  buffer.r_squared =
+      buffer.half_xsq_minus_asq +
+      sqrt(square(buffer.half_xsq_minus_asq) + buffer.a_dot_x_squared);
+  buffer.a_dot_x_over_rsquared = buffer.a_dot_x / buffer.r_squared;
 
-  const auto deriv_log_r = [
-    &deriv_log_r_denom, &x_minus_center, &a_dot_x_over_rsquared, &spin
-  ]() noexcept {
-    auto l_deriv_log_r =
-        make_with_value<tnsr::i<DataType, 3>>(x_minus_center, 0.0);
-    for (size_t i = 0; i < 3; ++i) {
-      l_deriv_log_r.get(i) =
-          deriv_log_r_denom *
-          (x_minus_center.get(i) + gsl::at(spin, i) * a_dot_x_over_rsquared);
-    }
-    return l_deriv_log_r;
+  buffer.deriv_log_r_denom =
+      0.5 / (buffer.r_squared - buffer.half_xsq_minus_asq);
+
+  for (size_t i = 0; i < 3; ++i) {
+    buffer.deriv_log_r.get(i) =
+        buffer.deriv_log_r_denom *
+        (buffer.x_minus_center.get(i) +
+         gsl::at(spin_a, i) * buffer.a_dot_x_over_rsquared);
   }
-  ();
 
-  const DataType H_denom = 1.0 / (square(r_squared) + a_dot_x_squared);
-  const DataType H = mass_ * sqrt(r_squared) * r_squared * H_denom;
+  buffer.H_denom = 1.0 / (square(buffer.r_squared) + buffer.a_dot_x_squared);
+  buffer.H = mass_ * sqrt(buffer.r_squared) * buffer.r_squared * buffer.H_denom;
 
-  const auto deriv_H =
-      [&H, &r_squared, &H_denom, &a_dot_x, &deriv_log_r, &spin ]() noexcept {
-    auto l_deriv_H = make_with_value<tnsr::i<DataType, 3>>(H_denom, 0.0);
-    const DataType temp1 = H * (3.0 - 4.0 * square(r_squared) * H_denom);
-    const DataType temp2 = H * (2.0 * H_denom * a_dot_x);
-    for (size_t i = 0; i < 3; ++i) {
-      l_deriv_H.get(i) = temp1 * deriv_log_r.get(i) - temp2 * gsl::at(spin, i);
-    }
-    return l_deriv_H;
+  buffer.temp1 =
+      buffer.H * (3.0 - 4.0 * square(buffer.r_squared) * buffer.H_denom);
+  buffer.temp2 = buffer.H * (2.0 * buffer.H_denom * buffer.a_dot_x);
+  for (size_t i = 0; i < 3; ++i) {
+    buffer.deriv_H.get(i) = buffer.temp1 * buffer.deriv_log_r.get(i) -
+                            buffer.temp2 * gsl::at(spin_a, i);
   }
-  ();
 
-  const auto a_cross_x = [](const std::array<double, 3>& a,
-                            const tnsr::I<DataType, 3>& coord) noexcept {
-    auto l_a_cross_x = make_with_value<tnsr::i<DataType, 3>>(coord, 0.0);
-    get<0>(l_a_cross_x) = a[1] * get<2>(coord) - a[2] * get<1>(coord);
-    get<1>(l_a_cross_x) = a[2] * get<0>(coord) - a[0] * get<2>(coord);
-    get<2>(l_a_cross_x) = a[0] * get<1>(coord) - a[1] * get<0>(coord);
-    return l_a_cross_x;
+  get<0>(buffer.a_cross_x) = spin_a[1] * get<2>(buffer.x_minus_center) -
+                             spin_a[2] * get<1>(buffer.x_minus_center);
+  get<1>(buffer.a_cross_x) = spin_a[2] * get<0>(buffer.x_minus_center) -
+                             spin_a[0] * get<2>(buffer.x_minus_center);
+  get<2>(buffer.a_cross_x) = spin_a[0] * get<1>(buffer.x_minus_center) -
+                             spin_a[1] * get<0>(buffer.x_minus_center);
+
+  buffer.denom = 1.0 / (buffer.r_squared + a_squared);
+  buffer.r = sqrt(buffer.r_squared);
+
+  buffer.temp1 = buffer.a_dot_x / buffer.r;
+  for (size_t i = 0; i < 3; ++i) {
+    buffer.null_form.get(i) =
+        buffer.denom *
+        (buffer.r * buffer.x_minus_center.get(i) - buffer.a_cross_x.get(i) +
+         buffer.temp1 * gsl::at(spin_a, i));
   }
-  (spin, x_minus_center);
 
-  const DataType denom = 1.0 / (r_squared + a_squared);
-  const DataType r = sqrt(r_squared);
-
-  const auto null_form = [
-    &x, &a_dot_x, &r, &denom, &x_minus_center, &a_cross_x, &spin
-  ]() noexcept {
-    auto l_null_form = make_with_value<tnsr::i<DataType, 3>>(x, 0.0);
-    const DataType temp = a_dot_x / r;
-    for (size_t i = 0; i < 3; ++i) {
-      l_null_form.get(i) = denom * (r * x_minus_center.get(i) -
-                                    a_cross_x.get(i) + temp * gsl::at(spin, i));
-    }
-    return l_null_form;
-  }
-  ();
-
-  const auto deriv_null_form = [
-    &denom, &x_minus_center, &r, &null_form, &a_dot_x_over_rsquared,
-    &deriv_log_r, &spin
-  ]() noexcept {
-    auto l_deriv_null_form = make_with_value<tnsr::ij<DataType, 3>>(r, 0.0);
-    for (size_t i = 0; i < 3; i++) {
-      for (size_t j = 0; j < 3; j++) {
-        l_deriv_null_form.get(j, i) =
-            denom * (gsl::at(spin, i) * gsl::at(spin, j) / r +
-                     (x_minus_center.get(i) - 2.0 * r * null_form.get(i) -
-                      a_dot_x_over_rsquared * gsl::at(spin, i)) *
-                         deriv_log_r.get(j) * r);
-        if (i == j) {
-          l_deriv_null_form.get(j, i) += denom * r;
-        } else {  //  add denom*epsilon^ijk a_k
-          size_t k = (j + 1) % 3;
-          if (k == i) {  // j+1 = i (cyclic), so choose minus sign
-            k++;
-            k = k % 3;  // and set k to be neither i nor j
-            l_deriv_null_form.get(j, i) -= denom * gsl::at(spin, k);
-          } else {  // i+1 = j (cyclic), so choose plus sign
-            l_deriv_null_form.get(j, i) += denom * gsl::at(spin, k);
-          }
+  for (size_t i = 0; i < 3; i++) {
+    for (size_t j = 0; j < 3; j++) {
+      buffer.deriv_null_form.get(j, i) =
+          buffer.denom * (gsl::at(spin_a, i) * gsl::at(spin_a, j) / buffer.r +
+                          (buffer.x_minus_center.get(i) -
+                           2.0 * buffer.r * buffer.null_form.get(i) -
+                           buffer.a_dot_x_over_rsquared * gsl::at(spin_a, i)) *
+                              buffer.deriv_log_r.get(j) * buffer.r);
+      if (i == j) {
+        buffer.deriv_null_form.get(j, i) += buffer.denom * buffer.r;
+      } else {  //  add denom*epsilon^ijk a_k
+        size_t k = (j + 1) % 3;
+        if (k == i) {  // j+1 = i (cyclic), so choose minus sign
+          k++;
+          k = k % 3;  // and set k to be neither i nor j
+          buffer.deriv_null_form.get(j, i) -= buffer.denom * gsl::at(spin_a, k);
+        } else {  // i+1 = j (cyclic), so choose plus sign
+          buffer.deriv_null_form.get(j, i) += buffer.denom * gsl::at(spin_a, k);
         }
       }
     }
-    return l_deriv_null_form;
   }
-  ();
 
   // Here null_vector_0 is simply -1, but if you have a boosted solution,
   // then null_vector_0 can be something different, so we leave it coded
   // in instead of eliminating it.
-  const constexpr double null_vector_0 = -1.0;
-  const DataType lapse_squared = 1.0 / (1.0 + 2.0 * H * square(null_vector_0));
+  buffer.null_vector_0 = -1.0;
+  buffer.lapse_squared =
+      1.0 / (1.0 + 2.0 * buffer.H * square(buffer.null_vector_0));
+
+  // Need the following quantities we computed above to construct the
+  // Kerr-Schild solution:
+  // - lapse_squared
+  // - H
+  // - deriv_H
+  // - null_vector_0
+  // - null_form
+  // - deriv_null_form
 
   auto result =
       make_with_value<tuples::tagged_tuple_from_typelist<tags<DataType>>>(x,
                                                                           0.0);
 
-  get(get<gr::Tags::Lapse<DataType>>(result)) = sqrt(lapse_squared);
+  get(get<gr::Tags::Lapse<DataType>>(result)) = sqrt(buffer.lapse_squared);
 
   {
-    const DataType temp = -square(null_vector_0) *
-                          get(get<gr::Tags::Lapse<DataType>>(result)) *
-                          lapse_squared;
+    buffer.temp1 = -square(buffer.null_vector_0) *
+                   get(get<gr::Tags::Lapse<DataType>>(result)) *
+                   buffer.lapse_squared;
     for (size_t i = 0; i < 3; ++i) {
-      get<DerivLapse<DataType>>(result).get(i) = temp * deriv_H.get(i);
+      get<DerivLapse<DataType>>(result).get(i) =
+          buffer.temp1 * buffer.deriv_H.get(i);
     }
   }
 
   {
-    const DataType temp = -2.0 * H * null_vector_0 * lapse_squared;
+    buffer.temp1 =
+        -2.0 * buffer.H * buffer.null_vector_0 * buffer.lapse_squared;
     for (size_t i = 0; i < 3; ++i) {
       get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(result).get(i) =
-          temp * null_form.get(i);
+          buffer.temp1 * buffer.null_form.get(i);
     }
   }
 
   for (size_t m = 0; m < 3; ++m) {
     for (size_t i = 0; i < 3; ++i) {
       get<DerivShift<DataType>>(result).get(m, i) =
-          4.0 * H * null_form.get(i) * square(lapse_squared) *
-              cube(null_vector_0) * deriv_H.get(m) -
-          2.0 * lapse_squared * null_vector_0 *
-              (null_form.get(i) * deriv_H.get(m) +
-               H * deriv_null_form.get(m, i));
+          4.0 * buffer.H * buffer.null_form.get(i) *
+              square(buffer.lapse_squared) * cube(buffer.null_vector_0) *
+              buffer.deriv_H.get(m) -
+          2.0 * buffer.lapse_squared * buffer.null_vector_0 *
+              (buffer.null_form.get(i) * buffer.deriv_H.get(m) +
+               buffer.H * buffer.deriv_null_form.get(m, i));
     }
   }
 
@@ -222,7 +308,8 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
         i, i) = 1.;
     for (size_t j = i; j < 3; ++j) {  // Symmetry
       get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(result).get(
-          i, j) += 2.0 * H * null_form.get(i) * null_form.get(j);
+          i, j) +=
+          2.0 * buffer.H * buffer.null_form.get(i) * buffer.null_form.get(j);
     }
   }
 
@@ -230,9 +317,11 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
     for (size_t j = i; j < 3; ++j) {  // Symmetry
       for (size_t m = 0; m < 3; ++m) {
         get<DerivSpatialMetric<DataType>>(result).get(m, i, j) =
-            2.0 * null_form.get(i) * null_form.get(j) * deriv_H.get(m) +
-            2.0 * H * (null_form.get(i) * deriv_null_form.get(m, j) +
-                       null_form.get(j) * deriv_null_form.get(m, i));
+            2.0 * buffer.null_form.get(i) * buffer.null_form.get(j) *
+                buffer.deriv_H.get(m) +
+            2.0 * buffer.H *
+                (buffer.null_form.get(i) * buffer.deriv_null_form.get(m, j) +
+                 buffer.null_form.get(j) * buffer.deriv_null_form.get(m, i));
       }
     }
   }

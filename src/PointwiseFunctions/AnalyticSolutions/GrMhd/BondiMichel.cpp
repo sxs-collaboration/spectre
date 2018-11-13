@@ -96,7 +96,8 @@ BondiMichel::IntermediateVars<DataType>::IntermediateVars(
     const double in_polytropic_constant, const double in_polytropic_exponent,
     const double in_bernoulli_constant_squared_minus_one,
     const double in_sonic_radius, const double in_sonic_density,
-    const tnsr::I<DataType, 3>& x) noexcept
+    const tnsr::I<DataType, 3>& x, const bool need_spacetime,
+    const gr::Solutions::KerrSchild& background_spacetime) noexcept
     : radius((magnitude(x)).get()),
       rest_mass_density(make_with_value<DataType>(x, 0.0)),
       mass_accretion_rate_over_four_pi(in_mass_accretion_rate_over_four_pi),
@@ -129,6 +130,10 @@ BondiMichel::IntermediateVars<DataType>::IntermediateVars(
                                           : sonic_bound,
             current_radius < sonic_radius ? sonic_bound : sonic_density, 1.e-15,
             1.e-15);
+  }
+  if (need_spacetime) {
+    kerr_schild_soln = background_spacetime.variables(
+        x, 0.0, gr::Solutions::KerrSchild::tags<DataType>{});
   }
 }
 
