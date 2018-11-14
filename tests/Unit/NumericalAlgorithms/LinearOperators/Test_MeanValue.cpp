@@ -3,18 +3,22 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <array>
 #include <cmath>
-#include <cstddef>
+#include <cstdlib>
 #include <numeric>
+#include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/IndexIterator.hpp"
+#include "DataStructures/SliceIterator.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Side.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace {
 void test_mean_value() {
@@ -81,6 +85,14 @@ void test_mean_value_on_boundary() {
           }
           return temp;
         }();
+
+        const auto buffer_and_indices =
+            volume_and_slice_indices(mesh.extents());
+        const auto& indices = buffer_and_indices.second;
+
+        std::array<DataVector, 3> temp_buffers{
+            {DataVector(ny * nz), DataVector(nx * nz), DataVector(nx * ny)}};
+
         // slice away x
         CHECK(1.0 ==
               approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Upper)));
@@ -91,6 +103,20 @@ void test_mean_value_on_boundary() {
               approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Lower)));
         CHECK(0.0 ==
               approx(mean_value_on_boundary(u_quad, mesh, 0, Side::Lower)));
+
+        CHECK(1.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[0], indices[0].second,
+                                            u_lin, mesh, 0, Side::Upper)));
+        CHECK(0.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[0], indices[0].second,
+                                            u_quad, mesh, 0, Side::Upper)));
+
+        CHECK(-1.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[0], indices[0].first,
+                                            u_lin, mesh, 0, Side::Lower)));
+        CHECK(0.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[0], indices[0].first,
+                                            u_quad, mesh, 0, Side::Lower)));
 
         // slice away y
         CHECK(1.0 ==
@@ -103,6 +129,20 @@ void test_mean_value_on_boundary() {
         CHECK(0.0 ==
               approx(mean_value_on_boundary(u_quad, mesh, 1, Side::Lower)));
 
+        CHECK(1.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[1], indices[1].second,
+                                            u_lin, mesh, 1, Side::Upper)));
+        CHECK(0.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[1], indices[1].second,
+                                            u_quad, mesh, 1, Side::Upper)));
+
+        CHECK(-1.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[1], indices[1].first,
+                                            u_lin, mesh, 1, Side::Lower)));
+        CHECK(0.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[1], indices[1].first,
+                                            u_quad, mesh, 1, Side::Lower)));
+
         // slice away z
         CHECK(1.0 ==
               approx(mean_value_on_boundary(u_lin, mesh, 2, Side::Upper)));
@@ -113,6 +153,20 @@ void test_mean_value_on_boundary() {
               approx(mean_value_on_boundary(u_lin, mesh, 2, Side::Lower)));
         CHECK(0.0 ==
               approx(mean_value_on_boundary(u_quad, mesh, 2, Side::Lower)));
+
+        CHECK(1.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[2], indices[2].second,
+                                            u_lin, mesh, 2, Side::Upper)));
+        CHECK(0.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[2], indices[2].second,
+                                            u_quad, mesh, 2, Side::Upper)));
+
+        CHECK(-1.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[2], indices[2].first,
+                                            u_lin, mesh, 2, Side::Lower)));
+        CHECK(0.0 ==
+              approx(mean_value_on_boundary(&temp_buffers[2], indices[2].first,
+                                            u_quad, mesh, 2, Side::Lower)));
       }
     }
   }
@@ -138,6 +192,13 @@ void test_mean_value_on_boundary_1d() {
     // slice away x
     CHECK(1.0 == approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Upper)));
     CHECK(-1.0 == approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Lower)));
+
+    // test overload with slice indices
+    DataVector temp{};
+    CHECK(1.0 == approx(mean_value_on_boundary(&temp, {}, u_lin, mesh, 0,
+                                               Side::Upper)));
+    CHECK(-1.0 == approx(mean_value_on_boundary(&temp, {}, u_lin, mesh, 0,
+                                                Side::Lower)));
   }
 }
 }  // namespace
