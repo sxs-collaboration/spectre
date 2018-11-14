@@ -57,7 +57,10 @@ namespace intrp {
 ///                                  `initialization_tags`
 ///                                  which is a `tmpl::list` of the tags that
 ///                                  are added by `initialize`.
-/// - post_interpolation_callback:   a struct with a function
+/// - post_interpolation_callback:   a struct with a type alias
+///                                  `const_global_cache_tags` (listing tags
+///                                  that should be read from option parsing)
+///                                  and with a function
 ///```
 ///       static void apply(const DataBox<DbTags>&,
 ///                         const intrp::ConstGlobalCache<Metavariables>&,
@@ -89,7 +92,9 @@ struct InterpolationTarget {
   using options = tmpl::list<::OptionTags::DomainCreator<
       Metavariables::domain_dim,
       typename Metavariables::domain_frame>>;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
+      tmpl::list<typename InterpolationTargetTag::compute_target_points,
+                 typename InterpolationTargetTag::post_interpolation_callback>>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache,
