@@ -5,14 +5,16 @@
 
 #include <array>
 #include <boost/functional/hash.hpp>  // IWYU pragma: keep
-#include <cstddef>
+#include <cstdlib>
 #include <limits>
+#include <memory>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Element.hpp"  // IWYU pragma: keep
@@ -22,12 +24,13 @@
 #include "Options/Options.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-class DataVector;
 template <size_t VolumeDim>
 class Direction;
 template <size_t VolumeDim>
@@ -90,7 +93,8 @@ MinmodResult minmod_tvbm(double a, double b, double c,
 template <size_t VolumeDim>
 bool limit_one_tensor(
     gsl::not_null<DataVector*> tensor_begin,
-    gsl::not_null<DataVector*> tensor_end,
+    gsl::not_null<DataVector*> tensor_end, gsl::not_null<DataVector*> u_lin,
+    gsl::not_null<std::array<DataVector, VolumeDim>*> temp_boundary_buffer,
     const SlopeLimiters::MinmodType& minmod_type, double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
@@ -355,10 +359,36 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       return false;
     }
 
+    // Allocate temporary buffer to be used in `limit_one_tensor` where we
+    // otherwise make 1 + 2 * VolumeDim allocations per tensor component for
+    // MUSCL and LambdaPi1, and 1 + 4 * VolumeDim allocations per tensor
+    // component for LambdaPiN.
+    const size_t half_number_boundary_points = alg::accumulate(
+        alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st),
+        0_st, [&mesh](const size_t state, const size_t d) noexcept {
+          return state + mesh.slice_away(d).number_of_grid_points();
+        });
+    std::unique_ptr<double[], decltype(&free)> temp_buffer(
+        static_cast<double*>(
+            malloc(sizeof(double) * (mesh.number_of_grid_points() +
+                                     half_number_boundary_points))),
+        &free);
+    size_t alloc_offset = 0;
+    DataVector u_lin(temp_buffer.get() + alloc_offset,
+                     mesh.number_of_grid_points());
+    alloc_offset += mesh.number_of_grid_points();
+    std::array<DataVector, VolumeDim> temp_boundary_buffer{};
+    for (size_t d = 0; d < VolumeDim; ++d) {
+      const size_t num_points = mesh.slice_away(d).number_of_grid_points();
+      temp_boundary_buffer[d].set_data_ref(temp_buffer.get() + alloc_offset,
+                                           num_points);
+      alloc_offset += num_points;
+    }
+
     bool limiter_activated = false;
     const auto wrap_limit_one_tensor = [
       this, &limiter_activated, &element, &mesh, &logical_coords, &element_size,
-      &neighbor_data
+      &neighbor_data, &u_lin, &temp_boundary_buffer
     ](auto tag, const auto& tensor) noexcept {
       // Because we hide the types of Tags from limit_one_tensor (we do this so
       // that its implementation isn't templated on Tags and can be moved out of
@@ -405,9 +435,9 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
 
       limiter_activated =
           Minmod_detail::limit_one_tensor<VolumeDim>(
-              tensor_begin, tensor_end, minmod_type_, tvbm_constant_, element,
-              mesh, logical_coords, element_size, neighbor_tensor_begin,
-              neighbor_sizes) or
+              tensor_begin, tensor_end, &u_lin, &temp_boundary_buffer,
+              minmod_type_, tvbm_constant_, element, mesh, logical_coords,
+              element_size, neighbor_tensor_begin, neighbor_sizes) or
           limiter_activated;
       return '0';
     };

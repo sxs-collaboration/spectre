@@ -48,6 +48,9 @@ template <size_t VolumeDim>
 bool limit_one_tensor(
     const gsl::not_null<DataVector*> tensor_begin,
     const gsl::not_null<DataVector*> tensor_end,
+    const gsl::not_null<DataVector*> u_lin,
+    const gsl::not_null<std::array<DataVector, VolumeDim>*>
+        temp_boundary_buffer,
     const SlopeLimiters::MinmodType& minmod_type, const double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
@@ -154,8 +157,10 @@ bool limit_one_tensor(
     if (minmod_type == SlopeLimiters::MinmodType::LambdaPiN) {
       bool u_needs_limiting = false;
       for (size_t d = 0; d < VolumeDim; ++d) {
-        const double u_lower = mean_value_on_boundary(u, mesh, d, Side::Lower);
-        const double u_upper = mean_value_on_boundary(u, mesh, d, Side::Upper);
+        const double u_lower = mean_value_on_boundary(
+            &(gsl::at(*temp_boundary_buffer, d)), u, mesh, d, Side::Lower);
+        const double u_upper = mean_value_on_boundary(
+            &(gsl::at(*temp_boundary_buffer, d)), u, mesh, d, Side::Upper);
         const double diff_lower = difference_to_neighbor(d, Side::Lower);
         const double diff_upper = difference_to_neighbor(d, Side::Upper);
 
@@ -184,15 +189,15 @@ bool limit_one_tensor(
       }
     }
 
-    const DataVector u_lin = linearize(u, mesh);
+    linearize(u_lin, u, mesh);
     bool this_component_was_limited = false;
     auto u_limited_slopes = make_array<VolumeDim>(0.0);
 
     for (size_t d = 0; d < VolumeDim; ++d) {
-      const double u_lower =
-          mean_value_on_boundary(u_lin, mesh, d, Side::Lower);
-      const double u_upper =
-          mean_value_on_boundary(u_lin, mesh, d, Side::Upper);
+      const double u_lower = mean_value_on_boundary(
+          &(gsl::at(*temp_boundary_buffer, d)), *u_lin, mesh, d, Side::Lower);
+      const double u_upper = mean_value_on_boundary(
+          &(gsl::at(*temp_boundary_buffer, d)), *u_lin, mesh, d, Side::Upper);
 
       // Divide by element's width (2.0 in logical coordinates) to get a slope
       const double local_slope = 0.5 * (u_upper - u_lower);
@@ -230,6 +235,8 @@ bool limit_one_tensor(
 // Explicit instantiations
 template bool limit_one_tensor<1>(
     const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>,
+    const gsl::not_null<DataVector*>,
+    const gsl::not_null<std::array<DataVector, 1>*>,
     const SlopeLimiters::MinmodType&, const double, const Element<1>&,
     const Mesh<1>&, const tnsr::I<DataVector, 1, Frame::Logical>&,
     const std::array<double, 1>&,
@@ -241,6 +248,8 @@ template bool limit_one_tensor<1>(
         boost::hash<std::pair<Direction<1>, ElementId<1>>>>&) noexcept;
 template bool limit_one_tensor<2>(
     const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>,
+    const gsl::not_null<DataVector*>,
+    const gsl::not_null<std::array<DataVector, 2>*>,
     const SlopeLimiters::MinmodType&, const double, const Element<2>&,
     const Mesh<2>&, const tnsr::I<DataVector, 2, Frame::Logical>&,
     const std::array<double, 2>&,
@@ -252,6 +261,8 @@ template bool limit_one_tensor<2>(
         boost::hash<std::pair<Direction<2>, ElementId<2>>>>&) noexcept;
 template bool limit_one_tensor<3>(
     const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>,
+    const gsl::not_null<DataVector*>,
+    const gsl::not_null<std::array<DataVector, 3>*>,
     const SlopeLimiters::MinmodType&, const double, const Element<3>&,
     const Mesh<3>&, const tnsr::I<DataVector, 3, Frame::Logical>&,
     const std::array<double, 3>&,
