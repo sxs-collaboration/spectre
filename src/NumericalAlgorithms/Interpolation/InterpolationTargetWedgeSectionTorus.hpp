@@ -148,6 +148,12 @@ struct WedgeSectionTorus {
   bool use_uniform_radial_grid;
   bool use_uniform_theta_grid;
 };
+
+bool operator==(const WedgeSectionTorus& lhs,
+                const WedgeSectionTorus& rhs) noexcept;
+bool operator!=(const WedgeSectionTorus& lhs,
+                const WedgeSectionTorus& rhs) noexcept;
+
 }  // namespace OptionHolders
 
 namespace Actions {
