@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
     ComputeGhQuantities.cpp
     ComputeSpacetimeQuantities.cpp
     IndexManipulation.cpp
+    KerrSchildCoords.cpp
     Ricci.cpp
     )
 
