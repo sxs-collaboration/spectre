@@ -26,7 +26,7 @@ void abort_with_error_message(const char* expression, const char* file,
   // We use printf instead of abort to print the error message because in the
   // case of an executable not using Charm++'s main function the call to abort
   // will segfault before anything is printed.
-  Parallel::printf(os.str());
+  Parallel::printf_error(os.str());
   Parallel::abort("");
 }
 
@@ -46,6 +46,6 @@ void abort_with_error_message(const char* file, const int line,
   // We use printf instead of abort to print the error message because in the
   // case of an executable not using Charm++'s main function the call to abort
   // will segfault before anything is printed.
-  Parallel::printf(os.str());
+  Parallel::printf_error(os.str());
   Parallel::abort("");
 }

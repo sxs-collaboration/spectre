@@ -69,10 +69,19 @@ inline const typename std::string::value_type* get_printable_type(
   return t.c_str();
 }
 
-template <typename... Ts>
-inline void print_helper(const std::string& format, Ts&&... t) {
-  CkPrintf(format.c_str(),                               // NOLINT
-           get_printable_type(std::forward<Ts>(t))...);  // NOLINT
+template <typename Printer, typename... Ts>
+inline void print_helper(Printer&& printer, const std::string& format,
+                         Ts&&... t) {
+  printer(format.c_str(), get_printable_type(std::forward<Ts>(t))...);
+}
+
+template <typename Printer, typename... Args>
+inline void call_printer(Printer&& printer, const std::string& format,
+                         Args&&... args) {
+  disable_floating_point_exceptions();
+  print_helper(printer, format,
+               stream_object_to_string(std::forward<Args>(args))...);
+  enable_floating_point_exceptions();
 }
 }  // namespace detail
 
@@ -89,9 +98,19 @@ inline void print_helper(const std::string& format, Ts&&... t) {
  */
 template <typename... Args>
 inline void printf(const std::string& format, Args&&... args) {
-  disable_floating_point_exceptions();
-  detail::print_helper(
-      format, detail::stream_object_to_string(std::forward<Args>(args))...);
-  enable_floating_point_exceptions();
+  detail::call_printer([](auto... a) noexcept { CkPrintf(a...); }, format,
+                       std::forward<Args>(args)...);
+}
+
+/*!
+ * \ingroup ParallelGroup
+ * \brief Print an atomic message to stderr with C printf usage.
+ *
+ * See Parallel::printf for details.
+ */
+template <typename... Args>
+inline void printf_error(const std::string& format, Args&&... args) {
+  detail::call_printer([](auto... a) noexcept { CkError(a...); }, format,
+                       std::forward<Args>(args)...);
 }
 }  // namespace Parallel

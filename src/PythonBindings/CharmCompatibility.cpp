@@ -24,6 +24,20 @@ void CmiPrintf(const char* fmt, ...) {
   va_end(args);  // NOLINT
 }
 
+__attribute__ ((format (printf, 1, 2)))
+// NOLINTNEXTLINE(cert-dcl50-cpp)
+void CmiError(const char* fmt, ...) {
+  va_list args;
+  // clang-tidy: cppcoreguidelines-pro-type-vararg,
+  // cppcoreguidelines-pro-bounds-array-to-pointer-decay
+  va_start(args, fmt);  // NOLINT
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+  vfprintf(stderr, fmt, args);
+  // clang-tidy: cppcoreguidelines-pro-type-vararg,
+  // cppcoreguidelines-pro-bounds-array-to-pointer-decay
+  va_end(args);  // NOLINT
+}
+
 int CmiMyPe() { return 0; }
 
 #pragma GCC diagnostic push
