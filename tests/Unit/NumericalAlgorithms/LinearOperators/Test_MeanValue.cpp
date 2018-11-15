@@ -16,8 +16,8 @@
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
-SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
-                  "[NumericalAlgorithms][LinearOperators][Unit]") {
+namespace {
+void test_mean_value() {
   constexpr size_t min_extents =
       Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>;
@@ -49,8 +49,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary",
-                  "[NumericalAlgorithms][LinearOperators][Unit]") {
+void test_mean_value_on_boundary() {
   constexpr size_t min_extents =
       Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>;
@@ -119,8 +118,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary1D",
-                  "[NumericalAlgorithms][LinearOperators][Unit]") {
+void test_mean_value_on_boundary_1d() {
   constexpr size_t min_extents =
       Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>;
@@ -141,4 +139,12 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValueOnBoundary1D",
     CHECK(1.0 == approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Upper)));
     CHECK(-1.0 == approx(mean_value_on_boundary(u_lin, mesh, 0, Side::Lower)));
   }
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.MeanValue",
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
+  SECTION("Mean Value") { test_mean_value(); }
+  SECTION("Mean Value on Boundary") { test_mean_value_on_boundary(); }
+  SECTION("Mean Value on Boundary 1d") { test_mean_value_on_boundary_1d(); }
 }
