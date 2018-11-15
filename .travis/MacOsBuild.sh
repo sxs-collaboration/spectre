@@ -6,7 +6,7 @@
 export PATH=$DEP_CACHE/mc/bin:$PATH
 source activate osx_env
 
-# We haven't figured out how to get ccache working on macOS properly either
+# We haven't figured out how to get ccache working on macOS properly, either
 # with or without a PCH.
 export USE_PCH=ON
 
@@ -38,8 +38,8 @@ fi
 cd $SPECTRE_BUILD_DIR
 ccache -z
 
-# We don't need debug symbols during CI and we are able to reduce memory
-# usage by 1.5x during compilation.
+# We don't need debug symbols during CI, so we turn them off to reduce memory
+# usage (by 1.5x) during compilation.
 cmake -D CHARM_ROOT=$DEP_CACHE/charm-${CHARM_VERSION} \
       -D BLAZE_ROOT=$DEP_CACHE/blaze-${BLAZE_VERSION}/ \
       -D BRIGAND_ROOT=$DEP_CACHE/brigand\
