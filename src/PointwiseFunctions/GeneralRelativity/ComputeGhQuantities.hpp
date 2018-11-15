@@ -271,4 +271,149 @@ Scalar<DataType> time_deriv_of_lapse(
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+
+// @{
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes spatial derivatives of the shift vector from
+ *        the generalized harmonic and geometric variables
+ *
+ * \details Spatial derivatives of the shift vector \f$N^i\f$ can be derived
+ * from the following steps:
+ * \f{align*}
+ * \partial_i N^j
+ *  =& g^{jl} g_{kl} \partial_i N^k \\
+ *  =& g^{jl} (N^k \partial_i g_{lk}
+ *             + g_{kl}\partial_i N^k - N^k \partial_i g_{kl}) \\
+ *  =& g^{jl} (\partial_i N_l - N^k \partial_i g_{lk}) (\because g^{j0} = 0) \\
+ *  =& g^{ja} (\partial_i \psi_{a0} - N^k \partial _i \psi_{ak}) \\
+ *  =& N g^{ja} t^b \partial_i \psi_{ab} \\
+ *  =& (g^{ja} - t^j t^a) N t^b \Phi_{iab} - 2 t^j \partial_i N \\
+ *  =& \psi^{ja} N t^b \Phi_{iab} - 2 t^j \partial_i N \\
+ *  =& N (\psi^{ja} + t^j t^a) t^b \Phi_{iab}.
+ * \f}
+ * where we used the equation from \ref spatial_deriv_of_lapse for
+ * \f$\partial_i N\f$.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+void spatial_deriv_of_shift(
+    gsl::not_null<tnsr::iJ<DataType, SpatialDim, Frame>*> deriv_shift,
+    const Scalar<DataType>& lapse,
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::iJ<DataType, SpatialDim, Frame> spatial_deriv_of_shift(
+    const Scalar<DataType>& lapse,
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+// @}
+
+// @{
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes time derivative of the shift vector from
+ *        the generalized harmonic and geometric variables
+ *
+ * \details The time derivative of \f$ N^i \f$ can be derived from the following
+ * steps:
+ * \f{align*}
+ * \partial_0 N^i
+ *  =& g^{ik} \partial_0 (g_{kj} N^j) - N^j g^{ik} \partial_0 g_{kj} \\
+ *  =& N g^{ik} t^b \partial_0 \psi_{kb} \\
+ *  =& N g^{ik} t^b (\partial_0 - N^j\partial_j) \psi_{kb}
+ *                  + N g^{ik} t^b N^j\partial_j \psi_{kb} \\
+ *  =& -N^2 t^b\Pi_{kb} g^{ik} + N N^j t^b\Phi_{jkb} g^{ik} \\
+ *  =& -N g^{ik} t^b (N \Pi_{kb} - N^j \Phi_{jkb}) \\
+ * \f}
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+void time_deriv_of_shift(
+    gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> dt_shift,
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::I<DataType, SpatialDim, Frame> time_deriv_of_shift(
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+// @}
+
+// @{
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes time derivative of index lowered shift from generalized
+ *        harmonic variables, spatial metric and its time derivative.
+ *
+ * \details The time derivative of \f$ N_i \f$ is given by:
+ * \f{align*}
+ *  \partial_0 N_i = g_{ij} \partial_0 N^j + N^j \partial_0 g_{ij}
+ * \f}
+ * where the first term is obtained from `time_deriv_of_shift()`, and the latter
+ * is a user input.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+void time_deriv_of_lower_shift(
+    gsl::not_null<tnsr::i<DataType, SpatialDim, Frame>*> dt_lower_shift,
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::i<DataType, SpatialDim, Frame> time_deriv_of_lower_shift(
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+// @}
+
+// @{
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes spacetime derivatives of the norm of the shift vector.
+ *
+ * \details The same is computed as:
+ * \f{align*}
+ * \partial_a (N^i N_i) = (N_i \partial_0 N^i + N^i \partial_0 N_i,
+ *                               N_i \partial_j N^i + N^i \partial_j N_i)
+ * \f}
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+void spacetime_deriv_of_norm_of_shift(
+    gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_norm_of_shift,
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+// @}
 }  // namespace GeneralizedHarmonic
