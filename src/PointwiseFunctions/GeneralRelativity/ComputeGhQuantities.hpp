@@ -100,10 +100,10 @@ tnsr::a<DataType, SpatialDim, Frame> gauge_source(
  *
  * \details If \f$ \Pi_{ab} \f$ and \f$ \Phi_{iab} \f$ are the generalized
  * harmonic conjugate momentum and spatial derivative variables, and if
- * \f$n^a\f$ is the spacetime normal vector, then the extrinsic curvature
+ * \f$t^a\f$ is the spacetime normal vector, then the extrinsic curvature
  * is computed as
  * \f{align}
- *     K_{ij} &= \frac{1}{2} \Pi_{ij} + \Phi_{(ij)a} n^a
+ *     K_{ij} &= \frac{1}{2} \Pi_{ij} + \Phi_{(ij)a} t^a
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -129,4 +129,71 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes spatial derivatives of lapse (N) from the generalized
+ *        harmonic variables and spacetime unit normal 1-form.
+ *
+ * \details If the generalized harmonic conjugate momentum and spatial
+ * derivative variables are \f$\Pi_{ab} = -t^c \partial_c \psi_{ab} \f$ and
+ * \f$\Phi_{iab} = \partial_i \psi_{ab} \f$, the spatial derivatives of N
+ * can be obtained from:
+ * \f{align*}
+ *  t^a t^b \Phi_{iab} = -\frac{1}{2N} [\partial_i (-N^2 + N_jN^j)-
+ *                               2 N^j \partial_i N_j
+ *                               + N^j N^k \partial_i g_{jk}]
+ *                     = -\frac{2}{N} \partial_i N,
+ * \f}
+ * since
+ * \f[
+ * \partial_i (N_jN^j) = 2N^j \partial_i N_j - N^j N^k \partial_i g_{jk}.
+ * \f]
+ *
+ * \f[
+ * \Longrightarrow \partial_i N = -(N/2) t^a \Phi_{iab} t^b
+ * \f]
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::i<DataType, SpatialDim, Frame> spatial_deriv_of_lapse(
+    const Scalar<DataType>& lapse,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes time derivative of lapse (N) from the generalized
+ *        harmonic variables, lapse, shift and the spacetime unit normal 1-form.
+ *
+ * \details Let the generalized harmonic conjugate momentum and spatial
+ * derivative variables be \f$\Pi_{ab} = -t^c \partial_c \psi_{ab} \f$ and
+ * \f$\Phi_{iab} = \partial_i \psi_{ab} \f$, and the operator
+ * \f$D := \partial_0 - N^k \partial_k \f$. The time derivative of N is then:
+ * \f{align*}
+ *  \frac{1}{2} N^2 t^a t^b \Pi_{ab} - \frac{1}{2} N N^i t^a t^b \Phi_{iab}
+ *  =& \frac{1}{2} N^2 t^a t^b t^c \partial_c \psi_{ab}
+ *       - \frac{1}{2} N N^i (-(2/N) \partial_i N) \\
+ *  =& \frac{1}{2} N^2 [-(1/N^3) D[g_{jk} N^j N^k - N^2] \\
+ *           &- (N^j N^k / N^3)D[g_{jk}] \\
+ *           &+ 2 (N^j / N^3) D[g_{jk} N^k] + (2 / N^2)(N^i \partial_i N)] \\
+ *  =& \frac{1}{2N} [-D[g_{jk}N^jN^k - N^2] - N^jN^k D[g_{jk}]
+ *            + 2N N^k\partial_k N + 2N^j D[g_{jk}N^k]] \\
+ *  =& D[N] + N^k\partial_k N \\
+ *  =& \partial_0 N
+ * \f}
+ * where the simplification done for \f$\partial_i N\f$ is used to substitute
+ * for the second term (\f$\frac{1}{2} N N^i t^a t^b \Phi_{iab}\f$).
+ *
+ * Thus,
+ * \f[
+ *  \partial_0 N = (N/2)(N t^a t^b \Pi_{ab} - N^i t^a t^b \Phi_{iab})
+ * \f]
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+Scalar<DataType> time_deriv_of_lapse(
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
 }  // namespace GeneralizedHarmonic

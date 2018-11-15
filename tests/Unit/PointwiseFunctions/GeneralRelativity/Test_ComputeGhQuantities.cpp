@@ -3,14 +3,29 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
+#include <limits>
+#include <memory>
+#include <pup.h>
 #include <random>
 
+#include "DataStructures/DataBox/Prefixes.hpp" // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/LogicalCoordinates.hpp"
+#include "Domain/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
@@ -102,6 +117,92 @@ void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
   CHECK_ITERABLE_APPROX(deriv_spatial_metric, deriv_spatial_metric_test);
 }
 
+template <typename DataType, size_t SpatialDim, typename Frame>
+void test_lapse_deriv_functions(const DataVector& used_for_size) noexcept {
+  // spatial_deriv_of_lapse
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::i<DataType, SpatialDim, Frame> (*)(
+        const Scalar<DataType>&,
+        const tnsr::A<DataType, SpatialDim, Frame>&,
+        const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
+          &::GeneralizedHarmonic::spatial_deriv_of_lapse<SpatialDim, Frame,
+          DataType>), "TestFunctions", "deriv_lapse",
+      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
+  // time_deriv_of_lapse
+  pypp::check_with_random_values<1>(
+      static_cast<Scalar<DataType> (*)(
+        const Scalar<DataType>&,
+        const tnsr::I<DataType, SpatialDim, Frame>&,
+        const tnsr::A<DataType, SpatialDim, Frame>&,
+        const tnsr::iaa<DataType, SpatialDim, Frame>&,
+        const tnsr::aa<DataType, SpatialDim, Frame>&)>(
+      &::GeneralizedHarmonic::time_deriv_of_lapse<SpatialDim, Frame, DataType>),
+      "TestFunctions", "dt_lapse",
+      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
+}
+
+// Test computation of derivs of lapse by comparing to Kerr-Schild
+template <typename Solution>
+void test_lapse_deriv_functions_analytic(
+    const Solution& solution, const size_t grid_size_each_dimension,
+    const std::array<double, 3>& lower_bound,
+    const std::array<double, 3>& upper_bound) noexcept {
+  // Setup grid
+  const size_t spatial_dim = 3;
+  const size_t data_size = pow<spatial_dim>(grid_size_each_dimension);
+  Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+               Spectral::Quadrature::GaussLobatto};
+
+  using Affine = CoordinateMaps::Affine;
+  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  const auto coord_map =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+          Affine{-1., 1., lower_bound[0], upper_bound[0]},
+          Affine{-1., 1., lower_bound[1], upper_bound[1]},
+          Affine{-1., 1., lower_bound[2], upper_bound[2]},
+      });
+
+  // Setup coordinates
+  const auto x_logical = logical_coordinates(mesh);
+  const auto x = coord_map(x_logical);
+  // Arbitrary time for time-independent solution.
+  const double t = std::numeric_limits<double>::signaling_NaN();
+
+  // Evaluate analytic solution
+  const auto vars =
+      solution.variables(x, t, typename Solution::template tags<DataVector>{});
+  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
+  const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<>>>(vars);
+  const auto& d_lapse =
+      get<typename Solution::template DerivLapse<DataVector>>(vars);
+  const auto& shift = get<gr::Tags::Shift<spatial_dim>>(vars);
+  const auto& d_shift =
+      get<typename Solution::template DerivShift<DataVector>>(vars);
+  const auto& dt_shift = get<Tags::dt<gr::Tags::Shift<spatial_dim>>>(vars);
+  const auto& spatial_metric = get<gr::Tags::SpatialMetric<spatial_dim>>(vars);
+  const auto& dt_spatial_metric =
+      get<Tags::dt<gr::Tags::SpatialMetric<spatial_dim>>>(vars);
+  const auto& d_spatial_metric =
+      get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
+
+  // Get ingredients
+  const auto& phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
+    spatial_metric, d_spatial_metric);
+  const auto& pi = GeneralizedHarmonic::pi(lapse, dt_lapse, shift, dt_shift,
+    spatial_metric, dt_spatial_metric, phi);
+  const auto& normal_vector = gr::spacetime_normal_vector(lapse, shift);
+
+  // Check that locally computed derivs match returned ones
+  const auto& d0_lapse_from_func = GeneralizedHarmonic::time_deriv_of_lapse<
+    spatial_dim, Frame::Inertial, DataVector>(lapse, shift, normal_vector, phi,
+      pi);
+
+  const auto& d_lapse_from_func = GeneralizedHarmonic::spatial_deriv_of_lapse<
+    spatial_dim, Frame::Inertial, DataVector>(lapse, normal_vector, phi);
+
+  CHECK_ITERABLE_APPROX(dt_lapse, d0_lapse_from_func);
+  CHECK_ITERABLE_APPROX(d_lapse, d_lapse_from_func);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
@@ -115,4 +216,24 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_gauge_source, (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(
       test_compute_extrinsic_curvature_and_deriv_metric, (1, 2, 3));
+
+  const DataVector used_for_size(20);
+  test_lapse_deriv_functions<DataVector, 1, Frame::Grid>(used_for_size);
+  test_lapse_deriv_functions<DataVector, 2, Frame::Grid>(used_for_size);
+  test_lapse_deriv_functions<DataVector, 3, Frame::Grid>(used_for_size);
+  test_lapse_deriv_functions<DataVector, 1, Frame::Inertial>(used_for_size);
+  test_lapse_deriv_functions<DataVector, 2, Frame::Inertial>(used_for_size);
+  test_lapse_deriv_functions<DataVector, 3, Frame::Inertial>(used_for_size);
+
+  const double mass = 2.;
+  const std::array<double, 3> spin{{0.3, 0.5, 0.2}};
+  const std::array<double, 3> center{{0.2, 0.3, 0.4}};
+  const gr::Solutions::KerrSchild solution(mass, spin, center);
+
+  const size_t grid_size = 8;
+  const std::array<double, 3> lower_bound{{0.82, 1.24, 1.32}};
+  const std::array<double, 3> upper_bound{{0.8, 1.22, 1.30}};
+
+  test_lapse_deriv_functions_analytic(solution, grid_size, lower_bound,
+    upper_bound);
 }

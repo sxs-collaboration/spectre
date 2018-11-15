@@ -124,6 +124,22 @@ def gh_gauge_source(lapse, dt_lapse, deriv_lapse, shift, dt_shift, deriv_shift,
     return source
 
 
+def deriv_lapse(lapse, spacetime_unit_normal, phi):
+    t1 = np.einsum('iab,b->ia', phi, spacetime_unit_normal)
+    t1 = np.einsum('ia,a->i', t1, spacetime_unit_normal)
+    return -0.5 * lapse * t1
+
+
+def dt_lapse(lapse, shift, spacetime_unit_normal, phi, pi):
+    t1 = np.einsum('ab,b->a', pi, spacetime_unit_normal)
+    t1 = np.einsum('a,a', t1, spacetime_unit_normal)
+    t1 *= lapse
+    t2 = np.einsum('iab,b->ia', phi, spacetime_unit_normal)
+    t2 = np.einsum('ia,a->i', t2, spacetime_unit_normal)
+    t2 = np.einsum('i,i', t2, shift)
+    return 0.5 * lapse * (t1 - t2)
+
+
 # End tests for Test_ComputeGhQuantities.cpp
 
 # Begin tests for Test_Ricci.cpp
