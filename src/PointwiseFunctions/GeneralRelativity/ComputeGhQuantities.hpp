@@ -10,6 +10,13 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
+/// \cond
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
+/// \endcond
+
 namespace GeneralizedHarmonic {
 /*!
  * \ingroup GeneralRelativityGroup
@@ -45,7 +52,7 @@ tnsr::iaa<DataType, SpatialDim, Frame> phi(
  *
  * \details If \f$ N, N^i\f$ are the lapse and shift
  * respectively, and \f$ \Phi_{iab} = \partial_i \psi_{ab} \f$ then
- * \f$\Pi_{\mu\nu} = -(1/N) ( \partial_t \psi_{\mu\nu}  -
+ * \f$\Pi_{\mu\nu} = -\frac{1}{N} ( \partial_t \psi_{\mu\nu}  -
  *      N^m \Phi_{m\mu\nu}) \f$ where \f$ \partial_t \psi_{ab} \f$ is computed
  * as
  *
@@ -112,6 +119,7 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
 
+// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes spatial derivatives of the spatial metric from
@@ -120,15 +128,82 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
  * \details If \f$ \Phi_{kab} \f$ is the generalized
  * harmonic spatial derivative variable, then the derivatives of the
  * spatial metric are
- * \f{align}
- *      \partial_k g_{ij} &= \Phi_{kij}
- * \f}
+ * \f[
+ *      \partial_k g_{ij} = \Phi_{kij}
+ * \f]
  *
  * This quantity is needed for computing spatial Christoffel symbols.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
+void deriv_spatial_metric(
+    gsl::not_null<tnsr::ijj<DataType, SpatialDim, Frame>*> d_spatial_metric,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+// @}
+
+// @{
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes time derivative of the spatial metric.
+ *
+ * \details Let the generalized harmonic conjugate momentum and spatial
+ * derivative variables be \f$\Pi_{ab} = -t^c \partial_c \psi_{ab} \f$ and
+ * \f$\Phi_{iab} = \partial_i \psi_{ab} \f$. As \f$ t_i \equiv 0 \f$. The time
+ * derivative of the spatial metric is given by the time derivative of the
+ * spatial sector of the spacetime metric, i.e.
+ * \f$ \partial_0 g_{ij} = \partial_0 \psi_{ij} \f$.
+ *
+ * To compute the latter, we use the evolution equation for \f$ \psi_{ij} \f$,
+ * c.f. eq.(35) of "A New Generalized Harmonic Evolution System" by
+ * Lindblom et. al \cite Lindblom2005qh (with \f$\gamma_1 = -1\f$):
+ *
+ * \f[
+ * \partial_0 \psi_{ab} = - N \Pi_{ab} + N^k \Phi_{kab}
+ * \f]
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+void time_deriv_of_spatial_metric(
+    gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> dt_spatial_metric,
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::ii<DataType, SpatialDim, Frame> time_deriv_of_spatial_metric(
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+// @}
+
+// @{
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes spacetime derivatives of the determinant of spatial metric,
+ *        using the generalized harmonic variables, spatial metric, and its
+ *        time derivative.
+ *
+ * \details Using the relation \f$ \partial_a g = g g^{jk} \partial_a g_{jk} \f$
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+void spacetime_deriv_of_det_spatial_metric(
+    gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> d4_det_spatial_metric,
+    const Scalar<DataType>& sqrt_det_spatial_metric,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
+    const Scalar<DataType>& sqrt_det_spatial_metric,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+// @}
 
 /*!
  * \ingroup GeneralRelativityGroup
