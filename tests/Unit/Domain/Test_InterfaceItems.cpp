@@ -271,7 +271,7 @@ struct Compute : db::ComputeTag {
   static auto function(const Mesh<VolumeDim>& mesh) {
     auto ret = Variables<tmpl::list<Var<VolumeDim>, Var<10 * VolumeDim>>>(
         mesh.number_of_grid_points(), VolumeDim);
-    get(get<Var<10 * VolumeDim>>(ret)) *= 5;
+    get(get<Var<10 * VolumeDim>>(ret)) *= 5.0;
     return ret;
   }
   using argument_tags = tmpl::list<Tags::Mesh<VolumeDim>>;

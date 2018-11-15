@@ -22,6 +22,69 @@
   new _TYPE_T[_SIZE_V]  // NOLINT
 #define SPECTRE_BLAZE_DEALLOCATOR blaze::ArrayDelete()
 
+// Blaze version compatibility definitions:
+// between Blaze 3.2 and 3.4, there have been several minor changes to type
+// definitions. Here, we define the aliases to the appropriate tokens for the
+// respective versions.
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION == 2))
+const bool blaze_unaligned = blaze::unaligned;
+template <typename T>
+using BlazePow = blaze::Pow<T>;
+#else  // we only support blaze 3.2+, so this is all later versions
+const bool blaze_unaligned = blaze::unaligned != 0;
+template <typename T>
+using BlazePow = blaze::UnaryPow<T>;
+#endif
+
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
+template <typename T>
+using blaze_enable_if_t = blaze::EnableIf_<T>;
+template <typename T>
+using blaze_remove_const_t = blaze::RemoveConst_<T>;
+template <typename T>
+using blaze_simd_trait_t = blaze::SIMDTrait_<T>;
+template <typename T>
+using blaze_element_type_t = blaze::ElementType_<T>;
+template <typename T>
+using blaze_result_type_t = blaze::ResultType_<T>;
+template <typename T1, typename T2>
+using blaze_mult_trait_t = blaze::MultTrait_<T1, T2>;
+template <typename T1, typename T2>
+using blaze_div_trait_t = blaze::DivTrait_<T1, T2>;
+template <typename T1, typename T2>
+using blaze_cross_trait_t = blaze::CrossTrait_<T1, T2>;
+template <typename T>
+using blaze_const_iterator_t = blaze::ConstIterator_<T>;
+template <typename T>
+using blaze_is_numeric = blaze::IsNumeric<T>;
+template <typename T>
+const bool blaze_is_numeric_v = blaze_is_numeric<T>::value;
+
+#else   // we only support blaze 3.2+, so this is all later versions
+template <bool B>
+using blaze_enable_if_t = blaze::EnableIf_t<B>;
+template <typename T>
+using blaze_remove_const_t = blaze::RemoveConst_t<T>;
+template <typename T>
+using blaze_simd_trait_t = blaze::SIMDTrait_t<T>;
+template <typename T>
+using blaze_element_type_t = blaze::ElementType_t<T>;
+template <typename T>
+using blaze_result_type_t = blaze::ResultType_t<T>;
+template <typename T1, typename T2>
+using blaze_mult_trait_t = blaze::MultTrait_t<T1, T2>;
+template <typename T1, typename T2>
+using blaze_div_trait_t = blaze::DivTrait_t<T1, T2>;
+template <typename T1, typename T2>
+using blaze_cross_trait_t = blaze::CrossTrait_t<T1, T2>;
+template <typename T>
+using blaze_const_iterator_t = blaze::ConstIterator_t<T>;
+template <typename T>
+const bool blaze_is_numeric = blaze::IsNumeric_v<T>;
+template <typename T>
+const bool blaze_is_numeric_v = blaze_is_numeric<T>;
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
+
 namespace blaze {
 template <typename T>
 BLAZE_ALWAYS_INLINE SIMDdouble step_function(const SIMDf64<T>& v) noexcept
@@ -269,7 +332,7 @@ struct DivideScalarByVector {
 };
 
 template <typename Scalar, typename VT, bool TF,
-          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+          typename = blaze_enable_if_t<blaze_is_numeric<Scalar>>>
 BLAZE_ALWAYS_INLINE decltype(auto) operator/(
     Scalar scalar, const blaze::DenseVector<VT, TF>& vec) {
   return forEach(~vec, DivideScalarByVector<Scalar>(scalar));
@@ -301,19 +364,19 @@ struct AddScalar {
 };
 
 template <typename VT, bool TF, typename Scalar,
-          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+          typename = blaze_enable_if_t<blaze_is_numeric<Scalar>>>
 decltype(auto) operator+(const blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
   return forEach(~vec, AddScalar<Scalar>(scalar));
 }
 
 template <typename Scalar, typename VT, bool TF,
-          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+          typename = blaze_enable_if_t<blaze_is_numeric<Scalar>>>
 decltype(auto) operator+(Scalar scalar, const blaze::DenseVector<VT, TF>& vec) {
   return forEach(~vec, AddScalar<Scalar>(scalar));
 }
 
 template <typename VT, bool TF, typename Scalar,
-          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+          typename = blaze_enable_if_t<blaze_is_numeric<Scalar>>>
 VT& operator+=(blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
   (~vec) = (~vec) + scalar;
   return ~vec;
@@ -370,19 +433,19 @@ struct SubScalarLhs {
 };
 
 template <typename VT, bool TF, typename Scalar,
-          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+          typename = blaze_enable_if_t<blaze_is_numeric<Scalar>>>
 decltype(auto) operator-(const blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
   return forEach(~vec, SubScalarRhs<Scalar>(scalar));
 }
 
 template <typename VT, bool TF, typename Scalar,
-          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+          typename = blaze_enable_if_t<blaze_is_numeric<Scalar>>>
 decltype(auto) operator-(Scalar scalar, const blaze::DenseVector<VT, TF>& vec) {
   return forEach(~vec, SubScalarLhs<Scalar>(scalar));
 }
 
 template <typename VT, bool TF, typename Scalar,
-          typename = blaze::EnableIf_<blaze::IsNumeric<Scalar>>>
+          typename = blaze_enable_if_t<blaze_is_numeric<Scalar>>>
 VT& operator-=(blaze::DenseVector<VT, TF>& vec, Scalar scalar) {
   (~vec) = (~vec) - scalar;
   return ~vec;
@@ -419,10 +482,10 @@ struct UnderlyingElement<std::reference_wrapper<T>> {
  * allows this by passing the `ExprResultType` template parameter. For example,
  * `DataVector` sets `ExprResultType = DataVector`.
  */
-template <typename Type, bool AF = blaze::unaligned, bool PF = blaze::unpadded,
+template <typename Type, bool AF = blaze_unaligned, bool PF = blaze::unpadded,
           bool TF = blaze::defaultTransposeFlag,
           typename ExprResultType =
-              blaze::DynamicVector<blaze::RemoveConst_<Type>, TF>>
+              blaze::DynamicVector<blaze_remove_const_t<Type>, TF>>
 struct PointerVector
     : public blaze::DenseVector<PointerVector<Type, AF, PF, TF, ExprResultType>,
                                 TF> {
@@ -433,7 +496,7 @@ struct PointerVector
   using ResultType = ExprResultType;
   using TransposeType = PointerVector<Type, AF, PF, !TF, ExprResultType>;
   using ElementType = Type;
-  using SIMDType = blaze::SIMDTrait_<ElementType>;
+  using SIMDType = blaze_simd_trait_t<ElementType>;
   using ReturnType = const Type&;
   using CompositeType = const PointerVector&;
 
@@ -508,10 +571,10 @@ struct PointerVector
   PointerVector& operator%=(const blaze::Vector<VT, TF>& rhs);
 
   template <typename Other>
-  std::enable_if_t<blaze::IsNumeric<Other>::value, This>& operator*=(Other rhs);
+  std::enable_if_t<blaze_is_numeric_v<Other>, This>& operator*=(Other rhs);
 
   template <typename Other>
-  std::enable_if_t<blaze::IsNumeric<Other>::value, This>& operator/=(Other rhs);
+  std::enable_if_t<blaze_is_numeric_v<Other>, This>& operator/=(Other rhs);
   //@}
 
   /*!\name Utility functions */
@@ -540,31 +603,35 @@ struct PointerVector
   template <typename VT>
   using VectorizedAssign = std::integral_constant<
       bool, blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-                blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value>;
+                blaze::IsSIMDCombinable<Type, blaze_element_type_t<VT>>::value>;
 
   template <typename VT>
   using VectorizedAddAssign = std::integral_constant<
-      bool, blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-                blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-                blaze::HasSIMDAdd<Type, blaze::ElementType_<VT>>::value>;
+      bool,
+      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+          blaze::IsSIMDCombinable<Type, blaze_element_type_t<VT>>::value &&
+          blaze::HasSIMDAdd<Type, blaze_element_type_t<VT>>::value>;
 
   template <typename VT>
   using VectorizedSubAssign = std::integral_constant<
-      bool, blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-                blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-                blaze::HasSIMDSub<Type, blaze::ElementType_<VT>>::value>;
+      bool,
+      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+          blaze::IsSIMDCombinable<Type, blaze_element_type_t<VT>>::value &&
+          blaze::HasSIMDSub<Type, blaze_element_type_t<VT>>::value>;
 
   template <typename VT>
   using VectorizedMultAssign = std::integral_constant<
-      bool, blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-                blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-                blaze::HasSIMDMult<Type, blaze::ElementType_<VT>>::value>;
+      bool,
+      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+          blaze::IsSIMDCombinable<Type, blaze_element_type_t<VT>>::value &&
+          blaze::HasSIMDMult<Type, blaze_element_type_t<VT>>::value>;
 
   template <typename VT>
   using VectorizedDivAssign = std::integral_constant<
-      bool, blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
-                blaze::IsSIMDCombinable<Type, blaze::ElementType_<VT>>::value &&
-                blaze::HasSIMDDiv<Type, blaze::ElementType_<VT>>::value>;
+      bool,
+      blaze::useOptimizedKernels && simdEnabled && VT::simdEnabled &&
+          blaze::IsSIMDCombinable<Type, blaze_element_type_t<VT>>::value &&
+          blaze::HasSIMDDiv<Type, blaze_element_type_t<VT>>::value>;
 
   //! The number of elements packed within a single SIMD element.
   enum : size_t { SIMDSIZE = blaze::SIMDTrait<ElementType>::size };
@@ -733,9 +800,9 @@ inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator*=(
     const blaze::Vector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(VT, TF);
-  BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(blaze::ResultType_<VT>);
+  BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(blaze_result_type_t<VT>);
 
-  using MultType = blaze::MultTrait_<ResultType, blaze::ResultType_<VT>>;
+  using MultType = blaze_mult_trait_t<ResultType, blaze_result_type_t<VT>>;
 
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(MultType, TF);
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(MultType);
@@ -751,9 +818,9 @@ inline PointerVector<Type, AF, PF, TF, ExprResultType>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator/=(
     const blaze::Vector<VT, TF>& rhs) {
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(VT, TF);
-  BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(blaze::ResultType_<VT>);
+  BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(blaze_result_type_t<VT>);
 
-  using DivType = blaze::DivTrait_<ResultType, blaze::ResultType_<VT>>;
+  using DivType = blaze_div_trait_t<ResultType, blaze_result_type_t<VT>>;
 
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(DivType, TF);
   BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(DivType);
@@ -771,9 +838,9 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator%=(
   using blaze::assign;
 
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(VT, TF);
-  BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(blaze::ResultType_<VT>);
+  BLAZE_CONSTRAINT_MUST_NOT_REQUIRE_EVALUATION(blaze_result_type_t<VT>);
 
-  using CrossType = blaze::CrossTrait_<ResultType, blaze::ResultType_<VT>>;
+  using CrossType = blaze_cross_trait_t<ResultType, blaze_result_type_t<VT>>;
 
   BLAZE_CONSTRAINT_MUST_BE_DENSE_VECTOR_TYPE(CrossType);
   BLAZE_CONSTRAINT_MUST_BE_VECTOR_WITH_TRANSPOSE_FLAG(CrossType, TF);
@@ -791,7 +858,7 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator%=(
 
 template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename Other>
-inline std::enable_if_t<blaze::IsNumeric<Other>::value,
+inline std::enable_if_t<blaze_is_numeric_v<Other>,
                         PointerVector<Type, AF, PF, TF, ExprResultType>>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator*=(Other rhs) {
   blaze::smpAssign(*this, (*this) * rhs);
@@ -800,7 +867,7 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::operator*=(Other rhs) {
 
 template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename Other>
-inline std::enable_if_t<blaze::IsNumeric<Other>::value,
+inline std::enable_if_t<blaze_is_numeric_v<Other>,
                         PointerVector<Type, AF, PF, TF, ExprResultType>>&
 PointerVector<Type, AF, PF, TF, ExprResultType>::operator/=(Other rhs) {
   BLAZE_USER_ASSERT(rhs != Other(0), "Division by zero detected");
@@ -1002,7 +1069,7 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::assign(
     BLAZE_INTERNAL_ASSERT(i4way <= ipos, "Invalid end calculation");
 
     size_t i(0UL);
-    blaze::ConstIterator_<VT> it((~rhs).begin());
+    blaze_const_iterator_t<VT> it((~rhs).begin());
 
     for (; i < i4way; i += SIMDSIZE * 4UL) {
       store(i, it.load());
@@ -1069,7 +1136,7 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::addAssign(
   BLAZE_INTERNAL_ASSERT(i4way <= ipos, "Invalid end calculation");
 
   size_t i(0UL);
-  blaze::ConstIterator_<VT> it((~rhs).begin());
+  blaze_const_iterator_t<VT> it((~rhs).begin());
 
   for (; i < i4way; i += SIMDSIZE * 4UL) {
     store(i, load(i) + it.load());
@@ -1096,7 +1163,7 @@ inline void PointerVector<Type, AF, PF, TF, ExprResultType>::addAssign(
     const blaze::SparseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
 
-  for (blaze::ConstIterator_<VT> element = (~rhs).begin();
+  for (blaze_const_iterator_t<VT> element = (~rhs).begin();
        element != (~rhs).end(); ++element) {
     v_[element->index()] += element->value();
   }
@@ -1147,7 +1214,7 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::subAssign(
   BLAZE_INTERNAL_ASSERT(i4way <= ipos, "Invalid end calculation");
 
   size_t i(0UL);
-  blaze::ConstIterator_<VT> it((~rhs).begin());
+  blaze_const_iterator_t<VT> it((~rhs).begin());
 
   for (; i < i4way; i += SIMDSIZE * 4UL) {
     store(i, load(i) - it.load());
@@ -1174,7 +1241,7 @@ inline void PointerVector<Type, AF, PF, TF, ExprResultType>::subAssign(
     const blaze::SparseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
 
-  for (blaze::ConstIterator_<VT> element = (~rhs).begin();
+  for (blaze_const_iterator_t<VT> element = (~rhs).begin();
        element != (~rhs).end(); ++element) {
     v_[element->index()] -= element->value();
   }
@@ -1225,7 +1292,7 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::multAssign(
   BLAZE_INTERNAL_ASSERT(i4way <= ipos, "Invalid end calculation");
 
   size_t i(0UL);
-  blaze::ConstIterator_<VT> it((~rhs).begin());
+  blaze_const_iterator_t<VT> it((~rhs).begin());
 
   for (; i < i4way; i += SIMDSIZE * 4UL) {
     store(i, load(i) * it.load());
@@ -1254,7 +1321,7 @@ inline void PointerVector<Type, AF, PF, TF, ExprResultType>::multAssign(
 
   const blaze::DynamicVector<Type, TF> tmp(serial(*this));
   reset();
-  for (blaze::ConstIterator_<VT> element = (~rhs).begin();
+  for (blaze_const_iterator_t<VT> element = (~rhs).begin();
        element != (~rhs).end(); ++element) {
     v_[element->index()] = tmp[element->index()] * element->value();
   }
@@ -1305,7 +1372,7 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::divAssign(
   BLAZE_INTERNAL_ASSERT(i4way <= ipos, "Invalid end calculation");
 
   size_t i(0UL);
-  blaze::ConstIterator_<VT> it((~rhs).begin());
+  blaze_const_iterator_t<VT> it((~rhs).begin());
 
   for (; i < i4way; i += SIMDSIZE * 4UL) {
     store(i, load(i) / it.load());
@@ -1340,8 +1407,8 @@ decltype(auto) pow(const PointerVector<Type, AF, PF, TF, ExprResultType>& t,
                    T&& exponent) noexcept {
   using ReturnType =
       const blaze::DVecMapExpr<PointerVector<Type, AF, PF, TF, ExprResultType>,
-                               blaze::Pow<double>, TF>;
-  return ReturnType(t, blaze::Pow<double>{static_cast<double>(exponent)});
+                               BlazePow<double>, TF>;
+  return ReturnType(t, BlazePow<double>{static_cast<double>(exponent)});
 }
 
 /*!
