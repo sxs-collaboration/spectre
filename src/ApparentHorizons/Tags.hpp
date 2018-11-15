@@ -16,6 +16,19 @@
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare gr::Tags::SpatialMetric
+/// \cond
+class DataVector;
+class FastFlow;
+/// \endcond
+
+namespace ah {
+namespace Tags {
+struct FastFlow : db::SimpleTag {
+  static std::string name() noexcept { return "FastFlow"; }
+  using type = ::FastFlow;
+};
+}  // namespace Tags
+}  // namespace ah
 
 /// \ingroup SurfacesGroup
 /// Holds tags and ComputeItems associated with a `::Strahlkorper`.
