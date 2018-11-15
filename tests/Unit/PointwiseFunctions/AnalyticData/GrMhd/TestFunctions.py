@@ -102,3 +102,103 @@ def bondi_hoyle_specific_enthalpy(x, bh_mass, bh_dimless_spin,
 
 
 # End functions for testing BondiHoyleAccretion.cpp
+
+# Functions for testing CylindricalBlastWave.cpp
+def cylindrical_blast_wave_compute_piecewise(x, inner_radius, outer_radius,
+                                             inner_value, outer_value):
+    radius = np.sqrt(np.square(x[0]) + np.square(x[1]))
+    if (radius > outer_radius):
+        return outer_value
+    elif (radius < inner_radius):
+        return inner_value
+    else:
+        piecewise_scalar = (-1.0 * radius + inner_radius) * \
+            np.log(outer_value)
+        piecewise_scalar += (radius - outer_radius) * np.log(inner_value)
+        piecewise_scalar /= inner_radius - outer_radius
+        return np.exp(piecewise_scalar)
+
+
+def cylindrical_blast_wave_rest_mass_density(x, inner_radius, outer_radius,
+                                             inner_density, outer_density,
+                                             inner_pressure, outer_pressure,
+                                             magnetic_field, adiabatic_index):
+    return cylindrical_blast_wave_compute_piecewise(x, inner_radius, outer_radius,
+                                                    inner_density, outer_density)
+
+
+def cylindrical_blast_wave_spatial_velocity(x, inner_radius, outer_radius,
+                                            inner_density, outer_density,
+                                            inner_pressure, outer_pressure,
+                                            magnetic_field, adiabatic_index):
+    return np.zeros(3)
+
+
+def cylindrical_blast_wave_specific_internal_energy(x, inner_radius, outer_radius,
+                                                    inner_density, outer_density,
+                                                    inner_pressure,
+                                                    outer_pressure,
+                                                    magnetic_field,
+                                                    adiabatic_index):
+    return (1.0 / (adiabatic_index - 1.0) *
+            cylindrical_blast_wave_pressure(x, inner_radius, outer_radius,
+                                            inner_density, outer_density,
+                                            inner_pressure, outer_pressure,
+                                            magnetic_field, adiabatic_index) /
+            cylindrical_blast_wave_rest_mass_density(x, inner_radius,
+                                                     outer_radius,
+                                                     inner_density,
+                                                     outer_density,
+                                                     inner_pressure,
+                                                     outer_pressure,
+                                                     magnetic_field,
+                                                     adiabatic_index))
+
+
+def cylindrical_blast_wave_pressure(x, inner_radius, outer_radius, inner_density,
+                                    outer_density, inner_pressure, outer_pressure,
+                                    magnetic_field, adiabatic_index):
+    return cylindrical_blast_wave_compute_piecewise(x, inner_radius, outer_radius,
+                                                    inner_pressure,
+                                                    outer_pressure)
+
+
+def cylindrical_blast_wave_lorentz_factor(x, inner_radius, outer_radius,
+                                          inner_density, outer_density,
+                                          inner_pressure, outer_pressure,
+                                          magnetic_field, adiabatic_index):
+    return 1.0
+
+
+def cylindrical_blast_wave_specific_enthalpy(x, inner_radius, outer_radius,
+                                             inner_density, outer_density,
+                                             inner_pressure, outer_pressure,
+                                             magnetic_field, adiabatic_index):
+    return (1.0 + adiabatic_index *
+            cylindrical_blast_wave_specific_internal_energy(x, inner_radius,
+                                                            outer_radius,
+                                                            inner_density,
+                                                            outer_density,
+                                                            inner_pressure,
+                                                            outer_pressure,
+                                                            magnetic_field,
+                                                            adiabatic_index))
+
+
+def cylindrical_blast_wave_magnetic_field(x, inner_radius, outer_radius,
+                                          inner_density, outer_density,
+                                          inner_pressure, outer_pressure,
+                                          magnetic_field, adiabatic_index):
+    return np.array(magnetic_field)
+
+
+def cylindrical_blast_wave_divergence_cleaning_field(x, inner_radius,
+                                                     outer_radius, inner_density,
+                                                     outer_density,
+                                                     inner_pressure,
+                                                     outer_pressure,
+                                                     magnetic_field,
+                                                     adiabatic_index):
+    return 0.0
+
+# End for testing CylindricalBlastWave.cpp
