@@ -578,3 +578,59 @@ std::ostream& operator<<(std::ostream& os,
     }                                                    \
   };                                                     \
   }  // namespace MakeWithValueImpls
+
+// {@
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Helper struct to determine the base storage type of a VectorImpl or
+ * container of VectorImpl
+ *
+ * \details Extracts the storage type of a `VectorImpl`, a std::array of
+ * `VectorImpl`, or a reference or pointer to a `VectorImpl`. In any of these
+ * cases, the `type` member is defined as the `ElementType` of the `VectorImpl`
+ * in question. If, instead, `VectorBaseType` is passed a numeric type, the
+ * `type` member is defined as that numeric type. Examples:
+ * - `VectorBaseType_t<DataVector>` is `double`
+ * - `VectorBaseType_t<std::array<DataVector, 2>>` is `double`
+ * - `VectorBaseType_t<std::complex<double>*>` is `std::complex<double>`
+ * - `VectorBaseType_t<std::vector<double>>` is not defined.
+ */
+template <typename T, typename Enable = std::nullptr_t>
+struct VectorBaseType {};
+template <typename T>
+struct VectorBaseType<
+    T, Requires<std::is_arithmetic<T>::value or tt::is_a_v<std::complex, T>>> {
+  using type = T;
+};
+template <typename T>
+struct VectorBaseType<
+    T,
+    Requires<std::is_arithmetic<typename T::ResultType::ElementType>::value or
+             tt::is_a_v<std::complex, typename T::ResultType::ElementType>>> {
+  using type = typename T::ResultType::ElementType;
+};
+template <typename T>
+struct VectorBaseType<
+    T,
+    Requires<
+        not std::is_arithmetic<typename T::ResultType::ElementType>::value and
+        not tt::is_a_v<std::complex, typename T::ResultType::ElementType>>> {
+  using type =
+      typename VectorBaseType<typename T::ResultType::ElementType>::type;
+};
+template <typename T>
+struct VectorBaseType<T*, std::nullptr_t> {
+  using type = typename VectorBaseType<T>::type;
+};
+template <typename T>
+struct VectorBaseType<T&, std::nullptr_t> {
+  using type = typename VectorBaseType<T>::type;
+};
+template <typename T, size_t S>
+struct VectorBaseType<std::array<T, S>, std::nullptr_t> {
+  using type = typename VectorBaseType<T>::type;
+};
+// @}
+
+template <typename T>
+using VectorBaseType_t = typename VectorBaseType<T>::type;
