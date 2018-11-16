@@ -9,7 +9,6 @@
 #include "DataStructures/VectorImpl.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
-#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PointerVector.hpp"
 #include "Utilities/Requires.hpp"
 
@@ -63,16 +62,7 @@ SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const DataVector& t) noexcept {
 
 MAKE_STD_ARRAY_VECTOR_BINOPS(DataVector)
 
-namespace MakeWithValueImpls {
-/// \brief Returns a DataVector the same size as `input`, with each element
-/// equal to `value`.
-template <>
-SPECTRE_ALWAYS_INLINE DataVector
-MakeWithValueImpl<DataVector, DataVector>::apply(const DataVector& input,
-                                                 const double value) {
-  return DataVector(input.size(), value);
-}
-}  // namespace MakeWithValueImpls
+MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(DataVector)
 
 namespace ConstantExpressions_detail {
 template <>
