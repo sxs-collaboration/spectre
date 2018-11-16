@@ -25,6 +25,7 @@
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -38,6 +39,15 @@
 namespace grmhd {
 namespace ValenciaDivClean {
 namespace Actions {
+namespace detail {
+template <class T, class = cpp17::void_t<>>
+struct has_analytic_solution_alias : std::false_type {};
+template <class T>
+struct has_analytic_solution_alias<T,
+                                   cpp17::void_t<typename T::analytic_solution>>
+    : std::true_type {};
+}  // namespace detail
+
 // Note:  I've left the Dim and System template parameters until it is clear
 // whether or not what remains is specific to this system, and what might be
 // applicable to more than one system
@@ -66,14 +76,33 @@ struct Initialize {
           db::get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Set initial data from analytic solution
-      using solution_tag = OptionTags::AnalyticSolutionBase;
       PrimitiveVars primitive_vars{num_grid_points};
-      primitive_vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
-          inertial_coords, initial_time,
-          typename Metavariables::analytic_variables_tags{}));
-
-      auto equation_of_state =
-          Parallel::get<solution_tag>(cache).equation_of_state();
+      auto equation_of_state = make_overloader(
+          [ initial_time, &inertial_coords ](
+              std::true_type /*is_analytic_solution*/,
+              const gsl::not_null<PrimitiveVars*> prim_vars,
+              const auto& local_cache) noexcept {
+            using solution_tag = OptionTags::AnalyticSolutionBase;
+            prim_vars->assign_subset(
+                Parallel::get<solution_tag>(local_cache)
+                    .variables(
+                        inertial_coords, initial_time,
+                        typename Metavariables::analytic_variables_tags{}));
+            return Parallel::get<solution_tag>(local_cache).equation_of_state();
+          },
+          [&inertial_coords](std::false_type /*is_analytic_solution*/,
+                             const gsl::not_null<PrimitiveVars*> prim_vars,
+                             const auto& local_cache) noexcept {
+            using analytic_data_tag = OptionTags::AnalyticDataBase;
+            prim_vars->assign_subset(
+                Parallel::get<analytic_data_tag>(local_cache)
+                    .variables(
+                        inertial_coords,
+                        typename Metavariables::analytic_variables_tags{}));
+            return Parallel::get<analytic_data_tag>(local_cache)
+                .equation_of_state();
+          })(detail::has_analytic_solution_alias<Metavariables>{},
+             make_not_null(&primitive_vars), cache);
 
       VariableFixing::FixToAtmosphere<decltype(
           equation_of_state)::thermodynamic_dim>
@@ -113,10 +142,27 @@ struct Initialize {
           db::get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
 
       // Set initial data from analytic solution
-      using solution_tag = OptionTags::AnalyticSolutionBase;
       GrVars gr_vars{num_grid_points};
-      gr_vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
-          inertial_coords, initial_time, typename GrVars::tags_list{}));
+      make_overloader(
+          [ initial_time, &inertial_coords ](
+              std::true_type /*is_analytic_solution*/,
+              const gsl::not_null<GrVars*> local_gr_vars,
+              const auto& local_cache) noexcept {
+            using solution_tag = OptionTags::AnalyticSolutionBase;
+            local_gr_vars->assign_subset(
+                Parallel::get<solution_tag>(local_cache)
+                    .variables(inertial_coords, initial_time,
+                               typename GrVars::tags_list{}));
+          },
+          [&inertial_coords](std::false_type /*is_analytic_solution*/,
+                             const gsl::not_null<GrVars*> local_gr_vars,
+                             const auto& local_cache) noexcept {
+            using analytic_data_tag = OptionTags::AnalyticDataBase;
+            local_gr_vars->assign_subset(
+                Parallel::get<analytic_data_tag>(local_cache)
+                    .variables(inertial_coords, typename GrVars::tags_list{}));
+          })(detail::has_analytic_solution_alias<Metavariables>{},
+             make_not_null(&gr_vars), cache);
 
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
           std::move(box), std::move(gr_vars));
