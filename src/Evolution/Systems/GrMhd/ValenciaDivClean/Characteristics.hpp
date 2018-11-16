@@ -33,6 +33,7 @@ struct Normalized;
 namespace grmhd {
 namespace ValenciaDivClean {
 
+// @{
 /*!
  * \brief Compute the characteristic speeds for the Valencia formulation of
  * GRMHD with divergence cleaning.
@@ -112,6 +113,22 @@ std::array<DataVector, 9> characteristic_speeds(
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) noexcept;
 
+template <size_t ThermodynamicDim>
+void characteristic_speeds(
+    gsl::not_null<std::array<DataVector, 9>*> result,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const Scalar<DataVector>& specific_enthalpy,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& lorentz_factor,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
+    const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::i<DataVector, 3>& unit_normal,
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state) noexcept;
+// @}
+
 namespace Tags {
 /// \brief Compute the characteristic speeds for the Valencia formulation of
 /// GRMHD with divergence cleaning.
@@ -134,7 +151,10 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
   using volume_tags =
       tmpl::list<hydro::Tags::EquationOfState<EquationOfStateType>>;
 
-  static constexpr auto function(
+  using return_type = std::array<DataVector, 9>;
+
+  static constexpr void function(
+      const gsl::not_null<return_type*> result,
       const Scalar<DataVector>& rest_mass_density,
       const Scalar<DataVector>& specific_internal_energy,
       const Scalar<DataVector>& specific_enthalpy,
@@ -147,8 +167,8 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
       const EquationsOfState::EquationOfState<
           true, EquationOfStateType::thermodynamic_dim>&
           equation_of_state) noexcept {
-    return characteristic_speeds<EquationOfStateType::thermodynamic_dim>(
-        rest_mass_density, specific_internal_energy, specific_enthalpy,
+    characteristic_speeds<EquationOfStateType::thermodynamic_dim>(
+        result, rest_mass_density, specific_internal_energy, specific_enthalpy,
         spatial_velocity, lorentz_factor, magnetic_field, lapse, shift,
         spatial_metric, unit_normal, equation_of_state);
   }

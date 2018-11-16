@@ -35,6 +35,7 @@ constexpr const typename Tag::type& get(  // NOLINT
     const Variables<TagList>& v) noexcept;
 /// \endcond
 
+// @{
 /*!
  * \ingroup DataStructuresGroup
  * \brief Slices the data within `vars` to a codimension 1 slice. The
@@ -46,21 +47,23 @@ constexpr const typename Tag::type& get(  // NOLINT
  *
  * \see add_slice_to_data
  *
- * \return Variables class sliced to a hypersurface.
+ * returns Variables class sliced to a hypersurface.
  */
 template <std::size_t VolumeDim, typename TagsList>
-Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
-                                  const Index<VolumeDim>& element_extents,
-                                  const size_t sliced_dim,
-                                  const size_t fixed_index) noexcept {
+void data_on_slice(const gsl::not_null<Variables<TagsList>*> interface_vars,
+                   const Variables<TagsList>& vars,
+                   const Index<VolumeDim>& element_extents,
+                   const size_t sliced_dim, const size_t fixed_index) noexcept {
   const size_t interface_grid_points =
       element_extents.slice_away(sliced_dim).product();
   const size_t volume_grid_points = vars.number_of_grid_points();
   constexpr const size_t number_of_independent_components =
       Variables<TagsList>::number_of_independent_components;
-  Variables<TagsList> interface_vars(interface_grid_points);
+  if (interface_vars->number_of_grid_points() != interface_grid_points) {
+    *interface_vars = Variables<TagsList>(interface_grid_points);
+  }
   const double* vars_data = vars.data();
-  double* interface_vars_data = interface_vars.data();
+  double* interface_vars_data = interface_vars->data();
   for (SliceIterator si(element_extents, sliced_dim, fixed_index); si; ++si) {
     for (size_t i = 0; i < number_of_independent_components; ++i) {
       // clang-tidy: do not use pointer arithmetic
@@ -69,9 +72,22 @@ Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
           vars_data[si.volume_offset() + i * volume_grid_points];  // NOLINT
     }
   }
-  return interface_vars;
 }
 
+template <std::size_t VolumeDim, typename TagsList>
+Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
+                                  const Index<VolumeDim>& element_extents,
+                                  const size_t sliced_dim,
+                                  const size_t fixed_index) noexcept {
+  Variables<TagsList> interface_vars(
+      element_extents.slice_away(sliced_dim).product());
+  data_on_slice(make_not_null(&interface_vars), vars, element_extents,
+                sliced_dim, fixed_index);
+  return interface_vars;
+}
+// @}
+
+// @{
 /*!
  * \ingroup DataStructuresGroup
  * \brief Slices volume `Tensor`s into a `Variables`
@@ -83,13 +99,17 @@ Variables<TagsList> data_on_slice(const Variables<TagsList>& vars,
  * `extents[sliced_dim] - 1`.
  */
 template <typename... TagsToSlice, size_t VolumeDim>
-Variables<tmpl::list<TagsToSlice...>> data_on_slice(
-    const Index<VolumeDim>& element_extents,
-    const size_t sliced_dim, const size_t fixed_index,
+void data_on_slice(
+    const gsl::not_null<Variables<tmpl::list<TagsToSlice...>>*> interface_vars,
+    const Index<VolumeDim>& element_extents, const size_t sliced_dim,
+    const size_t fixed_index,
     const typename TagsToSlice::type&... tensors) noexcept {
   const size_t interface_grid_points =
       element_extents.slice_away(sliced_dim).product();
-  Variables<tmpl::list<TagsToSlice...>> interface_vars(interface_grid_points);
+  if (interface_vars->number_of_grid_points() != interface_grid_points) {
+    *interface_vars =
+        Variables<tmpl::list<TagsToSlice...>>(interface_grid_points);
+  }
   for (SliceIterator si(element_extents, sliced_dim, fixed_index); si; ++si) {
     const auto lambda = [&si](auto& interface_tensor,
                               const auto& volume_tensor) noexcept {
@@ -101,11 +121,23 @@ Variables<tmpl::list<TagsToSlice...>> data_on_slice(
                 interface_and_volume_tensor_components)[si.volume_offset()];
       }
     };
-    expand_pack((lambda(get<TagsToSlice>(interface_vars), tensors),
+    expand_pack((lambda(get<TagsToSlice>(*interface_vars), tensors),
                  cpp17::void_type{})...);
   }
+}
+
+template <typename... TagsToSlice, size_t VolumeDim>
+Variables<tmpl::list<TagsToSlice...>> data_on_slice(
+    const Index<VolumeDim>& element_extents, const size_t sliced_dim,
+    const size_t fixed_index,
+    const typename TagsToSlice::type&... tensors) noexcept {
+  Variables<tmpl::list<TagsToSlice...>> interface_vars(
+      element_extents.slice_away(sliced_dim).product());
+  data_on_slice<TagsToSlice...>(make_not_null(&interface_vars), element_extents,
+                                sliced_dim, fixed_index, tensors...);
   return interface_vars;
 }
+// @}
 
 /*!
  * \ingroup DataStructuresGroup

@@ -3,12 +3,12 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/ConservativeFromPrimitive.hpp"
 
-#include <algorithm>
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
@@ -39,17 +39,37 @@ void ConservativeFromPrimitive::apply(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const Scalar<DataVector>& divergence_cleaning_field) noexcept {
-  const auto spatial_velocity_one_form =
-      raise_or_lower_index(spatial_velocity, spatial_metric);
-  const auto magnetic_field_one_form =
-      raise_or_lower_index(magnetic_field, spatial_metric);
-  const auto magnetic_field_dot_spatial_velocity =
-      dot_product(magnetic_field, spatial_velocity_one_form);
-  const auto spatial_velocity_squared =
-      dot_product(spatial_velocity, spatial_velocity_one_form);
-  // not const to save an allocation later
-  auto magnetic_field_squared =
-      dot_product(magnetic_field, magnetic_field_one_form);
+  Variables<tmpl::list<
+      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
+      hydro::Tags::SpatialVelocitySquared<DataVector>,
+      hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>,
+      hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
+      hydro::Tags::MagneticFieldSquared<DataVector>>>
+      temp_tensors{get(rest_mass_density).size()};
+  auto& spatial_velocity_one_form =
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+          temp_tensors);
+  raise_or_lower_index(make_not_null(&spatial_velocity_one_form),
+                       spatial_velocity, spatial_metric);
+  auto& magnetic_field_one_form =
+      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>>(
+          temp_tensors);
+  raise_or_lower_index(make_not_null(&magnetic_field_one_form), magnetic_field,
+                       spatial_metric);
+  auto& magnetic_field_dot_spatial_velocity =
+      get<hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>>(
+          temp_tensors);
+  dot_product(make_not_null(&magnetic_field_dot_spatial_velocity),
+              magnetic_field, spatial_velocity_one_form);
+  auto& spatial_velocity_squared =
+      get<hydro::Tags::SpatialVelocitySquared<DataVector>>(temp_tensors);
+  dot_product(make_not_null(&spatial_velocity_squared), spatial_velocity,
+              spatial_velocity_one_form);
+
+  auto& magnetic_field_squared =
+      get<hydro::Tags::MagneticFieldSquared<DataVector>>(temp_tensors);
+  dot_product(make_not_null(&magnetic_field_squared), magnetic_field,
+              magnetic_field_one_form);
 
   get(*tilde_d) = get(sqrt_det_spatial_metric) * get(rest_mass_density) *
                   get(lorentz_factor);
@@ -65,7 +85,9 @@ void ConservativeFromPrimitive::apply(
                         (1.0 + get(spatial_velocity_squared)) -
                        0.5 * square(get(magnetic_field_dot_spatial_velocity)));
 
-  Scalar<DataVector> common_factor = std::move(magnetic_field_squared);
+  // Reuse allocation
+  Scalar<DataVector>& common_factor =
+      get<hydro::Tags::MagneticFieldSquared<DataVector>>(temp_tensors);
   get(common_factor) *= get(sqrt_det_spatial_metric);
   get(common_factor) +=
       get(*tilde_d) * get(lorentz_factor) * get(specific_enthalpy);

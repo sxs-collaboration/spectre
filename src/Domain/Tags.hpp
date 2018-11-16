@@ -252,15 +252,21 @@ struct unmap_interface_args;
 
 template <>
 struct unmap_interface_args<true> {
+  template <typename T>
+  using f = T;
+
   template <size_t VolumeDim, typename T>
-  static constexpr decltype(auto) apply(
-      const ::Direction<VolumeDim>& /*direction*/, const T& arg) noexcept {
+  static constexpr const T& apply(const ::Direction<VolumeDim>& /*direction*/,
+                                  const T& arg) noexcept {
     return arg;
   }
 };
 
 template <>
 struct unmap_interface_args<false> {
+  template <typename T>
+  using f = typename T::mapped_type;
+
   template <size_t VolumeDim, typename T>
   static constexpr decltype(auto) apply(const ::Direction<VolumeDim>& direction,
                                         const T& arg) noexcept {
@@ -282,22 +288,60 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
           volume_tags, typename BaseComputeItem::argument_tags>>::value == 0,
       "volume_tags contains tags not in argument_tags");
 
-  static constexpr auto apply(
+ private:
+  // Order matters so we mix public/private
+  template <class ComputeItem, bool = db::has_return_type_member_v<ComputeItem>>
+  struct ComputeItemType {
+    using type = std::decay_t<decltype(BaseComputeItem::function(
+        std::declval<typename unmap_interface_args<
+            tmpl::list_contains_v<volume_tags, ArgumentTags>>::
+                         template f<db::item_type<ArgumentTags>>>()...))>;
+  };
+
+  template <class ComputeItem>
+  struct ComputeItemType<ComputeItem, true> {
+    using type = typename BaseComputeItem::return_type;
+  };
+
+ public:
+  using return_type =
+      std::unordered_map<typename db::item_type<DirectionsTag>::value_type,
+                         typename ComputeItemType<BaseComputeItem>::type>;
+
+  static constexpr void apply(
+      const gsl::not_null<return_type*> result,
       const db::item_type<DirectionsTag>& directions,
       const db::item_type<ArgumentTags>&... args) noexcept {
-    std::unordered_map<
-        typename db::item_type<DirectionsTag>::value_type,
-        std::decay_t<decltype(BaseComputeItem::function(
-            unmap_interface_args<tmpl::list_contains_v<
-                volume_tags, ArgumentTags>>::apply(*directions.begin(),
-                                                   args)...))>>
-        result;
+    apply_helper(
+        std::integral_constant<bool,
+                               db::has_return_type_member_v<BaseComputeItem>>{},
+        result, directions, args...);
+  }
+
+ private:
+  static constexpr void apply_helper(
+      std::false_type /*has_return_type_member*/,
+      const gsl::not_null<return_type*> result,
+      const db::item_type<DirectionsTag>& directions,
+      const db::item_type<ArgumentTags>&... args) noexcept {
     for (const auto& direction : directions) {
-      result[direction] = BaseComputeItem::function(
+      (*result)[direction] = BaseComputeItem::function(
           unmap_interface_args<tmpl::list_contains_v<
               volume_tags, ArgumentTags>>::apply(direction, args)...);
     }
-    return result;
+  }
+
+  static constexpr void apply_helper(
+      std::true_type /*has_return_type_member*/,
+      const gsl::not_null<return_type*> result,
+      const db::item_type<DirectionsTag>& directions,
+      const db::item_type<ArgumentTags>&... args) noexcept {
+    for (const auto& direction : directions) {
+      BaseComputeItem::function(
+          make_not_null(&(*result)[direction]),
+          unmap_interface_args<tmpl::list_contains_v<
+              volume_tags, ArgumentTags>>::apply(direction, args)...);
+    }
   }
 };
 
@@ -409,6 +453,9 @@ struct InterfaceComputeItem
                                                              Tag>;
   using argument_tags =
       tmpl::push_front<forwarded_argument_tags, DirectionsTag>;
+
+  using return_type = typename Interface_detail::evaluate_compute_item<
+      DirectionsTag, Tag, forwarded_argument_tags>::return_type;
   static constexpr auto function =
       Interface_detail::evaluate_compute_item<DirectionsTag, Tag,
                                               forwarded_argument_tags>::apply;
@@ -432,18 +479,22 @@ template <typename DirectionsTag, typename VarsTag>
 struct Slice : Interface<DirectionsTag, VarsTag>, db::ComputeTag {
   static constexpr size_t volume_dim =
       db::item_type<DirectionsTag>::value_type::volume_dim;
-  static constexpr auto function(
+
+  using return_type =
+      std::unordered_map<::Direction<volume_dim>, db::item_type<VarsTag>>;
+
+  static constexpr void function(
+      const gsl::not_null<
+          std::unordered_map<::Direction<volume_dim>, db::item_type<VarsTag>>*>
+          sliced_vars,
       const ::Mesh<volume_dim>& mesh,
       const std::unordered_set<::Direction<volume_dim>>& directions,
       const db::item_type<VarsTag>& variables) noexcept {
-    std::unordered_map<::Direction<volume_dim>, db::item_type<VarsTag>>
-        sliced_vars{};
     for (const auto& direction : directions) {
-      sliced_vars[direction] =
-          data_on_slice(variables, mesh.extents(), direction.dimension(),
-                        index_to_slice_at(mesh.extents(), direction));
+      data_on_slice(make_not_null(&((*sliced_vars)[direction])), variables,
+                    mesh.extents(), direction.dimension(),
+                    index_to_slice_at(mesh.extents(), direction));
     }
-    return sliced_vars;
   }
   static std::string name() { return "Interface<" + VarsTag::name() + ">"; };
   using argument_tags = tmpl::list<Mesh<volume_dim>, DirectionsTag, VarsTag>;
