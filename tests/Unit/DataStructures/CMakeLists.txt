@@ -19,7 +19,7 @@ set(LIBRARY_SOURCES
   Test_StripeIterator.cpp
   Test_Variables.cpp
   Test_VectorImpl.cpp
-  Test_VectorImplHelper.cpp
+  Test_VectorImplTestHelper.cpp
   )
 
 add_subdirectory(DataBox)
