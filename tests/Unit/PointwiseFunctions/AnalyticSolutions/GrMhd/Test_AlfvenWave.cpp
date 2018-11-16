@@ -4,6 +4,8 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <algorithm>
+#include <array>
+#include <cmath>
 #include <cstddef>
 #include <limits>
 #include <tuple>
@@ -64,19 +66,24 @@ void test_create_from_options() noexcept {
       "  Pressure: 1.23\n"
       "  RestMassDensity: 0.2\n"
       "  AdiabaticIndex: 1.4\n"
-      "  BackgroundMagField: 2.0\n"
-      "  PerturbationSize: 0.75");
-  CHECK(wave == grmhd::Solutions::AlfvenWave(2.2, 1.23, 0.2, 1.4, 2.0, 0.75));
+      "  BkgdMagneticField: [0.0, 0.0, 2.0]\n"
+      "  WaveMagneticField: [0.75, 0.0, 0.0]");
+  CHECK(wave == grmhd::Solutions::AlfvenWave(2.2, 1.23, 0.2, 1.4,
+                                             {{0.0, 0.0, 2.0}},
+                                             {{0.75, 0.0, 0.0}}));
 }
 
 void test_move() noexcept {
-  grmhd::Solutions::AlfvenWave wave(3.0, 2.1, 1.3, 1.5, 0.24, 0.01);
-  grmhd::Solutions::AlfvenWave wave_copy(3.0, 2.1, 1.3, 1.5, 0.24, 0.01);
+  grmhd::Solutions::AlfvenWave wave(3.0, 2.1, 1.3, 1.5, {{0.0, 0.0, 0.24}},
+                                    {{0.01, 0.0, 0.0}});
+  grmhd::Solutions::AlfvenWave wave_copy(3.0, 2.1, 1.3, 1.5, {{0.0, 0.0, 0.24}},
+                                         {{0.01, 0.0, 0.0}});
   test_move_semantics(std::move(wave), wave_copy);  //  NOLINT
 }
 
 void test_serialize() noexcept {
-  grmhd::Solutions::AlfvenWave wave(3.0, 2.1, 1.3, 1.5, 0.24, 0.01);
+  grmhd::Solutions::AlfvenWave wave(3.0, 2.1, 1.3, 1.5, {{0.0, 0.0, 0.24}},
+                                    {{0.01, 0.0, 0.0}});
   test_serialization(wave);
 }
 
@@ -86,28 +93,33 @@ void test_variables(const DataType& used_for_size) {
   const double pressure = 1.3;
   const double rest_mass_density = 0.4;
   const double adiabatic_index = 4. / 3.;
-  const double background_mag_field = 2.3;
-  const double perturbation_size = 0.78;
+  const std::array<double, 3> bkgd_magnetic_field = {
+      {2.3 * cos(M_PI_4) * cos(0.5 * M_PI_4),
+       2.3 * cos(M_PI_4) * sin(0.5 * M_PI_4), 2.3 * sin(M_PI_4)}};
+  const std::array<double, 3> wave_magnetic_field = {
+      {0.7 * cos(M_PI_4 + M_PI_2) * cos(0.5 * M_PI_4),
+       0.7 * cos(M_PI_4 + M_PI_2) * sin(0.5 * M_PI_4),
+       0.7 * sin(M_PI_4 + M_PI_2)}};
 
   pypp::check_with_random_values<
       1, AlfvenWaveProxy::hydro_variables_tags<DataType>>(
       &AlfvenWaveProxy::hydro_variables<DataType>,
       AlfvenWaveProxy(wavenumber, pressure, rest_mass_density, adiabatic_index,
-                      background_mag_field, perturbation_size),
+                      bkgd_magnetic_field, wave_magnetic_field),
       "TestFunctions",
       {"alfven_rest_mass_density", "alfven_spatial_velocity",
        "alfven_specific_internal_energy", "alfven_pressure",
        "alfven_lorentz_factor", "alfven_specific_enthalpy"},
       {{{-15., 15.}}},
       std::make_tuple(wavenumber, pressure, rest_mass_density, adiabatic_index,
-                      background_mag_field, perturbation_size),
+                      bkgd_magnetic_field, wave_magnetic_field),
       used_for_size);
 
   pypp::check_with_random_values<
       1, AlfvenWaveProxy::grmhd_variables_tags<DataType>>(
       &AlfvenWaveProxy::grmhd_variables<DataType>,
       AlfvenWaveProxy(wavenumber, pressure, rest_mass_density, adiabatic_index,
-                      background_mag_field, perturbation_size),
+                      bkgd_magnetic_field, wave_magnetic_field),
       "TestFunctions",
       {"alfven_rest_mass_density", "alfven_spatial_velocity",
        "alfven_specific_internal_energy", "alfven_pressure",
@@ -115,14 +127,14 @@ void test_variables(const DataType& used_for_size) {
        "alfven_magnetic_field", "alfven_divergence_cleaning_field"},
       {{{-15., 15.}}},
       std::make_tuple(wavenumber, pressure, rest_mass_density, adiabatic_index,
-                      background_mag_field, perturbation_size),
+                      bkgd_magnetic_field, wave_magnetic_field),
       used_for_size);
 
   // Test a few of the GR components to make sure that the implementation
   // correctly forwards to the background solution. Not meant to be extensive.
   grmhd::Solutions::AlfvenWave soln(wavenumber, pressure, rest_mass_density,
-                                    adiabatic_index, background_mag_field,
-                                    perturbation_size);
+                                    adiabatic_index, bkgd_magnetic_field,
+                                    wave_magnetic_field);
   const auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 1.0);
   CHECK_ITERABLE_APPROX(
       make_with_value<Scalar<DataType>>(used_for_size, 1.0),
