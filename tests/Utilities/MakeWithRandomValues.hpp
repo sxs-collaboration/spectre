@@ -141,7 +141,7 @@ void fill_with_random_values(
   TestHelpers_detail::FillWithRandomValuesImpl<T>::apply(data, generator,
                                                          distribution);
 }
-
+// @{
 /// \ingroup TestingFrameworkGroup
 /// \brief Make a data structure and fill it with random values
 ///
@@ -162,6 +162,20 @@ ReturnType make_with_random_values(
   fill_with_random_values(make_not_null(&result), generator, distribution);
   return result;
 }
+// distributions are sufficiently small to provide a convenience function that
+// recieves them by value, when obtaining pointers is inconvenient (e.g. for
+// distributions that are obtained as rvalues).
+// clang-tidy: seems to erroneously believe this is a function declaration
+// rather than a definition.
+template <typename ReturnType, typename T, typename UniformRandomBitGenerator,
+          typename RandomNumberDistribution>
+ReturnType make_with_random_values(
+    const gsl::not_null<UniformRandomBitGenerator*> generator, // NOLINT
+    RandomNumberDistribution distribution, const T& used_for_size) noexcept {
+  return make_with_random_values<ReturnType>(
+      generator, make_not_null(&distribution), used_for_size);
+}
+// @}
 
 // {@
 /// \ingroup TestingFrameworkGroup

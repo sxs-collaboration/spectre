@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <array>
 #include <complex>
 #include <cstddef>
@@ -22,6 +24,7 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/DataVector.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestHelpers.hpp"  // IWYU pragma: keep
@@ -1118,4 +1121,11 @@ struct IdentityPackExample<std::index_sequence<Is...>> {
   using type = std::tuple<tt::identity_t<double, Is>...>;
 };
 /// [example_identity_t]
+
+SPECTRE_TEST_CASE("Unit.Utilities.TypeTraits", "[Utilities][Unit]") {
+  CHECK(cpp17::size(std::vector<int>(10)) == 10);
+  CHECK(cpp17::size(DataVector{15}) == 15);
+  int test_native_array[13];
+  CHECK(cpp17::size(test_native_array) == 13);
+}
 }  // namespace

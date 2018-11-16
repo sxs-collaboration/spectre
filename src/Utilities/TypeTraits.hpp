@@ -212,6 +212,23 @@ struct negation : bool_constant<!B::value> {};
 template <typename... Ts>
 using void_t = void;
 
+// @{
+/// \ingroup TypeTraitsGroup
+/// \brief Retrieve the size of a container or native array
+///
+/// \details In the case of a container with the `size` function, use the `size`
+/// function to return the size. In the case of an array, use the type to infer
+/// the size.
+template <class C>
+constexpr auto size(const C& c) -> decltype(c.size()) {
+  return c.size();
+}
+template <class T, size_t N>
+constexpr size_t size(const T (&/*array*/)[N]) noexcept {
+  return N;
+}
+// @}
+
 /*!
  * \ingroup TypeTraitsGroup
  * \brief Variable template for is_same
