@@ -28,7 +28,7 @@ struct System {
   using variables_tag = ::Tags::Variables<tmpl::list<Tags::U>>;
   using sourced_variables = tmpl::list<>;
 
-  using du_dt = ConservativeDuDt<System>;
+  using compute_time_derivative = ConservativeDuDt<System>;
   using volume_fluxes = Fluxes;
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed;

@@ -598,6 +598,30 @@ struct variables_tag_with_tags_list_impl<DispatchTagType::Prefix> {
   template <typename Tag, typename NewTagsList>
   using f = typename helper<Tag, NewTagsList>::type;
 };
+
+// Implementation of get_variables_tags_list
+template <DispatchTagType TagType>
+struct get_variables_tags_list_impl;
+}  // namespace DataBox_detail
+
+template <typename Tag>
+using get_variables_tags_list =
+    typename DataBox_detail::get_variables_tags_list_impl<
+        DataBox_detail::tag_type<Tag>>::template f<Tag>;
+
+namespace DataBox_detail {
+// Implementation of get_variables_tags_list
+template <>
+struct get_variables_tags_list_impl<DispatchTagType::Variables> {
+  template <typename Tag>
+  using f = typename Tag::tags_list;
+};
+
+template <>
+struct get_variables_tags_list_impl<DispatchTagType::Prefix> {
+  template <typename Tag>
+  using f = get_variables_tags_list<typename Tag::tag>;
+};
 }  // namespace DataBox_detail
 
 /// \ingroup DataBoxGroup

@@ -17,7 +17,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 // IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Actions/ComputeVolumeDuDt.hpp"  // IWYU pragma: keep
+#include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
@@ -44,6 +44,11 @@ class ConstGlobalCache;
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
+struct TemporalId {
+  template <typename Tag>
+  using step_prefix = Tags::dt<Tag>;
+};
+
 struct Var : db::SimpleTag {
   static std::string name() noexcept { return "Var"; }
   using type = double;
@@ -59,7 +64,7 @@ struct SystemBase {
   static constexpr bool has_primitive_and_conservative_vars = HasPrimitives;
   using variables_tag = Var;
 
-  using du_dt = struct {
+  using compute_time_derivative = struct {
     using argument_tags =
         tmpl::list<tmpl::conditional_t<has_primitive_and_conservative_vars,
                                        PrimitiveVar, Var>>;
@@ -106,6 +111,7 @@ struct Metavariables {
   using component_list = tmpl::list<component<HasPrimitives>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<>;
+  using temporal_id = TemporalId;
 };
 
 template <bool HasPrimitives>
@@ -118,13 +124,13 @@ struct component {
   using update_actions = tmpl::conditional_t<
       HasPrimitives, tmpl::list<Actions::UpdateU, Actions::UpdatePrimitives>,
       Actions::UpdateU>;
-  using action_list =
-      tmpl::flatten<tmpl::list<SelfStart::self_start_procedure<
-                                   tmpl::list<Actions::ComputeVolumeDuDt,
-                                              Actions::RecordTimeStepperData>,
-                                   update_actions>,
-                               Actions::AdvanceTime, Actions::ComputeVolumeDuDt,
-                               Actions::RecordTimeStepperData, update_actions>>;
+  using action_list = tmpl::flatten<
+      tmpl::list<SelfStart::self_start_procedure<
+                     tmpl::list<Actions::ComputeTimeDerivative,
+                                Actions::RecordTimeStepperData>,
+                     update_actions>,
+                 Actions::AdvanceTime, Actions::ComputeTimeDerivative,
+                 Actions::RecordTimeStepperData, update_actions>>;
   using simple_tags = tmpl::flatten<db::AddSimpleTags<
       typename metavariables::system::variables_tag,
       typename metavariables::system::test_primitive_variables_tags,

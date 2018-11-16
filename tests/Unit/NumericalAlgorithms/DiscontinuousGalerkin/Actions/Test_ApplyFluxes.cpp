@@ -24,7 +24,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesGlobalTimeStepping.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -54,6 +54,8 @@ namespace {
 struct TemporalId : db::SimpleTag {
   static std::string name() noexcept { return "TemporalId"; }
   using type = size_t;
+  template <typename Tag>
+  using step_prefix = Tags::dt<Tag>;
 };
 
 struct Var : db::SimpleTag {
@@ -100,8 +102,7 @@ struct component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tag_list = tmpl::list<NumericalFluxTag<Flux>>;
-  using action_list =
-      tmpl::list<dg::Actions::ApplyBoundaryFluxesGlobalTimeStepping>;
+  using action_list = tmpl::list<dg::Actions::ApplyFluxes>;
   using initial_databox = db::compute_databox_type<
       tmpl::list<Tags::Mesh<Dim>, Tags::Coordinates<Dim, Frame::Logical>,
                  Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
@@ -123,7 +124,7 @@ struct Metavariables {
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping",
+SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyFluxes",
                   "[Unit][NumericalAlgorithms][Actions]") {
   using flux_comm_types =
       dg::FluxCommunicationTypes<Metavariables<2, NumericalFlux>>;
@@ -277,7 +278,7 @@ Scalar<DataVector> magnitude_of_face_normal2(
 }  // namespace
 
 SPECTRE_TEST_CASE(
-    "Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping.p-refinement",
+    "Unit.DG.Actions.ApplyFluxes.p-refinement",
     "[Unit][NumericalAlgorithms][Actions]") {
   using metavariables = Metavariables<3, RefinementNumericalFlux>;
   using my_component = component<3, RefinementNumericalFlux, metavariables>;
@@ -425,7 +426,7 @@ SPECTRE_TEST_CASE(
 }
 
 SPECTRE_TEST_CASE(
-    "Unit.DG.Actions.ApplyBoundaryFluxesGlobalTimeStepping.h-refinement",
+    "Unit.DG.Actions.ApplyFluxes.h-refinement",
     "[Unit][NumericalAlgorithms][Actions]") {
   using Spectral::MortarSize;
 

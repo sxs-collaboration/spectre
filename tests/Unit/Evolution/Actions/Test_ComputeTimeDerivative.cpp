@@ -12,7 +12,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
-#include "Evolution/Actions/ComputeVolumeDuDt.hpp"  // IWYU pragma: keep
+#include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -21,6 +21,11 @@
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
+struct TemporalId {
+  template <typename Tag>
+  using step_prefix = Tags::dt<Tag>;
+};
+
 struct var_tag : db::SimpleTag {
   using type = int;
   static std::string name() noexcept { return "var_tag"; }
@@ -35,7 +40,7 @@ struct ComputeDuDt {
 
 struct System {
   using variables_tag = var_tag;
-  using du_dt = ComputeDuDt;
+  using compute_time_derivative = ComputeDuDt;
 };
 
 using ElementIndexType = ElementIndex<2>;
@@ -46,7 +51,7 @@ struct component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndexType;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<Actions::ComputeVolumeDuDt>;
+  using action_list = tmpl::list<Actions::ComputeTimeDerivative>;
   using initial_databox =
       db::compute_databox_type<tmpl::list<var_tag, Tags::dt<var_tag>>>;
 };
@@ -55,10 +60,11 @@ struct Metavariables {
   using component_list = tmpl::list<component<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
+  using temporal_id = TemporalId;
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeDuDt",
+SPECTRE_TEST_CASE("Unit.Evolution.ComputeTimeDerivative",
                   "[Unit][Evolution][Actions]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using MockDistributedObjectsTag =

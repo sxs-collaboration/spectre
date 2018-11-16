@@ -92,7 +92,7 @@ struct System {
 
   using volume_sources = ComputeSources;
 
-  using du_dt = ConservativeDuDt<System>;
+  using compute_time_derivative = ConservativeDuDt<System>;
 
   // skip TildeD as its source is zero.
   using sourced_variables = tmpl::list<Tags::TildeTau, Tags::TildeS<>,

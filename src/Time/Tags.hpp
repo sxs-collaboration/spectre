@@ -12,10 +12,11 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "Options/Options.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
-#include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Time/StepChoosers/StepChooser.hpp"        // IWYU pragma: keep
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
@@ -34,6 +35,8 @@ namespace Tags {
 struct TimeId : db::SimpleTag {
   static std::string name() noexcept { return "TimeId"; }
   using type = ::TimeId;
+  template <typename Tag>
+  using step_prefix = typename Tags::dt<Tag>;
 };
 
 /// \ingroup DataBoxTagsGroup

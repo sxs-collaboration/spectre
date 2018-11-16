@@ -155,7 +155,7 @@ auto compute_boundary_flux_contribution(
       make_not_null(&normal_dot_numerical_fluxes),
       normal_dot_numerical_flux_computer, local_data.mortar_data, remote_data);
 
-  tmpl::for_each<typename variables_tag::tags_list>(
+  tmpl::for_each<db::get_variables_tags_list<variables_tag>>(
       [&normal_dot_numerical_fluxes, &local_data](const auto tag) noexcept {
         using Tag = tmpl::type_from<decltype(tag)>;
         auto& numerical_flux =
