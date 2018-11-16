@@ -12,38 +12,9 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/PointerVector.hpp"
 #include "Utilities/Requires.hpp"
-#include "Utilities/StdArrayHelpers.hpp"
 
-// IWYU doesn't like that we want PointerVector.hpp to expose Blaze and also
-// have VectorImpl.hpp to expose PointerVector.hpp without including Blaze
-// directly in VectorImpl.hpp
-//
 // IWYU pragma: no_include <blaze/math/expressions/DVecMapExpr.h>
 // IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
-// IWYU pragma: no_include <blaze/math/expressions/Forward.h>
-// IWYU pragma: no_include <blaze/math/PaddingFlag.h>
-// IWYU pragma: no_include <blaze/math/traits/AddTrait.h>
-// IWYU pragma: no_include <blaze/math/traits/DivTrait.h>
-// IWYU pragma: no_include <blaze/math/traits/MultTrait.h>
-// IWYU pragma: no_include <blaze/math/traits/SubTrait.h>
-// IWYU pragma: no_include <blaze/system/TransposeFlag.h>
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-// IWYU pragma: no_include <blaze/math/traits/UnaryMapTrait.h>
-// IWYU pragma: no_include <blaze/math/traits/BinaryMapTrait.h>
-#else
-// IWYU pragma: no_include <blaze/math/traits/MapTrait.h>
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-// IWYU pragma: no_include <blaze/math/typetraits/TransposeFlag.h>
-
-// IWYU pragma: no_forward_declare blaze::DenseVector
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-// IWYU pragma: no_forward_declare blaze::UnaryMapTrait
-// IWYU pragma: no_forward_declare blaze::BinaryMapTrait
-#else
-// IWYU pragma: no_forward_declare blaze::MapTrait
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-// IWYU pragma: no_forward_declare blaze::IsVector
-// IWYU pragma: no_forward_declare blaze::TransposeFlag
 // IWYU pragma: no_forward_declare ConstantExpressions_detail::pow
 
 /*!
@@ -78,115 +49,19 @@ class DataVector : public VectorImpl<double, DataVector> {
   using VectorImpl<double, DataVector>::operator=;
   using VectorImpl<double, DataVector>::VectorImpl;
 
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(+=, DataVector)
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(-=, DataVector)
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(*=, DataVector)
-  MAKE_EXPRESSION_MATH_ASSIGN_PV(/=, DataVector)
+  MAKE_MATH_ASSIGN_EXPRESSION_ARITHMETIC(DataVector)
 };
 
 // Specialize the Blaze type traits to correctly handle DataVector
 namespace blaze {
-template <>
-struct IsVector<DataVector> : std::true_type {};
-
-template <>
-struct TransposeFlag<DataVector> : BoolConstant<DataVector::transpose_flag> {};
-
-template <>
-struct AddTrait<DataVector, DataVector> {
-  using Type = DataVector;
-};
-
-template <>
-struct AddTrait<DataVector, double> {
-  using Type = DataVector;
-};
-
-template <>
-struct AddTrait<double, DataVector> {
-  using Type = DataVector;
-};
-
-template <>
-struct SubTrait<DataVector, DataVector> {
-  using Type = DataVector;
-};
-
-template <>
-struct SubTrait<DataVector, double> {
-  using Type = DataVector;
-};
-
-template <>
-struct SubTrait<double, DataVector> {
-  using Type = DataVector;
-};
-
-template <>
-struct MultTrait<DataVector, DataVector> {
-  using Type = DataVector;
-};
-
-template <>
-struct MultTrait<DataVector, double> {
-  using Type = DataVector;
-};
-
-template <>
-struct MultTrait<double, DataVector> {
-  using Type = DataVector;
-};
-
-template <>
-struct DivTrait<DataVector, DataVector> {
-  using Type = DataVector;
-};
-
-template <>
-struct DivTrait<DataVector, double> {
-  using Type = DataVector;
-};
-
-#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-template <typename Operator>
-struct UnaryMapTrait<DataVector, Operator> {
-  using Type = DataVector;
-};
-
-template <typename Operator>
-struct BinaryMapTrait<DataVector, DataVector, Operator> {
-  using Type = DataVector;
-};
-#else
-template <typename Operator>
-struct MapTrait<DataVector, Operator> {
-  using Type = DataVector;
-};
-
-template <typename Operator>
-struct MapTrait<DataVector, DataVector, Operator> {
-  using Type = DataVector;
-};
-#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
+BLAZE_TRAIT_SPECIALIZE_TYPICAL_VECTOR_TRAITS(DataVector);
 }  // namespace blaze
 
 SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const DataVector& t) noexcept {
   return abs(~t);
 }
 
-DEFINE_ARRAY_BINOP(DataVector, double, DataVector, operator+, std::plus<>())
-DEFINE_ARRAY_BINOP(DataVector, DataVector, double, operator+, std::plus<>())
-DEFINE_ARRAY_BINOP(DataVector, DataVector, DataVector, operator+, std::plus<>())
-
-DEFINE_ARRAY_BINOP(DataVector, double, DataVector, operator-, std::minus<>())
-DEFINE_ARRAY_BINOP(DataVector, DataVector, double, operator-, std::minus<>())
-DEFINE_ARRAY_BINOP(DataVector, DataVector, DataVector, operator-,
-                   std::minus<>())
-
-DEFINE_ARRAY_INPLACE_BINOP(DataVector, DataVector, operator-=, std::minus<>())
-DEFINE_ARRAY_INPLACE_BINOP(DataVector, double, operator-=, std::minus<>())
-DEFINE_ARRAY_INPLACE_BINOP(DataVector, DataVector, operator+=, std::plus<>())
-DEFINE_ARRAY_INPLACE_BINOP(DataVector, double, operator+=, std::plus<>())
+MAKE_STD_ARRAY_VECTOR_BINOPS(DataVector)
 
 namespace MakeWithValueImpls {
 /// \brief Returns a DataVector the same size as `input`, with each element

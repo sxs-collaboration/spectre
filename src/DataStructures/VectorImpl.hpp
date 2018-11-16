@@ -380,3 +380,153 @@ std::ostream& operator<<(std::ostream& os,
   sequence_print_helper(os, d.begin(), d.end());
   return os;
 }
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Instructs Blaze to provide the appropriate vector result type after
+ * math operations. This is accomplished by specializing Blaze's type traits
+ * that are used for handling return type deduction and specifying the `using
+ * Type =` nested type alias in the traits.
+ *
+ * \param VECTOR_TYPE The vector type, which matches the type of the operation
+ * result (e.g. `DataVector`)
+ *
+ * \param BLAZE_MATH_TRAIT The blaze trait/expression for which you want to
+ * specify the return type (e.g. `AddTrait`).
+ */
+#define BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, BLAZE_MATH_TRAIT) \
+  template <>                                                              \
+  struct BLAZE_MATH_TRAIT<VECTOR_TYPE, VECTOR_TYPE> {                      \
+    using Type = VECTOR_TYPE;                                              \
+  };                                                                       \
+  template <>                                                              \
+  struct BLAZE_MATH_TRAIT<VECTOR_TYPE, VECTOR_TYPE::value_type> {          \
+    using Type = VECTOR_TYPE;                                              \
+  };                                                                       \
+  template <>                                                              \
+  struct BLAZE_MATH_TRAIT<VECTOR_TYPE::value_type, VECTOR_TYPE> {          \
+    using Type = VECTOR_TYPE;                                              \
+  }
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Instructs Blaze to provide the appropriate vector result type of an
+ * operator between `VECTOR_TYPE` and `COMPATIBLE`, where the operation is
+ * represented by `BLAZE_MATH_TRAIT`
+ *
+ * \param VECTOR_TYPE The vector type, which matches the type of the operation
+ * result (e.g. `ComplexDataVector`)
+ *
+ * \param COMPATIBLE the type for which you want math operations to work with
+ * `VECTOR_TYPE` smoothly (e.g. `DataVector`)
+ *
+ * \param BLAZE_MATH_TRAIT The blaze trait for which you want declare the Type
+ * field (e.g. `AddTrait`)
+ */
+#define BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT( \
+    VECTOR_TYPE, COMPATIBLE, BLAZE_MATH_TRAIT)          \
+  template <>                                           \
+  struct BLAZE_MATH_TRAIT<VECTOR_TYPE, COMPATIBLE> {    \
+    using Type = VECTOR_TYPE;                           \
+  };                                                    \
+  template <>                                           \
+  struct BLAZE_MATH_TRAIT<COMPATIBLE, VECTOR_TYPE> {    \
+    using Type = VECTOR_TYPE;                           \
+  }
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Defines specializations of Blaze `Type` fields which are typically
+ * needed by a contiguous data set
+ *
+ * \details Type definitions here are suitable for the original DataVector, but
+ * this macro might need to be tweaked for other types of data, for instance
+ * Fourier coefficients.
+ *
+ * \param VECTOR_TYPE The vector type, which for the arithmetic operations is
+ * the type of the operation result (e.g. `DataVector`)
+ *
+ */
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
+#define BLAZE_TRAIT_SPECIALIZE_TYPICAL_VECTOR_TRAITS(VECTOR_TYPE) \
+  template <>                                                     \
+  struct IsVector<VECTOR_TYPE> : std::true_type {};               \
+  template <>                                                     \
+  struct TransposeFlag<VECTOR_TYPE>                               \
+      : BoolConstant<VECTOR_TYPE::transpose_flag> {};             \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, AddTrait);     \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, SubTrait);     \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, MultTrait);    \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, DivTrait);     \
+  template <typename Operator>                                    \
+  struct UnaryMapTrait<VECTOR_TYPE, Operator> {                   \
+    using Type = VECTOR_TYPE;                                     \
+  };                                                              \
+  template <typename Operator>                                    \
+  struct BinaryMapTrait<VECTOR_TYPE, VECTOR_TYPE, Operator> {     \
+    using Type = VECTOR_TYPE;                                     \
+  }
+#else
+#define VECTOR_BLAZE_TRAIT_SPEC(VECTOR_TYPE)                   \
+  template <>                                                  \
+  struct IsVector<VECTOR_TYPE> : std::true_type {};            \
+  template <>                                                  \
+  struct TransposeFlag<VECTOR_TYPE>                            \
+      : BoolConstant<VECTOR_TYPE::transpose_flag> {};          \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, AddTrait);  \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, SubTrait);  \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, MultTrait); \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, DivTrait);  \
+  template <typename Operator>                                 \
+  struct MapTrait<VECTOR_TYPE, Operator> {                     \
+    using Type = VECTOR_TYPE;                                  \
+  };                                                           \
+  template <typename Operator>                                 \
+  struct MapTrait<VECTOR_TYPE, VECTOR_TYPE, Operator> {        \
+    using Type = VECTOR_TYPE;                                  \
+  }
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Defines the set of binary operations often supported for
+ * `std::array<VECTOR_TYPE, size>`, for arbitrary `size`.
+ *
+ *  \param VECTOR_TYPE The vector type (e.g. `DataVector`)
+ */
+#define MAKE_STD_ARRAY_VECTOR_BINOPS(VECTOR_TYPE)                            \
+  DEFINE_STD_ARRAY_BINOP(VECTOR_TYPE, VECTOR_TYPE::value_type,               \
+                         VECTOR_TYPE, operator+, std::plus<>())              \
+  DEFINE_STD_ARRAY_BINOP(VECTOR_TYPE, VECTOR_TYPE,                           \
+                         VECTOR_TYPE::value_type, operator+, std::plus<>())  \
+  DEFINE_STD_ARRAY_BINOP(VECTOR_TYPE, VECTOR_TYPE, VECTOR_TYPE, operator+,   \
+                         std::plus<>())                                      \
+                                                                             \
+  DEFINE_STD_ARRAY_BINOP(VECTOR_TYPE, VECTOR_TYPE::value_type,               \
+                         VECTOR_TYPE, operator-, std::minus<>())             \
+  DEFINE_STD_ARRAY_BINOP(VECTOR_TYPE, VECTOR_TYPE,                           \
+                         VECTOR_TYPE::value_type, operator-, std::minus<>()) \
+  DEFINE_STD_ARRAY_BINOP(VECTOR_TYPE, VECTOR_TYPE, VECTOR_TYPE, operator-,   \
+                         std::minus<>())                                     \
+                                                                             \
+  DEFINE_STD_ARRAY_INPLACE_BINOP(VECTOR_TYPE, VECTOR_TYPE, operator-=,       \
+                                 std::minus<>())                             \
+  DEFINE_STD_ARRAY_INPLACE_BINOP(                                            \
+      VECTOR_TYPE, VECTOR_TYPE::value_type, operator-=, std::minus<>())      \
+  DEFINE_STD_ARRAY_INPLACE_BINOP(VECTOR_TYPE, VECTOR_TYPE, operator+=,       \
+                                 std::plus<>())                              \
+  DEFINE_STD_ARRAY_INPLACE_BINOP(                                            \
+      VECTOR_TYPE, VECTOR_TYPE::value_type, operator+=, std::plus<>())
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Defines `MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR` with all
+ * assignment arithmetic operations
+ *
+ * \param VECTOR_TYPE The vector type (e.g. `DataVector`)
+ */
+#define MAKE_MATH_ASSIGN_EXPRESSION_ARITHMETIC(VECTOR_TYPE)  \
+  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(+=, VECTOR_TYPE) \
+  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(-=, VECTOR_TYPE) \
+  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(*=, VECTOR_TYPE) \
+  MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(/=, VECTOR_TYPE)
