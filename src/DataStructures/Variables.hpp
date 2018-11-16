@@ -96,7 +96,7 @@ class Variables<tmpl::list<Tags...>> {
   using difference_type = std::ptrdiff_t;
   static constexpr auto transpose_flag = blaze::defaultTransposeFlag;
   using pointer_type =
-      PointerVector<double, blaze::unaligned, blaze::unpadded, transpose_flag,
+      PointerVector<double, blaze_unaligned, blaze::unpadded, transpose_flag,
                     blaze::DynamicVector<double, transpose_flag>>;
 
   /// A typelist of the Tags whose variables are held

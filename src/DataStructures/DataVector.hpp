@@ -58,8 +58,12 @@ using std::abs;  // NOLINT
 // IWYU pragma: no_include <blaze/math/traits/MultTrait.h>
 // IWYU pragma: no_include <blaze/math/traits/SubTrait.h>
 // IWYU pragma: no_include <blaze/system/TransposeFlag.h>
-// IWYU pragma: no_include <blaze/math/traits/BinaryMapTrait.h>
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 // IWYU pragma: no_include <blaze/math/traits/UnaryMapTrait.h>
+// IWYU pragma: no_include <blaze/math/traits/BinaryMapTrait.h>
+#else
+// IWYU pragma: no_include <blaze/math/traits/MapTrait.h>
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 // IWYU pragma: no_include <blaze/math/typetraits/TransposeFlag.h>
 
 // IWYU pragma: no_forward_declare blaze::DenseVector
@@ -124,7 +128,7 @@ using std::abs;  // NOLINT
  * - tanh
  */
 class DataVector
-    : public PointerVector<double, blaze::unaligned, blaze::unpadded,
+    : public PointerVector<double, blaze_unaligned, blaze::unpadded,
                            blaze::defaultTransposeFlag, DataVector> {
   /// \cond HIDDEN_SYMBOLS
   static constexpr void private_asserts() noexcept {
@@ -136,7 +140,7 @@ class DataVector
   using value_type = double;
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
-  using BaseType = PointerVector<double, blaze::unaligned, blaze::unpadded,
+  using BaseType = PointerVector<double, blaze_unaligned, blaze::unpadded,
                                  blaze::defaultTransposeFlag, DataVector>;
   static constexpr bool transpose_flag = blaze::defaultTransposeFlag;
 
@@ -340,6 +344,7 @@ struct DivTrait<DataVector, double> {
   using Type = DataVector;
 };
 
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 template <typename Operator>
 struct UnaryMapTrait<DataVector, Operator> {
   using Type = DataVector;
@@ -349,6 +354,17 @@ template <typename Operator>
 struct BinaryMapTrait<DataVector, DataVector, Operator> {
   using Type = DataVector;
 };
+#else
+template <typename Operator>
+struct MapTrait<DataVector, Operator> {
+  using Type = DataVector;
+};
+
+template <typename Operator>
+struct MapTrait<DataVector, DataVector, Operator> {
+  using Type = DataVector;
+};
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 }  // namespace blaze
 
 SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const DataVector& t) noexcept {
