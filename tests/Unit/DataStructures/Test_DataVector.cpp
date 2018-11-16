@@ -3,22 +3,21 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <functional>
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
-#include "ErrorHandling/Error.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"  // IWYU pragma: keep
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
-#include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/DataStructures/VectorImplTestHelper.hpp"
+
+// IWYU pragma: no_include <algorithm>
 
 // [[OutputRegex, Must copy into same size]]
 [[noreturn]] SPECTRE_TEST_CASE(

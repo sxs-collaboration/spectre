@@ -1,5 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
+
 #pragma once
 
 #include <array>
@@ -168,13 +169,13 @@ auto remove_nth(const std::tuple<ValueTypes...>& tup) noexcept {
 /// \brief test construction and assignment of a `VectorType` with a `ValueType`
 template <typename VectorType, typename ValueType>
 void vector_test_construct_and_assign(
-    typename tt::get_fundamental_type_t<ValueType> low =
-        typename tt::get_fundamental_type_t<ValueType>{-100.0},
-    typename tt::get_fundamental_type_t<ValueType> high =
-        typename tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
+    tt::get_fundamental_type_t<ValueType> low =
+        tt::get_fundamental_type_t<ValueType>{-100.0},
+    tt::get_fundamental_type_t<ValueType> high =
+        tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<typename tt::get_fundamental_type_t<ValueType>>
-      dist{low, high};
+  UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
+                                                                        high};
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
@@ -240,14 +241,14 @@ void vector_test_construct_and_assign(
 /// \brief test the serialization of a `VectorType` constructed with a
 /// `ValueType`
 template <typename VectorType, typename ValueType>
-void vector_test_serialize(
-    typename tt::get_fundamental_type_t<ValueType> low =
-        typename tt::get_fundamental_type_t<ValueType>{-100.0},
-    typename tt::get_fundamental_type_t<ValueType> high =
-        typename tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
+void vector_test_serialize(tt::get_fundamental_type_t<ValueType> low =
+                               tt::get_fundamental_type_t<ValueType>{-100.0},
+                           tt::get_fundamental_type_t<ValueType> high =
+                               tt::get_fundamental_type_t<ValueType>{
+                                   100.0}) noexcept {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<typename tt::get_fundamental_type_t<ValueType>>
-      dist{low, high};
+  UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
+                                                                        high};
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
@@ -298,14 +299,14 @@ void vector_test_serialize(
 /// \brief test the construction and move of a reference `VectorType`
 /// constructed with a `ValueType`
 template <typename VectorType, typename ValueType>
-void vector_test_ref(typename tt::get_fundamental_type_t<ValueType> low =
-                         typename tt::get_fundamental_type_t<ValueType>{-100.0},
-                     typename tt::get_fundamental_type_t<ValueType> high =
-                         typename tt::get_fundamental_type_t<ValueType>{
+void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
+                         tt::get_fundamental_type_t<ValueType>{-100.0},
+                     tt::get_fundamental_type_t<ValueType> high =
+                         tt::get_fundamental_type_t<ValueType>{
                              100.0}) noexcept {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<typename tt::get_fundamental_type_t<ValueType>>
-      dist{low, high};
+  UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
+                                                                        high};
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
@@ -396,13 +397,13 @@ template <typename VectorType,
           typename ValueType = typename VectorType::ElementType>
 void vector_ref_test_size_error(
     RefSizeErrorTestKind test_kind,
-    typename tt::get_fundamental_type_t<ValueType> low =
-        typename tt::get_fundamental_type_t<ValueType>{-100.0},
-    typename tt::get_fundamental_type_t<ValueType> high =
-        typename tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
+    tt::get_fundamental_type_t<ValueType> low =
+        tt::get_fundamental_type_t<ValueType>{-100.0},
+    tt::get_fundamental_type_t<ValueType> high =
+        tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<typename tt::get_fundamental_type_t<ValueType>>
-      dist{low, high};
+  UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
+                                                                        high};
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
@@ -431,13 +432,13 @@ void vector_ref_test_size_error(
 /// `VectorType` initialized with `ValueType`
 template <typename VectorType, typename ValueType>
 void vector_test_math_after_move(
-    typename tt::get_fundamental_type_t<ValueType> low =
-        typename tt::get_fundamental_type_t<ValueType>{-100.0},
-    typename tt::get_fundamental_type_t<ValueType> high =
-        typename tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
+    tt::get_fundamental_type_t<ValueType> low =
+        tt::get_fundamental_type_t<ValueType>{-100.0},
+    tt::get_fundamental_type_t<ValueType> high =
+        tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<typename tt::get_fundamental_type_t<ValueType>>
-      dist{low, high};
+  UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
+                                                                        high};
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);

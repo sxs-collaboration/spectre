@@ -353,9 +353,8 @@ void test_throw_exception(const ThrowingFunctor& func,
 
 /*!
  * \ingroup TestingFrameworkGroup
- *  \brief A wrapper around Catch's CHECK macro
- * that checks approximate equality of each entry in each tag within a
- * variables.
+ * \brief A wrapper around Catch's CHECK macro that checks approximate equality
+ * of each entry in each tag within a variables.
  */
 #define CHECK_VARIABLES_APPROX(a, b)                                         \
   do {                                                                       \
@@ -366,7 +365,7 @@ void test_throw_exception(const ThrowingFunctor& func,
 
 /*!
  * \ingroup TestingFrameworkGroup
- *  \brief Same as `CHECK_VARIABLES_APPROX`, but with a user-defined  Approx.
+ *  \brief Same as `CHECK_VARIABLES_APPROX`, but with a user-defined Approx.
  *  The third argument should be of type `Approx`.
  */
 #define CHECK_VARIABLES_CUSTOM_APPROX(a, b, appx)                            \
