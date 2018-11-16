@@ -3,14 +3,10 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <array>
-#include <cmath>
-#include <cstddef>
-#include <functional>
-#include <numeric>
+#include <tuple>
 
-#include "DataStructures/DataVector.hpp"
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
 #include "Utilities/Functional.hpp"
@@ -19,192 +15,39 @@
 #include "tests/Unit/DataStructures/VectorImplTestHelper.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-namespace {
-void test_main() {
-  DataVector a{2};
-  CHECK(a.size() == 2);
-  DataVector b{2, 10.0};
-  CHECK(b.size() == 2);
-  for (size_t i = 0; i < b.size(); ++i) {
-    INFO(i);
-    CHECK(b[i] == 10.0);
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
+  SECTION("test construct and assign") {
+    TestHelpers::VectorImpl::vector_test_construct_and_assign<DataVector,
+                                                              double>();
   }
-
-  DataVector t(5, 10.0);
-  CHECK(t.size() == 5);
-  for (size_t i = 0; i < t.size(); ++i) {
-    INFO(i);
-    CHECK(t[i] == 10.0);
+  SECTION("test serialize and deserialize") {
+    TestHelpers::VectorImpl::vector_test_serialize<DataVector, double>();
   }
-  for (const auto& p : t) {
-    CHECK(p == 10.0);
-  }
-  for (auto& p : t) {
-    CHECK(p == 10.0);
-  }
-  DataVector t2{1.43, 2.83, 3.94, 7.85};
-  CHECK(t2.size() == 4);
-  CHECK(t2.is_owning());
-  CHECK(t2[0] == 1.43);
-  CHECK(t2[1] == 2.83);
-  CHECK(t2[2] == 3.94);
-  CHECK(t2[3] == 7.85);
-  test_copy_semantics(t);
-  auto t_copy = t;
-  CHECK(t_copy.is_owning());
-  test_move_semantics(std::move(t), t_copy);
-  DataVector t_move_assignment = std::move(t_copy);
-  CHECK(t_move_assignment.is_owning());
-  DataVector t_move_constructor = std::move(t_move_assignment);
-  CHECK(t_move_constructor.is_owning());
+  TestHelpers::VectorImpl::vector_test_ref<DataVector, double>();
+  TestHelpers::VectorImpl::vector_test_math_after_move<DataVector, double>();
 }
 
-void test_serialization() {
-  const size_t npts = 10;
-  DataVector t(npts), tgood(npts);
-  std::iota(t.begin(), t.end(), 1.2);
-  std::iota(tgood.begin(), tgood.end(), 1.2);
-  CHECK(tgood == t);
-  CHECK(t.is_owning());
-  CHECK(tgood.is_owning());
-  const DataVector serialized = serialize_and_deserialize(t);
-  CHECK(tgood == t);
-  CHECK(serialized == tgood);
-  CHECK(serialized.is_owning());
-  CHECK(serialized.data() != t.data());
-  CHECK(t.is_owning());
+// [[OutputRegex, Must copy into same size]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.RefDiffSize",
+                               "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>();
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }
 
-void test_serialization_ref() {
-  const size_t npts = 10;
-  DataVector t(npts);
-  std::iota(t.begin(), t.end(), 4.3);
-  DataVector t2;
-  t2.set_data_ref(&t);
-  CHECK(t.is_owning());
-  CHECK_FALSE(t2.is_owning());
-  CHECK(t2 == t);
-  const DataVector serialized = serialize_and_deserialize(t);
-  CHECK(t2 == t);
-  CHECK(serialized == t2);
-  CHECK(serialized.is_owning());
-  CHECK(serialized.data() != t.data());
-  CHECK(t.is_owning());
-  const DataVector serialized2 = serialize_and_deserialize(t2);
-  CHECK(t2 == t);
-  CHECK(serialized2 == t2);
-  CHECK(serialized2.is_owning());
-  CHECK(serialized2.data() != t2.data());
-  CHECK_FALSE(t2.is_owning());
+// [[OutputRegex, Must copy into same size]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.MoveRefDiffSize",
+                               "[DataStructures][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  TestHelpers::VectorImpl::vector_ref_test_move_size_error<DataVector>();
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }
 
-void test_datavector_ref() {
-  DataVector data{1.43, 2.83, 3.94, 7.85};
-  DataVector t;
-  t.set_data_ref(&data);
-  CHECK(not t.is_owning());
-  CHECK(data.is_owning());
-  CHECK(t.data() == data.data());
-  CHECK(t.size() == 4);
-  CHECK(t[0] == 1.43);
-  CHECK(t[1] == 2.83);
-  CHECK(t[2] == 3.94);
-  CHECK(t[3] == 7.85);
-  test_copy_semantics(t);
-  DataVector t_copy;
-  t_copy.set_data_ref(&t);
-  test_move_semantics(std::move(t), t_copy);
-  DataVector t_move_assignment = std::move(t_copy);
-  CHECK(not t_move_assignment.is_owning());
-  DataVector t_move_constructor = std::move(t_move_assignment);
-  CHECK(not t_move_constructor.is_owning());
-  {
-    DataVector data_2{1.43, 2.83, 3.94, 7.85};
-    DataVector data_2_ref;
-    data_2_ref.set_data_ref(&data_2);
-    DataVector data_3{2.43, 3.83, 4.94, 8.85};
-    data_2_ref = std::move(data_3);
-    CHECK(data_2[0] == 2.43);
-    CHECK(data_2[1] == 3.83);
-    CHECK(data_2[2] == 4.94);
-    CHECK(data_2[3] == 8.85);
-// Intentionally testing self-move
-#ifdef __clang__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wself-move"
-#endif  // defined(__clang__)
-    data_2_ref = std::move(data_2_ref);
-#ifdef __clang__
-#pragma GCC diagnostic pop
-#endif  // defined(__clang__)
-    CHECK(data_2[0] == 2.43);
-    CHECK(data_2[1] == 3.83);
-    CHECK(data_2[2] == 4.94);
-    CHECK(data_2[3] == 8.85);
-    DataVector owned_data;
-    // clang-tidy: false positive, used after it was moved
-    owned_data = data_2_ref;  // NOLINT
-    CHECK(owned_data[0] == 2.43);
-    CHECK(owned_data[1] == 3.83);
-    CHECK(owned_data[2] == 4.94);
-    CHECK(owned_data[3] == 8.85);
-    // Test operator!=
-    CHECK_FALSE(owned_data != data_2_ref);
-  }
-}
 
-template <typename T1, typename T2>
-void check_vectors(const T1& t1, const T2& t2) {
-  CHECK_ITERABLE_APPROX(t1, t2);
-}
-
-void test_datavector_math_after_move() {
-  DataVector m0(10, 3.0), m1(10, 9.0);
-  {
-    DataVector a(10, 2.0);
-    DataVector b{};
-    b = std::move(a);
-    b = m0 + m1;
-    check_vectors(b, DataVector(10, 12.0));
-    // clang-tidy: use after move (intentional here)
-    CHECK(a.size() == 0);  // NOLINT
-    CHECK(a.is_owning());
-    a = m0 * m1;
-    check_vectors(a, DataVector(10, 27.0));
-    check_vectors(b, DataVector(10, 12.0));
-  }
-
-  {
-    DataVector a(10, 2.0);
-    DataVector b{};
-    b = std::move(a);
-    a = m0 + m1;
-    check_vectors(b, DataVector(10, 2.0));
-    check_vectors(a, DataVector(10, 12.0));
-  }
-
-  {
-    DataVector a(10, 2.0);
-    DataVector b{std::move(a)};
-    b = m0 + m1;
-    CHECK(b.size() == 10);
-    check_vectors(b, DataVector(10, 12.0));
-    // clang-tidy: use after move (intentional here)
-    CHECK(a.size() == 0);  // NOLINT
-    CHECK(a.is_owning());
-    a = m0 * m1;
-    check_vectors(a, DataVector(10, 27.0));
-    check_vectors(b, DataVector(10, 12.0));
-  }
-
-  {
-    DataVector a(10, 2.0);
-    DataVector b{std::move(a)};
-    a = m0 + m1;
-    check_vectors(b, DataVector(10, 2.0));
-    check_vectors(a, DataVector(10, 12.0));
-  }
-}
 enum class UseRefWrap { None, Cref, Ref };
 
 template <UseRefWrap Wrap, class T,
@@ -544,55 +387,7 @@ void test_datavector_math() {
   test_datavector_array_math();
 }
 }  // namespace
-
-SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
-  test_main();
-  test_serialization();
-  test_serialization_ref();
-  test_datavector_ref();
-  test_datavector_math_after_move();
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
+                  "[DataStructures][Unit]") {
   test_datavector_math();
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.DataVector.ExpressionAssignError",
-    "[Unit][DataStructures]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  DataVector one(10, 1.0);
-  DataVector one_ref(one.data(), one.size());
-  DataVector one_b(2, 1.0);
-  one_ref = (one_b * one_b);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.ref_diff_size",
-                               "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  DataVector data{1.43, 2.83, 3.94, 7.85};
-  DataVector data_ref;
-  data_ref.set_data_ref(&data);
-  DataVector data2{1.43, 2.83, 3.94};
-  data_ref = data2;
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.DataStructures.DataVector.move_ref_diff_size",
-    "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  DataVector data{1.43, 2.83, 3.94, 7.85};
-  DataVector data_ref;
-  data_ref.set_data_ref(&data);
-  DataVector data2{1.43, 2.83, 3.94};
-  data_ref = std::move(data2);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
 }
