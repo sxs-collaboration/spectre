@@ -408,3 +408,233 @@ std::ostream& operator<<(std::ostream& os,
   sequence_print_helper(os, d.begin(), d.end());
   return os;
 }
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Generates the (in)equivalence operators for a vector type
+ *
+ * \details Declares equivalence and inequivalence operators for a particular
+ * vector type, which is assumed to inherit from a specialization of
+ * vector as well as (in)equivalence operators for the same vector
+ * type for a comparable DenseVector.
+ *
+ * \param VECTORTYPE  the type which inherits from VectorImpl<a,b> (e.g.
+ * DataVector)
+ */
+#define DECLARE_VECTOR_EQUIV(VECTORTYPE)                                  \
+  bool operator==(const VECTORTYPE& lhs, const VECTORTYPE& rhs) noexcept; \
+  bool operator!=(const VECTORTYPE& lhs, const VECTORTYPE& rhs) noexcept; \
+  template <typename VT, bool VF>                                         \
+  bool operator==(const VECTORTYPE& lhs,                                  \
+                  const blaze::DenseVector<VT, VF>& rhs) noexcept {       \
+    return lhs == VECTORTYPE(rhs);                                        \
+  }                                                                       \
+  template <typename VT, bool VF>                                         \
+  bool operator!=(const VECTORTYPE& lhs,                                  \
+                  const blaze::DenseVector<VT, VF>& rhs) noexcept {       \
+    return not(lhs == rhs);                                               \
+  }                                                                       \
+  template <typename VT, bool VF>                                         \
+  bool operator==(const blaze::DenseVector<VT, VF>& lhs,                  \
+                  const VECTORTYPE& rhs) noexcept {                       \
+    return VECTORTYPE(lhs) == rhs;                                        \
+  }                                                                       \
+  template <typename VT, bool VF>                                         \
+  bool operator!=(const blaze::DenseVector<VT, VF>& lhs,                  \
+                  const VECTORTYPE& rhs) noexcept {                       \
+    return not(lhs == rhs);                                               \
+  }
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Declares the Type field in a chosen blaze trait
+ *
+ * \param VECTORTYPE The vector type, which matches the type of the operation
+ * result (e.g. DataVector)
+ *
+ * \param BLAZE_MATH_TRAIT The blaze trait for which you want declare the Type
+ * field (e.g. AddTrait)
+ */
+#define BLAZE_TRAIT_SPEC_BINTRAIT(VECTORTYPE, BLAZE_MATH_TRAIT) \
+  template <>                                                   \
+  struct BLAZE_MATH_TRAIT<VECTORTYPE, VECTORTYPE> {             \
+    using Type = VECTORTYPE;                                    \
+  };                                                            \
+  template <>                                                   \
+  struct BLAZE_MATH_TRAIT<VECTORTYPE, VECTORTYPE::value_type> { \
+    using Type = VECTORTYPE;                                    \
+  };                                                            \
+  template <>                                                   \
+  struct BLAZE_MATH_TRAIT<VECTORTYPE::value_type, VECTORTYPE> { \
+    using Type = VECTORTYPE;                                    \
+  }
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Declares the Type field in a chosen blaze trait for non-same types
+ *
+ * \param VECTORTYPE The vector type, which matches the type of the operation
+ * result (e.g. DataVector)
+ *
+ * \param COMPATIBLE the type for which you want math operations to work with
+ * VECTORTYPE smoothly
+ *
+ * \param BLAZE_MATH_TRAIT The blaze trait for which you want declare the Type
+ * field (e.g. AddTrait)
+ */
+#define BLAZE_TRAIT_COMPATIBLE_BINTRAIT(VECTORTYPE, COMPATIBLE, \
+                                        BLAZE_MATH_TRAIT)       \
+  template <>                                                   \
+  struct BLAZE_MATH_TRAIT<VECTORTYPE, COMPATIBLE> {             \
+    using Type = VECTORTYPE;                                    \
+  };                                                            \
+  template <>                                                   \
+  struct BLAZE_MATH_TRAIT<COMPATIBLE, VECTORTYPE> {             \
+    using Type = VECTORTYPE;                                    \
+  }
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Declares blaze Type fields which are needed by a contiguous data set
+ *
+ * \details Type declarations here are suitable for the original DataVector, but
+ * this macro might need to be tweaked for other types of data, for instance
+ * Fourier coefficients
+ *
+ * \param VECTORTYPE The vector type, which for the arithmetic operations is the
+ * type of the operation result (e.g. DataVector)
+ *
+ */
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
+#define VECTOR_BLAZE_TRAIT_SPEC(VECTORTYPE)                 \
+  template <>                                               \
+  struct IsVector<VECTORTYPE> : std::true_type {};          \
+  template <>                                               \
+  struct TransposeFlag<VECTORTYPE>                          \
+      : BoolConstant<VECTORTYPE::transpose_flag> {};        \
+  BLAZE_TRAIT_SPEC_BINTRAIT(VECTORTYPE, AddTrait);          \
+  BLAZE_TRAIT_SPEC_BINTRAIT(VECTORTYPE, SubTrait);          \
+  BLAZE_TRAIT_SPEC_BINTRAIT(VECTORTYPE, MultTrait);         \
+  BLAZE_TRAIT_SPEC_BINTRAIT(VECTORTYPE, DivTrait);          \
+  template <typename Operator>                              \
+  struct UnaryMapTrait<VECTORTYPE, Operator> {              \
+    using Type = VECTORTYPE;                                \
+  };                                                        \
+  template <typename Operator>                              \
+  struct BinaryMapTrait<VECTORTYPE, VECTORTYPE, Operator> { \
+    using Type = VECTORTYPE;                                \
+  }
+#else
+#define VECTOR_BLAZE_TRAIT_SPEC(VECTORTYPE)                 \
+  template <>                                               \
+  struct IsVector<VECTORTYPE> : std::true_type {};          \
+  template <>                                               \
+  struct TransposeFlag<VECTORTYPE>                          \
+      : BoolConstant<VECTORTYPE::transpose_flag> {};        \
+  BLAZE_TRAIT_SPEC_BINTRAIT(VECTORTYPE, AddTrait);          \
+  BLAZE_TRAIT_SPEC_BINTRAIT(VECTORTYPE, SubTrait);          \
+  BLAZE_TRAIT_SPEC_BINTRAIT(VECTORTYPE, MultTrait);         \
+  BLAZE_TRAIT_SPEC_BINTRAIT(VECTORTYPE, DivTrait);          \
+  template <typename Operator>                              \
+  struct MapTrait<VECTORTYPE, Operator> {              \
+    using Type = VECTORTYPE;                                \
+  };                                                        \
+  template <typename Operator>                              \
+  struct MapTrait<VECTORTYPE, VECTORTYPE, Operator> { \
+    using Type = VECTORTYPE;                                \
+  }
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
+
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Declares the set of binary operations often supported for arrays of
+ * vectors
+ *
+ *  \param VECTORTYPE The vector type (e.g. DataVector)
+ */
+#define MAKE_ARRAY_VECTOR_BINOPS(VECTORTYPE)                                 \
+  DEFINE_ARRAY_BINOP(VECTORTYPE, VECTORTYPE::value_type,                     \
+                     VECTORTYPE, operator+, std::plus<>())                   \
+  DEFINE_ARRAY_BINOP(VECTORTYPE, VECTORTYPE,                                 \
+                     VECTORTYPE::value_type, operator+, std::plus<>())       \
+  DEFINE_ARRAY_BINOP(VECTORTYPE, VECTORTYPE, VECTORTYPE, operator+,          \
+                     std::plus<>())                                          \
+                                                                             \
+  DEFINE_ARRAY_BINOP(VECTORTYPE, VECTORTYPE::value_type,                     \
+                     VECTORTYPE, operator-, std::minus<>())                  \
+  DEFINE_ARRAY_BINOP(VECTORTYPE, VECTORTYPE,                                 \
+                     VECTORTYPE::value_type, operator-, std::minus<>())      \
+  DEFINE_ARRAY_BINOP(VECTORTYPE, VECTORTYPE, VECTORTYPE, operator-,          \
+                     std::minus<>())                                         \
+                                                                             \
+  DEFINE_ARRAY_INPLACE_BINOP(VECTORTYPE, VECTORTYPE, operator-=,             \
+                             std::minus<>())                                 \
+  DEFINE_ARRAY_INPLACE_BINOP(VECTORTYPE, VECTORTYPE::value_type, operator-=, \
+                             std::minus<>())                                 \
+  DEFINE_ARRAY_INPLACE_BINOP(VECTORTYPE, VECTORTYPE, operator+=,             \
+                             std::plus<>())                                  \
+  DEFINE_ARRAY_INPLACE_BINOP(VECTORTYPE, VECTORTYPE::value_type, operator+=, \
+                             std::plus<>())
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Declares `MAKE_EXPRESSION_MATH_ASSIGN_PV` with all assignment
+ * arithmetic operations
+ *
+ * \param VECTORTYPE The vector type (e.g. DataVector)
+ */
+#define MAKE_EXPRESSION_MATH_ASSIGN_ARITHMETIC(VECTORTYPE) \
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(+=, VECTORTYPE)           \
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(-=, VECTORTYPE)           \
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(*=, VECTORTYPE)           \
+  MAKE_EXPRESSION_MATH_ASSIGN_PV(/=, VECTORTYPE)
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Implements equivalence operations for a derived vector type
+ *
+ * \param VECTORTYPE The vector type (e.g. DataVector)
+ */
+#define IMPLEMENT_VECTOR_EQUIV(VECTORTYPE)                                 \
+  bool operator==(const VECTORTYPE& lhs, const VECTORTYPE& rhs) noexcept { \
+    return lhs.size() == rhs.size() and                                    \
+           std::equal(lhs.begin(), lhs.end(), rhs.begin());                \
+  }                                                                        \
+                                                                           \
+  bool operator!=(const VECTORTYPE& lhs, const VECTORTYPE& rhs) noexcept { \
+    return not(lhs == rhs);                                                \
+  }
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Defines the overloaded elementwise unary function OPERATOR
+ *  taking INTYPE, returning OUTTYPE (vector types)
+ */
+#define DEFINE_VECTOR_ELEMENTWISE_UNARY_FUNCTION(INTYPE, OUTTYPE, OPERATOR) \
+  OUTTYPE OPERATOR(const INTYPE& t) noexcept {                              \
+    OUTTYPE ret{t.size()};                                                  \
+    std::transform(t.begin(), t.end(),                                      \
+                   ret.begin(), [](INTYPE::value_type a) noexcept {         \
+                     return OPERATOR(a);                                    \
+                   });                                                      \
+    return ret;                                                             \
+  }
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Defines the overloaded elementwise binary function OPERATOR
+ *  taking INTYPEL and INTYPER, returning OUTTYPE (vector types)
+ */
+#define DEFINE_VECTOR_ELEMENTWISE_BINARY_FUNCTION(INTYPEL, INTYPER, OUTTYPE,   \
+                                                  OPERATOR)                    \
+  OUTTYPE OPERATOR(const INTYPEL& l, const INTYPER& r) noexcept {              \
+    ASSERT(l.size() == r.size(),                                               \
+           "Elementwise operations must be between objects of the same size"   \
+               << " not " << l.size() << " and " r.size());                    \
+    OUTTYPE ret{l.size()};                                                     \
+    std::transform(l.begin(), l.end(), r.begin(), ret.begin(),                 \
+                   [](INTYPEL::value_type a, INTYPER::value_type b) noexcept { \
+                     return OPERATOR(a, b);                                    \
+                   });                                                         \
+    return ret;                                                                \
+  }
