@@ -34,24 +34,14 @@ struct MockMetavariables {
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
 
-  using component_list = tmpl::list<
-      InterpTargetTestHelpers::mock_interpolation_target<MockMetavariables,
-                                                         InterpolationTargetA>,
-      InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
+  using component_list =
+      tmpl::list<InterpTargetTestHelpers::mock_interpolation_target<
+                     MockMetavariables, InterpolationTargetA>,
+                 InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialize, Exit };
 };
 }  // namespace
-
-// operator== for testing creation:
-namespace intrp {
-namespace OptionHolders {
-bool operator==(const LineSegment<3>& lhs, const LineSegment<3>& rhs) noexcept {
-  return lhs.begin == rhs.begin and lhs.end == rhs.end and
-         lhs.number_of_points == rhs.number_of_points;
-}
-}  // namespace OptionHolders
-}  // namespace intrp
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
                   "[Unit]") {

@@ -19,8 +19,8 @@ export PATH=$PATH:/work/texlive/bin/x86_64-linux
 
 ccache -z
 
-# We don't need debug symbols during CI and we are able to reduce memory
-# usage by 1.5x during compilation.
+# We don't need debug symbols during CI, so we turn them off to reduce memory
+# usage (by 1.5x) during compilation.
 cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} \
       -D CMAKE_C_COMPILER=${CC} \
       -D CMAKE_CXX_COMPILER=${CXX} \
@@ -45,8 +45,8 @@ if [ ${RUN_IWYU} ]; then
     ${SPECTRE_SOURCE_DIR}/.travis/RunIncludeWhatYouUse.sh
 fi
 
-# Check documentation output for warnings write to stdout and to file so we
-# can search the file for warnings
+# Check documentation output for warnings; we write the output to stdout and to
+# a file so we can search the file for warnings
 if [ ${BUILD_DOC} ]; then
     make doc | tee doxygen.log
     grep 'warning' ./doxygen.log && exit 1

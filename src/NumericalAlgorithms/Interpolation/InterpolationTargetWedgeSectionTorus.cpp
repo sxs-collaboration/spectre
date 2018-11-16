@@ -44,5 +44,22 @@ void WedgeSectionTorus::pup(PUP::er& p) noexcept {
   p | use_uniform_theta_grid;
 }
 
+bool operator==(const WedgeSectionTorus& lhs,
+                const WedgeSectionTorus& rhs) noexcept {
+  return lhs.min_radius == rhs.min_radius and
+         lhs.max_radius == rhs.max_radius and lhs.min_theta == rhs.min_theta and
+         lhs.max_theta == rhs.max_theta and
+         lhs.number_of_radial_points == rhs.number_of_radial_points and
+         lhs.number_of_theta_points == rhs.number_of_theta_points and
+         lhs.number_of_phi_points == rhs.number_of_phi_points and
+         lhs.use_uniform_radial_grid == rhs.use_uniform_radial_grid and
+         lhs.use_uniform_theta_grid == rhs.use_uniform_theta_grid;
+}
+
+bool operator!=(const WedgeSectionTorus& lhs,
+                const WedgeSectionTorus& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
 }  // namespace OptionHolders
 }  // namespace intrp

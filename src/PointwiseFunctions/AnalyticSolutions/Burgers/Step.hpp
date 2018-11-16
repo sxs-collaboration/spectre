@@ -39,14 +39,14 @@ class Step {
  public:
   struct LeftValue {
     using type = double;
-    static type lower_bound() { return 0.0; }
-    static type default_value() { return 2.0; }
+    static type lower_bound() noexcept { return 0.0; }
+    static type default_value() noexcept { return 2.0; }
     static constexpr OptionString help{"The value of U, left of the shock"};
   };
   struct RightValue {
     using type = double;
-    static type lower_bound() { return 0.0; }
-    static type default_value() { return 1.0; }
+    static type lower_bound() noexcept { return 0.0; }
+    static type default_value() noexcept { return 1.0; }
     static constexpr OptionString help{"The value of U, right of the shock"};
   };
   struct InitialPosition {

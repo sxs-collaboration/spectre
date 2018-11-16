@@ -72,7 +72,7 @@ class BondiMichel {
   struct Mass {
     using type = double;
     static constexpr OptionString help = {"Mass of the black hole."};
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
   };
 
   /// The radius at which the fluid becomes supersonic.
@@ -80,7 +80,7 @@ class BondiMichel {
     using type = double;
     static constexpr OptionString help = {
         "Schwarzschild radius where fluid becomes supersonic."};
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
   };
 
   /// The rest mass density of the fluid at the sonic radius.
@@ -88,7 +88,7 @@ class BondiMichel {
     using type = double;
     static constexpr OptionString help = {
         "The density of the fluid at the sonic radius."};
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
   };
 
   /// The polytropic exponent for the polytropic fluid.
@@ -96,7 +96,7 @@ class BondiMichel {
     using type = double;
     static constexpr OptionString help = {
         "The polytropic exponent for the polytropic fluid."};
-    static type lower_bound() { return 1.0; }
+    static type lower_bound() noexcept { return 1.0; }
   };
 
   /// The strength of the radial magnetic field.

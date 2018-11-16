@@ -47,7 +47,7 @@ namespace Solutions {
  * (independent of \f$\phi\f$). Self-gravity is neglected, so that the fluid
  * variables are determined as functions of the metric. Following the treatment
  * by Kozlowski et al. (1978) (but using signature +2) the solution is
- * expresssed in terms of the quantities
+ * expressed in terms of the quantities
  *
  * \f{align*}
  * \Omega &= \dfrac{u^\phi}{u^t},\\
@@ -154,7 +154,7 @@ namespace Solutions {
  * \f}
  *
  * where \f$\alpha\f$ and \f$\beta^i\f$ are the lapse and the shift,
-respectively.
+ * respectively.
  *
  * \note Kozlowski et al. (1978) denote \f$l_* = u_\phi u^t\f$ in order to
  * distinguish this quantity from their own definition \f$l = - u_\phi/u_t\f$.
@@ -170,15 +170,15 @@ class FishboneMoncriefDisk {
   struct BlackHoleMass {
     using type = double;
     static constexpr OptionString help = {"The mass of the black hole."};
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
   };
-  /// The black hole spin magnitude in units of the black hole mass.
+  /// The dimensionless black hole spin magnitude.
   struct BlackHoleSpin {
     using type = double;
     static constexpr OptionString help = {
         "The dimensionless black hole spin magnitude."};
-    static type lower_bound() { return 0.0; }
-    static type upper_bound() { return 1.0; }
+    static type lower_bound() noexcept { return 0.0; }
+    static type upper_bound() noexcept { return 1.0; }
   };
   /// The radial coordinate of the inner edge of the disk.
   struct InnerEdgeRadius {
@@ -197,14 +197,14 @@ class FishboneMoncriefDisk {
     using type = double;
     static constexpr OptionString help = {
         "The polytropic constant of the fluid."};
-    static type lower_bound() { return 0.; }
+    static type lower_bound() noexcept { return 0.; }
   };
   /// The polytropic exponent of the fluid.
   struct PolytropicExponent {
     using type = double;
     static constexpr OptionString help = {
         "The polytropic exponent of the fluid."};
-    static type lower_bound() { return 1.; }
+    static type lower_bound() noexcept { return 1.; }
   };
 
   using options =

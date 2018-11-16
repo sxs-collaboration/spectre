@@ -36,10 +36,10 @@ struct MockMetavariables {
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
 
-  using component_list = tmpl::list<
-      InterpTargetTestHelpers::mock_interpolation_target<MockMetavariables,
-                                                         InterpolationTargetA>,
-      InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
+  using component_list =
+      tmpl::list<InterpTargetTestHelpers::mock_interpolation_target<
+                     MockMetavariables, InterpolationTargetA>,
+                 InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialize, Exit };
 };
@@ -127,23 +127,6 @@ void test_r_theta_uniform() noexcept {
       domain_creator, wedge_section_torus_opts, expected_block_coord_holders);
 }
 }  // namespace
-
-// operator== for testing creation:
-namespace intrp {
-namespace OptionHolders {
-bool operator==(const WedgeSectionTorus& lhs,
-                const WedgeSectionTorus& rhs) noexcept {
-  return lhs.min_radius == rhs.min_radius and
-         lhs.max_radius == rhs.max_radius and lhs.min_theta == rhs.min_theta and
-         lhs.max_theta == rhs.max_theta and
-         lhs.number_of_radial_points == rhs.number_of_radial_points and
-         lhs.number_of_theta_points == rhs.number_of_theta_points and
-         lhs.number_of_phi_points == rhs.number_of_phi_points and
-         lhs.use_uniform_radial_grid == rhs.use_uniform_radial_grid and
-         lhs.use_uniform_theta_grid == rhs.use_uniform_theta_grid;
-}
-}  // namespace OptionHolders
-}  // namespace intrp
 
 SPECTRE_TEST_CASE(
     "Unit.NumericalAlgorithms.InterpolationTarget.WedgeSectionTorus",

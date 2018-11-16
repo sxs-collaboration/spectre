@@ -75,7 +75,7 @@ class AlfvenWave {
     using type = double;
     static constexpr OptionString help = {
         "The constant pressure throughout the fluid."};
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
   };
 
   /// The constant rest mass density throughout the fluid.
@@ -83,7 +83,7 @@ class AlfvenWave {
     using type = double;
     static constexpr OptionString help = {
         "The constant rest mass density throughout the fluid."};
-    static type lower_bound() { return 0.0; }
+    static type lower_bound() noexcept { return 0.0; }
   };
 
   /// The adiabatic index for the ideal fluid.
@@ -91,7 +91,7 @@ class AlfvenWave {
     using type = double;
     static constexpr OptionString help = {
         "The adiabatic index for the ideal fluid."};
-    static type lower_bound() { return 1.0; }
+    static type lower_bound() noexcept { return 1.0; }
   };
 
   /// The strength of the background magnetic field.
@@ -106,8 +106,8 @@ class AlfvenWave {
     using type = double;
     static constexpr OptionString help = {
         "The perturbation amplitude of the magnetic field."};
-    static type lower_bound() { return -1.0; }
-    static type upper_bound() { return 1.0; }
+    static type lower_bound() noexcept { return -1.0; }
+    static type upper_bound() noexcept { return 1.0; }
   };
 
   using options =

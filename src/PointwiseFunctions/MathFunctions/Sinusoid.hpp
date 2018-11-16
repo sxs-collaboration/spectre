@@ -40,7 +40,7 @@ class Sinusoid : public MathFunction<1> {
   struct Phase {
     using type = double;
     static constexpr OptionString help = {"The phase shift."};
-    static type default_value() { return 0.; }
+    static type default_value() noexcept { return 0.; }
   };
   using options = tmpl::list<Amplitude, Wavenumber, Phase>;
 

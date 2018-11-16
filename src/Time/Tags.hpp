@@ -140,7 +140,7 @@ struct InitialTime {
   using type = double;
   static constexpr OptionString help = {
       "The time at which the evolution is started."};
-  static type default_value() { return 0.0; }
+  static type default_value() noexcept { return 0.0; }
 };
 
 /// \ingroup OptionTagsGroup

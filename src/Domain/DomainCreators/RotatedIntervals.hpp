@@ -52,7 +52,7 @@ class RotatedIntervals : public DomainCreator<1, TargetFrame> {
     using type = std::array<bool, 1>;
     static constexpr OptionString help = {
         "Sequence for [x], true if periodic."};
-    static type default_value() { return {{false}}; }
+    static type default_value() noexcept { return {{false}}; }
   };
   struct InitialRefinement {
     using type = std::array<size_t, 1>;

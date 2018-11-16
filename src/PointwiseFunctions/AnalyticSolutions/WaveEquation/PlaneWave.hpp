@@ -63,7 +63,7 @@ class PlaneWave {
     using type = std::array<double, Dim>;
     static constexpr OptionString help = {
         "The initial center of the profile of the wave."};
-    static type default_value() { return make_array<Dim>(0.0); }
+    static type default_value() noexcept { return make_array<Dim>(0.0); }
   };
 
   struct Profile {

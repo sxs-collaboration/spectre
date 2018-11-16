@@ -3,16 +3,34 @@
 
 #pragma once
 
-#include <algorithm>
-#include <pup.h>
+#include <array>
+#include <cstddef>
 
-#include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
-#include "NumericalAlgorithms/Interpolation/Tags.hpp"
+#include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+class DataVector;
+namespace PUP {
+class er;
+}  // namespace PUP
+namespace db {
+template <typename TagsList>
+class DataBox;
+}  // namespace db
+namespace intrp {
+namespace Tags {
+template <typename Metavariables>
+struct TemporalIds;
+}  // namespace Tags
+}  // namespace intrp
+/// \endcond
 
 namespace intrp {
 
@@ -36,7 +54,7 @@ struct LineSegment {
     using type = size_t;
     static constexpr OptionString help = {
         "Number of points including endpoints"};
-    static type lower_bound() { return 2; }
+    static type lower_bound() noexcept { return 2; }
   };
   using options = tmpl::list<Begin, End, NumberOfPoints>;
   static constexpr OptionString help = {
@@ -45,11 +63,7 @@ struct LineSegment {
 
   LineSegment(std::array<double, VolumeDim> begin_in,
               std::array<double, VolumeDim> end_in,
-              size_t number_of_points_in)
-      : begin(std::move(begin_in)),  // NOLINT
-        end(std::move(end_in)),      // NOLINT
-        number_of_points(number_of_points_in) {}
-  // above NOLINT for std::move of trivially copyable type.
+              size_t number_of_points_in) noexcept;
 
   LineSegment() = default;
   LineSegment(const LineSegment& /*rhs*/) = default;
@@ -59,16 +73,20 @@ struct LineSegment {
   ~LineSegment() = default;
 
   // clang-tidy non-const reference pointer.
-  void pup(PUP::er& p) noexcept {  // NOLINT
-    p | begin;
-    p | end;
-    p | number_of_points;
-  }
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
   std::array<double, VolumeDim> begin{};
   std::array<double, VolumeDim> end{};
   size_t number_of_points{};
 };
+
+template <size_t VolumeDim>
+bool operator==(const LineSegment<VolumeDim>& lhs,
+                const LineSegment<VolumeDim>& rhs) noexcept;
+template <size_t VolumeDim>
+bool operator!=(const LineSegment<VolumeDim>& lhs,
+                const LineSegment<VolumeDim>& rhs) noexcept;
+
 }  // namespace OptionHolders
 
 namespace Actions {

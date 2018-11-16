@@ -35,7 +35,7 @@ class Gaussian : public MathFunction<1> {
   struct Width {
     using type = double;
     static constexpr OptionString help = {"The width."};
-    static type lower_bound() { return 0.; }
+    static type lower_bound() noexcept { return 0.; }
   };
 
   struct Center {

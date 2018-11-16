@@ -53,7 +53,7 @@ class Cylinder : public DomainCreator<3, TargetFrame> {
     using type = bool;
     static constexpr OptionString help = {
         "True if periodic in the cylindrical z direction."};
-    static type default_value() { return true; }
+    static type default_value() noexcept { return true; }
   };
 
   struct InitialRefinement {
@@ -72,7 +72,7 @@ class Cylinder : public DomainCreator<3, TargetFrame> {
     using type = bool;
     static constexpr OptionString help = {
         "Use equiangular instead of equidistant coordinates."};
-    static type default_value() { return false; }
+    static type default_value() noexcept { return false; }
   };
 
   using options = tmpl::list<InnerRadius, OuterRadius, LowerBound, UpperBound,

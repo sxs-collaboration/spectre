@@ -54,8 +54,8 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
   struct Order {
     using type = size_t;
     static constexpr OptionString help = {"Convergence order"};
-    static type lower_bound() { return 1; }
-    static type upper_bound() { return maximum_order; }
+    static type lower_bound() noexcept { return 1; }
+    static type upper_bound() noexcept { return maximum_order; }
   };
   using options = tmpl::list<Order>;
   static constexpr OptionString help = {
