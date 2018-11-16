@@ -344,9 +344,8 @@ void test_throw_exception(const ThrowingFunctor& func,
 ///
 /// \details As the generator is made, `INFO` is called to make sure failed
 /// tests provide seed information.
-#define MAKE_GENERATOR(NAME)                    \
-    std::random_device r;                       \
-    const auto seed = r();                      \
-    INFO("Seed is: " << seed);                  \
-    auto (NAME) = std::mt19937{seed};           \
-
+#define MAKE_GENERATOR(NAME) \
+  std::random_device r;      \
+  const auto seed = r();     \
+  INFO("Seed is: " << seed); \
+  auto(NAME) = std::mt19937 { seed }

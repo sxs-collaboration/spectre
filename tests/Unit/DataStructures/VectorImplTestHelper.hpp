@@ -2,6 +2,7 @@
 // See LICENSE.txt for details.
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <memory>  // IWYU pragma: keep
 #include <tuple>
@@ -10,9 +11,91 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/Tuple.hpp"
+#include "tests/Unit/TestingFramework.hpp"
 
 namespace TestHelpers {
 namespace VectorImpl {
+
+namespace detail {
+// `check_vectors` checks equality of vectors and related data types for tests.
+//
+// Comparisons between any pairs of the following are supported:
+// vector types
+// arithmetic types
+// arrays of vectors
+// arrays of arithmetic types
+
+// between two vectors
+template <typename T1, typename T2,
+          Requires<cpp17::is_arithmetic_v<typename T1::ElementType> and
+                   cpp17::is_arithmetic_v<typename T2::ElementType>> = nullptr>
+inline void check_vectors(const T1& t1, const T2& t2) noexcept {
+  CHECK_ITERABLE_APPROX(typename T1::ResultType{t1},
+                        typename T2::ResultType{t2});
+}
+// between two arithmetic types
+template <typename T1, typename T2,
+          Requires<cpp17::is_arithmetic_v<T1> and cpp17::is_arithmetic_v<T2>> =
+              nullptr>
+inline void check_vectors(const T1& t1, const T2& t2) noexcept {
+  CHECK(approx(t1) == t2);
+}
+// between an arithmetic type and a vector
+template <typename T1, typename T2,
+          Requires<cpp17::is_arithmetic_v<T1> and
+                   cpp17::is_arithmetic_v<typename T2::ElementType>> = nullptr>
+void check_vectors(const T1& t1, const T2& t2) noexcept {
+  check_vectors(typename T2::ResultType{t2.size(), t1}, t2);
+}
+// between a vector and an arithmetic type
+template <typename T1, typename T2,
+          Requires<cpp17::is_arithmetic_v<typename T1::ElementType> and
+                   cpp17::is_arithmetic_v<T2>> = nullptr>
+void check_vectors(const T1& t1, const T2& t2) noexcept {
+  check_vectors(t2, t1);
+}
+// between two arrays
+template <typename T1, typename T2, size_t S>
+void check_vectors(const std::array<T1, S>& t1,
+                   const std::array<T2, S>& t2) noexcept {
+  for (size_t i = 0; i < S; i++) {
+    check_vectors(gsl::at(t1, i), gsl::at(t2, i));
+  }
+}
+// between an array of vectors and an arithmetic type
+template <typename T1, typename T2, size_t S,
+          Requires<cpp17::is_arithmetic_v<T2>> = nullptr,
+          Requires<cpp17::is_arithmetic_v<typename T1::ElementType>> = nullptr>
+void check_vectors(const std::array<T1, S>& t1, const T2& t2) noexcept {
+  std::array<T1, S> compArr;
+  compArr.fill(typename T1::ResultType(t1[0].size(), t2));
+  check_vectors(t1, compArr);
+}
+// between an array of vectors and a vector
+template <typename T1, typename T2, size_t S,
+          Requires<cpp17::is_arithmetic_v<typename T2::ElementType>> = nullptr,
+          Requires<cpp17::is_arithmetic_v<typename T1::ElementType>> = nullptr>
+void check_vectors(const std::array<T1, S>& t1, const T2& t2) noexcept {
+  std::array<T1, S> compArr;
+  compArr.fill(typename T1::ResultType(t2));
+  check_vectors(t1, compArr);
+}
+// between an arithmetic type and an array of vectors
+template <typename T1, typename T2, size_t S,
+          Requires<cpp17::is_arithmetic_v<T1>> = nullptr,
+          Requires<cpp17::is_arithmetic_v<typename T2::ElementType>> = nullptr>
+void check_vectors(const T1& t1, const std::array<T2, S>& t2) noexcept {
+  check_vectors(t2, t1);
+}
+// between a vector and an array of vectors
+template <typename T1, typename T2, size_t S,
+          Requires<cpp17::is_arithmetic_v<typename T1::ElementType>> = nullptr,
+          Requires<cpp17::is_arithmetic_v<typename T2::ElementType>> = nullptr>
+void check_vectors(const T1& t1, const std::array<T2, S>& t2) noexcept {
+  check_vectors(t2, t1);
+}
+} // namespace detail
+
 // @{
 /*!
  * \brief Perform a function over combinatoric subsets of a `std::tuple`
