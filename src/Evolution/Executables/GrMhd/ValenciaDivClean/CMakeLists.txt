@@ -26,3 +26,28 @@ add_spectre_executable(
   EvolutionMetavars
   "${LIBS_TO_LINK}"
   )
+
+set(LIBS_TO_LINK
+  CoordinateMaps
+  DiscontinuousGalerkin
+  DomainCreators
+  GeneralRelativitySolutions
+  GrMhdAnalyticData
+  Hydro
+  IO
+  Informer
+  LinearOperators
+  MathFunctions
+  SlopeLimiters
+  Time
+  Utilities
+  ValenciaDivClean
+  )
+
+add_spectre_executable(
+  EvolveValenciaDivCleanAnalyticData
+  EvolveValenciaDivCleanAnalyticData
+  Evolution/Executables/GrMhd/ValenciaDivClean
+  EvolutionMetavars
+  "${LIBS_TO_LINK}"
+  )
