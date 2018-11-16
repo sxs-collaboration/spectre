@@ -177,8 +177,9 @@ double quartic_answer(double x) {
 
 namespace MakeWithValueImpls {
 template <>
+template <typename ValType>
 SPECTRE_ALWAYS_INLINE NCd MakeWithValueImpl<NCd, NCd>::apply(
-    const NCd& /*unused*/, double value) {
+    const NCd& /*unused*/, ValType value) noexcept {
   return NCd(value);
 }
 }  // namespace MakeWithValueImpls

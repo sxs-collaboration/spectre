@@ -17,7 +17,8 @@
 namespace MakeWithValueImpls {
 template <typename R, typename T>
 struct MakeWithValueImpl {
-  static SPECTRE_ALWAYS_INLINE R apply(const T& input, double value);
+  template <typename ValType>
+  static SPECTRE_ALWAYS_INLINE R apply(const T& input, ValType value) noexcept;
 };
 }  // namespace MakeWithValueImpls
 
@@ -31,8 +32,9 @@ struct MakeWithValueImpl {
 /// at the same set of grid-points as the `input`
 ///
 /// \see MakeWithValueImpls
-template <typename R, typename T>
-SPECTRE_ALWAYS_INLINE R make_with_value(const T& input, double value) {
+template <typename R, typename T, typename ValType>
+SPECTRE_ALWAYS_INLINE R make_with_value(const T& input,
+                                        ValType value) noexcept {
   return MakeWithValueImpls::MakeWithValueImpl<R, T>::apply(input, value);
 }
 
@@ -41,7 +43,7 @@ namespace MakeWithValueImpls {
 template <typename T>
 struct MakeWithValueImpl<double, T> {
   static SPECTRE_ALWAYS_INLINE double apply(const T& /* input */,
-                                            const double value) {
+                                            const double value) noexcept {
     return value;
   }
 };
@@ -50,8 +52,9 @@ struct MakeWithValueImpl<double, T> {
 /// must be `make_with_value`-creatable from a `T`.
 template <size_t Size, typename T>
 struct MakeWithValueImpl<std::array<T, Size>, T> {
-  static SPECTRE_ALWAYS_INLINE std::array<T, Size> apply(const T& input,
-                                                         const double value) {
+  template <typename ValType>
+  static SPECTRE_ALWAYS_INLINE std::array<T, Size> apply(
+      const T& input, const ValType value) noexcept {
     return make_array<Size>(make_with_value<T>(input, value));
   }
 };
@@ -60,8 +63,9 @@ struct MakeWithValueImpl<std::array<T, Size>, T> {
 /// must be `make_with_value`-creatable from a `T`.
 template <typename... Tags, typename T>
 struct MakeWithValueImpl<tuples::TaggedTuple<Tags...>, T> {
+  template <typename ValType>
   static SPECTRE_ALWAYS_INLINE tuples::TaggedTuple<Tags...> apply(
-      const T& input, const double value) {
+      const T& input, const ValType value) noexcept {
     return tuples::TaggedTuple<Tags...>(
         make_with_value<typename Tags::type>(input, value)...);
   }

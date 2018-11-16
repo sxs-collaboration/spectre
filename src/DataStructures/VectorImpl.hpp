@@ -556,3 +556,25 @@ std::ostream& operator<<(std::ostream& os,
   MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(-=, VECTORTYPE) \
   MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(*=, VECTORTYPE) \
   MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(/=, VECTORTYPE)
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Declares the MakeWithValueImpl apply specialization
+ *
+ * \details the MakeWithValueImpl<type,type>::apply(type,double) constructed
+ * here produces an object with the same size as the type argument,
+ * initialized with the value argument in every entry.
+ *
+ * \param VECTORTYPE The vector type (e.g. DataVector)
+ */
+#define MAKE_VECTOR_MAKEWITHVALUES(VECTORTYPE)           \
+  namespace MakeWithValueImpls {                         \
+  template <>                                            \
+  struct MakeWithValueImpl<VECTORTYPE, VECTORTYPE> {     \
+    static SPECTRE_ALWAYS_INLINE VECTORTYPE              \
+    apply(const VECTORTYPE& input,                       \
+          const VECTORTYPE::value_type value) noexcept { \
+      return VECTORTYPE(input.size(), value);            \
+    }                                                    \
+  };                                                     \
+  }  // namespace MakeWithValueImpls
