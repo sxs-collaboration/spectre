@@ -26,6 +26,9 @@ installation_on_clusters "Installation on clusters" page.
 * [HDF5](https://support.hdfgroup.org/HDF5/) (non-mpi version on macOS)
 * [jemalloc](https://github.com/jemalloc/jemalloc)
 * LAPACK
+* [libsharp](https://github.com/Libsharp/libsharp) should be built with
+  support disabled for openmp and mpi, as we want all of our parallelism to
+  be accomplished via Charm++.
 * [LIBXSMM](https://github.com/hfp/libxsmm)
 * [yaml-cpp](https://github.com/jbeder/yaml-cpp) built from a commit more
   recent than November 2016 (versions newer than 0.5.3 should work once any
@@ -215,6 +218,7 @@ install the SpECTRE dependencies using
 ```
 spack install blaze
 spack install brigand@master
+spack install libsharp -openmp -mpi
 spack install catch
 spack install gsl
 spack install jemalloc # or from your package manager
