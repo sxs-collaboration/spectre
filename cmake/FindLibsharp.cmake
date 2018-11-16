@@ -29,10 +29,11 @@ find_library(LIBSHARP_LIBCUTILS
 
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(libsharp
-    DEFAULT_MSG LIBSHARP_INCLUDE_DIRS LIBSHARP_LIBRARIES)
-find_package_handle_standard_args(libsharp
-    DEFAULT_MSG LIBSHARP_INCLUDE_DIRS LIBSHARP_LIBFFTPACK)
-find_package_handle_standard_args(libsharp
-    DEFAULT_MSG LIBSHARP_INCLUDE_DIRS LIBSHARP_LIBCUTILS)
-mark_as_advanced(LIBSHARP_INCLUDE_DIRS LIBSHARP_LIBRARIES LIBSHARP_FFTPACK LIBSHARP_LIBCUTILS)
+find_package_handle_standard_args(Libsharp
+    REQUIRED_VARS LIBSHARP_INCLUDE_DIRS
+    LIBSHARP_LIBRARIES LIBSHARP_LIBFFTPACK LIBSHARP_LIBCUTILS)
+
+mark_as_advanced(LIBSHARP_INCLUDE_DIRS)
+mark_as_advanced(LIBSHARP_LIBRARIES)
+mark_as_advanced(LIBSHARP_FFTPACK)
+mark_as_advanced(LIBSHARP_LIBCUTILS)
