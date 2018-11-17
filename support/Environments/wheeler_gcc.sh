@@ -16,6 +16,7 @@ spectre_unload_modules() {
     module unload gsl/2.1
     module unload hdf5/1.8.17
     module unload jemalloc/5.0.1
+    module unload libsharp/1.0.0
     module unload libxsmm/1.8.1
     module unload openblas/0.2.18
     module unload papi/5.5.1
@@ -38,6 +39,7 @@ spectre_load_modules() {
     module load gsl/2.1
     module load hdf5/1.8.17
     module load jemalloc/5.0.1
+    module load libsharp/1.0.0
     module load libxsmm/1.8.1
     module load openblas/0.2.18
     module load papi/5.5.1
