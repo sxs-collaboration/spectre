@@ -296,6 +296,11 @@ void test_datavector_math() noexcept {
   const DataVector step_function_data{-12.3, 2.0, -4.0, 0.0, 7.0, -8.0};
   check_vectors(step_function(wrap<WrapLeftOp>(step_function_data)),
                 DataVector{0.0, 1.0, 0.0, 1.0, 1.0, 0.0});
+  // check that the step_function works with multiple blaze operations
+  // prior to step evaluation
+  check_vectors(step_function(wrap<WrapLeftOp>(0.5 * step_function_data
+                                               + DataVector(6, 1.0))),
+                DataVector{0.0, 1.0, 0.0, 1.0, 1.0, 0.0});
 
   check_vectors(sqrt(wrap<WrapLeftOp>(nine)), DataVector(num_pts, 3.0));
   check_vectors(invsqrt(wrap<WrapLeftOp>(nine)),

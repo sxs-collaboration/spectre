@@ -90,19 +90,26 @@ template <typename T>
 BLAZE_ALWAYS_INLINE SIMDdouble step_function(const SIMDf64<T>& v) noexcept
 #if BLAZE_AVX512F_MODE || BLAZE_MIC_MODE
 {
-  return _mm512_set_pd((~v)[7] < 0.0 ? 0.0 : 1.0, (~v)[6] < 0.0 ? 0.0 : 1.0,
-                       (~v)[5] < 0.0 ? 0.0 : 1.0, (~v)[4] < 0.0 ? 0.0 : 1.0,
-                       (~v)[3] < 0.0 ? 0.0 : 1.0, (~v)[2] < 0.0 ? 0.0 : 1.0,
-                       (~v)[1] < 0.0 ? 0.0 : 1.0, (~v)[0] < 0.0 ? 0.0 : 1.0);
+  return _mm512_set_pd((~v).eval().value[7] < 0.0 ? 0.0 : 1.0,
+                       (~v).eval().value[6] < 0.0 ? 0.0 : 1.0,
+                       (~v).eval().value[5] < 0.0 ? 0.0 : 1.0,
+                       (~v).eval().value[4] < 0.0 ? 0.0 : 1.0,
+                       (~v).eval().value[3] < 0.0 ? 0.0 : 1.0,
+                       (~v).eval().value[2] < 0.0 ? 0.0 : 1.0,
+                       (~v).eval().value[1] < 0.0 ? 0.0 : 1.0,
+                       (~v).eval().value[0] < 0.0 ? 0.0 : 1.0);
 }
 #elif BLAZE_AVX_MODE
 {
-  return _mm256_set_pd((~v)[3] < 0.0 ? 0.0 : 1.0, (~v)[2] < 0.0 ? 0.0 : 1.0,
-                       (~v)[1] < 0.0 ? 0.0 : 1.0, (~v)[0] < 0.0 ? 0.0 : 1.0);
+  return _mm256_set_pd((~v).eval().value[3] < 0.0 ? 0.0 : 1.0,
+                       (~v).eval().value[2] < 0.0 ? 0.0 : 1.0,
+                       (~v).eval().value[1] < 0.0 ? 0.0 : 1.0,
+                       (~v).eval().value[0] < 0.0 ? 0.0 : 1.0);
 }
 #elif BLAZE_SSE2_MODE
 {
-  return _mm_set_pd((~v)[1] < 0.0 ? 0.0 : 1.0, (~v)[0] < 0.0 ? 0.0 : 1.0);
+  return _mm_set_pd((~v).eval().value[1] < 0.0 ? 0.0 : 1.0,
+                    (~v).eval().value[0] < 0.0 ? 0.0 : 1.0);
 }
 #else
 {
