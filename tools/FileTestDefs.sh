@@ -142,7 +142,7 @@ standard_checks=()
 # Check for lines longer than 80 characters
 long_lines() {
     is_c++ "$1" && staged_grep '^[^#].\{80,\}' "$1" | grep -Ev 'https?://' | \
-        grep -v '// IWYU pragma:' >/dev/null
+        grep -v '// IWYU pragma:' | grep -v '// NOLINT' >/dev/null
 }
 long_lines_report() {
     echo "Found lines over 80 characters:"
@@ -163,6 +163,8 @@ long_lines_test() {
     test_check pass foo.cpp "// IWYU pragma: no_include ${eighty}x"$'\n'
     test_check pass foo.cpp "xxx http://${eighty}x"$'\n'
     test_check pass foo.cpp "xxx https://${eighty}x"$'\n'
+    test_check pass foo.cpp "linted;  // NOLINT(${eighty})"$'\n'
+    test_check pass foo.cpp "// NOLINTNEXTLINE(${eighty})"$'\n'
 }
 standard_checks+=(long_lines)
 
