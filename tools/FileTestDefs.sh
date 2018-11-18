@@ -215,6 +215,23 @@ carriage_returns_test() {
 }
 standard_checks+=(carriage_returns)
 
+# Check for carriage returns
+non_ascii_characters() {
+    whitelist "$1" '.png' 'FileTestDefs.sh' 'octicons.css' &&
+    staged_grep -q -P "[^\x00-\x7F]" "$1"
+}
+non_ascii_characters_report() {
+    echo "Found non-ASCII characters in the following files:"
+    # Skip highlighting because trying to highlight a carriage return
+    # confuses some terminals.
+    pretty_grep ${color_option:+--color=no} -P "[^\x00-\x7F]" "$@"
+}
+non_ascii_characters_test() {
+    test_check pass foo.cpp 'x'
+    test_check fail foo.cpp "Alfvén"
+}
+standard_checks+=(non_ascii_characters)
+
 # Check for license file.
 license() {
     whitelist "$1" \
