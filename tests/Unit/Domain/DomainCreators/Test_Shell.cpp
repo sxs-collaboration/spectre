@@ -253,8 +253,7 @@ void test_shell_construction(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Boundaries", "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
@@ -270,7 +269,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries",
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.Equiangular",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.Equiangular",
                   "[Domain][Unit]") {
   const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Shell:\n"
@@ -287,7 +286,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.Equiangular",
       {6, make_array<3>(refinement_level)});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.Equidistant",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.Equidistant",
                   "[Domain][Unit]") {
   const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Shell:\n"
@@ -305,7 +304,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.Equidistant",
       {6, make_array<3>(refinement_level)});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries.AspectRatio",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Boundaries.AspectRatio",
                   "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement_level = 2;
@@ -321,7 +320,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries.AspectRatio",
                           {6, make_array<3>(refinement_level)}, aspect_ratio);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.AspectRatio",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.AspectRatio",
                   "[Domain][Unit]") {
   const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Shell:\n"
@@ -341,7 +340,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.AspectRatio",
       {6, make_array<3>(refinement_level)}, aspect_ratio);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries.LogarithmicMap",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Boundaries.LogarithmicMap",
                   "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement_level = 2;
@@ -358,7 +357,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries.LogarithmicMap",
       {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.LogarithmicMap",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.LogarithmicMap",
                   "[Domain][Unit]") {
   const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Shell:\n"
@@ -380,7 +379,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.LogarithmicMap",
       {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.ShellWedges",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.ShellWedges",
                   "[Domain][Unit]") {
   {
     const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(

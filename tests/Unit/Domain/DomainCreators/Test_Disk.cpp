@@ -126,7 +126,7 @@ void test_disk_construction(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Disk.Boundaries.Equiangular",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Boundaries.Equiangular",
                   "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement_level = 2;
@@ -139,7 +139,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Disk.Boundaries.Equiangular",
                          {5, make_array<2>(refinement_level)}, true);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Disk.Factory.Equiangular",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Factory.Equiangular",
                   "[Domain][Unit]") {
   const auto disk = test_factory_creation<DomainCreator<2, Frame::Inertial>>(
       "  Disk:\n"
@@ -158,7 +158,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Disk.Factory.Equiangular",
       {5, make_array<2>(refinement_level)}, true);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Disk.Boundaries.Equidistant",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Boundaries.Equidistant",
                   "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement_level = 2;
@@ -171,7 +171,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Disk.Boundaries.Equidistant",
                          {5, make_array<2>(refinement_level)}, false);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Disk.Factory.Equidistant",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Factory.Equidistant",
                   "[Domain][Unit]") {
   const auto disk = test_factory_creation<DomainCreator<2, Frame::Inertial>>(
       "  Disk:\n"

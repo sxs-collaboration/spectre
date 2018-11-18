@@ -59,7 +59,7 @@ void test_brick_construction(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Brick", "[Domain][Unit]") {
   const std::vector<std::array<size_t, 3>> grid_points{{{4, 6, 3}}},
       refinement_level{{{3, 2, 4}}};
   const std::array<double, 3> lower_bound{{-1.2, 3.0, 2.5}},
@@ -197,8 +197,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick", "[Domain][Unit]") {
                  *serialize_and_deserialize(base_map));
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Brick.Factory",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Brick.Factory", "[Domain][Unit]") {
   const auto domain_creator =
       test_factory_creation<DomainCreator<3, Frame::Inertial>>(
           "  Brick:\n"

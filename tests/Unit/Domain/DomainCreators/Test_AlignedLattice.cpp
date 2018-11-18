@@ -28,8 +28,7 @@ void test_aligned_blocks(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.AlignedLattice",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
   const auto domain_creator_1d =
       test_factory_creation<DomainCreator<1, Frame::Inertial>>(
           "  AlignedLattice:\n"

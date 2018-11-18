@@ -189,7 +189,7 @@ void test_cylinder_construction(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Boundaries.Equiangular",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Boundaries.Equiangular",
                   "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const double lower_bound = -2.5, upper_bound = 5.0;
@@ -205,7 +205,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Boundaries.Equiangular",
                              {5, make_array<3>(refinement_level)}, true);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Factory.Equiangular",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Factory.Equiangular",
                   "[Domain][Unit]") {
   const auto cylinder =
       test_factory_creation<DomainCreator<3, Frame::Inertial>>(
@@ -229,7 +229,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Factory.Equiangular",
       {5, make_array<3>(refinement_level)}, true);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Boundaries.Equidistant",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Boundaries.Equidistant",
                   "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const double lower_bound = -2.5, upper_bound = 5.0;
@@ -245,7 +245,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Boundaries.Equidistant",
                              {5, make_array<3>(refinement_level)}, false);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Factory.Equidistant",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Factory.Equidistant",
                   "[Domain][Unit]") {
   const auto cylinder =
       test_factory_creation<DomainCreator<3, Frame::Inertial>>(
@@ -270,7 +270,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Factory.Equidistant",
 }
 
 SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainCreators.Cylinder.Boundaries.Equiangular.NotPeriodicInZ",
+    "Unit.Domain.Creators.Cylinder.Boundaries.Equiangular.NotPeriodicInZ",
     "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const double lower_bound = -2.5, upper_bound = 5.0;
@@ -287,7 +287,7 @@ SPECTRE_TEST_CASE(
 }
 
 SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainCreators.Cylinder.Factory.Equiangular.NotPeriodicInZ",
+    "Unit.Domain.Creators.Cylinder.Factory.Equiangular.NotPeriodicInZ",
     "[Domain][Unit]") {
   const auto cylinder =
       test_factory_creation<DomainCreator<3, Frame::Inertial>>(
@@ -313,7 +313,7 @@ SPECTRE_TEST_CASE(
 }
 
 SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainCreators.Cylinder.Boundaries.Equidistant.NotPeriodicInZ",
+    "Unit.Domain.Creators.Cylinder.Boundaries.Equidistant.NotPeriodicInZ",
     "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const double lower_bound = -2.5, upper_bound = 5.0;
@@ -330,7 +330,7 @@ SPECTRE_TEST_CASE(
 }
 
 SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainCreators.Cylinder.Factory.Equidistant.NotPeriodicInZ",
+    "Unit.Domain.Creators.Cylinder.Factory.Equidistant.NotPeriodicInZ",
     "[Domain][Unit]") {
   const auto cylinder =
       test_factory_creation<DomainCreator<3, Frame::Inertial>>(

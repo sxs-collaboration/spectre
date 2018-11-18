@@ -190,7 +190,7 @@ void test_sphere_construction(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Sphere.Boundaries.Equiangular",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Boundaries.Equiangular",
                   "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement = 2;
@@ -205,7 +205,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Sphere.Boundaries.Equiangular",
                            {7, make_array<3>(refinement)});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Sphere.Factory.Equiangular",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Factory.Equiangular",
                   "[Domain][Unit]") {
   const auto sphere = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Sphere:\n"
@@ -223,7 +223,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Sphere.Factory.Equiangular",
       {7, make_array<3>(refinement_level)});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Sphere.Boundaries.Equidistant",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Boundaries.Equidistant",
                   "[Domain][Unit]") {
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement = 2;
@@ -238,7 +238,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Sphere.Boundaries.Equidistant",
                            {7, make_array<3>(refinement)});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Sphere.Factory.Equidistant",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Factory.Equidistant",
                   "[Domain][Unit]") {
   const auto sphere = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Sphere:\n"

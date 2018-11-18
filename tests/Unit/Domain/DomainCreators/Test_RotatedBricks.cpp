@@ -108,8 +108,7 @@ void test_rotated_bricks_construction(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedBricks", "[Domain][Unit]") {
   const std::vector<std::array<size_t, 3>> grid_points{
       {{4, 2, 5}}, {{5, 2, 1}}, {{4, 5, 3}}, {{3, 5, 1}},
       {{2, 4, 6}}, {{6, 1, 2}}, {{3, 6, 4}}, {{1, 3, 6}}},
@@ -256,7 +255,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks",
           {}, {}, {}, {}, {}, {}, {}, {}});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks.Factory",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedBricks.Factory",
                   "[Domain][Unit]") {
   const OrientationMap<3> aligned{};
   const OrientationMap<3> rotation_F{std::array<Direction<3>, 3>{

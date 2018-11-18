@@ -60,8 +60,7 @@ void test_rotated_intervals_construction(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedIntervals",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedIntervals", "[Domain][Unit]") {
   const std::vector<std::array<size_t, 1>> grid_points{{{4}}, {{2}}},
       refinement_level{{{0}}, {{0}}};
   const std::array<double, 1> lower_bound{{-1.2}}, midpoint{{-0.6}},
@@ -99,7 +98,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedIntervals",
       std::vector<std::unordered_set<Direction<1>>>{{}, {}});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedIntervals.Factory",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedIntervals.Factory",
                   "[Domain][Unit]") {
   const OrientationMap<1> flipped{
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};

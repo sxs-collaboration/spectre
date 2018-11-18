@@ -81,8 +81,7 @@ void test_rotated_rectangles_construction(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedRectangles", "[Domain][Unit]") {
   const std::vector<std::array<size_t, 2>> grid_points{
       {{4, 2}}, {{1, 2}}, {{3, 4}}, {{3, 1}}},
       refinement_level{{{0, 1}}, {{0, 1}}, {{1, 0}}, {{1, 0}}};
@@ -154,7 +153,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles",
       std::vector<std::unordered_set<Direction<2>>>{{}, {}, {}, {}});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedRectangles.Factory",
+SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedRectangles.Factory",
                   "[Domain][Unit]") {
   const OrientationMap<2> half_turn{std::array<Direction<2>, 2>{
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};

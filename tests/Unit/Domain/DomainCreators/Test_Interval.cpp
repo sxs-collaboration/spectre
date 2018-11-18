@@ -52,7 +52,7 @@ void test_interval_construction(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval", "[Domain][Unit]") {
   const std::vector<std::array<size_t, 1>> grid_points{{{4}}},
       refinement_level{{{3}}};
   const std::array<double, 1> lower_bound{{-1.2}}, upper_bound{{0.8}};
@@ -94,8 +94,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval", "[Domain][Unit]") {
   CHECK(*dynamic_cast<MapType>(base_map.get()) == coord_map);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Interval.Factory",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval.Factory", "[Domain][Unit]") {
   const auto domain_creator =
       test_factory_creation<DomainCreator<1, Frame::Inertial>>(
           "  Interval:\n"

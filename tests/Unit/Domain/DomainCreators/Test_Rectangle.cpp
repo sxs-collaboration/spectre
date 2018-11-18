@@ -56,7 +56,7 @@ void test_rectangle_construction(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Rectangle", "[Domain][Unit]") {
   const std::vector<std::array<size_t, 2>> grid_points{{{4, 6}}},
       refinement_level{{{3, 2}}};
   const std::array<double, 2> lower_bound{{-1.2, 3.0}}, upper_bound{{0.8, 5.0}};
@@ -129,8 +129,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle", "[Domain][Unit]") {
   CHECK(*dynamic_cast<MapType>(base_map.get()) == coord_map);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Rectangle.Factory",
-                  "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Rectangle.Factory", "[Domain][Unit]") {
   const auto domain_creator =
       test_factory_creation<DomainCreator<2, Frame::Inertial>>(
           "  Rectangle:\n"
