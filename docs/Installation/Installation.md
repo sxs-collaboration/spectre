@@ -38,20 +38,20 @@ installation_on_clusters "Installation on clusters" page.
 * [SciPy](https://www.scipy.org)
 
 #### Optional:
-* [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) — to generate
+* [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) - to generate
   documentation
 * [Google Benchmark](https://github.com/google/benchmark) - to do
   microbenchmarking inside the SpECTRE framework. v1.2 or newer is required
 * [LCOV](http://ltp.sourceforge.net/coverage/lcov.php) and
-  [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html) — to check code test
+  [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html) - to check code test
   coverage
-* [coverxygen](https://github.com/psycofdj/coverxygen) — to check documentation
+* [coverxygen](https://github.com/psycofdj/coverxygen) - to check documentation
   coverage
-* [PAPI](http://icl.utk.edu/papi/) — to access hardware performance counters
-* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) — to format C++
+* [PAPI](http://icl.utk.edu/papi/) - to access hardware performance counters
+* [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html) - to format C++
   code in a clear and consistent fashion
-* [Clang-Tidy](http://clang.llvm.org/extra/clang-tidy/) — to "lint" C++ code
-* [Cppcheck](http://cppcheck.sourceforge.net/) — to analyze C++ code
+* [Clang-Tidy](http://clang.llvm.org/extra/clang-tidy/) - to "lint" C++ code
+* [Cppcheck](http://cppcheck.sourceforge.net/) - to analyze C++ code
 
 ## Using Docker to obtain a SpECTRE environment
 
@@ -190,7 +190,7 @@ Install Spack by cloning it into `SPACK_DIR` (a directory of your choice),
 then add `SPACK_DIR/bin` to your `PATH`.
 
 For security, it is good practice to make Spack use the system's OpenSSL
-rather than allow it to install a new copy — see Spack's documentation for
+rather than allow it to install a new copy - see Spack's documentation for
 [instructions](https://spack.readthedocs.io/en/latest/getting_started.html#openssl).
 You may need to install the development version of OpenSSL:
 * On Ubuntu (16.04), run `sudo apt-get install libssl-dev`

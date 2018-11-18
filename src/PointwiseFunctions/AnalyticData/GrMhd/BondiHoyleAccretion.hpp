@@ -32,7 +32,7 @@ namespace AnalyticData {
  *
  * In the context of studying Bondi-Hoyle accretion, i.e. non-spherical
  * accretion on to a Kerr black hole moving relative to a gas cloud, this class
- * implements the method proposed by Font & Ibáñez (1998) \ref font_98 "[1]" to
+ * implements the method proposed by Font & Ibanez (1998) \ref font_98 "[1]" to
  * initialize the GRMHD variables. The fluid quantities are initialized with
  * their (constant) values far from the black hole, e.g.
  * \f$\rho = \rho_\infty\f$. Here we assume a
@@ -78,7 +78,7 @@ namespace AnalyticData {
  * where \f$\gamma = \text{det}(\gamma_{ij})\f$. Wald's solution reproduces a
  * uniform magnetic field far from the black hole.
  *
- * \anchor font_98 [1] J.A. Font & J.M. Ibáñez, ApJ
+ * \anchor font_98 [1] J.A. Font & J.M. Ibanez, ApJ
  * [494 (1998) 297](http://esoads.eso.org/abs/1998ApJ...494..297F)
  *
  * \anchor penner_11 [2] A.J. Penner, MNRAS

@@ -17,7 +17,7 @@ namespace hydro {
 /// %Tags for hydrodynamic systems.
 namespace Tags {
 
-/// The Alfvén speed squared \f$v_A^2\f$.
+/// The Alfven speed squared \f$v_A^2\f$.
 template <typename DataType>
 struct AlfvenSpeedSquared : db::SimpleTag {
   using type = Scalar<DataType>;

@@ -1,4 +1,4 @@
-Copyright © 2004 the University Corporation for Atmospheric Research
+Copyright 2004 the University Corporation for Atmospheric Research
 ("UCAR"). All rights reserved. Developed by NCAR's Computational and
 Information Systems Laboratory, UCAR, www2.cisl.ucar.edu.
 

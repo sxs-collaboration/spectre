@@ -57,7 +57,7 @@ namespace ValenciaDivClean {
  * c_s^2 \longrightarrow c_s^2 + v_A^2(1 - c_s^2)
  * \f}
  *
- * in the definition of \f$\Lambda^\pm\f$. Here \f$v_A\f$ is the Alfvén
+ * in the definition of \f$\Lambda^\pm\f$. Here \f$v_A\f$ is the Alfven
  * speed. In addition, two more speeds corresponding to the divergence cleaning
  * mode and the longitudinal magnetic field are added,
  *
@@ -69,7 +69,7 @@ namespace ValenciaDivClean {
  * \note The ordering assumed here is such that, in the Newtonian limit,
  * the exact expressions for \f$\lambda_{2, 8}\f$, \f$\lambda_{3, 7}\f$,
  * and \f$\lambda_{4, 6}\f$ should reduce to the
- * corresponding fast modes, Alfvén modes, and slow modes, respectively.
+ * corresponding fast modes, Alfven modes, and slow modes, respectively.
  * See \ref mhd_ref "[2]" for a detailed description of the hyperbolic
  * characterization of Newtonian MHD.  In terms of the primitive variables:
  *
@@ -91,7 +91,7 @@ namespace ValenciaDivClean {
  * the pressure, and \f$B^i\f$ is the spatial magnetic field measured by an
  * Eulerian observer.
 
- * \anchor char_ref [1] C.F Gammie, J.C McKinney, G. Tóth, HARM: A Numerical
+ * \anchor char_ref [1] C.F Gammie, J.C McKinney, G. Toth, HARM: A Numerical
  * Scheme for General Relativistic Magnetohydrodynamics, ApJ.
  * [589 (2003) 444](http://iopscience.iop.org/article/10.1086/374594/meta)
  *
