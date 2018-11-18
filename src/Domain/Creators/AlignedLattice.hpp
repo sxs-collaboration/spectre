@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "DataStructures/Index.hpp"
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/DomainCreators/Disk.hpp"
+#include "Domain/Creators/Disk.hpp"
 
 #include <cmath>
 
@@ -12,9 +12,9 @@
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/MakeArray.hpp"
 

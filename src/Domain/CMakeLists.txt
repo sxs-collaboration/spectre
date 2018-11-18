@@ -3,7 +3,7 @@
 
 add_subdirectory(Amr)
 add_subdirectory(CoordinateMaps)
-add_subdirectory(DomainCreators)
+add_subdirectory(Creators)
 
 set(LIBRARY Domain)
 

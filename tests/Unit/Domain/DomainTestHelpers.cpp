@@ -14,10 +14,10 @@
 #include "Domain/Block.hpp"                  // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"          // IWYU pragma: keep
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"        // IWYU pragma: keep
-#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep

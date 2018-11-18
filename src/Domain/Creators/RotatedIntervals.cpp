@@ -1,13 +1,13 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/DomainCreators/RotatedIntervals.hpp"
+#include "Domain/Creators/RotatedIntervals.hpp"
 #include "DataStructures/Index.hpp"
-#include "Domain/Block.hpp"          // IWYU pragma: keep
-#include "Domain/BlockNeighbor.hpp"  // IWYU pragma: keep
+#include "Domain/Block.hpp"                   // IWYU pragma: keep
+#include "Domain/BlockNeighbor.hpp"           // IWYU pragma: keep
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
 

@@ -10,7 +10,7 @@
 
 #include "AlgorithmArray.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/DomainCreator.hpp"        // IWYU pragma: keep
 #include "Domain/ElementId.hpp"                     // IWYU pragma: keep
 #include "Domain/ElementIndex.hpp"
 #include "Domain/InitialElementIds.hpp"

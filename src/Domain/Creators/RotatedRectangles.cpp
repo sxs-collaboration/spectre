@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/DomainCreators/RotatedRectangles.hpp"
+#include "Domain/Creators/RotatedRectangles.hpp"
 
 #include "DataStructures/Index.hpp"  // for Index
 #include "Domain/Direction.hpp"

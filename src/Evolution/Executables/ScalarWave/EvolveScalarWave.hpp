@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"

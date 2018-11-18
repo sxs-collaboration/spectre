@@ -6,8 +6,8 @@
 #include <memory>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/TMPL.hpp"

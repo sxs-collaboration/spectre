@@ -30,13 +30,11 @@ class Interval : public DomainCreator<1, TargetFrame> {
  public:
   struct LowerBound {
     using type = std::array<double, 1>;
-    static constexpr OptionString help = {
-        "Sequence of [x] for lower bounds."};
+    static constexpr OptionString help = {"Sequence of [x] for lower bounds."};
   };
   struct UpperBound {
     using type = std::array<double, 1>;
-    static constexpr OptionString help = {
-        "Sequence of [x] for upper bounds."};
+    static constexpr OptionString help = {"Sequence of [x] for upper bounds."};
   };
   struct IsPeriodicIn {
     using type = std::array<bool, 1>;

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/DomainCreators/RotatedBricks.hpp"
+#include "Domain/Creators/RotatedBricks.hpp"
 
 #include "DataStructures/Index.hpp"
 #include "Domain/Direction.hpp"

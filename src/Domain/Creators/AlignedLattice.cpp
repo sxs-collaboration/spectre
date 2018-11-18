@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/DomainCreators/AlignedLattice.hpp"
+#include "Domain/Creators/AlignedLattice.hpp"
 
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
@@ -29,10 +29,8 @@ AlignedLattice<VolumeDim, TargetFrame>::AlignedLattice(
           std::move(initial_refinement_levels)),      // NOLINT
       initial_number_of_grid_points_(                 // NOLINT
           std::move(initial_number_of_grid_points)),  // NOLINT
-      number_of_blocks_by_dim_{
-          map_array(block_bounds_, [](const std::vector<double>& v) noexcept {
-            return v.size() - 1;
-          })} {}
+      number_of_blocks_by_dim_{map_array(block_bounds_, [
+      ](const std::vector<double>& v) noexcept { return v.size() - 1; })} {}
 
 template <size_t VolumeDim, typename TargetFrame>
 Domain<VolumeDim, TargetFrame>

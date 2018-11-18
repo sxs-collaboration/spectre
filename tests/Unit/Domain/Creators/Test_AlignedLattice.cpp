@@ -6,9 +6,9 @@
 #include <cstddef>
 #include <memory>
 
+#include "Domain/Creators/AlignedLattice.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/AlignedLattice.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Domain/DomainCreators/Shell.hpp"
+#include "Domain/Creators/Shell.hpp"
 
 #include <memory>
 #include <utility>
@@ -9,8 +9,8 @@
 #include "Domain/Block.hpp"                         // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"                 // IWYU pragma: keep
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/DomainCreator.hpp"        // IWYU pragma: keep
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/DomainHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"

@@ -18,9 +18,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockId.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
-#include "Domain/DomainCreators/Shell.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"

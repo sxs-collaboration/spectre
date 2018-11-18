@@ -23,11 +23,11 @@
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/Creators/DomainCreator.hpp"
+#include "Domain/Creators/Shell.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"
-#include "Domain/DomainCreators/Shell.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
@@ -247,7 +247,7 @@ void test_shell_construction(
     }
     test_domain_construction(domain, expected_block_neighbors,
                              expected_external_boundaries, vector_of_maps);
-    }
+  }
 
   test_initial_domain(domain, shell.initial_refinement_levels());
 }

@@ -16,8 +16,8 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Element.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/IndexToSliceAt.hpp"

@@ -48,8 +48,7 @@ class Rectangle : public DomainCreator<2, TargetFrame> {
 
   struct InitialRefinement {
     using type = std::array<size_t, 2>;
-    static constexpr OptionString help = {
-        "Initial refinement level in [x,y]."};
+    static constexpr OptionString help = {"Initial refinement level in [x,y]."};
   };
 
   struct InitialGridPoints {

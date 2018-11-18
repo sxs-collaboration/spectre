@@ -19,7 +19,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
   ${LIBRARY}
-  "Domain/DomainCreators"
+  "Domain/Creators"
   "${LIBRARY_SOURCES}"
   "DomainCreators;Test_Domain"
   )
