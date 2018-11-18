@@ -225,7 +225,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
 
   // Make an InterpolatedVarsHolders containing the target points.
   const auto domain_creator =
-      DomainCreators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{7, 7}}, false);
+      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{7, 7}}, false);
   const auto domain = domain_creator.create_domain();
   Slab slab(0.0, 1.0);
   Time temporal_id(slab, Rational(11, 15));

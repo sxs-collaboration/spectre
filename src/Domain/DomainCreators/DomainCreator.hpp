@@ -22,8 +22,9 @@ template <size_t, typename>
 class Domain;
 /// \endcond
 
+namespace domain {
 /// Defines classes that create Domains.
-namespace DomainCreators {
+namespace creators {
 /// \cond
 template <size_t VolumeDim, typename TargetFrame>
 class AlignedLattice;
@@ -48,7 +49,8 @@ class Shell;
 template <typename TargetFrame>
 class Sphere;
 /// \endcond
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain
 
 namespace DomainCreators_detail {
 template <size_t>
@@ -57,26 +59,26 @@ struct domain_creators;
 template <>
 struct domain_creators<1> {
   template <typename Frame>
-  using creators = tmpl::list<DomainCreators::AlignedLattice<1, Frame>,
-                              DomainCreators::Interval<Frame>,
-                              DomainCreators::RotatedIntervals<Frame>>;
+  using creators = tmpl::list<domain::creators::AlignedLattice<1, Frame>,
+                              domain::creators::Interval<Frame>,
+                              domain::creators::RotatedIntervals<Frame>>;
 };
 template <>
 struct domain_creators<2> {
   template <typename Frame>
-  using creators =
-      tmpl::list<DomainCreators::AlignedLattice<2, Frame>,
-                 DomainCreators::Disk<Frame>, DomainCreators::Rectangle<Frame>,
-                 DomainCreators::RotatedRectangles<Frame>>;
+  using creators = tmpl::list<domain::creators::AlignedLattice<2, Frame>,
+                              domain::creators::Disk<Frame>,
+                              domain::creators::Rectangle<Frame>,
+                              domain::creators::RotatedRectangles<Frame>>;
 };
 template <>
 struct domain_creators<3> {
   template <typename Frame>
-  using creators =
-      tmpl::list<DomainCreators::AlignedLattice<3, Frame>,
-                 DomainCreators::Brick<Frame>, DomainCreators::Cylinder<Frame>,
-                 DomainCreators::RotatedBricks<Frame>,
-                 DomainCreators::Shell<Frame>, DomainCreators::Sphere<Frame>>;
+  using creators = tmpl::list<
+      domain::creators::AlignedLattice<3, Frame>,
+      domain::creators::Brick<Frame>, domain::creators::Cylinder<Frame>,
+      domain::creators::RotatedBricks<Frame>, domain::creators::Shell<Frame>,
+      domain::creators::Sphere<Frame>>;
 };
 }  // namespace DomainCreators_detail
 

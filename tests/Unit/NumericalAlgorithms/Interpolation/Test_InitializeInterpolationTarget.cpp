@@ -78,7 +78,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
   const auto domain_creator =
-      DomainCreators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
 
   runner.simple_action<
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>,

@@ -17,7 +17,8 @@
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 namespace DomainCreators_detail {
 using Affine = CoordinateMaps::Affine;
 using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -86,4 +87,5 @@ void register_derived_with_charm() {
   DomainCreators_detail::register_with_charm<2>();
   DomainCreators_detail::register_with_charm<3>();
 }
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

@@ -21,7 +21,7 @@ struct Inertial;
 namespace {
 template <size_t VolumeDim>
 void test_aligned_blocks(
-    const DomainCreators::AlignedLattice<VolumeDim, Frame::Inertial>&
+    const domain::creators::AlignedLattice<VolumeDim, Frame::Inertial>&
         aligned_blocks) noexcept {
   const auto domain = aligned_blocks.create_domain();
   test_initial_domain(domain, aligned_blocks.initial_refinement_levels());
@@ -38,7 +38,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.AlignedLattice",
           "    InitialGridPoints: [3]\n"
           "    InitialRefinement: [2]\n");
   const auto* aligned_blocks_creator_1d =
-      dynamic_cast<const DomainCreators::AlignedLattice<1, Frame::Inertial>*>(
+      dynamic_cast<const domain::creators::AlignedLattice<1, Frame::Inertial>*>(
           domain_creator_1d.get());
   test_aligned_blocks(*aligned_blocks_creator_1d);
 
@@ -50,7 +50,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.AlignedLattice",
           "    InitialGridPoints: [3, 4]\n"
           "    InitialRefinement: [2, 1]\n");
   const auto* aligned_blocks_creator_2d =
-      dynamic_cast<const DomainCreators::AlignedLattice<2, Frame::Inertial>*>(
+      dynamic_cast<const domain::creators::AlignedLattice<2, Frame::Inertial>*>(
           domain_creator_2d.get());
   test_aligned_blocks(*aligned_blocks_creator_2d);
 
@@ -62,7 +62,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.AlignedLattice",
           "    InitialGridPoints: [3, 4, 5]\n"
           "    InitialRefinement: [2, 1, 0]\n");
   const auto* aligned_blocks_creator_3d =
-      dynamic_cast<const DomainCreators::AlignedLattice<3, Frame::Inertial>*>(
+      dynamic_cast<const domain::creators::AlignedLattice<3, Frame::Inertial>*>(
           domain_creator_3d.get());
   test_aligned_blocks(*aligned_blocks_creator_3d);
 }

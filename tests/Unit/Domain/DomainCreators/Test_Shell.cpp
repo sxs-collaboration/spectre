@@ -44,7 +44,7 @@
 // IWYU pragma: no_forward_declare BlockNeighbor
 namespace {
 void test_shell_construction(
-    const DomainCreators::Shell<Frame::Inertial>& shell,
+    const domain::creators::Shell<Frame::Inertial>& shell,
     const double inner_radius, const double outer_radius,
     const bool use_equiangular_map,
     const std::array<size_t, 2>& expected_shell_extents,
@@ -260,7 +260,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries",
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
   for (const auto& use_equiangular_map : {true, false}) {
-    const DomainCreators::Shell<Frame::Inertial> shell{
+    const domain::creators::Shell<Frame::Inertial> shell{
         inner_radius, outer_radius, refinement_level, grid_points_r_angular,
         use_equiangular_map};
     test_physical_separation(shell.create_domain().blocks());
@@ -282,7 +282,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.Equiangular",
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_shell_construction(
-      dynamic_cast<const DomainCreators::Shell<Frame::Inertial>&>(*shell),
+      dynamic_cast<const domain::creators::Shell<Frame::Inertial>&>(*shell),
       inner_radius, outer_radius, true, grid_points_r_angular,
       {6, make_array<3>(refinement_level)});
 }
@@ -300,7 +300,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.Equidistant",
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_shell_construction(
-      dynamic_cast<const DomainCreators::Shell<Frame::Inertial>&>(*shell),
+      dynamic_cast<const domain::creators::Shell<Frame::Inertial>&>(*shell),
       inner_radius, outer_radius, false, grid_points_r_angular,
       {6, make_array<3>(refinement_level)});
 }
@@ -312,7 +312,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries.AspectRatio",
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
   const double aspect_ratio = 1.3;
 
-  const DomainCreators::Shell<Frame::Inertial> shell{
+  const domain::creators::Shell<Frame::Inertial> shell{
       inner_radius,          outer_radius, refinement_level,
       grid_points_r_angular, false,        aspect_ratio};
   test_physical_separation(shell.create_domain().blocks());
@@ -336,7 +336,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.AspectRatio",
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   const double aspect_ratio = 2.0;
   test_shell_construction(
-      dynamic_cast<const DomainCreators::Shell<Frame::Inertial>&>(*shell),
+      dynamic_cast<const domain::creators::Shell<Frame::Inertial>&>(*shell),
       inner_radius, outer_radius, false, grid_points_r_angular,
       {6, make_array<3>(refinement_level)}, aspect_ratio);
 }
@@ -349,7 +349,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Boundaries.LogarithmicMap",
   const double aspect_ratio = 1.0;
   const bool use_logarithmic_map = true;
 
-  const DomainCreators::Shell<Frame::Inertial> shell{
+  const domain::creators::Shell<Frame::Inertial> shell{
       inner_radius, outer_radius, refinement_level,   grid_points_r_angular,
       false,        aspect_ratio, use_logarithmic_map};
   test_physical_separation(shell.create_domain().blocks());
@@ -375,7 +375,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.LogarithmicMap",
   const double aspect_ratio = 2.0;
   const bool use_logarithmic_map = true;
   test_shell_construction(
-      dynamic_cast<const DomainCreators::Shell<Frame::Inertial>&>(*shell),
+      dynamic_cast<const domain::creators::Shell<Frame::Inertial>&>(*shell),
       inner_radius, outer_radius, false, grid_points_r_angular,
       {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map);
 }
@@ -400,7 +400,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.ShellWedges",
     const bool use_logarithmic_map = true;
     const ShellWedges which_wedges = ShellWedges::FourOnEquator;
     test_shell_construction(
-        dynamic_cast<const DomainCreators::Shell<Frame::Inertial>&>(*shell),
+        dynamic_cast<const domain::creators::Shell<Frame::Inertial>&>(*shell),
         inner_radius, outer_radius, false, grid_points_r_angular,
         {4, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
         which_wedges);
@@ -423,7 +423,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.Factory.ShellWedges",
     const bool use_logarithmic_map = false;
     const ShellWedges which_wedges = ShellWedges::OneAlongMinusX;
     test_shell_construction(
-        dynamic_cast<const DomainCreators::Shell<Frame::Inertial>&>(*shell),
+        dynamic_cast<const domain::creators::Shell<Frame::Inertial>&>(*shell),
         inner_radius, outer_radius, true, grid_points_r_angular,
         {1, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
         which_wedges);
@@ -478,7 +478,7 @@ void test_radial_block_layers(const double inner_radius,
   const auto zero = make_with_value<DataVector>(x_in_block_interior, 0.0);
   tnsr::I<DataVector, 3, Frame::Inertial> interior_inertial_coords{
       {{-x_in_block_interior, zero, zero}}};
-  const DomainCreators::Shell<Frame::Inertial> shell{
+  const domain::creators::Shell<Frame::Inertial> shell{
       inner_radius,          outer_radius,        refinement_level,
       grid_points_r_angular, use_equiangular_map, aspect_ratio,
       use_logarithmic_map,   which_wedges,        radial_block_layers};

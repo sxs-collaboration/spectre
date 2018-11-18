@@ -13,7 +13,8 @@
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 3D Domain consisting of eight rotated Blocks.
@@ -156,4 +157,5 @@ class RotatedBricks : public DomainCreator<3, TargetFrame> {
   typename InitialGridPoints::type initial_number_of_grid_points_in_xyz_{
       {{{std::numeric_limits<size_t>::max()}}}};
 };
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

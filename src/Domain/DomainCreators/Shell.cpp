@@ -23,7 +23,8 @@ struct Logical;
 }  // namespace Frame
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 template <typename TargetFrame>
 Shell<TargetFrame>::Shell(
@@ -90,7 +91,8 @@ Shell<TargetFrame>::initial_refinement_levels() const noexcept {
   }
   return {num_wedges, make_array<3>(initial_refinement_)};
 }
-}  // namespace DomainCreators
 
-template class DomainCreators::Shell<Frame::Grid>;
-template class DomainCreators::Shell<Frame::Inertial>;
+template class Shell<Frame::Grid>;
+template class Shell<Frame::Inertial>;
+}  // namespace creators
+}  // namespace domain

@@ -15,7 +15,8 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 /// \ingroup DomainCreatorsGroup
 /// \brief Create a Domain consisting of multiple aligned Blocks arrayed in a
@@ -96,4 +97,5 @@ class AlignedLattice : public DomainCreator<VolumeDim, TargetFrame> {
       make_array<VolumeDim>(std::numeric_limits<size_t>::max())};
   Index<VolumeDim> number_of_blocks_by_dim_{};
 };
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

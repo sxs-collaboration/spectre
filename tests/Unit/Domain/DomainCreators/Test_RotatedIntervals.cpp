@@ -28,7 +28,8 @@
 
 namespace {
 void test_rotated_intervals_construction(
-    const DomainCreators::RotatedIntervals<Frame::Inertial>& rotated_intervals,
+    const domain::creators::RotatedIntervals<Frame::Inertial>&
+        rotated_intervals,
     const std::array<double, 1>& lower_bound,
     const std::array<double, 1>& midpoint,
     const std::array<double, 1>& upper_bound,
@@ -68,7 +69,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedIntervals",
   const OrientationMap<1> flipped{
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
 
-  const DomainCreators::RotatedIntervals<Frame::Inertial> rotated_intervals{
+  const domain::creators::RotatedIntervals<Frame::Inertial> rotated_intervals{
       lower_bound,         midpoint,
       upper_bound,         std::array<bool, 1>{{false}},
       refinement_level[0], {{{{grid_points[0][0], grid_points[1][0]}}}}};
@@ -82,7 +83,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedIntervals",
           {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}});
   test_physical_separation(rotated_intervals.create_domain().blocks());
 
-  const DomainCreators::RotatedIntervals<Frame::Inertial>
+  const domain::creators::RotatedIntervals<Frame::Inertial>
       periodic_rotated_intervals{
           lower_bound,         midpoint,
           upper_bound,         std::array<bool, 1>{{true}},
@@ -112,7 +113,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedIntervals.Factory",
           "    InitialGridPoints: [[3,2]]\n"
           "    InitialRefinement: [2]\n");
   const auto* rotated_intervals_creator =
-      dynamic_cast<const DomainCreators::RotatedIntervals<Frame::Inertial>*>(
+      dynamic_cast<const domain::creators::RotatedIntervals<Frame::Inertial>*>(
           domain_creator.get());
   test_rotated_intervals_construction(
       *rotated_intervals_creator, {{0.0}}, {{0.5}}, {{1.0}}, {{{3}}, {{2}}},

@@ -13,7 +13,8 @@
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 2D Domain consisting of four rotated Blocks.
@@ -116,4 +117,5 @@ class RotatedRectangles : public DomainCreator<2, TargetFrame> {
   typename InitialGridPoints::type initial_number_of_grid_points_in_xy_{
       {{{std::numeric_limits<size_t>::max()}}}};
 };
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

@@ -72,7 +72,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
   CHECK(created_opts == kerr_horizon_opts);
 
   const auto domain_creator =
-      DomainCreators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
 
   const auto expected_block_coord_holders =
       [&domain_creator, &mass, &center, &dimless_spin ]() noexcept {

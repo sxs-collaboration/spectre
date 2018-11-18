@@ -18,7 +18,8 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 template <typename TargetFrame>
 RotatedIntervals<TargetFrame>::RotatedIntervals(
     typename LowerBound::type lower_x, typename Midpoint::type midpoint_x,
@@ -60,7 +61,8 @@ RotatedIntervals<TargetFrame>::initial_refinement_levels() const noexcept {
   return {{{initial_refinement_level_x_[0]}},
           {{initial_refinement_level_x_[0]}}};
 }
-}  // namespace DomainCreators
 
-template class DomainCreators::RotatedIntervals<Frame::Inertial>;
-template class DomainCreators::RotatedIntervals<Frame::Grid>;
+template class RotatedIntervals<Frame::Inertial>;
+template class RotatedIntervals<Frame::Grid>;
+}  // namespace creators
+}  // namespace domain

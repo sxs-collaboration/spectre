@@ -31,7 +31,7 @@
 
 namespace {
 void test_sphere_construction(
-    const DomainCreators::Sphere<Frame::Inertial>& sphere,
+    const domain::creators::Sphere<Frame::Inertial>& sphere,
     const double inner_radius, const double outer_radius,
     const bool use_equiangular_map,
     const std::array<size_t, 2>& expected_sphere_extents,
@@ -196,7 +196,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Sphere.Boundaries.Equiangular",
   const size_t refinement = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
-  const DomainCreators::Sphere<Frame::Inertial> sphere{
+  const domain::creators::Sphere<Frame::Inertial> sphere{
       inner_radius, outer_radius, refinement, grid_points_r_angular, true};
   test_physical_separation(sphere.create_domain().blocks());
 
@@ -218,7 +218,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Sphere.Factory.Equiangular",
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_sphere_construction(
-      dynamic_cast<const DomainCreators::Sphere<Frame::Inertial>&>(*sphere),
+      dynamic_cast<const domain::creators::Sphere<Frame::Inertial>&>(*sphere),
       inner_radius, outer_radius, true, grid_points_r_angular,
       {7, make_array<3>(refinement_level)});
 }
@@ -229,7 +229,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Sphere.Boundaries.Equidistant",
   const size_t refinement = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
-  const DomainCreators::Sphere<Frame::Inertial> sphere{
+  const domain::creators::Sphere<Frame::Inertial> sphere{
       inner_radius, outer_radius, refinement, grid_points_r_angular, false};
   test_physical_separation(sphere.create_domain().blocks());
 
@@ -251,7 +251,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Sphere.Factory.Equidistant",
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_sphere_construction(
-      dynamic_cast<const DomainCreators::Sphere<Frame::Inertial>&>(*sphere),
+      dynamic_cast<const domain::creators::Sphere<Frame::Inertial>&>(*sphere),
       inner_radius, outer_radius, false, grid_points_r_angular,
       {7, make_array<3>(refinement_level)});
 }

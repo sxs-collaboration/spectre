@@ -23,7 +23,8 @@ struct Logical;
 }  // namespace Frame
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 template <typename TargetFrame>
 Rectangle<TargetFrame>::Rectangle(
@@ -71,7 +72,8 @@ std::vector<std::array<size_t, 2>>
 Rectangle<TargetFrame>::initial_refinement_levels() const noexcept {
   return {initial_refinement_level_xy_};
 }
-}  // namespace DomainCreators
 
-template class DomainCreators::Rectangle<Frame::Inertial>;
-template class DomainCreators::Rectangle<Frame::Grid>;
+template class Rectangle<Frame::Inertial>;
+template class Rectangle<Frame::Grid>;
+}  // namespace creators
+}  // namespace domain

@@ -12,7 +12,8 @@ struct Grid;
 struct Inertial;
 }  // namespace Frame
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 template <size_t VolumeDim, typename TargetFrame>
 AlignedLattice<VolumeDim, TargetFrame>::AlignedLattice(
@@ -52,11 +53,12 @@ AlignedLattice<VolumeDim, TargetFrame>::initial_refinement_levels() const
     noexcept {
   return {number_of_blocks_by_dim_.product(), initial_refinement_levels_};
 }
-}  // namespace DomainCreators
 
-template class DomainCreators::AlignedLattice<1, Frame::Inertial>;
-template class DomainCreators::AlignedLattice<1, Frame::Grid>;
-template class DomainCreators::AlignedLattice<2, Frame::Inertial>;
-template class DomainCreators::AlignedLattice<2, Frame::Grid>;
-template class DomainCreators::AlignedLattice<3, Frame::Inertial>;
-template class DomainCreators::AlignedLattice<3, Frame::Grid>;
+template class AlignedLattice<1, Frame::Inertial>;
+template class AlignedLattice<1, Frame::Grid>;
+template class AlignedLattice<2, Frame::Inertial>;
+template class AlignedLattice<2, Frame::Grid>;
+template class AlignedLattice<3, Frame::Inertial>;
+template class AlignedLattice<3, Frame::Grid>;
+}  // namespace creators
+}  // namespace domain

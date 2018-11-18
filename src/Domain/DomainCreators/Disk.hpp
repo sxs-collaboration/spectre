@@ -16,7 +16,8 @@ template <size_t Dim, typename Frame>
 class DomainCreator;  // IWYU pragma: keep
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 2D Domain in the shape of a disk from a square surrounded by four
@@ -93,4 +94,5 @@ class Disk : public DomainCreator<2, TargetFrame> {
   typename InitialGridPoints::type initial_number_of_grid_points_{};
   typename UseEquiangularMap::type use_equiangular_map_{false};
 };
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

@@ -17,7 +17,8 @@ template <size_t, class>
 class DomainCreator;  // IWYU pragma: keep
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 /*!
  * \ingroup DomainCreatorsGroup
@@ -141,4 +142,5 @@ class Shell : public DomainCreator<3, TargetFrame> {
   typename WhichWedges::type which_wedges_ = ShellWedges::All;
   typename RadialBlockLayers::type number_of_layers_ = 1;
 };
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

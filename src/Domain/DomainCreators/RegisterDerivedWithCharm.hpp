@@ -3,6 +3,8 @@
 
 #pragma once
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 void register_derived_with_charm();
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

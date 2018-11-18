@@ -54,7 +54,7 @@ void test_r_theta_lgl() noexcept {
       false);
 
   const auto domain_creator =
-      DomainCreators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
 
   const size_t num_total = num_radial * num_theta * num_phi;
   const auto expected_block_coord_holders =
@@ -100,7 +100,7 @@ void test_r_theta_uniform() noexcept {
       true);
 
   const auto domain_creator =
-      DomainCreators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
 
   const size_t num_total = num_radial * num_theta * num_phi;
   const auto expected_block_coord_holders =

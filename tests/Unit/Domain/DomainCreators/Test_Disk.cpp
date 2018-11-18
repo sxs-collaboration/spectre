@@ -31,7 +31,7 @@
 
 namespace {
 void test_disk_construction(
-    const DomainCreators::Disk<Frame::Inertial>& disk,
+    const domain::creators::Disk<Frame::Inertial>& disk,
     const double inner_radius, const double outer_radius,
     const std::array<size_t, 2>& expected_wedge_extents,
     const std::vector<std::array<size_t, 2>>& expected_refinement_level,
@@ -132,7 +132,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Disk.Boundaries.Equiangular",
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{4, 4}};
 
-  const DomainCreators::Disk<Frame::Inertial> disk{
+  const domain::creators::Disk<Frame::Inertial> disk{
       inner_radius, outer_radius, refinement_level, grid_points, true};
   test_physical_separation(disk.create_domain().blocks());
   test_disk_construction(disk, inner_radius, outer_radius, grid_points,
@@ -153,7 +153,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Disk.Factory.Equiangular",
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{2, 3}};
   test_disk_construction(
-      dynamic_cast<const DomainCreators::Disk<Frame::Inertial>&>(*disk),
+      dynamic_cast<const domain::creators::Disk<Frame::Inertial>&>(*disk),
       inner_radius, outer_radius, grid_points,
       {5, make_array<2>(refinement_level)}, true);
 }
@@ -164,7 +164,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Disk.Boundaries.Equidistant",
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{4, 4}};
 
-  const DomainCreators::Disk<Frame::Inertial> disk{
+  const domain::creators::Disk<Frame::Inertial> disk{
       inner_radius, outer_radius, refinement_level, grid_points, false};
   test_physical_separation(disk.create_domain().blocks());
   test_disk_construction(disk, inner_radius, outer_radius, grid_points,
@@ -185,7 +185,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Disk.Factory.Equidistant",
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{2, 3}};
   test_disk_construction(
-      dynamic_cast<const DomainCreators::Disk<Frame::Inertial>&>(*disk),
+      dynamic_cast<const domain::creators::Disk<Frame::Inertial>&>(*disk),
       inner_radius, outer_radius, grid_points,
       {5, make_array<2>(refinement_level)}, false);
 }

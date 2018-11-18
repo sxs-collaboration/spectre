@@ -31,7 +31,7 @@
 
 namespace {
 void test_cylinder_construction(
-    const DomainCreators::Cylinder<Frame::Inertial>& cylinder,
+    const domain::creators::Cylinder<Frame::Inertial>& cylinder,
     const double inner_radius, const double outer_radius,
     const double lower_bound, const double upper_bound,
     const bool is_periodic_in_z,
@@ -196,7 +196,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Boundaries.Equiangular",
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const DomainCreators::Cylinder<Frame::Inertial> cylinder{
+  const domain::creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       true,         refinement_level, grid_points, true};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -223,7 +223,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Factory.Equiangular",
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const DomainCreators::Cylinder<Frame::Inertial>&>(*cylinder),
+      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
+          *cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, true, grid_points,
       {5, make_array<3>(refinement_level)}, true);
 }
@@ -235,7 +236,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Boundaries.Equidistant",
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const DomainCreators::Cylinder<Frame::Inertial> cylinder{
+  const domain::creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       true,         refinement_level, grid_points, false};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -262,7 +263,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Cylinder.Factory.Equidistant",
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const DomainCreators::Cylinder<Frame::Inertial>&>(*cylinder),
+      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
+          *cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, true, grid_points,
       {5, make_array<3>(refinement_level)}, false);
 }
@@ -275,7 +277,7 @@ SPECTRE_TEST_CASE(
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const DomainCreators::Cylinder<Frame::Inertial> cylinder{
+  const domain::creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       false,        refinement_level, grid_points, true};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -304,7 +306,8 @@ SPECTRE_TEST_CASE(
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const DomainCreators::Cylinder<Frame::Inertial>&>(*cylinder),
+      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
+          *cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, false, grid_points,
       {5, make_array<3>(refinement_level)}, true);
 }
@@ -317,7 +320,7 @@ SPECTRE_TEST_CASE(
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const DomainCreators::Cylinder<Frame::Inertial> cylinder{
+  const domain::creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       false,        refinement_level, grid_points, false};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -346,7 +349,8 @@ SPECTRE_TEST_CASE(
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const DomainCreators::Cylinder<Frame::Inertial>&>(*cylinder),
+      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
+          *cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, false, grid_points,
       {5, make_array<3>(refinement_level)}, false);
 }

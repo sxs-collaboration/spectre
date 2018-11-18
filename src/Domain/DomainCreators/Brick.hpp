@@ -20,7 +20,8 @@ template <size_t Dim, typename Frame>
 class DomainCreator;  // IWYU pragma: keep
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 3D Domain consisting of a single Block.
@@ -89,4 +90,5 @@ class Brick : public DomainCreator<3, TargetFrame> {
   typename InitialRefinement::type initial_refinement_level_xyz_{};
   typename InitialGridPoints::type initial_number_of_grid_points_in_xyz_{};
 };
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

@@ -23,7 +23,8 @@ struct Inertial;
 struct Logical;
 }  // namespace Frame
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 template <typename TargetFrame>
 Cylinder<TargetFrame>::Cylinder(
@@ -137,7 +138,8 @@ std::vector<std::array<size_t, 3>>
 Cylinder<TargetFrame>::initial_refinement_levels() const noexcept {
   return {5, make_array<3>(initial_refinement_)};
 }
-}  // namespace DomainCreators
 
-template class DomainCreators::Cylinder<Frame::Grid>;
-template class DomainCreators::Cylinder<Frame::Inertial>;
+template class Cylinder<Frame::Grid>;
+template class Cylinder<Frame::Inertial>;
+}  // namespace creators
+}  // namespace domain

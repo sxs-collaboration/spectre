@@ -27,7 +27,7 @@
 
 namespace {
 void test_rotated_bricks_construction(
-    const DomainCreators::RotatedBricks<Frame::Inertial>& rotated_bricks,
+    const domain::creators::RotatedBricks<Frame::Inertial>& rotated_bricks,
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& midpoint,
     const std::array<double, 3>& upper_bound,
@@ -133,7 +133,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks",
   const OrientationMap<3> rotation_F_then_U{std::array<Direction<3>, 3>{
       {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
        Direction<3>::lower_eta()}}};
-  const DomainCreators::RotatedBricks<Frame::Inertial> rotated_bricks{
+  const domain::creators::RotatedBricks<Frame::Inertial> rotated_bricks{
       lower_bound,
       midpoint,
       upper_bound,
@@ -190,16 +190,16 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks",
            Direction<3>::upper_zeta()}});
   test_physical_separation(rotated_bricks.create_domain().blocks());
 
-  const DomainCreators::RotatedBricks<Frame::Inertial> rotated_periodic_bricks{
-      lower_bound,
-      midpoint,
-      upper_bound,
-      {{true, true, true}},
-      {{refinement_level[0][0], refinement_level[0][1],
-        refinement_level[0][2]}},
-      {{{{grid_points[0][0], grid_points[1][2]}},
-        {{grid_points[0][1], grid_points[2][2]}},
-        {{grid_points[0][2], grid_points[4][2]}}}}};
+  const domain::creators::RotatedBricks<Frame::Inertial>
+      rotated_periodic_bricks{lower_bound,
+                              midpoint,
+                              upper_bound,
+                              {{true, true, true}},
+                              {{refinement_level[0][0], refinement_level[0][1],
+                                refinement_level[0][2]}},
+                              {{{{grid_points[0][0], grid_points[1][2]}},
+                                {{grid_points[0][1], grid_points[2][2]}},
+                                {{grid_points[0][2], grid_points[4][2]}}}}};
   test_rotated_bricks_construction(
       rotated_periodic_bricks, lower_bound, midpoint, upper_bound, grid_points,
       refinement_level,
@@ -284,7 +284,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.RotatedBricks.Factory",
           "    InitialGridPoints: [[3,2],[1,4],[5,6]]\n"
           "    InitialRefinement: [2,1,0]\n");
   const auto* rotated_bricks_creator =
-      dynamic_cast<const DomainCreators::RotatedBricks<Frame::Inertial>*>(
+      dynamic_cast<const domain::creators::RotatedBricks<Frame::Inertial>*>(
           domain_creator.get());
   test_rotated_bricks_construction(
       *rotated_bricks_creator, {{0.1, -0.4, -0.2}}, {{2.6, 3.2, 1.7}},

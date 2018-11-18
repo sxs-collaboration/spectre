@@ -304,7 +304,7 @@ void test_domain_construction(
     CHECK(typeid(*expected_maps[i]) == typeid(block.coordinate_map()));
     check_if_maps_are_equal(*expected_maps[i], block.coordinate_map());
   }
-  DomainCreators::register_derived_with_charm();
+  domain::creators::register_derived_with_charm();
   test_serialization(domain);
   // test operator !=
   CHECK_FALSE(domain != domain);

@@ -25,7 +25,8 @@ struct Logical;   // IWYU pragma: keep
 }  // namespace Frame
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 template <typename TargetFrame>
 Sphere<TargetFrame>::Sphere(
@@ -96,7 +97,8 @@ std::vector<std::array<size_t, 3>>
 Sphere<TargetFrame>::initial_refinement_levels() const noexcept {
   return {7, make_array<3>(initial_refinement_)};
 }
-}  // namespace DomainCreators
 
-template class DomainCreators::Sphere<Frame::Grid>;
-template class DomainCreators::Sphere<Frame::Inertial>;
+template class Sphere<Frame::Grid>;
+template class Sphere<Frame::Inertial>;
+}  // namespace creators
+}  // namespace domain

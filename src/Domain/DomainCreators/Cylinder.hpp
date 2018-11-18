@@ -16,7 +16,8 @@ template <size_t Dim, typename Frame>
 class DomainCreator;  // IWYU pragma: keep
 /// \endcond
 
-namespace DomainCreators {
+namespace domain {
+namespace creators {
 
 /// \ingroup DomainCreatorsGroup
 /// Create a 3D Domain in the shape of a cylinder where the cross-section
@@ -124,4 +125,5 @@ class Cylinder : public DomainCreator<3, TargetFrame> {
   typename InitialGridPoints::type initial_number_of_grid_points_{};
   typename UseEquiangularMap::type use_equiangular_map_{false};
 };
-}  // namespace DomainCreators
+}  // namespace creators
+}  // namespace domain

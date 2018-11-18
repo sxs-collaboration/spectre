@@ -180,7 +180,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
               typename mock_interpolator<metavars>::initial_databox>();
 
   const auto domain_creator =
-      DomainCreators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{7, 7}}, false);
+      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{7, 7}}, false);
   const auto domain = domain_creator.create_domain();
   const auto block_logical_coords = [&domain]() noexcept {
     const size_t n_pts = 15;
