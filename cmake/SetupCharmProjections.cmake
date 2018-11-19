@@ -35,19 +35,19 @@ endfunction()
 
 if (PROJECTIONS)
   set(
-      CMAKE_CXX_LINK_FLAGS
-      "${CMAKE_CXX_LINK_FLAGS} -tracemode projections -tracemode summary"
-  )
-  # The values 1000 and 1001 are chosen arbitrary but assume that there are
-  # fewer than 1000 user-defined Actions (which should be a reasonable
-  # assumption).
-  set(
-      CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} \
- -D SPECTRE_CHARM_PROJECTIONS \
- -D SPECTRE_CHARM_NON_ACTION_WALLTIME_EVENT_ID=1000 \
- -D SPECTRE_CHARM_RECEIVE_MAP_DATA_EVENT_ID=1001"
-  )
+    CMAKE_CXX_LINK_FLAGS
+    "${CMAKE_CXX_LINK_FLAGS} -tracemode projections -tracemode summary"
+    )
+  # Sets the macro `SPECTRE_PAPI_COUNTERS` to a list of user-specfied PAPI
+  # counters (obtained from running `papi_avail`). The counters could be used
+  # in conjunction with Charm++'s user stats tracing facilities. However,
+  # care must be taken if/when this is implemented to not assume that an
+  # Action will start and end without any Actions being run in the middle.
+  # Because we sometimes elide calls to the Charm++ RTS when invoking
+  # Actions, an Action on a local component element could be executed as part
+  # of the current component element's execution. The PAPI counter stats
+  # must be kept separate for these two Actions in order for them to be
+  # meaningful.
   if (PROJECTIONS_PAPI_COUNTERS)
     check_charm_version_for_stat_tracing()
 
@@ -76,11 +76,10 @@ if (PROJECTIONS)
     )
     include(SetupPapi)
   endif()
+  # Defines the macro SPECTRE_PROJECTIONS_USER_STATS if gathering user
+  # specified stats is supported by the Charm++ version.
   if(PROJECTIONS_USER_STATS)
     CHECK_CHARM_VERSION_FOR_STAT_TRACING()
-    set(
-        CMAKE_CXX_FLAGS
-        "${CMAKE_CXX_FLAGS} -D SPECTRE_PROJECTIONS_USER_STATS"
-    )
+    add_definitions(-DSPECTRE_PROJECTIONS_USER_STATS)
   endif()
 endif ()

@@ -313,11 +313,6 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>> {
   // @}
 
   // Member variables
-
-#ifdef SPECTRE_CHARM_PROJECTIONS
-  double non_action_time_start_;
-#endif
-
   Parallel::ConstGlobalCache<metavariables>* const_global_cache_{nullptr};
   bool performing_action_ = false;
   std::size_t algorithm_step_ = 0;
@@ -465,19 +460,12 @@ AlgorithmImpl<ParallelComponent,
   if (performing_action_ or get_terminate()) {
     return;
   }
-#ifdef SPECTRE_CHARM_PROJECTIONS
-  non_action_time_start_ = Parallel::wall_time();
-#endif
   lock(&node_lock_);
   while (tmpl::size<actions_list>::value > 0 and not get_terminate() and
          iterate_over_actions(
              std::make_index_sequence<tmpl::size<actions_list>::value>{})) {
   }
   unlock(&node_lock_);
-#ifdef SPECTRE_CHARM_PROJECTIONS
-  traceUserBracketEvent(SPECTRE_CHARM_NON_ACTION_WALLTIME_EVENT_ID,
-                        non_action_time_start_, Parallel::wall_time());
-#endif
 }
 /// \endcond
 
@@ -533,11 +521,6 @@ constexpr bool AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::
       return;
     }
 
-#ifdef SPECTRE_CHARM_PROJECTIONS
-    traceUserBracketEvent(SPECTRE_CHARM_NON_ACTION_WALLTIME_EVENT_ID,
-                          non_action_time_start_, Parallel::wall_time());
-    double start_time = detail::start_trace_action<this_action>();
-#endif
     performing_action_ = true;
     algorithm_step_++;
     make_overloader(
@@ -568,10 +551,6 @@ constexpr bool AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::
                   std::add_pointer_t<ParallelComponent>{}))>::type{});
 
     performing_action_ = false;
-#ifdef SPECTRE_CHARM_PROJECTIONS
-    detail::stop_trace_action<this_action>(start_time);
-    non_action_time_start_ = Parallel::wall_time();
-#endif
     // Wrap counter if necessary
     if (algorithm_step_ >= tmpl::size<actions_list>::value) {
       algorithm_step_ = 0;
@@ -601,9 +580,6 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::
               typename ReceiveTag::type::mapped_type::mapped_type>,
       "The type of the data passed to receive_data for a tag that holds a map "
       "must be a std::pair.");
-#ifdef SPECTRE_CHARM_RECEIVE_MAP_DATA_EVENT_ID
-  double start_time = Parallel::wall_time();
-#endif
   auto& inbox = tuples::get<ReceiveTag>(inboxes_)[instance];
   ASSERT(0 == inbox.count(t.first),
          "Receiving data from the 'same' source twice. The message id is: "
@@ -613,10 +589,6 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<ActionsPack...>>::
           << instance << "' with tag '" << pretty_type::get_name<ReceiveTag>()
           << "'.\n");
   }
-#ifdef SPECTRE_CHARM_RECEIVE_MAP_DATA_EVENT_ID
-  traceUserBracketEvent(SPECTRE_CHARM_RECEIVE_MAP_DATA_EVENT_ID, start_time,
-                        Parallel::wall_time());
-#endif
 }
 
 template <typename ParallelComponent, typename... ActionsPack>
