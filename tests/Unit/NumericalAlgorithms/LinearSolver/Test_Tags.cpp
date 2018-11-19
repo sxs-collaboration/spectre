@@ -21,6 +21,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Tags",
   CHECK(LinearSolver::Tags::OperatorAppliedTo<Tag>::name() ==
         "LinearOperatorAppliedTo(Tag)");
   CHECK(LinearSolver::Tags::Residual<Tag>::name() == "LinearResidual(Tag)");
-  CHECK(LinearSolver::Tags::ResidualMagnitudeSquare<Tag>::name() ==
-        "LinearResidualMagnitudeSquare(Tag)");
+  CHECK(LinearSolver::Tags::MagnitudeSquare<Tag>::name() ==
+        "LinearMagnitudeSquare(Tag)");
+  CHECK(LinearSolver::Tags::Magnitude<Tag>::name() == "LinearMagnitude(Tag)");
+  CHECK(LinearSolver::Tags::Orthogonalization<Tag>::name() ==
+        "LinearOrthogonalization(Tag)");
+  CHECK(LinearSolver::Tags::OrthogonalizationHistory<Tag>::name() ==
+        "LinearOrthogonalizationHistory(Tag)");
+  CHECK(LinearSolver::Tags::KrylovSubspaceBasis<Tag>::name() ==
+        "KrylovSubspaceBasis(Tag)");
 }

@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_ConjugateGradient")
+set(LIBRARY "Test_Gmres")
 
 set(LIBRARY_SOURCES
   Test_ElementActions.cpp
@@ -10,7 +10,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
   ${LIBRARY}
-  "NumericalAlgorithms/LinearSolver/ConjugateGradient"
+  "NumericalAlgorithms/LinearSolver/Gmres"
   "${LIBRARY_SOURCES}"
   "DataStructures;LinearSolver"
   )
@@ -57,5 +57,5 @@ function(add_algorithm_test TEST_NAME)
     ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
 endfunction()
 
-add_algorithm_test("ConjugateGradientAlgorithm")
-add_algorithm_test("DistributedConjugateGradientAlgorithm")
+add_algorithm_test("GmresAlgorithm")
+add_algorithm_test("DistributedGmresAlgorithm")

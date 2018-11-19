@@ -6,6 +6,7 @@
 #include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DenseMatrix.hpp"
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
@@ -21,22 +22,22 @@ template <typename...>
 class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
-namespace cg_detail {
+namespace gmres_detail {
 template <typename>
 struct InitializeResidualMonitor;
-}  // namespace cg_detail
+}  // namespace gmres_detail
 }  // namespace LinearSolver
 /// \endcond
 
 namespace LinearSolver {
-namespace cg_detail {
+namespace gmres_detail {
 
 template <typename Metavariables>
 struct ResidualMonitor {
   struct Verbosity {
     using type = ::Verbosity;
     static constexpr OptionString help = {"Verbosity"};
-    static type default_value() noexcept { return ::Verbosity::Quiet; }
+    static type default_value() { return ::Verbosity::Quiet; }
   };
 
   using chare_type = Parallel::Algorithms::Singleton;
@@ -67,14 +68,25 @@ template <typename Metavariables>
 struct InitializeResidualMonitor {
  private:
   using fields_tag = typename Metavariables::system::fields_tag;
-  using residual_square_tag = db::add_tag_prefix<
-      LinearSolver::Tags::MagnitudeSquare,
+  using residual_magnitude_tag = db::add_tag_prefix<
+      LinearSolver::Tags::Magnitude,
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+  using source_magnitude_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Magnitude,
+                         db::add_tag_prefix<::Tags::Source, fields_tag>>;
+  using orthogonalization_iteration_id_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
+                         LinearSolver::Tags::IterationId>;
+  using orthogonalization_history_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
+                         fields_tag>;
 
  public:
   using simple_tags =
-      db::AddSimpleTags<::Tags::Verbosity, ::LinearSolver::Tags::IterationId,
-                        residual_square_tag>;
+      db::AddSimpleTags<::Tags::Verbosity, residual_magnitude_tag,
+                        source_magnitude_tag, LinearSolver::Tags::IterationId,
+                        orthogonalization_iteration_id_tag,
+                        orthogonalization_history_tag>;
   using compute_tags = db::AddComputeTags<>;
 
   template <typename... InboxTags, typename ArrayIndex, typename ActionList,
@@ -87,11 +99,12 @@ struct InitializeResidualMonitor {
                     const ParallelComponent* const /*meta*/,
                     ::Verbosity verbosity) noexcept {
     auto box = db::create<simple_tags, compute_tags>(
-        verbosity, LinearSolver::IterationId{0},
-        std::numeric_limits<double>::signaling_NaN());
+        verbosity, std::numeric_limits<double>::signaling_NaN(),
+        std::numeric_limits<double>::signaling_NaN(), IterationId{0},
+        IterationId{0}, DenseMatrix<double>{2, 1, 0.});
     return std::make_tuple(std::move(box));
   }
 };
 
-}  // namespace cg_detail
+}  // namespace gmres_detail
 }  // namespace LinearSolver

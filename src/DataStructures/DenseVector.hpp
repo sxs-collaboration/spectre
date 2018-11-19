@@ -8,7 +8,9 @@
 
 #include <pup.h>  // IWYU pragma: keep
 
+#include "Options/Options.hpp"
 #include "Utilities/Blaze.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -67,3 +69,13 @@ struct MakeWithValueImpl<DenseVector<double, TFOut>, DenseVector<TIn, TFIn>> {
   }
 };
 }  // namespace MakeWithValueImpls
+
+template <typename T, bool TF>
+struct create_from_yaml<DenseVector<T, TF>> {
+  static DenseVector<T, TF> create(const Option& options) {
+    const auto data = options.parse_as<std::vector<T>>();
+    DenseVector<T, TF> result(data.size());
+    std::copy(std::begin(data), std::end(data), result.begin());
+    return result;
+  }
+};

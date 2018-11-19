@@ -6,7 +6,7 @@
 #include <vector>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ConjugateGradient.hpp"
+#include "NumericalAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
@@ -18,7 +18,7 @@ namespace {
 struct Metavariables {
   using system = DistributedLinearSolverAlgorithmTest::System;
 
-  using linear_solver = LinearSolver::ConjugateGradient<Metavariables>;
+  using linear_solver = LinearSolver::Gmres<Metavariables>;
 
   using component_list = tmpl::append<
       tmpl::list<
@@ -27,8 +27,7 @@ struct Metavariables {
   using const_global_cache_tag_list = tmpl::list<>;
 
   static constexpr const char* const help{
-      "Test the conjugate gradient linear solver algorithm on multiple "
-      "elements"};
+      "Test the GMRES linear solver algorithm on multiple elements"};
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
   enum class Phase { Initialization, PerformLinearSolve, TestResult, Exit };

@@ -64,7 +64,7 @@ struct PerformStep {
         Parallel::get_parallel_component<ResidualMonitor<Metavariables>>(
             cache));
 
-    // Terminate algorithm for now. The reduction will be broadcasted to the
+    // Terminate algorithm for now. The reduction will be broadcast to the
     // next action which is responsible for restarting the algorithm.
     return std::tuple<db::DataBox<DbTagsList>&&, bool>(std::move(box), true);
   }

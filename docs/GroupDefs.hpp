@@ -543,7 +543,7 @@
  * converge the fields towards their solution and update the operand before
  * handing responsibility back to the algorithm for the next application of the
  * linear operator:
- * \snippet Test_ConjugateGradientAlgorithm.cpp action_list
+ * \snippet LinearSolverAlgorithmTestHelpers.hpp action_list
  */
 
 /// \defgroup LoggingGroup Logging

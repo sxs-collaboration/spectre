@@ -6,29 +6,27 @@
 #include <vector>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ConjugateGradient.hpp"
+#include "NumericalAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
 #include "Utilities/TMPL.hpp"
-#include "tests/Unit/NumericalAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
+#include "tests/Unit/NumericalAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"
 
 namespace {
 
 struct Metavariables {
-  using system = DistributedLinearSolverAlgorithmTest::System;
+  using system = LinearSolverAlgorithmTest::System;
 
-  using linear_solver = LinearSolver::ConjugateGradient<Metavariables>;
+  using linear_solver = LinearSolver::Gmres<Metavariables>;
 
   using component_list = tmpl::append<
-      tmpl::list<
-          DistributedLinearSolverAlgorithmTest::ElementArray<Metavariables>>,
+      tmpl::list<LinearSolverAlgorithmTest::ElementArray<Metavariables>>,
       typename linear_solver::component_list>;
   using const_global_cache_tag_list = tmpl::list<>;
 
   static constexpr const char* const help{
-      "Test the conjugate gradient linear solver algorithm on multiple "
-      "elements"};
+      "Test the GMRES linear solver algorithm"};
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
   enum class Phase { Initialization, PerformLinearSolve, TestResult, Exit };
