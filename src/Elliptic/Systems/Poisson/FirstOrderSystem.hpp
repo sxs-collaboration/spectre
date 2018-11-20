@@ -57,6 +57,7 @@ struct FirstOrderSystem {
 
   // The physical fields to solve for
   using fields_tag = Tags::Variables<tmpl::list<Field, AuxiliaryField<Dim>>>;
+  using impose_boundary_conditions_on_fields = tmpl::list<Field>;
 
   // The variables to compute bulk contributions and fluxes for.
   using variables_tag =
