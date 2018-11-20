@@ -26,7 +26,7 @@ struct component {
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<OptionTags::FinalTime>;
   using action_list = tmpl::list<Actions::FinalTime>;
-  using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>;
+  using simple_tags = db::AddSimpleTags<Tags::TimeId>;
   using compute_tags = db::AddComputeTags<Tags::Time>;
   using initial_databox =
       db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
@@ -49,7 +49,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.FinalTime", "[Unit][Time][Actions]") {
       .emplace(0, ActionTesting::MockDistributedObject<component>{
                       db::create<typename component::simple_tags,
                                  typename component::compute_tags>(
-                          TimeId{}, TimeDelta{})});
+                          TimeId{})});
   MockRuntimeSystem runner{{5.}, std::move(dist_objects)};
   auto& box = runner.algorithms<component>()
                   .at(0)
@@ -57,20 +57,19 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.FinalTime", "[Unit][Time][Actions]") {
 
   struct Test {
     Time time{};
-    TimeDelta time_step{};
+    bool time_runs_forward{};
     bool expected_result{};
   };
   const std::array<Test, 4> tests{{
-      {slab.start(), slab.duration(), false},
-      {slab.start(), -slab.duration(), true},
-      {slab.end(), slab.duration(), true},
-      {slab.end(), -slab.duration(), false}}};
+      {slab.start(), true, false},
+      {slab.start(), false, true},
+      {slab.end(), true, true},
+      {slab.end(), false, false}}};
 
   for (const auto& test : tests) {
-    db::mutate<Tags::TimeId, Tags::TimeStep>(
-        make_not_null(&box), [&test](const auto time_id, const auto time_step) {
-          *time_id = TimeId(time_step->is_positive(), 0, test.time);
-          *time_step = test.time_step;
+    db::mutate<Tags::TimeId>(
+        make_not_null(&box), [&test](const auto time_id) {
+          *time_id = TimeId(test.time_runs_forward, 0, test.time);
         });
 
     runner.next_action<component>(0);

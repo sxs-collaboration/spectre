@@ -10,6 +10,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Time/EvolutionOrdering.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -20,7 +21,7 @@ struct FinalTime;
 }  // namespace OptionTags
 namespace Tags {
 struct Time;
-struct TimeStep;
+struct TimeId;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -32,7 +33,7 @@ namespace Actions {
 ///
 /// Uses:
 /// - ConstGlobalCache: OptionTags::FinalTime
-/// - DataBox: Tags::Time, Tags::TimeStep
+/// - DataBox: Tags::Time, Tags::TimeId
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -51,11 +52,11 @@ struct FinalTime {
       const ParallelComponent* const /*meta*/) noexcept {
     const double final_time = Parallel::get<OptionTags::FinalTime>(cache);
     const Time& time = db::get<Tags::Time>(box);
-    const TimeDelta& time_step = db::get<Tags::TimeStep>(box);
+    const bool time_runs_forward =
+        db::get<Tags::TimeId>(box).time_runs_forward();
 
-    return {std::move(box), time_step.is_positive()
-                                ? time.value() >= final_time
-                                : time.value() <= final_time};
+    return {std::move(box), evolution_greater_equal<double>{time_runs_forward}(
+                                time.value(), final_time)};
   }
 };
 }  // namespace Actions
