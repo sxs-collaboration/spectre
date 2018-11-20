@@ -6,6 +6,7 @@ set(LIBRARY GrMhdAnalyticData)
 set(LIBRARY_SOURCES
   BondiHoyleAccretion.cpp
   CylindricalBlastWave.cpp
+  OrszagTangVortex.cpp
   )
 
 add_library(${LIBRARY} ${LIBRARY_SOURCES})

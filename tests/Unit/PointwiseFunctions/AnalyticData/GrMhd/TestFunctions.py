@@ -202,3 +202,44 @@ def cylindrical_blast_wave_divergence_cleaning_field(x, inner_radius,
     return 0.0
 
 # End for testing CylindricalBlastWave.cpp
+
+# Functions for testing OrszagTangVortex.cpp
+
+
+def orszag_tang_rest_mass_density(x):
+    return 25. / (36. * np.pi)
+
+
+def orszag_tang_spatial_velocity(x):
+    return np.array([-1. / 2. * np.sin(2. * np.pi * x[1]),
+                     1. / 2. * np.sin(2. * np.pi * x[0]),
+                     0.])
+
+
+def orszag_tang_specific_internal_energy(x):
+    return 1. / (5. / 3. - 1.) * orszag_tang_pressure(x) / orszag_tang_rest_mass_density(x)
+
+
+def orszag_tang_pressure(x):
+    return 5. / (12. * np.pi)
+
+
+def orszag_tang_lorentz_factor(x):
+    v = orszag_tang_spatial_velocity(x)
+    return 1. / np.sqrt(1. - np.dot(v, v))
+
+
+def orszag_tang_specific_enthalpy(x):
+    return 1. + orszag_tang_specific_internal_energy(x) + orszag_tang_pressure(x) / orszag_tang_rest_mass_density(x)
+
+
+def orszag_tang_magnetic_field(x):
+    return np.array([-1. / np.sqrt(4. * np.pi) * np.sin(2. * np.pi * x[1]),
+                     1. / np.sqrt(4. * np.pi) * np.sin(4. * np.pi * x[0]),
+                     0.])
+
+
+def orszag_tang_divergence_cleaning_field(x):
+    return 0.
+
+# End for testing OrszagTangVortex.cpp
