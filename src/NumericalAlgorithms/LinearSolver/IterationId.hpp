@@ -27,6 +27,9 @@ struct IterationId {
 
   IterationId() = default;
 
+  // To support ObservationId
+  double value() const noexcept { return static_cast<double>(step_number); }
+
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 };
