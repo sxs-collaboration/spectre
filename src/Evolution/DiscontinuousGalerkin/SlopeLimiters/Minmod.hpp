@@ -16,6 +16,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
+#include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "Domain/MaxNumberOfNeighbors.hpp"
@@ -95,6 +96,9 @@ bool limit_one_tensor(
     gsl::not_null<DataVector*> tensor_begin,
     gsl::not_null<DataVector*> tensor_end, gsl::not_null<DataVector*> u_lin,
     gsl::not_null<std::array<DataVector, VolumeDim>*> temp_boundary_buffer,
+    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
+                               gsl::span<std::pair<size_t, size_t>>>,
+                     VolumeDim>& volume_and_slice_indices,
     const SlopeLimiters::MinmodType& minmod_type, double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
@@ -384,11 +388,13 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
                                            num_points);
       alloc_offset += num_points;
     }
+    // Compute the slice indices once since this is (surprisingly) expensive
+    const auto indices_and_buffer = volume_and_slice_indices(mesh.extents());
 
     bool limiter_activated = false;
     const auto wrap_limit_one_tensor = [
       this, &limiter_activated, &element, &mesh, &logical_coords, &element_size,
-      &neighbor_data, &u_lin, &temp_boundary_buffer
+      &neighbor_data, &u_lin, &temp_boundary_buffer, &indices_and_buffer
     ](auto tag, const auto& tensor) noexcept {
       // Because we hide the types of Tags from limit_one_tensor (we do this so
       // that its implementation isn't templated on Tags and can be moved out of
@@ -436,8 +442,9 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       limiter_activated =
           Minmod_detail::limit_one_tensor<VolumeDim>(
               tensor_begin, tensor_end, &u_lin, &temp_boundary_buffer,
-              minmod_type_, tvbm_constant_, element, mesh, logical_coords,
-              element_size, neighbor_tensor_begin, neighbor_sizes) or
+              indices_and_buffer.second, minmod_type_, tvbm_constant_, element,
+              mesh, logical_coords, element_size, neighbor_tensor_begin,
+              neighbor_sizes) or
           limiter_activated;
       return '0';
     };

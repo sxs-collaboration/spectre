@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
 
 // IWYU pragma: no_include <ostream>
@@ -51,6 +52,9 @@ bool limit_one_tensor(
     const gsl::not_null<DataVector*> u_lin,
     const gsl::not_null<std::array<DataVector, VolumeDim>*>
         temp_boundary_buffer,
+    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
+                               gsl::span<std::pair<size_t, size_t>>>,
+                     VolumeDim>& volume_and_slice_indices,
     const SlopeLimiters::MinmodType& minmod_type, const double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
@@ -157,10 +161,14 @@ bool limit_one_tensor(
     if (minmod_type == SlopeLimiters::MinmodType::LambdaPiN) {
       bool u_needs_limiting = false;
       for (size_t d = 0; d < VolumeDim; ++d) {
-        const double u_lower = mean_value_on_boundary(
-            &(gsl::at(*temp_boundary_buffer, d)), u, mesh, d, Side::Lower);
-        const double u_upper = mean_value_on_boundary(
-            &(gsl::at(*temp_boundary_buffer, d)), u, mesh, d, Side::Upper);
+        const double u_lower =
+            mean_value_on_boundary(&(gsl::at(*temp_boundary_buffer, d)),
+                                   gsl::at(volume_and_slice_indices, d).first,
+                                   u, mesh, d, Side::Lower);
+        const double u_upper =
+            mean_value_on_boundary(&(gsl::at(*temp_boundary_buffer, d)),
+                                   gsl::at(volume_and_slice_indices, d).second,
+                                   u, mesh, d, Side::Upper);
         const double diff_lower = difference_to_neighbor(d, Side::Lower);
         const double diff_upper = difference_to_neighbor(d, Side::Upper);
 
@@ -194,10 +202,14 @@ bool limit_one_tensor(
     auto u_limited_slopes = make_array<VolumeDim>(0.0);
 
     for (size_t d = 0; d < VolumeDim; ++d) {
-      const double u_lower = mean_value_on_boundary(
-          &(gsl::at(*temp_boundary_buffer, d)), *u_lin, mesh, d, Side::Lower);
-      const double u_upper = mean_value_on_boundary(
-          &(gsl::at(*temp_boundary_buffer, d)), *u_lin, mesh, d, Side::Upper);
+      const double u_lower =
+          mean_value_on_boundary(&(gsl::at(*temp_boundary_buffer, d)),
+                                 gsl::at(volume_and_slice_indices, d).first,
+                                 *u_lin, mesh, d, Side::Lower);
+      const double u_upper =
+          mean_value_on_boundary(&(gsl::at(*temp_boundary_buffer, d)),
+                                 gsl::at(volume_and_slice_indices, d).second,
+                                 *u_lin, mesh, d, Side::Upper);
 
       // Divide by element's width (2.0 in logical coordinates) to get a slope
       const double local_slope = 0.5 * (u_upper - u_lower);
@@ -233,45 +245,37 @@ bool limit_one_tensor(
 }
 
 // Explicit instantiations
-template bool limit_one_tensor<1>(
-    const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>,
-    const gsl::not_null<DataVector*>,
-    const gsl::not_null<std::array<DataVector, 1>*>,
-    const SlopeLimiters::MinmodType&, const double, const Element<1>&,
-    const Mesh<1>&, const tnsr::I<DataVector, 1, Frame::Logical>&,
-    const std::array<double, 1>&,
-    const FixedHashMap<2, std::pair<Direction<1>, ElementId<1>>,
-                       gsl::not_null<const double*>,
-                       boost::hash<std::pair<Direction<1>, ElementId<1>>>>&,
-    const FixedHashMap<
-        2, std::pair<Direction<1>, ElementId<1>>, std::array<double, 1>,
-        boost::hash<std::pair<Direction<1>, ElementId<1>>>>&) noexcept;
-template bool limit_one_tensor<2>(
-    const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>,
-    const gsl::not_null<DataVector*>,
-    const gsl::not_null<std::array<DataVector, 2>*>,
-    const SlopeLimiters::MinmodType&, const double, const Element<2>&,
-    const Mesh<2>&, const tnsr::I<DataVector, 2, Frame::Logical>&,
-    const std::array<double, 2>&,
-    const FixedHashMap<8, std::pair<Direction<2>, ElementId<2>>,
-                       gsl::not_null<const double*>,
-                       boost::hash<std::pair<Direction<2>, ElementId<2>>>>&,
-    const FixedHashMap<
-        8, std::pair<Direction<2>, ElementId<2>>, std::array<double, 2>,
-        boost::hash<std::pair<Direction<2>, ElementId<2>>>>&) noexcept;
-template bool limit_one_tensor<3>(
-    const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>,
-    const gsl::not_null<DataVector*>,
-    const gsl::not_null<std::array<DataVector, 3>*>,
-    const SlopeLimiters::MinmodType&, const double, const Element<3>&,
-    const Mesh<3>&, const tnsr::I<DataVector, 3, Frame::Logical>&,
-    const std::array<double, 3>&,
-    const FixedHashMap<24, std::pair<Direction<3>, ElementId<3>>,
-                       gsl::not_null<const double*>,
-                       boost::hash<std::pair<Direction<3>, ElementId<3>>>>&,
-    const FixedHashMap<
-        24, std::pair<Direction<3>, ElementId<3>>, std::array<double, 3>,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>&) noexcept;
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                                              \
+  template bool limit_one_tensor<DIM(data)>(                              \
+      const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>, \
+      const gsl::not_null<DataVector*>,                                   \
+      const gsl::not_null<std::array<DataVector, DIM(data)>*>,            \
+      const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,    \
+                                 gsl::span<std::pair<size_t, size_t>>>,   \
+                       DIM(data)>&,                                       \
+      const SlopeLimiters::MinmodType&, const double,                     \
+      const Element<DIM(data)>&, const Mesh<DIM(data)>&,                  \
+      const tnsr::I<DataVector, DIM(data), Frame::Logical>&,              \
+      const std::array<double, DIM(data)>&,                               \
+      const FixedHashMap<                                                 \
+          maximum_number_of_neighbors(DIM(data)),                         \
+          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,          \
+          gsl::not_null<const double*>,                                   \
+          boost::hash<                                                    \
+              std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>&,   \
+      const FixedHashMap<                                                 \
+          maximum_number_of_neighbors(DIM(data)),                         \
+          std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,          \
+          std::array<double, DIM(data)>,                                  \
+          boost::hash<std::pair<Direction<DIM(data)>,                     \
+                                ElementId<DIM(data)>>>>&) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef DIM
+#undef INSTANTIATE
 }  // namespace Minmod_detail
 
 SlopeLimiters::MinmodType create_from_yaml<SlopeLimiters::MinmodType>::create(
