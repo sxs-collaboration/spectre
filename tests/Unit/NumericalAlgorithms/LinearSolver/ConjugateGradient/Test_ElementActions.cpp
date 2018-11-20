@@ -29,11 +29,14 @@ struct VectorTag : db::SimpleTag {
 using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, VectorTag>;
 using residual_tag =
     db::add_tag_prefix<LinearSolver::Tags::Residual, VectorTag>;
+using residual_magnitude_tag =
+    LinearSolver::Tags::Magnitude<LinearSolver::Tags::Residual<VectorTag>>;
 
 using simple_tags =
     db::AddSimpleTags<VectorTag, LinearSolver::Tags::IterationId,
                       ::Tags::Next<LinearSolver::Tags::IterationId>,
-                      operand_tag, residual_tag>;
+                      operand_tag, residual_tag, residual_magnitude_tag,
+                      LinearSolver::Tags::HasConverged>;
 
 template <typename Metavariables>
 struct ElementArray {
@@ -68,11 +71,11 @@ SPECTRE_TEST_CASE(
 
   MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
   tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(self_id, db::create<simple_tags>(DenseVector<double>(3, 0.),
-                                                LinearSolver::IterationId{0},
-                                                LinearSolver::IterationId{0},
-                                                DenseVector<double>(3, 2.),
-                                                DenseVector<double>(3, 1.)));
+      .emplace(self_id,
+               db::create<simple_tags>(
+                   DenseVector<double>(3, 0.), LinearSolver::IterationId{0},
+                   LinearSolver::IterationId{0}, DenseVector<double>(3, 2.),
+                   DenseVector<double>(3, 1.), 10., false));
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
   const auto get_box = [&runner, &self_id]() -> decltype(auto) {
     return runner.algorithms<ElementArray<Metavariables>>()
@@ -91,24 +94,29 @@ SPECTRE_TEST_CASE(
   // `Test_ConjugateGradientAlgorithm.cpp` and
   // `Test_DistributedConjugateGradientAlgorithm.cpp`.
 
+  SECTION("InitializeResidualMagnitude") {
+    runner.simple_action<ElementArray<Metavariables>,
+                         LinearSolver::cg_detail::InitializeResidualMagnitude>(
+        self_id, 3.);
+    const auto& box = get_box();
+    CHECK(db::get<residual_magnitude_tag>(box) == 3.);
+  }
   SECTION("UpdateOperand") {
     runner.simple_action<ElementArray<Metavariables>,
                          LinearSolver::cg_detail::UpdateOperand>(self_id, 2.,
-                                                                 false);
+                                                                 1., false);
     const auto& box = get_box();
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
     CHECK(db::get<LinearSolver::Tags::Operand<VectorTag>>(box) ==
           DenseVector<double>(3, 5.));
-    CHECK_FALSE(runner.algorithms<ElementArray<Metavariables>>()
-                    .at(self_id)
-                    .get_terminate());
+    CHECK(db::get<residual_magnitude_tag>(box) == 1.);
+    CHECK(db::get<LinearSolver::Tags::HasConverged>(box) == false);
   }
-  SECTION("UpdateOperandAndTerminate") {
+  SECTION("Converge") {
     runner.simple_action<ElementArray<Metavariables>,
                          LinearSolver::cg_detail::UpdateOperand>(self_id, 2.,
-                                                                 true);
-    CHECK(runner.algorithms<ElementArray<Metavariables>>()
-              .at(self_id)
-              .get_terminate());
+                                                                 1., true);
+    const auto& box = get_box();
+    CHECK(db::get<LinearSolver::Tags::HasConverged>(box) == true);
   }
 }

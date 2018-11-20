@@ -23,6 +23,7 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace cg_detail {
+struct InitializeResidualMagnitude;
 struct UpdateFieldValues;
 struct UpdateOperand;
 }  // namespace cg_detail
@@ -32,6 +33,7 @@ struct UpdateOperand;
 namespace LinearSolver {
 namespace cg_detail {
 
+template <typename BroadcastTarget>
 struct InitializeResidual {
   template <
       typename... DbTags, typename... InboxTags, typename Metavariables,
@@ -44,7 +46,7 @@ struct InitializeResidual {
           DbTags>...>> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
@@ -59,6 +61,13 @@ struct InitializeResidual {
                                            res_old) noexcept {
           *res_old = res_new;
         });
+
+    // When more sophisticated convergence criteria are implemented we may also
+    // want to check for convergence here.
+
+    Parallel::simple_action<InitializeResidualMagnitude>(
+        Parallel::get_parallel_component<BroadcastTarget>(cache),
+        sqrt(res_new));
   }
 };
 
@@ -124,6 +133,11 @@ struct UpdateResidual {
           get<LinearSolver::Tags::IterationId>(box).step_number + 1, residual);
     }
 
+    // Determine whether the linear solver has converged
+    // More sophisticated convergence criteria can be added in the future.
+    const bool has_converged = equal_within_roundoff(residual, 0.);
+
+    // Prepare for the next iteration
     db::mutate<residual_square_tag, LinearSolver::Tags::IterationId>(
         make_not_null(&box), [res_new](const gsl::not_null<double*> res_old,
                                        const gsl::not_null<IterationId*>
@@ -134,7 +148,7 @@ struct UpdateResidual {
 
     Parallel::simple_action<UpdateOperand>(
         Parallel::get_parallel_component<BroadcastTarget>(cache), res_ratio,
-        equal_within_roundoff(residual, 0.));
+        residual, has_converged);
   }
 };
 

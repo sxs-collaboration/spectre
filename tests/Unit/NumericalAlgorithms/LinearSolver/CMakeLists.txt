@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_Tags.cpp
   )
 
+add_subdirectory(Actions)
 add_subdirectory(ConjugateGradient)
 add_subdirectory(Gmres)
 

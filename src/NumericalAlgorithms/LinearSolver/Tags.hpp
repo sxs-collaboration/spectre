@@ -69,6 +69,16 @@ struct IterationId : db::SimpleTag {
 };
 
 /*!
+ * \brief Holds a flag that signals the linear solver has converged
+ */
+struct HasConverged : db::SimpleTag {
+  static std::string name() noexcept {
+    return "LinearSolverHasConverged";
+  }
+  using type = bool;
+};
+
+/*!
  * \brief The residual \f$r=b - Ax\f$
  */
 template <typename Tag>
@@ -77,6 +87,13 @@ struct Residual : db::PrefixTag, db::SimpleTag {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
     return "LinearResidual(" + Tag::name() + ")";
   }
+  using type = typename Tag::type;
+  using tag = Tag;
+};
+
+template <typename Tag>
+struct Initial : db::PrefixTag, db::SimpleTag {
+  static std::string name() noexcept { return "Initial(" + Tag::name() + ")"; }
   using type = typename Tag::type;
   using tag = Tag;
 };

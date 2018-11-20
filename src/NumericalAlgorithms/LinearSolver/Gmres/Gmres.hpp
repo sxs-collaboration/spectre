@@ -55,12 +55,9 @@ namespace LinearSolver {
  * Broadcast to `UpdateFieldAndTerminate` if the residual vanishes to a
  * precision determined by `equal_within_roundoff`, else broadcast to
  * `NormalizeOperand`.
- * 5. `NormalizeOperand` (on elements): Set the operand \f$q\f$ as the new
- * orthogonal vector and normalize. `UpdateFieldAndTerminate`: Use the residual
- * vector and the set of orthogonal vectors to determine the solution \f$x\f$.
- *
- * \note that the field \f$x\f$ is not updated in every step, but only set to
- * the solution when the algorithm has decided to terminate.
+ * 5. `NormalizeOperandAndUpdateField` (on elements): Set the operand \f$q\f$ as
+ * the new orthogonal vector and normalize. Use the residual vector and the set
+ * of orthogonal vectors to determine the solution \f$x\f$.
  *
  * \see ConjugateGradient for a linear solver that is more efficient when the
  * linear operator \f$A\f$ is symmetric.
@@ -86,6 +83,8 @@ struct Gmres {
    * - ConstGlobalCache: nothing
    *
    * With:
+   * - `initial_fields_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>`
    * - `operand_tag` =
    * `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
    * - `operator_tag` =
@@ -95,15 +94,21 @@ struct Gmres {
    * LinearSolver::Tags::IterationId>`
    * - `basis_history_tag` =
    * `LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>`
+   * - `residual_magnitude_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Magnitude,
+   * db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>`
    *
    * DataBox changes:
    * - Adds:
    *   * `LinearSolver::Tags::IterationId`
    *   * `Tags::Next<LinearSolver::Tags::IterationId>`
+   *   * `initial_fields_tag`
    *   * `operand_tag`
    *   * `operator_tag`
    *   * `orthogonalization_iteration_id_tag`
    *   * `basis_history_tag`
+   *   * `residual_magnitude_tag`
+   *   * `LinearSolver::Tags::HasConverged`
    * - Removes: nothing
    * - Modifies: nothing
    */
@@ -125,6 +130,9 @@ struct Gmres {
    * LinearSolver::Tags::IterationId>`
    * - `basis_history_tag` =
    * `LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>`
+   * - `residual_magnitude_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Magnitude,
+   * db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>`
    *
    * DataBox changes:
    * - Adds: nothing
@@ -133,9 +141,11 @@ struct Gmres {
    *   * `LinearSolver::Tags::IterationId`
    *   * `Tags::Next<LinearSolver::Tags::IterationId>`
    *   * `fields_tag`
+   *   * `operand_tag`
    *   * `orthogonalization_iteration_id_tag`
    *   * `basis_history_tag`
-   *   * `operand_tag`
+   *   * `residual_magnitude_tag`
+   *   * `LinearSolver::Tags::HasConverged`
    */
   using perform_step = gmres_detail::PerformStep;
 };
