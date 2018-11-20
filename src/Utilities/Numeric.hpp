@@ -39,6 +39,15 @@ constexpr T accumulate(InputIt first, InputIt last, T init) {
 }  // namespace cpp2b
 
 namespace alg {
+template <class Container, class T>
+constexpr decltype(auto) iota(Container&& c, T value) {
+  for (auto& t : c) {
+    t = value;
+    ++value;
+  }
+  return std::forward<Container>(c);
+}
+
 /// Convenience wrapper around std::accumulate, returns
 /// `std::accumulate(begin(c), end(c), init)`.
 template <class Container, class T>
