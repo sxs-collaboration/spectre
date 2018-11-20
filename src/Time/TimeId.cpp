@@ -7,6 +7,7 @@
 #include <ostream>
 #include <pup.h>
 
+#include "Time/EvolutionOrdering.hpp"
 #include "Time/Slab.hpp"
 
 void TimeId::canonicalize() noexcept {
@@ -53,8 +54,8 @@ bool operator<(const TimeId& a, const TimeId& b) noexcept {
          "Time is not running in a consistent direction");
   return a.slab_number() < b.slab_number() or
          (a.slab_number() == b.slab_number() and
-          ((a.time_runs_forward() ? a.step_time() < b.step_time()
-                                  : a.step_time() > b.step_time()) or
+          (evolution_less<Time>{a.time_runs_forward()}(a.step_time(),
+                                                       b.step_time()) or
            (a.step_time() == b.step_time() and a.substep() < b.substep())));
 }
 bool operator<=(const TimeId& a, const TimeId& b) noexcept {
