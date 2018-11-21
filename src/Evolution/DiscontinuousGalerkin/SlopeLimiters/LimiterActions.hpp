@@ -79,12 +79,11 @@ struct Limit {
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& inboxes,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&> apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     using mutate_tags = typename Metavariables::limiter::type::limit_tags;
     using argument_tags =
         typename Metavariables::limiter::type::limit_argument_tags;
@@ -164,12 +163,11 @@ struct SendData {
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&> apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
     auto& receiver_proxy =

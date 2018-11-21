@@ -49,12 +49,11 @@ struct RecordTimeStepperData {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&> apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     using variables_tag = typename Metavariables::system::variables_tag;
     using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
     using history_tag =

@@ -56,12 +56,12 @@ struct ApplyBoundaryFluxesLocalTimeStepping {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&> apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     static_assert(Metavariables::local_time_stepping,
                   "ApplyBoundaryFluxesLocalTimeStepping can only be used with "
                   "local time-stepping.");

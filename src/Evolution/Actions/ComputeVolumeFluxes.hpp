@@ -42,12 +42,12 @@ struct ComputeVolumeFluxes {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<tmpl::size<DbTagsList>::value != 0> = nullptr>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
     using variables_tag = typename system::variables_tag;
     db::mutate_apply<db::split_tag<db::add_tag_prefix<

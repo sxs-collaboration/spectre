@@ -33,20 +33,18 @@ struct FinalTime {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&, bool> apply(
+      db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     const double final_time = Parallel::get<OptionTags::FinalTime>(cache);
     const Time& time = db::get<Tags::Time>(box);
     const TimeDelta& time_step = db::get<Tags::TimeStep>(box);
 
-    return std::tuple<db::DataBox<DbTags>&&, bool>(
-        std::move(box),
-        time_step.is_positive() ? time.value() >= final_time
-                                : time.value() <= final_time);
+    return {std::move(box), time_step.is_positive()
+                                ? time.value() >= final_time
+                                : time.value() <= final_time};
   }
 };
 }  // namespace Actions
