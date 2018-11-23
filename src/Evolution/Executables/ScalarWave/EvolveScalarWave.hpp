@@ -92,9 +92,12 @@ struct EvolutionMetavars {
                  StepChoosers::Register::Increase>;
 
   using compute_rhs = tmpl::flatten<tmpl::list<
-      dg::Actions::ComputeNonconservativeBoundaryFluxes,
+      dg::Actions::ComputeNonconservativeBoundaryFluxes<
+          Tags::InternalDirections<Dim>>,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       Actions::ComputeTimeDerivative,
+      dg::Actions::ComputeNonconservativeBoundaryFluxes<
+          Tags::BoundaryDirectionsInterior<Dim>>,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,

@@ -28,18 +28,20 @@ namespace Actions {
 /// non-conservative system.
 ///
 /// Uses:
-/// - ConstGlobalCache: nothing
+/// - System:
+///   - `variables_tag`
 /// - DataBox:
-///   Tags::InternalDirections<volume_dim>,
-///   interface items as required by Metavariables::system::normal_dot_fluxes
+///   - `DirectionsTag`,
+///   - Interface items as required by
+///   `Metavariables::system::normal_dot_fluxes`
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   Tags::Interface<
-///       Tags::InternalDirections<volume_dim>,
-///       db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>
+///   - `Tags::Interface<
+///   DirectionsTag, db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>`
+template <typename DirectionsTag>
 struct ComputeNonconservativeBoundaryFluxes {
  private:
   template <typename Metavariables, typename... NormalDotFluxTags,
@@ -65,27 +67,24 @@ struct ComputeNonconservativeBoundaryFluxes {
     using system = typename Metavariables::system;
     using variables_tag = typename system::variables_tag;
 
-    using internal_directions_tag =
-        Tags::InternalDirections<system::volume_dim>;
-
     using interface_normal_dot_fluxes_tag =
-        Tags::Interface<internal_directions_tag,
+        Tags::Interface<DirectionsTag,
                         db::add_tag_prefix<Tags::NormalDotFlux, variables_tag>>;
 
     db::mutate_apply<
         tmpl::list<interface_normal_dot_fluxes_tag>,
-        tmpl::push_front<
-            tmpl::transform<
-                typename Metavariables::system::normal_dot_fluxes::
-                    argument_tags,
-                tmpl::bind<Tags::Interface, internal_directions_tag, tmpl::_1>>,
-            internal_directions_tag>>(
+        tmpl::push_front<tmpl::transform<typename Metavariables::system::
+                                             normal_dot_fluxes::argument_tags,
+                                         tmpl::bind<Tags::Interface,
+                                                    DirectionsTag, tmpl::_1>>,
+                         DirectionsTag>>(
         [](const gsl::not_null<db::item_type<interface_normal_dot_fluxes_tag>*>
                boundary_fluxes,
-           const db::item_type<internal_directions_tag>& internal_directions,
+           const db::item_type<DirectionsTag>& internal_directions,
            const auto&... tensors) noexcept {
           for (const auto& direction : internal_directions) {
-            apply_flux<Metavariables>(
+            // Prepending the type name works around an issue with gcc-6
+            ComputeNonconservativeBoundaryFluxes::apply_flux<Metavariables>(
                 make_not_null(&boundary_fluxes->at(direction)),
                 tensors.at(direction)...);
           }
