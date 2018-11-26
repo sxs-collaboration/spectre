@@ -12,9 +12,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "NumericalAlgorithms/RootFinding/TOMS748.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include <array>
 // IWYU pragma: no_forward_declare Tensor
@@ -101,18 +103,29 @@ void FixConservatives::operator()(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric) const noexcept {
-  const DataVector rest_mass_density_times_lorentz_factor =
+  const size_t size = get<0>(tilde_b).size();
+  Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                       ::Tags::TempScalar<2>, ::Tags::TempScalar<3>>>
+      temp_buffer(size);
+
+  DataVector& rest_mass_density_times_lorentz_factor =
+      get(get<::Tags::TempScalar<0>>(temp_buffer));
+  rest_mass_density_times_lorentz_factor =
       get(*tilde_d) / get(sqrt_det_spatial_metric);
 
-  const DataVector tilde_b_squared =
-      get(dot_product(tilde_b, tilde_b, spatial_metric));
+  Scalar<DataVector>& tilde_b_squared = get<::Tags::TempScalar<1>>(temp_buffer);
+  dot_product(make_not_null(&tilde_b_squared), tilde_b, tilde_b,
+              spatial_metric);
 
-  const DataVector tilde_s_squared =
-      get(dot_product(*tilde_s, *tilde_s, inv_spatial_metric));
+  Scalar<DataVector>& tilde_s_squared = get<::Tags::TempScalar<2>>(temp_buffer);
+  dot_product(make_not_null(&tilde_s_squared), *tilde_s, *tilde_s,
+              inv_spatial_metric);
 
-  const DataVector tilde_s_dot_tilde_b = get(dot_product(*tilde_s, tilde_b));
+  Scalar<DataVector>& tilde_s_dot_tilde_b =
+      get<::Tags::TempScalar<3>>(temp_buffer);
+  dot_product(make_not_null(&tilde_s_dot_tilde_b), *tilde_s, tilde_b);
 
-  for (size_t s = 0; s < tilde_b_squared.size(); s++) {
+  for (size_t s = 0; s < size; s++) {
     // Increase density if necessary
     double& d_tilde = get(*tilde_d)[s];
     const double sqrt_det_g = get(sqrt_det_spatial_metric)[s];
@@ -123,7 +136,7 @@ void FixConservatives::operator()(
 
     // Increase internal energy if necessary
     double& tau_tilde = get(*tilde_tau)[s];
-    const double b_tilde_squared = tilde_b_squared[s];
+    const double b_tilde_squared = get(tilde_b_squared)[s];
     // Equation B.39 of Foucart
     if (b_tilde_squared > one_minus_safety_factor_for_magnetic_field_ * 2. *
                               tau_tilde * sqrt_det_g) {
@@ -132,7 +145,7 @@ void FixConservatives::operator()(
     }
 
     // Decrease momentum density if necessary
-    const double s_tilde_squared = tilde_s_squared[s];
+    const double s_tilde_squared = get(tilde_s_squared)[s];
     // Equation B.24 of Foucart
     const double tau_over_d = tau_tilde / d_tilde;
     // Equation B.23 of Foucart
@@ -141,7 +154,8 @@ void FixConservatives::operator()(
     const double normalized_s_dot_b =
         (b_tilde_squared > 1.e-16 * d_tilde and
          s_tilde_squared > 1.e-16 * square(d_tilde))
-            ? tilde_s_dot_tilde_b[s] / sqrt(b_tilde_squared * s_tilde_squared)
+            ? get(tilde_s_dot_tilde_b)[s] /
+                  sqrt(b_tilde_squared * s_tilde_squared)
             : 0.;
 
     // Equation B.40 of Foucart

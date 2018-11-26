@@ -12,11 +12,13 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
+#include "Domain/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
@@ -95,11 +97,11 @@ struct FluxCommunicationTypes {
     using temporal_id = db::item_type<typename Metavariables::temporal_id>;
     using type = std::map<
         temporal_id,
-        std::unordered_map<
-            std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
-            std::pair<temporal_id, PackagedData>,
-            boost::hash<
-                std::pair<Direction<volume_dim>, ElementId<volume_dim>>>>>;
+        FixedHashMap<maximum_number_of_neighbors(volume_dim),
+                     std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
+                     std::pair<temporal_id, PackagedData>,
+                     boost::hash<std::pair<Direction<volume_dim>,
+                                           ElementId<volume_dim>>>>>;
   };
 };
 }  // namespace dg

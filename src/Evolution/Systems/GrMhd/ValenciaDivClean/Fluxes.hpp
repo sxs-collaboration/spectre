@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
@@ -13,6 +13,7 @@
 // IWYU pragma: no_include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 // IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 // IWYU pragma: no_include "PointwiseFunctions/Hydro/Tags.hpp"
+// IWYU pragma: no_forward_declare Tags::Flux
 
 /// \cond
 namespace gsl {

@@ -6,7 +6,6 @@
 #include <array>
 #include <cstddef>
 #include <initializer_list>  // IWYU pragma: keep
-#include <type_traits>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -188,9 +187,6 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
     get(get<Var>(vars)) = 4.;
     CHECK(get<Var>(dg::project_to_mortar(vars, lgl_mesh<0>({}), lgl_mesh<0>({}),
                                          {})) == Scalar<DataVector>{{{{4.}}}});
-    CHECK(get<Var>(dg::project_from_mortar(vars, lgl_mesh<0>({}),
-                                           lgl_mesh<0>({}), {})) ==
-          Scalar<DataVector>{{{{4.}}}});
   }
   // Check 1D
   {
@@ -229,7 +225,7 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
       };
 
       // full mortar -> face
-      {
+      if (face_mesh != mortar_mesh) {
         const std::array<MortarSize, 1> mortar_size{{MortarSize::Full}};
         CAPTURE(mortar_size);
         const auto vars = make_mortar_data(mortar_size);
@@ -297,7 +293,7 @@ SPECTRE_TEST_CASE("Unit.DG.MortarHelpers.projections",
       };
 
       // full mortar -> face
-      {
+      if (face_mesh != mortar_mesh) {
         const std::array<MortarSize, 2> mortar_size{
             {MortarSize::Full, MortarSize::Full}};
         const auto vars = make_mortar_data(mortar_size);

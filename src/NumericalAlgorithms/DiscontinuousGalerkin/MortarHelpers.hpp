@@ -18,6 +18,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -82,6 +83,14 @@ Variables<Tags> project_from_mortar(
     const Mesh<Dim>& face_mesh,
     const Mesh<Dim>& mortar_mesh,
     const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept {
+  ASSERT(face_mesh != mortar_mesh or
+             alg::any_of(mortar_size,
+                         [](const Spectral::MortarSize& size) noexcept {
+                           return size != Spectral::MortarSize::Full;
+                         }),
+         "project_from_mortar should not be called if the interface mesh and "
+         "mortar mesh are identical. Please elide the copy instead.");
+
   const Matrix identity{};
   auto projection_matrices = make_array<Dim>(std::cref(identity));
 

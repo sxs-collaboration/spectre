@@ -12,6 +12,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"  // IWYU pragma: keep
@@ -63,34 +64,60 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
   for (size_t i = 0; i < 3; ++i) {
     magnetic_field->get(i) = tilde_b.get(i) / get(sqrt_det_spatial_metric);
   }
-  const DataVector total_energy_density =
+  const size_t size = get<0>(tilde_b).size();
+  Variables<
+      tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                 ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
+                 ::Tags::TempScalar<4>, ::Tags::TempI<5, 3, Frame::Inertial>>>
+      temp_buffer(size);
+
+  DataVector& total_energy_density =
+      get(get<::Tags::TempScalar<0>>(temp_buffer));
+  total_energy_density =
       (get(tilde_tau) + get(tilde_d)) / get(sqrt_det_spatial_metric);
-  const auto tilde_s_upper = raise_or_lower_index(tilde_s, inv_spatial_metric);
-  const DataVector momentum_density_squared =
-      get(dot_product(tilde_s, tilde_s_upper)) /
-      square(get(sqrt_det_spatial_metric));
-  const DataVector momentum_density_dot_magnetic_field =
-      get(dot_product(tilde_s, *magnetic_field)) / get(sqrt_det_spatial_metric);
-  const DataVector magnetic_field_squared =
-      get(dot_product(*magnetic_field, *magnetic_field, spatial_metric));
-  const DataVector rest_mass_density_times_lorentz_factor =
+
+  tnsr::I<DataVector, 3, Frame::Inertial>& tilde_s_upper =
+      get<::Tags::TempI<5, 3, Frame::Inertial>>(temp_buffer);
+  raise_or_lower_index(make_not_null(&tilde_s_upper), tilde_s,
+                       inv_spatial_metric);
+
+  Scalar<DataVector>& momentum_density_squared =
+      get<::Tags::TempScalar<1>>(temp_buffer);
+  dot_product(make_not_null(&momentum_density_squared), tilde_s, tilde_s_upper);
+  get(momentum_density_squared) /= square(get(sqrt_det_spatial_metric));
+
+  Scalar<DataVector>& momentum_density_dot_magnetic_field =
+      get<::Tags::TempScalar<2>>(temp_buffer);
+  dot_product(make_not_null(&momentum_density_dot_magnetic_field), tilde_s,
+              *magnetic_field);
+  get(momentum_density_dot_magnetic_field) /= get(sqrt_det_spatial_metric);
+
+  Scalar<DataVector>& magnetic_field_squared =
+      get<::Tags::TempScalar<3>>(temp_buffer);
+  dot_product(make_not_null(&magnetic_field_squared), *magnetic_field,
+              *magnetic_field, spatial_metric);
+
+  DataVector& rest_mass_density_times_lorentz_factor =
+      get(get<::Tags::TempScalar<4>>(temp_buffer));
+  rest_mass_density_times_lorentz_factor =
       get(tilde_d) / get(sqrt_det_spatial_metric);
 
   for (size_t s = 0; s < total_energy_density.size(); ++s) {
     boost::optional<PrimitiveRecoverySchemes::PrimitiveRecoveryData>
         primitive_data = boost::none;
     tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>(
-        [&primitive_data, &total_energy_density, &momentum_density_squared,
-         &momentum_density_dot_magnetic_field, &magnetic_field_squared,
-         &rest_mass_density_times_lorentz_factor,
-         &equation_of_state, &s](auto scheme) noexcept {
+        [
+          &primitive_data, &total_energy_density, &momentum_density_squared,
+          &momentum_density_dot_magnetic_field, &magnetic_field_squared,
+          &rest_mass_density_times_lorentz_factor, &equation_of_state, &s
+        ](auto scheme) noexcept {
           using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
           if (not primitive_data) {
             primitive_data =
                 primitive_recovery_scheme::template apply<ThermodynamicDim>(
-                    total_energy_density[s], momentum_density_squared[s],
-                    momentum_density_dot_magnetic_field[s],
-                    magnetic_field_squared[s],
+                    total_energy_density[s], get(momentum_density_squared)[s],
+                    get(momentum_density_dot_magnetic_field)[s],
+                    get(magnetic_field_squared)[s],
                     rest_mass_density_times_lorentz_factor[s],
                     equation_of_state);
           }
@@ -99,13 +126,14 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
     if (primitive_data) {
       get(*rest_mass_density)[s] = primitive_data.get().rest_mass_density;
       const double coefficient_of_b =
-          momentum_density_dot_magnetic_field[s] /
+          get(momentum_density_dot_magnetic_field)[s] /
           (primitive_data.get().rho_h_w_squared *
-           (primitive_data.get().rho_h_w_squared + magnetic_field_squared[s]));
+           (primitive_data.get().rho_h_w_squared +
+            get(magnetic_field_squared)[s]));
       const double coefficient_of_s =
-          1.0 /
-          (get(sqrt_det_spatial_metric)[s] *
-           (primitive_data.get().rho_h_w_squared + magnetic_field_squared[s]));
+          1.0 / (get(sqrt_det_spatial_metric)[s] *
+                 (primitive_data.get().rho_h_w_squared +
+                  get(magnetic_field_squared)[s]));
       for (size_t i = 0; i < 3; ++i) {
         spatial_velocity->get(i)[s] =
             coefficient_of_b * magnetic_field->get(i)[s] +

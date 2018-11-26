@@ -3,12 +3,12 @@
 
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 
-#include <algorithm>
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
@@ -22,7 +22,6 @@
 /// \cond
 namespace grmhd {
 namespace ValenciaDivClean {
-
 void ComputeFluxes::apply(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
@@ -43,26 +42,49 @@ void ComputeFluxes::apply(
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field) noexcept {
-  // not const to save an allocation below
-  auto spatial_velocity_one_form =
-      raise_or_lower_index(spatial_velocity, spatial_metric);
-  const auto magnetic_field_one_form =
-      raise_or_lower_index(magnetic_field, spatial_metric);
-  const auto magnetic_field_dot_spatial_velocity =
-      dot_product(magnetic_field, spatial_velocity_one_form);
-  const auto magnetic_field_squared =
-      dot_product(magnetic_field, magnetic_field_one_form);
+  Variables<tmpl::list<
+      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
+      hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>,
+      hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
+      hydro::Tags::MagneticFieldSquared<DataVector>, ::Tags::TempScalar<0>,
+      ::Tags::TempScalar<1>, ::Tags::TempScalar<2>>>
+      temp_tensors{get<0>(shift).size()};
 
-  const DataVector one_over_w_squared = 1.0 / square(get(lorentz_factor));
+  auto& spatial_velocity_one_form =
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+          temp_tensors);
+  raise_or_lower_index(make_not_null(&spatial_velocity_one_form),
+                       spatial_velocity, spatial_metric);
+  auto& magnetic_field_one_form =
+      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>>(
+          temp_tensors);
+  raise_or_lower_index(make_not_null(&magnetic_field_one_form), magnetic_field,
+                       spatial_metric);
+  auto& magnetic_field_dot_spatial_velocity =
+      get<hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>>(
+          temp_tensors);
+  dot_product(make_not_null(&magnetic_field_dot_spatial_velocity),
+              magnetic_field, spatial_velocity_one_form);
+  auto& magnetic_field_squared =
+      get<hydro::Tags::MagneticFieldSquared<DataVector>>(temp_tensors);
+  dot_product(make_not_null(&magnetic_field_squared), magnetic_field,
+              magnetic_field_one_form);
+
+  DataVector& one_over_w_squared =
+      get(get<::Tags::TempScalar<0>>(temp_tensors));
+  one_over_w_squared = 1.0 / square(get(lorentz_factor));
   // p_star = p + p_m = p + b^2/2 = p + ((B^m v_m)^2 + (B^m B_m)/W^2)/2
-  const DataVector p_star_alpha_sqrt_det_g =
+  DataVector& p_star_alpha_sqrt_det_g =
+      get(get<::Tags::TempScalar<1>>(temp_tensors));
+  p_star_alpha_sqrt_det_g =
       get(sqrt_det_spatial_metric) * get(lapse) *
       (get(pressure) + 0.5 * square(get(magnetic_field_dot_spatial_velocity)) +
        0.5 * get(magnetic_field_squared) * one_over_w_squared);
 
   // lapse b_i / W = lapse (B_i / W^2 + v_i (B^m v_m)
-  tnsr::i<DataVector, 3, Frame::Inertial> lapse_b_over_w =
-      std::move(spatial_velocity_one_form);
+  tnsr::i<DataVector, 3, Frame::Inertial>& lapse_b_over_w =
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+          temp_tensors);
   for (size_t i = 0; i < 3; ++i) {
     lapse_b_over_w.get(i) *= get(magnetic_field_dot_spatial_velocity);
     lapse_b_over_w.get(i) +=
@@ -71,7 +93,8 @@ void ComputeFluxes::apply(
   }
 
   // Outside the loop to save allocations
-  DataVector transport_velocity_I(p_star_alpha_sqrt_det_g.size());
+  DataVector& transport_velocity_I =
+      get(get<::Tags::TempScalar<2>>(temp_tensors));
 
   for (size_t i = 0; i < 3; ++i) {
     transport_velocity_I = get(lapse) * spatial_velocity.get(i) - shift.get(i);
