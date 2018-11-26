@@ -3,11 +3,19 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
+#include <cstdlib>
 #include <limits>
+#include <memory>
+#include <utility>
 
+#include "Utilities/Gsl.hpp"
+
+/// \cond
 template <size_t>
 class Index;
+/// \endcond
 
 /*!
  * \ingroup DataStructuresGroup
@@ -53,3 +61,27 @@ class SliceIterator {
   size_t volume_offset_ = std::numeric_limits<size_t>::max();
   size_t slice_offset_ = std::numeric_limits<size_t>::max();
 };
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Get the mapping between volume and boundary slice indices
+ *
+ * SliceIterator is used to map between the index of a point on a slice in the
+ * volume data and the index in the corresponding sliced data. Repeatedly
+ * applying the SliceIterator on various components of a tensor becomes very
+ * expensive and so precomputing the index map is sometimes advantageous. This
+ * function computes the index map onto all boundary slices of volume mesh with
+ * extents `extents`.
+ *
+ * The `unique_ptr` is where the volume and slice indices are stored in memory,
+ * the array holds views into the memory buffer. The index of the array is the
+ * fixed dimension, the outer `pair` holds the indices for the lower and upper
+ * side,  respectively, while the `pair`s in the `span`s hold the volume and
+ * slice indices, respectively.
+ */
+template <size_t VolumeDim>
+auto volume_and_slice_indices(const Index<VolumeDim>& extents) noexcept
+    -> std::pair<std::unique_ptr<std::pair<size_t, size_t>[], decltype(&free)>,
+                 std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
+                                      gsl::span<std::pair<size_t, size_t>>>,
+                            VolumeDim>>;

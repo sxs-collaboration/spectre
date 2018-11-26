@@ -4,8 +4,10 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include "Utilities/Array.hpp"  // IWYU pragma: associated
+#include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
 
+namespace {
 constexpr bool check_iota() noexcept {
   const size_t size = 6;
   cpp17::array<size_t, size> a{};
@@ -13,6 +15,12 @@ constexpr bool check_iota() noexcept {
   bool check{true};
   for (size_t i = 0; i < size; ++i) {
     check = check and a[i] == i + 1;
+  }
+
+  const cpp17::array<size_t, 4> inline_iota =
+      alg::iota(cpp17::array<size_t, 4>{{}}, 7_st);
+  for (size_t i = 0; i < inline_iota.size(); ++i) {
+    check = check and inline_iota[i] == i + 7;
   }
   return check;
 }
@@ -42,3 +50,4 @@ SPECTRE_TEST_CASE("Unit.Utilities.Numeric", "[Unit][Utilities]") {
                           return state * element;
                         }) == -84);
 }
+}  // namespace
