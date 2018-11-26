@@ -5,6 +5,7 @@ set(LIBRARY "Test_ApparentHorizons")
 
 set(LIBRARY_SOURCES
   StrahlkorperGrTestHelpers.cpp
+  Test_ApparentHorizonFinder.cpp
   Test_ComputeItems.cpp
   Test_FastFlow.cpp
   Test_SpherepackIterator.cpp
