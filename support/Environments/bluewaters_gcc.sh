@@ -160,6 +160,30 @@ spectre_setup_modules() {
     fi
     cd $dep_dir
 
+    if [ -f $dep_dir/libsharp/lib/libsharp.a ]; then
+        echo "libsharp is already installed"
+    else
+        echo "Installing libsharp..."
+        wget https://github.com/Libsharp/libsharp/archive/v1.0.0.tar.gz -O libsharp.tar.gz
+        tar -xzf libsharp.tar.gz
+        mv libsharp-* libsharp_build
+        cd $dep_dir/libsharp_build
+        autoconf
+        ./configure --prefix=$dep_dir/libsharp --disable-openmp
+        make -j4
+        mv ./auto $dep_dir/libsharp
+        cd $dep_dir
+        rm -r libsharp_build
+        rm libsharp.tar.gz
+        echo "Installed libsharp into $dep_dir/libsharp"
+        echo "#%Module1.0" > $dep_dir/modules/libsharp
+        echo "prepend-path LIBRARY_PATH \"$dep_dir/libsharp/lib\"" >> $dep_dir/modules/libsharp
+        echo "prepend-path LD_LIBRARY_PATH \"$dep_dir/libsharp/lib\"" >> $dep_dir/modules/libsharp
+        echo "prepend-path CPATH \"$dep_dir/libsharp/include\"" >> $dep_dir/modules/libsharp
+        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/libsharp/\"" >> $dep_dir/modules/libsharp
+    fi
+    cd $dep_dir
+
     # Set up Charm++ because that can be difficult
     if [ -f $dep_dir/charm/gni-crayxe-smp/lib/libck.a ]; then
         echo "Charm++ is already installed"
@@ -228,6 +252,7 @@ spectre_unload_modules() {
     module unload catch
     module unload charm
     module unload jemalloc
+    module unload libsharp
     module unload libxsmm
     module unload yaml-cpp
 
@@ -261,6 +286,7 @@ spectre_load_modules() {
     module load catch
     module load charm
     module load jemalloc
+    module load libsharp
     module load libxsmm
     module load yaml-cpp
 
