@@ -413,6 +413,29 @@ namespace_details_test() {
 }
 standard_checks+=(namespace_details)
 
+# Check for .cpp includes in cpp, hpp, and tpp files
+prevent_cpp_includes() {
+    is_c++ "$1" && staged_grep -q "include .*\.cpp" "$1"
+}
+prevent_cpp_includes_report() {
+    echo "Found cpp files included in cpp, hpp. or tpp files."
+    pretty_grep "include .*\.cpp" "$@"
+}
+prevent_cpp_includes_test() {
+    test_check pass foo.hpp ''
+    test_check pass foo.tpp ''
+    test_check fail foo.hpp '#include "blah/blue/bla.cpp"'
+    test_check fail foo.tpp '#include "blah/blue/bla.cpp"'
+    test_check fail foo.cpp '#include "blah/blue/bla.cpp"'
+    test_check pass foo.hpp '#include "blah/blue/bla.hpp"'
+    test_check pass foo.tpp '#include "blah/blue/bla.hpp"'
+    test_check pass foo.cpp '#include "blah/blue/bla.hpp"'
+    test_check pass foo.hpp '#include "blah/blue/bla.tpp"'
+    test_check pass foo.tpp '#include "blah/blue/bla.tpp"'
+    test_check pass foo.cpp '#include "blah/blue/bla.tpp"'
+}
+standard_checks+=(prevent_cpp_includes)
+
 # if test is enabled: redefines staged_grep to run tests on files that are not in git
 [ "$1" = --test ] && staged_grep() { grep "$@"; } && run_tests "${standard_checks[@]}"
 
