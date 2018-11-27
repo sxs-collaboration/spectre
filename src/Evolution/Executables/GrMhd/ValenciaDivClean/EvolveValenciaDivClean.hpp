@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "Domain/DomainCreators/RegisterDerivedWithCharm.cpp"
+#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
