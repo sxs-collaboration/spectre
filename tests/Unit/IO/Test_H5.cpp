@@ -11,9 +11,13 @@
 #include <regex>
 #include <sstream>
 #include <string>
+#include <typeinfo>
 #include <utility>
 #include <vector>
 
+#include "DataStructures/BoostMultiArray.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "IO/Connectivity.hpp"
 #include "IO/H5/AccessType.hpp"
@@ -27,6 +31,13 @@
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_include <boost/iterator/iterator_facade.hpp>
+// IWYU pragma: no_include <boost/multi_array.hpp>
+// IWYU pragma: no_include <boost/multi_array/base.hpp>
+// IWYU pragma: no_include <boost/multi_array/extent_gen.hpp>
+// IWYU pragma: no_include <boost/multi_array/subarray.hpp>
 
 SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   const std::string h5_file_name("Unit.IO.H5.File.h5");
@@ -449,6 +460,123 @@ SPECTRE_TEST_CASE("Unit.IO.H5.DatRead", "[Unit][IO][H5]") {
   }
 }
 
+// Test that we can read scalar, rank-1, rank-2, and rank-3 datasets
+SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
+  const std::string h5_file_name("Unit.IO.H5.ReadData.h5");
+  const hid_t file_id =
+      H5Fcreate(h5_file_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+  h5::detail::OpenGroup my_group(file_id, "ReadWrite",
+                                 h5::AccessType::ReadWrite);
+  const hid_t group_id = my_group.id();
+
+  using all_type_list =
+      tmpl::list<double, int, unsigned int, long, unsigned long, long long,
+                 unsigned long long>;
+
+  const DataVector scalar_data{1.0};
+  const Index<0> scalar_extents{1};
+  h5::write_data(group_id, scalar_data, scalar_extents, "scalar_dataset");
+  double scalar_data_from_file =
+    h5::read_data<0, double>(group_id, "scalar_dataset");
+  CHECK(scalar_data_from_file == 1.0);
+
+  tmpl::for_each<all_type_list>([&group_id](auto x) noexcept {
+    using DataType = typename decltype(x)::type;
+    const std::vector<DataType> rank1_data{1, 2, 3};
+    const std::vector<size_t> rank1_extents{3};
+    h5::write_data<DataType>(
+        group_id, rank1_data, rank1_extents,
+        "rank1_dataset_" + std::string(typeid(DataType).name()));
+
+    std::vector<DataType> rank1_data_from_file =
+        h5::read_data<1, std::vector<DataType>>(
+            group_id, "rank1_dataset_" + std::string(typeid(DataType).name()));
+    CHECK(rank1_data_from_file == std::vector<DataType>{1, 2, 3});
+  });
+  const DataVector rank1_data{1.0, 2.0, 3.0};
+  const std::vector<size_t> rank1_extents{3};
+  h5::write_data(group_id, rank1_data, rank1_extents, "rank1_dataset");
+  DataVector rank1_data_from_file =
+      h5::read_data<1, DataVector>(group_id, "rank1_dataset");
+  CHECK(rank1_data_from_file == rank1_data);
+
+  tmpl::for_each<all_type_list>([&group_id](auto x) noexcept {
+    using DataType = typename decltype(x)::type;
+    const std::vector<DataType> rank2_data{1, 2, 3, 4};
+    const std::vector<size_t> rank2_extents{2, 2};
+    h5::write_data<DataType>(
+        group_id, rank2_data, rank2_extents,
+        "rank2_dataset_" + std::string(typeid(DataType).name()));
+
+    boost::multi_array<DataType, 2> rank2_data_from_file =
+        h5::read_data<2, boost::multi_array<DataType, 2>>(
+            group_id, "rank2_dataset_" + std::string(typeid(DataType).name()));
+    boost::multi_array<DataType, 2> expected_rank2_data(boost::extents[2][2]);
+    expected_rank2_data[0][0] = static_cast<DataType>(1);
+    expected_rank2_data[0][1] = static_cast<DataType>(2);
+    expected_rank2_data[1][0] = static_cast<DataType>(3);
+    expected_rank2_data[1][1] = static_cast<DataType>(4);
+    CHECK(rank2_data_from_file == expected_rank2_data);
+  });
+  const DataVector rank2_data{1.0, 2.0, 3.0, 4.0};
+  const std::vector<size_t> rank2_extents{2, 2};
+  h5::write_data(group_id, rank2_data, rank2_extents, "rank2_dataset");
+  DataVector rank2_data_from_file =
+      h5::read_data<2, DataVector>(group_id, "rank2_dataset");
+  CHECK(rank2_data_from_file == rank2_data);
+
+  tmpl::for_each<all_type_list>([&group_id](auto x) noexcept {
+    using DataType = typename decltype(x)::type;
+    const std::vector<DataType> rank3_data{1, 2, 3, 4, 5, 6};
+    const std::vector<size_t> rank3_extents{1, 2, 3};
+    h5::write_data<DataType>(
+        group_id, rank3_data, rank3_extents,
+        "rank3_dataset_" + std::string(typeid(DataType).name()));
+
+    boost::multi_array<DataType, 3> rank3_data_from_file =
+        h5::read_data<3, boost::multi_array<DataType, 3>>(
+            group_id, "rank3_dataset_" + std::string(typeid(DataType).name()));
+    boost::multi_array<DataType, 3> expected_rank3_data(
+        boost::extents[1][2][3]);
+    expected_rank3_data[0][0][0] = static_cast<DataType>(1);
+    expected_rank3_data[0][0][1] = static_cast<DataType>(2);
+    expected_rank3_data[0][0][2] = static_cast<DataType>(3);
+    expected_rank3_data[0][1][0] = static_cast<DataType>(4);
+    expected_rank3_data[0][1][1] = static_cast<DataType>(5);
+    expected_rank3_data[0][1][2] = static_cast<DataType>(6);
+    CHECK(rank3_data_from_file == expected_rank3_data);
+  });
+  const DataVector rank3_data{1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+  const std::vector<size_t> rank3_extents{1, 2, 3};
+  h5::write_data(group_id, rank3_data, rank3_extents, "rank3_dataset");
+  DataVector rank3_data_from_file =
+      h5::read_data<3, DataVector>(group_id, "rank3_dataset");
+  CHECK(rank3_data_from_file == rank3_data);
+
+  CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << h5_file_name << "'");
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
+
+// Check that we can insert and open subfiles at the '/' level
+SPECTRE_TEST_CASE("Unit.IO.H5.check_if_object_exists", "[Unit][IO][H5]") {
+  const std::string h5_file_name("Unit.IO.H5.ObjectCheck.h5");
+  {
+    h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+    auto& error_file = my_file.insert<h5::Header>("/");
+  }
+
+  // Reopen the file to check that the subfile '/' can be opened
+  h5::H5File<h5::AccessType::ReadWrite> reopened_file(h5_file_name, true);
+  const auto& sample_data =
+      reopened_file.get<h5::Header>("/");
+  CHECK(file_system::check_if_file_exists(h5_file_name) == true);
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+}
+
 SPECTRE_TEST_CASE("Unit.IO.H5.contains_attribute_false", "[Unit][IO][H5]") {
   const std::string file_name("Unit.IO.H5.contains_attribute_false.h5");
   const hid_t file_id =
@@ -458,14 +586,14 @@ SPECTRE_TEST_CASE("Unit.IO.H5.contains_attribute_false", "[Unit][IO][H5]") {
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
 }
 
-/// [[OutputRegex, could not open dataset 'no_dataset']]
+/// [[OutputRegex, Failed HDF5 operation: Failed to open dataset 'no_dataset']]
 SPECTRE_TEST_CASE("Unit.IO.H5.read_data_error", "[Unit][IO][H5]") {
   ERROR_TEST();
   const std::string file_name("Unit.IO.H5.read_data_error.h5");
   const hid_t file_id =
       H5Fcreate(file_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   CHECK_H5(file_id, "Failed to open file: " << file_name);
-  static_cast<void>(h5::read_data(file_id, "no_dataset"));
+  static_cast<void>(h5::read_data<1, DataVector>(file_id, "no_dataset"));
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
 }
 

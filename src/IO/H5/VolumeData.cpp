@@ -31,23 +31,23 @@ VolumeData::VolumeData(const bool exists, detail::OpenGroup&& group,
                        : name + extension())
                 : name + extension()),
       version_(version),
-      volume_file_root_group_(group_.id(), name_, h5::AccessType::ReadWrite) {
+      volume_data_group_(group_.id(), name_, h5::AccessType::ReadWrite) {
   if (exists) {
     // We treat this as an internal version for now. We'll need to deal with
     // proper versioning later.
     const Version open_version(true, detail::OpenGroup{},
-                               volume_file_root_group_.id(), "version");
+                               volume_data_group_.id(), "version");
     version_ = open_version.get_version();
-    const Header header(true, detail::OpenGroup{}, volume_file_root_group_.id(),
+    const Header header(true, detail::OpenGroup{}, volume_data_group_.id(),
                         "header");
     header_ = header.get_header();
   } else {  // file does not exist
     {
       Version open_version(false, detail::OpenGroup{},
-                           volume_file_root_group_.id(), "version", version_);
+                           volume_data_group_.id(), "version", version_);
     }
     {
-      Header header(false, detail::OpenGroup{}, volume_file_root_group_.id(),
+      Header header(false, detail::OpenGroup{}, volume_data_group_.id(),
                     "header");
       header_ = header.get_header();
     }
@@ -58,7 +58,7 @@ void VolumeData::insert_tensor_data(
     const size_t observation_id, const double observation_value,
     const ExtentsAndTensorVolumeData& extents_and_tensors) noexcept {
   const std::string path = "ObservationId" + std::to_string(observation_id);
-  detail::OpenGroup observation_group(volume_file_root_group_.id(), path,
+  detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadWrite);
   if (not contains_attribute(observation_group.id(), "", "observation_value")) {
     h5::write_to_attribute(observation_group.id(), "observation_value",
@@ -118,7 +118,7 @@ void VolumeData::insert_tensor_data(
 }
 
 std::vector<size_t> VolumeData::list_observation_ids() const noexcept {
-  const auto names = get_group_names(volume_file_root_group_.id(), "");
+  const auto names = get_group_names(volume_data_group_.id(), "");
   const auto helper = [](const std::string& s) noexcept {
     return std::stoul(s.substr(std::string("ObservationId").size()));
   };
@@ -129,7 +129,7 @@ std::vector<size_t> VolumeData::list_observation_ids() const noexcept {
 double VolumeData::get_observation_value(const size_t observation_id) const
     noexcept {
   const std::string path = "ObservationId" + std::to_string(observation_id);
-  detail::OpenGroup observation_group(volume_file_root_group_.id(), path,
+  detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadOnly);
   return h5::read_value_attribute<double>(observation_group.id(),
                                           "observation_value");
@@ -138,7 +138,7 @@ double VolumeData::get_observation_value(const size_t observation_id) const
 std::vector<std::string> VolumeData::list_grids(
     const size_t observation_id) const noexcept {
   detail::OpenGroup observation_group(
-      volume_file_root_group_.id(),
+      volume_data_group_.id(),
       "ObservationId" + std::to_string(observation_id), AccessType::ReadOnly);
   return get_group_names(observation_group.id(), "");
 }
@@ -146,7 +146,7 @@ std::vector<std::string> VolumeData::list_grids(
 std::vector<std::string> VolumeData::list_tensor_components(
     size_t observation_id, const std::string& grid_name) const noexcept {
   detail::OpenGroup spatial_group(
-      volume_file_root_group_.id(),
+      volume_data_group_.id(),
       "ObservationId" + std::to_string(observation_id) + "/" + grid_name,
       AccessType::ReadOnly);
   auto tensor_components = get_group_names(spatial_group.id(), "");
@@ -160,17 +160,33 @@ DataVector VolumeData::get_tensor_component(
     size_t observation_id, const std::string& grid_name,
     const std::string& tensor_component) const noexcept {
   detail::OpenGroup spatial_group(
-      volume_file_root_group_.id(),
+      volume_data_group_.id(),
       "ObservationId" + std::to_string(observation_id) + "/" + grid_name,
       AccessType::ReadOnly);
-  return h5::read_data(spatial_group.id(), tensor_component);
+  const hid_t dataset_id =
+      h5::open_dataset(spatial_group.id(), tensor_component);
+  const hid_t dataspace_id = h5::open_dataspace(dataset_id);
+  const auto rank =
+      static_cast<size_t>(H5Sget_simple_extent_ndims(dataspace_id));
+  h5::close_dataspace(dataspace_id);
+  h5::close_dataset(dataset_id);
+  switch (rank) {
+    case 1:
+      return h5::read_data<1, DataVector>(spatial_group.id(), tensor_component);
+    case 2:
+      return h5::read_data<2, DataVector>(spatial_group.id(), tensor_component);
+    case 3:
+      return h5::read_data<3, DataVector>(spatial_group.id(), tensor_component);
+    default:
+      ERROR("Rank must be 1, 2, or 3. Received data with Rank = " << rank);
+  }
 }
 
 std::vector<size_t> VolumeData::get_extents(size_t observation_id,
                                             const std::string& grid_name) const
     noexcept {
   detail::OpenGroup spatial_group(
-      volume_file_root_group_.id(),
+      volume_data_group_.id(),
       "ObservationId" + std::to_string(observation_id) + "/" + grid_name,
       AccessType::ReadOnly);
   return h5::read_rank1_attribute<size_t>(spatial_group.id(), "extents");

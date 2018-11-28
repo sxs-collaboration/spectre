@@ -114,7 +114,7 @@ class VolumeData : public h5::Object {
   detail::OpenGroup group_{};
   std::string name_{};
   uint32_t version_{};
-  detail::OpenGroup volume_file_root_group_{};
+  detail::OpenGroup volume_data_group_{};
   std::string header_{};
 };
 }  // namespace h5
