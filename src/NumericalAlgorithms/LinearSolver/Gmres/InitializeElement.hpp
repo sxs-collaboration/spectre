@@ -20,9 +20,9 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace gmres_detail {
-template <typename>
+template <typename Metavariables>
 struct ResidualMonitor;
-template <typename>
+template <typename BroadcastTarget>
 struct InitializeResidualMagnitude;
 struct InitializeSourceMagnitude;
 }  // namespace gmres_detail
@@ -36,6 +36,8 @@ template <typename Metavariables>
 struct InitializeElement {
  private:
   using fields_tag = typename Metavariables::system::fields_tag;
+  using initial_fields_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
   using operand_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
   using operator_tag =
@@ -44,13 +46,18 @@ struct InitializeElement {
       db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                          LinearSolver::Tags::IterationId>;
   using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
+  using residual_magnitude_tag = db::add_tag_prefix<
+      LinearSolver::Tags::Magnitude,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
  public:
   using simple_tags =
       db::AddSimpleTags<LinearSolver::Tags::IterationId,
                         ::Tags::Next<LinearSolver::Tags::IterationId>,
-                        operand_tag, operator_tag,
-                        orthogonalization_iteration_id_tag, basis_history_tag>;
+                        initial_fields_tag, operand_tag, operator_tag,
+                        orthogonalization_iteration_id_tag, basis_history_tag,
+                        residual_magnitude_tag,
+                        LinearSolver::Tags::HasConverged>;
   using compute_tags = db::AddComputeTags<>;
 
   template <typename TagsList, typename ArrayIndex, typename ParallelComponent>
@@ -80,13 +87,15 @@ struct InitializeElement {
         Parallel::get_parallel_component<ResidualMonitor<Metavariables>>(
             cache));
 
+    db::item_type<initial_fields_tag> x0(get<fields_tag>(box));
     auto Aq = make_with_value<db::item_type<operator_tag>>(
         q, std::numeric_limits<double>::signaling_NaN());
     db::item_type<basis_history_tag> basis_history{};
 
     return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
-        std::move(box), IterationId{0}, IterationId{1}, std::move(q),
-        std::move(Aq), IterationId{0}, std::move(basis_history));
+        std::move(box), IterationId{0}, IterationId{1}, std::move(x0),
+        std::move(q), std::move(Aq), IterationId{0}, std::move(basis_history),
+        std::numeric_limits<double>::signaling_NaN(), false);
   }
 };
 

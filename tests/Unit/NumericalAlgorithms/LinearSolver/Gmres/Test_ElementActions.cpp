@@ -27,17 +27,22 @@ struct VectorTag : db::SimpleTag {
   static std::string name() noexcept { return "VectorTag"; }
 };
 
+using initial_fields_tag =
+    db::add_tag_prefix<LinearSolver::Tags::Initial, VectorTag>;
 using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, VectorTag>;
 using orthogonalization_iteration_id_tag =
     db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                        LinearSolver::Tags::IterationId>;
 using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<VectorTag>;
+using residual_magnitude_tag =
+    LinearSolver::Tags::Magnitude<LinearSolver::Tags::Residual<VectorTag>>;
 
 using simple_tags =
     db::AddSimpleTags<VectorTag, LinearSolver::Tags::IterationId,
                       ::Tags::Next<LinearSolver::Tags::IterationId>,
-                      operand_tag, orthogonalization_iteration_id_tag,
-                      basis_history_tag>;
+                      initial_fields_tag, operand_tag,
+                      orthogonalization_iteration_id_tag, basis_history_tag,
+                      residual_magnitude_tag, LinearSolver::Tags::HasConverged>;
 
 template <typename Metavariables>
 struct ElementArray {
@@ -75,10 +80,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
           self_id,
           db::create<simple_tags>(
               DenseVector<double>(3, 0.), LinearSolver::IterationId{0},
-              LinearSolver::IterationId{0}, DenseVector<double>(3, 2.),
-              LinearSolver::IterationId{0},
+              LinearSolver::IterationId{0}, DenseVector<double>(3, -1.),
+              DenseVector<double>(3, 2.), LinearSolver::IterationId{0},
               std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
-                                               DenseVector<double>(3, 1.5)}));
+                                               DenseVector<double>(3, 1.5)},
+              10., false));
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
   const auto get_box = [&runner, &self_id]() -> decltype(auto) {
     return runner.algorithms<ElementArray<Metavariables>>()
@@ -88,6 +94,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
   {
     const auto& box = get_box();
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 0);
+    CHECK(db::get<initial_fields_tag>(box) == DenseVector<double>(3, -1.));
     CHECK(db::get<operand_tag>(box) == DenseVector<double>(3, 2.));
     CHECK(db::get<basis_history_tag>(box).size() == 2);
   }
@@ -106,11 +113,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
                           DenseVector<double>(3, 0.5));
     CHECK(db::get<basis_history_tag>(box).size() == 3);
     CHECK(db::get<basis_history_tag>(box)[2] == db::get<operand_tag>(box));
+    CHECK(db::get<residual_magnitude_tag>(box) == 4.);
   }
-  SECTION("NormalizeOperand") {
-    runner.simple_action<ElementArray<Metavariables>,
-                         LinearSolver::gmres_detail::NormalizeOperand>(self_id,
-                                                                       4.);
+  SECTION("NormalizeOperandAndUpdateField") {
+    runner.simple_action<
+        ElementArray<Metavariables>,
+        LinearSolver::gmres_detail::NormalizeOperandAndUpdateField>(
+        self_id, 4., DenseVector<double>{2., 4.}, 1., false);
     const auto& box = get_box();
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
     CHECK(db::get<orthogonalization_iteration_id_tag>(box).step_number == 0);
@@ -118,18 +127,17 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
                           DenseVector<double>(3, 0.5));
     CHECK(db::get<basis_history_tag>(box).size() == 3);
     CHECK(db::get<basis_history_tag>(box)[2] == db::get<operand_tag>(box));
-    CHECK_FALSE(runner.algorithms<ElementArray<Metavariables>>()
-                    .at(self_id)
-                    .get_terminate());
+    // minres * basis_history - initial = 2 * 0.5 + 4 * 1.5 - 1 = 6
+    CHECK_ITERABLE_APPROX(db::get<VectorTag>(box), DenseVector<double>(3, 6.));
+    CHECK(db::get<residual_magnitude_tag>(box) == 1.);
+    CHECK(db::get<LinearSolver::Tags::HasConverged>(box) == false);
   }
-  SECTION("UpdateFieldAndTerminate") {
-    runner.simple_action<ElementArray<Metavariables>,
-                         LinearSolver::gmres_detail::UpdateFieldAndTerminate>(
-        self_id, DenseVector<double>{2., 4.});
+  SECTION("Converge") {
+    runner.simple_action<
+        ElementArray<Metavariables>,
+        LinearSolver::gmres_detail::NormalizeOperandAndUpdateField>(
+        self_id, 4., DenseVector<double>{2., 4.}, 1., true);
     const auto& box = get_box();
-    CHECK_ITERABLE_APPROX(db::get<VectorTag>(box), DenseVector<double>(3, 7.));
-    CHECK(runner.algorithms<ElementArray<Metavariables>>()
-              .at(self_id)
-              .get_terminate());
+    CHECK(db::get<LinearSolver::Tags::HasConverged>(box) == true);
   }
 }

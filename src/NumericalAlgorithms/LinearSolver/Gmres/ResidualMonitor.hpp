@@ -23,7 +23,7 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace gmres_detail {
-template <typename>
+template <typename Metavariables>
 struct InitializeResidualMonitor;
 }  // namespace gmres_detail
 }  // namespace LinearSolver

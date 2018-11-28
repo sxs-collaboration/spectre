@@ -3,6 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <cmath>
 #include <limits>
 #include <string>
 #include <unordered_map>
@@ -29,6 +30,7 @@ class ConstGlobalCache;
 }  // namespace Parallel
 namespace LinearSolver {
 namespace cg_detail {
+struct InitializeResidualMagnitude;
 struct UpdateFieldValues;
 struct UpdateOperand;
 }  // namespace cg_detail
@@ -46,9 +48,9 @@ struct CheckValueTag : db::SimpleTag {
   static std::string name() noexcept { return "CheckValueTag"; }
 };
 
-struct CheckTerminateTag : db::SimpleTag {
+struct CheckConvergedTag : db::SimpleTag {
   using type = bool;
-  static std::string name() noexcept { return "CheckTerminateTag"; }
+  static std::string name() noexcept { return "CheckConvergedTag"; }
 };
 
 template <typename Metavariables>
@@ -71,11 +73,29 @@ struct MockResidualMonitor {
       db::compute_databox_type<residual_monitor_tags<Metavariables>>;
 };
 
+struct MockInitializeResidualMagnitude {
+  template <typename... InboxTags, typename Metavariables, typename ActionList,
+            typename ParallelComponent, typename ArrayIndex>
+  static void apply(
+      db::DataBox<tmpl::list<CheckValueTag, CheckConvergedTag>>& box,  // NOLINT
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/,
+      const double residual_magnitude) noexcept {
+    db::mutate<CheckValueTag>(
+        make_not_null(&box), [residual_magnitude](const gsl::not_null<double*>
+                                                      value_box) noexcept {
+          *value_box = residual_magnitude;
+        });
+  }
+};
+
 struct MockUpdateFieldValues {
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent, typename ArrayIndex>
   static void apply(
-      db::DataBox<tmpl::list<CheckValueTag, CheckTerminateTag>>& box,  // NOLINT
+      db::DataBox<tmpl::list<CheckValueTag, CheckConvergedTag>>& box,  // NOLINT
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -92,19 +112,19 @@ struct MockUpdateOperand {
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent, typename ArrayIndex>
   static void apply(
-      db::DataBox<tmpl::list<CheckValueTag, CheckTerminateTag>>& box,  // NOLINT
+      db::DataBox<tmpl::list<CheckValueTag, CheckConvergedTag>>& box,  // NOLINT
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/, const double res_ratio,
-      const bool terminate) noexcept {
-    db::mutate<CheckValueTag, CheckTerminateTag>(
+      const double residual_magnitude, const bool has_converged) noexcept {
+    db::mutate<CheckValueTag, CheckConvergedTag>(
         make_not_null(&box),
-        [res_ratio, terminate](
+        [ res_ratio, residual_magnitude, has_converged ](
             const gsl::not_null<double*> value_box,
-            const gsl::not_null<bool*> terminate_box) noexcept {
-          *value_box = res_ratio;
-          *terminate_box = terminate;
+            const gsl::not_null<bool*> converged_box) noexcept {
+          *value_box = res_ratio + residual_magnitude;
+          *converged_box = has_converged;
         });
   }
 };
@@ -118,13 +138,15 @@ struct MockElementArray {
   using const_global_cache_tag_list = tmpl::list<>;
   using action_list = tmpl::list<>;
   using initial_databox =
-      db::compute_databox_type<tmpl::list<CheckValueTag, CheckTerminateTag>>;
+      db::compute_databox_type<tmpl::list<CheckValueTag, CheckConvergedTag>>;
 
   using replace_these_simple_actions =
-      tmpl::list<LinearSolver::cg_detail::UpdateFieldValues,
+      tmpl::list<LinearSolver::cg_detail::InitializeResidualMagnitude,
+                 LinearSolver::cg_detail::UpdateFieldValues,
                  LinearSolver::cg_detail::UpdateOperand>;
   using with_these_simple_actions =
-      tmpl::list<MockUpdateFieldValues, MockUpdateOperand>;
+      tmpl::list<MockInitializeResidualMagnitude, MockUpdateFieldValues,
+                 MockUpdateOperand>;
 };
 
 struct System {
@@ -163,7 +185,7 @@ SPECTRE_TEST_CASE(
   const int element_id{0};
   tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(element_id,
-               db::create<db::AddSimpleTags<CheckValueTag, CheckTerminateTag>>(
+               db::create<db::AddSimpleTags<CheckValueTag, CheckConvergedTag>>(
                    std::numeric_limits<double>::signaling_NaN(), false));
 
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
@@ -179,7 +201,7 @@ SPECTRE_TEST_CASE(
     return runner.algorithms<MockElementArray<Metavariables>>()
         .at(element_id)
         .get_databox<db::compute_databox_type<
-            db::AddSimpleTags<CheckValueTag, CheckTerminateTag>>>();
+            db::AddSimpleTags<CheckValueTag, CheckConvergedTag>>>();
   };
 
   using residual_square_tag = db::add_tag_prefix<
@@ -188,17 +210,25 @@ SPECTRE_TEST_CASE(
 
   SECTION("InitializeResidual") {
     runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::InitializeResidual>(
-        singleton_id, 1.);
+                         LinearSolver::cg_detail::InitializeResidual<
+                             MockElementArray<Metavariables>>>(singleton_id,
+                                                               4.);
+    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
+        element_id);
     const auto& box = get_box();
-    CHECK(db::get<residual_square_tag>(box) == 1.);
+    CHECK(db::get<residual_square_tag>(box) == 4.);
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 0);
+    const auto& mock_element_box = get_mock_element_box();
+    CHECK(db::get<CheckValueTag>(mock_element_box) == 2.);
   }
 
   SECTION("ComputeAlpha") {
     runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::InitializeResidual>(
-        singleton_id, 1.);
+                         LinearSolver::cg_detail::InitializeResidual<
+                             MockElementArray<Metavariables>>>(singleton_id,
+                                                               1.);
+    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
+        element_id);
     runner.simple_action<
         MockResidualMonitor<Metavariables>,
         LinearSolver::cg_detail::ComputeAlpha<MockElementArray<Metavariables>>>(
@@ -214,8 +244,11 @@ SPECTRE_TEST_CASE(
 
   SECTION("UpdateResidual") {
     runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::InitializeResidual>(
-        singleton_id, 1.);
+                         LinearSolver::cg_detail::InitializeResidual<
+                             MockElementArray<Metavariables>>>(singleton_id,
+                                                               1.);
+    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
+        element_id);
     runner.simple_action<MockResidualMonitor<Metavariables>,
                          LinearSolver::cg_detail::UpdateResidual<
                              MockElementArray<Metavariables>>>(singleton_id,
@@ -226,14 +259,17 @@ SPECTRE_TEST_CASE(
     CHECK(db::get<residual_square_tag>(box) == 10.);
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
     const auto& mock_element_box = get_mock_element_box();
-    CHECK(db::get<CheckValueTag>(mock_element_box) == 10.);
-    CHECK(db::get<CheckTerminateTag>(mock_element_box) == false);
+    CHECK(db::get<CheckValueTag>(mock_element_box) == approx(10. + sqrt(10.)));
+    CHECK(db::get<CheckConvergedTag>(mock_element_box) == false);
   }
 
-  SECTION("UpdateResidualAndTerminate") {
+  SECTION("Converge") {
     runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::InitializeResidual>(
-        singleton_id, 1.);
+                         LinearSolver::cg_detail::InitializeResidual<
+                             MockElementArray<Metavariables>>>(singleton_id,
+                                                               1.);
+    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
+        element_id);
     runner.simple_action<MockResidualMonitor<Metavariables>,
                          LinearSolver::cg_detail::UpdateResidual<
                              MockElementArray<Metavariables>>>(singleton_id,
@@ -245,6 +281,6 @@ SPECTRE_TEST_CASE(
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckValueTag>(mock_element_box) == 0.);
-    CHECK(db::get<CheckTerminateTag>(mock_element_box) == true);
+    CHECK(db::get<CheckConvergedTag>(mock_element_box) == true);
   }
 }

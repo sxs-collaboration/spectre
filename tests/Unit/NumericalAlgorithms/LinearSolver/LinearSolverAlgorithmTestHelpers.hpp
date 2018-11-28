@@ -18,8 +18,7 @@
 #include "DataStructures/DenseVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ConjugateGradient.hpp"
-#include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitor.hpp"
+#include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -131,7 +130,8 @@ struct ElementArray {
   // magnitude and the iteration step number.
   /// [action_list]
   using action_list =
-      tmpl::list<ComputeOperatorAction,
+      tmpl::list<LinearSolver::Actions::TerminateIfConverged,
+                 ComputeOperatorAction,
                  typename Metavariables::linear_solver::perform_step>;
   /// [action_list]
   using initial_databox = db::compute_databox_type<

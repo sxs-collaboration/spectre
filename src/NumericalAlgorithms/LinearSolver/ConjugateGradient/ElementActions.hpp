@@ -26,7 +26,7 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace cg_detail {
-template <typename>
+template <typename Metavariables>
 struct ResidualMonitor;
 }  // namespace cg_detail
 }  // namespace LinearSolver
@@ -35,12 +35,43 @@ struct ResidualMonitor;
 namespace LinearSolver {
 namespace cg_detail {
 
+struct InitializeResidualMagnitude {
+  template <
+      typename... DbTags, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<tmpl2::flat_any_v<cpp17::is_same_v<
+          db::add_tag_prefix<
+              LinearSolver::Tags::Magnitude,
+              db::add_tag_prefix<LinearSolver::Tags::Residual,
+                                 typename Metavariables::system::fields_tag>>,
+          DbTags>...>> = nullptr>
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/,
+                    const double residual_magnitude) noexcept {
+    using fields_tag = typename Metavariables::system::fields_tag;
+    using residual_magnitude_tag = db::add_tag_prefix<
+        LinearSolver::Tags::Magnitude,
+        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+
+    db::mutate<residual_magnitude_tag>(
+        make_not_null(&box), [residual_magnitude](
+                                 const gsl::not_null<double*>
+                                     local_residual_magnitude) noexcept {
+          *local_residual_magnitude = residual_magnitude;
+        });
+  }
+};
+
 struct PerformStep {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -77,7 +108,7 @@ struct UpdateFieldValues {
       Requires<tmpl2::flat_any_v<cpp17::is_same_v<
           typename Metavariables::system::fields_tag, DbTags>...>> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
@@ -125,43 +156,48 @@ struct UpdateOperand {
                                    typename Metavariables::system::fields_tag>,
                 DbTags>...>> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
-                    const double res_ratio, const bool terminate) noexcept {
+                    const double res_ratio, const double residual_magnitude,
+                    const bool has_converged) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using operand_tag =
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
     using residual_tag =
         db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
+    using residual_magnitude_tag =
+        db::add_tag_prefix<LinearSolver::Tags::Magnitude, residual_tag>;
 
     // Prepare conjugate gradient for next iteration
-    db::mutate<operand_tag>(
+    db::mutate<operand_tag, residual_magnitude_tag,
+               LinearSolver::Tags::HasConverged,
+               LinearSolver::Tags::IterationId,
+               ::Tags::Next<LinearSolver::Tags::IterationId>>(
         make_not_null(&box),
-        [res_ratio](const gsl::not_null<db::item_type<operand_tag>*> p,
-                    const db::item_type<residual_tag>& r) noexcept {
+        [ res_ratio, residual_magnitude, has_converged ](
+            const gsl::not_null<db::item_type<operand_tag>*> p,
+            const gsl::not_null<double*> local_residual_magnitude,
+            const gsl::not_null<bool*> local_has_converged,
+            const gsl::not_null<IterationId*> iteration_id,
+            const gsl::not_null<IterationId*> next_iteration_id,
+            const db::item_type<residual_tag>& r) noexcept {
           *p = r + res_ratio * *p;
+          *local_residual_magnitude = residual_magnitude;
+          *local_has_converged = has_converged;
+          iteration_id->step_number++;
+          next_iteration_id->step_number = iteration_id->step_number + 1;
         },
         get<residual_tag>(box));
 
-    // Increment iteration id
-    db::mutate<LinearSolver::Tags::IterationId,
-               ::Tags::Next<LinearSolver::Tags::IterationId>>(
-        make_not_null(&box), [](const gsl::not_null<IterationId*> iteration_id,
-                                const gsl::not_null<IterationId*>
-                                    next_iteration_id) noexcept {
-          iteration_id->step_number++;
-          next_iteration_id->step_number = iteration_id->step_number + 1;
-        });
-
-    // Terminate when the residual vanishes to machine precision
+    // Proceed with algorithm
     // We use `ckLocal()` here since this is essentially retrieving "self",
     // which is guaranteed to be on the local processor. This ensures the calls
     // are evaluated in order.
     Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
         .ckLocal()
-        ->set_terminate(terminate);
+        ->set_terminate(false);
     Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
         .perform_algorithm();
   }

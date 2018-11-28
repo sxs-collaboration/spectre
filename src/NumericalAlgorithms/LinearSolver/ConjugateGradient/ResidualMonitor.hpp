@@ -22,7 +22,7 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace cg_detail {
-template <typename>
+template <typename Metavariables>
 struct InitializeResidualMonitor;
 }  // namespace cg_detail
 }  // namespace LinearSolver

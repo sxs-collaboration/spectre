@@ -27,7 +27,5 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.IterationId",
   test_serialization(id);
   test_copy_semantics(id);
 
-  SECTION("Tag") {
-    CHECK(LinearSolver::Tags::IterationId::name() == "LinearIterationId");
-  }
+  CHECK(LinearSolver::Tags::IterationId::name() == "LinearIterationId");
 }

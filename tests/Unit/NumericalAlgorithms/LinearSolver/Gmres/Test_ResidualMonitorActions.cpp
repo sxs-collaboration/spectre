@@ -32,8 +32,7 @@ namespace LinearSolver {
 namespace gmres_detail {
 struct NormalizeInitialOperand;
 struct OrthogonalizeOperand;
-struct NormalizeOperand;
-struct UpdateFieldAndTerminate;
+struct NormalizeOperandAndUpdateField;
 }  // namespace gmres_detail
 }  // namespace LinearSolver
 
@@ -66,6 +65,11 @@ struct CheckVectorTag : db::SimpleTag {
   static std::string name() noexcept { return "CheckVectorTag"; }
 };
 
+struct CheckConvergedTag : db::SimpleTag {
+  using type = bool;
+  static std::string name() noexcept { return "CheckConvergedTag"; }
+};
+
 template <typename Metavariables>
 using residual_monitor_tags =
     tmpl::append<typename LinearSolver::gmres_detail::InitializeResidualMonitor<
@@ -90,7 +94,8 @@ struct MockNormalizeInitialOperand {
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent, typename ArrayIndex>
   static void apply(
-      db::DataBox<tmpl::list<CheckValueTag, CheckVectorTag>>& box,  // NOLINT
+      db::DataBox<tmpl::list<CheckValueTag, CheckVectorTag, CheckConvergedTag>>&
+          box,  // NOLINT
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -108,7 +113,8 @@ struct MockOrthogonalizeOperand {
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent, typename ArrayIndex>
   static void apply(
-      db::DataBox<tmpl::list<CheckValueTag, CheckVectorTag>>& box,  // NOLINT
+      db::DataBox<tmpl::list<CheckValueTag, CheckVectorTag, CheckConvergedTag>>&
+          box,  // NOLINT
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
@@ -122,38 +128,27 @@ struct MockOrthogonalizeOperand {
   }
 };
 
-struct MockNormalizeOperand {
+struct MockNormalizeOperandAndUpdateField {
   template <typename... InboxTags, typename Metavariables, typename ActionList,
             typename ParallelComponent, typename ArrayIndex>
   static void apply(
-      db::DataBox<tmpl::list<CheckValueTag, CheckVectorTag>>& box,  // NOLINT
+      db::DataBox<tmpl::list<CheckValueTag, CheckVectorTag, CheckConvergedTag>>&
+          box,  // NOLINT
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/,
-      const double normalization) noexcept {
-    db::mutate<CheckValueTag>(
-        make_not_null(&box), [normalization](const gsl::not_null<double*>
-                                                 value_box) noexcept {
-          *value_box = normalization;
-        });
-  }
-};
-
-struct MockUpdateFieldAndTerminate {
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent, typename ArrayIndex>
-  static void apply(
-      db::DataBox<tmpl::list<CheckValueTag, CheckVectorTag>>& box,  // NOLINT
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/,
-      const DenseVector<double>& minres) noexcept {
-    db::mutate<CheckVectorTag>(
-        make_not_null(&box), [minres](const gsl::not_null<DenseVector<double>*>
-                                          vector_box) noexcept {
+      const ParallelComponent* const /*meta*/, const double normalization,
+      const DenseVector<double>& minres, const double residual_magnitude,
+      const bool has_converged) noexcept {
+    db::mutate<CheckValueTag, CheckVectorTag, CheckConvergedTag>(
+        make_not_null(&box),
+        [ normalization, minres, residual_magnitude, has_converged ](
+            const gsl::not_null<double*> value_box,
+            const gsl::not_null<DenseVector<double>*> vector_box,
+            const gsl::not_null<bool*> converged_box) noexcept {
+          *value_box = normalization + residual_magnitude;
           *vector_box = minres;
+          *converged_box = has_converged;
         });
   }
 };
@@ -166,17 +161,16 @@ struct MockElementArray {
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<>;
   using action_list = tmpl::list<>;
-  using initial_databox =
-      db::compute_databox_type<tmpl::list<CheckValueTag, CheckVectorTag>>;
+  using initial_databox = db::compute_databox_type<
+      tmpl::list<CheckValueTag, CheckVectorTag, CheckConvergedTag>>;
 
   using replace_these_simple_actions =
       tmpl::list<LinearSolver::gmres_detail::NormalizeInitialOperand,
                  LinearSolver::gmres_detail::OrthogonalizeOperand,
-                 LinearSolver::gmres_detail::NormalizeOperand,
-                 LinearSolver::gmres_detail::UpdateFieldAndTerminate>;
+                 LinearSolver::gmres_detail::NormalizeOperandAndUpdateField>;
   using with_these_simple_actions =
       tmpl::list<MockNormalizeInitialOperand, MockOrthogonalizeOperand,
-                 MockNormalizeOperand, MockUpdateFieldAndTerminate>;
+                 MockNormalizeOperandAndUpdateField>;
 };
 
 struct System {
@@ -217,9 +211,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
   const int element_id{0};
   tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(element_id,
-               db::create<db::AddSimpleTags<CheckValueTag, CheckVectorTag>>(
+               db::create<db::AddSimpleTags<CheckValueTag, CheckVectorTag,
+                                            CheckConvergedTag>>(
                    std::numeric_limits<double>::signaling_NaN(),
-                   DenseVector<double>{}));
+                   DenseVector<double>{}, false));
 
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
@@ -233,8 +228,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
   const auto get_mock_element_box = [&runner, &element_id]() -> decltype(auto) {
     return runner.algorithms<MockElementArray<Metavariables>>()
         .at(element_id)
-        .get_databox<db::compute_databox_type<
-            db::AddSimpleTags<CheckValueTag, CheckVectorTag>>>();
+        .get_databox<db::compute_databox_type<db::AddSimpleTags<
+            CheckValueTag, CheckVectorTag, CheckConvergedTag>>>();
   };
 
   SECTION("InitializeResidualMagnitude") {
@@ -309,13 +304,23 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     // residual should be nonzero, so don't terminate
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
     CHECK(db::get<orthogonalization_iteration_id_tag>(box).step_number == 0);
+    // H = [[3.], [2.]] and added a zero row and column
     CHECK(db::get<orthogonalization_history_tag>(box) ==
           DenseMatrix<double>({{3., 0.}, {2., 0.}, {0., 0.}}));
     const auto& mock_element_box = get_mock_element_box();
-    CHECK(db::get<CheckValueTag>(mock_element_box) == 2.);
+    // beta = [2., 0.]
+    // minres = inv(qr_R(H)) * trans(qr_Q(H)) * beta = [0.4615384615384615]
+    CHECK(db::get<CheckVectorTag>(mock_element_box).size() == 1);
+    CHECK_ITERABLE_APPROX(db::get<CheckVectorTag>(mock_element_box),
+                          DenseVector<double>({0.4615384615384615}));
+    // r = beta - H * minres = [0.6153846153846154, -0.923076923076923]
+    // |r| = 1.1094003924504583
+    CHECK(db::get<CheckValueTag>(mock_element_box) ==
+          approx(2. + 1.1094003924504583));
+    CHECK(db::get<CheckConvergedTag>(mock_element_box) == false);
   }
 
-  SECTION("StoreFinalOrthogonalizationAndTerminate") {
+  SECTION("Converge") {
     runner
         .simple_action<MockResidualMonitor<Metavariables>,
                        LinearSolver::gmres_detail::InitializeResidualMagnitude<
@@ -338,11 +343,16 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
     const auto& box = get_box();
+    // H = [[1.], [0.]] and added a zero row and column
     CHECK(db::get<orthogonalization_history_tag>(box) ==
-          DenseMatrix<double>({{1.}, {0.}}));
-    // residual should be zero, so terminate
+          DenseMatrix<double>({{1., 0.}, {0., 0.}, {0., 0.}}));
+    // residual should be zero, so converge
     const auto& mock_element_box = get_mock_element_box();
+    // beta = [2., 0.]
+    // inv(qr_R(H)) * trans(qr_Q(H)) * beta = {2.}
+    CHECK(db::get<CheckVectorTag>(mock_element_box).size() == 1);
     CHECK_ITERABLE_APPROX(db::get<CheckVectorTag>(mock_element_box),
                           DenseVector<double>({2.}));
+    CHECK(db::get<CheckConvergedTag>(mock_element_box) == true);
   }
 }

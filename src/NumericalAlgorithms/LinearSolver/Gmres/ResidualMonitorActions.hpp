@@ -28,8 +28,7 @@ namespace LinearSolver {
 namespace gmres_detail {
 struct NormalizeInitialOperand;
 struct OrthogonalizeOperand;
-struct NormalizeOperand;
-struct UpdateFieldAndTerminate;
+struct NormalizeOperandAndUpdateField;
 }  // namespace gmres_detail
 }  // namespace LinearSolver
 /// \endcond
@@ -66,6 +65,9 @@ struct InitializeResidualMagnitude {
                                      stored_residual_magnitude) noexcept {
           *stored_residual_magnitude = residual_magnitude;
         });
+
+    // When more sophisticated convergence criteria are implemented we may also
+    // want to check for convergence here.
 
     Parallel::simple_action<NormalizeInitialOperand>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
@@ -207,51 +209,52 @@ struct StoreFinalOrthogonalization {
     beta[0] = get<residual_magnitude_tag>(box);
     const DenseVector<double> minres =
         blaze::inv(qr_R) * blaze::trans(qr_Q) * beta;
-    const double residual =
-        blaze::length(beta - orthogonalization_history * minres) /
-        get<source_magnitude_tag>(box);
+    const double absolute_residual =
+        blaze::length(beta - orthogonalization_history * minres);
 
     if (UNLIKELY(static_cast<int>(get<::Tags::Verbosity>(box)) >=
                  static_cast<int>(::Verbosity::Verbose))) {
       Parallel::printf(
-          "Linear solver iteration %d done. Remaining residual: %e\n",
-          get<LinearSolver::Tags::IterationId>(box).step_number + 1, residual);
+          "Linear solver iteration %d done. Remaining absolute residual: %e\n",
+          get<LinearSolver::Tags::IterationId>(box).step_number + 1,
+          absolute_residual);
     }
 
-    if (equal_within_roundoff(residual, 0.)) {
-      Parallel::simple_action<UpdateFieldAndTerminate>(
-          Parallel::get_parallel_component<BroadcastTarget>(cache), minres);
-    } else {
-      db::mutate<LinearSolver::Tags::IterationId,
-                 orthogonalization_iteration_id_tag,
-                 orthogonalization_history_tag>(
-          make_not_null(&box),
-          [](const gsl::not_null<IterationId*> iteration_id,
-             const gsl::not_null<IterationId*> orthogonalization_iteration_id,
-             // `local_` prefix to silence gcc shadowing complaints
-             const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
-                 local_orthogonalization_history) noexcept {
-            iteration_id->step_number++;
-            orthogonalization_iteration_id->step_number = 0;
-            local_orthogonalization_history->resize(
-                iteration_id->step_number + 2, iteration_id->step_number + 1);
-            // Make sure the new entries are zero
-            for (size_t i = 0; i < local_orthogonalization_history->rows();
-                 i++) {
-              (*local_orthogonalization_history)(
-                  i, local_orthogonalization_history->columns() - 1) = 0.;
-            }
-            for (size_t j = 0; j < local_orthogonalization_history->columns();
-                 j++) {
-              (*local_orthogonalization_history)(
-                  local_orthogonalization_history->rows() - 1, j) = 0.;
-            }
-          });
+    // Determine whether the linear solver has converged
+    // More sophisticated convergence criteria can be added in the future.
+    const double relative_residual =
+        absolute_residual / get<source_magnitude_tag>(box);
+    const bool has_converged = equal_within_roundoff(relative_residual, 0.);
 
-      Parallel::simple_action<NormalizeOperand>(
-          Parallel::get_parallel_component<BroadcastTarget>(cache),
-          sqrt(orthogonalization));
-    }
+    // Prepare for the next iteration
+    db::mutate<LinearSolver::Tags::IterationId,
+               orthogonalization_iteration_id_tag,
+               orthogonalization_history_tag>(
+        make_not_null(&box),
+        [](const gsl::not_null<IterationId*> iteration_id,
+           const gsl::not_null<IterationId*> orthogonalization_iteration_id,
+           // `local_` prefix to silence gcc shadowing complaints
+           const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
+               local_orthogonalization_history) noexcept {
+          iteration_id->step_number++;
+          orthogonalization_iteration_id->step_number = 0;
+          local_orthogonalization_history->resize(
+              iteration_id->step_number + 2, iteration_id->step_number + 1);
+          // Make sure the new entries are zero
+          for (size_t i = 0; i < local_orthogonalization_history->rows(); i++) {
+            (*local_orthogonalization_history)(
+                i, local_orthogonalization_history->columns() - 1) = 0.;
+          }
+          for (size_t j = 0; j < local_orthogonalization_history->columns();
+               j++) {
+            (*local_orthogonalization_history)(
+                local_orthogonalization_history->rows() - 1, j) = 0.;
+          }
+        });
+
+    Parallel::simple_action<NormalizeOperandAndUpdateField>(
+        Parallel::get_parallel_component<BroadcastTarget>(cache),
+        sqrt(orthogonalization), minres, absolute_residual, has_converged);
   }
 };
 

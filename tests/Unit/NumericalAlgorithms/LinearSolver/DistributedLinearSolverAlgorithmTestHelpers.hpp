@@ -22,6 +22,7 @@
 #include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -210,7 +211,8 @@ struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
   using action_list =
-      tmpl::list<ComputeOperatorAction,
+      tmpl::list<LinearSolver::Actions::TerminateIfConverged,
+                 ComputeOperatorAction,
                  typename Metavariables::linear_solver::perform_step>;
   using initial_databox = db::compute_databox_type<
       typename InitializeElement::return_tag_list<Metavariables>>;

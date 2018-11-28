@@ -20,8 +20,9 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace cg_detail {
-template <typename>
+template <typename Metavariables>
 struct ResidualMonitor;
+template <typename BroadcastTarget>
 struct InitializeResidual;
 }  // namespace cg_detail
 }  // namespace LinearSolver
@@ -40,12 +41,14 @@ struct InitializeElement {
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
+  using residual_magnitude_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Magnitude, residual_tag>;
 
  public:
-  using simple_tags =
-      db::AddSimpleTags<LinearSolver::Tags::IterationId,
-                        ::Tags::Next<LinearSolver::Tags::IterationId>,
-                        operand_tag, operator_tag, residual_tag>;
+  using simple_tags = db::AddSimpleTags<
+      LinearSolver::Tags::IterationId,
+      ::Tags::Next<LinearSolver::Tags::IterationId>, operand_tag, operator_tag,
+      residual_tag, residual_magnitude_tag, LinearSolver::Tags::HasConverged>;
   using compute_tags = db::AddComputeTags<>;
 
   template <typename TagsList, typename ArrayIndex, typename ParallelComponent>
@@ -66,7 +69,8 @@ struct InitializeElement {
 
     // Perform global reduction to compute initial residual magnitude square for
     // residual monitor
-    Parallel::contribute_to_reduction<cg_detail::InitializeResidual>(
+    Parallel::contribute_to_reduction<
+        cg_detail::InitializeResidual<ParallelComponent>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
             inner_product(r, r)},
@@ -76,7 +80,8 @@ struct InitializeElement {
 
     return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
         std::move(box), iteration_id, next_iteration_id, std::move(p),
-        std::move(Ap), std::move(r));
+        std::move(Ap), std::move(r),
+        std::numeric_limits<double>::signaling_NaN(), false);
   }
 };
 
