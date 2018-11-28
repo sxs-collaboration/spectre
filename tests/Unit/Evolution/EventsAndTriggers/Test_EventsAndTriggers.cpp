@@ -36,7 +36,7 @@ struct DefaultClasses {
 };
 
 using events_and_triggers_tag =
-    Tags::EventsAndTriggers<DefaultClasses, DefaultClasses>;
+    Tags::EventsAndTriggers<tmpl::list<>, DefaultClasses>;
 
 struct Metavariables;
 struct component {
@@ -53,12 +53,12 @@ struct Metavariables {
   using const_global_cache_tag_list = tmpl::list<>;
 };
 
-using EventsAndTriggersType = EventsAndTriggers<DefaultClasses, DefaultClasses>;
+using EventsAndTriggersType = EventsAndTriggers<tmpl::list<>, DefaultClasses>;
 
 void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
                              const bool expected) {
   // Test pup
-  Parallel::register_derived_classes_with_charm<Event<DefaultClasses>>();
+  Parallel::register_derived_classes_with_charm<Event<tmpl::list<>>>();
   Parallel::register_derived_classes_with_charm<Trigger<DefaultClasses>>();
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
@@ -86,8 +86,8 @@ void check_trigger(const bool expected, const std::string& trigger_string) {
   EventsAndTriggersType::Storage events_and_triggers_map;
   events_and_triggers_map.emplace(
       std::move(trigger),
-      make_vector<std::unique_ptr<Event<DefaultClasses>>>(
-          std::make_unique<Events::Completion<DefaultClasses>>()));
+      make_vector<std::unique_ptr<Event<tmpl::list<>>>>(
+          std::make_unique<Events::Completion<tmpl::list<>>>()));
   const EventsAndTriggersType events_and_triggers(
       std::move(events_and_triggers_map));
 
@@ -96,7 +96,7 @@ void check_trigger(const bool expected, const std::string& trigger_string) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
-  test_factory_creation<Event<DefaultClasses>>("  Completion");
+  test_factory_creation<Event<tmpl::list<>>>("  Completion");
 
   check_trigger(true,
                 "  Always");
