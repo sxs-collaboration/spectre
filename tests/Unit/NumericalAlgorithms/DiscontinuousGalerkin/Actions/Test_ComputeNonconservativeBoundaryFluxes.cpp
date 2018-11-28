@@ -60,7 +60,6 @@ struct OtherArg : db::SimpleTag {
 };
 
 struct System {
-  static constexpr const size_t volume_dim = 2;
   using variables_tag = Tags::Variables<tmpl::list<Var, Var2>>;
 
   template <typename Tag>
@@ -107,7 +106,8 @@ struct component {
   using array_index = ElementIndex<2>;
   using const_global_cache_tag_list = tmpl::list<>;
   using action_list =
-      tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes>;
+      tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes<
+          Tags::InternalDirections<2>>>;
   using simple_tags =
       db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
