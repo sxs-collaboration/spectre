@@ -13,6 +13,7 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
 #include <numpy/arrayobject.h>  // IWYU pragma: keep
+#include <pydebug.h>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Informer/InfoFromBuild.hpp"
@@ -27,6 +28,10 @@ SetupLocalPythonEnvironment::SetupLocalPythonEnvironment(
   // done in the constructor of SetupLocalPythonEnvironment, while finalization
   // is done in the constructor of RunTests.
   if (not initialized) {
+    // Don't produce the __pycache__ dir (python 3.2 and newer) or the .pyc
+    // files (python 2.7) in the tests directory to avoid cluttering the source
+    // tree. The overhead of not having the compile files is <= 0.01s
+    Py_DontWriteBytecodeFlag = 1;
     Py_Initialize();
     // On some python versions init_numpy() can throw an FPE, this occurred at
     // least with python 3.6, numpy 1.14.2.
