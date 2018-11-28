@@ -765,14 +765,15 @@ template <typename ComputeItem, typename FullTagList,
 SPECTRE_ALWAYS_INLINE constexpr void
 DataBox<tmpl::list<Tags...>>::add_compute_item_to_box_impl(
     tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept {
-  static_assert(
+  DEBUG_STATIC_ASSERT(
       tmpl2::flat_all_v<is_tag_v<ComputeItemArgumentsTags>...>,
       "Cannot have non-DataBoxTag arguments to a ComputeItem. Please make "
       "sure all the specified argument_tags in the ComputeItem derive from "
       "db::SimpleTag.");
-  static_assert(not tmpl2::flat_any_v<
-                    cpp17::is_same_v<ComputeItemArgumentsTags, ComputeItem>...>,
-                "A ComputeItem cannot take its own Tag as an argument.");
+  DEBUG_STATIC_ASSERT(
+      not tmpl2::flat_any_v<
+          cpp17::is_same_v<ComputeItemArgumentsTags, ComputeItem>...>,
+      "A ComputeItem cannot take its own Tag as an argument.");
   expand_pack(DataBox_detail::check_compute_item_argument_exists<
               ComputeItem, ComputeItemArgumentsTags, FullTagList>()...);
 
@@ -885,10 +886,14 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
   DEBUG_STATIC_ASSERT(
       not tmpl2::flat_any_v<is_databox<std::decay_t<Args>>::value...>,
       "Cannot store a DataBox inside a DataBox.");
+#ifdef SPECTRE_DEBUG
+  // The check_argument_type call is very expensive compared to the majority of
+  // DataBox
   expand_pack(
       DataBox_detail::check_argument_type<TagsInArgsOrder,
                                           typename TagsInArgsOrder::type,
                                           std::decay_t<Args>>()...);
+#endif  // SPECTRE_DEBUG
 
   std::tuple<Args...> args_tuple(std::forward<Args>(args)...);
   add_items_to_box<tmpl::list<FullItems..., FullComputeItems...>>(
