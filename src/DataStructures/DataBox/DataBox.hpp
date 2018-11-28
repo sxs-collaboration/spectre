@@ -492,9 +492,7 @@ class DataBox<tmpl::list<Tags...>>
 
   template <typename... TagsInArgsOrder, typename... FullItems,
             typename... ComputeTags, typename... FullComputeItems,
-            typename... Args,
-            Requires<not tmpl2::flat_any_v<
-                db::is_databox<std::decay_t<Args>>::value...>> = nullptr>
+            typename... Args>
   constexpr DataBox(tmpl::list<TagsInArgsOrder...> /*meta*/,
                     tmpl::list<FullItems...> /*meta*/,
                     tmpl::list<ComputeTags...> /*meta*/,
@@ -872,10 +870,9 @@ constexpr int check_argument_type() noexcept {
 
 /// \cond
 template <typename... Tags>
-template <
-    typename... TagsInArgsOrder, typename... FullItems, typename... ComputeTags,
-    typename... FullComputeItems, typename... Args,
-    Requires<not tmpl2::flat_any_v<is_databox<std::decay_t<Args>>::value...>>>
+template <typename... TagsInArgsOrder, typename... FullItems,
+          typename... ComputeTags, typename... FullComputeItems,
+          typename... Args>
 constexpr DataBox<tmpl::list<Tags...>>::DataBox(
     tmpl::list<TagsInArgsOrder...> /*meta*/, tmpl::list<FullItems...> /*meta*/,
     tmpl::list<ComputeTags...> /*meta*/,
@@ -885,6 +882,9 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
       "Must pass in as many (compute) items as there are Tags.");
   DEBUG_STATIC_ASSERT(sizeof...(TagsInArgsOrder) == sizeof...(Args),
                       "Must pass in as many arguments as AddTags");
+  DEBUG_STATIC_ASSERT(
+      not tmpl2::flat_any_v<is_databox<std::decay_t<Args>>::value...>,
+      "Cannot store a DataBox inside a DataBox.");
   expand_pack(
       DataBox_detail::check_argument_type<TagsInArgsOrder,
                                           typename TagsInArgsOrder::type,
