@@ -12,6 +12,7 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
+#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -74,13 +75,13 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
 
-namespace Register {
+namespace Registrars {
 template <size_t Dim, typename Frame>
 struct Cfl {
   template <typename StepChooserRegistrars>
   using f = StepChoosers::Cfl<Dim, Frame, StepChooserRegistrars>;
 };
-}  // namespace Register
+}  // namespace Registrars
 
 /// \cond
 template <size_t Dim, typename Frame, typename StepChooserRegistrars>

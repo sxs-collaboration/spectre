@@ -92,9 +92,9 @@ struct EvolutionMetavars {
   using limiter = OptionTags::SlopeLimiterParams<
       SlopeLimiters::Minmod<3, system::variables_tag::tags_list>>;
   using step_choosers =
-      tmpl::list<StepChoosers::Register::Cfl<3, Frame::Inertial>,
-                 StepChoosers::Register::Constant,
-                 StepChoosers::Register::Increase>;
+      tmpl::list<StepChoosers::Registrars::Cfl<3, Frame::Inertial>,
+                 StepChoosers::Registrars::Constant,
+                 StepChoosers::Registrars::Increase>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;

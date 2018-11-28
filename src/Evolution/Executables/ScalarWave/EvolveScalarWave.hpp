@@ -87,9 +87,9 @@ struct EvolutionMetavars {
       Parallel::ReductionDatum<size_t, funcl::Plus<>>, Redum, Redum>>;
 
   using step_choosers =
-      tmpl::list<StepChoosers::Register::Cfl<Dim, Frame::Inertial>,
-                 StepChoosers::Register::Constant,
-                 StepChoosers::Register::Increase>;
+      tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
+                 StepChoosers::Registrars::Constant,
+                 StepChoosers::Registrars::Increase>;
 
   using compute_rhs = tmpl::flatten<tmpl::list<
       dg::Actions::ComputeNonconservativeBoundaryFluxes<

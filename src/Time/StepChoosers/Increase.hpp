@@ -11,6 +11,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
+#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -26,7 +27,7 @@ struct TimeStep;
 namespace StepChoosers {
 
 /// Suggests increasing the step size by a constant ratio.
-template <typename StepChooserRegistrars>
+template <typename StepChooserRegistrars = tmpl::list<>>
 class Increase : public StepChooser<StepChooserRegistrars> {
  public:
   /// \cond
@@ -63,12 +64,9 @@ class Increase : public StepChooser<StepChooserRegistrars> {
   double factor_ = std::numeric_limits<double>::signaling_NaN();
 };
 
-namespace Register {
-struct Increase {
-  template <typename StepChooserRegistrars>
-  using f = StepChoosers::Increase<StepChooserRegistrars>;
-};
-}  // namespace Register
+namespace Registrars {
+using Increase = Registration::Registrar<StepChoosers::Increase>;
+}  // namespace Registrars
 
 /// \cond
 template <typename StepChooserRegistrars>
