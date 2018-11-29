@@ -567,13 +567,12 @@ SPECTRE_TEST_CASE("Unit.IO.H5.check_if_object_exists", "[Unit][IO][H5]") {
   }
   {
     h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
-    auto& error_file = my_file.insert<h5::Header>("/");
+    my_file.insert<h5::Header>("/");
   }
 
   // Reopen the file to check that the subfile '/' can be opened
   h5::H5File<h5::AccessType::ReadWrite> reopened_file(h5_file_name, true);
-  const auto& sample_data =
-      reopened_file.get<h5::Header>("/");
+  reopened_file.get<h5::Header>("/");
   CHECK(file_system::check_if_file_exists(h5_file_name) == true);
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
