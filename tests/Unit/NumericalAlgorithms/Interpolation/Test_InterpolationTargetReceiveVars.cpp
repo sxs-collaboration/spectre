@@ -5,18 +5,15 @@
 
 #include <array>
 #include <cstddef>
-#include <deque>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp"
+#include "DataStructures/Variables.hpp" // IWYU pragma: keep
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
@@ -154,19 +151,41 @@ struct SquareComputeItem : Square, db::ComputeTag {
 };
 }  // namespace Tags
 
+template <typename DbTags, typename TemporalId>
+void callback_impl(const db::DataBox<DbTags>& box,
+                   const TemporalId& temporal_id) noexcept {
+  Slab slab(0.0, 1.0);
+  CHECK(temporal_id == TimeId(true, 0, Time(slab, Rational(13, 15))));
+  // The result should be the square of the first 10 integers, in
+  // a Scalar<DataVector>.
+  const Scalar<DataVector> expected{
+      DataVector{{0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0, 64.0, 81.0}}};
+  CHECK_ITERABLE_APPROX(expected, db::get<Tags::Square>(box));
+}
+
 struct MockPostInterpolationCallback {
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
-    Slab slab(0.0, 1.0);
-    CHECK(temporal_id == TimeId(true, 0, Time(slab, Rational(13, 15))));
-    // The result should be the square of the first 10 integers, in
-    // a Scalar<DataVector>.
-    const Scalar<DataVector> expected{
-        DataVector{{0.0, 1.0, 4.0, 9.0, 16.0, 25.0, 36.0, 49.0, 64.0, 81.0}}};
-    CHECK_ITERABLE_APPROX(expected, db::get<Tags::Square>(box));
+    callback_impl(box, temporal_id);
+  }
+};
+
+// The sole purpose of this class is to check
+// the overload of the callback, and to prevent
+// cleanup.  The only time that one would actually want
+// to prevent cleanup is in the AH finder, and it is tested there,
+//  but this is a more direct test.
+struct MockPostInterpolationCallbackNoCleanup {
+  template <typename DbTags, typename Metavariables>
+  static bool apply(
+      const gsl::not_null<db::DataBox<DbTags>*> box,
+      const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> /*cache*/,
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+    callback_impl(*box, temporal_id);
+    return false;
   }
 };
 
@@ -188,12 +207,13 @@ struct mock_interpolator {
       MockCleanUpInterpolator<typename Metavariables::InterpolationTargetA>>;
 };
 
+template <typename MockCallBackType>
 struct MockMetavariables {
   struct InterpolationTargetA {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_target_points = MockComputeTargetPoints;
-    using post_interpolation_callback = MockPostInterpolationCallback;
+    using post_interpolation_callback = MockCallBackType;
     using compute_items_on_target = tmpl::list<Tags::SquareComputeItem>;
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
@@ -209,16 +229,17 @@ struct MockMetavariables {
   enum class Phase { Initialize, Exit };
 };
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
-                  "[Unit]") {
-  using metavars = MockMetavariables;
+template <typename MockCallbackType, size_t NumberOfExpectedCleanUpActions>
+void test_interpolation_target_receive_vars() noexcept {
+  using metavars = MockMetavariables<MockCallbackType>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using TupleOfMockDistributedObjects =
-      MockRuntimeSystem::TupleOfMockDistributedObjects;
+      typename MockRuntimeSystem::TupleOfMockDistributedObjects;
   TupleOfMockDistributedObjects dist_objects{};
   using MockDistributedObjectsTagTarget =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          mock_interpolation_target<metavars, metavars::InterpolationTargetA>>;
+          mock_interpolation_target<metavars,
+                                    typename metavars::InterpolationTargetA>>;
   using MockDistributedObjectsTagInterpolator =
       typename MockRuntimeSystem::template MockDistributedObjectsTag<
           mock_interpolator<metavars>>;
@@ -231,39 +252,39 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
   // Set databox to contain two temporal_ids and a vars of num_points points.
   tuples::get<MockDistributedObjectsTagTarget>(dist_objects)
       .emplace(
-          0,
-          ActionTesting::MockDistributedObject<mock_interpolation_target<
-              metavars, metavars::InterpolationTargetA>>{
-              db::create<
-                  db::get_items<intrp::Actions::InitializeInterpolationTarget<
-                      metavars::InterpolationTargetA>::
-                                    return_tag_list<metavars>>>(
-                  db::item_type<intrp::Tags::IndicesOfFilledInterpPoints>{},
-                  db::item_type<intrp::Tags::TemporalIds<metavars>>{
-                      TimeId(true, 0, Time(slab, Rational(13, 15))),
-                      TimeId(true, 0, Time(slab, Rational(14, 15)))},
-                  domain_creator.create_domain(),
-                  db::item_type<
-                      ::Tags::Variables<metavars::InterpolationTargetA::
-                                            vars_to_interpolate_to_target>>{
-                      num_points})});
+          0, ActionTesting::MockDistributedObject<mock_interpolation_target<
+                 metavars, typename metavars::InterpolationTargetA>>{
+                 db::create<db::get_items<
+                     typename intrp::Actions::InitializeInterpolationTarget<
+                         typename metavars::InterpolationTargetA>::
+                         template return_tag_list<metavars>>>(
+                     db::item_type<intrp::Tags::IndicesOfFilledInterpPoints>{},
+                     db::item_type<typename intrp::Tags::TemporalIds<metavars>>{
+                         TimeId(true, 0, Time(slab, Rational(13, 15))),
+                         TimeId(true, 0, Time(slab, Rational(14, 15)))},
+                     domain_creator.create_domain(),
+                     db::item_type<::Tags::Variables<
+                         typename metavars::InterpolationTargetA::
+                             vars_to_interpolate_to_target>>{num_points})});
 
   tuples::get<MockDistributedObjectsTagInterpolator>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<
-                      mock_interpolator<metavars>>{});
+      .emplace(
+          0,
+          ActionTesting::MockDistributedObject<mock_interpolator<metavars>>{});
 
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
-  runner.simple_action<mock_interpolator<metavars>,
-                       intrp::Actions::InitializeInterpolator>(0);
+  runner.template simple_action<mock_interpolator<metavars>,
+                                intrp::Actions::InitializeInterpolator>(0);
 
   const auto& box_target =
       runner
           .template algorithms<mock_interpolation_target<
-              metavars, metavars::InterpolationTargetA>>()
+              metavars, typename metavars::InterpolationTargetA>>()
           .at(0)
           .template get_databox<typename mock_interpolation_target<
-              metavars, metavars::InterpolationTargetA>::initial_databox>();
+              metavars,
+              typename metavars::InterpolationTargetA>::initial_databox>();
 
   const auto& box_interpolator =
       runner.template algorithms<mock_interpolator<metavars>>()
@@ -273,7 +294,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
 
   // Now set up the vars.
   std::vector<db::item_type<::Tags::Variables<
-      metavars::InterpolationTargetA::vars_to_interpolate_to_target>>>
+      typename metavars::InterpolationTargetA::vars_to_interpolate_to_target>>>
       vars_src;
   std::vector<std::vector<size_t>> global_offsets;
 
@@ -282,8 +303,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
                              const std::vector<double>& lapse_vals,
                              const std::vector<size_t>& offset_vals) {
     vars_src.emplace_back(
-        db::item_type<::Tags::Variables<
-            metavars::InterpolationTargetA::vars_to_interpolate_to_target>>{
+        db::item_type<
+            ::Tags::Variables<typename metavars::InterpolationTargetA::
+                                  vars_to_interpolate_to_target>>{
             lapse_vals.size()});
     global_offsets.emplace_back(offset_vals);
     auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars_src.back());
@@ -295,20 +317,23 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
   add_to_vars_src({{3.0, 6.0}}, {{3, 6}});
   add_to_vars_src({{2.0, 7.0}}, {{2, 7}});
 
-  runner.simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
+  runner.template simple_action<
+      mock_interpolation_target<metavars,
+                                typename metavars::InterpolationTargetA>,
       intrp::Actions::InterpolationTargetReceiveVars<
-          metavars::InterpolationTargetA>>(0, vars_src, global_offsets);
+          typename metavars::InterpolationTargetA>>(0, vars_src,
+                                                    global_offsets);
 
   // It should have interpolated 4 points by now.
   CHECK(db::get<intrp::Tags::IndicesOfFilledInterpPoints>(box_target).size() ==
         4);
 
   // Should be no queued simple action until we get num_points points.
-  CHECK(runner.is_simple_action_queue_empty<
-        mock_interpolation_target<metavars, metavars::InterpolationTargetA>>(
-      0));
-  CHECK(runner.is_simple_action_queue_empty<mock_interpolator<metavars>>(0));
+  CHECK(runner.template is_simple_action_queue_empty<mock_interpolation_target<
+            metavars, typename metavars::InterpolationTargetA>>(0));
+  CHECK(
+      runner.template is_simple_action_queue_empty<mock_interpolator<metavars>>(
+          0));
   CHECK(db::get<intrp::Tags::TemporalIds<metavars>>(box_target).size() == 2);
 
   vars_src.clear();
@@ -317,10 +342,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
                   {{1, 6}});  // 6 is repeated, point will be ignored.
   add_to_vars_src({{8.0, 0.0, 4.0}}, {{8, 0, 4}});
 
-  runner.simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
+  runner.template simple_action<
+      mock_interpolation_target<metavars,
+                                typename metavars::InterpolationTargetA>,
       intrp::Actions::InterpolationTargetReceiveVars<
-          metavars::InterpolationTargetA>>(0, vars_src, global_offsets);
+          typename metavars::InterpolationTargetA>>(0, vars_src,
+                                                    global_offsets);
 
   // It should have interpolated 8 points by now. (The ninth point had
   // a repeated global_offsets so it should be ignored)
@@ -328,10 +355,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
         8);
 
   // Should be no queued simple action until we have added 10 points.
-  CHECK(runner.is_simple_action_queue_empty<
-        mock_interpolation_target<metavars, metavars::InterpolationTargetA>>(
-      0));
-  CHECK(runner.is_simple_action_queue_empty<mock_interpolator<metavars>>(0));
+  CHECK(runner.template is_simple_action_queue_empty<mock_interpolation_target<
+            metavars, typename metavars::InterpolationTargetA>>(0));
+  CHECK(
+      runner.template is_simple_action_queue_empty<mock_interpolator<metavars>>(
+          0));
 
   vars_src.clear();
   global_offsets.clear();
@@ -339,42 +367,69 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
 
   // This will call InterpolationTargetA::post_interpolation_callback
   // where we check that the points are correct.
-  runner.simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
+  runner.template simple_action<
+      mock_interpolation_target<metavars,
+                                typename metavars::InterpolationTargetA>,
       intrp::Actions::InterpolationTargetReceiveVars<
-          metavars::InterpolationTargetA>>(0, vars_src, global_offsets);
+          typename metavars::InterpolationTargetA>>(0, vars_src,
+                                                    global_offsets);
 
   // It should have interpolated all the points by now.
   CHECK(db::get<intrp::Tags::IndicesOfFilledInterpPoints>(box_target).size() ==
         num_points);
 
-  // Now there should be a queued simple action, which is
-  // CleanUpInterpolator, which here we mock.
-  runner.invoke_queued_simple_action<mock_interpolator<metavars>>(0);
+  if (NumberOfExpectedCleanUpActions == 0) {
+    // We called the function without cleanup, as a test, so there should
+    // be no queued simple actions (tested below outside the if-else).
 
-  // Check that MockCleanUpInterpolator was called.  It resets the
-  // (fake) number of elements, specifically so we can test it here.
-  CHECK(db::get<intrp::Tags::NumberOfElements>(box_interpolator) == 1);
+    // Check that MockCleanUpInterpolator was NOT called.  If called, it resets
+    // the (fake) number of elements, specifically so we can test it here.
+    CHECK(db::get<intrp::Tags::NumberOfElements>(box_interpolator) == 0);
 
-  // Also, there should be only 1 TemporalId left.
-  CHECK(db::get<intrp::Tags::TemporalIds<metavars>>(box_target).size() == 1);
+    // Also, there should be 2 TemporalIds left because we did not
+    // clean up one of them.
+    CHECK(db::get<intrp::Tags::TemporalIds<metavars>>(box_target).size() == 2);
 
-  // And there is yet one more simple action, compute_target_points,
-  // which here we mock just to check that it is called.
-  runner.invoke_queued_simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>>(0);
+  } else {
+    // This is the (usual) case where we want a cleanup.
 
-  // Check that MockComputeTargetPoints was called.
-  // It sets a (fake) value of IndicesOfFilledInterpPoints for the express
-  // purpose of this check.
-  CHECK(db::get<intrp::Tags::IndicesOfFilledInterpPoints>(box_target).size() ==
+    // Now there should be a queued simple action, which is
+    // CleanUpInterpolator, which here we mock.
+    runner.template invoke_queued_simple_action<mock_interpolator<metavars>>(0);
+
+    // Check that MockCleanUpInterpolator was called.  It resets the
+    // (fake) number of elements, specifically so we can test it here.
+    CHECK(db::get<intrp::Tags::NumberOfElements>(box_interpolator) == 1);
+
+    // Also, there should be only 1 TemporalId left.
+    CHECK(db::get<intrp::Tags::TemporalIds<metavars>>(box_target).size() == 1);
+
+    // And there is yet one more simple action, compute_target_points,
+    // which here we mock just to check that it is called.
+    runner.template invoke_queued_simple_action<mock_interpolation_target<
+        metavars, typename metavars::InterpolationTargetA>>(0);
+
+    // Check that MockComputeTargetPoints was called.
+    // It sets a (fake) value of IndicesOfFilledInterpPoints for the express
+    // purpose of this check.
+    CHECK(
+        db::get<intrp::Tags::IndicesOfFilledInterpPoints>(box_target).size() ==
         num_points + 1);
+  }
 
   // There should be no more queued actions; verify this.
-  CHECK(runner.is_simple_action_queue_empty<
-        mock_interpolation_target<metavars, metavars::InterpolationTargetA>>(
-      0));
-  CHECK(runner.is_simple_action_queue_empty<mock_interpolator<metavars>>(0));
+  CHECK(runner.template is_simple_action_queue_empty<mock_interpolation_target<
+            metavars, typename metavars::InterpolationTargetA>>(0));
+  CHECK(
+      runner.template is_simple_action_queue_empty<mock_interpolator<metavars>>(
+          0));
+}
+
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
+                  "[Unit]") {
+  test_interpolation_target_receive_vars<MockPostInterpolationCallback, 1>();
+  test_interpolation_target_receive_vars<MockPostInterpolationCallbackNoCleanup,
+                                         0>();
 }
 
 }  // namespace
