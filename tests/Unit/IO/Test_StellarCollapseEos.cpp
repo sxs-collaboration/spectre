@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <string>
 #include <vector>
 
@@ -10,7 +12,6 @@
 #include "IO/H5/Header.hpp"  // IWYU pragma: keep
 #include "IO/H5/StellarCollapseEos.hpp"
 #include "Informer/InfoFromBuild.hpp"
-#include "tests/Unit/TestingFramework.hpp"
 
 // IWYU pragma: no_include <boost/iterator/iterator_facade.hpp>
 // IWYU pragma: no_include <boost/multi_array.hpp>
