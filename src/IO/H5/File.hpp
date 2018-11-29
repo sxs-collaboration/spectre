@@ -312,6 +312,7 @@ H5File<Access_t>::check_if_object_exists(const std::string& path) const {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
   const bool exists =
+      name_with_extension == "/" or
       H5Lexists(group.id(), name_with_extension.c_str(), H5P_DEFAULT) or
       H5Aexists(group.id(), name_with_extension.c_str());
 #pragma GCC diagnostic pop
