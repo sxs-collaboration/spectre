@@ -12,9 +12,9 @@
 
 namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
-/// Always triggers.
-template <typename KnownTriggers>
-class Always : public Trigger<KnownTriggers> {
+/// Always triggers.  This trigger is automatically registered.
+template <typename TriggerRegistrars = tmpl::list<>>
+class Always : public Trigger<TriggerRegistrars> {
  public:
   /// \cond
   explicit Always(CkMigrateMessage* /*unused*/) noexcept {}
@@ -33,9 +33,9 @@ class Always : public Trigger<KnownTriggers> {
 };
 
 /// \ingroup EventsAndTriggersGroup
-/// Negates another trigger
-template <typename KnownTriggers>
-class Not : public Trigger<KnownTriggers> {
+/// Negates another trigger.  This trigger is automatically registered.
+template <typename TriggerRegistrars>
+class Not : public Trigger<TriggerRegistrars> {
  public:
   /// \cond
   Not() = default;
@@ -46,7 +46,8 @@ class Not : public Trigger<KnownTriggers> {
 
   static constexpr OptionString help = {"Negates another trigger."};
 
-  explicit Not(std::unique_ptr<Trigger<KnownTriggers>> negated_trigger) noexcept
+  explicit Not(
+      std::unique_ptr<Trigger<TriggerRegistrars>> negated_trigger) noexcept
       : negated_trigger_(std::move(negated_trigger)) {}
 
   using argument_tags = tmpl::list<Tags::DataBox>;
@@ -62,13 +63,14 @@ class Not : public Trigger<KnownTriggers> {
   }
 
  private:
-  std::unique_ptr<Trigger<KnownTriggers>> negated_trigger_;
+  std::unique_ptr<Trigger<TriggerRegistrars>> negated_trigger_;
 };
 
 /// \ingroup EventsAndTriggersGroup
-/// Short-circuiting logical AND of other triggers.
-template <typename KnownTriggers>
-class And : public Trigger<KnownTriggers> {
+/// Short-circuiting logical AND of other triggers.  This trigger is
+/// automatically registered.
+template <typename TriggerRegistrars>
+class And : public Trigger<TriggerRegistrars> {
  public:
   /// \cond
   And() = default;
@@ -80,7 +82,7 @@ class And : public Trigger<KnownTriggers> {
   static constexpr OptionString help = {
       "Short-circuiting logical AND of other triggers."};
 
-  explicit And(std::vector<std::unique_ptr<Trigger<KnownTriggers>>>
+  explicit And(std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>
                    combined_triggers) noexcept
       : combined_triggers_(std::move(combined_triggers)) {}
 
@@ -102,13 +104,14 @@ class And : public Trigger<KnownTriggers> {
   }
 
  private:
-  std::vector<std::unique_ptr<Trigger<KnownTriggers>>> combined_triggers_;
+  std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>> combined_triggers_;
 };
 
 /// \ingroup EventsAndTriggersGroup
-/// Short-circuiting logical OR of other triggers.
-template <typename KnownTriggers>
-class Or : public Trigger<KnownTriggers> {
+/// Short-circuiting logical OR of other triggers.  This trigger is
+/// automatically registered.
+template <typename TriggerRegistrars>
+class Or : public Trigger<TriggerRegistrars> {
  public:
   /// \cond
   Or() = default;
@@ -120,7 +123,7 @@ class Or : public Trigger<KnownTriggers> {
   static constexpr OptionString help = {
       "Short-circuiting logical OR of other triggers."};
 
-  explicit Or(std::vector<std::unique_ptr<Trigger<KnownTriggers>>>
+  explicit Or(std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>
                   combined_triggers) noexcept
       : combined_triggers_(std::move(combined_triggers)) {}
 
@@ -142,43 +145,43 @@ class Or : public Trigger<KnownTriggers> {
   }
 
  private:
-  std::vector<std::unique_ptr<Trigger<KnownTriggers>>> combined_triggers_;
+  std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>> combined_triggers_;
 };
 
 /// \cond
-template <typename KnownTriggers>
-PUP::able::PUP_ID Always<KnownTriggers>::my_PUP_ID = 0;  // NOLINT
-template <typename KnownTriggers>
-PUP::able::PUP_ID Not<KnownTriggers>::my_PUP_ID = 0;  // NOLINT
-template <typename KnownTriggers>
-PUP::able::PUP_ID And<KnownTriggers>::my_PUP_ID = 0;  // NOLINT
-template <typename KnownTriggers>
-PUP::able::PUP_ID Or<KnownTriggers>::my_PUP_ID = 0;  // NOLINT
+template <typename TriggerRegistrars>
+PUP::able::PUP_ID Always<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
+template <typename TriggerRegistrars>
+PUP::able::PUP_ID Not<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
+template <typename TriggerRegistrars>
+PUP::able::PUP_ID And<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
+template <typename TriggerRegistrars>
+PUP::able::PUP_ID Or<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Triggers
 
-template <typename KnownTriggers>
-struct create_from_yaml<Triggers::Not<KnownTriggers>> {
-  static Triggers::Not<KnownTriggers> create(const Option& options) {
-    return Triggers::Not<KnownTriggers>(
-        options.parse_as<std::unique_ptr<Trigger<KnownTriggers>>>());
+template <typename TriggerRegistrars>
+struct create_from_yaml<Triggers::Not<TriggerRegistrars>> {
+  static Triggers::Not<TriggerRegistrars> create(const Option& options) {
+    return Triggers::Not<TriggerRegistrars>(
+        options.parse_as<std::unique_ptr<Trigger<TriggerRegistrars>>>());
   }
 };
 
-template <typename KnownTriggers>
-struct create_from_yaml<Triggers::And<KnownTriggers>> {
-  static Triggers::And<KnownTriggers> create(const Option& options) {
-    return Triggers::And<KnownTriggers>(
-        options
-            .parse_as<std::vector<std::unique_ptr<Trigger<KnownTriggers>>>>());
+template <typename TriggerRegistrars>
+struct create_from_yaml<Triggers::And<TriggerRegistrars>> {
+  static Triggers::And<TriggerRegistrars> create(const Option& options) {
+    return Triggers::And<TriggerRegistrars>(
+        options.parse_as<
+            std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>>());
   }
 };
 
-template <typename KnownTriggers>
-struct create_from_yaml<Triggers::Or<KnownTriggers>> {
-  static Triggers::Or<KnownTriggers> create(const Option& options) {
-    return Triggers::Or<KnownTriggers>(
-        options
-            .parse_as<std::vector<std::unique_ptr<Trigger<KnownTriggers>>>>());
+template <typename TriggerRegistrars>
+struct create_from_yaml<Triggers::Or<TriggerRegistrars>> {
+  static Triggers::Or<TriggerRegistrars> create(const Option& options) {
+    return Triggers::Or<TriggerRegistrars>(
+        options.parse_as<
+            std::vector<std::unique_ptr<Trigger<TriggerRegistrars>>>>());
   }
 };

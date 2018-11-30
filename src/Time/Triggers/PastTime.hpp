@@ -8,6 +8,7 @@
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Options/Options.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Triggers {
@@ -16,8 +17,8 @@ namespace Triggers {
 /// Trigger when the simulation is past a certain time (after that
 /// time if time is running forward, before that time if time is
 /// running backward).
-template <typename KnownTriggers>
-class PastTime : public Trigger<KnownTriggers> {
+template <typename TriggerRegistrars = tmpl::list<>>
+class PastTime : public Trigger<TriggerRegistrars> {
  public:
   /// \cond
   PastTime() = default;
@@ -52,15 +53,19 @@ class PastTime : public Trigger<KnownTriggers> {
   double trigger_time_{std::numeric_limits<double>::signaling_NaN()};
 };
 
+namespace Registrars {
+using PastTime = Registration::Registrar<Triggers::PastTime>;
+}  // namespace Registrars
+
 /// \cond
-template <typename KnownTriggers>
-PUP::able::PUP_ID PastTime<KnownTriggers>::my_PUP_ID = 0;  // NOLINT
+template <typename TriggerRegistrars>
+PUP::able::PUP_ID PastTime<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Triggers
 
-template <typename KnownTriggers>
-struct create_from_yaml<Triggers::PastTime<KnownTriggers>> {
-  static Triggers::PastTime<KnownTriggers> create(const Option& options) {
-    return Triggers::PastTime<KnownTriggers>(options.parse_as<double>());
+template <typename TriggerRegistrars>
+struct create_from_yaml<Triggers::PastTime<TriggerRegistrars>> {
+  static Triggers::PastTime<TriggerRegistrars> create(const Option& options) {
+    return Triggers::PastTime<TriggerRegistrars>(options.parse_as<double>());
   }
 };
