@@ -3,7 +3,9 @@
 
 #pragma once
 
+#include <array>
 #include <limits>
+#include <string>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
@@ -27,37 +29,69 @@ namespace Solutions {
 
 /*!
  * \brief Circularly polarized Alfv&eacute;n wave solution in Minkowski
- * spacetime travelling in the z-direction.
+ * spacetime travelling along a background magnetic field.
  *
- * An analytic solution to the 3-D GrMhd system. The user specifies the
- * wavenumber \f$k_z\f$ of the Alfv&eacute;n wave, the constant pressure
+ * An analytic solution to the 3-D GRMHD system. The user specifies the
+ * wavenumber \f$k\f$ of the Alfv&eacute;n wave, the constant pressure
  * throughout the fluid \f$P\f$, the constant rest mass density throughout the
  * fluid \f$\rho_0\f$, the adiabatic index for the ideal fluid equation of
- * state \f$\gamma\f$, the background magnetic field strength \f$B_0\f$,
- * and the strength of the perturbation of the magnetic field \f$B_1\f$.
- * The Alfv&eacute;n wave phase speed is then given by:
+ * state \f$\gamma\f$, the magnetic field parallel to the wavevector
+ * \f$\vec{B}_0\f$, and the transverse magnetic field vector \f$\vec{B}_1\f$ at
+ * \f$x=y=z=t=0\f$.
  *
- * \f[v_A = \frac{B_0}{\sqrt{\rho_0 h + B_0^2}}\f]
+ * We define the auxiliary velocities:
+ * \f[v^2_{B0} = \frac{B_0^2}{\rho_0 h + B_0^2 + B_1^2}\f]
+ * \f[v^2_{B1} = \frac{B_1^2}{\rho_0 h + B_0^2 + B_1^2}\f]
+ *
+ * The Alfv&eacute;n wave phase speed that solves the GRMHD equations, even for
+ * finite amplitudes \ref alfven_ref "[1]", is given by:
+ *
+ * \f[v_A^2 = \frac{2v^2_{B0}}{1 + \sqrt{1 - 4 v^2_{B0}v^2_{B1}}}\f]
  *
  * The amplitude of the fluid velocity is given by:
  *
- * \f[v_f = \frac{-B_1}{\sqrt{\rho_0 h + B_0^2}}\f]
+ * \f[v_f^2 = \frac{2v^2_{B1}}{1 + \sqrt{1 - 4 v^2_{B0}v^2_{B1}}}\f]
  *
+ * The electromagnetic field vectors define a set of basis vectors:
+ *
+ * \f{align*}{
+ * \hat{b}_0 &= \vec{B_0}/B_0 \\
+ * \hat{b}_1 &= \vec{B_1}/B_1 \\
+ * \hat{e} &= \hat{b}_1 \times \hat{b}_0
+ * \f}
+ *
+ * We also define the auxiliary variable for the phase \f$\phi\f$:
+ * \f[\phi = k(\vec{x}\cdot\hat{b}_0 - v_A t)\f]
  * In Cartesian coordinates \f$(x, y, z)\f$, and using
  * dimensionless units, the primitive quantities at a given time \f$t\f$ are
  * then
  *
  * \f{align*}
  * \rho(\vec{x},t) &= \rho_0 \\
- * v_x(\vec{x},t) &= v_f \cos(k_z(z - v_A t))\\
- * v_y(\vec{x},t) &= v_f \sin(k_z(z - v_A t))\\
- * v_z(\vec{x},t) &= 0\\
+ * \vec{v}(\vec{x},t) &= v_f(-\hat{b}_1\cos\phi
+ *  +\hat{e}\sin\phi)\\
  * P(\vec{x},t) &= P, \\
  * \epsilon(\vec{x}, t) &= \frac{P}{(\gamma - 1)\rho_0}\\
- * B_x(\vec{x},t) &= B_1 \cos(k_z(z - v_A t))\\
- * B_y(\vec{x},t) &= B_1 \sin(k_z(z - v_A t))\\
- * B_z(\vec{x},t) &= B_0
+ * \vec{B}(\vec{x},t) &= B_1(\hat{b}_1\cos\phi
+ *  -\hat{e}\sin\phi) + \vec{B_0}
  * \f}
+ *
+ * Note that the phase speed is not the characteristic Alfv&eacute;n speed
+ * \f$c_A\f$, which is the speed in the limiting case where the total magnetic
+ * field is parallel to the direction of propagation \ref alfven_ref "[1]":
+ *
+ * \f[c_A^2 = \frac{b^2}{\rho_0 h + b^2}\f]
+ *
+ * Where \f$b^2\f$ is the invariant quantity \f$B^2 - E^2\f$, given by:
+ *
+ * \f[b^2 = B_0^2 + B_1^2 - B_0^2 v_f^2\f]
+ *
+ * \anchor alfven_ref [1]
+ * L. Del Zanna, O. Zanotti, N. Bucciantini, P. Londrillo, ECHO: an Eulerian
+ * Conservative High Order scheme for general relativistic magnetohydrodynamics
+ * and magnetodynamics. Astronomy & Astrophysics,
+ * [473(1):11–30, 2007](https://arxiv.org/pdf/0704.3206.pdf)
+ *
  */
 class AlfvenWave {
  public:
@@ -94,25 +128,26 @@ class AlfvenWave {
     static type lower_bound() noexcept { return 1.0; }
   };
 
-  /// The strength of the background magnetic field.
-  struct BackgroundMagField {
-    using type = double;
+  /// The background static magnetic field vector.
+  struct BackgroundMagneticField {
+    using type = std::array<double, 3>;
+    static std::string name() noexcept { return "BkgdMagneticField"; }
     static constexpr OptionString help = {
-        "The background magnetic field strength."};
+        "The background magnetic field [B0^x, B0^y, B0^z]."};
   };
 
-  /// The amplitude of the perturbation of the magnetic field.
-  struct PerturbationSize {
-    using type = double;
+  /// The sinusoidal magnetic field vector associated with
+  /// the Alfv&eacute;n wave, perpendicular to the background
+  /// magnetic field vector.
+  struct WaveMagneticField {
+    using type = std::array<double, 3>;
     static constexpr OptionString help = {
-        "The perturbation amplitude of the magnetic field."};
-    static type lower_bound() noexcept { return -1.0; }
-    static type upper_bound() noexcept { return 1.0; }
+        "The wave magnetic field [B1^x, B1^y, B1^z]."};
   };
 
   using options =
       tmpl::list<WaveNumber, Pressure, RestMassDensity, AdiabaticIndex,
-                 BackgroundMagField, PerturbationSize>;
+                 BackgroundMagneticField, WaveMagneticField>;
   static constexpr OptionString help = {
       "Circularly polarized Alfven wave in Minkowski spacetime."};
 
@@ -126,8 +161,8 @@ class AlfvenWave {
   AlfvenWave(WaveNumber::type wavenumber, Pressure::type pressure,
              RestMassDensity::type rest_mass_density,
              AdiabaticIndex::type adiabatic_index,
-             BackgroundMagField::type background_mag_field,
-             PerturbationSize::type perturbation_size) noexcept;
+             BackgroundMagneticField::type background_magnetic_field,
+             WaveMagneticField::type wave_magnetic_field) noexcept;
 
   // @{
   /// Retrieve hydro variable at `(x, t)`
@@ -222,13 +257,22 @@ class AlfvenWave {
       std::numeric_limits<double>::signaling_NaN();
   AdiabaticIndex::type adiabatic_index_ =
       std::numeric_limits<double>::signaling_NaN();
-  BackgroundMagField::type background_mag_field_ =
-      std::numeric_limits<double>::signaling_NaN();
-  PerturbationSize::type perturbation_size_ =
-      std::numeric_limits<double>::signaling_NaN();
+  BackgroundMagneticField::type background_magnetic_field_{
+      {std::numeric_limits<double>::signaling_NaN()}};
+  WaveMagneticField::type wave_magnetic_field_{
+      {std::numeric_limits<double>::signaling_NaN()}};
+  EquationsOfState::IdealFluid<true> equation_of_state_{};
+  tnsr::I<double, 3, Frame::Inertial>
+      initial_unit_vector_along_background_magnetic_field_{};
+  tnsr::I<double, 3, Frame::Inertial>
+      initial_unit_vector_along_wave_magnetic_field_{};
+  tnsr::I<double, 3, Frame::Inertial>
+      initial_unit_vector_along_wave_electric_field_{};
+  double magnitude_B0_ = std::numeric_limits<double>::signaling_NaN();
+  double magnitude_B1_ = std::numeric_limits<double>::signaling_NaN();
+  double magnitude_E_ = std::numeric_limits<double>::signaling_NaN();
   double alfven_speed_ = std::numeric_limits<double>::signaling_NaN();
   double fluid_speed_ = std::numeric_limits<double>::signaling_NaN();
-  EquationsOfState::IdealFluid<true> equation_of_state_{};
   gr::Solutions::Minkowski<3> background_spacetime_{};
 };
 

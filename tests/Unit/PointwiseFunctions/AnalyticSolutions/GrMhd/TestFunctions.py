@@ -60,70 +60,88 @@ def smooth_flow_divergence_cleaning_field(x, t, mean_velocity, wave_vector,
 
 # Functions for testing AlfvenWave.cpp
 def alfven_rest_mass_density(x, t, wavenumber, pressure, rest_mass_density,
-                             adiabatic_index, background_mag_field,
-                             perturbation_size):
+                             adiabatic_index, bkgd_magnetic_field,
+                             wave_magnetic_field):
     return rest_mass_density
 
 
 def alfven_spatial_velocity(x, t, wavenumber, pressure, rest_mass_density,
-                            adiabatic_index, background_mag_field,
-                            perturbation_size):
+                            adiabatic_index, bkgd_magnetic_field,
+                            wave_magnetic_field):
+    magnitude_B0 = np.linalg.norm(bkgd_magnetic_field)
+    magnitude_B1 = np.linalg.norm(wave_magnetic_field)
+    unit_B0 = np.array(bkgd_magnetic_field) / magnitude_B0
+    unit_B1 = np.array(wave_magnetic_field) / magnitude_B1
+    unit_E = np.cross(unit_B1, unit_B0)
     rho_zero_times_h = \
      (rest_mass_density + pressure *
       (adiabatic_index)/(adiabatic_index - 1.0))
-    alfven_speed = background_mag_field / \
-     np.sqrt(rho_zero_times_h + background_mag_field ** 2)
-    phase = wavenumber * (x[2] - alfven_speed * t)
-    fluid_velocity = -perturbation_size * alfven_speed / background_mag_field
-    return np.array([fluid_velocity * np.cos(phase), \
-     fluid_velocity * np.sin(phase), 0.0])
+    aux_speed_b0 = magnitude_B0 / \
+     np.sqrt(rho_zero_times_h + magnitude_B0 ** 2 + \
+     magnitude_B1 **2)
+    aux_speed_b1 = magnitude_B1 * aux_speed_b0 / magnitude_B0
+    one_over_speed_denominator = 1.0 / np.sqrt( \
+     0.5 * (1.0 + np.sqrt(1.0 - 4.0 * aux_speed_b0**2 * aux_speed_b1**2)))
+    alfven_speed = aux_speed_b0 * one_over_speed_denominator
+    phase = wavenumber * (np.dot(unit_B0, x) - alfven_speed * t)
+    fluid_velocity = -aux_speed_b1 * one_over_speed_denominator
+    return fluid_velocity * (np.cos(phase) * unit_B1 - np.sin(phase) * unit_E)
 
 
 def alfven_specific_internal_energy(x, t, wavenumber, pressure,
                                     rest_mass_density, adiabatic_index,
-                                    background_mag_field, perturbation_size):
+                                    bkgd_magnetic_field, wave_magnetic_field):
     return pressure / (rest_mass_density * (adiabatic_index - 1.0))
 
 
 def alfven_pressure(x, t, wavenumber, pressure, rest_mass_density,
-                    adiabatic_index, background_mag_field, perturbation_size):
+                    adiabatic_index, bkgd_magnetic_field, wave_magnetic_field):
     return pressure
 
 
 def alfven_specific_enthalpy(x, t, wavenumber, pressure, rest_mass_density,
-                             adiabatic_index, background_mag_field,
-                             perturbation_size):
+                             adiabatic_index, bkgd_magnetic_field,
+                             wave_magnetic_field):
     return 1.0 + adiabatic_index * alfven_specific_internal_energy(
         x, t, wavenumber, pressure, rest_mass_density, adiabatic_index,
-        background_mag_field, perturbation_size)
+        bkgd_magnetic_field, wave_magnetic_field)
 
 
 def alfven_lorentz_factor(x, t, wavenumber, pressure, rest_mass_density,
-                          adiabatic_index, background_mag_field,
-                          perturbation_size):
+                          adiabatic_index, bkgd_magnetic_field,
+                          wave_magnetic_field):
     return 1.0 / np.sqrt(1.0 - np.linalg.norm(
         alfven_spatial_velocity(x, t, wavenumber, pressure, rest_mass_density,
-                                adiabatic_index, background_mag_field,
-                                perturbation_size))**2)
+                                adiabatic_index, bkgd_magnetic_field,
+                                wave_magnetic_field))**2)
 
 
 def alfven_magnetic_field(x, t, wavenumber, pressure, rest_mass_density,
-                          adiabatic_index, background_mag_field,
-                          perturbation_size):
+                          adiabatic_index, bkgd_magnetic_field,
+                          wave_magnetic_field):
+    magnitude_B0 = np.linalg.norm(bkgd_magnetic_field)
+    magnitude_B1 = np.linalg.norm(wave_magnetic_field)
+    unit_B0 = np.array(bkgd_magnetic_field) / magnitude_B0
+    unit_B1 = np.array(wave_magnetic_field) / magnitude_B1
+    unit_E = np.cross(unit_B1, unit_B0)
     rho_zero_times_h = \
      (rest_mass_density + pressure *
       (adiabatic_index)/(adiabatic_index - 1.0))
-    alfven_speed = background_mag_field / \
-     np.sqrt(rho_zero_times_h + background_mag_field ** 2)
-    phase = wavenumber * (x[2] - alfven_speed * t)
-    fluid_velocity = -perturbation_size * alfven_speed / background_mag_field
-    return np.array([perturbation_size * np.cos(phase), \
-     perturbation_size * np.sin(phase), background_mag_field])
+    aux_speed_b0 = magnitude_B0 / \
+     np.sqrt(rho_zero_times_h + magnitude_B0 ** 2 + \
+     magnitude_B1 ** 2)
+    aux_speed_b1 = magnitude_B1 * aux_speed_b0 / magnitude_B0
+    one_over_speed_denominator = 1.0 / np.sqrt( \
+     0.5 * (1.0 + np.sqrt(1.0 - 4.0 * aux_speed_b0**2 * aux_speed_b1 **2)))
+    alfven_speed = aux_speed_b0 * one_over_speed_denominator
+    phase = wavenumber * (np.dot(unit_B0, x) - alfven_speed * t)
+    return np.array(bkgd_magnetic_field) + \
+      magnitude_B1 * (np.cos(phase) * unit_B1 - np.sin(phase) * unit_E)
 
 
 def alfven_divergence_cleaning_field(x, t, wavenumber, pressure,
                                      rest_mass_density, adiabatic_index,
-                                     background_mag_field, perturbation_size):
+                                     bkgd_magnetic_field, wave_magnetic_field):
     return 0.0
 
 
