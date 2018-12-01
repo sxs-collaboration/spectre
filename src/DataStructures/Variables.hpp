@@ -6,9 +6,15 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cstdlib>
+#include <limits>
 #include <memory>
+#include <ostream>
+#include <pup.h>
 #include <string>
 
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
@@ -16,11 +22,16 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeSignalingNan.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+// IWYU pragma: no_forward_declare MakeWithValueImpl
+// IWYU pragma: no_forward_declare Variables
 
 /// \cond
 template <typename X, typename Symm, typename IndexList>
@@ -51,11 +62,6 @@ struct Variables : db::SimpleTag {
   }
 };
 }  // namespace Tags
-
-/// \cond
-template <typename TagsList>
-class Variables;
-/// \endcond
 
 /*!
  * \ingroup DataStructuresGroup
@@ -90,17 +96,46 @@ class Variables;
 template <typename... Tags>
 class Variables<tmpl::list<Tags...>> {
  public:
-  using value_type = double;
-  using allocator_type = std::allocator<value_type>;
   using size_type = size_t;
   using difference_type = std::ptrdiff_t;
   static constexpr auto transpose_flag = blaze::defaultTransposeFlag;
-  using pointer_type =
-      PointerVector<double, blaze_unaligned, blaze::unpadded, transpose_flag,
-                    blaze::DynamicVector<double, transpose_flag>>;
 
   /// A typelist of the Tags whose variables are held
   using tags_list = tmpl::list<Tags...>;
+  static_assert(sizeof...(Tags) > 0,
+                "You must provide at least one tag to the Variables "
+                "for type inference");
+
+  static_assert(
+      tmpl2::flat_all_v<
+          cpp17::is_same_v<typename Tags::type::type,
+                           typename tmpl::front<tags_list>::type::type>...>,
+      "All tensors stored in a single Variables must "
+      "have the same internal storage type.");
+
+  static_assert(
+      tmpl2::flat_all_v<cpp17::is_same_v<
+          cpp17::void_t<typename Tags::type::type::value_type>, void>...>,
+      "The tensor stored in a Variables must have as member `type` "
+      "a vector with a member `value_type` (e.g. Tensors of doubles are "
+      "disallowed, use instead a Tensor of DataVectors).");
+
+  using vector_type = typename tmpl::front<tags_list>::type::type;
+  using value_type = typename vector_type::value_type;
+  using allocator_type = std::allocator<value_type>;
+  using pointer_type =
+      PointerVector<value_type, blaze::unaligned, blaze::unpadded,
+                    transpose_flag,
+                    blaze::DynamicVector<value_type, transpose_flag>>;
+
+  static_assert(
+      cpp17::is_fundamental_v<value_type> or
+          tt::is_a_v<std::complex, value_type>,
+      "`value_type` of the Variables (so the storage type of the vector type "
+      "within the tensors in the Variables) must be either a fundamental type "
+      "or a std::complex. If this constraint is relaxed, the value_type "
+      "should be handled differently in the Variables, including pass by "
+      "reference.");
 
   /// The number of variables of the Variables object is holding. E.g.
   /// \f$\psi_{ab}\f$ would be counted as one variable.
@@ -132,7 +167,7 @@ class Variables<tmpl::list<Tags...>> {
 
   explicit Variables(size_t number_of_grid_points) noexcept;
 
-  Variables(size_t number_of_grid_points, double value) noexcept;
+  Variables(size_t number_of_grid_points, value_type value) noexcept;
 
   Variables(Variables&& rhs) noexcept = default;
   Variables& operator=(Variables&& rhs) noexcept;
@@ -173,8 +208,10 @@ class Variables<tmpl::list<Tags...>> {
   // @{
   /// Initialize a Variables to the state it would have after calling
   /// the constructor with the same arguments.
+  // this should be updated if we ever use a variables which has a `value_type`
+  // larger than ~2 doubles in size.
   void initialize(size_t number_of_grid_points) noexcept;
-  void initialize(size_t number_of_grid_points, double value) noexcept;
+  void initialize(size_t number_of_grid_points, value_type value) noexcept;
   // @}
 
   constexpr SPECTRE_ALWAYS_INLINE size_t number_of_grid_points() const
@@ -189,8 +226,8 @@ class Variables<tmpl::list<Tags...>> {
 
   //{@
   /// Access pointer to underlying data
-  double* data() noexcept { return variable_data_.data(); }
-  const double* data() const noexcept { return variable_data_.data(); }
+  value_type* data() noexcept { return variable_data_.data(); }
+  const value_type* data() const noexcept { return variable_data_.data(); }
   //@}
 
   /// \cond HIDDEN_SYMBOLS
@@ -204,10 +241,10 @@ class Variables<tmpl::list<Tags...>> {
 
   // clang-tidy: redundant-declaration
   template <typename Tag, typename TagList>
-  friend constexpr typename Tag::type& get(Variables<TagList>& v)  // NOLINT
-      noexcept;
+  friend constexpr typename Tag::type& get(  // NOLINT
+      Variables<TagList>& v) noexcept;
   template <typename Tag, typename TagList>
-  friend constexpr const typename Tag::type& get(  //  NOLINT
+  friend constexpr const typename Tag::type& get(  // NOLINT
       const Variables<TagList>& v) noexcept;
 
   /// Serialization for Charm++.
@@ -225,8 +262,8 @@ class Variables<tmpl::list<Tags...>> {
                 tmpl::list<Tags...>, SubsetOfTags>...>> = nullptr>
   void assign_subset(
       const Variables<tmpl::list<SubsetOfTags...>>& vars) noexcept {
-    (void)std::initializer_list<char>{
-        (get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars), '0')...};
+    EXPAND_PACK_LEFT_TO_RIGHT(
+        (get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars)));
   }
 
   template <typename... SubsetOfTags,
@@ -234,8 +271,8 @@ class Variables<tmpl::list<Tags...>> {
                 tmpl::list<Tags...>, SubsetOfTags>...>> = nullptr>
   void assign_subset(
       const tuples::TaggedTuple<SubsetOfTags...>& vars) noexcept {
-    (void)std::initializer_list<char>{
-        (get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars), '0')...};
+    EXPAND_PACK_LEFT_TO_RIGHT(
+        (get<SubsetOfTags>(*this) = get<SubsetOfTags>(vars)));
   }
   // @}
 
@@ -279,12 +316,12 @@ class Variables<tmpl::list<Tags...>> {
     return *this;
   }
 
-  SPECTRE_ALWAYS_INLINE Variables& operator*=(const double& rhs) noexcept {
+  SPECTRE_ALWAYS_INLINE Variables& operator*=(const value_type& rhs) noexcept {
     variable_data_ *= rhs;
     return *this;
   }
 
-  SPECTRE_ALWAYS_INLINE Variables& operator/=(const double& rhs) noexcept {
+  SPECTRE_ALWAYS_INLINE Variables& operator/=(const value_type& rhs) noexcept {
     variable_data_ /= rhs;
     return *this;
   }
@@ -330,16 +367,16 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator*(
-      const Variables& lhs, const double& rhs) noexcept {
+      const Variables& lhs, const value_type& rhs) noexcept {
     return lhs.variable_data_ * rhs;
   }
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator*(
-      const double& lhs, const Variables& rhs) noexcept {
+      const value_type& lhs, const Variables& rhs) noexcept {
     return lhs * rhs.variable_data_;
   }
 
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator/(
-      const Variables& lhs, const double& rhs) noexcept {
+      const Variables& lhs, const value_type& rhs) noexcept {
     return lhs.variable_data_ / rhs;
   }
 
@@ -356,10 +393,10 @@ class Variables<tmpl::list<Tags...>> {
    *
    *  \requires `i >= 0 and i < size()`
    */
-  SPECTRE_ALWAYS_INLINE double& operator[](const size_type i) noexcept {
+  SPECTRE_ALWAYS_INLINE value_type& operator[](const size_type i) noexcept {
     return variable_data_[i];
   }
-  SPECTRE_ALWAYS_INLINE const double& operator[](const size_type i) const
+  SPECTRE_ALWAYS_INLINE const value_type& operator[](const size_type i) const
       noexcept {
     return variable_data_[i];
   }
@@ -367,10 +404,6 @@ class Variables<tmpl::list<Tags...>> {
 
   static SPECTRE_ALWAYS_INLINE void add_reference_variable_data(
       tmpl::list<> /*unused*/, const size_t /*variable_offset*/ = 0) noexcept {
-    ASSERT(sizeof...(Tags) > 0,
-           "This ASSERT is triggered if you try to construct a Variables "
-           "with no Tags. A Variables with no Tags is a valid type, but "
-           "cannot be used in a meaningful way.");
   }
 
   template <
@@ -386,8 +419,8 @@ class Variables<tmpl::list<Tags...>> {
   template <class FriendTags>
   friend class Variables;
 
-  std::unique_ptr<double[], decltype(&free)> variable_data_impl_{nullptr,
-                                                                 &free};
+  std::unique_ptr<value_type[], decltype(&free)> variable_data_impl_{nullptr,
+                                                                     &free};
   size_t size_ = 0;
   size_t number_of_grid_points_ = 0;
 
@@ -418,7 +451,7 @@ Variables<tmpl::list<Tags...>>::Variables(
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables(const size_t number_of_grid_points,
-                                          const double value) noexcept {
+                                          const value_type value) noexcept {
   initialize(number_of_grid_points, value);
 }
 
@@ -428,13 +461,13 @@ void Variables<tmpl::list<Tags...>>::initialize(
   size_ = number_of_grid_points * number_of_independent_components;
   if (size_ > 0) {
     // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<double*>(
+    variable_data_impl_.reset(static_cast<value_type*>(
         malloc(number_of_grid_points *  // NOLINT
-               number_of_independent_components * sizeof(double))));
+               number_of_independent_components * sizeof(value_type))));
     number_of_grid_points_ = number_of_grid_points;
 #if defined(SPECTRE_DEBUG) || defined(SPECTRE_NAN_INIT)
     std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
-              std::numeric_limits<double>::signaling_NaN());
+              make_signaling_NaN<value_type>());
 #endif  // SPECTRE_DEBUG
     variable_data_.reset(variable_data_impl_.get(), size_);
     add_reference_variable_data(tmpl::list<Tags...>{});
@@ -443,13 +476,13 @@ void Variables<tmpl::list<Tags...>>::initialize(
 
 template <typename... Tags>
 void Variables<tmpl::list<Tags...>>::initialize(
-    const size_t number_of_grid_points, const double value) noexcept {
+    const size_t number_of_grid_points, const value_type value) noexcept {
   size_ = number_of_grid_points * number_of_independent_components;
   if (size_ > 0) {
     // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<double*>(
+    variable_data_impl_.reset(static_cast<value_type*>(
         malloc(number_of_grid_points *  // NOLINT
-               number_of_independent_components * sizeof(double))));
+               number_of_independent_components * sizeof(value_type))));
     number_of_grid_points_ = number_of_grid_points;
     std::fill(variable_data_impl_.get(), variable_data_impl_.get() + size_,
               value);
@@ -465,8 +498,8 @@ Variables<tmpl::list<Tags...>>::Variables(
     : size_(rhs.size_), number_of_grid_points_(rhs.number_of_grid_points()) {
   if (size_ > 0) {
     // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(
-        static_cast<double*>(malloc(size_ * sizeof(double))));  // NOLINT
+    variable_data_impl_.reset(static_cast<value_type*>(
+        malloc(size_ * sizeof(value_type))));  // NOLINT
     variable_data_.reset(variable_data_impl_.get(), size_);
     add_reference_variable_data(tmpl::list<Tags...>{});
     variable_data_ =
@@ -486,8 +519,8 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     number_of_grid_points_ = rhs.number_of_grid_points();
     if (size_ > 0) {
       // clang-tidy: cppcoreguidelines-no-malloc
-      variable_data_impl_.reset(
-          static_cast<double*>(malloc(size_ * sizeof(double))));  // NOLINT
+      variable_data_impl_.reset(static_cast<value_type*>(
+          malloc(size_ * sizeof(value_type))));  // NOLINT
       variable_data_.reset(variable_data_impl_.get(), size_);
       add_reference_variable_data(tmpl::list<Tags...>{});
     }
@@ -523,8 +556,8 @@ Variables<tmpl::list<Tags...>>::Variables(
     : size_(rhs.size_), number_of_grid_points_(rhs.number_of_grid_points()) {
   if (size_ > 0) {
     // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(
-        static_cast<double*>(malloc(size_ * sizeof(double))));  // NOLINT
+    variable_data_impl_.reset(static_cast<value_type*>(
+        malloc(size_ * sizeof(value_type))));  // NOLINT
     variable_data_.reset(variable_data_impl_.get(), size_);
     variable_data_ =
         static_cast<const blaze::Vector<pointer_type, transpose_flag>&>(
@@ -544,8 +577,8 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     number_of_grid_points_ = rhs.number_of_grid_points();
     if (size_ > 0) {
       // clang-tidy: cppcoreguidelines-no-malloc
-      variable_data_impl_.reset(
-          static_cast<double*>(malloc(size_ * sizeof(double))));  // NOLINT
+      variable_data_impl_.reset(static_cast<value_type*>(
+          malloc(size_ * sizeof(value_type))));  // NOLINT
       variable_data_.reset(variable_data_impl_.get(), size_);
       add_reference_variable_data(tmpl::list<Tags...>{});
     }
@@ -589,9 +622,9 @@ void Variables<tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
   p | number_of_grid_points_;
   if (p.isUnpacking()) {
     // clang-tidy: cppcoreguidelines-no-malloc
-    variable_data_impl_.reset(static_cast<double*>(
+    variable_data_impl_.reset(static_cast<value_type*>(
         malloc(number_of_grid_points_ *  // NOLINT
-               number_of_independent_components * sizeof(double))));
+               number_of_independent_components * sizeof(value_type))));
     variable_data_.reset(variable_data_impl_.get(), size());
     add_reference_variable_data(tmpl::list<Tags...>{});
   }
@@ -677,13 +710,15 @@ void Variables<tmpl::list<Tags...>>::add_reference_variable_data(
 /// \endcond
 
 template <typename... Tags>
-Variables<tmpl::list<Tags...>>& operator*=(Variables<tmpl::list<Tags...>>& lhs,
-                                           const DataVector& rhs) noexcept {
+Variables<tmpl::list<Tags...>>& operator*=(
+    Variables<tmpl::list<Tags...>>& lhs,
+    const typename Variables<tmpl::list<Tags...>>::vector_type& rhs) noexcept {
+  using value_type = typename Variables<tmpl::list<Tags...>>::value_type;
   ASSERT(lhs.number_of_grid_points() == rhs.size(),
          "Size mismatch in multiplication: " << lhs.number_of_grid_points()
                                              << " and " << rhs.size());
-  double* const lhs_data = lhs.data();
-  const double* const rhs_data = rhs.data();
+  value_type* const lhs_data = lhs.data();
+  const value_type* const rhs_data = rhs.data();
   for (size_t c = 0; c < lhs.number_of_independent_components; ++c) {
     for (size_t s = 0; s < lhs.number_of_grid_points(); ++s) {
       // clang-tidy: do not use pointer arithmetic
@@ -695,7 +730,8 @@ Variables<tmpl::list<Tags...>>& operator*=(Variables<tmpl::list<Tags...>>& lhs,
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>> operator*(
-    const Variables<tmpl::list<Tags...>>& lhs, const DataVector& rhs) noexcept {
+    const Variables<tmpl::list<Tags...>>& lhs,
+    const typename Variables<tmpl::list<Tags...>>::vector_type& rhs) noexcept {
   auto result = lhs;
   result *= rhs;
   return result;
@@ -703,20 +739,23 @@ Variables<tmpl::list<Tags...>> operator*(
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>> operator*(
-    const DataVector& lhs, const Variables<tmpl::list<Tags...>>& rhs) noexcept {
+    const typename Variables<tmpl::list<Tags...>>::vector_type& lhs,
+    const Variables<tmpl::list<Tags...>>& rhs) noexcept {
   auto result = rhs;
   result *= lhs;
   return result;
 }
 
 template <typename... Tags>
-Variables<tmpl::list<Tags...>>& operator/=(Variables<tmpl::list<Tags...>>& lhs,
-                                           const DataVector& rhs) noexcept {
+Variables<tmpl::list<Tags...>>& operator/=(
+    Variables<tmpl::list<Tags...>>& lhs,
+    const typename Variables<tmpl::list<Tags...>>::vector_type& rhs) noexcept {
   ASSERT(lhs.number_of_grid_points() == rhs.size(),
          "Size mismatch in multiplication: " << lhs.number_of_grid_points()
                                              << " and " << rhs.size());
-  double* const lhs_data = lhs.data();
-  const double* const rhs_data = rhs.data();
+  using value_type = typename Variables<tmpl::list<Tags...>>::value_type;
+  value_type* const lhs_data = lhs.data();
+  const value_type* const rhs_data = rhs.data();
   for (size_t c = 0; c < lhs.number_of_independent_components; ++c) {
     for (size_t s = 0; s < lhs.number_of_grid_points(); ++s) {
       // clang-tidy: do not use pointer arithmetic
@@ -728,7 +767,8 @@ Variables<tmpl::list<Tags...>>& operator/=(Variables<tmpl::list<Tags...>>& lhs,
 
 template <typename... Tags>
 Variables<tmpl::list<Tags...>> operator/(
-    const Variables<tmpl::list<Tags...>>& lhs, const DataVector& rhs) noexcept {
+    const Variables<tmpl::list<Tags...>>& lhs,
+    const typename Variables<tmpl::list<Tags...>>::vector_type& rhs) noexcept {
   auto result = lhs;
   result /= rhs;
   return result;
@@ -773,22 +813,27 @@ bool operator!=(const Variables<TagsList>& lhs,
 
 namespace MakeWithValueImpls {
 template <typename TagList>
-struct MakeWithValueImpl<Variables<TagList>, DataVector> {
-  /// \brief Returns a Variables whose DataVectors are the same size as `input`,
+struct MakeWithValueImpl<Variables<TagList>,
+                         typename Variables<TagList>::vector_type> {
+  /// \brief Returns a Variables whose vectors are the same size as `input`,
   /// with each element equal to `value`.
   static SPECTRE_ALWAYS_INLINE Variables<TagList> apply(
-      const DataVector& input, const double value) noexcept {
+      const typename Variables<TagList>::vector_type& input,
+      const typename Variables<TagList>::value_type value) noexcept {
     return Variables<TagList>(input.size(), value);
   }
 };
 
 template <typename TagList, typename... Structure>
-struct MakeWithValueImpl<Variables<TagList>, Tensor<DataVector, Structure...>> {
+struct MakeWithValueImpl<
+    Variables<TagList>,
+    Tensor<typename Variables<TagList>::vector_type, Structure...>> {
   /// \brief Returns a Variables whose DataVectors are the same size as `input`,
   /// with each element equal to `value`.
   static SPECTRE_ALWAYS_INLINE Variables<TagList> apply(
-      const Tensor<DataVector, Structure...>& input,
-      const double value) noexcept {
+      const Tensor<typename Variables<TagList>::vector_type, Structure...>&
+          input,
+      const typename Variables<TagList>::value_type value) noexcept {
     return Variables<TagList>(input.begin()->size(), value);
   }
 };
@@ -798,7 +843,8 @@ struct MakeWithValueImpl<Variables<TagListOut>, Variables<TagListIn>> {
   /// \brief Returns a Variables whose DataVectors are the same size as `input`,
   /// with each element equal to `value`.
   static SPECTRE_ALWAYS_INLINE Variables<TagListOut> apply(
-      const Variables<TagListIn>& input, const double value) noexcept {
+      const Variables<TagListIn>& input,
+      const typename Variables<TagListIn>::value_type value) noexcept {
     return Variables<TagListOut>(input.number_of_grid_points(), value);
   }
 };

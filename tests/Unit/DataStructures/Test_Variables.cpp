@@ -156,9 +156,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
       "T()=(-3)";
   CHECK(get_output(v) == expected_output);
 
-  Variables<tmpl::list<>> empty_vars;
-  CHECK(get_output(empty_vars) == "Variables is empty!");
-
   // Check self-assignment
 #ifndef __APPLE__
 #if defined(__clang__) && __clang_major__ > 6
