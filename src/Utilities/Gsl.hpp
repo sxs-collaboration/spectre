@@ -844,12 +844,6 @@ constexpr ElementType& at(span<ElementType, Extent> s,
   return s[i];
 }
 
-template <class ElementType, std::ptrdiff_t Extent>
-constexpr ElementType& at(span<ElementType, Extent> s, size_t i) {
-  // No bounds checking here because it is done in span::operator[] called below
-  return s[i];
-}
-
 #if __GNUC__ > 6
 #pragma GCC diagnostic pop
 #endif  // __GNUC__ > 6
