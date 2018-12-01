@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_GetOutput.cpp
   Test_Gsl.cpp
   Test_MakeArray.cpp
+  Test_MakeSignalingNan.cpp
   Test_MakeString.cpp
   Test_MakeVector.cpp
   Test_MakeWithValue.cpp
