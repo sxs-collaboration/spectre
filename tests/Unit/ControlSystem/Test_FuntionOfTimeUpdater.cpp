@@ -1,7 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "tests/Unit/ControlSystem/FoTUpdater_Helper.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <algorithm>
@@ -16,6 +15,7 @@
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "Utilities/Gsl.hpp"
+#include "tests/Unit/ControlSystem/FoTUpdater_Helper.hpp"
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionOfTimeUpdater.Translation",
                   "[ControlSystem][Unit]") {
