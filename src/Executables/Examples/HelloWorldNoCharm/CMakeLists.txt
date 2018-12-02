@@ -12,6 +12,7 @@ add_executable(
 target_link_libraries(
   ${EXECUTABLE}
   DataStructures
+  ${YAMLCPP_LIBRARIES}
   )
 
 set_target_properties(
