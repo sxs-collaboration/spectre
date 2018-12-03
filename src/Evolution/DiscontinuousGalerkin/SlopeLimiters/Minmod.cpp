@@ -49,12 +49,8 @@ template <size_t VolumeDim>
 bool limit_one_tensor(
     const gsl::not_null<DataVector*> tensor_begin,
     const gsl::not_null<DataVector*> tensor_end,
-    const gsl::not_null<DataVector*> u_lin,
-    const gsl::not_null<std::array<DataVector, VolumeDim>*>
-        temp_boundary_buffer,
-    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
-                               gsl::span<std::pair<size_t, size_t>>>,
-                     VolumeDim>& volume_and_slice_indices,
+    const gsl::not_null<DataVector*> u_lin_buffer,
+    const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
     const SlopeLimiters::MinmodType& minmod_type, const double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
@@ -70,7 +66,10 @@ bool limit_one_tensor(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         std::array<double, VolumeDim>,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_sizes) noexcept {
+        neighbor_sizes,
+    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
+                               gsl::span<std::pair<size_t, size_t>>>,
+                     VolumeDim>& volume_and_slice_indices) noexcept {
   // True if the mesh is linear-order in every direction
   const bool mesh_is_linear = (mesh.extents() == Index<VolumeDim>(2));
 
@@ -162,11 +161,11 @@ bool limit_one_tensor(
       bool u_needs_limiting = false;
       for (size_t d = 0; d < VolumeDim; ++d) {
         const double u_lower =
-            mean_value_on_boundary(&(gsl::at(*temp_boundary_buffer, d)),
+            mean_value_on_boundary(&(gsl::at(*boundary_buffer, d)),
                                    gsl::at(volume_and_slice_indices, d).first,
                                    u, mesh, d, Side::Lower);
         const double u_upper =
-            mean_value_on_boundary(&(gsl::at(*temp_boundary_buffer, d)),
+            mean_value_on_boundary(&(gsl::at(*boundary_buffer, d)),
                                    gsl::at(volume_and_slice_indices, d).second,
                                    u, mesh, d, Side::Upper);
         const double diff_lower = difference_to_neighbor(d, Side::Lower);
@@ -197,19 +196,19 @@ bool limit_one_tensor(
       }
     }
 
-    linearize(u_lin, u, mesh);
+    linearize(u_lin_buffer, u, mesh);
     bool this_component_was_limited = false;
     auto u_limited_slopes = make_array<VolumeDim>(0.0);
 
     for (size_t d = 0; d < VolumeDim; ++d) {
       const double u_lower =
-          mean_value_on_boundary(&(gsl::at(*temp_boundary_buffer, d)),
+          mean_value_on_boundary(&(gsl::at(*boundary_buffer, d)),
                                  gsl::at(volume_and_slice_indices, d).first,
-                                 *u_lin, mesh, d, Side::Lower);
+                                 *u_lin_buffer, mesh, d, Side::Lower);
       const double u_upper =
-          mean_value_on_boundary(&(gsl::at(*temp_boundary_buffer, d)),
+          mean_value_on_boundary(&(gsl::at(*boundary_buffer, d)),
                                  gsl::at(volume_and_slice_indices, d).second,
-                                 *u_lin, mesh, d, Side::Upper);
+                                 *u_lin_buffer, mesh, d, Side::Upper);
 
       // Divide by element's width (2.0 in logical coordinates) to get a slope
       const double local_slope = 0.5 * (u_upper - u_lower);
@@ -252,9 +251,6 @@ bool limit_one_tensor(
       const gsl::not_null<DataVector*>, const gsl::not_null<DataVector*>, \
       const gsl::not_null<DataVector*>,                                   \
       const gsl::not_null<std::array<DataVector, DIM(data)>*>,            \
-      const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,    \
-                                 gsl::span<std::pair<size_t, size_t>>>,   \
-                       DIM(data)>&,                                       \
       const SlopeLimiters::MinmodType&, const double,                     \
       const Element<DIM(data)>&, const Mesh<DIM(data)>&,                  \
       const tnsr::I<DataVector, DIM(data), Frame::Logical>&,              \
@@ -269,8 +265,11 @@ bool limit_one_tensor(
           maximum_number_of_neighbors(DIM(data)),                         \
           std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>,          \
           std::array<double, DIM(data)>,                                  \
-          boost::hash<std::pair<Direction<DIM(data)>,                     \
-                                ElementId<DIM(data)>>>>&) noexcept;
+          boost::hash<                                                    \
+              std::pair<Direction<DIM(data)>, ElementId<DIM(data)>>>>&,   \
+      const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,    \
+                                 gsl::span<std::pair<size_t, size_t>>>,   \
+                       DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
