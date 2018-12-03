@@ -142,6 +142,7 @@ BINARY_REF_WRAP_OP(+)
 BINARY_REF_WRAP_OP(-)
 BINARY_REF_WRAP_OP(*)
 BINARY_REF_WRAP_OP(/)
+BINARY_REF_WRAP_OP(==)
 
 template <typename T>
 SPECTRE_ALWAYS_INLINE decltype(auto) operator-(

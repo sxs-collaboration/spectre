@@ -83,39 +83,6 @@ class DataVector : public VectorImpl<double, DataVector> {
   MAKE_EXPRESSION_MATH_ASSIGN_PV(/=, DataVector)
 };
 
-/// Equivalence operator for DataVector
-bool operator==(const DataVector& lhs, const DataVector& rhs) noexcept;
-
-/// Inequivalence operator for DataVector
-bool operator!=(const DataVector& lhs, const DataVector& rhs) noexcept;
-
-/// \cond
-// Used for comparing DataVector to an expression
-template <typename VT, bool VF>
-bool operator==(const DataVector& lhs,
-                const blaze::DenseVector<VT, VF>& rhs) noexcept {
-  return lhs == DataVector(rhs);
-}
-
-template <typename VT, bool VF>
-bool operator!=(const DataVector& lhs,
-                const blaze::DenseVector<VT, VF>& rhs) noexcept {
-  return not(lhs == rhs);
-}
-
-template <typename VT, bool VF>
-bool operator==(const blaze::DenseVector<VT, VF>& lhs,
-                const DataVector& rhs) noexcept {
-  return DataVector(lhs) == rhs;
-}
-
-template <typename VT, bool VF>
-bool operator!=(const blaze::DenseVector<VT, VF>& lhs,
-                const DataVector& rhs) noexcept {
-  return not(lhs == rhs);
-}
-/// \endcond
-
 // Specialize the Blaze type traits to correctly handle DataVector
 namespace blaze {
 template <>

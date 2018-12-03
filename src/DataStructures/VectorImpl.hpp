@@ -76,6 +76,37 @@
  * operations on the contained values. The `VectorImpl` template class and the
  * macros defined in `VectorImpl.hpp` assist in the construction of various
  * derived classes supporting a chosen set of mathematical operations.
+ *
+ * In addition, the equivalence ooperator `==` is inherited from the underlying
+ * `PointerVector` type, and returns true if and only if the size and contents
+ * of the two compared vectors are equivalent.
+ *
+ * Template parameters:
+ * - `T` is the underlying stored type, e.g. `double`, `std::complex<double>`,
+     `float`, etc.
+
+ * - `VectorType` is the type that should be associated with the VectorImpl
+ *    during mathematical computations. In most cases, inherited types should
+ *    have themselves as the second template argument, e.g.
+ *  ```
+ *  class DataVector : VectorImpl<double, DataVector> {
+ *  ```
+ *  The second template parameter communicates arithmetic type restrictions to
+ *  the underlying Blaze framework. For example, if `VectorType` is
+ *  `DataVector`, then the underlying architecture will prevent the addition the
+ *  vector type with `ModalVector`. Since `DataVector`s and `ModalVector`s
+ *  represent data in different spaces, we wish to forbid several operations
+ *  between them. This typing tracks the vector type through an expression and
+ *  prevents accidental mixing in math expressions.
+ *
+ * \note
+ * - If created with size 0, then  `data()` will return `nullptr`
+ * - If `SPECTRE_DEBUG` or `SPECTRE_NAN_INIT` macros are defined, then the
+ *   `VectorImpl` is default initialized to `signaling_NaN()`. Otherwise, the
+ *   vector is filled with uninitialized memory for performance.
+ * - Using an object of this type without explicit initialization is undefined
+     behavior unless `SPECTRE_DEBUG` or `SPECTRE_NAN_INIT` is defined (see
+     previous point).
  */
 template <typename T, typename VectorType>
 class VectorImpl
@@ -114,7 +145,10 @@ class VectorImpl
   using BaseType::size;
 
   // @{
-  // Upcast to `BaseType`
+  /// Upcast to `BaseType`
+  /// \attention
+  /// upcast should only be used when implementing a derived vector type, not in
+  /// calling code
   const BaseType& operator~() const noexcept {
     return static_cast<const BaseType&>(*this);
   }
@@ -155,8 +189,8 @@ class VectorImpl
 
   /// Create from an initializer list of doubles. All elements in the
   /// `std::initializer_list` must have decimal points
-  template <class C, Requires<cpp17::is_same_v<C, T>> = nullptr>
-  VectorImpl(std::initializer_list<C> list) noexcept
+  template <class U, Requires<cpp17::is_same_v<U, T>> = nullptr>
+  VectorImpl(std::initializer_list<U> list) noexcept
       : owned_data_(list.size() > 0 ? static_cast<value_type*>(malloc(
                                           list.size() * sizeof(value_type)))
                                     : nullptr,
@@ -187,34 +221,28 @@ class VectorImpl
   VectorImpl(const blaze::DenseVector<VT, VF>& expression) noexcept;  // NOLINT
 
   template <typename VT, bool VF>
-  VectorImpl<T, VectorType>& operator=(
-      const blaze::DenseVector<VT, VF>& expression) noexcept;
+  VectorImpl& operator=(const blaze::DenseVector<VT, VF>& expression) noexcept;
 
   //  declaration for copy constructor
-  VectorImpl<T, VectorType>& operator=(
-      const VectorImpl<T, VectorType>& rhs) noexcept;
+  VectorImpl& operator=(const VectorImpl<T, VectorType>& rhs) noexcept;
 
   // declaration for move constructor
-  VectorImpl<T, VectorType>& operator=(
-      VectorImpl<T, VectorType>&& rhs) noexcept;
+  VectorImpl& operator=(VectorImpl<T, VectorType>&& rhs) noexcept;
   /// \endcond
 
-  // create from a single stored value, which becomes the sole entry.
-  VectorImpl<T, VectorType>& operator=(const T& rhs) noexcept;
+  // The case of assigning a type apart from the same VectorImpl or a
+  // `blaze::DenseVector` forwards the assignment to the `PointerVector` base
+  // type. In the case of a single compatible value, this fills the vector with
+  // that value.
+  VectorImpl& operator=(const T& rhs) noexcept;
 
   // @{
   /// Set the VectorImpl to be a reference to another VectorImpl object
-  template <typename RhsVectorType>
-  void set_data_ref(gsl::not_null<RhsVectorType*> rhs) noexcept {
-    static_assert(
-        cpp17::is_same_v<typename RhsVectorType::ResultType, VectorType>,
-        "You are attempting to assign the pointer of a VectorImpl type "
-        "that is not consistent with the VectorImpl type you are "
-        "assigning to.");
+  void set_data_ref(gsl::not_null<VectorType*> rhs) noexcept {
     set_data_ref(rhs->data(), rhs->size());
   }
 
-  void set_data_ref(T* start, size_t set_size) noexcept {
+  void set_data_ref(T* const start, const size_t set_size) noexcept {
     owned_data_.reset();
     (~*this).reset(start, set_size);
     owning_ = false;
@@ -252,6 +280,27 @@ VectorImpl<T, VectorType>::VectorImpl(
   std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
 }
 
+//  definition for copy constructor
+template <typename T, typename VectorType>
+VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
+    const VectorImpl<T, VectorType>& rhs) noexcept {
+  if (this != &rhs) {
+    if (owning_) {
+      if (size() != rhs.size()) {
+        owned_data_.reset(rhs.size() > 0 ? static_cast<value_type*>(malloc(
+                                               rhs.size() * sizeof(value_type)))
+                                         : nullptr);
+      }
+      reset_pointer_vector(rhs.size());
+    } else {
+      ASSERT(rhs.size() == size(), "Must copy into same size, not "
+                                       << rhs.size() << " into " << size());
+    }
+    std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
+  }
+  return *this;
+}
+
 template <typename T, typename VectorType>
 VectorImpl<T, VectorType>::VectorImpl(
     VectorImpl<T, VectorType>&& rhs) noexcept {
@@ -260,6 +309,26 @@ VectorImpl<T, VectorType>::VectorImpl(
   owning_ = rhs.owning_;
   rhs.owning_ = true;
   rhs.reset();
+}
+
+// definition for move constructor
+template <typename T, typename VectorType>
+VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
+    VectorImpl<T, VectorType>&& rhs) noexcept {
+  if (this != &rhs) {
+    if (owning_) {
+      owned_data_ = std::move(rhs.owned_data_);
+      ~*this = ~rhs; /* PointerVector is trivially copyable */
+      owning_ = rhs.owning_;
+    } else {
+      ASSERT(rhs.size() == size(), "Must copy into same size, not "
+                                       << rhs.size() << " into " << size());
+      std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
+    }
+    rhs.owning_ = true;
+    rhs.reset();
+  }
+  return *this;
 }
 
 /// \cond HIDDEN_SYMBOLS
@@ -305,49 +374,10 @@ VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
 }
 /// \endcond
 
-//  declaration for copy constructor
-template <typename T, typename VectorType>
-VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
-    const VectorImpl<T, VectorType>& rhs) noexcept {
-  if (this != &rhs) {
-    if (owning_) {
-      if (size() != rhs.size()) {
-        owned_data_.reset(rhs.size() > 0 ? static_cast<value_type*>(malloc(
-                                               rhs.size() * sizeof(value_type)))
-                                         : nullptr);
-      }
-      reset_pointer_vector(rhs.size());
-    } else {
-      ASSERT(rhs.size() == size(), "Must copy into same size, not "
-                                       << rhs.size() << " into " << size());
-    }
-    std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
-  }
-  return *this;
-}
-
-// declaration for move constructor
-template <typename T, typename VectorType>
-VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
-    VectorImpl<T, VectorType>&& rhs) noexcept {
-  if (this != &rhs) {
-    if (owning_) {
-      owned_data_ = std::move(rhs.owned_data_);
-      ~*this = ~rhs; /* PointerVector is trivially copyable */
-      owning_ = rhs.owning_;
-    } else {
-      ASSERT(rhs.size() == size(), "Must copy into same size, not "
-                                       << rhs.size() << " into " << size());
-      std::memcpy(data(), rhs.data(), size() * sizeof(value_type));
-    }
-    rhs.owning_ = true;
-    rhs.reset();
-  }
-  return *this;
-}
-/// \endcond
-
-// create from a single stored value, which becomes the sole entry.
+// The case of assigning a type apart from the same VectorImpl or a
+// `blaze::DenseVector` forwards the assignment to the `PointerVector` base
+// type. In the case of a single compatible value, this fills the vector with
+// that value.
 template <typename T, typename VectorType>
 VectorImpl<T, VectorType>& VectorImpl<T, VectorType>::operator=(
     const T& rhs) noexcept {

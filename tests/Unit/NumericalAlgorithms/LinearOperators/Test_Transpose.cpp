@@ -72,9 +72,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Transpose",
   /// [return_transpose_example]
   std::fill(transposed_data.begin(), transposed_data.end(), 0.0);
   DataVector ref_to_data;
-  ref_to_data.set_data_ref(make_not_null(&data));
+  ref_to_data.set_data_ref(&data);
   DataVector ref_to_transposed_data;
-  ref_to_transposed_data.set_data_ref(make_not_null(&transposed_data));
+  ref_to_transposed_data.set_data_ref(&transposed_data);
   CHECK(not ref_to_data.is_owning());
   CHECK(not ref_to_transposed_data.is_owning());
   ref_to_transposed_data = transpose(ref_to_data, chunk_size, number_of_chunks);
