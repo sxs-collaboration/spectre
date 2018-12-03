@@ -154,11 +154,11 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.map_array",
 }
 
 namespace {
-DEFINE_ARRAY_BINOP(int, int, int, operator+, std::plus<>())
-DEFINE_ARRAY_BINOP(double, double, double, f, std::multiplies<>())
+DEFINE_STD_ARRAY_BINOP(int, int, int, operator+, std::plus<>())
+DEFINE_STD_ARRAY_BINOP(double, double, double, f, std::multiplies<>())
 
-DEFINE_ARRAY_INPLACE_BINOP(int, int, operator+=, std::plus<>())
-DEFINE_ARRAY_INPLACE_BINOP(double, double, g, std::multiplies<>())
+DEFINE_STD_ARRAY_INPLACE_BINOP(int, int, operator+=, std::plus<>())
+DEFINE_STD_ARRAY_INPLACE_BINOP(double, double, g, std::multiplies<>())
 
 SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.define_array_binop",
                   "[Utilities][Unit]") {

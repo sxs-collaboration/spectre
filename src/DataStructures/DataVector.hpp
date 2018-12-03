@@ -48,21 +48,19 @@ class DataVector : public VectorImpl<double, DataVector> {
   using VectorImpl<double, DataVector>::operator=;
   using VectorImpl<double, DataVector>::VectorImpl;
 
-  MAKE_EXPRESSION_MATH_ASSIGN_ARITHMETIC(DataVector)
+  MAKE_MATH_ASSIGN_EXPRESSION_ARITHMETIC(DataVector)
 };
 
 // Specialize the Blaze type traits to correctly handle DataVector
 namespace blaze {
-VECTOR_BLAZE_TRAIT_SPEC(DataVector);
+BLAZE_TRAIT_SPECIALIZE_TYPICAL_VECTOR_TRAITS(DataVector);
 }  // namespace blaze
 
 SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const DataVector& t) noexcept {
   return abs(~t);
 }
 
-DECLARE_VECTOR_EQUIV(DataVector)
-
-MAKE_ARRAY_VECTOR_BINOPS(DataVector)
+MAKE_STD_ARRAY_VECTOR_BINOPS(DataVector)
 
 namespace MakeWithValueImpls {
 /// \brief Returns a DataVector the same size as `input`, with each element
