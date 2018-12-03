@@ -106,8 +106,7 @@ void VolumeData::insert_tensor_data(
         tensor_component.name.find_last_of('/') + 1);
     if (not h5::contains_dataset_or_group(spatial_group.id(), "",
                                           component_name)) {
-      h5::write_data(spatial_group.id(), tensor_component.data, extents,
-                     component_name);
+      h5::write_data(spatial_group.id(), tensor_component.data, component_name);
     } else {
       ERROR("Trying to write tensor component '"
             << component_name

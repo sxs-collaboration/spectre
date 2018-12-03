@@ -22,7 +22,6 @@
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp" // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -110,17 +109,15 @@ struct VectorTo<3, boost::multi_array<T, 3>> {
 };
 }  // namespace
 
-namespace {
-// Implementation of 'write_data'. Common to both DataVector and std::vector
+namespace h5 {
 template <typename T>
-void write_data_impl(const hid_t group_id, const T& data,
-                     const std::vector<size_t>& extents,
-                     const std::string& name) noexcept {
+void write_data(const hid_t group_id, const std::vector<T>& data,
+                const std::vector<size_t>& extents,
+                const std::string& name) noexcept {
   const std::vector<hsize_t> dims(extents.begin(), extents.end());
   const hid_t space_id = H5Screate_simple(dims.size(), dims.data(), nullptr);
   CHECK_H5(space_id, "Failed to create dataspace");
-  const hid_t contained_type =
-      h5::h5_type<tt::get_fundamental_type_t<T>>();
+  const hid_t contained_type = h5::h5_type<tt::get_fundamental_type_t<T>>();
   const hid_t dataset_id =
       H5Dcreate2(group_id, name.c_str(), contained_type, space_id,
                  h5::h5p_default(), h5::h5p_default(), h5::h5p_default());
@@ -131,36 +128,19 @@ void write_data_impl(const hid_t group_id, const T& data,
   CHECK_H5(H5Sclose(space_id), "Failed to close dataspace");
   CHECK_H5(H5Dclose(dataset_id), "Failed to close dataset");
 }
-} // namespace
 
-namespace h5 {
 void write_data(const hid_t group_id, const DataVector& data,
-                const std::vector<size_t>& extents,
                 const std::string& name) noexcept {
-  write_data_impl(group_id, data, extents, name);
-}
-
-template <typename T>
-void write_data(const hid_t group_id, const std::vector<T>& data,
-                const std::vector<size_t>& extents,
-                const std::string& name) noexcept {
-  write_data_impl(group_id, data, extents, name);
-}
-
-template <size_t Dim>
-void write_data(const hid_t group_id, const DataVector& data,
-                const Index<Dim>& extents, const std::string& name) noexcept {
-  // Write a DataVector into the group
-  const std::array<hsize_t, Dim> dims = make_array<hsize_t, Dim>(extents);
-  const hid_t space_id = H5Screate_simple(Dim, dims.data(), nullptr);
+  const auto number_of_points = static_cast<hsize_t>(data.size());
+  const hid_t space_id = H5Screate_simple(1, &number_of_points, nullptr);
   CHECK_H5(space_id, "Failed to create dataspace");
-  const hid_t contained_type = h5::h5_type<std::decay_t<decltype(data[0])>>();
+  const hid_t contained_type = h5::h5_type<double>();
   const hid_t dataset_id =
       H5Dcreate2(group_id, name.c_str(), contained_type, space_id,
-                 h5p_default(), h5p_default(), h5p_default());
+                 h5::h5p_default(), h5::h5p_default(), h5::h5p_default());
   CHECK_H5(dataset_id, "Failed to create dataset");
-  CHECK_H5(H5Dwrite(dataset_id, contained_type, h5s_all(), h5s_all(),
-                    h5p_default(), static_cast<const void*>(data.data())),
+  CHECK_H5(H5Dwrite(dataset_id, contained_type, h5::h5s_all(), h5::h5s_all(),
+                    h5::h5p_default(), static_cast<const void*>(data.data())),
            "Failed to write data to dataset");
   CHECK_H5(H5Sclose(space_id), "Failed to close dataspace");
   CHECK_H5(H5Dclose(dataset_id), "Failed to close dataset");
@@ -517,15 +497,6 @@ Index<Dim> read_extents(const hid_t group_id, const std::string& extents_name) {
 }
 
 // Explicit instantiations
-template void write_data<0>(const hid_t group_id, const DataVector& data,
-                            const Index<0>& extents, const std::string& name);
-template void write_data<1>(const hid_t group_id, const DataVector& data,
-                            const Index<1>& extents, const std::string& name);
-template void write_data<2>(const hid_t group_id, const DataVector& data,
-                            const Index<2>& extents, const std::string& name);
-template void write_data<3>(const hid_t group_id, const DataVector& data,
-                            const Index<3>& extents, const std::string& name);
-
 template void write_extents<1>(const hid_t group_id, const Index<1>& extents,
                                const std::string& name);
 template void write_extents<2>(const hid_t group_id, const Index<2>& extents,
