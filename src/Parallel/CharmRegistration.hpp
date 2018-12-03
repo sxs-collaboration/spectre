@@ -47,7 +47,7 @@ extern size_t charm_register_list_size;
  * Uses the __PRETTY_FUNCTION__ compiler intrinsic to extract the template
  * parameter names in the same form that Charm++ uses to register entry methods.
  * This is used by the generated Singleton, Array, Group and Nodegroup headers,
- * as well as in CharmMain.cpp.
+ * as well as in CharmMain.tpp.
  */
 template <class... Args>
 std::string get_template_parameters_as_string() {
@@ -164,7 +164,7 @@ struct RegisterParallelComponent : RegistrationHelper {
  * Parallel::charmxx::MainChareRegistrationConstructor&` as its only argument.
  * This constructor is only used to trigger the `RegisterChare::registrar` code
  * needed for automatic registration. The main chare is determined by specifying
- * the type alias `charmxx_main_component` before the `Parallel/CharmMain.cpp`
+ * the type alias `charmxx_main_component` before the `Parallel/CharmMain.tpp`
  * include.
  * \snippet Test_AlgorithmCore.cpp charm_main_example
  */

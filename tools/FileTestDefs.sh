@@ -360,7 +360,6 @@ enable_if() {
         whitelist "$1" \
                   'src/DataStructures/Tensor/Structure.hpp$' \
                   'src/IO/H5/File.hpp$' \
-                  'src/Parallel/CharmMain.cpp$' \
                   'src/Utilities/PointerVector.hpp$' \
                   'src/Utilities/Requires.hpp$' \
                   'src/Utilities/TMPL.hpp$' \

@@ -5,6 +5,8 @@
 /// Defines functions used by Charm++ to register classes/chares and entry
 /// methods
 
+#pragma once
+
 #include <algorithm>
 #include <string>
 #include <type_traits>

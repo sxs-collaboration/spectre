@@ -107,7 +107,7 @@ class AlgorithmImpl;
  * `array_index`, which must be a `const&`.
  *
  * ### Explicit instantiations of entry methods
- * The code in src/Parallel/CharmMain.cpp registers all entry methods, and if
+ * The code in src/Parallel/CharmMain.tpp registers all entry methods, and if
  * one is not properly registered then a static_assert explains how to have it
  * be registered. If there is a bug in the implementation and an entry method
  * isn't being registered or hitting a static_assert then Charm++ will give an

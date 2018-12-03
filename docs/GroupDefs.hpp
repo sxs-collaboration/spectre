@@ -1091,7 +1091,7 @@ a `std::vector<void (*)()>` called `charm_init_node_funcs` and
 For example,
 \snippet Test_AlgorithmCore.cpp charm_init_funcs_example
 
-Finally, the user must include the `Parallel/CharmMain.cpp` file at the end of
+Finally, the user must include the `Parallel/CharmMain.tpp` file at the end of
 the main executable cpp file. So, the end of an executables main cpp file will
 then typically look as follows:
 \snippet Test_AlgorithmParallel.cpp charm_include_example

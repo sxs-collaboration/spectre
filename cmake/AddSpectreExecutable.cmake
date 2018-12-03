@@ -37,7 +37,7 @@ function(add_spectre_executable EXECUTABLE_NAME HPP_NAME SUBDIR_NAME METAVARS LI
     "\n"
     "using charmxx_main_component = Parallel::Main<${METAVARS}>;\n"
     "\n"
-    "#include \"Parallel/CharmMain.cpp\"\n"
+    "#include \"Parallel/CharmMain.tpp\"\n"
     )
   configure_file(
     "${BUILD_TARGET_FILENAME}.out"
