@@ -2,9 +2,7 @@
 Distributed under the MIT License.
 See LICENSE.txt for details.
 \endcond
-# Template Metaprogramming {#template_metaprogramming}
-
-## SFINAE
+# SFINAE {#sfinae}
 
 SFINAE, Substitution Failure Is Not An Error, means that if a deduced template
 substitution fails, compilation must continue. This can be exploited to make

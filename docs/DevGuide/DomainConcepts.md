@@ -2,7 +2,7 @@
 Distributed under the MIT License.
 See LICENSE.txt for details.
 \endcond
-# Code Concepts {#code_concepts}
+# Domain Concepts {#domain_concepts}
 
 * Logical Coordinates:<br>
   The coordinate frame of a reference cell.
