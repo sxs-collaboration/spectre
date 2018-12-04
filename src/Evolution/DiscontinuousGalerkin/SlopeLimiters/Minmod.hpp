@@ -23,7 +23,6 @@
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Options/Options.hpp"
-#include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -257,11 +256,10 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
     p | disable_for_debugging_;
   }
 
+  // To facilitate testing
+  /// \cond
   const MinmodType& minmod_type() const noexcept { return minmod_type_; }
-  const double& tvbm_constant() const noexcept { return tvbm_constant_; }
-  const bool& disable_for_debugging() const noexcept {
-    return disable_for_debugging_;
-  }
+  /// \endcond
 
   /// \brief Data to send to neighbor elements.
   struct PackagedData {
@@ -457,24 +455,27 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   }
 
  private:
+  template <size_t LocalDim, typename LocalTagList>
+  // NOLINTNEXTLINE(readability-redundant-declaration) false positive
+  friend bool operator==(const Minmod<LocalDim, LocalTagList>& lhs,
+                         const Minmod<LocalDim, LocalTagList>& rhs) noexcept;
+
   MinmodType minmod_type_;
   double tvbm_constant_;
   bool disable_for_debugging_;
 };
 
-template <size_t VolumeDim, typename TagList>
-SPECTRE_ALWAYS_INLINE bool operator==(
-    const Minmod<VolumeDim, TagList>& lhs,
-    const Minmod<VolumeDim, TagList>& rhs) noexcept {
-  return lhs.minmod_type() == rhs.minmod_type() and
-         lhs.tvbm_constant() == rhs.tvbm_constant() and
-         lhs.disable_for_debugging() == rhs.disable_for_debugging();
+template <size_t LocalDim, typename LocalTagList>
+bool operator==(const Minmod<LocalDim, LocalTagList>& lhs,
+                const Minmod<LocalDim, LocalTagList>& rhs) noexcept {
+  return lhs.minmod_type_ == rhs.minmod_type_ and
+         lhs.tvbm_constant_ == rhs.tvbm_constant_ and
+         lhs.disable_for_debugging_ == rhs.disable_for_debugging_;
 }
 
 template <size_t VolumeDim, typename TagList>
-SPECTRE_ALWAYS_INLINE bool operator!=(
-    const Minmod<VolumeDim, TagList>& lhs,
-    const Minmod<VolumeDim, TagList>& rhs) noexcept {
+bool operator!=(const Minmod<VolumeDim, TagList>& lhs,
+                const Minmod<VolumeDim, TagList>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
