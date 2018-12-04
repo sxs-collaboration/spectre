@@ -6,7 +6,6 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
-#include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
@@ -15,12 +14,9 @@
 #include "Domain/Mesh.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
-#include "Options/ParseOptions.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
-
-// IWYU pragma: no_include <ostream>
 
 namespace Minmod_detail {
 
@@ -307,21 +303,3 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 }  // namespace Minmod_detail
-
-template <>
-SlopeLimiters::MinmodType
-create_from_yaml<SlopeLimiters::MinmodType>::create<void>(
-    const Option& options) {
-  const std::string minmod_type_read = options.parse_as<std::string>();
-  if (minmod_type_read == "LambdaPi1") {
-    return SlopeLimiters::MinmodType::LambdaPi1;
-  } else if (minmod_type_read == "LambdaPiN") {
-    return SlopeLimiters::MinmodType::LambdaPiN;
-  } else if (minmod_type_read == "Muscl") {
-    return SlopeLimiters::MinmodType::Muscl;
-  }
-  PARSE_ERROR(options.context(), "Failed to convert \""
-                                     << minmod_type_read
-                                     << "\" to MinmodType. Expected one of: "
-                                        "{LambdaPi1, LambdaPiN, Muscl}.");
-}

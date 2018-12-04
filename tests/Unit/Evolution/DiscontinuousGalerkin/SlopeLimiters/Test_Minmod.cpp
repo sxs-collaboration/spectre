@@ -25,6 +25,7 @@
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
+#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -82,14 +83,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.Options",
 
   test_creation<SlopeLimiters::Minmod<3, tmpl::list<ScalarTag>>>(
       "  Type: LambdaPiN\n  DisableForDebugging: True");
-}
-
-// [[OutputRegex, Failed to convert "BadType" to MinmodType]]
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.OptionParseError",
-                  "[SlopeLimiters][Unit]") {
-  ERROR_TEST();
-  test_creation<SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>>(
-      "  Type: BadType");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.Serialization",
