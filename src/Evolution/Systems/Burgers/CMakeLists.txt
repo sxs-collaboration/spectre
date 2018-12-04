@@ -6,6 +6,7 @@ set(LIBRARY Burgers)
 set(LIBRARY_SOURCES
   Equations.cpp
   Fluxes.cpp
+  Minmod.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
