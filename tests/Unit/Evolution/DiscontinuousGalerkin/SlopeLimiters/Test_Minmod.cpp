@@ -15,6 +15,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Index.hpp"
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"
@@ -24,7 +25,7 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
+#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.tpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
@@ -38,6 +39,7 @@
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+// IWYU pragma: no_include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
 // IWYU pragma: no_forward_declare SlopeLimiters::Minmod
 // IWYU pragma: no_forward_declare Tensor
 

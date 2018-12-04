@@ -4,7 +4,6 @@
 set(LIBRARY SlopeLimiters)
 
 set(LIBRARY_SOURCES
-  Minmod.cpp
   MinmodTci.cpp
   MinmodType.cpp
   )

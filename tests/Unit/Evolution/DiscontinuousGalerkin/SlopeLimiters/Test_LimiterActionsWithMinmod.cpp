@@ -27,12 +27,14 @@
 #include "Domain/SizeOfElement.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
+#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.tpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
 
 namespace {
 struct TemporalId : db::SimpleTag {
