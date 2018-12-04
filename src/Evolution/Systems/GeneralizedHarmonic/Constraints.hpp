@@ -77,4 +77,71 @@ void gauge_constraint(
     const tnsr::aa<DataType, SpatialDim, Frame>& pi,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
 // @}
+
+// @{
+/*!
+ * \brief Computes the generalized-harmonic 2-index constraint.
+ *
+ * \details Computes the generalized-harmonic 2-index constraint
+ * [Eq. (44) of https://arXiv.org/abs/gr-qc/0512093v3],
+ * \f{eqnarray}{
+ * C_{ia} &\equiv& g^{jk}\partial_j \Phi_{ika}
+ * - \frac{1}{2} g_a^j\psi^{cd}\partial_j \Phi_{icd}
+ * + t^b \partial_i \Pi_{ba}
+ * - \frac{1}{2} t_a \psi^{cd}\partial_i\Pi_{cd}
+ * \nonumber\\&&
+ * + \partial_i H_a
+ * + \frac{1}{2} g_a^j \Phi_{jcd} \Phi_{ief}
+ * \psi^{ce}\psi^{df}
+ * + \frac{1}{2} g^{jk} \Phi_{jcd} \Phi_{ike}
+ * \psi^{cd}t^e t_a
+ * \nonumber\\&&
+ * - g^{jk}g^{mn}\Phi_{jma}\Phi_{ikn}
+ * + \frac{1}{2} \Phi_{icd} \Pi_{be} t_a
+ *                             \left(\psi^{cb}\psi^{de}
+ *                       +\frac{1}{2}\psi^{be} t^c t^d\right)
+ * \nonumber\\&&
+ * - \Phi_{icd} \Pi_{ba} t^c \left(\psi^{bd}
+ *                             +\frac{1}{2} t^b t^d\right)
+ * + \frac{1}{2} \gamma_2 \left(t_a \psi^{cd}
+ * - 2 \delta^c_a t^d\right) C_{icd}.
+ * \f}
+ * where \f$H_a\f$ is the gauge function,
+ * \f$\psi_{ab}\f$ is the spacetime metric,
+ * \f$\Pi_{ab}=-t^c\partial_c \psi_{ab}\f$, and
+ * \f$\Phi_{iab} = \partial_i\psi_{ab}\f$; \f$t^a\f$ is the timelike unit
+ * normal vector to the spatial slice, \f$g^{ij}\f$ is the inverse spatial
+ * metric, and \f$g^b_c = \delta^b_c + t^b t_c\f$.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::ia<DataType, SpatialDim, Frame> two_index_constraint(
+    const tnsr::ia<DataType, SpatialDim, Frame>& d_gauge_function,
+    const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const Scalar<DataType>& gamma2,
+    const tnsr::iaa<DataType, SpatialDim, Frame>&
+        three_index_constraint) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void two_index_constraint(
+    gsl::not_null<tnsr::ia<DataType, SpatialDim, Frame>*> constraint,
+    const tnsr::ia<DataType, SpatialDim, Frame>& d_gauge_function,
+    const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const tnsr::AA<DataType, SpatialDim, Frame>& inverse_spacetime_metric,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const Scalar<DataType>& gamma2,
+    const tnsr::iaa<DataType, SpatialDim, Frame>&
+        three_index_constraint) noexcept;
+// @}
 }  // namespace GeneralizedHarmonic
