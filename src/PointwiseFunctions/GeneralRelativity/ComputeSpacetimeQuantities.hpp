@@ -15,18 +15,18 @@
 namespace gr {
 
 /*!
-* \ingroup GeneralRelativityGroup
-* \brief Computes the spacetime metric from the spatial metric, lapse, and
-* shift.
-* \details The spacetime metric \f$ \psi_{ab} \f$ is calculated as
-* \f{align}{
-*   \psi_{tt} &= - N^2 + N^m N^n g_{mn} \\
-*   \psi_{ti} &= g_{mi} N^m  \\
-*   \psi_{ij} &= g_{ij}
-* \f}
-* where \f$ N, N^i\f$ and \f$ g_{ij}\f$ are the lapse, shift and spatial metric
-* respectively
-*/
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes the spacetime metric from the spatial metric, lapse, and
+ * shift.
+ * \details The spacetime metric \f$ \psi_{ab} \f$ is calculated as
+ * \f{align}{
+ *   \psi_{tt} &= - N^2 + N^m N^n g_{mn} \\
+ *   \psi_{ti} &= g_{mi} N^m  \\
+ *   \psi_{ij} &= g_{ij}
+ * \f}
+ * where \f$ N, N^i\f$ and \f$ g_{ij}\f$ are the lapse, shift and spatial metric
+ * respectively
+ */
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::aa<DataType, SpatialDim, Frame> spacetime_metric(
     const Scalar<DataType>& lapse,
@@ -155,7 +155,16 @@ tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief  Computes extrinsic curvature from metric and derivatives.
- * \details Uses ADM evolution equation for spatial metric.
+ * \details Uses the ADM evolution equation for the spatial metric,
+ * \f[ K_{ij} = \frac{1}{2N} \left ( -\partial_0 g_{ij}
+ * + N^k \partial_k g_{ij} + g_{ki} \partial_j N^k
+ * + g_{kj} \partial_i N^k \right ) \f]
+ * where \f$K_{ij}\f$ is the extrinsic curvature, \f$N\f$ is the lapse,
+ * \f$N^i\f$ is the shift, and \f$g_{ij}\f$ is the spatial metric. In terms
+ * of the Lie derivative of the spatial metric with respect to a unit timelike
+ * vector \f$t^a\f$ normal to the spatial slice, this corresponds to the sign
+ * convention
+ * \f[ K_{ab} = - \frac{1}{2} \mathcal{L}_{\mathbf{t}} g_{ab} \f]
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
