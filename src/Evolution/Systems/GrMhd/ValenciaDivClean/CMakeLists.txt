@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   ConservativeFromPrimitive.cpp
   FixConservatives.cpp
   Fluxes.cpp
+  Minmod.cpp
   NewmanHamlin.cpp
   PalenzuelaEtAl.cpp
   PrimitiveFromConservative.cpp
@@ -22,6 +23,7 @@ target_link_libraries(
   INTERFACE ErrorHandling
   INTERFACE GeneralRelativity
   INTERFACE Hydro
+  INTERFACE SlopeLimiters
   INTERFACE Valencia
   INTERFACE VariableFixing
   )
