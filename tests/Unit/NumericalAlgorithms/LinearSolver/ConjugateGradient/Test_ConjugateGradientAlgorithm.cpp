@@ -56,4 +56,4 @@ static const std::vector<void (*)()> charm_init_proc_funcs{
 
 using charmxx_main_component = Parallel::Main<Metavariables>;
 
-#include "Parallel/CharmMain.cpp"
+#include "Parallel/CharmMain.tpp"  // IWYU pragma: keep

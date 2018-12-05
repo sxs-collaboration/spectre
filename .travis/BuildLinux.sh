@@ -63,7 +63,9 @@ if [ -z "${RUN_CLANG_TIDY}" ] \
 
     if [[ ${TRAVIS_BUILD_STAGE_NAME} = \
           "Build and run tests, clangtidy, iwyu, and doxygen" ]]; then
-        make test-executables -j2
+        make -j2
+        # Build major executables in serial to avoid hitting memory limits.
+        make test-executables -j1
         ctest --output-on-failure -j2
 
         # Build test coverage

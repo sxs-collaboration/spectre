@@ -15,7 +15,6 @@
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Block.hpp"  // IWYU pragma: keep
-#include "Domain/BlockNeighbor.cpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
