@@ -17,6 +17,7 @@
 #include "Utilities/Math.hpp"  // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/DataStructures/VectorImplTestHelper.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 void test_main() {

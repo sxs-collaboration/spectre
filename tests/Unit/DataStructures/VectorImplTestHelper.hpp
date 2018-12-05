@@ -8,6 +8,7 @@
 #include <tuple>
 #include <utility>
 
+#include "DataStructures/VectorImpl.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/Tuple.hpp"
@@ -26,12 +27,10 @@ namespace detail {
 // arrays of arithmetic types
 
 // between two vectors
-template <typename T1, typename T2,
-          Requires<cpp17::is_arithmetic_v<typename T1::ElementType> and
-                   cpp17::is_arithmetic_v<typename T2::ElementType>> = nullptr>
-inline void check_vectors(const T1& t1, const T2& t2) noexcept {
-  CHECK_ITERABLE_APPROX(typename T1::ResultType{t1},
-                        typename T2::ResultType{t2});
+template <typename T1, typename T2, typename VT1, typename VT2>
+inline void check_vectors(const ::VectorImpl<T1, VT1>& t1,
+                          const ::VectorImpl<T2, VT2>& t2) noexcept {
+  CHECK_ITERABLE_APPROX(VT1{t1}, VT2{t2});
 }
 // between two arithmetic types
 template <typename T1, typename T2,
@@ -41,19 +40,18 @@ inline void check_vectors(const T1& t1, const T2& t2) noexcept {
   CHECK(approx(t1) == t2);
 }
 // between an arithmetic type and a vector
-template <typename T1, typename T2,
-          Requires<cpp17::is_arithmetic_v<T1> and
-                   cpp17::is_arithmetic_v<typename T2::ElementType>> = nullptr>
-void check_vectors(const T1& t1, const T2& t2) noexcept {
-  check_vectors(typename T2::ResultType{t2.size(), t1}, t2);
+template <typename T1, typename T2, typename VT2,
+          Requires<cpp17::is_arithmetic_v<T1>> = nullptr>
+void check_vectors(const T1& t1, const ::VectorImpl<T2, VT2>& t2) noexcept {
+  check_vectors(VT2{t2.size(), t1}, t2);
 }
 // between a vector and an arithmetic type
-template <typename T1, typename T2,
-          Requires<cpp17::is_arithmetic_v<typename T1::ElementType> and
-                   cpp17::is_arithmetic_v<T2>> = nullptr>
-void check_vectors(const T1& t1, const T2& t2) noexcept {
+template <typename T1, typename VT1, typename T2,
+          Requires<cpp17::is_arithmetic_v<T2>> = nullptr>
+void check_vectors(const ::VectorImpl<T1, VT1>& t1, const T2& t2) noexcept {
   check_vectors(t2, t1);
 }
+// between two arrays
 // between two arrays
 template <typename T1, typename T2, size_t S>
 void check_vectors(const std::array<T1, S>& t1,
@@ -63,34 +61,14 @@ void check_vectors(const std::array<T1, S>& t1,
   }
 }
 // between an array of vectors and an arithmetic type
-template <typename T1, typename T2, size_t S,
-          Requires<cpp17::is_arithmetic_v<T2>> = nullptr,
-          Requires<cpp17::is_arithmetic_v<typename T1::ElementType>> = nullptr>
+template <typename T1, typename T2, size_t S>
 void check_vectors(const std::array<T1, S>& t1, const T2& t2) noexcept {
-  std::array<T1, S> compArr;
-  compArr.fill(typename T1::ResultType(t1[0].size(), t2));
-  check_vectors(t1, compArr);
-}
-// between an array of vectors and a vector
-template <typename T1, typename T2, size_t S,
-          Requires<cpp17::is_arithmetic_v<typename T2::ElementType>> = nullptr,
-          Requires<cpp17::is_arithmetic_v<typename T1::ElementType>> = nullptr>
-void check_vectors(const std::array<T1, S>& t1, const T2& t2) noexcept {
-  std::array<T1, S> compArr;
-  compArr.fill(typename T1::ResultType(t2));
-  check_vectors(t1, compArr);
+  for (const auto& array_element : t1) {
+    check_vectors(array_element, t2);
+  }
 }
 // between an arithmetic type and an array of vectors
-template <typename T1, typename T2, size_t S,
-          Requires<cpp17::is_arithmetic_v<T1>> = nullptr,
-          Requires<cpp17::is_arithmetic_v<typename T2::ElementType>> = nullptr>
-void check_vectors(const T1& t1, const std::array<T2, S>& t2) noexcept {
-  check_vectors(t2, t1);
-}
-// between a vector and an array of vectors
-template <typename T1, typename T2, size_t S,
-          Requires<cpp17::is_arithmetic_v<typename T1::ElementType>> = nullptr,
-          Requires<cpp17::is_arithmetic_v<typename T2::ElementType>> = nullptr>
+template <typename T1, typename T2, size_t S>
 void check_vectors(const T1& t1, const std::array<T2, S>& t2) noexcept {
   check_vectors(t2, t1);
 }
