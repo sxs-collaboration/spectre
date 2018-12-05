@@ -582,55 +582,42 @@ std::ostream& operator<<(std::ostream& os,
 // {@
 /*!
  * \ingroup DataStructuresGroup
+ * \ingroup TypeTraitsGroup
  * \brief Helper struct to determine the base storage type of a VectorImpl or
  * container of VectorImpl
  *
  * \details Extracts the storage type of a `VectorImpl`, a std::array of
  * `VectorImpl`, or a reference or pointer to a `VectorImpl`. In any of these
  * cases, the `type` member is defined as the `ElementType` of the `VectorImpl`
- * in question. If, instead, `VectorBaseType` is passed a numeric type, the
- * `type` member is defined as that numeric type. Examples:
- * - `VectorBaseType_t<DataVector>` is `double`
- * - `VectorBaseType_t<std::array<DataVector, 2>>` is `double`
- * - `VectorBaseType_t<std::complex<double>*>` is `std::complex<double>`
- * - `VectorBaseType_t<std::vector<double>>` is not defined.
+ * in question. If, instead, `vector_base_type` is passed a numeric type, the
+ * `type` member is defined as that numeric type.
+ *
+ * \snippet DataStructures/Test_VectorImpl.cpp vector_base_type_example
  */
-template <typename T, typename Enable = std::nullptr_t>
-struct VectorBaseType {};
-template <typename T>
-struct VectorBaseType<
-    T, Requires<std::is_arithmetic<T>::value or tt::is_a_v<std::complex, T>>> {
+template <typename T, typename ValidVectorElement =
+                          cpp17::bool_constant<cpp17::is_arithmetic_v<T> or
+                                               tt::is_a_v<std::complex, T>>>
+struct vector_base_type {
   using type = T;
 };
 template <typename T>
-struct VectorBaseType<
-    T,
-    Requires<std::is_arithmetic<typename T::ResultType::ElementType>::value or
-             tt::is_a_v<std::complex, typename T::ResultType::ElementType>>> {
-  using type = typename T::ResultType::ElementType;
-};
-template <typename T>
-struct VectorBaseType<
-    T,
-    Requires<
-        not std::is_arithmetic<typename T::ResultType::ElementType>::value and
-        not tt::is_a_v<std::complex, typename T::ResultType::ElementType>>> {
+struct vector_base_type<T, cpp17::bool_constant<false>> {
   using type =
-      typename VectorBaseType<typename T::ResultType::ElementType>::type;
+      typename vector_base_type<typename T::ResultType::ElementType>::type;
 };
 template <typename T>
-struct VectorBaseType<T*, std::nullptr_t> {
-  using type = typename VectorBaseType<T>::type;
+struct vector_base_type<T*, cpp17::bool_constant<false>> {
+  using type = typename vector_base_type<T>::type;
 };
 template <typename T>
-struct VectorBaseType<T&, std::nullptr_t> {
-  using type = typename VectorBaseType<T>::type;
+struct vector_base_type<T&, cpp17::bool_constant<false>> {
+  using type = typename vector_base_type<T>::type;
 };
 template <typename T, size_t S>
-struct VectorBaseType<std::array<T, S>, std::nullptr_t> {
-  using type = typename VectorBaseType<T>::type;
+struct vector_base_type<std::array<T, S>, cpp17::bool_constant<false>> {
+  using type = typename vector_base_type<T>::type;
 };
 // @}
 
 template <typename T>
-using VectorBaseType_t = typename VectorBaseType<T>::type;
+using vector_base_type_t = typename vector_base_type<T>::type;
