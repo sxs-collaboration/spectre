@@ -559,9 +559,9 @@ std::ostream& operator<<(std::ostream& os,
 
 /*!
  * \ingroup DataStructuresGroup
- * \brief Declares the MakeWithValueImpl apply specialization
+ * \brief Defines the MakeWithValueImpl apply specialization
  *
- * \details the MakeWithValueImpl<type,type>::apply(type,double) constructed
+ * \details The MakeWithValueImpl<type,type>::apply(type,double) constructed
  * here produces an object with the same size as the type argument,
  * initialized with the value argument in every entry.
  *
