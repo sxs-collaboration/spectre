@@ -21,15 +21,6 @@ class DataVector;
 namespace h5 {
 /*!
  * \ingroup HDF5Group
- * \brief Write a DataVector named `name` to the group `group_id`
- */
-template <size_t Dim>
-void write_data(hid_t group_id, const DataVector& data,
-                const Index<Dim>& extents,
-                const std::string& name = "scalar") noexcept;
-
-/*!
- * \ingroup HDF5Group
  * \brief Write a std::vector named `name` to the group `group_id`
  */
 template <typename T>
@@ -42,8 +33,7 @@ void write_data(hid_t group_id, const std::vector<T>& data,
  * \brief Write a DataVector named `name` to the group `group_id`
  */
 void write_data(hid_t group_id, const DataVector& data,
-                const std::vector<size_t>& extents,
-                const std::string& name = "scalar") noexcept;
+                const std::string& name) noexcept;
 
 /*!
  * \ingroup HDF5Group

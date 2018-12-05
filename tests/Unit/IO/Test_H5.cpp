@@ -17,7 +17,6 @@
 
 #include "DataStructures/BoostMultiArray.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Index.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "IO/Connectivity.hpp"
 #include "IO/H5/AccessType.hpp"
@@ -469,13 +468,21 @@ SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
                                  h5::AccessType::ReadWrite);
   const hid_t group_id = my_group.id();
 
+  {
+    // Test writing and reading a DataVector as a rank-1 dataset
+    const DataVector rank1_data{1.0, 2.0, 3.0};
+    h5::write_data(group_id, rank1_data, "rank1_dataset");
+    DataVector rank1_data_from_file =
+        h5::read_data<1, DataVector>(group_id, "rank1_dataset");
+    CHECK(rank1_data_from_file == rank1_data);
+  }
+
+  // Test writing and reading `std::vector`s from rank-0 to rank-3
   using all_type_list =
       tmpl::list<double, int, unsigned int, long, unsigned long, long long,
                  unsigned long long>;
 
-  const DataVector scalar_data{1.0};
-  const Index<0> scalar_extents{1};
-  h5::write_data(group_id, scalar_data, scalar_extents, "scalar_dataset");
+  h5::write_data(group_id, std::vector<double>{1.0}, {}, "scalar_dataset");
   double scalar_data_from_file =
     h5::read_data<0, double>(group_id, "scalar_dataset");
   CHECK(scalar_data_from_file == 1.0);
@@ -493,12 +500,6 @@ SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
             group_id, "rank1_dataset_" + std::string(typeid(DataType).name()));
     CHECK(rank1_data_from_file == std::vector<DataType>{1, 2, 3});
   });
-  const DataVector rank1_data{1.0, 2.0, 3.0};
-  const std::vector<size_t> rank1_extents{3};
-  h5::write_data(group_id, rank1_data, rank1_extents, "rank1_dataset");
-  DataVector rank1_data_from_file =
-      h5::read_data<1, DataVector>(group_id, "rank1_dataset");
-  CHECK(rank1_data_from_file == rank1_data);
 
   tmpl::for_each<all_type_list>([&group_id](auto x) noexcept {
     using DataType = typename decltype(x)::type;
@@ -518,12 +519,6 @@ SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
     expected_rank2_data[1][1] = static_cast<DataType>(4);
     CHECK(rank2_data_from_file == expected_rank2_data);
   });
-  const DataVector rank2_data{1.0, 2.0, 3.0, 4.0};
-  const std::vector<size_t> rank2_extents{2, 2};
-  h5::write_data(group_id, rank2_data, rank2_extents, "rank2_dataset");
-  DataVector rank2_data_from_file =
-      h5::read_data<2, DataVector>(group_id, "rank2_dataset");
-  CHECK(rank2_data_from_file == rank2_data);
 
   tmpl::for_each<all_type_list>([&group_id](auto x) noexcept {
     using DataType = typename decltype(x)::type;
@@ -546,12 +541,6 @@ SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
     expected_rank3_data[0][1][2] = static_cast<DataType>(6);
     CHECK(rank3_data_from_file == expected_rank3_data);
   });
-  const DataVector rank3_data{1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-  const std::vector<size_t> rank3_extents{1, 2, 3};
-  h5::write_data(group_id, rank3_data, rank3_extents, "rank3_dataset");
-  DataVector rank3_data_from_file =
-      h5::read_data<3, DataVector>(group_id, "rank3_dataset");
-  CHECK(rank3_data_from_file == rank3_data);
 
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << h5_file_name << "'");
   if (file_system::check_if_file_exists(h5_file_name)) {
