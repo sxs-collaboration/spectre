@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_InterpolatorRegisterElement.cpp
   Test_IrregularInterpolant.cpp
   Test_LagrangePolynomial.cpp
+  Test_ObserveSurfaceIntegrals.cpp
   Test_ParallelInterpolator.cpp
   )
 
