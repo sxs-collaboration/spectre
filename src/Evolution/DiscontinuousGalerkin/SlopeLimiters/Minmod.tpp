@@ -17,7 +17,6 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/SliceIterator.hpp"
 #include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -25,7 +24,6 @@
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
-#include "Domain/MaxNumberOfNeighbors.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "ErrorHandling/Assert.hpp"
@@ -41,28 +39,19 @@ namespace SlopeLimiters {
 namespace Minmod_detail {
 
 // Implements the minmod limiter for one Tensor<DataVector> at a time.
-template <size_t VolumeDim>
+template <size_t VolumeDim, typename Tag, typename PackagedData>
 bool limit_one_tensor(
-    const gsl::not_null<DataVector*> tensor_begin,
-    const gsl::not_null<DataVector*> tensor_end,
+    const gsl::not_null<db::item_type<Tag>*> tensor,
     const gsl::not_null<DataVector*> u_lin_buffer,
     const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
     const SlopeLimiters::MinmodType& minmod_type, const double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
-    const FixedHashMap<
-        maximum_number_of_neighbors(VolumeDim),
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        gsl::not_null<const double*>,
+    const std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_tensor_begin,
-    const FixedHashMap<
-        maximum_number_of_neighbors(VolumeDim),
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        std::array<double, VolumeDim>,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_sizes,
+        neighbor_data,
     const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                                gsl::span<std::pair<size_t, size_t>>>,
                      VolumeDim>& volume_and_slice_indices) noexcept {
@@ -79,8 +68,7 @@ bool limit_one_tensor(
   // does not depend on the solution on the neighboring elements, so could be
   // precomputed outside of `limit_one_tensor`. Changing the code to
   // precompute the average may or may not be a measurable optimization.
-  const auto effective_neighbor_sizes =
-      [&neighbor_sizes, &element ]() noexcept {
+  const auto effective_neighbor_sizes = [&neighbor_data, &element ]() noexcept {
     DirectionMap<VolumeDim, double> result;
     for (const auto& dir : Direction<VolumeDim>::all_directions()) {
       const auto& externals = element.external_boundaries();
@@ -88,13 +76,13 @@ bool limit_one_tensor(
           (externals.find(dir) == externals.end());
       if (neighbors_in_this_dir) {
         const double effective_neighbor_size =
-            [&neighbor_sizes, &dir, &element ]() noexcept {
+            [&neighbor_data, &dir, &element ]() noexcept {
           const size_t dim = dir.dimension();
           const auto& neighbor_ids = element.neighbors().at(dir).ids();
           double size_accumulate = 0.0;
           for (const auto& id : neighbor_ids) {
-            size_accumulate +=
-                gsl::at(neighbor_sizes.at(std::make_pair(dir, id)), dim);
+            size_accumulate += gsl::at(
+                neighbor_data.at(std::make_pair(dir, id)).element_size, dim);
           }
           return size_accumulate / neighbor_ids.size();
         }
@@ -107,30 +95,25 @@ bool limit_one_tensor(
   ();
 
   bool some_component_was_limited = false;
-  for (auto iter = tensor_begin.get(); iter != tensor_end.get(); ++iter) {
-    const auto iter_offset = std::distance(tensor_begin.get(), iter);
-
-    // In each direction, average the mean of the `iter` tensor component over
+  for (size_t i = 0; i < tensor->size(); ++i) {
+    // In each direction, average the mean of the i'th tensor component over
     // all different neighbors in that direction. This produces one effective
     // neighbor per direction.
     const auto effective_neighbor_means =
-        [&neighbor_tensor_begin, &element, &iter_offset ]() noexcept {
+        [&neighbor_data, &element, &i ]() noexcept {
       DirectionMap<VolumeDim, double> result;
       for (const auto& dir : Direction<VolumeDim>::all_directions()) {
         const auto& externals = element.external_boundaries();
         const bool neighbors_in_this_dir =
             (externals.find(dir) == externals.end());
         if (neighbors_in_this_dir) {
-          const double effective_neighbor_mean = [
-            &neighbor_tensor_begin, &dir, &element, &iter_offset
-          ]() noexcept {
+          const double effective_neighbor_mean =
+              [&neighbor_data, &dir, &element, &i ]() noexcept {
             const auto& neighbor_ids = element.neighbors().at(dir).ids();
             double mean_accumulate = 0.0;
             for (const auto& id : neighbor_ids) {
-              // clang-tidy: do not use pointer arithmetic
-              mean_accumulate +=
-                  *(neighbor_tensor_begin.at(std::make_pair(dir, id)).get() +
-                    iter_offset);  // NOLINT
+              mean_accumulate += get<::Tags::Mean<Tag>>(
+                  neighbor_data.at(std::make_pair(dir, id)).means)[i];
             }
             return mean_accumulate / neighbor_ids.size();
           }
@@ -142,7 +125,7 @@ bool limit_one_tensor(
     }
     ();
 
-    DataVector& u = *iter;
+    DataVector& u = (*tensor)[i];
     double u_mean;
     std::array<double, VolumeDim> u_limited_slopes{};
     const bool reduce_slope = troubled_cell_indicator(
@@ -199,8 +182,8 @@ void Minmod<VolumeDim, tmpl::list<Tags...>>::package_data(
       // Compute the mean using the local orientation of the tensor and mesh:
       // this avoids the work of reorienting the tensor while giving the same
       // result.
-      get<::Tags::Mean<decltype(tag)>>(
-          packaged_data->means)[i] = mean_value(tensor[i], mesh);
+      get<::Tags::Mean<decltype(tag)>>(packaged_data->means)[i] =
+          mean_value(tensor[i], mesh);
     }
     return '0';
   };
@@ -260,55 +243,11 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
     this, &limiter_activated, &element, &mesh, &logical_coords, &element_size,
     &neighbor_data, &u_lin_buffer, &boundary_buffer, &volume_and_slice_indices
   ](auto tag, const auto& tensor) noexcept {
-    // Because we hide the types of Tags from limit_one_tensor (we do this so
-    // that its implementation isn't templated on Tags and can be moved out of
-    // this header file), we cannot pass it PackagedData as currently
-    // implemented. So we unpack everything from PackagedData. In the future
-    // we may want a PackagedData type that erases types inherently, as this
-    // would avoid the need for unpacking as done here.
-    //
-    // Get iterators into the local and neighbor tensors, because these are
-    // independent from the structure of the tensor being limited.
-    const auto tensor_begin = make_not_null(tensor->begin());
-    const auto tensor_end = make_not_null(tensor->end());
-    const auto neighbor_tensor_begin = [&neighbor_data]() noexcept {
-      FixedHashMap<
-          maximum_number_of_neighbors(VolumeDim),
-          std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-          gsl::not_null<const double*>,
-          boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
-          result;
-      for (const auto& neighbor_and_data : neighbor_data) {
-        result.insert(std::make_pair(
-            neighbor_and_data.first,
-            make_not_null(get<::Tags::Mean<decltype(tag)>>(
-                              neighbor_and_data.second.means)
-                              .cbegin())));
-      }
-      return result;
-    }
-    ();
-    const auto neighbor_sizes = [&neighbor_data]() noexcept {
-      FixedHashMap<
-          maximum_number_of_neighbors(VolumeDim),
-          std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-          std::array<double, VolumeDim>,
-          boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
-          result;
-      for (const auto& neighbor_and_data : neighbor_data) {
-        result.insert(std::make_pair(neighbor_and_data.first,
-                                     neighbor_and_data.second.element_size));
-      }
-      return result;
-    }
-    ();
-
     limiter_activated =
-        Minmod_detail::limit_one_tensor<VolumeDim>(
-            tensor_begin, tensor_end, &u_lin_buffer, &boundary_buffer,
-            minmod_type_, tvbm_constant_, element, mesh, logical_coords,
-            element_size, neighbor_tensor_begin, neighbor_sizes,
-            volume_and_slice_indices) or
+        Minmod_detail::limit_one_tensor<VolumeDim, decltype(tag)>(
+            tensor, &u_lin_buffer, &boundary_buffer, minmod_type_,
+            tvbm_constant_, element, mesh, logical_coords, element_size,
+            neighbor_data, volume_and_slice_indices) or
         limiter_activated;
     return '0';
   };
