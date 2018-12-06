@@ -17,13 +17,14 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 
 namespace DgActions_detail {
-template<typename Metavariables, typename DataBoxType, typename DirectionsTag,
-    typename NumericalFlux>
+template <typename Metavariables, typename DataBoxType, typename DirectionsTag,
+          typename NumericalFlux>
 auto compute_packaged_data(
-    const DataBoxType &box,
-    const Direction<Metavariables::system::volume_dim> &direction,
-    const NumericalFlux &normal_dot_numerical_flux_computer,
-    const DirectionsTag /*meta*/, const Metavariables /*meta*/) noexcept {
+    const DataBoxType& box,
+    const Direction<Metavariables::system::volume_dim>& direction,
+    const NumericalFlux& normal_dot_numerical_flux_computer,
+    const DirectionsTag /*meta*/, const Metavariables /*meta*/) noexcept ->
+    typename dg::FluxCommunicationTypes<Metavariables>::PackagedData {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
@@ -54,7 +55,8 @@ auto compute_local_mortar_data(
     const DataBoxType& box,
     const Direction<Metavariables::system::volume_dim>& direction,
     const NumericalFlux& normal_dot_numerical_flux_computer,
-    const DirectionsTag /*meta*/, const Metavariables /*meta*/) noexcept {
+    const DirectionsTag /*meta*/, const Metavariables /*meta*/) noexcept ->
+    typename dg::FluxCommunicationTypes<Metavariables>::LocalData {
   constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
