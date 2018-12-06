@@ -295,4 +295,16 @@ std::array<double, 3> spin_vector(double spin_magnitude,
                                   const Scalar<DataVector>& ricci_scalar,
                                   const Scalar<DataVector>& spin_function,
                                   const YlmSpherepack& ylm) noexcept;
+
+/*!
+ * \ingroup SurfacesGroup
+ * \brief Irreducible mass of a 2D `Strahlkorper`.
+ *
+ * \details See Eqs. (15.38)
+ * of Hartle page 325. This function computes the irreducible
+ * mass from the area of a horizon 
+ * Specifically, computes
+ * \f$M_{irr}=\sqrt{\frac{A}{16\pi}\f$
+ */
+double irreducible_mass(double area) noexcept;
 }  // namespace StrahlkorperGr

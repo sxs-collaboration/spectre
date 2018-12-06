@@ -651,6 +651,10 @@ std::array<double, 3> spin_vector(const double spin_magnitude,
   // Normalize spin_vector so its magnitude is the magnitude of the spin
   return spin_vector * (spin_magnitude / magnitude(spin_vector));
 }
+    
+double irreducible_mass(const double area) noexcept {
+  return sqrt(area/(16.0*M_PI));
+}
 }  // namespace StrahlkorperGr
 
 template tnsr::i<DataVector, 3, Frame::Inertial>
