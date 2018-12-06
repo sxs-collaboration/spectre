@@ -111,7 +111,7 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
   std::random_device r;
   const auto seed = r();
   std::mt19937 generator(seed);
-  INFO("seed" << seed);
+  CAPTURE(seed);
   std::uniform_real_distribution<> dist(inertial_coord_min, inertial_coord_max);
 
   const auto nn_generator = make_not_null(&generator);
@@ -131,8 +131,7 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
       for (size_t d = 0; d < Dim; ++d) {
         x_inertial_local.get(d) = target_x_inertial.get(d)[s];
       }
-      const auto x_local =
-          coordinate_map.inverse(x_inertial_local).get();
+      const auto x_local = coordinate_map.inverse(x_inertial_local).get();
       for (size_t d = 0; d < Dim; ++d) {
         result.get(d)[s] = x_local.get(d);
       }

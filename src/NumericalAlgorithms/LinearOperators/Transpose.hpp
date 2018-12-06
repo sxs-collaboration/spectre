@@ -21,10 +21,14 @@
 // This is not an overload of transpose because overload resolution
 // would make non-intuitive choices of the return-by-pointer version
 // below over this function.
+//
+// Clang-tidy is confused and doesn't see this as a definition:
+// clang-tidy: readability-avoid-const-params-in-decls
 template <typename T>
-void raw_transpose(const gsl::not_null<T*> result, const T* const data,
-                   const size_t chunk_size,
-                   const size_t number_of_chunks) noexcept {
+void raw_transpose(const gsl::not_null<T*> result,            // NOLINT
+                   const T* const data,                       // NOLINT
+                   const size_t chunk_size,                   // NOLINT
+                   const size_t number_of_chunks) noexcept {  // NOLINT
   // The i outside loop order is faster, but that could be architecture
   // dependent and so may need updating in the future. Changing this made the
   // logical derivatives in 3D with 50 variables 20% faster.
@@ -79,13 +83,12 @@ void raw_transpose(const gsl::not_null<T*> result, const T* const data,
 /// \tparam U the type of data to be transposed
 /// \tparam T the type of the transposed data
 template <typename U, typename T>
-void transpose(const gsl::not_null<T*> result,
-               const U& u, const size_t chunk_size,
+void transpose(const gsl::not_null<T*> result, const U& u,
+               const size_t chunk_size,
                const size_t number_of_chunks) noexcept {
   ASSERT(chunk_size * number_of_chunks == result->size(),
-         "chunk_size = " << chunk_size
-                         << ", number_of_chunks = " << number_of_chunks
-                         << ", size = " << result->size());
+         "chunk_size = " << chunk_size << ", number_of_chunks = "
+                         << number_of_chunks << ", size = " << result->size());
   ASSERT(result->size() <= u.size(),
          "result.size = " << result->size() << ", u.size = " << u.size());
   raw_transpose(make_not_null(result->data()), u.data(), chunk_size,
@@ -95,7 +98,7 @@ void transpose(const gsl::not_null<T*> result,
 template <typename U, typename T = U>
 T transpose(const U& u, const size_t chunk_size,
             const size_t number_of_chunks) noexcept {
-  T t = make_with_value<T>(u,0.0);
+  T t = make_with_value<T>(u, 0.0);
   transpose(make_not_null(&t), u, chunk_size, number_of_chunks);
   return t;
 }

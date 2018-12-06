@@ -17,6 +17,7 @@ set(LIBS_TO_LINK
   Time
   Utilities
   ValenciaDivClean
+  GrMhdAnalyticData
   )
 
 add_spectre_executable(

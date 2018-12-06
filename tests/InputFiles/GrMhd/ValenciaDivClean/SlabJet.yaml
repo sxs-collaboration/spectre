@@ -1,0 +1,55 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveValenciaDivClean
+# Check: execute
+
+InitialTime: 0.0
+InitialTimeStep: 0.01
+FinalTime: 2.
+
+# InitialSlabSize is only needed for local time stepping
+# InitialSlabSize: 0.01
+
+DomainCreator:
+  Brick:
+    LowerBound: [-1.0, -14.0, 0.0]
+    UpperBound: [20.0, 14.0, 1.0]
+    IsPeriodicIn: [false, true, true]
+    InitialRefinement: [6, 6, 0]
+    InitialGridPoints: [2, 2, 2]
+
+AnalyticSolution:
+  AmbientDensity: 10.0
+  AmbientPressure: 0.01
+  JetDensity: 0.1
+  JetPressure: 0.01
+  JetVelocity: [0.9987523388778445, 0.0, 0.0] # u_i = [20, 0, 0]
+  InletRadius: 5.0
+  MagneticField: [1.0, 0.0, 0.0]
+
+TimeStepper: RungeKutta3
+
+VolumeFileName: "./SlabJetVolume"
+ReductionFileName: "./SlabJetReduction"
+
+NumericalFluxParams:
+
+DampingParameter: 0.0
+
+SlopeLimiterParams:
+  # Type: Muscl
+  # TvbmConstant: 0.0
+
+FixConservatives:
+  CutoffD: 1.0e-12
+  MinimumValueOfD: 1.0e-12
+  SafetyFactorForB: 1.0e-12
+  SafetyFactorForS: 1.0e-12
+
+FixToAtmosphere:
+  DensityOfAtmosphere: 1.0e-12
+  DensityCutoff: 1.0e-12
+
+ObserveNSlabs: 10
+ObserveAtT0: true

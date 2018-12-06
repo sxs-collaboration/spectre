@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_LagrangePolynomial.cpp
   Test_ObserveSurfaceIntegrals.cpp
   Test_ParallelInterpolator.cpp
+  Test_RegularGridInterpolant.cpp
   )
 
 add_test_library(

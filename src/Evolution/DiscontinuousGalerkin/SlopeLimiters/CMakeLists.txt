@@ -13,5 +13,6 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE DataStructures
   INTERFACE Domain
+  INTERFACE Interpolation
   INTERFACE LinearOperators
   )

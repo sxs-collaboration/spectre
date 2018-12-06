@@ -81,6 +81,32 @@ struct MinmodResult {
 MinmodResult minmod_tvbm(double a, double b, double c,
                          double tvbm_scale) noexcept;
 
+// Implements the minmod troubled-cell detector for one component of a
+// Tensor<DataVector> at a time.
+template <size_t VolumeDim>
+bool minmod_troubled_cell_indicator(
+    gsl::not_null<DataVector*> tensor_component, gsl::not_null<double*> u_mean,
+    gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
+    gsl::not_null<DataVector*> u_lin,
+    gsl::not_null<std::array<DataVector, VolumeDim>*> temp_boundary_buffer,
+    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
+                               gsl::span<std::pair<size_t, size_t>>>,
+                     VolumeDim>& volume_and_slice_indices,
+    const SlopeLimiters::MinmodType& minmod_type, double tvbm_constant,
+    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const std::array<double, VolumeDim>& element_size,
+    const FixedHashMap<
+        maximum_number_of_neighbors(VolumeDim),
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, double,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+        neighbor_tensor_component,
+    const FixedHashMap<
+        maximum_number_of_neighbors(VolumeDim),
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        std::array<double, VolumeDim>,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+        neighbor_sizes) noexcept;
+
 // Implements the minmod limiter for one Tensor<DataVector>.
 //
 // The interface is designed to erase the tensor structure information, because

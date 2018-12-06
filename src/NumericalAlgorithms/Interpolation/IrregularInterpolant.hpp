@@ -77,7 +77,7 @@ void Irregular<Dim>::interpolate(
              << ",\n disagrees with the size of the source_mesh, " << k
              << ", that was passed into the constructor");
   if (result->number_of_grid_points() != m) {
-    *result = Variables<TagsList>(m, 0.);
+    *result = Variables<TagsList>(m, 0.0);
   }
   dgemm_('n', 'n', m, n, k, 1.0, interpolation_matrix_.data(), m, vars.data(),
          k, 0.0, result->data(), m);

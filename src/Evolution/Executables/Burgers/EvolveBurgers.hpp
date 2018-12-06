@@ -14,7 +14,7 @@
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
+#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/SimpleWeno.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
 #include "Evolution/Systems/Burgers/System.hpp"
@@ -64,7 +64,7 @@ struct EvolutionMetavars {
   using normal_dot_numerical_flux =
       OptionTags::NumericalFluxParams<Burgers::LocalLaxFriedrichsFlux>;
   using limiter = OptionTags::SlopeLimiterParams<
-      SlopeLimiters::Minmod<1, system::variables_tag::tags_list>>;
+      SlopeLimiters::SimpleWeno<1, system::variables_tag::tags_list>>;
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,
                  OptionTags::TypedTimeStepper<tmpl::conditional_t<

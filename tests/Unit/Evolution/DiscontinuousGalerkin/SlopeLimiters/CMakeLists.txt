@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_LimiterActions.cpp
   Test_LimiterActionsWithMinmod.cpp
   Test_Minmod.cpp
+  Test_SimpleWeno.cpp
   )
 
 add_test_library(

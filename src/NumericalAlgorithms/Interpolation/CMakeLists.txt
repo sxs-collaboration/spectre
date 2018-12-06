@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   InterpolationTargetLineSegment.cpp
   InterpolationTargetWedgeSectionTorus.cpp
   IrregularInterpolant.cpp
+  RegularGridInterpolant.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
