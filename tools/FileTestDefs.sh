@@ -143,8 +143,14 @@ standard_checks=()
 
 # Check for lines longer than 80 characters
 long_lines() {
-    is_c++ "$1" && staged_grep '^[^#].\{80,\}' "$1" | grep -Ev 'https?://' | \
-        grep -v '// IWYU pragma:' | grep -v '// NOLINT' >/dev/null
+    whitelist "$1" \
+              '.cmake$' \
+              '.travis.yml$' \
+              'CMakeLists.txt$' \
+              'containers/Dockerfile.travis$' \
+              'tools/Iwyu/boost-all.imp$' && \
+        staged_grep '^[^#].\{80,\}' "$1" | grep -Ev 'https?://' | \
+            grep -v '// IWYU pragma:' | grep -v '// NOLINT' >/dev/null
 }
 long_lines_report() {
     echo "Found lines over 80 characters:"
@@ -160,7 +166,8 @@ long_lines_test() {
     test_check fail foo.cpp "${eighty}x"$'\n'
     test_check fail foo.hpp "${eighty}x"$'\n'
     test_check fail foo.tpp "${eighty}x"$'\n'
-    test_check pass foo.yaml "${eighty}x"$'\n'
+    test_check fail foo.yaml "${eighty}x"$'\n'
+    test_check pass foo.cmake "${eighty}x"$'\n'
     test_check pass foo.cpp "#include ${eighty}x"$'\n'
     test_check pass foo.cpp "// IWYU pragma: no_include ${eighty}x"$'\n'
     test_check pass foo.cpp "xxx http://${eighty}x"$'\n'
