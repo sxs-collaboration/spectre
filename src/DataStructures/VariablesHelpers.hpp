@@ -59,11 +59,13 @@ void data_on_slice(const gsl::not_null<Variables<TagsList>*> interface_vars,
   const size_t volume_grid_points = vars.number_of_grid_points();
   constexpr const size_t number_of_independent_components =
       Variables<TagsList>::number_of_independent_components;
+
   if (interface_vars->number_of_grid_points() != interface_grid_points) {
     *interface_vars = Variables<TagsList>(interface_grid_points);
   }
-  const double* vars_data = vars.data();
-  double* interface_vars_data = interface_vars->data();
+  using value_type = typename Variables<TagsList>::value_type;
+  const value_type* vars_data = vars.data();
+  value_type* interface_vars_data = interface_vars->data();
   for (SliceIterator si(element_extents, sliced_dim, fixed_index); si; ++si) {
     for (size_t i = 0; i < number_of_independent_components; ++i) {
       // clang-tidy: do not use pointer arithmetic
@@ -168,8 +170,9 @@ void add_slice_to_data(const gsl::not_null<Variables<TagsList>*> volume_vars,
          "vars_on_slice has wrong number of grid points.  Expected "
          << slice_grid_points << ", got "
          << vars_on_slice.number_of_grid_points());
-  double* const volume_data = volume_vars->data();
-  const double* const slice_data = vars_on_slice.data();
+  using value_type = typename Variables<TagsList>::value_type;
+  value_type* const volume_data = volume_vars->data();
+  const value_type* const slice_data = vars_on_slice.data();
   for (SliceIterator si(extents, sliced_dim, fixed_index); si; ++si) {
     for (size_t i = 0; i < number_of_independent_components; ++i) {
       // clang-tidy: do not use pointer arithmetic
@@ -217,11 +220,12 @@ Variables<TagsList> orient_variables_on_slice(
     using Tag = tmpl::type_from<decltype(tag)>;
     auto& oriented_tensor = get<Tag>(oriented_variables);
     const auto& tensor_on_slice = get<Tag>(variables_on_slice);
+    using vector_type = typename Variables<TagsList>::vector_type;
     for (decltype(auto) oriented_and_slice_tensor_components :
          boost::combine(oriented_tensor, tensor_on_slice)) {
-      DataVector& oriented_tensor_component =
+      vector_type& oriented_tensor_component =
           boost::get<0>(oriented_and_slice_tensor_components);
-      const DataVector& tensor_component_on_slice =
+      const vector_type& tensor_component_on_slice =
           boost::get<1>(oriented_and_slice_tensor_components);
       for (size_t s = 0; s < number_of_grid_points; ++s) {
         oriented_tensor_component[oriented_offset[s]] =

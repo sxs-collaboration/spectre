@@ -18,6 +18,7 @@
 #include <random>
 #include <string>
 
+#include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -344,9 +345,51 @@ void test_throw_exception(const ThrowingFunctor& func,
 ///
 /// \details As the generator is made, `INFO` is called to make sure failed
 /// tests provide seed information.
-#define MAKE_GENERATOR(NAME)                    \
-    std::random_device r;                       \
-    const auto seed = r();                      \
-    INFO("Seed is: " << seed);                  \
-    auto (NAME) = std::mt19937{seed};           \
+#define MAKE_GENERATOR(NAME) \
+  std::random_device r;      \
+  const auto seed = r();     \
+  INFO("Seed is: " << seed); \
+  auto(NAME) = std::mt19937 { seed }
 
+/*!
+ * \ingroup TestingFrameworkGroup
+ *  \brief A wrapper around Catch's CHECK macro
+ * that checks approximate equality of each entry in each tag within a
+ * variables.
+ */
+#define CHECK_VARIABLES_APPROX(a, b)                                         \
+  do {                                                                       \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
+    check_variables_approx<std::common_type_t<                               \
+        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b); \
+  } while (false)
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ *  \brief Same as `CHECK_VARIABLES_APPROX`, but with a user-defined  Approx.
+ *  The third argument should be of type `Approx`.
+ */
+#define CHECK_VARIABLES_CUSTOM_APPROX(a, b, appx)                            \
+  do {                                                                       \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
+    check_variables_approx<std::common_type_t<                               \
+        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b,  \
+                                                                      appx); \
+  } while (false)
+
+template <typename T>
+struct check_variables_approx;
+
+template <typename TagList>
+struct check_variables_approx<Variables<TagList>> {
+  // clang-tidy: non-const reference
+  static void apply(const Variables<TagList>& a, const Variables<TagList>& b,
+                    Approx& appx = approx) {  // NOLINT
+    tmpl::for_each<TagList>([&a, &b, &appx](auto x) {
+      using Tag = typename decltype(x)::type;
+      auto& a_val = get<Tag>(a);
+      auto& b_val = get<Tag>(b);
+      CHECK_ITERABLE_CUSTOM_APPROX(a_val, b_val, appx);
+    });
+  }
+};

@@ -348,6 +348,10 @@ constexpr bool is_unsigned_v = std::is_unsigned<T>::value;
 
 /// \ingroup TypeTraitsGroup
 template <class T>
+constexpr bool is_arithmetic_v = std::is_arithmetic<T>::value;
+
+/// \ingroup TypeTraitsGroup
+template <class T>
 constexpr bool is_floating_point_v = std::is_floating_point<T>::value;
 
 /// \ingroup TypeTraitsGroup
