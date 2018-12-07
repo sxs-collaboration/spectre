@@ -46,9 +46,11 @@ spectre_setup_modules() {
         cd $dep_dir/catch/include
         wget https://github.com/catchorg/Catch2/releases/download/v2.2.1/catch.hpp -O catch.hpp
         echo "Installed Catch into $dep_dir/catch"
-        echo "#%Module1.0" > $dep_dir/modules/catch
-        echo "prepend-path CPATH \"$dep_dir/catch/include\"" >> $dep_dir/modules/catch
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/catch/\"" >> $dep_dir/modules/catch
+cat >$dep_dir/modules/catch <<EOF
+#%Module1.0
+prepend-path CPATH "$dep_dir/catch/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/catch/"
+EOF
     fi
     cd $dep_dir
 
@@ -62,9 +64,11 @@ spectre_setup_modules() {
         tar -xzf blaze.tar.gz
         mv blaze-* include
         echo "Installed Blaze into $dep_dir/blaze"
-        echo "#%Module1.0" > $dep_dir/modules/blaze
-        echo "prepend-path CPATH \"$dep_dir/blaze/include\"" >> $dep_dir/modules/blaze
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/blaze/\"" >> $dep_dir/modules/blaze
+        cat >$dep_dir/modules/blaze <<EOF
+#%Module1.0
+prepend-path CPATH "$dep_dir/blaze/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/blaze/"
+EOF
     fi
     cd $dep_dir
 
@@ -76,9 +80,11 @@ spectre_setup_modules() {
         rm -rf $dep_dir/brigand
         git clone https://github.com/edouarda/brigand.git
         echo "Installed Brigand into $dep_dir/brigand"
-        echo "#%Module1.0" > $dep_dir/modules/brigand
-        echo "prepend-path CPATH \"$dep_dir/brigand/include\"" >> $dep_dir/modules/brigand
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/brigand/\"" >> $dep_dir/modules/brigand
+        cat >$dep_dir/modules/brigand <<EOF
+#%Module1.0
+prepend-path CPATH "$dep_dir/brigand/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/brigand/"
+EOF
     fi
     cd $dep_dir
 
@@ -96,11 +102,13 @@ spectre_setup_modules() {
         cd $dep_dir
         rm libxsmm.tar.gz
         echo "Installed LIBXSMM into $dep_dir/libxsmm"
-        echo "#%Module1.0" > $dep_dir/modules/libxsmm
-        echo "prepend-path LIBRARY_PATH \"$dep_dir/libxsmm/lib\"" >> $dep_dir/modules/libxsmm
-        echo "prepend-path LD_LIBRARY_PATH \"$dep_dir/libxsmm/lib\"" >> $dep_dir/modules/libxsmm
-        echo "prepend-path CPATH \"$dep_dir/libxsmm/include\"" >> $dep_dir/modules/libxsmm
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/libxsmm/\"" >> $dep_dir/modules/libxsmm
+        cat >$dep_dir/modules/libxsmm <<EOF
+#%Module1.0
+prepend-path LIBRARY_PATH "$dep_dir/libxsmm/lib"
+prepend-path LD_LIBRARY_PATH "$dep_dir/libxsmm/lib"
+prepend-path CPATH "$dep_dir/libxsmm/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/libxsmm/"
+EOF
     fi
     cd $dep_dir
 
@@ -122,11 +130,13 @@ spectre_setup_modules() {
         rm $dep_dir/jemalloc.tar.gz
         module unload autoconf/2.69
         echo "Installed jemalloc into $dep_dir/jemalloc"
-        echo "#%Module1.0" > $dep_dir/modules/jemalloc
-        echo "prepend-path LIBRARY_PATH \"$dep_dir/jemalloc/lib\"" >> $dep_dir/modules/jemalloc
-        echo "prepend-path LD_LIBRARY_PATH \"$dep_dir/jemalloc/lib\"" >> $dep_dir/modules/jemalloc
-        echo "prepend-path CPATH \"$dep_dir/jemalloc/include\"" >> $dep_dir/modules/jemalloc
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/jemalloc/\"" >> $dep_dir/modules/jemalloc
+        cat >$dep_dir/modules/jemalloc <<EOF
+#%Module1.0
+prepend-path LIBRARY_PATH "$dep_dir/jemalloc/lib"
+prepend-path LD_LIBRARY_PATH "$dep_dir/jemalloc/lib"
+prepend-path CPATH "$dep_dir/jemalloc/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/jemalloc/"
+EOF
     fi
     cd $dep_dir
 
@@ -152,11 +162,13 @@ spectre_setup_modules() {
         rm -r yaml-cpp-build
         rm -r yaml-cpp.tar.gz
         echo "Installed yaml-cpp into $dep_dir/yaml-cpp"
-        echo "#%Module1.0" > $dep_dir/modules/yaml-cpp
-        echo "prepend-path LIBRARY_PATH \"$dep_dir/yaml-cpp/lib\"" >> $dep_dir/modules/yaml-cpp
-        echo "prepend-path LD_LIBRARY_PATH \"$dep_dir/yaml-cpp/lib\"" >> $dep_dir/modules/yaml-cpp
-        echo "prepend-path CPATH \"$dep_dir/yaml-cpp/include\"" >> $dep_dir/modules/yaml-cpp
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/yaml-cpp/\"" >> $dep_dir/modules/yaml-cpp
+        cat >$dep_dir/modules/yaml-cpp <<EOF
+#%Module1.0
+prepend-path LIBRARY_PATH "$dep_dir/yaml-cpp/lib"
+prepend-path LD_LIBRARY_PATH "$dep_dir/yaml-cpp/lib"
+prepend-path CPATH "$dep_dir/yaml-cpp/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/yaml-cpp/"
+EOF
     fi
     cd $dep_dir
 
@@ -176,11 +188,13 @@ spectre_setup_modules() {
         rm -r libsharp_build
         rm libsharp.tar.gz
         echo "Installed libsharp into $dep_dir/libsharp"
-        echo "#%Module1.0" > $dep_dir/modules/libsharp
-        echo "prepend-path LIBRARY_PATH \"$dep_dir/libsharp/lib\"" >> $dep_dir/modules/libsharp
-        echo "prepend-path LD_LIBRARY_PATH \"$dep_dir/libsharp/lib\"" >> $dep_dir/modules/libsharp
-        echo "prepend-path CPATH \"$dep_dir/libsharp/include\"" >> $dep_dir/modules/libsharp
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/libsharp/\"" >> $dep_dir/modules/libsharp
+        cat >$dep_dir/modules/libsharp <<EOF
+#%Module1.0
+prepend-path LIBRARY_PATH "$dep_dir/libsharp/lib"
+prepend-path LD_LIBRARY_PATH "$dep_dir/libsharp/lib"
+prepend-path CPATH "$dep_dir/libsharp/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/libsharp/"
+EOF
     fi
     cd $dep_dir
 
@@ -198,33 +212,40 @@ spectre_setup_modules() {
         cd $dep_dir
         rm charm.tar.gz
         echo "Installed Charm++ into $dep_dir/charm"
-        echo "#%Module1.0" > $dep_dir/modules/charm
-        echo "prepend-path LIBRARY_PATH \"$dep_dir/charm/lib\"" >> $dep_dir/modules/charm
-        echo "prepend-path LD_LIBRARY_PATH \"$dep_dir/charm/lib\"" >> $dep_dir/modules/charm
-        echo "prepend-path CPATH \"$dep_dir/charm/include\"" >> $dep_dir/modules/charm
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/charm/\"" >> $dep_dir/modules/charm
-        echo "setenv CHARM_VERSION 6.8.2" >> $dep_dir/modules/charm
-        echo "setenv CHARM_HOME $dep_dir/charm/gni-crayxe-smp" >> $dep_dir/modules/charm
-        echo "setenv CHARM_ROOT $dep_dir/charm/gni-crayxe-smp" >> $dep_dir/modules/charm
+        cat >$dep_dir/modules/charm <<EOF
+#%Module1.0
+prepend-path LIBRARY_PATH "$dep_dir/charm/lib"
+prepend-path LD_LIBRARY_PATH "$dep_dir/charm/lib"
+prepend-path CPATH "$dep_dir/charm/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/charm/"
+setenv CHARM_VERSION 6.8.2
+setenv CHARM_HOME $dep_dir/charm/gni-crayxe-smp
+setenv CHARM_ROOT $dep_dir/charm/gni-crayxe-smp
+EOF
     fi
     cd $dep_dir
 
     # We need to be able to link in the MKL, which BlueWaters doesn't allow
-    echo "#%Module1.0" > $dep_dir/modules/mkl
-    echo "prepend-path LIBRARY_PATH \"/opt/intel/compilers_and_libraries_2017.4.196/linux/mkl/lib/intel64_lin\"" >> $dep_dir/modules/mkl
-    echo "prepend-path LD_LIBRARY_PATH \"/opt/intel/compilers_and_libraries_2017.4.196/linux/mkl/lib/intel64_lin\"" >> $dep_dir/modules/mkl
-    echo "prepend-path CPATH \"/opt/intel/compilers_and_libraries_2017.4.196/linux/mkl/include\"" >> $dep_dir/modules/mkl
-    echo "prepend-path CMAKE_PREFIX_PATH \"/opt/intel/compilers_and_libraries_2017.4.196/linux/mkl/\"" >> $dep_dir/modules/mkl
+    MKL_DIR=/opt/intel/compilers_and_libraries_2017.4.196/linux/mkl
+    cat >$dep_dir/modules/mkl <<EOF
+#%Module1.0
+prepend-path LIBRARY_PATH "${MKL_DIR}/lib/intel64_lin"
+prepend-path LD_LIBRARY_PATH "${MKL_DIR}/lib/intel64_lin"
+prepend-path CPATH "${MKL_DIR}/include"
+prepend-path CMAKE_PREFIX_PATH "${MKL_DIR}/"
+EOF
 
     # Set up env variables needed to get traces and linking working
-    echo "#%Module1.0" > $dep_dir/modules/env_vars
-    echo "setenv XTPE_LINK_TYPE dynamic" >> $dep_dir/modules/env_vars
-    echo "setenv CRAYPE_LINK_TYPE dynamic" >> $dep_dir/modules/env_vars
-    echo "setenv CRAY_ADD_RPATH yes" >> $dep_dir/modules/env_vars
-    echo "setenv XTPE_LINK_TYPE dynamic" >> $dep_dir/modules/env_vars
-    echo "prepend-path PE_PKGCONFIG_LIBS \"cray-pmi\"" >> $dep_dir/modules/env_vars
-    echo "prepend-path PE_PKGCONFIG_LIBS \"cray-ugni\"" >> $dep_dir/modules/env_vars
-    echo "setenv ATP_ENABLED 1" >> $dep_dir/modules/env_vars
+    cat >$dep_dir/modules/env_vars <<EOF
+#%Module1.0
+setenv XTPE_LINK_TYPE dynamic
+setenv CRAYPE_LINK_TYPE dynamic
+setenv CRAY_ADD_RPATH yes
+setenv XTPE_LINK_TYPE dynamic
+prepend-path PE_PKGCONFIG_LIBS "cray-pmi"
+prepend-path PE_PKGCONFIG_LIBS "cray-ugni"
+setenv ATP_ENABLED 1
+EOF
 
     cd $start_dir
 

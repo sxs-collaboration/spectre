@@ -35,9 +35,11 @@ spectre_setup_modules() {
         cd $dep_dir/catch/include
         wget https://github.com/catchorg/Catch2/releases/download/v2.2.1/catch.hpp -O catch.hpp
         echo "Installed Catch into $dep_dir/catch"
-        echo "#%Module1.0" > $dep_dir/modules/catch
-        echo "prepend-path CPATH \"$dep_dir/catch/include\"" >> $dep_dir/modules/catch
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/catch/\"" >> $dep_dir/modules/catch
+        cat >$dep_dir/modules/catch <<EOF
+#%Module1.0
+prepend-path CPATH "$dep_dir/catch/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/catch/"
+EOF
     fi
     cd $dep_dir
 
@@ -51,9 +53,11 @@ spectre_setup_modules() {
         tar -xzf blaze.tar.gz
         mv blaze-* include
         echo "Installed Blaze into $dep_dir/blaze"
-        echo "#%Module1.0" > $dep_dir/modules/blaze
-        echo "prepend-path CPATH \"$dep_dir/blaze/include\"" >> $dep_dir/modules/blaze
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/blaze/\"" >> $dep_dir/modules/blaze
+        cat >$dep_dir/modules/blaze <<EOF
+#%Module1.0
+prepend-path CPATH "$dep_dir/blaze/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/blaze/"
+EOF
     fi
     cd $dep_dir
 
@@ -65,9 +69,11 @@ spectre_setup_modules() {
         rm -rf $dep_dir/brigand
         git clone https://github.com/edouarda/brigand.git
         echo "Installed Brigand into $dep_dir/brigand"
-        echo "#%Module1.0" > $dep_dir/modules/brigand
-        echo "prepend-path CPATH \"$dep_dir/brigand/include\"" >> $dep_dir/modules/brigand
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/brigand/\"" >> $dep_dir/modules/brigand
+        cat >$dep_dir/modules/brigand <<EOF
+#%Module1.0
+prepend-path CPATH "$dep_dir/brigand/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/brigand/"
+EOF
     fi
     cd $dep_dir
 
@@ -91,11 +97,13 @@ spectre_setup_modules() {
         rm -r yaml-cpp-build
         rm -r yaml-cpp.tar.gz
         echo "Installed yaml-cpp into $dep_dir/yaml-cpp"
-        echo "#%Module1.0" > $dep_dir/modules/yaml-cpp
-        echo "prepend-path LIBRARY_PATH \"$dep_dir/yaml-cpp/lib\"" >> $dep_dir/modules/yaml-cpp
-        echo "prepend-path LD_LIBRARY_PATH \"$dep_dir/yaml-cpp/lib\"" >> $dep_dir/modules/yaml-cpp
-        echo "prepend-path CPATH \"$dep_dir/yaml-cpp/include\"" >> $dep_dir/modules/yaml-cpp
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/yaml-cpp/\"" >> $dep_dir/modules/yaml-cpp
+        cat >$dep_dir/modules/yaml-cpp <<EOF
+#%Module1.0
+prepend-path LIBRARY_PATH "$dep_dir/yaml-cpp/lib"
+prepend-path LD_LIBRARY_PATH "$dep_dir/yaml-cpp/lib"
+prepend-path CPATH "$dep_dir/yaml-cpp/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/yaml-cpp/"
+EOF
     fi
     cd $dep_dir
 
@@ -115,11 +123,13 @@ spectre_setup_modules() {
         rm -r libsharp_build
         rm libsharp.tar.gz
         echo "Installed libsharp into $dep_dir/libsharp"
-        echo "#%Module1.0" > $dep_dir/modules/libsharp
-        echo "prepend-path LIBRARY_PATH \"$dep_dir/libsharp/lib\"" >> $dep_dir/modules/libsharp
-        echo "prepend-path LD_LIBRARY_PATH \"$dep_dir/libsharp/lib\"" >> $dep_dir/modules/libsharp
-        echo "prepend-path CPATH \"$dep_dir/libsharp/include\"" >> $dep_dir/modules/libsharp
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/libsharp/\"" >> $dep_dir/modules/libsharp
+        cat >$dep_dir/modules/libsharp <<EOF
+#%Module1.0
+prepend-path LIBRARY_PATH "$dep_dir/libsharp/lib"
+prepend-path LD_LIBRARY_PATH "$dep_dir/libsharp/lib"
+prepend-path CPATH "$dep_dir/libsharp/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/libsharp/"
+EOF
     fi
     cd $dep_dir
 
@@ -139,14 +149,16 @@ spectre_setup_modules() {
         cd $dep_dir
         rm charm.tar.gz
         echo "Installed Charm++ into $dep_dir/charm"
-        echo "#%Module1.0" > $dep_dir/modules/charm
-        echo "prepend-path LIBRARY_PATH \"$dep_dir/charm/lib\"" >> $dep_dir/modules/charm
-        echo "prepend-path LD_LIBRARY_PATH \"$dep_dir/charm/lib\"" >> $dep_dir/modules/charm
-        echo "prepend-path CPATH \"$dep_dir/charm/include\"" >> $dep_dir/modules/charm
-        echo "prepend-path CMAKE_PREFIX_PATH \"$dep_dir/charm/\"" >> $dep_dir/modules/charm
-        echo "setenv CHARM_VERSION 6.8.2" >> $dep_dir/modules/charm
-        echo "setenv CHARM_HOME $dep_dir/charm/$charm_target" >> $dep_dir/modules/charm
-        echo "setenv CHARM_ROOT $dep_dir/charm/$charm_target" >> $dep_dir/modules/charm
+        cat >$dep_dir/modules/charm <<EOF
+#%Module1.0
+prepend-path LIBRARY_PATH "$dep_dir/charm/lib"
+prepend-path LD_LIBRARY_PATH "$dep_dir/charm/lib"
+prepend-path CPATH "$dep_dir/charm/include"
+prepend-path CMAKE_PREFIX_PATH "$dep_dir/charm/"
+setenv CHARM_VERSION 6.8.2
+setenv CHARM_HOME $dep_dir/charm/$charm_target
+setenv CHARM_ROOT $dep_dir/charm/$charm_target
+EOF
     fi
     cd $dep_dir
 
@@ -154,9 +166,12 @@ spectre_setup_modules() {
         echo "Already set up environment variables"
     else
         echo "Setting up environment variables..."
-        echo "#%Module1.0" > $dep_dir/modules/env_vars
-        echo "prepend-path CMAKE_PREFIX_PATH \"$EBROOTGCC\"" >> $dep_dir/modules/env_vars
-        echo "prepend-path CMAKE_PREFIX_PATH \"/cvmfs/soft.computecanada.ca/easybuild/software/2017/avx2/Compiler/gcc7.3/libxsmm/1.8.2\"" >> $dep_dir/modules/env_vars
+        cat >$dep_dir/modules/env_vars <<EOF
+#%Module1.0
+prepend-path CMAKE_PREFIX_PATH "$EBROOTGCC"
+prepend-path CMAKE_PREFIX_PATH "/cvmfs/soft.computecanada.ca/easybuild/\
+software/2017/avx2/Compiler/gcc7.3/libxsmm/1.8.2"
+EOF
         echo "Done setting up environment "
     fi
     cd $start_dir

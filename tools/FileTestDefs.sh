@@ -30,7 +30,8 @@ fi
 # Utility that uses grep on the staged version of the file specified by the last argument
 # does not work with multiple files as argument
 staged_grep() {
-    # git show ":./path/to/file" shows the content of the file as it appears in the staging area
+    # git show ":./path/to/file" shows the content of the file as it
+    # appears in the staging area
     git show ":./${@: -1}" | grep "${@:1:$(($#-1))}"
 }
 
@@ -38,7 +39,8 @@ staged_grep() {
 # Works like staged_grep
 pretty_grep() {
     echo -n -e "\033[0;35m${@: -1}\033[0m:"
-    git show ":./${@: -1}" | GREP_COLOR='1;37;41' grep -n $color_option "${@:1:$(($#-1))}"
+    git show ":./${@: -1}" | \
+        GREP_COLOR='1;37;41' grep -n $color_option "${@:1:$(($#-1))}"
 }
 
 # Utility functions for checks classifying a file based on its name
@@ -396,7 +398,8 @@ standard_checks+=(struct_td)
 
 # Check for _details and details namespaces, request replacement with detail
 namespace_details() {
-    is_c++ "$1" && staged_grep -q "\(_details\|namespace[[:space:]]\+details\)" "$1"
+    is_c++ "$1" && \
+        staged_grep -q "\(_details\|namespace[[:space:]]\+details\)" "$1"
 }
 namespace_details_report() {
     echo "Found '_details' namespace, please replace with '_detail'"
@@ -436,8 +439,10 @@ prevent_cpp_includes_test() {
 }
 standard_checks+=(prevent_cpp_includes)
 
-# if test is enabled: redefines staged_grep to run tests on files that are not in git
-[ "$1" = --test ] && staged_grep() { grep "$@"; } && run_tests "${standard_checks[@]}"
+# if test is enabled: redefines staged_grep to run tests on files that
+# are not in git
+[ "$1" = --test ] && staged_grep() { grep "$@"; } && \
+    run_tests "${standard_checks[@]}"
 
 # True result for sourcing
 :

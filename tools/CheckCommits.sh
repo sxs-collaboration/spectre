@@ -27,9 +27,9 @@ else
     git checkout ${UPSTREAM_BRANCH}
     COMMITS_ON_UPSTREAM=`git rev-list HEAD`
     cd $WORK_DIR
-    # For each upstream commit we check if the commit is on this branch, once we
-    # find a match we save that hash and exit. This allows us to check only files
-    # currently being committed.
+    # For each upstream commit we check if the commit is on this
+    # branch, once we find a match we save that hash and exit. This
+    # allows us to check only files currently being committed.
     HEAD_COMMIT_HASH=''
 
     for hash in ${COMMITS_ON_UPSTREAM}
@@ -43,7 +43,8 @@ else
 
     if [ -z $HEAD_COMMIT_HASH ];
     then
-        echo "The branch is not branched from ${UPSTREAM_REPO}/${UPSTREAM_BRANCH}"
+        echo "The branch is not branched from" \
+             "${UPSTREAM_REPO}/${UPSTREAM_BRANCH}"
         exit 1
     fi
     COMMIT_LINES=`git log ${HEAD_COMMIT_HASH}..HEAD --oneline`
