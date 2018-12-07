@@ -16,7 +16,8 @@ namespace CoordinateMaps {
 template <size_t VolumeDim>
 DiscreteRotation<VolumeDim>::DiscreteRotation(
     OrientationMap<VolumeDim> orientation) noexcept
-    : orientation_(std::move(orientation)) {}
+    : orientation_(std::move(orientation)),
+      is_identity_(orientation_ == OrientationMap<VolumeDim>{}) {}
 
 template <size_t VolumeDim>
 template <typename T>
@@ -69,6 +70,7 @@ DiscreteRotation<VolumeDim>::inv_jacobian(
 template <size_t VolumeDim>
 void DiscreteRotation<VolumeDim>::pup(PUP::er& p) noexcept {
   p | orientation_;
+  p | is_identity_;
 }
 
 template class DiscreteRotation<1>;

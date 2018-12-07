@@ -126,4 +126,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube", "[Domain][Unit]") {
   test_bulged_cube(true);   // Equiangular
   test_bulged_cube(false);  // Equidistant
   test_bulged_cube_fail();
+
+  check_if_map_is_identity(CoordinateMaps::BulgedCube{sqrt(3.0), 0, false});
 }

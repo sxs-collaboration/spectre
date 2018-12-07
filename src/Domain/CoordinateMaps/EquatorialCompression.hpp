@@ -79,6 +79,8 @@ class EquatorialCompression {
   // clang-tidy: google runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  bool is_identity() const noexcept { return is_identity_; }
+
  private:
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> angular_distortion(
@@ -92,6 +94,7 @@ class EquatorialCompression {
 
   double aspect_ratio_{std::numeric_limits<double>::signaling_NaN()};
   double inverse_aspect_ratio_{std::numeric_limits<double>::signaling_NaN()};
+  bool is_identity_{false};
 };
 bool operator!=(const EquatorialCompression& lhs,
                 const EquatorialCompression& rhs) noexcept;

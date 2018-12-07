@@ -131,19 +131,25 @@ class ProductOf2Maps {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p);  // NOLINT
 
+  bool is_identity() const noexcept { return is_identity_; }
+
  private:
   friend bool operator==(const ProductOf2Maps& lhs,
                          const ProductOf2Maps& rhs) noexcept {
-    return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_;
+    return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_ and
+           lhs.is_identity_ == rhs.is_identity_;
   }
 
   Map1 map1_;
   Map2 map2_;
+  bool is_identity_ = false;
 };
 
 template <typename Map1, typename Map2>
 ProductOf2Maps<Map1, Map2>::ProductOf2Maps(Map1 map1, Map2 map2) noexcept
-    : map1_(std::move(map1)), map2_(std::move(map2)) {}
+    : map1_(std::move(map1)),
+      map2_(std::move(map2)),
+      is_identity_(map1_.is_identity() and map2_.is_identity()) {}
 
 template <typename Map1, typename Map2>
 template <typename T>
@@ -202,6 +208,7 @@ template <typename Map1, typename Map2>
 void ProductOf2Maps<Map1, Map2>::pup(PUP::er& p) {
   p | map1_;
   p | map2_;
+  p | is_identity_;
 }
 
 template <typename Map1, typename Map2>
@@ -242,22 +249,29 @@ class ProductOf3Maps {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  bool is_identity() const noexcept { return is_identity_; }
+
  private:
   friend bool operator==(const ProductOf3Maps& lhs,
                          const ProductOf3Maps& rhs) noexcept {
     return lhs.map1_ == rhs.map1_ and lhs.map2_ == rhs.map2_ and
-           lhs.map3_ == rhs.map3_;
+           lhs.map3_ == rhs.map3_ and lhs.is_identity_ == rhs.is_identity_;
   }
 
   Map1 map1_;
   Map2 map2_;
   Map3 map3_;
+  bool is_identity_ = false;
 };
 
 template <typename Map1, typename Map2, typename Map3>
 ProductOf3Maps<Map1, Map2, Map3>::ProductOf3Maps(Map1 map1, Map2 map2,
                                                  Map3 map3) noexcept
-    : map1_(std::move(map1)), map2_(std::move(map2)), map3_(std::move(map3)) {}
+    : map1_(std::move(map1)),
+      map2_(std::move(map2)),
+      map3_(std::move(map3)),
+      is_identity_(map1_.is_identity() and map2_.is_identity() and
+                   map3_.is_identity()) {}
 
 template <typename Map1, typename Map2, typename Map3>
 template <typename T>
@@ -332,6 +346,7 @@ void ProductOf3Maps<Map1, Map2, Map3>::pup(PUP::er& p) noexcept {
   p | map1_;
   p | map2_;
   p | map3_;
+  p | is_identity_;
 }
 
 template <typename Map1, typename Map2, typename Map3>

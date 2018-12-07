@@ -14,10 +14,17 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/BulgedCube.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/DiscreteRotation.hpp"
+#include "Domain/CoordinateMaps/EquatorialCompression.hpp"
+#include "Domain/CoordinateMaps/Frustum.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
+#include "Domain/CoordinateMaps/SpecialMobius.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
+#include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/Gsl.hpp"
@@ -748,6 +755,131 @@ void test_make_vector_coordinate_map_base() {
   CHECK(*translated_lower_xi_wedge_base == *(vector_of_translated_wedges[2]));
   CHECK(*translated_lower_eta_wedge_base == *(vector_of_translated_wedges[3]));
 }
+
+void test_coordinate_maps_are_identity() {
+  const auto giant_identity_map =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          CoordinateMaps::Identity<3>{},
+          CoordinateMaps::BulgedCube{sqrt(3.0), 0.0, false},
+          CoordinateMaps::DiscreteRotation<3>{OrientationMap<3>{}},
+          CoordinateMaps::EquatorialCompression{1.0},
+          CoordinateMaps::Frustum{
+              std::array<std::array<double, 2>, 4>{
+                  {{{-1.0, -1.0}}, {{1.0, 1.0}}, {{-1.0, -1.0}}, {{1.0, 1.0}}}},
+              -1.0, 1.0, OrientationMap<3>{}, false},
+          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
+                                         CoordinateMaps::Affine,
+                                         CoordinateMaps::Affine>{
+              CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0},
+              CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0},
+              CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0}},
+          CoordinateMaps::Rotation<3>{0.0, 0.0, 0.0},
+          CoordinateMaps::SpecialMobius{0.0});
+  test_serialization(giant_identity_map);
+
+  const auto wedge = make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0, true));
+  const auto wedge_composed_with_giant_identity =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0,
+                                  true),
+          CoordinateMaps::Identity<3>{},
+          CoordinateMaps::BulgedCube{sqrt(3.0), 0.0, false},
+          CoordinateMaps::DiscreteRotation<3>{OrientationMap<3>{}},
+          CoordinateMaps::EquatorialCompression{1.0},
+          CoordinateMaps::Frustum{
+              std::array<std::array<double, 2>, 4>{
+                  {{{-1.0, -1.0}}, {{1.0, 1.0}}, {{-1.0, -1.0}}, {{1.0, 1.0}}}},
+              -1.0, 1.0, OrientationMap<3>{}, false},
+          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
+                                         CoordinateMaps::Affine,
+                                         CoordinateMaps::Affine>{
+              CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0},
+              CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0},
+              CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0}},
+          CoordinateMaps::Rotation<3>{0.0, 0.0, 0.0},
+          CoordinateMaps::SpecialMobius{0.0});
+
+  for (size_t i = 1; i < 11; ++i) {
+    const auto source_point = tnsr::I<double, 3, Frame::Logical>{
+        {{-1.0 + 2.0 / i, -1.0 + 2.0 / i, -1.0 + 2.0 / i}}};
+    const auto mapped_point = tnsr::I<double, 3, Frame::Inertial>{
+        {{-1.0 + 2.0 / i, -1.0 + 2.0 / i, -1.0 + 2.0 / i}}};
+    CHECK(get<0>(mapped_point) == get<0>(giant_identity_map(source_point)));
+    CHECK(get<1>(mapped_point) == get<1>(giant_identity_map(source_point)));
+    CHECK(get<2>(mapped_point) == get<2>(giant_identity_map(source_point)));
+    CHECK(get<0>(source_point) ==
+          get<0>(giant_identity_map.inverse(mapped_point).get()));
+    CHECK(get<1>(source_point) ==
+          get<1>(giant_identity_map.inverse(mapped_point).get()));
+    CHECK(get<2>(source_point) ==
+          get<2>(giant_identity_map.inverse(mapped_point).get()));
+    const auto wedge_mapped_point = wedge(source_point);
+    CHECK(get<0>(wedge_mapped_point) ==
+          get<0>(wedge_composed_with_giant_identity(source_point)));
+    CHECK(get<1>(wedge_mapped_point) ==
+          get<1>(wedge_composed_with_giant_identity(source_point)));
+    CHECK(get<2>(wedge_mapped_point) ==
+          get<2>(wedge_composed_with_giant_identity(source_point)));
+    CHECK(get<0>(wedge.inverse(wedge_mapped_point).get()) ==
+          get<0>(wedge_composed_with_giant_identity.inverse(wedge_mapped_point)
+                     .get()));
+    CHECK(get<1>(wedge.inverse(wedge_mapped_point).get()) ==
+          get<1>(wedge_composed_with_giant_identity.inverse(wedge_mapped_point)
+                     .get()));
+    CHECK(get<2>(wedge.inverse(wedge_mapped_point).get()) ==
+          get<2>(wedge_composed_with_giant_identity.inverse(wedge_mapped_point)
+                     .get()));
+
+    const auto inv_jac = giant_identity_map.inv_jacobian(source_point);
+    CHECK(1.0 == approx(get<0, 0>(inv_jac)));
+    CHECK(0.0 == approx(get<1, 0>(inv_jac)));
+    CHECK(0.0 == approx(get<2, 0>(inv_jac)));
+    CHECK(0.0 == approx(get<0, 1>(inv_jac)));
+    CHECK(1.0 == approx(get<1, 1>(inv_jac)));
+    CHECK(0.0 == approx(get<2, 1>(inv_jac)));
+    CHECK(0.0 == approx(get<0, 2>(inv_jac)));
+    CHECK(0.0 == approx(get<1, 2>(inv_jac)));
+    CHECK(1.0 == approx(get<2, 2>(inv_jac)));
+    const auto jac = giant_identity_map.jacobian(source_point);
+    CHECK(1.0 == approx(get<0, 0>(jac)));
+    CHECK(0.0 == approx(get<1, 0>(jac)));
+    CHECK(0.0 == approx(get<2, 0>(jac)));
+    CHECK(0.0 == approx(get<0, 1>(jac)));
+    CHECK(1.0 == approx(get<1, 1>(jac)));
+    CHECK(0.0 == approx(get<2, 1>(jac)));
+    CHECK(0.0 == approx(get<0, 2>(jac)));
+    CHECK(0.0 == approx(get<1, 2>(jac)));
+    CHECK(1.0 == approx(get<2, 2>(jac)));
+
+    const auto wedge_1_jac = wedge.jacobian(source_point);
+    const auto wedge_2_jac =
+        wedge_composed_with_giant_identity.jacobian(source_point);
+
+    CHECK(get<0, 0>(wedge_1_jac) == get<0, 0>(wedge_2_jac));
+    CHECK(get<1, 0>(wedge_1_jac) == get<1, 0>(wedge_2_jac));
+    CHECK(get<2, 0>(wedge_1_jac) == get<2, 0>(wedge_2_jac));
+    CHECK(get<0, 0>(wedge_1_jac) == get<0, 0>(wedge_2_jac));
+    CHECK(get<1, 0>(wedge_1_jac) == get<1, 0>(wedge_2_jac));
+    CHECK(get<2, 0>(wedge_1_jac) == get<2, 0>(wedge_2_jac));
+    CHECK(get<0, 0>(wedge_1_jac) == get<0, 0>(wedge_2_jac));
+    CHECK(get<1, 0>(wedge_1_jac) == get<1, 0>(wedge_2_jac));
+    CHECK(get<2, 0>(wedge_1_jac) == get<2, 0>(wedge_2_jac));
+
+    const auto wedge_1_jac_inv = wedge.inv_jacobian(source_point);
+    const auto wedge_2_jac_inv =
+        wedge_composed_with_giant_identity.inv_jacobian(source_point);
+    CHECK(get<0, 0>(wedge_1_jac_inv) == get<0, 0>(wedge_2_jac_inv));
+    CHECK(get<1, 0>(wedge_1_jac_inv) == get<1, 0>(wedge_2_jac_inv));
+    CHECK(get<2, 0>(wedge_1_jac_inv) == get<2, 0>(wedge_2_jac_inv));
+    CHECK(get<0, 0>(wedge_1_jac_inv) == get<0, 0>(wedge_2_jac_inv));
+    CHECK(get<1, 0>(wedge_1_jac_inv) == get<1, 0>(wedge_2_jac_inv));
+    CHECK(get<2, 0>(wedge_1_jac_inv) == get<2, 0>(wedge_2_jac_inv));
+    CHECK(get<0, 0>(wedge_1_jac_inv) == get<0, 0>(wedge_2_jac_inv));
+    CHECK(get<1, 0>(wedge_1_jac_inv) == get<1, 0>(wedge_2_jac_inv));
+    CHECK(get<2, 0>(wedge_1_jac_inv) == get<2, 0>(wedge_2_jac_inv));
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
@@ -757,4 +889,5 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
   test_coordinate_map_with_rotation_map_datavector();
   test_coordinate_map_with_rotation_wedge();
   test_make_vector_coordinate_map_base();
+  test_coordinate_maps_are_identity();
 }

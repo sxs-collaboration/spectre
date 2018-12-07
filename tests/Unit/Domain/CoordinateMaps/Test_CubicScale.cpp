@@ -238,6 +238,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.CubicScale",
                   "[Domain][Unit]") {
   test_map();
   test_boundaries();
+  CHECK(not CoordMapsTimeDependent::CubicScale{}.is_identity());
 }
 
 // [[OutputRegex, The map is invertible only if 0 < expansion_b <

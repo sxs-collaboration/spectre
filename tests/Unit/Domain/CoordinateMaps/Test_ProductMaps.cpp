@@ -6,6 +6,8 @@
 #include <array>
 #include <boost/optional.hpp>
 #include <cstddef>
+#include <memory>
+#include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -168,6 +170,16 @@ void test_product_of_2_maps() {
 
   test_coordinate_map_argument_types(affine_map_xy, point_xi);
   test_product_two_maps_fail();
+  check_if_map_is_identity(
+      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                     CoordinateMaps::Affine>{
+          CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0},
+          CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0}});
+  CHECK(not CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                           CoordinateMaps::Affine>{
+      CoordinateMaps::Affine{-1.0, 2.0, -1.0, 1.0},
+      CoordinateMaps::Affine{-1.0, 1.0, -3.0, 1.0}}
+                .is_identity());
 }
 
 void test_product_of_3_maps() {
@@ -338,6 +350,13 @@ void test_product_of_3_maps() {
   test_serialization(affine_map_xyz);
 
   test_coordinate_map_argument_types(affine_map_xyz, point_xi);
+  check_if_map_is_identity(
+      CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
+                                     CoordinateMaps::Affine,
+                                     CoordinateMaps::Affine>{
+          CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0},
+          CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0},
+          CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0}});
 }
 }  // namespace
 

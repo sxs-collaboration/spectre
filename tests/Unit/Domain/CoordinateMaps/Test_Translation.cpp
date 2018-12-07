@@ -81,4 +81,5 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
   CHECK_FALSE(trans_map != trans_map_deserialized);
 
   test_coordinate_map_argument_types(trans_map, point_xi, t, f_of_t_list);
+  CHECK(not CoordMapsTimeDependent::Translation{}.is_identity());
 }

@@ -7,6 +7,8 @@
 #include <boost/optional.hpp>
 #include <cmath>
 #include <cstddef>
+#include <memory>
+#include <pup.h>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
@@ -61,6 +63,7 @@ void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
 
   test_coordinate_map_argument_types(three_dim_rotation_map, xi);
 }
+
 void test_rotation_2() {
   CoordinateMaps::Rotation<2> half_pi_rotation_map(M_PI_2);
 
@@ -108,6 +111,8 @@ void test_rotation_2() {
   test_serialization(half_pi_rotation_map);
 
   test_coordinate_map_argument_types(half_pi_rotation_map, xi1);
+  check_if_map_is_identity(CoordinateMaps::Rotation<2>{0.0});
+  CHECK(not CoordinateMaps::Rotation<2>(M_PI_2).is_identity());
 }
 
 void test_rotation_3() {
@@ -140,6 +145,8 @@ void test_rotation_3() {
                   std::array<double, 3>{{0.0, 0.0, -1.0}},
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
                   std::array<double, 3>{{1.0, 0.0, 0.0}});
+  check_if_map_is_identity(CoordinateMaps::Rotation<3>{0.0, 0.0, 0.0});
+  CHECK(not CoordinateMaps::Rotation<3>{0.0, 0.0, M_PI_2}.is_identity());
 }
 }  // namespace
 

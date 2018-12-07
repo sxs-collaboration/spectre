@@ -305,6 +305,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
   test_wedge3d_all_directions();
   test_wedge3d_alignment();
   test_wedge3d_random_radii();
+  CHECK(not CoordinateMaps::Wedge3D{}.is_identity());
 }
 
 // [[OutputRegex, The radius of the inner surface must be greater than zero.]]

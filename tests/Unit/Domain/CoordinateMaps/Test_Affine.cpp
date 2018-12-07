@@ -5,6 +5,8 @@
 
 #include <array>
 #include <boost/optional.hpp>
+#include <memory>
+#include <pup.h>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -53,4 +55,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {
   test_serialization(affine_map);
 
   test_coordinate_map_argument_types(affine_map, point_xi);
+
+  check_if_map_is_identity(CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0});
 }

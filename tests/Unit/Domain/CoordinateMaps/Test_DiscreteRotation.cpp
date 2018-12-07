@@ -96,6 +96,30 @@ void test_with_orientation() {
     test_suite_for_map_on_unit_cube(coord_map);
   }
 }
+
+void test_is_identity() {
+  check_if_map_is_identity(
+      CoordinateMaps::DiscreteRotation<1>{OrientationMap<1>{}});
+  CHECK(not CoordinateMaps::DiscreteRotation<1>{
+      OrientationMap<1>{
+          std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}}}
+                .is_identity());
+
+  check_if_map_is_identity(
+      CoordinateMaps::DiscreteRotation<2>{OrientationMap<2>{}});
+  CHECK(not CoordinateMaps::DiscreteRotation<2>{
+      OrientationMap<2>{std::array<Direction<2>, 2>{
+          {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}}
+                .is_identity());
+
+  check_if_map_is_identity(
+      CoordinateMaps::DiscreteRotation<3>{OrientationMap<3>{}});
+  CHECK(not CoordinateMaps::DiscreteRotation<3>{
+      OrientationMap<3>{std::array<Direction<3>, 3>{
+          {Direction<3>::lower_eta(), Direction<3>::lower_zeta(),
+           Direction<3>::upper_xi()}}}}
+                .is_identity());
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.DiscreteRotation",
@@ -104,4 +128,5 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.DiscreteRotation",
   test_2d();
   test_3d();
   test_with_orientation();
+  test_is_identity();
 }

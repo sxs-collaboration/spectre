@@ -20,6 +20,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "DataStructures/Tensor/Identity.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp11.hpp"
@@ -353,7 +354,9 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::call_impl(
          const std::unordered_map<std::string, FunctionOfTime&>&
          /*f_of_ts*/,
          const std::false_type /*is_time_independent*/) noexcept {
-        point = the_map(point);
+        if (LIKELY(not the_map.is_identity())) {
+          point = the_map(point);
+        }
         return '0';
       },
       [](const auto& the_map, std::array<T, dim>& point, const double t,
@@ -385,7 +388,9 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
          /*f_of_ts*/,
          const std::false_type /*is_time_independent*/) noexcept {
         if (point) {
-          point = the_map.inverse(point.get());
+          if (LIKELY(not the_map.is_identity())) {
+            point = the_map.inverse(point.get());
+          }
         }
         return '0';
       },
@@ -445,7 +450,11 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
                const std::unordered_map<std::string, FunctionOfTime&>&
                /*f_of_ts*/,
                const std::false_type /*is_time_independent*/) {
-              *t_inv_jac = the_map.inv_jacobian(point);
+              if (LIKELY(not the_map.is_identity())) {
+                *t_inv_jac = the_map.inv_jacobian(point);
+              } else {
+                *t_inv_jac = identity<dim>(point[0]);
+              }
               return nullptr;
             },
             [](const gsl::not_null<tnsr::Ij<T, dim, Frame::NoFrame>*> t_inv_jac,
@@ -458,24 +467,27 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
             });
 
         if (LIKELY(count != 0)) {
-          mapped_point =
-              std::get<(count != 0 ? count - 1 : 0)>(maps)(mapped_point);
-          inv_jac_overload(
-              &temp_inv_jac, map, mapped_point, time, f_of_t_list,
-              CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
-                                                                 T>{});
-          std::array<T, dim> temp{};
-          for (size_t source = 0; source < dim; ++source) {
-            for (size_t target = 0; target < dim; ++target) {
-              gsl::at(temp, target) =
-                  inv_jac.get(source, 0) * temp_inv_jac.get(0, target);
-              for (size_t dummy = 1; dummy < dim; ++dummy) {
-                gsl::at(temp, target) += inv_jac.get(source, dummy) *
-                                         temp_inv_jac.get(dummy, target);
+          const auto& map_in_loop =
+              std::get<(count != 0 ? count - 1 : 0)>(maps);
+          if (LIKELY(not map_in_loop.is_identity())) {
+            mapped_point = map_in_loop(mapped_point);
+            inv_jac_overload(&temp_inv_jac, map, mapped_point, time,
+                             f_of_t_list,
+                             CoordinateMap_detail::is_jacobian_time_dependent_t<
+                                 decltype(map), T>{});
+            std::array<T, dim> temp{};
+            for (size_t source = 0; source < dim; ++source) {
+              for (size_t target = 0; target < dim; ++target) {
+                gsl::at(temp, target) =
+                    inv_jac.get(source, 0) * temp_inv_jac.get(0, target);
+                for (size_t dummy = 1; dummy < dim; ++dummy) {
+                  gsl::at(temp, target) += inv_jac.get(source, dummy) *
+                                           temp_inv_jac.get(dummy, target);
+                }
               }
-            }
-            for (size_t target = 0; target < dim; ++target) {
-              inv_jac.get(source, target) = std::move(gsl::at(temp, target));
+              for (size_t target = 0; target < dim; ++target) {
+                inv_jac.get(source, target) = std::move(gsl::at(temp, target));
+              }
             }
           }
         } else {
@@ -522,7 +534,11 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
                const std::unordered_map<std::string, FunctionOfTime&>&
                /*f_of_ts*/,
                const std::false_type /*is_time_independent*/) {
-              *no_frame_jac = the_map.jacobian(point);
+              if (LIKELY(not the_map.is_identity())) {
+                *no_frame_jac = the_map.jacobian(point);
+              } else {
+                *no_frame_jac = identity<dim>(point[0]);
+              }
               return nullptr;
             },
             [](const gsl::not_null<tnsr::Ij<T, dim, Frame::NoFrame>*>
@@ -536,24 +552,26 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
             });
 
         if (LIKELY(count != 0)) {
-          mapped_point =
-              std::get<(count != 0 ? count - 1 : 0)>(maps)(mapped_point);
-          jac_overload(
-              &noframe_jac, map, mapped_point, time, f_of_t_list,
-              CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
-                                                                 T>{});
-          std::array<T, dim> temp{};
-          for (size_t source = 0; source < dim; ++source) {
-            for (size_t target = 0; target < dim; ++target) {
-              gsl::at(temp, target) =
-                  noframe_jac.get(target, 0) * jac.get(0, source);
-              for (size_t dummy = 1; dummy < dim; ++dummy) {
-                gsl::at(temp, target) +=
-                    noframe_jac.get(target, dummy) * jac.get(dummy, source);
+          const auto& map_in_loop =
+              std::get<(count != 0 ? count - 1 : 0)>(maps);
+          if (LIKELY(not map_in_loop.is_identity())) {
+            mapped_point = map_in_loop(mapped_point);
+            jac_overload(&noframe_jac, map, mapped_point, time, f_of_t_list,
+                         CoordinateMap_detail::is_jacobian_time_dependent_t<
+                             decltype(map), T>{});
+            std::array<T, dim> temp{};
+            for (size_t source = 0; source < dim; ++source) {
+              for (size_t target = 0; target < dim; ++target) {
+                gsl::at(temp, target) =
+                    noframe_jac.get(target, 0) * jac.get(0, source);
+                for (size_t dummy = 1; dummy < dim; ++dummy) {
+                  gsl::at(temp, target) +=
+                      noframe_jac.get(target, dummy) * jac.get(dummy, source);
+                }
               }
-            }
-            for (size_t target = 0; target < dim; ++target) {
-              jac.get(target, source) = std::move(gsl::at(temp, target));
+              for (size_t target = 0; target < dim; ++target) {
+                jac.get(target, source) = std::move(gsl::at(temp, target));
+              }
             }
           }
         } else {

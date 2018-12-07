@@ -179,6 +179,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
   test_wedge2d_all_orientations(false);  // Equidistant
   test_wedge2d_all_orientations(true);   // Equiangular
   test_equality();
+  CHECK(not CoordinateMaps::Wedge2D{}.is_identity());
 }
 
 // [[OutputRegex, The radius of the inner surface must be greater than zero.]]

@@ -6,8 +6,11 @@
 #include <array>
 #include <boost/optional/optional.hpp>
 #include <cmath>
+#include <memory>
+#include <pup.h>
 #include <random>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/SpecialMobius.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
@@ -106,6 +109,11 @@ void test_large_mu() {
   CHECK(abs(expected_input_point[1] - 0.6) < 1.e-13);
   CHECK(abs(expected_input_point[2] - 0.8) < 1.e-13);
 }
+
+void test_is_identity() {
+  check_if_map_is_identity(CoordinateMaps::SpecialMobius{0.0});
+  CHECK(not CoordinateMaps::SpecialMobius{0.1}.is_identity());
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius",
@@ -113,6 +121,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius",
   test_suite();
   test_map();
   test_large_mu();
+  test_is_identity();
 }
 
 // [[OutputRegex, The magnitude of mu must be less than 0.96.]]

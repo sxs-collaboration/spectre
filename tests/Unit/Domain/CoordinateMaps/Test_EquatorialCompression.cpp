@@ -5,8 +5,11 @@
 
 #include <array>
 #include <cmath>
+#include <memory>
+#include <pup.h>
 #include <random>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -71,12 +74,18 @@ void test_radius() {
   CHECK(aspect_ratio * sqrt(pow<2>(x) + pow<2>(y)) / z ==
         approx(sqrt(pow<2>(result_x) + pow<2>(result_y)) / result_z));
 }
+
+void test_is_identity() {
+  check_if_map_is_identity(CoordinateMaps::EquatorialCompression{1.0});
+  CHECK(not CoordinateMaps::EquatorialCompression{0.9}.is_identity());
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression",
                   "[Domain][Unit]") {
   test_suite();
   test_radius();
+  test_is_identity();
 }
 // [[OutputRegex, The aspect_ratio must be greater than zero.]]
 [[noreturn]] SPECTRE_TEST_CASE(

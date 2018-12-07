@@ -149,6 +149,9 @@ class Wedge2D {
 
   // clang-tidy: google runtime references
   void pup(PUP::er& p);  // NOLINT
+
+  bool is_identity() const noexcept { return false; }
+
  private:
   friend bool operator==(const Wedge2D& lhs, const Wedge2D& rhs) noexcept;
 

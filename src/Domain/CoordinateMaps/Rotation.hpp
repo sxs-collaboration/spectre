@@ -73,6 +73,8 @@ class Rotation<2> {
 
   void pup(PUP::er& p);  // NOLINT
 
+  bool is_identity() const noexcept { return is_identity_; }
+
  private:
   friend bool operator==(const Rotation<2>& lhs,
                          const Rotation<2>& rhs) noexcept;
@@ -80,6 +82,7 @@ class Rotation<2> {
   double rotation_angle_{std::numeric_limits<double>::signaling_NaN()};
   tnsr::ij<double, 2, Frame::Grid> rotation_matrix_{
       std::numeric_limits<double>::signaling_NaN()};
+  bool is_identity_{false};
 };
 
 bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept;
@@ -144,6 +147,8 @@ class Rotation<3> {
 
   void pup(PUP::er& p);  // NOLINT
 
+  bool is_identity() const noexcept { return is_identity_; }
+
  private:
   friend bool operator==(const Rotation<3>& lhs,
                          const Rotation<3>& rhs) noexcept;
@@ -155,6 +160,7 @@ class Rotation<3> {
       std::numeric_limits<double>::signaling_NaN()};
   tnsr::ij<double, 3, Frame::Grid> rotation_matrix_{
       std::numeric_limits<double>::signaling_NaN()};
+  bool is_identity_{false};
 };
 
 bool operator!=(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept;

@@ -5,8 +5,11 @@
 
 #include <array>
 #include <boost/optional.hpp>
+#include <memory>
+#include <pup.h>
 #include <random>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -163,6 +166,18 @@ void test_alignment() {
   CHECK_ITERABLE_APPROX(map_lower_xi(lowest_corner),
                         lowest_physical_corner_in_map_lower_xi);
 }
+
+void test_is_identity() {
+  check_if_map_is_identity(CoordinateMaps::Frustum{
+      std::array<std::array<double, 2>, 4>{
+          {{{-1.0, -1.0}}, {{1.0, 1.0}}, {{-1.0, -1.0}}, {{1.0, 1.0}}}},
+      -1.0, 1.0, OrientationMap<3>{}, false});
+  CHECK(not CoordinateMaps::Frustum{
+      std::array<std::array<double, 2>, 4>{
+          {{{-1.0, -1.0}}, {{2.0, 1.0}}, {{-1.0, -3.0}}, {{1.0, 1.0}}}},
+      -1.0, 1.0, OrientationMap<3>{}, false}
+                .is_identity());
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
@@ -170,6 +185,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
   test_suite_for_frustum(false);  // Equidistant
   test_suite_for_frustum(true);   // Equiangular
   test_alignment();
+  test_is_identity();
 }
 
 // [[OutputRegex, The lower bound for a coordinate must be numerically less
