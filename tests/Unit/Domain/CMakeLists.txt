@@ -35,7 +35,7 @@ set(LIBRARY_SOURCES
 
 add_subdirectory(Amr)
 add_subdirectory(CoordinateMaps)
-add_subdirectory(DomainCreators)
+add_subdirectory(Creators)
 
 add_test_library(
   ${LIBRARY}

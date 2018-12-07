@@ -6,7 +6,7 @@
 // IWYU pragma: no_include <pup.h>
 #include <vector>
 
-#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
@@ -125,7 +125,7 @@ struct EvolutionMetavars {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &DomainCreators::register_derived_with_charm,
+    &setup_error_handling, &domain::creators::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<TimeStepper>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

@@ -14,10 +14,10 @@
 #include "Domain/Block.hpp"                  // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"          // IWYU pragma: keep
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"        // IWYU pragma: keep
-#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
@@ -304,7 +304,7 @@ void test_domain_construction(
     CHECK(typeid(*expected_maps[i]) == typeid(block.coordinate_map()));
     check_if_maps_are_equal(*expected_maps[i], block.coordinate_map());
   }
-  DomainCreators::register_derived_with_charm();
+  domain::creators::register_derived_with_charm();
   test_serialization(domain);
   // test operator !=
   CHECK_FALSE(domain != domain);
