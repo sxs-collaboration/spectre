@@ -301,10 +301,11 @@ std::array<double, 3> spin_vector(double spin_magnitude,
  * \brief Irreducible mass of a 2D `Strahlkorper`.
  *
  * \details See Eqs. (15.38)
- * of Hartle page 325. This function computes the irreducible
- * mass from the area of a horizon 
+ * of James B. Hartle's Gravity: An Introduction to Einstein's General Relativity. 
+ * This function computes the irreducible
+ * mass from the area of a horizon.
  * Specifically, computes
- * \f$M_{irr}=\sqrt{\frac{A}{16\pi}\f$
+ * \f$M_\mathrm{irr}=\sqrt{\frac{A}{16\pi}}\f$
  */
 double irreducible_mass(double area) noexcept;
 }  // namespace StrahlkorperGr
