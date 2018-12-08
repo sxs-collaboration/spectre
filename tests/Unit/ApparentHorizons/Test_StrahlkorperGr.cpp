@@ -282,7 +282,7 @@ void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
   
   const double irreducible_mass = StrahlkorperGr::irreducible_mass(area);
   const double expected_irreducible_mass = sqrt(area/(16.0*M_PI));
-  CHECK_ITERABLE_APPROX(irreducible_mass, expected_irreducible_mass);
+  CHECK(irreducible_mass== expected_irreducible_mass);
 }
 
 template <typename Solution, typename Fr>
