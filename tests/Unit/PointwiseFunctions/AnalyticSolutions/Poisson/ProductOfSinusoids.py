@@ -15,7 +15,9 @@ def auxiliary_field(x, wave_numbers):
         dim = len(x)
     except TypeError:
         dim = 1
-    return wave_numbers * np.cos(wave_numbers * x) * np.array([field(np.delete(x, d), np.delete(wave_numbers, d)) for d in range(dim)])
+    return wave_numbers * np.cos(wave_numbers * x) * \
+        np.array([field(np.delete(x, d), np.delete(wave_numbers, d))
+                  for d in range(dim)])
 
 def source(x, wave_numbers):
     x, wave_numbers = np.asarray(x), np.asarray(wave_numbers)

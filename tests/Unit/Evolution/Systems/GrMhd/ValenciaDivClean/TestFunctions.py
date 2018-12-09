@@ -32,7 +32,8 @@ def stress_tensor(spatial_velocity, magnetic_field, rest_mass_density,
     bsq_ = bsq(magnetic_field, spatial_metric)
     b_dot_v_ = b_dot_v(magnetic_field, spatial_velocity, spatial_metric)
     return (sqrt_det_spatial_metric *
-            ((specific_enthalpy * rest_mass_density * lorentz_factor**2 + bsq_) *
+            ((specific_enthalpy * rest_mass_density * lorentz_factor**2 +
+              bsq_) *
              np.outer(spatial_velocity, spatial_velocity) +
              p_star(pressure, b_dot_v_, bsq_, lorentz_factor) *
              inv_spatial_metric -

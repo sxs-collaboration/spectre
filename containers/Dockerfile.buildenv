@@ -162,6 +162,7 @@ RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/TeXLive/texlive.profile \
     && install-tl-*/install-tl -profile=texlive.profile \
     && rm -r install-tl-* texlive.profile install-tl.log \
-    && echo "export PATH=\$PATH:/work/texlive/bin/x86_64-linux" >> /root/.bashrc \
+    && echo "export PATH=\$PATH:/work/texlive/bin/x86_64-linux" \
+            >> /root/.bashrc \
     && /work/texlive/bin/x86_64-linux/tlmgr install bibtex
 WORKDIR /work

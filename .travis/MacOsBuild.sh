@@ -26,7 +26,8 @@ export CCACHE_COMPRESSLEVEL=6
 export CCACHE_MAXSIZE=5G
 export CCACHE_COMPILERCHECK=none
 export CCACHE_EXTRAFILES="${SPECTRE_SOURCE_DIR}/tools/SpectrePch.hpp"
-export CCACHE_IGNOREHEADERS="${SPECTRE_BUILD_DIR}/SpectrePch.hpp:${SPECTRE_BUILD_DIR}/SpectrePch.hpp.gch"
+export CCACHE_IGNOREHEADERS="${SPECTRE_BUILD_DIR}/SpectrePch.hpp:\
+${SPECTRE_BUILD_DIR}/SpectrePch.hpp.gch"
 
 # Print the ccache setting. Useful for finding ccache-related bugs.
 ccache -p
