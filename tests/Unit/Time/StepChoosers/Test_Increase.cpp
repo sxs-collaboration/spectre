@@ -28,7 +28,7 @@ struct Metavariables {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
-  using registrars = tmpl::list<StepChoosers::Register::Increase>;
+  using registrars = tmpl::list<StepChoosers::Registrars::Increase>;
   using Increase = StepChoosers::Increase<registrars>;
 
   Parallel::register_derived_classes_with_charm<StepChooser<registrars>>();

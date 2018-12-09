@@ -30,13 +30,8 @@
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
-struct DefaultClasses {
-  template <typename T>
-  using type = tmpl::list<>;
-};
-
 using events_and_triggers_tag =
-    Tags::EventsAndTriggers<DefaultClasses, DefaultClasses>;
+    Tags::EventsAndTriggers<tmpl::list<>, tmpl::list<>>;
 
 struct Metavariables;
 struct component {
@@ -53,13 +48,13 @@ struct Metavariables {
   using const_global_cache_tag_list = tmpl::list<>;
 };
 
-using EventsAndTriggersType = EventsAndTriggers<DefaultClasses, DefaultClasses>;
+using EventsAndTriggersType = EventsAndTriggers<tmpl::list<>, tmpl::list<>>;
 
 void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
                              const bool expected) {
   // Test pup
-  Parallel::register_derived_classes_with_charm<Event<DefaultClasses>>();
-  Parallel::register_derived_classes_with_charm<Trigger<DefaultClasses>>();
+  Parallel::register_derived_classes_with_charm<Event<tmpl::list<>>>();
+  Parallel::register_derived_classes_with_charm<Trigger<tmpl::list<>>>();
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using my_component = component;
@@ -80,14 +75,14 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
 
 void check_trigger(const bool expected, const std::string& trigger_string) {
   // Test factory
-  std::unique_ptr<Trigger<DefaultClasses>> trigger =
-      test_factory_creation<Trigger<DefaultClasses>>(trigger_string);
+  std::unique_ptr<Trigger<tmpl::list<>>> trigger =
+      test_factory_creation<Trigger<tmpl::list<>>>(trigger_string);
 
   EventsAndTriggersType::Storage events_and_triggers_map;
   events_and_triggers_map.emplace(
       std::move(trigger),
-      make_vector<std::unique_ptr<Event<DefaultClasses>>>(
-          std::make_unique<Events::Completion<DefaultClasses>>()));
+      make_vector<std::unique_ptr<Event<tmpl::list<>>>>(
+          std::make_unique<Events::Completion<tmpl::list<>>>()));
   const EventsAndTriggersType events_and_triggers(
       std::move(events_and_triggers_map));
 
@@ -96,7 +91,7 @@ void check_trigger(const bool expected, const std::string& trigger_string) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
-  test_factory_creation<Event<DefaultClasses>>("  Completion");
+  test_factory_creation<Event<tmpl::list<>>>("  Completion");
 
   check_trigger(true,
                 "  Always");

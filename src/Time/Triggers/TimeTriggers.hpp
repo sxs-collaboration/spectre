@@ -11,7 +11,6 @@
 namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// Typelist of Time triggers
-template <typename T>
-using time_triggers =
-    tmpl::list<EveryNSlabs<T>, PastTime<T>, SpecifiedSlabs<T>>;
+using time_triggers = tmpl::list<Registrars::EveryNSlabs, Registrars::PastTime,
+                                 Registrars::SpecifiedSlabs>;
 }  // namespace Triggers

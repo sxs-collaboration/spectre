@@ -14,12 +14,12 @@
 
 /// \ingroup EventsAndTriggersGroup
 /// Class that checks triggers and runs events
-template <typename KnownEvents, typename KnownTriggers>
+template <typename EventRegistrars, typename TriggerRegistrars>
 class EventsAndTriggers {
  public:
   using Storage =
-      std::unordered_map<std::unique_ptr<Trigger<KnownTriggers>>,
-                         std::vector<std::unique_ptr<Event<KnownEvents>>>>;
+      std::unordered_map<std::unique_ptr<Trigger<TriggerRegistrars>>,
+                         std::vector<std::unique_ptr<Event<EventRegistrars>>>>;
 
   EventsAndTriggers() = default;
   explicit EventsAndTriggers(Storage events_and_triggers) noexcept
@@ -54,9 +54,9 @@ class EventsAndTriggers {
   Storage events_and_triggers_;
 };
 
-template <typename KnownEvents, typename KnownTriggers>
-struct create_from_yaml<EventsAndTriggers<KnownEvents, KnownTriggers>> {
-  using type = EventsAndTriggers<KnownEvents, KnownTriggers>;
+template <typename EventRegistrars, typename TriggerRegistrars>
+struct create_from_yaml<EventsAndTriggers<EventRegistrars, TriggerRegistrars>> {
+  using type = EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
   static type create(const Option& options) {
     return type(options.parse_as<typename type::Storage>());
   }
@@ -70,8 +70,8 @@ struct EventsAndTriggersTagBase {};
 /// \ingroup OptionTagsGroup
 /// \ingroup EventsAndTriggersGroup
 /// Contains the events and triggers
-template <typename KnownEvents, typename KnownTriggers>
+template <typename EventRegistrars, typename TriggerRegistrars>
 struct EventsAndTriggers : EventsAndTriggersTagBase {
-  using type = ::EventsAndTriggers<KnownEvents, KnownTriggers>;
+  using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
 };
 }  // namespace Tags

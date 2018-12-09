@@ -72,9 +72,9 @@ struct EvolutionMetavars {
   using domain_creator_tag = OptionTags::DomainCreator<1, Frame::Inertial>;
 
   using step_choosers =
-      tmpl::list<StepChoosers::Register::Cfl<1, Frame::Inertial>,
-                 StepChoosers::Register::Constant,
-                 StepChoosers::Register::Increase>;
+      tmpl::list<StepChoosers::Registrars::Cfl<1, Frame::Inertial>,
+                 StepChoosers::Registrars::Constant,
+                 StepChoosers::Registrars::Increase>;
 
   using compute_rhs = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,

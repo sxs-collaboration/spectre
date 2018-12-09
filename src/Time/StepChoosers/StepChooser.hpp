@@ -10,6 +10,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/FakeVirtual.hpp"
+#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -28,8 +29,7 @@ namespace StepChoosers {
 ///
 /// These can be passed in a list to the template argument of
 /// StepChooser to choose which StepChoosers can be constructed.
-namespace Register {
-}  // namespace Register
+namespace Registrars {}
 }  // namespace StepChoosers
 
 /// \ingroup TimeSteppersGroup
@@ -52,19 +52,12 @@ class StepChooser : public PUP::able {
   StepChooser& operator=(StepChooser&&) = default;
   /// \endcond
 
-  template <typename Registrar>
-  struct get_step_chooser_from_registrar {
-    using type = typename Registrar::template f<StepChooserRegistrars>;
-  };
-
  public:
   ~StepChooser() override = default;
 
   WRAPPED_PUPable_abstract(StepChooser);  // NOLINT
 
-  using creatable_classes =
-      tmpl::transform<StepChooserRegistrars,
-                      get_step_chooser_from_registrar<tmpl::_1>>;
+  using creatable_classes = Registration::registrants<StepChooserRegistrars>;
 
   template <typename Metavariables, typename DbTags>
   double desired_step(

@@ -12,6 +12,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/TimeId.hpp"
+#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -24,8 +25,8 @@ namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger at specified numbers of slabs after the simulation start.
-template <typename KnownTriggers>
-class SpecifiedSlabs : public Trigger<KnownTriggers> {
+template <typename TriggerRegistrars = tmpl::list<>>
+class SpecifiedSlabs : public Trigger<TriggerRegistrars> {
  public:
   /// \cond
   SpecifiedSlabs() = default;
@@ -63,8 +64,12 @@ class SpecifiedSlabs : public Trigger<KnownTriggers> {
   std::unordered_set<uint64_t> slabs_;
 };
 
+namespace Registrars {
+using SpecifiedSlabs = Registration::Registrar<Triggers::SpecifiedSlabs>;
+}  // namespace Registrars
+
 /// \cond
-template <typename KnownTriggers>
-PUP::able::PUP_ID SpecifiedSlabs<KnownTriggers>::my_PUP_ID = 0;  // NOLINT
+template <typename TriggerRegistrars>
+PUP::able::PUP_ID SpecifiedSlabs<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Triggers
