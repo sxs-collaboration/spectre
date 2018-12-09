@@ -28,6 +28,7 @@ allowed_tags = [
                 "LinearAlgebra",
                 "LinearOperators",
                 "LinearSolver",
+                "M1Grey",
                 "NumericalAlgorithms",
                 "Observers",
                 "Options",
