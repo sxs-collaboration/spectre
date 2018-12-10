@@ -15,16 +15,16 @@
 #include "tests/Unit/DataStructures/VectorImplTestHelper.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
-  SECTION("test construct and assign") {
-    TestHelpers::VectorImpl::vector_test_construct_and_assign<DataVector,
-                                                              double>();
-  }
-  SECTION("test serialize and deserialize") {
-    TestHelpers::VectorImpl::vector_test_serialize<DataVector, double>();
-  }
-  TestHelpers::VectorImpl::vector_test_ref<DataVector, double>();
-  TestHelpers::VectorImpl::vector_test_math_after_move<DataVector, double>();
+// [[OutputRegex, Must copy into same size]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.DataVector.ExpressionAssignError",
+    "[Unit][DataStructures]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
+      TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }
 
 // [[OutputRegex, Must copy into same size]]
@@ -32,7 +32,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
                                "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>();
+  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
+      TestHelpers::VectorImpl::RefSizeErrorTestKind::Copy);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -42,11 +43,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
                                "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_move_size_error<DataVector>();
+  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
+      TestHelpers::VectorImpl::RefSizeErrorTestKind::Move);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
+namespace {
 
 enum class UseRefWrap { None, Cref, Ref };
 
@@ -63,6 +66,12 @@ template <UseRefWrap Wrap, class T,
           Requires<Wrap == UseRefWrap::None> = nullptr>
 decltype(auto) wrap(const T& t) noexcept {
   return t;
+}
+
+// just for this commit to make intermediate steps compile
+template <typename T1, typename T2>
+void check_vectors(const T1& t1, const T2& t2) {
+  CHECK_ITERABLE_APPROX(t1, t2);
 }
 
 // Wrap is used to wrap values in a std::reference_wrapper using std::cref and
@@ -387,7 +396,15 @@ void test_datavector_math() {
   test_datavector_array_math();
 }
 }  // namespace
-SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
-                  "[DataStructures][Unit]") {
-  test_datavector_math();
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
+  INFO("test construct and assign");
+  TestHelpers::VectorImpl::vector_test_construct_and_assign<DataVector,
+                                                            double>();
+  INFO("test serialize and deserialize");
+  TestHelpers::VectorImpl::vector_test_serialize<DataVector, double>();
+  INFO("test set_data_ref functionality");
+  TestHelpers::VectorImpl::vector_test_ref<DataVector, double>();
+  INFO("test math after move");
+  TestHelpers::VectorImpl::vector_test_math_after_move<DataVector, double>();
+  SECTION("test DataVector math operations") { test_datavector_math(); }
 }
