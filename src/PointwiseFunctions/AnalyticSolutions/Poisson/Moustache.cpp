@@ -65,11 +65,9 @@ tuples::TaggedTuple<Field, AuxiliaryField<Dim>> Moustache<Dim>::field_variables(
 template <>
 tuples::TaggedTuple<::Tags::Source<Field>, ::Tags::Source<AuxiliaryField<1>>>
 Moustache<1>::source_variables(const tnsr::I<DataVector, 1>& x) const noexcept {
-  const auto& x1 = get<0>(x);
+  const auto& x1 = get<0>(x) - 0.5;
   // This polynomial is minus the laplacian of the 1D solution
-  Scalar<DataVector> field_source(
-      evaluate_polynomial<double>({0.875, -8.5, 28.5, -40., 20.}, x1) /
-      abs(x1 - 0.5));
+  Scalar<DataVector> field_source(abs(x1) * (20. * square(x1) - 1.5));
   return {std::move(field_source),
           make_with_value<tnsr::I<DataVector, 1, Frame::Inertial>>(x, 0.)};
 }
@@ -77,24 +75,17 @@ Moustache<1>::source_variables(const tnsr::I<DataVector, 1>& x) const noexcept {
 template <>
 tuples::TaggedTuple<::Tags::Source<Field>, ::Tags::Source<AuxiliaryField<2>>>
 Moustache<2>::source_variables(const tnsr::I<DataVector, 2>& x) const noexcept {
-  auto norm_square = make_with_value<DataVector>(get<0>(x), 0.);
-  for (size_t d = 0; d < 2; d++) {
-    norm_square += square(x.get(d) - 0.5);
-  }
-  const auto& x1 = get<0>(x);
-  const auto& x2 = get<1>(x);
+  const auto& x1 = get<0>(x) - 0.5;
+  const auto& x2 = get<1>(x) - 0.5;
+  const auto x1_square = square(x1);
+  const auto x2_square = square(x2);
+  const auto norm_square = x1_square + x2_square;
   // This polynomial is minus the laplacian of the 2D solution
   Scalar<DataVector> field_source(
-      evaluate_polynomial<DataVector>(
-          {evaluate_polynomial<double>({0., 2., -7., 12., -11., 6., -2.}, x2),
-           evaluate_polynomial<double>({2., -26.5, 65.5, -78., 39.}, x2),
-           evaluate_polynomial<double>({-7., 65.5, -104.5, 78., -39.}, x2),
-           evaluate_polynomial<double>({12., -78., 78.}, x2),
-           evaluate_polynomial<double>({-11., 39., -39.}, x2),
-           make_with_value<DataVector>(x2, 6.),
-           make_with_value<DataVector>(x2, -2.)},
-          x1) /
-      sqrt(norm_square));
+      sqrt(norm_square) *
+      (-0.5625 + 6.25 * norm_square - 6.125 * square(norm_square) +
+       4.125 * square(x1_square) - 24.75 * x1_square * x2_square +
+       4.125 * square(x2_square)));
   return {std::move(field_source),
           make_with_value<tnsr::I<DataVector, 2, Frame::Inertial>>(x, 0.)};
 }
