@@ -210,16 +210,16 @@ auto map_array(const std::array<T, Dim>& array, const F& f) noexcept {
  */
 // clang-tidy: complaints about uninitialized member, but the transform will set
 // data
-#define DEFINE_ARRAY_BINOP(RESULT_TYPE, LTYPE, RTYPE, OP_FUNCTION_NAME, \
-                           BINARY_OP)                                   \
-  template <size_t Dim>                                                 \
-  std::array<RESULT_TYPE, Dim> OP_FUNCTION_NAME(                        \
-      const std::array<LTYPE, Dim>& lhs,                                \
-      const std::array<RTYPE, Dim>& rhs) noexcept {                     \
-    std::array<RESULT_TYPE, Dim> result; /*NOLINT*/                     \
-    std::transform(lhs.begin(), lhs.end(), rhs.begin(), result.begin(), \
-                   BINARY_OP);                                          \
-    return result;                                                      \
+#define DEFINE_STD_ARRAY_BINOP(RESULT_TYPE, LTYPE, RTYPE, OP_FUNCTION_NAME, \
+                               BINARY_OP)                                   \
+  template <size_t Dim>                                                     \
+  std::array<RESULT_TYPE, Dim> OP_FUNCTION_NAME(                            \
+      const std::array<LTYPE, Dim>& lhs,                                    \
+      const std::array<RTYPE, Dim>& rhs) noexcept {                         \
+    std::array<RESULT_TYPE, Dim> result; /*NOLINT*/                         \
+    std::transform(lhs.begin(), lhs.end(), rhs.begin(), result.begin(),     \
+                   BINARY_OP);                                              \
+    return result;                                                          \
   }
 
 /*!
@@ -239,12 +239,13 @@ auto map_array(const std::array<T, Dim>& array, const F& f) noexcept {
  * \param BINARY_OP the binary function which should be applied elementwise to
  * the pair of arrays. (e.g. `std::plus<>()`)
  */
-#define DEFINE_ARRAY_INPLACE_BINOP(LTYPE, RTYPE, OP_FUNCTION_NAME, BINARY_OP) \
-  template <size_t Dim>                                                       \
-  std::array<LTYPE, Dim>& OP_FUNCTION_NAME(                                   \
-      std::array<LTYPE, Dim>& lhs,                                            \
-      const std::array<RTYPE, Dim>& rhs) noexcept {                           \
-    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(),          \
-                   BINARY_OP);                                                \
-    return lhs;                                                               \
+#define DEFINE_STD_ARRAY_INPLACE_BINOP(LTYPE, RTYPE, OP_FUNCTION_NAME, \
+                                       BINARY_OP)                      \
+  template <size_t Dim>                                                \
+  std::array<LTYPE, Dim>& OP_FUNCTION_NAME(                            \
+      std::array<LTYPE, Dim>& lhs,                                     \
+      const std::array<RTYPE, Dim>& rhs) noexcept {                    \
+    std::transform(lhs.begin(), lhs.end(), rhs.begin(), lhs.begin(),   \
+                   BINARY_OP);                                         \
+    return lhs;                                                        \
   }

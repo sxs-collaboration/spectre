@@ -4,7 +4,6 @@
 set(LIBRARY DataStructures)
 
 set(LIBRARY_SOURCES
-    DataVector.cpp
     Index.cpp
     IndexIterator.cpp
     LeviCivitaIterator.cpp

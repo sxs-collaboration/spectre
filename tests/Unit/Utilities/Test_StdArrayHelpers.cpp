@@ -154,22 +154,22 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.map_array",
 }
 
 namespace {
-DEFINE_ARRAY_BINOP(int, int, int, operator+, std::plus<>())
-DEFINE_ARRAY_BINOP(double, double, double, f, std::multiplies<>())
+DEFINE_STD_ARRAY_BINOP(int, int, int, operator+, std::plus<>())
+DEFINE_STD_ARRAY_BINOP(double, double, double, f, std::multiplies<>())
 
-DEFINE_ARRAY_INPLACE_BINOP(int, int, operator+=, std::plus<>())
-DEFINE_ARRAY_INPLACE_BINOP(double, double, g, std::multiplies<>())
+DEFINE_STD_ARRAY_INPLACE_BINOP(int, int, operator+=, std::plus<>())
+DEFINE_STD_ARRAY_INPLACE_BINOP(double, double, g, std::multiplies<>())
 
-SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.define_array_binop",
+SPECTRE_TEST_CASE("Unit.Utilities.StdArrayHelpers.define_std_array_binop",
                   "[Utilities][Unit]") {
-  // tests DEFINE_ARRAY_BINOP
+  // tests DEFINE_STD_ARRAY_BINOP
   CHECK(std::array<int, 2>{{1, 2}} + std::array<int, 2>{{2, 3}} ==
         std::array<int, 2>{{3, 5}});
   CHECK(
       f(std::array<double, 2>{{1.0, 2.0}}, std::array<double, 2>{{2.0, 3.0}}) ==
       std::array<double, 2>{{2.0, 6.0}});
 
-  // tests DEFINE_ARRAY_INPLACE_BINOP
+  // tests DEFINE_STD_ARRAY_INPLACE_BINOP
   std::array<int, 2> a{{1, 2}};
   CHECK((a += std::array<int, 2>{{2, 3}}) == std::array<int, 2>{{3, 5}});
   CHECK(a == std::array<int, 2>{{3, 5}});
