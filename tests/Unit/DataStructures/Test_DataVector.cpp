@@ -14,16 +14,16 @@
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/DataStructures/VectorImplTestHelper.hpp"
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
-  SECTION("test construct and assign") {
-    TestHelpers::VectorImpl::vector_test_construct_and_assign<DataVector,
-                                                              double>();
-  }
-  SECTION("test serialize and deserialize") {
-    TestHelpers::VectorImpl::vector_test_serialize<DataVector, double>();
-  }
-  TestHelpers::VectorImpl::vector_test_ref<DataVector, double>();
-  TestHelpers::VectorImpl::vector_test_math_after_move<DataVector, double>();
+// [[OutputRegex, Must copy into same size]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DataStructures.DataVector.ExpressionAssignError",
+    "[Unit][DataStructures]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
+      TestHelpers::VectorImpl::RefSizeErrorTestKind::ExpressionAssign);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }
 
 // [[OutputRegex, Must copy into same size]]
@@ -31,7 +31,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
                                "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>();
+  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
+      TestHelpers::VectorImpl::RefSizeErrorTestKind::Copy);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
@@ -41,13 +42,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
                                "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  TestHelpers::VectorImpl::vector_ref_test_move_size_error<DataVector>();
+  TestHelpers::VectorImpl::vector_ref_test_size_error<DataVector>(
+      TestHelpers::VectorImpl::RefSizeErrorTestKind::Move);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
-                  "[Unit][DataStructures]") {
+void test_data_vector_math() noexcept {
   TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
   TestHelpers::VectorImpl::Bound mone_one{{-1.0, 1.0}};
   TestHelpers::VectorImpl::Bound gt_one{{1.0, 100.0}};
@@ -136,4 +137,17 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.Math",
   TestHelpers::VectorImpl::VectorTestFunctors<
       TestHelpers::VectorImpl::TestType::Strict, std::array<DataVector, 2>>{}(
       array_binary_ops);
+}
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
+  INFO("test construct and assign");
+  TestHelpers::VectorImpl::vector_test_construct_and_assign<DataVector,
+                                                            double>();
+  INFO("test serialize and deserialize");
+  TestHelpers::VectorImpl::vector_test_serialize<DataVector, double>();
+  INFO("test set_data_ref functionality");
+  TestHelpers::VectorImpl::vector_test_ref<DataVector, double>();
+  INFO("test math after move");
+  TestHelpers::VectorImpl::vector_test_math_after_move<DataVector, double>();
+  test_data_vector_math();
 }
