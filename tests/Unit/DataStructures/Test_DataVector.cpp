@@ -49,6 +49,7 @@
 }
 
 void test_data_vector_math() noexcept {
+  /// [vector_test_functors_example]
   TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
   TestHelpers::VectorImpl::Bound mone_one{{-1.0, 1.0}};
   TestHelpers::VectorImpl::Bound gt_one{{1.0, 100.0}};
@@ -83,6 +84,7 @@ void test_data_vector_math() noexcept {
 
   TestHelpers::VectorImpl::VectorTestFunctors<
       TestHelpers::VectorImpl::TestType::Normal, DataVector>{}(unary_ops);
+  /// [vector_test_functors_example]
 
   auto binary_ops = std::make_tuple(
       std::make_tuple(funcl::Divides<>{}, std::make_tuple(generic, positive)),
