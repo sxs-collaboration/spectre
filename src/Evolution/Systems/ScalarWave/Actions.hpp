@@ -130,6 +130,7 @@ struct Observe {
                .ckLocalBranch();
       Parallel::simple_action<observers::Actions::ContributeVolumeData>(
           local_observer, observers::ObservationId(time),
+          std::string{"/element_data"},
           observers::ArrayComponentId(
               std::add_pointer_t<ParallelComponent>{nullptr},
               Parallel::ArrayIndex<ElementIndex<Dim>>(array_index)),

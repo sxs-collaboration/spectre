@@ -42,6 +42,13 @@ struct ContributeVolumeDataToWriter;
  * \ingroup ObserverGroup
  * \brief Send volume tensor data to the observer.
  *
+ * The caller of this Action (which is to be invoked on the Observer parallel
+ * component) must pass in an `observation_id` used to uniquely identify the
+ * observation in time, the name of the `h5::VolumeData` subfile in the HDF5
+ * file (e.g. `/element_data`, where the slash is important), the contributing
+ * parallel component element's component id, a vector of the `TensorComponent`s
+ * to be written to disk, and an `Index<Dim>` of the extents of the volume.
+ *
  * \warning  Currently this action can only be called once per `observation_id`
  * per `array_component_id`. Calling it more often is undefined behavior and may
  * result in incomplete data being written and/or memory leaks. The reason is
@@ -54,13 +61,14 @@ struct ContributeVolumeData {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent, size_t Dim,
             Requires<sizeof...(DbTags) != 0> = nullptr>
-    static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
                     const observers::ObservationId& observation_id,
+                    const std::string& subfile_name,
                     const observers::ArrayComponentId& array_component_id,
                     std::vector<TensorComponent>&& in_received_tensor_data,
                     const Index<Dim>& received_extents) noexcept {
@@ -68,7 +76,8 @@ struct ContributeVolumeData {
         make_not_null(&box),
         [
           &cache, &observation_id, &array_component_id, &received_extents,
-          received_tensor_data = std::move(in_received_tensor_data)
+          received_tensor_data = std::move(in_received_tensor_data), &
+          subfile_name
         ](const gsl::not_null<db::item_type<Tags::TensorData>*> volume_data,
           const std::unordered_set<ArrayComponentId>&
               volume_component_ids) mutable noexcept {
@@ -104,7 +113,7 @@ struct ContributeVolumeData {
                                       ObserverWriter<Metavariables>>(cache)
                                       .ckLocalBranch();
             Parallel::simple_action<ContributeVolumeDataToWriter>(
-                local_writer, observation_id,
+                local_writer, observation_id, subfile_name,
                 std::move((*volume_data)[observation_id]));
             volume_data->erase(observation_id);
           }
@@ -129,20 +138,23 @@ struct ContributeVolumeDataToWriter {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
                     const observers::ObservationId& observation_id,
+                    const std::string& subfile_name,
                     std::unordered_map<observers::ArrayComponentId,
                                        ExtentsAndTensorVolumeData>&&
                         in_volume_data) noexcept {
     db::mutate<Tags::TensorData, Tags::VolumeObserversContributed>(
         make_not_null(&box),
-        [&cache, &observation_id, in_volume_data = std::move(in_volume_data) ](
-            const gsl::not_null<std::unordered_map<
-                observers::ObservationId,
-                std::unordered_map<observers::ArrayComponentId,
-                                   ExtentsAndTensorVolumeData>>*>
-                volume_data,
-            const gsl::not_null<
-                std::unordered_map<observers::ObservationId, size_t>*>
-                volume_observers_contributed) mutable noexcept {
+        [
+          &cache, &observation_id, in_volume_data = std::move(in_volume_data), &
+          subfile_name
+        ](const gsl::not_null<std::unordered_map<
+              observers::ObservationId,
+              std::unordered_map<observers::ArrayComponentId,
+                                 ExtentsAndTensorVolumeData>>*>
+              volume_data,
+          const gsl::not_null<
+              std::unordered_map<observers::ObservationId, size_t>*>
+              volume_observers_contributed) mutable noexcept {
           if (volume_data->count(observation_id) == 0) {
             volume_data->operator[](observation_id) = std::move(in_volume_data);
             (*volume_observers_contributed)[observation_id] = 1;
@@ -161,7 +173,7 @@ struct ContributeVolumeDataToWriter {
             Parallel::threaded_action<ThreadedActions::WriteVolumeData>(
                 Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
                     cache)[static_cast<size_t>(Parallel::my_node())],
-                observation_id);
+                observation_id, subfile_name);
             volume_observers_contributed->erase(observation_id);
           }
         });
@@ -186,7 +198,8 @@ struct WriteVolumeData {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
                     const gsl::not_null<CmiNodeLock*> node_lock,
-                    const observers::ObservationId& observation_id) noexcept {
+                    const observers::ObservationId& observation_id,
+                    const std::string& subfile_name) noexcept {
     // Get data from the DataBox in a thread-safe manner
     Parallel::lock(node_lock);
     std::unordered_map<observers::ArrayComponentId, ExtentsAndTensorVolumeData>
@@ -217,7 +230,7 @@ struct WriteVolumeData {
           file_prefix + std::to_string(Parallel::my_node()) + ".h5", true);
       constexpr size_t version_number = 0;
       auto& volume_file =
-          h5file.try_insert<h5::VolumeData>("/element_data", version_number);
+          h5file.try_insert<h5::VolumeData>(subfile_name, version_number);
       for (const auto& id_and_tensor_data_for_grid : volume_data) {
         const auto& extents_and_tensors = id_and_tensor_data_for_grid.second;
         volume_file.insert_tensor_data(
