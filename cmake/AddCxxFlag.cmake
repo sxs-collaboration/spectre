@@ -10,8 +10,8 @@ function(check_and_add_cxx_flag FLAG_TO_CHECK)
   execute_process(
     COMMAND
     bash -c
-    "${CMAKE_CXX_COMPILER} -Werror ${POSITIVE_FLAG_TO_CHECK} -x c++ -c \
-- <<< \"\" -o /dev/null"
+    "LC_ALL=POSIX ${CMAKE_CXX_COMPILER} -Werror ${POSITIVE_FLAG_TO_CHECK} \
+-x c++ -c - <<< \"\" -o /dev/null"
     RESULT_VARIABLE RESULT
     ERROR_VARIABLE ERROR_FROM_COMPILATION
     OUTPUT_QUIET)
@@ -38,8 +38,8 @@ function(check_and_add_cxx_flags FLAGS_TO_CHECK)
   execute_process(
     COMMAND
     bash -c
-    "${CMAKE_CXX_COMPILER} -Werror ${POSITIVE_FLAGS_WITH_SPACES} -x c++ -c \
-- <<< \"\" -o /dev/null"
+    "LC_ALL=POSIX ${CMAKE_CXX_COMPILER} -Werror ${POSITIVE_FLAGS_WITH_SPACES} \
+-x c++ -c - <<< \"\" -o /dev/null"
     RESULT_VARIABLE RESULT
     ERROR_VARIABLE ERROR_FROM_COMPILATION
     OUTPUT_QUIET)
@@ -49,14 +49,8 @@ function(check_and_add_cxx_flags FLAGS_TO_CHECK)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS_WITH_SPACES}" PARENT_SCOPE)
   else(${RESULT} EQUAL 0)
     # Check each flag to see if it was marked as "invalid" in the output
-    string(FIND "${ERROR_FROM_COMPILATION}" "‘" GCC_STYLE_QUOTE)
     foreach(FLAG ${POSITIVE_FLAGS_TO_CHECK})
-      if(NOT ${GCC_STYLE_QUOTE} EQUAL -1)
-        string(FIND "${ERROR_FROM_COMPILATION}" "‘${FLAG}’" FOUND_POS)
-      else()
-        string(FIND "${ERROR_FROM_COMPILATION}" "'${FLAG}'" FOUND_POS)
-      endif()
-
+      string(FIND "${ERROR_FROM_COMPILATION}" "'${FLAG}'" FOUND_POS)
       if(${FOUND_POS} EQUAL -1)
         # For some reason:
         # list(FIND ${POSITIVE_FLAGS_TO_CHECK} ${FLAG} INDEX_OF_FLAG)
