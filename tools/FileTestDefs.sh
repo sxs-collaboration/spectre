@@ -144,6 +144,7 @@ standard_checks=()
 # Check for lines longer than 80 characters
 long_lines() {
     whitelist "$1" \
+              '.bib$' \
               '.cmake$' \
               '.travis.yml$' \
               'CMakeLists.txt$' \
