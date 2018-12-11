@@ -28,6 +28,8 @@ template <typename DataType>
 struct LorentzFactor;
 template <typename DataType, size_t Dim, typename Fr>
 struct LorentzFactorCompute;
+template <typename DataType>
+struct LorentzFactorSquared;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct MagneticField;
 template <typename DataType>
