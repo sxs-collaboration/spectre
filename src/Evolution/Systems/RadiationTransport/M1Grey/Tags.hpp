@@ -31,12 +31,23 @@ struct TildeE : db::SimpleTag {
 };
 
 /// The densitized momentum density of neutrinos of a given species
-/// \f${\tilde F_i}\f$
+/// \f${\tilde S_i}\f$
 template <typename Fr, class Species>
-struct TildeF : db::SimpleTag {
+struct TildeS : db::SimpleTag {
   using type = tnsr::i<DataVector, 3, Fr>;
   static std::string name() noexcept {
-    return Frame::prefix<Fr>() + "TildeF_" + neutrinos::get_name(Species{});
+    return Frame::prefix<Fr>() + "TildeS_" + neutrinos::get_name(Species{});
+  }
+};
+
+/// The densitized pressure tensor of neutrinos of a given species
+/// \f${\tilde P^{ij}}\f$
+/// computed from \f${\tilde E}\f$, \f${\tilde S_i}\f$ using the M1 closure
+template <typename Fr, class Species>
+struct TildeP : db::SimpleTag {
+  using type = tnsr::II<DataVector, 3, Fr>;
+  static std::string name() noexcept {
+    return Frame::prefix<Fr>() + "TildeP_" + neutrinos::get_name(Species{});
   }
 };
 
