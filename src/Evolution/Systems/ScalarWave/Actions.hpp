@@ -3,6 +3,10 @@
 
 #pragma once
 
+#include <cstddef>
+#include <string>
+#include <tuple>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
@@ -126,6 +130,7 @@ struct Observe {
                .ckLocalBranch();
       Parallel::simple_action<observers::Actions::ContributeVolumeData>(
           local_observer, observers::ObservationId(time),
+          std::string{"/element_data"},
           observers::ArrayComponentId(
               std::add_pointer_t<ParallelComponent>{nullptr},
               Parallel::ArrayIndex<ElementIndex<Dim>>(array_index)),
@@ -140,6 +145,7 @@ struct Observe {
           Parallel::ReductionDatum<size_t, funcl::Plus<>>, Redum, Redum>;
       Parallel::simple_action<observers::Actions::ContributeReductionData>(
           local_observer, observers::ObservationId(time),
+          std::string{"/element_data"},
           std::vector<std::string>{"Time", "NumberOfPoints", "PsiError",
                                    "PiError"},
           ReData{time.value(),

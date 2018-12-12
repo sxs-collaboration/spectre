@@ -131,7 +131,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
         make_fake_reduction_data(array_id, time.value());
     runner.simple_action<obs_component,
                          observers::Actions::ContributeReductionData>(
-        0, observers::ObservationId(time), legend,
+        0, observers::ObservationId(time), "/element_data", legend,
         std::move(reduction_data_fakes));
   }
   // Invke the threaded action 'WriteReductionData' to write reduction data to
