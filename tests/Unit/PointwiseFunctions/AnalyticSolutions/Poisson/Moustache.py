@@ -23,16 +23,13 @@ def auxiliary_field(x):
 
 def source(x):
     if len(x) == 1:
-        return (poly(x, [0.875, -8.5, 28.5, -40., 20.]) / np.abs(x - 0.5))[0]
+        return np.abs(x[0] - 0.5) * (20. * (x[0] - 0.5)**2 - 1.5)
     elif len(x) == 2:
-        return poly(x[0], [
-            poly(x[1], [0., 2., -7., 12., -11., 6., -2.]),
-            poly(x[1], [2., -26.5, 65.5, -78., 39.]),
-            poly(x[1], [-7., 65.5, -104.5, 78., -39.]),
-            poly(x[1], [12., -78., 78.]),
-            poly(x[1], [-11., 39., -39.]),
-            6., -2.
-        ]) / np.linalg.norm(x - 0.5)
+        r = np.linalg.norm(x - 0.5)
+        return r * (
+            -0.5625 + 6.25 * r**2 - 6.125 * r**4 + 4.125 * (x[0] - 0.5)**4 \
+            - 24.75 * (x[0] - 0.5)**2 * (x[1] - 0.5)**2                    \
+            + 4.125 * (x[1] - 0.5)**4)
 
 def auxiliary_source(x):
     return np.zeros(len(x))
