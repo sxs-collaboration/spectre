@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
+#include <type_traits>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
@@ -220,6 +221,172 @@ void test_3d_orient_variables() noexcept {
   CHECK(number_of_orientations_checked == 48);
 }
 
+// Test 0D slice of a 1D element
+void test_0d_orient_variables_on_slice() noexcept {
+  const Index<0> slice_extents{1};
+  Variables<tmpl::list<ScalarTensor, Coords<1>>> vars(slice_extents.product());
+  get(get<ScalarTensor>(vars)) = DataVector{{-0.5}};
+  get<0>(get<Coords<1>>(vars)) = DataVector{{1.0}};
+  for (const auto& side : {Side::Lower, Side::Upper}) {
+    CAPTURE(side);
+    const OrientationMap<1> orientation_map(
+        std::array<Direction<1>, 1>{{Direction<1>(0, side)}});
+    const auto oriented_vars =
+        orient_variables_on_slice(vars, slice_extents, 0, orientation_map);
+    // 1D boundary is a point, so no change expected
+    CHECK(oriented_vars == vars);
+  }
+}
+
+void test_1d_slice_with_orientation(
+    const OrientationMap<2>& orientation_map) noexcept {
+  const auto slice_extents = Index<1>{4};
+  const auto slice_mesh =
+      Mesh<1>(slice_extents.indices(), Spectral::Basis::Legendre,
+              Spectral::Quadrature::GaussLobatto);
+  const auto affine = Affine(-1.0, 1.0, 2.3, 4.5);
+  const auto map = make_coordinate_map<Frame::Logical, Frame::Inertial>(affine);
+
+  for (const size_t sliced_dim : {0_st, 1_st}) {
+    CAPTURE(sliced_dim);
+    // Because `orientation_map` transforms between directions in the volume, we
+    // make a new OrientationMap that transforms between directions on the
+    // slices. In the case of a 1D slice, this is a 1D OrientationMap.
+    const size_t remaining_dim = 1 - sliced_dim;
+    const auto slice_orientation_map =
+        OrientationMap<1>(std::array<Direction<1>, 1>({{Direction<1>(
+            0, orientation_map(Direction<2>(remaining_dim, Side::Upper))
+                   .side())}}));
+    const auto map_oriented =
+        make_coordinate_map<Frame::Logical, Frame::Inertial>(
+            CoordinateMaps::DiscreteRotation<1>{slice_orientation_map}, affine);
+
+    Variables<tmpl::list<ScalarTensor, Coords<1>>> vars(
+        slice_extents.product());
+    // Fill ScalarTensor with x-coordinate values
+    get(get<ScalarTensor>(vars)) = get<0>(map(logical_coordinates(slice_mesh)));
+    get<Coords<1>>(vars) = map(logical_coordinates(slice_mesh));
+    const auto oriented_vars = orient_variables_on_slice(
+        vars, slice_extents, sliced_dim, orientation_map);
+
+    Variables<tmpl::list<ScalarTensor, Coords<1>>> expected_vars(
+        slice_extents.product());
+    get(get<ScalarTensor>(expected_vars)) = get<0>(map_oriented(
+        logical_coordinates(slice_orientation_map.inverse_map()(slice_mesh))));
+    get<Coords<1>>(expected_vars) = map_oriented(
+        logical_coordinates(slice_orientation_map.inverse_map()(slice_mesh)));
+    CHECK(oriented_vars == expected_vars);
+  }
+}
+
+// Test 1D slice of a 2D element
+void test_1d_orient_variables_on_slice() noexcept {
+  size_t number_of_orientations_checked = 0;
+  auto dimensions = make_array(0_st, 1_st);
+  do {
+    CAPTURE(dimensions);
+    for (const auto& side_1 : {Side::Lower, Side::Upper}) {
+      const auto dir_1 = Direction<2>(dimensions[0], side_1);
+      for (const auto& side_2 : {Side::Lower, Side::Upper}) {
+        const auto dir_2 = Direction<2>(dimensions[1], side_2);
+        const OrientationMap<2> orientation_map(
+            std::array<Direction<2>, 2>{{dir_1, dir_2}});
+        CAPTURE(orientation_map);
+        test_1d_slice_with_orientation(orientation_map);
+        number_of_orientations_checked++;
+      }
+    }
+  } while (std::next_permutation(dimensions.begin(), dimensions.end()));
+  CHECK(number_of_orientations_checked == 8);
+}
+
+void test_2d_slice_with_orientation(
+    const OrientationMap<3>& orientation_map) noexcept {
+  const auto slice_extents = Index<2>{3, 4};
+  const auto slice_mesh =
+      Mesh<2>(slice_extents.indices(), Spectral::Basis::Legendre,
+              Spectral::Quadrature::GaussLobatto);
+  const auto affine =
+      Affine2D{Affine(-1.0, 1.0, 2.3, 4.5), Affine(-1.0, 1.0, 0.8, 3.1)};
+  const auto map = make_coordinate_map<Frame::Logical, Frame::Inertial>(affine);
+
+  for (const size_t sliced_dim : {0_st, 1_st, 2_st}) {
+    CAPTURE(sliced_dim);
+
+    // Because `orientation_map` transforms between directions in the volume, we
+    // make a new OrientationMap that transforms between directions on the
+    // slices. In the case of a 2D slice, this is a 2D OrientationMap.
+    const auto slice_orientation_map =
+        [&orientation_map, &sliced_dim ]() noexcept {
+      const auto dims_of_slice =
+          (sliced_dim == 0 ? make_array(1_st, 2_st)
+                           : (sliced_dim == 1 ? make_array(0_st, 2_st)
+                                              : make_array(0_st, 1_st)));
+      const auto neighbor_dims_of_slice = make_array(
+          orientation_map(dims_of_slice[0]), orientation_map(dims_of_slice[1]));
+      const bool neighbor_axes_transposed =
+          (neighbor_dims_of_slice[1] < neighbor_dims_of_slice[0]);
+      const size_t neighbor_first_slice_dim = neighbor_axes_transposed ? 1 : 0;
+      const size_t neighbor_second_slice_dim = neighbor_axes_transposed ? 0 : 1;
+
+      return OrientationMap<2>(std::array<Direction<2>, 2>(
+          {{Direction<2>(
+                neighbor_first_slice_dim,
+                orientation_map(Direction<3>(dims_of_slice[0], Side::Upper))
+                    .side()),
+            Direction<2>(
+                neighbor_second_slice_dim,
+                orientation_map(Direction<3>(dims_of_slice[1], Side::Upper))
+                    .side())}}));
+    }
+    ();
+
+    const auto map_oriented =
+        make_coordinate_map<Frame::Logical, Frame::Inertial>(
+            CoordinateMaps::DiscreteRotation<2>{slice_orientation_map}, affine);
+
+    Variables<tmpl::list<ScalarTensor, Coords<2>>> vars(
+        slice_extents.product());
+    // Fill ScalarTensor with x-coordinate values
+    get(get<ScalarTensor>(vars)) = get<0>(map(logical_coordinates(slice_mesh)));
+    get<Coords<2>>(vars) = map(logical_coordinates(slice_mesh));
+    const auto oriented_vars = orient_variables_on_slice(
+        vars, slice_extents, sliced_dim, orientation_map);
+
+    Variables<tmpl::list<ScalarTensor, Coords<2>>> expected_vars(
+        slice_extents.product());
+    get(get<ScalarTensor>(expected_vars)) = get<0>(map_oriented(
+        logical_coordinates(slice_orientation_map.inverse_map()(slice_mesh))));
+    get<Coords<2>>(expected_vars) = map_oriented(
+        logical_coordinates(slice_orientation_map.inverse_map()(slice_mesh)));
+    CHECK(oriented_vars == expected_vars);
+  }
+}
+
+// Test 2D slice of a 3D element
+void test_2d_orient_variables_on_slice() noexcept {
+  size_t number_of_orientations_checked = 0;
+  auto dimensions = make_array(0_st, 1_st, 2_st);
+  do {
+    CAPTURE(dimensions);
+    for (const auto& side_1 : {Side::Lower, Side::Upper}) {
+      const auto dir_1 = Direction<3>(dimensions[0], side_1);
+      for (const auto& side_2 : {Side::Lower, Side::Upper}) {
+        const auto dir_2 = Direction<3>(dimensions[1], side_2);
+        for (const auto& side_3 : {Side::Lower, Side::Upper}) {
+          const auto dir_3 = Direction<3>(dimensions[2], side_2);
+          const OrientationMap<3> orientation_map(
+              std::array<Direction<3>, 3>{{dir_1, dir_2, dir_3}});
+          CAPTURE(orientation_map);
+          test_2d_slice_with_orientation(orientation_map);
+          number_of_orientations_checked++;
+        }
+      }
+    }
+  } while (std::next_permutation(dimensions.begin(), dimensions.end()));
+  CHECK(number_of_orientations_checked == 48);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables.OrientVariables",
@@ -230,5 +397,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables.OrientVariables",
     test_3d_orient_variables();
     test_2d_simple_case_by_hand();
     test_3d_simple_case_by_hand();
+  }
+
+  SECTION("Testing orient_variables_on_slice") {
+    // Each of these tests closely follows the corresponding volume test
+    // e.g., test_1d_orient_variables_on_slice -> test_2d_orient_variables
+    test_0d_orient_variables_on_slice();
+    test_1d_orient_variables_on_slice();
+    test_2d_orient_variables_on_slice();
   }
 }
