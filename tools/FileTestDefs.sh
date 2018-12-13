@@ -245,6 +245,7 @@ license() {
               'LICENSE' \
               'support/TeXLive/texlive.profile' \
               'tools/Iwyu/boost-all.imp$' \
+              '.bib' \
               '.github/ISSUE_TEMPLATE.md' \
               '.github/PULL_REQUEST_TEMPLATE.md' \
               '.h5' \
