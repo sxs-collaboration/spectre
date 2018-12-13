@@ -101,12 +101,14 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
     db::mutate<Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
                                typename system::variables_tag>>(
         make_not_null(&box),
-        [](const gsl::not_null<db::item_type<
-               Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
-                               typename system::variables_tag>>*>
+        // Need to use system::volume_dim below instead of just
+        // volume_dim to avoid an ICE on gcc 7.
+        [](const gsl::not_null<db::item_type<Tags::Interface<
+               Tags::BoundaryDirectionsExterior<system::volume_dim>,
+               typename system::variables_tag>>*>
                exterior_boundary_vars,
            const db::item_type<Tags::Interface<
-               Tags::BoundaryDirectionsInterior<volume_dim>,
+               Tags::BoundaryDirectionsInterior<system::volume_dim>,
                typename system::variables_tag>>& interior_vars) noexcept {
           for (auto& exterior_direction_and_vars : *exterior_boundary_vars) {
             auto& direction = exterior_direction_and_vars.first;
