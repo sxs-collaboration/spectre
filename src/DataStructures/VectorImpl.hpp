@@ -572,40 +572,28 @@ std::ostream& operator<<(std::ostream& os,
 // cast to bool needed to avoid the compiler mistaking the type to be determined
 // by T
 template <typename T,
-          typename = cpp17::bool_constant<cpp17::is_arithmetic_v<T>>,
-          bool = static_cast<bool>(tt::is_a_v<std::complex, T>)>
+          bool = static_cast<bool>(tt::is_complex_of_fundamental_v<T> or
+                                   cpp17::is_fundamental_v<T>)>
 struct get_vector_element_type;
 template <typename T>
-struct get_vector_element_type<T, cpp17::bool_constant<true>, false> {
+struct get_vector_element_type<T, true> {
   using type = T;
 };
-// this version will only be called with the combination
-// `cpp17::bool_constant<false>, true`, as std::complex are not arithmetic
-// types. Therefore, we ensure that the contained value is arithmetic by
-// matching the pattern `cpp17::bool_constant<false>, true` only in the desired
-// case.
 template <typename T>
-struct get_vector_element_type<
-    std::complex<T>, cpp17::bool_constant<not cpp17::is_arithmetic_v<T>>,
-    true> {
-  using type = std::complex<T>;
-};
-template <typename T>
-struct get_vector_element_type<T, cpp17::bool_constant<false>, false> {
+struct get_vector_element_type<T, false> {
   using type = typename get_vector_element_type<
       typename T::ResultType::ElementType>::type;
 };
 template <typename T>
-struct get_vector_element_type<T*, cpp17::bool_constant<false>, false> {
+struct get_vector_element_type<T*, false> {
   using type = typename get_vector_element_type<T>::type;
 };
 template <typename T>
-struct get_vector_element_type<T&, cpp17::bool_constant<false>, false> {
+struct get_vector_element_type<T&, false> {
   using type = typename get_vector_element_type<T>::type;
 };
 template <typename T, size_t S>
-struct get_vector_element_type<std::array<T, S>, cpp17::bool_constant<false>,
-                               false> {
+struct get_vector_element_type<std::array<T, S>, false> {
   using type = typename get_vector_element_type<T>::type;
 };
 // @}
