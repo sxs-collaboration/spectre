@@ -13,11 +13,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/DereferenceWrapper.hpp"
+#include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Math.hpp"  // IWYU pragma: keep
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
-#include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {

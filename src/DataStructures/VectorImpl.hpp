@@ -530,3 +530,85 @@ std::ostream& operator<<(std::ostream& os,
   MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(-=, VECTOR_TYPE) \
   MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(*=, VECTOR_TYPE) \
   MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(/=, VECTOR_TYPE)
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Defines the `MakeWithValueImpl` `apply` specialization
+ *
+ * \details The `MakeWithValueImpl<VECTOR_TYPE, VECTOR_TYPE>` member
+ * `apply(VECTOR_TYPE, VECTOR_TYPE::value_type)` specialization defined by this
+ * macro produces an object with the same size as the `input` argument,
+ * initialized with the `value` argument in every entry.
+ *
+ * \param VECTOR_TYPE The vector type (e.g. `DataVector`)
+ */
+#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)  \
+  namespace MakeWithValueImpls {                          \
+  template <>                                             \
+  struct MakeWithValueImpl<VECTOR_TYPE, VECTOR_TYPE> {    \
+    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE              \
+    apply(const VECTOR_TYPE& input,                       \
+          const VECTOR_TYPE::value_type value) noexcept { \
+      return VECTOR_TYPE(input.size(), value);            \
+    }                                                     \
+  };                                                      \
+  }  // namespace MakeWithValueImpls
+
+// {@
+/*!
+ * \ingroup DataStructuresGroup
+ * \ingroup TypeTraitsGroup
+ * \brief Helper struct to determine the element type of a VectorImpl or
+ * container of VectorImpl
+ *
+ * \details Extracts the element type of a `VectorImpl`, a std::array of
+ * `VectorImpl`, or a reference or pointer to a `VectorImpl`. In any of these
+ * cases, the `type` member is defined as the `ElementType` of the `VectorImpl`
+ * in question. If, instead, `get_vector_element_type` is passed an arithmetic
+ * or complex arithemetic type, the `type` member is defined as the passed type.
+ *
+ * \snippet DataStructures/Test_VectorImpl.cpp get_vector_element_type_example
+ */
+// cast to bool needed to avoid the compiler mistaking the type to be determined
+// by T
+template <typename T,
+          typename = cpp17::bool_constant<cpp17::is_arithmetic_v<T>>,
+          bool = static_cast<bool>(tt::is_a_v<std::complex, T>)>
+struct get_vector_element_type;
+template <typename T>
+struct get_vector_element_type<T, cpp17::bool_constant<true>, false> {
+  using type = T;
+};
+// this version will only be called with the combination
+// `cpp17::bool_constant<false>, true`, as std::complex are not arithmetic
+// types. Therefore, we ensure that the contained value is arithmetic by
+// matching the pattern `cpp17::bool_constant<false>, true` only in the desired
+// case.
+template <typename T>
+struct get_vector_element_type<
+    std::complex<T>, cpp17::bool_constant<not cpp17::is_arithmetic_v<T>>,
+    true> {
+  using type = std::complex<T>;
+};
+template <typename T>
+struct get_vector_element_type<T, cpp17::bool_constant<false>, false> {
+  using type = typename get_vector_element_type<
+      typename T::ResultType::ElementType>::type;
+};
+template <typename T>
+struct get_vector_element_type<T*, cpp17::bool_constant<false>, false> {
+  using type = typename get_vector_element_type<T>::type;
+};
+template <typename T>
+struct get_vector_element_type<T&, cpp17::bool_constant<false>, false> {
+  using type = typename get_vector_element_type<T>::type;
+};
+template <typename T, size_t S>
+struct get_vector_element_type<std::array<T, S>, cpp17::bool_constant<false>,
+                               false> {
+  using type = typename get_vector_element_type<T>::type;
+};
+// @}
+
+template <typename T>
+using get_vector_element_type_t = typename get_vector_element_type<T>::type;
