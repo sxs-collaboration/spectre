@@ -45,11 +45,10 @@ if [ ${RUN_IWYU} ]; then
     ${SPECTRE_SOURCE_DIR}/.travis/RunIncludeWhatYouUse.sh
 fi
 
-# Check documentation output for warnings; we write the output to stdout and to
-# a file so we can search the file for warnings
 if [ ${BUILD_DOC} ]; then
-    make doc | tee doxygen.log
-    grep 'warning' ./doxygen.log && exit 1
+    # Use `doc-check` target to determine if the documentation was built
+    # successfully
+    make doc-check || exit 1
 fi
 
 # Build the code and run tests
