@@ -21,62 +21,6 @@
 namespace TestHelpers {
 namespace VectorImpl {
 
-namespace detail {
-// `check_vectors` checks equality of vectors and related data types for tests.
-//
-// Comparisons between any pairs of the following are supported:
-// vector types
-// arithmetic types
-// arrays of vectors
-// arrays of arithmetic types
-
-// between two vectors
-template <typename T1, typename T2, typename VT1, typename VT2>
-inline void check_vectors(const ::VectorImpl<T1, VT1>& t1,
-                          const ::VectorImpl<T2, VT2>& t2) noexcept {
-  CHECK_ITERABLE_APPROX(VT1{t1}, VT2{t2});
-}
-// between two arithmetic types
-template <typename T1, typename T2,
-          Requires<cpp17::is_arithmetic_v<T1> and cpp17::is_arithmetic_v<T2>> =
-              nullptr>
-inline void check_vectors(const T1& t1, const T2& t2) noexcept {
-  CHECK(approx(t1) == t2);
-}
-// between an arithmetic type and a vector
-template <typename T1, typename T2, typename VT2,
-          Requires<cpp17::is_arithmetic_v<T1>> = nullptr>
-void check_vectors(const T1& t1, const ::VectorImpl<T2, VT2>& t2) noexcept {
-  check_vectors(VT2{t2.size(), t1}, t2);
-}
-// between a vector and an arithmetic type
-template <typename T1, typename VT1, typename T2,
-          Requires<cpp17::is_arithmetic_v<T2>> = nullptr>
-void check_vectors(const ::VectorImpl<T1, VT1>& t1, const T2& t2) noexcept {
-  check_vectors(t2, t1);
-}
-// between two arrays
-template <typename T1, typename T2, size_t S>
-void check_vectors(const std::array<T1, S>& t1,
-                   const std::array<T2, S>& t2) noexcept {
-  for (size_t i = 0; i < S; i++) {
-    check_vectors(gsl::at(t1, i), gsl::at(t2, i));
-  }
-}
-// between an array of vectors and an arithmetic type
-template <typename T1, typename T2, size_t S>
-void check_vectors(const std::array<T1, S>& t1, const T2& t2) noexcept {
-  for (const auto& array_element : t1) {
-    check_vectors(array_element, t2);
-  }
-}
-// between an arithmetic type and an array of vectors
-template <typename T1, typename T2, size_t S>
-void check_vectors(const T1& t1, const std::array<T2, S>& t2) noexcept {
-  check_vectors(t2, t1);
-}
-}  // namespace detail
-
 /// \ingroup TestingFrameworkGroup
 /// \brief test construction and assignment of a `VectorType` with a `ValueType`
 template <typename VectorType, typename ValueType>
@@ -283,8 +227,10 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
     VectorType owning_vector{size, generated_value2};
     sharing_vector.set_data_ref(&owning_vector);
     sharing_vector = sharing_vector + generated_value1;
-    detail::check_vectors(owning_vector, sum_generated_values);
-    detail::check_vectors(sharing_vector, sum_generated_values);
+    CHECK_ITERABLE_APPROX(owning_vector,
+                          (VectorType{size, sum_generated_values}));
+    CHECK_ITERABLE_APPROX(sharing_vector,
+                          (VectorType{size, sum_generated_values}));
   }
 }
 
@@ -370,14 +316,14 @@ void vector_test_math_after_move(
     VectorType to_vector{};
     to_vector = std::move(from_vector);
     to_vector = vector_math_lhs + vector_math_rhs;
-    detail::check_vectors(to_vector, VectorType{size, sum_generated_values});
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
     // clang-tidy: use after move (intentional here)
     CHECK(from_vector.size() == 0);  // NOLINT
     CHECK(from_vector.is_owning());
     from_vector = vector_math_lhs - vector_math_rhs;
-    detail::check_vectors(from_vector,
-                          VectorType{size, difference_generated_values});
-    detail::check_vectors(to_vector, sum_generated_values);
+    CHECK_ITERABLE_APPROX(from_vector,
+                          (VectorType{size, difference_generated_values}));
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
   }
   {
     INFO("Check move assignment and value of target")
@@ -387,8 +333,9 @@ void vector_test_math_after_move(
     VectorType to_vector{};
     to_vector = std::move(from_vector);
     from_vector = vector_math_lhs + vector_math_rhs;
-    detail::check_vectors(to_vector, from_value);
-    detail::check_vectors(from_vector, sum_generated_values);
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, from_value}));
+    CHECK_ITERABLE_APPROX(from_vector,
+                          (VectorType{size, sum_generated_values}));
   }
   {
     INFO("Check move constructor and use after move")
@@ -397,14 +344,14 @@ void vector_test_math_after_move(
     VectorType to_vector{std::move(from_vector)};
     to_vector = vector_math_lhs + vector_math_rhs;
     CHECK(to_vector.size() == size);
-    detail::check_vectors(to_vector, sum_generated_values);
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
     // clang-tidy: use after move (intentional here)
     CHECK(from_vector.size() == 0);  // NOLINT
     CHECK(from_vector.is_owning());
     from_vector = vector_math_lhs - vector_math_rhs;
-    detail::check_vectors(from_vector,
-                          VectorType{size, difference_generated_values});
-    detail::check_vectors(to_vector, VectorType{size, sum_generated_values});
+    CHECK_ITERABLE_APPROX(from_vector,
+                          (VectorType{size, difference_generated_values}));
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
   }
 
   {
@@ -414,8 +361,9 @@ void vector_test_math_after_move(
     VectorType from_vector{size, from_value};
     const VectorType to_vector{std::move(from_vector)};
     from_vector = vector_math_lhs + vector_math_rhs;
-    detail::check_vectors(to_vector, VectorType{size, from_value});
-    detail::check_vectors(from_vector, VectorType{size, sum_generated_values});
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, from_value}));
+    CHECK_ITERABLE_APPROX(from_vector,
+                          (VectorType{size, sum_generated_values}));
   }
 }
 }  // namespace VectorImpl
