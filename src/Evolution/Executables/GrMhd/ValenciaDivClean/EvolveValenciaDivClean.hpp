@@ -28,6 +28,7 @@
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "Evolution/VariableFixing/Tags.hpp"
 #include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
@@ -99,13 +100,9 @@ struct EvolutionMetavars {
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
 
-  // hack this has to be synchronized with the Observe action :(
-  using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,
-                                         funcl::Sqrt<funcl::Divides<>>,
-                                         std::index_sequence<1>>;
-  using reduction_data_tags = tmpl::list<observers::Tags::ReductionData<
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<size_t, funcl::Plus<>>, Redum, Redum, Redum>>;
+  using reduction_data_tags =
+      observers::get_reduction_data_tags_from_observing_actions<
+          tmpl::list<grmhd::ValenciaDivClean::Actions::Observe>>;
 
   using compute_rhs = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
