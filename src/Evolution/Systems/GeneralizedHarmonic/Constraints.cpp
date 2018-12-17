@@ -5,7 +5,9 @@
 
 #include <cstddef>
 
+#include "DataStructures/LeviCivitaIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -384,7 +386,7 @@ tnsr::ia<DataType, SpatialDim, Frame> two_index_constraint(
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void two_index_constraint(
-    gsl::not_null<tnsr::ia<DataType, SpatialDim, Frame>*> constraint,
+    const gsl::not_null<tnsr::ia<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::ia<DataType, SpatialDim, Frame>& d_gauge_function,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_normal_vector,
@@ -427,6 +429,43 @@ void two_index_constraint(
   two_index_constraint_add_term_11_of_11(
       constraint, gamma2, spacetime_normal_one_form, inverse_spacetime_metric,
       spacetime_normal_vector, three_index_constraint);
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::iaa<DataType, SpatialDim, Frame> four_index_constraint(
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept {
+  static_assert(
+      SpatialDim == 3,
+      "four_index_constraint() currently only supports 3 spatial dimensions");
+  auto constraint =
+      make_with_value<tnsr::iaa<DataType, SpatialDim, Frame>>(d_phi, 0.0);
+  four_index_constraint<SpatialDim, Frame, DataType>(&constraint, d_phi);
+  return constraint;
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void four_index_constraint(
+    const gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> constraint,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept {
+  static_assert(
+      SpatialDim == 3,
+      "four_index_constraint() currently only supports 3 spatial dimensions");
+  if (get_size(get<0, 0, 0>(*constraint)) != get_size(get<0, 0, 0, 0>(d_phi))) {
+    *constraint =
+        tnsr::iaa<DataType, SpatialDim, Frame>{get<0, 0, 0, 0>(d_phi)};
+  }
+  std::fill(constraint->begin(), constraint->end(), 0.0);
+
+  for (LeviCivitaIterator<SpatialDim> it; it; ++it) {
+    for (size_t a = 0; a < SpatialDim + 1; ++a) {
+      // Constraint is symmetric on a,b. Avoid double-counting in summation
+      // by starting the inner loop at b = a.
+      for (size_t b = a; b < SpatialDim + 1; ++b) {
+        constraint->get(it[0], a, b) +=
+            it.sign() * d_phi.get(it[1], it[2], a, b);
+      }
+    }
+  }
 }
 }  // namespace GeneralizedHarmonic
 
@@ -513,9 +552,19 @@ void two_index_constraint(
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                  \
           three_index_constraint) noexcept;
 
+#define INSTANTIATE_ONLY_3D(_, data)                                          \
+  template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                     \
+  GeneralizedHarmonic::four_index_constraint(                                 \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi) noexcept; \
+  template void GeneralizedHarmonic::four_index_constraint(                   \
+      const gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*>    \
+          constraint,                                                         \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi) noexcept;
+
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Grid, Frame::Inertial))
-
+GENERATE_INSTANTIATIONS(INSTANTIATE_ONLY_3D, (3), (double, DataVector),
+                        (Frame::Grid, Frame::Inertial))
 #undef DIM
 #undef DTYPE
 #undef FRAME
