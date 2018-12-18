@@ -27,7 +27,6 @@ namespace AnalyticData {
  *
  * The relativistic version of the Orszag-Tang vortex is a
  * 2-dimensional test case for relativistic MHD systems (see, e.g.,
- * [arXiv:1101.3573](https://arxiv.org/abs/1101.3573)
  * \cite Beckwith2011iy).  It describes the flow of an ideal fluid with
  * adiabatic index \f$5/3\f$.  The initial conditions (and hence the
  * states at later times) are periodic in both \f$x\f$ and \f$y\f$
@@ -50,13 +49,10 @@ namespace AnalyticData {
  *
  * \parblock
  * \note There are multiple errors in the description of this test
- * problem in [the original SpECTRE
- * paper](https://arxiv.org/abs/1609.00098) \cite Kidder2016hev and there
- * is a sign error in the velocity in
- * [arXiv:1101.3573](https://arxiv.org/abs/1101.3573)
- * \cite Beckwith2011iy.  Despite these errors, the actual tests
- * performed for those papers matched the standard problem as
- * presented here.
+ * problem in the original SpECTRE paper \cite Kidder2016hev and there
+ * is a sign error in the velocity in \cite Beckwith2011iy.  Despite these
+ * errors, the actual tests performed for those papers matched the standard
+ * problem as presented here.
  * \endparblock
  */
 class OrszagTangVortex {
