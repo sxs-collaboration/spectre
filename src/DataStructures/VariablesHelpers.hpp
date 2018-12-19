@@ -155,8 +155,7 @@ Variables<tmpl::list<TagsToSlice...>> data_on_slice(
 template <std::size_t VolumeDim, typename TagsList>
 void add_slice_to_data(const gsl::not_null<Variables<TagsList>*> volume_vars,
                        const Variables<TagsList>& vars_on_slice,
-                       const Index<VolumeDim>& extents,
-                       const size_t sliced_dim,
+                       const Index<VolumeDim>& extents, const size_t sliced_dim,
                        const size_t fixed_index) noexcept {
   constexpr const size_t number_of_independent_components =
       Variables<TagsList>::number_of_independent_components;
@@ -164,12 +163,12 @@ void add_slice_to_data(const gsl::not_null<Variables<TagsList>*> volume_vars,
   const size_t slice_grid_points = extents.slice_away(sliced_dim).product();
   ASSERT(volume_vars->number_of_grid_points() == volume_grid_points,
          "volume_vars has wrong number of grid points.  Expected "
-         << volume_grid_points << ", got "
-         << volume_vars->number_of_grid_points());
+             << volume_grid_points << ", got "
+             << volume_vars->number_of_grid_points());
   ASSERT(vars_on_slice.number_of_grid_points() == slice_grid_points,
          "vars_on_slice has wrong number of grid points.  Expected "
-         << slice_grid_points << ", got "
-         << vars_on_slice.number_of_grid_points());
+             << slice_grid_points << ", got "
+             << vars_on_slice.number_of_grid_points());
   using value_type = typename Variables<TagsList>::value_type;
   value_type* const volume_data = volume_vars->data();
   const value_type* const slice_data = vars_on_slice.data();
@@ -177,7 +176,7 @@ void add_slice_to_data(const gsl::not_null<Variables<TagsList>*> volume_vars,
     for (size_t i = 0; i < number_of_independent_components; ++i) {
       // clang-tidy: do not use pointer arithmetic
       volume_data[si.volume_offset() + i * volume_grid_points] +=  // NOLINT
-          slice_data[si.slice_offset() + i * slice_grid_points];  // NOLINT
+          slice_data[si.slice_offset() + i * slice_grid_points];   // NOLINT
     }
   }
 }
