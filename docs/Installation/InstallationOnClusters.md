@@ -71,6 +71,11 @@ you do not need to install any dependencies, so you can skip steps 5 and 6. You
 can optionally compile using LLVM/Clang by sourcing `wheeler_clang.sh` instead
 of `wheeler_gcc.sh`
 
+## Ocean at Fullerton
+
+Follow the general instructions, using `ocean` for `SYSTEM_TO_RUN_ON`,
+you do not need to install any dependencies, so you can skip steps 5 and 6.
+
 ## Orca at Fullerton
 
 Follow the general instructions, using `orca` for `SYSTEM_TO_RUN_ON`,
