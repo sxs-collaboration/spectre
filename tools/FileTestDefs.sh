@@ -146,8 +146,11 @@ long_lines() {
     whitelist "$1" \
               '.bib$' \
               '.cmake$' \
+              '.html$' \
+              '.min.js$' \
               '.travis.yml$' \
               'CMakeLists.txt$' \
+              'Doxyfile.in$' \
               'containers/Dockerfile.travis$' \
               'tools/Iwyu/boost-all.imp$' && \
         staged_grep '^[^#].\{80,\}' "$1" | grep -Ev 'https?://' | \
