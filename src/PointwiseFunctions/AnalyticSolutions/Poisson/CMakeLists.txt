@@ -4,6 +4,7 @@
 set(LIBRARY PoissonSolutions)
 
 set(LIBRARY_SOURCES
+  Lorentzian.cpp
   Moustache.cpp
   ProductOfSinusoids.cpp
   )
