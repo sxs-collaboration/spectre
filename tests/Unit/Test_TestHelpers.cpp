@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cmath>
+#include <complex>
 #include <cstddef>
 #include <limits>
 #include <map>
@@ -48,6 +49,18 @@ SPECTRE_TEST_CASE("Unit.TestHelpers", "[Unit]") {
   CHECK_ITERABLE_APPROX(vec_a, vec_b);
   vec_b[1] += 1e-12;
   CHECK_ITERABLE_CUSTOM_APPROX(vec_a, vec_b, larger_approx);
+
+  const std::vector<std::complex<double>> complex_vector{
+      std::complex<double>(1.0, 1.5), std::complex<double>(2.0, 2.5),
+      std::complex<double>(3.0, 3.5)};
+  CHECK_ITERABLE_APPROX(complex_vector, complex_vector);
+  auto perturbed_complex_vector = complex_vector;
+  perturbed_complex_vector[1] += 1e-15;
+  CHECK(complex_vector != perturbed_complex_vector);
+  CHECK_ITERABLE_APPROX(complex_vector, perturbed_complex_vector);
+  perturbed_complex_vector[1] += 1e-12;
+  CHECK_ITERABLE_CUSTOM_APPROX(complex_vector, perturbed_complex_vector,
+                               larger_approx);
 
   const std::vector<std::map<int, double>> vecmap_a{
       {{1, 1.}, {2, 2.}}, {{1, 1.23}, {3, 4.56}, {5, 7.89}}};

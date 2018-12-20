@@ -446,7 +446,9 @@ struct VectorOrArraySize {
   }
   // vector version
   template <typename T,
-            Requires<cpp17::is_arithmetic_v<typename T::ElementType>> = nullptr>
+            Requires<cpp17::is_arithmetic_v<typename T::ElementType> or
+                     tt::is_complex_of_fundamental_v<typename T::ElementType>> =
+                nullptr>
   size_t operator()(const T& container) const noexcept {
     return container.size();
   }
@@ -468,7 +470,9 @@ struct VectorOrArrayAt {
   }
   // vector version
   template <typename T,
-            Requires<cpp17::is_arithmetic_v<typename T::ElementType>> = nullptr>
+            Requires<cpp17::is_arithmetic_v<typename T::ElementType> or
+                     tt::is_complex_of_fundamental_v<typename T::ElementType>> =
+                nullptr>
   decltype(auto) operator()(T& container, size_t index) noexcept {
     return container.at(index);
   }
@@ -481,6 +485,26 @@ template <typename... Wraps, typename... Operands, size_t... Is>
 auto wrap_tuple(std::tuple<Operands...>& operand_values,
                 std::index_sequence<Is...> /*meta*/) noexcept {
   return std::make_tuple(wrap(Wraps{}, get<Is>(operand_values))...);
+}
+
+// Helper function for obtaining an appropriate vector to pass to
+// make_with_values as the used_for_size.
+template <typename T>
+auto get_used_for_size(size_t size, T /*meta*/,
+                       cpp17::bool_constant<false> /*meta*/) {
+  return T{size};
+}
+
+template <typename T, size_t S>
+auto get_used_for_size(size_t size, std::array<T, S> /*meta*/,
+                       cpp17::bool_constant<false> /*meta*/) {
+  return T{size};
+}
+
+template <typename T>
+auto get_used_for_size(size_t /*size*/, T /*meta*/,
+                       cpp17::bool_constant<true> /*meta*/) {
+  return T{};
 }
 
 // given the set of types of operands to test (`Operands`), and a set of
@@ -496,7 +520,7 @@ void test_function_on_vector_operands(
     std::index_sequence<Is...> /*meta*/) noexcept {
   MAKE_GENERATOR(generator);
   UniformCustomDistribution<size_t> size_distribution{2, 5};
-  const DataVector used_for_size{size_distribution(generator)};
+  const size_t size = size_distribution(generator);
   // using each distribution, generate a value for the appropriate operand type
   // and put it in a tuple.
   auto operand_values = std::make_tuple(make_with_random_values<Operands>(
@@ -504,7 +528,10 @@ void test_function_on_vector_operands(
       UniformCustomDistribution<
           tt::get_fundamental_type_t<get_vector_element_type_t<Operands>>>{
           std::get<Is>(bounds)},
-      used_for_size)...);
+      get_used_for_size(size, Operands{},
+                        cpp17::bool_constant<(
+                            cpp17::is_fundamental_v<Operands> or
+                            tt::is_complex_of_fundamental_v<Operands>)>{}))...);
   // wrap the tuple of random values according to the passed in `Wraps`
   auto wrapped_operands = wrap_tuple<Wraps...>(
       operand_values, std::make_index_sequence<sizeof...(Bounds)>{});
