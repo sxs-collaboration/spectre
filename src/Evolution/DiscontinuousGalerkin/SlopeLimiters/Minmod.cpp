@@ -11,6 +11,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Mesh.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
@@ -88,52 +89,87 @@ bool limit_one_tensor(
   const double max_slope_factor =
       (minmod_type == SlopeLimiters::MinmodType::Muscl) ? 1.0 : 2.0;
 
+  // In each direction, average the size of all different neighbors in that
+  // direction. Note that only the component of neighor_size that is normal
+  // to the face is needed (and, therefore, computed). Note that this average
+  // does not depend on the solution on the neighboring elements, so could be
+  // precomputed outside of `limit_one_tensor`. Changing the code to
+  // precompute the average may or may not be a measurable optimization.
+  const auto effective_neighbor_sizes =
+      [&neighbor_sizes, &element ]() noexcept {
+    DirectionMap<VolumeDim, double> result;
+    for (const auto& dir : Direction<VolumeDim>::all_directions()) {
+      const auto& externals = element.external_boundaries();
+      const bool neighbors_in_this_dir =
+          (externals.find(dir) == externals.end());
+      if (neighbors_in_this_dir) {
+        const double effective_neighbor_size =
+            [&neighbor_sizes, &dir, &element ]() noexcept {
+          const size_t dim = dir.dimension();
+          const auto& neighbor_ids = element.neighbors().at(dir).ids();
+          double size_accumulate = 0.0;
+          for (const auto& id : neighbor_ids) {
+            size_accumulate +=
+                gsl::at(neighbor_sizes.at(std::make_pair(dir, id)), dim);
+          }
+          return size_accumulate / neighbor_ids.size();
+        }
+        ();
+        result.insert(std::make_pair(dir, effective_neighbor_size));
+      }
+    }
+    return result;
+  }
+  ();
+
   bool some_component_was_limited = false;
   for (auto iter = tensor_begin.get(); iter != tensor_end.get(); ++iter) {
     DataVector& u = *iter;
     const double u_mean = mean_value(u, mesh);
 
     const auto iter_offset = std::distance(tensor_begin.get(), iter);
+    // In each direction, average the mean of the `iter` tensor component over
+    // all different neighbors in that direction. This produces one effective
+    // neighbor per direction.
+    const auto effective_neighbor_means =
+        [&neighbor_tensor_begin, &element, &iter_offset ]() noexcept {
+      DirectionMap<VolumeDim, double> result;
+      for (const auto& dir : Direction<VolumeDim>::all_directions()) {
+        const auto& externals = element.external_boundaries();
+        const bool neighbors_in_this_dir =
+            (externals.find(dir) == externals.end());
+        if (neighbors_in_this_dir) {
+          const double effective_neighbor_mean = [
+            &neighbor_tensor_begin, &dir, &element, &iter_offset
+          ]() noexcept {
+            const auto& neighbor_ids = element.neighbors().at(dir).ids();
+            double mean_accumulate = 0.0;
+            for (const auto& id : neighbor_ids) {
+              // clang-tidy: do not use pointer arithmetic
+              mean_accumulate +=
+                  *(neighbor_tensor_begin.at(std::make_pair(dir, id)).get() +
+                    iter_offset);  // NOLINT
+            }
+            return mean_accumulate / neighbor_ids.size();
+          }
+          ();
+          result.insert(std::make_pair(dir, effective_neighbor_mean));
+        }
+      }
+      return result;
+    }
+    ();
+
     const auto difference_to_neighbor = [
-      &u_mean, &neighbor_tensor_begin, &element, &element_size, &neighbor_sizes,
-      &iter_offset
+      &u_mean, &element, &element_size, &effective_neighbor_means, &
+      effective_neighbor_sizes
     ](const size_t dim, const Side& side) noexcept {
       const auto& externals = element.external_boundaries();
       const auto dir = Direction<VolumeDim>(dim, side);
       const bool has_neighbors = (externals.find(dir) == externals.end());
       if (has_neighbors) {
-        const auto& neighbor_ids = element.neighbors().at(dir).ids();
-
-        // Average neighbor_size over the different neighbors on the opposite
-        // side of the face. Note that only the component of neighbor_size that
-        // is normal to the face is needed (and, therefore, computed).
-        // This average is independent of the tensor component `u`, so could be
-        // precomputed outside the loop over tensors. Changing the code to
-        // precompute the average may or may not be an optimization.
-        const double neighbor_size =
-            [&dim, &dir, &neighbor_ids, &neighbor_sizes ]() noexcept {
-          double size_cumul = 0.0;
-          for (const auto& id : neighbor_ids) {
-            size_cumul +=
-                gsl::at(neighbor_sizes.at(std::make_pair(dir, id)), dim);
-          }
-          return size_cumul / neighbor_ids.size();
-        }();
-
-        // Average the neighbor_tensor means over the different neighbors on the
-        // opposite side of the face.
-        const double neighbor_mean = [
-          &dir, &neighbor_ids, &neighbor_tensor_begin, &iter_offset
-        ]() noexcept {
-          double u_cumul = 0.0;
-          for (const auto& id : neighbor_ids) {
-            // clang-tidy: do not use pointer arithmetic
-            u_cumul +=
-                *(neighbor_tensor_begin.at(std::make_pair(dir, id)).get() +
-                  iter_offset);  // NOLINT
-          }
-          return u_cumul / neighbor_ids.size();
-        }();
+        const double neighbor_size = effective_neighbor_sizes.at(dir);
+        const double neighbor_mean = effective_neighbor_means.at(dir);
 
         // Compute an effective element-center-to-neighbor-center distance
         // that accounts for the possibility of different refinement levels
