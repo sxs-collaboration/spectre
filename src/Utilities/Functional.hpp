@@ -39,9 +39,6 @@
  */
 namespace funcl {
 // using for overload resolution with blaze
-using std::conj;
-using std::imag;
-using std::real;
 using std::max;
 using std::min;
 
