@@ -163,7 +163,7 @@ class VectorImpl
   ///
   /// - `set_size` number of values
   /// - `value` the value to initialize each element
-  VectorImpl(size_t set_size, double value) noexcept
+  VectorImpl(size_t set_size, T value) noexcept
       : owned_data_(set_size > 0 ? static_cast<value_type*>(
                                        malloc(set_size * sizeof(value_type)))
                                  : nullptr,
@@ -436,28 +436,44 @@ std::ostream& operator<<(std::ostream& os,
 
 /*!
  * \ingroup DataStructuresGroup
- * \brief Defines specializations of Blaze `Type` fields which are typically
- * needed by a contiguous data set
+ * \brief Instructs Blaze to provide the appropriate vector result type of
+ * arithmetic operations for `VECTOR_TYPE`. This is accomplished by specializing
+ * Blaze's type traits that are used for handling return type deduction.
  *
- * \details Type definitions here are suitable for the original DataVector, but
- * this macro might need to be tweaked for other types of data, for instance
- * Fourier coefficients.
+ * \details Type definitions here are suitable for contiguous data
+ * (e.g. `DataVector`), but this macro might need to be tweaked for other types
+ * of data, for instance Fourier coefficients.
  *
  * \param VECTOR_TYPE The vector type, which for the arithmetic operations is
  * the type of the operation result (e.g. `DataVector`)
+ */
+#define VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(VECTOR_TYPE) \
+  template <>                                                        \
+  struct IsVector<VECTOR_TYPE> : std::true_type {};                  \
+  template <>                                                        \
+  struct TransposeFlag<VECTOR_TYPE>                                  \
+      : BoolConstant<VECTOR_TYPE::transpose_flag> {};                \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, AddTrait);        \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, SubTrait);        \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, MultTrait);       \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, DivTrait)
+
+/*!
+ * \ingroup DataStructuresGroup
+ * \brief Instructs Blaze to provide the appropriate vector result type of `Map`
+ * operations (unary and binary) acting on `VECTOR_TYPE`. This is accomplished
+ * by specializing Blaze's type traits that are used for handling return type
+ * deduction.
  *
+ * \details Type declarations here are suitable for contiguous data (e.g.
+ * `DataVector`), but this macro might need to be tweaked for other types of
+ * data, for instance Fourier coefficients.
+ *
+ * \param VECTOR_TYPE The vector type, which for the `Map` operations is
+ * the type of the operation result (e.g. `DataVector`)
  */
 #if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-#define BLAZE_TRAIT_SPECIALIZE_TYPICAL_VECTOR_TRAITS(VECTOR_TYPE) \
-  template <>                                                     \
-  struct IsVector<VECTOR_TYPE> : std::true_type {};               \
-  template <>                                                     \
-  struct TransposeFlag<VECTOR_TYPE>                               \
-      : BoolConstant<VECTOR_TYPE::transpose_flag> {};             \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, AddTrait);     \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, SubTrait);     \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, MultTrait);    \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, DivTrait);     \
+#define VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(VECTOR_TYPE) \
   template <typename Operator>                                    \
   struct UnaryMapTrait<VECTOR_TYPE, Operator> {                   \
     using Type = VECTOR_TYPE;                                     \
@@ -467,16 +483,7 @@ std::ostream& operator<<(std::ostream& os,
     using Type = VECTOR_TYPE;                                     \
   }
 #else
-#define BLAZE_TRAIT_SPECIALIZE_TYPICAL_VECTOR_TRAITS(VECTOR_TYPE) \
-  template <>                                                     \
-  struct IsVector<VECTOR_TYPE> : std::true_type {};               \
-  template <>                                                     \
-  struct TransposeFlag<VECTOR_TYPE>                               \
-      : BoolConstant<VECTOR_TYPE::transpose_flag> {};             \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, AddTrait);     \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, SubTrait);     \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, MultTrait);    \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, DivTrait);     \
+#define VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(VECTOR_TYPE) \
   template <typename Operator>                                    \
   struct MapTrait<VECTOR_TYPE, Operator> {                        \
     using Type = VECTOR_TYPE;                                     \

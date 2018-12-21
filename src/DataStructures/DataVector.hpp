@@ -53,7 +53,8 @@ class DataVector : public VectorImpl<double, DataVector> {
 
 // Specialize the Blaze type traits to correctly handle DataVector
 namespace blaze {
-BLAZE_TRAIT_SPECIALIZE_TYPICAL_VECTOR_TRAITS(DataVector);
+VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(DataVector);
+VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(DataVector);
 }  // namespace blaze
 
 SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const DataVector& t) noexcept {
