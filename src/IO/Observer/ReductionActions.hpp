@@ -189,7 +189,7 @@ struct WriteReductionData {
         make_not_null(&box),
         [
           &cache, &file_lock, &in_reduction_data, &legend, &observation_id,
-          &reduction_names, &write_to_disk
+          &reduction_names, &subfile_name, &write_to_disk
         ](const gsl::not_null<
               db::item_type<Tags::ReductionData<ReductionDatums...>>*>
               reduction_data,
@@ -252,7 +252,7 @@ struct WriteReductionData {
             Parallel::threaded_action<WriteReductionData>(
                 Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
                     cache)[0],
-                observation_id, std::vector<std::string>{},
+                observation_id, subfile_name, std::vector<std::string>{},
                 std::move(reduction_data->operator[](observation_id)));
             reduction_observers_contributed->erase(observation_id);
             reduction_data->erase(observation_id);
