@@ -272,6 +272,28 @@ MAKE_UNARY_FUNCTIONAL(Tan, tan);
 MAKE_UNARY_FUNCTIONAL(Tanh, tanh);
 MAKE_UNARY_FUNCTIONAL(Negate, -);
 
+/// Function for computing an integer power, forwards to template pow<N>()
+template <int N, typename C0 = Identity>
+struct UnaryPow;
+
+/// \cond
+template <int N, typename C0>
+struct UnaryPow : Functional<C0::arity> {
+  template <class... Ts>
+  constexpr auto operator()(const Ts&... ts) noexcept {
+    return pow<N>(C0{}(ts...));
+  }
+};
+
+template <int N>
+struct UnaryPow<N, Identity> : Functional<1> {
+  template <class T0>
+  constexpr auto operator()(const T0& t0) noexcept {
+    return pow<N>(t0);
+  }
+};
+/// \endcond
+
 /// Function for squaring a quantity
 template <class C = Identity>
 struct Square : Functional<C::arity> {

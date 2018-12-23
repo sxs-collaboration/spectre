@@ -81,7 +81,10 @@ void test_data_vector_math() noexcept {
       std::make_tuple(funcl::Square<>{}, std::make_tuple(generic)),
       std::make_tuple(funcl::Sqrt<>{}, std::make_tuple(positive)),
       std::make_tuple(funcl::Tan<>{}, std::make_tuple(generic)),
-      std::make_tuple(funcl::Tanh<>{}, std::make_tuple(generic)));
+      std::make_tuple(funcl::Tanh<>{}, std::make_tuple(generic)),
+      std::make_tuple(funcl::UnaryPow<1>{}, std::make_tuple(generic)),
+      std::make_tuple(funcl::UnaryPow<-2>{}, std::make_tuple(generic)),
+      std::make_tuple(funcl::UnaryPow<3>{}, std::make_tuple(generic)));
 
   TestHelpers::VectorImpl::test_functions_with_vector_arguments<
       TestHelpers::VectorImpl::TestKind::Normal, DataVector>(unary_ops);
