@@ -1,18 +1,29 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
+
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
+#include <functional>
+#include <map>
 #include <memory>  // IWYU pragma: keep
+#include <random>
 #include <tuple>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/VectorImpl.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Math.hpp"  // IWYU pragma: keep
 #include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TmplDebugging.hpp"
 #include "Utilities/Tuple.hpp"
+#include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Unit/TestingFramework.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
@@ -20,161 +31,17 @@
 namespace TestHelpers {
 namespace VectorImpl {
 
-namespace detail {
-// `check_vectors` checks equality of vectors and related data types for tests.
-//
-// Comparisons between any pairs of the following are supported:
-// vector types
-// arithmetic types
-// arrays of vectors
-// arrays of arithmetic types
-
-// between two vectors
-template <typename T1, typename T2, typename VT1, typename VT2>
-inline void check_vectors(const ::VectorImpl<T1, VT1>& t1,
-                          const ::VectorImpl<T2, VT2>& t2) noexcept {
-  CHECK_ITERABLE_APPROX(VT1{t1}, VT2{t2});
-}
-// between two arithmetic types
-template <typename T1, typename T2,
-          Requires<cpp17::is_arithmetic_v<T1> and cpp17::is_arithmetic_v<T2>> =
-              nullptr>
-inline void check_vectors(const T1& t1, const T2& t2) noexcept {
-  CHECK(approx(t1) == t2);
-}
-// between an arithmetic type and a vector
-template <typename T1, typename T2, typename VT2,
-          Requires<cpp17::is_arithmetic_v<T1>> = nullptr>
-void check_vectors(const T1& t1, const ::VectorImpl<T2, VT2>& t2) noexcept {
-  check_vectors(VT2{t2.size(), t1}, t2);
-}
-// between a vector and an arithmetic type
-template <typename T1, typename VT1, typename T2,
-          Requires<cpp17::is_arithmetic_v<T2>> = nullptr>
-void check_vectors(const ::VectorImpl<T1, VT1>& t1, const T2& t2) noexcept {
-  check_vectors(t2, t1);
-}
-// between two arrays
-template <typename T1, typename T2, size_t S>
-void check_vectors(const std::array<T1, S>& t1,
-                   const std::array<T2, S>& t2) noexcept {
-  for (size_t i = 0; i < S; i++) {
-    check_vectors(gsl::at(t1, i), gsl::at(t2, i));
-  }
-}
-// between an array of vectors and an arithmetic type
-template <typename T1, typename T2, size_t S>
-void check_vectors(const std::array<T1, S>& t1, const T2& t2) noexcept {
-  for (const auto& array_element : t1) {
-    check_vectors(array_element, t2);
-  }
-}
-// between an arithmetic type and an array of vectors
-template <typename T1, typename T2, size_t S>
-void check_vectors(const T1& t1, const std::array<T2, S>& t2) noexcept {
-  check_vectors(t2, t1);
-}
-}  // namespace detail
-
-// @{
-/*!
- * \brief Perform a function over combinatoric subsets of a `std::tuple`
- *
- * \details
- * If given a function object, the apply_tuple_combinations function will
- * apply the function to all ordered combinations. For instance, if the tuple
- * contains elements (a,b,c) and the function f accepts two arguments it will be
- * executed on all nine combinations of the three possible
- * arguments. Importantly, the function f must then be invokable for all such
- * argument combinations.
- *
- * \tparam ArgLength the number of arguments taken by the invokable. In the
- * case where `function` is an object or closure whose call operator is
- * overloaded or a template it is not possible to determine the number of
- * arguments using a type trait. One common use case would be a generic
- * lambda. For this reason it is necessary to explicitly specify the number of
- * arguments to the invokable.
- *
- * \param set - the tuple for which you'd like to execute every combination
- *
- * \param function - The a callable, which is called on the combinations of the
- * tuple
- *
- * \param args - a set of partially assembled arguments passed recursively. Some
- * arguments can be passed in by the using code, in which case those are kept at
- * the end of the argument list and the combinations are prependend.
- */
-template <size_t ArgLength, typename T, typename... Elements, typename... Args,
-          Requires<sizeof...(Args) == ArgLength> = nullptr>
-constexpr inline void apply_tuple_combinations(
-    const std::tuple<Elements...>& set, const T& function,
-    const Args&... args) noexcept {
-  (void)
-      set;  // so it is used, can be documented, and causes no compiler warnings
-  function(args...);
-}
-
-template <size_t ArgLength, typename T, typename... Elements, typename... Args,
-          Requires<(ArgLength > sizeof...(Args))> = nullptr>
-constexpr inline void apply_tuple_combinations(
-    const std::tuple<Elements...>& set, const T& function,
-    const Args&... args) noexcept {
-  tuple_fold(set, [&function, &set, &args... ](const auto& x) noexcept {
-    apply_tuple_combinations<ArgLength>(set, function, x, args...);
-  });
-}
-// @}
-
-namespace detail {
-template <typename... ValueTypes, size_t... Is>
-auto addressof_impl(gsl::not_null<std::tuple<ValueTypes...>*> preset,
-                    std::index_sequence<Is...> /*meta*/) noexcept {
-  return std::make_tuple(std::addressof(std::get<Is>(*preset))...);
-}
-
-template <size_t N, typename... ValueTypes, size_t... Is1, size_t... Is2>
-auto remove_nth_impl(const std::tuple<ValueTypes...>& tup,
-                     std::index_sequence<Is1...> /*meta*/,
-                     std::index_sequence<Is2...> /*meta*/) noexcept {
-  return std::make_tuple(std::get<Is1>(tup)..., std::get<N + Is2 + 1>(tup)...);
-}
-}  // namespace detail
-
-/*!
- * \brief given a pointer to a tuple, returns a tuple filled with pointers to
- * the given tuple's elements
- */
-template <typename... ValueTypes>
-auto addressof(gsl::not_null<std::tuple<ValueTypes...>*> preset) noexcept {
-  return detail::addressof_impl(
-      preset, std::make_index_sequence<sizeof...(ValueTypes)>());
-}
-
-/*!
- * \brief given a tuple, returns a tuple with the specified element removed
- *
- * \tparam N the element to remove
- *
- * \param tup the tuple from which to remove the element
- */
-template <size_t N, typename... ValueTypes>
-auto remove_nth(const std::tuple<ValueTypes...>& tup) noexcept {
-  return detail::remove_nth_impl<N>(
-      tup, std::make_index_sequence<N>(),
-      std::make_index_sequence<sizeof...(ValueTypes) - N - 1>());
-}
-
 /// \ingroup TestingFrameworkGroup
 /// \brief test construction and assignment of a `VectorType` with a `ValueType`
 template <typename VectorType, typename ValueType>
 void vector_test_construct_and_assign(
-    typename tt::get_fundamental_type_t<ValueType> low =
-        typename tt::get_fundamental_type_t<ValueType>{-100.0},
-    typename tt::get_fundamental_type_t<ValueType> high =
-        typename tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
+    tt::get_fundamental_type_t<ValueType> low =
+        tt::get_fundamental_type_t<ValueType>{-100.0},
+    tt::get_fundamental_type_t<ValueType> high =
+        tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<typename tt::get_fundamental_type_t<ValueType>>
-      dist{low, high};
+  UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
+                                                                        high};
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
@@ -240,14 +107,14 @@ void vector_test_construct_and_assign(
 /// \brief test the serialization of a `VectorType` constructed with a
 /// `ValueType`
 template <typename VectorType, typename ValueType>
-void vector_test_serialize(
-    typename tt::get_fundamental_type_t<ValueType> low =
-        typename tt::get_fundamental_type_t<ValueType>{-100.0},
-    typename tt::get_fundamental_type_t<ValueType> high =
-        typename tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
+void vector_test_serialize(tt::get_fundamental_type_t<ValueType> low =
+                               tt::get_fundamental_type_t<ValueType>{-100.0},
+                           tt::get_fundamental_type_t<ValueType> high =
+                               tt::get_fundamental_type_t<ValueType>{
+                                   100.0}) noexcept {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<typename tt::get_fundamental_type_t<ValueType>>
-      dist{low, high};
+  UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
+                                                                        high};
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
@@ -298,14 +165,14 @@ void vector_test_serialize(
 /// \brief test the construction and move of a reference `VectorType`
 /// constructed with a `ValueType`
 template <typename VectorType, typename ValueType>
-void vector_test_ref(typename tt::get_fundamental_type_t<ValueType> low =
-                         typename tt::get_fundamental_type_t<ValueType>{-100.0},
-                     typename tt::get_fundamental_type_t<ValueType> high =
-                         typename tt::get_fundamental_type_t<ValueType>{
+void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
+                         tt::get_fundamental_type_t<ValueType>{-100.0},
+                     tt::get_fundamental_type_t<ValueType> high =
+                         tt::get_fundamental_type_t<ValueType>{
                              100.0}) noexcept {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<typename tt::get_fundamental_type_t<ValueType>>
-      dist{low, high};
+  UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
+                                                                        high};
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
@@ -370,8 +237,10 @@ void vector_test_ref(typename tt::get_fundamental_type_t<ValueType> low =
     VectorType owning_vector{size, generated_value2};
     sharing_vector.set_data_ref(&owning_vector);
     sharing_vector = sharing_vector + generated_value1;
-    detail::check_vectors(owning_vector, sum_generated_values);
-    detail::check_vectors(sharing_vector, sum_generated_values);
+    CHECK_ITERABLE_APPROX(owning_vector,
+                          (VectorType{size, sum_generated_values}));
+    CHECK_ITERABLE_APPROX(sharing_vector,
+                          (VectorType{size, sum_generated_values}));
   }
 }
 
@@ -396,13 +265,13 @@ template <typename VectorType,
           typename ValueType = typename VectorType::ElementType>
 void vector_ref_test_size_error(
     RefSizeErrorTestKind test_kind,
-    typename tt::get_fundamental_type_t<ValueType> low =
-        typename tt::get_fundamental_type_t<ValueType>{-100.0},
-    typename tt::get_fundamental_type_t<ValueType> high =
-        typename tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
+    tt::get_fundamental_type_t<ValueType> low =
+        tt::get_fundamental_type_t<ValueType>{-100.0},
+    tt::get_fundamental_type_t<ValueType> high =
+        tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<typename tt::get_fundamental_type_t<ValueType>>
-      dist{low, high};
+  UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
+                                                                        high};
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
@@ -431,13 +300,13 @@ void vector_ref_test_size_error(
 /// `VectorType` initialized with `ValueType`
 template <typename VectorType, typename ValueType>
 void vector_test_math_after_move(
-    typename tt::get_fundamental_type_t<ValueType> low =
-        typename tt::get_fundamental_type_t<ValueType>{-100.0},
-    typename tt::get_fundamental_type_t<ValueType> high =
-        typename tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
+    tt::get_fundamental_type_t<ValueType> low =
+        tt::get_fundamental_type_t<ValueType>{-100.0},
+    tt::get_fundamental_type_t<ValueType> high =
+        tt::get_fundamental_type_t<ValueType>{100.0}) noexcept {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<typename tt::get_fundamental_type_t<ValueType>>
-      dist{low, high};
+  UniformCustomDistribution<tt::get_fundamental_type_t<ValueType>> dist{low,
+                                                                        high};
   UniformCustomDistribution<size_t> sdist{2, 20};
 
   const size_t size = sdist(gen);
@@ -457,14 +326,14 @@ void vector_test_math_after_move(
     VectorType to_vector{};
     to_vector = std::move(from_vector);
     to_vector = vector_math_lhs + vector_math_rhs;
-    detail::check_vectors(to_vector, VectorType{size, sum_generated_values});
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
     // clang-tidy: use after move (intentional here)
     CHECK(from_vector.size() == 0);  // NOLINT
     CHECK(from_vector.is_owning());
     from_vector = vector_math_lhs - vector_math_rhs;
-    detail::check_vectors(from_vector,
-                          VectorType{size, difference_generated_values});
-    detail::check_vectors(to_vector, sum_generated_values);
+    CHECK_ITERABLE_APPROX(from_vector,
+                          (VectorType{size, difference_generated_values}));
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
   }
   {
     INFO("Check move assignment and value of target")
@@ -474,8 +343,9 @@ void vector_test_math_after_move(
     VectorType to_vector{};
     to_vector = std::move(from_vector);
     from_vector = vector_math_lhs + vector_math_rhs;
-    detail::check_vectors(to_vector, from_value);
-    detail::check_vectors(from_vector, sum_generated_values);
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, from_value}));
+    CHECK_ITERABLE_APPROX(from_vector,
+                          (VectorType{size, sum_generated_values}));
   }
   {
     INFO("Check move constructor and use after move")
@@ -484,14 +354,14 @@ void vector_test_math_after_move(
     VectorType to_vector{std::move(from_vector)};
     to_vector = vector_math_lhs + vector_math_rhs;
     CHECK(to_vector.size() == size);
-    detail::check_vectors(to_vector, sum_generated_values);
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
     // clang-tidy: use after move (intentional here)
     CHECK(from_vector.size() == 0);  // NOLINT
     CHECK(from_vector.is_owning());
     from_vector = vector_math_lhs - vector_math_rhs;
-    detail::check_vectors(from_vector,
-                          VectorType{size, difference_generated_values});
-    detail::check_vectors(to_vector, VectorType{size, sum_generated_values});
+    CHECK_ITERABLE_APPROX(from_vector,
+                          (VectorType{size, difference_generated_values}));
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, sum_generated_values}));
   }
 
   {
@@ -501,9 +371,350 @@ void vector_test_math_after_move(
     VectorType from_vector{size, from_value};
     const VectorType to_vector{std::move(from_vector)};
     from_vector = vector_math_lhs + vector_math_rhs;
-    detail::check_vectors(to_vector, VectorType{size, from_value});
-    detail::check_vectors(from_vector, VectorType{size, sum_generated_values});
+    CHECK_ITERABLE_APPROX(to_vector, (VectorType{size, from_value}));
+    CHECK_ITERABLE_APPROX(from_vector,
+                          (VectorType{size, sum_generated_values}));
   }
+}
+
+/// \ingroup TestingFrameworkGroup
+/// \brief Type alias to be more expressive with distribution bounds in vector
+/// tests which call the generic math test below
+using Bound = std::array<double, 2>;
+
+/// \ingroup TestingFrameworkGroup
+/// \brief the set of test types that may be used for the math operations
+///
+/// \details Three types of test are provided:
+/// - `Normal` is used to indicate those tests which should be performed over
+///   all combinations of the supplied vector type(s) and their value
+///   types. This is useful for e.g. `+`.
+///
+/// - `Strict` is used to indicate those tests which should be performed over
+///   only sets of the vector type and compared to the same operation of the set
+///   of its value type. This is useful for e.g. `atan2`, which cannot take a
+///   `DataVector` and a double as arguments.
+///
+/// - `Inplace` is used to indicate those tests which should be performed
+///   maintaining the type of the left-hand side of the operator and not
+///   including it in the combinations. Inplace operators such as `+=` have a
+///   more restrictive condition on the type of the left hand side than do
+///   simply `+`. (e.g. `double + complex<double>` compiles, but
+///   `double += complex<double>` does not)
+enum TestKind { Normal, Strict, Inplace };
+
+namespace detail {
+
+// to choose between possible reference wrappers for the math tests.
+namespace UseRefWrap {
+struct Cref {};
+struct None {};
+struct Ref {};
+}  // namespace UseRefWrap
+
+// Wrap is used to wrap values in a std::reference_wrapper using std::cref and
+// std::ref, or to not wrap at all. This is done to verify that all math
+// operations work transparently with a `std::reference_wrapper` too.
+template <class T>
+decltype(auto) wrap(UseRefWrap::Cref /*meta*/, T& t) noexcept {
+  return std::cref(t);
+}
+
+template <class T>
+decltype(auto) wrap(UseRefWrap::None /*meta*/, T& t) noexcept {
+  return t;
+}
+
+template <class T>
+decltype(auto) wrap(UseRefWrap::Ref /*meta*/, T& t) noexcept {
+  return std::ref(t);
+}
+
+using NonConstWrapperList = tmpl::list<UseRefWrap::None, UseRefWrap::Ref>;
+
+using WrapperList = tmpl::push_front<NonConstWrapperList, UseRefWrap::Cref>;
+
+// struct used for determining the full number of elements in a vector, array of
+// vectors. Designed for use with `test_element_wise_function`
+struct VectorOrArraySize {
+  // array of vectors version, assumes all vectors in the array are the same
+  // size, as will be the case for the relevant test helpers in this detail
+  // namespace
+  template <typename T, size_t S>
+  size_t operator()(const std::array<T, S>& container) const noexcept {
+    return S * VectorOrArraySize{}(container[0]);
+  }
+  // vector version
+  template <typename T,
+            Requires<cpp17::is_arithmetic_v<typename T::ElementType>> = nullptr>
+  size_t operator()(const T& container) const noexcept {
+    return container.size();
+  }
+};
+
+// struct used for obtaining an indexed value in a vector, array of vectors.
+// Designed for use with `test_element_wise_function`
+struct VectorOrArrayAt {
+  // array of vectors version
+  template <typename T, size_t S>
+  decltype(auto) operator()(std::array<T, S>& container,
+                            size_t index) noexcept {
+    return VectorOrArrayAt{}(gsl::at(container, index % S), index / S);
+  }
+  template <typename T, size_t S>
+  decltype(auto) operator()(const std::array<T, S>& container,
+                            size_t index) noexcept {
+    return VectorOrArrayAt{}(gsl::at(container, index % S), index / S);
+  }
+  // vector version
+  template <typename T,
+            Requires<cpp17::is_arithmetic_v<typename T::ElementType>> = nullptr>
+  decltype(auto) operator()(T& container, size_t index) noexcept {
+    return container.at(index);
+  }
+};
+
+// given an explicit template parameter pack `Wraps`, wrap the elements of
+// `operand`, passed by pointer, element-by-element, and return the
+// resulting tuple of wrapped elements.
+template <typename... Wraps, typename... Operands, size_t... Is>
+auto wrap_tuple(std::tuple<Operands...>& operand_values,
+                std::index_sequence<Is...> /*meta*/) noexcept {
+  return std::make_tuple(wrap(Wraps{}, get<Is>(operand_values))...);
+}
+
+// given the set of types of operands to test (`Operands`), and a set of
+// reference wrappers (`Wraps`), make each operand with random values according
+// to the bound from `Bounds`. Then, call
+// `CHECK_CUSTOM_ELEMENT_WISE_FUNCTION_APPROX` to test the element wise `func`.
+template <typename Function, typename... Bounds, typename... Wraps,
+          typename... Operands, size_t... Is>
+void test_function_on_vector_operands(
+    const Function& function, const std::tuple<Bounds...>& bounds,
+    const std::tuple<Wraps...>& /*wraps*/,
+    const std::tuple<Operands...>& /*operands*/,
+    std::index_sequence<Is...> /*meta*/) noexcept {
+  MAKE_GENERATOR(generator);
+  UniformCustomDistribution<size_t> size_distribution{2, 5};
+  const DataVector used_for_size{size_distribution(generator)};
+  // using each distribution, generate a value for the appropriate operand type
+  // and put it in a tuple.
+  auto operand_values = std::make_tuple(make_with_random_values<Operands>(
+      make_not_null(&generator),
+      UniformCustomDistribution<
+          tt::get_fundamental_type_t<get_vector_element_type_t<Operands>>>{
+          std::get<Is>(bounds)},
+      used_for_size)...);
+  // wrap the tuple of random values according to the passed in `Wraps`
+  auto wrapped_operands = wrap_tuple<Wraps...>(
+      operand_values, std::make_index_sequence<sizeof...(Bounds)>{});
+  CHECK_CUSTOM_ELEMENT_WISE_FUNCTION_APPROX(
+      function, make_not_null(&wrapped_operands), VectorOrArrayAt{},
+      VectorOrArraySize{});
+}
+
+// Set of structs for choosing between execution paths when assembling the
+// argument list for the math testing utility
+namespace TestFunctionsWithVectorArgumentsChoices {
+struct FirstInplace {};
+struct Continuing {};
+struct Done {};
+}  // namespace TestFunctionsWithVectorArgumentsChoices
+
+// helper struct implementation for choosing the next branch for assembling the
+// argument list for the math testing utility. This is done to use pattern
+// matching instead of SFINAE.
+template <bool IsDone, bool IsFirstAssignment>
+struct next_choice_for_test_functions_recursion_impl;
+
+// if the size of the vector list is the same as the size of the distribution
+// bound list, then assembly is done
+template <bool IsFirstAssignment>
+struct next_choice_for_test_functions_recursion_impl<true, IsFirstAssignment> {
+  using type = TestFunctionsWithVectorArgumentsChoices::Done;
+};
+
+// if we are assembling the first argument and the test type is Inplace, then
+// treat it separately
+template <>
+struct next_choice_for_test_functions_recursion_impl<false, true> {
+  using type = TestFunctionsWithVectorArgumentsChoices::FirstInplace;
+};
+
+// otherwise, continue assembling as ordinary
+template <>
+struct next_choice_for_test_functions_recursion_impl<false, false> {
+  using type = TestFunctionsWithVectorArgumentsChoices::Continuing;
+};
+
+// helper function for easily determining the next branch of the call operator
+// for TestFunctionsWithVectorArgumentsImpl
+template <typename VectorList, typename BoundList, TestKind Test>
+using next_choice_for_test_functions_recursion =
+    typename next_choice_for_test_functions_recursion_impl<
+        tmpl::size<VectorList>::value == tmpl::size<BoundList>::value,
+        tmpl::size<VectorList>::value == 0 and Test == TestKind::Inplace>::type;
+
+// functions to recursively assemble the arguments and wrappers for
+// calling the operator tester `test_function_on_vector_operands`.
+//
+// `UniqueTypeList` is a tmpl::list which stores the set of unique types to
+// test the functions with.
+//
+// `FirstOperand` is the first operand type, used when the Test is
+// `TestKind::Inplace`, as inplace operators have specific demands on the
+// first operand.
+
+// base case: the correct number of operand types has been obtained in
+// `Operands`, so this calls the test function with the function, bounds,
+// reference wrap, and operand type information.
+template <TestKind Test, typename UniqueTypeList, typename FirstOperand,
+          typename... Operands, typename Function, typename... DistBounds,
+          typename... Wraps>
+void assemble_test_function_arguments_and_execute_tests(
+    const Function& function, const std::tuple<DistBounds...>& bounds,
+    const std::tuple<Wraps...>& wraps, const std::tuple<Operands...>&& operands,
+    TestFunctionsWithVectorArgumentsChoices::Done /*meta*/) noexcept {
+  test_function_on_vector_operands(
+      function, bounds, wraps, operands,
+      std::make_index_sequence<sizeof...(DistBounds)>{});
+}
+
+// general case: add an additional reference wrapper identification type from
+// `WrapperList` to `wraps`, and an additional type from `UniqueTypeList`
+// to `operands`, and recurse on each option.
+template <TestKind Test, typename UniqueTypeList, typename FirstOperand,
+          typename... Operands, typename Function, typename... DistBounds,
+          typename... Wraps>
+void assemble_test_function_arguments_and_execute_tests(
+    const Function& function, const std::tuple<DistBounds...>& bounds,
+    const std::tuple<Wraps...>& wraps, const std::tuple<Operands...>&& operands,
+    TestFunctionsWithVectorArgumentsChoices::Continuing
+    /*meta*/) noexcept {
+  tmpl::for_each<WrapperList>(
+      [&function, &bounds, &wraps, &operands ](const auto x) noexcept {
+        tmpl::for_each<UniqueTypeList>([&function, &bounds, &wraps,
+                                        &operands ](const auto y) noexcept {
+          using next_vector = typename decltype(y)::type;
+          using next_wrap = typename decltype(x)::type;
+          assemble_test_function_arguments_and_execute_tests<
+              Test, UniqueTypeList, FirstOperand>(
+              function, bounds, std::tuple_cat(wraps, std::tuple<next_wrap>{}),
+              std::tuple_cat(operands, std::tuple<next_vector>{}),
+              detail::next_choice_for_test_functions_recursion<
+                  tmpl::list<Operands..., next_vector>,
+                  tmpl::list<DistBounds...>, Test>{});
+        });
+      });
+}
+
+// case of first operand and inplace test: the left hand operand for inplace
+// tests cannot be const, so the reference wrapper must be chosen
+// accordingly. Also, the left hand size type is fixed to be FirstOperand.
+template <TestKind Test, typename UniqueTypeList, typename FirstOperand,
+          typename... Operands, typename Function, typename... DistBounds,
+          typename... Wraps>
+void assemble_test_function_arguments_and_execute_tests(
+    const Function& function, const std::tuple<DistBounds...>& bounds,
+    const std::tuple<Wraps...>& /*wraps*/,
+    const std::tuple<Operands...>&& /*operands*/,
+    TestFunctionsWithVectorArgumentsChoices::FirstInplace /*meta*/) noexcept {
+  tmpl::for_each<NonConstWrapperList>([&function,
+                                       &bounds ](const auto x) noexcept {
+    using next_wrap = typename decltype(x)::type;
+    assemble_test_function_arguments_and_execute_tests<Test, UniqueTypeList,
+                                                       FirstOperand>(
+        function, bounds, std::tuple<next_wrap>{}, std::tuple<FirstOperand>{},
+        detail::next_choice_for_test_functions_recursion<
+            tmpl::list<FirstOperand>, tmpl::list<DistBounds...>, Test>{});
+  });
+}
+
+// dispatch function for the individual tuples of functions and bounds for their
+// respective distributions. This processes the requested set of vector types to
+// test and passes the resulting request to the recursive argument assembly
+// function assemble_test_function_arguments_and_execute_tests above
+template <TestKind Test, typename VectorType0, typename... VectorTypes,
+          typename Function, typename... DistBounds>
+void test_function_with_vector_arguments_impl(
+    const std::tuple<Function, std::tuple<DistBounds...>>&
+        function_and_argument_bounds) noexcept {
+  // The unique set of possible operands
+  using operand_type_list = tmpl::conditional_t<
+      Test == TestKind::Strict,
+      // if strict, the operand choices are just the vector types passed in
+      tmpl::remove_duplicates<tmpl::list<VectorType0, VectorTypes...>>,
+      // else, the operand choices include both the vectors and their element
+      // types
+      tmpl::remove_duplicates<tmpl::list<
+          VectorType0, VectorTypes..., get_vector_element_type_t<VectorType0>,
+          get_vector_element_type_t<VectorTypes>...>>>;
+  assemble_test_function_arguments_and_execute_tests<Test, operand_type_list,
+                                                     VectorType0>(
+      get<0>(function_and_argument_bounds) /*function*/,
+      get<1>(function_and_argument_bounds) /*tuple of bounds*/, std::tuple<>{},
+      std::tuple<>{},
+      next_choice_for_test_functions_recursion<
+          tmpl::list<>, tmpl::list<DistBounds...>, Test>{});
+}
+}  // namespace detail
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief General entry function for testing arbitrary math functions
+ * on vector types
+ *
+ * \details This utility tests all combinations of the operator on the type
+ * arguments, and all combinations of reference or constant reference wrappers
+ * on all arguments. In certain test cases (see below), it also tests using the
+ * vector type's `value_type`s in the operators as well (e.g. `DataVector +
+ * double`). This is very useful for quickly generating a lot of tests, but the
+ * number of tests scales exponentially in the number of arguments. Therefore,
+ * functions with many arguments can be time-consuming to
+ * run. 4-or-more-argument functions should be used only if completely necessary
+ * and with caution. Any number of vector types may be specified, and tests are
+ * run on all unique combinations of the provided. For instance, if only one
+ * type is provided, the tests will be run only on combinations of that single
+ * type and its `value_type`.
+ *
+ * \param tuple_of_functions_and_argument_bounds A tuple of tuples, in which
+ *  the inner tuple contains first a function object followed by a tuple of
+ *  2-element arrays equal to the number of arguments, which represent the
+ *  bounds for the random generation of the respective arguments. This system
+ *  is provided for robust testing of operators like `/`, where the left-hand
+ *  side has a different valid set of values than the right-hand-side.
+ *
+ * \tparam Test from the `TestKind` enum, determines whether the tests will
+ *  be:
+ *  - `TestKind::Normal`: executed on all combinations of arguments and value
+ *    types
+ *  - `TestKind::Strict`: executed on all combinations of arguments, for only
+ *    the vector types
+ *  - `TestKind::Inplace`: executed on all combinations of arguments after the
+ *    first, so first is always the 'left hand side' of the operator. In this
+ *    case, at least two `VectorTypes` must be specified, where the first is
+ *    used only for the left-hand side.
+ *
+ * \tparam VectorType0 The first vector type for which combinations are
+ *  tested. The first is accepted as a separate template argument for
+ *  appropriately handling `Inplace` tests.
+ * \tparam VectorTypes The remaining types for which combinations are tested.
+ *  Any number of types may be passed in, and the test will check the
+ *  appropriate combinations of the vector types and (depending on the `Test`)
+ *  the respective `value_type`s.
+ */
+template <TestKind Test, typename VectorType0, typename... VectorTypes,
+          typename... FunctionsAndArgumentBounds>
+void test_functions_with_vector_arguments(
+    const std::tuple<FunctionsAndArgumentBounds...>&
+        tuple_of_functions_and_argument_bounds) noexcept {
+  tuple_fold(
+      tuple_of_functions_and_argument_bounds,
+      [](const auto& function_and_argument_bounds) noexcept {
+        detail::test_function_with_vector_arguments_impl<Test, VectorType0,
+                                                         VectorTypes...>(
+            function_and_argument_bounds);
+      });
 }
 }  // namespace VectorImpl
 }  // namespace TestHelpers
