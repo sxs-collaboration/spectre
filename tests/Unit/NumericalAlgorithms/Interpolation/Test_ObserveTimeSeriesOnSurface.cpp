@@ -29,13 +29,13 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
-#include "IO/Observer/Helpers.hpp"           // IWYU pragma: keep
+#include "IO/Observer/Helpers.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"              // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/Interpolation/Callbacks/ObserveSurfaceIntegrals.hpp"
+#include "NumericalAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
@@ -63,6 +63,17 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
+
+/// \cond
+namespace StrahlkorperGr {
+namespace Tags {
+template <typename Frame>
+struct AreaElement;
+template <typename IntegrandTag, typename Frame>
+struct SurfaceIntegral;
+}  // namespace Tags
+}  // namespace StrahlkorperGr
+/// \endcond
 
 namespace {
 // Simple DataBoxItems for test.
@@ -150,12 +161,17 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
-    using compute_items_on_target = tmpl::list<Tags::SquareComputeItem>;
+    using compute_items_on_target = tmpl::list<
+        Tags::SquareComputeItem,
+        StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
+        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::Actions::KerrHorizon<SurfaceA, ::Frame::Inertial>;
     using post_interpolation_callback =
-        intrp::callbacks::ObserveSurfaceIntegrals<tmpl::list<Tags::Square>,
-                                                  SurfaceA, Frame::Inertial>;
+        intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
+                Tags::Square, ::Frame::Inertial>>,
+            SurfaceA>;
     // This `type` is so this tag can be used to read options.
     using type = typename compute_target_points::options_type;
   };
@@ -164,13 +180,20 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
-    using compute_items_on_target =
-        tmpl::list<Tags::SquareComputeItem, Tags::NegateComputeItem>;
+    using compute_items_on_target = tmpl::list<
+        Tags::SquareComputeItem, Tags::NegateComputeItem,
+        StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
+        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, Frame::Inertial>,
+        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, Frame::Inertial>>;
     using compute_target_points =
         intrp::Actions::KerrHorizon<SurfaceB, ::Frame::Inertial>;
     using post_interpolation_callback =
-        intrp::callbacks::ObserveSurfaceIntegrals<
-            tmpl::list<Tags::Square, Tags::Negate>, SurfaceB, Frame::Inertial>;
+        intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square,
+                                                             ::Frame::Inertial>,
+                       StrahlkorperGr::Tags::SurfaceIntegral<
+                           Tags::Negate, ::Frame::Inertial>>,
+            SurfaceB>;
     // This `type` is so this tag can be used to read options.
     using type = typename compute_target_points::options_type;
   };
@@ -179,13 +202,17 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
-    using compute_items_on_target =
-        tmpl::list<Tags::SquareComputeItem, Tags::NegateComputeItem>;
+    using compute_items_on_target = tmpl::list<
+        Tags::SquareComputeItem, Tags::NegateComputeItem,
+        StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
+        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, ::Frame::Inertial>>;
     using compute_target_points =
         intrp::Actions::KerrHorizon<SurfaceC, ::Frame::Inertial>;
     using post_interpolation_callback =
-        intrp::callbacks::ObserveSurfaceIntegrals<tmpl::list<Tags::Negate>,
-                                                  SurfaceC, Frame::Inertial>;
+        intrp::callbacks::ObserveTimeSeriesOnSurface<
+            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
+                Tags::Negate, ::Frame::Inertial>>,
+            SurfaceC>;
     // This `type` is so this tag can be used to read options.
     using type = typename compute_target_points::options_type;
   };
@@ -393,9 +420,12 @@ SPECTRE_TEST_CASE(
   // 2.25 (from the area element), for a net factor of 5.0625.  There is also a
   // minus sign for "Negate".
   const std::vector<double> expected_integral_c{-5.0625 * 2432.0 * M_PI / 3.0};
-  const std::vector<std::string> expected_legend_a{"Time", "Square"};
-  const std::vector<std::string> expected_legend_b{"Time", "Square", "Negate"};
-  const std::vector<std::string> expected_legend_c{"Time", "Negate"};
+  const std::vector<std::string> expected_legend_a{"Time",
+                                                   "SurfaceIntegralSquare"};
+  const std::vector<std::string> expected_legend_b{
+      "Time", "SurfaceIntegralSquare", "SurfaceIntegralNegate"};
+  const std::vector<std::string> expected_legend_c{"Time",
+                                                   "SurfaceIntegralNegate"};
 
   // Check that the H5 file was written correctly.
   const auto h5_file_name = h5_file_prefix + ".h5";
@@ -415,12 +445,9 @@ SPECTRE_TEST_CASE(
       CHECK(expected_integral[i] == custom_approx(written_data(0, i + 1)));
     }
   };
-  check_file_contents(expected_integral_a, expected_legend_a,
-                      "/SurfaceA_integrals");
-  check_file_contents(expected_integral_b, expected_legend_b,
-                      "/SurfaceB_integrals");
-  check_file_contents(expected_integral_c, expected_legend_c,
-                      "/SurfaceC_integrals");
+  check_file_contents(expected_integral_a, expected_legend_a, "/SurfaceA");
+  check_file_contents(expected_integral_b, expected_legend_b, "/SurfaceB");
+  check_file_contents(expected_integral_c, expected_legend_c, "/SurfaceC");
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
