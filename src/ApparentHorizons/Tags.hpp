@@ -7,44 +7,17 @@
 #include <string>
 
 #include "ApparentHorizons/Strahlkorper.hpp"
+#include "ApparentHorizons/TagsDeclarations.hpp" // IWYU pragma: keep
+#include "ApparentHorizons/TagsTypeAliases.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/DataVector.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
-
-class DataVector;
 
 /// \ingroup SurfacesGroup
 /// Holds tags and ComputeItems associated with a `::Strahlkorper`.
 namespace StrahlkorperTags {
-
-namespace StrahlkorperTags_detail {
-// Shorter names for longer types used below.
-template <typename Frame>
-using ThetaPhi = tnsr::i<DataVector, 2, ::Frame::Spherical<Frame>>;
-template <typename Frame>
-using OneForm = tnsr::i<DataVector, 3, Frame>;
-template <typename Frame>
-using Vector = tnsr::I<DataVector, 3, Frame>;
-template <typename Frame>
-using Jacobian =
-    Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-           index_list<SpatialIndex<3, UpLo::Up, Frame>,
-                      SpatialIndex<2, UpLo::Lo, ::Frame::Spherical<Frame>>>>;
-template <typename Frame>
-using InvJacobian =
-    Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-           index_list<SpatialIndex<2, UpLo::Up, ::Frame::Spherical<Frame>>,
-                      SpatialIndex<3, UpLo::Lo, Frame>>>;
-template <typename Frame>
-using InvHessian =
-    Tensor<DataVector, tmpl::integral_list<std::int32_t, 3, 2, 1>,
-           index_list<SpatialIndex<2, UpLo::Up, ::Frame::Spherical<Frame>>,
-                      SpatialIndex<3, UpLo::Lo, Frame>,
-                      SpatialIndex<3, UpLo::Lo, Frame>>>;
-template <typename Frame>
-using SecondDeriv = tnsr::ii<DataVector, 3, Frame>;
-}  // namespace StrahlkorperTags_detail
 
 /// Tag referring to a `::Strahlkorper`
 template <typename Frame>
@@ -58,7 +31,7 @@ struct Strahlkorper : db::SimpleTag {
 template <typename Frame>
 struct ThetaPhi : db::ComputeTag {
   static std::string name() noexcept { return "ThetaPhi"; }
-  static StrahlkorperTags_detail::ThetaPhi<Frame> function(
+  static aliases::ThetaPhi<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper) noexcept;
   using argument_tags = tmpl::list<Strahlkorper<Frame>>;
 };
@@ -68,7 +41,7 @@ struct ThetaPhi : db::ComputeTag {
 template <typename Frame>
 struct Rhat : db::ComputeTag {
   static std::string name() noexcept { return "Rhat"; }
-  static StrahlkorperTags_detail::OneForm<Frame> function(
+  static aliases::OneForm<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
@@ -81,7 +54,7 @@ struct Rhat : db::ComputeTag {
 template <typename Frame>
 struct Jacobian : db::ComputeTag {
   static std::string name() noexcept { return "Jacobian"; }
-  static StrahlkorperTags_detail::Jacobian<Frame> function(
+  static aliases::Jacobian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
@@ -93,7 +66,7 @@ struct Jacobian : db::ComputeTag {
 template <typename Frame>
 struct InvJacobian : db::ComputeTag {
   static std::string name() noexcept { return "InvJacobian"; }
-  static StrahlkorperTags_detail::InvJacobian<Frame> function(
+  static aliases::InvJacobian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
@@ -105,7 +78,7 @@ struct InvJacobian : db::ComputeTag {
 template <typename Frame>
 struct InvHessian : db::ComputeTag {
   static std::string name() noexcept { return "InvHessian"; }
-  static StrahlkorperTags_detail::InvHessian<Frame> function(
+  static aliases::InvHessian<Frame> function(
       const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept;
   using argument_tags = tmpl::list<ThetaPhi<Frame>>;
 };
@@ -129,7 +102,7 @@ struct Radius : db::ComputeTag {
 template <typename Frame>
 struct CartesianCoords : db::ComputeTag {
   static std::string name() noexcept { return "CartesianCoords"; }
-  static StrahlkorperTags_detail::Vector<Frame> function(
+  static aliases::Vector<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<Rhat<Frame>>& r_hat) noexcept;
   using argument_tags =
@@ -145,7 +118,7 @@ struct CartesianCoords : db::ComputeTag {
 template <typename Frame>
 struct DxRadius : db::ComputeTag {
   static std::string name() noexcept { return "DxRadius"; }
-  static StrahlkorperTags_detail::OneForm<Frame> function(
+  static aliases::OneForm<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<InvJacobian<Frame>>& inv_jac) noexcept;
   using argument_tags =
@@ -162,7 +135,7 @@ struct DxRadius : db::ComputeTag {
 template <typename Frame>
 struct D2xRadius : db::ComputeTag {
   static std::string name() noexcept { return "D2xRadius"; }
-  static StrahlkorperTags_detail::SecondDeriv<Frame> function(
+  static aliases::SecondDeriv<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<InvJacobian<Frame>>& inv_jac,
       const db::item_type<InvHessian<Frame>>& inv_hess) noexcept;
@@ -195,7 +168,7 @@ struct LaplacianRadius : db::ComputeTag {
 template <typename Frame>
 struct NormalOneForm : db::ComputeTag {
   static std::string name() noexcept { return "NormalOneForm"; }
-  static StrahlkorperTags_detail::OneForm<Frame> function(
+  static aliases::OneForm<Frame> function(
       const db::item_type<DxRadius<Frame>>& dx_radius,
       const db::item_type<Rhat<Frame>>& r_hat) noexcept;
   using argument_tags = tmpl::list<DxRadius<Frame>, Rhat<Frame>>;
@@ -219,7 +192,7 @@ struct NormalOneForm : db::ComputeTag {
 template <typename Frame>
 struct Tangents : db::ComputeTag {
   static std::string name() noexcept { return "Tangents"; }
-  static StrahlkorperTags_detail::Jacobian<Frame> function(
+  static aliases::Jacobian<Frame> function(
       const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
       const db::item_type<Rhat<Frame>>& r_hat,
       const db::item_type<Jacobian<Frame>>& jac) noexcept;
