@@ -32,3 +32,12 @@ struct NormalOneForm;
 template <typename Frame>
 struct Tangents;
 }  // namespace StrahlkorperTags
+
+namespace StrahlkorperGr {
+namespace Tags {
+template <typename Frame>
+struct AreaElement;
+template <typename IntegrandTag, typename Frame>
+struct SurfaceIntegral;
+}  // namespace Tags
+}  // namespace StrahlkorperGr

@@ -249,3 +249,9 @@ template struct LaplacianRadius<Frame::Inertial>;
 template struct NormalOneForm<Frame::Inertial>;
 template struct Tangents<Frame::Inertial>;
 }  // namespace StrahlkorperTags
+
+namespace StrahlkorperGr {
+namespace Tags {
+template struct AreaElement<Frame::Inertial>;
+}  // namespace Tags
+}  // namespace StrahlkorperGr

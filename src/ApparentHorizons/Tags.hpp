@@ -3,17 +3,19 @@
 
 #pragma once
 
-#include <cstdint>
 #include <string>
 
 #include "ApparentHorizons/Strahlkorper.hpp"
+#include "ApparentHorizons/StrahlkorperGr.hpp"
 #include "ApparentHorizons/TagsDeclarations.hpp" // IWYU pragma: keep
 #include "ApparentHorizons/TagsTypeAliases.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp" // IWYU pragma: keep
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_forward_declare gr::Tags::SpatialMetric
 
 /// \ingroup SurfacesGroup
 /// Holds tags and ComputeItems associated with a `::Strahlkorper`.
@@ -211,3 +213,33 @@ using compute_items_tags =
                LaplacianRadius<Frame>, NormalOneForm<Frame>, Tangents<Frame>>;
 
 }  // namespace StrahlkorperTags
+
+namespace StrahlkorperGr {
+/// \ingroup SurfacesGroup
+/// Holds tags and ComputeItems associated with a `::Strahlkorper` that
+/// also need a metric.
+namespace Tags {
+
+/// Computes the area element on a Strahlkorper. Useful for integrals.
+template <typename Frame>
+struct AreaElement : db::ComputeTag {
+  static std::string name() noexcept { return "AreaElement"; }
+  static constexpr auto function = area_element<Frame>;
+  using argument_tags = tmpl::list<
+      gr::Tags::SpatialMetric<3, Frame>, StrahlkorperTags::Jacobian<Frame>,
+      StrahlkorperTags::NormalOneForm<Frame>, StrahlkorperTags::Radius<Frame>,
+      StrahlkorperTags::Rhat<Frame>>;
+};
+
+/// Computes the integral of a scalar over a Strahlkorper.
+template <typename IntegrandTag, typename Frame>
+struct SurfaceIntegral : db::ComputeTag {
+  static std::string name() noexcept {
+    return "SurfaceIntegral" + IntegrandTag::name();
+  }
+  static constexpr auto function = surface_integral_of_scalar<Frame>;
+  using argument_tags = tmpl::list<AreaElement<Frame>, IntegrandTag,
+                                   StrahlkorperTags::Strahlkorper<Frame>>;
+};
+}  // namespace Tags
+}  // namespace StrahlkorperGr
