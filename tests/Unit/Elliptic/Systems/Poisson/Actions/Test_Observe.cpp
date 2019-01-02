@@ -4,7 +4,6 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
-#include <cmath>
 #include <cstddef>
 #include <string>
 #include <utility>
@@ -121,13 +120,15 @@ struct Metavariables {
   using reduction_data_tags = tmpl::list<observers::Tags::ReductionData<
       Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
       Parallel::ReductionDatum<size_t, funcl::Plus<>>,
-      Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Sqrt<>>>>;
+      Parallel::ReductionDatum<double, funcl::Plus<>,
+                               funcl::Sqrt<funcl::Divides<>>,
+                               std::index_sequence<1>>>>;
 
   enum class Phase { Initialize, Exit };
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions",
+SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions.Observe",
                   "[Unit][Elliptic][Actions]") {
   using TupleOfMockDistributedObjects =
       typename ActionTesting::MockRuntimeSystem<
@@ -244,7 +245,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions",
     // NumberOfPoints
     CHECK(reduction_data(0, 1) == 18);
     // L2Error
-    CHECK(reduction_data(0, 2) == sqrt(72.));
+    CHECK(reduction_data(0, 2) == approx(2.));
 
     const auto volume_file =
         h5::H5File<h5::AccessType::ReadOnly>(volume_h5_file_name);

@@ -127,7 +127,9 @@ struct Observe {
     using observed_reduction_data = Parallel::ReductionData<
         Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
         Parallel::ReductionDatum<size_t, funcl::Plus<>>,
-        Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Sqrt<>>>;
+        Parallel::ReductionDatum<double, funcl::Plus<>,
+                                 funcl::Sqrt<funcl::Divides<>>,
+                                 std::index_sequence<1>>>;
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer, observers::ObservationId(iteration_id),
         std::string{"/element_data"},
