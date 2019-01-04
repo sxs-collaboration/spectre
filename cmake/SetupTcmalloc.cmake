@@ -5,7 +5,8 @@ find_package(TCMALLOC REQUIRED)
 
 
 spectre_include_directories(${TCMALLOC_INCLUDE_DIRS})
-set(SPECTRE_LIBRARIES "${SPECTRE_LIBRARIES};${TCMALLOC_LIBRARIES}")
+# Allocators should be linked as early as possible.
+set(SPECTRE_LIBRARIES "${TCMALLOC_LIBRARIES};${SPECTRE_LIBRARIES}")
 
 message(STATUS "tcmalloc libs: " ${TCMALLOC_LIBRARIES})
 message(STATUS "tcmalloc incl: " ${TCMALLOC_INCLUDE_DIRS})
