@@ -7,6 +7,7 @@
 
 #include "DataStructures/LeviCivitaIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -1222,6 +1223,76 @@ void f_constraint(
                                  inverse_spatial_metric, gauge_function, phi,
                                  inverse_spacetime_metric);
 }
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+Scalar<DataType> constraint_energy(
+    const tnsr::a<DataType, SpatialDim, Frame>& gauge_constraint,
+    const tnsr::a<DataType, SpatialDim, Frame>& f_constraint,
+    const tnsr::ia<DataType, SpatialDim, Frame>& two_index_constraint,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& four_index_constraint,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const Scalar<DataType>& spatial_metric_determinant,
+    double gauge_constraint_multiplier, double two_index_constraint_multiplier,
+    double three_index_constraint_multiplier,
+    double four_index_constraint_multiplier) noexcept {
+  auto energy = make_with_value<Scalar<DataType>>(gauge_constraint, 0.0);
+  constraint_energy<SpatialDim, Frame, DataType>(
+      &energy, gauge_constraint, f_constraint, two_index_constraint,
+      three_index_constraint, four_index_constraint, inverse_spatial_metric,
+      spatial_metric_determinant, gauge_constraint_multiplier,
+      two_index_constraint_multiplier, three_index_constraint_multiplier,
+      four_index_constraint_multiplier);
+  return energy;
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void constraint_energy(
+    gsl::not_null<Scalar<DataType>*> energy,
+    const tnsr::a<DataType, SpatialDim, Frame>& gauge_constraint,
+    const tnsr::a<DataType, SpatialDim, Frame>& f_constraint,
+    const tnsr::ia<DataType, SpatialDim, Frame>& two_index_constraint,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& three_index_constraint,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& four_index_constraint,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const Scalar<DataType>& spatial_metric_determinant,
+    double gauge_constraint_multiplier, double two_index_constraint_multiplier,
+    double three_index_constraint_multiplier,
+    double four_index_constraint_multiplier) noexcept {
+  if (get_size(get(*energy)) != get_size(get<0>(f_constraint))) {
+    *energy = Scalar<DataType>{get_size(get<0>(f_constraint))};
+  }
+
+  get(*energy) = gauge_constraint_multiplier * square(gauge_constraint.get(0)) +
+                 two_index_constraint_multiplier * square(f_constraint.get(0));
+  for (size_t a = 1; a < SpatialDim + 1; ++a) {
+    get(*energy) +=
+        gauge_constraint_multiplier * square(gauge_constraint.get(a)) +
+        two_index_constraint_multiplier * square(f_constraint.get(a));
+  }
+
+  for (size_t a = 0; a < SpatialDim + 1; ++a) {
+    for (size_t i = 0; i < SpatialDim; ++i) {
+      for (size_t j = 0; j < SpatialDim; ++j) {
+        get(*energy) +=
+            two_index_constraint_multiplier * two_index_constraint.get(i, a) *
+            two_index_constraint.get(j, a) * inverse_spatial_metric.get(i, j);
+
+        for (size_t b = 0; b < SpatialDim + 1; ++b) {
+          get(*energy) += three_index_constraint_multiplier *
+                              three_index_constraint.get(i, a, b) *
+                              three_index_constraint.get(j, a, b) *
+                              inverse_spatial_metric.get(i, j) +
+                          2.0 * four_index_constraint_multiplier *
+                              get(spatial_metric_determinant) *
+                              four_index_constraint.get(i, a, b) *
+                              four_index_constraint.get(j, a, b) *
+                              inverse_spatial_metric.get(i, j);
+        }
+      }
+    }
+  }
+}
 }  // namespace GeneralizedHarmonic
 
 // Explicit Instantiations
@@ -1344,7 +1415,40 @@ void f_constraint(
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,          \
       const Scalar<DTYPE(data)>& gamma2,                                     \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          three_index_constraint) noexcept;
+          three_index_constraint) noexcept;                                  \
+  template Scalar<DTYPE(data)> GeneralizedHarmonic::constraint_energy(       \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_constraint,  \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& f_constraint,      \
+      const tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          two_index_constraint,                                              \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                  \
+          three_index_constraint,                                            \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                  \
+          four_index_constraint,                                             \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          inverse_spatial_metric,                                            \
+      const Scalar<DTYPE(data)>& spatial_metric_determinant,                 \
+      double gauge_constraint_multiplier,                                    \
+      double two_index_constraint_multiplier,                                \
+      double three_index_constraint_multiplier,                              \
+      double four_index_constraint_multiplier) noexcept;                     \
+  template void GeneralizedHarmonic::constraint_energy(                      \
+      gsl::not_null<Scalar<DTYPE(data)>*> energy,                            \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_constraint,  \
+      const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& f_constraint,      \
+      const tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          two_index_constraint,                                              \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                  \
+          three_index_constraint,                                            \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                  \
+          four_index_constraint,                                             \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          inverse_spatial_metric,                                            \
+      const Scalar<DTYPE(data)>& spatial_metric_determinant,                 \
+      double gauge_constraint_multiplier,                                    \
+      double two_index_constraint_multiplier,                                \
+      double three_index_constraint_multiplier,                              \
+      double four_index_constraint_multiplier) noexcept;
 
 #define INSTANTIATE_ONLY_3D(_, data)                                          \
   template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                     \
