@@ -62,8 +62,8 @@
 
 /// \cond
 namespace Frame {
- struct Inertial;
- }  // namespace Frame
+struct Inertial;
+}  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>
 class CProxy_ConstGlobalCache;
@@ -107,8 +107,7 @@ struct EvolutionMetavars {
   using compute_rhs = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-      Actions::ComputeVolumeSources,
-      Actions::ComputeTimeDerivative,
+      Actions::ComputeVolumeSources, Actions::ComputeTimeDerivative,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
