@@ -90,8 +90,12 @@ struct EvolutionMetavars {
       typename analytic_solution_tag::type::equation_of_state_type>;
   using normal_dot_numerical_flux = OptionTags::NumericalFluxParams<
       dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
-  using limiter = OptionTags::SlopeLimiterParams<
-      SlopeLimiters::Minmod<3, system::variables_tag::tags_list>>;
+  // Do not limit the divergence-cleaning field Phi
+  using limiter = OptionTags::SlopeLimiterParams<SlopeLimiters::Minmod<
+      3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
+                    grmhd::ValenciaDivClean::Tags::TildeTau,
+                    grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,
+                    grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>>>;
   using step_choosers =
       tmpl::list<StepChoosers::Registrars::Cfl<3, Frame::Inertial>,
                  StepChoosers::Registrars::Constant,
