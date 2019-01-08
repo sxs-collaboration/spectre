@@ -467,23 +467,23 @@ std::ostream& operator<<(std::ostream& os,
     using Type = VECTOR_TYPE;                                     \
   }
 #else
-#define VECTOR_BLAZE_TRAIT_SPEC(VECTOR_TYPE)                   \
-  template <>                                                  \
-  struct IsVector<VECTOR_TYPE> : std::true_type {};            \
-  template <>                                                  \
-  struct TransposeFlag<VECTOR_TYPE>                            \
-      : BoolConstant<VECTOR_TYPE::transpose_flag> {};          \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, AddTrait);  \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, SubTrait);  \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, MultTrait); \
-  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, DivTrait);  \
-  template <typename Operator>                                 \
-  struct MapTrait<VECTOR_TYPE, Operator> {                     \
-    using Type = VECTOR_TYPE;                                  \
-  };                                                           \
-  template <typename Operator>                                 \
-  struct MapTrait<VECTOR_TYPE, VECTOR_TYPE, Operator> {        \
-    using Type = VECTOR_TYPE;                                  \
+#define BLAZE_TRAIT_SPECIALIZE_TYPICAL_VECTOR_TRAITS(VECTOR_TYPE) \
+  template <>                                                     \
+  struct IsVector<VECTOR_TYPE> : std::true_type {};               \
+  template <>                                                     \
+  struct TransposeFlag<VECTOR_TYPE>                               \
+      : BoolConstant<VECTOR_TYPE::transpose_flag> {};             \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, AddTrait);     \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, SubTrait);     \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, MultTrait);    \
+  BLAZE_TRAIT_SPECIALIZE_BINARY_TRAIT(VECTOR_TYPE, DivTrait);     \
+  template <typename Operator>                                    \
+  struct MapTrait<VECTOR_TYPE, Operator> {                        \
+    using Type = VECTOR_TYPE;                                     \
+  };                                                              \
+  template <typename Operator>                                    \
+  struct MapTrait<VECTOR_TYPE, VECTOR_TYPE, Operator> {           \
+    using Type = VECTOR_TYPE;                                     \
   }
 #endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 
