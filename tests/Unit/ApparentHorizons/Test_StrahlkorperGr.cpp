@@ -279,9 +279,9 @@ void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
       strahlkorper.ylm_spherepack().definite_integral(get(area_element).data());
 
   CHECK_ITERABLE_APPROX(area, expected);
-  
+
   const double irreducible_mass = StrahlkorperGr::irreducible_mass(area);
-  const double expected_irreducible_mass = sqrt(area/(16.0*M_PI));
+  const double expected_irreducible_mass = sqrt(area / (16.0 * M_PI));
   CHECK(irreducible_mass == expected_irreducible_mass);
 }
 
