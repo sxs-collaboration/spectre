@@ -23,7 +23,6 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
@@ -58,7 +57,7 @@ void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
   std::random_device r;
   const auto seed = r();
   std::mt19937 generator(seed);
-  INFO("seed" << seed);
+  INFO("seed = " << seed);
   std::uniform_real_distribution<> dist(-1., 1.);
   std::uniform_real_distribution<> dist_positive(1., 2.);
   const auto nn_generator = make_not_null(&generator);
@@ -149,7 +148,6 @@ void test_lapse_deriv_functions_analytic(
     const std::array<double, 3>& upper_bound) noexcept {
   // Setup grid
   const size_t spatial_dim = 3;
-  const size_t data_size = pow<spatial_dim>(grid_size_each_dimension);
   Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};
 

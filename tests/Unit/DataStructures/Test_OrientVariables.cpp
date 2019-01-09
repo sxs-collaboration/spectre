@@ -374,7 +374,7 @@ void test_2d_orient_variables_on_slice() noexcept {
       for (const auto& side_2 : {Side::Lower, Side::Upper}) {
         const auto dir_2 = Direction<3>(dimensions[1], side_2);
         for (const auto& side_3 : {Side::Lower, Side::Upper}) {
-          const auto dir_3 = Direction<3>(dimensions[2], side_2);
+          const auto dir_3 = Direction<3>(dimensions[2], side_3);
           const OrientationMap<3> orientation_map(
               std::array<Direction<3>, 3>{{dir_1, dir_2, dir_3}});
           CAPTURE(orientation_map);
