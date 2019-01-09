@@ -17,6 +17,7 @@ function(add_algorithm_test EXECUTABLE_NAME)
     ${EXECUTABLE_NAME}
     ErrorHandling
     Informer
+    Utilities
     ${SPECTRE_LIBRARIES}
     )
 

@@ -4,10 +4,11 @@
 set(LIBRARY Utilities)
 
 set(LIBRARY_SOURCES
-    FileSystem.cpp
-    PrettyType.cpp
-    Rational.cpp
-    )
+  FileSystem.cpp
+  Formaline.cpp
+  PrettyType.cpp
+  Rational.cpp
+  )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 

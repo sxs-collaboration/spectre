@@ -15,6 +15,7 @@ set(LIBRARY_SOURCES
   Test_EqualWithinRoundoff.cpp
   Test_FakeVirtual.cpp
   Test_FileSystem.cpp
+  Test_Formaline.cpp
   Test_FractionUtilities.cpp
   Test_Functional.cpp
   Test_GetOutput.cpp
