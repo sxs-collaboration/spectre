@@ -19,7 +19,7 @@ set(LIBS_TO_LINK
   ValenciaDivClean
   )
 
-add_spectre_executable(
+add_spectre_parallel_executable(
   EvolveValenciaDivClean
   EvolveValenciaDivClean
   Evolution/Executables/GrMhd/ValenciaDivClean
@@ -44,7 +44,7 @@ set(LIBS_TO_LINK
   ValenciaDivClean
   )
 
-add_spectre_executable(
+add_spectre_parallel_executable(
   EvolveValenciaDivCleanAnalyticData
   EvolveValenciaDivCleanAnalyticData
   Evolution/Executables/GrMhd/ValenciaDivClean

@@ -8,7 +8,7 @@
 if("${GOOGLE_BENCHMARK_FOUND}" AND NOT "${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
   set(executable Benchmark)
 
-  add_executable(
+  add_spectre_executable(
     ${executable}
     EXCLUDE_FROM_ALL
     Benchmark.cpp

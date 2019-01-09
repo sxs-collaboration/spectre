@@ -4,16 +4,16 @@
 set(EXECUTABLE ParallelInfo)
 
 set(EXECUTABLE_SOURCES
-    ParallelInfo.cpp
-    ${EXECUTABLE}.decl.h
-)
+  ParallelInfo.cpp
+  ${EXECUTABLE}.decl.h
+  )
 
 add_charm_module(${EXECUTABLE})
 
-add_executable(
-    ${EXECUTABLE}
-    ${EXECUTABLE_SOURCES}
-)
+add_spectre_executable(
+  ${EXECUTABLE}
+  ${EXECUTABLE_SOURCES}
+  )
 
 add_dependencies(
   ${EXECUTABLE}
@@ -22,6 +22,6 @@ add_dependencies(
   )
 
 target_link_libraries(
-    ${EXECUTABLE}
-    ErrorHandling
-)
+  ${EXECUTABLE}
+  ErrorHandling
+  )

@@ -1,6 +1,12 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+# Adds an executable by wrapping CMake's 'add_executable' but allows
+# us to inject dependencies, flags, etc. into the targets.
+function(add_spectre_executable TARGET_NAME)
+  add_executable(${TARGET_NAME} ${ARGN})
+endfunction()
+
 # A function to add a SpECTRE executable that uses Charm++
 #
 # EXECUTABLE_NAME is the name of the executable (with no extension)
@@ -18,7 +24,9 @@
 # The function creates EXECUTABLE_NAME.cpp in the build tree which is then
 # used to build EXECUTABLE_NAME which is put into the bin directory of the
 # the build tree
-function(add_spectre_executable EXECUTABLE_NAME HPP_NAME SUBDIR_NAME METAVARS LINK_LIBS)
+function(
+    add_spectre_parallel_executable EXECUTABLE_NAME
+    HPP_NAME SUBDIR_NAME METAVARS LINK_LIBS)
   set(BUILD_TARGET_FILENAME
     "${CMAKE_BINARY_DIR}/${SUBDIR_NAME}/${EXECUTABLE_NAME}.cpp"
     )
@@ -44,7 +52,7 @@ function(add_spectre_executable EXECUTABLE_NAME HPP_NAME SUBDIR_NAME METAVARS LI
     ${BUILD_TARGET_FILENAME}
     )
 
-  add_executable(
+  add_spectre_executable(
     ${EXECUTABLE_NAME}
     EXCLUDE_FROM_ALL
     ${BUILD_TARGET_FILENAME}
@@ -61,4 +69,4 @@ function(add_spectre_executable EXECUTABLE_NAME HPP_NAME SUBDIR_NAME METAVARS LI
     ${LINK_LIBS}
     ${SPECTRE_LIBRARIES}
     )
-endfunction(add_spectre_executable)
+endfunction(add_spectre_parallel_executable)

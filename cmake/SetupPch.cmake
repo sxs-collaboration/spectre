@@ -151,9 +151,9 @@ if (USE_PCH)
       )
   endif()
 
-  # Override the default add_library and add_executable function provided
-  # by CMake so that it adds the precompiled header as a dependency to
-  # all of them.
+  # Override the default add_library function provided by CMake and override
+  # add_spectre_executable function so that it adds the precompiled header as a
+  # dependency to all of them.
   #
   # In addition to the library/executable depending on the precompiled header,
   # all source files (technically the objects generated from them) must also
@@ -180,8 +180,8 @@ if (USE_PCH)
     endif()
   endfunction()
 
-  function(add_executable TARGET_NAME)
-    _add_executable(${TARGET_NAME} ${ARGN})
+  function(add_spectre_executable TARGET_NAME)
+    _add_spectre_executable(${TARGET_NAME} ${ARGN})
     add_dependencies(${TARGET_NAME} pch)
     set_source_files_properties(
       ${ARGN}

@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 function(add_algorithm_test EXECUTABLE_NAME)
-  add_executable(
+  add_spectre_executable(
     ${EXECUTABLE_NAME}
     ${EXECUTABLE_NAME}.cpp
     )
@@ -39,7 +39,7 @@ add_dependencies(
   module_ConstGlobalCache
   )
 
-add_executable(
+add_spectre_executable(
   Test_ConstGlobalCache
   Test_ConstGlobalCache.cpp
   )

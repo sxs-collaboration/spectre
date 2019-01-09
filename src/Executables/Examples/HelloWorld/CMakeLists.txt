@@ -6,7 +6,7 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-add_spectre_executable(
+add_spectre_parallel_executable(
   SingletonHelloWorld
   SingletonHelloWorld
   Executables/Examples/HelloWorld
