@@ -15,6 +15,7 @@
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/LinearAlgebra/FindGeneralizedEigenvalues.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
@@ -650,6 +651,12 @@ std::array<double, 3> spin_vector(const double spin_magnitude,
 
   // Normalize spin_vector so its magnitude is the magnitude of the spin
   return spin_vector * (spin_magnitude / magnitude(spin_vector));
+}
+
+double irreducible_mass(const double area) noexcept {
+  ASSERT(area > 0.0,
+         "The area of the horizon must be greater than zero but is " << area);
+  return sqrt(area / (16.0 * M_PI));
 }
 }  // namespace StrahlkorperGr
 
