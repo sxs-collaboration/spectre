@@ -6,7 +6,7 @@
 #include <cstddef>
 #include <vector>
 
-#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
@@ -87,9 +87,9 @@ struct EvolutionMetavars {
       Parallel::ReductionDatum<size_t, funcl::Plus<>>, Redum, Redum>>;
 
   using step_choosers =
-      tmpl::list<StepChoosers::Register::Cfl<Dim, Frame::Inertial>,
-                 StepChoosers::Register::Constant,
-                 StepChoosers::Register::Increase>;
+      tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
+                 StepChoosers::Registrars::Constant,
+                 StepChoosers::Registrars::Increase>;
 
   using compute_rhs = tmpl::flatten<tmpl::list<
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
@@ -161,7 +161,8 @@ struct EvolutionMetavars {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &DomainCreators::register_derived_with_charm,
+    &setup_error_handling,
+    &domain::creators::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<MathFunction<1>>,
     &Parallel::register_derived_classes_with_charm<
         StepChooser<metavariables::step_choosers>>,

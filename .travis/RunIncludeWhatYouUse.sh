@@ -111,7 +111,8 @@ rm -f ${IWYU_OUTPUT}
 
 if [ ! -z "$MODIFIED_FILES" ]; then
     printf "Invoking IWYU as:\n \
-$IWYU_TOOL -j ${NUMBER_OF_CORES} -p $BUILD_DIR ${MODIFIED_FILES[*]} -- --mapping_file=$SOURCE_DIR/tools/Iwyu/iwyu.imp\n"
+$IWYU_TOOL -j ${NUMBER_OF_CORES} -p $BUILD_DIR ${MODIFIED_FILES[*]} -- \
+--mapping_file=$SOURCE_DIR/tools/Iwyu/iwyu.imp\n"
 
     # We loop over two files at a time since we can run IWYU
     # in parallel and TravisCI has 2 cores.

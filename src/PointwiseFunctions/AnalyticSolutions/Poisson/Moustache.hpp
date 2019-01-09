@@ -41,9 +41,7 @@ namespace Solutions {
  * solver.
  * - It makes it look like a moustache (at least in 1D).
  *
- * This solution is taken from _B. Stamm and T. Wihler, Mathematics of
- * Computation 79, 2117 (2010)_. It is also investigated in _T. Vincent and H.P.
- * Pfeiffer, in preparation_.
+ * This solution is taken from \cite Stamm2010.
  */
 template <size_t Dim>
 class Moustache {

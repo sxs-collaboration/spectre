@@ -29,7 +29,7 @@
 #include "tests/Unit/ActionTesting.hpp"
 
 namespace {
-using step_choosers = tmpl::list<StepChoosers::Register::Constant>;
+using step_choosers = tmpl::list<StepChoosers::Registrars::Constant>;
 using change_step_size = Actions::ChangeStepSize<step_choosers>;
 
 struct Var : db::SimpleTag {

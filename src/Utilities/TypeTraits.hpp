@@ -9,6 +9,7 @@
 #pragma once
 
 #include <array>
+#include <complex>
 #include <cstddef>
 #include <deque>
 #include <forward_list>
@@ -345,6 +346,10 @@ constexpr bool is_base_of_v = std::is_base_of<Base, Derived>::value;
 /// \ingroup TypeTraitsGroup
 template <class T>
 constexpr bool is_unsigned_v = std::is_unsigned<T>::value;
+
+/// \ingroup TypeTraitsGroup
+template <class T>
+constexpr bool is_arithmetic_v = std::is_arithmetic<T>::value;
 
 /// \ingroup TypeTraitsGroup
 template <class T>
@@ -1388,6 +1393,26 @@ struct get_fundamental_type<T, cpp17::void_t<typename T::value_type>> {
 template <typename T>
 using get_fundamental_type_t = typename get_fundamental_type<T>::type;
 // @}
+
+// @{
+/// \ingroup TypeTraitsGroup
+/// \brief Determines if a type `T` is a `std::complex` of a fundamental type,
+/// is a `std::true_type` if so, and otherwise is a `std::false_type`
+///
+/// \snippet Test_TypeTraits.cpp is_complex_of_fundamental
+template <typename T, typename = cpp17::bool_constant<true>>
+struct is_complex_of_fundamental : std::false_type {};
+/// \cond
+// this version will only pattern match if `T` is both complex and a fundamental
+// type
+template <typename T>
+struct is_complex_of_fundamental<
+    std::complex<T>, cpp17::bool_constant<cpp17::is_fundamental_v<T>>>
+    : std::true_type {};
+/// \endcond
+// @}
+template <typename T>
+const bool is_complex_of_fundamental_v = is_complex_of_fundamental<T>::value;
 
 namespace tt_detail {
 template <typename T>

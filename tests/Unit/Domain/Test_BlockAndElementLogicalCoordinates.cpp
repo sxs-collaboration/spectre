@@ -18,9 +18,9 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockId.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
+#include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/DomainCreator.hpp"  // IWYU pragma: keep
-#include "Domain/DomainCreators/Shell.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementLogicalCoordinates.hpp"
@@ -232,7 +232,7 @@ template <typename TargetFrame>
 void fuzzy_test_block_and_element_logical_coordinates_shell(
     const size_t n_pts) noexcept {
   const auto shell =
-      DomainCreators::Shell<TargetFrame>(1.5, 2.5, 2, {{1, 1}}, true, 1.0);
+      domain::creators::Shell<TargetFrame>(1.5, 2.5, 2, {{1, 1}}, true, 1.0);
   const auto domain = shell.create_domain();
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(

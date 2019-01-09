@@ -39,4 +39,5 @@ export PATH=${SPECTRE_BUILD_DIR}/bin:$PATH
 cd ${RUN_DIR}
 
 # The 23 is there because Charm++ uses one thread per node for communication
-srun -n ${SLURM_JOB_NUM_NODES} -c 24 ${SPECTRE_EXECUTABLE} ++ppn 23 --input-file ${SPECTRE_INPUT_FILE}
+srun -n ${SLURM_JOB_NUM_NODES} -c 24 \
+     ${SPECTRE_EXECUTABLE} ++ppn 23 --input-file ${SPECTRE_INPUT_FILE}

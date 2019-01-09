@@ -17,15 +17,21 @@
 #include <ostream>
 #include <random>
 #include <string>
+#include <tuple>
 
+#include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Parallel/Serialize.hpp"
+#include "Utilities/ContainerHelpers.hpp"
+#include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdArrayHelpers.hpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
+#include "Utilities/Tuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /*!
@@ -344,9 +350,173 @@ void test_throw_exception(const ThrowingFunctor& func,
 ///
 /// \details As the generator is made, `INFO` is called to make sure failed
 /// tests provide seed information.
-#define MAKE_GENERATOR(NAME)                    \
-    std::random_device r;                       \
-    const auto seed = r();                      \
-    INFO("Seed is: " << seed);                  \
-    auto (NAME) = std::mt19937{seed};           \
+#define MAKE_GENERATOR(NAME) \
+  std::random_device r;      \
+  const auto seed = r();     \
+  INFO("Seed is: " << seed); \
+  auto(NAME) = std::mt19937 { seed }
 
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief A wrapper around Catch's CHECK macro that checks approximate equality
+ * of each entry in each tag within a variables.
+ */
+#define CHECK_VARIABLES_APPROX(a, b)                                         \
+  do {                                                                       \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
+    check_variables_approx<std::common_type_t<                               \
+        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b); \
+  } while (false)
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ *  \brief Same as `CHECK_VARIABLES_APPROX`, but with a user-defined Approx.
+ *  The third argument should be of type `Approx`.
+ */
+#define CHECK_VARIABLES_CUSTOM_APPROX(a, b, appx)                            \
+  do {                                                                       \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b);       \
+    check_variables_approx<std::common_type_t<                               \
+        std::decay_t<decltype(a)>, std::decay_t<decltype(b)>>>::apply(a, b,  \
+                                                                      appx); \
+  } while (false)
+
+template <typename T>
+struct check_variables_approx;
+
+template <typename TagList>
+struct check_variables_approx<Variables<TagList>> {
+  // clang-tidy: non-const reference
+  static void apply(const Variables<TagList>& a, const Variables<TagList>& b,
+                    Approx& appx = approx) {  // NOLINT
+    tmpl::for_each<TagList>([&a, &b, &appx](auto x) {
+      using Tag = typename decltype(x)::type;
+      auto& a_val = get<Tag>(a);
+      auto& b_val = get<Tag>(b);
+      CHECK_ITERABLE_CUSTOM_APPROX(a_val, b_val, appx);
+    });
+  }
+};
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief A test utility for verifying that an element-wise function, `function`
+ * acts identically to the same operation applied to each element of a container
+ * separately. This macro invokes `test_element_wise_function()` (which gives a
+ * more complete documentation of the element-wise checking operations and
+ * arguments).
+ */
+#define CHECK_ELEMENT_WISE_FUNCTION_APPROX(function, arguments) \
+  do {                                                          \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) +              \
+         ": " #function ", " #arguments);                       \
+    test_element_wise_function(function, arguments);            \
+  } while (false)
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Same as `CHECK_ELEMENT_WISE_FUNCTION_APPROX`, but with a user-defined
+ * function `at_operator` and `size_of_operator`, each of which correspond to
+ * arguments of `test_element_wise_function()` (which gives a more complete
+ * documentation of the element-wise checking operations and arguments).
+ */
+#define CHECK_CUSTOM_ELEMENT_WISE_FUNCTION_APPROX(               \
+    function, arguments, at_operator, size_of_operator)          \
+  do {                                                           \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) +               \
+         ": " #function ", " #arguments);                        \
+    test_element_wise_function(function, arguments, at_operator, \
+                               size_of_operator);                \
+  } while (false)
+
+namespace TestHelpers_detail {
+// CHECK forwarding for parameter pack expansion. Return value also required for
+// easy parameter pack use.
+SPECTRE_ALWAYS_INLINE int call_check(const bool input) noexcept {
+  CHECK(input);
+  return 0;
+}
+
+// internal implementation for checking that an element-wise function acts
+// appropriately on a container object by first trying the operation on the
+// containers, then checking that the operation has been performed as it would
+// by looping over the elements and performing the same operation on each. This
+// also supports testing functions between containers and single elements by
+// making use of `get_size` and `get_element`.
+template <typename Function, typename IndexingFunction, typename SizeFunction,
+          typename... Arguments, size_t... Is>
+void test_element_wise_function_impl(
+    Function element_wise_function,
+    const gsl::not_null<std::tuple<Arguments...>*> arguments,
+    IndexingFunction at, SizeFunction size, std::index_sequence<Is...> /*meta*/,
+    Approx custom_approx) noexcept {
+  const size_t size_value =
+      std::max({get_size(std::get<Is>(*arguments), size)...});
+  tuple_fold(*arguments, [&size, &size_value ](const auto x) noexcept {
+    if (not(get_size(x, size) == size_value or get_size(x, size) == 1)) {
+      ERROR(
+          "inconsistent sized arguments passed "
+          "to test_element_wise_function");
+    }
+  });
+  // Some operators might modify the values of the arguments. We take care to
+  // verify that the modifications (or lack thereof) are also as expected.
+  auto original_arguments = std::make_tuple(std::get<Is>(*arguments)...);
+  const auto result = element_wise_function(std::get<Is>(*arguments)...);
+  for (size_t i = 0; i < size_value; ++i) {
+    // the arguments which modify their arguments must be passed lvalues
+    auto element_of_arguments = std::make_tuple(
+        get_element(std::get<Is>(original_arguments), i, at)...);
+    CHECK(custom_approx(get_element(result, i, at)) ==
+          element_wise_function(std::get<Is>(element_of_arguments)...));
+    // ensure that the final state of the arguments matches
+    expand_pack(call_check(
+        custom_approx(get_element(std::get<Is>(*arguments), i, at)) ==
+        std::get<Is>(element_of_arguments))...);
+  }
+}
+}  // namespace TestHelpers_detail
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Utility function for verifying the action of an element-wise function
+ * on containers, or on some combination of containers and compatible
+ * non-containers (e.g. `DataVectors` with `doubles`).
+ *
+ * \details The ability to specify custom functions for `at` and `size` is
+ * useful for more intricate containers. For instance, multidimensional types
+ * can be used with this function with a size function that returns the full
+ * number of elements, and an `at` function which indexes the multidimensional
+ * type in a flattened fashion.
+ *
+ * parameters:
+ * \param element_wise_function A callable which is expected to act in an
+ * element-wise fashion, must be compatible both with the container and its
+ * individual elements.
+ * \param arguments A tuple of arguments to be tested
+ * \param at A function to override the container access function. Defaults to
+ * an object which simply calls `container.at(i)`. A custom callable must take
+ * as arguments the container(s) used in `arguments` and a `size_t` index (in
+ * that order), and return an element compatible with
+ * `element_wise_function`. This function signature follows the convention of
+ * `gsl::at`.
+ * \param size A function to override the container size function. Defaults to
+ * an object which simply calls `container.size()`. A custom callable must take
+ * as argument the container(s) used in `arguments`, and return a size_t. This
+ * function signature follows the convention of `cpp17::size`.
+ * \param custom_approx An object of type `Approx` specifying an alternative
+ * precision with which to test the element-wise function
+ */
+template <typename ElementWiseFunction,
+          typename AtFunction = GetContainerElement,
+          typename SizeFunction = GetContainerSize, typename... Arguments>
+void test_element_wise_function(
+    ElementWiseFunction element_wise_function,
+    const gsl::not_null<std::tuple<Arguments...>*> arguments,
+    AtFunction at = GetContainerElement{},
+    SizeFunction size = GetContainerSize{},
+    Approx custom_approx = approx) noexcept {
+  TestHelpers_detail::test_element_wise_function_impl(
+      element_wise_function, arguments, at, size,
+      std::make_index_sequence<sizeof...(Arguments)>{}, custom_approx);
+}

@@ -4,7 +4,7 @@
 # See LICENSE.txt for details.
 
 spectre_setup_modules() {
-    echo "All modules on Minerva are provided by the system"
+    source /home/SPACK/share/spack/setup-env.sh
 }
 
 spectre_unload_modules() {
@@ -19,7 +19,11 @@ spectre_unload_modules() {
     module unload hdf5-1.10.1-gcc-7.3.0-w32z4ik
     module unload jemalloc-4.5.0-gcc-7.3.0-wlf2m7r
     module unload libxsmm-1.9-gcc-7.3.0-npctj4l
+    module unload libsharp-2018-01-17-gcc-7.3.0-4xamgaw
     module unload openblas-0.3.0-gcc-7.3.0-cjwkbox
+    module unload python-2.7.15-gcc-7.3.0-2azrjn6
+    module unload py-numpy-1.13.3-gcc-7.3.0-ggad2xs
+    module unload py-scipy-1.0.0-gcc-7.3.0-tegl6xx
     module unload yaml-cpp-develop-gcc-7.3.0-qcfbbll
 }
 
@@ -34,8 +38,12 @@ spectre_load_modules() {
     module load gsl-2.4-gcc-7.3.0-yobvdek
     module load hdf5-1.10.1-gcc-7.3.0-w32z4ik
     module load jemalloc-4.5.0-gcc-7.3.0-wlf2m7r
+    module load libsharp-2018-01-17-gcc-7.3.0-4xamgaw
     module load libxsmm-1.9-gcc-7.3.0-npctj4l
     module load openblas-0.3.0-gcc-7.3.0-cjwkbox
+    module load python-2.7.15-gcc-7.3.0-2azrjn6
+    module load py-numpy-1.13.3-gcc-7.3.0-ggad2xs
+    module load py-scipy-1.0.0-gcc-7.3.0-tegl6xx
     module load yaml-cpp-develop-gcc-7.3.0-qcfbbll
 }
 

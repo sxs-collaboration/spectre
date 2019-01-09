@@ -22,7 +22,7 @@ struct Metavariables {
   using const_global_cache_tag_list = tmpl::list<>;
 };
 
-using registrars = tmpl::list<StepChoosers::Register::Constant>;
+using registrars = tmpl::list<StepChoosers::Registrars::Constant>;
 using Constant = StepChoosers::Constant<registrars>;
 }  // namespace
 

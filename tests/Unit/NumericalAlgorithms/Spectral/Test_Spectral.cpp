@@ -76,33 +76,30 @@ void test_exact_differentiation(const Function& max_poly_deg) {
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactDifferentiation",
                   "[NumericalAlgorithms][Spectral][Unit]") {
+  const auto minus_one = [](const size_t n) noexcept { return n - 1; };
   SECTION(
       "Legendre-Gauss differentiation is exact to polynomial order "
       "num_points - 1") {
     test_exact_differentiation<Spectral::Basis::Legendre,
-                               Spectral::Quadrature::Gauss>(
-        [](const size_t n) { return n - 1; });
+                               Spectral::Quadrature::Gauss>(minus_one);
   }
   SECTION(
       "Legendre-Gauss-Lobatto differentiation is exact to polynomial order "
       "num_points - 1") {
     test_exact_differentiation<Spectral::Basis::Legendre,
-                               Spectral::Quadrature::GaussLobatto>(
-        [](const size_t n) { return n - 1; });
+                               Spectral::Quadrature::GaussLobatto>(minus_one);
   }
   SECTION(
       "Chebyshev-Gauss differentiation is exact to polynomial order "
       "num_points - 1") {
     test_exact_differentiation<Spectral::Basis::Chebyshev,
-                               Spectral::Quadrature::Gauss>(
-        [](const size_t n) { return n - 1; });
+                               Spectral::Quadrature::Gauss>(minus_one);
   }
   SECTION(
       "Chebyshev-Gauss-Lobatto differentiation is exact to polynomial order "
       "num_points - 1") {
     test_exact_differentiation<Spectral::Basis::Chebyshev,
-                               Spectral::Quadrature::GaussLobatto>(
-        [](const size_t n) { return n - 1; });
+                               Spectral::Quadrature::GaussLobatto>(minus_one);
   }
 }
 
@@ -155,59 +152,92 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LinearFilter",
 
 namespace {
 
+// By default, uses the default tolerance for floating-point comparisons. When
+// a non-zero eps is passed in as last argument, uses that tolerance instead.
 template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
           typename Function>
-void test_exact_interpolation(const Function& max_poly_deg) {
+void test_interpolation_matrix(const DataVector& target_points,
+                               const Function& max_poly_deg,
+                               const double eps = 0.) noexcept {
+  DataVector interpolated_u(target_points.size(), 0.);
   for (size_t n = Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        n <= Spectral::maximum_number_of_points<BasisType>; n++) {
+    const auto& collocation_pts =
+        Spectral::collocation_points<BasisType, QuadratureType>(n);
+    const auto interp_matrix =
+        Spectral::interpolation_matrix<BasisType, QuadratureType>(
+            n, target_points);
     for (size_t p = 0; p <= max_poly_deg(n); p++) {
-      const auto& collocation_pts =
-          Spectral::collocation_points<BasisType, QuadratureType>(n);
       const DataVector u = unit_polynomial(p, collocation_pts);
-      const DataVector target_points{-0.5, -0.4837, 0.5, 0.9378, 1.};
-      DataVector interpolated_u(target_points.size(), 0.);
-      const auto interp_matrix =
-          Spectral::interpolation_matrix<BasisType, QuadratureType>(
-              n, target_points);
-      dgemv_('n', target_points.size(), n, 1.0, interp_matrix.data(),
-             target_points.size(), u.data(), 1, 0.0, interpolated_u.data(), 1);
+      dgemv_('n', target_points.size(), n, 1., interp_matrix.data(),
+             target_points.size(), u.data(), 1, 0., interpolated_u.data(), 1);
       CHECK(interpolated_u.size() == target_points.size());
-      CHECK_ITERABLE_APPROX(unit_polynomial(p, target_points), interpolated_u);
+      if (eps <= 0.) {
+        CHECK_ITERABLE_APPROX(unit_polynomial(p, target_points),
+                              interpolated_u);
+      } else {
+        Approx local_approx = Approx::custom().epsilon(eps).scale(1.);
+        CHECK_ITERABLE_CUSTOM_APPROX(unit_polynomial(p, target_points),
+                                     interpolated_u, local_approx);
+      }
     }
   }
+}
+
+template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
+          typename Function>
+void test_exact_interpolation(const Function& max_poly_deg) noexcept {
+  const DataVector target_points{-0.5, -0.4837, 0.5, 0.9378, 1.};
+  test_interpolation_matrix<BasisType, QuadratureType>(target_points,
+                                                       max_poly_deg);
+}
+
+template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
+          typename Function>
+void test_exact_extrapolation(const Function& max_poly_deg) {
+  const DataVector target_points{-1.66, 1., 1.5, 1.98, 2.};
+  // Errors are larger when extrapolating outside of the original grid:
+  const double eps = 1.e-9;
+  test_interpolation_matrix<BasisType, QuadratureType>(target_points,
+                                                       max_poly_deg, eps);
 }
 
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.Spectral.ExactInterpolation",
                   "[NumericalAlgorithms][Spectral][Unit]") {
+  const auto minus_one = [](const size_t n) noexcept { return n - 1; };
   SECTION(
       "Legendre-Gauss interpolation is exact to polynomial order "
       "num_points-1") {
     test_exact_interpolation<Spectral::Basis::Legendre,
-                             Spectral::Quadrature::Gauss>(
-        [](const size_t n) { return n - 1; });
+                             Spectral::Quadrature::Gauss>(minus_one);
+    test_exact_extrapolation<Spectral::Basis::Legendre,
+                             Spectral::Quadrature::Gauss>(minus_one);
   }
   SECTION(
       "Legendre-Gauss-Lobatto interpolation is exact to polynomial "
       "order num_points-1") {
     test_exact_interpolation<Spectral::Basis::Legendre,
-                             Spectral::Quadrature::GaussLobatto>(
-        [](const size_t n) { return n - 1; });
+                             Spectral::Quadrature::GaussLobatto>(minus_one);
+    test_exact_extrapolation<Spectral::Basis::Legendre,
+                             Spectral::Quadrature::GaussLobatto>(minus_one);
   }
   SECTION(
       "Chebyshev-Gauss interpolation is exact to polynomial "
       "order num_points-1") {
     test_exact_interpolation<Spectral::Basis::Chebyshev,
-                             Spectral::Quadrature::Gauss>(
-        [](const size_t n) { return n - 1; });
+                             Spectral::Quadrature::Gauss>(minus_one);
+    test_exact_extrapolation<Spectral::Basis::Chebyshev,
+                             Spectral::Quadrature::Gauss>(minus_one);
   }
   SECTION(
       "Chebyshev-Gauss-Lobatto interpolation is exact to polynomial "
       "order num_points-1") {
     test_exact_interpolation<Spectral::Basis::Chebyshev,
-                             Spectral::Quadrature::GaussLobatto>(
-        [](const size_t n) { return n - 1; });
+                             Spectral::Quadrature::GaussLobatto>(minus_one);
+    test_exact_extrapolation<Spectral::Basis::Chebyshev,
+                             Spectral::Quadrature::GaussLobatto>(minus_one);
   }
 }
 

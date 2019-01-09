@@ -112,6 +112,8 @@ enum class ShellWedges {
 /// This is done if `aspect_ratio` is set to something other than the default
 /// value of one. When the argument `use_logarithmic_map` is set to `true`,
 /// the radial gridpoints of the wedge map are set to be spaced logarithmically.
+/// The `number_of_layers` is used when the user wants to have multiple layers
+/// of Blocks in the radial direction.
 template <typename TargetFrame>
 auto wedge_coordinate_maps(double inner_radius, double outer_radius,
                            double inner_sphericity, double outer_sphericity,
@@ -120,7 +122,8 @@ auto wedge_coordinate_maps(double inner_radius, double outer_radius,
                            bool use_half_wedges = false,
                            double aspect_ratio = 1.0,
                            bool use_logarithmic_map = false,
-                           ShellWedges which_wedges = ShellWedges::All) noexcept
+                           ShellWedges which_wedges = ShellWedges::All,
+                           size_t number_of_layers = 1) noexcept
     -> std::vector<
         std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
 

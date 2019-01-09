@@ -5,7 +5,7 @@
 
 #include <vector>
 
-#include "Domain/DomainCreators/RegisterDerivedWithCharm.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"
@@ -83,9 +83,9 @@ struct EvolutionMetavars {
   using limiter = OptionTags::SlopeLimiterParams<
       SlopeLimiters::Minmod<3, system::variables_tag::tags_list>>;
   using step_choosers =
-      tmpl::list<StepChoosers::Register::Cfl<3, Frame::Inertial>,
-                 StepChoosers::Register::Constant,
-                 StepChoosers::Register::Increase>;
+      tmpl::list<StepChoosers::Registrars::Cfl<3, Frame::Inertial>,
+                 StepChoosers::Registrars::Constant,
+                 StepChoosers::Registrars::Increase>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
@@ -167,7 +167,7 @@ struct EvolutionMetavars {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &DomainCreators::register_derived_with_charm,
+    &setup_error_handling, &domain::creators::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
         StepChooser<EvolutionMetavars::step_choosers>>,
     &Parallel::register_derived_classes_with_charm<StepController>,

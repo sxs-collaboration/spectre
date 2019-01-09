@@ -45,14 +45,8 @@ struct System {
   static constexpr size_t thermodynamic_dim =
       EquationOfStateType::thermodynamic_dim;
 
-  using primitive_variables_tag = ::Tags::Variables<tmpl::list<
-      hydro::Tags::RestMassDensity<DataVector>,
-      hydro::Tags::SpecificInternalEnergy<DataVector>,
-      hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::DivergenceCleaningField<DataVector>,
-      hydro::Tags::LorentzFactor<DataVector>, hydro::Tags::Pressure<DataVector>,
-      hydro::Tags::SpecificEnthalpy<DataVector>>>;
+  using primitive_variables_tag =
+      ::Tags::Variables<hydro::grmhd_tags<DataVector>>;
 
   using variables_tag =
       ::Tags::Variables<tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<>,

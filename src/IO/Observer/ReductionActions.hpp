@@ -48,6 +48,14 @@ struct ContributeReductionDataToWriter;
  *
  * Once everything at a specific `ObservationId` has been contributed to the
  * reduction, the groups reduce to their local nodegroup.
+ *
+ * The caller of this Action (which is to be invoked on the Observer parallel
+ * component) must pass in an `observation_id` used to uniquely identify the
+ * observation in time, the name of the `h5::Dat` subfile in the HDF5 file (e.g.
+ * `/element_data`, where the slash is important), a `std::vector<std::string>`
+ * of names of the quantities being reduced (e.g. `{"Time", "L1ErrorDensity",
+ * "L2ErrorDensity"}`), and the `Parallel::ReductionData` that holds the
+ * `ReductionDatums` containing info on how to do the reduction.
  */
 struct ContributeReductionData {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
@@ -61,6 +69,7 @@ struct ContributeReductionData {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
                     const observers::ObservationId& observation_id,
+                    const std::string& subfile_name,
                     const std::vector<std::string>& reduction_names,
                     Parallel::ReductionData<Ts...>&& reduction_data) noexcept {
     db::mutate<Tags::ReductionData<Ts...>, Tags::ReductionDataNames<Ts...>,
@@ -68,7 +77,7 @@ struct ContributeReductionData {
         make_not_null(&box),
         [
           &observation_id, reduction_data = std::move(reduction_data),
-          &reduction_names, &cache
+          &reduction_names, &cache, &subfile_name
         ](const gsl::not_null<std::unordered_map<
               ObservationId, Parallel::ReductionData<Ts...>>*>
               reduction_data_map,
@@ -111,7 +120,7 @@ struct ContributeReductionData {
                                       ObserverWriter<Metavariables>>(cache)
                                       .ckLocalBranch();
             Parallel::threaded_action<ThreadedActions::WriteReductionData>(
-                local_writer, observation_id,
+                local_writer, observation_id, subfile_name,
                 node_id == 0 ? std::move((*reduction_names_map)[observation_id])
                              : std::vector<std::string>{},
                 std::move((*reduction_data_map)[observation_id]));
@@ -136,7 +145,8 @@ namespace ThreadedActions {
 struct WriteReductionData {
  private:
   template <typename... Ts, size_t... Is>
-  static void write_data(std::vector<std::string>&& legend,
+  static void write_data(const std::string& subfile_name,
+                         std::vector<std::string>&& legend,
                          std::tuple<Ts...>&& data,
                          const std::string& file_prefix,
                          std::index_sequence<Is...> /*meta*/) noexcept {
@@ -148,7 +158,7 @@ struct WriteReductionData {
     h5::H5File<h5::AccessType::ReadWrite> h5file(file_prefix + ".h5", true);
     constexpr size_t version_number = 0;
     auto& time_series_file = h5file.try_insert<h5::Dat>(
-        "/element_data", std::move(legend), version_number);
+        subfile_name, std::move(legend), version_number);
     time_series_file.append(data_to_append);
   }
 
@@ -165,6 +175,7 @@ struct WriteReductionData {
                     const ParallelComponent* const /*meta*/,
                     const gsl::not_null<CmiNodeLock*> node_lock,
                     const observers::ObservationId& observation_id,
+                    const std::string& subfile_name,
                     std::vector<std::string>&& reduction_names,
                     Parallel::ReductionData<ReductionDatums...>&&
                         in_reduction_data) noexcept {
@@ -253,7 +264,7 @@ struct WriteReductionData {
       Parallel::lock(&file_lock);
       in_reduction_data.finalize();
       WriteReductionData::write_data(
-          std::move(legend), std::move(in_reduction_data.data()),
+          subfile_name, std::move(legend), std::move(in_reduction_data.data()),
           Parallel::get<OptionTags::ReductionFileName>(cache),
           std::make_index_sequence<sizeof...(ReductionDatums)>{});
       Parallel::unlock(&file_lock);

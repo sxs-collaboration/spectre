@@ -222,21 +222,10 @@ class BondiHoyleAccretion {
     return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
   }
 
-  template <typename DataType>
-  using grmhd_tags =
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpecificEnthalpy<DataType>,
-                 hydro::Tags::Pressure<DataType>,
-                 hydro::Tags::SpecificInternalEnergy<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3>,
-                 hydro::Tags::LorentzFactor<DataType>,
-                 hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
-                 hydro::Tags::DivergenceCleaningField<DataType>>;
-
   /// Retrieve the metric variables at `x`
-  template <
-      typename DataType, typename Tag,
-      Requires<not tmpl::list_contains_v<grmhd_tags<DataType>, Tag>> = nullptr>
+  template <typename DataType, typename Tag,
+            Requires<not tmpl::list_contains_v<hydro::grmhd_tags<DataType>,
+                                               Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& x,
                                      tmpl::list<Tag> /*meta*/) const noexcept {
     constexpr double dummy_time = 0.0;

@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Math.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -142,6 +143,7 @@ BINARY_REF_WRAP_OP(+)
 BINARY_REF_WRAP_OP(-)
 BINARY_REF_WRAP_OP(*)
 BINARY_REF_WRAP_OP(/)
+BINARY_REF_WRAP_OP(==)
 
 template <typename T>
 SPECTRE_ALWAYS_INLINE decltype(auto) operator-(

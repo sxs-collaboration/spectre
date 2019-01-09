@@ -6,6 +6,7 @@ set(LIBRARY "Test_GrMhdSolutions")
 set(LIBRARY_SOURCES
   Test_AlfvenWave.cpp
   Test_BondiMichel.cpp
+  Test_KomissarovShock.cpp
   Test_SmoothFlow.cpp
   )
 

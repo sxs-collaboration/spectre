@@ -1,0 +1,25 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: SolvePoissonProblem1D
+# Check: execute
+
+AnalyticSolution:
+    WaveNumbers: [1]
+
+DomainCreator:
+  Interval:
+    LowerBound: [0]
+    UpperBound: [3.141592653589793]
+    IsPeriodicIn: [false]
+    InitialRefinement: [1]
+    InitialGridPoints: [3]
+
+NumericalFluxParams:
+    PenaltyParameter: 5.729577951308232 # p^2 / h
+
+Verbosity: Verbose
+
+VolumeFileName: "./PoissonVolume1D"
+
+ReductionFileName: "./PoissonReduction1D"

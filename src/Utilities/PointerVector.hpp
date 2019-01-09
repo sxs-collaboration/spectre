@@ -1427,7 +1427,7 @@ decltype(auto) pow(const PointerVector<Type, AF, PF, TF, ExprResultType>& t,
  * the cases where the new vector type inherits from `PointerVector` with a
  * custom `ExprResultType`.
  */
-#define MAKE_EXPRESSION_MATH_ASSIGN_PV(OP, TYPE)                        \
+#define MAKE_MATH_ASSIGN_EXPRESSION_POINTERVECTOR(OP, TYPE)             \
   TYPE& operator OP(const TYPE& rhs) noexcept {                         \
     /* clang-tidy: parens around OP */                                  \
     ~*this OP ~rhs; /* NOLINT */                                        \

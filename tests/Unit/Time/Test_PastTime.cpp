@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <pup.h>
+// IWYU pragma: no_include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
@@ -14,23 +15,16 @@
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
-#include "Time/Triggers/TimeTriggers.hpp"
+#include "Time/Triggers/PastTime.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-namespace {
-struct TimeTriggers {
-  template <typename T>
-  using type = Triggers::time_triggers<T>;
-};
-}  // namespace
-
 SPECTRE_TEST_CASE("Unit.Time.Triggers.PastTime", "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<Trigger<TimeTriggers>>();
+  using TriggerType = Trigger<tmpl::list<Triggers::Registrars::PastTime>>;
+  Parallel::register_derived_classes_with_charm<TriggerType>();
 
-  const auto trigger =
-      test_factory_creation<Trigger<TimeTriggers>>("  PastTime: -7.");
+  const auto trigger = test_factory_creation<TriggerType>("  PastTime: -7.");
 
   const auto sent_trigger = serialize_and_deserialize(trigger);
 

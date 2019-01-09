@@ -103,7 +103,10 @@ useful to perform at least the following tests locally:
   highlight warnings) can be used, placing its result in the `docs`
   directory in the build tree.  Once code has been made into a pull
   request to GitHub, the documentation can be rendered locally using
-  the `tools/pr-docs` script.
+  the `tools/pr-docs` script.  To view the documentation, simply open the
+  `index.html` file in the `html` subdirectory in a browser. Some functionality
+  requires a web server (e.g. citation popovers), so just run a
+  `python3 -m http.server` in the `html` directory to enable this.
 
 ## Travis setup
 

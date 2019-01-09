@@ -24,11 +24,11 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/Creators/Brick.hpp"
+#include "Domain/Creators/Interval.hpp"
+#include "Domain/Creators/Rectangle.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/Brick.hpp"
-#include "Domain/DomainCreators/Interval.hpp"
-#include "Domain/DomainCreators/Rectangle.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
@@ -405,7 +405,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
           std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<1>{0, {{SegmentId{2, 1}}}}, 3., 1., 1.,
-      DomainCreators::Interval<Frame::Inertial>{
+      domain::creators::Interval<Frame::Inertial>{
           {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}});
 
   test_initialize_element<Metavariables<1, false, false, tmpl::list<>>>(
@@ -414,7 +414,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
           std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<1>{0, {{SegmentId{2, 0}}}}, 3., 1., 1.,
-      DomainCreators::Interval<Frame::Inertial>{
+      domain::creators::Interval<Frame::Inertial>{
           {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}});
 
   test_initialize_element<Metavariables<2, false, false, tmpl::list<>>>(
@@ -423,7 +423,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
           std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{3, 2}}}}, 3., 1., 1.,
-      DomainCreators::Rectangle<Frame::Inertial>{
+      domain::creators::Rectangle<Frame::Inertial>{
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
 
   test_initialize_element<Metavariables<2, false, false, tmpl::list<>>>(
@@ -432,9 +432,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
           std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<2>{0, {{SegmentId{2, 0}, SegmentId{3, 7}}}}, 3., 1., 1.,
-      DomainCreators::Rectangle<Frame::Inertial>{
+      domain::creators::Rectangle<Frame::Inertial>{
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
-
 
   test_initialize_element<Metavariables<3, false, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
@@ -443,11 +442,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
           SystemAnalyticSolution{}},
       ElementId<3>{0, {{SegmentId{2, 1}, SegmentId{3, 2}, SegmentId{1, 0}}}},
       3., 1., 1.,
-      DomainCreators::Brick<Frame::Inertial>{{{-0.5, -0.75, -1.2}},
-                                             {{1.5, 2.4, 1.2}},
-                                             {{false, false, true}},
-                                             {{2, 3, 1}},
-                                             {{4, 5, 3}}});
+      domain::creators::Brick<Frame::Inertial>{{{-0.5, -0.75, -1.2}},
+                                               {{1.5, 2.4, 1.2}},
+                                               {{false, false, true}},
+                                               {{2, 3, 1}},
+                                               {{4, 5, 3}}});
 
   test_initialize_element<Metavariables<3, false, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
@@ -457,11 +456,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
 
       ElementId<3>{0, {{SegmentId{0, 0}, SegmentId{0, 0}, SegmentId{1, 1}}}},
       3., 1., 1.,
-      DomainCreators::Brick<Frame::Inertial>{{{-0.5, -0.75, -1.2}},
-                                             {{1.5, 2.4, 1.2}},
-                                             {{false, false, false}},
-                                             {{0, 0, 1}},
-                                             {{4, 5, 3}}});
+      domain::creators::Brick<Frame::Inertial>{{{-0.5, -0.75, -1.2}},
+                                               {{1.5, 2.4, 1.2}},
+                                               {{false, false, false}},
+                                               {{0, 0, 1}},
+                                               {{4, 5, 3}}});
 
   test_initialize_element<Metavariables<2, true, false, tmpl::list<>>>(
       ActionTesting::MockRuntimeSystem<
@@ -469,7 +468,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
           std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}}, 3., 1., 1.,
-      DomainCreators::Rectangle<Frame::Inertial>{
+      domain::creators::Rectangle<Frame::Inertial>{
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
 
   // local time-stepping
@@ -481,7 +480,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.InitializeElement",
           std::make_unique<TimeSteppers::AdamsBashforthN>(4),
           SystemAnalyticSolution{}},
       ElementId<2>{0, {{SegmentId{2, 1}, SegmentId{3, 2}}}}, 1.5, 0.25, 0.5,
-      DomainCreators::Rectangle<Frame::Inertial>{
+      domain::creators::Rectangle<Frame::Inertial>{
           {{-0.5, -0.75}}, {{1.5, 2.4}}, {{false, false}}, {{2, 3}}, {{4, 5}}});
 
   test_mortar_orientation();

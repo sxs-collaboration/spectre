@@ -146,7 +146,7 @@ class BondiMichel {
         sonic_density_,
         x,
         tmpl2::flat_any_v<
-            not tmpl::list_contains_v<grmhd_tags<DataType>, Tags>...>,
+            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>...>,
         background_spacetime_};
     return {get<Tags>(variables(x, tmpl::list<Tags>{}, intermediate_vars))...};
   }
@@ -162,7 +162,7 @@ class BondiMichel {
             mass_, polytropic_constant_, polytropic_exponent_,
             bernoulli_constant_squared_minus_one_, sonic_radius_,
             sonic_density_, x,
-            not tmpl::list_contains_v<grmhd_tags<DataType>, Tag>,
+            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>,
             background_spacetime_});
   }
 
@@ -176,17 +176,6 @@ class BondiMichel {
  private:
   friend bool operator==(const BondiMichel& lhs,
                          const BondiMichel& rhs) noexcept;
-
-  template <typename DataType>
-  using grmhd_tags =
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpecificEnthalpy<DataType>,
-                 hydro::Tags::Pressure<DataType>,
-                 hydro::Tags::SpecificInternalEnergy<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3>,
-                 hydro::Tags::LorentzFactor<DataType>,
-                 hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
-                 hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
@@ -244,9 +233,9 @@ class BondiMichel {
                  const IntermediateVars<DataType>& vars) const noexcept
       -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
 
-  template <
-      typename DataType, typename Tag,
-      Requires<not tmpl::list_contains_v<grmhd_tags<DataType>, Tag>> = nullptr>
+  template <typename DataType, typename Tag,
+            Requires<not tmpl::list_contains_v<hydro::grmhd_tags<DataType>,
+                                               Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& /*x*/,
                                      tmpl::list<Tag> /*meta*/,
                                      IntermediateVars<DataType>& vars) const

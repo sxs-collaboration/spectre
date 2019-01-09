@@ -73,6 +73,9 @@ class Minkowski {
                                          double t,
                                          tmpl::list<Tags...> /*meta*/) const
       noexcept {
+    static_assert(sizeof...(Tags) > 1,
+                  "Unrecognized tag requested.  See the function parameters "
+                  "for the tag.");
     return {get<Tags>(variables(x, t, tmpl::list<Tags>{}))...};
   }
 

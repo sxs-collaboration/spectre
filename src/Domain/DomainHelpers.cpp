@@ -503,18 +503,50 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double x_coord_of_shell_center,
                       const bool use_half_wedges, const double aspect_ratio,
                       const bool use_logarithmic_map,
-                      const ShellWedges which_wedges) noexcept {
+                      const ShellWedges which_wedges,
+                      const size_t number_of_layers) noexcept {
+  ASSERT(not use_half_wedges or which_wedges == ShellWedges::All,
+         "If we are using half wedges we must also be using ShellWedges::All.");
+  ASSERT(number_of_layers == 1 or inner_sphericity == outer_sphericity,
+         "If we are using more than one layer the inner and outer sphericities "
+         "must match.");
+  // At most one of these options can be turned on, if any.
+  ASSERT((x_coord_of_shell_center != 0.0) + use_half_wedges +
+                 (aspect_ratio != 1.0) <=
+             1,
+         "Only one of: using a non-zero translation, using half wedges, or "
+         "using a non-unity aspect_ratio, can be done at a time.");
+
   const auto wedge_orientations = orientations_for_wrappings();
 
   using Wedge3DMap = CoordinateMaps::Wedge3D;
   using Halves = Wedge3DMap::WedgeHalves;
   std::vector<Wedge3DMap> wedges{};
 
-  for (size_t i = which_wedge_index(which_wedges); i < 6; i++) {
-    wedges.emplace_back(inner_radius, outer_radius,
-                        gsl::at(wedge_orientations, i), inner_sphericity,
-                        outer_sphericity, use_equiangular_map, Halves::Both,
-                        use_logarithmic_map);
+  const double delta_zeta = 2.0 / number_of_layers;
+  for (size_t layer_i = 0; layer_i < number_of_layers; layer_i++) {
+    // Linear interpolation variables in the radial direction from -1 to 1
+    const double global_zeta_inner = -1.0 + layer_i * delta_zeta;
+    const double global_zeta_outer = -1.0 + (layer_i + 1.0) * delta_zeta;
+    const double inner_radius_layer_i =
+        use_logarithmic_map
+            ? pow(inner_radius, 0.5 * (1.0 - global_zeta_inner)) *
+                  pow(outer_radius, 0.5 * (1.0 + global_zeta_inner))
+            : inner_radius * 0.5 * (1.0 - global_zeta_inner) +
+                  outer_radius * 0.5 * (1.0 + global_zeta_inner);
+    const double outer_radius_layer_i =
+        use_logarithmic_map
+            ? pow(inner_radius, 0.5 * (1.0 - global_zeta_outer)) *
+                  pow(outer_radius, 0.5 * (1.0 + global_zeta_outer))
+            : inner_radius * 0.5 * (1.0 - global_zeta_outer) +
+                  outer_radius * 0.5 * (1.0 + global_zeta_outer);
+    for (size_t face_j = which_wedge_index(which_wedges); face_j < 6;
+         face_j++) {
+      wedges.emplace_back(inner_radius_layer_i, outer_radius_layer_i,
+                          gsl::at(wedge_orientations, face_j), inner_sphericity,
+                          outer_sphericity, use_equiangular_map, Halves::Both,
+                          use_logarithmic_map);
+    }
   }
 
   if (use_half_wedges) {
@@ -1054,7 +1086,8 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double x_coord_of_shell_center,
                       const bool use_wedge_halves, const double aspect_ratio,
                       const bool use_logarithmic_map,
-                      const ShellWedges which_wedges) noexcept;
+                      const ShellWedges which_wedges,
+                      const size_t number_of_layers) noexcept;
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
@@ -1064,7 +1097,8 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double x_coord_of_shell_center,
                       const bool use_wedge_halves, const double aspect_ratio,
                       const bool use_logarithmic_map,
-                      const ShellWedges which_wedges) noexcept;
+                      const ShellWedges which_wedges,
+                      const size_t number_of_layers) noexcept;
 template std::vector<
     std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,

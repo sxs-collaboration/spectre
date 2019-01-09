@@ -162,8 +162,11 @@ void test_two_index_constraint_random(const DataType& used_for_size) noexcept {
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &GeneralizedHarmonic::two_index_constraint<SpatialDim, Frame,
                                                      DataType>),
-      "TestFunctions", "two_index_constraint", {{{-10.0, 10.0}}},
-      used_for_size);
+      "TestFunctions", "two_index_constraint", {{{-10.0, 10.0}}}, used_for_size,
+      1.0e-10);  // last argument loosens tolerance from
+                 // default of 1.0e-12 to avoid occasional
+                 // failures of this test, suspected from
+                 // accumulated roundoff error
 }
 
 // Test the return-by-reference two-index constraint

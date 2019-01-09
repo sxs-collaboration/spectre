@@ -10,6 +10,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -22,7 +23,7 @@ class ConstGlobalCache;
 namespace StepChoosers {
 
 /// Suggests a constant step size.
-template <typename StepChooserRegistrars>
+template <typename StepChooserRegistrars = tmpl::list<>>
 class Constant : public StepChooser<StepChooserRegistrars> {
  public:
   /// \cond
@@ -53,12 +54,9 @@ class Constant : public StepChooser<StepChooserRegistrars> {
   double value_ = std::numeric_limits<double>::signaling_NaN();
 };
 
-namespace Register {
-struct Constant {
-  template <typename StepChooserRegistrars>
-  using f = StepChoosers::Constant<StepChooserRegistrars>;
-};
-}  // namespace Register
+namespace Registrars {
+using Constant = Registration::Registrar<StepChoosers::Constant>;
+}  // namespace Registrars
 
 /// \cond
 template <typename StepChooserRegistrars>

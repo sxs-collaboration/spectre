@@ -42,6 +42,8 @@ namespace funcl {
 using std::conj;
 using std::imag;
 using std::real;
+using std::max;
+using std::min;
 
 /// \cond
 template <size_t Arity>
@@ -236,6 +238,8 @@ MAKE_BINARY_OPERATOR(Plus, +);
 
 MAKE_BINARY_FUNCTIONAL(Atan2, atan2);
 MAKE_BINARY_FUNCTIONAL(Hypot, hypot);
+MAKE_BINARY_FUNCTIONAL(Max, max);
+MAKE_BINARY_FUNCTIONAL(Min, min);
 MAKE_BINARY_FUNCTIONAL(Pow, pow);
 
 MAKE_LITERAL_VAL(Pi, M_PI);

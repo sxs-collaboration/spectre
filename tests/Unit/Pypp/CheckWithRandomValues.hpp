@@ -143,7 +143,7 @@ void check_with_random_values_impl(
     std::index_sequence<ResultIs...> /*index_return_types*/,
     std::index_sequence<ArgumentIs...> /*index_argument_types*/,
     std::index_sequence<MemberArgsIs...> /*index_member_args*/,
-    TagsList /*meta*/) {
+    TagsList /*meta*/, const double epsilon = 1.0e-12) {
   // Note: generator and distributions cannot be const.
   std::tuple<ArgumentTypes...> args{
       make_with_value<ArgumentTypes>(used_for_size, 0.0)...};
@@ -158,7 +158,8 @@ void check_with_random_values_impl(
 
   size_t count = 0;
   tmpl::for_each<TagsList>([&f, &klass, &args, &used_for_size, &member_args,
-                            &module_name, &function_names, &count](auto tag) {
+                            &epsilon, &module_name, &function_names,
+                            &count](auto tag) {
     (void)member_args;    // Avoid compiler warning
     (void)used_for_size;  // Avoid compiler warning
     using Tag = tmpl::type_from<decltype(tag)>;
@@ -171,7 +172,7 @@ void check_with_random_values_impl(
             module_name, function_names[count], std::get<ArgumentIs>(args)...,
             forward_to_pypp<std::decay_t<decltype(result)>>(
                 std::get<MemberArgsIs>(member_args), used_for_size)...)),
-        Approx::custom().epsilon(1.e-12).scale(1.0));
+        Approx::custom().epsilon(epsilon).scale(1.0));
     count++;
   });
 }
@@ -187,7 +188,7 @@ void check_with_random_values_impl(
     tmpl::list<ArgumentTypes...> /*argument_types*/,
     std::index_sequence<ArgumentIs...> /*index_argument_types*/,
     std::index_sequence<MemberArgsIs...> /*index_member_args*/,
-    NoSuchType /*meta*/) {
+    NoSuchType /*meta*/, const double epsilon = 1.0e-12) {
   // Note: generator and distributions cannot be const.
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
   using ResultType = typename f_info::return_type;
@@ -218,7 +219,7 @@ void check_with_random_values_impl(
           module_name, function_name, std::get<ArgumentIs>(args)...,
           forward_to_pypp<ResultType>(std::get<MemberArgsIs>(member_args),
                                       used_for_size)...),
-      Approx::custom().epsilon(1.e-12).scale(1.0));
+      Approx::custom().epsilon(epsilon).scale(1.0));
 }
 
 template <class F, class T, class Klass, class... ReturnTypes,
@@ -235,7 +236,7 @@ void check_with_random_values_impl(
     std::index_sequence<ResultIs...> /*index_return_types*/,
     std::index_sequence<ArgumentIs...> /*index_argument_types*/,
     std::index_sequence<MemberArgsIs...> /*index_member_args*/,
-    NoSuchType /* meta */) {
+    NoSuchType /* meta */, const double epsilon = 1.0e-12) {
   // Note: generator and distributions cannot be const.
   std::tuple<ReturnTypes...> results{
       make_with_value<ReturnTypes>(used_for_size, 0.0)...};
@@ -269,7 +270,7 @@ void check_with_random_values_impl(
       std::integral_constant<
           bool, not cpp17::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
       std::forward<F>(f));
-  const auto helper = [&module_name, &function_names, &args, &results,
+  const auto helper = [&module_name, &function_names, &args, &results, &epsilon,
                        &member_args, &used_for_size](auto result_i) {
     (void)member_args;    // avoid compiler warning
     (void)used_for_size;  // avoid compiler warning
@@ -282,7 +283,7 @@ void check_with_random_values_impl(
             forward_to_pypp<
                 std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
                 std::get<MemberArgsIs>(member_args), used_for_size)...)),
-        Approx::custom().epsilon(1.e-12).scale(1.0));
+        Approx::custom().epsilon(epsilon).scale(1.0));
     return '0';
   };
   (void)std::initializer_list<char>{
@@ -316,6 +317,8 @@ void check_with_random_values_impl(
  * pairs as there are arguments to `f` that are not a `gsl::not_null`
  * \param used_for_size The type `X` for the arguments of `f` of type
  *`Tensor<X>`
+ * \param epsilon A double specifying the comparison tolerance
+ * (default 1.0e-12)
  * \param seed The seed for the random number generator. This should only be
  * specified when debugging a failure with a particular set of random numbers,
  * in general it should be left to the default value.
@@ -330,7 +333,7 @@ void check_with_random_values(
     F&& f, const std::string& module_name, const std::string& function_name,
     const std::array<std::pair<double, double>, NumberOfBounds>&
         lower_and_upper_bounds,
-    const T& used_for_size,
+    const T& used_for_size, const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
   INFO("seed: " << seed);
@@ -367,7 +370,7 @@ void check_with_random_values(
       std::forward<F>(f), NoSuchType{}, module_name, function_name, generator,
       std::move(distributions), std::tuple<>{}, used_for_size, argument_types{},
       std::make_index_sequence<tmpl::size<argument_types>::value>{},
-      std::make_index_sequence<0>{}, NoSuchType{});
+      std::make_index_sequence<0>{}, NoSuchType{}, epsilon);
 }
 
 /*!
@@ -400,6 +403,8 @@ void check_with_random_values(
  * pairs as there are arguments to `f` that are not a `gsl::not_null`
  * \param used_for_size The type `X` for the arguments of `f` of type
  * `Tensor<X>`
+ * \param epsilon A double specifying the comparison tolerance
+ * (default 1.0e-12)
  * \param seed The seed for the random number generator. This should only be
  * specified when debugging a failure with a particular set of random numbers,
  * in general it should be left to the default value.
@@ -410,7 +415,7 @@ void check_with_random_values(
     const std::vector<std::string>& function_names,
     const std::array<std::pair<double, double>, NumberOfBounds>&
         lower_and_upper_bounds,
-    const T& used_for_size,
+    const T& used_for_size, const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
   INFO("seed: " << seed);
@@ -463,7 +468,7 @@ void check_with_random_values(
       argument_types{},
       std::make_index_sequence<tmpl::size<return_types>::value>{},
       std::make_index_sequence<tmpl::size<argument_types>::value>{},
-      std::make_index_sequence<0>{}, NoSuchType{});
+      std::make_index_sequence<0>{}, NoSuchType{}, epsilon);
 }
 
 /*!
@@ -499,6 +504,8 @@ void check_with_random_values(
  * function, e.g. `Tensor<X>`.
  * \param used_for_size The type `X` for the arguments of `f` of type
  * `Tensor<X>`
+ * \param epsilon A double specifying the comparison tolerance
+ * (default 1.0e-12)
  * \param seed The seed for the random number generator. This should only be
  * specified when debugging a failure with a particular set of random numbers,
  * in general it should be left to the default value.
@@ -517,6 +524,7 @@ void check_with_random_values(
     const std::array<std::pair<double, double>, NumberOfBounds>&
         lower_and_upper_bounds,
     const std::tuple<MemberArgs...>& member_args, const T& used_for_size,
+    const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
   INFO("seed: " << seed);
@@ -553,7 +561,7 @@ void check_with_random_values(
       std::forward<F>(f), klass, module_name, function_name, generator,
       std::move(distributions), member_args, used_for_size, argument_types{},
       std::make_index_sequence<tmpl::size<argument_types>::value>{},
-      std::make_index_sequence<sizeof...(MemberArgs)>{}, NoSuchType{});
+      std::make_index_sequence<sizeof...(MemberArgs)>{}, NoSuchType{}, epsilon);
 }
 
 /*!
@@ -600,6 +608,8 @@ void check_with_random_values(
  * function, e.g. `Tensor<X>`.
  * \param used_for_size The type `X` for the arguments of `f` of type
  * `Tensor<X>`
+ * \param epsilon A double specifying the comparison tolerance
+ * (default 1.0e-12)
  * \param seed The seed for the random number generator. This should only be
  * specified when debugging a failure with a particular set of random numbers,
  * in general it should be left to the default value.
@@ -615,6 +625,7 @@ void check_with_random_values(
     const std::array<std::pair<double, double>, NumberOfBounds>&
         lower_and_upper_bounds,
     const std::tuple<MemberArgs...>& member_args, const T& used_for_size,
+    const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
   INFO("seed: " << seed);
@@ -672,7 +683,7 @@ void check_with_random_values(
       argument_types{},
       std::make_index_sequence<tmpl::size<return_types>::value>{},
       std::make_index_sequence<tmpl::size<argument_types>::value>{},
-      std::make_index_sequence<sizeof...(MemberArgs)>{}, TagsList{});
+      std::make_index_sequence<sizeof...(MemberArgs)>{}, TagsList{}, epsilon);
 }
 
 /// \cond

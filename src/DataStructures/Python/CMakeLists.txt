@@ -5,7 +5,10 @@ set(LIBRARY "PyDataStructures")
 
 spectre_python_add_module(
   DataStructures
-  SOURCES Bindings.cpp DataVector.cpp
+  SOURCES
+  Bindings.cpp
+  DataVector.cpp
+  Matrix.cpp
   )
 
 target_link_libraries(

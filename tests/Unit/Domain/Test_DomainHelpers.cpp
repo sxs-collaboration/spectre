@@ -305,6 +305,107 @@ void test_wedge_map_generation_against_domain_helpers(
 }
 
 }  // namespace
+
+// [[OutputRegex, If we are using half wedges we must also be using
+// ShellWedges::All.]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Domain.DomainHelpers.WedgeCoordinateMaps.Assert1", "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const double inner_radius = 0.5;
+  const double outer_radius = 2.0;
+  const double inner_sphericity = 1.0;
+  const double outer_sphericity = 1.0;
+  const bool use_equiangular_map = true;
+  const double x_coord_of_shell_center = 0.1;
+  const bool use_half_wedges = true;
+  const double aspect_ratio = 1.0;
+  const bool use_logarithmic_map = true;
+  const ShellWedges which_wedges = ShellWedges::FourOnEquator;
+  const size_t number_of_layers = 3;
+  static_cast<void>(wedge_coordinate_maps<Frame::Inertial>(
+      inner_radius, outer_radius, inner_sphericity, outer_sphericity,
+      use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
+      aspect_ratio, use_logarithmic_map, which_wedges, number_of_layers));
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, If we are using more than one layer the inner and outer
+// sphericities must match.]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Domain.DomainHelpers.WedgeCoordinateMaps.Assert2", "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const double inner_radius = 0.5;
+  const double outer_radius = 2.0;
+  const double inner_sphericity = 0.9;
+  const double outer_sphericity = 1.0;
+  const bool use_equiangular_map = true;
+  const double x_coord_of_shell_center = 0.1;
+  const bool use_half_wedges = true;
+  const double aspect_ratio = 1.0;
+  const bool use_logarithmic_map = true;
+  const ShellWedges which_wedges = ShellWedges::All;
+  const size_t number_of_layers = 3;
+  static_cast<void>(wedge_coordinate_maps<Frame::Inertial>(
+      inner_radius, outer_radius, inner_sphericity, outer_sphericity,
+      use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
+      aspect_ratio, use_logarithmic_map, which_wedges, number_of_layers));
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Only one of: using a non-zero translation, using half wedges,
+// or using a non-unity aspect_ratio, can be done at a time.]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Domain.DomainHelpers.WedgeCoordinateMaps.Assert3", "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const double inner_radius = 0.5;
+  const double outer_radius = 2.0;
+  const double inner_sphericity = 0.2;
+  const double outer_sphericity = 0.2;
+  const bool use_equiangular_map = true;
+  const double x_coord_of_shell_center = 0.1;
+  const bool use_half_wedges = true;
+  const double aspect_ratio = 1.0;
+  const bool use_logarithmic_map = false;
+  const ShellWedges which_wedges = ShellWedges::All;
+  const size_t number_of_layers = 3;
+  static_cast<void>(wedge_coordinate_maps<Frame::Inertial>(
+      inner_radius, outer_radius, inner_sphericity, outer_sphericity,
+      use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
+      aspect_ratio, use_logarithmic_map, which_wedges, number_of_layers));
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Only one of: using a non-zero translation, using half wedges,
+// or using a non-unity aspect_ratio, can be done at a time.]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Domain.DomainHelpers.WedgeCoordinateMaps.Assert4", "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const double inner_radius = 0.5;
+  const double outer_radius = 2.0;
+  const double inner_sphericity = 0.2;
+  const double outer_sphericity = 0.2;
+  const bool use_equiangular_map = true;
+  const double x_coord_of_shell_center = 0.0;
+  const bool use_half_wedges = true;
+  const double aspect_ratio = 0.3;
+  const bool use_logarithmic_map = false;
+  const ShellWedges which_wedges = ShellWedges::All;
+  const size_t number_of_layers = 3;
+  static_cast<void>(wedge_coordinate_maps<Frame::Inertial>(
+      inner_radius, outer_radius, inner_sphericity, outer_sphericity,
+      use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
+      aspect_ratio, use_logarithmic_map, which_wedges, number_of_layers));
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
 SPECTRE_TEST_CASE(
     "Unit.Domain.DomainHelpers.DefaultSixWedgeDirections.Equiangular",
     "[Domain][Unit]") {

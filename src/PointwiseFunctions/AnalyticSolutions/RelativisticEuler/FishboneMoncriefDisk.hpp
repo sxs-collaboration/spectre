@@ -278,7 +278,7 @@ class FishboneMoncriefDisk {
         tmpl2::flat_any_v<(
             cpp17::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
             cpp17::is_same_v<Tags, hydro::Tags::LorentzFactor<DataType>> or
-            not tmpl::list_contains_v<grmhd_tags<DataType>, Tags>)...>>
+            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>)...>>
         vars(black_hole_mass_, black_hole_spin_, max_pressure_radius_,
              background_spacetime_, x, t,
              index_helper(
@@ -301,7 +301,7 @@ class FishboneMoncriefDisk {
     IntermediateVariables<
         DataType,
         cpp17::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
-            not tmpl::list_contains_v<grmhd_tags<DataType>, Tag>>
+            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>>
         intermediate_vars(black_hole_mass_, black_hole_spin_,
                           max_pressure_radius_, background_spacetime_, x, t,
                           std::numeric_limits<size_t>::max(),
@@ -319,17 +319,6 @@ class FishboneMoncriefDisk {
   }
 
  private:
-  template <typename DataType>
-  using grmhd_tags =
-      tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpecificEnthalpy<DataType>,
-                 hydro::Tags::Pressure<DataType>,
-                 hydro::Tags::SpecificInternalEnergy<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3>,
-                 hydro::Tags::LorentzFactor<DataType>,
-                 hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
-                 hydro::Tags::DivergenceCleaningField<DataType>>;
-
   template <typename DataType, bool NeedSpacetime>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
@@ -392,9 +381,9 @@ class FishboneMoncriefDisk {
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   // Grab the metric variables
-  template <
-      typename DataType, typename Tag,
-      Requires<not tmpl::list_contains_v<grmhd_tags<DataType>, Tag>> = nullptr>
+  template <typename DataType, typename Tag,
+            Requires<not tmpl::list_contains_v<hydro::grmhd_tags<DataType>,
+                                               Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(
       const tnsr::I<DataType, 3>& /*x*/, tmpl::list<Tag> /*meta*/,
       IntermediateVariables<DataType, true>& vars, const size_t index) const

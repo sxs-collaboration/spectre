@@ -18,7 +18,8 @@ def create_interface_file(args):
              "  include \"Parallel/ConstGlobalCache.decl.h\";\n" \
              "\n" \
              "  template <typename ParallelComponent,\n" \
-             "            typename SpectreArrayIndex>\n" % args['algorithm_name']
+             "            typename SpectreArrayIndex>\n" \
+             % args['algorithm_name']
     # The chare type needs to be checked
     if args['algorithm_type'] == "array":
         ci_str += "  array [SpectreArrayIndex]"
@@ -44,7 +45,8 @@ def create_interface_file(args):
               "\n" % (args['algorithm_name'], args['algorithm_name'])
 
     if (args['algorithm_type'] == "nodegroup"):
-        ci_str += "    template <typename Action, typenameLDOTLDOTLDOT Args>\n" \
+        ci_str += \
+            "    template <typename Action, typenameLDOTLDOTLDOT Args>\n" \
             "    entry void threaded_action(\n" \
             "               std::tuple<COMPUTE_VARIADIC_ARGS>& args);\n" \
             "\n" \

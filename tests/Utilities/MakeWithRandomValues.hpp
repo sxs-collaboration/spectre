@@ -142,6 +142,7 @@ void fill_with_random_values(
                                                          distribution);
 }
 
+// @{
 /// \ingroup TestingFrameworkGroup
 /// \brief Make a data structure and fill it with random values
 ///
@@ -162,8 +163,24 @@ ReturnType make_with_random_values(
   fill_with_random_values(make_not_null(&result), generator, distribution);
   return result;
 }
+// distributions are sufficiently small to justify providing a convenience
+// function that receives them by value, which is useful when obtaining pointers
+// is inconvenient (e.g. for distributions that are obtained as
+// rvalues). Generators should never be copied, as doing so will cause
+// duplication of the pseudorandom numbers and performance hits due to the
+// nontrivial size.
+// clang-tidy: seems to erroneously believe this is a function declaration
+// rather than a definition.
+template <typename ReturnType, typename T, typename UniformRandomBitGenerator,
+          typename RandomNumberDistribution>
+ReturnType make_with_random_values(
+    const gsl::not_null<UniformRandomBitGenerator*> generator,  // NOLINT
+    RandomNumberDistribution distribution, const T& used_for_size) noexcept {
+  return make_with_random_values<ReturnType>(
+      generator, make_not_null(&distribution), used_for_size);
+}
+// @}
 
-// {@
 /// \ingroup TestingFrameworkGroup
 /// \brief Make a fixed-size data structure and fill with random values
 ///
@@ -174,26 +191,11 @@ ReturnType make_with_random_values(
 /// Used as
 /// `make_with_random_values<Type>(make_not_null(&gen),make_not_null(&dist))`
 template <typename T, typename UniformRandomBitGenerator,
-          typename RandomNumberDistribution,
-          Requires<cpp17::is_floating_point_v<tt::get_fundamental_type_t<T>>> =
-              nullptr>
+          typename RandomNumberDistribution>
 T make_with_random_values(
     const gsl::not_null<UniformRandomBitGenerator*> generator,
     const gsl::not_null<RandomNumberDistribution*> distribution) noexcept {
-  T result{std::numeric_limits<tt::get_fundamental_type_t<T>>::signaling_NaN()};
+  T result{};
   fill_with_random_values(make_not_null(&result), generator, distribution);
   return result;
 }
-
-template <
-    typename T, typename UniformRandomBitGenerator,
-    typename RandomNumberDistribution,
-    Requires<cpp17::is_integral_v<tt::get_fundamental_type_t<T>>> = nullptr>
-T make_with_random_values(
-    const gsl::not_null<UniformRandomBitGenerator*> generator,
-    const gsl::not_null<RandomNumberDistribution*> distribution) noexcept {
-  T result{std::numeric_limits<tt::get_fundamental_type_t<T>>::max()};
-  fill_with_random_values(make_not_null(&result), generator, distribution);
-  return result;
-}
-// @}

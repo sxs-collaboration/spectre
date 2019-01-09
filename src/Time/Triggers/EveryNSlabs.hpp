@@ -7,9 +7,10 @@
 #include <pup.h>
 
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
-#include "Time/TimeId.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Time/TimeId.hpp"
+#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -22,8 +23,8 @@ namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger every N time slabs after a given offset.
-template <typename KnownTriggers>
-class EveryNSlabs : public Trigger<KnownTriggers> {
+template <typename TriggerRegistrars = tmpl::list<>>
+class EveryNSlabs : public Trigger<TriggerRegistrars> {
  public:
   /// \cond
   EveryNSlabs() = default;
@@ -68,8 +69,12 @@ class EveryNSlabs : public Trigger<KnownTriggers> {
   uint64_t offset_{0};
 };
 
+namespace Registrars {
+using EveryNSlabs = Registration::Registrar<Triggers::EveryNSlabs>;
+}  // namespace Registrars
+
 /// \cond
-template <typename KnownTriggers>
-PUP::able::PUP_ID EveryNSlabs<KnownTriggers>::my_PUP_ID = 0;  // NOLINT
+template <typename TriggerRegistrars>
+PUP::able::PUP_ID EveryNSlabs<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Triggers

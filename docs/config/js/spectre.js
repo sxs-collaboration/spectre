@@ -63,4 +63,49 @@ window.onload = function(){
         $(this).html( $(this).html().replace(/implementation defined/g,
             "implementation defined".italics()) );
     });
+
+    // Show popovers for references
+    $("body").children().find('a[href*="citelist.html#CITEREF_"]').each(function () {
+        var tooltip_base = $(this);
+        // Get the reference id, e.g. `CITEREF_Kopriva`. This is the one used as
+        // anchor on the bibliography page.
+        var ref_id = $(this).attr('href').match(/CITEREF_([a-zA-Z0-9]+)/)[0];
+        // Load the bibliography page to retrieve the reference data as nicely
+        // formatted HTML.
+        // This does not work locally because it is forbidden to access files,
+        // so just spin up a web server in the `html` directory with
+        // `python3 -m http.server` to enable this functionality
+        $.get('citelist.html', function(data) {
+            // Filter the bibliography data for this particular reference
+            var ref_html = $($.grep($.parseHTML(data), function(el, i) {
+                    return el.nodeName == 'DIV' && el.className == 'contents';
+                })[0])
+                .find('#' + ref_id)
+                .parent()
+                .next()
+                .find('p.startdd')
+                .html();
+            // Define a function that hides the popover after a delay, but only
+            // if neither the reference nor the popover are hovered over
+            var counter;
+            var hide_popover = function() {
+                clearTimeout(counter);
+                counter = setTimeout(function () {
+                    if (!($(".popover:hover").length > 0 || tooltip_base.is(':hover'))) {
+                        tooltip_base.popover('hide');
+                    }
+                }, 100);
+            };
+            // Create the popover
+            tooltip_base.popover({
+                html: true,
+                trigger: 'manual',
+                content: ref_html
+            }).on("mouseenter", function () {
+                $('[data-toggle="popover"]').not(tooltip_base).popover('hide');
+                tooltip_base.popover('show');
+                $('.popover').on('mouseleave', hide_popover);
+            }).on("mouseleave", hide_popover);
+        }, 'html');
+    });
 };

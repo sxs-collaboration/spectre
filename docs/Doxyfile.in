@@ -87,6 +87,7 @@ INPUT += @PROJECT_SOURCE_DIR@/docs
 
 # Add files to scan that explain testing framework
 INPUT += @PROJECT_SOURCE_DIR@/tests/Unit/ActionTesting.hpp \
+         @PROJECT_SOURCE_DIR@/tests/Unit/DataStructures/VectorImplTestHelper.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp \
          @PROJECT_SOURCE_DIR@/tests/Unit/Pypp/CheckWithRandomValues.hpp  \
@@ -234,6 +235,7 @@ HTML_EXTRA_FILES       = @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.eot \
                          @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.woff \
                          @PROJECT_SOURCE_DIR@/docs/config/bootstrap.min.css \
                          @PROJECT_SOURCE_DIR@/docs/config/octicons.css \
+                         @PROJECT_SOURCE_DIR@/docs/config/js/popper.min.js \
                          @PROJECT_SOURCE_DIR@/docs/config/js/bootstrap.min.js \
                          @PROJECT_SOURCE_DIR@/docs/config/js/jquery.js \
                          @PROJECT_SOURCE_DIR@/docs/config/js/spectre.js \

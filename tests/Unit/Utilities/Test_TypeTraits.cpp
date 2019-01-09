@@ -26,6 +26,10 @@
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/TestHelpers.hpp"  // IWYU pragma: keep
 
+/// \cond
+class DataVector;
+/// \endcond
+
 namespace {
 
 /// \cond HIDDEN_SYMBOLS
@@ -707,6 +711,19 @@ static_assert(
 static_assert(cpp17::is_same_v<typename tt::get_fundamental_type_t<int>, int>,
               "Failed testing get_fundamental_type");
 /// [get_fundamental_type]
+
+/// [is_complex_of_fundamental]
+static_assert(tt::is_complex_of_fundamental_v<std::complex<double>>,
+              "Failed testing is_complex_of_fundamental");
+static_assert(tt::is_complex_of_fundamental_v<std::complex<int>>,
+              "Failed testing is_complex_of_fundamental");
+static_assert(not tt::is_complex_of_fundamental_v<double>,
+              "Failed testing is_complex_of_fundamental");
+static_assert(not tt::is_complex_of_fundamental_v<std::complex<DataVector>>,
+              "Failed testing is_complex_of_fundamental");
+static_assert(not tt::is_complex_of_fundamental_v<DataVector>,
+              "Failed testing is_complex_of_fundamental");
+/// [is_complex_of_fundamental]
 
 namespace {
 // The name syntax is ReturnType_NumberOfArgs_Counter

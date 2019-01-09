@@ -28,6 +28,7 @@ fi
 # isl, libmpc are GCC dependencies
 # szip is an HDF5 dependency
 HOMEBREW_DEPS=(mpfr isl libmpc gcc ccache jemalloc gsl szip hdf5 openblas)
+HOMEBREW_FORMULA=/usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula
 
 # copy homebrew formulas out of cache to try and avoid having to run
 # brew update
@@ -35,8 +36,7 @@ FOUND_ALL_DEPS=true
 for DEP in ${HOMEBREW_DEPS[*]}
 do
     if [ -f $DEP_CACHE/brew/${DEP}.rb ]; then
-        cp $DEP_CACHE/brew/${DEP}.rb \
-           /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula
+        cp $DEP_CACHE/brew/${DEP}.rb ${HOMEBREW_FORMULA}
     else
         FOUND_ALL_DEPS=false
     fi
@@ -53,8 +53,7 @@ fi
 # copy formulas to cache
 for DEP in ${HOMEBREW_DEPS[*]}
 do
-    cp /usr/local/Homebrew/Library/Taps/homebrew/homebrew-core/Formula/${DEP}.rb \
-       $DEP_CACHE/brew/
+    cp ${HOMEBREW_FORMULA}/${DEP}.rb $DEP_CACHE/brew/
 done
 
 # Install dependencies available from homebrew. We explicitly prevent brew from
@@ -120,9 +119,19 @@ if [ ! -d ./blaze-${BLAZE_VERSION} ]; then
 fi
 
 if [ "$(sw_vers -productVersion | cut -d '.' -f 1,2)" = "10.12" ]; then
-    printf "#ifndef _MACH_PORT_T\n#define _MACH_PORT_T\n#include <sys/_types.h> /* __darwin_mach_port_t */\ntypedef __darwin_mach_port_t mach_port_t\n#include <pthread.h>\nmach_port_t pthread_mach_thread_np(pthread_t)\n#endif /* _MACH_PORT_T */" > ./new_threads
-    cat /Library/Developer/CommandLineTools/usr/include/c++/v1/__threading_support >> ./new_threads
-    sudo mv ./new_threads /Library/Developer/CommandLineTools/usr/include/c++/v1/__threading_support
+    threading_support=/Library/Developer/CommandLineTools/usr/include/c++/v1/\
+__threading_support
+    cat >./new_threads <<EOF
+#ifndef _MACH_PORT_T
+#define _MACH_PORT_T
+#include <sys/_types.h> /* __darwin_mach_port_t */
+typedef __darwin_mach_port_t mach_port_t;
+#include <pthread.h>
+mach_port_t pthread_mach_thread_np(pthread_t);
+#endif /* _MACH_PORT_T */
+EOF
+    cat "${threading_support}" >> ./new_threads
+    sudo mv ./new_threads "${threading_support}"
 fi
 
 if [ ! -d ./charm-${CHARM_VERSION} ]; then

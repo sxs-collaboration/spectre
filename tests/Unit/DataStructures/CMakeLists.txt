@@ -13,12 +13,12 @@ set(LIBRARY_SOURCES
   Test_Index.cpp
   Test_IndexIterator.cpp
   Test_LeviCivitaIterator.cpp
-  Test_OrientVariablesOnSlice.cpp
+  Test_OrientVariables.cpp
   Test_SliceIterator.cpp
   Test_SpinWeighted.cpp
   Test_StripeIterator.cpp
   Test_Variables.cpp
-  Test_VectorImplHelper.cpp
+  Test_VectorImpl.cpp
   )
 
 add_subdirectory(DataBox)
@@ -34,4 +34,8 @@ add_test_library(
 spectre_add_python_test(
   "Unit.DataStructures.Python.DataVector"
   Test_DataVector.py
+  "unit;datastructures;python")
+spectre_add_python_test(
+  "Unit.DataStructures.Python.Matrix"
+  Test_Matrix.py
   "unit;datastructures;python")

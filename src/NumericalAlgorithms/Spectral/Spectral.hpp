@@ -200,8 +200,11 @@ const Matrix& differentiation_matrix(const Mesh<1>& mesh) noexcept;
 /*!
  * \brief %Matrix used to interpolate to the \p target_points.
  *
- * \warning It is expected but not checked that the \p target_points are inside
- * the interval covered by the `BasisType` in logical coordinates.
+ * \warning For each target point located outside of the logical coordinate
+ * interval covered by `BasisType` (often \f$[-1,1]\f$), the resulting matrix
+ * performs polynomial extrapolation instead of interpolation. The extapolation
+ * will be correct but may suffer from reduced accuracy, especially for
+ * higher-order polynomials (i.e., larger values of `num_points`).
  *
  * \param num_points The number of collocation points
  * \param target_points The points to interpolate to

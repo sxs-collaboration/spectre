@@ -18,6 +18,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.IterationId",
   const LinearSolver::IterationId id{2};
 
   CHECK(id.step_number == 2);
+  CHECK(id.value() == 2.);
   CHECK(id == LinearSolver::IterationId{2});
   CHECK(id != LinearSolver::IterationId{3});
   CHECK(Hash{}(id) == Hash{}(LinearSolver::IterationId{2}));

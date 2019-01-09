@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_GetOutput.cpp
   Test_Gsl.cpp
   Test_MakeArray.cpp
+  Test_MakeSignalingNan.cpp
   Test_MakeString.cpp
   Test_MakeVector.cpp
   Test_MakeWithValue.cpp
@@ -28,6 +29,7 @@ set(LIBRARY_SOURCES
   Test_Overloader.cpp
   Test_PrettyType.cpp
   Test_Rational.cpp
+  Test_Registration.cpp
   Test_Requires.cpp
   Test_StaticCache.cpp
   Test_StdArrayHelpers.cpp

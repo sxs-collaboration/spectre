@@ -10,8 +10,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/BlockLogicalCoordinates.hpp"
+#include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
-#include "Domain/DomainCreators/Shell.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetLineSegment.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Time.hpp"
@@ -57,7 +57,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
   CHECK(created_opts == line_segment_opts);
 
   const auto domain_creator =
-      DomainCreators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
 
   const auto expected_block_coord_holders = [&domain_creator]() noexcept {
     const size_t n_pts = 15;

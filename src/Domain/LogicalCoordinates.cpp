@@ -15,7 +15,6 @@
 #include "Domain/Mesh.hpp"                   // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Utilities/Gsl.hpp"
 
 template <size_t VolumeDim>
 tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
@@ -43,21 +42,21 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
 
   std::array<DataVector, VolumeDim - 1> collocation_points_in_each_dim{};
   for (size_t d = 0; d < VolumeDim - 1; ++d) {
-    gsl::at(collocation_points_in_each_dim, d) =
+    collocation_points_in_each_dim.at(d) =
         Spectral::collocation_points(mesh.slice_through(d));
   }
 
   for (IndexIterator<VolumeDim - 1> index(mesh.extents()); index; ++index) {
     for (size_t d = 0; d < sliced_away_dim; ++d) {
       logical_x.get(d)[index.collapsed_index()] =
-          gsl::at(collocation_points_in_each_dim, d)[index()[d]];
+          collocation_points_in_each_dim.at(d)[index()[d]];
     }
     logical_x[sliced_away_dim] =
         (Side::Lower == direction.side() ? DataVector(num_grid_points, -1.0)
                                          : DataVector(num_grid_points, 1.0));
     for (size_t d = sliced_away_dim; d < VolumeDim - 1; ++d) {
       logical_x.get(d + 1)[index.collapsed_index()] =
-          gsl::at(collocation_points_in_each_dim, d)[index()[d]];
+          collocation_points_in_each_dim.at(d)[index()[d]];
     }
   }
   return logical_x;
