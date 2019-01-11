@@ -364,6 +364,10 @@ class MockDistributedObject {
     simple_action_queue_.pop_front();
   }
 
+  bool is_threaded_action_queue_empty() noexcept {
+    return threaded_action_queue_.empty();
+  }
+
   void invoke_queued_threaded_action() noexcept {
     if (threaded_action_queue_.empty()) {
       ERROR(
@@ -852,6 +856,16 @@ class MockRuntimeSystem {
   void invoke_queued_simple_action(
       const typename Component::array_index& array_index) noexcept {
     algorithms<Component>().at(array_index).invoke_queued_simple_action();
+  }
+
+  /// Return true if there are no queued threaded actions on the
+  /// `Component` labeled by `array_index`.
+  template <typename Component>
+  bool is_threaded_action_queue_empty(
+      const typename Component::array_index& array_index) noexcept {
+    return algorithms<Component>()
+        .at(array_index)
+        .is_threaded_action_queue_empty();
   }
 
   /// Invoke the next queued threaded action on the `Component` labeled by
