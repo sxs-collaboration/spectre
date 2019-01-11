@@ -7,6 +7,7 @@
 #pragma once
 
 #include <array>
+#include <type_traits>
 
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -38,9 +39,10 @@ struct MakeWithValueImpl {
 ///
 /// \see MakeWithValueImpls
 template <typename R, typename T, typename ValueType>
-SPECTRE_ALWAYS_INLINE R make_with_value(const T& input,
-                                        const ValueType value) noexcept {
-  return MakeWithValueImpls::MakeWithValueImpl<R, T>::apply(input, value);
+SPECTRE_ALWAYS_INLINE std::remove_const_t<R> make_with_value(
+    const T& input, const ValueType& value) noexcept {
+  return MakeWithValueImpls::MakeWithValueImpl<std::remove_const_t<R>,
+                                               T>::apply(input, value);
 }
 
 namespace MakeWithValueImpls {

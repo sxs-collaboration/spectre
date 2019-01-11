@@ -580,6 +580,10 @@ struct get_vector_element_type<T, true> {
   using type = T;
 };
 template <typename T>
+struct get_vector_element_type<const T, false> {
+  using type = typename get_vector_element_type<T>::type;
+};
+template <typename T>
 struct get_vector_element_type<T, false> {
   using type = typename get_vector_element_type<
       typename T::ResultType::ElementType>::type;
