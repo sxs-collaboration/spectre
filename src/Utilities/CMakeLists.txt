@@ -11,6 +11,7 @@ spectre_target_sources(
   Blas.cpp
   FileSystem.cpp
   Formaline.cpp
+  IsNan.cpp
   MemoryHelpers.cpp
   OptimizerHacks.cpp
   PrettyType.cpp
@@ -40,6 +41,7 @@ spectre_target_headers(
   GenerateInstantiations.hpp
   GetOutput.hpp
   Gsl.hpp
+  IsNan.hpp
   Literals.hpp
   MakeArray.hpp
   MakeSignalingNan.hpp

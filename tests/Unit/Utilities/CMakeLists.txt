@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_Functional.cpp
   Test_GetOutput.cpp
   Test_Gsl.cpp
+  Test_IsNan.cpp
   Test_MakeArray.cpp
   Test_MakeSignalingNan.cpp
   Test_MakeString.cpp
