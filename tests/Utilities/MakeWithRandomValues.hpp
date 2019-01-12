@@ -110,12 +110,14 @@ struct FillWithRandomValuesImpl<Variables<tmpl::list<Tags...>>,
 /// floating point or int distributions.
 template <typename T>
 class UniformCustomDistribution
-    : public tmpl::conditional_t<cpp17::is_integral_v<T>,
-                                std::uniform_int_distribution<T>,
-                                std::uniform_real_distribution<T>> {
-  using base = tmpl::conditional_t<cpp17::is_integral_v<T>,
-                                  std::uniform_int_distribution<T>,
-                                  std::uniform_real_distribution<T>>;
+    : public tmpl::conditional_t<
+          cpp17::is_integral_v<T>,
+          std::uniform_int_distribution<std::remove_const_t<T>>,
+          std::uniform_real_distribution<std::remove_const_t<T>>> {
+  using base = tmpl::conditional_t<
+      cpp17::is_integral_v<T>,
+      std::uniform_int_distribution<std::remove_const_t<T>>,
+      std::uniform_real_distribution<std::remove_const_t<T>>>;
   static_assert(cpp17::is_integral_v<T> or cpp17::is_floating_point_v<T>,
                 "UniformCustomDistribution currently supports only floating"
                 "point and integral values");
