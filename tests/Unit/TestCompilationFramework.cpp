@@ -5,12 +5,10 @@
 #ifdef COMPILATION_TEST_TEST_DIFFERENT_COMPILERS
 // [[TAGS: unit, CompilationTest]]
 
-// [[COMPILER: GNU:0.0.0 REGEX: static assertion failed: assert with GCC 5]]
-// [[COMPILER: GNU:6.0.0 REGEX: static assertion failed: assert with GCC 6 or
-// newer]]
-// [[COMPILER: Clang REGEX: static_assert failed \"assert with Clang\"]]
-// [[COMPILER: AppleClang REGEX: static_assert failed \"assert with
-// AppleClang\"]]
+// [[COMPILER: GNU:0.0.0 REGEX: assert with GCC 5]]
+// [[COMPILER: GNU:6.0.0 REGEX: assert with GCC 6 or newer]]
+// [[COMPILER: Clang REGEX: assert with Clang]]
+// [[COMPILER: AppleClang REGEX: assert with AppleClang]]
 
 #ifdef __APPLE__
 static_assert(false, "assert with AppleClang");
