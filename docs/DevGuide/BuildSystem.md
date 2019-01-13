@@ -186,3 +186,42 @@ cmake -D FLAG1=OPT1 ... -D FLAGN=OPTN <SPECTRE_ROOT>
   - This needs to be turned `OFF` in order to use
     [include-what-you-use
     (IWYU)](https://github.com/include-what-you-use/include-what-you-use)
+
+## Formaline
+
+SpECTRE's implementation of Formaline is based on, but distinct in
+implementation from, the original design by
+[Erik Schnetter and Christian Ott](https://github.com/hypercott/formaline),
+which embeds an archive of the source tree into the executable. The original
+design creates a C/C++ file with a function that returns an array/vector of
+`char`s (a byte stream). However, this results in a very large source file (50MB
+or more), which is very slow to compile and ends up more than doubling the link
+time. Instead, SpECTRE's Formaline implementation uses the linker `ld` to
+encode a file into an object, which means
+rather than creating a large source file, we can directly encode the source tree
+archive into the binary at the linking stage.
+
+Most of SpECTRE's Formaline is implemented
+inside the `tools/WrapLinker.sh` script. Function declarations are provided
+in `Utilities/Formaline.hpp` and a small function that writes the source
+file to disk is defined in `Utilities/Formaline.cpp`. The first
+Formaline-related thing done in `WrapLinker.sh` is to archive everything in the
+source directory tracked by git. Once the archive is created we run
+`ld -r -b binary -o object.o src.tar.gz` (with unique names for `object.o` and
+`src.tar.gz` for each executable that is built to avoid name collisions) to
+generate an object file with the source file encoded from
+`_binary_src_tar_gz_start` to `_binary_src_tar_gz_end`. Next we write a C++
+source file that defines a function `get_archive` to convert the byte stream
+into a `std::vector<char>`. We also encode the output of `printenv`, the various
+`PATH` environment variables, and the CMake generated `LibraryVersions.txt` file
+into the source file. Finally, the generated source file is built during the
+linking phase and the object file containing the source archive is linked into
+the executable.
+
+To further aid in reproducibility, the `printenv` output and
+`LibraryVersions.txt` contents are written to HDF5 files as part of the
+`h5::Header` object. The archive of the source tree is written using the
+`h5::SourceArchive` object and can be extracted by running
+```
+h5dump -d /src.tar.gz -b LE -o src.tar.gz /path/to/hdf5/file.h5
+```
