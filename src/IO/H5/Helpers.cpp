@@ -332,7 +332,7 @@ void write_to_attribute<std::string>(
   CHECK_H5(space_id, "Failed to create null space");
   const hid_t attr_id = H5Acreate2(group_id, name.c_str(), type_id, space_id,
                                    h5p_default(), h5p_default());
-  CHECK_H5(attr_id, "Could not create attribute");
+  CHECK_H5(attr_id, "Could not create attribute " << name);
 
   // We are using C-style strings, which is type to be written into attribute
   const auto memtype_id = h5_type<std::string>();
@@ -345,7 +345,7 @@ void write_to_attribute<std::string>(
   CHECK_H5(H5Awrite(attr_id, memtype_id, string_pointers.data()),
            "Failed attribute write");
 
-  CHECK_H5(H5Aclose(attr_id), "Failed to close attribute");
+  CHECK_H5(H5Aclose(attr_id), "Failed to close attribute " << name);
   CHECK_H5(H5Sclose(space_id), "Failed to close space_id");
   CHECK_H5(H5Tclose(memtype_id), "Failed to close memtype_id");
   CHECK_H5(H5Tclose(type_id), "Failed to close type_id");
@@ -522,8 +522,8 @@ template Index<3> read_extents<3>(const hid_t group_id,
       const std::string& name) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_WRITE_DATA,
-                       (double, int, unsigned int, long, unsigned long,
-                         long long, unsigned long long))
+                        (double, int, unsigned int, long, unsigned long,
+                         long long, unsigned long long, char))
 
 #define INSTANTIATE_ATTRIBUTE(_, DATA)                                 \
   template void write_to_attribute<TYPE(DATA)>(                        \
@@ -546,7 +546,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_ATTRIBUTE,
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_SCALAR,
                         (double, int, unsigned int, long, unsigned long,
-                         long long, unsigned long long),
+                         long long, unsigned long long, char),
                         (0))
 
 #define INSTANTIATE_READ_VECTOR(_, DATA)          \
@@ -556,7 +556,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_SCALAR,
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR,
                         (double, int, unsigned int, long, unsigned long,
-                         long long, unsigned long long),
+                         long long, unsigned long long, char),
                         (1))
 
 #define INSTANTIATE_READ_MULTIARRAY(_, DATA)                         \
@@ -566,7 +566,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_READ_VECTOR,
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_READ_MULTIARRAY,
                         (double, int, unsigned int, long, unsigned long,
-                         long long, unsigned long long),
+                         long long, unsigned long long, char),
                         (2, 3))
 
 #define INSTANTIATE_READ_DATAVECTOR(_, DATA)             \
