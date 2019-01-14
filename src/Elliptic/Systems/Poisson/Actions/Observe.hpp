@@ -81,7 +81,7 @@ struct Observe {
         db::get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
     const auto field_analytic = get<Poisson::Field>(
         Parallel::get<typename Metavariables::analytic_solution_tag>(cache)
-            .field_variables(inertial_coordinates));
+            .variables(inertial_coordinates, tmpl::list<Poisson::Field>{}));
 
     // Compute error between numeric and analytic solutions
     const DataVector field_error = get(field) - get(field_analytic);
