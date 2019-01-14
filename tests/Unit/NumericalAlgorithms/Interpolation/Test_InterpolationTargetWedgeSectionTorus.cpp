@@ -16,7 +16,7 @@
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetWedgeSectionTorus.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Time.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/NumericalAlgorithms/Interpolation/InterpolationTargetTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
@@ -30,7 +30,7 @@ struct MockMetavariables {
         ::intrp::Actions::WedgeSectionTorus<InterpolationTargetA>;
     using type = compute_target_points::options_type;
   };
-  using temporal_id = Time;
+  using temporal_id = ::Tags::TimeId;
   using domain_frame = Frame::Inertial;
   static constexpr size_t domain_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;

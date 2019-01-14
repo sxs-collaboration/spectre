@@ -39,7 +39,9 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -143,7 +145,7 @@ struct MockInterpolationTargetReceiveVars {
     // This is not the usual usage of Tags::TemporalIds; this is done just
     // for the test.
     Slab slab(0.0, 1.0);
-    Time temporal_id(slab, Rational(111, 135));
+    TimeId temporal_id(true, 0, Time(slab, Rational(111, 135)));
     db::mutate<intrp::Tags::TemporalIds<Metavariables>>(
         make_not_null(&box), [&temporal_id](
                                  const gsl::not_null<db::item_type<
@@ -194,7 +196,7 @@ struct MockMetavariables {
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-  using temporal_id = Time;
+  using temporal_id = ::Tags::TimeId;
   using domain_frame = Frame::Inertial;
   static constexpr size_t domain_dim = 3;
   using component_list = tmpl::list<
@@ -228,7 +230,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{7, 7}}, false);
   const auto domain = domain_creator.create_domain();
   Slab slab(0.0, 1.0);
-  Time temporal_id(slab, Rational(11, 15));
+  TimeId temporal_id(true, 0, Time(slab, Rational(11, 15)));
   auto vars_holders = [&domain, &temporal_id]() {
     const size_t n_pts = 15;
     tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
@@ -332,7 +334,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   // by looking for a funny temporal_id that it inserts for the specific
   // purpose of this test.
   CHECK(db::get<intrp::Tags::TemporalIds<metavars>>(box_target).front() ==
-        Time(Slab(0.0, 1.0), Rational(111, 135)));
+        TimeId(true, 0, Time(Slab(0.0, 1.0), Rational(111, 135))));
 
   // No more queued simple actions.
   CHECK(runner.is_simple_action_queue_empty<

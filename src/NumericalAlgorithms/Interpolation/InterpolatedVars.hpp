@@ -73,10 +73,10 @@ template <typename Metavariables,
           typename InterpolationTargetTag, typename TagList>
 struct Holder {
   std::unordered_map<
-      typename Metavariables::temporal_id,
+      typename Metavariables::temporal_id::type,
       Info<Metavariables::domain_dim, TagList>>
       infos;
-  std::unordered_set<typename Metavariables::temporal_id>
+  std::unordered_set<typename Metavariables::temporal_id::type>
       temporal_ids_when_data_has_been_interpolated;
 };
 

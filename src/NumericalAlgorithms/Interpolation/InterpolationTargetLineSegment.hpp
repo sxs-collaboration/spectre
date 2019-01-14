@@ -123,7 +123,7 @@ struct LineSegment {
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/,
-      const typename Metavariables::temporal_id& temporal_id) noexcept {
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     const auto& options = Parallel::get<InterpolationTargetTag>(cache);
 
     // Fill points on a line segment

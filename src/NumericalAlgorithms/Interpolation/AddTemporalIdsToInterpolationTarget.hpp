@@ -43,7 +43,7 @@ struct AddTemporalIdsToInterpolationTarget {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
-                    std::vector<typename Metavariables::temporal_id>&&
+                    std::vector<typename Metavariables::temporal_id::type>&&
                         temporal_ids) noexcept {
     const bool begin_interpolation =
         db::get<Tags::TemporalIds<Metavariables>>(box).empty();

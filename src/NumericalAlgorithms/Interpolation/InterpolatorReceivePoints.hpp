@@ -71,7 +71,7 @@ struct ReceivePoints {
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/,
-      const typename Metavariables::temporal_id& temporal_id,
+      const typename Metavariables::temporal_id::type& temporal_id,
       std::vector<IdPair<domain::BlockId, tnsr::I<double, VolumeDim,
                                                   typename ::Frame::Logical>>>&&
           block_logical_coords) noexcept {

@@ -18,7 +18,9 @@
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
@@ -26,6 +28,8 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 // IWYU pragma: no_forward_declare db::DataBox
+
+// IWYU pragma: no_include <boost/variant/get.hpp>
 
 /// \cond
 class DataVector;
@@ -69,9 +73,9 @@ struct MockComputeTargetPoints {
       Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/,
-      const typename Metavariables::temporal_id& temporal_id) noexcept {
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
-    CHECK(temporal_id == Time(slab, 0));
+    CHECK(temporal_id == TimeId(true, 0, Time(slab, 0)));
     // Put something in IndicesOfFilledInterpPts so we can check later whether
     // this function was called.  This isn't the usual usage of
     // IndicesOfFilledInterpPoints.
@@ -89,7 +93,7 @@ struct MockMetavariables {
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_target_points = MockComputeTargetPoints;
   };
-  using temporal_id = Time;
+  using temporal_id = ::Tags::TimeId;
   using domain_frame = Frame::Inertial;
   static constexpr size_t domain_dim = 3;
 
@@ -134,8 +138,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
   CHECK(db::get<::intrp::Tags::TemporalIds<metavars>>(box).empty());
 
   Slab slab(0.0, 1.0);
-  const std::vector<Time> temporal_ids = {Time(slab, 0),
-                                          Time(slab, Rational(1, 3))};
+  const std::vector<TimeId> temporal_ids = {
+      TimeId(true, 0, Time(slab, 0)),
+      TimeId(true, 0, Time(slab, Rational(1, 3)))};
 
   runner.simple_action<
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
@@ -143,7 +148,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
           metavars::InterpolationTargetA>>(0, temporal_ids);
 
   CHECK(db::get<::intrp::Tags::TemporalIds<metavars>>(box) ==
-        std::deque<Time>(temporal_ids.begin(), temporal_ids.end()));
+        std::deque<TimeId>(temporal_ids.begin(), temporal_ids.end()));
 
   runner.invoke_queued_simple_action<
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>>(0);
@@ -152,8 +157,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
   CHECK(db::get<::intrp::Tags::IndicesOfFilledInterpPoints>(box).size() == 1);
 
   // Call again; it should not call MockComputeTargetPoints this time.
-  const std::vector<Time> temporal_ids_2 = {Time(slab, Rational(2, 3)),
-                                            Time(slab, Rational(3, 3))};
+  const std::vector<TimeId> temporal_ids_2 = {
+      TimeId(true, 0, Time(slab, Rational(2, 3))),
+      TimeId(true, 0, Time(slab, Rational(3, 3)))};
   runner.simple_action<
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
       ::intrp::Actions::AddTemporalIdsToInterpolationTarget<

@@ -27,12 +27,16 @@
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <boost/variant/get.hpp>
 
 /// \cond
 namespace intrp {
@@ -139,7 +143,7 @@ struct MockMetavariables {
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-  using temporal_id = Time;
+  using temporal_id = ::Tags::TimeId;
   using domain_frame = Frame::Inertial;
   static constexpr size_t domain_dim = 3;
   using component_list = tmpl::list<
@@ -194,7 +198,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   }
   ();
   Slab slab(0.0, 1.0);
-  Time temporal_id(slab, Rational(11, 15));
+  TimeId temporal_id(true, 0, Time(slab, Rational(11, 15)));
 
   runner.simple_action<
       mock_interpolator<metavars>,
