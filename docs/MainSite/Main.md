@@ -59,8 +59,7 @@ style="max-width:100%;"></a>
 </p>
 \endhtmlonly
 
-What is SpECTRE? {#intro_sec}
-==============================================================================
+# What is SpECTRE? {#intro_sec}
 
 SpECTRE is an open-source code for multi-scale, multi-physics problems
 in astrophysics and gravitational physics. In the future, we hope that
@@ -74,8 +73,7 @@ eXtreme Spacetimes (SXS) research program into the multi-messenger
 astrophysics of neutron star mergers, core-collapse supernovae, and
 gamma-ray bursts.
 
-Navigating the Documentation {#navigate_documentation_sec}
------
+## Navigating the Documentation {#navigate_documentation_sec}
 
 The SpECTRE documentation is organized into tutorials, developer guides, groups
 of related code, namespaces, and files for easier navigation. These can all be
