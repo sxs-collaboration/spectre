@@ -12,6 +12,7 @@
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Header.hpp"  // IWYU pragma: keep
 #include "IO/H5/Object.hpp"
+#include "IO/H5/SourceArchive.hpp"  // IWYU pragma: keep
 #include "IO/H5/Wrappers.hpp"
 #include "Utilities/FileSystem.hpp"
 
@@ -53,6 +54,7 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file)
                          << ". Trying to open in mode: " << Access_t);
   if (not file_exists) {
     insert_header();
+    insert_source_archive();
   }
 }
 
@@ -88,6 +90,13 @@ H5File<Access_t>::~H5File() {
              "Failed to close file: '" << file_name_ << "'");
   }
 }
+
+template <>
+void H5File<AccessType::ReadWrite>::insert_source_archive() noexcept {
+  insert<h5::SourceArchive>("/src");
+}
+template <>
+void H5File<AccessType::ReadOnly>::insert_source_archive() noexcept {}
 /// \endcond
 }  // namespace h5
 

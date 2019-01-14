@@ -26,6 +26,7 @@
 #include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/OpenGroup.hpp"
+#include "IO/H5/SourceArchive.hpp"  // IWYU pragma: keep
 #include "IO/H5/Version.hpp"
 #include "IO/H5/Wrappers.hpp"
 #include "Informer/InfoFromBuild.hpp"
@@ -81,6 +82,14 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   };
   check_header(my_file0);
   check_header(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
+
+  const auto check_source_archive = [](const auto& my_file) noexcept {
+    const std::vector<char> archive =
+        my_file.template get<h5::SourceArchive>("/src").get_archive();
+    CHECK(archive == formaline::get_archive());
+  };
+  check_source_archive(my_file0);
+  check_source_archive(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
 
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
