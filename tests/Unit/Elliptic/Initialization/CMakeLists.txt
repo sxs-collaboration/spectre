@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_Domain.cpp
   Test_Interface.cpp
   Test_LinearSolver.cpp
+  Test_Source.cpp
   Test_System.cpp
   )
 
