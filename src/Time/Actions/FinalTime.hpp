@@ -10,9 +10,20 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
-#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+namespace OptionTags {
+struct FinalTime;
+}  // namespace OptionTags
+namespace Tags {
+struct Time;
+struct TimeStep;
+}  // namespace Tags
+// IWYU pragma: no_forward_declare db::DataBox
+/// \endcond
 
 namespace Actions {
 /// \ingroup ActionsGroup
