@@ -4,6 +4,7 @@
 set(LIBRARY "Test_EllipticInitialization")
 
 set(LIBRARY_SOURCES
+  Test_BoundaryConditions.cpp
   Test_Derivatives.cpp
   Test_DiscontinuousGalerkin.cpp
   Test_Domain.cpp
