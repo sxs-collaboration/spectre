@@ -38,6 +38,13 @@
 // IWYU pragma: no_include <boost/multi_array/extent_gen.hpp>
 // IWYU pragma: no_include <boost/multi_array/subarray.hpp>
 
+namespace {
+void test_access_type() noexcept {
+  CHECK(get_output(h5::AccessType::ReadOnly) == "ReadOnly");
+  CHECK(get_output(h5::AccessType::ReadWrite) == "ReadWrite");
+}
+}  // namespace
+
 SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   const std::string h5_file_name("Unit.IO.H5.File.h5");
   if (file_system::check_if_file_exists(h5_file_name)) {
@@ -65,6 +72,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
+
+  test_access_type();
 }
 
 SPECTRE_TEST_CASE("Unit.IO.H5.FileMove", "[Unit][IO][H5]") {

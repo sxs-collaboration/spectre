@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <iosfwd>
+
 /*!
  * \ingroup HDF5Group
  * \brief Contains functions and classes for manipulating HDF5 files
@@ -24,4 +26,6 @@ enum class AccessType {
   /// Allow only read access to the file
   ReadOnly
 };
+
+std::ostream& operator<<(std::ostream& os, AccessType t) noexcept;
 }  // namespace h5

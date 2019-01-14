@@ -468,6 +468,7 @@ T read_data(const hid_t group_id, const std::string& dataset_name) noexcept {
   const size_t total_number_of_components = std::accumulate(
       size.begin(), size.end(), static_cast<size_t>(1), std::multiplies<>());
   if (UNLIKELY(total_number_of_components == 0)) {
+    using ::operator<<;
     ERROR("At least one element in 'size' is 0. Expected data along "
           << Rank << " dimensions. size = " << size);
   }
