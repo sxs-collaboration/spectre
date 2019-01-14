@@ -37,18 +37,17 @@ struct InitializeElement {
   using fields_tag = typename Metavariables::system::fields_tag;
   using operand_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-  using operator_tag =
-      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
   using residual_magnitude_tag =
       db::add_tag_prefix<LinearSolver::Tags::Magnitude, residual_tag>;
 
  public:
-  using simple_tags = db::AddSimpleTags<
-      LinearSolver::Tags::IterationId,
-      ::Tags::Next<LinearSolver::Tags::IterationId>, operand_tag, operator_tag,
-      residual_tag, residual_magnitude_tag, LinearSolver::Tags::HasConverged>;
+  using simple_tags =
+      db::AddSimpleTags<LinearSolver::Tags::IterationId,
+                        ::Tags::Next<LinearSolver::Tags::IterationId>,
+                        residual_tag, residual_magnitude_tag,
+                        LinearSolver::Tags::HasConverged>;
   using compute_tags = db::AddComputeTags<>;
 
   template <typename TagsList, typename ArrayIndex, typename ParallelComponent>
@@ -62,10 +61,12 @@ struct InitializeElement {
     LinearSolver::IterationId iteration_id{0};
     LinearSolver::IterationId next_iteration_id{1};
 
-    db::item_type<operand_tag> p = b - Ax;
-    auto r = db::item_type<residual_tag>(p);
-    auto Ap = make_with_value<db::item_type<operator_tag>>(
-        b, std::numeric_limits<double>::signaling_NaN());
+    db::mutate<operand_tag>(make_not_null(&box), [
+      &b, &Ax
+    ](const gsl::not_null<db::item_type<operand_tag>*> p) noexcept {
+      *p = b - Ax;
+    });
+    auto r = db::item_type<residual_tag>(get<operand_tag>(box));
 
     // Perform global reduction to compute initial residual magnitude square for
     // residual monitor
@@ -79,8 +80,7 @@ struct InitializeElement {
             cache));
 
     return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
-        std::move(box), iteration_id, next_iteration_id, std::move(p),
-        std::move(Ap), std::move(r),
+        std::move(box), iteration_id, next_iteration_id, std::move(r),
         std::numeric_limits<double>::signaling_NaN(), false);
   }
 };

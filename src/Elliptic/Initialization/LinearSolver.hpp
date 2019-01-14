@@ -39,7 +39,6 @@ namespace Initialization {
  * - Metavariables:
  *   - `linear_solver`
  * - System:
- *   - `volume_dim`
  *   - `fields_tag`
  * - DataBox:
  *   - `sources_tag`

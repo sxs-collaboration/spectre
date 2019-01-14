@@ -73,8 +73,10 @@ struct ScalarFieldTag : db::SimpleTag {
   static std::string name() noexcept { return "ScalarField"; }
 };
 
-using VariablesTag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
-using VariablesType = db::item_type<VariablesTag>;
+using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
+using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+using operator_tag =
+    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
 
 // In the following `ComputeOperatorAction` and `CollectAp` actions we
 // compute A(p)=sum_elements(A_element(p_element)) in a global reduction and
@@ -98,16 +100,16 @@ struct ComputeOperatorAction {
     const auto number_of_elements = operator_matrices.size();
     const auto& A = gsl::at(operator_matrices, array_index);
     const auto number_of_grid_points = A.columns();
-    const auto& p =
-        get<db::add_tag_prefix<LinearSolver::Tags::Operand, VariablesTag>>(box);
+    const auto& p = get<operand_tag>(box);
 
-    VariablesType Ap{number_of_grid_points * number_of_elements};
+    db::item_type<fields_tag> Ap{number_of_grid_points * number_of_elements};
     dgemv_('N', A.rows(), A.columns(), 1, A.data(), A.rows(), p.data(), 1, 0,
            Ap.data(), 1);
 
     Parallel::contribute_to_reduction<CollectAp>(
         Parallel::ReductionData<
-            Parallel::ReductionDatum<VariablesType, funcl::Plus<>>>{Ap},
+            Parallel::ReductionDatum<db::item_type<fields_tag>, funcl::Plus<>>>{
+            Ap},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
         Parallel::get_parallel_component<ParallelComponent>(cache));
 
@@ -118,17 +120,15 @@ struct ComputeOperatorAction {
 };
 
 struct CollectAp {
-  template <
-      typename... DbTags, typename... InboxTags, typename Metavariables,
-      typename ActionList, typename ParallelComponent,
-      Requires<tmpl2::flat_any_v<cpp17::is_same_v<VariablesTag, DbTags>...>> =
-          nullptr>
+  template <typename... DbTags, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent,
+            Requires<sizeof...(DbTags) != 0> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const int array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*component*/,
-                    const VariablesType& Ap_global_data) noexcept {
+                    const db::item_type<fields_tag>& Ap_global_data) noexcept {
     // This could be generalized to work on the Variables instead of the
     // Scalar, but it's only for the purpose of this test.
     const auto number_of_grid_points = get<LinearOperator>(cache)[0].columns();
@@ -139,9 +139,8 @@ struct CollectAp {
               Ap_global.begin() +
                   (array_index + 1) * static_cast<int>(number_of_grid_points),
               Ap_local.begin());
-    db::mutate<db::add_tag_prefix<
-        LinearSolver::Tags::OperatorAppliedTo,
-        db::add_tag_prefix<LinearSolver::Tags::Operand, ScalarFieldTag>>>(
+    db::mutate<LinearSolver::Tags::OperatorAppliedTo<
+        LinearSolver::Tags::Operand<ScalarFieldTag>>>(
         make_not_null(&box), [&Ap_local](auto Ap) noexcept {
           *Ap = Scalar<DataVector>(Ap_local);
         });
@@ -162,7 +161,7 @@ struct TestResult {
   template <
       typename... DbTags, typename... InboxTags, typename Metavariables,
       typename ActionList, typename ParallelComponent,
-      Requires<tmpl2::flat_any_v<cpp17::is_same_v<VariablesTag, DbTags>...>> =
+      Requires<tmpl2::flat_any_v<cpp17::is_same_v<fields_tag, DbTags>...>> =
           nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -182,7 +181,7 @@ struct TestResult {
 struct InitializeElement {
   template <typename Metavariables>
   using return_tag_list =
-      tmpl::append<tmpl::list<VariablesTag>,
+      tmpl::append<tmpl::list<fields_tag, operand_tag, operator_tag>,
                    typename Metavariables::linear_solver::tags::simple_tags,
                    typename Metavariables::linear_solver::tags::compute_tags>;
 
@@ -195,13 +194,19 @@ struct InitializeElement {
       const int array_index, const ActionList /*meta*/,
       const ParallelComponent* const parallel_component_meta) noexcept {
     const auto& source = gsl::at(get<Source>(cache), array_index);
+    const size_t num_points = source.size();
 
-    auto box = db::create<db::AddSimpleTags<tmpl::list<VariablesTag>>>(
-        VariablesType{source.size(), 0.});
+    auto box = db::create<
+        db::AddSimpleTags<tmpl::list<fields_tag, operand_tag, operator_tag>>>(
+        db::item_type<fields_tag>{num_points, 0.},
+        db::item_type<operand_tag>{
+            num_points, std::numeric_limits<double>::signaling_NaN()},
+        db::item_type<operator_tag>{
+            num_points, std::numeric_limits<double>::signaling_NaN()});
     auto linear_solver_box = Metavariables::linear_solver::tags::initialize(
         std::move(box), cache, array_index, parallel_component_meta, source,
         db::item_type<db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
-                                         VariablesTag>>{source.size(), 0.});
+                                         fields_tag>>{num_points, 0.});
     return std::make_tuple(std::move(linear_solver_box));
   }
 };
@@ -259,7 +264,7 @@ struct ElementArray {
 };
 
 struct System {
-  using fields_tag = VariablesTag;
+  using fields_tag = ::DistributedLinearSolverAlgorithmTest::fields_tag;
 };
 
 }  // namespace DistributedLinearSolverAlgorithmTest

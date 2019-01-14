@@ -14,6 +14,7 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Initialization/System.hpp"
+#include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -23,16 +24,25 @@ struct ScalarFieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+template <typename Tag>
+struct SomePrefix : db::PrefixTag, db::SimpleTag {
+  static std::string name() noexcept { return "SomePrefix"; }
+  using type = db::item_type<Tag>;
+  using tag = Tag;
+};
+
 template <size_t Dim>
 struct System {
   static constexpr size_t volume_dim = Dim;
   using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
+  using variables_tag = db::add_tag_prefix<SomePrefix, fields_tag>;
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.System",
                   "[Unit][Elliptic][Actions]") {
-  SECTION("1D") {
+  {
+    INFO("1D");
     Mesh<1> mesh{4, Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};
     const auto box = Elliptic::Initialization::System<System<1>>::initialize(
@@ -40,8 +50,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.System",
 
     const Scalar<DataVector> expected_initial_field{{{{4, 0.}}}};
     CHECK(get<ScalarFieldTag>(box) == expected_initial_field);
+    // Only check that the variables are initialized
+    get<SomePrefix<ScalarFieldTag>>(box);
+    get<LinearSolver::Tags::OperatorAppliedTo<SomePrefix<ScalarFieldTag>>>(box);
   }
-  SECTION("2D") {
+  {
+    INFO("2D");
     Mesh<2> mesh{{{3, 4}},
                  Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};
@@ -50,8 +64,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.System",
 
     const Scalar<DataVector> expected_initial_field{{{{12, 0.}}}};
     CHECK(get<ScalarFieldTag>(box) == expected_initial_field);
+    // Only check that the variables are initialized
+    get<SomePrefix<ScalarFieldTag>>(box);
+    get<LinearSolver::Tags::OperatorAppliedTo<SomePrefix<ScalarFieldTag>>>(box);
   }
-  SECTION("3D") {
+  {
+    INFO("3D");
     Mesh<3> mesh{{{3, 4, 2}},
                  Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};
@@ -60,5 +78,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.System",
 
     const Scalar<DataVector> expected_initial_field{{{{24, 0.}}}};
     CHECK(get<ScalarFieldTag>(box) == expected_initial_field);
+    // Only check that the variables are initialized
+    get<SomePrefix<ScalarFieldTag>>(box);
+    get<LinearSolver::Tags::OperatorAppliedTo<SomePrefix<ScalarFieldTag>>>(box);
   }
 }
