@@ -27,6 +27,7 @@
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/Version.hpp"
+#include "IO/H5/Wrappers.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -97,6 +98,13 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileMove", "[Unit][IO][H5]") {
   h5::H5File<h5::AccessType::ReadWrite> my_file3(h5_file_name2);
   my_file3 = std::move(*my_file2);
   my_file2.reset();
+
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  if (file_system::check_if_file_exists(h5_file_name2)) {
+    file_system::rm(h5_file_name2, true);
+  }
 }
 
 // [[OutputRegex, Cannot open the object '/Dummy.hdr' because it does not
@@ -471,8 +479,11 @@ SPECTRE_TEST_CASE("Unit.IO.H5.DatRead", "[Unit][IO][H5]") {
 // Test that we can read scalar, rank-1, rank-2, and rank-3 datasets
 SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
   const std::string h5_file_name("Unit.IO.H5.ReadData.h5");
-  const hid_t file_id =
-      H5Fcreate(h5_file_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  const hid_t file_id = H5Fcreate(h5_file_name.c_str(), h5::h5f_acc_trunc(),
+                                  h5::h5p_default(), h5::h5p_default());
   h5::detail::OpenGroup my_group(file_id, "ReadWrite",
                                  h5::AccessType::ReadWrite);
   const hid_t group_id = my_group.id();
@@ -578,20 +589,23 @@ SPECTRE_TEST_CASE("Unit.IO.H5.check_if_object_exists", "[Unit][IO][H5]") {
 }
 
 SPECTRE_TEST_CASE("Unit.IO.H5.contains_attribute_false", "[Unit][IO][H5]") {
-  const std::string file_name("Unit.IO.H5.contains_attribute_false.h5");
-  const hid_t file_id =
-      H5Fcreate(file_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-  CHECK_H5(file_id, "Failed to open file: " << file_name);
+  const std::string h5_file_name("Unit.IO.H5.contains_attribute_false.h5");
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  const hid_t file_id = H5Fcreate(h5_file_name.c_str(), h5::h5f_acc_trunc(),
+                                  h5::h5p_default(), h5::h5p_default());
+  CHECK_H5(file_id, "Failed to open file: " << h5_file_name);
   CHECK_FALSE(h5::contains_attribute(file_id, "/", "no_attr"));
-  CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
+  CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << h5_file_name << "'");
 }
 
 /// [[OutputRegex, Failed HDF5 operation: Failed to open dataset 'no_dataset']]
 SPECTRE_TEST_CASE("Unit.IO.H5.read_data_error", "[Unit][IO][H5]") {
   ERROR_TEST();
   const std::string file_name("Unit.IO.H5.read_data_error.h5");
-  const hid_t file_id =
-      H5Fcreate(file_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+  const hid_t file_id = H5Fcreate(file_name.c_str(), h5::h5f_acc_trunc(),
+                                  h5::h5p_default(), h5::h5p_default());
   CHECK_H5(file_id, "Failed to open file: " << file_name);
   static_cast<void>(h5::read_data<1, DataVector>(file_id, "no_dataset"));
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
@@ -603,8 +617,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroup_read_access", "[Unit][IO][H5]") {
   ERROR_TEST();
   const std::string file_name("Unit.IO.H5.OpenGroup_read_access.h5");
 
-  const hid_t file_id =
-      H5Fcreate(file_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+  const hid_t file_id = H5Fcreate(file_name.c_str(), h5::h5f_acc_trunc(),
+                                  h5::h5p_default(), h5::h5p_default());
   CHECK_H5(file_id, "Failed to open file: " << file_name);
   { h5::detail::OpenGroup group(file_id, "/group", h5::AccessType::ReadOnly); }
   CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
@@ -626,8 +640,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroupMove", "[Unit][IO][H5]") {
     if (file_system::check_if_file_exists(file_name)) {
       file_system::rm(file_name, true);
     }
-    const hid_t file_id =
-        H5Fcreate(file_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    const hid_t file_id = H5Fcreate(file_name.c_str(), h5::h5f_acc_trunc(),
+                                    h5::h5p_default(), h5::h5p_default());
     CHECK_H5(file_id, "Failed to open file: " << file_name);
     auto group = std::make_unique<h5::detail::OpenGroup>(
         file_id, "/group/group2/group3", h5::AccessType::ReadWrite);
@@ -635,6 +649,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroupMove", "[Unit][IO][H5]") {
     group.reset();
     CHECK(group == nullptr);
     CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
+    if (file_system::check_if_file_exists(file_name)) {
+      file_system::rm(file_name, true);
+    }
   }
 
   {
@@ -644,11 +661,11 @@ SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroupMove", "[Unit][IO][H5]") {
     if (file_system::check_if_file_exists(file_name2)) {
       file_system::rm(file_name2, true);
     }
-    const hid_t file_id =
-        H5Fcreate(file_name.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    const hid_t file_id = H5Fcreate(file_name.c_str(), h5::h5f_acc_trunc(),
+                                    h5::h5p_default(), h5::h5p_default());
     CHECK_H5(file_id, "Failed to open file: " << file_name);
-    const hid_t file_id2 =
-        H5Fcreate(file_name2.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    const hid_t file_id2 = H5Fcreate(file_name2.c_str(), h5::h5f_acc_trunc(),
+                                     h5::h5p_default(), h5::h5p_default());
     CHECK_H5(file_id2, "Failed to open file: " << file_name);
     {
       h5::detail::OpenGroup group(file_id, "/group/group2/group3",
@@ -662,6 +679,12 @@ SPECTRE_TEST_CASE("Unit.IO.H5.OpenGroupMove", "[Unit][IO][H5]") {
     CHECK_H5(H5Fclose(file_id), "Failed to close file: '" << file_name << "'");
     CHECK_H5(H5Fclose(file_id2),
              "Failed to close file: '" << file_name2 << "'");
+    if (file_system::check_if_file_exists(file_name)) {
+      file_system::rm(file_name, true);
+    }
+    if (file_system::check_if_file_exists(file_name2)) {
+      file_system::rm(file_name2, true);
+    }
   }
 }
 
