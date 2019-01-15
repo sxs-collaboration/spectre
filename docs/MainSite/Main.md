@@ -12,6 +12,7 @@ Table of Contents
 <li class="level1"><a href="installation_on_clusters.html">Installation on clusters</a></li>
 <li class="level1"><a href="tutorials.html">User tutorials</a></li>
 <li class="level1"><a href="dev_guide.html">Dev guide</a></li>
+<li class="level1"><a href="code_of_conduct.html">Code of Conduct</a></li>
 </ul>
 Further links
 <ul>
