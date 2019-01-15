@@ -28,7 +28,8 @@
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Domain",
                   "[Unit][Elliptic][Actions]") {
-  SECTION("1D") {
+  {
+    INFO("1D");
     // Reference element:
     // [ |X| | ] -xi->
     const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
@@ -68,7 +69,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Domain",
                                     Tags::Coordinates<1, Frame::Logical>>>(
               box) == element_map.inv_jacobian(logical_coords));
   }
-  SECTION("2D") {
+  {
+    INFO("2D");
     // Reference element:
     // ^ eta
     // +-+-+-+-+> xi
@@ -114,7 +116,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Domain",
                                     Tags::Coordinates<2, Frame::Logical>>>(
               box) == element_map.inv_jacobian(logical_coords));
   }
-  SECTION("3D") {
+  {
+    INFO("3D");
     const ElementId<3> element_id{
         0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 1}}}};
     const domain::creators::Brick<Frame::Inertial> domain_creator{

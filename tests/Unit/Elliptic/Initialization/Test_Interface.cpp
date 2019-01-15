@@ -51,7 +51,8 @@ struct System {
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Interface",
                   "[Unit][Elliptic][Actions]") {
-  SECTION("1D") {
+  {
+    INFO("1D");
     // Reference element:
     // [X| | | ] -xi->
     const ElementId<1> element_id{0, {{SegmentId{2, 0}}}};
@@ -137,7 +138,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Interface",
                 exterior_derivs.at(Direction<1>::lower_xi()))) ==
         expected_deriv_lower_xi);
   }
-  SECTION("2D") {
+  {
+    INFO("2D");
     // Reference element:
     // ^ eta
     // +-+-+> xi
@@ -209,7 +211,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Interface",
     CHECK(exterior_vars.at(Direction<2>::upper_eta()).number_of_grid_points() ==
           3);
   }
-  SECTION("3D") {
+  {
+    INFO("3D");
     const ElementId<3> element_id{
         0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{2, 0}}}};
     const domain::creators::Brick<Frame::Inertial> domain_creator{

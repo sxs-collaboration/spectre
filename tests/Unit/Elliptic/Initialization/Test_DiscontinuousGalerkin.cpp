@@ -68,7 +68,8 @@ struct Metavariables {
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
                   "[Unit][Elliptic][Actions]") {
-  SECTION("1D") {
+  {
+    INFO("1D");
     // Reference element:
     // [X| | | ] -xi->
     const ElementId<1> element_id{0, {{SegmentId{2, 0}}}};
@@ -133,7 +134,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
     CHECK(interface_normal_dot_fluxes.at(Direction<1>::upper_xi())
               .number_of_grid_points() == 1);
   }
-  SECTION("2D") {
+  {
+    INFO("2D");
     // Reference element:
     // ^ eta
     // +-+-+> xi
@@ -231,7 +233,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
     CHECK(interface_normal_dot_fluxes.at(Direction<2>::lower_eta())
               .number_of_grid_points() == 3);
   }
-  SECTION("3D") {
+  {
+    INFO("3D");
     const ElementId<3> element_id{
         0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{1, 0}}}};
     const domain::creators::Brick<Frame::Inertial> domain_creator{

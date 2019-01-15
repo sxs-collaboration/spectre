@@ -45,7 +45,8 @@ struct System {
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Derivatives",
                   "[Unit][Elliptic][Actions]") {
-  SECTION("1D") {
+  {
+    INFO("1D");
     const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
     const domain::creators::Interval<Frame::Inertial> domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
@@ -75,7 +76,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Derivatives",
                 box)),
         get<0>(expected_derivs));
   }
-  SECTION("2D") {
+  {
+    INFO("2D");
     const ElementId<2> element_id{0, {{SegmentId{2, 1}, SegmentId{0, 0}}}};
     const domain::creators::Rectangle<Frame::Inertial> domain_creator{
         {{-0.5, 0.}}, {{1.5, 1.}}, {{false, false}}, {{2, 0}}, {{4, 2}}};
@@ -112,7 +114,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Derivatives",
                 box)),
         get<1>(expected_derivs));
   }
-  SECTION("3D") {
+  {
+    INFO("3D");
     const ElementId<3> element_id{
         0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 1}}}};
     const domain::creators::Brick<Frame::Inertial> domain_creator{
