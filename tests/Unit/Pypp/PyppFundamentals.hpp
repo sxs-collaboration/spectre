@@ -74,9 +74,9 @@ PyObject* make_py_tuple(const Args&... t) {
     entry++;
     return '0';
   };
-  (void)add_entry; // GCC warns that add_entry is unused
+  (void)add_entry;  // GCC warns that add_entry is unused
   (void)std::initializer_list<char>{add_entry(t)...};
-  return  py_tuple;
+  return py_tuple;
 }
 
 ///\cond
@@ -175,8 +175,7 @@ struct ToPyObject<std::array<T, Size>, std::nullptr_t> {
       throw std::runtime_error{"Failed to convert argument."};
     }
     for (size_t i = 0; i < Size; ++i) {
-      PyObject* value =
-          ToPyObject<T>::convert(gsl::at(t, i));
+      PyObject* value = ToPyObject<T>::convert(gsl::at(t, i));
       if (value == nullptr) {
         throw std::runtime_error{"Failed to convert argument."};
       }
@@ -221,7 +220,8 @@ struct FromPyObject<long, std::nullptr_t> {
 #if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
     } else if (not PyInt_Check(t) and not PyLong_Check(t)) {
 #elif PY_MAJOR_VERSION == 3
-    } else if (not PyLong_Check(t)) {
+      // clang-tidy: hicpp-signed-bitwise
+    } else if (not PyLong_Check(t)) {  // NOLINT
 #else
     } else {
       static_assert(false, "Only works on Python 2.7 and 3.x")
@@ -240,7 +240,8 @@ struct FromPyObject<unsigned long, std::nullptr_t> {
 #if PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION == 7
     } else if (not PyInt_Check(t) and not PyLong_Check(t)) {
 #elif PY_MAJOR_VERSION == 3
-    } else if (not PyLong_Check(t)) {
+      // clang-tidy: hicpp-signed-bitwise
+    } else if (not PyLong_Check(t)) {  // NOLINT
 #else
     } else {
       static_assert(false, "Only works on Python 2.7 and 3.x");
