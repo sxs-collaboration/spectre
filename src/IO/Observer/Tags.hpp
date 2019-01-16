@@ -115,7 +115,6 @@ struct VolumeFileName {
   using type = std::string;
   static constexpr OptionString help = {
       "Name of the volume data file without extension"};
-  static type default_value() noexcept { return "./VolumeData"; }
 };
 
 /// \ingroup ObserversGroup
@@ -124,7 +123,6 @@ struct ReductionFileName {
   using type = std::string;
   static constexpr OptionString help = {
       "Name of the reduction data file without extension"};
-  static type default_value() noexcept { return "./TimeSeriesData"; }
 };
 }  // namespace OptionTags
 }  // namespace observers

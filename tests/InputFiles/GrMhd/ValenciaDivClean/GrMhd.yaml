@@ -41,8 +41,6 @@ TimeStepper:
 #   - Cfl:
 #       SafetyFactor: 0.2
 
-VolumeFileName: "./GrMhd"
-
 NumericalFluxParams:
 
 DampingParameter: 0.0
@@ -63,6 +61,9 @@ FixConservatives:
 FixToAtmosphere:
   DensityOfAtmosphere: 1.0e-12
   DensityCutoff: 1.0e-12
+
+VolumeFileName: "./GrMhdVolume"
+ReductionFileName: "./GrMhdReductions"
 
 ObserveNSlabs: 1000
 ObserveAtT0: false

@@ -20,6 +20,5 @@ NumericalFluxParams:
 
 Verbosity: Verbose
 
-VolumeFileName: "./PoissonVolume3D"
-
-ReductionFileName: "./PoissonReduction3D"
+VolumeFileName: "./Poisson3DVolume"
+ReductionFileName: "./Poisson3DReductions"
