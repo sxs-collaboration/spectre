@@ -51,6 +51,7 @@ add_dependencies(
   )
 
 add_subdirectory(Actions)
+add_subdirectory(Ader)
 add_subdirectory(BoundaryConditions)
 add_subdirectory(Conservative)
 add_subdirectory(DgSubcell)
