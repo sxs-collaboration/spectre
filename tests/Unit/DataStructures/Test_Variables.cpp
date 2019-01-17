@@ -10,16 +10,17 @@
 #include <string>
 #include <tuple>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
-#include "ErrorHandling/Error.hpp"
+#include "ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Literals.hpp"
+#include "Utilities/Literals.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -910,30 +911,39 @@ void test_variables_add_slice_to_data() noexcept {
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   SECTION("Test Variables construction, access, and assignment") {
     test_variables_construction_and_access<DataVector>();
+    test_variables_construction_and_access<ComplexDataVector>();
   }
   SECTION("Test Variables move operations") {
     test_variables_move<DataVector>();
+    test_variables_move<ComplexDataVector>();
   }
   SECTION("Test Variables arithmetic operations") {
     test_variables_math<DataVector>();
+    test_variables_math<ComplexDataVector>();
   }
   SECTION("Test Prefix Variables move and copy semantics") {
     test_variables_prefix_semantics<DataVector>();
+    test_variables_prefix_semantics<ComplexDataVector>();
   }
   SECTION("Test Prefix Variables arithmetic operations") {
     test_variables_prefix_math<DataVector>();
+    test_variables_prefix_math<ComplexDataVector>();
   }
   SECTION("Test Variables serialization") {
     test_variables_serialization<DataVector>();
+    test_variables_serialization<ComplexDataVector>();
   }
   SECTION("Test Variables assign subset") {
     test_variables_assign_subset<DataVector>();
+    test_variables_assign_subset<ComplexDataVector>();
   }
   SECTION("Test Variables slice utilities") {
     test_variables_slice<DataVector>();
+    test_variables_slice<ComplexDataVector>();
   }
   SECTION("Test adding slice values to Variables") {
     test_variables_add_slice_to_data<DataVector>();
+    test_variables_add_slice_to_data<ComplexDataVector>();
   }
 }
 }  // namespace

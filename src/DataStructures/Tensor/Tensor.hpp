@@ -8,6 +8,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
@@ -79,8 +80,11 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                 "file an issue on GitHub or discuss with a core developer of "
                 "SpECTRE.");
   static_assert(
-      cpp17::is_same_v<X, double> or cpp17::is_same_v<X, DataVector>,
-      "Only a Tensor<double> or Tensor<DataVector> is currently "
+      cpp17::is_same_v<X, double> or cpp17::is_same_v<X, DataVector> or
+          cpp17::is_same_v<X, std::complex<double>> or
+          cpp17::is_same_v<X, ComplexDataVector>,
+      "Only a Tensor<double>, Tensor<DataVector>, "
+      "Tensor<std::complex<double>>, or Tensor<ComplexDataVector> is currently "
       "allowed. While other types are technically possible it is not "
       "clear that Tensor is the correct container for them. Please "
       "seek advice on the topic by discussing with the SpECTRE developers.");

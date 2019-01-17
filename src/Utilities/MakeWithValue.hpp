@@ -55,6 +55,14 @@ struct MakeWithValueImpl<double, T> {
   }
 };
 
+template <typename T>
+struct MakeWithValueImpl<std::complex<double>, T> {
+  static SPECTRE_ALWAYS_INLINE std::complex<double> apply(
+      const T& /* input */, const std::complex<double> value) noexcept {
+    return value;
+  }
+};
+
 /// \brief Makes a `std::array`; each element of the `std::array`
 /// must be `make_with_value`-creatable from a `T`.
 template <size_t Size, typename T>

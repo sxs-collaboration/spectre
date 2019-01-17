@@ -11,7 +11,7 @@
 #include <tuple>
 #include <utility>
 
-#include "ErrorHandling/Error.hpp"
+#include "ErrorHandling/Error.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
@@ -137,6 +137,19 @@ MAKE_UNARY_TEST(Square, square);
 MAKE_UNARY_TEST(Sqrt, sqrt);
 MAKE_UNARY_TEST(Tan, tan);
 MAKE_UNARY_TEST(Tanh, tanh);
+
+// test for UnaryPow needs to be handled separately due to the compile-time
+// exponent parameter
+template <int N>
+struct TestFuncEvalUnaryPow {
+  template <typename T, typename DistT, typename UniformGen>
+  void operator()(UniformGen gen, UniformCustomDistribution<DistT> dist,
+                  T /*meta*/) noexcept {
+    auto val = make_with_random_values<typename T::type>(make_not_null(&gen),
+                                                         make_not_null(&dist));
+    CHECK(UnaryPow<N>{}(val) == pow<N>(val)); /*NOLINT*/
+  }
+};
 
 MAKE_BINARY_TEST(Atan2, atan2);
 MAKE_BINARY_TEST(Hypot, hypot);
@@ -276,7 +289,10 @@ void test_generic_unaries(Gen& gen) noexcept {
                       std::make_tuple(TestFuncEvalSqrt{}, positive),
                       std::make_tuple(TestFuncEvalSquare{}, generic),
                       std::make_tuple(TestFuncEvalTan{}, generic),
-                      std::make_tuple(TestFuncEvalTanh{}, generic));
+                      std::make_tuple(TestFuncEvalTanh{}, generic),
+                      std::make_tuple(TestFuncEvalUnaryPow<1>{}, generic),
+                      std::make_tuple(TestFuncEvalUnaryPow<-2>{}, generic),
+                      std::make_tuple(TestFuncEvalUnaryPow<3>{}, generic));
 
   tmpl::for_each<AllTypeList>([&gen, &generic_unaries ](auto x) noexcept {
     using DistType =

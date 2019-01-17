@@ -4,6 +4,7 @@
 set(LIBRARY "Test_DataStructures")
 
 set(LIBRARY_SOURCES
+  Test_ComplexDataVector.cpp
   Test_DataVector.cpp
   Test_DenseMatrix.cpp
   Test_DenseVector.cpp
@@ -19,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_StripeIterator.cpp
   Test_Variables.cpp
   Test_VectorImpl.cpp
+  Test_VectorImplTestHelper.cpp
   )
 
 add_subdirectory(DataBox)

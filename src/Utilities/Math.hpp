@@ -13,6 +13,12 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
+// using for overload resolution with blaze
+// clang-tidy doesn't want these in the global namespace
+using std::conj; //NOLINT
+using std::imag; //NOLINT
+using std::real; //NOLINT
+
 /*!
  * \ingroup UtilitiesGroup
  * \brief Returns the number of digits in an integer number

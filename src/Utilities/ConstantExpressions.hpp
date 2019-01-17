@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -89,45 +90,73 @@ constexpr uint64_t factorial(const uint64_t n) noexcept {
 
 /// \ingroup ConstantExpressionsGroup
 namespace ConstantExpressions_detail {
-template <typename T, int N, typename = std::nullptr_t>
-struct pow;
 
-/// \cond HIDDEN_SYMBOLS
-template <typename T, int N>
-struct pow<T, N, Requires<(N > 0)>> {
-  SPECTRE_ALWAYS_INLINE static constexpr decltype(auto) apply(const T& t) {
-    return t * pow<T, N - 1>::apply(t);
-  }
-};
+// Implementation functions for the pow template function below which computes
+// optimized powers where the exponent is a compile-time integer
 
-template <typename T, int N>
-struct pow<T, N, Requires<(N < 0)>> {
-  SPECTRE_ALWAYS_INLINE static constexpr decltype(auto) apply(const T& t) {
-    return static_cast<T>(1) / (t * pow<T, -N - 1>::apply(t));
-  }
-};
-
+// base case power 0: Returns 1.0. This will need to be overloaded for types for
+// which the simple return is inappropriate.
 template <typename T>
-struct pow<T, 0, Requires<not blaze::IsVector<T>::value>> {
-  SPECTRE_ALWAYS_INLINE static constexpr T apply(const T& /*t*/) {
-    return static_cast<T>(1);
-  }
-};
-/// \endcond
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
+    const T& /*t*/, std::integral_constant<int, 0> /*meta*/,
+    cpp17::bool_constant<true> /*exponent_was_positive*/) noexcept {
+  return static_cast<tt::get_fundamental_type_t<T>>(1.0);
+}
+
+// special case power 1: acts as a direct identity function for efficiency
+template <typename T>
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
+    const T& t, std::integral_constant<int, 1> /*meta*/,
+    cpp17::bool_constant<true> /*exponent_was_positive*/) noexcept {
+  return t;
+}
+
+// general case for positive powers: return the power via recursive inline call,
+// which expands to a series of multiplication operations.
+template <int N, typename T>
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
+    const T& t, std::integral_constant<int, N> /*meta*/,
+    cpp17::bool_constant<true> /*exponent_was_positive*/) noexcept {
+  return t * pow_impl(t, std::integral_constant<int, N - 1>{},
+                      cpp17::bool_constant<true>{});
+}
+
+// general case for negative powers: return the multiplicative inverse of the
+// result from the recursive inline call, which expands to a series of
+// multiplication operations. This assumes that division is supported with
+// tt::get_fundamental_type_t<T> and T. If not, this utility will need further
+// specialization.
+template <int N, typename T>
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow_impl(
+    const T& t, std::integral_constant<int, N> /*meta*/,
+    cpp17::bool_constant<false> /*exponent_was_positive*/) noexcept {
+  return static_cast<tt::get_fundamental_type_t<T>>(1) /
+         (pow_impl(t, std::integral_constant<int, -N>{},
+                   cpp17::bool_constant<true>{}));
+}
 }  // namespace ConstantExpressions_detail
 
 /// \ingroup ConstantExpressionsGroup
 /// \brief Compute t^N where N is an integer (positive or negative)
 ///
-/// \warning If passing an integer this will do integer arithmatic, e.g.
-/// pow<-10>(2) == 0
+/// \warning If passing an integer this will do integer arithmetic, e.g.
+/// `pow<-10>(2) == 0` evaluates to `true`
 ///
-/// \tparam N the integer power being raised to in t^N
+/// \warning For optimization, it is assumed that the `pow<0>` of a vector type
+/// (e.g. `DataVector`) will not be used for initialization or directly indexed,
+/// so `pow<0>` returns simply `1.0`. In the case of use for initialization, a
+/// constructor should be used instead, and in the case of a direct index, the
+/// expression may be simplifyable to avoid the use of `pow<0>` altogether. If a
+/// more complete treatment of `pow<0>` is required, further overloads may be
+/// added to the `ConstantExpressions_detail` namespace.
+///
+/// \tparam N the integer power being raised to in \f$t^N\f$
 /// \param t the value being exponentiated
-/// \return value t^N of type T
+/// \return value \f$t^N\f$ determined via repeated multiplication
 template <int N, typename T>
-SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) {
-  return ConstantExpressions_detail::pow<T, N>::apply(t);
+SPECTRE_ALWAYS_INLINE constexpr decltype(auto) pow(const T& t) noexcept {
+  return ConstantExpressions_detail::pow_impl(
+      t, std::integral_constant<int, N>{}, cpp17::bool_constant<(N >= 0)>{});
 }
 
 /// \ingroup ConstantExpressionsGroup

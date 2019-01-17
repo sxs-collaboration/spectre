@@ -53,7 +53,8 @@ class DataVector : public VectorImpl<double, DataVector> {
 
 // Specialize the Blaze type traits to correctly handle DataVector
 namespace blaze {
-BLAZE_TRAIT_SPECIALIZE_TYPICAL_VECTOR_TRAITS(DataVector);
+VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(DataVector);
+VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(DataVector);
 }  // namespace blaze
 
 SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const DataVector& t) noexcept {
@@ -63,46 +64,3 @@ SPECTRE_ALWAYS_INLINE decltype(auto) fabs(const DataVector& t) noexcept {
 MAKE_STD_ARRAY_VECTOR_BINOPS(DataVector)
 
 MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(DataVector)
-
-namespace ConstantExpressions_detail {
-template <>
-struct pow<DataVector, 0, std::nullptr_t> {
-  SPECTRE_ALWAYS_INLINE static constexpr double apply(
-      const DataVector& /*t*/) noexcept {
-    return 1.0;
-  }
-};
-template <>
-struct pow<std::reference_wrapper<DataVector>, 0, std::nullptr_t> {
-  SPECTRE_ALWAYS_INLINE static constexpr double apply(
-      const std::reference_wrapper<DataVector>& /*t*/) noexcept {
-    return 1.0;
-  }
-};
-template <>
-struct pow<std::reference_wrapper<const DataVector>, 0, std::nullptr_t> {
-  SPECTRE_ALWAYS_INLINE static constexpr double apply(
-      const std::reference_wrapper<const DataVector>& /*t*/) noexcept {
-    return 1.0;
-  }
-};
-template <typename BlazeVector>
-struct pow<BlazeVector, 0, Requires<blaze::IsVector<BlazeVector>::value>> {
-  SPECTRE_ALWAYS_INLINE static constexpr double apply(
-      const BlazeVector& /*t*/) noexcept {
-    return 1.0;
-  }
-};
-
-template <int N>
-struct pow<DataVector, N, Requires<(N < 0)>> {
-  static_assert(N > 0,
-                "Cannot use pow on DataVectorStructures with a negative "
-                "exponent. You must "
-                "divide by a positive exponent instead.");
-  SPECTRE_ALWAYS_INLINE static constexpr decltype(auto) apply(
-      const DataVector& t) noexcept {
-    return DataVector(t.size(), 1.0) / (t * pow<DataVector, -N - 1>::apply(t));
-  }
-};
-}  // namespace ConstantExpressions_detail

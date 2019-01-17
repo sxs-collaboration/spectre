@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <complex>
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
@@ -33,9 +34,9 @@ using two_vars = tmpl::list<Var1<Dim>, Var2>;
 template <size_t Dim>
 using one_var = tmpl::list<Var1<Dim>>;
 
-template <typename R, typename T>
+template <typename R, typename T, typename ValueType>
 void check_make_with_value(const R& expected, const T& input,
-                           const double value) {
+                           const ValueType value) {
   const auto computed = make_with_value<R>(input, value);
   CHECK(expected == computed);
 }
@@ -67,15 +68,32 @@ void test_make_tagged_tuple() {
 SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
                   "[DataStructures][Unit]") {
   check_make_with_value(8.3, 1.3, 8.3);
+  check_make_with_value(std::complex<double>(8.3, 2.5), 1.3,
+                        std::complex<double>(8.3, 2.5));
   check_make_with_value(8.3, tnsr::i<double, 3>{{{1.3, 8.3, 3.4}}}, 8.3);
+  check_make_with_value(std::complex<double>(8.3, 2.5),
+                        tnsr::i<double, 3>{{{1.3, 8.3, 3.4}}},
+                        std::complex<double>(8.3, 2.5));
   check_make_with_value(8.3, DataVector{8, 2.3}, 8.3);
+  check_make_with_value(std::complex<double>(8.3, 2.5), DataVector{8, 2.3},
+                        std::complex<double>(8.3, 2.5));
   check_make_with_value(
-      8.3, tnsr::i<DataVector, 3>{{{DataVector{8, 2.3}, DataVector{8, 9.8},
-                                    DataVector{8, -1.2}}}},
+      8.3,
+      tnsr::i<DataVector, 3>{
+          {{DataVector{8, 2.3}, DataVector{8, 9.8}, DataVector{8, -1.2}}}},
       8.3);
+  check_make_with_value(
+      std::complex<double>(8.3, 2.5),
+      tnsr::i<DataVector, 3>{
+          {{DataVector{8, 2.3}, DataVector{8, 9.8}, DataVector{8, -1.2}}}},
+      std::complex<double>(8.3, 2.5));
+
   check_make_with_value(Scalar<double>(8.3), 1.3, 8.3);
   check_make_with_value(tnsr::I<double, 3, Frame::Grid>(8.3), 1.3, 8.3);
   check_make_with_value(8.3, tnsr::I<double, 3, Frame::Grid>(1.3), 8.3);
+  check_make_with_value(std::complex<double>(8.3, 2.5),
+                        tnsr::I<double, 3, Frame::Grid>(1.3),
+                        std::complex<double>(8.3, 2.5));
   check_make_with_value(tnsr::Ij<double, 3, Frame::Grid>(8.3),
                         tnsr::aB<double, 1, Frame::Inertial>(1.3), 8.3);
   check_make_with_value(make_array<4>(8.3), 1.3, 8.3);

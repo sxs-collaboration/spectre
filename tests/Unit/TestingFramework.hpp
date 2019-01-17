@@ -139,6 +139,16 @@ struct check_iterable_approx {
 };
 
 template <typename T>
+struct check_iterable_approx<std::complex<T>, std::nullptr_t> {
+  // clang-tidy: non-const reference
+  static void apply(const std::complex<T>& a, const std::complex<T>& b,
+                    Approx& appx = approx) {  // NOLINT
+    check_iterable_approx<T>::apply(real(a), real(b), appx);
+    check_iterable_approx<T>::apply(imag(a), imag(b), appx);
+  }
+};
+
+template <typename T>
 struct check_iterable_approx<
     T, Requires<not tt::is_maplike_v<T> and tt::is_iterable_v<T> and
                 not tt::is_a_v<std::unordered_set, T>>> {

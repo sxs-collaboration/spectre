@@ -432,8 +432,19 @@ struct check_variables_approx<Variables<TagList>> {
 namespace TestHelpers_detail {
 // CHECK forwarding for parameter pack expansion. Return value also required for
 // easy parameter pack use.
-SPECTRE_ALWAYS_INLINE int call_check(const bool input) noexcept {
-  CHECK(input);
+template <typename Approx>
+SPECTRE_ALWAYS_INLINE int call_check_approx(double a, double b,
+                                            Approx custom_approx) noexcept {
+  CHECK(custom_approx(a) == b);
+  return 0;
+}
+
+template <typename Approx>
+SPECTRE_ALWAYS_INLINE int call_check_approx(std::complex<double> a,
+                                            std::complex<double> b,
+                                            Approx custom_approx) noexcept {
+  CHECK(custom_approx(real(a)) == real(b));
+  CHECK(custom_approx(imag(a)) == imag(b));
   return 0;
 }
 
@@ -467,12 +478,14 @@ void test_element_wise_function_impl(
     // the arguments which modify their arguments must be passed lvalues
     auto element_of_arguments = std::make_tuple(
         get_element(std::get<Is>(original_arguments), i, at)...);
-    CHECK(custom_approx(get_element(result, i, at)) ==
-          element_wise_function(std::get<Is>(element_of_arguments)...));
+    call_check_approx(
+        get_element(result, i, at),
+        element_wise_function(std::get<Is>(element_of_arguments)...),
+        custom_approx);
     // ensure that the final state of the arguments matches
-    expand_pack(call_check(
-        custom_approx(get_element(std::get<Is>(*arguments), i, at)) ==
-        std::get<Is>(element_of_arguments))...);
+    expand_pack(call_check_approx(get_element(std::get<Is>(*arguments), i, at),
+                                  std::get<Is>(element_of_arguments),
+                                  custom_approx)...);
   }
 }
 }  // namespace TestHelpers_detail
