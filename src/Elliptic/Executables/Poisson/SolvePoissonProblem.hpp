@@ -69,7 +69,9 @@ struct Metavariables {
   using reduction_data_tags = tmpl::list<observers::Tags::ReductionData<
       Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
       Parallel::ReductionDatum<size_t, funcl::Plus<>>,
-      Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Sqrt<>>>>;
+      Parallel::ReductionDatum<double, funcl::Plus<>,
+                               funcl::Sqrt<funcl::Divides<>>,
+                               std::index_sequence<1>>>>;
 
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::append<
