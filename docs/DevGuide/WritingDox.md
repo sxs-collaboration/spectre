@@ -130,9 +130,45 @@ previous section. One can also use (within a Doxygen comment) the form
 to put the expression on its own line. We also encourage you to use the latex
 env `align` for formatting these multiple-line equations.
 
-## Put any links to papers in your documentation in tags:
+## Cite publications in your documentation
 
-Use the markdown format of `[Text to be displayed](url)`.
+When you refer to publications or books in the documentation, add a
+corresponding entry to `docs/References.bib`. Follow these guidelines when
+editing `docs/References.bib`:
+
+- Ideally, find the publication on [INSPIRE HEP](https://inspirehep.net), copy
+its BibTeX entry, remove the colon `:` from its key and add the `url` field (see
+below). We remove the colon because it can create problems in HTML related to
+its function as a CSS selector.
+- For publications that are not listed on [INSPIRE HEP](https://inspirehep.net),
+make sure to format the new entry's key in the same style, i.e.
+`(<Author>[a-zA-Z]+)(<Year>[0-9]{4})(<ID>[a-z]*)`. Good keys are, for
+instance, `Einstein1915` or `LVC2016a`. For books you may omit the year.
+- Sort the list of BibTeX entries in the file alphabetically by their keys.
+- Provide open access or preprint information whenever possible. For
+publications available on [arXiv](https://arxiv.org), for instance, add the
+following fields (filling in the correct values):
+```
+archivePrefix = {arXiv},
+eprint = {1609.00098},
+primaryClass = {astro-ph.HE},
+```
+- Provide the `url` field whenever possible. If a DOI has been issued by the
+publisher, use `https://doi.org/<doi>` and also fill the `doi` field of the
+entry. Else, use the URL provided by the publisher.
+- Make sure to wrap strings in the BibTeX entries in `{}` when capitalization is
+important, or when BibTeX keywords should be ignored (e.g. `and` in author
+lists).
+
+To cite an entry from the `docs/References.bib` file in the documentation, use
+the Doxygen keyword
+\verbatim
+\cite
+\endverbatim
+followed by the BibTeX key at the place in the documentation where you want the
+citation to appear. It will render as a numbered link to the bibliography
+page. It will also show a popover when hovering over the link, which displays
+the bibliographic information and provides quick access to the publication.
 
 ## Include any pictures that aid in the understanding of your documentation:
 

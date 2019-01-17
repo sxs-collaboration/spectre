@@ -33,11 +33,14 @@ RUN apt-get update -y && \
 RUN apt-get update -y && apt-get install -y libc++-dev libc++1 libc++abi-dev \
     && apt-get update -y && apt-get install -y libjemalloc1 libjemalloc-dev
 
-# Install ccache to cache compilations for reduced compile time, Doxygen
-# and coverxygen to check documentation coverage
-RUN apt-get install -y ccache doxygen python-pip && pip install coverxygen \
-        && pip install numpy && pip install scipy \
-        && pip install --upgrade autopep8 flake8
+# Install ccache to cache compilations for reduced compile time, and Doxygen
+RUN apt-get install -y ccache doxygen
+
+# Install Python packages
+RUN apt-get install -y python-pip \
+    && pip install autopep8 flake8 \
+    && pip install numpy scipy \
+    && pip install coverxygen beautifulsoup4 pybtex
 
 # Add ruby gems and install coveralls using gem
 RUN apt-get update -y && apt-get install -y rubygems && \
