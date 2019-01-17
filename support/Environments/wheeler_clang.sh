@@ -15,7 +15,6 @@ spectre_unload_modules() {
     module unload catch/2.1.2
     module unload gsl/2.1
     module unload hdf5/1.8.17
-    module unload jemalloc/5.0.1
     module unload libsharp/1.0.0
     module unload libxsmm/1.8.1
     module unload openblas/0.2.18
@@ -38,7 +37,6 @@ spectre_load_modules() {
     module load catch/2.1.2
     module load gsl/2.1
     module load hdf5/1.8.17
-    module load jemalloc/5.0.1
     module load libsharp/1.0.0
     module load libxsmm/1.8.1
     module load openblas/0.2.18
@@ -64,5 +62,6 @@ spectre_run_cmake() {
           -D CMAKE_C_COMPILER=clang \
           -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_Fortran_COMPILER=gfortran \
+          -D MEMORY_ALLOCATOR=SYSTEM \
           $SPECTRE_HOME
 }

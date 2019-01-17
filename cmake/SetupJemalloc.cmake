@@ -5,7 +5,8 @@ find_package(JEMALLOC REQUIRED)
 
 
 spectre_include_directories(${JEMALLOC_INCLUDE_DIRS})
-set(SPECTRE_LIBRARIES "${SPECTRE_LIBRARIES};${JEMALLOC_LIBRARIES}")
+# Allocators should be linked as early as possible.
+set(SPECTRE_LIBRARIES "${JEMALLOC_LIBRARIES};${SPECTRE_LIBRARIES}")
 
 message(STATUS "jemalloc libs: " ${JEMALLOC_LIBRARIES})
 message(STATUS "jemalloc incl: " ${JEMALLOC_INCLUDE_DIRS})

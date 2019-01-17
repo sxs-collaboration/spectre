@@ -24,6 +24,10 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+// We don't do anything complex, but IWYU thinks it's needed for some math
+// functions
+// IWYU pragma: no_include <complex>
+
 /// \cond
 namespace RelativisticEuler {
 namespace Solutions {
@@ -134,6 +138,9 @@ FishboneMoncriefDisk::IntermediateVariables<DataType, NeedSpacetime>::
   z_squared /= -r_squared;
   z_squared += 1.0;
   sin_theta_squared = std::move(z_squared);
+  // Because of the subtraction done to compute sin^2(theta) can be negative by
+  // roundoff. This is a fix for that for now.
+  sin_theta_squared = abs(sin_theta_squared);
 
   angular_momentum = [
     a_squared, black_hole_mass, black_hole_spin,
