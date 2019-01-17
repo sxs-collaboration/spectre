@@ -153,6 +153,7 @@ long_lines() {
               'Doxyfile.in$' \
               'containers/Dockerfile.travis$' \
               'docs/MainSite/Main.md' \
+              'docs/DevGuide/Travis.md' \
               'tools/Iwyu/boost-all.imp$' && \
         staged_grep '^[^#].\{80,\}' "$1" | grep -Ev 'https?://' | \
             grep -v '// IWYU pragma:' | grep -v '// NOLINT' >/dev/null

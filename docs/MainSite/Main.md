@@ -13,6 +13,7 @@ Table of Contents
 <li class="level1"><a href="tutorials.html">User tutorials</a></li>
 <li class="level1"><a href="dev_guide.html">Dev guide</a></li>
 <li class="level1"><a href="code_of_conduct.html">Code of Conduct</a></li>
+<li class="level1"><a href="contributing_to_spectre.html">Contributing to SpECTRE</a></li>
 </ul>
 Further links
 <ul>
