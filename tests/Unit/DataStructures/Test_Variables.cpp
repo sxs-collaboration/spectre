@@ -11,6 +11,7 @@
 #include <tuple>
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
@@ -915,49 +916,57 @@ void test_variables_add_slice_to_data() noexcept {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   SECTION("Test Variables construction, access, and assignment") {
-    test_variables_construction_and_access<DataVector>();
     test_variables_construction_and_access<ComplexDataVector>();
+    test_variables_construction_and_access<ComplexModalVector>();
+    test_variables_construction_and_access<DataVector>();
     test_variables_construction_and_access<ModalVector>();
   }
   SECTION("Test Variables move operations") {
-    test_variables_move<DataVector>();
     test_variables_move<ComplexDataVector>();
+    test_variables_move<ComplexModalVector>();
+    test_variables_move<DataVector>();
     test_variables_move<ModalVector>();
   }
   SECTION("Test Variables arithmetic operations") {
     test_variables_math<DataVector>();
     test_variables_math<ComplexDataVector>();
-    // test for ModalVector omitted due to limited arithmetic operation support
-    // for ModalVectors
+    // tests for ModalVector and ComplexModalVector omitted due to limited
+    // arithmetic operation support for ModalVectors
   }
   SECTION("Test Prefix Variables move and copy semantics") {
-    test_variables_prefix_semantics<DataVector>();
     test_variables_prefix_semantics<ComplexDataVector>();
+    test_variables_prefix_semantics<ComplexModalVector>();
+    test_variables_prefix_semantics<DataVector>();
     test_variables_prefix_semantics<ModalVector>();
   }
   SECTION("Test Prefix Variables arithmetic operations") {
-    test_variables_prefix_math<DataVector>();
     test_variables_prefix_math<ComplexDataVector>();
+    test_variables_prefix_math<ComplexModalVector>();
+    test_variables_prefix_math<DataVector>();
     test_variables_prefix_math<ModalVector>();
   }
   SECTION("Test Variables serialization") {
-    test_variables_serialization<DataVector>();
     test_variables_serialization<ComplexDataVector>();
+    test_variables_serialization<ComplexModalVector>();
+    test_variables_serialization<DataVector>();
     test_variables_serialization<ModalVector>();
   }
   SECTION("Test Variables assign subset") {
-    test_variables_assign_subset<DataVector>();
     test_variables_assign_subset<ComplexDataVector>();
+    test_variables_assign_subset<ComplexModalVector>();
+    test_variables_assign_subset<DataVector>();
     test_variables_assign_subset<ModalVector>();
   }
   SECTION("Test Variables slice utilities") {
-    test_variables_slice<DataVector>();
     test_variables_slice<ComplexDataVector>();
+    test_variables_slice<ComplexModalVector>();
+    test_variables_slice<DataVector>();
     test_variables_slice<ModalVector>();
   }
   SECTION("Test adding slice values to Variables") {
-    test_variables_add_slice_to_data<DataVector>();
     test_variables_add_slice_to_data<ComplexDataVector>();
+    test_variables_add_slice_to_data<ComplexModalVector>();
+    test_variables_add_slice_to_data<DataVector>();
     test_variables_add_slice_to_data<ModalVector>();
   }
 }
