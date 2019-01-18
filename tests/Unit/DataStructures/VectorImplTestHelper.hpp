@@ -401,7 +401,12 @@ using Bound = std::array<double, 2>;
 ///   more restrictive condition on the type of the left hand side than do
 ///   simply `+`. (e.g. `double + complex<double>` compiles, but
 ///   `double += complex<double>` does not)
-enum TestKind { Normal, Strict, Inplace };
+///
+/// - `GivenOrderOfArgumentsOnly` is used to indicate that the arguments given
+///   should not be taken in any combination apart from the given combination.
+///   This should be used for highly restrictive operations which are only
+///   supported for certain type combinations.
+enum TestKind { Normal, Strict, Inplace, GivenOrderOfArgumentsOnly };
 
 namespace detail {
 
@@ -489,21 +494,23 @@ auto wrap_tuple(std::tuple<Operands...>& operand_values,
 
 // Helper function for obtaining an appropriate vector to pass to
 // make_with_values as the used_for_size.
+// clang-tidy sometimes believes this to be a declaration rather than a
+// definition, so warns about the `const` not doing anything.
 template <typename T>
-auto get_used_for_size(const size_t size, T /*meta*/,
-                       cpp17::bool_constant<false> /*meta*/) {
+auto get_used_for_size(const size_t size, T /*meta*/,  // NOLINT
+                       cpp17::bool_constant<false> /*meta*/) noexcept {
   return T(size);
 }
 
 template <typename T, size_t S>
 auto get_used_for_size(size_t size, std::array<T, S> /*meta*/,
-                       cpp17::bool_constant<false> /*meta*/) {
+                       cpp17::bool_constant<false> /*meta*/) noexcept {
   return T{size};
 }
 
 template <typename T>
 auto get_used_for_size(size_t /*size*/, T /*meta*/,
-                       cpp17::bool_constant<true> /*meta*/) {
+                       cpp17::bool_constant<true> /*meta*/) noexcept {
   return T{};
 }
 
@@ -546,32 +553,43 @@ namespace TestFunctionsWithVectorArgumentsChoices {
 struct FirstInplace {};
 struct Continuing {};
 struct Done {};
+struct GivenOrderOfArgumentsOnly {};
 }  // namespace TestFunctionsWithVectorArgumentsChoices
 
 // helper struct implementation for choosing the next branch for assembling the
 // argument list for the math testing utility. This is done to use pattern
 // matching instead of SFINAE.
-template <bool IsDone, bool IsFirstAssignment>
+template <bool IsDone, bool IsFirstAssignment, bool GivenOrderOfArgumentsOnly>
 struct next_choice_for_test_functions_recursion_impl;
 
 // if the size of the vector list is the same as the size of the distribution
 // bound list, then assembly is done
-template <bool IsFirstAssignment>
-struct next_choice_for_test_functions_recursion_impl<true, IsFirstAssignment> {
+template <bool IsFirstAssignment, bool GivenOrderOfArgumentsOnly>
+struct next_choice_for_test_functions_recursion_impl<
+    true, IsFirstAssignment, GivenOrderOfArgumentsOnly> {
   using type = TestFunctionsWithVectorArgumentsChoices::Done;
 };
 
 // if we are assembling the first argument and the test type is Inplace, then
 // treat it separately
 template <>
-struct next_choice_for_test_functions_recursion_impl<false, true> {
+struct next_choice_for_test_functions_recursion_impl<false, true, false> {
   using type = TestFunctionsWithVectorArgumentsChoices::FirstInplace;
 };
 
 // otherwise, continue assembling as ordinary
 template <>
-struct next_choice_for_test_functions_recursion_impl<false, false> {
+struct next_choice_for_test_functions_recursion_impl<false, false, false> {
   using type = TestFunctionsWithVectorArgumentsChoices::Continuing;
+};
+
+// if using mode GivenOrderOfArgumentsOnly, follow a distinct exection path with
+// only the wraps assembled in combinations
+template <bool IsFirstAssignment>
+struct next_choice_for_test_functions_recursion_impl<false, IsFirstAssignment,
+                                                     true> {
+  using type =
+      TestFunctionsWithVectorArgumentsChoices::GivenOrderOfArgumentsOnly;
 };
 
 // helper function for easily determining the next branch of the call operator
@@ -580,7 +598,8 @@ template <typename VectorList, typename BoundList, TestKind Test>
 using next_choice_for_test_functions_recursion =
     typename next_choice_for_test_functions_recursion_impl<
         tmpl::size<VectorList>::value == tmpl::size<BoundList>::value,
-        tmpl::size<VectorList>::value == 0 and Test == TestKind::Inplace>::type;
+        tmpl::size<VectorList>::value == 0 and Test == TestKind::Inplace,
+        Test == TestKind::GivenOrderOfArgumentsOnly>::type;
 
 // functions to recursively assemble the arguments and wrappers for
 // calling the operator tester `test_function_on_vector_operands`.
@@ -600,7 +619,7 @@ template <TestKind Test, typename UniqueTypeList, typename FirstOperand,
           typename... Wraps>
 void assemble_test_function_arguments_and_execute_tests(
     const Function& function, const std::tuple<DistBounds...>& bounds,
-    const std::tuple<Wraps...>& wraps, const std::tuple<Operands...>&& operands,
+    const std::tuple<Wraps...>& wraps, const std::tuple<Operands...> operands,
     TestFunctionsWithVectorArgumentsChoices::Done /*meta*/) noexcept {
   test_function_on_vector_operands(
       function, bounds, wraps, operands,
@@ -618,21 +637,21 @@ void assemble_test_function_arguments_and_execute_tests(
     const std::tuple<Wraps...>& wraps, const std::tuple<Operands...>&& operands,
     TestFunctionsWithVectorArgumentsChoices::Continuing
     /*meta*/) noexcept {
-  tmpl::for_each<WrapperList>(
-      [&function, &bounds, &wraps, &operands ](const auto x) noexcept {
-        tmpl::for_each<UniqueTypeList>([&function, &bounds, &wraps,
-                                        &operands ](const auto y) noexcept {
-          using next_vector = typename decltype(y)::type;
-          using next_wrap = typename decltype(x)::type;
-          assemble_test_function_arguments_and_execute_tests<
-              Test, UniqueTypeList, FirstOperand>(
-              function, bounds, std::tuple_cat(wraps, std::tuple<next_wrap>{}),
-              std::tuple_cat(operands, std::tuple<next_vector>{}),
-              detail::next_choice_for_test_functions_recursion<
-                  tmpl::list<Operands..., next_vector>,
-                  tmpl::list<DistBounds...>, Test>{});
-        });
-      });
+  tmpl::for_each<WrapperList>([&function, &bounds, &wraps,
+                               &operands ](const auto x) noexcept {
+    tmpl::for_each<UniqueTypeList>([&function, &bounds, &wraps,
+                                    &operands ](const auto y) noexcept {
+      using next_vector = typename decltype(y)::type;
+      using next_wrap = typename decltype(x)::type;
+      assemble_test_function_arguments_and_execute_tests<Test, UniqueTypeList,
+                                                         FirstOperand>(
+          function, bounds, std::tuple_cat(wraps, std::tuple<next_wrap>{}),
+          std::tuple_cat(operands, std::tuple<next_vector>{}),
+          detail::next_choice_for_test_functions_recursion<
+              tmpl::list<Wraps..., next_wrap>, tmpl::list<DistBounds...>,
+              Test>{});
+    });
+  });
 }
 
 // case of first operand and inplace test: the left hand operand for inplace
@@ -657,6 +676,29 @@ void assemble_test_function_arguments_and_execute_tests(
   });
 }
 
+// case of TestKind of NoArgumentsCombinations: The Operands are already
+// assembled, we just need to loop through the wrap possibilities.
+template <TestKind Test, typename UniqueTypeList, typename FirstOperand,
+          typename... Operands, typename Function, typename... DistBounds,
+          typename... Wraps>
+void assemble_test_function_arguments_and_execute_tests(
+    const Function& function, const std::tuple<DistBounds...>& bounds,
+    const std::tuple<Wraps...>& wraps, const std::tuple<Operands...>& operands,
+    TestFunctionsWithVectorArgumentsChoices::
+        GivenOrderOfArgumentsOnly /*meta*/) noexcept {
+  tmpl::for_each<NonConstWrapperList>(
+      [&function, &bounds, &wraps, &operands ](const auto x) noexcept {
+        using next_wrap = typename decltype(x)::type;
+        assemble_test_function_arguments_and_execute_tests<Test, UniqueTypeList,
+                                                           FirstOperand>(
+            function, bounds, std::tuple_cat(wraps, std::tuple<next_wrap>{}),
+            operands,
+            detail::next_choice_for_test_functions_recursion<
+                tmpl::list<Wraps..., next_wrap>, tmpl::list<DistBounds...>,
+                Test>{});
+      });
+}
+
 // dispatch function for the individual tuples of functions and bounds for their
 // respective distributions. This processes the requested set of vector types to
 // test and passes the resulting request to the recursive argument assembly
@@ -676,11 +718,16 @@ void test_function_with_vector_arguments_impl(
       tmpl::remove_duplicates<tmpl::list<
           VectorType0, VectorTypes..., get_vector_element_type_t<VectorType0>,
           get_vector_element_type_t<VectorTypes>...>>>;
+
+  using starting_operands =
+      tmpl::conditional_t<Test == TestKind::GivenOrderOfArgumentsOnly,
+                          std::tuple<VectorType0, VectorTypes...>,
+                          std::tuple<>>;
   assemble_test_function_arguments_and_execute_tests<Test, operand_type_list,
                                                      VectorType0>(
       get<0>(function_and_argument_bounds) /*function*/,
       get<1>(function_and_argument_bounds) /*tuple of bounds*/, std::tuple<>{},
-      std::tuple<>{},
+      starting_operands{},
       next_choice_for_test_functions_recursion<
           tmpl::list<>, tmpl::list<DistBounds...>, Test>{});
 }
@@ -721,6 +768,10 @@ void test_function_with_vector_arguments_impl(
  *    first, so first is always the 'left hand side' of the operator. In this
  *    case, at least two `VectorTypes` must be specified, where the first is
  *    used only for the left-hand side.
+ *  - `TestKind::GivenOrderOfArgumentsOnly`: executed on only the combination of
+ *    arguments provided, in the order provided. In this case, the number of
+ *    provided types in `typename VectorType0, typename... VectorTypes` must
+ *    precisely match the number of arguments taken by the function.
  *
  * \tparam VectorType0 The first vector type for which combinations are
  *  tested. The first is accepted as a separate template argument for
