@@ -101,6 +101,24 @@ void test_all_of_and_any_of_and_none_of() noexcept {
                            [](const int t) { return t == 1; }));
 }
 
+void test_count_related() noexcept {
+  std::vector<int> a{1, 2, 3, 4, 3, 5};
+  CHECK(alg::count(a, 0) == 0);
+  CHECK(alg::count(a, -1) == 0);
+  CHECK(alg::count(a, -2) == 0);
+  for (int i = 1; i < 5; ++i) {
+    CHECK(alg::count(a, i) == (i == 3 ? 2 : 1));
+  }
+
+  CHECK(alg::count_if(a, [](const int t) { return t == 0; }) == 0);
+  CHECK(alg::count_if(a, [](const int t) { return t == -1; }) == 0);
+  CHECK(alg::count_if(a, [](const int t) { return t == -2; }) == 0);
+  CHECK(alg::count_if(a, [](const int t) { return t % 2 == 0; }) == 2);
+  CHECK(alg::count_if(a, [](const int t) { return t % 3 == 0; }) == 2);
+  CHECK(alg::count_if(a, [](const int t) { return t % 5 == 0; }) == 1);
+  CHECK(alg::count_if(a, [](const int t) { return t % 7 == 0; }) == 0);
+}
+
 void test_equal() noexcept {
   // Test alg::equal
   CHECK(alg::equal(std::vector<int>{1, -7, 8, 9},
@@ -149,6 +167,7 @@ void test_for_each() noexcept {
 SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
   test_constexpr_swap_iter_swap_reverse_etc();
   test_all_of_and_any_of_and_none_of();
+  test_count_related();
   test_equal();
   test_find_related();
   test_for_each();

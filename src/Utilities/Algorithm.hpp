@@ -161,6 +161,23 @@ decltype(auto) none_of(const Container& c, UnaryPredicate&& unary_predicate) {
                       std::forward<UnaryPredicate>(unary_predicate));
 }
 
+/// Convenience wrapper around std::count
+template <class Container, class T>
+decltype(auto) count(const Container& c, const T& value) {
+  using std::begin;
+  using std::end;
+  return std::count(begin(c), end(c), value);
+}
+
+/// Convenience wrapper around std::count_if
+template <class Container, class UnaryPredicate>
+decltype(auto) count_if(const Container& c, UnaryPredicate&& unary_predicate) {
+  using std::begin;
+  using std::end;
+  return std::count_if(begin(c), end(c),
+                       std::forward<UnaryPredicate>(unary_predicate));
+}
+
 /// Convenience wrapper around std::find
 template <class Container, class T>
 decltype(auto) find(const Container& c, const T& value) {
