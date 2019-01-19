@@ -262,4 +262,21 @@ decltype(auto) equal(const Container& lhs, const Container2& rhs,
   return std::equal(begin(lhs), end(lhs), begin(rhs),
                     std::forward<BinaryPredicate>(p));
 }
+
+/// Convenience wrapper around std::remove
+template <class Container, class T>
+decltype(auto) remove(Container& c, const T& value) {
+  using std::begin;
+  using std::end;
+  return std::remove(begin(c), end(c), value);
+}
+
+/// Convenience wrapper around std::remove_if
+template <class Container, class UnaryPredicate>
+decltype(auto) remove_if(Container& c, UnaryPredicate&& unary_predicate) {
+  using std::begin;
+  using std::end;
+  return std::remove_if(begin(c), end(c),
+                        std::forward<UnaryPredicate>(unary_predicate));
+}
 }  // namespace alg

@@ -3,7 +3,9 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <cctype>
 #include <iterator>
+#include <string>
 #include <vector>
 
 #include "Utilities/Algorithm.hpp"
@@ -162,6 +164,18 @@ void test_for_each() noexcept {
                 });
   CHECK(count == 2);
 }
+
+void test_remove() noexcept {
+  std::string str1 = "Test with some   spaces";
+  str1.erase(alg::remove(str1, ' '), str1.end());
+  CHECK(str1 == "Testwithsomespaces");
+
+  std::string str2 = "Text\n with\tsome \t  whitespaces\n\n";
+  str2.erase(
+      alg::remove_if(str2, [](unsigned char x) { return std::isspace(x); }),
+      str2.end());
+  CHECK(str2 == "Textwithsomewhitespaces");
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
@@ -171,5 +185,5 @@ SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
   test_equal();
   test_find_related();
   test_for_each();
-
+  test_remove();
 }
