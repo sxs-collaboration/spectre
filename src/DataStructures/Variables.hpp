@@ -234,9 +234,7 @@ class Variables<tmpl::list<Tags...>> {
   /// Needed because of limitations and inconsistency between compiler
   /// implementations of friend function templates with auto return type of
   /// class templates
-  const auto& get_variable_data() const noexcept {
-    return variable_data_;
-  }
+  const auto& get_variable_data() const noexcept { return variable_data_; }
   /// \endcond
 
   // clang-tidy: redundant-declaration
@@ -403,8 +401,7 @@ class Variables<tmpl::list<Tags...>> {
   //@}
 
   static SPECTRE_ALWAYS_INLINE void add_reference_variable_data(
-      tmpl::list<> /*unused*/, const size_t /*variable_offset*/ = 0) noexcept {
-  }
+      tmpl::list<> /*unused*/, const size_t /*variable_offset*/ = 0) noexcept {}
 
   template <
       typename TagToAdd, typename... Rest,
