@@ -490,9 +490,9 @@ auto wrap_tuple(std::tuple<Operands...>& operand_values,
 // Helper function for obtaining an appropriate vector to pass to
 // make_with_values as the used_for_size.
 template <typename T>
-auto get_used_for_size(size_t size, T /*meta*/,
+auto get_used_for_size(const size_t size, T /*meta*/,
                        cpp17::bool_constant<false> /*meta*/) {
-  return T{size};
+  return T(size);
 }
 
 template <typename T, size_t S>

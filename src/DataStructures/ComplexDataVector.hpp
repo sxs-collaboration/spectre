@@ -56,6 +56,7 @@ class ComplexDataVector
 namespace blaze {
 VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(ComplexDataVector);
 VECTOR_BLAZE_TRAIT_SPECIALIZE_ALL_MAP_TRAITS(ComplexDataVector);
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 template <>
 struct UnaryMapTrait<ComplexDataVector, blaze::Real> {
   using Type = DataVector;
@@ -76,6 +77,28 @@ template <>
 struct UnaryMapTrait<ComplexDataVector, blaze::Abs> {
   using Type = DataVector;
 };
+#else
+template <>
+struct MapTrait<ComplexDataVector, blaze::Real> {
+  using Type = DataVector;
+};
+template <>
+struct MapTrait<ComplexDataVector, blaze::Imag> {
+  using Type = DataVector;
+};
+template <>
+struct MapTrait<DataVector, blaze::Real> {
+  using Type = DataVector;
+};
+template <>
+struct MapTrait<DataVector, blaze::Imag> {
+  using Type = DataVector;
+};
+template <>
+struct MapTrait<ComplexDataVector, blaze::Abs> {
+  using Type = DataVector;
+};
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, DataVector,
                                                AddTrait);
@@ -95,6 +118,7 @@ BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, double,
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, double,
                                                SubTrait);
 
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 template <typename Operator>
 struct BinaryMapTrait<DataVector, ComplexDataVector, Operator> {
   using Type = ComplexDataVector;
@@ -103,6 +127,16 @@ template <typename Operator>
 struct BinaryMapTrait<ComplexDataVector, DataVector, Operator> {
   using Type = ComplexDataVector;
 };
+#else
+template <typename Operator>
+struct MapTrait<DataVector, ComplexDataVector, Operator> {
+  using Type = ComplexDataVector;
+};
+template <typename Operator>
+struct MapTrait<ComplexDataVector, DataVector, Operator> {
+  using Type = ComplexDataVector;
+};
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 }  // namespace blaze
 
 MAKE_STD_ARRAY_VECTOR_BINOPS(ComplexDataVector)
