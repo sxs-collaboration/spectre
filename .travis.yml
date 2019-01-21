@@ -152,10 +152,10 @@ jobs:
   - <<: *GccDebug
     stage: Build and Run Tests, ClangTidy, IWYU, and Doxygen
   - <<: *GccRelease
-  - <<: *Gcc6Debug
-  - <<: *Gcc6Release
   - <<: *ClangDebug
   - <<: *ClangRelease
+  - <<: *Gcc6Debug
+  - <<: *Gcc6Release
   # - <<: *MacOsDebug9_2
   # - <<: *MacOsRelease9_2
 
@@ -301,7 +301,7 @@ script:
         -t ${TRAVIS_REPO_SLUG}
         -f ${HOME}/docker/Dockerfile.travis
         ${HOME}/docker/
-    && rm -rf ${HOME}/ccache/*
+    && rm -rf ${HOME}/ccache/build_${CC}_${BUILD_TYPE}
     && CON=$(docker run -d ${TRAVIS_REPO_SLUG} /bin/bash)
     && docker cp ${CON}:/root/.ccache ${HOME}/ccache/build_${CC}_${BUILD_TYPE}/
     && docker cp ${CON}:/work/build_${BUILD_TYPE}_${CC}/tmp/coverage.info
