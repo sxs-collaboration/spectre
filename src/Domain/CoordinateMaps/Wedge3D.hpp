@@ -240,10 +240,16 @@ class Wedge3D {
    * somewhere in between
    * \param with_equiangular_map Determines whether to apply a tangent function
    * mapping to the logical coordinates (for `true`) or not (for `false`).
-   * \param halves_to_use Determines whether to use the logical xi
-   * coordinates in the [0,1] interval (value of `UpperOnly`) of the full wedge,
-   * the coordinates in the [-1,0] interval (value of `LowerOnly`) of the
-   * full wedge, or the full wedge entirely (value of `Both`). Half wedges are
+   * \param halves_to_use Determines whether to construct a full wedge or only
+   * half a wedge. If constructing only half a wedge, the resulting shape has a
+   * face normal to the x direction (assuming default OrientationMap). If
+   * constructing half a wedge, an intermediate affine map is applied to the
+   * logical xi coordinate such that the interval [-1,1] is mapped to the
+   * corresponding logical half of the wedge. For example, if `UpperOnly` is
+   * specified, [-1,1] is mapped to [0,1], and if `LowerOnly` is specified,
+   * [-1,1] is mapped to [-1,0]. The case of `Both` means a full wedge, with no
+   * intermediate map applied. In all cases, the logical points returned by the
+   * inverse map will lie in the range [-1,1] in each dimension. Half wedges are
    * currently only useful in constructing domains for binary systems.
    * \param with_logarithmic_map Determines whether to apply an exponential
    * function mapping to the "sphere factor", the effect of which is to
