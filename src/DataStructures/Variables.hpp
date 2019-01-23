@@ -183,20 +183,20 @@ class Variables<tmpl::list<Tags...>> {
                 db::remove_all_prefixes<Tags>>::value...>> = nullptr>
   explicit Variables(Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept;
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all_v<
-                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
-                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+            Requires<tmpl2::flat_all_v<std::is_same<
+                db::remove_all_prefixes<WrappedTags>,
+                db::remove_all_prefixes<Tags>>::value...>> = nullptr>
   Variables& operator=(Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept;
 
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all_v<
-                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
-                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+            Requires<tmpl2::flat_all_v<std::is_same<
+                db::remove_all_prefixes<WrappedTags>,
+                db::remove_all_prefixes<Tags>>::value...>> = nullptr>
   explicit Variables(const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept;
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all_v<
-                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
-                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+            Requires<tmpl2::flat_all_v<std::is_same<
+                db::remove_all_prefixes<WrappedTags>,
+                db::remove_all_prefixes<Tags>>::value...>> = nullptr>
   Variables& operator=(
       const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept;
   // @}
@@ -234,9 +234,7 @@ class Variables<tmpl::list<Tags...>> {
   /// Needed because of limitations and inconsistency between compiler
   /// implementations of friend function templates with auto return type of
   /// class templates
-  const auto& get_variable_data() const noexcept {
-    return variable_data_;
-  }
+  const auto& get_variable_data() const noexcept { return variable_data_; }
   /// \endcond
 
   // clang-tidy: redundant-declaration
@@ -403,8 +401,7 @@ class Variables<tmpl::list<Tags...>> {
   //@}
 
   static SPECTRE_ALWAYS_INLINE void add_reference_variable_data(
-      tmpl::list<> /*unused*/, const size_t /*variable_offset*/ = 0) noexcept {
-  }
+      tmpl::list<> /*unused*/, const size_t /*variable_offset*/ = 0) noexcept {}
 
   template <
       typename TagToAdd, typename... Rest,
@@ -548,9 +545,10 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 }
 
 template <typename... Tags>
-template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
-                                       db::remove_all_prefixes<WrappedTags>,
-                                       db::remove_all_prefixes<Tags>>...>>>
+template <typename... WrappedTags,
+          Requires<tmpl2::flat_all_v<
+              std::is_same<db::remove_all_prefixes<WrappedTags>,
+                           db::remove_all_prefixes<Tags>>::value...>>>
 Variables<tmpl::list<Tags...>>::Variables(
     const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept
     : size_(rhs.size_), number_of_grid_points_(rhs.number_of_grid_points()) {
@@ -567,9 +565,10 @@ Variables<tmpl::list<Tags...>>::Variables(
 }
 
 template <typename... Tags>
-template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
-                                       db::remove_all_prefixes<WrappedTags>,
-                                       db::remove_all_prefixes<Tags>>...>>>
+template <typename... WrappedTags,
+          Requires<tmpl2::flat_all_v<
+              std::is_same<db::remove_all_prefixes<WrappedTags>,
+                           db::remove_all_prefixes<Tags>>::value...>>>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
   size_ = rhs.size_;
@@ -603,9 +602,10 @@ Variables<tmpl::list<Tags...>>::Variables(
       reference_variable_data_(std::move(rhs.reference_variable_data_)) {}
 
 template <typename... Tags>
-template <typename... WrappedTags, Requires<tmpl2::flat_all_v<cpp17::is_same_v<
-                                       db::remove_all_prefixes<WrappedTags>,
-                                       db::remove_all_prefixes<Tags>>...>>>
+template <typename... WrappedTags,
+          Requires<tmpl2::flat_all_v<
+              std::is_same<db::remove_all_prefixes<WrappedTags>,
+                           db::remove_all_prefixes<Tags>>::value...>>>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept {
   variable_data_impl_ = std::move(rhs.variable_data_impl_);
