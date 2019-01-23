@@ -103,14 +103,20 @@ struct Gmres {
    *   * `LinearSolver::Tags::IterationId`
    *   * `Tags::Next<LinearSolver::Tags::IterationId>`
    *   * `initial_fields_tag`
-   *   * `operand_tag`
-   *   * `operator_tag`
    *   * `orthogonalization_iteration_id_tag`
    *   * `basis_history_tag`
    *   * `residual_magnitude_tag`
    *   * `LinearSolver::Tags::HasConverged`
    * - Removes: nothing
-   * - Modifies: nothing
+   * - Modifies:
+   *   * `operand_tag`
+   *
+   * \note The `operand_tag` must already be present in the DataBox and is set
+   * to its initial value here. It is typically added to the DataBox by the
+   * system, which uses it to compute the `operator_tag` in each step. Also the
+   * `operator_tag` is typically added to the DataBox by the system, but does
+   * not need to be initialized until it is computed for the first time in the
+   * first step of the algorithm.
    */
   using tags = gmres_detail::InitializeElement<Metavariables>;
 

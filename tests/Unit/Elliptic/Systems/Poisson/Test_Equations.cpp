@@ -50,10 +50,11 @@ void test_first_order_operator_action(db::DataBox<DbTagsList>&& domain_box) {
 
   const Poisson::Solutions::ProductOfSinusoids<Dim> solution(
       make_array<Dim>(1.));
-  const auto field_variables = solution.field_variables(inertial_coords);
+  const auto auxiliary_field =
+      get<Poisson::AuxiliaryField<Dim>>(solution.variables(
+          inertial_coords,
+          tmpl::list<Poisson::Field, Poisson::AuxiliaryField<Dim>>{}));
 
-  const auto& auxiliary_field =
-      get<Poisson::AuxiliaryField<Dim>>(field_variables);
   auto grad_field = make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(
       inertial_coords, 0.);
   for (size_t d = 0; d < Dim; d++) {
@@ -86,7 +87,10 @@ void test_first_order_operator_action(db::DataBox<DbTagsList>&& domain_box) {
       typename Poisson::ComputeFirstOrderOperatorAction<Dim>::argument_tags>(
       Poisson::ComputeFirstOrderOperatorAction<Dim>{}, make_not_null(&box));
 
-  const auto source_variables = solution.source_variables(inertial_coords);
+  const auto auxiliary_source =
+      get<Tags::Source<Poisson::AuxiliaryField<Dim>>>(solution.variables(
+          inertial_coords,
+          tmpl::list<Tags::Source<Poisson::AuxiliaryField<Dim>>>{}));
 
   // Field volume contribution should be -div(v), which is not exactly the
   // source f because of discretization error
@@ -109,7 +113,7 @@ void test_first_order_operator_action(db::DataBox<DbTagsList>&& domain_box) {
   CHECK_ITERABLE_APPROX(
       get<LinearSolver::Tags::OperatorAppliedTo<
           LinearSolver::Tags::Operand<Poisson::AuxiliaryField<Dim>>>>(box),
-      get<Tags::Source<Poisson::AuxiliaryField<Dim>>>(source_variables));
+      auxiliary_source);
 }
 
 template <size_t Dim, typename DbTagsList>
@@ -123,7 +127,9 @@ void test_first_order_normal_dot_fluxes(
 
   const Poisson::Solutions::ProductOfSinusoids<Dim> solution(
       make_array<Dim>(1.));
-  const auto field_variables = solution.field_variables(inertial_coords);
+  const auto field_variables = solution.variables(
+      inertial_coords,
+      tmpl::list<Poisson::Field, Poisson::AuxiliaryField<Dim>>{});
 
   // Any numbers are fine, doesn't have anything to do with unit normal
   tnsr::i<DataVector, Dim, Frame::Inertial> unit_normal(num_points, 0.0);
@@ -181,7 +187,9 @@ void test_first_order_internal_penalty_flux(
 
   const Poisson::Solutions::ProductOfSinusoids<Dim> solution(
       make_array<Dim>(1.));
-  const auto field_variables = solution.field_variables(inertial_coords);
+  const auto field_variables = solution.variables(
+      inertial_coords,
+      tmpl::list<Poisson::Field, Poisson::AuxiliaryField<Dim>>{});
 
   // Any numbers are fine, doesn't have anything to do with unit normal
   tnsr::i<DataVector, Dim, Frame::Inertial> unit_normal(num_points, 0.0);

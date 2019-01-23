@@ -40,8 +40,6 @@ struct InitializeElement {
       db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
   using operand_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-  using operator_tag =
-      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
   using orthogonalization_iteration_id_tag =
       db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                          LinearSolver::Tags::IterationId>;
@@ -54,9 +52,8 @@ struct InitializeElement {
   using simple_tags =
       db::AddSimpleTags<LinearSolver::Tags::IterationId,
                         ::Tags::Next<LinearSolver::Tags::IterationId>,
-                        initial_fields_tag, operand_tag, operator_tag,
-                        orthogonalization_iteration_id_tag, basis_history_tag,
-                        residual_magnitude_tag,
+                        initial_fields_tag, orthogonalization_iteration_id_tag,
+                        basis_history_tag, residual_magnitude_tag,
                         LinearSolver::Tags::HasConverged>;
   using compute_tags = db::AddComputeTags<>;
 
@@ -76,7 +73,12 @@ struct InitializeElement {
         Parallel::get_parallel_component<ResidualMonitor<Metavariables>>(
             cache));
 
-    db::item_type<operand_tag> q = b - Ax;
+    db::mutate<operand_tag>(make_not_null(&box), [
+      &b, &Ax
+    ](const gsl::not_null<db::item_type<operand_tag>*> q) noexcept {
+      *q = b - Ax;
+    });
+    const auto& q = get<operand_tag>(box);
 
     Parallel::contribute_to_reduction<
         gmres_detail::InitializeResidualMagnitude<ParallelComponent>>(
@@ -88,13 +90,11 @@ struct InitializeElement {
             cache));
 
     db::item_type<initial_fields_tag> x0(get<fields_tag>(box));
-    auto Aq = make_with_value<db::item_type<operator_tag>>(
-        q, std::numeric_limits<double>::signaling_NaN());
     db::item_type<basis_history_tag> basis_history{};
 
     return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
         std::move(box), IterationId{0}, IterationId{1}, std::move(x0),
-        std::move(q), std::move(Aq), IterationId{0}, std::move(basis_history),
+        IterationId{0}, std::move(basis_history),
         std::numeric_limits<double>::signaling_NaN(), false);
   }
 };

@@ -32,16 +32,16 @@ namespace Initialization {
  * `Elliptic::Initialization::System`) so we don't have to apply the operator to
  * the initial guess.
  *
+ * With:
+ * - `sources_tag` = `db::add_tag_prefix<Tags::Source, system::fields_tag>`
+ *
  * Uses:
  * - Metavariables:
  *   - `linear_solver`
- *   - `analytic_solution_tag`
  * - System:
- *   - `volume_dim`
  *   - `fields_tag`
  * - DataBox:
- *   - `Tags::Mesh<volume_dim>`
- *   - `Tags::Coordinates<volume_dim, Frame::Inertial>`
+ *   - `sources_tag`
  *
  * DataBox:
  * - Adds:
@@ -67,22 +67,15 @@ struct LinearSolver {
       const Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index,
       const ParallelComponent* const parallel_component_meta) noexcept {
-    const auto& inertial_coords =
-        get<Tags::Coordinates<system::volume_dim, Frame::Inertial>>(box);
-    const auto num_grid_points =
-        get<Tags::Mesh<system::volume_dim>>(box).number_of_grid_points();
-
-    db::item_type<sources_tag> sources(num_grid_points, 0.);
-    sources.assign_subset(
-        Parallel::get<typename Metavariables::analytic_solution_tag>(cache)
-            .source_variables(inertial_coords));
+    const auto& sources = get<sources_tag>(box);
 
     // Starting with x_0 = 0 initial guess, so Ax_0=0
-    db::item_type<fields_operator_tag> fields_operator(num_grid_points, 0.);
+    auto fields_operator =
+        make_with_value<db::item_type<fields_operator_tag>>(sources, 0.);
 
-    return linear_solver_tags::initialize(
-        std::move(box), cache, array_index, parallel_component_meta,
-        std::move(sources), std::move(fields_operator));
+    return linear_solver_tags::initialize(std::move(box), cache, array_index,
+                                          parallel_component_meta, sources,
+                                          std::move(fields_operator));
   }
 };
 }  // namespace Initialization

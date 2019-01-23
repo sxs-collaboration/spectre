@@ -123,6 +123,27 @@ void FirstOrderInternalPenaltyFlux<Dim>::operator()(
       penalty * (get(field_interior) - get(field_exterior));
 }
 
+template <size_t Dim>
+void FirstOrderInternalPenaltyFlux<Dim>::compute_dirichlet_boundary(
+    const gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+        numerical_flux_for_auxiliary_field,
+    const Scalar<DataVector>& dirichlet_field,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
+    const noexcept {
+  // Need polynomial degress and element size to compute this dynamically
+  const double penalty = penalty_parameter_;
+
+  // The minus sign is to cancel the one in `lift_flux`
+  for (size_t d = 0; d < Dim; d++) {
+    numerical_flux_for_auxiliary_field->get(d) =
+        -interface_unit_normal.get(d) * get(dirichlet_field);
+  }
+
+  // The minus sign in the equation is canceled by the one in `lift_flux`
+  numerical_flux_for_field->get() = 2. * penalty * get(dirichlet_field);
+}
+
 }  // namespace Poisson
 
 // Instantiate needed gradient and divergence templates

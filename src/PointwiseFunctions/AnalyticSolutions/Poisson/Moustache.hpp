@@ -59,12 +59,35 @@ class Moustache {
   Moustache& operator=(Moustache&&) noexcept = default;
   ~Moustache() noexcept = default;
 
-  auto field_variables(const tnsr::I<DataVector, Dim>& x) const noexcept
-      -> tuples::TaggedTuple<Field, AuxiliaryField<Dim>>;
+  // @{
+  /// Retrieve variable at coordinates `x`
+  auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+                 tmpl::list<Field> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<Field>;
 
-  auto source_variables(const tnsr::I<DataVector, Dim>& x) const noexcept
-      -> tuples::TaggedTuple<::Tags::Source<Field>,
-                             ::Tags::Source<AuxiliaryField<Dim>>>;
+  auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+                 tmpl::list<AuxiliaryField<Dim>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<AuxiliaryField<Dim>>;
+
+  auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+                 tmpl::list<::Tags::Source<Field>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<::Tags::Source<Field>>;
+
+  auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+                 tmpl::list<::Tags::Source<AuxiliaryField<Dim>>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<::Tags::Source<AuxiliaryField<Dim>>>;
+  // @}
+
+  /// Retrieve a collection of variables at coordinates `x`
+  template <typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+      tmpl::list<Tags...> /*meta*/) const noexcept {
+    static_assert(sizeof...(Tags) > 1,
+                  "The generic template will recurse infinitely if only one "
+                  "tag is being retrieved.");
+    return {tuples::get<Tags>(variables(x, tmpl::list<Tags>{}))...};
+  }
 
   // clang-tidy: no pass by reference
   void pup(PUP::er& p) noexcept;  // NOLINT

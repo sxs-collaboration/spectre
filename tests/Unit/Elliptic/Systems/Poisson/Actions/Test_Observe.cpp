@@ -96,8 +96,9 @@ struct MockObserverWriterComponent {
 };
 
 struct AnalyticSolution {
-  tuples::TaggedTuple<Poisson::Field> field_variables(
-      const tnsr::I<DataVector, 2>& x) const noexcept {
+  tuples::TaggedTuple<Poisson::Field> variables(
+      const tnsr::I<DataVector, 2>& x,
+      tmpl::list<Poisson::Field> /*meta*/) const noexcept {
     return {Scalar<DataVector>(2. * get<0>(x) + get<1>(x))};
   }
   // clang-tidy: do not use references
