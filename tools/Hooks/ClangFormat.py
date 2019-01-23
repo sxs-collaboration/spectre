@@ -74,9 +74,10 @@ if output not in ['\n', '', 'no modified files to format\n',
     print("\nWARNING:\n"
           "ClangFormat found differences. The diff output has been written to"
           "\n'%s'\n"
-          "You can apply the patch as is using:\n"
-          "git apply %s\n"
-          "then staging the modified files and amending your original "
+          "You can apply the patch as-is using the following two commands:\n"
+          "  cd @CMAKE_SOURCE_DIR@\n"
+          "  git apply %s\n"
+          "and then staging the modified files and amending your original "
           "commit.\n" %
           (output_file_name, output_file_name))
     sys.exit(1)
