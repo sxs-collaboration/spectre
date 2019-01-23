@@ -462,6 +462,25 @@ void test_interpolation(
         const double th = (2.0 * ran(gen) - 1.0) * M_PI;
         const double ph = 2.0 * ran(gen) * M_PI;
         points.emplace_back(std::array<double, 2>{{th, ph}});
+
+        // For the next point, increase ph by 2pi so it is out of range.
+        // Should be equivalent to the first point.
+        points.emplace_back(std::array<double, 2>{{th, ph + 2.0 * M_PI}});
+
+        // For the next point, decrease ph by 2pi so it is out of range.
+        // Should be equivalent to the first point.
+        points.emplace_back(std::array<double, 2>{{th, ph - 2.0 * M_PI}});
+
+        // For the next point, use negative theta so it is out of range,
+        // and also add pi to phi.
+        // Should be equivalent to the first point.
+        points.emplace_back(std::array<double, 2>{{-th, ph + M_PI}});
+
+        // For the next point, theta -> 2pi - theta so that theta is out of
+        // range.  Also add pi to Phi.
+        // Should be equivalent to the first point.
+        points.emplace_back(
+            std::array<double, 2>{{2.0 * M_PI - th, ph + M_PI}});
       }
     }
 
@@ -482,6 +501,16 @@ void test_interpolation(
       func.func(&uintanal, 1, s, {points[s][0]}, {points[s][1]});
       CHECK(uintanal[s] == approx(uintPhys[s]));
       CHECK(uintanal[s] == approx(uintSpec[s]));
+    }
+
+    // Test for angles out of range.
+    for (size_t s = 0; s < uintanal.size() / 5; ++s) {
+      // All answers should agree in each group of five, since the values
+      // of all the out-of-range angles should represent the same point.
+      CHECK(uintPhys[5 * s + 1] == approx(uintPhys[5 * s]));
+      CHECK(uintPhys[5 * s + 2] == approx(uintPhys[5 * s]));
+      CHECK(uintPhys[5 * s + 3] == approx(uintPhys[5 * s]));
+      CHECK(uintPhys[5 * s + 4] == approx(uintPhys[5 * s]));
     }
 
     // Tests default values of stride and offset.
