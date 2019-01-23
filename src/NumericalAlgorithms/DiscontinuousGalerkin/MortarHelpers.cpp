@@ -20,6 +20,12 @@ Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
                       const Mesh<Dim>& face_mesh2) noexcept {
   Index<Dim> mortar_extents{};
   for (size_t i = 0; i < Dim; ++i) {
+    ASSERT(
+        face_mesh1.basis(i) == Spectral::Basis::Legendre and
+            face_mesh2.basis(i) == Spectral::Basis::Legendre and
+            face_mesh1.quadrature(i) == Spectral::Quadrature::GaussLobatto and
+            face_mesh2.quadrature(i) == Spectral::Quadrature::GaussLobatto,
+        "Only LGL meshes are supported for element faces so far.");
     mortar_extents[i] = std::max(face_mesh1.extents(i), face_mesh2.extents(i));
   }
   return {mortar_extents.indices(), Spectral::Basis::Legendre,
