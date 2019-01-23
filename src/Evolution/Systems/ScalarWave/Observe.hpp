@@ -44,8 +44,6 @@ using reduction_datums =
  * \brief Temporary action for observing volume and reduction data
  *
  * A few notes:
- * - Observation frequency is currently hard-coded and must manually be updated.
- *   Look for `time_by_timestep_value` to update.
  * - Writes the solution and error in \f$\Psi, \Pi\f$, and \f$\Phi_i\f$ to disk
  *   as volume data.
  * - The RMS error of \f$\Psi\f$ and \f$\Pi\f$ are written to disk.
