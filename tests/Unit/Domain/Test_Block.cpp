@@ -22,6 +22,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace {
 template <size_t Dim>
 void test_block() {
   PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Grid,
@@ -55,13 +56,12 @@ void test_block() {
   const Block<Dim, Frame::Grid> block_copy(identity_map.get_clone(), 7, {});
   test_move_semantics(std::move(block), block_copy);
 }
+}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Block.Identity", "[Domain][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
   test_block<1>();
   test_block<2>();
-}
 
-SPECTRE_TEST_CASE("Unit.Domain.Block.Neighbors", "[Domain][Unit]") {
   // Create DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>
 
   // Each BlockNeighbor is an id and an OrientationMap:
