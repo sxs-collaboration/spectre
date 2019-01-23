@@ -894,51 +894,68 @@ template <size_t N, typename DataType = DataVector>
 using TempScalar = TempTensor<N, Scalar<DataType>>;
 
 // Rank 1
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using Tempa = TempTensor<N, tnsr::a<DataVector, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using TempA = TempTensor<N, tnsr::A<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Tempa = TempTensor<N, tnsr::a<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempA = TempTensor<N, tnsr::A<DataType, SpatialDim, Fr>>;
 
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using Tempi = TempTensor<N, tnsr::i<DataVector, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using TempI = TempTensor<N, tnsr::I<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Tempi = TempTensor<N, tnsr::i<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempI = TempTensor<N, tnsr::I<DataType, SpatialDim, Fr>>;
 
 // Rank 2
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using Tempab = TempTensor<N, tnsr::ab<DataVector, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using TempaB = TempTensor<N, tnsr::aB<DataVector, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using TempAb = TempTensor<N, tnsr::Ab<DataVector, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using TempAB = TempTensor<N, tnsr::AB<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Tempab = TempTensor<N, tnsr::ab<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempaB = TempTensor<N, tnsr::aB<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempAb = TempTensor<N, tnsr::Ab<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempAB = TempTensor<N, tnsr::AB<DataType, SpatialDim, Fr>>;
 
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using Tempij = TempTensor<N, tnsr::ij<DataVector, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using TempiJ = TempTensor<N, tnsr::iJ<DataVector, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using TempIj = TempTensor<N, tnsr::Ij<DataVector, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using TempIJ = TempTensor<N, tnsr::IJ<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Tempij = TempTensor<N, tnsr::ij<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempiJ = TempTensor<N, tnsr::iJ<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempIj = TempTensor<N, tnsr::Ij<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempIJ = TempTensor<N, tnsr::IJ<DataType, SpatialDim, Fr>>;
 
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using Tempia = TempTensor<N, tnsr::ia<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Tempia = TempTensor<N, tnsr::ia<DataType, SpatialDim, Fr>>;
 
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using Tempaa = TempTensor<N, tnsr::aa<DataVector, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using TempAA = TempTensor<N, tnsr::AA<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Tempaa = TempTensor<N, tnsr::aa<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempAA = TempTensor<N, tnsr::AA<DataType, SpatialDim, Fr>>;
 
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using Tempii = TempTensor<N, tnsr::ii<DataVector, SpatialDim, Fr>>;
-template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
-using TempII = TempTensor<N, tnsr::II<DataVector, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Tempii = TempTensor<N, tnsr::ii<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using TempII = TempTensor<N, tnsr::II<DataType, SpatialDim, Fr>>;
 
 // Rank 3
 template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
-  typename DataType = DataVector>
+          typename DataType = DataVector>
 using Tempijj = TempTensor<N, tnsr::ijj<DataType, SpatialDim, Fr>>;
 
 // @}
