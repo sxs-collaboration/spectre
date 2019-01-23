@@ -76,11 +76,14 @@ template <typename... Ts>
 struct reduction_data_tag_type<tmpl::list<Ts...>> {
   // The first argument is for Time, the others are for
   // the list of scalars being integrated.
-  using type = tmpl::list<observers::Tags::ReductionData<
+  using type = observers::Tags::ReductionData<
       Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
       Parallel::ReductionDatum<typename Ts::type::type::value_type,
-                               funcl::AssertEqual<>>...>>;
+                               funcl::AssertEqual<>>...>;
 };
+
+template <typename T>
+using reduction_data_tag_type_t = typename reduction_data_tag_type<T>::type;
 
 template <typename List, size_t... Is>
 auto make_reduction_data(const std::array<double, sizeof...(Is)>& a,
@@ -110,6 +113,8 @@ auto make_reduction_data(const std::array<double, N>& a) noexcept {
 template <typename TagsToObserve, typename InterpolationTargetTag,
           typename Frame>
 struct ObserveSurfaceIntegrals {
+  using reduction_data_tags = detail::reduction_data_tag_type_t<TagsToObserve>;
+
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,
