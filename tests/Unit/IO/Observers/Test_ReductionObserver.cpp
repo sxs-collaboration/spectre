@@ -28,22 +28,21 @@
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/FileSystem.hpp"
-#include "Utilities/Functional.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/IO/Observers/ObserverHelpers.hpp"
 
-// NOLINTNEXTLINE(google-build-using-namespace)
-using namespace TestObservers_detail;
+namespace helpers = TestObservers_detail;
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
+  using Metavariables = helpers::Metavariables;
   using TupleOfMockDistributedObjects =
       typename ActionTesting::MockRuntimeSystem<
           Metavariables>::TupleOfMockDistributedObjects;
-  using obs_component = observer_component<Metavariables>;
-  using obs_writer = observer_writer_component<Metavariables>;
-  using element_comp = element_component<Metavariables>;
+  using obs_component = helpers::observer_component<Metavariables>;
+  using obs_writer = helpers::observer_writer_component<Metavariables>;
+  using element_comp = helpers::element_component<Metavariables>;
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using ObserverMockDistributedObjectsTag =
@@ -102,12 +101,6 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
     file_system::rm(h5_file_name, true);
   }
 
-  using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,
-                                         funcl::Sqrt<funcl::Divides<>>,
-                                         std::index_sequence<1>>;
-  using ReData = Parallel::ReductionData<
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<size_t, funcl::Plus<>>, Redum, Redum>;
   const auto make_fake_reduction_data = [](
       const observers::ArrayComponentId& id, const double time) noexcept {
     const auto hashed_id =
@@ -115,10 +108,10 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
     constexpr size_t number_of_grid_points = 4;
     const double error0 = 1.0e-10 * hashed_id + time;
     const double error1 = 1.0e-12 * hashed_id + 2 * time;
-    return ReData{time, number_of_grid_points, error0, error1};
+    return helpers::reduction_data{time, number_of_grid_points, error0, error1};
   };
 
-  const TimeId time(3);
+  const helpers::TimeId time(3);
   const std::vector<std::string> legend{"Time", "NumberOfPoints", "Error0",
                                         "Error1"};
   // Test passing reduction data.
@@ -147,9 +140,10 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
     CHECK(written_legend == legend);
     const auto expected =
         alg::accumulate(
-            element_ids, ReData(time.value(), 0, 0.0, 0.0),
-            [&time, &make_fake_reduction_data ](
-                ReData state, const ElementId<2>& id) noexcept {
+            element_ids, helpers::reduction_data(time.value(), 0, 0.0, 0.0),
+            [
+              &time, &make_fake_reduction_data
+            ](helpers::reduction_data state, const ElementId<2>& id) noexcept {
               const observers::ArrayComponentId array_id(
                   std::add_pointer_t<element_comp>{nullptr},
                   Parallel::ArrayIndex<ElementIndex<2>>{ElementIndex<2>{id}});

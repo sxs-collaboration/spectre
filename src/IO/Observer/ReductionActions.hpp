@@ -56,6 +56,19 @@ struct ContributeReductionDataToWriter;
  * of names of the quantities being reduced (e.g. `{"Time", "L1ErrorDensity",
  * "L2ErrorDensity"}`), and the `Parallel::ReductionData` that holds the
  * `ReductionDatums` containing info on how to do the reduction.
+ *
+ * The observer components need to know all expected reduction data types by
+ * compile-time, so they rely on the
+ * `Metavariables::observed_reduction_data_tags` alias to collect them in one
+ * place. To this end, each Action that contributes reduction data must expose
+ * the type alias as:
+ *
+ * \snippet ObserverHelpers.hpp make_reduction_data_tags
+ *
+ * Then, in the `Metavariables` collect them from all observing Actions like
+ * this:
+ *
+ * \snippet Test_Observe.cpp collect_reduction_data_tags
  */
 struct ContributeReductionData {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,

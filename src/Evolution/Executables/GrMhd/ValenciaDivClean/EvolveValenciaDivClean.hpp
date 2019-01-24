@@ -104,9 +104,8 @@ struct EvolutionMetavars {
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
 
-  using reduction_data_tags =
-      observers::get_reduction_data_tags_from_observing_actions<
-          tmpl::list<grmhd::ValenciaDivClean::Actions::Observe>>;
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      tmpl::list<grmhd::ValenciaDivClean::Actions::Observe>>;
 
   using compute_rhs = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,

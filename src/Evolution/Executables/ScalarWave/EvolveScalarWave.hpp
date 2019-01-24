@@ -16,10 +16,9 @@
 #include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
 #include "Evolution/Systems/ScalarWave/Observe.hpp"    // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/System.hpp"
-#include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
-#include "IO/Observer/Helpers.hpp"
+#include "IO/Observer/Actions.hpp"            // IWYU pragma: keep
+#include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
-#include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
@@ -80,9 +79,8 @@ struct EvolutionMetavars {
                      local_time_stepping, LtsTimeStepper, TimeStepper>>>;
   using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
 
-  using reduction_data_tags =
-      observers::get_reduction_data_tags_from_observing_actions<
-          tmpl::list<ScalarWave::Actions::Observe>>;
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      tmpl::list<ScalarWave::Actions::Observe>>;
 
   using step_choosers =
       tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,

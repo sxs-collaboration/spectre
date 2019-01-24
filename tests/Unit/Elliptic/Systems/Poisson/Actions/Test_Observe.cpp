@@ -24,6 +24,7 @@
 #include "IO/H5/File.hpp"
 #include "IO/H5/VolumeData.hpp"
 #include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Helpers.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
@@ -31,10 +32,8 @@
 #include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/Reduction.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
-#include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -116,14 +115,10 @@ struct Metavariables {
   using analytic_solution_tag = AnalyticSolutionTag;
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
 
-  // This has to be kept in sync with
-  // `Elliptic/Systems/Poisson/Actions/Observe.hpp` for now
-  using reduction_data_tags = tmpl::list<observers::Tags::ReductionData<
-      Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<size_t, funcl::Plus<>>,
-      Parallel::ReductionDatum<double, funcl::Plus<>,
-                               funcl::Sqrt<funcl::Divides<>>,
-                               std::index_sequence<1>>>>;
+  /// [collect_reduction_data_tags]
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      tmpl::list<Poisson::Actions::Observe>>;
+  /// [collect_reduction_data_tags]
 
   enum class Phase { Initialize, Exit };
 };

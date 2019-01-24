@@ -10,12 +10,14 @@
 #include "Elliptic/Systems/Poisson/Tags.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
+#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/Reduction.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/MakeString.hpp"
@@ -60,6 +62,19 @@ namespace Actions {
  * only the desired quantities.
  */
 struct Observe {
+ private:
+  using observed_reduction_data = Parallel::ReductionData<
+      Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
+      Parallel::ReductionDatum<size_t, funcl::Plus<>>,
+      Parallel::ReductionDatum<double, funcl::Plus<>,
+                               funcl::Sqrt<funcl::Divides<>>,
+                               std::index_sequence<1>>>;
+
+ public:
+  // Compile-time interface for observers
+  using observed_reduction_data_tags =
+      observers::make_reduction_data_tags<tmpl::list<observed_reduction_data>>;
+
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
@@ -124,12 +139,6 @@ struct Observe {
         std::move(components), mesh.extents());
 
     // Send data to reduction observer
-    using observed_reduction_data = Parallel::ReductionData<
-        Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
-        Parallel::ReductionDatum<size_t, funcl::Plus<>>,
-        Parallel::ReductionDatum<double, funcl::Plus<>,
-                                 funcl::Sqrt<funcl::Divides<>>,
-                                 std::index_sequence<1>>>;
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer, observers::ObservationId(iteration_id),
         std::string{"/element_data"},

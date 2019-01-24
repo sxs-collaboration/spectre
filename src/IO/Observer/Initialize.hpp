@@ -21,6 +21,10 @@ using reduction_data_to_reduction_names = typename Tag::names_tag;
 }  // namespace detail
 /*!
  * \brief Initializes the DataBox on the observer parallel component
+ *
+ * Uses:
+ * - Metavariables:
+ *   - `observed_reduction_data_tags` (see ContributeReductionData)
  */
 template <class Metavariables>
 struct Initialize {
@@ -28,9 +32,9 @@ struct Initialize {
       db::AddSimpleTags<Tags::NumberOfEvents, Tags::ReductionArrayComponentIds,
                         Tags::VolumeArrayComponentIds, Tags::TensorData,
                         Tags::ReductionObserversContributed>,
-      typename Metavariables::reduction_data_tags,
+      typename Metavariables::observed_reduction_data_tags,
       tmpl::transform<
-          typename Metavariables::reduction_data_tags,
+          typename Metavariables::observed_reduction_data_tags,
           tmpl::bind<detail::reduction_data_to_reduction_names, tmpl::_1>>>;
   using compute_tags = db::AddComputeTags<>;
 
@@ -44,7 +48,7 @@ struct Initialize {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return helper(typename Metavariables::reduction_data_tags{});
+    return helper(typename Metavariables::observed_reduction_data_tags{});
   }
 
  private:
@@ -65,15 +69,19 @@ struct Initialize {
 /*!
  * \brief Initializes the DataBox of the observer parallel component that writes
  * to disk.
+ *
+ * Uses:
+ * - Metavariables:
+ *   - `observed_reduction_data_tags` (see ContributeReductionData)
  */
 template <class Metavariables>
 struct InitializeWriter {
   using simple_tags = tmpl::append<
       db::AddSimpleTags<Tags::TensorData, Tags::VolumeObserversContributed,
                         Tags::ReductionObserversContributed, Tags::H5FileLock>,
-      typename Metavariables::reduction_data_tags,
+      typename Metavariables::observed_reduction_data_tags,
       tmpl::transform<
-          typename Metavariables::reduction_data_tags,
+          typename Metavariables::observed_reduction_data_tags,
           tmpl::bind<detail::reduction_data_to_reduction_names, tmpl::_1>>>;
   using compute_tags = db::AddComputeTags<>;
 
@@ -87,7 +95,7 @@ struct InitializeWriter {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return helper(typename Metavariables::reduction_data_tags{});
+    return helper(typename Metavariables::observed_reduction_data_tags{});
   }
 
  private:

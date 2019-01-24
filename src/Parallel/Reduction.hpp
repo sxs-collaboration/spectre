@@ -81,6 +81,8 @@ struct ReductionData<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
   static_assert(sizeof...(Ts) > 0,
                 "Must be reducing at least one piece of data.");
   static constexpr size_t pack_size() noexcept { return sizeof...(Ts); }
+  using datum_list = tmpl::list<ReductionDatum<Ts, InvokeCombines, InvokeFinals,
+                                               InvokeFinalExtraArgsIndices>...>;
 
   explicit ReductionData(
       ReductionDatum<Ts, InvokeCombines, InvokeFinals,
