@@ -6,32 +6,48 @@
 #include <vector>
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
+#include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ConjugateGradient.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Main.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/NumericalAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
+#include "tests/Unit/NumericalAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"  // IWYU pragma: keep
+
+namespace helpers = LinearSolverAlgorithmTestHelpers;
+namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 
 namespace {
 
 struct Metavariables {
-  using system = DistributedLinearSolverAlgorithmTest::System;
+  using system = helpers_distributed::System;
 
   using linear_solver = LinearSolver::ConjugateGradient<Metavariables>;
 
-  using component_list = tmpl::append<
-      tmpl::list<
-          DistributedLinearSolverAlgorithmTest::ElementArray<Metavariables>>,
-      typename linear_solver::component_list>;
+  using component_list =
+      tmpl::append<tmpl::list<helpers_distributed::ElementArray<Metavariables>,
+                              observers::ObserverWriter<Metavariables>,
+                              helpers::OutputCleaner<Metavariables>>,
+                   typename linear_solver::component_list>;
   using const_global_cache_tag_list = tmpl::list<>;
+
+  using observed_reduction_data_tags =
+      observers::collect_reduction_data_tags<tmpl::list<linear_solver>>;
 
   static constexpr const char* const help{
       "Test the conjugate gradient linear solver algorithm on multiple "
       "elements"};
   static constexpr bool ignore_unrecognized_command_line_options = false;
 
-  enum class Phase { Initialization, PerformLinearSolve, TestResult, Exit };
+  enum class Phase {
+    Initialization,
+    PerformLinearSolve,
+    TestResult,
+    CleanOutput,
+    Exit
+  };
 
   static Phase determine_next_phase(
       const Phase& current_phase,
@@ -42,6 +58,8 @@ struct Metavariables {
         return Phase::PerformLinearSolve;
       case Phase::PerformLinearSolve:
         return Phase::TestResult;
+      case Phase::TestResult:
+        return Phase::CleanOutput;
       default:
         return Phase::Exit;
     }

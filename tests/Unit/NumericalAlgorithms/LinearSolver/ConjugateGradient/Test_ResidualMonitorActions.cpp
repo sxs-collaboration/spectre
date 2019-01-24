@@ -4,15 +4,19 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cmath>
+#include <cstddef>
 #include <limits>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DenseVector.hpp"
+#include "IO/Observer/ObservationId.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitor.hpp"
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitorActions.hpp"  // IWYU pragma: keep
@@ -22,6 +26,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+#include "tests/Unit/NumericalAlgorithms/LinearSolver/ResidualMonitorActionsTestHelpers.hpp"
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace Parallel {
@@ -35,6 +40,9 @@ struct UpdateFieldValues;
 struct UpdateOperand;
 }  // namespace cg_detail
 }  // namespace LinearSolver
+
+// NOLINTNEXTLINE(google-build-using-namespace)
+using namespace ResidualMonitorActionsTestHelpers;
 
 namespace {
 
@@ -62,6 +70,8 @@ using residual_monitor_tags =
 
 template <typename Metavariables>
 struct MockResidualMonitor {
+  using component_being_mocked =
+      LinearSolver::cg_detail::ResidualMonitor<Metavariables>;
   using metavariables = Metavariables;
   // We represent the singleton as an array with only one element for the action
   // testing framework
@@ -132,6 +142,7 @@ struct MockUpdateOperand {
 // This is used to receive action calls from the residual monitor
 template <typename Metavariables>
 struct MockElementArray {
+  using component_being_mocked = void;
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
@@ -155,7 +166,8 @@ struct System {
 
 struct Metavariables {
   using component_list = tmpl::list<MockResidualMonitor<Metavariables>,
-                                    MockElementArray<Metavariables>>;
+                                    MockElementArray<Metavariables>,
+                                    MockObserverWriter<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -188,6 +200,17 @@ SPECTRE_TEST_CASE(
                db::create<db::AddSimpleTags<CheckValueTag, CheckConvergedTag>>(
                    std::numeric_limits<double>::signaling_NaN(), false));
 
+  // Setup mock observer writer
+  using MockObserverObjectsTag = MockRuntimeSystem::MockDistributedObjectsTag<
+      MockObserverWriter<Metavariables>>;
+  tuples::get<MockObserverObjectsTag>(dist_objects)
+      .emplace(singleton_id,
+               db::create<observer_writer_tags>(
+                   observers::ObservationId{}, std::string{},
+                   std::vector<std::string>{},
+                   std::tuple<size_t, double>{
+                       0, std::numeric_limits<double>::signaling_NaN()}));
+
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
   // DataBox shortcuts
@@ -202,6 +225,12 @@ SPECTRE_TEST_CASE(
         .at(element_id)
         .get_databox<db::compute_databox_type<
             db::AddSimpleTags<CheckValueTag, CheckConvergedTag>>>();
+  };
+  const auto get_mock_observer_writer_box =
+      [&runner, &singleton_id]() -> decltype(auto) {
+    return runner.algorithms<MockObserverWriter<Metavariables>>()
+        .at(singleton_id)
+        .get_databox<db::compute_databox_type<observer_writer_tags>>();
   };
 
   using residual_square_tag = db::add_tag_prefix<
@@ -255,12 +284,25 @@ SPECTRE_TEST_CASE(
                                                                10.);
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
+    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
+        singleton_id);
     const auto& box = get_box();
     CHECK(db::get<residual_square_tag>(box) == 10.);
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckValueTag>(mock_element_box) == approx(10. + sqrt(10.)));
     CHECK(db::get<CheckConvergedTag>(mock_element_box) == false);
+    const auto& mock_observer_writer_box = get_mock_observer_writer_box();
+    CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
+          observers::ObservationId{LinearSolver::IterationId{0}});
+    CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
+          "/linear_residuals");
+    CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
+          std::vector<std::string>{"Iteration", "Residual"});
+    CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          0);
+    CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          approx(sqrt(10.)));
   }
 
   SECTION("Converge") {
@@ -276,11 +318,24 @@ SPECTRE_TEST_CASE(
                                                                0.);
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
+    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
+        singleton_id);
     const auto& box = get_box();
     CHECK(db::get<residual_square_tag>(box) == 0.);
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckValueTag>(mock_element_box) == 0.);
     CHECK(db::get<CheckConvergedTag>(mock_element_box) == true);
+    const auto& mock_observer_writer_box = get_mock_observer_writer_box();
+    CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
+          observers::ObservationId{LinearSolver::IterationId{0}});
+    CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
+          "/linear_residuals");
+    CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
+          std::vector<std::string>{"Iteration", "Residual"});
+    CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          0);
+    CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          approx(0.));
   }
 }

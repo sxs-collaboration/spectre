@@ -3,16 +3,20 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <cstddef>
 #include <limits>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/DenseVector.hpp"
+#include "IO/Observer/ObservationId.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ResidualMonitor.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ResidualMonitorActions.hpp"  // IWYU pragma: keep
@@ -22,6 +26,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+#include "tests/Unit/NumericalAlgorithms/LinearSolver/ResidualMonitorActionsTestHelpers.hpp"
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace Parallel {
@@ -35,6 +40,9 @@ struct OrthogonalizeOperand;
 struct NormalizeOperandAndUpdateField;
 }  // namespace gmres_detail
 }  // namespace LinearSolver
+
+// NOLINTNEXTLINE(google-build-using-namespace)
+using namespace ResidualMonitorActionsTestHelpers;
 
 namespace {
 
@@ -79,6 +87,8 @@ using residual_monitor_tags =
 
 template <typename Metavariables>
 struct MockResidualMonitor {
+  using component_being_mocked =
+      LinearSolver::gmres_detail::ResidualMonitor<Metavariables>;
   using metavariables = Metavariables;
   // We represent the singleton as an array with only one element for the action
   // testing framework
@@ -156,6 +166,7 @@ struct MockNormalizeOperandAndUpdateField {
 // This is used to receive action calls from the residual monitor
 template <typename Metavariables>
 struct MockElementArray {
+  using component_being_mocked = void;
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
@@ -179,7 +190,8 @@ struct System {
 
 struct Metavariables {
   using component_list = tmpl::list<MockResidualMonitor<Metavariables>,
-                                    MockElementArray<Metavariables>>;
+                                    MockElementArray<Metavariables>,
+                                    MockObserverWriter<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -216,6 +228,17 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
                    std::numeric_limits<double>::signaling_NaN(),
                    DenseVector<double>{}, false));
 
+  // Setup mock observer writer
+  using MockObserverObjectsTag = MockRuntimeSystem::MockDistributedObjectsTag<
+      MockObserverWriter<Metavariables>>;
+  tuples::get<MockObserverObjectsTag>(dist_objects)
+      .emplace(singleton_id,
+               db::create<observer_writer_tags>(
+                   observers::ObservationId{}, std::string{},
+                   std::vector<std::string>{},
+                   std::tuple<size_t, double>{
+                       0, std::numeric_limits<double>::signaling_NaN()}));
+
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
   // DataBox shortcuts
@@ -230,6 +253,12 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
         .at(element_id)
         .get_databox<db::compute_databox_type<db::AddSimpleTags<
             CheckValueTag, CheckVectorTag, CheckConvergedTag>>>();
+  };
+  const auto get_mock_observer_writer_box =
+      [&runner, &singleton_id]() -> decltype(auto) {
+    return runner.algorithms<MockObserverWriter<Metavariables>>()
+        .at(singleton_id)
+        .get_databox<db::compute_databox_type<observer_writer_tags>>();
   };
 
   SECTION("InitializeResidualMagnitude") {
@@ -300,6 +329,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
                            MockElementArray<Metavariables>>>(singleton_id, 4.);
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
+    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
+        singleton_id);
     const auto& box = get_box();
     // residual should be nonzero, so don't terminate
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
@@ -318,6 +349,17 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     CHECK(db::get<CheckValueTag>(mock_element_box) ==
           approx(2. + 1.1094003924504583));
     CHECK(db::get<CheckConvergedTag>(mock_element_box) == false);
+    const auto& mock_observer_writer_box = get_mock_observer_writer_box();
+    CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
+          observers::ObservationId{LinearSolver::IterationId{0}});
+    CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
+          "/linear_residuals");
+    CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
+          std::vector<std::string>{"Iteration", "Residual"});
+    CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          0);
+    CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          approx(1.1094003924504583));
   }
 
   SECTION("Converge") {
@@ -336,12 +378,14 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
                                                                1.);
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
-    runner.simple_action<
-        MockResidualMonitor<Metavariables>,
-        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
-            MockElementArray<Metavariables>>>(singleton_id, 0.);
+    runner
+        .simple_action<MockResidualMonitor<Metavariables>,
+                       LinearSolver::gmres_detail::StoreFinalOrthogonalization<
+                           MockElementArray<Metavariables>>>(singleton_id, 0.);
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
+    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
+        singleton_id);
     const auto& box = get_box();
     // H = [[1.], [0.]] and added a zero row and column
     CHECK(db::get<orthogonalization_history_tag>(box) ==
@@ -354,5 +398,16 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     CHECK_ITERABLE_APPROX(db::get<CheckVectorTag>(mock_element_box),
                           DenseVector<double>({2.}));
     CHECK(db::get<CheckConvergedTag>(mock_element_box) == true);
+    const auto& mock_observer_writer_box = get_mock_observer_writer_box();
+    CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
+          observers::ObservationId{LinearSolver::IterationId{0}});
+    CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
+          "/linear_residuals");
+    CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
+          std::vector<std::string>{"Iteration", "Residual"});
+    CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          0);
+    CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          approx(0.));
   }
 }

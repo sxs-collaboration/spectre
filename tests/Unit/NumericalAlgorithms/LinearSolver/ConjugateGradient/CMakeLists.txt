@@ -12,7 +12,7 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/LinearSolver/ConjugateGradient"
   "${LIBRARY_SOURCES}"
-  "DataStructures;LinearSolver"
+  "DataStructures;IO;LinearSolver"
   )
 
 # This code is adapted from Parallel/CMakeLists.txt
@@ -36,6 +36,7 @@ function(add_algorithm_test TEST_NAME)
     ${EXECUTABLE_NAME}
     ErrorHandling
     Informer
+    IO
     DataStructures
     LinearSolver
     ${SPECTRE_LIBRARIES}

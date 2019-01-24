@@ -104,6 +104,10 @@ struct ConjugateGradient {
    */
   using tags = cg_detail::InitializeElement<Metavariables>;
 
+  // Compile-time interface for observers
+  using observed_reduction_data_tags = observers::make_reduction_data_tags<
+      tmpl::list<cg_detail::observed_reduction_data>>;
+
   /*!
    * \brief Perform an iteration of the conjugate gradient linear solver
    *

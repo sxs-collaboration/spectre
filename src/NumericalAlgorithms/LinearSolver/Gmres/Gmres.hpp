@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "IO/Observer/Helpers.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ResidualMonitor.hpp"
@@ -119,6 +120,10 @@ struct Gmres {
    * first step of the algorithm.
    */
   using tags = gmres_detail::InitializeElement<Metavariables>;
+
+  // Compile-time interface for observers
+  using observed_reduction_data_tags = observers::make_reduction_data_tags<
+      tmpl::list<gmres_detail::observed_reduction_data>>;
 
   /*!
    * \brief Perform an iteration of the GMRES linear solver
