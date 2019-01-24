@@ -13,10 +13,11 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/ScalarWave/Actions.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
+#include "Evolution/Systems/ScalarWave/Observe.hpp"    // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/System.hpp"
-#include "IO/Observer/Actions.hpp"            // IWYU pragma: keep
+#include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
@@ -79,12 +80,9 @@ struct EvolutionMetavars {
                      local_time_stepping, LtsTimeStepper, TimeStepper>>>;
   using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
 
-  using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,
-                                         funcl::Sqrt<funcl::Divides<>>,
-                                         std::index_sequence<1>>;
-  using reduction_data_tags = tmpl::list<observers::Tags::ReductionData<
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<size_t, funcl::Plus<>>, Redum, Redum>>;
+  using reduction_data_tags =
+      observers::get_reduction_data_tags_from_observing_actions<
+          tmpl::list<ScalarWave::Actions::Observe>>;
 
   using step_choosers =
       tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,

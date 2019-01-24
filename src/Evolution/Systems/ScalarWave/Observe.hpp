@@ -12,6 +12,7 @@
 #include "Evolution/Systems/ScalarWave/Tags.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
+#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
@@ -27,8 +28,18 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace ScalarWave {
-/// %Actions specific to scalar wave evolutions.
 namespace Actions {
+
+namespace observe_detail {
+using reduction_datum = Parallel::ReductionDatum<double, funcl::Plus<>,
+                                                 funcl::Sqrt<funcl::Divides<>>,
+                                                 std::index_sequence<1>>;
+using reduction_datums =
+    tmpl::list<Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+               Parallel::ReductionDatum<size_t, funcl::Plus<>>, reduction_datum,
+               reduction_datum>;
+}  // namespace observe_detail
+
 /*!
  * \brief Temporary action for observing volume and reduction data
  *
@@ -50,6 +61,9 @@ struct Observe {
   };
 
   using const_global_cache_tags = tmpl::list<ObserveNSlabs, ObserveAtT0>;
+
+  using reduction_data_tags =
+      ::observers::make_reduction_data_tags_t<observe_detail::reduction_datums>;
 
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
@@ -137,12 +151,8 @@ struct Observe {
           std::move(components), extents);
 
       // Send data to reduction observer
-      using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,
-                                             funcl::Sqrt<funcl::Divides<>>,
-                                             std::index_sequence<1>>;
-      using ReData = Parallel::ReductionData<
-          Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-          Parallel::ReductionDatum<size_t, funcl::Plus<>>, Redum, Redum>;
+      using ReData =
+          ::observers::make_reduction_data_t<observe_detail::reduction_datums>;
       Parallel::simple_action<observers::Actions::ContributeReductionData>(
           local_observer, observers::ObservationId(time),
           std::string{"/element_data"},
