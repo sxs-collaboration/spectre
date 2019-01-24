@@ -24,7 +24,7 @@ namespace GeneralizedHarmonic {
  *
  * \details Computes the generalized-harmonic 3-index constraint,
  * \f$C_{iab} = \partial_i\psi_{ab} - \Phi_{iab},\f$ which is
- * given by Eq. (26) of http://arXiv.org/abs/gr-qc/0512093v3
+ * given by Eq. (26) of \cite Lindblom:2005qh
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::iaa<DataType, SpatialDim, Frame> three_index_constraint(
@@ -43,7 +43,7 @@ void three_index_constraint(
  * \brief Computes the generalized-harmonic gauge constraint.
  *
  * \details Computes the generalized-harmonic gauge constraint
- * [Eq. (40) of http://arXiv.org/abs/gr-qc/0512093v3],
+ * [Eq. (40) of \cite Lindblom:2005qh],
  * \f[
  * C_a = H_a + g^{ij} \Phi_{ija} + t^b \Pi_{ba}
  * - \frac{1}{2} g^i_a \psi^{bc} \Phi_{ibc}
@@ -83,7 +83,7 @@ void gauge_constraint(
  * \brief Computes the generalized-harmonic 2-index constraint.
  *
  * \details Computes the generalized-harmonic 2-index constraint
- * [Eq. (44) of https://arXiv.org/abs/gr-qc/0512093v3],
+ * [Eq. (44) of \cite Lindblom:2005qh],
  * \f{eqnarray}{
  * C_{ia} &\equiv& g^{jk}\partial_j \Phi_{ika}
  * - \frac{1}{2} g_a^j\psi^{cd}\partial_j \Phi_{icd}
@@ -143,5 +143,41 @@ void two_index_constraint(
     const Scalar<DataType>& gamma2,
     const tnsr::iaa<DataType, SpatialDim, Frame>&
         three_index_constraint) noexcept;
+// @}
+
+// @{
+/*!
+ * \brief Computes the generalized-harmonic 4-index constraint.
+ *
+ * \details Computes the independent components of the generalized-harmonic
+ * 4-index constraint. The constraint itself is given by Eq. (45) of
+ * \cite Lindblom:2005qh,
+ * \f{eqnarray}{
+ * C_{ijab} = 2 \partial_{[i}\Phi_{j]ab},
+ * \f}
+ * where \f$\Phi_{iab} = \partial_i\psi_{ab}\f$. Because the constraint is
+ * antisymmetric on the two spatial indices, here we compute and store
+ * only the independent components of \f$C_{ijab}\f$. Specifically, we
+ * compute
+ * \f{eqnarray}{
+ * D_{iab} \equiv \frac{1}{2} \epsilon_{i}{}^{jk} C_{jkab}
+ * = \epsilon_{i}{}^{jk} \partial_j \Phi_{kab},
+ * \f}
+ * where \f$\epsilon_{ijk}\f$ is the flat-space Levi-Civita symbol,
+ * which is raised and lowered with the Kronecker delta.
+ * In terms
+ * of \f$D_{iab}\f$, the full 4-index constraint is
+ * \f{eqnarray}{
+ * C_{jkab} = \epsilon^{i}{}_{jk} D_{iab}.
+ * \f}
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::iaa<DataType, SpatialDim, Frame> four_index_constraint(
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void four_index_constraint(
+    gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> constraint,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi) noexcept;
 // @}
 }  // namespace GeneralizedHarmonic

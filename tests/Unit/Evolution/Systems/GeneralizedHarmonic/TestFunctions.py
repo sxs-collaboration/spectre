@@ -196,3 +196,14 @@ def two_index_constraint(d_gauge_function, spacetime_normal_one_form,
     return constraint
 
 # End test functions for two-index constraint
+
+# Test functions for four-index constraint
+
+def four_index_constraint(d_phi):
+    e_ijk = np.zeros((3, 3, 3))
+    e_ijk[0, 1, 2] = e_ijk[1, 2, 0] = e_ijk[2, 0, 1] = 1.0
+    e_ijk[0, 2, 1] = e_ijk[2, 1, 0] = e_ijk[1, 0, 2] = -1.0
+    constraint = np.einsum("ijk,jkab->iab", e_ijk, d_phi)
+    return constraint
+
+# End test functions for four-index constraint

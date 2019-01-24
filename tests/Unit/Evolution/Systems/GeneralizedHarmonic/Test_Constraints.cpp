@@ -287,6 +287,91 @@ void test_two_index_constraint_analytic(
       make_with_value<decltype(two_index_constraint)>(x, 0.0),
       numerical_approx);
 }
+
+// Test the return-by-value four-index constraint function using random values
+template <size_t SpatialDim, typename Frame, typename DataType>
+void test_four_index_constraint_random(const DataType& used_for_size) noexcept {
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::iaa<DataType, SpatialDim, Frame> (*)(
+          const tnsr::ijaa<DataType, SpatialDim, Frame>&)>(
+          &GeneralizedHarmonic::four_index_constraint<SpatialDim, Frame,
+                                                      DataType>),
+      "TestFunctions", "four_index_constraint", {{{-10.0, 10.0}}},
+      used_for_size);
+}
+
+// Test the return-by-reference four-index constraint
+// by comparing to a time-independent analytic solution (e.g. Kerr-Schild)
+template <typename Solution>
+void test_four_index_constraint_analytic(
+    const Solution& solution, const size_t grid_size_each_dimension,
+    const std::array<double, 3>& lower_bound,
+    const std::array<double, 3>& upper_bound,
+    const double error_tolerance) noexcept {
+  // Shorter names for tags.
+  using Phi = ::GeneralizedHarmonic::Phi<3, Frame::Inertial>;
+  using VariablesTags = tmpl::list<Phi>;
+
+  // Check vs. time-independent analytic solution
+  // Set up grid
+  const size_t data_size = pow<3>(grid_size_each_dimension);
+  Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
+               Spectral::Quadrature::GaussLobatto};
+
+  using Affine = CoordinateMaps::Affine;
+  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  const auto coord_map =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+          Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
+          Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
+          Affine{-1.0, 1.0, lower_bound[2], upper_bound[2]},
+      });
+
+  // Set up coordinates
+  const auto x_logical = logical_coordinates(mesh);
+  const auto x = coord_map(x_logical);
+  // Arbitrary time for time-independent solution.
+  const double t = std::numeric_limits<double>::signaling_NaN();
+
+  // Evaluate analytic solution
+  const auto vars =
+      solution.variables(x, t, typename Solution::template tags<DataVector>{});
+  const auto& lapse = get<gr::Tags::Lapse<>>(vars);
+  const auto& d_lapse =
+      get<typename Solution::template DerivLapse<DataVector>>(vars);
+  const auto& shift = get<gr::Tags::Shift<3>>(vars);
+  const auto& d_shift =
+      get<typename Solution::template DerivShift<DataVector>>(vars);
+  const auto& spatial_metric = get<gr::Tags::SpatialMetric<3>>(vars);
+  const auto& d_spatial_metric =
+      get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
+
+  // Compute derivative d_phi numerically
+  Variables<VariablesTags> gh_vars(data_size);
+  get<Phi>(gh_vars) = GeneralizedHarmonic::phi(
+      lapse, d_lapse, shift, d_shift, spatial_metric, d_spatial_metric);
+
+  // Compute numerical derivatives of phi
+  const auto gh_derivs =
+      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::Inertial>(
+          gh_vars, mesh, coord_map.inv_jacobian(x_logical));
+  const auto& d_phi =
+      get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+
+  // Get the constraint, and check that it vanishes to error_tolerance
+  auto four_index_constraint =
+      make_with_value<tnsr::iaa<DataVector, 3, Frame::Inertial>>(
+          x, std::numeric_limits<double>::signaling_NaN());
+  GeneralizedHarmonic::four_index_constraint(
+      make_not_null(&four_index_constraint), d_phi);
+
+  Approx numerical_approx =
+      Approx::custom().epsilon(error_tolerance).scale(1.0);
+  CHECK_ITERABLE_CUSTOM_APPROX(
+      four_index_constraint,
+      make_with_value<decltype(four_index_constraint)>(x, 0.0),
+      numerical_approx);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE(
@@ -417,5 +502,38 @@ SPECTRE_TEST_CASE(
   test_two_index_constraint_random<3, Frame::Grid, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_two_index_constraint_random<3, Frame::Inertial, double>(
+      std::numeric_limits<double>::signaling_NaN());
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.Evolution.Systems.GeneralizedHarmonic.FourIndexConstraint",
+    "[Unit][Evolution]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{
+      "Evolution/Systems/GeneralizedHarmonic/"};
+
+  // Test the four-index constraint against Kerr Schild
+  const double mass = 1.4;
+  const std::array<double, 3> dimensionless_spin{{0.4, 0.3, 0.2}};
+  const std::array<double, 3> center{{0.2, 0.3, 0.4}};
+  const gr::Solutions::KerrSchild solution(mass, dimensionless_spin, center);
+
+  const size_t grid_size = 8;
+  const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
+  const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
+
+  // Note: looser numerical tolerance because this check
+  // uses numerical derivatives
+  test_four_index_constraint_analytic(
+      solution, grid_size, lower_bound, upper_bound,
+      std::numeric_limits<double>::epsilon() * 1.e6);
+
+  // Test the four-index constraint with random numbers
+  test_four_index_constraint_random<3, Frame::Grid, DataVector>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_four_index_constraint_random<3, Frame::Inertial, DataVector>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_four_index_constraint_random<3, Frame::Grid, double>(
+      std::numeric_limits<double>::signaling_NaN());
+  test_four_index_constraint_random<3, Frame::Inertial, double>(
       std::numeric_limits<double>::signaling_NaN());
 }
