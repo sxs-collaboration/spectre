@@ -10,7 +10,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -147,6 +147,32 @@ void test_variables(const DataType& used_for_size) noexcept {
           tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{}));
   CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 }
+
+//  A former implementation of the `IntermediateVariables` function in
+//  `FishboneMoncriefDisk.cpp` included an ill-defined calculation of
+//  sin_theta_squared, which resulted in negative numbers due to round-off
+//  errors. This would induce FPEs after taking the square root of
+//  sin_theta_squared. This test evaluates the most recent implementation at
+//  those points in order to ensure that the FPEs are no longer induced.
+template <typename DataType>
+void test_sin_theta_squared(const DataType& used_for_size) noexcept {
+  // Numbers below reproduce the initial data the bug was spotted with,
+  // along with the points where the FPEs were found.
+  FishboneMoncriefDiskProxy disk(1.0, 0.9375, 6.0, 12.0, 0.001,
+                                 1.3333333333333333333333);
+  using variables_tags =
+      FishboneMoncriefDiskProxy::grmhd_variables_tags<DataType>;
+  auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 0.0);
+  get<2>(coords) = -1.8427400003643177317514;
+  disk.variables(coords, 0.0, variables_tags{});
+  get<2>(coords) = 1.8427400003643177317514;
+  disk.variables(coords, 0.0, variables_tags{});
+  get<2>(coords) = -1.9588918957550884858421;
+  disk.variables(coords, 0.0, variables_tags{});
+  get<2>(coords) = 1.9588918957550884858421;
+  disk.variables(coords, 0.0, variables_tags{});
+  CHECK(true);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
@@ -160,6 +186,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
 
   test_variables(std::numeric_limits<double>::signaling_NaN());
   test_variables(DataVector(5));
+  test_sin_theta_squared(std::numeric_limits<double>::signaling_NaN());
+  test_sin_theta_squared(DataVector(5));
 }
 
 struct Disk {

@@ -130,21 +130,10 @@ FishboneMoncriefDisk::IntermediateVariables<DataType, NeedSpacetime>::
     : spatial_velocity_index(in_spatial_velocity_index),
       lorentz_factor_index(in_lorentz_factor_index) {
   const double a_squared = bh_spin_a * bh_spin_a;
-
-  DataType z_squared = square(x.get(2));
-  r_squared = [&x, &z_squared, &a_squared ]() noexcept {
-    DataType temp =
-        0.5 * (square(x.get(0)) + square(x.get(1)) + z_squared - a_squared);
-    temp += sqrt(square(temp) + a_squared * z_squared);
-    return temp;
-  }
-  ();
-  z_squared /= -r_squared;
-  z_squared += 1.0;
-  sin_theta_squared = std::move(z_squared);
-  // Because of the subtraction done to compute sin^2(theta) can be negative by
-  // roundoff. This is a fix for that for now.
-  sin_theta_squared = abs(sin_theta_squared);
+  sin_theta_squared = square(get<0>(x)) + square(get<1>(x));
+  r_squared = 0.5 * (sin_theta_squared + square(get<2>(x)) - a_squared);
+  r_squared += sqrt(square(r_squared) + a_squared * square(get<2>(x)));
+  sin_theta_squared /= (r_squared + a_squared);
 
   if (NeedSpacetime) {
     kerr_schild_soln = background_spacetime.variables(
