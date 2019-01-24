@@ -1222,6 +1222,64 @@ void f_constraint(
                                  inverse_spatial_metric, gauge_function, phi,
                                  inverse_spacetime_metric);
 }
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+Scalar<DataType> constraint_energy_normalization(
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_psi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const double psi_multiplier, const double pi_multipiler,
+    const double phi_multiplier) noexcept {
+  auto normalization = make_with_value<Scalar<DataType>>(d_pi, 0.0);
+  constraint_energy_normalization<SpatialDim, Frame, DataType>(
+      &normalization, d_psi, d_pi, d_phi, inverse_spatial_metric,
+      psi_multiplier, pi_multipiler, phi_multiplier);
+  return normalization;
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void constraint_energy_normalization(
+    gsl::not_null<Scalar<DataType>*> normalization,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_psi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    const double psi_multiplier, const double pi_multiplier,
+    const double phi_multiplier) noexcept {
+  if (get_size(get(*normalization)) !=
+      get_size(get_size(get<0, 0, 0>(d_psi)))) {
+    *normalization = Scalar<DataType>{get_size(get<0, 0, 0>(d_psi))};
+  }
+  get(*normalization) = psi_multiplier * inverse_spatial_metric.get(0, 0) *
+                            d_psi.get(0, 0, 0) * d_psi.get(0, 0, 0) +
+                        pi_multiplier * inverse_spatial_metric.get(0, 0) *
+                            d_pi.get(0, 0, 0) * d_pi.get(0, 0, 0);
+
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    for (size_t j = 0; j < SpatialDim; ++j) {
+      for (size_t a = 0; a < SpatialDim + 1; ++a) {
+        for (size_t c = 0; c < SpatialDim + 1; ++c) {
+          if (not(i == 0 and j == 0 and a == 0 and c == 0)) {
+            get(*normalization) +=
+                psi_multiplier * inverse_spatial_metric.get(i, j) *
+                    d_psi.get(i, a, c) * d_psi.get(j, a, c) +
+                pi_multiplier * inverse_spatial_metric.get(i, j) *
+                    d_pi.get(i, a, c) * d_pi.get(j, a, c);
+          }
+          for (size_t k = 0; k < SpatialDim; ++k) {
+            for (size_t l = 0; l < SpatialDim; ++l) {
+              get(*normalization) +=
+                  phi_multiplier * inverse_spatial_metric.get(i, j) *
+                  inverse_spatial_metric.get(k, l) * d_phi.get(i, k, a, c) *
+                  d_phi.get(j, l, a, c);
+            }
+          }
+        }
+      }
+    }
+  }
+}
 }  // namespace GeneralizedHarmonic
 
 // Explicit Instantiations
@@ -1344,7 +1402,25 @@ void f_constraint(
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,          \
       const Scalar<DTYPE(data)>& gamma2,                                     \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                  \
-          three_index_constraint) noexcept;
+          three_index_constraint) noexcept;                                  \
+  template Scalar<DTYPE(data)>                                               \
+  GeneralizedHarmonic::constraint_energy_normalization(                      \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_psi,           \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,            \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,          \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          inverse_spatial_metric,                                            \
+      const double psi_multiplier, const double pi_multiplier,               \
+      const double phi_multiplier) noexcept;                                 \
+  template void GeneralizedHarmonic::constraint_energy_normalization(        \
+      gsl::not_null<Scalar<DTYPE(data)>*> normalization,                     \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_psi,           \
+      const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& d_pi,            \
+      const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi,          \
+      const tnsr::II<DTYPE(data), DIM(data), FRAME(data)>&                   \
+          inverse_spatial_metric,                                            \
+      const double psi_multiplier, const double pi_multiplier,               \
+      const double phi_multiplier) noexcept;
 
 #define INSTANTIATE_ONLY_3D(_, data)                                          \
   template tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>                     \

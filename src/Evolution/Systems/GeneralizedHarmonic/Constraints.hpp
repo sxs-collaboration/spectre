@@ -268,4 +268,47 @@ void f_constraint(
     const tnsr::iaa<DataType, SpatialDim, Frame>&
         three_index_constraint) noexcept;
 // @}
+
+// @{
+/*!
+ * \brief Computes the generalized-harmonic constraint energy normalization.
+ *
+ * \details Computes the generalized-harmonic constraint energy normalization
+ * [the integrand of Eq. (70) of \cite Lindblom:2005qh, with
+ * \f$\Lambda = 1\f$,
+ * \f$m^{ab} = \delta^{ab}\f$, \f$m^{cd} = \delta^{cd}\f$, and
+ * each term scaled by an arbitrary coefficient],
+ * \f{eqnarray}{
+ * N_E & = & g^{ij} \left(K_\psi \partial_i \psi_{ac} \partial_j \psi_{ac}
+ * + K_\Pi \partial_i \Pi_{ac} \partial_j \Pi_{ac}
+ * + K_\Phi g^{kl} \partial_i \Phi_{kac} \partial_j \Phi_{lac}\right),
+ * \f}
+ * \f$\psi_{ab}\f$ is the spacetime metric,
+ * \f$\Pi_{ab}=-t^c\partial_c \psi_{ab}\f$,
+ * \f$\Phi_{iab} = \partial_i\psi_{ab}\f$,
+ * \f$g^{ij}\f$ is the inverse spatial metric, and
+ * \f$K_\psi\f$, \f$K_\Pi\f$, and \f$K_\Phi\f$ are constant multipliers
+ * for each term that each default to 1.0. Note that in this equation,
+ * spacetime indices \f$a,c\f$ are raised and lowered with the
+ * Kronecker delta.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+Scalar<DataType> constraint_energy_normalization(
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_psi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    double psi_multiplier = 1.0, double pi_multiplier = 1.0,
+    double phi_multiplier = 1.0) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void constraint_energy_normalization(
+    gsl::not_null<Scalar<DataType>*> normalization,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_psi,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& d_pi,
+    const tnsr::ijaa<DataType, SpatialDim, Frame>& d_phi,
+    const tnsr::II<DataType, SpatialDim, Frame>& inverse_spatial_metric,
+    double psi_multiplier = 1.0, double pi_multiplier = 1.0,
+    double phi_multiplier = 1.0) noexcept;
+// @}
 }  // namespace GeneralizedHarmonic

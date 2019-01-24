@@ -596,3 +596,23 @@ def f_constraint(gauge_function, d_gauge_function, spacetime_normal_one_form,
     return constraint
 
 # End test functions for F constraint
+
+# Test functions for constraint energy normalization
+
+
+def constraint_energy_normalization(d_psi, d_pi, d_phi, inverse_spatial_metric,
+                                    psi_multiplier, pi_multipiler,
+                                    phi_multiplier):
+    normalization = psi_multiplier * np.einsum("ij,iac,jac",
+                                               inverse_spatial_metric, d_psi,
+                                               d_psi)
+    normalization += pi_multipiler * np.einsum("ij,iac,jac",
+                                               inverse_spatial_metric, d_pi,
+                                               d_pi)
+    normalization += phi_multiplier * np.einsum("ij,kl,ikac,jlac",
+                                                inverse_spatial_metric,
+                                                inverse_spatial_metric, d_phi,
+                                                d_phi)
+    return normalization
+
+# End test functions for constraint energy normalization

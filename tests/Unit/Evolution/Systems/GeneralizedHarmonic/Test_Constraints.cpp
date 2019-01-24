@@ -513,6 +513,22 @@ void test_f_constraint_analytic(const Solution& solution,
                                make_with_value<decltype(f_constraint)>(x, 0.0),
                                numerical_approx);
 }
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void test_constraint_energy_normalization(
+    const DataType& used_for_size) noexcept {
+  pypp::check_with_random_values<1>(
+      static_cast<Scalar<DataType> (*)(
+          const tnsr::iaa<DataType, SpatialDim, Frame>&,
+          const tnsr::iaa<DataType, SpatialDim, Frame>&,
+          const tnsr::ijaa<DataType, SpatialDim, Frame>&,
+          const tnsr::II<DataType, SpatialDim, Frame>&, double, double,
+          double)>(
+          &GeneralizedHarmonic::constraint_energy_normalization<
+              SpatialDim, Frame, DataType>),
+      "TestFunctions", "constraint_energy_normalization", {{{-10.0, 10.0}}},
+      used_for_size);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE(
@@ -724,5 +740,40 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.FConstraint",
   test_f_constraint_random<3, Frame::Grid, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_f_constraint_random<3, Frame::Inertial, double>(
+      std::numeric_limits<double>::signaling_NaN());
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintEnergyNorm",
+    "[Unit][Evolution]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{
+      "Evolution/Systems/GeneralizedHarmonic/"};
+
+  // Test the constraint energy normalization with random numbers
+  test_constraint_energy_normalization<1, Frame::Grid, DataVector>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_constraint_energy_normalization<1, Frame::Inertial, DataVector>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_constraint_energy_normalization<1, Frame::Grid, double>(
+      std::numeric_limits<double>::signaling_NaN());
+  test_constraint_energy_normalization<1, Frame::Inertial, double>(
+      std::numeric_limits<double>::signaling_NaN());
+
+  test_constraint_energy_normalization<2, Frame::Grid, DataVector>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_constraint_energy_normalization<2, Frame::Inertial, DataVector>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_constraint_energy_normalization<2, Frame::Grid, double>(
+      std::numeric_limits<double>::signaling_NaN());
+  test_constraint_energy_normalization<2, Frame::Inertial, double>(
+      std::numeric_limits<double>::signaling_NaN());
+
+  test_constraint_energy_normalization<3, Frame::Grid, DataVector>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_constraint_energy_normalization<3, Frame::Inertial, DataVector>(
+      DataVector(4, std::numeric_limits<double>::signaling_NaN()));
+  test_constraint_energy_normalization<3, Frame::Grid, double>(
+      std::numeric_limits<double>::signaling_NaN());
+  test_constraint_energy_normalization<3, Frame::Inertial, double>(
       std::numeric_limits<double>::signaling_NaN());
 }
