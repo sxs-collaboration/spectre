@@ -8,12 +8,14 @@ set(LIBRARY_SOURCES
   Test_DataVector.cpp
   Test_DenseMatrix.cpp
   Test_DenseVector.cpp
+  Test_DiagonalModalOperator.cpp
   Test_FixedHashMap.cpp
   Test_GeneralIndexIterator.cpp
   Test_IdPair.cpp
   Test_Index.cpp
   Test_IndexIterator.cpp
   Test_LeviCivitaIterator.cpp
+  Test_ModalVector.cpp
   Test_OrientVariables.cpp
   Test_SliceIterator.cpp
   Test_SpinWeighted.cpp

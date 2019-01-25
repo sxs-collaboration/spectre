@@ -10,6 +10,7 @@
 
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/ModalVector.hpp"
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
@@ -81,9 +82,10 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                 "SpECTRE.");
   static_assert(
       cpp17::is_same_v<X, double> or cpp17::is_same_v<X, DataVector> or
+          cpp17::is_same_v<X, ModalVector> or
           cpp17::is_same_v<X, std::complex<double>> or
           cpp17::is_same_v<X, ComplexDataVector>,
-      "Only a Tensor<double>, Tensor<DataVector>, "
+      "Only a Tensor<double>, Tensor<DataVector>, Tensor<ModalVector>, "
       "Tensor<std::complex<double>>, or Tensor<ComplexDataVector> is currently "
       "allowed. While other types are technically possible it is not "
       "clear that Tensor is the correct container for them. Please "
