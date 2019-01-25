@@ -23,7 +23,6 @@
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Options/Options.hpp"
-#include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -94,11 +93,9 @@ MinmodResult minmod_tvbm(double a, double b, double c,
 template <size_t VolumeDim>
 bool limit_one_tensor(
     gsl::not_null<DataVector*> tensor_begin,
-    gsl::not_null<DataVector*> tensor_end, gsl::not_null<DataVector*> u_lin,
-    gsl::not_null<std::array<DataVector, VolumeDim>*> temp_boundary_buffer,
-    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
-                               gsl::span<std::pair<size_t, size_t>>>,
-                     VolumeDim>& volume_and_slice_indices,
+    gsl::not_null<DataVector*> tensor_end,
+    gsl::not_null<DataVector*> u_lin_buffer,
+    gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
     const SlopeLimiters::MinmodType& minmod_type, double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
@@ -114,7 +111,10 @@ bool limit_one_tensor(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         std::array<double, VolumeDim>,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_sizes) noexcept;
+        neighbor_sizes,
+    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
+                               gsl::span<std::pair<size_t, size_t>>>,
+                     VolumeDim>& volume_and_slice_indices) noexcept;
 
 template <typename Tag>
 struct to_tensor_double : db::PrefixTag, db::SimpleTag {
@@ -256,11 +256,10 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
     p | disable_for_debugging_;
   }
 
+  // To facilitate testing
+  /// \cond
   const MinmodType& minmod_type() const noexcept { return minmod_type_; }
-  const double& tvbm_constant() const noexcept { return tvbm_constant_; }
-  const bool& disable_for_debugging() const noexcept {
-    return disable_for_debugging_;
-  }
+  /// \endcond
 
   /// \brief Data to send to neighbor elements.
   struct PackagedData {
@@ -378,23 +377,26 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
                                      half_number_boundary_points))),
         &free);
     size_t alloc_offset = 0;
-    DataVector u_lin(temp_buffer.get() + alloc_offset,
-                     mesh.number_of_grid_points());
+    DataVector u_lin_buffer(temp_buffer.get() + alloc_offset,
+                            mesh.number_of_grid_points());
     alloc_offset += mesh.number_of_grid_points();
-    std::array<DataVector, VolumeDim> temp_boundary_buffer{};
+    std::array<DataVector, VolumeDim> boundary_buffer{};
     for (size_t d = 0; d < VolumeDim; ++d) {
       const size_t num_points = mesh.slice_away(d).number_of_grid_points();
-      temp_boundary_buffer[d].set_data_ref(temp_buffer.get() + alloc_offset,
-                                           num_points);
+      gsl::at(boundary_buffer, d)
+          .set_data_ref(temp_buffer.get() + alloc_offset, num_points);
       alloc_offset += num_points;
     }
     // Compute the slice indices once since this is (surprisingly) expensive
-    const auto indices_and_buffer = volume_and_slice_indices(mesh.extents());
+    const auto volume_and_slice_buffer_and_indices =
+        volume_and_slice_indices(mesh.extents());
+    const auto& volume_and_slice_indices =
+        volume_and_slice_buffer_and_indices.second;
 
     bool limiter_activated = false;
     const auto wrap_limit_one_tensor = [
       this, &limiter_activated, &element, &mesh, &logical_coords, &element_size,
-      &neighbor_data, &u_lin, &temp_boundary_buffer, &indices_and_buffer
+      &neighbor_data, &u_lin_buffer, &boundary_buffer, &volume_and_slice_indices
     ](auto tag, const auto& tensor) noexcept {
       // Because we hide the types of Tags from limit_one_tensor (we do this so
       // that its implementation isn't templated on Tags and can be moved out of
@@ -441,10 +443,10 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
 
       limiter_activated =
           Minmod_detail::limit_one_tensor<VolumeDim>(
-              tensor_begin, tensor_end, &u_lin, &temp_boundary_buffer,
-              indices_and_buffer.second, minmod_type_, tvbm_constant_, element,
-              mesh, logical_coords, element_size, neighbor_tensor_begin,
-              neighbor_sizes) or
+              tensor_begin, tensor_end, &u_lin_buffer, &boundary_buffer,
+              minmod_type_, tvbm_constant_, element, mesh, logical_coords,
+              element_size, neighbor_tensor_begin, neighbor_sizes,
+              volume_and_slice_indices) or
           limiter_activated;
       return '0';
     };
@@ -453,24 +455,27 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   }
 
  private:
+  template <size_t LocalDim, typename LocalTagList>
+  // NOLINTNEXTLINE(readability-redundant-declaration) false positive
+  friend bool operator==(const Minmod<LocalDim, LocalTagList>& lhs,
+                         const Minmod<LocalDim, LocalTagList>& rhs) noexcept;
+
   MinmodType minmod_type_;
   double tvbm_constant_;
   bool disable_for_debugging_;
 };
 
-template <size_t VolumeDim, typename TagList>
-SPECTRE_ALWAYS_INLINE bool operator==(
-    const Minmod<VolumeDim, TagList>& lhs,
-    const Minmod<VolumeDim, TagList>& rhs) noexcept {
-  return lhs.minmod_type() == rhs.minmod_type() and
-         lhs.tvbm_constant() == rhs.tvbm_constant() and
-         lhs.disable_for_debugging() == rhs.disable_for_debugging();
+template <size_t LocalDim, typename LocalTagList>
+bool operator==(const Minmod<LocalDim, LocalTagList>& lhs,
+                const Minmod<LocalDim, LocalTagList>& rhs) noexcept {
+  return lhs.minmod_type_ == rhs.minmod_type_ and
+         lhs.tvbm_constant_ == rhs.tvbm_constant_ and
+         lhs.disable_for_debugging_ == rhs.disable_for_debugging_;
 }
 
 template <size_t VolumeDim, typename TagList>
-SPECTRE_ALWAYS_INLINE bool operator!=(
-    const Minmod<VolumeDim, TagList>& lhs,
-    const Minmod<VolumeDim, TagList>& rhs) noexcept {
+bool operator!=(const Minmod<VolumeDim, TagList>& lhs,
+                const Minmod<VolumeDim, TagList>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
