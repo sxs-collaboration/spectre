@@ -4,7 +4,11 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <complex>
+#include <cstddef>
+#include <random>
 
+#include "DataStructures/ComplexDataVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"         // IWYU pragma: keep
 #include "DataStructures/SpinWeighted.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -12,57 +16,123 @@
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
+// IWYU pragma: no_forward_declare ComplexDataVector
+// IWYU pragma: no_forward_declare DataVector
+// IWYU pragma: no_forward_declare SpinWeighted
+
 namespace {
-template <typename T>
+template <typename SpinWeightedType, typename CompatibleType>
 void test_spinweights() {
   MAKE_GENERATOR(gen);
-  UniformCustomDistribution<T> dist{static_cast<T>(1.0), // avoid divide by 0
-                                    static_cast<T>(100.0)};
+  UniformCustomDistribution<tt::get_fundamental_type_t<SpinWeightedType>>
+      spin_weighted_dist{
+          static_cast<tt::get_fundamental_type_t<SpinWeightedType>>(
+              1.0),  // avoid divide by 0
+          static_cast<tt::get_fundamental_type_t<SpinWeightedType>>(100.0)};
 
-  const auto v1 = make_with_random_values<SpinWeighted<T, 0>>(
-      make_not_null(&gen), make_not_null(&dist));
-  const auto v2 = make_with_random_values<SpinWeighted<T, 1>>(
-      make_not_null(&gen), make_not_null(&dist));
-  const auto v3 = make_with_random_values<SpinWeighted<T, -2>>(
-      make_not_null(&gen), make_not_null(&dist));
+  UniformCustomDistribution<tt::get_fundamental_type_t<CompatibleType>>
+      compatible_dist{
+          static_cast<tt::get_fundamental_type_t<CompatibleType>>(
+              1.0),  // avoid divide by 0
+          static_cast<tt::get_fundamental_type_t<CompatibleType>>(100.0)};
 
-  const auto v4 = make_with_random_values<SpinWeighted<std::complex<T>, 0>>(
-      make_not_null(&gen), make_not_null(&dist));
-  const auto v5 = make_with_random_values<SpinWeighted<std::complex<T>, 1>>(
-      make_not_null(&gen), make_not_null(&dist));
+  UniformCustomDistribution<size_t> size_dist{5, 10};
+  const size_t size = size_dist(gen);
 
-  const auto v7 = make_with_random_values<T>(make_not_null(&gen),
-                                            make_not_null(&dist));
-  const auto v8 = make_with_random_values<std::complex<T>>(make_not_null(&gen),
-                                                          make_not_null(&dist));
+  const auto spin_weight_0 =
+      make_with_random_values<SpinWeighted<SpinWeightedType, 0>>(
+          make_not_null(&gen), make_not_null(&spin_weighted_dist), size);
+  const auto spin_weight_1 =
+      make_with_random_values<SpinWeighted<SpinWeightedType, 1>>(
+          make_not_null(&gen), make_not_null(&spin_weighted_dist), size);
+  const auto spin_weight_m2 =
+      make_with_random_values<SpinWeighted<SpinWeightedType, -2>>(
+          make_not_null(&gen), make_not_null(&spin_weighted_dist), size);
+  const auto no_spin_weight = make_with_random_values<SpinWeightedType>(
+      make_not_null(&gen), make_not_null(&spin_weighted_dist), size);
+
+  const auto compatible_spin_weight_0 =
+      make_with_random_values<SpinWeighted<CompatibleType, 0>>(
+          make_not_null(&gen), make_not_null(&compatible_dist), size);
+  const auto compatible_spin_weight_1 =
+      make_with_random_values<SpinWeighted<CompatibleType, 1>>(
+          make_not_null(&gen), make_not_null(&compatible_dist), size);
+  const auto compatible_spin_weight_m2 =
+      make_with_random_values<SpinWeighted<CompatibleType, -2>>(
+          make_not_null(&gen), make_not_null(&compatible_dist), size);
+  const auto compatible_no_spin_weight =
+      make_with_random_values<CompatibleType>(
+          make_not_null(&gen), make_not_null(&compatible_dist), size);
+
+  SpinWeighted<SpinWeightedType, 1> rvalue_assigned_spin_weight_1{
+      spin_weight_1 + compatible_spin_weight_1};
+  CHECK(rvalue_assigned_spin_weight_1.data() ==
+        spin_weight_1.data() + compatible_spin_weight_1.data());
+  rvalue_assigned_spin_weight_1 = spin_weight_1 - compatible_spin_weight_1;
+  CHECK(rvalue_assigned_spin_weight_1.data() ==
+        spin_weight_1.data() - compatible_spin_weight_1.data());
+
+  SpinWeighted<SpinWeightedType, -2> lvalue_assigned_spin_weight_m2{
+      spin_weight_m2};
+  CHECK(lvalue_assigned_spin_weight_m2.data() == spin_weight_m2.data());
+  lvalue_assigned_spin_weight_m2 = compatible_spin_weight_m2;
+  CHECK(lvalue_assigned_spin_weight_m2.data() ==
+        compatible_spin_weight_m2.data());
+
   // check compile-time spin values
-  static_assert(decltype(v1)::spin == 0,
+  static_assert(decltype(spin_weight_0)::spin == 0,
                 "assert failed for the spin of a spin-weight 0");
-  static_assert(decltype(v2)::spin == 1,
+  static_assert(decltype(spin_weight_1)::spin == 1,
                 "assert failed for the spin of a spin-weight 1");
-  static_assert(decltype(v4 / v3)::spin == 2,
+  static_assert(decltype(compatible_spin_weight_0 / spin_weight_m2)::spin == 2,
                 "assert failed for the spin of a spin-weight ratio.");
-  static_assert(decltype(v5 * v2)::spin == 2,
+  static_assert(decltype(compatible_spin_weight_1 * spin_weight_1)::spin == 2,
                 "assert failed for the spin of a spin-weight product.");
 
   // check that valid spin combinations work
-  CHECK(v1 + v1 == SpinWeighted<T, 0>{v1.data + v1.data});
-  CHECK(v2 - v5 == SpinWeighted<std::complex<T>, 1>{v2.data - v5.data});
-  CHECK(v2 * v3 == SpinWeighted<T, -1>{v2.data * v3.data});
-  CHECK(v5 / v3 == SpinWeighted<std::complex<T>, 3>{v5.data / v3.data});
+  CHECK(spin_weight_0 + spin_weight_0 ==
+        SpinWeighted<SpinWeightedType, 0>{spin_weight_0.data() +
+                                          spin_weight_0.data()});
+  CHECK(spin_weight_0 - no_spin_weight ==
+        SpinWeighted<decltype(std::declval<SpinWeightedType>() -
+                              std::declval<SpinWeightedType>()),
+                     0>{spin_weight_0.data() - no_spin_weight});
+  CHECK(spin_weight_1 * spin_weight_m2 ==
+        SpinWeighted<SpinWeightedType, -1>{spin_weight_1.data() *
+                                           spin_weight_m2.data()});
+  CHECK(
+      compatible_spin_weight_1 / spin_weight_m2 ==
+      SpinWeighted<decltype(std::declval<CompatibleType>() /
+                            std::declval<SpinWeightedType>()),
+                   3>{compatible_spin_weight_1.data() / spin_weight_m2.data()});
 
   // check that plain data types act as spin 0
-  CHECK(v1 + v7 == SpinWeighted<T, 0>{v1.data + v7});
-  CHECK(v8 - v4 == SpinWeighted<std::complex<T>, 0>{v8 - v4.data});
-  CHECK(v2 * v7 == SpinWeighted<T, 1>{v2.data * v7});
-  CHECK(v7 / v3 == SpinWeighted<std::complex<T>, 2>{v7 / v3.data});
+  CHECK(
+      spin_weight_0 + no_spin_weight ==
+      SpinWeighted<SpinWeightedType, 0>{spin_weight_0.data() + no_spin_weight});
+  CHECK(compatible_no_spin_weight - spin_weight_0 ==
+        SpinWeighted<decltype(std::declval<CompatibleType>() -
+                              std::declval<SpinWeightedType>()),
+                     0>{compatible_no_spin_weight - spin_weight_0.data()});
+  CHECK(
+      spin_weight_1 * no_spin_weight ==
+      SpinWeighted<SpinWeightedType, 1>{spin_weight_1.data() * no_spin_weight});
+  CHECK(no_spin_weight / spin_weight_m2 ==
+        SpinWeighted<decltype(std::declval<SpinWeightedType>() /
+                              std::declval<SpinWeightedType>()),
+                     2>{no_spin_weight / spin_weight_m2.data()});
 }
 
-using SpinWeightedTypes = tmpl::list<double, int, long>;
+using SpinWeightedTypePairs =
+    tmpl::list<tmpl::list<std::complex<double>, double>,
+               tmpl::list<ComplexDataVector, double>,
+               tmpl::list<ComplexDataVector, std::complex<double>>>;
 
-SPECTRE_TEST_CASE("Unit.DataStructures.SpinWeight", "[DataStructures][Unit]") {
-  tmpl::for_each<SpinWeightedTypes>([](auto x) noexcept {
-    test_spinweights<typename decltype(x)::type>();
+SPECTRE_TEST_CASE("Unit.DataStructures.SpinWeighted",
+                  "[DataStructures][Unit]") {
+  tmpl::for_each<SpinWeightedTypePairs>([](auto x) noexcept {
+    using type_pair = typename decltype(x)::type;
+    test_spinweights<tmpl::front<type_pair>, tmpl::back<type_pair>>();
   });
 }
 
