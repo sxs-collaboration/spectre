@@ -890,8 +890,8 @@ struct TempTensor {
 // @{
 /// \ingroup PeoGroup
 /// Variables Tags for temporary tensors inside a function.
-template <size_t N>
-using TempScalar = TempTensor<N, Scalar<DataVector>>;
+template <size_t N, typename DataType = DataVector>
+using TempScalar = TempTensor<N, Scalar<DataType>>;
 
 // Rank 1
 template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
@@ -935,5 +935,11 @@ template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
 using Tempii = TempTensor<N, tnsr::ii<DataVector, SpatialDim, Fr>>;
 template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial>
 using TempII = TempTensor<N, tnsr::II<DataVector, SpatialDim, Fr>>;
+
+// Rank 3
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+  typename DataType = DataVector>
+using Tempijj = TempTensor<N, tnsr::ijj<DataType, SpatialDim, Fr>>;
+
 // @}
 }  // namespace Tags

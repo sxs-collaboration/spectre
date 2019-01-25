@@ -140,6 +140,28 @@ def dt_lapse(lapse, shift, spacetime_unit_normal, phi, pi):
     return 0.5 * lapse * (t1 - t2)
 
 
+def deriv_spatial_metric(phi):
+    return phi[:,1:,1:]
+
+
+def dt_spatial_metric(lapse, shift, phi, pi):
+    return (-lapse * pi + np.einsum('k,kab->ab', shift, phi))[1:,1:]
+
+
+def spacetime_deriv_detg(sqrt_det_spatial_metric, inverse_spatial_metric,
+        dt_spatial_metric, phi):
+    det_spatial_metric = sqrt_det_spatial_metric**2
+    deriv_of_g = deriv_spatial_metric(phi)
+    dtg = np.einsum('jk,jk', inverse_spatial_metric, dt_spatial_metric)
+    dtg *= det_spatial_metric
+    dxg = np.einsum('jk,ijk->i', inverse_spatial_metric, deriv_of_g)
+    dxg *= det_spatial_metric
+    dg     = np.zeros(1  + len(dxg))
+    dg[0]  = dtg
+    dg[1:] = dxg
+    return dg
+
+
 # End tests for Test_ComputeGhQuantities.cpp
 
 # Begin tests for Test_Ricci.cpp
