@@ -137,6 +137,57 @@ struct SpinWeighted<T, Spin, true> {
 };
 // @}
 
+// @{
+/// \ingroup TypeTraitsGroup
+/// \ingroup DataStructuresGroup
+/// This is a `std::true_type` if the provided type is a `SpinWeighted` of any
+/// type and spin, otherwise is a `std::false_type`.
+template <typename T>
+struct is_any_spin_weighted : std::false_type {};
+
+template <typename T, int S>
+struct is_any_spin_weighted<SpinWeighted<T, S>> : std::true_type {};
+// @}
+
+template <typename T>
+constexpr bool is_any_spin_weighted_v = is_any_spin_weighted<T>::value;
+
+// @{
+/// \ingroup TypeTraitsGroup
+/// \ingroup DataStructuresGroup
+/// This is a `std::true_type` if the provided type `T` is a `SpinWeighted` of
+/// `InternalType` and any spin, otherwise is a `std::false_type`.
+template <typename InternalType, typename T>
+struct is_spin_weighted_of : std::false_type {};
+
+template <typename InternalType, int S>
+struct is_spin_weighted_of<InternalType, SpinWeighted<InternalType, S>>
+    : std::true_type {};
+// @}
+
+template <typename InternalType, typename T>
+constexpr bool is_spin_weighted_of_v =
+    is_spin_weighted_of<InternalType, T>::value;
+
+// @{
+/// \ingroup TypeTraitsGroup
+/// \ingroup DataStructuresGroup
+/// This is a `std::true_type` if the provided type `T1` is a `SpinWeighted` and
+/// `T2` is a `SpinWeighted`, and both have the same internal type, but any
+/// combination of spin weights.
+template <typename T1, typename T2>
+struct is_spin_weighted_of_same_type : std::false_type {};
+
+template <typename T, int Spin1, int Spin2>
+struct is_spin_weighted_of_same_type<SpinWeighted<T, Spin1>,
+                                     SpinWeighted<T, Spin2>> : std::true_type {
+};
+// @}
+
+template <typename T1, typename T2>
+constexpr bool is_spin_weighted_of_same_type_v =
+    is_spin_weighted_of_same_type<T1, T2>::value;
+
 // {@
 /// \brief Add two spin-weighted quantities if the types are compatible and
 /// spins are the same. Un-weighted quantities are assumed to be spin 0.
