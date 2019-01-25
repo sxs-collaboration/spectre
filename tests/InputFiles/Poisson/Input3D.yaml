@@ -22,3 +22,8 @@ Verbosity: Verbose
 
 VolumeFileName: "./Poisson3DVolume"
 ReductionFileName: "./Poisson3DReductions"
+
+ConvergenceCriteria:
+  MaxIterations: 1
+  AbsoluteResidual: 0
+  RelativeResidual: 0
