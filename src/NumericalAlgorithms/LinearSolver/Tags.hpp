@@ -15,6 +15,8 @@
 #include "DataStructures/DenseMatrix.hpp"
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
+#include "Utilities/Requires.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /*!
  * \ingroup LinearSolverGroup
@@ -117,6 +119,21 @@ struct Magnitude : db::PrefixTag, db::SimpleTag {
   }
   using type = double;
   using tag = Tag;
+};
+
+/*!
+ * \brief Compute the `LinearSolver::Magnitude` of a tag from its
+ * `LinearSolver::MagnitudeSquare`.
+ */
+template <typename MagnitudeSquareTag,
+          Requires<tt::is_a_v<MagnitudeSquare, MagnitudeSquareTag>> = nullptr>
+struct MagnitudeCompute
+    : db::add_tag_prefix<Magnitude, db::remove_tag_prefix<MagnitudeSquareTag>>,
+      db::ComputeTag {
+  static constexpr double function(const double& magnitude_square) noexcept {
+    return sqrt(magnitude_square);
+  }
+  using argument_tags = tmpl::list<MagnitudeSquareTag>;
 };
 
 /*!

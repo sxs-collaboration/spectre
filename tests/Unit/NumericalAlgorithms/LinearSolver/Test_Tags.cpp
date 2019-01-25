@@ -17,6 +17,8 @@ struct Tag : db::SimpleTag {
   static std::string name() noexcept { return "Tag"; }
   using type = int;
 };
+using magnitude_square_tag = LinearSolver::Tags::MagnitudeSquare<Tag>;
+using magnitude_tag = LinearSolver::Tags::Magnitude<Tag>;
 using residual_magnitude_tag =
     LinearSolver::Tags::Magnitude<LinearSolver::Tags::Residual<Tag>>;
 using initial_residual_magnitude_tag =
@@ -75,5 +77,16 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Tags",
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
           LinearSolver::ConvergenceReason::AbsoluteResidual);
+  }
+
+  {
+    INFO("MagnitudeCompute");
+    CHECK(LinearSolver::Tags::MagnitudeCompute<magnitude_square_tag>::name() ==
+          "LinearMagnitude(Tag)");
+    const auto box =
+        db::create<db::AddSimpleTags<magnitude_square_tag>,
+                   db::AddComputeTags<LinearSolver::Tags::MagnitudeCompute<
+                       magnitude_square_tag>>>(4.);
+    CHECK(db::get<magnitude_tag>(box) == approx(2.));
   }
 }
