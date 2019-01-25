@@ -316,8 +316,10 @@ void test_variables_math() noexcept {
                            VariablesTestTags_detail::scalar2<VectorType>>>;
 
   MAKE_GENERATOR(gen);
+  // keep distribution somewhat near 1.0 to avoid accumulation of errors in
+  // cascaded math
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{1.0,
-                                                                         100.0};
+                                                                         10.0};
   UniformCustomDistribution<size_t> sdist{5, 20};
 
   const size_t num_points = sdist(gen);  // number of grid points
@@ -481,8 +483,10 @@ void test_variables_prefix_math() noexcept {
   using value_type = typename VectorType::value_type;
 
   MAKE_GENERATOR(gen);
+  // keep distribution somewhat near 1.0 to avoid accumulation of errors in
+  // cascaded math
   UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{1.0,
-                                                                         100.0};
+                                                                         10.0};
   UniformCustomDistribution<size_t> sdist{5, 20};
 
   const size_t number_of_grid_points = sdist(gen);
