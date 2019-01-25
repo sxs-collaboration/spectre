@@ -62,7 +62,8 @@ struct FillWithRandomValuesImpl<SpinWeighted<T, Spin>> {
       const gsl::not_null<SpinWeighted<T, Spin>*> data,
       const gsl::not_null<UniformRandomBitGenerator*> generator,
       const gsl::not_null<RandomNumberDistribution*> distribution) noexcept {
-    FillWithRandomValuesImpl<T>::apply(&(data->data), generator, distribution);
+    FillWithRandomValuesImpl<T>::apply(&(data->data()), generator,
+                                       distribution);
   }
 };
 
@@ -161,7 +162,9 @@ ReturnType make_with_random_values(
     const gsl::not_null<RandomNumberDistribution*> distribution,
     const T& used_for_size) noexcept {
   auto result = make_with_value<ReturnType>(
-      used_for_size, std::numeric_limits<double>::signaling_NaN());
+      used_for_size,
+      std::numeric_limits<
+          tt::get_fundamental_type_t<ReturnType>>::signaling_NaN());
   fill_with_random_values(make_not_null(&result), generator, distribution);
   return result;
 }
