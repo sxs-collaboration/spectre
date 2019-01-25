@@ -107,9 +107,12 @@ class Variables<tmpl::list<Tags...>> {
                 "for type inference");
 
   static_assert(
-      tmpl2::flat_all_v<
-          cpp17::is_same_v<typename Tags::type::type,
-                           typename tmpl::front<tags_list>::type::type>...>,
+      (tmpl2::flat_all_v<
+           cpp17::is_same_v<typename Tags::type::type,
+                            typename tmpl::front<tags_list>::type::type>...> or
+       tmpl2::flat_all_v<is_spin_weighted_of_same_type_v<
+           typename tmpl::front<tags_list>::type::type,
+           typename Tags::type::type>...>),
       "All tensors stored in a single Variables must "
       "have the same internal storage type.");
 
@@ -120,7 +123,10 @@ class Variables<tmpl::list<Tags...>> {
       "a vector with a member `value_type` (e.g. Tensors of doubles are "
       "disallowed, use instead a Tensor of DataVectors).");
 
-  using vector_type = typename tmpl::front<tags_list>::type::type;
+  using vector_type = tmpl::conditional_t<
+      is_any_spin_weighted_v<typename tmpl::front<tags_list>::type::value_type>,
+      typename tmpl::front<tags_list>::type::type::value_type,
+      typename tmpl::front<tags_list>::type::type>;
   using value_type = typename vector_type::value_type;
   using allocator_type = std::allocator<value_type>;
   using pointer_type =

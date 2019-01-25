@@ -20,6 +20,42 @@
 // IWYU pragma: no_forward_declare DataVector
 // IWYU pragma: no_forward_declare SpinWeighted
 
+// tests for is_any_spin_weighted
+static_assert(is_any_spin_weighted_v<SpinWeighted<int, 3>>,
+              "failed testing is_any_spin_weighted");
+static_assert(is_any_spin_weighted_v<SpinWeighted<DataVector, 0>>,
+              "failed testing is_any_spin_weighted");
+static_assert(not is_any_spin_weighted_v<ComplexDataVector>,
+              "failed testing is_any_spin_weighted");
+
+// tests for is_spin_weighted_of
+static_assert(is_spin_weighted_of_v<DataVector, SpinWeighted<DataVector, 1>>,
+              "failed testing is_spin_weighted_of");
+static_assert(is_spin_weighted_of_v<ComplexDataVector,
+                                    SpinWeighted<ComplexDataVector, -1>>,
+              "failed testing is_spin_weighted_of");
+static_assert(
+    not is_spin_weighted_of_v<ComplexDataVector, SpinWeighted<DataVector, -2>>,
+    "failed testing is_spin_weighted_of");
+static_assert(not is_spin_weighted_of_v<ComplexDataVector, ComplexDataVector>,
+              "failed testing is_spin_weighted_of");
+
+// tests for is_spin_weighted_of_same_type
+static_assert(is_spin_weighted_of_same_type_v<SpinWeighted<DataVector, -2>,
+                                              SpinWeighted<DataVector, 1>>,
+              "failed testing is_spin_weighted_of_same_type");
+static_assert(
+    is_spin_weighted_of_same_type_v<SpinWeighted<ComplexDataVector, 0>,
+                                    SpinWeighted<ComplexDataVector, -1>>,
+    "failed testing is_spin_weighted_of_same_type");
+static_assert(not is_spin_weighted_of_same_type_v<ComplexDataVector,
+                                                  SpinWeighted<DataVector, -2>>,
+              "failed testing is_spin_weighted_of_same_type");
+static_assert(
+    not is_spin_weighted_of_same_type_v<SpinWeighted<ComplexDataVector, 1>,
+                                        SpinWeighted<DataVector, 1>>,
+    "failed testing is_spin_weighted_of_same_type");
+
 namespace {
 template <typename SpinWeightedType, typename CompatibleType>
 void test_spinweights() {
