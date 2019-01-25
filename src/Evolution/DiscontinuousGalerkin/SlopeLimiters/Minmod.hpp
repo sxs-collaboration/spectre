@@ -483,5 +483,12 @@ bool operator!=(const Minmod<VolumeDim, TagList>& lhs,
 
 template <>
 struct create_from_yaml<SlopeLimiters::MinmodType> {
-  static SlopeLimiters::MinmodType create(const Option& options);
+  template <typename Metavariables>
+  static SlopeLimiters::MinmodType create(const Option& options) {
+    return create<void>(options);
+  }
 };
+template <>
+SlopeLimiters::MinmodType
+create_from_yaml<SlopeLimiters::MinmodType>::create<void>(
+    const Option& options);

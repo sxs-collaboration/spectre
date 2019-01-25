@@ -437,6 +437,7 @@ struct hash<Wrapped<T>> {
 
 template <typename T>
 struct create_from_yaml<Wrapped<T>> {
+  template <typename Metavariables>
   static Wrapped<T> create(const Option& options) {
     return Wrapped<T>{options.parse_as<T>()};
   }

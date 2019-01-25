@@ -74,6 +74,7 @@ PUP::able::PUP_ID PastTime<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
 
 template <typename TriggerRegistrars>
 struct create_from_yaml<Triggers::PastTime<TriggerRegistrars>> {
+  template <typename Metavariables>
   static Triggers::PastTime<TriggerRegistrars> create(const Option& options) {
     return Triggers::PastTime<TriggerRegistrars>(options.parse_as<double>());
   }

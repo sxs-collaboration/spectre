@@ -49,6 +49,15 @@ described in their individual help strings.
 
 Creatable classes must be default constructible and move assignable.
 
+The `OptionContext` is an optional argument to the constructor that should be
+used when the constructor checks for validity of the input. If the input is
+invalid, `PARSE_ERROR` is used to propagate the error message back through the
+options ensuring that the error message will have a full backtrace so it is easy
+for the user to diagnose. Finally, after the `OptionContext` the constructor may
+optionally take the Metavariables struct, which is effectively the compile time
+input file, and the constructor can use the Metavariables for whatever it wants,
+including additional option parsing.
+
 Example:
 \snippet Test_CustomTypeConstruction.cpp class_creation_example
 
@@ -73,6 +82,7 @@ struct
 \code{cpp}
 template <typename T>
 struct create_from_yaml {
+  template <typename Metavariables>
   static T create(const Option& options);
 };
 \endcode
@@ -81,3 +91,20 @@ the object.
 
 Example of using a specialization to parse an enum:
 \snippet Test_CustomTypeConstruction.cpp enum_creation_example
+
+Note that in the case where the `create` function does *not* need to use the
+`Metavariables` it is recommended that a general implementation forward to an
+explicit instantiation with `void` as the `Metavariables` type. The reason for
+using `void` specialization is to reduce compile time. Since we only need one
+full implementation of the function independent of what type `Metavariables` is,
+we should only parse and compile it once. By having a specialization on `void`
+(or some other non-metavariables type like `NoSuchType`) we can handle the
+metavariables-independent case efficiently. As a concrete example, the general
+definition and forward declaration of the `void` specialization in the header
+file would be:
+
+\snippet Test_CustomTypeConstruction.cpp enum_void_creation_header_example
+
+while in the `cpp` file the definition of the `void` specialization is:
+
+\snippet Test_CustomTypeConstruction.cpp enum_void_creation_cpp_example

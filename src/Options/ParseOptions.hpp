@@ -23,6 +23,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/OptionsDetails.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
@@ -65,12 +66,12 @@ inline void Option::set_node(YAML::Node node) noexcept {
   context_.column = node_->Mark().column;
 }
 
-template <typename T>
+template <typename T, typename Metavariables>
 T Option::parse_as() const {
   try {
     // yaml-cpp's `as` method won't parse empty nodes, so we need to
     // inline a bit of its logic.
-    Options_detail::wrap_create_types<T> result{};
+    Options_detail::wrap_create_types<T, Metavariables> result{};
     if (YAML::convert<decltype(result)>::decode(node(), result)) {
       return Options_detail::unwrap_create_types(std::move(result));
     }
@@ -165,14 +166,14 @@ class Options {
   ///
   /// \tparam T the option to retrieve
   /// \return the value of the option
-  template <typename T>
+  template <typename T, typename Metavariables = NoSuchType>
   typename T::type get() const;
 
   /// Call a function with the specified options as arguments.
   ///
   /// \tparam TagList a typelist of options to pass
   /// \return the result of the function call
-  template <typename TagList, typename F>
+  template <typename TagList, typename Metavariables = NoSuchType, typename F>
   decltype(auto) apply(F&& func) const;
 
   /// Get the help string
@@ -393,7 +394,7 @@ void Options<OptionList>::parse(const YAML::Node& node) {
 }
 
 template <typename OptionList>
-template <typename T>
+template <typename T, typename Metavariables>
 typename T::type Options<OptionList>::get() const {
   static_assert(
       not cpp17::is_same_v<tmpl::index_of<opts_t, T>, tmpl::no_such_type_>,
@@ -409,7 +410,7 @@ typename T::type Options<OptionList>::get() const {
   Option option(parsed_options_.find(label)->second, context_);
   option.append_context("While parsing option " + label);
 
-  auto t = option.parse_as<typename T::type>();
+  auto t = option.parse_as<typename T::type, Metavariables>();
 
   check_lower_bound_on_size<T>(t, option.context());
   check_upper_bound_on_size<T>(t, option.context());
@@ -424,7 +425,7 @@ struct apply_helper;
 
 template <typename... Tags>
 struct apply_helper<tmpl::list<Tags...>> {
-  template <typename Options, typename F>
+  template <typename Metavariables, typename Options, typename F>
   static decltype(auto) apply(const Options& opts, F&& func) {
     return func(opts.template get<Tags>()...);
   }
@@ -434,10 +435,10 @@ struct apply_helper<tmpl::list<Tags...>> {
 // \cond
 // Doxygen is confused by decltype(auto)
 template <typename OptionList>
-template <typename TagList, typename F>
+template <typename TagList, typename Metavariables, typename F>
 decltype(auto) Options<OptionList>::apply(F&& func) const {
-  return Options_detail::apply_helper<TagList>::apply(*this,
-                                                       std::forward<F>(func));
+  return Options_detail::apply_helper<TagList>::template apply<Metavariables>(
+      *this, std::forward<F>(func));
 }
 // \endcond
 
@@ -549,34 +550,46 @@ template <typename OptionList>
 }
 
 template <typename T>
+template <typename Metavariables>
 T create_from_yaml<T>::create(const Option& options) {
   Options<typename T::options> parser(T::help);
   parser.parse(options);
   return parser.template apply<typename T::options>([&options](auto&&... args) {
     return make_overloader(
-        [&options](std::true_type /*meta*/, auto&&... args2) {
+        [&options](std::false_type /*option_context_no_metavars*/,
+                   std::true_type /*option_context_with_metavars*/,
+                   auto&&... args2) {
+          return T(std::move(args2)..., options.context(), Metavariables{});
+        },
+        [&options](std::true_type /*option_context_no_metavars*/,
+                   std::false_type /*option_context_with_metavars*/,
+                   auto&&... args2) {
           return T(std::move(args2)..., options.context());
         },
-        [](std::false_type /*meta*/, auto&&... args2) {
+        [](std::false_type /*option_context_no_metavars*/,
+           std::false_type /*option_context_with_metavars*/, auto&&... args2) {
           return T(std::move(args2)...);
         })(cpp17::is_constructible_t<T, decltype(std::move(args))...,
                                      const OptionContext&>{},
+           cpp17::is_constructible_t<T, decltype(std::move(args))...,
+                                     const OptionContext&, Metavariables>{},
            std::move(args)...);
   });
 }
 
 namespace YAML {
-template <typename T>
-struct convert<Options_detail::CreateWrapper<T>> {
+template <typename T, typename Metavariables>
+struct convert<Options_detail::CreateWrapper<T, Metavariables>> {
   /* clang-tidy: non-const reference parameter */
-  static bool decode(const Node& node,
-                     Options_detail::CreateWrapper<T>& rhs) { /* NOLINT */
+  static bool decode(
+      const Node& node,
+      Options_detail::CreateWrapper<T, Metavariables>& rhs) { /* NOLINT */
     OptionContext context;
     context.top_level = false;
     context.append("While creating a " + pretty_type::short_name<T>());
     Option options(node, std::move(context));
-    rhs =
-        Options_detail::CreateWrapper<T>{create_from_yaml<T>::create(options)};
+    rhs = Options_detail::CreateWrapper<T, Metavariables>{
+        create_from_yaml<T>::template create<Metavariables>(options)};
     return true;
   }
 };
@@ -585,6 +598,7 @@ struct convert<Options_detail::CreateWrapper<T>> {
 // yaml-cpp doesn't handle C++11 types yet
 template <typename K, typename V, typename H, typename P>
 struct create_from_yaml<std::unordered_map<K, V, H, P>> {
+  template <typename Metavariables>
   static std::unordered_map<K, V, H, P> create(const Option& options) {
     // This shared_ptr stuff is a hack to work around the inability to
     // extract keys from maps before C++17.  Once we require C++17
@@ -592,7 +606,7 @@ struct create_from_yaml<std::unordered_map<K, V, H, P>> {
     // OptionsDetails.hpp can be updated to use the map `extract`
     // method and the shared_ptr conversion below can be removed.
     std::map<std::shared_ptr<K>, V> ordered =
-        options.parse_as<std::map<std::shared_ptr<K>, V>>();
+        options.parse_as<std::map<std::shared_ptr<K>, V>, Metavariables>();
     std::unordered_map<K, V, H, P> result;
     for (auto& kv : ordered) {
       result.emplace(std::move(*kv.first), std::move(kv.second));
@@ -604,8 +618,9 @@ struct create_from_yaml<std::unordered_map<K, V, H, P>> {
 // This is more of the hack for pre-C++17 unordered_maps
 template <typename T>
 struct create_from_yaml<std::shared_ptr<T>> {
+  template <typename Metavariables>
   static std::shared_ptr<T> create(const Option& options) {
-    return std::make_shared<T>(options.parse_as<T>());
+    return std::make_shared<T>(options.parse_as<T, Metavariables>());
   }
 };
 

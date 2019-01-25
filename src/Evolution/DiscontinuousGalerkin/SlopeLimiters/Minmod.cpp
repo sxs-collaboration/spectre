@@ -313,7 +313,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 }  // namespace Minmod_detail
 
-SlopeLimiters::MinmodType create_from_yaml<SlopeLimiters::MinmodType>::create(
+template <>
+SlopeLimiters::MinmodType
+create_from_yaml<SlopeLimiters::MinmodType>::create<void>(
     const Option& options) {
   const std::string minmod_type_read = options.parse_as<std::string>();
   if (minmod_type_read == "LambdaPi1") {

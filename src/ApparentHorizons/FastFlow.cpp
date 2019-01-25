@@ -17,7 +17,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Options/ParseOptions.hpp"
@@ -28,6 +28,8 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 // IWYU pragma: no_forward_declare Tensor
+
+// IWYU pragma: no_include <complex>
 
 FastFlow::FastFlow(FastFlow::Flow::type flow, FastFlow::Alpha::type alpha,
                    FastFlow::Beta::type beta, FastFlow::AbsTol::type abs_tol,
@@ -336,7 +338,8 @@ bool operator==(const FastFlow& lhs, const FastFlow& rhs) noexcept {
              rhs.iter_at_min_residual_mesh_norm_;
 }
 
-FastFlow::FlowType create_from_yaml<FastFlow::FlowType>::create(
+template <>
+FastFlow::FlowType create_from_yaml<FastFlow::FlowType>::create<void>(
     const Option& options) {
   const std::string flow_type_read = options.parse_as<std::string>();
   if ("Jacobi" == flow_type_read) {

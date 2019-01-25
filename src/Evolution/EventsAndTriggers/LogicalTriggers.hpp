@@ -162,6 +162,7 @@ PUP::able::PUP_ID Or<TriggerRegistrars>::my_PUP_ID = 0;  // NOLINT
 
 template <typename TriggerRegistrars>
 struct create_from_yaml<Triggers::Not<TriggerRegistrars>> {
+  template <typename Metavariables>
   static Triggers::Not<TriggerRegistrars> create(const Option& options) {
     return Triggers::Not<TriggerRegistrars>(
         options.parse_as<std::unique_ptr<Trigger<TriggerRegistrars>>>());
@@ -170,6 +171,7 @@ struct create_from_yaml<Triggers::Not<TriggerRegistrars>> {
 
 template <typename TriggerRegistrars>
 struct create_from_yaml<Triggers::And<TriggerRegistrars>> {
+  template <typename Metavariables>
   static Triggers::And<TriggerRegistrars> create(const Option& options) {
     return Triggers::And<TriggerRegistrars>(
         options.parse_as<
@@ -179,6 +181,7 @@ struct create_from_yaml<Triggers::And<TriggerRegistrars>> {
 
 template <typename TriggerRegistrars>
 struct create_from_yaml<Triggers::Or<TriggerRegistrars>> {
+  template <typename Metavariables>
   static Triggers::Or<TriggerRegistrars> create(const Option& options) {
     return Triggers::Or<TriggerRegistrars>(
         options.parse_as<
