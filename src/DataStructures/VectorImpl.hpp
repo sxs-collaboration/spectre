@@ -611,3 +611,23 @@ struct get_vector_element_type<std::array<T, S>, false> {
 
 template <typename T>
 using get_vector_element_type_t = typename get_vector_element_type<T>::type;
+
+namespace detail {
+template <typename... VectorImplTemplateArgs>
+std::true_type is_derived_of_vector_impl_impl(
+    const VectorImpl<VectorImplTemplateArgs...>*);
+
+std::false_type is_derived_of_vector_impl_impl(...);
+}  // namespace detail
+
+/// \ingroup TypeTraitsGroup
+/// This is `std::true_type` if the provided type possesses an implicit
+/// conversion to any `VectorImpl`, which is the primary feature of SpECTRE
+/// vectors generally. Otherwise, it is `std::false_type`.
+template <typename T>
+using is_derived_of_vector_impl =
+    decltype(detail::is_derived_of_vector_impl_impl(std::declval<T*>()));
+
+template <typename T>
+constexpr bool is_derived_of_vector_impl_v =
+    is_derived_of_vector_impl<T>::value;
