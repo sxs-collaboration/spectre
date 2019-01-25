@@ -64,12 +64,12 @@ struct MakeWithValueImpl<std::complex<double>, T> {
 };
 
 /// \brief Makes a `std::array`; each element of the `std::array`
-/// must be `make_with_value`-creatable from a `T`.
-template <size_t Size, typename T>
-struct MakeWithValueImpl<std::array<T, Size>, T> {
+/// must be `make_with_value`-creatable from a `InputType`.
+template <size_t Size, typename T, typename InputType>
+struct MakeWithValueImpl<std::array<T, Size>, InputType> {
   template <typename ValueType>
   static SPECTRE_ALWAYS_INLINE std::array<T, Size> apply(
-      const T& input, const ValueType value) noexcept {
+      const InputType& input, const ValueType value) noexcept {
     return make_array<Size>(make_with_value<T>(input, value));
   }
 };
