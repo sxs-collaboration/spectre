@@ -3,13 +3,13 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
-#include "tests/Unit/TestHelpers.hpp"
-
 #include <cmath>
 #include <cstddef>
 #include <random>
 #include <vector>
+
+#include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 template <class F>
