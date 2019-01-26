@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_Projection.cpp
   Test_Spectral.cpp
   Test_SwshCollocation.cpp
+  Test_SwshTags.cpp
   )
 
 add_test_library(

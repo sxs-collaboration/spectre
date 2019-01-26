@@ -1141,6 +1141,12 @@ then typically look as follows:
  */
 
 /*!
+ * \defgroup SwshGroup Spin-weighted spherical harmonics
+ * Utilities, tags, and metafunctions for using and manipulating spin-weighted
+ * spherical harmonics
+ */
+
+/*!
  * \defgroup TensorGroup Tensor
  * Tensor use documentation.
  */
