@@ -53,9 +53,8 @@ namespace LinearSolver {
  * vector is constructed. Then compute its magnitude and reduce.
  * 4. `StoreFinalOrthogonalization` (on `ResidualMonitor`): Perform a QR
  * decomposition of the Hessenberg matrix to produce a residual vector.
- * Broadcast to `UpdateFieldAndTerminate` if the residual vanishes to a
- * precision determined by `equal_within_roundoff`, else broadcast to
- * `NormalizeOperand`.
+ * Broadcast to `NormalizeOperandAndUpdateField` along with a termination
+ * flag if the `LinearSolver::Tags::ConvergenceCriteria` are met.
  * 5. `NormalizeOperandAndUpdateField` (on elements): Set the operand \f$q\f$ as
  * the new orthogonal vector and normalize. Use the residual vector and the set
  * of orthogonal vectors to determine the solution \f$x\f$.
@@ -95,9 +94,6 @@ struct Gmres {
    * LinearSolver::Tags::IterationId>`
    * - `basis_history_tag` =
    * `LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>`
-   * - `residual_magnitude_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Magnitude,
-   * db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>`
    *
    * DataBox changes:
    * - Adds:
@@ -106,7 +102,6 @@ struct Gmres {
    *   * `initial_fields_tag`
    *   * `orthogonalization_iteration_id_tag`
    *   * `basis_history_tag`
-   *   * `residual_magnitude_tag`
    *   * `LinearSolver::Tags::HasConverged`
    * - Removes: nothing
    * - Modifies:
@@ -141,9 +136,6 @@ struct Gmres {
    * LinearSolver::Tags::IterationId>`
    * - `basis_history_tag` =
    * `LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>`
-   * - `residual_magnitude_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Magnitude,
-   * db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>`
    *
    * DataBox changes:
    * - Adds: nothing
@@ -155,7 +147,6 @@ struct Gmres {
    *   * `operand_tag`
    *   * `orthogonalization_iteration_id_tag`
    *   * `basis_history_tag`
-   *   * `residual_magnitude_tag`
    *   * `LinearSolver::Tags::HasConverged`
    */
   using perform_step = gmres_detail::PerformStep;

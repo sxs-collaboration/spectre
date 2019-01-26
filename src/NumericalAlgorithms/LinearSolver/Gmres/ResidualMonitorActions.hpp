@@ -41,15 +41,10 @@ namespace gmres_detail {
 
 template <typename BroadcastTarget>
 struct InitializeResidualMagnitude {
-  template <
-      typename... DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-          db::add_tag_prefix<
-              LinearSolver::Tags::Magnitude,
-              db::add_tag_prefix<LinearSolver::Tags::Residual,
-                                 typename Metavariables::system::fields_tag>>,
-          DbTags>...>> = nullptr>
+  template <typename... DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
+            Requires<sizeof...(DbTags) != 0> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -61,51 +56,32 @@ struct InitializeResidualMagnitude {
     using residual_magnitude_tag = db::add_tag_prefix<
         LinearSolver::Tags::Magnitude,
         db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+    using initial_residual_magnitude_tag =
+        db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
 
-    db::mutate<residual_magnitude_tag>(
+    db::mutate<residual_magnitude_tag, initial_residual_magnitude_tag>(
         make_not_null(&box), [residual_magnitude](
                                  const gsl::not_null<double*>
-                                     stored_residual_magnitude) noexcept {
-          *stored_residual_magnitude = residual_magnitude;
+                                     local_residual_magnitude,
+                                 const gsl::not_null<double*>
+                                     initial_residual_magnitude) noexcept {
+          *local_residual_magnitude = *initial_residual_magnitude =
+              residual_magnitude;
         });
 
-    // When more sophisticated convergence criteria are implemented we may also
-    // want to check for convergence here.
+    // Determine whether the linear solver has already converged. This invokes
+    // the compute item.
+    const auto& has_converged = db::get<LinearSolver::Tags::HasConverged>(box);
+
+    if (UNLIKELY(has_converged and
+                 static_cast<int>(get<::Tags::Verbosity>(box)) >=
+                     static_cast<int>(::Verbosity::Quiet))) {
+      Parallel::printf("%s", has_converged);
+    }
 
     Parallel::simple_action<NormalizeInitialOperand>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
-        residual_magnitude);
-  }
-};
-
-struct InitializeSourceMagnitude {
-  template <
-      typename... DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-          db::add_tag_prefix<
-              LinearSolver::Tags::Magnitude,
-              db::add_tag_prefix<::Tags::Source,
-                                 typename Metavariables::system::fields_tag>>,
-          DbTags>...>> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    const double source_magnitude) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
-    using source_magnitude_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Magnitude,
-                           db::add_tag_prefix<::Tags::Source, fields_tag>>;
-
-    db::mutate<source_magnitude_tag>(
-        make_not_null(&box), [source_magnitude](
-                                 const gsl::not_null<double*>
-                                     stored_source_magnitude) noexcept {
-          *stored_source_magnitude = source_magnitude;
-        });
+        residual_magnitude, has_converged);
   }
 };
 
@@ -114,10 +90,7 @@ struct StoreOrthogonalization {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-                db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
-                                   typename Metavariables::system::fields_tag>,
-                DbTags>...>> = nullptr>
+            Requires<sizeof...(DbTags) != 0> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -163,10 +136,7 @@ struct StoreFinalOrthogonalization {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-                db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
-                                   typename Metavariables::system::fields_tag>,
-                DbTags>...>> = nullptr>
+            Requires<sizeof...(DbTags) != 0> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -178,9 +148,8 @@ struct StoreFinalOrthogonalization {
     using residual_magnitude_tag = db::add_tag_prefix<
         LinearSolver::Tags::Magnitude,
         db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-    using source_magnitude_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Magnitude,
-                           db::add_tag_prefix<::Tags::Source, fields_tag>>;
+    using initial_residual_magnitude_tag =
+        db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
     using orthogonalization_iteration_id_tag =
         db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                            LinearSolver::Tags::IterationId>;
@@ -213,19 +182,44 @@ struct StoreFinalOrthogonalization {
     blaze::qr(orthogonalization_history, qr_Q, qr_R);
     // Compute the residual vector from the QR decomposition
     DenseVector<double> beta(num_rows, 0.);
-    beta[0] = get<residual_magnitude_tag>(box);
+    beta[0] = get<initial_residual_magnitude_tag>(box);
     const DenseVector<double> minres =
         blaze::inv(qr_R) * blaze::trans(qr_Q) * beta;
-    const double absolute_residual =
+    const double residual_magnitude =
         blaze::length(beta - orthogonalization_history * minres);
 
-    if (UNLIKELY(static_cast<int>(get<::Tags::Verbosity>(box)) >=
-                 static_cast<int>(::Verbosity::Verbose))) {
-      Parallel::printf(
-          "Linear solver iteration %d done. Remaining absolute residual: %e\n",
-          get<LinearSolver::Tags::IterationId>(box).step_number + 1,
-          absolute_residual);
-    }
+    // Store residual magnitude and prepare for the next iteration
+    db::mutate<residual_magnitude_tag, LinearSolver::Tags::IterationId,
+               orthogonalization_iteration_id_tag,
+               orthogonalization_history_tag>(
+        make_not_null(&box),
+        [residual_magnitude](
+            const gsl::not_null<double*> local_residual_magnitude,
+            const gsl::not_null<IterationId*> iteration_id,
+            const gsl::not_null<IterationId*> orthogonalization_iteration_id,
+            const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
+                local_orthogonalization_history) noexcept {
+          *local_residual_magnitude = residual_magnitude;
+          // Prepare for the next iteration
+          iteration_id->step_number++;
+          orthogonalization_iteration_id->step_number = 0;
+          local_orthogonalization_history->resize(
+              iteration_id->step_number + 2, iteration_id->step_number + 1);
+          // Make sure the new entries are zero
+          for (size_t i = 0; i < local_orthogonalization_history->rows(); i++) {
+            (*local_orthogonalization_history)(
+                i, local_orthogonalization_history->columns() - 1) = 0.;
+          }
+          for (size_t j = 0; j < local_orthogonalization_history->columns();
+               j++) {
+            (*local_orthogonalization_history)(
+                local_orthogonalization_history->rows() - 1, j) = 0.;
+          }
+        });
+
+    // At this point, the iteration is complete. We proceed with observing,
+    // logging and checking convergence before broadcasting back to the
+    // elements.
 
     // Contribute data to the observer
     const auto observation_id =
@@ -243,43 +237,29 @@ struct StoreFinalOrthogonalization {
         std::vector<std::string>{"Iteration", "Residual"},
         observed_reduction_data{
             get<LinearSolver::Tags::IterationId>(box).step_number,
-            absolute_residual});
+            residual_magnitude});
 
-    // Determine whether the linear solver has converged
-    // More sophisticated convergence criteria can be added in the future.
-    const double relative_residual =
-        absolute_residual / get<source_magnitude_tag>(box);
-    const bool has_converged = equal_within_roundoff(relative_residual, 0.);
+    // Determine whether the linear solver has converged. This invokes the
+    // compute item.
+    const auto& has_converged = db::get<LinearSolver::Tags::HasConverged>(box);
 
-    // Prepare for the next iteration
-    db::mutate<LinearSolver::Tags::IterationId,
-               orthogonalization_iteration_id_tag,
-               orthogonalization_history_tag>(
-        make_not_null(&box),
-        [](const gsl::not_null<IterationId*> iteration_id,
-           const gsl::not_null<IterationId*> orthogonalization_iteration_id,
-           // `local_` prefix to silence gcc shadowing complaints
-           const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
-               local_orthogonalization_history) noexcept {
-          iteration_id->step_number++;
-          orthogonalization_iteration_id->step_number = 0;
-          local_orthogonalization_history->resize(
-              iteration_id->step_number + 2, iteration_id->step_number + 1);
-          // Make sure the new entries are zero
-          for (size_t i = 0; i < local_orthogonalization_history->rows(); i++) {
-            (*local_orthogonalization_history)(
-                i, local_orthogonalization_history->columns() - 1) = 0.;
-          }
-          for (size_t j = 0; j < local_orthogonalization_history->columns();
-               j++) {
-            (*local_orthogonalization_history)(
-                local_orthogonalization_history->rows() - 1, j) = 0.;
-          }
-        });
+    // Do some logging
+    if (UNLIKELY(static_cast<int>(get<::Tags::Verbosity>(box)) >=
+                 static_cast<int>(::Verbosity::Verbose))) {
+      Parallel::printf(
+          "Linear solver iteration %d done. Remaining residual: %e\n",
+          get<LinearSolver::Tags::IterationId>(box).step_number,
+          residual_magnitude);
+    }
+    if (UNLIKELY(has_converged and
+                 static_cast<int>(get<::Tags::Verbosity>(box)) >=
+                     static_cast<int>(::Verbosity::Quiet))) {
+      Parallel::printf("%s", has_converged);
+    }
 
     Parallel::simple_action<NormalizeOperandAndUpdateField>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
-        sqrt(orthogonalization), minres, absolute_residual, has_converged);
+        sqrt(orthogonalization), minres, has_converged);
   }
 };
 
