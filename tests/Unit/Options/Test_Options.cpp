@@ -19,7 +19,8 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 
-SPECTRE_TEST_CASE("Unit.Options.Empty.success", "[Unit][Options]") {
+namespace {
+void test_options_empty_success() {
   Options<tmpl::list<>> opts("");
   opts.parse("");
   // Catch requires us to have at least one CHECK in each test
@@ -51,7 +52,6 @@ SPECTRE_TEST_CASE("Unit.Options.syntax_error", "[Unit][Options]") {
              "  IsPeriodicIn: [false]");
 }
 
-namespace {
 struct Simple {
   using type = int;
   static constexpr OptionString help = {"halp"};
@@ -61,9 +61,8 @@ struct NamedSimple {
   static std::string name() noexcept { return "SomeName"; }
   static constexpr OptionString help = {"halp"};
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Options.Simple.success", "[Unit][Options]") {
+void test_options_simple_success() {
   {
     Options<tmpl::list<Simple>> opts("");
     opts.parse("Simple: -4");
@@ -148,7 +147,6 @@ SPECTRE_TEST_CASE("Unit.Options.NamedSimple.invalid", "[Unit][Options]") {
   opts.get<NamedSimple>();
 }
 
-namespace {
 /// [options_example_scalar_struct]
 struct Bounded {
   using type = int;
@@ -160,17 +158,16 @@ struct Bounded {
   static type upper_bound() noexcept { return 10; }
 };
 /// [options_example_scalar_struct]
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Options.Defaulted.specified", "[Unit][Options]") {
-/// [options_example_scalar_parse]
+void test_options_default_specified() {
+  /// [options_example_scalar_parse]
   Options<tmpl::list<Bounded>> opts("Overall help text");
   opts.parse("Bounded: 8");
   CHECK(opts.get<Bounded>() == 8);
 /// [options_example_scalar_parse]
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Defaulted.defaulted", "[Unit][Options]") {
+void test_options_default_defaulted() {
   Options<tmpl::list<Bounded>> opts("");
   opts.parse("");
   CHECK(opts.get<Bounded>() == 3);
@@ -185,13 +182,13 @@ SPECTRE_TEST_CASE("Unit.Options.Bounded.below", "[Unit][Options]") {
   opts.get<Bounded>();
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Bounded.lower_bound", "[Unit][Options]") {
+void test_options_bounded_lower_bound() {
   Options<tmpl::list<Bounded>> opts("");
   opts.parse("Bounded: 2");
   CHECK(opts.get<Bounded>() == 2);
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Bounded.upper_bound", "[Unit][Options]") {
+void test_options_bounded_upper_bound() {
   Options<tmpl::list<Bounded>> opts("");
   opts.parse("Bounded: 10");
   CHECK(opts.get<Bounded>() == 10);
@@ -206,7 +203,6 @@ SPECTRE_TEST_CASE("Unit.Options.Bounded.above", "[Unit][Options]") {
   opts.get<Bounded>();
 }
 
-namespace {
 struct BadDefault {
   using type = int;
   static constexpr OptionString help = {"halp"};
@@ -220,7 +216,6 @@ struct NamedBadDefault {
   static type default_value() noexcept { return 3; }
   static type lower_bound() noexcept { return 4; }
 };
-}  // namespace
 
 // [[OutputRegex, Checking DEFAULT value for BadDefault:.Value 3 is below the
 // lower bound of 4]]
@@ -240,7 +235,6 @@ SPECTRE_TEST_CASE("Unit.Options.NamedBadDefault", "[Unit][Options]") {
   opts.get<NamedBadDefault>();
 }
 
-namespace {
 /// [options_example_vector_struct]
 struct VectorOption {
   using type = std::vector<int>;
@@ -253,7 +247,6 @@ struct VectorOption {
   static size_t upper_bound_on_size() { return 5; }
 };
 /// [options_example_vector_struct]
-}  // namespace
 
 // [[OutputRegex, In string:.*While parsing option Vector:.At line 1 column
 // 9:.Value must have at least 2 entries, but 1 were given.]]
@@ -264,13 +257,13 @@ SPECTRE_TEST_CASE("Unit.Options.Vector.too_short", "[Unit][Options]") {
   opts.get<VectorOption>();
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Vector.lower_bound", "[Unit][Options]") {
+void test_options_vector_lower_bound() {
   Options<tmpl::list<VectorOption>> opts("");
   opts.parse("Vector: [2,3]");
   CHECK(opts.get<VectorOption>() == (std::vector<int>{2, 3}));
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Vector.upper_bound", "[Unit][Options]") {
+void test_options_vector_upper_bound() {
   Options<tmpl::list<VectorOption>> opts("");
   opts.parse("Vector: [2, 3, 3, 3, 5]");
   CHECK(opts.get<VectorOption>() == (std::vector<int>{2, 3, 3, 3, 5}));
@@ -294,12 +287,10 @@ SPECTRE_TEST_CASE("Unit.Options.Vector.empty_too_short", "[Unit][Options]") {
   opts.get<VectorOption>();
 }
 
-namespace {
 struct Array {
   using type = std::array<int, 3>;
   static constexpr OptionString help = {"halp"};
 };
-}  // namespace
 
 // [[OutputRegex, In string:.*While parsing option Array:.At line 1 column
 // 8:.Failed to convert value to type \[int x3\]:]]
@@ -310,7 +301,7 @@ SPECTRE_TEST_CASE("Unit.Options.Array.too_short", "[Unit][Options]") {
   opts.get<Array>();
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Array.success", "[Unit][Options]") {
+void test_options_array_success() {
   Options<tmpl::list<Array>> opts("");
   opts.parse("Array: [1,2,3]");
   CHECK(opts.get<Array>() == (std::array<int, 3>{{1, 2, 3}}));
@@ -348,14 +339,12 @@ SPECTRE_TEST_CASE("Unit.Options.Array.missing", "[Unit][Options]") {
   opts.get<Array>();
 }
 
-namespace {
 struct ZeroArray {
   using type = std::array<int, 0>;
   static constexpr OptionString help = {"halp"};
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Options.ZeroArray.missing", "[Unit][Options]") {
+void test_options_zero_array_missing() {
   Options<tmpl::list<ZeroArray>> opts("");
   opts.parse("ZeroArray:");
   opts.get<ZeroArray>();
@@ -364,14 +353,12 @@ SPECTRE_TEST_CASE("Unit.Options.ZeroArray.missing", "[Unit][Options]") {
   CHECK(true);
 }
 
-namespace {
 struct Map {
   using type = std::map<std::string, int>;
   static constexpr OptionString help = {"halp"};
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Options.Map.success", "[Unit][Options]") {
+void test_options_map_success() {
   Options<tmpl::list<Map>> opts("");
   opts.parse("Map:\n"
              "  A: 3\n"
@@ -382,7 +369,7 @@ SPECTRE_TEST_CASE("Unit.Options.Map.success", "[Unit][Options]") {
   CHECK(opts.get<Map>() == expected);
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Map.empty", "[Unit][Options]") {
+void test_options_map_empty() {
   Options<tmpl::list<Map>> opts("");
   opts.parse("Map:");
   CHECK(opts.get<Map>().empty());
@@ -407,14 +394,12 @@ SPECTRE_TEST_CASE("Unit.Options.Map.invalid_entry", "[Unit][Options]") {
   opts.get<Map>();
 }
 
-namespace {
 struct UnorderedMap {
   using type = std::unordered_map<std::string, int>;
   static constexpr OptionString help = {"halp"};
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Options.UnorderedMap.success", "[Unit][Options]") {
+void test_options_unordered_map_success() {
   Options<tmpl::list<UnorderedMap>> opts("");
   opts.parse("UnorderedMap:\n"
              "  A: 3\n"
@@ -425,7 +410,6 @@ SPECTRE_TEST_CASE("Unit.Options.UnorderedMap.success", "[Unit][Options]") {
   CHECK(opts.get<UnorderedMap>() == expected);
 }
 
-namespace {
 template <typename T>
 struct Wrapped {
   T data;
@@ -483,9 +467,8 @@ struct WrapUnorderedMap {
   using type = std::unordered_map<Wrapped<int>, Wrapped<std::string>>;
   static constexpr OptionString help = {"halp"};
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Options.ComplexContainers", "[Unit][Options]") {
+void test_options_complex_containers() {
   Options<tmpl::list<WrapMap, WrapVector, WrapList, WrapArray, WrapPair,
                      WrapUnorderedMap>> opts("");
   opts.parse("WrapMap: {1: A, 2: B}\n"
@@ -508,7 +491,6 @@ SPECTRE_TEST_CASE("Unit.Options.ComplexContainers", "[Unit][Options]") {
 }
 
 #ifdef SPECTRE_DEBUG
-namespace {
 struct Duplicate {
   using type = int;
   static constexpr OptionString help = {"halp"};
@@ -518,7 +500,6 @@ struct NamedDuplicate {
   static std::string name() noexcept { return "Duplicate"; }
   static constexpr OptionString help = {"halp"};
 };
-}  // namespace
 #endif  // SPECTRE_DEBUG
 
 // [[OutputRegex, Duplicate option name: Duplicate]]
@@ -531,7 +512,6 @@ struct NamedDuplicate {
 }
 
 #ifdef SPECTRE_DEBUG
-namespace {
 struct TooooooooooooooooooooLong {
   using type = int;
   static constexpr OptionString help = {"halp"};
@@ -561,7 +541,6 @@ struct NamedTooLongHelp {
   static constexpr OptionString help = {
     "halp halp halp halp halp halp halp halp halp halp halp halp"};
 };
-}  // namespace
 #endif  // SPECTRE_DEBUG
 
 // [[OutputRegex, The option name TooooooooooooooooooooLong is too long for
@@ -621,7 +600,6 @@ struct NamedTooLongHelp {
 #endif
 }
 
-namespace {
 struct Apply1 {
   using type = int;
   static constexpr OptionString help = {"halp"};
@@ -634,9 +612,8 @@ struct Apply3 {
   using type = std::vector<int>;
   static constexpr OptionString help = {"halp"};
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Options.Apply", "[Unit][Options]") {
+void test_options_apply() {
   Options<tmpl::list<Apply1, Apply2, Apply3>> opts("");
   opts.parse("Apply1: 2\n"
              "Apply2: str\n"
@@ -653,12 +630,10 @@ SPECTRE_TEST_CASE("Unit.Options.Apply", "[Unit][Options]") {
   CHECK(arg2 == 2);
 }
 
-SPECTRE_TEST_CASE("Unit.Options.OptionContext.default_stream",
-                  "[Unit][Options]") {
+void test_options_option_context_default_stream() {
   CHECK(get_output(OptionContext{}).empty());
 }
 
-namespace {
 // Use formatted inner types to make sure nested formatting works
 template <typename T>
 using In = std::array<T, 0>;
@@ -697,9 +672,8 @@ struct FormatUnorderedMap {
   static constexpr OptionString help = {"halp"};
   static constexpr const char* const expected = "{[int x0]: [double x0]}";
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Options.Format", "[Unit][Options]") {
+void test_options_format() {
   const auto check = [](auto opt) noexcept {
     using Opt = decltype(opt);
     Options<tmpl::list<Opt>> opts("");
@@ -730,4 +704,25 @@ SPECTRE_TEST_CASE("Unit.Options.bad_colon", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<>> opts("");
   opts.parse("\n\n:");
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
+  test_options_empty_success();
+  test_options_simple_success();
+  test_options_default_specified();
+  test_options_default_defaulted();
+  test_options_bounded_lower_bound();
+  test_options_bounded_upper_bound();
+  test_options_vector_lower_bound();
+  test_options_vector_upper_bound();
+  test_options_array_success();
+  test_options_zero_array_missing();
+  test_options_map_success();
+  test_options_map_empty();
+  test_options_unordered_map_success();
+  test_options_complex_containers();
+  test_options_apply();
+  test_options_option_context_default_stream();
+  test_options_format();
 }
