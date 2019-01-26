@@ -84,6 +84,10 @@ struct TestResult {
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const int /*array_index*/, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    const auto& has_converged = get<LinearSolver::Tags::HasConverged>(box);
+    SPECTRE_PARALLEL_REQUIRE(has_converged);
+    SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
+                             LinearSolver::ConvergenceReason::AbsoluteResidual);
     const auto& result = get<VectorTag>(box);
     const auto& expected_result = get<ExpectedResult>(cache);
     for (size_t i = 0; i < expected_result.size(); i++) {
