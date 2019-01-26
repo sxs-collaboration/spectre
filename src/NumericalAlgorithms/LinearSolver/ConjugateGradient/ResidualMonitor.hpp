@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
+#include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Options/Options.hpp"
@@ -41,7 +42,8 @@ struct ResidualMonitor {
 
   using chare_type = Parallel::Algorithms::Singleton;
   using const_global_cache_tag_list = tmpl::list<>;
-  using options = tmpl::list<Verbosity>;
+  using options =
+      tmpl::list<Verbosity, LinearSolver::Tags::ConvergenceCriteria>;
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<tmpl::append<
@@ -50,11 +52,14 @@ struct ResidualMonitor {
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
-      ::Verbosity verbosity) noexcept {
+      ::Verbosity verbosity,
+      LinearSolver::ConvergenceCriteria convergence_criteria) noexcept {
     Parallel::simple_action<InitializeResidualMonitor<Metavariables>>(
         Parallel::get_parallel_component<ResidualMonitor>(
             *(global_cache.ckLocalBranch())),
-        verbosity);
+        // clang-tidy: std::move of trivially-copyable type
+        std::move(verbosity),              // NOLINT
+        std::move(convergence_criteria));  // NOLINT
   }
 
   static void execute_next_phase(
@@ -70,24 +75,37 @@ struct InitializeResidualMonitor {
   using residual_square_tag = db::add_tag_prefix<
       LinearSolver::Tags::MagnitudeSquare,
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+  using initial_residual_magnitude_tag = db::add_tag_prefix<
+      LinearSolver::Tags::Initial,
+      db::add_tag_prefix<
+          LinearSolver::Tags::Magnitude,
+          db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
 
  public:
   using simple_tags =
-      db::AddSimpleTags<::Tags::Verbosity, ::LinearSolver::Tags::IterationId,
-                        residual_square_tag>;
-  using compute_tags = db::AddComputeTags<>;
+      db::AddSimpleTags<::Tags::Verbosity,
+                        LinearSolver::Tags::ConvergenceCriteria,
+                        ::LinearSolver::Tags::IterationId, residual_square_tag,
+                        initial_residual_magnitude_tag>;
+  using compute_tags = db::AddComputeTags<
+      LinearSolver::Tags::MagnitudeCompute<residual_square_tag>,
+      LinearSolver::Tags::HasConvergedCompute<fields_tag>>;
 
   template <typename... InboxTags, typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    ::Verbosity verbosity) noexcept {
+  static auto apply(
+      const db::DataBox<tmpl::list<>>& /*box*/,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/, ::Verbosity verbosity,
+      LinearSolver::ConvergenceCriteria convergence_criteria) noexcept {
     auto box = db::create<simple_tags, compute_tags>(
-        verbosity, LinearSolver::IterationId{0},
+        // clang-tidy: std::move of trivially-copyable type
+        std::move(verbosity),             // NOLINT
+        std::move(convergence_criteria),  // NOLINT
+        LinearSolver::IterationId{0},
+        std::numeric_limits<double>::signaling_NaN(),
         std::numeric_limits<double>::signaling_NaN());
     return std::make_tuple(std::move(box));
   }

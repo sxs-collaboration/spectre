@@ -48,8 +48,7 @@ namespace LinearSolver {
  * new \f$r^2\f$.
  * 4. `UpdateResidual` (on `ResidualMonitor`): Store the new \f$r^2\f$ and
  * broadcast the ratio of the new and old \f$r^2\f$, as well as a termination
- * flag if the residual vanishes to a precision determined by
- * `equal_within_roundoff`.
+ * flag if the `LinearSolver::Tags::ConvergenceCriteria` are met.
  * 5. `UpdateOperand` (on elements): Update \f$p\f$.
  *
  * \see Gmres for a linear solver that can invert nonsymmetric operators
@@ -81,15 +80,12 @@ struct ConjugateGradient {
    * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>`
    * - `residual_tag` =
    * `db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>`
-   * - `residual_magnitude_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Magnitude, residual_tag>`
    *
    * DataBox changes:
    * - Adds:
    *   * `LinearSolver::Tags::IterationId`
    *   * `Tags::Next<LinearSolver::Tags::IterationId>`
    *   * `residual_tag`
-   *   * `residual_magnitude_tag`
    *   * `LinearSolver::Tags::HasConverged`
    * - Removes: nothing
    * - Modifies:
@@ -121,8 +117,6 @@ struct ConjugateGradient {
    * `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
    * - `residual_tag` =
    * `db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>`
-   * - `residual_magnitude_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Magnitude, residual_tag>`
    *
    * DataBox changes:
    * - Adds: nothing
@@ -133,7 +127,6 @@ struct ConjugateGradient {
    *   * `fields_tag`
    *   * `operand_tag`
    *   * `residual_tag`
-   *   * `residual_magnitude_tag`
    *   * `LinearSolver::Tags::HasConverged`
    */
   using perform_step = cg_detail::PerformStep;
