@@ -655,4 +655,14 @@ template <typename Tag, typename TagList = NoSuchType>
 using split_tag = tmpl::conditional_t<
     tmpl::size<typename Subitems<TagList, Tag>::type>::value == 0,
     tmpl::list<Tag>, typename Subitems<TagList, Tag>::type>;
+
+/// \ingroup DataBoxTagsGroup
+/// \brief `true_type` if the prefix tag wraps the specified tag, `false_type`
+/// otherwise. Can be used with `tmpl::filter` to extract a subset of a
+/// `tmpl::list` of prefix tags which wrap a specified tag.
+///
+/// \snippet Test_DataBoxTag.cpp prefix_tag_wraps_specified_tag
+template <typename PrefixTag, typename Tag>
+struct prefix_tag_wraps_specified_tag
+    : std::is_same<Tag, typename PrefixTag::tag> {};
 }  // namespace db
