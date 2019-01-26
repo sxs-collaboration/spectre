@@ -22,3 +22,5 @@ See LICENSE.txt for details.
 - \ref spectre_writing_python_bindings "Writing Python Bindings" to use
   SpECTRE C++ classes and functions from within python.
 - \ref writing_unit_tests "Writing Unit Tests"
+- \ref implementing_vectors "Implementing SpECTRE vectors" a quick how-to for
+  making new generalizations of DataVectors
