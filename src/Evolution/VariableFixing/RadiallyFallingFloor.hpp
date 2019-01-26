@@ -49,9 +49,7 @@ namespace VariableFixing {
 /// `PowerPressureFloor`, and \f$r_{min}\f$ is given by the option
 /// `MinimumRadius`.
 ///
-/// \note In Porth et al.'s ["The Black Hole Accretion
-/// Code"](https://arxiv.org/pdf/1611.09720.pdf), the following floors are
-/// applied:
+/// \note In \cite Porth2016rfi, the following floors are applied:
 /// \f$\rho(r) \geq \rho_{\mathrm{fl}}(r) = 10^{-5}r^{-3/2}\f$
 /// and \f$P(r) \geq P_{\mathrm{fl}}(r) = \frac{1}{3} \times 10^{-7}r^{-5/2}\f$
 template <size_t Dim>

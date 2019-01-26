@@ -163,7 +163,7 @@ struct LaplacianRadius : db::ComputeTag {
 /// This is computed by \f$x_i/r-\partial r_{\rm surf}/\partial x^i\f$,
 /// where \f$x_i/r\f$ is `Rhat` and
 /// \f$\partial r_{\rm surf}/\partial x^i\f$ is `DxRadius`.
-/// See Eq. (8) of [arXiv:gr-qc/9606010] (https://arxiv.org/abs/gr-qc/9606010).
+/// See Eq. (8) of \cite Baumgarte1996hh.
 /// Note on the word "normal": \f$s_i\f$ points in the correct direction
 /// (it is "normal" to the surface), but it does not have unit length
 /// (it is not "normalized"; normalization requires a metric).

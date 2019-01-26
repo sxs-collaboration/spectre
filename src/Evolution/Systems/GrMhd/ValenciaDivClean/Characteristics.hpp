@@ -41,7 +41,7 @@ namespace ValenciaDivClean {
  *
  * Obtaining the exact form of the characteristic speeds involves the solution
  * of a nontrivial quartic equation for the fast and slow modes. Here we make
- * use of a common approximation in the literature (e.g. \ref char_ref "[1]")
+ * use of a common approximation in the literature (e.g. \cite Gammie2003)
  * where the resulting characteristic speeds are analogous to those of the
  * Valencia formulation of the 3-D relativistic Euler system
  * (see RelativisticEuler::Valencia::characteristic_speeds),
@@ -71,7 +71,7 @@ namespace ValenciaDivClean {
  * the exact expressions for \f$\lambda_{2, 8}\f$, \f$\lambda_{3, 7}\f$,
  * and \f$\lambda_{4, 6}\f$ should reduce to the
  * corresponding fast modes, Alfvén modes, and slow modes, respectively.
- * See \ref mhd_ref "[2]" for a detailed description of the hyperbolic
+ * See \cite Dedner2002 for a detailed description of the hyperbolic
  * characterization of Newtonian MHD.  In terms of the primitive variables:
  *
  * \f{align*}
@@ -91,14 +91,6 @@ namespace ValenciaDivClean {
  * spatial velocity, \f$\epsilon\f$ is the specific internal energy, \f$p\f$ is
  * the pressure, and \f$B^i\f$ is the spatial magnetic field measured by an
  * Eulerian observer.
-
- * \anchor char_ref [1] C.F Gammie, J.C McKinney, G. Tóth, HARM: A Numerical
- * Scheme for General Relativistic Magnetohydrodynamics, ApJ.
- * [589 (2003) 444](http://iopscience.iop.org/article/10.1086/374594/meta)
- *
- * \anchor mhd_ref [2] A. Dedner et al., Hyperbolic Divergence Cleaning for the
- * MHD Equations, J. Comput. Phys.
- * [175 (2002) 645](https://doi.org/10.1006/jcph.2001.6961)
  */
 template <size_t ThermodynamicDim>
 std::array<DataVector, 9> characteristic_speeds(

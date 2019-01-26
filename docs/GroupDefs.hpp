@@ -107,8 +107,8 @@
  *   \f$\alpha=0.3\f$ to be a good choice).
  *
  *
- * For additional details describing our control system approach, see Hemberger
- * et al. 2012 (https://arxiv.org/abs/1211.6079).
+ * For additional details describing our control system approach, see
+ * \cite Hemberger2012jz.
  */
 
 /*!

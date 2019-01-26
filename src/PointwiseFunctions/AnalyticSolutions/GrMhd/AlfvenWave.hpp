@@ -44,7 +44,7 @@ namespace Solutions {
  * \f[v^2_{B1} = \frac{B_1^2}{\rho_0 h + B_0^2 + B_1^2}\f]
  *
  * The Alfv&eacute;n wave phase speed that solves the GRMHD equations, even for
- * finite amplitudes \ref alfven_ref "[1]", is given by:
+ * finite amplitudes \cite DelZanna2007pk, is given by:
  *
  * \f[v_A^2 = \frac{2v^2_{B0}}{1 + \sqrt{1 - 4 v^2_{B0}v^2_{B1}}}\f]
  *
@@ -78,20 +78,13 @@ namespace Solutions {
  *
  * Note that the phase speed is not the characteristic Alfv&eacute;n speed
  * \f$c_A\f$, which is the speed in the limiting case where the total magnetic
- * field is parallel to the direction of propagation \ref alfven_ref "[1]":
+ * field is parallel to the direction of propagation \cite DelZanna2007pk :
  *
  * \f[c_A^2 = \frac{b^2}{\rho_0 h + b^2}\f]
  *
  * Where \f$b^2\f$ is the invariant quantity \f$B^2 - E^2\f$, given by:
  *
  * \f[b^2 = B_0^2 + B_1^2 - B_0^2 v_f^2\f]
- *
- * \anchor alfven_ref [1]
- * L. Del Zanna, O. Zanotti, N. Bucciantini, P. Londrillo, ECHO: an Eulerian
- * Conservative High Order scheme for general relativistic magnetohydrodynamics
- * and magnetodynamics. Astronomy & Astrophysics,
- * [473(1):11–30, 2007](https://arxiv.org/pdf/0704.3206.pdf)
- *
  */
 class AlfvenWave {
  public:

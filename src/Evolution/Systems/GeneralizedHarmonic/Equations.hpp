@@ -31,13 +31,12 @@ class not_null;
 /// \endcond
 
 namespace GeneralizedHarmonic {
-  /*!
-   * \brief Compute the RHS of the Generalized Harmonic formulation of
-   * Einstein's equations.
-   *
-   * \details For the full form of the equations see "A New Generalized Harmonic
-   * Evolution System" by Lindblom et. al, arxiv.org/abs/gr-qc/0512093.
-   */
+/*!
+ * \brief Compute the RHS of the Generalized Harmonic formulation of
+ * Einstein's equations.
+ *
+ * \details For the full form of the equations see \cite Lindblom2005qh.
+ */
 template <size_t Dim>
 struct ComputeDuDt {
  public:
@@ -85,9 +84,8 @@ struct ComputeDuDt {
  * \brief Compute the fluxes of the Generalized Harmonic formulation of
  * Einstein's equations.
  *
- * \details The expressions for the fluxes is obtained
- * from <a href="https://arxiv.org/abs/gr-qc/0512093">
- * gr-qc/0512093 </a>.
+ * \details The expressions for the fluxes is obtained from
+ * \cite Lindblom2005qh.
  * The fluxes for each variable are obtained by taking the principal part of
  * equations 35, 36, and 37, and replacing derivatives \f$ \partial_k \f$
  * with the unit normal \f$ n_k \f$. This gives:

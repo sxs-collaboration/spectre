@@ -30,9 +30,7 @@ namespace Solutions {
  * \brief TOV solver based on Lindblom's method
  *
  * Uses Lindblom's method of integrating the TOV equations from
- * <a href="https://arxiv.org/abs/gr-qc/9802072">
- * "Phase Transitions and the Mass-Radius Curves of Relativistic Stars" </a>
- * L. Lindblom, Phys.Rev. D58 (1998) 024008
+ * \cite Lindblom1998dp
  *
  * Instead of integrating \f$m(r)\f$ and \f$p(r)\f$
  * (\f$r\f$=radius, \f$m\f$=mass, \f$p\f$=pressure)

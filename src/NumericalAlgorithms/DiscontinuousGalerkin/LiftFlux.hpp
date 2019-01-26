@@ -31,9 +31,8 @@ namespace dg {
 /// reduction in the computational cost of the lifting operation, however,
 /// the scheme is slightly less accurate, especially when the grid is
 /// deformed by non-trivial Jacobians. For more details on the
-/// diagonalization of the mass matrix and its implications, see Saul's
-/// DG formulation paper, especially Section 3:
-/// https://arxiv.org/abs/1510.01190.
+/// diagonalization of the mass matrix and its implications,
+/// \cite Teukolsky2015ega, especially Section 3.
 ///
 /// \note The result is still provided only on the boundary grid.  The
 /// values away from the boundary are zero and are not stored.

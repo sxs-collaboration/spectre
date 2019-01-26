@@ -130,7 +130,7 @@ previous section. One can also use (within a Doxygen comment) the form
 to put the expression on its own line. We also encourage you to use the latex
 env `align` for formatting these multiple-line equations.
 
-## Cite publications in your documentation
+## Cite publications in your documentation {#writing_dox_citations}
 
 When you refer to publications or books in the documentation, add a
 corresponding entry to `docs/References.bib`. Follow these guidelines when

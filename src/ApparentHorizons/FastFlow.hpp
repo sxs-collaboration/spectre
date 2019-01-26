@@ -29,7 +29,7 @@ class Strahlkorper;
 /// \ingroup SurfacesGroup
 /// \brief Fast flow method for finding apparent horizons.
 ///
-/// \details Based on https://arxiv.org/abs/gr-qc/9707050
+/// \details Based on \cite Gundlach1997us.
 //  The method is iterative.
 class FastFlow {
  public:

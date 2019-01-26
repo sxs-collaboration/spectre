@@ -31,7 +31,7 @@ namespace AnalyticData {
  * \brief Analytic initial data for a cylindrical blast wave.
  *
  * This class implements analytic initial data for a cylindrical blast wave,
- * as described, e.g., in https://arxiv.org/abs/1609.00098v2 Sec. 6.2.3.
+ * as described, e.g., in \cite Kidder2016hev Sec. 6.2.3.
  * A uniform magnetic field threads an ideal fluid. The solution begins with
  * material at fixed (typically high) density and pressure at rest inside a
  * cylinder of radius \f$r < r_{\rm in}\f$ and material at fixed (typically low)
