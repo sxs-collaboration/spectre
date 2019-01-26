@@ -5,14 +5,22 @@
 
 #include <string>
 
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
+#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace {
 struct Tag : db::SimpleTag {
   static std::string name() noexcept { return "Tag"; }
   using type = int;
 };
+using residual_magnitude_tag =
+    LinearSolver::Tags::Magnitude<LinearSolver::Tags::Residual<Tag>>;
+using initial_residual_magnitude_tag =
+    LinearSolver::Tags::Initial<residual_magnitude_tag>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Tags",
@@ -32,4 +40,40 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Tags",
         "LinearOrthogonalizationHistory(Tag)");
   CHECK(LinearSolver::Tags::KrylovSubspaceBasis<Tag>::name() ==
         "KrylovSubspaceBasis(Tag)");
+  CHECK(LinearSolver::Tags::ConvergenceCriteria::name() ==
+        "ConvergenceCriteria");
+
+  {
+    INFO("HasConvergedCompute");
+    CHECK(LinearSolver::Tags::HasConvergedCompute<Tag>::name() ==
+          "LinearSolverHasConverged");
+    const auto box = db::create<
+        db::AddSimpleTags<LinearSolver::Tags::ConvergenceCriteria,
+                          LinearSolver::Tags::IterationId,
+                          residual_magnitude_tag,
+                          initial_residual_magnitude_tag>,
+        db::AddComputeTags<LinearSolver::Tags::HasConvergedCompute<Tag>>>(
+        LinearSolver::ConvergenceCriteria{2, 0., 0.5},
+        LinearSolver::IterationId{2}, 1., 1.);
+    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
+    CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
+          LinearSolver::ConvergenceReason::MaxIterations);
+  }
+
+  {
+    INFO("HasConvergedCompute - Zero initial residual");
+    // A vanishing initial residual should work because the absolute residual
+    // condition takes precedence so that no FPE occurs
+    const auto box = db::create<
+        db::AddSimpleTags<LinearSolver::Tags::ConvergenceCriteria,
+                          LinearSolver::Tags::IterationId,
+                          residual_magnitude_tag,
+                          initial_residual_magnitude_tag>,
+        db::AddComputeTags<LinearSolver::Tags::HasConvergedCompute<Tag>>>(
+        LinearSolver::ConvergenceCriteria{2, 0., 0.5},
+        LinearSolver::IterationId{1}, 0., 0.);
+    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
+    CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
+          LinearSolver::ConvergenceReason::AbsoluteResidual);
+  }
 }

@@ -5,9 +5,12 @@
 
 #include <algorithm>
 #include <unordered_map>
+// IWYU pragma: no_include <boost/variant/get.hpp>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
+#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -46,7 +49,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Actions.TerminateIfConverged",
 
   SECTION("ProceedIfNotConverged") {
     tuples::get<MockDistributedObjectsTag>(dist_objects)
-        .emplace(self_id, db::create<simple_tags>(false));
+        .emplace(self_id,
+                 db::create<simple_tags>(
+                     db::item_type<LinearSolver::Tags::HasConverged>{}));
     MockRuntimeSystem runner{{}, std::move(dist_objects)};
     const auto get_box = [&runner, &self_id]() -> decltype(auto) {
       return runner.algorithms<ElementArray<Metavariables>>()
@@ -65,7 +70,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Actions.TerminateIfConverged",
   }
   SECTION("TerminateIfConverged") {
     tuples::get<MockDistributedObjectsTag>(dist_objects)
-        .emplace(self_id, db::create<simple_tags>(true));
+        .emplace(self_id, db::create<simple_tags>(
+                              db::item_type<LinearSolver::Tags::HasConverged>{
+                                  LinearSolver::ConvergenceCriteria{1, 0., 0.},
+                                  LinearSolver::IterationId{1}, 0., 0.}));
     MockRuntimeSystem runner{{}, std::move(dist_objects)};
     const auto get_box = [&runner, &self_id]() -> decltype(auto) {
       return runner.algorithms<ElementArray<Metavariables>>()
