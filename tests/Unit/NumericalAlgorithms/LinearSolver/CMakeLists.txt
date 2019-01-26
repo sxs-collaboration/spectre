@@ -4,6 +4,7 @@
 set(LIBRARY "Test_LinearSolver")
 
 set(LIBRARY_SOURCES
+  Test_Convergence.cpp
   Test_InnerProduct.cpp
   Test_IterationId.cpp
   Test_Tags.cpp
