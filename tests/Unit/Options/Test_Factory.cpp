@@ -85,30 +85,31 @@ struct Map {
   using type = std::map<std::string, std::unique_ptr<OptionTest>>;
   static constexpr OptionString help = {"halp"};
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Options.Factory", "[Unit][Options]") {
+void test_factory() {
   Options<tmpl::list<OptionType>> opts("");
   opts.parse("OptionType: Test2");
   CHECK(opts.get<OptionType>()->name() == "Test2");
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Factory.with_colon", "[Unit][Options]") {
+void test_factory_with_colon() {
   Options<tmpl::list<OptionType>> opts("");
-  opts.parse("OptionType:\n"
-             "  Test2:");
+  opts.parse(
+      "OptionType:\n"
+      "  Test2:");
   CHECK(opts.get<OptionType>()->name() == "Test2");
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Factory.with_arg", "[Unit][Options]") {
+void test_factory_with_arg() {
   Options<tmpl::list<OptionType>> opts("");
-  opts.parse("OptionType:\n"
-             "  TestWithArg:\n"
-             "    Arg: stuff");
+  opts.parse(
+      "OptionType:\n"
+      "  TestWithArg:\n"
+      "    Arg: stuff");
   CHECK(opts.get<OptionType>()->name() == "TestWithArg(stuff)");
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Factory.object_vector", "[Unit][Options]") {
+void test_factory_object_vector() {
   Options<tmpl::list<Vector>> opts("");
   opts.parse("Vector: [Test1, Test2, Test1]");
   const auto& arg = opts.get<Vector>();
@@ -118,17 +119,38 @@ SPECTRE_TEST_CASE("Unit.Options.Factory.object_vector", "[Unit][Options]") {
   CHECK(arg[2]->name() == "Test1");
 }
 
-SPECTRE_TEST_CASE("Unit.Options.Factory.object_map", "[Unit][Options]") {
+void test_factory_object_map() {
   Options<tmpl::list<Map>> opts("");
-  opts.parse("Map:\n"
-             "  A: Test1\n"
-             "  B: Test2\n"
-             "  C: Test1\n");
+  opts.parse(
+      "Map:\n"
+      "  A: Test1\n"
+      "  B: Test2\n"
+      "  C: Test1\n");
   const auto& arg = opts.get<Map>();
   CHECK(arg.size() == 3);
   CHECK(arg.at("A")->name() == "Test1");
   CHECK(arg.at("B")->name() == "Test2");
   CHECK(arg.at("C")->name() == "Test1");
+}
+
+void test_factory_format() {
+  Options<tmpl::list<OptionType>> opts("");
+  INFO(opts.help());
+  // The compiler puts "(anonymous namespace)::" before the type, but
+  // I don't want to rely on that, so just check that the type is at
+  // the end of the line, which should ensure it is not in a template
+  // parameter or something.
+  CHECK(opts.help().find("OptionTest\n") != std::string::npos);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Options.Factory", "[Unit][Options]") {
+  test_factory();
+  test_factory_with_arg();
+  test_factory_with_colon();
+  test_factory_object_vector();
+  test_factory_object_map();
+  test_factory_format();
 }
 
 // [[OutputRegex, In string:.*At line 1 column 1:.Expected a class to
@@ -176,14 +198,4 @@ SPECTRE_TEST_CASE("Unit.Options.Factory.missing_arg", "[Unit][Options]") {
   opts.parse("OptionType:\n"
              "  TestWithArg:");
   CHECK(opts.get<OptionType>()->name() == "TestWithArg(stuff)");
-}
-
-SPECTRE_TEST_CASE("Unit.Options.Factory.Format", "[Unit][Options]") {
-  Options<tmpl::list<OptionType>> opts("");
-  INFO(opts.help());
-  // The compiler puts "(anonymous namespace)::" before the type, but
-  // I don't want to rely on that, so just check that the type is at
-  // the end of the line, which should ensure it is not in a template
-  // parameter or something.
-  CHECK(opts.help().find("OptionTest\n") != std::string::npos);
 }
