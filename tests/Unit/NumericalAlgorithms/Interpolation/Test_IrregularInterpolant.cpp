@@ -15,8 +15,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp" // IWYU pragma: keep
-#include "DataStructures/VariablesHelpers.hpp" // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"         // IWYU pragma: keep
+#include "DataStructures/VariablesHelpers.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -128,8 +128,7 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
       for (size_t d = 0; d < Dim; ++d) {
         x_inertial_local.get(d) = target_x_inertial.get(d)[s];
       }
-      const auto x_local =
-          coordinate_map.inverse(x_inertial_local).get();
+      const auto x_local = coordinate_map.inverse(x_inertial_local).get();
       for (size_t d = 0; d < Dim; ++d) {
         result.get(d)[s] = x_local.get(d);
       }

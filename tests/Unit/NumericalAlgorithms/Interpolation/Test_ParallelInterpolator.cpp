@@ -278,16 +278,17 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
                ActionTesting::MockDistributedObject<mock_interpolation_target<
                    metavars, metavars::InterpolationTargetC>>{});
   tuples::get<MockDistributedObjectsTagInterpolator>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<
-                      mock_interpolator<metavars>>{});
+      .emplace(
+          0,
+          ActionTesting::MockDistributedObject<mock_interpolator<metavars>>{});
 
   // Options for all InterpolationTargets.
   intrp::OptionHolders::LineSegment<3> line_segment_opts_A(
       {{1.0, 1.0, 1.0}}, {{2.4, 2.4, 2.4}}, 15);
   intrp::OptionHolders::LineSegment<3> line_segment_opts_B(
       {{1.1, 1.1, 1.1}}, {{2.5, 2.5, 2.5}}, 17);
-  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(
-      10, {{0.0, 0.0, 0.0}}, 1.0, {{0.0, 0.0, 0.0}});
+  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
+                                                        1.0, {{0.0, 0.0, 0.0}});
   tuples::TaggedTuple<metavars::InterpolationTargetA,
                       metavars::InterpolationTargetB,
                       metavars::InterpolationTargetC>

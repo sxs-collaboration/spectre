@@ -170,8 +170,8 @@ void test_coordinate_map_argument_types(
     const Args&... args) {
   const auto make_array_data_vector = [](const auto& double_array) noexcept {
     std::array<DataVector, Map::dim> result;
-    std::transform(double_array.begin(), double_array.end(),
-                   result.begin(), [](const double x) noexcept {
+    std::transform(double_array.begin(), double_array.end(), result.begin(),
+                   [](const double x) noexcept {
                      return DataVector{x, x};
                    });
     return result;
@@ -196,10 +196,10 @@ void test_coordinate_map_argument_types(
   // Here, time_args is a const auto& not const Args& because time_args
   // is allowed to be different than Args (which was the reason for the
   // overloader below that calls this function).
-  const auto check_jac = [](const auto& make_arr_data_vec,
-                            const auto& add_ref_wrap, const Map& the_map,
-                            const std::array<double, Map::dim>& point,
-                            const auto&... time_args) noexcept {
+  const auto check_jac =
+      [](const auto& make_arr_data_vec, const auto& add_ref_wrap,
+         const Map& the_map, const std::array<double, Map::dim>& point,
+         const auto&... time_args) noexcept {
     const auto make_tensor_data_vector = [](const auto& double_tensor) {
       using Arg = std::decay_t<decltype(double_tensor)>;
       Tensor<DataVector, typename Arg::symmetry, typename Arg::index_list>

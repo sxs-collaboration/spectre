@@ -69,7 +69,7 @@ void test_frustum_fail() noexcept {
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point1)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point2)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point3)));
-  if(map.inverse(test_mapped_point4)) {
+  if (map.inverse(test_mapped_point4)) {
     CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point4).get()),
                           test_mapped_point4);
   }

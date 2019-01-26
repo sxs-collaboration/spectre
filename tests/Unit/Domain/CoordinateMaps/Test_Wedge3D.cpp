@@ -288,12 +288,12 @@ void test_wedge3d_fail() noexcept {
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point3)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point4)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point5)));
-  if(map.inverse(test_mapped_point6)) {
+  if (map.inverse(test_mapped_point6)) {
     Approx my_approx = Approx::custom().epsilon(1.e-10).scale(1.0);
     CHECK_ITERABLE_CUSTOM_APPROX(map(map.inverse(test_mapped_point6).get()),
                                  test_mapped_point6, my_approx);
   }
-  if(map.inverse(test_mapped_point7)) {
+  if (map.inverse(test_mapped_point7)) {
     CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point7).get()),
                           test_mapped_point7);
   }
