@@ -90,8 +90,6 @@ struct Metavariables {
       tmpl::list<analytic_solution_tag, normal_dot_numerical_flux>;
 };
 
-struct MockParallelComponent {};
-
 template <size_t Dim>
 using arguments_compute_tags = db::AddComputeTags<
     Tags::BoundaryDirectionsInterior<Dim>,

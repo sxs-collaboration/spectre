@@ -87,7 +87,7 @@ struct MapTrait<DiagonalModalOperator, Operator> {
               // these traits are required for operators acting with doubles
               blaze::AddScalar<DiagonalModalOperator::ElementType>,
               blaze::SubScalarRhs<DiagonalModalOperator::ElementType>,
-              blaze::SubScalarLhs<DiagonalModalOperator::ElementType>>,
+              blaze::SubScalarLhs<DiagonalModalOperator::ElementType>,
               blaze::DivideScalarByVector<DiagonalModalOperator::ElementType>>,
           Operator>,
       "This unary operation is not permitted on a DiagonalModalOperator");

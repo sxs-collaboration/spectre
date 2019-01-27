@@ -58,7 +58,6 @@ struct Metavariables {
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
 };
 
-struct MockParallelComponent {};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Source",
@@ -76,7 +75,6 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Source",
     ActionTesting::MockRuntimeSystem<Metavariables<1>> runner{
         {AnalyticSolution<1>{}}, {}};
 
-    MockParallelComponent component{};
     const auto box =
         Elliptic::Initialization::Source<Metavariables<1>>::initialize(
             std::move(arguments_box), runner.cache());
@@ -100,7 +98,6 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Source",
     ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
         {AnalyticSolution<2>{}}, {}};
 
-    MockParallelComponent component{};
     const auto box =
         Elliptic::Initialization::Source<Metavariables<2>>::initialize(
             std::move(arguments_box), runner.cache());
@@ -126,7 +123,6 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Source",
     ActionTesting::MockRuntimeSystem<Metavariables<3>> runner{
         {AnalyticSolution<3>{}}, {}};
 
-    MockParallelComponent component{};
     const auto box =
         Elliptic::Initialization::Source<Metavariables<3>>::initialize(
             std::move(arguments_box), runner.cache());
