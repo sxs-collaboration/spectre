@@ -20,6 +20,7 @@ set(LIBRARY_SOURCES
   Test_SliceIterator.cpp
   Test_SpinWeighted.cpp
   Test_StripeIterator.cpp
+  Test_TempBuffer.cpp
   Test_Variables.cpp
   Test_VectorImpl.cpp
   Test_VectorImplTestHelper.cpp
