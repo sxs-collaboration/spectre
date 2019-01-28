@@ -7,7 +7,6 @@
 #include <cmath>
 #include <cstddef>
 #include <pup.h>
-#include <random>
 #include <string>
 #include <utility>
 #include <vector>
@@ -48,6 +47,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox
@@ -375,10 +375,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   }
 
   // Invoke remaining actions in random order.
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  CAPTURE(seed);
+  MAKE_GENERATOR(generator);
 
   auto index_map = ActionTesting::indices_of_components_with_queued_actions<
       metavars::component_list>(make_not_null(&runner), 0_st);

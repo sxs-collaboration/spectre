@@ -14,6 +14,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace {
@@ -47,10 +48,7 @@ void test_compute_spacetime_normal_vector(const DataType& used_for_size) {
 }
 template <size_t Dim, typename DataType>
 void test_compute_spacetime_normal_one_form(const DataType& used_for_size) {
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-1.0, 1.0);
   const auto lapse = make_with_random_values<Scalar<DataType>>(
       make_not_null(&generator), make_not_null(&distribution), used_for_size);
@@ -73,10 +71,7 @@ void test_compute_extrinsic_curvature(const DataType& used_for_size) {
 template <size_t Dim, typename T>
 void test_compute_spatial_metric_lapse_shift(const T& used_for_size) {
   // Set up random values for lapse, shift, and spatial_metric.
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed" << seed);
+  MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist(-1., 1.);
   std::uniform_real_distribution<> dist_positive(1., 2.);
   const auto nn_generator = make_not_null(&generator);

@@ -13,6 +13,7 @@
 #include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -47,9 +48,7 @@ DataVector apply_numerical_flux(const DataVector& ndotf_interior,
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Burgers.LocalLaxFriedrichsFlux", "[Unit][Burgers]") {
-  const auto seed = std::random_device{}();
-  CAPTURE(seed);
-  std::mt19937 gen(seed);
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> interval(-10., 10.);
   const DataVector size(5);
   // Check general properties of fluxes

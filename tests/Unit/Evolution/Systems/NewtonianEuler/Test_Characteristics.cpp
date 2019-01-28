@@ -17,6 +17,7 @@
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -34,10 +35,7 @@ void test_characteristic_speeds(const DataVector& used_for_size) noexcept {
 template <size_t Dim>
 void test_with_normal_along_coordinate_axes(
     const DataVector& used_for_size) noexcept {
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(0.0, 1.0);
 
   const auto nn_generator = make_not_null(&generator);

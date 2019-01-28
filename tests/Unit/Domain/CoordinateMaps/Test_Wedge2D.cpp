@@ -16,13 +16,12 @@
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 void test_wedge2d_all_orientations(const bool with_equiangular_map) {
-  // Set up random number generator:
-  const auto seed = std::random_device{}();
-  std::mt19937 gen(seed);
-  INFO("seed = " << seed);
+  // Set up random number generator
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
   std::uniform_real_distribution<> unit_dis(0, 1);
   std::uniform_real_distribution<> inner_dis(1, 3);

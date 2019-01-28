@@ -19,6 +19,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_include <algorithm>
@@ -449,10 +450,7 @@ void test_real_functions(Gen& gen) noexcept {
 }
 
 SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
-  std::random_device r;
-  const auto seed = r();
-  INFO("Seed (individual functionals) is: " << seed);
-  std::mt19937 generator(seed);
+  MAKE_GENERATOR(generator);
   test_generic_unaries(generator);
   test_floating_point_functions(generator);
   test_real_functions(generator);

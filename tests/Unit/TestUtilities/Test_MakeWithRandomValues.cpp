@@ -15,6 +15,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -70,10 +71,7 @@ void check_random_values(
 
 template <typename T, typename U>
 void test_make_with_random_values(const U& used_for_size) noexcept {
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-10.0, 10.0);
   // check that the data structure is filled with unique random values
   // by adding them to a set and checking that the size of the set

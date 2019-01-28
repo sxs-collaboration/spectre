@@ -108,10 +108,7 @@ struct SymmetricTensor : db::SimpleTag {
 template <size_t Dim>
 void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
   // Fill target interpolation coordinates with random values
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed" << seed);
+  MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist(inertial_coord_min, inertial_coord_max);
 
   const auto nn_generator = make_not_null(&generator);

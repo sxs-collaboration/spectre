@@ -12,12 +12,12 @@
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Suite",
                   "[Domain][Unit]") {
   // Set up random number generator
-  std::random_device rd;
-  std::mt19937 gen(rd());
+  MAKE_GENERATOR(gen);
   // Note: Empirically we have found that the map is accurate
   // to 12 decimal places for mu = 0.96.
   // test_suite demands more accuracy than 12 decimal places
@@ -32,10 +32,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Suite",
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Map",
                   "[Domain][Unit]") {
-  // Set up random number generator:
-  const auto seed = std::random_device{}();
-  std::mt19937 gen(seed);
-  INFO("seed = " << seed);
+  // Set up random number generator
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> radius_dis(0, 1);
   std::uniform_real_distribution<> phi_dis(0, 2.0 * M_PI);
   std::uniform_real_distribution<> theta_dis(0, M_PI);

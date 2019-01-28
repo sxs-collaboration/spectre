@@ -14,13 +14,12 @@
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 void test_wedge3d_all_directions() {
   // Set up random number generator
-  const auto seed = std::random_device{}();
-  std::mt19937 gen(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> unit_dis(0, 1);
   std::uniform_real_distribution<> inner_dis(1, 3);
   std::uniform_real_distribution<> outer_dis(5.2, 7);
@@ -153,10 +152,8 @@ void test_wedge3d_alignment() {
 }
 
 void test_wedge3d_random_radii() {
-  // Set up random number generator:
-  const auto seed = std::random_device{}();
-  std::mt19937 gen(seed);
-  INFO("seed = " << seed);
+  // Set up random number generator
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
   std::uniform_real_distribution<> inner_dis(1, 3);
   std::uniform_real_distribution<> outer_dis(4, 7);

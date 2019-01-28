@@ -12,12 +12,12 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression",
                   "[Domain][Unit]") {
   // Set up random number generator
-  std::random_device rd;
-  std::mt19937 gen(rd());
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> aspect_ratio_dis(0.1, 10);
 
   const double aspect_ratio = aspect_ratio_dis(gen);
@@ -29,10 +29,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression",
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression.Radius",
                   "[Domain][Unit]") {
-  // Set up random number generator:
-  const auto seed = std::random_device{}();
-  std::mt19937 gen(seed);
-  INFO("seed = " << seed);
+  // Set up random number generator
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-10, 10);
   std::uniform_real_distribution<> aspect_ratio_dis(0.1, 10);
   const double x = real_dis(gen);

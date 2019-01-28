@@ -20,6 +20,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 #include "tests/Utilities/RandomUnitNormal.hpp"
 
@@ -341,10 +342,7 @@ void test_primitive_from_conservative_known(
 
 SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.PrimitiveFromConservative",
                   "[Unit][GrMhd]") {
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(generator);
 
   EquationsOfState::PolytropicFluid<true> polytropic_fluid(100.0, 2.0);
   EquationsOfState::IdealFluid<true> ideal_fluid(4.0 / 3.0);
