@@ -45,10 +45,6 @@ using reduction_datums =
 
 /*!
  * \brief Temporary action for observing volume and reduction data
- *
- * A few notes:
- * - Observation frequency is currently hard-coded and must manually be updated.
- *   Look for `time_by_timestep_value` to update.
  */
 struct Observe {
   struct ObserveNSlabs {
@@ -82,8 +78,6 @@ struct Observe {
     const auto& time = time_id.time();
     const std::string element_name = MakeString{} << ElementId<Dim>(array_index)
                                                   << '/';
-    // We hard-code the writing frequency to large time values to avoid breaking
-    // the tests.
     if (time_id.slab_number() >= 0 and time_id.time().is_at_slab_start() and
         static_cast<size_t>(time_id.slab_number()) %
                 Parallel::get<ObserveNSlabs>(cache) ==

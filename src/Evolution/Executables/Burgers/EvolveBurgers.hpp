@@ -17,7 +17,11 @@
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
+#include "Evolution/Systems/Burgers/Observe.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
+#include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Helpers.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
@@ -71,6 +75,10 @@ struct EvolutionMetavars {
                      local_time_stepping, LtsTimeStepper, TimeStepper>>>;
   using domain_creator_tag = OptionTags::DomainCreator<1, Frame::Inertial>;
 
+  using reduction_data_tags =
+      observers::get_reduction_data_tags_from_observing_actions<
+          tmpl::list<Burgers::Actions::Observe>>;
+
   using step_choosers =
       tmpl::list<StepChoosers::Registrars::Cfl<1, Frame::Inertial>,
                  StepChoosers::Registrars::Constant,
@@ -89,21 +97,24 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      Actions::UpdateU,
-      SlopeLimiters::Actions::SendData<EvolutionMetavars>,
+      Actions::UpdateU, SlopeLimiters::Actions::SendData<EvolutionMetavars>,
       SlopeLimiters::Actions::Limit<EvolutionMetavars>>>;
 
   struct EvolvePhaseStart;
-  using component_list = tmpl::list<DgElementArray<
-      EvolutionMetavars, dg::Actions::InitializeElement<1>,
-      tmpl::flatten<tmpl::list<
-          SelfStart::self_start_procedure<compute_rhs, update_variables>,
-          Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
-          Actions::FinalTime,
-          tmpl::conditional_t<local_time_stepping,
-                              Actions::ChangeStepSize<step_choosers>,
-                              tmpl::list<>>,
-          compute_rhs, update_variables, Actions::Goto<EvolvePhaseStart>>>>>;
+  using component_list = tmpl::list<
+      observers::Observer<EvolutionMetavars>,
+      observers::ObserverWriter<EvolutionMetavars>,
+      DgElementArray<
+          EvolutionMetavars, dg::Actions::InitializeElement<1>,
+          tmpl::flatten<tmpl::list<
+              SelfStart::self_start_procedure<compute_rhs, update_variables>,
+              Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
+              Burgers::Actions::Observe, Actions::FinalTime,
+              tmpl::conditional_t<local_time_stepping,
+                                  Actions::ChangeStepSize<step_choosers>,
+                                  tmpl::list<>>,
+              compute_rhs, update_variables,
+              Actions::Goto<EvolvePhaseStart>>>>>;
 
   static constexpr OptionString help{
       "Evolve the Burgers equation.\n\n"
@@ -112,6 +123,7 @@ struct EvolutionMetavars {
 
   enum class Phase {
     Initialization,
+    RegisterWithObserver,
     Evolve,
     Exit
   };
@@ -120,7 +132,22 @@ struct EvolutionMetavars {
       const Phase& current_phase,
       const Parallel::CProxy_ConstGlobalCache<
           EvolutionMetavars>& /*cache_proxy*/) noexcept {
-    return current_phase == Phase::Initialization ? Phase::Evolve : Phase::Exit;
+    switch (current_phase) {
+      case Phase::Initialization:
+        return Phase::RegisterWithObserver;
+      case Phase::RegisterWithObserver:
+        return Phase::Evolve;
+      case Phase::Evolve:
+        return Phase::Exit;
+      case Phase::Exit:
+        ERROR(
+            "Should never call determine_next_phase with the current phase "
+            "being 'Exit'");
+      default:
+        ERROR(
+            "Unknown type of phase. Did you static_cast<Phase> an integral "
+            "value?");
+    }
   }
 };
 
