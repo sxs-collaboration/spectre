@@ -55,8 +55,9 @@ class RungeKutta3 : public TimeStepper::Inherit {
                 const TimeDelta& time_step) const noexcept;
 
   template <typename Vars, typename DerivVars>
-  Vars dense_output(const History<Vars, DerivVars>& history,
-                    double time) const noexcept;
+  void dense_update_u(gsl::not_null<Vars*> u,
+                      const History<Vars, DerivVars>& history,
+                      double time) const noexcept;
 
   uint64_t number_of_substeps() const noexcept override;
 
@@ -136,8 +137,9 @@ void RungeKutta3::update_u(
 }
 
 template <typename Vars, typename DerivVars>
-Vars RungeKutta3::dense_output(const History<Vars, DerivVars>& history,
-                               const double time) const noexcept {
+void RungeKutta3::dense_update_u(gsl::not_null<Vars*> u,
+                                 const History<Vars, DerivVars>& history,
+                                 const double time) const noexcept {
   ASSERT(history.size() == 3, "Can only dense output on last substep");
   const double step_start = history[0].value();
   const double step_end = history[1].value();
@@ -150,12 +152,13 @@ Vars RungeKutta3::dense_output(const History<Vars, DerivVars>& history,
          << ", " << step_end << "]");
 
   // arXiv:1605.02429
-  return (1 - output_fraction * (1 - output_fraction / 3.0)) *
-             history.begin().value() +
-         output_fraction * (1.0 - output_fraction) *
-             (history.begin() + 1).value() +
-         2.0 / 3.0 * square(output_fraction) *
-             ((history.begin() + 2).value() +
-              time_step * (history.begin() + 2).derivative());
+  *u += (1.0 - output_fraction * (1.0 - output_fraction / 3.0)) *
+            history.begin().value() +
+        output_fraction * (1.0 - output_fraction) *
+            (history.begin() + 1).value() +
+        (2.0 / 3.0 * square(output_fraction) - 1.0) *
+            (history.begin() + 2).value() +
+        2.0 / 3.0 * square(output_fraction) * time_step *
+            (history.begin() + 2).derivative();
 }
 }  // namespace TimeSteppers
