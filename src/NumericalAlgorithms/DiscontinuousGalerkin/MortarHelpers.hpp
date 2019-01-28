@@ -15,6 +15,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
@@ -22,7 +23,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
-
 /// \cond
 template <size_t VolumeDim>
 class ElementId;
