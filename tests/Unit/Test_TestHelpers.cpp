@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <limits>
 #include <map>
+#include <random>
 #include <set>
 #include <unordered_map>
 #include <unordered_set>
@@ -133,4 +134,14 @@ SPECTRE_TEST_CASE("Unit.TestHelpers.Derivative", "[Unit]") {
             approx(gsl::at(dfunc(x), i)));
     }
   }
+}
+
+SPECTRE_TEST_CASE("Unit.TestHelpers.MAKE_GENERATOR", "[Unit]") {
+  MAKE_GENERATOR(gen1);
+  MAKE_GENERATOR(gen2);
+  // This will fail randomly every 2**32 runs.  That is probably OK.
+  CHECK(gen1() != gen2());
+
+  MAKE_GENERATOR(seeded_gen, 12345);
+  CHECK(seeded_gen() == 3992670690);
 }
