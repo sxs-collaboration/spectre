@@ -48,10 +48,7 @@ void test_coord_transformation_on_xy_plane(
   const double bh_dimless_spin = 0.6332;
   const double spin_a = bh_mass * bh_dimless_spin;
 
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(generator);
 
   // get random point outside of the ring singularity x^2 + y^2 = a^2
   // to avoid possible FPE when computing the Jacobian.
@@ -84,10 +81,7 @@ void test_coord_transformation_on_xy_plane(
 template <typename DataType>
 void test_coord_transformation_along_z_axis(
     const DataType& used_for_size) noexcept {
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-13.0, 13.0);
 
   auto random_radial_vector_to_transform =
@@ -123,10 +117,7 @@ void test_coord_transformation_along_z_axis(
 
 template <typename DataType>
 void test_theta_component(const DataType& used_for_size) noexcept {
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-13.0, 13.0);
 
   auto random_point_along_z_axis =

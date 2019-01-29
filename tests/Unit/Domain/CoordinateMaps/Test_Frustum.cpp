@@ -12,12 +12,12 @@
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 void test_suite_for_frustum(const bool with_equiangular_map) {
   // Set up random number generator
-  std::random_device rd;
-  std::mt19937 gen(rd());
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> lower_bound_dis(-14, -2);
   std::uniform_real_distribution<> upper_bound_dis(2, 14);
 
@@ -69,7 +69,7 @@ void test_frustum_fail() noexcept {
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point1)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point2)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point3)));
-  if(map.inverse(test_mapped_point4)) {
+  if (map.inverse(test_mapped_point4)) {
     CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point4).get()),
                           test_mapped_point4);
   }

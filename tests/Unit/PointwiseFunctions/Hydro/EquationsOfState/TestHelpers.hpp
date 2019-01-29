@@ -95,10 +95,7 @@ void check_impl(
     INFO(
         "Done\nTesting that rest_mass_density_from_enthalpy and "
         "specific_enthalpy_from_density are inverses of each other...")
-    std::random_device r;
-    const auto seed = r();
-    CAPTURE(seed);
-    std::mt19937 generator(seed);
+    MAKE_GENERATOR(generator);
     std::uniform_real_distribution<> distribution(1.0, 1.0e+04);
     const auto specific_enthalpy = make_with_random_values<Scalar<T>>(
         make_not_null(&generator), make_not_null(&distribution), used_for_size);

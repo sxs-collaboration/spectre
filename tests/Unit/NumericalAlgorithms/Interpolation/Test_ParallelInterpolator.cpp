@@ -7,7 +7,6 @@
 #include <cmath>
 #include <cstddef>
 #include <pup.h>
-#include <random>
 #include <string>
 #include <utility>
 #include <vector>
@@ -48,6 +47,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox
@@ -278,16 +278,17 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
                ActionTesting::MockDistributedObject<mock_interpolation_target<
                    metavars, metavars::InterpolationTargetC>>{});
   tuples::get<MockDistributedObjectsTagInterpolator>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<
-                      mock_interpolator<metavars>>{});
+      .emplace(
+          0,
+          ActionTesting::MockDistributedObject<mock_interpolator<metavars>>{});
 
   // Options for all InterpolationTargets.
   intrp::OptionHolders::LineSegment<3> line_segment_opts_A(
       {{1.0, 1.0, 1.0}}, {{2.4, 2.4, 2.4}}, 15);
   intrp::OptionHolders::LineSegment<3> line_segment_opts_B(
       {{1.1, 1.1, 1.1}}, {{2.5, 2.5, 2.5}}, 17);
-  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(
-      10, {{0.0, 0.0, 0.0}}, 1.0, {{0.0, 0.0, 0.0}});
+  intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
+                                                        1.0, {{0.0, 0.0, 0.0}});
   tuples::TaggedTuple<metavars::InterpolationTargetA,
                       metavars::InterpolationTargetB,
                       metavars::InterpolationTargetC>
@@ -375,10 +376,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   }
 
   // Invoke remaining actions in random order.
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  CAPTURE(seed);
+  MAKE_GENERATOR(generator);
 
   auto index_map = ActionTesting::indices_of_components_with_queued_actions<
       metavars::component_list>(make_not_null(&runner), 0_st);

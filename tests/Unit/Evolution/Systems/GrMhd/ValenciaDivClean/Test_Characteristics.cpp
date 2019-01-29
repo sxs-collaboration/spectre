@@ -19,6 +19,7 @@
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
@@ -45,9 +46,7 @@ void test_characteristic_speeds(const DataVector& /*used_for_size*/) noexcept {
 
 void test_with_normal_along_coordinate_axes(
     const DataVector& used_for_size) noexcept {
-  const auto seed = std::random_device{}();
-  CAPTURE(seed);
-  std::mt19937 generator(seed);
+  MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(0.0, 1.0);
   std::uniform_real_distribution<> small_distribution(0.0, 0.1);
 

@@ -14,13 +14,12 @@
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 void test_wedge3d_all_directions() {
   // Set up random number generator
-  const auto seed = std::random_device{}();
-  std::mt19937 gen(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> unit_dis(0, 1);
   std::uniform_real_distribution<> inner_dis(1, 3);
   std::uniform_real_distribution<> outer_dis(5.2, 7);
@@ -153,10 +152,8 @@ void test_wedge3d_alignment() {
 }
 
 void test_wedge3d_random_radii() {
-  // Set up random number generator:
-  const auto seed = std::random_device{}();
-  std::mt19937 gen(seed);
-  INFO("seed = " << seed);
+  // Set up random number generator
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
   std::uniform_real_distribution<> inner_dis(1, 3);
   std::uniform_real_distribution<> outer_dis(4, 7);
@@ -291,12 +288,12 @@ void test_wedge3d_fail() noexcept {
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point3)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point4)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point5)));
-  if(map.inverse(test_mapped_point6)) {
+  if (map.inverse(test_mapped_point6)) {
     Approx my_approx = Approx::custom().epsilon(1.e-10).scale(1.0);
     CHECK_ITERABLE_CUSTOM_APPROX(map(map.inverse(test_mapped_point6).get()),
                                  test_mapped_point6, my_approx);
   }
-  if(map.inverse(test_mapped_point7)) {
+  if (map.inverse(test_mapped_point7)) {
     CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point7).get()),
                           test_mapped_point7);
   }

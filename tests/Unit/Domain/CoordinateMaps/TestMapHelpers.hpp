@@ -45,8 +45,7 @@ template <typename SourceFrame, typename TargetFrame, size_t VolumeDim>
 void check_if_maps_are_equal(
     const CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>& map_one,
     const CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>& map_two) {
-  std::random_device rd;
-  std::mt19937 gen(rd());
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
 
   for (size_t n = 0; n < 10; ++n) {
@@ -125,8 +124,7 @@ void test_inv_jacobian(const Map& map,
 template <typename Map, typename... Args>
 void test_coordinate_map_implementation(const Map& map) {
   const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Grid>(map);
-  std::random_device rd;
-  std::mt19937 gen(rd());
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
 
   const auto test_point = [&gen, &real_dis] {
@@ -172,8 +170,8 @@ void test_coordinate_map_argument_types(
     const Args&... args) {
   const auto make_array_data_vector = [](const auto& double_array) noexcept {
     std::array<DataVector, Map::dim> result;
-    std::transform(double_array.begin(), double_array.end(),
-                   result.begin(), [](const double x) noexcept {
+    std::transform(double_array.begin(), double_array.end(), result.begin(),
+                   [](const double x) noexcept {
                      return DataVector{x, x};
                    });
     return result;
@@ -198,10 +196,10 @@ void test_coordinate_map_argument_types(
   // Here, time_args is a const auto& not const Args& because time_args
   // is allowed to be different than Args (which was the reason for the
   // overloader below that calls this function).
-  const auto check_jac = [](const auto& make_arr_data_vec,
-                            const auto& add_ref_wrap, const Map& the_map,
-                            const std::array<double, Map::dim>& point,
-                            const auto&... time_args) noexcept {
+  const auto check_jac =
+      [](const auto& make_arr_data_vec, const auto& add_ref_wrap,
+         const Map& the_map, const std::array<double, Map::dim>& point,
+         const auto&... time_args) noexcept {
     const auto make_tensor_data_vector = [](const auto& double_tensor) {
       using Arg = std::decay_t<decltype(double_tensor)>;
       Tensor<DataVector, typename Arg::symmetry, typename Arg::index_list>
@@ -289,9 +287,7 @@ void test_inverse_map(const Map& map,
 template <typename Map>
 void test_suite_for_map_on_unit_cube(const Map& map) {
   // Set up random number generator
-  const auto seed = std::random_device{}();
-  std::mt19937 gen(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1.0, 1.0);
 
   std::array<double, Map::dim> origin{};
@@ -346,9 +342,7 @@ void test_suite_for_map_on_sphere(const Map& map,
   static_assert(Map::dim == 3, "Works only for a 3d map");
 
   // Set up random number generator
-  const auto seed = std::random_device{}();
-  std::mt19937 gen(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(gen);
 
   // If we don't include the origin, we want to use some finite inner
   // boundary so that random points stay away from the origin.

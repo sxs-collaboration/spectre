@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 #include "tests/Utilities/RandomUnitNormal.hpp"
 
@@ -44,10 +45,7 @@ void test_random_unit_normal(const gsl::not_null<std::mt19937*> generator,
 }  // namespace
 
 SPECTRE_TEST_CASE("Test.TestHelpers.RandomUnitNormal", "[Unit]") {
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(generator);
 
   const double d = std::numeric_limits<double>::signaling_NaN();
   test_random_unit_normal<1>(&generator, d);

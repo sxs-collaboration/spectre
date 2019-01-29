@@ -15,8 +15,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Variables.hpp" // IWYU pragma: keep
-#include "DataStructures/VariablesHelpers.hpp" // IWYU pragma: keep
+#include "DataStructures/Variables.hpp"         // IWYU pragma: keep
+#include "DataStructures/VariablesHelpers.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -108,10 +108,7 @@ struct SymmetricTensor : db::SimpleTag {
 template <size_t Dim>
 void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
   // Fill target interpolation coordinates with random values
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed" << seed);
+  MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist(inertial_coord_min, inertial_coord_max);
 
   const auto nn_generator = make_not_null(&generator);
@@ -131,8 +128,7 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
       for (size_t d = 0; d < Dim; ++d) {
         x_inertial_local.get(d) = target_x_inertial.get(d)[s];
       }
-      const auto x_local =
-          coordinate_map.inverse(x_inertial_local).get();
+      const auto x_local = coordinate_map.inverse(x_inertial_local).get();
       for (size_t d = 0; d < Dim; ++d) {
         result.get(d)[s] = x_local.get(d);
       }

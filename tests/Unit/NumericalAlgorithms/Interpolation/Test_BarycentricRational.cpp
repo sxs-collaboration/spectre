@@ -3,13 +3,13 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
-#include "tests/Unit/TestHelpers.hpp"
-
 #include <cmath>
 #include <cstddef>
 #include <random>
 #include <vector>
+
+#include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 namespace {
 template <class F>
@@ -18,10 +18,7 @@ void test_barycentric_rational(const F& function, const double lower_bound,
                                const size_t order) noexcept {
   std::vector<double> x_values(size), y_values(size);
   const double delta_x = (upper_bound - lower_bound) / size;
-  std::random_device rd;
-  const auto seed = rd();
-  CAPTURE(seed);
-  std::mt19937 gen(seed);
+  MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> dis(0.0, delta_x);
   for (size_t i = 0; i < size; ++i) {
     x_values[i] = lower_bound + i * delta_x + dis(gen);

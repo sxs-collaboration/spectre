@@ -30,6 +30,7 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -59,10 +60,7 @@ template <size_t Dim, typename T>
 void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
   // Set up random values for lapse, shift, spatial_metric,
   // and their derivatives.
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed = " << seed);
+  MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist(-1., 1.);
   std::uniform_real_distribution<> dist_positive(1., 2.);
   const auto nn_generator = make_not_null(&generator);
