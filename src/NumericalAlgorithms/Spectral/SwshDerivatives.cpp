@@ -87,6 +87,19 @@ void compute_coefficients_of_derivative(
 }
 }  // namespace detail
 
+template <typename DerivKind, ComplexRepresentation Representation, int Spin>
+SpinWeighted<ComplexDataVector, Tags::derivative_spin_weight<DerivKind> + Spin>
+angular_derivative(
+    const size_t l_max, const size_t number_of_radial_points,
+    const SpinWeighted<ComplexDataVector, Spin>& to_differentiate) noexcept {
+  auto result =
+      SpinWeighted<ComplexDataVector, Tags::derivative_spin_weight<DerivKind> +
+                                          Spin>{to_differentiate.size()};
+  angular_derivatives<tmpl::list<DerivKind>, Representation>(
+      l_max, number_of_radial_points, make_not_null(&result), to_differentiate);
+  return result;
+}
+
 #define GET_DERIVKIND(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define GET_SPIN(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -117,5 +130,44 @@ GENERATE_INSTANTIATIONS(DERIVKIND_AND_SPIN_INSTANTIATION, (Tags::EthbarEthbar),
 #undef DERIVKIND_AND_SPIN_INSTANTIATION
 #undef GET_SPIN
 #undef GET_DERIVKIND
+
+#define GET_REPRESENTATION(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define GET_DERIVKIND(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define GET_SPIN(data) BOOST_PP_TUPLE_ELEM(2, data)
+
+#define FULL_DERIVATIVE_INSTANTIATION(r, data)                              \
+  template SpinWeighted<ComplexDataVector,                                  \
+                        Tags::derivative_spin_weight<GET_DERIVKIND(data)> + \
+                            GET_SPIN(data)>                                 \
+  angular_derivative<GET_DERIVKIND(data), GET_REPRESENTATION(data),         \
+                     GET_SPIN(data)>(                                       \
+      const size_t l_max, const size_t number_of_radial_points,             \
+      const SpinWeighted<ComplexDataVector, GET_SPIN(data)>&                \
+          to_differentiate) noexcept;
+
+GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
+                        (ComplexRepresentation::Interleaved,
+                         ComplexRepresentation::RealsThenImags),
+                        (Tags::EthEthbar, Tags::EthbarEth), (-2, -1, 0, 1, 2))
+GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
+                        (ComplexRepresentation::Interleaved,
+                         ComplexRepresentation::RealsThenImags),
+                        (Tags::Eth), (-2, -1, 0, 1))
+GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
+                        (ComplexRepresentation::Interleaved,
+                         ComplexRepresentation::RealsThenImags),
+                        (Tags::EthEth), (-2, -1, 0))
+GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
+                        (ComplexRepresentation::Interleaved,
+                         ComplexRepresentation::RealsThenImags),
+                        (Tags::Ethbar), (-1, 0, 1, 2))
+GENERATE_INSTANTIATIONS(FULL_DERIVATIVE_INSTANTIATION,
+                        (ComplexRepresentation::Interleaved,
+                         ComplexRepresentation::RealsThenImags),
+                        (Tags::EthbarEthbar), (0, 1, 2))
+
+#undef GET_SPIN
+#undef GET_DERIVKIND
+#undef GET_REPRESENTATION
 }  // namespace Swsh
 }  // namespace Spectral

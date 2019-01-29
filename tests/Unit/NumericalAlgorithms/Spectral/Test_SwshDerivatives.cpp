@@ -268,9 +268,37 @@ void test_compute_angular_derivatives() noexcept {
             .data(),
         swsh_approx);
   }
+  {
+    INFO("Check the multiple argument function interface");
+    SpinWeighted<ComplexDataVector,
+                 Spin0 + Tags::derivative_spin_weight<DerivativeKind0>>
+        function_output_0{number_of_radial_points *
+                          number_of_swsh_collocation_points(l_max)};
+    SpinWeighted<ComplexDataVector,
+                 Spin1 + Tags::derivative_spin_weight<DerivativeKind1>>
+        function_output_1{number_of_radial_points *
+                          number_of_swsh_collocation_points(l_max)};
+    angular_derivatives<tmpl::list<DerivativeKind0, DerivativeKind1>,
+                        Representation>(
+        l_max, number_of_radial_points, make_not_null(&function_output_0),
+        make_not_null(&function_output_1), get(db::get<TestTag<0, Spin0>>(box)),
+        get(db::get<TestTag<1, Spin1>>(box)));
+    CHECK_ITERABLE_CUSTOM_APPROX(expected_derivative_0_collocation_spin_0,
+                                 function_output_0.data(), swsh_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(expected_derivative_1_collocation_spin_1,
+                                 function_output_1.data(), swsh_approx);
+  }
+  {
+    INFO("Check the single argument function interface");
+    auto function_return = angular_derivative<DerivativeKind0, Representation>(
+        l_max, number_of_radial_points, get(db::get<TestTag<0, Spin0>>(box)));
+    CHECK_ITERABLE_CUSTOM_APPROX(function_return.data(),
+                                 expected_derivative_0_collocation_spin_0,
+                                 swsh_approx);
+  }
 }
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshDerivatives",
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.AngularDerivatives",
                   "[Unit][NumericalAlgorithms]") {
   // we do not test the full set of combinations of derivatives, spins, and
   // slice kinds due to the slow execution time. We test a handful of each spin,
@@ -322,7 +350,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshDerivatives",
                                    ComplexRepresentation::RealsThenImags, 1>();
   }
   {
-    INFO("Test compute_swsh_derivatives utility");
+    INFO("Test angular_derivatives utility");
     test_compute_angular_derivatives<ComplexRepresentation::Interleaved, -1, 1,
                                      Tags::Eth, Tags::Ethbar>();
     test_compute_angular_derivatives<ComplexRepresentation::RealsThenImags, -1,

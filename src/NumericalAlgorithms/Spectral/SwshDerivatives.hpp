@@ -321,5 +321,166 @@ using AngularDerivatives = detail::AngularDerivativesImpl<
     DerivativeTagList,
     typename detail::unique_derived_from_list<DerivativeTagList>::type,
     Representation>;
+
+/*!
+ * \ingroup SpectralGroup
+ * \brief Produces a `SpinWeighted<ComplexModalVector, Spin>` of the appropriate
+ * size to be used as a modal buffer for `Spectral::Swsh::AngularDerivatives` or
+ * `Spectral::Swsh::angular_derivatives`.
+ *
+ * \details The `Spectral::Swsh::angular_derivatives` and
+ * `Spectral::Swsh::AngularDerivatives` interfaces require that calling code
+ * provides a buffer for the intermediate transform results, to ensure that
+ * callers are aware of the allocations and can suitably reuse buffers if
+ * possible. This utility eases the creation of those buffers.
+ */
+template <int Spin>
+auto swsh_buffer(const size_t l_max,
+                 const size_t number_of_radial_points) noexcept {
+  return SpinWeighted<ComplexModalVector, Spin>{
+      size_of_libsharp_coefficient_vector(l_max) * number_of_radial_points};
+}
+
+namespace detail {
+// template 'implementation' for the `angular_derivatives` function below which
+// evaluates an arbitrary number of derivatives, and places them in the set of
+// nodal containers passed by pointer.
+template <ComplexRepresentation Representation, typename... DerivativeKinds,
+          typename... ArgumentTypes, size_t... Is>
+void angular_derivatives_impl(
+    const std::tuple<ArgumentTypes...>& argument_tuple, const size_t l_max,
+    const size_t number_of_radial_points, std::index_sequence<Is...> /*meta*/,
+    tmpl::list<DerivativeKinds...> /*meta*/,
+    cpp17::bool_constant<true> /*buffers_included_in_arguments*/) noexcept {
+  AngularDerivatives<
+      tmpl::list<Tags::Derivative<
+          ::Tags::SpinWeighted<
+              ::Tags::TempScalar<Is, ComplexDataVector>,
+              std::integral_constant<
+                  int, std::decay_t<decltype(get<Is + 3 * sizeof...(Is)>(
+                           argument_tuple))>::spin>>,
+          DerivativeKinds>...>,
+      Representation>::apply_to_vectors(get<Is>(argument_tuple)...,
+                                        get<Is + sizeof...(Is)>(
+                                            argument_tuple)...,
+                                        get<Is + 2 * sizeof...(Is)>(
+                                            argument_tuple)...,
+                                        get<Is + 3 * sizeof...(Is)>(
+                                            argument_tuple)...,
+                                        l_max, number_of_radial_points);
+}
+
+template <ComplexRepresentation Representation, typename... DerivativeKinds,
+          typename... ArgumentTypes, size_t... Is>
+void angular_derivatives_impl(
+    const std::tuple<ArgumentTypes...>& argument_tuple, const size_t l_max,
+    const size_t number_of_radial_points,
+    std::index_sequence<Is...> index_sequence,
+    tmpl::list<DerivativeKinds...> derivative_kinds,
+    cpp17::bool_constant<false> /*buffers_included_in_arguments*/) noexcept {
+  auto derivative_buffer_tuple = std::make_tuple(
+      swsh_buffer<std::decay_t<decltype(*get<Is>(argument_tuple))>::spin>(
+          l_max, number_of_radial_points)...);
+  auto input_buffer_tuple = std::make_tuple(
+      swsh_buffer<std::decay_t<decltype(get<Is + sizeof...(Is)>(
+          argument_tuple))>::spin>(l_max, number_of_radial_points)...);
+  angular_derivatives_impl<Representation>(
+      std::forward_as_tuple(make_not_null(&get<Is>(derivative_buffer_tuple))...,
+                            make_not_null(&get<Is>(input_buffer_tuple))...,
+                            get<Is>(argument_tuple)...,
+                            get<Is + sizeof...(Is)>(argument_tuple)...),
+      l_max, number_of_radial_points, index_sequence, derivative_kinds,
+      cpp17::bool_constant<true>{});
+}
+}  // namespace detail
+
+/*!
+ * \ingroup SpectralGroup
+ * \brief Evaluate all of the spin-weighted derivatives in `DerivKindList` on
+ * input `SpinWeighted<ComplexDataVector, Spin>` collocation data, returning by
+ * pointer.
+ *
+ * \details This function provides two interfaces, one in which the caller
+ * provides the intermediate coefficient buffers needed during the computation
+ * of the derivatives, and one in which those buffers are temporarily allocated
+ * during the derivative function calls.
+ *
+ * For the interface in which the caller does not provide buffers, the arguments
+ * must take the following structure (enforced by internal function calls):
+ *
+ * - `size_t l_max` : angular resolution for the spherical representation
+ * - `size_t number_of_radial_points` : radial resolution (number of consecutive
+ * blocks to evaluate derivatives, for each input vector )
+ * - for each `DerivKind` in `DerivKindList`, a
+ * `gsl::not_null<SpinWeighted<ComplexDataVector, Spin +
+ * Tags::derivative_spin_weight<DerivKind>>>` : the output of the derivative
+ * evaluation
+ * - for each `DerivKind` in `DerivKindList`, a `const
+ * SpinWeighted<ComplexDataVector, Spin>&` (where the `Spin` for these arguments
+ * matches the corresponding vector from the previous set) : the input to the
+ * derivative evaluation.
+ *
+ * For the interface in which the caller does provide buffers, the arguments
+ * must take the following structure (enforced by internal function calls):
+ *
+ * - `size_t l_max` : angular resolution for the spherical representation
+ * - `size_t number_of_radial_points` : radial resolution (number of consecutive
+ * blocks to evaluate derivatives, for each input vector )
+ * - for each `DerivKind` in `DerivKindList`, a
+ * `gsl::not_null<SpinWeighted<ComplexModalVector, Spin +
+ * Tags::derivative_spin_weight<DerivKind>>>` : the buffer for the spin-weighted
+ * spherical harmonic modes of the derivative quantities.
+ * - for each `DerivKind` in `DerivKindList`, a `const
+ * SpinWeighted<ComplexModalVector, Spin>` (where the `Spin` for these arguments
+ * matches the corresponding vector from the previous set) : the buffer for the
+ * spin-weighted spherical harmonic modes of the input quantities.
+ * - for each `DerivKind` in `DerivKindList`, a
+ * `gsl::not_null<SpinWeighted<ComplexDataVector, Spin +
+ * Tags::derivative_spin_weight<DerivKind>>>` : the output of the derivative
+ * evaluation
+ * - for each `DerivKind` in `DerivKindList`, a `const
+ * SpinWeighted<ComplexDataVector, Spin>` (where the `Spin` for these arguments
+ * matches the corresponding vector from the previous set) : the input to the
+ * derivative evaluation.
+ *
+ * The function `swsh_buffer` assists in generating the modal buffers of
+ * appropriate size.
+ */
+template <
+    typename DerivativeKindList,
+    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
+    typename... ArgumentTypes>
+void angular_derivatives(const size_t l_max,
+                         const size_t number_of_radial_points,
+                         const ArgumentTypes&... arguments) noexcept {
+  static_assert(
+      tmpl::size<DerivativeKindList>::value * 2 == sizeof...(ArgumentTypes) or
+          tmpl::size<DerivativeKindList>::value * 4 == sizeof...(ArgumentTypes),
+      "When using the tagless `angular_derivatives` interface, you must "
+      "provide either one nodal input and one nodal output per derivative "
+      "or one nodal input, one nodal output, and two appropriate "
+      "intermediate transform buffers per derivative.");
+
+  detail::angular_derivatives_impl<Representation>(
+      std::forward_as_tuple(arguments...), l_max, number_of_radial_points,
+      std::make_index_sequence<tmpl::size<DerivativeKindList>::value>{},
+      DerivativeKindList{},
+      cpp17::bool_constant<tmpl::size<DerivativeKindList>::value * 4 ==
+                           sizeof...(ArgumentTypes)>{});
+}
+
+/*!
+ * \ingroup SpectralGroup
+ * \brief Evaluate the spin-weighted derivative `DerivKind` on the provided
+ * `SpinWeighted<ComplexDataVector, Spin>` collocation data, returning by value.
+ */
+template <
+    typename DerivKind,
+    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
+    int Spin>
+SpinWeighted<ComplexDataVector, Tags::derivative_spin_weight<DerivKind> + Spin>
+angular_derivative(
+    size_t l_max, size_t number_of_radial_points,
+    const SpinWeighted<ComplexDataVector, Spin>& to_differentiate) noexcept;
 }  // namespace Swsh
 }  // namespace Spectral
