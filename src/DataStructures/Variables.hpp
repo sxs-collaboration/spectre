@@ -957,6 +957,9 @@ using TempII = TempTensor<N, tnsr::II<DataType, SpatialDim, Fr>>;
 template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
           typename DataType = DataVector>
 using Tempijj = TempTensor<N, tnsr::ijj<DataType, SpatialDim, Fr>>;
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+  typename DataType = DataVector>
+using Tempiaa = TempTensor<N, tnsr::iaa<DataType, SpatialDim, Fr>>;
 
 // @}
 }  // namespace Tags
