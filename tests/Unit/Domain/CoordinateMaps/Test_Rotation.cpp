@@ -18,7 +18,50 @@
 
 // IWYU pragma: no_forward_declare CoordinateMaps::Rotation
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {
+namespace {
+template <typename T>
+void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
+                     const std::array<T, 3>& xi_hat,
+                     const std::array<T, 3>& eta_hat,
+                     const std::array<T, 3>& zeta_hat) {
+  const std::array<T, 3> zero_logical{{0.0, 0.0, 0.0}};
+  const std::array<T, 3> zero_grid{{0.0, 0.0, 0.0}};
+  const std::array<T, 3> xi{{1.0, 0.0, 0.0}};
+  const std::array<T, 3> eta{{0.0, 1.0, 0.0}};
+  const std::array<T, 3> zeta{{0.0, 0.0, 1.0}};
+
+  const auto inv_jac = three_dim_rotation_map.inv_jacobian(zero_logical);
+  const auto jac = three_dim_rotation_map.jacobian(zero_logical);
+  for (size_t i = 0; i < 3; ++i) {
+    CHECK(gsl::at(three_dim_rotation_map(zero_logical), i) ==
+          approx(gsl::at(zero_grid, i)));
+    CHECK(gsl::at(three_dim_rotation_map(xi), i) == approx(gsl::at(xi_hat, i)));
+    CHECK(gsl::at(three_dim_rotation_map(eta), i) ==
+          approx(gsl::at(eta_hat, i)));
+    CHECK(gsl::at(three_dim_rotation_map(zeta), i) ==
+          approx(gsl::at(zeta_hat, i)));
+    CHECK(gsl::at(three_dim_rotation_map.inverse(zero_grid).get(), i) ==
+          approx(gsl::at(zero_logical, i)));
+    CHECK(gsl::at(three_dim_rotation_map.inverse(xi_hat).get(), i) ==
+          approx(gsl::at(xi, i)));
+    CHECK(gsl::at(three_dim_rotation_map.inverse(eta_hat).get(), i) ==
+          approx(gsl::at(eta, i)));
+    CHECK(gsl::at(three_dim_rotation_map.inverse(zeta_hat).get(), i) ==
+          approx(gsl::at(zeta, i)));
+    CHECK(inv_jac.get(0, i) == approx(gsl::at(xi_hat, i)));
+    CHECK(inv_jac.get(1, i) == approx(gsl::at(eta_hat, i)));
+    CHECK(inv_jac.get(2, i) == approx(gsl::at(zeta_hat, i)));
+    CHECK(jac.get(i, 0) == approx(gsl::at(xi_hat, i)));
+    CHECK(jac.get(i, 1) == approx(gsl::at(eta_hat, i)));
+    CHECK(jac.get(i, 2) == approx(gsl::at(zeta_hat, i)));
+  }
+  // Check inequivalence operator
+  CHECK_FALSE(three_dim_rotation_map != three_dim_rotation_map);
+  test_serialization(three_dim_rotation_map);
+
+  test_coordinate_map_argument_types(three_dim_rotation_map, xi);
+}
+void test_rotation_2() {
   CoordinateMaps::Rotation<2> half_pi_rotation_map(M_PI_2);
 
   const auto xi0 = make_array<2>(0.0);
@@ -67,50 +110,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<2>", "[Domain][Unit]") {
   test_coordinate_map_argument_types(half_pi_rotation_map, xi1);
 }
 
-template <typename T>
-void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
-                     const std::array<T, 3>& xi_hat,
-                     const std::array<T, 3>& eta_hat,
-                     const std::array<T, 3>& zeta_hat) {
-  const std::array<T, 3> zero_logical{{0.0, 0.0, 0.0}};
-  const std::array<T, 3> zero_grid{{0.0, 0.0, 0.0}};
-  const std::array<T, 3> xi{{1.0, 0.0, 0.0}};
-  const std::array<T, 3> eta{{0.0, 1.0, 0.0}};
-  const std::array<T, 3> zeta{{0.0, 0.0, 1.0}};
-
-  const auto inv_jac = three_dim_rotation_map.inv_jacobian(zero_logical);
-  const auto jac = three_dim_rotation_map.jacobian(zero_logical);
-  for (size_t i = 0; i < 3; ++i) {
-    CHECK(gsl::at(three_dim_rotation_map(zero_logical), i) ==
-          approx(gsl::at(zero_grid, i)));
-    CHECK(gsl::at(three_dim_rotation_map(xi), i) == approx(gsl::at(xi_hat, i)));
-    CHECK(gsl::at(three_dim_rotation_map(eta), i) ==
-          approx(gsl::at(eta_hat, i)));
-    CHECK(gsl::at(three_dim_rotation_map(zeta), i) ==
-          approx(gsl::at(zeta_hat, i)));
-    CHECK(gsl::at(three_dim_rotation_map.inverse(zero_grid).get(), i) ==
-          approx(gsl::at(zero_logical, i)));
-    CHECK(gsl::at(three_dim_rotation_map.inverse(xi_hat).get(), i) ==
-          approx(gsl::at(xi, i)));
-    CHECK(gsl::at(three_dim_rotation_map.inverse(eta_hat).get(), i) ==
-          approx(gsl::at(eta, i)));
-    CHECK(gsl::at(three_dim_rotation_map.inverse(zeta_hat).get(), i) ==
-          approx(gsl::at(zeta, i)));
-    CHECK(inv_jac.get(0, i) == approx(gsl::at(xi_hat, i)));
-    CHECK(inv_jac.get(1, i) == approx(gsl::at(eta_hat, i)));
-    CHECK(inv_jac.get(2, i) == approx(gsl::at(zeta_hat, i)));
-    CHECK(jac.get(i, 0) == approx(gsl::at(xi_hat, i)));
-    CHECK(jac.get(i, 1) == approx(gsl::at(eta_hat, i)));
-    CHECK(jac.get(i, 2) == approx(gsl::at(zeta_hat, i)));
-  }
-  // Check inequivalence operator
-  CHECK_FALSE(three_dim_rotation_map != three_dim_rotation_map);
-  test_serialization(three_dim_rotation_map);
-
-  test_coordinate_map_argument_types(three_dim_rotation_map, xi);
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<3>", "[Domain][Unit]") {
+void test_rotation_3() {
   test_rotation_3(CoordinateMaps::Rotation<3>(0.0, 0.0, 0.0),
                   std::array<double, 3>{{1.0, 0.0, 0.0}},
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
@@ -140,4 +140,10 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation<3>", "[Domain][Unit]") {
                   std::array<double, 3>{{0.0, 0.0, -1.0}},
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
                   std::array<double, 3>{{1.0, 0.0, 0.0}});
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation", "[Domain][Unit]") {
+  test_rotation_2();
+  test_rotation_3();
 }

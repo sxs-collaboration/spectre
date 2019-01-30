@@ -14,9 +14,8 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression",
-                  "[Domain][Unit]") {
-  // Set up random number generator
+namespace {
+void test_suite() {  // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> aspect_ratio_dis(0.1, 10);
 
@@ -27,8 +26,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression",
   test_suite_for_map_on_unit_cube(angular_compression_map);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression.Radius",
-                  "[Domain][Unit]") {
+void test_radius() {
   // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-10, 10);
@@ -73,7 +71,13 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression.Radius",
   CHECK(aspect_ratio * sqrt(pow<2>(x) + pow<2>(y)) / z ==
         approx(sqrt(pow<2>(result_x) + pow<2>(result_y)) / result_z));
 }
+}  // namespace
 
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression",
+                  "[Domain][Unit]") {
+  test_suite();
+  test_radius();
+}
 // [[OutputRegex, The aspect_ratio must be greater than zero.]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.Domain.CoordinateMaps.EquatorialCompression.Assert2",

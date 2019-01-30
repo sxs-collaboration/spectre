@@ -146,24 +146,8 @@ void test_wedge2d_fail() noexcept {
                           test_mapped_point4);
   }
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Fail", "[Domain][Unit]") {
-  test_wedge2d_fail();
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Equidistant",
-                  "[Domain][Unit]") {
-  test_wedge2d_all_orientations(false);
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Equiangular",
-                  "[Domain][Unit]") {
-  test_wedge2d_all_orientations(true);
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Equality",
-                  "[Domain][Unit]") {
+void test_equality() {
   const auto wedge2d =
       CoordinateMaps::Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
   const auto wedge2d_inner_radius_changed =
@@ -187,6 +171,14 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Equality",
   CHECK_FALSE(wedge2d == wedge2d_outer_circularity_changed);
   CHECK_FALSE(wedge2d == wedge2d_orientation_map_changed);
   CHECK_FALSE(wedge2d == wedge2d_use_equiangular_map_changed);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
+  test_wedge2d_fail();
+  test_wedge2d_all_orientations(false);  // Equidistant
+  test_wedge2d_all_orientations(true);   // Equiangular
+  test_equality();
 }
 
 // [[OutputRegex, The radius of the inner surface must be greater than zero.]]

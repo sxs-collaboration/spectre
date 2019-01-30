@@ -300,11 +300,8 @@ void test_wedge3d_fail() noexcept {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Fail", "[Domain][Unit]") {
-  test_wedge3d_fail();
-}
-
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
+  test_wedge3d_fail();
   test_wedge3d_all_directions();
   test_wedge3d_alignment();
   test_wedge3d_random_radii();

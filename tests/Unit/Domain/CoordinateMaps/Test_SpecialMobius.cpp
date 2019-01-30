@@ -14,9 +14,8 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Suite",
-                  "[Domain][Unit]") {
-  // Set up random number generator
+namespace {
+void test_suite() {  // Set up random number generator
   MAKE_GENERATOR(gen);
   // Note: Empirically we have found that the map is accurate
   // to 12 decimal places for mu = 0.96.
@@ -30,8 +29,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Suite",
   test_suite_for_map_on_sphere(special_mobius_map);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Map",
-                  "[Domain][Unit]") {
+void test_map() {
   // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> radius_dis(0, 1);
@@ -85,8 +83,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.Map",
   CHECK_FALSE(static_cast<bool>(special_mobius_map.inverse(bad_point)));
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.LargeMu",
-                  "[Domain][Unit]") {
+void test_large_mu() {
   const double mu = 0.95;
   CAPTURE_PRECISE(mu);
   // A point on the unit sphere with x=0, y!=z:
@@ -108,6 +105,14 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius.LargeMu",
   CHECK(abs(expected_input_point[0] - 0.0) < 1.e-13);
   CHECK(abs(expected_input_point[1] - 0.6) < 1.e-13);
   CHECK(abs(expected_input_point[2] - 0.8) < 1.e-13);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.SpecialMobius",
+                  "[Domain][Unit]") {
+  test_suite();
+  test_map();
+  test_large_mu();
 }
 
 // [[OutputRegex, The magnitude of mu must be less than 0.96.]]

@@ -75,24 +75,7 @@ void test_frustum_fail() noexcept {
   }
 }
 
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Fail", "[Domain][Unit]") {
-  test_frustum_fail();
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Equidistant",
-                  "[Domain][Unit]") {
-  test_suite_for_frustum(false);
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Equiangular",
-                  "[Domain][Unit]") {
-  test_suite_for_frustum(true);
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Alignment",
-                  "[Domain][Unit]") {
+void test_alignment() {
   // This test tests that the logical axes point along the expected directions
   // in physical space
 
@@ -179,6 +162,14 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Alignment",
   CHECK(map_lower_xi(along_zeta)[0] == approx(-5.0));
   CHECK_ITERABLE_APPROX(map_lower_xi(lowest_corner),
                         lowest_physical_corner_in_map_lower_xi);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
+  test_frustum_fail();
+  test_suite_for_frustum(false);  // Equidistant
+  test_suite_for_frustum(true);   // Equiangular
+  test_alignment();
 }
 
 // [[OutputRegex, The lower bound for a coordinate must be numerically less

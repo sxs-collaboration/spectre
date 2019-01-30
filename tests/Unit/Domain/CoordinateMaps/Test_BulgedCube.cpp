@@ -17,37 +17,6 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube.Identity",
-                  "[Domain][Unit]") {
-  const CoordinateMaps::BulgedCube map(sqrt(3.0), 0, false);
-  const std::array<double, 3> lower_corner{{-1.0, -1.0, -1.0}};
-  const std::array<double, 3> upper_corner{{1.0, 1.0, 1.0}};
-  const std::array<double, 3> test_point1{{-1.0, 0.25, 0.0}};
-  const std::array<double, 3> test_point2{{1.0, 1.0, -0.5}};
-  const std::array<double, 3> test_point3{{0.7, -0.2, 0.4}};
-
-  CHECK_ITERABLE_APPROX(map(lower_corner), lower_corner);
-  CHECK_ITERABLE_APPROX(map(upper_corner), upper_corner);
-  CHECK_ITERABLE_APPROX(map(test_point1), test_point1);
-  CHECK_ITERABLE_APPROX(map(test_point2), test_point2);
-  CHECK_ITERABLE_APPROX(map(test_point3), test_point3);
-
-  test_jacobian(map, test_point1);
-  test_jacobian(map, test_point2);
-  test_jacobian(map, test_point3);
-
-  test_inv_jacobian(map, test_point1);
-  test_inv_jacobian(map, test_point2);
-  test_inv_jacobian(map, test_point3);
-
-  test_coordinate_map_implementation<CoordinateMaps::BulgedCube>(map);
-
-  CHECK(serialize_and_deserialize(map) == map);
-  CHECK_FALSE(serialize_and_deserialize(map) != map);
-
-  test_coordinate_map_argument_types(map, test_point1);
-}
-
 void test_bulged_cube_fail() {
   const CoordinateMaps::BulgedCube map(2.0 * sqrt(3.0), 0.5, false);
 
@@ -126,17 +95,35 @@ void test_bulged_cube(bool with_equiangular_map) {
   test_inverse_map(map, test_point4);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube.Bulged.Equiangular",
-                  "[Domain][Unit]") {
-  test_bulged_cube(true);
-}
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube", "[Domain][Unit]") {
+  const CoordinateMaps::BulgedCube map(sqrt(3.0), 0, false);
+  const std::array<double, 3> lower_corner{{-1.0, -1.0, -1.0}};
+  const std::array<double, 3> upper_corner{{1.0, 1.0, 1.0}};
+  const std::array<double, 3> test_point1{{-1.0, 0.25, 0.0}};
+  const std::array<double, 3> test_point2{{1.0, 1.0, -0.5}};
+  const std::array<double, 3> test_point3{{0.7, -0.2, 0.4}};
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube.Bulged.Equidistant",
-                  "[Domain][Unit]") {
-  test_bulged_cube(false);
-}
+  CHECK_ITERABLE_APPROX(map(lower_corner), lower_corner);
+  CHECK_ITERABLE_APPROX(map(upper_corner), upper_corner);
+  CHECK_ITERABLE_APPROX(map(test_point1), test_point1);
+  CHECK_ITERABLE_APPROX(map(test_point2), test_point2);
+  CHECK_ITERABLE_APPROX(map(test_point3), test_point3);
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube.Bulged.Fail",
-                  "[Domain][Unit]") {
+  test_jacobian(map, test_point1);
+  test_jacobian(map, test_point2);
+  test_jacobian(map, test_point3);
+
+  test_inv_jacobian(map, test_point1);
+  test_inv_jacobian(map, test_point2);
+  test_inv_jacobian(map, test_point3);
+
+  test_coordinate_map_implementation<CoordinateMaps::BulgedCube>(map);
+
+  CHECK(serialize_and_deserialize(map) == map);
+  CHECK_FALSE(serialize_and_deserialize(map) != map);
+
+  test_coordinate_map_argument_types(map, test_point1);
+  test_bulged_cube(true);   // Equiangular
+  test_bulged_cube(false);  // Equidistant
   test_bulged_cube_fail();
 }
