@@ -35,23 +35,11 @@ Scalar<T> Step::u(const tnsr::I<T, 1>& x, const double t) const noexcept {
                        step_function(get<0>(x) - current_shock_position));
 }
 
-template <typename T>
-Scalar<T> Step::du_dt(const tnsr::I<T, 1>& x, const double /*t*/) const
-    noexcept {
-  return make_with_value<Scalar<T>>(x, 0.0);
-}
-
 tuples::TaggedTuple<Tags::U> Step::variables(const tnsr::I<DataVector, 1>& x,
                                              const double t,
                                              tmpl::list<Tags::U> /*meta*/) const
     noexcept {
   return {u(x, t)};
-}
-
-tuples::TaggedTuple<::Tags::dt<Tags::U>> Step::variables(
-    const tnsr::I<DataVector, 1>& x, const double t,
-    tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const noexcept {
-  return {du_dt(x, t)};
 }
 
 void Step::pup(PUP::er& p) noexcept {
@@ -67,8 +55,6 @@ void Step::pup(PUP::er& p) noexcept {
 
 #define INSTANTIATE(_, data)                                      \
   template Scalar<DTYPE(data)> Burgers::Solutions::Step::u(       \
-      const tnsr::I<DTYPE(data), 1>& x, double t) const noexcept; \
-  template Scalar<DTYPE(data)> Burgers::Solutions::Step::du_dt(   \
       const tnsr::I<DTYPE(data), 1>& x, double t) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

@@ -34,8 +34,6 @@ namespace Solutions {
 ///
 /// \note At the shock, where \f$x = x_0 + vt\f$, we have \f$U(x, t) = U_L\f$.
 /// (This is inherited from the Heaviside implementation `step_function`.)
-/// Additionally, the time derivative \f$\partial_t u0\f$ is zero, rather than
-/// the correct delta function.
 class Step : public MarkAsAnalyticSolution {
  public:
   struct LeftValue {
@@ -71,17 +69,10 @@ class Step : public MarkAsAnalyticSolution {
   template <typename T>
   Scalar<T> u(const tnsr::I<T, 1>& x, double t) const noexcept;
 
-  template <typename T>
-  Scalar<T> du_dt(const tnsr::I<T, 1>& x, double t) const noexcept;
-
   tuples::TaggedTuple<Tags::U> variables(const tnsr::I<DataVector, 1>& x,
                                          double t,
                                          tmpl::list<Tags::U> /*meta*/) const
       noexcept;
-
-  tuples::TaggedTuple<::Tags::dt<Tags::U>> variables(
-      const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const noexcept;
 
   // clang-tidy: no pass by reference
   void pup(PUP::er& p) noexcept;  // NOLINT

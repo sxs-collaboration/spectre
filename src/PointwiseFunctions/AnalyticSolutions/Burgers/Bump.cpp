@@ -34,34 +34,10 @@ Scalar<T> Bump::u(const tnsr::I<T, 1>& x, double t) const noexcept {
                    (height_ - center_distance * reduced_peak_distance * denom));
 }
 
-template <typename T>
-Scalar<T> Bump::du_dt(const tnsr::I<T, 1>& x, double t) const noexcept {
-  const T center_distance = get<0>(x) - center_;
-  // Distance from the current peak location divided by the half width
-  // and the time the shock reaches the solution zero.
-  const T reduced_peak_distance =
-      2. * height_ / square(half_width_) * (center_distance - height_ * t);
-
-  const T denom = 1. / (1. + sqrt(1. - 2. * t * reduced_peak_distance));
-
-  return Scalar<T>(4. * square(height_ / half_width_) * square(denom) *
-                   (denom / (1. - denom) *
-                        (center_distance - 2. * height_ * t) *
-                        (1 - 2. / height_ * denom * center_distance *
-                                 reduced_peak_distance) +
-                    center_distance));
-}
-
 tuples::TaggedTuple<Tags::U> Bump::variables(
     const tnsr::I<DataVector, 1>& x, double t,
     tmpl::list<Tags::U> /*meta*/) const noexcept {
   return {u(x, t)};
-}
-
-tuples::TaggedTuple<::Tags::dt<Tags::U>> Bump::variables(
-    const tnsr::I<DataVector, 1>& x, double t,
-    tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const noexcept {
-  return {du_dt(x, t)};
 }
 
 void Bump::pup(PUP::er& p) noexcept {
@@ -77,8 +53,6 @@ void Bump::pup(PUP::er& p) noexcept {
 
 #define INSTANTIATE(_, data)                                      \
   template Scalar<DTYPE(data)> Burgers::Solutions::Bump::u(       \
-      const tnsr::I<DTYPE(data), 1>& x, double t) const noexcept; \
-  template Scalar<DTYPE(data)> Burgers::Solutions::Bump::du_dt(   \
       const tnsr::I<DTYPE(data), 1>& x, double t) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

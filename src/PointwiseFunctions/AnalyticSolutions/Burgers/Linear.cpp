@@ -24,23 +24,10 @@ Scalar<T> Linear::u(const tnsr::I<T, 1>& x, double t) const noexcept {
   return result;
 }
 
-template <typename T>
-Scalar<T> Linear::du_dt(const tnsr::I<T, 1>& x, double t) const noexcept {
-  Scalar<T> result(get<0>(x));
-  get(result) /= -square(t - shock_time_);
-  return result;
-}
-
 tuples::TaggedTuple<Tags::U> Linear::variables(
     const tnsr::I<DataVector, 1>& x, double t,
     tmpl::list<Tags::U> /*meta*/) const noexcept {
   return {u(x, t)};
-}
-
-tuples::TaggedTuple<::Tags::dt<Tags::U>> Linear::variables(
-    const tnsr::I<DataVector, 1>& x, double t,
-    tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const noexcept {
-  return {du_dt(x, t)};
 }
 
 void Linear::pup(PUP::er& p) noexcept { p | shock_time_; }
@@ -52,8 +39,6 @@ void Linear::pup(PUP::er& p) noexcept { p | shock_time_; }
 
 #define INSTANTIATE(_, data)                                      \
   template Scalar<DTYPE(data)> Burgers::Solutions::Linear::u(     \
-      const tnsr::I<DTYPE(data), 1>& x, double t) const noexcept; \
-  template Scalar<DTYPE(data)> Burgers::Solutions::Linear::du_dt( \
       const tnsr::I<DTYPE(data), 1>& x, double t) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

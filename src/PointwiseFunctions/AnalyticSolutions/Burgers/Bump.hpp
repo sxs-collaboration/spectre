@@ -70,16 +70,9 @@ class Bump : public MarkAsAnalyticSolution {
   template <typename T>
   Scalar<T> u(const tnsr::I<T, 1>& x, double t) const noexcept;
 
-  template <typename T>
-  Scalar<T> du_dt(const tnsr::I<T, 1>& x, double t) const noexcept;
-
   tuples::TaggedTuple<Tags::U> variables(
       const tnsr::I<DataVector, 1>& x, double t,
       tmpl::list<Tags::U> /*meta*/) const noexcept;
-
-  tuples::TaggedTuple<::Tags::dt<Burgers::Tags::U>> variables(
-      const tnsr::I<DataVector, 1>& x, double t,
-      tmpl::list<::Tags::dt<Tags::U>> /*meta*/) const noexcept;
 
   // clang-tidy: no pass by reference
   void pup(PUP::er& p) noexcept;  // NOLINT
