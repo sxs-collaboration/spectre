@@ -225,6 +225,7 @@ void test_assert_equal() noexcept { CHECK(AssertEqual<>{}(7, 7) == 7); }
 template <typename Gen>
 void test_functional_combinations(Gen& gen) noexcept {
   const Bound generic{{-50.0, 50.0}};
+  const Bound small{{-5.0, 5.0}};
 
   test_functional_against_function<Plus<Minus<>, Identity>, double>(
       [](const auto& x, const auto& y, const auto& z) { return (x - y) + z; },
@@ -234,11 +235,13 @@ void test_functional_combinations(Gen& gen) noexcept {
         return w * sin(x + y * z);
       },
       gen, generic, std::make_index_sequence<4>());
+  // This function needs the distribution to be `small` to avoid rare
+  // accumulation of error
   test_functional_against_function<Multiplies<Plus<Plus<>, Plus<>>, Identity>,
                                    double>(
       [](const auto& x1, const auto& x2, const auto& x3, const auto& x4,
          const auto& x5) { return x5 * (x1 + x2 + x3 + x4); },
-      gen, generic, std::make_index_sequence<5>());
+      gen, small, std::make_index_sequence<5>());
   test_functional_against_function<
       Minus<Plus<Identity, Multiplies<>>, Identity>, double>(
       [](const auto& x1, const auto& x2, const auto& x3, const auto& x4) {
