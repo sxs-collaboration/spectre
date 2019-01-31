@@ -5,6 +5,8 @@ set(LIBRARY "Test_DataStructures")
 
 set(LIBRARY_SOURCES
   Test_ComplexDataVector.cpp
+  Test_ComplexDiagonalModalOperator.cpp
+  Test_ComplexModalVector.cpp
   Test_DataVector.cpp
   Test_DenseMatrix.cpp
   Test_DenseVector.cpp
