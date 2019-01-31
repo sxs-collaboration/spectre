@@ -241,6 +241,7 @@ license() {
               'cmake/FindPythonModule.cmake$' \
               'cmake/Findcppcheck.cmake$' \
               'cmake/Findcppcheck.cpp$' \
+              'docs/config/doxygen.css' \
               'docs/config/footer.html' \
               'docs/config/header.html' \
               'docs/config/layout.xml' \
