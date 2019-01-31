@@ -1404,10 +1404,34 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries1",
           {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
           {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}},
           {{Direction<3>::upper_zeta(), Direction<3>::upper_eta()}}};
+
+  // Issue 1018 describes a memory bug that is caused by incorrect indexing
+  // in the function `maps_for_rectilinear_domains` called through the function
+  // `rectilinear_domain`. When called through `rectilinear_domain`, the empty
+  // `orientations_of_all_blocks` vector passed to `rectilinear_domain`
+  // triggers the construction of a vector filled with default-constructed
+  // `OrientationMaps` which is then passed to `maps_for_rectilinear_domains`.
+  // In `maps_for_rectilinear_domains` the non-empty vector of `OrientationMaps`
+  // is then indexed into using `block_orientation_index`.
+  // The maps created in this fashion are then compared to the maps created by
+  // calling the `maps_for_rectilinear_domains` directly, with an empty vector
+  // of `OrientationMaps`. In this case no indexing is done, so if an incorrect
+  // map is created via incorrect indexing, the maps created by the two
+  // function calls will differ.
+  const std::vector<
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+      expected_coordinate_maps = maps_for_rectilinear_domains<Frame::Inertial>(
+          Index<3>{3, 3, 3},
+          std::array<std::vector<double>, 3>{{{0.0, 1.0, 2.0, 3.0},
+                                              {0.0, 1.0, 2.0, 3.0},
+                                              {0.0, 1.0, 2.0, 3.0}}},
+          {Index<3>{1, 1, 1}}, {});
+
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
+    CHECK(domain.blocks()[i].coordinate_map() == *expected_coordinate_maps[i]);
   }
 }
 
@@ -1429,11 +1453,19 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries2",
                                    {{Direction<2>::lower_eta()}},
                                    {{Direction<2>::upper_eta()}},
                                    {{Direction<2>::upper_eta()}}};
+  const std::vector<
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
+      expected_coordinate_maps = maps_for_rectilinear_domains<Frame::Inertial>(
+          Index<2>{2, 2},
+          std::array<std::vector<double>, 2>{
+              {{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
+          {}, orientations_of_all_blocks, false);
 
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
+    CHECK(domain.blocks()[i].coordinate_map() == *expected_coordinate_maps[i]);
   }
 }
 
@@ -1475,13 +1507,19 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries3",
        {Direction<2>::lower_eta(), {2, flipped}}}};
   std::vector<std::unordered_set<Direction<2>>> expected_external_boundaries{
       {}, {}, {}, {}};
+  const std::vector<
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
+      expected_coordinate_maps = maps_for_rectilinear_domains<Frame::Inertial>(
+          Index<2>{2, 2},
+          std::array<std::vector<double>, 2>{
+              {{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
+          {}, orientations_of_all_blocks, false);
+
   for (size_t i = 0; i < domain.blocks().size(); i++) {
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
-  }
-  for (size_t i = 0; i < domain.blocks().size(); i++) {
-    INFO(i);
+    CHECK(domain.blocks()[i].coordinate_map() == *expected_coordinate_maps[i]);
     CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
   }
 }
