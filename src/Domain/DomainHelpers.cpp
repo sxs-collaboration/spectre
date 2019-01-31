@@ -874,6 +874,14 @@ maps_for_rectilinear_domains(
   std::vector<std::unique_ptr<
       CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
       maps{};
+  // block_orientation_index is the index into orientation_of_all_blocks,
+  // and is equal to IndexIterator.collapsed_index()
+  // except in the case where block_indices_to_exclude.size() != 0. That is,
+  // orientation_of_all_blocks does not get incremented if a block is excluded.
+  // (ii.collapsed_index() is incremented in both case, and if used as the
+  // index into orientation_of_all_blocks would lead to
+  // out-of-bounds indexing into the orientations_of_all_blocks array.
+  size_t block_orientation_index = 0;
   for (IndexIterator<VolumeDim> ii(domain_extents); ii; ++ii) {
     if (std::find(block_indices_to_exclude.begin(),
                   block_indices_to_exclude.end(),
@@ -897,7 +905,8 @@ maps_for_rectilinear_domains(
         }
         if (not orientations_of_all_blocks.empty()) {
           maps.push_back(product_of_1d_maps<TargetFrame>(
-              affine_maps, orientations_of_all_blocks[ii.collapsed_index()]));
+              affine_maps,
+              orientations_of_all_blocks[block_orientation_index]));
         } else {
           maps.push_back(product_of_1d_maps<TargetFrame>(affine_maps));
         }
@@ -911,11 +920,12 @@ maps_for_rectilinear_domains(
         if (not orientations_of_all_blocks.empty()) {
           maps.push_back(product_of_1d_maps<TargetFrame>(
               equiangular_maps,
-              orientations_of_all_blocks[ii.collapsed_index()]));
+              orientations_of_all_blocks[block_orientation_index]));
         } else {
           maps.push_back(product_of_1d_maps<TargetFrame>(equiangular_maps));
         }
       }
+      block_orientation_index++;
     }
   }
   return maps;
