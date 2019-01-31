@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/ModalVector.hpp"
 #include "DataStructures/SliceIterator.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/Gsl.hpp"
@@ -188,6 +189,7 @@ void orient_each_component(
     const gsl::not_null<Variables<TagsList>*> oriented_variables,
     const Variables<TagsList>& variables,
     const std::vector<size_t>& oriented_offset) noexcept {
+  using VectorType = typename Variables<TagsList>::vector_type;
   tmpl::for_each<TagsList>(
       [&oriented_variables, &variables, &oriented_offset](auto tag) {
         using Tag = tmpl::type_from<decltype(tag)>;
@@ -195,9 +197,9 @@ void orient_each_component(
         const auto& tensor = get<Tag>(variables);
         for (decltype(auto) oriented_and_tensor_components :
              boost::combine(oriented_tensor, tensor)) {
-          DataVector& oriented_tensor_component =
+          VectorType& oriented_tensor_component =
               boost::get<0>(oriented_and_tensor_components);
-          const DataVector& tensor_component =
+          const VectorType& tensor_component =
               boost::get<1>(oriented_and_tensor_components);
           for (size_t s = 0; s < tensor_component.size(); ++s) {
             oriented_tensor_component[oriented_offset[s]] = tensor_component[s];
