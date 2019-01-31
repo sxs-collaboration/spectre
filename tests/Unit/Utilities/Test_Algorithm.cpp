@@ -136,6 +136,16 @@ void test_equal() noexcept {
       [](const int lhs, const int rhs) noexcept { return lhs == -rhs; }));
 }
 
+void test_min_max_element() noexcept {
+  std::vector<int> t{3, 5, 8, -1};
+  CHECK(*alg::min_element(t) == -1);
+  CHECK(*alg::max_element(t) == 8);
+  CHECK(*alg::min_element(t, [](const int a, const int b) { return a > b; }) ==
+        8);
+  CHECK(*alg::max_element(t, [](const int a, const int b) { return a > b; }) ==
+        -1);
+}
+
 void test_find_related() noexcept {
   const std::vector<int> a{1, 2, 3, 4};
   CHECK(alg::find(a, 3) == a.begin() + 2);
@@ -185,5 +195,6 @@ SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
   test_equal();
   test_find_related();
   test_for_each();
+  test_min_max_element();
   test_remove();
 }

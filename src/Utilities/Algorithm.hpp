@@ -263,6 +263,38 @@ decltype(auto) equal(const Container& lhs, const Container2& rhs,
                     std::forward<BinaryPredicate>(p));
 }
 
+/// Convenience wrapper around std::max_element
+template <class Container>
+decltype(auto) max_element(const Container& c) {
+  using std::begin;
+  using std::end;
+  return std::max_element(begin(c), end(c));
+}
+
+/// Convenience wrapper around std::max_element
+template <class Container, class Compare>
+decltype(auto) max_element(const Container& c, Compare&& comp) {
+  using std::begin;
+  using std::end;
+  return std::max_element(begin(c), end(c), std::forward<Compare>(comp));
+}
+
+/// Convenience wrapper around std::min_element
+template <class Container>
+decltype(auto) min_element(const Container& c) {
+  using std::begin;
+  using std::end;
+  return std::min_element(begin(c), end(c));
+}
+
+/// Convenience wrapper around std::min_element
+template <class Container, class Compare>
+decltype(auto) min_element(const Container& c, Compare&& comp) {
+  using std::begin;
+  using std::end;
+  return std::min_element(begin(c), end(c), std::forward<Compare>(comp));
+}
+
 /// Convenience wrapper around std::remove
 template <class Container, class T>
 decltype(auto) remove(Container& c, const T& value) {
