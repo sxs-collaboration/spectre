@@ -198,7 +198,7 @@ before_install:
   - export DEP_CACHE=$HOME/mac_cache
   - export CHARM_PATCH=v6.8.patch
   - export CHARM_CC=${CC}
-  - export FC=gfortran
+  - export FC=gfortran-8
   - if [[ ${COMPILER} =~ (gcc|clang)-([0-9\.]+) ]]; then
       CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
       if [[ ${BASH_REMATCH[1]} = gcc ]]; then

@@ -13,13 +13,17 @@
 # someone who does. Since changes to this image effect our testing
 # infrastructure it is important all changes be carefully reviewed.
 
-FROM ubuntu:17.10
+FROM ubuntu:18.04
 
 ARG PARALLEL_MAKE_ARG=-j2
+ARG DEBIAN_FRONTEND=noninteractive
 
 # Install required packages for SpECTRE
 RUN apt-get update -y && \
-    apt-get install -y gcc g++ gfortran gcc-6 g++-6 gfortran-6 gdb git cmake \
+    apt-get install -y gcc-6 g++-6 gfortran-6 \
+                       gcc-7 g++-7 gfortran-7 \
+                       gcc-8 g++-8 gfortran-8 \
+                       gdb git cmake \
                        libopenblas-dev liblapack-dev libhdf5-dev hdf5-tools \
                        libgsl0-dev \
                        clang-5.0 clang-format-5.0 clang-tidy-5.0 \
@@ -88,12 +92,11 @@ RUN /work/spack/bin/spack install cmake && \
     /work/spack/bin/spack install --no-checksum catch@2.1.0 && \
     /work/spack/bin/spack install brigand@master && \
     /work/spack/bin/spack install blaze && \
-    /work/spack/bin/spack install gsl%gcc@6.4.0 && \
+    /work/spack/bin/spack install gsl%gcc@6.5.0 && \
     /work/spack/bin/spack install libsharp -openmp -mpi && \
-    /work/spack/bin/spack install libxsmm%gcc@6.4.0
-# On 09/03/2017 CMake 3.9.0 failed to build with spack
-RUN /work/spack/bin/spack install yaml-cpp@develop%gcc@6.4.0
-RUN /work/spack/bin/spack install benchmark%gcc@6.4.0
+    /work/spack/bin/spack install libxsmm%gcc@6.5.0 && \
+    /work/spack/bin/spack install yaml-cpp@develop%gcc@6.5.0 && \
+    /work/spack/bin/spack install benchmark%gcc@6.5.0
 
 # Install include-what-you-use
 # We patch it to allow cyclic includes in boost
@@ -102,11 +105,11 @@ RUN wget https://github.com/include-what-you-use/include-what-you-use/archive/cl
     && rm clang_5.0.tar.gz \
     && mkdir /work/include-what-you-use-clang_5.0/build \
     && cd /work/include-what-you-use-clang_5.0/ \
-    && sed -i 's^\\\"third_party/^<boost/^' iwyu_include_picker.cc
-WORKDIR /work/include-what-you-use-clang_5.0/build
-RUN cmake -D CMAKE_CXX_COMPILER=clang++-5.0 \
-    -D CMAKE_C_COMPILER=clang-5.0 \
-    -D IWYU_LLVM_ROOT_PATH=/usr/lib/llvm-5.0 .. \
+    && sed -i 's^\\\"third_party/^<boost/^' iwyu_include_picker.cc \
+    && cd /work/include-what-you-use-clang_5.0/build \
+    && cmake -D CMAKE_CXX_COMPILER=clang++-5.0 \
+        -D CMAKE_C_COMPILER=clang-5.0 \
+        -D IWYU_LLVM_ROOT_PATH=/usr/lib/llvm-5.0 .. \
     && make -j2 \
     && make install \
     && cd /work \
@@ -170,3 +173,12 @@ RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
             >> /root/.bashrc \
     && /work/texlive/bin/x86_64-linux/tlmgr install bibtex
 WORKDIR /work
+
+# Work around posix rename bug:
+#   https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=891541
+RUN ln -s /usr/lib/x86_64-linux-gnu/lua/5.1/posix_c.so \
+    /usr/lib/x86_64-linux-gnu/lua/5.1/posix.so && \
+    ln -s /usr/lib/x86_64-linux-gnu/lua/5.2/posix_c.so \
+    /usr/lib/x86_64-linux-gnu/lua/5.2/posix.so && \
+    ln -s /usr/lib/x86_64-linux-gnu/lua/5.3/posix_c.so \
+    /usr/lib/x86_64-linux-gnu/lua/5.3/posix.so
