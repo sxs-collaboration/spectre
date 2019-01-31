@@ -267,3 +267,332 @@ def evol_field_phi(gamma2, upsi, uzero, uplus, uminus, normal_one_form):
     return np.einsum('i,ab->iab', normal_one_form, udiff) + uzero
 
 # End test functions for characteristic fields
+
+# Test functions for F constraint
+
+
+def f_constraint_term_1_of_25(spacetime_normal_one_form,
+                              spacetime_normal_vector,
+                              inverse_spacetime_metric, d_pi):
+    spacetime_normal_vector_I = spacetime_normal_vector[1:]
+    d_pi_abc = np.pad(d_pi, ((1, 0), (0, 0), (0, 0)), 'constant')
+    term = np.einsum("bc,abc", inverse_spacetime_metric, d_pi_abc)
+    term += np.einsum("a,i,bc,ibc", spacetime_normal_one_form,
+                      spacetime_normal_vector_I, inverse_spacetime_metric, d_pi)
+    return 0.5 * term
+
+
+def f_constraint_term_2_of_25(inverse_spatial_metric, d_pi):
+    d_pi_ija = d_pi[:, 1:, :]
+    return -1.0 * np.einsum("ij,ija", inverse_spatial_metric, d_pi_ija)
+
+
+def f_constraint_term_3_of_25(inverse_spatial_metric, spacetime_normal_vector,
+                              d_phi):
+    return -1.0 * np.einsum("ij,b,ijba", inverse_spatial_metric,
+                            spacetime_normal_vector, d_phi)
+
+
+def f_constraint_term_4_of_25(spacetime_normal_one_form,
+                              inverse_spacetime_metric,
+                              inverse_spatial_metric, d_phi):
+    return 0.5 * np.einsum("a,bc,ij,ijbc", spacetime_normal_one_form,
+                           inverse_spacetime_metric,
+                           inverse_spatial_metric, d_phi)
+
+
+def f_constraint_term_5_of_25(spacetime_normal_one_form, inverse_spatial_metric,
+                              d_gauge_function):
+    d_gauge_function_ij = d_gauge_function[:, 1:]
+    return np.einsum("a,ij,ij", spacetime_normal_one_form,
+                     inverse_spatial_metric,
+                     d_gauge_function_ij)
+
+
+def f_constraint_term_6_of_25(spacetime_normal_one_form,
+                              spacetime_normal_vector,
+                              phi, inverse_spatial_metric,
+                              inverse_spacetime_metric):
+    spacetime_normal_vector_I = spacetime_normal_vector[1:]
+    phi_ijb = phi[:, 1:, :]
+    phi_ajb = np.pad(phi, ((1, 0), (0, 0), (0, 0)), 'constant')[:, 1:, :]
+    term = np.einsum("ajb,jk,kcd,bd,c", phi_ajb, inverse_spatial_metric, phi,
+                     inverse_spacetime_metric,
+                     spacetime_normal_vector)
+    return term + np.einsum("a,i,ijb,jk,kcd,bd,c", spacetime_normal_one_form,
+                            spacetime_normal_vector_I, phi_ijb,
+                            inverse_spatial_metric, phi,
+                            inverse_spacetime_metric, spacetime_normal_vector)
+
+
+def f_constraint_term_7_of_25(spacetime_normal_one_form,
+                              spacetime_normal_vector,
+                              phi, inverse_spatial_metric,
+                              inverse_spacetime_metric):
+    spacetime_normal_vector_I = spacetime_normal_vector[1:]
+    phi_ijb = phi[:, 1:, :]
+    phi_ajb = np.pad(phi, ((1, 0), (0, 0), (0, 0)), 'constant')[:, 1:, :]
+    term = np.einsum("ajb,jk,kcd,cd,b", phi_ajb, inverse_spatial_metric, phi,
+                     inverse_spacetime_metric,
+                     spacetime_normal_vector)
+    return -0.5 * (term + np.einsum("a,i,ijb,jk,kcd,cd,b",
+                                    spacetime_normal_one_form,
+                                    spacetime_normal_vector_I, phi_ijb,
+                                    inverse_spatial_metric, phi,
+                                    inverse_spacetime_metric,
+                                    spacetime_normal_vector))
+
+
+def f_constraint_term_8_of_25(spacetime_normal_one_form,
+                              spacetime_normal_vector,
+                              d_gauge_function):
+    d_gauge_function_ab = np.pad(
+        d_gauge_function, ((1, 0), (0, 0)), 'constant')
+    spacetime_normal_vector_I = spacetime_normal_vector[1:]
+    term = -1.0 * np.einsum("b,ab", spacetime_normal_vector,
+                            d_gauge_function_ab)
+    return term - np.einsum("a,i,b,ib", spacetime_normal_one_form,
+                            spacetime_normal_vector_I,
+                            spacetime_normal_vector, d_gauge_function)
+
+
+def f_constraint_term_9_of_25(inverse_spatial_metric, phi,
+                              inverse_spacetime_metric,
+                              spacetime_normal_vector):
+    return np.einsum("ij,icd,jba,bc,d", inverse_spatial_metric, phi, phi,
+                     inverse_spacetime_metric, spacetime_normal_vector)
+
+
+def f_constraint_term_10_of_25(spacetime_normal_one_form,
+                               inverse_spatial_metric, phi,
+                               inverse_spacetime_metric):
+    phi_imc = phi[:, 1:, :]
+    return -0.5 * np.einsum("a,ij,mn,imc,njd,cd", spacetime_normal_one_form,
+                            inverse_spatial_metric, inverse_spatial_metric,
+                            phi_imc, phi_imc, inverse_spacetime_metric)
+
+
+def f_constraint_term_11_of_25(spacetime_normal_one_form,
+                               inverse_spatial_metric, phi,
+                               inverse_spacetime_metric):
+    return -0.25 * np.einsum("a,ij,icd,jbe,cb,de", spacetime_normal_one_form,
+                             inverse_spatial_metric, phi, phi,
+                             inverse_spacetime_metric, inverse_spacetime_metric)
+
+
+def f_constraint_term_12_of_25(spacetime_normal_one_form, pi,
+                               inverse_spacetime_metric):
+    return 0.25 * np.einsum("a,cd,be,cb,de", spacetime_normal_one_form, pi, pi,
+                            inverse_spacetime_metric, inverse_spacetime_metric)
+
+
+def f_constraint_term_13_of_25(inverse_spatial_metric, gauge_function, pi):
+    gauge_function_i = gauge_function[1:]
+    pi_ja = pi[1:, :]
+    return -1.0 * np.einsum("ij,i,ja", inverse_spatial_metric,
+                            gauge_function_i, pi_ja)
+
+
+def f_constraint_term_14_of_25(spacetime_normal_vector, inverse_spatial_metric,
+                               pi):
+    pi_bi = pi[:, 1:]
+    pi_ja = pi[1:, :]
+    return -1.0 * np.einsum("b,ij,bi,ja", spacetime_normal_vector,
+                            inverse_spatial_metric, pi_bi, pi_ja)
+
+
+def f_constraint_term_15_of_25(inverse_spacetime_metric,
+                               spacetime_normal_one_form,
+                               spacetime_normal_vector, phi, pi):
+    phi_acd = np.pad(phi, ((1, 0), (0, 0), (0, 0)), 'constant')
+    spacetime_normal_vector_I = spacetime_normal_vector[1:]
+    term = np.einsum("acd,c,d,be,be", phi_acd, spacetime_normal_vector,
+                     spacetime_normal_vector, pi, inverse_spacetime_metric)
+    term += np.einsum("a,i,icd,c,d,be,be", spacetime_normal_one_form,
+                      spacetime_normal_vector_I, phi, spacetime_normal_vector,
+                      spacetime_normal_vector, pi, inverse_spacetime_metric)
+    return -0.25 * term
+
+
+def f_constraint_term_16_of_25(spacetime_normal_one_form, pi,
+                               inverse_spacetime_metric,
+                               spacetime_normal_vector):
+    return 0.5 * np.einsum("a,cd,be,ce,d,b", spacetime_normal_one_form,
+                           pi, pi, inverse_spacetime_metric,
+                           spacetime_normal_vector, spacetime_normal_vector)
+
+
+def f_constraint_term_17_of_25(inverse_spacetime_metric,
+                               spacetime_normal_one_form,
+                               spacetime_normal_vector, phi, pi):
+    phi_acd = np.pad(phi, ((1, 0), (0, 0), (0, 0)), 'constant')
+    spacetime_normal_vector_I = spacetime_normal_vector[1:]
+    term = np.einsum("acd,be,c,b,de", phi_acd, pi, spacetime_normal_vector,
+                     spacetime_normal_vector, inverse_spacetime_metric)
+    return term + np.einsum("a,i,icd,be,c,b,de", spacetime_normal_one_form,
+                            spacetime_normal_vector_I, phi, pi,
+                            spacetime_normal_vector, spacetime_normal_vector,
+                            inverse_spacetime_metric)
+
+
+def f_constraint_term_18_of_25(inverse_spatial_metric, phi,
+                               spacetime_normal_vector, pi):
+    pi_je = pi[1:, :]
+    return -1.0 * np.einsum("ij,iba,b,je,e", inverse_spatial_metric, phi,
+                            spacetime_normal_vector, pi_je,
+                            spacetime_normal_vector)
+
+
+def f_constraint_term_19_of_25(inverse_spatial_metric, phi,
+                               spacetime_normal_vector, pi):
+    pi_ja = pi[1:, :]
+    return -0.5 * np.einsum("ij,icd,c,d,ja", inverse_spatial_metric, phi,
+                            spacetime_normal_vector, spacetime_normal_vector,
+                            pi_ja)
+
+
+def f_constraint_term_20_of_25(inverse_spatial_metric, gauge_function, phi,
+                               spacetime_normal_vector):
+    gauge_function_i = gauge_function[1:]
+    return -1.0 * np.einsum("ij,i,jab,b", inverse_spatial_metric,
+                            gauge_function_i, phi, spacetime_normal_vector)
+
+
+def f_constraint_term_21_of_25(spacetime_normal_one_form,
+                               spacetime_normal_vector, phi, gauge_function,
+                               inverse_spacetime_metric):
+    phi_acd = np.pad(phi, ((1, 0), (0, 0), (0, 0)), 'constant')
+    spacetime_normal_vector_I = spacetime_normal_vector[1:]
+    term = np.einsum("acd,b,bc,d", phi_acd, gauge_function,
+                     inverse_spacetime_metric, spacetime_normal_vector)
+    return term + np.einsum("a,i,icd,b,bc,d", spacetime_normal_one_form,
+                            spacetime_normal_vector_I, phi, gauge_function,
+                            inverse_spacetime_metric, spacetime_normal_vector)
+
+
+def f_constraint_term_22_of_25(gamma2, inverse_spacetime_metric,
+                               spacetime_normal_vector, three_index_constraint,
+                               spacetime_normal_one_form):
+    inverse_spacetime_metric_ID = inverse_spacetime_metric[1:, :]
+    spacetime_normal_vector_I = spacetime_normal_vector[1:]
+    three_index_constraint_acd = np.pad(three_index_constraint,
+                                        ((1, 0), (0, 0), (0, 0)), 'constant')
+    term = np.einsum("id,ida", inverse_spacetime_metric_ID,
+                     three_index_constraint)
+    term += np.einsum("i,d,ida", spacetime_normal_vector_I,
+                      spacetime_normal_vector, three_index_constraint)
+    term -= 0.5 * np.einsum("cd,acd", inverse_spacetime_metric,
+                            three_index_constraint_acd)
+    term -= 0.5 * np.einsum("a,i,cd,icd", spacetime_normal_one_form,
+                            spacetime_normal_vector_I, inverse_spacetime_metric,
+                            three_index_constraint)
+    return gamma2 * term
+
+
+def f_constraint_term_23_of_25(spacetime_normal_one_form, pi,
+                               inverse_spacetime_metric, gauge_function,
+                               spacetime_normal_vector):
+    return 0.5 * np.einsum("a,cd,cd,b,b", spacetime_normal_one_form, pi,
+                           inverse_spacetime_metric, gauge_function,
+                           spacetime_normal_vector)
+
+
+def f_constraint_term_24_of_25(spacetime_normal_one_form,
+                               inverse_spatial_metric, phi, gauge_function,
+                               inverse_spacetime_metric):
+    phi_ijc = phi[:, 1:, :]
+    return -1.0 * np.einsum("a,ij,ijc,d,cd", spacetime_normal_one_form,
+                            inverse_spatial_metric, phi_ijc, gauge_function,
+                            inverse_spacetime_metric)
+
+
+def f_constraint_term_25_of_25(spacetime_normal_one_form,
+                               inverse_spatial_metric, gauge_function,
+                               phi, inverse_spacetime_metric):
+    gauge_function_i = gauge_function[1:]
+    return 0.5 * np.einsum("a,ij,i,jcd,cd", spacetime_normal_one_form,
+                           inverse_spatial_metric, gauge_function_i, phi,
+                           inverse_spacetime_metric)
+
+
+def f_constraint(gauge_function, d_gauge_function, spacetime_normal_one_form,
+                 spacetime_normal_vector, inverse_spatial_metric,
+                 inverse_spacetime_metric, pi, phi, d_pi, d_phi, gamma2,
+                 three_index_constraint):
+    constraint = f_constraint_term_1_of_25(spacetime_normal_one_form,
+                                           spacetime_normal_vector,
+                                           inverse_spacetime_metric, d_pi)
+    constraint += f_constraint_term_2_of_25(inverse_spatial_metric, d_pi)
+    constraint += f_constraint_term_3_of_25(inverse_spatial_metric,
+                                            spacetime_normal_vector, d_phi)
+    constraint += f_constraint_term_4_of_25(spacetime_normal_one_form,
+                                            inverse_spacetime_metric,
+                                            inverse_spatial_metric, d_phi)
+    constraint += f_constraint_term_5_of_25(spacetime_normal_one_form,
+                                            inverse_spatial_metric,
+                                            d_gauge_function)
+    constraint += f_constraint_term_6_of_25(spacetime_normal_one_form,
+                                            spacetime_normal_vector,
+                                            phi, inverse_spatial_metric,
+                                            inverse_spacetime_metric)
+    constraint += f_constraint_term_7_of_25(spacetime_normal_one_form,
+                                            spacetime_normal_vector,
+                                            phi, inverse_spatial_metric,
+                                            inverse_spacetime_metric)
+    constraint += f_constraint_term_8_of_25(spacetime_normal_one_form,
+                                            spacetime_normal_vector,
+                                            d_gauge_function)
+    constraint += f_constraint_term_9_of_25(inverse_spatial_metric, phi,
+                                            inverse_spacetime_metric,
+                                            spacetime_normal_vector)
+    constraint += f_constraint_term_10_of_25(spacetime_normal_one_form,
+                                             inverse_spatial_metric, phi,
+                                             inverse_spacetime_metric)
+    constraint += f_constraint_term_11_of_25(spacetime_normal_one_form,
+                                             inverse_spatial_metric, phi,
+                                             inverse_spacetime_metric)
+    constraint += f_constraint_term_12_of_25(spacetime_normal_one_form, pi,
+                                             inverse_spacetime_metric)
+    constraint += f_constraint_term_13_of_25(inverse_spatial_metric,
+                                             gauge_function, pi)
+    constraint += f_constraint_term_14_of_25(spacetime_normal_vector,
+                                             inverse_spatial_metric, pi)
+    constraint += f_constraint_term_15_of_25(inverse_spacetime_metric,
+                                             spacetime_normal_one_form,
+                                             spacetime_normal_vector, phi, pi)
+    constraint += f_constraint_term_16_of_25(spacetime_normal_one_form, pi,
+                                             inverse_spacetime_metric,
+                                             spacetime_normal_vector)
+    constraint += f_constraint_term_17_of_25(inverse_spacetime_metric,
+                                             spacetime_normal_one_form,
+                                             spacetime_normal_vector, phi, pi)
+    constraint += f_constraint_term_18_of_25(inverse_spatial_metric, phi,
+                                             spacetime_normal_vector, pi)
+    constraint += f_constraint_term_19_of_25(inverse_spatial_metric, phi,
+                                             spacetime_normal_vector, pi)
+    constraint += f_constraint_term_20_of_25(inverse_spatial_metric,
+                                             gauge_function, phi,
+                                             spacetime_normal_vector)
+    constraint += f_constraint_term_21_of_25(spacetime_normal_one_form,
+                                             spacetime_normal_vector, phi,
+                                             gauge_function,
+                                             inverse_spacetime_metric)
+    constraint += f_constraint_term_22_of_25(gamma2, inverse_spacetime_metric,
+                                             spacetime_normal_vector,
+                                             three_index_constraint,
+                                             spacetime_normal_one_form)
+    constraint += f_constraint_term_23_of_25(spacetime_normal_one_form, pi,
+                                             inverse_spacetime_metric,
+                                             gauge_function,
+                                             spacetime_normal_vector)
+    constraint += f_constraint_term_24_of_25(spacetime_normal_one_form,
+                                             inverse_spatial_metric,
+                                             phi, gauge_function,
+                                             inverse_spacetime_metric)
+    constraint += f_constraint_term_25_of_25(spacetime_normal_one_form,
+                                             inverse_spatial_metric,
+                                             gauge_function, phi,
+                                             inverse_spacetime_metric)
+    return constraint
+
+# End test functions for F constraint
