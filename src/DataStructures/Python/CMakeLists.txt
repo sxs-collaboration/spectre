@@ -9,6 +9,7 @@ spectre_python_add_module(
   Bindings.cpp
   DataVector.cpp
   Matrix.cpp
+  ToNumpy.cpp
   )
 
 target_link_libraries(
