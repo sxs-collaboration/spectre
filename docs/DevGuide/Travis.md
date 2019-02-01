@@ -5,6 +5,10 @@ See LICENSE.txt for details.
 
 # Travis CI {#travis_guide}
 
+\tableofcontents
+
+# Testing SpECTRE with Travis CI {#travis_ci}
+
 SpECTRE uses
 [TravisCI](https://travis-ci.org/sxs-collaboration/spectre) for
 testing the code.  Multiple build jobs (described below) are launched
@@ -22,7 +26,7 @@ Travis using your GitHub credentials in order to cancel your builds,
 and you should do so if you update your pull request while it is
 building.
 
-## What is tested
+## What is tested {#what-is-tested}
 
 The Travis report lists the build jobs which will each have either a
 green check mark if it passes, a red `X` if it has failed, or a yellow
@@ -74,7 +78,7 @@ performed in the CHECK_FILES build.
 using a Linux OS, and the `AppleClang` compiler for `OS X`.
 * The `gcc Debug` build will fail if there are `doxygen` warnings.
 
-## How to perform the checks locally
+## How to perform the checks locally {#perform-checks-locally}
 
 Before pushing to GitHub and waiting for Travis to perform the checks it is
 useful to perform at least the following tests locally:
@@ -108,11 +112,11 @@ useful to perform at least the following tests locally:
   requires a web server (e.g. citation popovers), so just run a
   `python3 -m http.server` in the `html` directory to enable this.
 
-## Travis setup
+## Travis setup {#travis-setup}
 
 * The `gcc Debug` build runs code coverage for each Travis build.
 
-## Troubleshooting
+## Troubleshooting {#travis-troubleshooting}
 
 * Occasionally, a build job will fail because of a problem with Travis
 (e.g. it times out).  Clicking on the circular arrow icon on the far
@@ -125,7 +129,7 @@ this may be the case, get a SpECTRE owner to click on the `More
 options` button in the top right, choose `Caches` and delete the cache
 for your pull request.
 
-## Precompiled Headers and ccache
+## Precompiled Headers and ccache {#precompiled-headers-ccache}
 
 Getting ccache to work with precompiled headers on TravisCI is a little
 challenging. The header to be precompiled is
@@ -143,7 +147,7 @@ On macOS builds we haven't yet had success with using `ccache` with a
 precompiled header. We disable the precompiled header and build in debug mode
 only to have reasonable build times.
 
-## Build Stages
+## Build Stages {#travis-build-stages}
 
 In order to avoid timeouts we build SpECTRE in various stages, carrying over the
 ccache from one stage to the next. This allows us to avoid recompiling the code
@@ -154,7 +158,7 @@ test executables, runs the tests, and also runs ClangTidy, include-what-you-use,
 and various other checks. Another stage could be added that builds some of the
 test libraries if necessary.
 
-## Caching Dependencies on macOS Builds
+## Caching Dependencies on macOS Builds {#caching-mac-os}
 
 On macOS builds we cache all of our dependencies, like LIBXSMM and
 Charm++. These are cached in `$HOME/mac_cache`. Ultimately this saves about

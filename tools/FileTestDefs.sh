@@ -152,6 +152,8 @@ long_lines() {
               'CMakeLists.txt$' \
               'Doxyfile.in$' \
               'containers/Dockerfile.travis$' \
+              'docs/MainSite/Main.md' \
+              'docs/DevGuide/Travis.md' \
               'tools/Iwyu/boost-all.imp$' && \
         staged_grep '^[^#].\{80,\}' "$1" | grep -Ev 'https?://' | \
             grep -v '// IWYU pragma:' | grep -v '// NOLINT' >/dev/null
@@ -239,6 +241,7 @@ license() {
               'cmake/FindPythonModule.cmake$' \
               'cmake/Findcppcheck.cmake$' \
               'cmake/Findcppcheck.cpp$' \
+              'docs/config/doxygen.css' \
               'docs/config/footer.html' \
               'docs/config/header.html' \
               'docs/config/layout.xml' \
