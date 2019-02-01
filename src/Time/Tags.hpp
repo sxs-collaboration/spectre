@@ -13,6 +13,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "Options/Options.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
@@ -21,11 +22,6 @@
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/TMPL.hpp"
-
-/// \cond
-// NOLINTNEXTLINE(misc-forward-declaration-namespace)
-class TimeStepper;
-/// \endcond
 
 namespace Tags {
 
@@ -163,5 +159,17 @@ struct InitialSlabSize {
   using type = double;
   static constexpr OptionString help = "The initial slab size";
   static type lower_bound() noexcept { return 0.; }
+};
+
+
+/// \ingroup OptionTagsGroup
+/// \ingroup EventsAndTriggersGroup
+/// \ingroup TimeGroup
+/// Contains the events and triggers
+template <typename EventRegistrars, typename TriggerRegistrars>
+struct EventsAndTriggers : EventsAndTriggersTagBase {
+  using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
+  static constexpr OptionString help =
+      "Events and triggers to run at slab boundaries";
 };
 }  // namespace OptionTags

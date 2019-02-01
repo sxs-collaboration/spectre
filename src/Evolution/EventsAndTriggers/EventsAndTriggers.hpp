@@ -4,13 +4,22 @@
 #pragma once
 
 #include <memory>
-#include <pup.h>
+#include <pup.h>  // IWYU pragma: keep
 #include <unordered_map>
+#include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
-#include "Evolution/EventsAndTriggers/Event.hpp"
-#include "Evolution/EventsAndTriggers/Trigger.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "Evolution/EventsAndTriggers/Event.hpp"  // IWYU pragma: keep // for option parsing
+#include "Evolution/EventsAndTriggers/Trigger.hpp"  // IWYU pragma: keep // for option parsing
+#include "Options/Options.hpp"
+
+/// \cond
+namespace Parallel {
+template <typename Metavariables> class ConstGlobalCache;
+}  // namespace Parallel
+namespace db {
+template <typename TagsList> class DataBox;
+}  // namespace db
+/// \endcond
 
 /// \ingroup EventsAndTriggersGroup
 /// Class that checks triggers and runs events
@@ -63,16 +72,8 @@ struct create_from_yaml<EventsAndTriggers<EventRegistrars, TriggerRegistrars>> {
   }
 };
 
-namespace Tags {
+namespace OptionTags {
 /// \cond
 struct EventsAndTriggersTagBase {};
 /// \endcond
-
-/// \ingroup OptionTagsGroup
-/// \ingroup EventsAndTriggersGroup
-/// Contains the events and triggers
-template <typename EventRegistrars, typename TriggerRegistrars>
-struct EventsAndTriggers : EventsAndTriggersTagBase {
-  using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
-};
-}  // namespace Tags
+}  // namespace OptionTags
