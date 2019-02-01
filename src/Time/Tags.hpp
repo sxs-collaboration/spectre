@@ -52,15 +52,6 @@ struct Time : db::ComputeTag {
   using argument_tags = tmpl::list<TimeId>;
 };
 
-/// \ingroup DataBoxTagsGroup
-/// \ingroup TimeGroup
-/// \brief Tag for compute item for current time as a double
-struct TimeValue : db::ComputeTag {
-  static std::string name() noexcept { return "TimeValue"; }
-  static auto function(const ::Time& t) noexcept { return t.value(); }
-  using argument_tags = tmpl::list<Time>;
-};
-
 /// \ingroup DataBoxTags
 /// \ingroup TimeGroup
 /// \brief Prefix for TimeStepper history
