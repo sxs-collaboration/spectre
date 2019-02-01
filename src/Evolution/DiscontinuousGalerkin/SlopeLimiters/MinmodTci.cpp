@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
+#include <limits>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
@@ -18,6 +19,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/MakeArray.hpp"
 
 namespace SlopeLimiters {
 namespace Minmod_detail {
@@ -146,6 +148,11 @@ bool troubled_cell_indicator(
 
     if (not u_needs_limiting) {
       // Skip the limiting step for this tensor component
+#ifdef SPECTRE_DEBUG
+      *u_mean = std::numeric_limits<double>::signaling_NaN();
+      *u_limited_slopes =
+          make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
+#endif  // ifdef SPECTRE_DEBUG
       return false;
     }
   }  // end if LambdaPiN
@@ -184,6 +191,17 @@ bool troubled_cell_indicator(
       slopes_need_reducing = true;
     }
   }
+
+#ifdef SPECTRE_DEBUG
+  // Guard against incorrect use of returned (by reference) slopes in a
+  // LambdaPiN limiter, by setting these to NaN when they should not be used.
+  if (minmod_type == SlopeLimiters::MinmodType::LambdaPiN and
+      not slopes_need_reducing) {
+    *u_mean = std::numeric_limits<double>::signaling_NaN();
+    *u_limited_slopes =
+        make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
+  }
+#endif  // ifdef SPECTRE_DEBUG
 
   return slopes_need_reducing;
 }
