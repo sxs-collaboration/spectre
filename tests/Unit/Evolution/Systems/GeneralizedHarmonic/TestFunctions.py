@@ -596,3 +596,32 @@ def f_constraint(gauge_function, d_gauge_function, spacetime_normal_one_form,
     return constraint
 
 # End test functions for F constraint
+
+# Begin test functions for constraint energy
+
+
+def constraint_energy(gauge_constraint, f_constraint, two_index_constraint,
+                      three_index_constraint, four_index_constraint,
+                      inverse_spatial_metric, spatial_metric_determinant,
+                      gauge_constraint_multiplier,
+                      two_index_constraint_multiplier,
+                      three_index_constraint_multiplier,
+                      four_index_constraint_multiplier):
+    energy = 0.0
+    energy += gauge_constraint_multiplier \
+        * np.einsum("a,a", gauge_constraint, gauge_constraint)
+    energy += two_index_constraint_multiplier \
+        * np.einsum("a,a", f_constraint, f_constraint)
+    energy += two_index_constraint_multiplier \
+        * np.einsum("ia,ja,ij", two_index_constraint, two_index_constraint,
+                    inverse_spatial_metric)
+    energy += three_index_constraint_multiplier \
+        * np.einsum("iab,jab,ij", three_index_constraint,
+                    three_index_constraint, inverse_spatial_metric)
+    energy += 2.0 * four_index_constraint_multiplier \
+        * spatial_metric_determinant \
+        * np.einsum("iab,jab,ij", four_index_constraint,
+                    four_index_constraint, inverse_spatial_metric)
+    return energy
+
+# End test functions for constraint energy
