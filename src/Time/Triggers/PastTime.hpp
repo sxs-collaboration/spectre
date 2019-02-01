@@ -4,12 +4,21 @@
 #pragma once
 
 #include <limits>
+#include <pup.h>
 
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Options/Options.hpp"
-#include "Time/Tags.hpp"
+#include "Parallel/CharmPupable.hpp"
+#include "Time/Time.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct TimeStep;
+struct TimeValue;
+}  // namespace Tags
+/// \endcond
 
 namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
