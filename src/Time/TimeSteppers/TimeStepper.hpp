@@ -34,7 +34,7 @@ class RungeKutta3;  // IWYU pragma: keep
 }  // namespace TimeSteppers
 
 namespace TimeStepper_detail {
-DEFINE_FAKE_VIRTUAL(dense_output)
+DEFINE_FAKE_VIRTUAL(dense_update_u)
 DEFINE_FAKE_VIRTUAL(update_u)
 }  // namespace TimeStepper_detail
 
@@ -43,7 +43,7 @@ DEFINE_FAKE_VIRTUAL(update_u)
 /// Abstract base class for TimeSteppers.
 class TimeStepper : public PUP::able {
  public:
-  using Inherit = TimeStepper_detail::FakeVirtualInherit_dense_output<
+  using Inherit = TimeStepper_detail::FakeVirtualInherit_dense_update_u<
       TimeStepper_detail::FakeVirtualInherit_update_u<TimeStepper>>;
   using creatable_classes =
       tmpl::list<TimeSteppers::AdamsBashforthN, TimeSteppers::RungeKutta3>;
@@ -63,12 +63,14 @@ class TimeStepper : public PUP::able {
   /// Compute the solution value at a time between steps.  To evaluate
   /// at a time within a given step, this must be called before the
   /// step is completed but after any intermediate substeps have been
-  /// taken.
+  /// taken.  The value of `*u` before this function is called should
+  /// be the value at the last substep.
   template <typename Vars, typename DerivVars>
-  Vars dense_output(const TimeSteppers::History<Vars, DerivVars>& history,
-                    const double time) const noexcept {
-    return TimeStepper_detail::fake_virtual_dense_output<creatable_classes>(
-        this, history, time);
+  void dense_update_u(const gsl::not_null<Vars*> u,
+                      const TimeSteppers::History<Vars, DerivVars>& history,
+                      const double time) const noexcept {
+    return TimeStepper_detail::fake_virtual_dense_update_u<creatable_classes>(
+        this, u, history, time);
   }
 
   /// Number of substeps in this TimeStepper

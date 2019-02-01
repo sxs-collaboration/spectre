@@ -75,8 +75,9 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
                 const TimeDelta& time_step) const noexcept;
 
   template <typename Vars, typename DerivVars>
-  Vars dense_output(const History<Vars, DerivVars>& history,
-                    double time) const noexcept;
+  void dense_update_u(gsl::not_null<Vars*> u,
+                      const History<Vars, DerivVars>& history,
+                      double time) const noexcept;
 
   // This is defined as a separate type alias to keep the doxygen page
   // width somewhat under control.
@@ -339,13 +340,12 @@ void AdamsBashforthN::update_u(
 }
 
 template <typename Vars, typename DerivVars>
-Vars AdamsBashforthN::dense_output(const History<Vars, DerivVars>& history,
-                                   const double time) const noexcept {
-  auto result = (history.end() - 1).value();
+void AdamsBashforthN::dense_update_u(const gsl::not_null<Vars*> u,
+                                     const History<Vars, DerivVars>& history,
+                                     const double time) const noexcept {
   const ApproximateTimeDelta time_step{
       time - history[history.size() - 1].value()};
-  update_u_impl(make_not_null(&result), history, time_step);
-  return result;
+  update_u_impl(u, history, time_step);
 }
 
 template <typename Vars, typename DerivVars, typename Delta>

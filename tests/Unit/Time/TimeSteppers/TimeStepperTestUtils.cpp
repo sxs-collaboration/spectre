@@ -299,7 +299,8 @@ void check_dense_output(const TimeStepper& stepper,
       const auto next_time_id = stepper.next_time_id(time_id, step_size);
       history.insert(time_id.time(), y, static_cast<double>(y));
       if (next_time_id.substep() == 0 and time < next_time_id.time().value()) {
-        return stepper.dense_output(history, time);
+        stepper.dense_update_u(make_not_null(&y), history, time);
+        return y;
       }
       stepper.update_u(make_not_null(&y), make_not_null(&history), step_size);
       time_id = next_time_id;
