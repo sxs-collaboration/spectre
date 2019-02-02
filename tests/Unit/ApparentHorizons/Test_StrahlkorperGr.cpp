@@ -249,7 +249,8 @@ void test_area_element(const Solution& solution, const double& surface_radius,
 
 template <typename Solution, typename Fr>
 void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
-               const double expected) noexcept {
+               const double expected,
+               const double expected_irreducible_mass) noexcept {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<
@@ -279,6 +280,9 @@ void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
       strahlkorper.ylm_spherepack().definite_integral(get(area_element).data());
 
   CHECK_ITERABLE_APPROX(area, expected);
+
+  const double irreducible_mass = StrahlkorperGr::irreducible_mass(area);
+  CHECK(irreducible_mass == approx(expected_irreducible_mass));
 }
 
 template <typename Solution, typename Fr>
@@ -631,6 +635,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
       mass * (1.0 + sqrt(1.0 - square(magnitude(spin))));
   // Eq. (26.84a) of Thorne and Blandford
   const double expected_area = 8.0 * M_PI * mass * kerr_horizon_radius;
+  const double expected_irreducible_mass =
+      sqrt(0.5 * mass * kerr_horizon_radius);
 
   const auto horizon_radius = gr::Solutions::kerr_horizon_radius(
       Strahlkorper<Frame::Inertial>(l_max, l_max, 2.0, center)
@@ -642,7 +648,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
       Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
 
   test_area(gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
-            expected_area);
+            expected_area, expected_irreducible_mass);
 }
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SurfaceInteralOfScalar",
