@@ -964,7 +964,7 @@ class MockRuntimeSystem {
     return tuples::get<MockDistributedObjectsTag<Component>>(local_algorithms_);
   }
 
-  const GlobalCache& cache() noexcept { return cache_; }
+  GlobalCache& cache() noexcept { return cache_; }
 
  private:
   GlobalCache cache_;

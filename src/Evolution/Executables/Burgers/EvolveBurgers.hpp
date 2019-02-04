@@ -15,6 +15,8 @@
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
+#include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
 #include "Evolution/Systems/Burgers/Observe.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
@@ -45,6 +47,7 @@
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/Triggers/TimeTriggers.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include <pup.h>
@@ -70,17 +73,23 @@ struct EvolutionMetavars {
       OptionTags::NumericalFluxParams<Burgers::LocalLaxFriedrichsFlux>;
   using limiter = OptionTags::SlopeLimiterParams<
       SlopeLimiters::Minmod<1, system::variables_tag::tags_list>>;
+
+  // public for use by the Charm++ registration code
+  using events = tmpl::list<Burgers::Events::Registrars::Observe>;
+  using triggers = Triggers::time_triggers;
+
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,
                  OptionTags::TypedTimeStepper<tmpl::conditional_t<
-                     local_time_stepping, LtsTimeStepper, TimeStepper>>>;
+                     local_time_stepping, LtsTimeStepper, TimeStepper>>,
+                 OptionTags::EventsAndTriggers<events, triggers>>;
   using domain_creator_tag = OptionTags::DomainCreator<1, Frame::Inertial>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::list<Burgers::Actions::Observe>>;
+      tmpl::list<Burgers::Events::Observe<>>>;
 
   using step_choosers =
       tmpl::list<StepChoosers::Registrars::Cfl<1, Frame::Inertial>,
@@ -112,7 +121,7 @@ struct EvolutionMetavars {
           tmpl::flatten<tmpl::list<
               SelfStart::self_start_procedure<compute_rhs, update_variables>,
               Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
-              Burgers::Actions::Observe, Actions::FinalTime,
+              Actions::RunEventsAndTriggers, Actions::FinalTime,
               tmpl::conditional_t<local_time_stepping,
                                   Actions::ChangeStepSize<step_choosers>,
                                   tmpl::list<>>,
@@ -156,6 +165,10 @@ struct EvolutionMetavars {
 
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &domain::creators::register_derived_with_charm,
-    &Parallel::register_derived_classes_with_charm<TimeStepper>};
+    &Parallel::register_derived_classes_with_charm<
+        Event<metavariables::events>>,
+    &Parallel::register_derived_classes_with_charm<TimeStepper>,
+    &Parallel::register_derived_classes_with_charm<
+        Trigger<metavariables::triggers>>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
