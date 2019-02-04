@@ -67,23 +67,24 @@ void test_element_impl(
           composed_map.inverse(inertial_point_double).get());
   }
 
-  CHECK(element_map.inv_jacobian(logical_point_dv) ==
-        composed_map.inv_jacobian(logical_point_dv));
-  CHECK(element_map.inv_jacobian(logical_point_double) ==
-        composed_map.inv_jacobian(logical_point_double));
-  CHECK(element_map_deserialized.inv_jacobian(logical_point_dv) ==
-        composed_map.inv_jacobian(logical_point_dv));
-  CHECK(element_map_deserialized.inv_jacobian(logical_point_double) ==
-        composed_map.inv_jacobian(logical_point_double));
+  CHECK_ITERABLE_APPROX(element_map.inv_jacobian(logical_point_dv),
+                        composed_map.inv_jacobian(logical_point_dv));
+  CHECK_ITERABLE_APPROX(element_map.inv_jacobian(logical_point_double),
+                        composed_map.inv_jacobian(logical_point_double));
+  CHECK_ITERABLE_APPROX(element_map_deserialized.inv_jacobian(logical_point_dv),
+                        composed_map.inv_jacobian(logical_point_dv));
+  CHECK_ITERABLE_APPROX(
+      element_map_deserialized.inv_jacobian(logical_point_double),
+      composed_map.inv_jacobian(logical_point_double));
 
-  CHECK(element_map.inv_jacobian(logical_point_dv) ==
-        composed_map.inv_jacobian(logical_point_dv));
-  CHECK(element_map.jacobian(logical_point_double) ==
-        composed_map.jacobian(logical_point_double));
-  CHECK(element_map_deserialized.inv_jacobian(logical_point_dv) ==
-        composed_map.inv_jacobian(logical_point_dv));
-  CHECK(element_map_deserialized.jacobian(logical_point_double) ==
-        composed_map.jacobian(logical_point_double));
+  CHECK_ITERABLE_APPROX(element_map.inv_jacobian(logical_point_dv),
+                        composed_map.inv_jacobian(logical_point_dv));
+  CHECK_ITERABLE_APPROX(element_map.jacobian(logical_point_double),
+                        composed_map.jacobian(logical_point_double));
+  CHECK_ITERABLE_APPROX(element_map_deserialized.inv_jacobian(logical_point_dv),
+                        composed_map.inv_jacobian(logical_point_dv));
+  CHECK_ITERABLE_APPROX(element_map_deserialized.jacobian(logical_point_double),
+                        composed_map.jacobian(logical_point_double));
 
   CHECK(element_map.block_map() ==
         *(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
