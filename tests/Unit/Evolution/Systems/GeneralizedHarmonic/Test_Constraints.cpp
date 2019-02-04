@@ -66,7 +66,8 @@ void test_gauge_constraint_random(const DataType& used_for_size) noexcept {
           const tnsr::aa<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &GeneralizedHarmonic::gauge_constraint<SpatialDim, Frame, DataType>),
-      "TestFunctions", "gauge_constraint", {{{-10.0, 10.0}}}, used_for_size);
+      "TestFunctions", "gauge_constraint", {{{-10.0, 10.0}}}, used_for_size,
+      1.0e-11);
 }
 
 // Test the return-by-reference gauge constraint by comparing to Kerr-Schild
