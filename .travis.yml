@@ -98,19 +98,19 @@ jobs:
     name: test check files
 
   # Run full builds after static analysis
-  - &GccDebug
+  - &Gcc7Debug
     os: linux
     compiler: gcc
     dist: trusty
-    env: BUILD_TYPE=Debug COVERAGE=OFF
-    name: gcc debug
+    env: BUILD_TYPE=Debug COVERAGE=OFF COMPILER=gcc-7
+    name: gcc-7 debug
     stage: Build Libraries
-  - &GccRelease
+  - &Gcc7Release
     os: linux
     compiler: gcc
     dist: trusty
-    env: BUILD_TYPE=Release
-    name: gcc release
+    env: BUILD_TYPE=Release COMPILER=gcc-7
+    name: gcc-7 release
   - &Gcc6Debug
     os: linux
     compiler: gcc-6
@@ -123,6 +123,18 @@ jobs:
     dist: trusty
     env: BUILD_TYPE=Release COMPILER=gcc-6
     name: gcc-6 release
+  - &Gcc8Debug
+    os: linux
+    compiler: gcc-8
+    dist: trusty
+    env: BUILD_TYPE=Debug COMPILER=gcc-8
+    name: gcc-8 debug
+  - &Gcc8Release
+    os: linux
+    compiler: gcc-8
+    dist: trusty
+    env: BUILD_TYPE=Release COMPILER=gcc-8
+    name: gcc-8 release
   - &ClangDebug
     os: linux
     compiler: clang
@@ -149,13 +161,15 @@ jobs:
   #   name: osx xcode 9.2 release
 
   # Build and run tests, clang tidy, IWYU, and docs.
-  - <<: *GccDebug
+  - <<: *Gcc7Debug
     stage: Build and Run Tests, ClangTidy, IWYU, and Doxygen
-  - <<: *GccRelease
+  - <<: *Gcc7Release
   - <<: *ClangDebug
   - <<: *ClangRelease
   - <<: *Gcc6Debug
   - <<: *Gcc6Release
+  - <<: *Gcc8Debug
+  - <<: *Gcc8Release
   # - <<: *MacOsDebug9_2
   # - <<: *MacOsRelease9_2
 
@@ -198,7 +212,7 @@ before_install:
   - export DEP_CACHE=$HOME/mac_cache
   - export CHARM_PATCH=v6.8.patch
   - export CHARM_CC=${CC}
-  - export FC=gfortran
+  - export FC=gfortran-8
   - if [[ ${COMPILER} =~ (gcc|clang)-([0-9\.]+) ]]; then
       CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
       if [[ ${BASH_REMATCH[1]} = gcc ]]; then
