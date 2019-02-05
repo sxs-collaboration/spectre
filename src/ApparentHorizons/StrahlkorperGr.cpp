@@ -4,11 +4,12 @@
 #include "ApparentHorizons/StrahlkorperGr.hpp"
 
 #include <array>
-#include <cmath>
+#include <cmath>  // IWYU pragma: keep
 #include <cstddef>
 #include <utility>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
+#include "ApparentHorizons/Strahlkorper.hpp"
 #include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -24,6 +25,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 
+// IWYU pragma: no_include <complex>
 // IWYU pragma: no_forward_declare Strahlkorper
 // IWYU pragma: no_forward_declare Tensor
 
@@ -35,7 +37,7 @@ namespace {
 template <typename Fr>
 tnsr::ii<DataVector, 2, Frame::Spherical<Fr>> get_surface_metric(
     const tnsr::ii<DataVector, 3, Fr>& spatial_metric,
-    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Fr>& tangents,
+    const StrahlkorperTags::aliases::Jacobian<Fr>& tangents,
     const Scalar<DataVector>& sin_theta) noexcept {
   auto surface_metric =
       make_with_value<tnsr::ii<DataVector, 2, Frame::Spherical<Fr>>>(
@@ -498,7 +500,7 @@ Scalar<DataVector> ricci_scalar(
 template <typename Frame>
 Scalar<DataVector> area_element(
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& jacobian,
+    const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const DataVector& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept {
@@ -535,7 +537,7 @@ double surface_integral_of_scalar(
 
 template <typename Frame>
 Scalar<DataVector> spin_function(
-    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& tangents,
+    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
     const YlmSpherepack& ylm,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
@@ -589,7 +591,7 @@ double dimensionful_spin_magnitude(
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& tangents,
+    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
     const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept {
   const Scalar<DataVector> sin_theta{sin(ylm.theta_phi_points()[0])};
 
@@ -641,7 +643,7 @@ std::array<double, 3> spin_vector(const double spin_magnitude,
     get(integrand) =
         get(area_element) * get(ricci_scalar) * r_hat.get(i) * get(radius);
     get(integrand) =
-      ylm.definite_integral(get(integrand).data()) / (-8.0 * M_PI);
+        ylm.definite_integral(get(integrand).data()) / (-8.0 * M_PI);
     get(integrand) += r_hat.get(i) * get(radius);
 
     // Get a component of a vector in the direction of the spin
@@ -702,8 +704,7 @@ template Scalar<DataVector> StrahlkorperGr::ricci_scalar<Frame::Inertial>(
 
 template Scalar<DataVector> StrahlkorperGr::area_element<Frame::Inertial>(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame::Inertial>&
-        jacobian,
+    const StrahlkorperTags::aliases::Jacobian<Frame::Inertial>& jacobian,
     const tnsr::i<DataVector, 3, Frame::Inertial>& normal_one_form,
     const DataVector& radius,
     const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat) noexcept;
@@ -713,8 +714,7 @@ template double StrahlkorperGr::surface_integral_of_scalar(
     const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept;
 
 template Scalar<DataVector> StrahlkorperGr::spin_function<Frame::Inertial>(
-    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame::Inertial>&
-        tangents,
+    const StrahlkorperTags::aliases::Jacobian<Frame::Inertial>& tangents,
     const YlmSpherepack& ylm,
     const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
@@ -725,8 +725,7 @@ template double StrahlkorperGr::dimensionful_spin_magnitude<Frame::Inertial>(
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame::Inertial>&
-        tangents,
+    const StrahlkorperTags::aliases::Jacobian<Frame::Inertial>& tangents,
     const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept;
 
 template std::array<double, 3> StrahlkorperGr::spin_vector<Frame::Inertial>(

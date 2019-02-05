@@ -5,7 +5,7 @@
 
 #include <array>
 
-#include "ApparentHorizons/Tags.hpp"
+#include "ApparentHorizons/TagsTypeAliases.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
 /// \cond
@@ -159,7 +159,7 @@ Scalar<DataVector> ricci_scalar(
 template <typename Frame>
 Scalar<DataVector> area_element(
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& jacobian,
+    const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
     const tnsr::i<DataVector, 3, Frame>& normal_one_form,
     const DataVector& radius,
     const tnsr::i<DataVector, 3, Frame>& r_hat) noexcept;
@@ -212,7 +212,7 @@ double surface_integral_of_scalar(
  */
 template <typename Frame>
 Scalar<DataVector> spin_function(
-    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& tangents,
+    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
     const YlmSpherepack& ylm,
     const tnsr::I<DataVector, 3, Frame>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
@@ -256,7 +256,7 @@ double dimensionful_spin_magnitude(
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
-    const StrahlkorperTags::StrahlkorperTags_detail::Jacobian<Frame>& tangents,
+    const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
     const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept;
 
 /*!
