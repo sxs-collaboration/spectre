@@ -344,17 +344,55 @@ void test_throw_exception(const ThrowingFunctor& func,
   }
 }
 
+/// \cond
+#define MAKE_GENERATOR_IMPL_FIRST_ARG(NAME, ...) NAME
+#define MAKE_GENERATOR_IMPL_SECOND_ARG(NAME, SEED, ...) SEED
+/// \endcond
+
 /// \ingroup TestingFrameworkGroup
-/// \brief Make a generator of type `std::mt19937`, stores it in a declared
-/// variable of name `NAME`
+/// \brief `MAKE_GENERATOR(NAME [, SEED])` declares a variable of name `NAME`
+/// containing a generator of type `std::mt19937`.
 ///
 /// \details As the generator is made, `INFO` is called to make sure failed
-/// tests provide seed information.
-#define MAKE_GENERATOR(NAME) \
-  std::random_device r;      \
-  const auto seed = r();     \
-  INFO("Seed is: " << seed); \
-  auto(NAME) = std::mt19937 { seed }
+/// tests provide seed information.  `SEED` is chosen randomly if not supplied,
+/// otherwise it must be a constant expression.
+// What is going on here:
+//
+// If this is called as MAKE_GENERATOR(NAME):
+//   MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN)
+//     -> MAKE_GENERATOR_IMPL_FIRST_ARG(NAME, DUMMY_TOKEN)
+//     -> NAME
+//   MAKE_GENERATOR_IMPL_SECOND_ARG(
+//       __VA_ARGS__, std::random_device{}(), DUMMY_TOKEN)
+//     -> MAKE_GENERATOR_IMPL_SECOND_ARG(
+//            NAME, std::random_device{}(), DUMMY_TOKEN)
+//     -> std::random_device{}()
+//   So we create NAME with a random seed.
+//
+//   In this case DUMMY_TOKEN is needed because the "..." in the IMPL
+//   macros has to match at least one thing.
+//
+// If this is called as MAKE_GENERATOR(NAME, SEED):
+//   MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN)
+//     -> MAKE_GENERATOR_IMPL_FIRST_ARG(NAME, SEED, DUMMY_TOKEN)
+//     -> NAME
+//   MAKE_GENERATOR_IMPL_SECOND_ARG(
+//       __VA_ARGS__, std::random_device{}(), DUMMY_TOKEN)
+//     -> MAKE_GENERATOR_IMPL_SECOND_ARG(
+//            NAME, SEED, std::random_device{}(), DUMMY_TOKEN)
+//     -> SEED
+//   So we create NAME with seed SEED.
+//
+//   In this case the DUMMY_TOKEN is not necessary.
+#define MAKE_GENERATOR(...)                                             \
+  std::mt19937 MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN); \
+  INFO("Seed is: " << [&MAKE_GENERATOR_IMPL_FIRST_ARG(                  \
+           __VA_ARGS__, DUMMY_TOKEN)]() noexcept {                      \
+    const auto seed = (MAKE_GENERATOR_IMPL_SECOND_ARG(                  \
+        __VA_ARGS__, std::random_device{}(), DUMMY_TOKEN));             \
+    MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN).seed(seed); \
+    return seed;                                                        \
+  }())
 
 /*!
  * \ingroup TestingFrameworkGroup
