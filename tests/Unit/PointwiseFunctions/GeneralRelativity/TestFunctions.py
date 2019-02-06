@@ -139,6 +139,56 @@ def dt_lapse(lapse, shift, spacetime_unit_normal, phi, pi):
     t2 = np.einsum('i,i', t2, shift)
     return 0.5 * lapse * (t1 - t2)
 
+def deriv_shift(lapse, inverse_spacetime_metric, spacetime_unit_normal, phi):
+    t1 = np.einsum('b,iab->ia', spacetime_unit_normal, phi)
+    t1 = np.einsum('ja,ia->ij', inverse_spacetime_metric[1:,:], t1) * lapse
+    t2 = np.einsum('a,iab->ib', spacetime_unit_normal, phi)
+    t2 = np.einsum('b,ib->i', spacetime_unit_normal, t2)
+    t2 = np.einsum('i,j->ij', t2, spacetime_unit_normal[1:]) * lapse
+    return t1 + t2
+
+
+def dt_shift(lapse, shift, inverse_spatial_metric, spacetime_unit_normal,\
+        phi, pi):
+    t1 = np.einsum('a,ja->j', spacetime_unit_normal, pi[1:,:])
+    t1 = np.einsum('j,ij->i', t1, inverse_spatial_metric)
+    t2 = np.einsum('jka,a->jk', phi[:,1:,:], spacetime_unit_normal)
+    t2 = np.einsum('jk,ik->ji', t2, inverse_spatial_metric)
+    t2 = np.einsum('ji,j->i', t2, shift)
+    return lapse * (t2 - lapse * t1)
+
+
+def dt_lower_shift(lapse, shift, spatial_metric, spacetime_unit_normal, phi,
+        pi):
+    inverse_spatial_metric = np.linalg.inv(spatial_metric)
+    dt_shift_ = dt_shift(lapse, shift, inverse_spatial_metric,\
+                  spacetime_unit_normal, phi, pi)
+    t1 = np.einsum('ij,j->i', spatial_metric, dt_shift_)
+    dt_spatial_metric =\
+      (-lapse * pi + np.einsum('k,kab->ab', shift, phi))[1:,1:]
+    t2 = np.einsum('j,ij->i', shift, dt_spatial_metric)
+    return t1 + t2
+
+
+def spacetime_deriv_norm_shift(lapse, shift, spatial_metric,\
+        inverse_spatial_metric, inverse_spacetime_metric,\
+        spacetime_unit_normal, phi, pi):
+    lower_shift = np.einsum('ij,j->i', spatial_metric, shift)
+    deriv_shift_ = deriv_shift(lapse, inverse_spacetime_metric,\
+                               spacetime_unit_normal, phi)
+    dt_lower_shift_ = dt_lower_shift(lapse, shift, spatial_metric,\
+                                     spacetime_unit_normal, phi, pi)
+    dt_shift_ = dt_shift(lapse, shift, inverse_spatial_metric,\
+                         spacetime_unit_normal, phi, pi)
+    t0 = np.einsum('i,i', lower_shift, dt_shift_) \
+          + np.einsum('i,i', shift, dt_lower_shift_)
+    ti = np.einsum('i,ji->j', lower_shift, deriv_shift_) \
+          + np.einsum('i,ji->j', shift, phi[:,0,1:])
+    ta     = np.zeros(1 + len(ti))
+    ta[0]  = t0
+    ta[1:] = ti
+    return ta
+
 
 def deriv_spatial_metric(phi):
     return phi[:,1:,1:]
