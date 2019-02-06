@@ -10,7 +10,7 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -62,8 +62,8 @@ struct FishboneMoncriefDiskProxy
 void test_create_from_options() noexcept {
   const auto disk =
       test_creation<RelativisticEuler::Solutions::FishboneMoncriefDisk>(
-          "  BlackHoleMass: 1.0\n"
-          "  BlackHoleSpin: 0.23\n"
+          "  BhMass: 1.0\n"
+          "  BhDimlessSpin: 0.23\n"
           "  InnerEdgeRadius: 6.0\n"
           "  MaxPressureRadius: 12.0\n"
           "  PolytropicConstant: 0.001\n"
@@ -88,18 +88,18 @@ void test_serialize() noexcept {
 
 template <typename DataType>
 void test_variables(const DataType& used_for_size) noexcept {
-  const double black_hole_mass = 1.0;
-  const double black_hole_spin = 0.9375;
+  const double bh_mass = 1.34;
+  const double bh_dimless_spin = 0.94432;
   const double inner_edge_radius = 6.0;
   const double max_pressure_radius = 12.0;
   const double polytropic_constant = 0.001;
   const double polytropic_exponent = 4.0 / 3.0;
 
-  FishboneMoncriefDiskProxy disk(black_hole_mass, black_hole_spin,
-                                 inner_edge_radius, max_pressure_radius,
-                                 polytropic_constant, polytropic_exponent);
+  FishboneMoncriefDiskProxy disk(bh_mass, bh_dimless_spin, inner_edge_radius,
+                                 max_pressure_radius, polytropic_constant,
+                                 polytropic_exponent);
   const auto member_variables = std::make_tuple(
-      black_hole_mass, black_hole_spin, inner_edge_radius, max_pressure_radius,
+      bh_mass, bh_dimless_spin, inner_edge_radius, max_pressure_radius,
       polytropic_constant, polytropic_exponent);
 
   pypp::check_with_random_values<
@@ -125,7 +125,7 @@ void test_variables(const DataType& used_for_size) noexcept {
   // correctly forwards to the background solution. Not meant to be extensive.
   const auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 1.0);
   const gr::Solutions::KerrSchild ks_soln{
-      black_hole_mass, {{0.0, 0.0, black_hole_spin}}, {{0.0, 0.0, 0.0}}};
+      bh_mass, {{0.0, 0.0, bh_dimless_spin}}, {{0.0, 0.0, 0.0}}};
   CHECK_ITERABLE_APPROX(
       get<gr::Tags::Lapse<DataType>>(ks_soln.variables(
           coords, 0.0, gr::Solutions::KerrSchild::tags<DataType>{})),
@@ -147,6 +147,32 @@ void test_variables(const DataType& used_for_size) noexcept {
           tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{}));
   CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 }
+
+//  A former implementation of the `IntermediateVariables` function in
+//  `FishboneMoncriefDisk.cpp` included an ill-defined calculation of
+//  sin_theta_squared, which resulted in negative numbers due to round-off
+//  errors. This would induce FPEs after taking the square root of
+//  sin_theta_squared. This test evaluates the most recent implementation at
+//  those points in order to ensure that the FPEs are no longer induced.
+template <typename DataType>
+void test_sin_theta_squared(const DataType& used_for_size) noexcept {
+  // Numbers below reproduce the initial data the bug was spotted with,
+  // along with the points where the FPEs were found.
+  FishboneMoncriefDiskProxy disk(1.0, 0.9375, 6.0, 12.0, 0.001,
+                                 1.3333333333333333333333);
+  using variables_tags =
+      FishboneMoncriefDiskProxy::grmhd_variables_tags<DataType>;
+  auto coords = make_with_value<tnsr::I<DataType, 3>>(used_for_size, 0.0);
+  get<2>(coords) = -1.8427400003643177317514;
+  disk.variables(coords, 0.0, variables_tags{});
+  get<2>(coords) = 1.8427400003643177317514;
+  disk.variables(coords, 0.0, variables_tags{});
+  get<2>(coords) = -1.9588918957550884858421;
+  disk.variables(coords, 0.0, variables_tags{});
+  get<2>(coords) = 1.9588918957550884858421;
+  disk.variables(coords, 0.0, variables_tags{});
+  CHECK(true);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
@@ -160,6 +186,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
 
   test_variables(std::numeric_limits<double>::signaling_NaN());
   test_variables(DataVector(5));
+  test_sin_theta_squared(std::numeric_limits<double>::signaling_NaN());
+  test_sin_theta_squared(DataVector(5));
 }
 
 struct Disk {
@@ -168,7 +196,7 @@ struct Disk {
       "A fluid disk orbiting a Kerr black hole."};
 };
 
-// [[OutputRegex, In string:.*At line 2 column 18:.Value -1.5 is below the lower
+// [[OutputRegex, In string:.*At line 2 column 11:.Value -1.5 is below the lower
 // bound of 0]]
 SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDiskBHMassOpt",
@@ -177,8 +205,8 @@ SPECTRE_TEST_CASE(
   Options<tmpl::list<Disk>> test_options("");
   test_options.parse(
       "Disk:\n"
-      "  BlackHoleMass: -1.5\n"
-      "  BlackHoleSpin: 0.3\n"
+      "  BhMass: -1.5\n"
+      "  BhDimlessSpin: 0.3\n"
       "  InnerEdgeRadius: 4.3\n"
       "  MaxPressureRadius: 6.7\n"
       "  PolytropicConstant: 0.12\n"
@@ -195,8 +223,8 @@ SPECTRE_TEST_CASE(
   Options<tmpl::list<Disk>> test_options("");
   test_options.parse(
       "Disk:\n"
-      "  BlackHoleMass: 1.5\n"
-      "  BlackHoleSpin: -0.24\n"
+      "  BhMass: 1.5\n"
+      "  BhDimlessSpin: -0.24\n"
       "  InnerEdgeRadius: 5.76\n"
       "  MaxPressureRadius: 13.2\n"
       "  PolytropicConstant: 0.002\n"
@@ -213,8 +241,8 @@ SPECTRE_TEST_CASE(
   Options<tmpl::list<Disk>> test_options("");
   test_options.parse(
       "Disk:\n"
-      "  BlackHoleMass: 1.5\n"
-      "  BlackHoleSpin: 1.24\n"
+      "  BhMass: 1.5\n"
+      "  BhDimlessSpin: 1.24\n"
       "  InnerEdgeRadius: 5.76\n"
       "  MaxPressureRadius: 13.2\n"
       "  PolytropicConstant: 0.002\n"
@@ -231,8 +259,8 @@ SPECTRE_TEST_CASE(
   Options<tmpl::list<Disk>> test_options("");
   test_options.parse(
       "Disk:\n"
-      "  BlackHoleMass: 1.5\n"
-      "  BlackHoleSpin: 0.3\n"
+      "  BhMass: 1.5\n"
+      "  BhDimlessSpin: 0.3\n"
       "  InnerEdgeRadius: 4.3\n"
       "  MaxPressureRadius: 6.7\n"
       "  PolytropicConstant: -0.12\n"
@@ -249,8 +277,8 @@ SPECTRE_TEST_CASE(
   Options<tmpl::list<Disk>> test_options("");
   test_options.parse(
       "Disk:\n"
-      "  BlackHoleMass: 1.5\n"
-      "  BlackHoleSpin: 0.3\n"
+      "  BhMass: 1.5\n"
+      "  BhDimlessSpin: 0.3\n"
       "  InnerEdgeRadius: 4.3\n"
       "  MaxPressureRadius: 6.7\n"
       "  PolytropicConstant: 0.123\n"

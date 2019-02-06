@@ -100,77 +100,80 @@ def potential(angular_momentum, r_sqrd, sin_theta_sqrd, m, a):
             u_t(angular_momentum, r_sqrd, sin_theta_sqrd, m, a)))
 
 
-def fishbone_specific_enthalpy(x, t, black_hole_mass, black_hole_spin, r_in,
-                               r_max, polytropic_constant,
+def fishbone_specific_enthalpy(x, t, bh_mass, bh_dimless_a, dimless_r_in,
+                               dimless_r_max, polytropic_constant,
                                polytropic_exponent):
-    l = angular_momentum(black_hole_mass, black_hole_spin, r_max)
-    Win = potential(l, r_in * r_in, 1.0, black_hole_mass, black_hole_spin)
-    r_sqrd = boyer_lindquist_r_sqrd(x, black_hole_spin)
+    r_in = bh_mass * dimless_r_in
+    bh_spin_a = bh_mass * bh_dimless_a
+    l = angular_momentum(bh_mass, bh_spin_a, bh_mass * dimless_r_max)
+    Win = potential(l, r_in * r_in, 1.0, bh_mass, bh_spin_a)
+    r_sqrd = boyer_lindquist_r_sqrd(x, bh_spin_a)
     sin_theta_sqrd = boyer_lindquist_sin_theta_sqrd(x[2] * x[2], r_sqrd)
     result = 1.0
     if (np.sqrt(r_sqrd * sin_theta_sqrd) >= r_in):
-        W = potential(l, r_sqrd, sin_theta_sqrd, black_hole_mass,
-                      black_hole_spin)
+        W = potential(l, r_sqrd, sin_theta_sqrd, bh_mass, bh_spin_a)
         if (W < Win):
             result = np.exp(Win - W)
 
     return result
 
 
-def fishbone_rest_mass_density(x, t, black_hole_mass, black_hole_spin, r_in,
-                               r_max, polytropic_constant,
+def fishbone_rest_mass_density(x, t, bh_mass, bh_dimless_a, dimless_r_in,
+                               dimless_r_max, polytropic_constant,
                                polytropic_exponent):
     return np.power((polytropic_exponent - 1.0) * (fishbone_specific_enthalpy(
-        x, t, black_hole_mass, black_hole_spin, r_in, r_max,
+        x, t, bh_mass, bh_dimless_a, dimless_r_in, dimless_r_max,
         polytropic_constant, polytropic_exponent) - 1.0) /
                     (polytropic_exponent * polytropic_constant),
                     1.0 / (polytropic_exponent - 1.0))
 
 
-def fishbone_specific_internal_energy(x, t, black_hole_mass, black_hole_spin,
-                                      r_in, r_max, polytropic_constant,
+def fishbone_specific_internal_energy(x, t, bh_mass, bh_dimless_a, dimless_r_in,
+                                      dimless_r_max, polytropic_constant,
                                       polytropic_exponent):
     return (polytropic_constant * np.power(
-        fishbone_rest_mass_density(x, t, black_hole_mass, black_hole_spin,
-                                   r_in, r_max, polytropic_constant,
+        fishbone_rest_mass_density(x, t, bh_mass, bh_dimless_a, dimless_r_in,
+                                   dimless_r_max, polytropic_constant,
                                    polytropic_exponent),
         polytropic_exponent - 1.0) / (polytropic_exponent - 1.0))
 
 
-def fishbone_pressure(x, t, black_hole_mass, black_hole_spin, r_in, r_max,
+def fishbone_pressure(x, t, bh_mass, bh_dimless_a, dimless_r_in, dimless_r_max,
                       polytropic_constant, polytropic_exponent):
     return (polytropic_constant * np.power(
-        fishbone_rest_mass_density(x, t, black_hole_mass, black_hole_spin,
-                                   r_in, r_max, polytropic_constant,
+        fishbone_rest_mass_density(x, t, bh_mass, bh_dimless_a, dimless_r_in,
+                                   dimless_r_max, polytropic_constant,
                                    polytropic_exponent), polytropic_exponent))
 
 
-def fishbone_spatial_velocity(x, t, black_hole_mass, black_hole_spin, r_in,
-                              r_max, polytropic_constant, polytropic_exponent):
-    l = angular_momentum(black_hole_mass, black_hole_spin, r_max)
-    Win = potential(l, r_in * r_in, 1.0, black_hole_mass, black_hole_spin)
-    r_sqrd = boyer_lindquist_r_sqrd(x, black_hole_spin)
+def fishbone_spatial_velocity(x, t, bh_mass, bh_dimless_a, dimless_r_in,
+                              dimless_r_max, polytropic_constant,
+                              polytropic_exponent):
+    r_in = bh_mass * dimless_r_in
+    bh_spin_a = bh_mass * bh_dimless_a
+    l = angular_momentum(bh_mass, bh_spin_a, bh_mass * dimless_r_max)
+    Win = potential(l, r_in * r_in, 1.0, bh_mass, bh_spin_a)
+    r_sqrd = boyer_lindquist_r_sqrd(x, bh_spin_a)
     sin_theta_sqrd = boyer_lindquist_sin_theta_sqrd(x[2] * x[2], r_sqrd)
 
     result = np.array([0.0, 0.0, 0.0])
     if (np.sqrt(r_sqrd * sin_theta_sqrd) >= r_in):
-        W = potential(l, r_sqrd, sin_theta_sqrd, black_hole_mass,
-                      black_hole_spin)
+        W = potential(l, r_sqrd, sin_theta_sqrd, bh_mass, bh_spin_a)
         if (W < Win):
             result += ((np.array([-x[1], x[0], 0.0]) * angular_velocity(
-                l, r_sqrd, sin_theta_sqrd, black_hole_mass, black_hole_spin) +
-                        kerr_schild_shift(x, black_hole_mass, black_hole_spin))
-                       / kerr_schild_lapse(x, black_hole_mass,
-                                           black_hole_spin))
+                l, r_sqrd, sin_theta_sqrd, bh_mass, bh_spin_a) +
+                        kerr_schild_shift(x, bh_mass, bh_spin_a))
+                       / kerr_schild_lapse(x, bh_mass, bh_spin_a))
     return result
 
 
-def fishbone_lorentz_factor(x, t, black_hole_mass, black_hole_spin, r_in,
-                            r_max, polytropic_constant, polytropic_exponent):
-    spatial_metric = kerr_schild_spatial_metric(x, black_hole_mass,
-                                                black_hole_spin)
+def fishbone_lorentz_factor(x, t, bh_mass, bh_dimless_a, dimless_r_in,
+                            dimless_r_max, polytropic_constant,
+                            polytropic_exponent):
+    bh_spin_a = bh_mass * bh_dimless_a
+    spatial_metric = kerr_schild_spatial_metric(x, bh_mass, bh_spin_a)
     velocity = fishbone_spatial_velocity(
-        x, t, black_hole_mass, black_hole_spin, r_in, r_max,
+        x, t, bh_mass, bh_dimless_a, dimless_r_in, dimless_r_max,
         polytropic_constant, polytropic_exponent)
     return 1.0 / np.sqrt(
         1.0 - np.einsum("i,j,ij", velocity, velocity, spatial_metric))

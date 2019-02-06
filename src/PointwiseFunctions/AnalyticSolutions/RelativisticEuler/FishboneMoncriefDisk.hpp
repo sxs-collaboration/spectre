@@ -20,7 +20,7 @@
 
 /// \cond
 namespace PUP {
-class er; // IWYU pragma: keep
+class er;  // IWYU pragma: keep
 }  // namespace PUP
 /// \endcond
 
@@ -32,10 +32,10 @@ namespace Solutions {
 /*!
  * \brief Fluid disk orbiting a Kerr black hole
  *
- * The Fishbone-Moncrief solution to the 3D relativistic Euler system,
- * representing the isentropic flow of a thick fluid disk orbiting a Kerr black
- * hole. In Boyer-Lindquist coordinates \f$(t, r, \theta, \phi)\f$, the flow is
- * assumed to be purely toroidal,
+ * The Fishbone-Moncrief solution to the 3D relativistic Euler system
+ * \cite fishbone1976apj, representing the isentropic flow of a thick fluid disk
+ * orbiting a Kerr black hole. In Boyer-Lindquist coordinates
+ * \f$(t, r, \theta, \phi)\f$, the flow is assumed to be purely toroidal,
  *
  * \f{align*}
  * u^\mu = (u^t, 0, 0, u^\phi),
@@ -44,10 +44,15 @@ namespace Solutions {
  * where \f$u^\mu\f$ is the 4-velocity. Then, all the fluid quantities are
  * assumed to share the same symmetries as those of the background spacetime,
  * namely they are stationary (independent of \f$t\f$), and axially symmetric
- * (independent of \f$\phi\f$). Self-gravity is neglected, so that the fluid
+ * (independent of \f$\phi\f$). Note that \f$r\f$ and \f$\theta\f$ can also be
+ * interpreted as Kerr (a.k.a. "spherical" Kerr-Schild) coordinates
+ * (see gr::KerrSchildCoords), and that the symmetries of the equilibrium ensure
+ * that \f$u^\mu\f$ as defined above is also the 4-velocity in Kerr coordinates.
+ *
+ * Self-gravity is neglected, so that the fluid
  * variables are determined as functions of the metric. Following the treatment
- * by Kozlowski et al. (1978) (but using signature +2) the solution is
- * expressed in terms of the quantities
+ * by Kozlowski et al. \cite Kozlowski1978aa (but using signature +2)
+ * the solution is expressed in terms of the quantities
  *
  * \f{align*}
  * \Omega &= \dfrac{u^\phi}{u^t},\\
@@ -119,35 +124,18 @@ namespace Solutions {
  * p = K\rho^\gamma.
  * \f}
  *
- * Once all the variables are known in Boyer-Lindquist coordinates, it is
- * straightforward to write them in Kerr-Schild coordinates. The coordinate
- * transformation
- *
- * \f{align*}
- * t_\text{KS} &= t\\
- * x &= \sqrt{r^2 + a^2}\sin\theta\cos\phi\\
- * y &= \sqrt{r^2 + a^2}\sin\theta\sin\phi\\
- * z &= r\cos\theta
- * \f}
- *
- * helps read the Jacobian matrix, which, applied to the azimuthal flow of the
- * disk, gives
+ * Once all the variables are known in Boyer-Lindquist (or Kerr) coordinates, it
+ * is straightforward to write them in Cartesian Kerr-Schild coordinates. The
+ * coordinate transformation in gr::KerrSchildCoords helps read the Jacobian
+ * matrix, which, applied to the azimuthal flow of the disk, gives
  *
  * \f{align*}
  * u_\text{KS}^\mu = u^t(1, -y\Omega, x\Omega, 0),
  * \f}
  *
  * where \f$u^t\f$ and \f$\Omega\f$ are now understood as functions of the
- * Kerr-Schild coordinates, for which the relations
- *
- * \f{align*}
- * r^2 &= \frac{1}{2}\left(x^2 + y^2 + z^2 - a^2 +
- * \sqrt{(x^2 + y^2 + z^2 - a^2)^2 + 4a^2z^2}\right)\\
- * \theta &= \cos^{-1}\left(\frac{z}{r}\right)
- * \f}
- *
- * are needed. Finally, the spatial velocity can be readily obtained from its
- * definition,
+ * Kerr-Schild coordinates. Finally, the spatial velocity can be readily
+ * obtained from its definition,
  *
  * \f{align*}
  * \alpha v^i = \frac{u^i}{u^t} + \beta^i,
@@ -156,7 +144,8 @@ namespace Solutions {
  * where \f$\alpha\f$ and \f$\beta^i\f$ are the lapse and the shift,
  * respectively.
  *
- * \note Kozlowski et al. (1978) denote \f$l_* = u_\phi u^t\f$ in order to
+ * \note Kozlowski et al. \cite Kozlowski1978aa denote
+ * \f$l_* = u_\phi u^t\f$ in order to
  * distinguish this quantity from their own definition \f$l = - u_\phi/u_t\f$.
  */
 class FishboneMoncriefDisk {
@@ -166,27 +155,26 @@ class FishboneMoncriefDisk {
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
 
-  /// The mass of the black hole.
-  struct BlackHoleMass {
+  /// The mass of the black hole, \f$M\f$.
+  struct BhMass {
     using type = double;
     static constexpr OptionString help = {"The mass of the black hole."};
     static type lower_bound() noexcept { return 0.0; }
   };
-  /// The dimensionless black hole spin magnitude.
-  struct BlackHoleSpin {
+  /// The dimensionless black hole spin, \f$\chi = a/M\f$.
+  struct BhDimlessSpin {
     using type = double;
-    static constexpr OptionString help = {
-        "The dimensionless black hole spin magnitude."};
-    static type lower_bound() noexcept { return 0.0; }
-    static type upper_bound() noexcept { return 1.0; }
+    static constexpr OptionString help = {"The dimensionless black hole spin."};
+    static type lower_bound() { return 0.0; }
+    static type upper_bound() { return 1.0; }
   };
-  /// The radial coordinate of the inner edge of the disk.
+  /// The radial coordinate of the inner edge of the disk, in units of \f$M\f$.
   struct InnerEdgeRadius {
     using type = double;
     static constexpr OptionString help = {
         "The radial coordinate of the inner edge of the disk."};
   };
-  /// The radial coordinate at which the pressure reaches its maximum.
+  /// The radial coordinate of the maximum pressure, in units of \f$M\f$.
   struct MaxPressureRadius {
     using type = double;
     static constexpr OptionString help = {
@@ -208,8 +196,8 @@ class FishboneMoncriefDisk {
   };
 
   using options =
-      tmpl::list<BlackHoleMass, BlackHoleSpin, InnerEdgeRadius,
-                 MaxPressureRadius, PolytropicConstant, PolytropicExponent>;
+      tmpl::list<BhMass, BhDimlessSpin, InnerEdgeRadius, MaxPressureRadius,
+                 PolytropicConstant, PolytropicExponent>;
   static constexpr OptionString help = {
       "Fluid disk orbiting a Kerr black hole."};
 
@@ -221,7 +209,7 @@ class FishboneMoncriefDisk {
       default;
   ~FishboneMoncriefDisk() = default;
 
-  FishboneMoncriefDisk(double black_hole_mass, double black_hole_spin,
+  FishboneMoncriefDisk(double bh_mass, double bh_dimless_spin,
                        double inner_edge_radius, double max_pressure_radius,
                        double polytropic_constant,
                        double polytropic_exponent) noexcept;
@@ -240,17 +228,15 @@ class FishboneMoncriefDisk {
 
   template <typename DataType>
   DataType four_velocity_t_sqrd(const DataType& r_sqrd,
-                                const DataType& sin_theta_sqrd,
-                                double angular_momentum) const noexcept;
+                                const DataType& sin_theta_sqrd) const noexcept;
 
   template <typename DataType>
   DataType angular_velocity(const DataType& r_sqrd,
-                            const DataType& sin_theta_sqrd,
-                            double angular_momentum) const noexcept;
+                            const DataType& sin_theta_sqrd) const noexcept;
 
   template <typename DataType>
-  DataType potential(const DataType& r_sqrd, const DataType& sin_theta_sqrd,
-                     double angular_momentum) const noexcept;
+  DataType potential(const DataType& r_sqrd,
+                     const DataType& sin_theta_sqrd) const noexcept;
 
   SPECTRE_ALWAYS_INLINE size_t index_helper(tmpl::no_such_type_ /*meta*/) const
       noexcept {
@@ -279,8 +265,7 @@ class FishboneMoncriefDisk {
             cpp17::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
             cpp17::is_same_v<Tags, hydro::Tags::LorentzFactor<DataType>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>)...>>
-        vars(black_hole_mass_, black_hole_spin_, max_pressure_radius_,
-             background_spacetime_, x, t,
+        vars(bh_spin_a_, background_spacetime_, x, t,
              index_helper(
                  tmpl::index_of<tmpl::list<Tags...>,
                                 hydro::Tags::SpatialVelocity<DataType, 3>>{}),
@@ -301,9 +286,9 @@ class FishboneMoncriefDisk {
     IntermediateVariables<
         DataType,
         cpp17::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
+            cpp17::is_same_v<Tag, hydro::Tags::LorentzFactor<DataType>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>>
-        intermediate_vars(black_hole_mass_, black_hole_spin_,
-                          max_pressure_radius_, background_spacetime_, x, t,
+        intermediate_vars(bh_spin_a_, background_spacetime_, x, t,
                           std::numeric_limits<size_t>::max(),
                           std::numeric_limits<size_t>::max());
     return variables(x, tmpl::list<Tag>{}, intermediate_vars, 0);
@@ -413,8 +398,7 @@ class FishboneMoncriefDisk {
   // solution's variables.
   template <typename DataType, bool NeedSpacetime>
   struct IntermediateVariables {
-    IntermediateVariables(double black_hole_mass, double black_hole_spin,
-                          double max_pressure_radius,
+    IntermediateVariables(double bh_spin_a,
                           const gr::Solutions::KerrSchild& background_spacetime,
                           const tnsr::I<DataType, 3>& x, double t,
                           size_t in_spatial_velocity_index,
@@ -422,7 +406,6 @@ class FishboneMoncriefDisk {
 
     DataType r_squared{};
     DataType sin_theta_squared{};
-    double angular_momentum{};
     tuples::tagged_tuple_from_typelist<
         typename gr::Solutions::KerrSchild::tags<DataType>>
         kerr_schild_soln{};
@@ -433,12 +416,13 @@ class FishboneMoncriefDisk {
   friend bool operator==(const FishboneMoncriefDisk& lhs,
                          const FishboneMoncriefDisk& rhs) noexcept;
 
-  double black_hole_mass_ = std::numeric_limits<double>::signaling_NaN();
-  double black_hole_spin_ = std::numeric_limits<double>::signaling_NaN();
+  double bh_mass_ = std::numeric_limits<double>::signaling_NaN();
+  double bh_spin_a_ = std::numeric_limits<double>::signaling_NaN();
   double inner_edge_radius_ = std::numeric_limits<double>::signaling_NaN();
   double max_pressure_radius_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_exponent_ = std::numeric_limits<double>::signaling_NaN();
+  double angular_momentum_ = std::numeric_limits<double>::signaling_NaN();
   EquationsOfState::PolytropicFluid<true> equation_of_state_{};
   gr::Solutions::KerrSchild background_spacetime_{};
 };
