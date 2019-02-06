@@ -130,8 +130,7 @@ class Strahlkorper {
   }
 
   /// Approximate physical center (determined by \f$l=1\f$ coefficients)
-  /// Implementation of Eqs. (38)-(40) in Hemberger et al,
-  /// [arXiv:1211.6079] (https://arxiv.org/abs/1211.6079)
+  /// Implementation of Eqs. (38)-(40) in \cite Hemberger2012jz
   std::array<double, 3> physical_center() const noexcept;
 
   /// Average radius of the surface (determined by \f$Y_{00}\f$ coefficient)

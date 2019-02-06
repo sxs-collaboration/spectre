@@ -85,8 +85,7 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
  * + N^{-1} \partial_l N - g^{km}\Gamma_{lkm} \\
  * H_0 &= -N^{-1} \partial_t N + N^{-1} N^k\partial_k N + N^k H_k - N K
  * \f}
- * See Eqs. 8 and 9 of [arXiv:gr-qc/0512093]
- * (https://arxiv.org/abs/gr-qc/0512093)
+ * See Eqs. 8 and 9 of \cite Lindblom2005qh
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::a<DataType, SpatialDim, Frame> gauge_source(
@@ -157,8 +156,7 @@ tnsr::ijj<DataType, SpatialDim, Frame> deriv_spatial_metric(
  * \f$ \partial_0 g_{ij} = \partial_0 \psi_{ij} \f$.
  *
  * To compute the latter, we use the evolution equation for \f$ \psi_{ij} \f$,
- * c.f. eq.(35) of "A New Generalized Harmonic Evolution System" by
- * Lindblom et. al \cite Lindblom2005qh (with \f$\gamma_1 = -1\f$):
+ * c.f. eq.(35) of \cite Lindblom2005qh (with \f$\gamma_1 = -1\f$):
  *
  * \f[
  * \partial_0 \psi_{ab} = - N \Pi_{ab} + N^k \Phi_{kab}

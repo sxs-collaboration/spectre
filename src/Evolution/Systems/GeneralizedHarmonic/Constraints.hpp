@@ -25,7 +25,6 @@ namespace GeneralizedHarmonic {
  * \details Computes the generalized-harmonic 3-index constraint,
  * \f$C_{iab} = \partial_i\psi_{ab} - \Phi_{iab},\f$ which is
  * given by Eq. (26) of \cite Lindblom2005qh
- *
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::iaa<DataType, SpatialDim, Frame> three_index_constraint(
@@ -44,8 +43,7 @@ void three_index_constraint(
  * \brief Computes the generalized-harmonic gauge constraint.
  *
  * \details Computes the generalized-harmonic gauge constraint
- * [Eq. (40) of \cite Lindblom2005qh
- * ],
+ * [Eq. (40) of \cite Lindblom2005qh],
  * \f[
  * C_a = H_a + g^{ij} \Phi_{ija} + t^b \Pi_{ba}
  * - \frac{1}{2} g^i_a \psi^{bc} \Phi_{ibc}
@@ -85,8 +83,7 @@ void gauge_constraint(
  * \brief Computes the generalized-harmonic 2-index constraint.
  *
  * \details Computes the generalized-harmonic 2-index constraint
- * [Eq. (44) of \cite Lindblom2005qh
- * ],
+ * [Eq. (44) of \cite Lindblom2005qh],
  * \f{eqnarray}{
  * C_{ia} &\equiv& g^{jk}\partial_j \Phi_{ika}
  * - \frac{1}{2} g_a^j\psi^{cd}\partial_j \Phi_{icd}
@@ -154,8 +151,7 @@ void two_index_constraint(
  *
  * \details Computes the independent components of the generalized-harmonic
  * 4-index constraint. The constraint itself is given by Eq. (45) of
- * \cite Lindblom2005qh
- * ,
+ * \cite Lindblom2005qh,
  * \f{eqnarray}{
  * C_{ijab} = 2 \partial_{[i}\Phi_{j]ab},
  * \f}
@@ -190,7 +186,7 @@ void four_index_constraint(
  * \brief Computes the generalized-harmonic F constraint.
  *
  * \details Computes the generalized-harmonic F constraint
- * [Eq. (43) of https://arXiv.org/abs/gr-qc/0512093v3],
+ * [Eq. (43) of \cite Lindblom2005qh],
  * \f{eqnarray}{
  * {\cal F}_a &\equiv&
  * \frac{1}{2} g_a^i \psi^{bc}\partial_i \Pi_{bc}
@@ -278,10 +274,8 @@ void f_constraint(
  * \brief Computes the generalized-harmonic (unnormalized) constraint energy.
  *
  * \details Computes the generalized-harmonic unnormalized constraint energy
- * [Eq. (53) of \cite Lindblom2005qh
- *  with
- * \f$m^{ab}=\delta^{ab}\f$ and with each term in the sum scaled by an
- * arbitrary coefficient],
+ * [Eq. (53) of \cite Lindblom2005qh with \f$m^{ab}=\delta^{ab}\f$ and with each
+ * term in the sum scaled by an arbitrary coefficient],
  * \f{eqnarray}{
  * E & = & K_1 C_a C_a + K_2\left(F_a F_a
      + C_{ia} C_{ja} g^{ij}\right)\nonumber\\
@@ -314,8 +308,7 @@ void f_constraint(
  * \f} where \f$g\f$ is the determinant of the spatial metric.
  *
  * To derive this expression for the constraint energy implemented here,
- * Eq.~(53) of \cite Lindblom2005qh
- *  is
+ * Eq.~(53) of \cite Lindblom2005qh is
  * \f{eqnarray}{
  * S_{AB} dc^A dc^B &=&
  *      m^{ab}\Bigl[d F_ad F_b

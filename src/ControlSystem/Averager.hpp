@@ -13,7 +13,7 @@
 
 /// \ingroup ControlSystemGroup
 /// A weighted exponential averager of \f$Q\f$ and its derivatives
-/// implementing Appendix A in Hemberger et al, https://arxiv.org/abs/1211.6079
+/// implementing Appendix A in \cite Hemberger2012jz
 ///
 /// The purpose of the averager is to provide \f$Q\f$ and 'smoothed' numerical
 /// derivatives of \f$Q\f$ up to the `DerivOrder`'th derivative. The 0th

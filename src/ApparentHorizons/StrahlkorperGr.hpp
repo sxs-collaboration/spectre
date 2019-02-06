@@ -38,7 +38,7 @@ tnsr::i<DataVector, 3, Frame> unit_normal_one_form(
 /// \brief Computes 3-covariant gradient \f$D_i S_j\f$ of a
 /// Strahlkorper's normal.
 ///
-/// \details See Eqs. (1--9) of https://arxiv.org/abs/gr-qc/9606010.
+/// \details See Eqs. (1--9) of \cite Baumgarte1996hh.
 /// Here \f$S_j\f$ is the (normalized) unit one-form to the surface,
 /// and \f$D_i\f$ is the spatial covariant derivative.  Note that this
 /// object is symmetric, even though this is not obvious from the
@@ -62,7 +62,7 @@ tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
 /// \ingroup SurfacesGroup
 /// \brief Computes inverse 2-metric \f$g^{ij}-S^i S^j\f$ of a Strahlkorper.
 ///
-/// \details See Eqs. (1--9) of https://arxiv.org/abs/gr-qc/9606010.
+/// \details See Eqs. (1--9) of \cite Baumgarte1996hh.
 /// Here \f$S^i\f$ is the (normalized) unit vector to the surface,
 /// and \f$g^{ij}\f$ is the 3-metric.  This object is expressed in the
 /// usual 3-d Cartesian basis, so it is written as a 3-dimensional tensor.
@@ -78,8 +78,7 @@ tnsr::II<DataVector, 3, Frame> inverse_surface_metric(
 /// \ingroup SurfacesGroup
 /// \brief Expansion of a `Strahlkorper`. Should be zero on apparent horizons.
 ///
-/// \details Implements Eq. (5) in
-/// https://arxiv.org/abs/gr-qc/9606010.  The input argument
+/// \details Implements Eq. (5) in \cite Baumgarte1996hh.  The input argument
 /// `grad_normal` is the quantity returned by
 /// `StrahlkorperGr::grad_unit_normal_one_form`, and `inverse_surface_metric`
 /// is the quantity returned by `StrahlkorperGr::inverse_surface_metric`.
@@ -140,8 +139,7 @@ Scalar<DataVector> ricci_scalar(
  * \brief Area element of a 2D `Strahlkorper`.
  *
  * \details Implements Eq. (D.13), using Eqs. (D.4) and (D.5),
- * of https://arxiv.org/abs/gr-qc/9606010.
- * Specifically, computes
+ * of \cite Baumgarte1996hh. Specifically, computes
  * \f$\sqrt{(\Theta^i\Theta_i)(\Phi^j\Phi_j)-(\Theta^i\Phi_i)^2}\f$,
  * \f$\Theta^i=\left(n^i(n_j-s_j) r J^j_\theta + r J^i_\theta\right)\f$,
  * \f$\Phi^i=\left(n^i(n_j-s_j)r J^j_\phi + r J^i_\phi\right)\f$,
@@ -182,7 +180,7 @@ double surface_integral_of_scalar(
  * \brief Spin function of a 2D `Strahlkorper`.
  *
  * \details See Eqs. (2) and (10)
- * of https://arxiv.org/abs/1708.07325. This function computes the
+ * of \cite Owen2017yaj. This function computes the
  * "spin function," which is an ingredient for horizon surface integrals that
  * measure quasilocal spin. This function is proportional to the imaginary part
  * of the horizon's complex scalar curvature. For Kerr black holes, the spin
@@ -223,23 +221,23 @@ Scalar<DataVector> spin_function(
  * \brief Spin magnitude measured on a 2D `Strahlkorper`.
  *
  * \details Measures the quasilocal spin magnitude of a Strahlkorper, by
- * inserting \f$\alpha=1\f$ into Eq. (10) of https://arxiv.org/abs/0907.0280
+ * inserting \f$\alpha=1\f$ into Eq. (10) of \cite Owen2009sb
  * and dividing by \f$8\pi\f$ to yield the spin magnitude. The
  * spin magnitude is a Euclidean norm of surface integrals over the horizon
  * \f$S = \frac{1}{8\pi}\oint z \Omega dA\f$,
  * where \f$\Omega\f$ is obtained via `StrahlkorperGr::spin_function()`,
  * \f$dA\f$ is the area element, and \f$z\f$ (the "spin potential") is a
  * solution of a generalized eigenproblem given by Eq. (9) of
- * https://arxiv.org/abs/0907.0280. Specifically,
+ * \cite Owen2009sb. Specifically,
  * \f$\nabla^4 z + \nabla \cdot (R\nabla z) = \lambda \nabla^2 z\f$, where
  * \f$R\f$ is obtained via `StrahlkorperGr::ricci_scalar()`. The spin
  * magnitude is the Euclidean norm of the three values of \f$S\f$ obtained from
  * the eigenvectors \f$z\f$ with the 3 smallest-magnitude
  * eigenvalues \f$\lambda\f$. Note that this formulation of the eigenproblem
  * uses the "Owen" normalization, Eq. (A9) and surrounding discussion in
- * https://arxiv.org/abs/0805.4192.
+ * \cite Lovelace2008tw.
  * The eigenvectors are normalized  with the "Kerr normalization",
- * Eq. (A22) of https://arxiv.org/abs/0805.4192.
+ * Eq. (A22) of \cite Lovelace2008tw.
  * The argument `spatial_metric` is the metric of the 3D spatial slice
  * evaluated on the `Strahlkorper`.
  * The argument `tangents` can be obtained from the StrahlkorperDataBox
@@ -271,7 +269,7 @@ double dimensionful_spin_magnitude(
  * it will return the dimensionful spin components if `spin_magnitude` is
  * the dimensionful spin magnitude. The spin vector is given by
  * a surface integral over the horizon \f$\mathcal{H}\f$ [Eq. (25) of
- * https://arxiv.org/abs/1708.07325]:
+ * \cite Owen2017yaj]:
  * \f$S^i = \frac{S}{N} \oint_\mathcal{H} dA \Omega (x^i - x^i_0 - x^i_R) \f$,
  * where \f$S\f$ is the spin magnitude,
  * \f$N\f$ is a normalization factor enforcing \f$\delta_{ij}S^iS^j = S\f$,
@@ -300,7 +298,7 @@ std::array<double, 3> spin_vector(double spin_magnitude,
  * \ingroup SurfacesGroup
  * \brief Irreducible mass of a 2D `Strahlkorper`.
  *
- * \details See Eqs. (15.38) \cite Hartle2003Gravity. This function computes the
+ * \details See Eqs. (15.38) \cite Hartle2003gravity. This function computes the
  * irreducible mass from the area of a horizon. Specifically, computes
  * \f$M_\mathrm{irr}=\sqrt{\frac{A}{16\pi}}\f$.
  */

@@ -32,8 +32,7 @@ namespace CurvedScalarWave {
  * first-order scalar wave system on a curved background.
  *
  * The evolution equations for the first-order scalar wave system are given by
-  * <a href="https://arxiv.org/abs/gr-qc/0407011">
- * gr-qc/0407011 </a>:
+ * \cite Holst2004wt :
  *
  * \f{align}
  * \partial_t\psi = & (1 + \gamma_1) N^k \partial_k \psi - N \Pi - \gamma_1 N^k
