@@ -203,6 +203,7 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
 // @}
 
+// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes spatial derivatives of lapse (N) from the generalized
@@ -228,11 +229,20 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_det_spatial_metric(
  * \f]
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
-tnsr::i<DataType, SpatialDim, Frame> spatial_deriv_of_lapse(
+void spatial_deriv_of_lapse(
+    gsl::not_null<tnsr::i<DataType, SpatialDim, Frame>*> deriv_lapse,
     const Scalar<DataType>& lapse,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
 
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::i<DataType, SpatialDim, Frame> spatial_deriv_of_lapse(
+    const Scalar<DataType>& lapse,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+// @}
+
+// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes time derivative of lapse (N) from the generalized
@@ -263,12 +273,21 @@ tnsr::i<DataType, SpatialDim, Frame> spatial_deriv_of_lapse(
  * \f]
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
+void time_deriv_of_lapse(
+    gsl::not_null<Scalar<DataType>*> dt_lapse, const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
+    const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
+    const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 Scalar<DataType> time_deriv_of_lapse(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::A<DataType, SpatialDim, Frame>& spacetime_unit_normal,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
+// @}
 
 // @{
 /*!
