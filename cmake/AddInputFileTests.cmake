@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+find_package(PythonInterp REQUIRED)
+
 function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
   # Extract just the name of the input file
   get_filename_component(INPUT_FILE_NAME "${INPUT_FILE}" NAME)
@@ -35,8 +37,11 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
   elseif("${CHECK_TYPE}" STREQUAL "execute")
     add_test(
       NAME "${CTEST_NAME}"
-      COMMAND ${CMAKE_BINARY_DIR}/bin/${EXECUTABLE}
-      --input-file ${INPUT_FILE}
+      # This script is written below, and only once
+      COMMAND sh ${PROJECT_BINARY_DIR}/tmp/InputFileExecuteAndClean.sh
+      ${EXECUTABLE} ${INPUT_FILE}
+      # Make sure we run the test in the build directory for cleaning its output
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       )
   else()
     message(FATAL_ERROR "Unknown Check for input file: ${CHECK_TYPE}."
@@ -107,5 +112,18 @@ endfunction()
 
 # Dependencies will be added as the tests are processed.
 add_custom_target(test-executables)
+
+# Write command to execute an input file and clean its output into a shell
+# script, which makes it easier to chain multiple commands
+file(
+  WRITE
+  ${PROJECT_BINARY_DIR}/tmp/InputFileExecuteAndClean.sh
+  "\
+#!/bin/sh\n\
+${CMAKE_BINARY_DIR}/bin/$1 --input-file $2\n\
+execute_exit=$?\n\
+${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v \
+--input-file $2 --output-dir ${CMAKE_BINARY_DIR} && exit \${execute_exit}\n"
+)
 
 add_input_file_tests("${CMAKE_SOURCE_DIR}/tests/InputFiles/")

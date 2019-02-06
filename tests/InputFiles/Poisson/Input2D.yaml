@@ -3,6 +3,9 @@
 
 # Executable: SolvePoissonProblem2D
 # Check: execute
+# ExpectedOutput:
+#   Poisson2DReductions.h5
+#   Poisson2DVolume0.h5
 
 AnalyticSolution:
     WaveNumbers: [1, 1]
