@@ -25,7 +25,8 @@ namespace PrimitiveRecoverySchemes {
 
 template <size_t ThermodynamicDim>
 boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
-    const double total_energy_density, const double momentum_density_squared,
+    const double initial_guess_for_pressure, const double total_energy_density,
+    const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
     const double magnetic_field_squared,
     const double rest_mass_density_times_lorentz_factor,
@@ -51,7 +52,6 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
     return boost::none;
   }
 
-  const double initial_guess_for_pressure{0.0};
   // bound needed so cubic equation has a positive root
   const double minimum_pressure =
       std::max(0.0, cbrt(6.75 * d_in_cubic) - total_energy_density -
@@ -188,7 +188,7 @@ boost::optional<PrimitiveRecoveryData> NewmanHamlin::apply(
                                PrimitiveRecoveryData>                          \
   grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin::apply<      \
       THERMODIM(data)>(                                                        \
-      const double total_energy_density,                                       \
+      const double initial_guess_pressure, const double total_energy_density,  \
       const double momentum_density_squared,                                   \
       const double momentum_density_dot_magnetic_field,                        \
       const double magnetic_field_squared,                                     \

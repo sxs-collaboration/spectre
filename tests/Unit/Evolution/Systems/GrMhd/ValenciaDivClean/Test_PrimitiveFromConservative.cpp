@@ -218,7 +218,9 @@ void test_primitive_from_conservative_random(
   tnsr::I<DataVector, 3> magnetic_field(number_of_points);
   Scalar<DataVector> divergence_cleaning_field(number_of_points);
   Scalar<DataVector> lorentz_factor(number_of_points);
-  Scalar<DataVector> pressure(number_of_points);
+  // need to zero-initialize pressure because the recovery schemes assume it is
+  // not nan
+  Scalar<DataVector> pressure(number_of_points, 0.0);
   Scalar<DataVector> specific_enthalpy(number_of_points);
   grmhd::ValenciaDivClean::PrimitiveFromConservative<
       OrderedListOfPrimitiveRecoverySchemes,
@@ -311,7 +313,9 @@ void test_primitive_from_conservative_known(
   tnsr::I<DataVector, 3> magnetic_field(number_of_points);
   Scalar<DataVector> divergence_cleaning_field(number_of_points);
   Scalar<DataVector> lorentz_factor(number_of_points);
-  Scalar<DataVector> pressure(number_of_points);
+  // need to zero-initialize pressure because the recovery schemes assume it is
+  // not nan
+  Scalar<DataVector> pressure(number_of_points, 0.0);
   Scalar<DataVector> specific_enthalpy(number_of_points);
   EquationsOfState::IdealFluid<true> ideal_fluid(4.0 / 3.0);
   grmhd::ValenciaDivClean::PrimitiveFromConservative<
