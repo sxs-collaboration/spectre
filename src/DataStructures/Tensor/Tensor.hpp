@@ -83,16 +83,18 @@ class Tensor<X, Symm, IndexList<Indices...>> {
                 "file an issue on GitHub or discuss with a core developer of "
                 "SpECTRE.");
   static_assert(
-      cpp17::is_same_v<X, double> or cpp17::is_same_v<X, DataVector> or
-          cpp17::is_same_v<X, ModalVector> or
-          cpp17::is_same_v<X, std::complex<double>> or
+      cpp17::is_same_v<X, std::complex<double>> or
+          cpp17::is_same_v<X, double> or
           cpp17::is_same_v<X, ComplexDataVector> or
           cpp17::is_same_v<X, ComplexModalVector> or
-          is_spin_weighted_of_v<ComplexDataVector, X>,
-      "Only a Tensor<double>, Tensor<DataVector>, Tensor<ModalVector>, "
-      "Tensor<std::complex<double>>, Tensor<ComplexDataVector>, "
-      "Tensor<ComplexModalVector>, or "
-      "Tensor<SpinWeighted<ComplexDataVector, N>> is currently "
+          cpp17::is_same_v<X, DataVector> or cpp17::is_same_v<X, ModalVector> or
+          is_spin_weighted_of_v<ComplexDataVector, X> or
+          is_spin_weighted_of_v<ComplexModalVector, X>,
+      "Only a Tensor<std::complex<double>>, Tensor<double>, "
+      "Tensor<ComplexDataVector>, Tensor<ComplexModalVector>, "
+      "Tensor<DataVector>, Tensor<ModalVector>, "
+      "Tensor<SpinWeighted<ComplexDataVector, N>>, "
+      "or Tensor<SpinWeighted<ComplexModalVector, N>> is currently "
       "allowed. While other types are technically possible it is not "
       "clear that Tensor is the correct container for them. Please "
       "seek advice on the topic by discussing with the SpECTRE developers.");
