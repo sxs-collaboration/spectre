@@ -309,7 +309,7 @@ Scalar<DataType> time_deriv_of_lapse(
  *  =& \psi^{ja} N t^b \Phi_{iab} - 2 t^j \partial_i N \\
  *  =& N (\psi^{ja} + t^j t^a) t^b \Phi_{iab}.
  * \f}
- * where we used the equation from \ref spatial_deriv_of_lapse for
+ * where we used the equation from spatial_deriv_of_lapse() for
  * \f$\partial_i N\f$.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
