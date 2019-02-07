@@ -29,7 +29,6 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
@@ -90,7 +89,6 @@ void test_characteristic_speeds_analytic(
     const std::array<double, 3>& upper_bound) noexcept {
   // Set up grid
   const size_t spatial_dim = 3;
-  const size_t data_size = pow<spatial_dim>(grid_size_each_dimension);
   Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto};
 
@@ -191,12 +189,14 @@ void test_characteristic_fields() noexcept {
   pypp::check_with_random_values<1>(
       compute_field_with_tag<GeneralizedHarmonic::Tags::UZero<Dim, Frame>, Dim,
                              Frame>,
-      "TestFunctions", "char_field_uzero", {{{-100., 100.}}}, used_for_size);
+      "TestFunctions", "char_field_uzero", {{{-100., 100.}}}, used_for_size,
+      1.e-10);
   // UPlus
   pypp::check_with_random_values<1>(
       compute_field_with_tag<GeneralizedHarmonic::Tags::UPlus<Dim, Frame>, Dim,
                              Frame>,
-      "TestFunctions", "char_field_uplus", {{{-100., 100.}}}, used_for_size);
+      "TestFunctions", "char_field_uplus", {{{-100., 100.}}}, used_for_size,
+      1.e-11);
   // UMinus
   pypp::check_with_random_values<1>(
       compute_field_with_tag<GeneralizedHarmonic::Tags::UMinus<Dim, Frame>, Dim,
@@ -212,7 +212,6 @@ void test_characteristic_fields_analytic(
     const std::array<double, 3>& upper_bound) noexcept {
   // Set up grid
   const size_t spatial_dim = 3;
-  const size_t data_size = pow<spatial_dim>(grid_size_each_dimension);
   Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto};
 
@@ -380,7 +379,6 @@ void test_evolved_from_characteristic_fields_analytic(
     const std::array<double, 3>& upper_bound) noexcept {
   // Set up grid
   const size_t spatial_dim = 3;
-  const size_t data_size = pow<spatial_dim>(grid_size_each_dimension);
   Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto};
 
