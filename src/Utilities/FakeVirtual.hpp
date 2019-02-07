@@ -87,7 +87,7 @@ template <typename Result, typename Classes, typename Base, typename Callable,
 }
 /// \endcond
 
-/// \ingroup Utilities
+/// \ingroup UtilitiesGroup
 /// \brief Call a functor with the derived type of a base class pointer.
 ///
 /// \details Calls functor with obj cast to type `T*` where T is the
