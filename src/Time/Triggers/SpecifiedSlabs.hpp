@@ -22,10 +22,17 @@ struct TimeId;
 /// \endcond
 
 namespace Triggers {
+template <typename TriggerRegistrars>
+class SpecifiedSlabs;
+
+namespace Registrars {
+using SpecifiedSlabs = Registration::Registrar<Triggers::SpecifiedSlabs>;
+}  // namespace Registrars
+
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger at specified numbers of slabs after the simulation start.
-template <typename TriggerRegistrars = tmpl::list<>>
+template <typename TriggerRegistrars = tmpl::list<Registrars::SpecifiedSlabs>>
 class SpecifiedSlabs : public Trigger<TriggerRegistrars> {
  public:
   /// \cond
@@ -63,10 +70,6 @@ class SpecifiedSlabs : public Trigger<TriggerRegistrars> {
  private:
   std::unordered_set<uint64_t> slabs_;
 };
-
-namespace Registrars {
-using SpecifiedSlabs = Registration::Registrar<Triggers::SpecifiedSlabs>;
-}  // namespace Registrars
 
 /// \cond
 template <typename TriggerRegistrars>

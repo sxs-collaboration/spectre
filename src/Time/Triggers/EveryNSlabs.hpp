@@ -20,10 +20,17 @@ struct TimeId;
 /// \endcond
 
 namespace Triggers {
+template <typename TriggerRegistrars>
+class EveryNSlabs;
+
+namespace Registrars {
+using EveryNSlabs = Registration::Registrar<Triggers::EveryNSlabs>;
+}  // namespace Registrars
+
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger every N time slabs after a given offset.
-template <typename TriggerRegistrars = tmpl::list<>>
+template <typename TriggerRegistrars = tmpl::list<Registrars::EveryNSlabs>>
 class EveryNSlabs : public Trigger<TriggerRegistrars> {
  public:
   /// \cond
@@ -68,10 +75,6 @@ class EveryNSlabs : public Trigger<TriggerRegistrars> {
   uint64_t interval_{0};
   uint64_t offset_{0};
 };
-
-namespace Registrars {
-using EveryNSlabs = Registration::Registrar<Triggers::EveryNSlabs>;
-}  // namespace Registrars
 
 /// \cond
 template <typename TriggerRegistrars>

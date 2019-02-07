@@ -12,12 +12,19 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Triggers {
+template <typename TriggerRegistrars>
+class PastTime;
+
+namespace Registrars {
+using PastTime = Registration::Registrar<Triggers::PastTime>;
+}  // namespace Registrars
+
 /// \ingroup EventsAndTriggersGroup
 /// \ingroup TimeGroup
 /// Trigger when the simulation is past a certain time (after that
 /// time if time is running forward, before that time if time is
 /// running backward).
-template <typename TriggerRegistrars = tmpl::list<>>
+template <typename TriggerRegistrars = tmpl::list<Registrars::PastTime>>
 class PastTime : public Trigger<TriggerRegistrars> {
  public:
   /// \cond
@@ -52,10 +59,6 @@ class PastTime : public Trigger<TriggerRegistrars> {
  private:
   double trigger_time_{std::numeric_limits<double>::signaling_NaN()};
 };
-
-namespace Registrars {
-using PastTime = Registration::Registrar<Triggers::PastTime>;
-}  // namespace Registrars
 
 /// \cond
 template <typename TriggerRegistrars>

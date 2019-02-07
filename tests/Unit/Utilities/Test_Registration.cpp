@@ -26,7 +26,14 @@ class Base {
   virtual int func() const noexcept = 0;
 };
 
-template <typename Registrars = tmpl::list<>>
+template <typename Registrars>
+class Derived1;
+
+namespace Registrars {
+using Derived1 = Registration::Registrar<::Derived1>;
+}  // namespace Registrars
+
+template <typename Registrars = tmpl::list<Registrars::Derived1>>
 class Derived1 : public Base<Registrars> {
  public:
   static constexpr OptionString help = "help";
@@ -35,33 +42,28 @@ class Derived1 : public Base<Registrars> {
 };
 /// [registrar_structure]
 
+/// [registrar]
+template <typename SomeArg, typename Registrars>
+class Derived2;
+
 namespace Registrars {
-using Derived1 = Registration::Registrar<::Derived1>;
+template <typename SomeArg>
+using Derived2 = Registration::Registrar<::Derived2, SomeArg>;
 }  // namespace Registrars
 
-/// [registrar]
-template <typename SomeArg, typename Registrars = tmpl::list<>>
+template <typename SomeArg,
+          typename Registrars = tmpl::list<Registrars::Derived2<SomeArg>>>
 class Derived2 : public Base<Registrars> {
  public:
   static constexpr OptionString help = "help";
   using options = tmpl::list<>;
   int func() const noexcept override { return 2; }
 };
-
-namespace Registrars {
-template <typename SomeArg>
-using Derived2 = Registration::Registrar<::Derived2, SomeArg>;
-}  // namespace Registrars
 /// [registrar]
 
 /// [custom_registrar]
-template <int N, typename Registrars = tmpl::list<>>
-class Derived3 : public Base<Registrars> {
- public:
-  static constexpr OptionString help = "help";
-  using options = tmpl::list<>;
-  int func() const noexcept override { return N; }
-};
+template <int N, typename Registrars>
+class Derived3;
 
 namespace Registrars {
 template <int N>
@@ -70,6 +72,14 @@ struct Derived3 {
   using f = ::Derived3<N, RegistrarList>;
 };
 }  // namespace Registrars
+
+template <int N, typename Registrars = tmpl::list<Registrars::Derived3<N>>>
+class Derived3 : public Base<Registrars> {
+ public:
+  static constexpr OptionString help = "help";
+  using options = tmpl::list<>;
+  int func() const noexcept override { return N; }
+};
 /// [custom_registrar]
 }  // namespace
 
