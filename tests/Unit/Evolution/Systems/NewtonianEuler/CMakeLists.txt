@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_ConservativeFromPrimitive.cpp
   Test_Fluxes.cpp
   Test_PrimitiveFromConservative.cpp
+  Test_Tags.cpp
   )
 
 add_subdirectory(Sources)
