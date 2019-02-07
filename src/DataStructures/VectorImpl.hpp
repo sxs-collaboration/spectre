@@ -549,16 +549,23 @@ std::ostream& operator<<(std::ostream& os,
  *
  * \param VECTOR_TYPE The vector type (e.g. `DataVector`)
  */
-#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)  \
-  namespace MakeWithValueImpls {                          \
-  template <>                                             \
-  struct MakeWithValueImpl<VECTOR_TYPE, VECTOR_TYPE> {    \
-    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE              \
-    apply(const VECTOR_TYPE& input,                       \
-          const VECTOR_TYPE::value_type value) noexcept { \
-      return VECTOR_TYPE(input.size(), value);            \
-    }                                                     \
-  };                                                      \
+#define MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(VECTOR_TYPE)                      \
+  namespace MakeWithValueImpls {                                              \
+  template <>                                                                 \
+  struct MakeWithValueImpl<VECTOR_TYPE, VECTOR_TYPE> {                        \
+    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                  \
+    apply(const VECTOR_TYPE& input,                                           \
+          const VECTOR_TYPE::value_type value) noexcept {                     \
+      return VECTOR_TYPE(input.size(), value);                                \
+    }                                                                         \
+  };                                                                          \
+  template <>                                                                 \
+  struct MakeWithValueImpl<VECTOR_TYPE, size_t> {                             \
+    static SPECTRE_ALWAYS_INLINE VECTOR_TYPE                                  \
+    apply(const size_t& size, const VECTOR_TYPE::value_type value) noexcept { \
+      return VECTOR_TYPE(size, value);                                        \
+    }                                                                         \
+  };                                                                          \
   }  // namespace MakeWithValueImpls
 
 // {@
@@ -611,3 +618,23 @@ struct get_vector_element_type<std::array<T, S>, false> {
 
 template <typename T>
 using get_vector_element_type_t = typename get_vector_element_type<T>::type;
+
+namespace detail {
+template <typename... VectorImplTemplateArgs>
+std::true_type is_derived_of_vector_impl_impl(
+    const VectorImpl<VectorImplTemplateArgs...>*);
+
+std::false_type is_derived_of_vector_impl_impl(...);
+}  // namespace detail
+
+/// \ingroup TypeTraitsGroup
+/// This is `std::true_type` if the provided type possesses an implicit
+/// conversion to any `VectorImpl`, which is the primary feature of SpECTRE
+/// vectors generally. Otherwise, it is `std::false_type`.
+template <typename T>
+using is_derived_of_vector_impl =
+    decltype(detail::is_derived_of_vector_impl_impl(std::declval<T*>()));
+
+template <typename T>
+constexpr bool is_derived_of_vector_impl_v =
+    is_derived_of_vector_impl<T>::value;

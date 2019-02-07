@@ -725,6 +725,17 @@ static_assert(not tt::is_complex_of_fundamental_v<DataVector>,
               "Failed testing is_complex_of_fundamental");
 /// [is_complex_of_fundamental]
 
+static_assert(tt::is_complex_or_fundamental_v<std::complex<double>>,
+              "Failed testing is_complex_of_fundamental");
+static_assert(tt::is_complex_or_fundamental_v<std::complex<int>>,
+              "Failed testing is_complex_of_fundamental");
+static_assert(tt::is_complex_or_fundamental_v<double>,
+              "Failed testing is_complex_of_fundamental");
+static_assert(not tt::is_complex_or_fundamental_v<std::complex<DataVector>>,
+              "Failed testing is_complex_of_fundamental");
+static_assert(not tt::is_complex_or_fundamental_v<DataVector>,
+              "Failed testing is_complex_of_fundamental");
+
 namespace {
 // The name syntax is ReturnType_NumberOfArgs_Counter
 // clang-tidy: no non-const references (we need them for testing)

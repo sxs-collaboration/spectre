@@ -12,6 +12,7 @@
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/ModalVector.hpp"
+#include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Expressions/Contract.hpp"
 #include "DataStructures/Tensor/Expressions/TensorExpression.hpp"
 #include "DataStructures/Tensor/IndexType.hpp"
@@ -86,13 +87,15 @@ class Tensor<X, Symm, IndexList<Indices...>> {
           cpp17::is_same_v<X, ModalVector> or
           cpp17::is_same_v<X, std::complex<double>> or
           cpp17::is_same_v<X, ComplexDataVector> or
-          cpp17::is_same_v<X, ComplexModalVector>,
+          cpp17::is_same_v<X, ComplexModalVector> or
+          is_spin_weighted_of_v<ComplexDataVector, X>,
       "Only a Tensor<double>, Tensor<DataVector>, Tensor<ModalVector>, "
-      "Tensor<std::complex<double>>, Tensor<ComplexDataVector>, or "
-      "Tensor<ComplexModalVector> is currently allowed. While other types are "
-      "technically possible it is not clear that Tensor is the correct "
-      "container for them. Please seek advice on the topic by discussing with "
-      "the SpECTRE developers.");
+      "Tensor<std::complex<double>>, Tensor<ComplexDataVector>, "
+      "Tensor<ComplexModalVector>, or "
+      "Tensor<SpinWeighted<ComplexDataVector, N>> is currently "
+      "allowed. While other types are technically possible it is not "
+      "clear that Tensor is the correct container for them. Please "
+      "seek advice on the topic by discussing with the SpECTRE developers.");
   /// The Tensor_detail::Structure for the particular tensor index structure
   ///
   /// Each tensor index structure, e.g. \f$T_{ab}\f$, \f$T_a{}^b\f$ or

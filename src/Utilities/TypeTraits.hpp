@@ -1412,7 +1412,15 @@ struct is_complex_of_fundamental<
 /// \endcond
 // @}
 template <typename T>
-const bool is_complex_of_fundamental_v = is_complex_of_fundamental<T>::value;
+constexpr bool is_complex_of_fundamental_v =
+    is_complex_of_fundamental<T>::value;
+
+/// \ingroup TypeTraitsGroup
+/// \brief Evaluates to `true` if type `T` is a `std::complex` of a fundamental
+/// type or if `T` is a fundamental type.
+template <typename T>
+constexpr bool is_complex_or_fundamental_v =
+    is_complex_of_fundamental_v<T> or cpp17::is_fundamental_v<T>;
 
 namespace tt_detail {
 template <typename T>
