@@ -33,9 +33,8 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.SpecifiedSlabs", "[Unit][Time]") {
   const auto sent_trigger = serialize_and_deserialize(trigger);
 
   const Slab slab(0., 1.);
-  auto box = db::create<db::AddSimpleTags<Tags::TimeId, Tags::TimeStep>,
-                        db::AddComputeTags<Tags::Time, Tags::TimeValue>>(
-      TimeId(true, 0, slab.start()), slab.duration());
+  auto box = db::create<db::AddSimpleTags<Tags::TimeId>>(
+      TimeId(true, 0, slab.start()));
   for (const bool expected :
        {false, false, false, true, false, false, true, false, true, false}) {
     CHECK(sent_trigger->is_triggered(box) == expected);

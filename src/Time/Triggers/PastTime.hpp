@@ -4,12 +4,22 @@
 #pragma once
 
 #include <limits>
+#include <pup.h>
 
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Options/Options.hpp"
-#include "Time/Tags.hpp"
+#include "Parallel/CharmPupable.hpp"
+#include "Time/EvolutionOrdering.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
+
+/// \cond
+namespace Tags {
+struct TimeId;
+struct TimeValue;
+}  // namespace Tags
+/// \endcond
 
 namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
@@ -33,15 +43,11 @@ class PastTime : public Trigger<TriggerRegistrars> {
   explicit PastTime(const double trigger_time) noexcept
       : trigger_time_(trigger_time) {}
 
-  using argument_tags = tmpl::list<Tags::TimeValue, Tags::TimeStep>;
+  using argument_tags = tmpl::list<Tags::TimeValue, Tags::TimeId>;
 
-  bool operator()(const double time, const TimeDelta& time_step) const
-      noexcept {
-    if (time_step.is_positive()) {
-      return time > trigger_time_;
-    } else {
-      return time < trigger_time_;
-    }
+  bool operator()(const double time, const TimeId& time_id) const noexcept {
+    return evolution_greater<double>{time_id.time_runs_forward()}(
+        time, trigger_time_);
   }
 
   // clang-tidy: google-runtime-references

@@ -23,6 +23,7 @@
 #include "NumericalAlgorithms/Interpolation/LagrangePolynomial.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "Time/EvolutionOrdering.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
@@ -281,6 +282,14 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
       return {a.value() - b.value()};
     }
 
+    friend bool operator<(const Time& a, const ApproximateTime& b) noexcept {
+      return a.value() < b.value();
+    }
+
+    friend bool operator<(const ApproximateTime& a, const Time& b) noexcept {
+      return a.value() < b.value();
+    }
+
     friend std::ostream& operator<<(std::ostream& s,
                                     const ApproximateTime& t) noexcept {
       return s << t.value();
@@ -304,24 +313,6 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
         const AdamsBashforthN::ApproximateTimeDelta& b) noexcept {
       return a.value() / b.value();
     }
-  };
-
-  /// Comparator for ordering by "simulation time"
-  class SimulationLess {
-   public:
-    explicit SimulationLess(const bool forward_in_time) noexcept
-        : forward_in_time_(forward_in_time) {}
-
-    bool operator()(const Time& a, const Time& b) const noexcept {
-      return forward_in_time_ ? a < b : b < a;
-    }
-
-    bool operator()(const Time& a, const ApproximateTime& b) const noexcept {
-      return forward_in_time_ ? a.value() < b.value() : b.value() < a.value();
-    }
-
-   private:
-    bool forward_in_time_;
   };
 
   size_t order_ = 3;
@@ -509,37 +500,32 @@ AdamsBashforthN::boundary_impl(
       LocalVars, RemoteVars, Coupling>::remote_iterator::difference_type>(
       order_);
 
-  const SimulationLess simulation_less(time_step.is_positive());
+  const evolution_less<> less{time_step.is_positive()};
 
-  ASSERT(std::is_sorted(history.local_begin(), history.local_end(),
-                        simulation_less),
+  ASSERT(std::is_sorted(history.local_begin(), history.local_end(), less),
          "Local history not in order");
-  ASSERT(std::is_sorted(remote_begin, history.remote_end(), simulation_less),
+  ASSERT(std::is_sorted(remote_begin, history.remote_end(), less),
          "Remote history not in order");
-  ASSERT(not simulation_less(start_time, *(remote_begin + (order_s - 1))),
+  ASSERT(not less(start_time, *(remote_begin + (order_s - 1))),
          "Remote history does not extend far enough back");
-  ASSERT(simulation_less(*(history.remote_end() - 1), end_time),
+  ASSERT(less(*(history.remote_end() - 1), end_time),
          "Please supply only older data: " << *(history.remote_end() - 1)
          << " is not before " << end_time);
 
   // Union of times of all step boundaries on any side.
-  const auto union_times =
-      [&history, &remote_begin, &simulation_less]() noexcept {
+  const auto union_times = [&history, &remote_begin, &less]() noexcept {
     std::vector<Time> ret;
     ret.reserve(history.local_size() + history.remote_size());
     std::set_union(history.local_begin(), history.local_end(), remote_begin,
-                   history.remote_end(), std::back_inserter(ret),
-                   simulation_less);
+                   history.remote_end(), std::back_inserter(ret), less);
     return ret;
   }();
 
   using UnionIter = typename decltype(union_times)::const_iterator;
 
   // Find the union times iterator for a given time.
-  const auto union_step =
-      [&union_times, &simulation_less](const Time& t) noexcept {
-    return std::lower_bound(union_times.cbegin(), union_times.cend(), t,
-                            simulation_less);
+  const auto union_step = [&union_times, &less](const Time& t) noexcept {
+    return std::lower_bound(union_times.cbegin(), union_times.cend(), t, less);
   };
 
   // The union time index for the step start.
@@ -637,7 +623,7 @@ AdamsBashforthN::boundary_impl(
         // actual evaluation at that time then skip this because the
         // Lagrange polynomial will be zero.
         if (not std::binary_search(history.local_begin(), history.local_end(),
-                                   *remote_evaluation_step, simulation_less)) {
+                                   *remote_evaluation_step, less)) {
           const auto union_step_upper_bound =
               advance_within_step(union_remote_evaluation_step);
           for (auto step = union_step_lower_bound;
@@ -657,7 +643,7 @@ AdamsBashforthN::boundary_impl(
         // more complicated because the latest remote time that can be
         // used varies for the different segments making up the step.
         if (not std::binary_search(remote_begin, history.remote_end(),
-                                   *local_evaluation_step, simulation_less)) {
+                                   *local_evaluation_step, less)) {
           auto union_step_upper_bound =
               advance_within_step(union_local_evaluation_step);
           if (history.remote_end() - remote_evaluation_step > order_s) {
@@ -707,7 +693,7 @@ bool AdamsBashforthN::can_change_step_size(
   // changing the step size, but we need to wait during the main
   // evolution until the self-start history has been replaced with
   // "real" values.
-  const SimulationLess less(time_id.time_runs_forward());
+  const evolution_less<Time> less{time_id.time_runs_forward()};
   return history.size() == 0 or
          (less(history.back(), time_id.time()) and
           std::is_sorted(history.begin(), history.end(), less));
