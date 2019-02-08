@@ -142,7 +142,18 @@ void test_view() noexcept {
   }
 
   // check self-assignment from the referenced vector
+#ifndef __APPLE__
+#if defined(__clang__) && __clang_major__ > 6
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#endif  // defined(__clang__) && __clang_major__ > 6
+#endif  // ! __APPLE__
   assign_vec_1 = assign_vec_1;
+#ifndef __APPLE__
+#if defined(__clang__) && __clang_major__ > 6
+#pragma GCC diagnostic pop
+#endif  // defined(__clang__) && __clang_major__ > 6
+#endif  // ! __APPLE__
   for (size_t i = 0; i < view_size; i++) {
     CHECK(real(assign_vec_1[i]) == real(source_vec[i + offset]));
     CHECK(imag(assign_vec_1[i]) == imag(assign_vec_1[i]));
@@ -169,11 +180,22 @@ void test_view() noexcept {
   }
 
   // check self-assignment from the view
+#ifndef __APPLE__
+#if defined(__clang__) && __clang_major__ > 6
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wself-assign-overloaded"
+#endif  // defined(__clang__) && __clang_major__ > 6
+#endif  // ! __APPLE__
   // clang-tidy and gcc ignore for allowing the intentional self-assignment
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wextra"
   vector_view = vector_view; // NOLINT
 #pragma GCC diagnostic pop
+#ifndef __APPLE__
+#if defined(__clang__) && __clang_major__ > 6
+#pragma GCC diagnostic pop
+#endif  // defined(__clang__) && __clang_major__ > 6
+#endif  // ! __APPLE__
   for (size_t i = 0; i < view_size; i++) {
     CHECK(source_vec[i + offset] == assign_view_source[i]);
   }
@@ -247,4 +269,3 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.ComplexDataView",
 }  // namespace detail
 }  // namespace SWSH
 }  // namespace Spectral
-
