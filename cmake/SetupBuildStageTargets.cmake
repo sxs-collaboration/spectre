@@ -10,7 +10,6 @@ add_custom_target(test-libs-stage1)
 add_dependencies(test-libs-stage1
   Test_ApparentHorizons
   Test_ControlSystem
-  Test_DataStructures
   Test_Amr
   Test_CoordinateMaps
   Test_DomainCreators
