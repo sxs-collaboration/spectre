@@ -22,7 +22,7 @@ namespace Solutions {
  *
  * The analytic solution to the 2-D Newtonian Euler system
  * representing the slow advection of an incompressible, isentropic
- * vortex \ref vortex_ref "[1]". The initial condition is the superposition of a
+ * vortex \cite Yee1999. The initial condition is the superposition of a
  * mean uniform flow with a gaussian-profile vortex. When embedded in
  * 3-D space, the isentropic vortex is still a solution to the corresponding 3-D
  * system if the velocity along the third axis is a constant. In Cartesian
@@ -71,10 +71,6 @@ namespace Solutions {
  * where \f$\epsilon\f$ is the amplitude of the perturbation. The resulting
  * source for the Newtonian Euler system will then be proportional to
  * \f$\epsilon \cos{z}\f$.
- *
- * \anchor vortex_ref [1] H.C Yee, N.D Sandham, M.J Djomehri, Low-dissipative
- * high-order shock-capturing methods using characteristic-based filters, J.
- * Comput. Phys. [150 (1999) 199](http://dx.doi.org/10.1006/jcph.1998.6177)
  */
 class IsentropicVortex {
  public:
