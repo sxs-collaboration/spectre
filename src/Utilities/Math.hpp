@@ -79,3 +79,24 @@ template <typename T, Requires<std::is_arithmetic<T>::value> = nullptr>
 auto invcbrt(const T& arg) noexcept {
   return static_cast<T>(1.0) / cbrt(arg);
 }
+
+namespace sgn_detail {
+template <typename T>
+constexpr T sgn(const T& val, std::true_type /*is_signed*/) noexcept {
+  return static_cast<T>(static_cast<T>(0) < val) -
+         static_cast<T>(val < static_cast<T>(0));
+}
+
+template <typename T>
+constexpr T sgn(const T& val, std::false_type /*is_signed*/) noexcept {
+  return static_cast<T>(static_cast<T>(0) < val);
+}
+}  // namespace sgn_detail
+
+/// \ingroup UtilitiesGroup
+/// \brief Compute the sign function of `val` defined as `1` if `val > 0`, `0`
+/// if `val == 0`, and `-1` if `val < 0`.
+template <typename T>
+constexpr T sgn(const T& val) noexcept {
+  return sgn_detail::sgn(val, std::is_signed<T>{});
+}

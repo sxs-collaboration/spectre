@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "Utilities/Math.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
   {
@@ -45,5 +46,27 @@ SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
     CHECK(invsqrt(10) == 1.0 / sqrt(10));
     CHECK(approx(invcbrt(27.0)) == (1 / 3.0));
     CHECK(approx(invcbrt(1.0 / 64.0)) == 4.0);
+  }
+
+  {
+    INFO("Test sign function");
+    CHECK(sgn(2) == 1);
+    CHECK(sgn(0) == 0);
+    CHECK(sgn(-2) == -1);
+    static_assert(cpp17::is_same_v<decltype(sgn(-2)), int>,
+                  "Failed testing type of sgn");
+
+    CHECK(sgn(2.14) == 1.0);
+    CHECK(sgn(0.0) == 0.0);
+    CHECK(sgn(-3.87) == -1.0);
+    static_assert(cpp17::is_same_v<decltype(sgn(2.14)), double>,
+                  "Failed testing type of sgn");
+
+    CHECK(sgn(static_cast<unsigned>(2)) == 1);
+    CHECK(sgn(static_cast<unsigned>(0)) == 0);
+    CHECK(sgn(static_cast<unsigned>(-1)) == 1);
+    static_assert(
+        cpp17::is_same_v<decltype(sgn(static_cast<unsigned>(2))), unsigned>,
+        "Failed testing type of sgn");
   }
 }
