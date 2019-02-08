@@ -138,21 +138,11 @@ class IsentropicVortex {
                  Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
-  using conservative_t = tmpl::list<Tags::MassDensity<DataType>,
-                                    Tags::MomentumDensity<DataType, 3>,
-                                    Tags::EnergyDensity<DataType>>;
-
-  template <typename DataType>
   Scalar<DataType> perturbation(const DataType& coord_z) const noexcept;
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<primitive_t<DataType>> primitive_variables(
       const tnsr::I<DataType, 3>& x, double t) const noexcept;
-
-  template <typename DataType>
-  tuples::tagged_tuple_from_typelist<conservative_t<DataType>>
-  conservative_variables(const tnsr::I<DataType, 3>& x, double t) const
-      noexcept;
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT

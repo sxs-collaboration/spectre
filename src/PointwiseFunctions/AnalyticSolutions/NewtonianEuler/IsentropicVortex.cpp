@@ -12,7 +12,6 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -104,28 +103,6 @@ IsentropicVortex::primitive_variables(const tnsr::I<DataType, 3>& x,
   return result;
 }
 
-template <typename DataType>
-tuples::tagged_tuple_from_typelist<IsentropicVortex::conservative_t<DataType>>
-IsentropicVortex::conservative_variables(const tnsr::I<DataType, 3>& x,
-                                         const double t) const noexcept {
-  const auto primitives = primitive_variables(x, t);
-
-  auto result = make_with_value<tuples::tagged_tuple_from_typelist<
-      IsentropicVortex::conservative_t<DataType>>>(x, 0.0);
-
-  get<Tags::MassDensity<DataType>>(result) =
-      get<Tags::MassDensity<DataType>>(primitives);
-
-  conservative_from_primitive(
-      make_not_null(&get<Tags::MomentumDensity<DataType, 3>>(result)),
-      make_not_null(&get<Tags::EnergyDensity<DataType>>(result)),
-      get<Tags::MassDensity<DataType>>(primitives),
-      get<Tags::Velocity<DataType, 3>>(primitives),
-      get<Tags::SpecificInternalEnergy<DataType>>(primitives));
-
-  return result;
-}
-
 }  // namespace Solutions
 }  // namespace NewtonianEuler
 
@@ -138,11 +115,6 @@ IsentropicVortex::conservative_variables(const tnsr::I<DataType, 3>& x,
   template tuples::tagged_tuple_from_typelist<                               \
       NewtonianEuler::Solutions::IsentropicVortex::primitive_t<DTYPE(data)>> \
   NewtonianEuler::Solutions::IsentropicVortex::primitive_variables(          \
-      const tnsr::I<DTYPE(data), 3>& x, const double t) const noexcept;      \
-  template tuples::tagged_tuple_from_typelist<                               \
-      NewtonianEuler::Solutions::IsentropicVortex::conservative_t<DTYPE(     \
-          data)>>                                                            \
-  NewtonianEuler::Solutions::IsentropicVortex::conservative_variables(       \
       const tnsr::I<DTYPE(data), 3>& x, const double t) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

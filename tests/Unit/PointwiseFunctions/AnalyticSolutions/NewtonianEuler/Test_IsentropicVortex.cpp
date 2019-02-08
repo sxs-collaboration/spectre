@@ -71,20 +71,6 @@ void test_variables(const DataType& used_for_size) noexcept {
       {{{-1.0, 1.0}}}, std::make_tuple(adiabatic_index, center, mean_velocity,
                                        perturbation_amplitude, strength),
       used_for_size);
-
-  pypp::check_with_random_values<
-      1, tmpl::list<NewtonianEuler::Tags::MassDensity<DataType>,
-                    NewtonianEuler::Tags::MomentumDensity<DataType, 3>,
-                    NewtonianEuler::Tags::EnergyDensity<DataType>>>(
-      &NewtonianEuler::Solutions::IsentropicVortex::conservative_variables<
-          DataType>,
-      NewtonianEuler::Solutions::IsentropicVortex(
-          adiabatic_index, center, mean_velocity, perturbation_amplitude,
-          strength),
-      "TestFunctions", {"mass_density", "momentum_density", "energy_density"},
-      {{{-1.0, 1.0}}}, std::make_tuple(adiabatic_index, center, mean_velocity,
-                                       perturbation_amplitude, strength),
-      used_for_size);
 }
 
 }  // namespace
