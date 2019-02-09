@@ -19,7 +19,7 @@
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Time.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -51,7 +51,7 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
-  using temporal_id = Time;
+  using temporal_id = ::Tags::TimeId;
   using domain_frame = Frame::Inertial;
   static constexpr size_t domain_dim = 3;
 

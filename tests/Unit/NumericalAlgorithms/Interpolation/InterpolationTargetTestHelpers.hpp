@@ -26,6 +26,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -93,7 +94,7 @@ struct MockReceivePoints {
       Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/,
-      const typename Metavariables::temporal_id& temporal_id,
+      const typename Metavariables::temporal_id::type& temporal_id,
       std::vector<IdPair<domain::BlockId,
                          tnsr::I<double, VolumeDim, typename Frame::Logical>>>&&
           block_coord_holders) noexcept {
@@ -194,7 +195,7 @@ void test_interpolation_target(
               typename mock_interpolator<metavars>::initial_databox>();
 
   Slab slab(0.0, 1.0);
-  Time temporal_id(slab, 0);
+  TimeId temporal_id(true, 0, Time(slab, 0));
 
   runner.template simple_action<
       mock_interpolation_target<metavars,
@@ -241,7 +242,7 @@ void test_interpolation_target(
   }
 
   // Call again at a different temporal_id
-  Time new_temporal_id(slab, 1);
+  TimeId new_temporal_id(true, 0, Time(slab, 1));
   runner.template simple_action<
       mock_interpolation_target<metavars,
                                 typename metavars::InterpolationTargetA>,

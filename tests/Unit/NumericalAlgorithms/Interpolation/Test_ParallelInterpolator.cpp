@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <pup.h>
+#include <random>
 #include <string>
 #include <utility>
 #include <vector>
@@ -39,7 +40,9 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -122,10 +125,10 @@ size_t num_test_function_calls = 0;
 template <typename InterpolationTargetTag, typename DbTagToRetrieve>
 struct TestFunction {
   template <typename DbTags, typename Metavariables>
-  static void apply(
-      const db::DataBox<DbTags>& box,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const typename Metavariables::temporal_id& /*temporal_id*/) noexcept {
+  static void apply(const db::DataBox<DbTags>& box,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const typename Metavariables::temporal_id::
+                        type& /*temporal_id*/) noexcept {
     const auto& interpolation_result = get<DbTagToRetrieve>(box);
     const auto
         expected_interpolation_result = [&interpolation_result]() noexcept {
@@ -150,10 +153,10 @@ struct TestFunction {
 
 struct TestKerrHorizonIntegral {
   template <typename DbTags, typename Metavariables>
-  static void apply(
-      const db::DataBox<DbTags>& box,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const typename Metavariables::temporal_id& /*temporal_id*/) noexcept {
+  static void apply(const db::DataBox<DbTags>& box,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const typename Metavariables::temporal_id::
+                        type& /*temporal_id*/) noexcept {
     const auto& interpolation_result = get<Tags::Square>(box);
     const auto& strahlkorper =
         get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
@@ -232,7 +235,7 @@ struct MockMetavariables {
   using interpolation_target_tags =
       tmpl::list<InterpolationTargetA, InterpolationTargetB,
                  InterpolationTargetC>;
-  using temporal_id = Time;
+  using temporal_id = ::Tags::TimeId;
   using domain_frame = Frame::Inertial;
   static constexpr size_t domain_dim = 3;
   using component_list = tmpl::list<
@@ -316,7 +319,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
                        ::intrp::Actions::InitializeInterpolator>(0);
 
   Slab slab(0.0, 1.0);
-  Time temporal_id(slab, 0);
+  TimeId temporal_id(true, 0, Time(slab, 0));
   const auto domain = domain_creator.create_domain();
 
   // Create Element_ids.
@@ -340,15 +343,15 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   runner.simple_action<
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<
-          metavars::InterpolationTargetA>>(0, std::vector<Time>{temporal_id});
+          metavars::InterpolationTargetA>>(0, std::vector<TimeId>{temporal_id});
   runner.simple_action<
       mock_interpolation_target<metavars, metavars::InterpolationTargetB>,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<
-          metavars::InterpolationTargetB>>(0, std::vector<Time>{temporal_id});
+          metavars::InterpolationTargetB>>(0, std::vector<TimeId>{temporal_id});
   runner.simple_action<
       mock_interpolation_target<metavars, metavars::InterpolationTargetC>,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<
-          metavars::InterpolationTargetC>>(0, std::vector<Time>{temporal_id});
+          metavars::InterpolationTargetC>>(0, std::vector<TimeId>{temporal_id});
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {

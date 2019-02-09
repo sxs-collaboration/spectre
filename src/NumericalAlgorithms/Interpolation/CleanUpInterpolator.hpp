@@ -67,7 +67,7 @@ struct CleanUpInterpolator {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/,
-      const typename Metavariables::temporal_id& temporal_id) noexcept {
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     // Signal that this InterpolationTarget is done at this time.
     db::mutate<Tags::InterpolatedVarsHolders<Metavariables>>(
         make_not_null(&box),

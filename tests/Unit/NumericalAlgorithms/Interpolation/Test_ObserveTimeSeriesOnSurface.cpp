@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstddef>
 #include <pup.h>
+#include <random>
 #include <string>
 #include <utility>
 #include <vector>
@@ -50,6 +51,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -227,7 +229,7 @@ struct MockMetavariables {
       tmpl::list<Tags::TestSolution,
                  gr::Tags::SpatialMetric<3, Frame::Inertial>>;
   using interpolation_target_tags = tmpl::list<SurfaceA, SurfaceB, SurfaceC>;
-  using temporal_id = TimeId;
+  using temporal_id = ::Tags::TimeId;
   using domain_frame = Frame::Inertial;
   static constexpr size_t domain_dim = 3;
   using component_list =

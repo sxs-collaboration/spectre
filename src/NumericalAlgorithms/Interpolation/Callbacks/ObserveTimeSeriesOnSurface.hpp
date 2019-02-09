@@ -95,7 +95,7 @@ struct ObserveTimeSeriesOnSurface {
   static void apply(
       const db::DataBox<DbTags>& box,
       Parallel::ConstGlobalCache<Metavariables>& cache,
-      const typename Metavariables::temporal_id& temporal_id) noexcept {
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     auto& proxy = Parallel::get_parallel_component<
         observers::ObserverWriter<Metavariables>>(cache);
 

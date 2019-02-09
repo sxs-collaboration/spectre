@@ -64,7 +64,7 @@ namespace intrp {
 ///```
 ///       static void apply(const DataBox<DbTags>&,
 ///                         const intrp::ConstGlobalCache<Metavariables>&,
-///                         const Metavariables::temporal_id&) noexcept;
+///                         const Metavariables::temporal_id::type&) noexcept;
 ///```
 ///                                  that will be called when interpolation
 ///                                  is complete. `DbTags` includes everything

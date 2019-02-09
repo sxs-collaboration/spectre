@@ -36,7 +36,7 @@ struct IndicesOfFilledInterpPoints : db::SimpleTag {
 /// `temporal_id`s on which to interpolate.
 template <typename Metavariables>
 struct TemporalIds : db::SimpleTag {
-  using type = std::deque<typename Metavariables::temporal_id>;
+  using type = std::deque<typename Metavariables::temporal_id::type>;
   static std::string name() noexcept { return "TemporalIds"; }
 };
 
@@ -48,7 +48,7 @@ struct VolumeVarsInfo : db::SimpleTag {
     Variables<typename Metavariables::interpolator_source_vars> vars;
   };
   using type = std::unordered_map<
-      typename Metavariables::temporal_id,
+      typename Metavariables::temporal_id::type,
       std::unordered_map<
           ElementId<Metavariables::domain_dim>, Info>>;
   static std::string name() noexcept { return "VolumeVarsInfo"; }

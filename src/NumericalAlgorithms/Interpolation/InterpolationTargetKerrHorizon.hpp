@@ -156,7 +156,7 @@ struct KerrHorizon {
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/,
-      const typename Metavariables::temporal_id& temporal_id) noexcept {
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     // In the future, when we add support for multiple Frames,
     // the code that transforms coordinates from the Strahlkorper Frame
     // to `Metavariables::domain_frame` will go here.  That transformation

@@ -36,7 +36,7 @@ template <typename InterpolationTargetTag, typename Metavariables,
           typename DbTags>
 void interpolate_data(
     const gsl::not_null<db::DataBox<DbTags>*> box,
-    const typename Metavariables::temporal_id& temporal_id) noexcept {
+    const typename Metavariables::temporal_id::type& temporal_id) noexcept {
   db::mutate_apply<tmpl::list<Tags::InterpolatedVarsHolders<Metavariables>>,
                    tmpl::list<Tags::VolumeVarsInfo<Metavariables>>>(
       [&temporal_id](
@@ -127,7 +127,7 @@ template <typename InterpolationTargetTag, typename Metavariables,
 void try_to_interpolate(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
-    const typename Metavariables::temporal_id& temporal_id) noexcept {
+    const typename Metavariables::temporal_id::type& temporal_id) noexcept {
   const auto& holders =
       db::get<Tags::InterpolatedVarsHolders<Metavariables>>(*box);
   const auto& vars_infos =

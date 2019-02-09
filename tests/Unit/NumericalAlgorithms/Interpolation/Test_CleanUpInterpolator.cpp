@@ -16,7 +16,9 @@
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/TMPL.hpp"
@@ -58,7 +60,7 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
-  using temporal_id = Time;
+  using temporal_id = ::Tags::TimeId;
   static constexpr size_t domain_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags =
@@ -80,12 +82,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
           mock_interpolator<metavars>>;
 
   Slab slab(0.0, 1.0);
-  Time temporal_id(slab, Rational(12, 13));
+  TimeId temporal_id(true, 0, Time(slab, Rational(12, 13)));
 
   // Make a VolumeVarsInfo that contains a single temporal_id but
   // no data (since we don't need data for this test).
   std::unordered_map<
-      typename metavars::temporal_id,
+      typename metavars::temporal_id::type,
       std::unordered_map<ElementId<3>,
                          intrp::Tags::VolumeVarsInfo<metavars>::Info>>
       volume_vars_info{{temporal_id, {}}};

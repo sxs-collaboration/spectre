@@ -25,7 +25,9 @@
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
+#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -34,6 +36,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <boost/variant/get.hpp>
 
 /// \cond
 // IWYU pragma: no_forward_declare Tensor
@@ -91,9 +95,9 @@ struct MockCleanUpInterpolator {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/,
-      const typename Metavariables::temporal_id& temporal_id) noexcept {
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
-    CHECK(temporal_id == Time(slab, Rational(13, 15)));
+    CHECK(temporal_id == TimeId(true, 0, Time(slab, Rational(13, 15))));
     // Put something in NumberOfElements so we can check later whether
     // this function was called.  This isn't the usual usage of
     // NumberOfElements.
@@ -118,9 +122,9 @@ struct MockComputeTargetPoints {
       Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/,
-      const typename Metavariables::temporal_id& temporal_id) noexcept {
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
-    CHECK(temporal_id == Time(slab, Rational(14, 15)));
+    CHECK(temporal_id == TimeId(true, 0, Time(slab, Rational(14, 15))));
     // Increment IndicesOfFilledInterpPoints so we can check later
     // whether this function was called.  This isn't the usual usage
     // of IndicesOfFilledInterpPoints; this is done only for the test.
@@ -155,9 +159,9 @@ struct MockPostInterpolationCallback {
   static void apply(
       const db::DataBox<DbTags>& box,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const typename Metavariables::temporal_id& temporal_id) noexcept {
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
-    CHECK(temporal_id == Time(slab, Rational(13, 15)));
+    CHECK(temporal_id == TimeId(true, 0, Time(slab, Rational(13, 15))));
     // The result should be the square of the first 10 integers, in
     // a Scalar<DataVector>.
     const Scalar<DataVector> expected{
@@ -194,7 +198,7 @@ struct MockMetavariables {
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-  using temporal_id = Time;
+  using temporal_id = ::Tags::TimeId;
   using domain_frame = Frame::Inertial;
   static constexpr size_t domain_dim = 3;
 
@@ -236,8 +240,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
                                     return_tag_list<metavars>>>(
                   db::item_type<intrp::Tags::IndicesOfFilledInterpPoints>{},
                   db::item_type<intrp::Tags::TemporalIds<metavars>>{
-                      Time(slab, Rational(13, 15)),
-                      Time(slab, Rational(14, 15))},
+                      TimeId(true, 0, Time(slab, Rational(13, 15))),
+                      TimeId(true, 0, Time(slab, Rational(14, 15)))},
                   domain_creator.create_domain(),
                   db::item_type<
                       ::Tags::Variables<metavars::InterpolationTargetA::
