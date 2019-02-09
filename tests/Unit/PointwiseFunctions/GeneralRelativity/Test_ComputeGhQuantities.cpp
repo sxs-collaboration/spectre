@@ -26,7 +26,6 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -301,7 +300,6 @@ void test_shift_deriv_functions_analytic(
     const std::array<double, 3>& upper_bound) noexcept {
   // Setup grid
   const size_t SpatialDim = 3;
-  const size_t data_size = pow<SpatialDim>(grid_size_each_dimension);
   Mesh<SpatialDim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto};
 
