@@ -14,6 +14,11 @@ set(LIBRARY_SOURCES
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )
+
 target_link_libraries(
   ${LIBRARY}
   INTERFACE Domain
