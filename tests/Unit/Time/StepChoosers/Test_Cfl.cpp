@@ -32,8 +32,9 @@ class TimeStepper;
 namespace {
 constexpr size_t dim = 1;
 using frame = Frame::Grid;
-using registrars = tmpl::list<StepChoosers::Registrars::Cfl<dim, frame>>;
-using Cfl = StepChoosers::Cfl<dim, frame, registrars>;
+using StepChooserType =
+    StepChooser<tmpl::list<StepChoosers::Registrars::Cfl<dim, frame>>>;
+using Cfl = StepChoosers::Cfl<dim, frame>;
 
 struct CharacteristicSpeed : db::SimpleTag {
   static std::string name() noexcept { return "CharacteristicSpeed"; }
@@ -68,8 +69,7 @@ double get_suggestion(const size_t stepper_order, const double safety_factor,
   const double grid_spacing = get<Tags::MinimumGridSpacing<dim, frame>>(box);
 
   const Cfl cfl{safety_factor};
-  const std::unique_ptr<StepChooser<registrars>> cfl_base =
-      std::make_unique<Cfl>(cfl);
+  const std::unique_ptr<StepChooserType> cfl_base = std::make_unique<Cfl>(cfl);
 
   const double result = cfl(grid_spacing, box, cache);
   CHECK(cfl_base->desired_step(box, cache) == result);
@@ -81,7 +81,7 @@ double get_suggestion(const size_t stepper_order, const double safety_factor,
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Cfl", "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<StepChooser<registrars>>();
+  Parallel::register_derived_classes_with_charm<StepChooserType>();
 
   CHECK(get_suggestion(1, 1., 1., {0., 2., 3., 5.}) == approx(1.));
   CHECK(get_suggestion(2, 1., 1., {0., 2., 3., 5.}) < 1.);
@@ -89,7 +89,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Cfl", "[Unit][Time]") {
   CHECK(get_suggestion(1, 1., 2., {0., 2., 3., 5.}) == approx(0.5));
   CHECK(get_suggestion(1, 1., 1., {0., 2., 2.5, 5.}) == approx(0.5));
 
-  test_factory_creation<StepChooser<registrars>>(
+  test_factory_creation<StepChooserType>(
       "  Cfl:\n"
       "    SafetyFactor: 5.0");
 }

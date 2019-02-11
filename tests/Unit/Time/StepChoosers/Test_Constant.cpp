@@ -22,18 +22,19 @@ struct Metavariables {
   using const_global_cache_tag_list = tmpl::list<>;
 };
 
-using registrars = tmpl::list<StepChoosers::Registrars::Constant>;
-using Constant = StepChoosers::Constant<registrars>;
+using StepChooserType =
+    StepChooser<tmpl::list<StepChoosers::Registrars::Constant>>;
+using Constant = StepChoosers::Constant<>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
-  Parallel::register_derived_classes_with_charm<StepChooser<registrars>>();
+  Parallel::register_derived_classes_with_charm<StepChooserType>();
 
   const Parallel::ConstGlobalCache<Metavariables> cache{{}};
   const auto box = db::create<db::AddSimpleTags<>>();
 
   const Constant constant{5.4};
-  const std::unique_ptr<StepChooser<registrars>> constant_base =
+  const std::unique_ptr<StepChooserType> constant_base =
       std::make_unique<Constant>(constant);
 
   CHECK(constant(cache) == 5.4);
@@ -42,12 +43,12 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
   CHECK(serialize_and_deserialize(constant_base)->desired_step(box, cache) ==
         5.4);
 
-  test_factory_creation<StepChooser<registrars>>("  Constant: 5.4");
+  test_factory_creation<StepChooserType>("  Constant: 5.4");
 }
 
 // [[OutputRegex, Requested step magnitude should be positive]]
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant.bad_create",
                   "[Unit][Time]") {
   ERROR_TEST();
-  test_factory_creation<StepChooser<registrars>>("  Constant: -5.4");
+  test_factory_creation<StepChooserType>("  Constant: -5.4");
 }

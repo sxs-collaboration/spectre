@@ -23,9 +23,21 @@ class ConstGlobalCache;
 /// \endcond
 
 namespace StepChoosers {
+template <size_t Dim, typename Frame, typename StepChooserRegistrars>
+class Cfl;
+
+namespace Registrars {
+template <size_t Dim, typename Frame>
+struct Cfl {
+  template <typename StepChooserRegistrars>
+  using f = StepChoosers::Cfl<Dim, Frame, StepChooserRegistrars>;
+};
+}  // namespace Registrars
 
 /// Suggests a step size based on the CFL stability criterion.
-template <size_t Dim, typename Frame, typename StepChooserRegistrars>
+template <size_t Dim, typename Frame,
+          typename StepChooserRegistrars =
+              tmpl::list<Registrars::Cfl<Dim, Frame>>>
 class Cfl : public StepChooser<StepChooserRegistrars> {
  public:
   /// \cond
@@ -74,14 +86,6 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
  private:
   double safety_factor_ = std::numeric_limits<double>::signaling_NaN();
 };
-
-namespace Registrars {
-template <size_t Dim, typename Frame>
-struct Cfl {
-  template <typename StepChooserRegistrars>
-  using f = StepChoosers::Cfl<Dim, Frame, StepChooserRegistrars>;
-};
-}  // namespace Registrars
 
 /// \cond
 template <size_t Dim, typename Frame, typename StepChooserRegistrars>

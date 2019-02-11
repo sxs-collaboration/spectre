@@ -25,9 +25,15 @@ struct TimeStep;
 /// \endcond
 
 namespace StepChoosers {
+template <typename StepChooserRegistrars>
+class Increase;
+
+namespace Registrars {
+using Increase = Registration::Registrar<StepChoosers::Increase>;
+}  // namespace Registrars
 
 /// Suggests increasing the step size by a constant ratio.
-template <typename StepChooserRegistrars = tmpl::list<>>
+template <typename StepChooserRegistrars = tmpl::list<Registrars::Increase>>
 class Increase : public StepChooser<StepChooserRegistrars> {
  public:
   /// \cond
@@ -63,10 +69,6 @@ class Increase : public StepChooser<StepChooserRegistrars> {
  private:
   double factor_ = std::numeric_limits<double>::signaling_NaN();
 };
-
-namespace Registrars {
-using Increase = Registration::Registrar<StepChoosers::Increase>;
-}  // namespace Registrars
 
 /// \cond
 template <typename StepChooserRegistrars>

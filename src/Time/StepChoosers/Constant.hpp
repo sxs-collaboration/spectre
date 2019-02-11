@@ -21,9 +21,15 @@ class ConstGlobalCache;
 /// \endcond
 
 namespace StepChoosers {
+template <typename StepChooserRegistrars>
+class Constant;
+
+namespace Registrars {
+using Constant = Registration::Registrar<StepChoosers::Constant>;
+}  // namespace Registrars
 
 /// Suggests a constant step size.
-template <typename StepChooserRegistrars = tmpl::list<>>
+template <typename StepChooserRegistrars = tmpl::list<Registrars::Constant>>
 class Constant : public StepChooser<StepChooserRegistrars> {
  public:
   /// \cond
@@ -53,10 +59,6 @@ class Constant : public StepChooser<StepChooserRegistrars> {
  private:
   double value_ = std::numeric_limits<double>::signaling_NaN();
 };
-
-namespace Registrars {
-using Constant = Registration::Registrar<StepChoosers::Constant>;
-}  // namespace Registrars
 
 /// \cond
 template <typename StepChooserRegistrars>

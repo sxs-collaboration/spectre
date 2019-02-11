@@ -28,10 +28,11 @@ struct Metavariables {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
-  using registrars = tmpl::list<StepChoosers::Registrars::Increase>;
-  using Increase = StepChoosers::Increase<registrars>;
+  using StepChooserType =
+      StepChooser<tmpl::list<StepChoosers::Registrars::Increase>>;
+  using Increase = StepChoosers::Increase<>;
 
-  Parallel::register_derived_classes_with_charm<StepChooser<registrars>>();
+  Parallel::register_derived_classes_with_charm<StepChooserType>();
 
   const Parallel::ConstGlobalCache<Metavariables> cache{{}};
   for (const auto& sign : {1, -1}) {
@@ -39,7 +40,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
     const auto box = db::create<db::AddSimpleTags<Tags::TimeStep>>(step);
 
     const Increase increase{5.};
-    const std::unique_ptr<StepChooser<registrars>> increase_base =
+    const std::unique_ptr<StepChooserType> increase_base =
         std::make_unique<Increase>(increase);
 
     CHECK(increase(step, cache) == 1.25);
@@ -49,7 +50,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
           1.25);
   }
 
-  test_factory_creation<StepChooser<registrars>>(
+  test_factory_creation<StepChooserType>(
       "  Increase:\n"
       "    Factor: 5.0");
 }
