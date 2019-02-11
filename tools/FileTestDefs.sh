@@ -24,7 +24,7 @@ die() {
 # support color
 color_option=''
 if grep --help 2>&1 | grep -q -e --color ; then
-  color_option='--color=auto'
+  color_option='--color=always'
 fi
 
 # Utility that uses grep on the staged version of the file specified by the last argument
@@ -35,12 +35,47 @@ staged_grep() {
     git show ":./${@: -1}" | grep "${@:1:$(($#-1))}"
 }
 
-# Utility function for reporters that enables lots of decorators in grep
-# Works like staged_grep
+# Utility function for reporters that enables lots of decorators in
+# grep.  Works like staged_grep, except that it can take multiple file
+# arguments like real grep.  Accepts the same arguments as grep except
+# that any option taking an argument must use the --opt=arg form
+# instead of the short form.  Additionally, the order of options is
+# restricted as compared to real grep: only filename arguments are
+# allowed to follow the pattern.
 pretty_grep() {
-    echo -n -e "\033[0;35m${@: -1}\033[0m:"
-    git show ":./${@: -1}" | \
-        GREP_COLOR='1;37;41' grep -n $color_option "${@:1:$(($#-1))}"
+    local -a non_file_args
+    local file file_prefix
+    # This loop extracts all the flags and the pattern into
+    # non_file_args, leaving the filenames in $@.
+    while [ $# -gt 0 ] ; do
+        case "$1" in
+            # "--" indicates the end of command line switches, so the
+            # following argument is the pattern and the remainder are
+            # file names.
+            --)
+                non_file_args+=("$1" "$2")
+                shift 2
+                break
+                ;;
+            -*)
+                non_file_args+=("$1")
+                shift
+                ;;
+            *)
+                # This is the pattern
+                non_file_args+=("$1")
+                shift
+                break
+                ;;
+        esac
+    done
+
+    for file in "$@" ; do
+        printf -v file_prefix "\033[0;35m%s\033[0m:" "${file}"
+        git show ":./${file}" | \
+            GREP_COLOR='1;37;41' grep -n $color_option "${non_file_args[@]}" | \
+            sed "s|^|${file_prefix}|"
+    done
 }
 
 # Utility functions for checks classifying a file based on its name
