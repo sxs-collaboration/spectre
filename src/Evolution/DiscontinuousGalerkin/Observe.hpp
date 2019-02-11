@@ -8,6 +8,7 @@
 #include <pup.h>
 #include <string>
 #include <type_traits>  // IWYU pragma: keep
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -32,6 +33,7 @@
 #include "Parallel/Reduction.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Literals.hpp"
@@ -147,7 +149,15 @@ class Observe<VolumeDim, tmpl::list<Tensors...>,
   WRAPPED_PUPable_decl_template(Observe);  // NOLINT
   /// \endcond
 
-  using options = tmpl::list<>;
+  struct VariablesToObserve {
+    static constexpr OptionString help =
+        "Subset of system variables to observe in the volume";
+    using type = std::vector<std::string>;
+    static type default_value() noexcept { return {Tensors::name()...}; }
+    static size_t lower_bound_on_size() noexcept { return 1; }
+  };
+
+  using options = tmpl::list<VariablesToObserve>;
   static constexpr OptionString help =
       "Observe the fields in a system.\n"
       "\n"
@@ -167,7 +177,25 @@ class Observe<VolumeDim, tmpl::list<Tensors...>,
       "a given time.  Causing multiple events to run at once will produce\n"
       "unpredictable results.";
 
-  Observe() = default;
+  explicit Observe(const std::vector<std::string>& variables_to_observe =
+                       VariablesToObserve::default_value(),
+                   const OptionContext& context = {})
+      : variables_to_observe_(variables_to_observe.begin(),
+                              variables_to_observe.end()) {
+    const std::unordered_set<std::string> valid_tensors{Tensors::name()...};
+    for (const auto& name : variables_to_observe_) {
+      if (valid_tensors.count(name) != 1) {
+        PARSE_ERROR(
+            context,
+            name << " is not a variable in the system.  Available variables:\n"
+            << (std::vector<std::string>{Tensors::name()...}));
+      }
+      if (alg::count(variables_to_observe, name) != 1) {
+        PARSE_ERROR(context, name << " specified multiple times");
+      }
+    }
+    variables_to_observe_.insert(coordinates_tag::name());
+  }
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
@@ -191,6 +219,9 @@ class Observe<VolumeDim, tmpl::list<Tensors...>,
 
     // Remove tensor types, only storing individual components.
     std::vector<TensorComponent> components;
+    // This is larger than we need if we are only observing some
+    // tensors, but that's not a big deal and calculating the correct
+    // size is nontrivial.
     components.reserve(alg::accumulate(
         std::initializer_list<size_t>{
             inertial_coordinates.size(),
@@ -198,13 +229,15 @@ class Observe<VolumeDim, tmpl::list<Tensors...>,
             db::item_type<NonSolutionTensors>::size()...},
         0_st));
 
-    const auto record_tensor_components = [&components, &element_name](
+    const auto record_tensor_components = [this, &components, &element_name](
         const auto tensor_tag_v, const auto& tensor) noexcept {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
-      for (size_t i = 0; i < tensor.size(); ++i) {
-        components.emplace_back(
-            element_name + tensor_tag::name() + component_suffix(tensor, i),
-            tensor[i]);
+      if (variables_to_observe_.count(tensor_tag::name()) == 1) {
+        for (size_t i = 0; i < tensor.size(); ++i) {
+          components.emplace_back(
+              element_name + tensor_tag::name() + component_suffix(tensor, i),
+              tensor[i]);
+        }
       }
     };
     record_tensor_components(tmpl::type_<coordinates_tag>{},
@@ -221,17 +254,23 @@ class Observe<VolumeDim, tmpl::list<Tensors...>,
 
     tuples::TaggedTuple<LocalSquareError<AnalyticSolutionTensors>...>
         local_square_errors;
-    const auto record_errors =
-        [&components, &element_name, &exact_solution, &local_square_errors](
-            const auto tensor_tag_v, const auto& tensor) noexcept {
+    const auto record_errors = [
+      this, &components, &element_name, &exact_solution, &local_square_errors
+    ](const auto tensor_tag_v, const auto& tensor) noexcept {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       double local_square_error = 0.0;
       for (size_t i = 0; i < tensor.size(); ++i) {
         DataVector error = tensor[i] - get<tensor_tag>(exact_solution)[i];
         local_square_error += alg::accumulate(square(error), 0.0);
-        components.emplace_back(element_name + "Error" + tensor_tag::name() +
-                                    component_suffix(tensor, i),
-                                std::move(error));
+        // The reduction has to observe all variables because the
+        // reduction type is determined at compile time, so we can
+        // only restrict the volume measurement based on
+        // variables_to_observe_.
+        if (variables_to_observe_.count(tensor_tag::name()) == 1) {
+          components.emplace_back(element_name + "Error" + tensor_tag::name() +
+                                      component_suffix(tensor, i),
+                                  std::move(error));
+        }
       }
       get<LocalSquareError<tensor_tag>>(local_square_errors) =
           local_square_error;
@@ -267,6 +306,15 @@ class Observe<VolumeDim, tmpl::list<Tensors...>,
                       std::move(get<LocalSquareError<AnalyticSolutionTensors>>(
                           local_square_errors))...});
   }
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) noexcept override {
+    Event<EventRegistrars>::pup(p);
+    p | variables_to_observe_;
+  }
+
+ private:
+  std::unordered_set<std::string> variables_to_observe_{};
 };
 
 /// \cond

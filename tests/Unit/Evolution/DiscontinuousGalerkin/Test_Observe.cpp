@@ -59,8 +59,9 @@ template <size_t>
 class Index;
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
+// IWYU pragma: no_forward_declare dg::Events::Observe
 namespace PUP {
-class er;
+class er;  // IWYU pragma: keep
 }  // namespace PUP
 namespace Parallel {
 template <typename Metavariables>
@@ -238,6 +239,8 @@ struct ScalarSystem {
 
   using ObserveEvent = dg::Events::Observe<volume_dim, all_vars_for_test,
                                            solution_for_test::vars_for_test>;
+  static constexpr auto creation_string_for_test = "  Observe";
+  static ObserveEvent make_test_object() noexcept { return ObserveEvent{}; }
 };
 
 struct ComplicatedSystem {
@@ -261,10 +264,21 @@ struct ComplicatedSystem {
     using type = tnsr::ii<DataVector, 2>;
   };
 
+  struct UnobservedVar : db::SimpleTag {
+    static std::string name() noexcept { return "Unobserved"; }
+    using type = Scalar<DataVector>;
+  };
+
+  struct UnobservedVar2 : db::SimpleTag {
+    static std::string name() noexcept { return "Unobserved2"; }
+    using type = Scalar<DataVector>;
+  };
+
   static constexpr size_t volume_dim = 2;
-  using variables_tag = Tags::Variables<tmpl::list<TensorVar, ScalarVar>>;
+  using variables_tag =
+      Tags::Variables<tmpl::list<TensorVar, ScalarVar, UnobservedVar>>;
   using primitive_variables_tag =
-      Tags::Variables<tmpl::list<VectorVar, TensorVar2>>;
+      Tags::Variables<tmpl::list<VectorVar, TensorVar2, UnobservedVar2>>;
 
   template <typename CheckComponent>
   static void check_volume_data(
@@ -280,8 +294,8 @@ struct ComplicatedSystem {
     check_component("Tensor2_yy", TensorVar2{}, 1, 1);
   }
 
-  using all_vars_for_test =
-      tmpl::list<TensorVar, ScalarVar, VectorVar, TensorVar2>;
+  using all_vars_for_test = tmpl::list<TensorVar, ScalarVar, UnobservedVar,
+                                       VectorVar, TensorVar2, UnobservedVar2>;
   struct solution_for_test {
     using vars_for_test = primitive_variables_tag::tags_list;
 
@@ -299,6 +313,7 @@ struct ComplicatedSystem {
     static void check_reduction_data(const CheckTensor& check_tensor) noexcept {
       check_tensor("ErrorVector", VectorVar{});
       check_tensor("ErrorTensor2", TensorVar2{});
+      check_tensor("ErrorUnobserved2", UnobservedVar2{});
     }
 
     tuples::tagged_tuple_from_typelist<vars_for_test> variables(
@@ -306,13 +321,15 @@ struct ComplicatedSystem {
         const vars_for_test /*meta*/) const noexcept {
       auto vector = make_with_value<tnsr::I<DataVector, 2>>(x, 0.0);
       auto tensor = make_with_value<tnsr::ii<DataVector, 2>>(x, 0.0);
+      auto unobserved = make_with_value<Scalar<DataVector>>(x, 0.0);
       // Arbitrary functions
       get<0>(vector) = 1.0 - t * get<0>(x);
       get<1>(vector) = 1.0 - t * get<1>(x);
       get<0, 0>(tensor) = get<0>(x) + get<1>(x);
       get<0, 1>(tensor) = get<0>(x) - get<1>(x);
       get<1, 1>(tensor) = get<0>(x) * get<1>(x);
-      return {std::move(vector), std::move(tensor)};
+      get(unobserved) = 2.0 * get<0>(x);
+      return {std::move(vector), std::move(tensor), std::move(unobserved)};
     }
 
     void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
@@ -320,6 +337,12 @@ struct ComplicatedSystem {
 
   using ObserveEvent = dg::Events::Observe<volume_dim, all_vars_for_test,
                                            solution_for_test::vars_for_test>;
+  static constexpr auto creation_string_for_test =
+      "  Observe:\n"
+      "    VariablesToObserve: [Scalar, Vector, Tensor, Tensor2]";
+  static ObserveEvent make_test_object() noexcept {
+    return ObserveEvent({"Scalar", "Vector", "Tensor", "Tensor2"});
+  }
 };
 
 template <typename System, typename ObserveEvent>
@@ -479,14 +502,16 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
 template <typename System>
 void test_system() noexcept {
   INFO(pretty_type::get_name<System>());
-  test_observe<System>(std::make_unique<typename System::ObserveEvent>());
+  test_observe<System>(std::make_unique<typename System::ObserveEvent>(
+      System::make_test_object()));
 
   INFO("create/serialize");
   using EventType = Event<tmpl::list<dg::Events::Registrars::Observe<
       System::volume_dim, typename System::all_vars_for_test,
       typename System::solution_for_test::vars_for_test>>>;
   Parallel::register_derived_classes_with_charm<EventType>();
-  const auto factory_event = test_factory_creation<EventType>("  Observe");
+  const auto factory_event =
+      test_factory_creation<EventType>(System::creation_string_for_test);
   auto serialized_event = serialize_and_deserialize(factory_event);
   test_observe<System>(std::move(serialized_event));
 }
@@ -495,4 +520,18 @@ void test_system() noexcept {
 SPECTRE_TEST_CASE("Unit.Evolution.dG.Observe", "[Unit][Evolution]") {
   test_system<ScalarSystem>();
   test_system<ComplicatedSystem>();
+}
+
+// [[OutputRegex, NotAVar is not a variable in the system.*Scalar]]
+SPECTRE_TEST_CASE("Unit.Evolution.dG.Observe.bad_field", "[Unit][Evolution]") {
+  ERROR_TEST();
+  test_creation<ScalarSystem::ObserveEvent>("  VariablesToObserve: [NotAVar]");
+}
+
+// [[OutputRegex, Scalar specified multiple times]]
+SPECTRE_TEST_CASE("Unit.Evolution.dG.Observe.repeated_field",
+                  "[Unit][Evolution]") {
+  ERROR_TEST();
+  test_creation<ScalarSystem::ObserveEvent>(
+      "  VariablesToObserve: [Scalar, Scalar]");
 }
