@@ -30,17 +30,6 @@
 namespace Burgers {
 namespace Actions {
 
-namespace observe_detail {
-using reduction_datum = Parallel::ReductionDatum<double, funcl::Plus<>,
-                                                 funcl::Sqrt<funcl::Divides<>>,
-                                                 std::index_sequence<1>>;
-using reduction_datums =
-    tmpl::list<Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-               Parallel::ReductionDatum<size_t, funcl::Plus<>>,
-               reduction_datum>;
-
-}  // namespace observe_detail
-
 /*!
  * \brief Temporary action for observing volume and reduction data
  *
@@ -49,6 +38,15 @@ using reduction_datums =
  * - The RMS error of \f$U\f$ is written to disk.
  */
 struct Observe {
+ private:
+  using l2_error_datum = Parallel::ReductionDatum<double, funcl::Plus<>,
+                                                  funcl::Sqrt<funcl::Divides<>>,
+                                                  std::index_sequence<1>>;
+  using reduction_data = Parallel::ReductionData<
+      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+      Parallel::ReductionDatum<size_t, funcl::Plus<>>, l2_error_datum>;
+
+ public:
   struct ObserveNSlabs {
     using type = size_t;
     static constexpr OptionString help = {"Observe every Nth slab"};
@@ -59,9 +57,8 @@ struct Observe {
   };
 
   using const_global_cache_tags = tmpl::list<ObserveNSlabs, ObserveAtT0>;
-
-  using reduction_data_tags =
-      ::observers::make_reduction_data_tags_t<observe_detail::reduction_datums>;
+  using observed_reduction_data_tags =
+      observers::make_reduction_data_tags<tmpl::list<reduction_data>>;
 
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             size_t Dim, typename ActionList, typename ParallelComponent>
@@ -127,15 +124,14 @@ struct Observe {
           std::move(components), extents);
 
       // Send data to reduction observer
-      using ReData =
-          ::observers::make_reduction_data_t<observe_detail::reduction_datums>;
       Parallel::simple_action<observers::Actions::ContributeReductionData>(
           local_observer, observers::ObservationId(time),
           std::string{"/element_data"},
           std::vector<std::string>{"Time", "NumberOfPoints", "UError"},
-          ReData{time.value(),
-                 db::get<::Tags::Mesh<Dim>>(box).number_of_grid_points(),
-                 u_error});
+          reduction_data{
+              time.value(),
+              db::get<::Tags::Mesh<Dim>>(box).number_of_grid_points(),
+              u_error});
     }
     return std::forward_as_tuple(std::move(box));
   }

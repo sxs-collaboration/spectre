@@ -25,11 +25,12 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
+#include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace LinearSolverAlgorithmTest {
+namespace LinearSolverAlgorithmTestHelpers {
 
 struct LinearOperator {
   static constexpr OptionString help = "The linear operator A to invert.";
@@ -61,7 +62,7 @@ struct ComputeOperatorAction {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const int /*array_index*/, const ActionList /*meta*/,
                     const ParallelComponent* const /*component*/) noexcept {
@@ -75,13 +76,11 @@ struct ComputeOperatorAction {
 
 // Checks for the correct solution after the algorithm has terminated.
 struct TestResult {
-  template <
-      typename... DbTags, typename... InboxTags, typename Metavariables,
-      typename ActionList, typename ParallelComponent,
-      Requires<tmpl2::flat_any_v<cpp17::is_same_v<VectorTag, DbTags>...>> =
-          nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <typename... DbTags, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent,
+            Requires<sizeof...(DbTags) != 0> = nullptr>
+  static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const int /*array_index*/, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -167,6 +166,8 @@ struct ElementArray {
       case Metavariables::Phase::TestResult:
         Parallel::simple_action<TestResult>(array_proxy);
         break;
+      case Metavariables::Phase::CleanOutput:
+        break;
       default:
         ERROR(
             "The Metavariables is expected to have the following Phases: "
@@ -175,8 +176,53 @@ struct ElementArray {
   }
 };
 
+// After the algorithm completes we perform a cleanup phase that checks the
+// expected output file was written and deletes it.
+struct CleanOutput {
+  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static void apply(const db::DataBox<tmpl::list<>>& /*box*/,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    const auto& reductions_file_name =
+        get<observers::OptionTags::ReductionFileName>(cache) + ".h5";
+    if (file_system::check_if_file_exists(reductions_file_name)) {
+      file_system::rm(reductions_file_name, true);
+    } else {
+      ERROR("Expected reductions file '" << reductions_file_name
+                                         << "' does not exist");
+    }
+  }
+};
+
+template <typename Metavariables>
+struct OutputCleaner {
+  using chare_type = Parallel::Algorithms::Singleton;
+  using metavariables = Metavariables;
+  using action_list = tmpl::list<>;
+  using initial_databox = db::compute_databox_type<tmpl::list<>>;
+  using options = tmpl::list<>;
+  using const_global_cache_tag_list = tmpl::list<>;
+
+  static void initialize(Parallel::CProxy_ConstGlobalCache<
+                         Metavariables>& /*global_cache*/) noexcept {}
+
+  static void execute_next_phase(
+      const typename Metavariables::Phase next_phase,
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+    if (next_phase == Metavariables::Phase::CleanOutput) {
+      Parallel::simple_action<CleanOutput>(
+          Parallel::get_parallel_component<OutputCleaner>(
+              *(global_cache.ckLocalBranch())));
+    }
+  }
+};
+
 struct System {
   using fields_tag = VectorTag;
 };
 
-}  // namespace LinearSolverAlgorithmTest
+}  // namespace LinearSolverAlgorithmTestHelpers

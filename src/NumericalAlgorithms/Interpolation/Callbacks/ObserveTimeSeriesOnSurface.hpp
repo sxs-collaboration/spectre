@@ -9,8 +9,8 @@
 #include <utility>
 #include <vector>
 
+#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
-#include "IO/Observer/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
@@ -39,10 +39,10 @@ namespace callbacks {
 namespace detail {
 
 template <typename T>
-struct reduction_data_tag_type;
+struct reduction_data_type;
 
 template <typename... Ts>
-struct reduction_data_tag_type<tmpl::list<Ts...>> {
+struct reduction_data_type<tmpl::list<Ts...>> {
   // We use ReductionData because that is what is expected by the
   // ObserverWriter.  We do a "reduction" that involves only one
   // processing element (often equivalent to a core),
@@ -50,14 +50,11 @@ struct reduction_data_tag_type<tmpl::list<Ts...>> {
 
   // The first argument is for Time, the others are for
   // the list of things being observed.
-  using type = observers::Tags::ReductionData<
+  using type = Parallel::ReductionData<
       Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
       Parallel::ReductionDatum<typename db::item_type<Ts>,
                                funcl::AssertEqual<>>...>;
 };
-
-template <typename T>
-using reduction_data_tag_type_t = typename reduction_data_tag_type<T>::type;
 
 template <typename... Ts>
 auto make_legend(tmpl::list<Ts...> /* meta */) {
@@ -67,10 +64,7 @@ auto make_legend(tmpl::list<Ts...> /* meta */) {
 template <typename DbTags, typename... Ts>
 auto make_reduction_data(const db::DataBox<DbTags>& box, double time,
                          tmpl::list<Ts...> /* meta */) {
-  using reduction_data = Parallel::ReductionData<
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<typename db::item_type<Ts>,
-                               funcl::AssertEqual<>>...>;
+  using reduction_data = typename reduction_data_type<tmpl::list<Ts...>>::type;
   return reduction_data(time, get<Ts>(box)...);
 }
 
@@ -89,7 +83,8 @@ auto make_reduction_data(const db::DataBox<DbTags>& box, double time,
 /// see InterpolationTarget for a description of InterpolationTargetTag.
 template <typename TagsToObserve, typename InterpolationTargetTag>
 struct ObserveTimeSeriesOnSurface {
-  using reduction_data_tags = detail::reduction_data_tag_type_t<TagsToObserve>;
+  using observed_reduction_data_tags = observers::make_reduction_data_tags<
+      tmpl::list<typename detail::reduction_data_type<TagsToObserve>::type>>;
 
   template <typename DbTags, typename Metavariables>
   static void apply(

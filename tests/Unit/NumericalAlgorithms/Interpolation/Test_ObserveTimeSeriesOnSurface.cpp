@@ -219,11 +219,10 @@ struct MockMetavariables {
     using type = typename compute_target_points::options_type;
   };
 
-  using reduction_data_tags =
-      observers::get_reduction_data_tags_from_observing_actions<
-          tmpl::list<typename SurfaceA::post_interpolation_callback,
-                     typename SurfaceB::post_interpolation_callback,
-                     typename SurfaceC::post_interpolation_callback>>;
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      tmpl::list<typename SurfaceA::post_interpolation_callback,
+                 typename SurfaceB::post_interpolation_callback,
+                 typename SurfaceC::post_interpolation_callback>>;
 
   using interpolator_source_vars =
       tmpl::list<Tags::TestSolution,

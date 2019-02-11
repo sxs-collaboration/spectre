@@ -41,7 +41,8 @@ StepChoosers:
 
 NumericalFluxParams:
 
-VolumeFileName: "./ScalarWave2DPeriodic"
+VolumeFileName: "./ScalarWave2DPeriodicVolume"
+ReductionFileName: "./ScalarWave2DPeriodicReductions"
 
 ObserveNSlabs: 10000000
 ObserveAtT0: false

@@ -5,6 +5,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "IO/Observer/ObservationId.hpp"
+#include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/ReductionActions.hpp"
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
@@ -13,7 +16,9 @@
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
+#include "Parallel/Reduction.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
+#include "Utilities/Functional.hpp"
 #include "Utilities/Requires.hpp"
 
 /// \cond
@@ -100,6 +105,10 @@ struct ComputeAlpha {
   }
 };
 
+using observed_reduction_data = Parallel::ReductionData<
+    Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
+    Parallel::ReductionDatum<double, funcl::AssertEqual<>>>;
+
 template <typename BroadcastTarget>
 struct UpdateResidual {
   template <
@@ -132,6 +141,23 @@ struct UpdateResidual {
           "Linear solver iteration %d done. Remaining residual: %e\n",
           get<LinearSolver::Tags::IterationId>(box).step_number + 1, residual);
     }
+
+    // Contribute data to the observer
+    const auto observation_id =
+        observers::ObservationId(get<LinearSolver::Tags::IterationId>(box));
+    auto& reduction_writer = Parallel::get_parallel_component<
+        observers::ObserverWriter<Metavariables>>(cache);
+    Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
+        // Node 0 is always the writer, so directly call the component on that
+        // node
+        reduction_writer[0], observation_id,
+        // When multiple linear solves are performed, e.g. for the nonlinear
+        // solver, we'll need to write into separate subgroups, e.g.:
+        // `/linear_residuals/<nonlinear_iteration_id>`
+        std::string{"/linear_residuals"},
+        std::vector<std::string>{"Iteration", "Residual"},
+        observed_reduction_data{
+            get<LinearSolver::Tags::IterationId>(box).step_number, residual});
 
     // Determine whether the linear solver has converged
     // More sophisticated convergence criteria can be added in the future.

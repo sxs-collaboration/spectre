@@ -6,6 +6,7 @@
 #include <functional>
 
 #include "Domain/ElementIndex.hpp"
+#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -59,6 +60,13 @@ struct observer_writer_component {
       db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
 };
 
+using l2_error_datum = Parallel::ReductionDatum<double, funcl::Plus<>,
+                                                funcl::Sqrt<funcl::Divides<>>,
+                                                std::index_sequence<1>>;
+using reduction_data = Parallel::ReductionData<
+    Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
+    Parallel::ReductionDatum<size_t, funcl::Plus<>>, l2_error_datum,
+    l2_error_datum>;
 
 struct Metavariables {
   using component_list = tmpl::list<element_component<Metavariables>,
@@ -66,12 +74,10 @@ struct Metavariables {
                                     observer_writer_component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
 
-  using Redum = Parallel::ReductionDatum<double, funcl::Plus<>,
-                                         funcl::Sqrt<funcl::Divides<>>,
-                                         std::index_sequence<1>>;
-  using reduction_data_tags = tmpl::list<observers::Tags::ReductionData<
-      Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<size_t, funcl::Plus<>>, Redum, Redum>>;
+  /// [make_reduction_data_tags]
+  using observed_reduction_data_tags =
+      observers::make_reduction_data_tags<tmpl::list<reduction_data>>;
+  /// [make_reduction_data_tags]
 
   enum class Phase { Initialize, Exit };
 };

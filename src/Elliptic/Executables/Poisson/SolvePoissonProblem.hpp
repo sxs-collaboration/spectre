@@ -14,6 +14,7 @@
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "IO/Observer/Actions.hpp"
+#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"
@@ -64,14 +65,8 @@ struct Metavariables {
   // Collect all items to store in the cache.
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
 
-  // This has to be synchronized with Poisson::Actions::Observe (see also e.g.
-  // EvolveValenciaDivClean)
-  using reduction_data_tags = tmpl::list<observers::Tags::ReductionData<
-      Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<size_t, funcl::Plus<>>,
-      Parallel::ReductionDatum<double, funcl::Plus<>,
-                               funcl::Sqrt<funcl::Divides<>>,
-                               std::index_sequence<1>>>>;
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      tmpl::list<Poisson::Actions::Observe, linear_solver>>;
 
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::append<

@@ -32,7 +32,7 @@ struct observer_component {
 struct Metavariables {
   using component_list = tmpl::list<observer_component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using reduction_data_tags = tmpl::list<>;
+  using observed_reduction_data_tags = tmpl::list<>;
 
   enum class Phase { Initialize, Exit };
 };

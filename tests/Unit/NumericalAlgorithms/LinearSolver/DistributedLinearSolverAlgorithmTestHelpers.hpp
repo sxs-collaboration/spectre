@@ -37,7 +37,7 @@
 #include "Utilities/TMPL.hpp"
 // IWYU pragma: no_forward_declare db::DataBox
 
-namespace DistributedLinearSolverAlgorithmTest {
+namespace DistributedLinearSolverAlgorithmTestHelpers {
 
 namespace OptionTags {
 struct NumberOfElements {
@@ -92,7 +92,7 @@ struct ComputeOperatorAction {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const int array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -124,7 +124,7 @@ struct CollectAp {
             typename ActionList, typename ParallelComponent,
             Requires<sizeof...(DbTags) != 0> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const int array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*component*/,
@@ -163,9 +163,9 @@ struct TestResult {
       typename ActionList, typename ParallelComponent,
       Requires<tmpl2::flat_any_v<cpp17::is_same_v<fields_tag, DbTags>...>> =
           nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
+  static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const int array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     const auto& expected_result =
@@ -255,6 +255,8 @@ struct ElementArray {
       case Metavariables::Phase::TestResult:
         Parallel::simple_action<TestResult>(array_proxy);
         break;
+      case Metavariables::Phase::CleanOutput:
+        break;
       default:
         ERROR(
             "The Metavariables is expected to have the following Phases: "
@@ -264,7 +266,7 @@ struct ElementArray {
 };
 
 struct System {
-  using fields_tag = ::DistributedLinearSolverAlgorithmTest::fields_tag;
+  using fields_tag = ::DistributedLinearSolverAlgorithmTestHelpers::fields_tag;
 };
 
-}  // namespace DistributedLinearSolverAlgorithmTest
+}  // namespace DistributedLinearSolverAlgorithmTestHelpers
