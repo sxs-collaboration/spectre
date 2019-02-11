@@ -18,7 +18,7 @@
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace Spectral {
-namespace SWSH {
+namespace Swsh {
 namespace detail {
 namespace {
 
@@ -267,5 +267,5 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.ComplexDataView",
 }
 }  // namespace
 }  // namespace detail
-}  // namespace SWSH
+}  // namespace Swsh
 }  // namespace Spectral

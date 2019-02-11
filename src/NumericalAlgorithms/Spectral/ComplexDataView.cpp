@@ -10,7 +10,7 @@
 #include "Utilities/Math.hpp"  // IWYU pragma: keep
 
 namespace Spectral {
-namespace SWSH {
+namespace Swsh {
 namespace detail {
 
 template <typename T>
@@ -293,5 +293,5 @@ ComplexDataView<ComplexRepresentation::RealsThenImags>::imag_data() const
   return imag_slice_.data();
 }
 }  // namespace detail
-}  // namespace SWSH
+}  // namespace Swsh
 }  // namespace Spectral
