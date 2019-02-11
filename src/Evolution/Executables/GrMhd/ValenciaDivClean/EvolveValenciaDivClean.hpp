@@ -156,6 +156,9 @@ struct EvolutionMetavars {
 
   using domain_creator_tag = OptionTags::DomainCreator<3, Frame::Inertial>;
 
+  struct ObservationType {};
+  using element_observation_type = ObservationType;
+
   static constexpr OptionString help{
       "Evolve the Valencia formulation of the GRMHD system with divergence "
       "cleaning.\n\n"};

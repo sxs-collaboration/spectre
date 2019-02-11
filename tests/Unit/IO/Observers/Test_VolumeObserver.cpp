@@ -144,7 +144,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
         make_fake_volume_data(array_id, MakeString{} << id << '/');
     runner
         .simple_action<obs_component, observers::Actions::ContributeVolumeData>(
-            0, observers::ObservationId(TimeId(3)),
+            0,
+            observers::ObservationId(
+                TimeId(3), typename Metavariables::element_observation_type{}),
             std::string{"/element_data"}, array_id,
             /* get<1> = volume tensor data */
             std::move(std::get<1>(volume_data_fakes)),
@@ -162,7 +164,10 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
     h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
     auto& volume_file = my_file.get<h5::VolumeData>("/element_data");
 
-    const auto temporal_id = observers::ObservationId(TimeId(3)).hash();
+    const auto temporal_id =
+        observers::ObservationId(
+            TimeId(3), typename Metavariables::element_observation_type{})
+            .hash();
     CHECK(volume_file.list_observation_ids() ==
           std::vector<size_t>{temporal_id});
     const auto grids = volume_file.list_grids(temporal_id);

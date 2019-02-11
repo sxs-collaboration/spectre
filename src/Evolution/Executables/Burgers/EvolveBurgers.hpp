@@ -75,6 +75,9 @@ struct EvolutionMetavars {
                      local_time_stepping, LtsTimeStepper, TimeStepper>>>;
   using domain_creator_tag = OptionTags::DomainCreator<1, Frame::Inertial>;
 
+  struct ObservationType {};
+  using element_observation_type = ObservationType;
+
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::list<Burgers::Actions::Observe>>;
 

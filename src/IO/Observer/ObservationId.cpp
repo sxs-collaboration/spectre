@@ -8,6 +8,7 @@
 
 namespace observers {
 void ObservationId::pup(PUP::er& p) noexcept {
+  p | observation_type_hash_;
   p | combined_hash_;
   p | value_;
 }
@@ -21,6 +22,7 @@ bool operator!=(const ObservationId& lhs, const ObservationId& rhs) noexcept {
 }
 
 std::ostream& operator<<(std::ostream& os, const ObservationId& t) noexcept {
-  return os << '(' << t.hash() << ',' << t.value() << ')';
+  return os << '(' << t.observation_type_hash() << ","
+            << t.hash() << ',' << t.value() << ')';
 }
 }  // namespace observers
