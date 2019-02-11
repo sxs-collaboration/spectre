@@ -10,7 +10,8 @@
 #include "Utilities/Math.hpp"
 
 SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
-  SECTION("Test number_of_digits") {
+  {
+    INFO("Test number_of_digits");
     CHECK(2 == number_of_digits(10));
     CHECK(1 == number_of_digits(0));
     CHECK(1 == number_of_digits(-1));
@@ -18,7 +19,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
     CHECK(2 == number_of_digits(-99));
   }
 
-  SECTION("Test evaluate_polynomial") {
+  {
+    INFO("Test evaluate_polynomial");
     const std::vector<double> poly_coeffs{1., 2.5, 0.3, 1.5};
     CHECK_ITERABLE_APPROX(evaluate_polynomial(poly_coeffs, 0.5), 2.5125);
     CHECK_ITERABLE_APPROX(
@@ -32,7 +34,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.Math", "[Unit][Utilities]") {
         DataVector({1., 1., 3.}));
   }
 
-  SECTION("Test inverse roots and step_function") {
+  {
+    INFO("Test inverse roots and step_function");
     CHECK(step_function(1.0) == 1.0);
     CHECK(step_function(0.5) == 1.0);
     CHECK(step_function(-10) == 0);
