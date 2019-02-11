@@ -78,9 +78,6 @@ class IsentropicVortex {
   struct AdiabaticIndex {
     using type = double;
     static constexpr OptionString help = {"The adiabatic index of the fluid."};
-    // Note: bounds only valid for an ideal gas.
-    static type lower_bound() noexcept { return 1.0; }
-    static type upper_bound() noexcept { return 2.0; }
   };
 
   /// The position of the center of the vortex at \f$t = 0\f$

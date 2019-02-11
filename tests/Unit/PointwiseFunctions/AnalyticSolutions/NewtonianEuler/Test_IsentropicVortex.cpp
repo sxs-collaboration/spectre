@@ -93,20 +93,6 @@ struct Vortex {
   static constexpr OptionString help = {"A Newtonian isentropic vortex."};
 };
 
-// [[OutputRegex, The adiabatic index must be in the range \(1, 2\)]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexAdIndex",
-    "[Unit][PointwiseFunctions]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  NewtonianEuler::Solutions::IsentropicVortex test_vortex(
-      0.9, {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}}, 0.21, 2.5);
-  NewtonianEuler::Solutions::IsentropicVortex another_test_vortex(
-      2.2, {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}}, 0.21, 2.5);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
 // [[OutputRegex, The strength must be non-negative.]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexStrength",
@@ -117,40 +103,6 @@ struct Vortex {
       1.3, {{1.0, 1.0, 1.0}}, {{0.0, 0.0, 0.0}}, -0.15, -1.7);
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
-}
-
-// [[OutputRegex, In string:.*At line 2 column 19:.Value 0.4 is below the lower
-// bound of 1.]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexAdIndexOptLo",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  Options<tmpl::list<Vortex>> test_options("");
-  test_options.parse(
-      "Vortex:\n"
-      "  AdiabaticIndex: 0.4\n"
-      "  Center: [2.3, -1.3, -0.6]\n"
-      "  MeanVelocity: [-0.3, 0.1, 0.7]\n"
-      "  PerturbAmplitude: -0.2\n"
-      "  Strength: 3.76");
-  test_options.get<Vortex>();
-}
-
-// [[OutputRegex, In string:.*At line 2 column 19:.Value 2.7 is above the upper
-// bound of 2.]]
-SPECTRE_TEST_CASE(
-    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.VortexAdIndexOptUp",
-    "[PointwiseFunctions][Unit]") {
-  ERROR_TEST();
-  Options<tmpl::list<Vortex>> test_options("");
-  test_options.parse(
-      "Vortex:\n"
-      "  AdiabaticIndex: 2.7\n"
-      "  Center: [1.4, -0.1, 2.3]\n"
-      "  MeanVelocity: [0.56, 0.2, -0.16]\n"
-      "  PerturbAmplitude: 0.41\n"
-      "  Strength: 1.53");
-  test_options.get<Vortex>();
 }
 
 // [[OutputRegex, In string:.*At line 6 column 13:.Value -0.2 is below the lower

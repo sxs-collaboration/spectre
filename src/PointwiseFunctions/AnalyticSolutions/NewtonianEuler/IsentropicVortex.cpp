@@ -32,10 +32,6 @@ IsentropicVortex::IsentropicVortex(
       mean_velocity_(std::move(mean_velocity)),  // NOLINT
       perturbation_amplitude_(perturbation_amplitude),
       strength_(strength) {
-  ASSERT(adiabatic_index_ > 1.0 and adiabatic_index_ < 2.0,
-         "The adiabatic index must be in the range (1, 2). The value given "
-         "was "
-             << adiabatic_index_ << ".");
   ASSERT(strength_ >= 0.0,
          "The strength must be non-negative. The value given "
          "was "
