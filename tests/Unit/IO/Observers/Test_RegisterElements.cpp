@@ -85,6 +85,23 @@ void check_observer_registration() {
   CHECK(
       db::get<observers::Tags::VolumeArrayComponentIds>(observer_box).empty());
   CHECK(db::get<observers::Tags::TensorData>(observer_box).empty());
+  CHECK(db::get<observers::Tags::ReductionObserversContributed>(observer_box)
+            .empty());
+
+  // We should test writer_box too.
+  const auto& writer_box =
+      runner.template algorithms<obs_writer>()
+          .at(0)
+          .template get_databox<typename obs_writer::initial_databox>();
+  CHECK(db::get<observers::Tags::TensorData>(writer_box).empty());
+  CHECK(
+      db::get<observers::Tags::VolumeObserversContributed>(writer_box).empty());
+  CHECK(db::get<observers::Tags::ReductionObserversRegistered>(writer_box)
+            .empty());
+  CHECK(db::get<observers::Tags::ReductionObserversRegisteredNodes>(writer_box)
+            .empty());
+  CHECK(db::get<observers::Tags::ReductionObserversContributed>(writer_box)
+            .empty());
 
   // Register elements
   for (const auto& id : element_ids) {
@@ -96,6 +113,11 @@ void check_observer_registration() {
     // Invoke the simple_action RegisterSenderWithSelf that was called on the
     // observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);
+    if (TypeOfObservation != observers::TypeOfObservation::Volume) {
+      // Invoke the simple_action
+      // RegisterReductionContributorWithObserverWriter.
+      runner.invoke_queued_simple_action<obs_writer>(0);
+    }
   }
 
   // Test registration occurred as expected
@@ -124,6 +146,18 @@ void check_observer_registration() {
                 std::add_pointer_t<element_comp>{nullptr},
                 Parallel::ArrayIndex<ElementIndex<2>>(ElementIndex<2>(id)))) ==
         (TypeOfObservation == observers::TypeOfObservation::Reduction ? 0 : 1));
+  }
+  if (TypeOfObservation != observers::TypeOfObservation::Volume) {
+    CHECK(
+        db::get<observers::Tags::ReductionObserversRegisteredNodes>(writer_box)
+            .empty());
+    const auto hash =
+        observers::ObservationId(
+            TimeId(3), typename Metavariables::element_observation_type{})
+            .observation_type_hash();
+    CHECK(db::get<observers::Tags::ReductionObserversRegistered>(writer_box)
+              .at(hash)
+              .size() == 1);
   }
 }
 

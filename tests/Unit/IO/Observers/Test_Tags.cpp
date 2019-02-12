@@ -21,6 +21,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
   CHECK(ReductionDataNames<double>::name() == "ReductionDataNames");
   CHECK(ReductionObserversContributed::name() ==
         "ReductionObserversContributed");
+  CHECK(ReductionObserversRegistered::name() == "ReductionObserversRegistered");
+  CHECK(ReductionObserversRegisteredNodes::name() ==
+        "ReductionObserversRegisteredNodes");
   static_assert(
       cpp17::is_same_v<typename ReductionData<double, int, char>::names_tag,
                        ReductionDataNames<double, int, char>>,

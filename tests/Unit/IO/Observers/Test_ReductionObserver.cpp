@@ -97,6 +97,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
     // Invoke the simple_action RegisterSenderWithSelf that was called
     // on the observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);
+    // Invoke the simple_action RegisterReductionContributorWithObserverWriter.
+    runner.invoke_queued_simple_action<obs_writer>(0);
   }
 
   const std::string h5_file_name = output_file_prefix + ".h5";
