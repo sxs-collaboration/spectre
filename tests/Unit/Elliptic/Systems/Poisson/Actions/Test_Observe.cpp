@@ -26,6 +26,7 @@
 #include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Helpers.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Initialize.hpp"
+#include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
@@ -195,7 +196,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions.Observe",
     runner.simple_action<element_comp,
                          observers::Actions::RegisterWithObservers<
                              observers::TypeOfObservation::ReductionAndVolume>>(
-        id, 0);
+        id, observers::ObservationId(
+                LinearSolver::IterationId{},
+                typename Metavariables::element_observation_type{}));
     // Invoke the simple_action RegisterSenderWithSelf that was called on the
     // observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);

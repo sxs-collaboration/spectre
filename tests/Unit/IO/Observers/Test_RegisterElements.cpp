@@ -17,6 +17,7 @@
 #include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"         // IWYU pragma: keep
+#include "IO/Observer/ObservationId.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
@@ -89,7 +90,9 @@ void check_observer_registration() {
   for (const auto& id : element_ids) {
     runner.simple_action<
         element_comp,
-        observers::Actions::RegisterWithObservers<TypeOfObservation>>(id, 0);
+        observers::Actions::RegisterWithObservers<TypeOfObservation>>(
+        id, observers::ObservationId(
+                TimeId(3), typename Metavariables::element_observation_type{}));
     // Invoke the simple_action RegisterSenderWithSelf that was called on the
     // observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);

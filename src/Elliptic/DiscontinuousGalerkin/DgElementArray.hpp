@@ -8,7 +8,9 @@
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeElement.hpp"
+#include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
@@ -106,15 +108,17 @@ struct DgElementArray {
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
     if (next_phase == Metavariables::Phase::RegisterWithObserver) {
       auto& local_cache = *(global_cache.ckLocalBranch());
-      // We currently use a fake temporal id when registering observers but in
-      // the future when we start doing load balancing and elements migrate
-      // around the system they will need to register and unregister themselves
-      // at specific times.
-      const size_t fake_temporal_id = 0;
+      // We currently use an observation_id with a fake time when registering
+      // observers but in the future when we start doing load balancing and
+      // elements migrate around the system they will need to register and
+      // unregister themselves at specific times.
+      const observers::ObservationId observation_id_with_fake_time(
+          LinearSolver::IterationId{},
+          typename Metavariables::element_observation_type{});
       Parallel::simple_action<observers::Actions::RegisterWithObservers<
           observers::TypeOfObservation::ReductionAndVolume>>(
           Parallel::get_parallel_component<DgElementArray>(local_cache),
-          fake_temporal_id);
+          observation_id_with_fake_time);
     }
   }
 };

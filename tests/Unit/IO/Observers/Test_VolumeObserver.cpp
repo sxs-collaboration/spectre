@@ -95,7 +95,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
     runner
         .simple_action<element_comp, observers::Actions::RegisterWithObservers<
                                          observers::TypeOfObservation::Volume>>(
-            id, 0);
+            id,
+            observers::ObservationId(
+                TimeId(3), typename Metavariables::element_observation_type{}));
     // Invoke the simple_action RegisterSenderWithSelf that was called on the
     // observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);

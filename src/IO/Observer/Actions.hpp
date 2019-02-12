@@ -31,7 +31,6 @@ struct RegisterSenderWithSelf {
   template <
       typename DbTagList, typename... InboxTags, typename Metavariables,
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      typename TemporalId,
       Requires<tmpl::list_contains_v<
                    DbTagList, observers::Tags::ReductionArrayComponentIds> and
                tmpl::list_contains_v<
@@ -43,7 +42,7 @@ struct RegisterSenderWithSelf {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
-                    const TemporalId& /*temporal_id*/,
+                    const observers::ObservationId& /*observation_id*/,
                     const observers::ArrayComponentId& component_id,
                     const TypeOfObservation& type_of_observation) noexcept {
     const auto register_reduction = [&box, &component_id]() noexcept {
@@ -82,8 +81,8 @@ struct RegisterSenderWithSelf {
         return;
       default:
         ERROR(
-          "Registering an unknown TypeOfObservation. Should be one of "
-          "'Reduction', 'Volume', or 'ReductionAndVolume'");
+            "Registering an unknown TypeOfObservation. Should be one of "
+            "'Reduction', 'Volume', or 'ReductionAndVolume'");
     };
   }
 };
@@ -97,13 +96,13 @@ template <observers::TypeOfObservation TypeOfObservation>
 struct RegisterWithObservers {
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent, typename TemporalId>
+            typename ParallelComponent>
   static void apply(const db::DataBox<DbTagList>& /*box*/,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
-                    const TemporalId& temporal_id) noexcept {
+                    const observers::ObservationId& observation_id) noexcept {
     auto& observer =
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
              cache)
@@ -118,7 +117,7 @@ struct RegisterWithObservers {
     // At that point we won't need the template parameter on the class anymore
     // and everything can be read from an input file.
     Parallel::simple_action<RegisterSenderWithSelf>(
-        observer, temporal_id,
+        observer, observation_id,
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
