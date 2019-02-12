@@ -90,13 +90,13 @@ ${DOCS_POST_PROCESS_COMMAND} && exit \${generate_docs_exit}\n"
   # Write the shell script to a file to call it in the `add_custom_target`
   file(
     WRITE
-    ${PROJECT_BINARY_DIR}/docs/tmp/generate_and_check_docs.sh
+    ${PROJECT_BINARY_DIR}/docs/tmp/GenerateAndCheckDocs.sh
     ${GENERATE_AND_CHECK_DOCS_SCRIPT}
     )
 
   add_custom_target(
     doc-check
-    COMMAND sh ${PROJECT_BINARY_DIR}/docs/tmp/generate_and_check_docs.sh
+    COMMAND sh ${PROJECT_BINARY_DIR}/docs/tmp/GenerateAndCheckDocs.sh
     DEPENDS
     ${PROJECT_BINARY_DIR}/docs/DoxyfileHtml
     ${SPECTRE_DOXYGEN_GROUPS}
