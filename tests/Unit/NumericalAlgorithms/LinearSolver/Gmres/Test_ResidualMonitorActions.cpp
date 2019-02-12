@@ -272,6 +272,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
         .simple_action<MockResidualMonitor<Metavariables>,
                        LinearSolver::gmres_detail::InitializeResidualMagnitude<
                            MockElementArray<Metavariables>>>(singleton_id, 2.);
+    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
+        singleton_id);
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
     const auto& box = get_box();
@@ -282,6 +284,17 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     CHECK(db::get<CheckValueTag>(mock_element_box) == 2.);
     CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
           db::get<LinearSolver::Tags::HasConverged>(box));
+    const auto& mock_observer_writer_box = get_mock_observer_writer_box();
+    CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
+          observers::ObservationId{LinearSolver::IterationId{0}});
+    CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
+          "/linear_residuals");
+    CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
+          std::vector<std::string>{"Iteration", "Residual"});
+    CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          0);
+    CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          approx(2.));
   }
 
   SECTION("InitializeResidualMagnitudeAndConverge") {
@@ -323,6 +336,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
         .simple_action<MockResidualMonitor<Metavariables>,
                        LinearSolver::gmres_detail::InitializeResidualMagnitude<
                            MockElementArray<Metavariables>>>(singleton_id, 2.);
+    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
+        singleton_id);
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
     runner.simple_action<MockResidualMonitor<Metavariables>,
@@ -369,13 +384,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     CHECK(db::get<CheckValueTag>(mock_element_box) == approx(2.));
     const auto& mock_observer_writer_box = get_mock_observer_writer_box();
     CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
-          observers::ObservationId{LinearSolver::IterationId{0}});
+          observers::ObservationId{LinearSolver::IterationId{1}});
     CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
           "/linear_residuals");
     CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
           std::vector<std::string>{"Iteration", "Residual"});
     CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
-          0);
+          1);
     CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
           approx(1.1094003924504583));
   }
@@ -399,8 +414,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
                            MockElementArray<Metavariables>>>(singleton_id, 0.);
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
-    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
-        singleton_id);
     const auto& box = get_box();
     // H = [[1.], [0.]] and added a zero row and column
     CHECK(db::get<orthogonalization_history_tag>(box) ==
@@ -419,17 +432,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
           LinearSolver::ConvergenceReason::AbsoluteResidual);
     CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
           db::get<LinearSolver::Tags::HasConverged>(box));
-    const auto& mock_observer_writer_box = get_mock_observer_writer_box();
-    CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
-          observers::ObservationId{LinearSolver::IterationId{0}});
-    CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
-          "/linear_residuals");
-    CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
-          std::vector<std::string>{"Iteration", "Residual"});
-    CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
-          0);
-    CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
-          approx(0.));
   }
 
   SECTION("ConvergeByMaxIterations") {

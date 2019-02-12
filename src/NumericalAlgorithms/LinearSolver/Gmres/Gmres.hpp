@@ -118,7 +118,7 @@ struct Gmres {
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
-      tmpl::list<gmres_detail::observed_reduction_data>>;
+      tmpl::list<observe_detail::reduction_data>>;
 
   /*!
    * \brief Perform an iteration of the GMRES linear solver

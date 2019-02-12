@@ -257,6 +257,8 @@ SPECTRE_TEST_CASE(
                          LinearSolver::cg_detail::InitializeResidual<
                              MockElementArray<Metavariables>>>(singleton_id,
                                                                4.);
+    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
+        singleton_id);
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
     const auto& box = get_box();
@@ -266,6 +268,17 @@ SPECTRE_TEST_CASE(
     CHECK_FALSE(get<LinearSolver::Tags::HasConverged>(box));
     const auto& mock_element_box = get_mock_element_box();
     CHECK_FALSE(db::get<CheckConvergedTag>(mock_element_box));
+    const auto& mock_observer_writer_box = get_mock_observer_writer_box();
+    CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
+          observers::ObservationId{LinearSolver::IterationId{0}});
+    CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
+          "/linear_residuals");
+    CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
+          std::vector<std::string>{"Iteration", "Residual"});
+    CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          0);
+    CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+          approx(2.));
   }
 
   SECTION("InitializeResidualAndConverge") {
@@ -309,6 +322,8 @@ SPECTRE_TEST_CASE(
                          LinearSolver::cg_detail::InitializeResidual<
                              MockElementArray<Metavariables>>>(singleton_id,
                                                                9.);
+    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
+        singleton_id);
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
     runner.simple_action<MockResidualMonitor<Metavariables>,
@@ -330,13 +345,13 @@ SPECTRE_TEST_CASE(
           get<LinearSolver::Tags::HasConverged>(box));
     const auto& mock_observer_writer_box = get_mock_observer_writer_box();
     CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
-          observers::ObservationId{LinearSolver::IterationId{0}});
+          observers::ObservationId{LinearSolver::IterationId{1}});
     CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
           "/linear_residuals");
     CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
           std::vector<std::string>{"Iteration", "Residual"});
     CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
-          0);
+          1);
     CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
           approx(2.));
   }
@@ -354,8 +369,6 @@ SPECTRE_TEST_CASE(
                                                                0.);
     runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
         element_id);
-    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
-        singleton_id);
     const auto& box = get_box();
     CHECK(db::get<residual_square_tag>(box) == 0.);
     CHECK(db::get<initial_residual_magnitude_tag>(box) == 1.);
@@ -367,17 +380,6 @@ SPECTRE_TEST_CASE(
     CHECK(db::get<CheckValueTag>(mock_element_box) == 0.);
     CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
           get<LinearSolver::Tags::HasConverged>(box));
-    const auto& mock_observer_writer_box = get_mock_observer_writer_box();
-    CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
-          observers::ObservationId{LinearSolver::IterationId{0}});
-    CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
-          "/linear_residuals");
-    CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
-          std::vector<std::string>{"Iteration", "Residual"});
-    CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
-          0);
-    CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
-          approx(0.));
   }
 
   SECTION("ConvergeByMaxIterations") {
