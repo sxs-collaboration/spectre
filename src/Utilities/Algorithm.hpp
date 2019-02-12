@@ -161,6 +161,23 @@ decltype(auto) none_of(const Container& c, UnaryPredicate&& unary_predicate) {
                       std::forward<UnaryPredicate>(unary_predicate));
 }
 
+/// Convenience wrapper around std::count
+template <class Container, class T>
+decltype(auto) count(const Container& c, const T& value) {
+  using std::begin;
+  using std::end;
+  return std::count(begin(c), end(c), value);
+}
+
+/// Convenience wrapper around std::count_if
+template <class Container, class UnaryPredicate>
+decltype(auto) count_if(const Container& c, UnaryPredicate&& unary_predicate) {
+  using std::begin;
+  using std::end;
+  return std::count_if(begin(c), end(c),
+                       std::forward<UnaryPredicate>(unary_predicate));
+}
+
 /// Convenience wrapper around std::find
 template <class Container, class T>
 decltype(auto) find(const Container& c, const T& value) {
@@ -244,5 +261,54 @@ decltype(auto) equal(const Container& lhs, const Container2& rhs,
   using std::end;
   return std::equal(begin(lhs), end(lhs), begin(rhs),
                     std::forward<BinaryPredicate>(p));
+}
+
+/// Convenience wrapper around std::max_element
+template <class Container>
+decltype(auto) max_element(const Container& c) {
+  using std::begin;
+  using std::end;
+  return std::max_element(begin(c), end(c));
+}
+
+/// Convenience wrapper around std::max_element
+template <class Container, class Compare>
+decltype(auto) max_element(const Container& c, Compare&& comp) {
+  using std::begin;
+  using std::end;
+  return std::max_element(begin(c), end(c), std::forward<Compare>(comp));
+}
+
+/// Convenience wrapper around std::min_element
+template <class Container>
+decltype(auto) min_element(const Container& c) {
+  using std::begin;
+  using std::end;
+  return std::min_element(begin(c), end(c));
+}
+
+/// Convenience wrapper around std::min_element
+template <class Container, class Compare>
+decltype(auto) min_element(const Container& c, Compare&& comp) {
+  using std::begin;
+  using std::end;
+  return std::min_element(begin(c), end(c), std::forward<Compare>(comp));
+}
+
+/// Convenience wrapper around std::remove
+template <class Container, class T>
+decltype(auto) remove(Container& c, const T& value) {
+  using std::begin;
+  using std::end;
+  return std::remove(begin(c), end(c), value);
+}
+
+/// Convenience wrapper around std::remove_if
+template <class Container, class UnaryPredicate>
+decltype(auto) remove_if(Container& c, UnaryPredicate&& unary_predicate) {
+  using std::begin;
+  using std::end;
+  return std::remove_if(begin(c), end(c),
+                        std::forward<UnaryPredicate>(unary_predicate));
 }
 }  // namespace alg

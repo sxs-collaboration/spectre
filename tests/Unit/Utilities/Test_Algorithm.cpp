@@ -3,7 +3,9 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <cctype>
 #include <iterator>
+#include <string>
 #include <vector>
 
 #include "Utilities/Algorithm.hpp"
@@ -58,9 +60,8 @@ constexpr bool check_next_permutation() noexcept {
   cpp17::array<size_t, size> expected{{1, 2, 4, 6, 5, 3}};
   return a == expected;
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
+void test_constexpr_swap_iter_swap_reverse_etc() noexcept {
   // Check the functions at runtime
   CHECK(check_swap());
   CHECK(check_iter_swap());
@@ -76,7 +77,9 @@ SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
                 "Failed test Unit.Utilities.Algorithm");
   static_assert(check_next_permutation(),
                 "Failed test Unit.Utilities.Algorithm");
+}
 
+void test_all_of_and_any_of_and_none_of() noexcept {
   // Test wrappers around STL algorithms
   CHECK(alg::all_of(std::vector<int>{1, 1, 1, 1},
                     [](const int t) { return t == 1; }));
@@ -98,6 +101,52 @@ SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
                            [](const int t) { return t == 1; }));
   CHECK_FALSE(alg::none_of(std::vector<int>{4, 2, -1, 1},
                            [](const int t) { return t == 1; }));
+}
+
+void test_count_related() noexcept {
+  std::vector<int> a{1, 2, 3, 4, 3, 5};
+  CHECK(alg::count(a, 0) == 0);
+  CHECK(alg::count(a, -1) == 0);
+  CHECK(alg::count(a, -2) == 0);
+  for (int i = 1; i < 5; ++i) {
+    CHECK(alg::count(a, i) == (i == 3 ? 2 : 1));
+  }
+
+  CHECK(alg::count_if(a, [](const int t) { return t == 0; }) == 0);
+  CHECK(alg::count_if(a, [](const int t) { return t == -1; }) == 0);
+  CHECK(alg::count_if(a, [](const int t) { return t == -2; }) == 0);
+  CHECK(alg::count_if(a, [](const int t) { return t % 2 == 0; }) == 2);
+  CHECK(alg::count_if(a, [](const int t) { return t % 3 == 0; }) == 2);
+  CHECK(alg::count_if(a, [](const int t) { return t % 5 == 0; }) == 1);
+  CHECK(alg::count_if(a, [](const int t) { return t % 7 == 0; }) == 0);
+}
+
+void test_equal() noexcept {
+  // Test alg::equal
+  CHECK(alg::equal(std::vector<int>{1, -7, 8, 9},
+                   std::array<int, 4>{{1, -7, 8, 9}}));
+  CHECK_FALSE(alg::equal(std::vector<int>{1, 7, 8, 9},
+                         std::array<int, 4>{{1, -7, 8, 9}}));
+
+  CHECK(alg::equal(
+      std::vector<int>{1, -7, 8, 9}, std::array<int, 4>{{-1, 7, -8, -9}},
+      [](const int lhs, const int rhs) noexcept { return lhs == -rhs; }));
+  CHECK_FALSE(alg::equal(
+      std::vector<int>{1, -7, 8, 9}, std::array<int, 4>{{-1, -7, -8, -9}},
+      [](const int lhs, const int rhs) noexcept { return lhs == -rhs; }));
+}
+
+void test_min_max_element() noexcept {
+  std::vector<int> t{3, 5, 8, -1};
+  CHECK(*alg::min_element(t) == -1);
+  CHECK(*alg::max_element(t) == 8);
+  CHECK(*alg::min_element(t, [](const int a, const int b) { return a > b; }) ==
+        8);
+  CHECK(*alg::max_element(t, [](const int a, const int b) { return a > b; }) ==
+        -1);
+}
+
+void test_find_related() noexcept {
   const std::vector<int> a{1, 2, 3, 4};
   CHECK(alg::find(a, 3) == a.begin() + 2);
   CHECK(alg::find(a, 5) == a.end());
@@ -113,7 +162,9 @@ SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
   CHECK(alg::find_if_not(a, [](const int t) { return t < 8; }) == a.end());
   CHECK(alg::found_if_not(a, [](const int t) { return t < 3; }));
   CHECK_FALSE(alg::found_if_not(a, [](const int t) { return t < 8; }));
+}
 
+void test_for_each() noexcept {
   int count = 0;
   alg::for_each(std::vector<size_t>{1, 7, 234, 987, 32},
                 [&count](const size_t value) {
@@ -122,17 +173,28 @@ SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
                   }
                 });
   CHECK(count == 2);
+}
 
-  // Test alg::equal
-  CHECK(alg::equal(std::vector<int>{1, -7, 8, 9},
-                   std::array<int, 4>{{1, -7, 8, 9}}));
-  CHECK_FALSE(alg::equal(std::vector<int>{1, 7, 8, 9},
-                         std::array<int, 4>{{1, -7, 8, 9}}));
+void test_remove() noexcept {
+  std::string str1 = "Test with some   spaces";
+  str1.erase(alg::remove(str1, ' '), str1.end());
+  CHECK(str1 == "Testwithsomespaces");
 
-  CHECK(alg::equal(
-      std::vector<int>{1, -7, 8, 9}, std::array<int, 4>{{-1, 7, -8, -9}},
-      [](const int lhs, const int rhs) noexcept { return lhs == -rhs; }));
-  CHECK_FALSE(alg::equal(
-      std::vector<int>{1, -7, 8, 9}, std::array<int, 4>{{-1, -7, -8, -9}},
-      [](const int lhs, const int rhs) noexcept { return lhs == -rhs; }));
+  std::string str2 = "Text\n with\tsome \t  whitespaces\n\n";
+  str2.erase(
+      alg::remove_if(str2, [](unsigned char x) { return std::isspace(x); }),
+      str2.end());
+  CHECK(str2 == "Textwithsomewhitespaces");
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Utilities.Algorithm", "[Unit][Utilities]") {
+  test_constexpr_swap_iter_swap_reverse_etc();
+  test_all_of_and_any_of_and_none_of();
+  test_count_related();
+  test_equal();
+  test_find_related();
+  test_for_each();
+  test_min_max_element();
+  test_remove();
 }
