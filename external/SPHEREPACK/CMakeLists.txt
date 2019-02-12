@@ -34,4 +34,4 @@ file(GLOB FILES_WITH_WARNINGS
     )
 set_source_files_properties(${FILES_WITH_WARNINGS} PROPERTIES COMPILE_FLAGS -w)
 
-add_library(${LIBRARY} ${LIBRARY_SOURCES})
+add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
