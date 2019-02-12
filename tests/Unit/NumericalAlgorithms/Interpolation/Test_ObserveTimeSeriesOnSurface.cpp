@@ -243,6 +243,12 @@ struct MockMetavariables {
 
 SPECTRE_TEST_CASE(
     "Unit.NumericalAlgorithms.Interpolator.ObserveSurfaceIntegrals", "[Unit]") {
+  const std::string h5_file_prefix = "Test_ObserveSurfaceIntegrals";
+  const auto h5_file_name = h5_file_prefix + ".h5";
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+
   using metavars = MockMetavariables;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using TupleOfMockDistributedObjects =
@@ -288,7 +294,6 @@ SPECTRE_TEST_CASE(
                                                         2.0, {{0.0, 0.0, 0.0}});
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
                                                         1.5, {{0.0, 0.0, 0.0}});
-  std::string h5_file_prefix = "Test_ObserveSurfaceIntegrals";
   tuples::TaggedTuple<observers::OptionTags::ReductionFileName,
                       metavars::SurfaceA, metavars::SurfaceB,
                       metavars::SurfaceC>
@@ -429,7 +434,6 @@ SPECTRE_TEST_CASE(
                                                    "SurfaceIntegralNegate"};
 
   // Check that the H5 file was written correctly.
-  const auto h5_file_name = h5_file_prefix + ".h5";
   const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);
   auto check_file_contents = [&file](
       const std::vector<double>& expected_integral,

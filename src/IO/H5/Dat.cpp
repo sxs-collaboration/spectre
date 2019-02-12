@@ -20,6 +20,8 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 
+// IWYU pragma: no_include "DataStructures/Index.hpp"
+
 namespace {
 /*!
  * Given a vector of contiguous data and an array giving the dimensions of the
@@ -107,6 +109,7 @@ void Dat::append_impl(const hsize_t number_of_rows,
     }
     CHECK_H5(H5Sclose(dataspace_id), "Failed to close dataspace");
     if (read_size != size_) {
+      using ::operator<<;
       ERROR("Mismatch in the size of the read dataset. Read "
             << read_size << " but have stored " << size_
             << ". This means that another thread or process is writing data at "
@@ -205,6 +208,7 @@ Matrix Dat::get_data() const {
   CHECK_H5(H5Sclose(dataspace_id), "Failed to close dataspace");
 
   if (size != size_) {
+    using ::operator<<;
     ERROR("Mismatch in the size of the read dataset. Read "
           << size << " but have stored " << size_
           << ". This means that another thread or process is writing data at "
@@ -242,6 +246,7 @@ Matrix Dat::get_data_subset(const std::vector<size_t>& these_columns,
     ERROR("Incorrect dimension in get_data()");  // LCOV_EXCL_LINE
   }
   if (size != size_) {
+    using ::operator<<;
     CHECK_H5(H5Sclose(dataspace_id), "Failed to close dataspace");
     ERROR("Mismatch in the size of the read dataset. Read "
           << size << " but have stored " << size_

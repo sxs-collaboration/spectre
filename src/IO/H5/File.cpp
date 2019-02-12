@@ -46,7 +46,11 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file)
                            h5p_default())
                  : H5Fcreate(file_name_.c_str(), h5f_acc_trunc(), h5p_default(),
                              h5p_default());
-  CHECK_H5(file_id_, "Failed to open file '" << file_name_ << "'");
+  CHECK_H5(file_id_, "Failed to open file '"
+                         << file_name_ << "'. The file exists status is: "
+                         << std::boolalpha << file_exists
+                         << ". Writing from directory: " << file_system::cwd()
+                         << ". Trying to open in mode: " << Access_t);
   if (not file_exists) {
     insert_header();
   }
