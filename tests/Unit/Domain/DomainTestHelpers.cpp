@@ -6,7 +6,6 @@
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 
 #include <algorithm>
-#include <typeinfo>
 #include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
@@ -301,7 +300,6 @@ void test_domain_construction(
     CHECK(block.id() == i);
     CHECK(block.neighbors() == expected_block_neighbors[i]);
     CHECK(block.external_boundaries() == expected_external_boundaries[i]);
-    CHECK(typeid(*expected_maps[i]) == typeid(block.coordinate_map()));
     check_if_maps_are_equal(*expected_maps[i], block.coordinate_map());
   }
   domain::creators::register_derived_with_charm();

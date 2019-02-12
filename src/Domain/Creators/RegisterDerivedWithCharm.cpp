@@ -33,6 +33,8 @@ using EquatorialCompression = CoordinateMaps::EquatorialCompression;
 using Wedge2D = CoordinateMaps::Wedge2D;
 using Wedge3D = CoordinateMaps::Wedge3D;
 using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
+using Identity2D = CoordinateMaps::Identity<2>;
+using Translation3D = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>;
 
 template <size_t Dim>
 void register_with_charm();
@@ -79,6 +81,9 @@ void register_with_charm<3>() {
                                          Wedge3D, EquatorialCompression>));
   PUPable_reg(SINGLE_ARG(
       ::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3DPrism>));
+  PUPable_reg(
+      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, Wedge3D,
+                                 EquatorialCompression, Translation3D>));
 }
 }  // namespace DomainCreators_detail
 
