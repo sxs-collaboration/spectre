@@ -95,7 +95,10 @@ To build with the docker image:
 4. Make a build directory somewhere inside the container, e.g.
    /work/spectre-build-gcc, and cd into it.
 5. Build SpECTRE with
-   `cmake -D CHARM_ROOT=/work/charm/multicore-linux64-gcc SPECTRE_ROOT`
+```
+   cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
+         -D CHARM_ROOT=/work/charm/multicore-linux64-gcc SPECTRE_ROOT
+```
    then
    `make -jN`
    to compile the code, `make test-executables -jN` to compile the test
@@ -135,7 +138,7 @@ Notes:
 ```
     cmake -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_C_COMPILER=clang \
-          -D CMAKE_Fortran_COMPILER=gfortran \
+          -D CMAKE_Fortran_COMPILER=gfortran-8 \
           -D CHARM_ROOT=/work/charm/multicore-linux64-clang SPECTRE_ROOT
 ```
 
@@ -162,8 +165,12 @@ To use Singularity you must:
    `. SPECTRE_HOME/containers/SingularityLoad.sh`
 5. Run `cd SPECTRE_HOME && mkdir build && cd build` to set up a build
    directory.
-6. To build SpECTRE run `cmake -D
-   CHARM_ROOT=/work/charm/multicore-linux64-gcc SPECTRE_ROOT` followed by
+6. To build SpECTRE run
+```
+   cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
+         -D CHARM_ROOT=/work/charm/multicore-linux64-gcc SPECTRE_ROOT
+```
+   followed by
    `make -jN` where `N` is the number of cores to build on in parallel.
 
 Notes:
@@ -181,7 +188,7 @@ Notes:
 ```
     cmake -D CMAKE_CXX_COMPILER=clang++ \
           -D CMAKE_C_COMPILER=clang \
-          -D CMAKE_Fortran_COMPILER=gfortran \
+          -D CMAKE_Fortran_COMPILER=gfortran-8 \
           -D CHARM_ROOT=/work/charm/multicore-linux64-clang SPECTRE_ROOT
 ```
 
@@ -320,7 +327,8 @@ For documentation coverage analysis you will also need to install
 [coverxygen](https://github.com/psycofdj/coverxygen) and for test coverage
 analysis [gcov](https://gcc.gnu.org/onlinedocs/gcc/Gcov.html).
 
-If you have these installed (which is already done if you are using the docker container), you can look at code coverage as follows:
+If you have these installed (which is already done if
+you are using the docker container), you can look at code coverage as follows:
 
 1. On a gcc build, pass `-D COVERAGE=ON` to `cmake`
 2. `make unit-test-coverage`
