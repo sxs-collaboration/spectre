@@ -8,8 +8,11 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Domain.hpp"
+#include "IO/Observer/ObservationId.hpp"
+#include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -59,8 +62,13 @@ namespace intrp {
 ///                                  are added by `initialize`.
 /// - post_interpolation_callback:   a struct with a type alias
 ///                                  `const_global_cache_tags` (listing tags
-///                                  that should be read from option parsing)
-///                                  and with a static function
+///                                  that should be read from option parsing),
+///                                  with a type alias `observation_types`
+///                                  (listing any ObservationTypes that the
+///                                  callback will use in constructing
+///                                  ObserverIds to call
+///                             observers::ThreadedActions::WriteReductionData),
+///                                  and with a function
 ///```
 ///     void apply(const DataBox<DbTags>&,
 ///                const intrp::ConstGlobalCache<Metavariables>&,
@@ -100,30 +108,64 @@ struct InterpolationTarget {
       db::compute_databox_type<typename Actions::InitializeInterpolationTarget<
           InterpolationTargetTag>::template return_tag_list<Metavariables>>;
   using options = tmpl::list<::OptionTags::DomainCreator<
-      Metavariables::domain_dim,
-      typename Metavariables::domain_frame>>;
+      Metavariables::domain_dim, typename Metavariables::domain_frame>>;
   using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
       tmpl::list<typename InterpolationTargetTag::compute_target_points,
                  typename InterpolationTargetTag::post_interpolation_callback>>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache,
-      std::unique_ptr<
-          DomainCreator<Metavariables::domain_dim,
-                        typename Metavariables::domain_frame>>
+      std::unique_ptr<DomainCreator<Metavariables::domain_dim,
+                                    typename Metavariables::domain_frame>>
           domain_creator) noexcept;
   static void execute_next_phase(
-      typename metavariables::Phase /*next_phase*/,
-      const Parallel::CProxy_ConstGlobalCache<metavariables>&
-      /*global_cache*/) noexcept {}
+      typename metavariables::Phase next_phase,
+      Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache) noexcept {
+    try_register_with_observers(next_phase, global_cache);
+  }
+
+ private:
+  template <typename PhaseType,
+            Requires<not observers::has_register_with_observer_v<PhaseType>> =
+                nullptr>
+  static void try_register_with_observers(
+      const PhaseType /*next_phase*/,
+      Parallel::CProxy_ConstGlobalCache<
+          Metavariables>& /*global_cache*/) noexcept {}
+  template <
+      typename PhaseType,
+      Requires<observers::has_register_with_observer_v<PhaseType>> = nullptr>
+  static void try_register_with_observers(
+      const PhaseType next_phase,
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+    if (next_phase == Metavariables::Phase::RegisterWithObserver) {
+      auto& local_cache = *(global_cache.ckLocalBranch());
+      tmpl::for_each<
+          typename InterpolationTargetTag::post_interpolation_callback::
+              observation_types>([&local_cache](auto type_v) noexcept {
+         using type = typename decltype(type_v)::type;
+        // The 'time' value of the observation_id doesn't matter here and
+        // is currently not used.
+        // In the future when we do load balancing, we will need to register
+        // and unregister at specific times.
+        const observers::ObservationId observation_id(Time(Slab(0.0, 0.1), 0),
+                                                      type{});
+        Parallel::simple_action<
+            observers::Actions::RegisterSingletonWithObserverWriter>(
+            Parallel::get_parallel_component<
+                InterpolationTarget<Metavariables, InterpolationTargetTag>>(
+                local_cache),
+            observation_id);
+      });
+    }
+  }
 };
 
 template <class Metavariables, typename InterpolationTargetTag>
 void InterpolationTarget<Metavariables, InterpolationTargetTag>::initialize(
     Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache,
-    std::unique_ptr<
-        DomainCreator<Metavariables::domain_dim,
-                      typename Metavariables::domain_frame>>
+    std::unique_ptr<DomainCreator<Metavariables::domain_dim,
+                                  typename Metavariables::domain_frame>>
         domain_creator) noexcept {
   auto& my_proxy = Parallel::get_parallel_component<InterpolationTarget>(
       *(global_cache.ckLocalBranch()));

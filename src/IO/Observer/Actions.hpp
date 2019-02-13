@@ -215,5 +215,59 @@ struct RegisterWithObservers {
         TypeOfObservation);
   }
 };
+
+/*!
+ * \brief Registers a singleton with the ObserverWriter.
+ *
+ * The singleton that observes is expected to call WriteReductionData
+ * on node 0. An example of how to do this is
+ *```
+ * template <typename DbTags, typename Metavariables>
+ * static void apply(
+ *     const db::DataBox<DbTags>& box,
+ *     Parallel::ConstGlobalCache<Metavariables>& cache,
+ *     const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+ *   auto& proxy = Parallel::get_parallel_component<
+ *       observers::ObserverWriter<Metavariables>>(cache);
+ *
+ *   // We call this on proxy[0] because the 0th element of a NodeGroup is
+ *   // always guaranteed to be present.
+ *   Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
+ *       proxy[0],
+ *       observers::ObservationId(temporal_id.time(), ObservationType{}),
+ *       std::string{"/" + pretty_type::short_name<InterpolationTargetTag>()},
+ *       detail::make_legend(TagsToObserve{}),
+ *       detail::make_reduction_data(box, temporal_id.time().value(),
+ *                                   TagsToObserve{}));
+ * }
+ *
+ *```
+ *
+ */
+struct RegisterSingletonWithObserverWriter {
+  template <typename DbTagList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static void apply(const db::DataBox<DbTagList>& /*box*/,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/,
+                    const observers::ObservationId& observation_id) noexcept {
+    // The actual value of the processing element doesn't matter
+    // here; it is used only to give an ObserverWriter a count of how many
+    // times it will be called.
+    constexpr size_t fake_processing_element = 0;
+
+    // We call only on node 0; the observation call will occur only
+    // on node 0.
+    Parallel::simple_action<
+        Actions::RegisterReductionContributorWithObserverWriter>(
+        Parallel::get_parallel_component<
+            observers::ObserverWriter<Metavariables>>(cache)[0],
+        observation_id, fake_processing_element);
+  }
+};
 }  // namespace Actions
 }  // namespace observers
