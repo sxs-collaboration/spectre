@@ -61,17 +61,17 @@ def create_interface_file(args):
             or args['algorithm_type'] == "nodegroup"):
         ci_str += \
             "    template <typename ReceiveTag, typename ReceiveData_t>\n" \
-            "    entry [inline] void receive_data(ReceiveTag_temporal_id&,\n" \
-            "                                     ReceiveData_t&,\n" \
-            "                                     bool enable_if_disabled);\n"
+            "    entry void receive_data(ReceiveTag_temporal_id&,\n" \
+            "                            ReceiveData_t&,\n" \
+            "                            bool enable_if_disabled);\n"
         ci_str += \
             "    template <typename ReceiveTag, typename ReceiveData_t>\n" \
-            "    entry [inline] void receive_data(ReceiveTag_temporal_id&,\n" \
-            "                                     ReceiveData_t&);\n"
+            "    entry void receive_data(ReceiveTag_temporal_id&,\n" \
+            "                            ReceiveData_t&);\n"
     else:
         ci_str += \
             "    template <typename ReceiveTag, typename ReceiveData_t>\n" \
-            "    entry [inline] void receive_data(\n" \
+            "    entry void receive_data(\n" \
             "                            ReceiveTag_temporal_id&,\n" \
             "                            ReceiveData_t&,\n" \
             "                            bool enable_if_disabled = false);\n"

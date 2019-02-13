@@ -103,7 +103,8 @@ class FunctionOfX {
 
 template <size_t ThermodynamicDim>
 boost::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
-    const double total_energy_density, const double momentum_density_squared,
+    const double /*initial_guess_pressure*/, const double total_energy_density,
+    const double momentum_density_squared,
     const double momentum_density_dot_magnetic_field,
     const double magnetic_field_squared,
     const double rest_mass_density_times_lorentz_factor,
@@ -165,6 +166,7 @@ boost::optional<PrimitiveRecoveryData> PalenzuelaEtAl::apply(
                                PrimitiveRecoveryData>                          \
   grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl::apply<    \
       THERMODIM(data)>(                                                        \
+      const double /*initial_guess_pressure*/,                                 \
       const double total_energy_density,                                       \
       const double momentum_density_squared,                                   \
       const double momentum_density_dot_magnetic_field,                        \

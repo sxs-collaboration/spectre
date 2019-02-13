@@ -21,6 +21,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -57,6 +58,8 @@
 
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
+
+// IWYU pragma: no_include <boost/variant/get.hpp>
 
 namespace {
 struct TemporalId : db::SimpleTag {
