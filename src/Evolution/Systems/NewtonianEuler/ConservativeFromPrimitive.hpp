@@ -6,13 +6,25 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::EnergyDensity
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MassDensity
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MomentumDensity
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::SpecificInternalEnergy
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::Velocity
 
 /// \cond
 namespace gsl {
 template <typename T>
 class not_null;
 }  // namespace gsl
+
+class DataVector;
 /// \endcond
+
+// IWYU pragma: no_forward_declare Tensor
 
 namespace NewtonianEuler {
 
@@ -28,12 +40,20 @@ namespace NewtonianEuler {
  * \f$\rho\f$ is the mass density, \f$v^i\f$ is the velocity, \f$v^2\f$ is its
  * magnitude squared, and \f$\epsilon\f$ is the specific internal energy.
  */
-template <size_t Dim, typename DataType>
-void conservative_from_primitive(
-    gsl::not_null<tnsr::I<DataType, Dim>*> momentum_density,
-    gsl::not_null<Scalar<DataType>*> energy_density,
-    const Scalar<DataType>& mass_density,
-    const tnsr::I<DataType, Dim>& velocity,
-    const Scalar<DataType>& specific_internal_energy) noexcept;
+template <size_t Dim>
+struct ConservativeFromPrimitive {
+  using return_tags = tmpl::list<Tags::MomentumDensity<DataVector, Dim>,
+                                 Tags::EnergyDensity<DataVector>>;
 
+  using argument_tags =
+      tmpl::list<Tags::MassDensity<DataVector>, Tags::Velocity<DataVector, Dim>,
+                 Tags::SpecificInternalEnergy<DataVector>>;
+
+  static void apply(
+      gsl::not_null<tnsr::I<DataVector, Dim>*> momentum_density,
+      gsl::not_null<Scalar<DataVector>*> energy_density,
+      const Scalar<DataVector>& mass_density,
+      const tnsr::I<DataVector, Dim>& velocity,
+      const Scalar<DataVector>& specific_internal_energy) noexcept;
+};
 }  // namespace NewtonianEuler

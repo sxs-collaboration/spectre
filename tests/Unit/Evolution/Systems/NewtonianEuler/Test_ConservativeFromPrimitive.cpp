@@ -5,18 +5,18 @@
 
 #include <cstddef>
 
-#include "DataStructures/DataVector.hpp"
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
 namespace {
 
-template <size_t Dim, typename DataType>
-void test_conservative_from_primitive(const DataType& used_for_size) {
+template <size_t Dim>
+void test_conservative_from_primitive(const DataVector& used_for_size) {
   pypp::check_with_random_values<3>(
-      &NewtonianEuler::conservative_from_primitive<Dim, DataType>,
-      "TestFunctions", {"momentum_density", "energy_density"},
+      &NewtonianEuler::ConservativeFromPrimitive<Dim>::apply, "TestFunctions",
+      {"momentum_density", "energy_density"},
       {{{-1.0, 1.0}, {-2.0, 2.0}, {-3.0, 3.0}}}, used_for_size);
 }
 
@@ -28,6 +28,6 @@ SPECTRE_TEST_CASE(
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/NewtonianEuler"};
 
-  GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
-  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_conservative_from_primitive, (1, 2, 3))
+  GENERATE_UNINITIALIZED_DATAVECTOR;
+  CHECK_FOR_DATAVECTORS(test_conservative_from_primitive, (1, 2, 3))
 }
