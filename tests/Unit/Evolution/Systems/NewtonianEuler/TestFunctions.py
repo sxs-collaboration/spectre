@@ -50,7 +50,7 @@ def energy_density_flux(momentum_density, energy_density, velocity, pressure):
 
 
 # Functions for testing PrimitiveFromConservative.cpp
-def velocity(mass_density, momentum_density, energy_density = None):
+def velocity(mass_density, momentum_density, energy_density):
     return (momentum_density / mass_density)
 
 
