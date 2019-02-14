@@ -4,6 +4,7 @@
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 
 #include <boost/optional.hpp>
+#include <iomanip>
 #include <ostream>
 #include <pup.h>  // IWYU pragma: keep
 
@@ -14,7 +15,7 @@
 namespace LinearSolver {
 
 ConvergenceCriteria::ConvergenceCriteria(
-    const double max_iterations_in, const double absolute_residual_in,
+    const size_t max_iterations_in, const double absolute_residual_in,
     const double relative_residual_in) noexcept
     : max_iterations(max_iterations_in),
       absolute_residual(absolute_residual_in),
@@ -102,6 +103,7 @@ std::ostream& operator<<(std::ostream& os,
                   << has_converged.iteration_id_.step_number
                   << " iterations: AbsoluteResidual - The residual magnitude "
                      "has decreased to "
+                  << std::setprecision(6)
                   << has_converged.convergence_criteria_.absolute_residual
                   << " or below (" << has_converged.residual_magnitude_
                   << ").\n";
@@ -110,6 +112,7 @@ std::ostream& operator<<(std::ostream& os,
                   << has_converged.iteration_id_.step_number
                   << " iterations: RelativeResidual - The residual magnitude "
                      "has decreased to a fraction of "
+                  << std::setprecision(6)
                   << has_converged.convergence_criteria_.relative_residual
                   << " of its initial value or below ("
                   << has_converged.residual_magnitude_ /

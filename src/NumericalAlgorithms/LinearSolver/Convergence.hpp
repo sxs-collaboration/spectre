@@ -84,12 +84,12 @@ struct ConvergenceCriteria {
   using options = tmpl::list<MaxIterations, AbsoluteResidual, RelativeResidual>;
 
   ConvergenceCriteria() = default;
-  ConvergenceCriteria(double max_iterations_in, double absolute_residual_in,
+  ConvergenceCriteria(size_t max_iterations_in, double absolute_residual_in,
                       double relative_residual_in) noexcept;
 
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  double max_iterations{};
+  size_t max_iterations{};
   double absolute_residual{};
   double relative_residual{};
 };
