@@ -142,11 +142,19 @@ struct ContributeVolumeDataToWriter {
                     std::unordered_map<observers::ArrayComponentId,
                                        ExtentsAndTensorVolumeData>&&
                         in_volume_data) noexcept {
+    // This is the number of callers that have registered (that are associated
+    // with the observation type of this observation_id).
+    // We expect that this Action will be called once by each of them.
+    const auto expected_number_of_calls = [&box, &observation_id]() noexcept {
+      const auto hash = observation_id.observation_type_hash();
+      const auto& registered = db::get<Tags::VolumeObserversRegistered>(box);
+      return (registered.count(hash) == 1) ? registered.at(hash).size() : 0;
+    }();
     db::mutate<Tags::TensorData, Tags::VolumeObserversContributed>(
         make_not_null(&box),
         [
-          &cache, &observation_id, in_volume_data = std::move(in_volume_data), &
-          subfile_name
+          &cache, &expected_number_of_calls, &observation_id,
+          in_volume_data = std::move(in_volume_data), &subfile_name
         ](const gsl::not_null<std::unordered_map<
               observers::ObservationId,
               std::unordered_map<observers::ArrayComponentId,
@@ -156,6 +164,7 @@ struct ContributeVolumeDataToWriter {
               std::unordered_map<observers::ObservationId, size_t>*>
               volume_observers_contributed) mutable noexcept {
           if (volume_data->count(observation_id) == 0) {
+            // We haven't been called before on this processing element.
             volume_data->operator[](observation_id) = std::move(in_volume_data);
             (*volume_observers_contributed)[observation_id] = 1;
           } else {
@@ -166,10 +175,8 @@ struct ContributeVolumeDataToWriter {
           }
           // Check if we have received all "volume" data from the Observer
           // group. If so we write to disk.
-          const auto procs_on_node =
-              static_cast<size_t>(Parallel::procs_on_node(Parallel::my_node()));
           if (volume_observers_contributed->at(observation_id) ==
-              procs_on_node) {
+              expected_number_of_calls) {
             Parallel::threaded_action<ThreadedActions::WriteVolumeData>(
                 Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
                     cache)[static_cast<size_t>(Parallel::my_node())],
