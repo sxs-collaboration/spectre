@@ -95,6 +95,8 @@ void check_observer_registration() {
           .template get_databox<typename obs_writer::initial_databox>();
   CHECK(db::get<observers::Tags::TensorData>(writer_box).empty());
   CHECK(
+      db::get<observers::Tags::VolumeObserversRegistered>(writer_box).empty());
+  CHECK(
       db::get<observers::Tags::VolumeObserversContributed>(writer_box).empty());
   CHECK(db::get<observers::Tags::ReductionObserversRegistered>(writer_box)
             .empty());
@@ -116,6 +118,10 @@ void check_observer_registration() {
     if (TypeOfObservation != observers::TypeOfObservation::Volume) {
       // Invoke the simple_action
       // RegisterReductionContributorWithObserverWriter.
+      runner.invoke_queued_simple_action<obs_writer>(0);
+    }
+    if (TypeOfObservation != observers::TypeOfObservation::Reduction) {
+      // Invoke the simple_action RegisterVolumeContributorWithObserverWriter.
       runner.invoke_queued_simple_action<obs_writer>(0);
     }
   }
@@ -156,6 +162,15 @@ void check_observer_registration() {
             TimeId(3), typename Metavariables::element_observation_type{})
             .observation_type_hash();
     CHECK(db::get<observers::Tags::ReductionObserversRegistered>(writer_box)
+              .at(hash)
+              .size() == 1);
+  }
+  if (TypeOfObservation != observers::TypeOfObservation::Reduction) {
+    const auto hash =
+        observers::ObservationId(
+            TimeId(3), typename Metavariables::element_observation_type{})
+            .observation_type_hash();
+    CHECK(db::get<observers::Tags::VolumeObserversRegistered>(writer_box)
               .at(hash)
               .size() == 1);
   }

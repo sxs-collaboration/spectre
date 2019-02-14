@@ -27,6 +27,46 @@ namespace observers {
 namespace Actions {
 
 /// \brief Register a class that will call
+/// `observers::ThreadedActions::ContributeVolumeData`.
+///
+/// Should be invoked on ObserverWriter.
+struct RegisterVolumeContributorWithObserverWriter {
+ public:
+  template <typename... DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent, typename... ReductionDatums,
+            Requires<sizeof...(DbTags) != 0> = nullptr>
+  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
+                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/,
+                    const observers::ObservationId& observation_id,
+                    const size_t processing_element) noexcept {
+    db::mutate<Tags::VolumeObserversRegistered>(
+        make_not_null(&box),
+        [&observation_id, &processing_element ](
+            const gsl::not_null<std::unordered_map<size_t, std::set<size_t>>*>
+                volume_observers_registered) noexcept {
+          // Currently the only part of the observation_id that is used is the
+          // `observation_type_hash()`. But in the future with load balancing
+          // we will use the full observation_id, and elements will need
+          // to register and unregister themselves at specific times.
+          const size_t hash = observation_id.observation_type_hash();
+
+          if (volume_observers_registered->count(hash) == 0) {
+            (*volume_observers_registered)[hash] = std::set<size_t>{};
+          }
+          // We don't care if we insert the same processing element
+          // more than once. We care only about which processing
+          // elements have registered.
+          volume_observers_registered->at(hash).insert(processing_element);
+        });
+  }
+};
+
+/// \brief Register a class that will call
 /// `observers::ThreadedActions::WriteReductionData` or
 /// `observers::ThreadedActions::ContributeReductionData`.
 ///
@@ -147,7 +187,8 @@ struct RegisterSenderWithSelf {
           Actions::RegisterReductionContributorWithObserverWriter>(
           observer_writer, observation_id, my_proc);
     };
-    const auto register_volume = [&box, &component_id ]() noexcept {
+    const auto register_volume =
+        [&box, &cache, &component_id, &observation_id ]() noexcept {
       db::mutate<observers::Tags::VolumeArrayComponentIds>(
           make_not_null(&box), [&component_id](
                                    const auto array_component_ids) noexcept {
@@ -157,6 +198,14 @@ struct RegisterSenderWithSelf {
                    "itself with the observers more than once.");
             array_component_ids->insert(component_id);
           });
+      const auto my_proc = static_cast<size_t>(Parallel::my_proc());
+      auto& observer_writer =
+          *Parallel::get_parallel_component<
+               observers::ObserverWriter<Metavariables>>(cache)
+               .ckLocalBranch();
+      Parallel::simple_action<
+          Actions::RegisterVolumeContributorWithObserverWriter>(
+          observer_writer, observation_id, my_proc);
     };
 
     switch (type_of_observation) {

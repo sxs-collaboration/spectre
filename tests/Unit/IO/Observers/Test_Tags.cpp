@@ -15,6 +15,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
   CHECK(ReductionArrayComponentIds::name() == "ReductionArrayComponentIds");
   CHECK(VolumeArrayComponentIds::name() == "VolumeArrayComponentIds");
   CHECK(TensorData::name() == "TensorData");
+  CHECK(VolumeObserversRegistered::name() == "VolumeObserversRegistered");
   CHECK(VolumeObserversContributed::name() == "VolumeObserversContributed");
   CHECK(H5FileLock::name() == "H5FileLock");
   CHECK(ReductionData<double>::name() == "ReductionData");

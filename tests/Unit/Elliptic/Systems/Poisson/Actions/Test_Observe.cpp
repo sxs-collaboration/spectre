@@ -203,6 +203,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions.Observe",
     // observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);
     // Invoke the simple_action RegisterReductionContributorWithObserverWriter
+    // and RegisterVolumeContributorWithObserverWriter.
+    runner.invoke_queued_simple_action<obs_writer>(0);
     runner.invoke_queued_simple_action<obs_writer>(0);
   }
 

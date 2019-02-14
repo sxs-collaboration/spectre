@@ -75,6 +75,15 @@ struct ReductionDataNames : db::SimpleTag {
   using data_tag = ReductionData<ReductionDatums...>;
 };
 
+/// The number of observer components that have registered on each node
+/// for volume output.
+/// The key of the map is the `observation_type_hash` of the `ObservationId`.
+/// The set contains all the processing elements it has registered on.
+struct VolumeObserversRegistered : db::SimpleTag {
+  static std::string name() noexcept { return "VolumeObserversRegistered"; }
+  using type = std::unordered_map<size_t, std::set<size_t>>;
+};
+
 /// The number of observer components that have contributed data at the
 /// observation ids.
 struct VolumeObserversContributed : db::SimpleTag {
