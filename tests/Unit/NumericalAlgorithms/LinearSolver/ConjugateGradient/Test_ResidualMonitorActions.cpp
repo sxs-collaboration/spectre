@@ -76,7 +76,8 @@ struct MockResidualMonitor {
   // testing framework
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list =
+      tmpl::list<LinearSolver::OptionTags::ResidualMonitorOptions>;
   using action_list = tmpl::list<>;
   using initial_databox =
       db::compute_databox_type<residual_monitor_tags<Metavariables>>;
@@ -185,21 +186,22 @@ SPECTRE_TEST_CASE(
   MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
 
   // Setup mock residual monitor
+  const LinearSolver::OptionTags::ResidualMonitorOptions options{
+      Verbosity::Verbose, LinearSolver::ConvergenceCriteria{2, 0., 0.5}};
   using MockSingletonObjectsTag = MockRuntimeSystem::MockDistributedObjectsTag<
       MockResidualMonitor<Metavariables>>;
   const int singleton_id{0};
   tuples::get<MockSingletonObjectsTag>(dist_objects)
-      .emplace(
-          singleton_id,
-          db::create<
-              typename LinearSolver::cg_detail::InitializeResidualMonitor<
-                  Metavariables>::simple_tags,
-              typename LinearSolver::cg_detail::InitializeResidualMonitor<
-                  Metavariables>::compute_tags>(
-              Verbosity::Verbose, LinearSolver::ConvergenceCriteria{2, 0., 0.5},
-              LinearSolver::IterationId{0},
-              std::numeric_limits<double>::signaling_NaN(),
-              std::numeric_limits<double>::signaling_NaN()));
+      .emplace(singleton_id,
+               db::create<
+                   typename LinearSolver::cg_detail::InitializeResidualMonitor<
+                       Metavariables>::simple_tags,
+                   typename LinearSolver::cg_detail::InitializeResidualMonitor<
+                       Metavariables>::compute_tags>(
+                   get<LinearSolver::Tags::ConvergenceCriteria>(options),
+                   LinearSolver::IterationId{0},
+                   std::numeric_limits<double>::signaling_NaN(),
+                   std::numeric_limits<double>::signaling_NaN()));
 
   // Setup mock element array
   using MockDistributedObjectsTag =
@@ -222,7 +224,7 @@ SPECTRE_TEST_CASE(
                    std::tuple<size_t, double>{
                        0, std::numeric_limits<double>::signaling_NaN()}));
 
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
+  MockRuntimeSystem runner{{options}, std::move(dist_objects)};
 
   // DataBox shortcuts
   const auto get_box = [&runner, &singleton_id]() -> decltype(auto) {

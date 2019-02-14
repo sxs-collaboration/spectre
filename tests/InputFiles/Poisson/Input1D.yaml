@@ -21,12 +21,12 @@ DomainCreator:
 NumericalFluxParams:
     PenaltyParameter: 5.729577951308232 # p^2 / h
 
-Verbosity: Verbose
-
 VolumeFileName: "./Poisson1DVolume"
 ReductionFileName: "./Poisson1DReductions"
 
-ConvergenceCriteria:
-  MaxIterations: 1
-  AbsoluteResidual: 0
-  RelativeResidual: 0
+LinearSolver:
+  Verbosity: Verbose
+  ConvergenceCriteria:
+    MaxIterations: 1
+    AbsoluteResidual: 0
+    RelativeResidual: 0

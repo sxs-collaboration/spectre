@@ -6,12 +6,12 @@ Source: [1, 2]
 InitialGuess: [2, 1]
 ExpectedResult: [-1., 5.]
 
-Verbosity: Verbose
-
 VolumeFileName: "Test_GmresAlgorithm_Volume"
 ReductionFileName: "Test_GmresAlgorithm_Reductions"
 
-ConvergenceCriteria:
-  MaxIterations: 2
-  AbsoluteResidual: 1e-14
-  RelativeResidual: 0
+LinearSolver:
+  Verbosity: Verbose
+  ConvergenceCriteria:
+    MaxIterations: 2
+    AbsoluteResidual: 1e-14
+    RelativeResidual: 0

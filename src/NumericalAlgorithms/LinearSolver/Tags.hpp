@@ -13,9 +13,12 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DenseMatrix.hpp"
+#include "Informer/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
+#include "Options/Options.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /*!
@@ -236,4 +239,22 @@ struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
 };
 
 }  // namespace Tags
+
+namespace OptionTags {
+
+struct ResidualMonitorOptions
+    : tuples::TaggedTuple<::OptionTags::Verbosity,
+                          LinearSolver::Tags::ConvergenceCriteria> {
+  // TypedTag and OptionTag interface
+  static std::string name() noexcept { return "LinearSolver"; }
+  using type = ResidualMonitorOptions;
+  // OptionCreatable interface
+  static constexpr OptionString help =
+      "Options to control the linear solver algorithm.";
+  using options = TaggedTuple::tags;
+  using TaggedTuple::TaggedTuple;
+};
+
+}  // namespace OptionTags
+
 }  // namespace LinearSolver

@@ -73,8 +73,10 @@ struct InitializeResidualMagnitude {
     // the compute item.
     const auto& has_converged = db::get<LinearSolver::Tags::HasConverged>(box);
 
+    const auto& options =
+        get<LinearSolver::OptionTags::ResidualMonitorOptions>(cache);
     if (UNLIKELY(has_converged and
-                 static_cast<int>(get<::Tags::Verbosity>(box)) >=
+                 static_cast<int>(get<::OptionTags::Verbosity>(options)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf("%s", has_converged);
     }
@@ -224,7 +226,9 @@ struct StoreFinalOrthogonalization {
     const auto& has_converged = db::get<LinearSolver::Tags::HasConverged>(box);
 
     // Do some logging
-    if (UNLIKELY(static_cast<int>(get<::Tags::Verbosity>(box)) >=
+    const auto& options =
+        get<LinearSolver::OptionTags::ResidualMonitorOptions>(cache);
+    if (UNLIKELY(static_cast<int>(get<::OptionTags::Verbosity>(options)) >=
                  static_cast<int>(::Verbosity::Verbose))) {
       Parallel::printf(
           "Linear solver iteration %d done. Remaining residual: %e\n",
@@ -232,7 +236,7 @@ struct StoreFinalOrthogonalization {
           residual_magnitude);
     }
     if (UNLIKELY(has_converged and
-                 static_cast<int>(get<::Tags::Verbosity>(box)) >=
+                 static_cast<int>(get<::OptionTags::Verbosity>(options)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf("%s", has_converged);
     }

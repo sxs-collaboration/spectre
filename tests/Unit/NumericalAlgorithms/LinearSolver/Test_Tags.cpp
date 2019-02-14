@@ -89,4 +89,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Tags",
                        magnitude_square_tag>>>(4.);
     CHECK(db::get<magnitude_tag>(box) == approx(2.));
   }
+
+  {
+    INFO("ResidualMonitorOptions");
+    CHECK(LinearSolver::OptionTags::ResidualMonitorOptions::name() ==
+          "LinearSolver");
+  }
 }

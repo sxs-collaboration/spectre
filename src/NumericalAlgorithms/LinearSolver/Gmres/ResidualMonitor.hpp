@@ -35,16 +35,10 @@ namespace gmres_detail {
 
 template <typename Metavariables>
 struct ResidualMonitor {
-  struct Verbosity {
-    using type = ::Verbosity;
-    static constexpr OptionString help = {"Verbosity"};
-    static type default_value() { return ::Verbosity::Quiet; }
-  };
-
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using options =
-      tmpl::list<Verbosity, LinearSolver::Tags::ConvergenceCriteria>;
+  using const_global_cache_tag_list =
+      tmpl::list<LinearSolver::OptionTags::ResidualMonitorOptions>;
+  using options = tmpl::list<>;
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<tmpl::append<
@@ -52,15 +46,10 @@ struct ResidualMonitor {
       typename InitializeResidualMonitor<Metavariables>::compute_tags>>;
 
   static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
-      ::Verbosity verbosity,
-      LinearSolver::ConvergenceCriteria convergence_criteria) noexcept {
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
     Parallel::simple_action<InitializeResidualMonitor<Metavariables>>(
         Parallel::get_parallel_component<ResidualMonitor>(
-            *(global_cache.ckLocalBranch())),
-        // clang-tidy: std::move of trivially-copyable type
-        std::move(verbosity),              // NOLINT
-        std::move(convergence_criteria));  // NOLINT
+            *(global_cache.ckLocalBranch())));
   }
 
   static void execute_next_phase(
@@ -87,26 +76,26 @@ struct InitializeResidualMonitor {
 
  public:
   using simple_tags = db::AddSimpleTags<
-      ::Tags::Verbosity, LinearSolver::Tags::ConvergenceCriteria,
-      residual_magnitude_tag, initial_residual_magnitude_tag,
-      LinearSolver::Tags::IterationId, orthogonalization_iteration_id_tag,
-      orthogonalization_history_tag>;
+      // Need the `ConvergenceCriteria` in the DataBox to make them available to
+      // `HasConvergedCompute`
+      LinearSolver::Tags::ConvergenceCriteria, residual_magnitude_tag,
+      initial_residual_magnitude_tag, LinearSolver::Tags::IterationId,
+      orthogonalization_iteration_id_tag, orthogonalization_history_tag>;
   using compute_tags =
       db::AddComputeTags<LinearSolver::Tags::HasConvergedCompute<fields_tag>>;
 
   template <typename... InboxTags, typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(
-      const db::DataBox<tmpl::list<>>& /*box*/,
-      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/, ::Verbosity verbosity,
-      LinearSolver::ConvergenceCriteria convergence_criteria) noexcept {
+  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
+                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    const auto& options =
+        get<LinearSolver::OptionTags::ResidualMonitorOptions>(cache);
     auto box = db::create<simple_tags, compute_tags>(
-        // clang-tidy: std::move of trivially-copyable type
-        std::move(verbosity),             // NOLINT
-        std::move(convergence_criteria),  // NOLINT
+        get<LinearSolver::Tags::ConvergenceCriteria>(options),
         std::numeric_limits<double>::signaling_NaN(),
         std::numeric_limits<double>::signaling_NaN(), IterationId{0},
         IterationId{0}, DenseMatrix<double>{2, 1, 0.});
