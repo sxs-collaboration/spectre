@@ -26,10 +26,13 @@ namespace {
 
 template <size_t Dim>
 void test_characteristic_speeds(const DataVector& used_for_size) noexcept {
-  pypp::check_with_random_values<3>(&NewtonianEuler::characteristic_speeds<Dim>,
-                                    "TestFunctions", "characteristic_speeds",
-                                    {{{-1.0, 1.0}, {0.0, 1.0}, {-1.0, 1.0}}},
-                                    used_for_size);
+  pypp::check_with_random_values<3>(
+      static_cast<std::array<DataVector, Dim + 2> (*)(
+          const tnsr::I<DataVector, Dim>&, const Scalar<DataVector>&,
+          const tnsr::i<DataVector, Dim>&)>(
+          &NewtonianEuler::characteristic_speeds<Dim>),
+      "TestFunctions", "characteristic_speeds",
+      {{{-1.0, 1.0}, {0.0, 1.0}, {-1.0, 1.0}}}, used_for_size);
 }
 
 template <size_t Dim>
@@ -43,17 +46,17 @@ void test_with_normal_along_coordinate_axes(
 
   const auto velocity = make_with_random_values<tnsr::I<DataVector, Dim>>(
       nn_generator, nn_distribution, used_for_size);
-  const auto sound_speed_squared = make_with_random_values<Scalar<DataVector>>(
+  const auto sound_speed = make_with_random_values<Scalar<DataVector>>(
       nn_generator, nn_distribution, used_for_size);
 
   for (const auto& direction : Direction<Dim>::all_directions()) {
     const auto normal = euclidean_basis_vector(direction, used_for_size);
 
-    CHECK_ITERABLE_APPROX(NewtonianEuler::characteristic_speeds(
-                              velocity, sound_speed_squared, normal),
-                          (pypp::call<std::array<DataVector, Dim + 2>>(
-                              "TestFunctions", "characteristic_speeds",
-                              velocity, sound_speed_squared, normal)));
+    CHECK_ITERABLE_APPROX(
+        NewtonianEuler::characteristic_speeds(velocity, sound_speed, normal),
+        (pypp::call<std::array<DataVector, Dim + 2>>(
+            "TestFunctions", "characteristic_speeds", velocity, sound_speed,
+            normal)));
   }
 }
 

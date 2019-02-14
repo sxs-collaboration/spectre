@@ -5,9 +5,8 @@ import numpy as np
 
 
 # Functions for testing Characteristics.cpp
-def characteristic_speeds(velocity, sound_speed_squared, normal):
+def characteristic_speeds(velocity, sound_speed, normal):
     normal_velocity = np.dot(velocity, normal)
-    sound_speed = np.sqrt(sound_speed_squared)
     result = [normal_velocity - sound_speed]
     for i in range(0, velocity.size):
         result.append(normal_velocity)

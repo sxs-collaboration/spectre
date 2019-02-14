@@ -6,16 +6,35 @@
 #include <array>
 #include <cstddef>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/FaceNormal.hpp"
+#include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MassDensity
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::SoundSpeed
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::SpecificInternalEnergy
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::Velocity
+// IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_forward_declare hydro::Tags::EquationOfState
 
 /// \cond
 class DataVector;
+
+namespace Tags {
+template <typename Tag>
+struct Normalized;
+}  // namespace Tags
 /// \endcond
 
 // IWYU pragma: no_forward_declare Tensor
 
 namespace NewtonianEuler {
 
+// @{
 /*!
  * \brief Compute the characteristic speeds of NewtonianEuler system
  *
@@ -33,9 +52,37 @@ namespace NewtonianEuler {
  * and \f$c_s\f$ is the sound speed.
  */
 template <size_t Dim>
+void characteristic_speeds(
+    gsl::not_null<std::array<DataVector, Dim + 2>*> char_speeds,
+    const tnsr::I<DataVector, Dim>& velocity,
+    const Scalar<DataVector>& sound_speed,
+    const tnsr::i<DataVector, Dim>& normal) noexcept;
+
+template <size_t Dim>
 std::array<DataVector, Dim + 2> characteristic_speeds(
     const tnsr::I<DataVector, Dim>& velocity,
-    const Scalar<DataVector>& sound_speed_squared,
+    const Scalar<DataVector>& sound_speed,
     const tnsr::i<DataVector, Dim>& normal) noexcept;
+// @}
+
+namespace Tags {
+
+template <size_t Dim>
+struct CharacteristicSpeedsCompute : CharacteristicSpeeds<Dim>, db::ComputeTag {
+  using argument_tags =
+      tmpl::list<Velocity<DataVector, Dim>, SoundSpeed<DataVector>,
+                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
+
+  using return_type = std::array<DataVector, Dim + 2>;
+
+  static constexpr void function(
+      const gsl::not_null<return_type*> result,
+      const tnsr::I<DataVector, Dim>& velocity,
+      const Scalar<DataVector>& sound_speed,
+      const tnsr::i<DataVector, Dim>& normal) noexcept {
+    characteristic_speeds<Dim>(result, velocity, sound_speed, normal);
+  }
+};
+}  // namespace Tags
 
 }  // namespace NewtonianEuler
