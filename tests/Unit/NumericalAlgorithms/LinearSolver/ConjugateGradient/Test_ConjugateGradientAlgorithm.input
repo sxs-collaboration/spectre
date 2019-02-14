@@ -10,3 +10,8 @@ Verbosity: Verbose
 
 VolumeFileName: "Test_ConjugateGradientAlgorithm_Volume"
 ReductionFileName: "Test_ConjugateGradientAlgorithm_Reductions"
+
+ConvergenceCriteria:
+  MaxIterations: 2
+  AbsoluteResidual: 1e-14
+  RelativeResidual: 0

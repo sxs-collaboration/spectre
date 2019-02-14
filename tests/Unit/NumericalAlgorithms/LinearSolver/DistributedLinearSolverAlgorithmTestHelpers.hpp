@@ -168,6 +168,10 @@ struct TestResult {
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const int array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    const auto& has_converged = get<LinearSolver::Tags::HasConverged>(box);
+    SPECTRE_PARALLEL_REQUIRE(has_converged);
+    SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
+                             LinearSolver::ConvergenceReason::AbsoluteResidual);
     const auto& expected_result =
         gsl::at(get<ExpectedResult>(cache), array_index);
     const auto& result = get<ScalarFieldTag>(box).get();

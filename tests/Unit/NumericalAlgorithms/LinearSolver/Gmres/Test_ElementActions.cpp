@@ -12,7 +12,9 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DenseVector.hpp"
+#include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ElementActions.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
 #include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
@@ -34,15 +36,14 @@ using orthogonalization_iteration_id_tag =
     db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                        LinearSolver::Tags::IterationId>;
 using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<VectorTag>;
-using residual_magnitude_tag =
-    LinearSolver::Tags::Magnitude<LinearSolver::Tags::Residual<VectorTag>>;
 
-using simple_tags =
-    db::AddSimpleTags<VectorTag, LinearSolver::Tags::IterationId,
-                      ::Tags::Next<LinearSolver::Tags::IterationId>,
-                      initial_fields_tag, operand_tag,
-                      orthogonalization_iteration_id_tag, basis_history_tag,
-                      residual_magnitude_tag, LinearSolver::Tags::HasConverged>;
+template <typename Metavariables>
+using element_tags =
+    tmpl::append<tmpl::list<VectorTag, operand_tag>,
+                 typename LinearSolver::gmres_detail::InitializeElement<
+                     Metavariables>::simple_tags,
+                 typename LinearSolver::gmres_detail::InitializeElement<
+                     Metavariables>::compute_tags>;
 
 template <typename Metavariables>
 struct ElementArray {
@@ -51,7 +52,7 @@ struct ElementArray {
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<>;
   using action_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<simple_tags>;
+  using initial_databox = db::compute_databox_type<element_tags<Metavariables>>;
 };
 
 struct System {
@@ -78,13 +79,19 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
   tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(
           self_id,
-          db::create<simple_tags>(
-              DenseVector<double>(3, 0.), LinearSolver::IterationId{0},
-              LinearSolver::IterationId{0}, DenseVector<double>(3, -1.),
-              DenseVector<double>(3, 2.), LinearSolver::IterationId{0},
+          db::create<
+              tmpl::append<tmpl::list<VectorTag, operand_tag>,
+                           typename LinearSolver::gmres_detail::
+                               InitializeElement<Metavariables>::simple_tags>,
+              typename LinearSolver::gmres_detail::InitializeElement<
+                  Metavariables>::compute_tags>(
+              DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
+              LinearSolver::IterationId{0}, LinearSolver::IterationId{0},
+              DenseVector<double>(3, -1.),
+              LinearSolver::IterationId{0},
               std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
                                                DenseVector<double>(3, 1.5)},
-              10., false));
+              db::item_type<LinearSolver::Tags::HasConverged>{}));
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
   const auto get_box = [&runner, &self_id]() -> decltype(auto) {
     return runner.algorithms<ElementArray<Metavariables>>()
@@ -107,19 +114,25 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
   SECTION("NormalizeInitialOperand") {
     runner.simple_action<ElementArray<Metavariables>,
                          LinearSolver::gmres_detail::NormalizeInitialOperand>(
-        self_id, 4.);
+        self_id, 4.,
+        db::item_type<LinearSolver::Tags::HasConverged>{
+            LinearSolver::ConvergenceCriteria{1, 0., 0.},
+            LinearSolver::IterationId{1}, 0., 0.});
     const auto& box = get_box();
     CHECK_ITERABLE_APPROX(db::get<operand_tag>(box),
                           DenseVector<double>(3, 0.5));
     CHECK(db::get<basis_history_tag>(box).size() == 3);
     CHECK(db::get<basis_history_tag>(box)[2] == db::get<operand_tag>(box));
-    CHECK(db::get<residual_magnitude_tag>(box) == 4.);
+    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
   }
   SECTION("NormalizeOperandAndUpdateField") {
     runner.simple_action<
         ElementArray<Metavariables>,
         LinearSolver::gmres_detail::NormalizeOperandAndUpdateField>(
-        self_id, 4., DenseVector<double>{2., 4.}, 1., false);
+        self_id, 4., DenseVector<double>{2., 4.},
+        db::item_type<LinearSolver::Tags::HasConverged>{
+            LinearSolver::ConvergenceCriteria{1, 0., 0.},
+            LinearSolver::IterationId{1}, 0., 0.});
     const auto& box = get_box();
     CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
     CHECK(db::get<orthogonalization_iteration_id_tag>(box).step_number == 0);
@@ -129,15 +142,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
     CHECK(db::get<basis_history_tag>(box)[2] == db::get<operand_tag>(box));
     // minres * basis_history - initial = 2 * 0.5 + 4 * 1.5 - 1 = 6
     CHECK_ITERABLE_APPROX(db::get<VectorTag>(box), DenseVector<double>(3, 6.));
-    CHECK(db::get<residual_magnitude_tag>(box) == 1.);
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box) == false);
-  }
-  SECTION("Converge") {
-    runner.simple_action<
-        ElementArray<Metavariables>,
-        LinearSolver::gmres_detail::NormalizeOperandAndUpdateField>(
-        self_id, 4., DenseVector<double>{2., 4.}, 1., true);
-    const auto& box = get_box();
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box) == true);
+    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
   }
 }

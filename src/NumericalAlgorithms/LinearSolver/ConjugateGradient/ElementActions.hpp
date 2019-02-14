@@ -35,33 +35,25 @@ struct ResidualMonitor;
 namespace LinearSolver {
 namespace cg_detail {
 
-struct InitializeResidualMagnitude {
-  template <
-      typename... DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-          db::add_tag_prefix<
-              LinearSolver::Tags::Magnitude,
-              db::add_tag_prefix<LinearSolver::Tags::Residual,
-                                 typename Metavariables::system::fields_tag>>,
-          DbTags>...>> = nullptr>
+struct InitializeHasConverged {
+  template <typename... DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
+            Requires<sizeof...(DbTags) != 0> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
-                    const double residual_magnitude) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
-    using residual_magnitude_tag = db::add_tag_prefix<
-        LinearSolver::Tags::Magnitude,
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-
-    db::mutate<residual_magnitude_tag>(
-        make_not_null(&box), [residual_magnitude](
-                                 const gsl::not_null<double*>
-                                     local_residual_magnitude) noexcept {
-          *local_residual_magnitude = residual_magnitude;
+                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                        has_converged) noexcept {
+    db::mutate<LinearSolver::Tags::HasConverged>(
+        make_not_null(&box), [&has_converged](
+                                 const gsl::not_null<db::item_type<
+                                     LinearSolver::Tags::HasConverged>*>
+                                     local_has_converged) noexcept {
+          *local_has_converged = has_converged;
         });
   }
 };
@@ -102,11 +94,10 @@ struct PerformStep {
 };
 
 struct UpdateFieldValues {
-  template <
-      typename... DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-          typename Metavariables::system::fields_tag, DbTags>...>> = nullptr>
+  template <typename... DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
+            Requires<sizeof...(DbTags) != 0> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -151,40 +142,35 @@ struct UpdateOperand {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-                db::add_tag_prefix<LinearSolver::Tags::Operand,
-                                   typename Metavariables::system::fields_tag>,
-                DbTags>...>> = nullptr>
+            Requires<sizeof...(DbTags) != 0> = nullptr>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
-                    const double res_ratio, const double residual_magnitude,
-                    const bool has_converged) noexcept {
+                    const double res_ratio,
+                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                        has_converged) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using operand_tag =
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
     using residual_tag =
         db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
-    using residual_magnitude_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Magnitude, residual_tag>;
 
     // Prepare conjugate gradient for next iteration
-    db::mutate<operand_tag, residual_magnitude_tag,
-               LinearSolver::Tags::HasConverged,
+    db::mutate<operand_tag, LinearSolver::Tags::HasConverged,
                LinearSolver::Tags::IterationId,
                ::Tags::Next<LinearSolver::Tags::IterationId>>(
         make_not_null(&box),
-        [ res_ratio, residual_magnitude, has_converged ](
-            const gsl::not_null<db::item_type<operand_tag>*> p,
-            const gsl::not_null<double*> local_residual_magnitude,
-            const gsl::not_null<bool*> local_has_converged,
-            const gsl::not_null<IterationId*> iteration_id,
-            const gsl::not_null<IterationId*> next_iteration_id,
-            const db::item_type<residual_tag>& r) noexcept {
+        [
+          res_ratio, &has_converged
+        ](const gsl::not_null<db::item_type<operand_tag>*> p,
+          const gsl::not_null<db::item_type<LinearSolver::Tags::HasConverged>*>
+              local_has_converged,
+          const gsl::not_null<IterationId*> iteration_id,
+          const gsl::not_null<IterationId*> next_iteration_id,
+          const db::item_type<residual_tag>& r) noexcept {
           *p = r + res_ratio * *p;
-          *local_residual_magnitude = residual_magnitude;
           *local_has_converged = has_converged;
           iteration_id->step_number++;
           next_iteration_id->step_number = iteration_id->step_number + 1;

@@ -9,6 +9,7 @@
 #include "DataStructures/DenseMatrix.hpp"
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
+#include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Options/Options.hpp"
@@ -42,7 +43,8 @@ struct ResidualMonitor {
 
   using chare_type = Parallel::Algorithms::Singleton;
   using const_global_cache_tag_list = tmpl::list<>;
-  using options = tmpl::list<Verbosity>;
+  using options =
+      tmpl::list<Verbosity, LinearSolver::Tags::ConvergenceCriteria>;
   using metavariables = Metavariables;
   using action_list = tmpl::list<>;
   using initial_databox = db::compute_databox_type<tmpl::append<
@@ -51,11 +53,14 @@ struct ResidualMonitor {
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
-      ::Verbosity verbosity) noexcept {
+      ::Verbosity verbosity,
+      LinearSolver::ConvergenceCriteria convergence_criteria) noexcept {
     Parallel::simple_action<InitializeResidualMonitor<Metavariables>>(
         Parallel::get_parallel_component<ResidualMonitor>(
             *(global_cache.ckLocalBranch())),
-        verbosity);
+        // clang-tidy: std::move of trivially-copyable type
+        std::move(verbosity),              // NOLINT
+        std::move(convergence_criteria));  // NOLINT
   }
 
   static void execute_next_phase(
@@ -71,9 +76,8 @@ struct InitializeResidualMonitor {
   using residual_magnitude_tag = db::add_tag_prefix<
       LinearSolver::Tags::Magnitude,
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-  using source_magnitude_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Magnitude,
-                         db::add_tag_prefix<::Tags::Source, fields_tag>>;
+  using initial_residual_magnitude_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
   using orthogonalization_iteration_id_tag =
       db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                          LinearSolver::Tags::IterationId>;
@@ -82,24 +86,28 @@ struct InitializeResidualMonitor {
                          fields_tag>;
 
  public:
-  using simple_tags =
-      db::AddSimpleTags<::Tags::Verbosity, residual_magnitude_tag,
-                        source_magnitude_tag, LinearSolver::Tags::IterationId,
-                        orthogonalization_iteration_id_tag,
-                        orthogonalization_history_tag>;
-  using compute_tags = db::AddComputeTags<>;
+  using simple_tags = db::AddSimpleTags<
+      ::Tags::Verbosity, LinearSolver::Tags::ConvergenceCriteria,
+      residual_magnitude_tag, initial_residual_magnitude_tag,
+      LinearSolver::Tags::IterationId, orthogonalization_iteration_id_tag,
+      orthogonalization_history_tag>;
+  using compute_tags =
+      db::AddComputeTags<LinearSolver::Tags::HasConvergedCompute<fields_tag>>;
 
   template <typename... InboxTags, typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    ::Verbosity verbosity) noexcept {
+  static auto apply(
+      const db::DataBox<tmpl::list<>>& /*box*/,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/, ::Verbosity verbosity,
+      LinearSolver::ConvergenceCriteria convergence_criteria) noexcept {
     auto box = db::create<simple_tags, compute_tags>(
-        verbosity, std::numeric_limits<double>::signaling_NaN(),
+        // clang-tidy: std::move of trivially-copyable type
+        std::move(verbosity),             // NOLINT
+        std::move(convergence_criteria),  // NOLINT
+        std::numeric_limits<double>::signaling_NaN(),
         std::numeric_limits<double>::signaling_NaN(), IterationId{0},
         IterationId{0}, DenseMatrix<double>{2, 1, 0.});
     return std::make_tuple(std::move(box));

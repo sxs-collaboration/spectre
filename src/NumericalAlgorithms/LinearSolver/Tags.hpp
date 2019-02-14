@@ -7,11 +7,16 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DenseMatrix.hpp"
+#include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
+#include "Utilities/Requires.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /*!
  * \ingroup LinearSolverGroup
@@ -69,16 +74,6 @@ struct IterationId : db::SimpleTag {
 };
 
 /*!
- * \brief Holds a flag that signals the linear solver has converged
- */
-struct HasConverged : db::SimpleTag {
-  static std::string name() noexcept {
-    return "LinearSolverHasConverged";
-  }
-  using type = bool;
-};
-
-/*!
  * \brief The residual \f$r=b - Ax\f$
  */
 template <typename Tag>
@@ -124,6 +119,21 @@ struct Magnitude : db::PrefixTag, db::SimpleTag {
   }
   using type = double;
   using tag = Tag;
+};
+
+/*!
+ * \brief Compute the `LinearSolver::Magnitude` of a tag from its
+ * `LinearSolver::MagnitudeSquare`.
+ */
+template <typename MagnitudeSquareTag,
+          Requires<tt::is_a_v<MagnitudeSquare, MagnitudeSquareTag>> = nullptr>
+struct MagnitudeCompute
+    : db::add_tag_prefix<Magnitude, db::remove_tag_prefix<MagnitudeSquareTag>>,
+      db::ComputeTag {
+  static constexpr double function(const double& magnitude_square) noexcept {
+    return sqrt(magnitude_square);
+  }
+  using argument_tags = tmpl::list<MagnitudeSquareTag>;
 };
 
 /*!
@@ -174,6 +184,55 @@ struct KrylovSubspaceBasis : db::PrefixTag, db::SimpleTag {
   }
   using type = std::vector<db::item_type<db::add_tag_prefix<Operand, Tag>>>;
   using tag = Tag;
+};
+
+/*!
+ * \brief `LinearSolver::ConvergenceCriteria` that determine the linear solve
+ * has converged
+ */
+struct ConvergenceCriteria : db::SimpleTag {
+  static std::string name() noexcept { return "ConvergenceCriteria"; }
+  static constexpr OptionString help =
+      "Criteria that determine the linear solve has converged";
+  using type = LinearSolver::ConvergenceCriteria;
+};
+
+/*!
+ * \brief Holds a `LinearSolver::HasConverged` flag that signals the linear
+ * solver has converged, along with the reason for convergence.
+ */
+struct HasConverged : db::SimpleTag {
+  static std::string name() noexcept { return "LinearSolverHasConverged"; }
+  using type = LinearSolver::HasConverged;
+};
+
+/*
+ * \brief Employs the `LinearSolver::Tags::ConvergenceCriteria` to determine the
+ * linear solver has converged.
+ */
+template <typename FieldsTag>
+struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
+ private:
+  using residual_magnitude_tag = db::add_tag_prefix<
+      LinearSolver::Tags::Magnitude,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>>;
+  using initial_residual_magnitude_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
+
+ public:
+  using argument_tags =
+      tmpl::list<LinearSolver::Tags::ConvergenceCriteria,
+                 LinearSolver::Tags::IterationId, residual_magnitude_tag,
+                 initial_residual_magnitude_tag>;
+  static db::item_type<LinearSolver::Tags::HasConverged> function(
+      const LinearSolver::ConvergenceCriteria& convergence_criteria,
+      const LinearSolver::IterationId& iteration_id,
+      const double& residual_magnitude,
+      const double& initial_residual_magnitude) noexcept {
+    return LinearSolver::HasConverged(convergence_criteria, iteration_id,
+                                      residual_magnitude,
+                                      initial_residual_magnitude);
+  }
 };
 
 }  // namespace Tags

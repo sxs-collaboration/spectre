@@ -40,36 +40,34 @@ struct NormalizeInitialOperand {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-                db::add_tag_prefix<LinearSolver::Tags::Operand,
-                                   typename Metavariables::system::fields_tag>,
-                DbTags>...>> = nullptr>
+            Requires<sizeof...(DbTags) != 0> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/,
-                    const double residual_magnitude) noexcept {
+                    const double residual_magnitude,
+                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                        has_converged) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using operand_tag =
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
     using basis_history_tag =
         LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
-    using residual_magnitude_tag = db::add_tag_prefix<
-        LinearSolver::Tags::Magnitude,
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
-    db::mutate<operand_tag, basis_history_tag, residual_magnitude_tag>(
+    db::mutate<operand_tag, basis_history_tag,
+               LinearSolver::Tags::HasConverged>(
         make_not_null(&box),
-        [residual_magnitude](
-            const gsl::not_null<db::item_type<operand_tag>*> operand,
-            const gsl::not_null<db::item_type<basis_history_tag>*>
-                basis_history,
-            const gsl::not_null<double*> local_residual_magnitude) noexcept {
+        [
+          residual_magnitude, &has_converged
+        ](const gsl::not_null<db::item_type<operand_tag>*> operand,
+          const gsl::not_null<db::item_type<basis_history_tag>*> basis_history,
+          const gsl::not_null<db::item_type<LinearSolver::Tags::HasConverged>*>
+              local_has_converged) noexcept {
           *operand /= residual_magnitude;
           basis_history->push_back(*operand);
-          *local_residual_magnitude = residual_magnitude;
+          *local_has_converged = has_converged;
         });
   }
 };
@@ -116,10 +114,7 @@ struct OrthogonalizeOperand {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-                db::add_tag_prefix<LinearSolver::Tags::Operand,
-                                   typename Metavariables::system::fields_tag>,
-                DbTags>...>> = nullptr>
+            Requires<sizeof...(DbTags) != 0> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -183,10 +178,7 @@ struct NormalizeOperandAndUpdateField {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
-            Requires<tmpl2::flat_any_v<cpp17::is_same_v<
-                db::add_tag_prefix<LinearSolver::Tags::Operand,
-                                   typename Metavariables::system::fields_tag>,
-                DbTags>...>> = nullptr>
+            Requires<sizeof...(DbTags) != 0> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -194,8 +186,8 @@ struct NormalizeOperandAndUpdateField {
                     const ParallelComponent* const /*meta*/,
                     const double normalization,
                     const DenseVector<double>& minres,
-                    const double residual_magnitude,
-                    const bool has_converged) noexcept {
+                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                        has_converged) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using initial_fields_tag =
         db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
@@ -206,26 +198,22 @@ struct NormalizeOperandAndUpdateField {
                            LinearSolver::Tags::IterationId>;
     using basis_history_tag =
         LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
-    using residual_magnitude_tag = db::add_tag_prefix<
-        LinearSolver::Tags::Magnitude,
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
     db::mutate<LinearSolver::Tags::IterationId,
                ::Tags::Next<LinearSolver::Tags::IterationId>,
                orthogonalization_iteration_id_tag, operand_tag,
-               basis_history_tag, fields_tag, residual_magnitude_tag,
-               LinearSolver::Tags::HasConverged>(
+               basis_history_tag, fields_tag, LinearSolver::Tags::HasConverged>(
         make_not_null(&box),
         [
-          normalization, minres, residual_magnitude, has_converged
+          normalization, &minres, &has_converged
         ](const gsl::not_null<IterationId*> iteration_id,
           const gsl::not_null<IterationId*> next_iteration_id,
           const gsl::not_null<IterationId*> orthogonalization_iteration_id,
           const gsl::not_null<db::item_type<operand_tag>*> operand,
           const gsl::not_null<db::item_type<basis_history_tag>*> basis_history,
           const gsl::not_null<db::item_type<fields_tag>*> field,
-          const gsl::not_null<double*> local_residual_magnitude,
-          const gsl::not_null<bool*> local_has_converged,
+          const gsl::not_null<db::item_type<LinearSolver::Tags::HasConverged>*>
+              local_has_converged,
           const db::item_type<initial_fields_tag>& initial_field) noexcept {
           iteration_id->step_number++;
           next_iteration_id->step_number = iteration_id->step_number + 1;
@@ -236,7 +224,6 @@ struct NormalizeOperandAndUpdateField {
           for (size_t i = 0; i < minres.size(); i++) {
             *field += minres[i] * gsl::at(*basis_history, i);
           }
-          *local_residual_magnitude = residual_magnitude;
           *local_has_converged = has_converged;
         },
         get<initial_fields_tag>(box));

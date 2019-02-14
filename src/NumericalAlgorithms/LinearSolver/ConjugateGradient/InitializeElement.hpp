@@ -39,15 +39,12 @@ struct InitializeElement {
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
   using residual_tag =
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
-  using residual_magnitude_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Magnitude, residual_tag>;
 
  public:
   using simple_tags =
       db::AddSimpleTags<LinearSolver::Tags::IterationId,
                         ::Tags::Next<LinearSolver::Tags::IterationId>,
-                        residual_tag, residual_magnitude_tag,
-                        LinearSolver::Tags::HasConverged>;
+                        residual_tag, LinearSolver::Tags::HasConverged>;
   using compute_tags = db::AddComputeTags<>;
 
   template <typename TagsList, typename ArrayIndex, typename ParallelComponent>
@@ -81,7 +78,7 @@ struct InitializeElement {
 
     return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
         std::move(box), iteration_id, next_iteration_id, std::move(r),
-        std::numeric_limits<double>::signaling_NaN(), false);
+        db::item_type<LinearSolver::Tags::HasConverged>{});
   }
 };
 

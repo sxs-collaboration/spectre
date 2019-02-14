@@ -24,7 +24,6 @@ template <typename Metavariables>
 struct ResidualMonitor;
 template <typename BroadcastTarget>
 struct InitializeResidualMagnitude;
-struct InitializeSourceMagnitude;
 }  // namespace gmres_detail
 }  // namespace LinearSolver
 /// \endcond
@@ -44,17 +43,13 @@ struct InitializeElement {
       db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                          LinearSolver::Tags::IterationId>;
   using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
-  using residual_magnitude_tag = db::add_tag_prefix<
-      LinearSolver::Tags::Magnitude,
-      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
  public:
   using simple_tags =
       db::AddSimpleTags<LinearSolver::Tags::IterationId,
                         ::Tags::Next<LinearSolver::Tags::IterationId>,
                         initial_fields_tag, orthogonalization_iteration_id_tag,
-                        basis_history_tag, residual_magnitude_tag,
-                        LinearSolver::Tags::HasConverged>;
+                        basis_history_tag, LinearSolver::Tags::HasConverged>;
   using compute_tags = db::AddComputeTags<>;
 
   template <typename TagsList, typename ArrayIndex, typename ParallelComponent>
@@ -65,14 +60,6 @@ struct InitializeElement {
       const db::item_type<db::add_tag_prefix<::Tags::Source, fields_tag>>& b,
       const db::item_type<db::add_tag_prefix<
           LinearSolver::Tags::OperatorAppliedTo, fields_tag>>& Ax) noexcept {
-    Parallel::contribute_to_reduction<gmres_detail::InitializeSourceMagnitude>(
-        Parallel::ReductionData<
-            Parallel::ReductionDatum<double, funcl::Plus<>, funcl::Sqrt<>>>{
-            inner_product(b, b)},
-        Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
-        Parallel::get_parallel_component<ResidualMonitor<Metavariables>>(
-            cache));
-
     db::mutate<operand_tag>(make_not_null(&box), [
       &b, &Ax
     ](const gsl::not_null<db::item_type<operand_tag>*> q) noexcept {
@@ -95,7 +82,7 @@ struct InitializeElement {
     return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
         std::move(box), IterationId{0}, IterationId{1}, std::move(x0),
         IterationId{0}, std::move(basis_history),
-        std::numeric_limits<double>::signaling_NaN(), false);
+        db::item_type<LinearSolver::Tags::HasConverged>{});
   }
 };
 
