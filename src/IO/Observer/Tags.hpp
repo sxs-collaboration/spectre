@@ -75,14 +75,6 @@ struct ReductionDataNames : db::SimpleTag {
   using data_tag = ReductionData<ReductionDatums...>;
 };
 
-/// The number of nodes that have contributed to the reduction data so far.
-struct NumberOfNodesContributedToReduction : db::SimpleTag {
-  static std::string name() noexcept {
-    return "NumberOfNodesContributedToReduction";
-  }
-  using type = std::unordered_map<ObservationId, size_t>;
-};
-
 /// The number of observer components that have contributed data at the
 /// observation ids.
 struct VolumeObserversContributed : db::SimpleTag {
