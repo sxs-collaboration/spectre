@@ -53,16 +53,16 @@ void cubic_scale_non_invertible(const double a0, const double b0,
   // this call should fail.
   scale_map.inverse(mapped_point, t, f_of_t_list);
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.CubicScale",
-                  "[Domain][Unit]") {
+void test_map() {
   static constexpr size_t deriv_order = 2;
 
-  const auto run_tests = [](
-      const std::array<DataVector, deriv_order + 1>& init_func_a,
-      const std::array<DataVector, deriv_order + 1>& init_func_b,
-      const double outer_b, const double x0, const double final_time) {
+  const auto run_tests = [](const std::array<DataVector, deriv_order + 1>&
+                                init_func_a,
+                            const std::array<DataVector, deriv_order + 1>&
+                                init_func_b,
+                            const double outer_b, const double x0,
+                            const double final_time) {
     double t = -0.5;
     const double dt = 0.6;
 
@@ -157,7 +157,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.CubicScale",
       CHECK(approx(scale_map_deserialized.hessian(point_xi, t, f_of_t_list)
                        .get(0, 1, 0)) == time_space);
       CHECK(approx(scale_map_deserialized.hessian(point_xi, t, f_of_t_list)
-                   .get(0, 0, 1)) == time_space);
+                       .get(0, 0, 1)) == time_space);
       CHECK(approx(scale_map_deserialized.hessian(point_xi, t, f_of_t_list)
                        .get(0, 1, 1)) == space_space);
 
@@ -186,9 +186,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.CubicScale",
   run_tests(init_func_a2, init_func_b2, 6.0, 5.0, 0.0);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.CoordMapsTimeDependent.CubicScale.TestBoundaries",
-    "[Domain][Unit]") {
+void test_boundaries() {
   static constexpr size_t deriv_order = 2;
 
   const auto run_tests = [](const double x0) {
@@ -233,6 +231,14 @@ SPECTRE_TEST_CASE(
   // test inverse at inner and outer boundary values
   run_tests(0.0);
   run_tests(20.0);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.CubicScale",
+                  "[Domain][Unit]") {
+  test_map();
+  test_boundaries();
+  CHECK(not CoordMapsTimeDependent::CubicScale{}.is_identity());
 }
 
 // [[OutputRegex, The map is invertible only if 0 < expansion_b <

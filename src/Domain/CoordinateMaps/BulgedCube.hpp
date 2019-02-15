@@ -8,6 +8,7 @@
 #include <array>
 #include <boost/optional.hpp>
 #include <cstddef>
+#include <limits>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -513,14 +514,18 @@ class BulgedCube {
   // clang-tidy: google runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  bool is_identity() const noexcept { return is_identity_; }
+
  private:
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> xi_derivative(
       const std::array<T, 3>& source_coords) const noexcept;
   friend bool operator==(const BulgedCube& lhs, const BulgedCube& rhs) noexcept;
-  double radius_;
-  double sphericity_;
-  bool use_equiangular_map_;
+
+  double radius_{std::numeric_limits<double>::signaling_NaN()};
+  double sphericity_{std::numeric_limits<double>::signaling_NaN()};
+  bool use_equiangular_map_ = false;
+  bool is_identity_ = false;
 };
 
 bool operator!=(const BulgedCube& lhs, const BulgedCube& rhs) noexcept;

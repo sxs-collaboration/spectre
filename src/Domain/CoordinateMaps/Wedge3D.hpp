@@ -294,6 +294,8 @@ class Wedge3D {
   // clang-tidy: google runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  bool is_identity() const noexcept { return false; }
+
  private:
   // factors out calculation of z needed for mapping and jacobian
   template <typename T>

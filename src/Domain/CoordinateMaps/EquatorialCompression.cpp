@@ -20,7 +20,9 @@
 namespace CoordinateMaps {
 
 EquatorialCompression::EquatorialCompression(const double aspect_ratio) noexcept
-    : aspect_ratio_(aspect_ratio), inverse_aspect_ratio_(1.0 / aspect_ratio) {
+    : aspect_ratio_(aspect_ratio),
+      inverse_aspect_ratio_(1.0 / aspect_ratio),
+      is_identity_(aspect_ratio_ == 1.0) {
   ASSERT(aspect_ratio > 0.0, "The aspect_ratio must be greater than zero.");
 }
 
@@ -146,12 +148,14 @@ EquatorialCompression::inv_jacobian(const std::array<T, 3>& source_coords) const
 void EquatorialCompression::pup(PUP::er& p) noexcept {
   p | aspect_ratio_;
   p | inverse_aspect_ratio_;
+  p | is_identity_;
 }
 
 bool operator==(const EquatorialCompression& lhs,
                 const EquatorialCompression& rhs) noexcept {
   return lhs.aspect_ratio_ == rhs.aspect_ratio_ and
-         lhs.inverse_aspect_ratio_ == rhs.inverse_aspect_ratio_;
+         lhs.inverse_aspect_ratio_ == rhs.inverse_aspect_ratio_ and
+         lhs.is_identity_ == rhs.is_identity_;
 }
 
 bool operator!=(const EquatorialCompression& lhs,

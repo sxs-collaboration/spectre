@@ -72,4 +72,5 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Equiangular", "[Domain][Unit]") {
   test_coordinate_map_argument_types(equiangular_map, point_xi);
   test_coordinate_map_argument_types(equiangular_map, point_r1);
   test_coordinate_map_argument_types(equiangular_map, point_r2);
+  CHECK(not CoordinateMaps::Equiangular{}.is_identity());
 }

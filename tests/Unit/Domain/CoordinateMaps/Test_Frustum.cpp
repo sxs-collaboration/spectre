@@ -5,8 +5,11 @@
 
 #include <array>
 #include <boost/optional.hpp>
+#include <memory>
+#include <pup.h>
 #include <random>
 
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -75,24 +78,7 @@ void test_frustum_fail() noexcept {
   }
 }
 
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Fail", "[Domain][Unit]") {
-  test_frustum_fail();
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Equidistant",
-                  "[Domain][Unit]") {
-  test_suite_for_frustum(false);
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Equiangular",
-                  "[Domain][Unit]") {
-  test_suite_for_frustum(true);
-}
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Alignment",
-                  "[Domain][Unit]") {
+void test_alignment() {
   // This test tests that the logical axes point along the expected directions
   // in physical space
 
@@ -179,6 +165,27 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Alignment",
   CHECK(map_lower_xi(along_zeta)[0] == approx(-5.0));
   CHECK_ITERABLE_APPROX(map_lower_xi(lowest_corner),
                         lowest_physical_corner_in_map_lower_xi);
+}
+
+void test_is_identity() {
+  check_if_map_is_identity(CoordinateMaps::Frustum{
+      std::array<std::array<double, 2>, 4>{
+          {{{-1.0, -1.0}}, {{1.0, 1.0}}, {{-1.0, -1.0}}, {{1.0, 1.0}}}},
+      -1.0, 1.0, OrientationMap<3>{}, false});
+  CHECK(not CoordinateMaps::Frustum{
+      std::array<std::array<double, 2>, 4>{
+          {{{-1.0, -1.0}}, {{2.0, 1.0}}, {{-1.0, -3.0}}, {{1.0, 1.0}}}},
+      -1.0, 1.0, OrientationMap<3>{}, false}
+                .is_identity());
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
+  test_frustum_fail();
+  test_suite_for_frustum(false);  // Equidistant
+  test_suite_for_frustum(true);   // Equiangular
+  test_alignment();
+  test_is_identity();
 }
 
 // [[OutputRegex, The lower bound for a coordinate must be numerically less

@@ -78,6 +78,8 @@ class CubicScale {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  bool is_identity() const noexcept { return false; }
+
  private:
   friend bool operator==(const CubicScale& lhs, const CubicScale& rhs) noexcept;
 

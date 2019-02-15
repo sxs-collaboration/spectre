@@ -6,6 +6,8 @@
 #include <array>
 #include <boost/optional.hpp>
 #include <cstddef>
+#include <memory>
+#include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -54,10 +56,7 @@ void test_product_two_maps_fail() {
     CHECK_ITERABLE_APPROX(map(map.inverse(mapped_point2).get()), mapped_point2);
   }
 }
-}  // namespace
-
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
-                  "[Domain][Unit]") {
+void test_product_of_2_maps() {
   using affine_map = CoordinateMaps::Affine;
   using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
 
@@ -171,10 +170,19 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf2Maps",
 
   test_coordinate_map_argument_types(affine_map_xy, point_xi);
   test_product_two_maps_fail();
+  check_if_map_is_identity(
+      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                     CoordinateMaps::Affine>{
+          CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0},
+          CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0}});
+  CHECK(not CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
+                                           CoordinateMaps::Affine>{
+      CoordinateMaps::Affine{-1.0, 2.0, -1.0, 1.0},
+      CoordinateMaps::Affine{-1.0, 1.0, -3.0, 1.0}}
+                .is_identity());
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
-                  "[Domain][Unit]") {
+void test_product_of_3_maps() {
   using affine_map = CoordinateMaps::Affine;
   using affine_map_3d =
       CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
@@ -342,4 +350,17 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductOf3Maps",
   test_serialization(affine_map_xyz);
 
   test_coordinate_map_argument_types(affine_map_xyz, point_xi);
+  check_if_map_is_identity(
+      CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
+                                     CoordinateMaps::Affine,
+                                     CoordinateMaps::Affine>{
+          CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0},
+          CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0},
+          CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0}});
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductMaps", "[Domain][Unit]") {
+  test_product_of_2_maps();
+  test_product_of_3_maps();
 }

@@ -70,6 +70,8 @@ class Frustum {
   // clang-tidy: google runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  bool is_identity() const noexcept { return is_identity_; }
+
  private:
   friend bool operator==(const Frustum& lhs, const Frustum& rhs) noexcept;
 
@@ -85,6 +87,7 @@ class Frustum {
   double midpoint_z_{std::numeric_limits<double>::signaling_NaN()};
   double half_length_z_{std::numeric_limits<double>::signaling_NaN()};
   bool with_equiangular_map_{false};
+  bool is_identity_{false};
 };
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs) noexcept;

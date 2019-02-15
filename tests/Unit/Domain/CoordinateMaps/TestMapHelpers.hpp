@@ -17,6 +17,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
@@ -60,6 +61,18 @@ void check_if_maps_are_equal(
     CHECK_ITERABLE_APPROX(map_one.inv_jacobian(source_point),
                           map_two.inv_jacobian(source_point));
   }
+}
+
+/// \ingroup TestingFrameworkGroup
+/// \brief Given a coordinate map, check that this map is equal to the identity
+/// by evaluating the map at a random set of points.
+template <typename Map>
+void check_if_map_is_identity(const Map& map) {
+  using IdentityMap = CoordinateMaps::Identity<Map::dim>;
+  check_if_maps_are_equal(
+      make_coordinate_map<Frame::Inertial, Frame::Grid>(IdentityMap{}),
+      make_coordinate_map<Frame::Inertial, Frame::Grid>(map));
+  CHECK(map.is_identity());
 }
 
 /*!

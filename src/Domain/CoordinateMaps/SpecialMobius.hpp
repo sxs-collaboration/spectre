@@ -110,6 +110,8 @@ class SpecialMobius {
   // clang-tidy: google runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  bool is_identity() const noexcept { return is_identity_; }
+
  private:
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 3> mobius_distortion(
@@ -122,6 +124,7 @@ class SpecialMobius {
                          const SpecialMobius& rhs) noexcept;
 
   double mu_{std::numeric_limits<double>::signaling_NaN()};
+  bool is_identity_{false};
 };
 bool operator!=(const SpecialMobius& lhs, const SpecialMobius& rhs) noexcept;
 }  // namespace CoordinateMaps

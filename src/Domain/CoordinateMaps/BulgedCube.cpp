@@ -99,7 +99,9 @@ BulgedCube::BulgedCube(const double radius, const double sphericity,
                        const bool use_equiangular_map) noexcept
     : radius_(radius),
       sphericity_(sphericity),
-      use_equiangular_map_(use_equiangular_map) {
+      use_equiangular_map_(use_equiangular_map),
+      is_identity_(radius_ == sqrt(3.0) and sphericity_ == 0.0 and
+                   not use_equiangular_map_) {
   ASSERT(radius > 0.0, "The radius of the cube must be greater than zero");
   ASSERT(sphericity >= 0.0 and sphericity < 1.0,
          "The sphericity must be strictly less than one.");
@@ -261,11 +263,13 @@ void BulgedCube::pup(PUP::er& p) noexcept {
   p | radius_;
   p | sphericity_;
   p | use_equiangular_map_;
+  p | is_identity_;
 }
 
 bool operator==(const BulgedCube& lhs, const BulgedCube& rhs) noexcept {
   return lhs.radius_ == rhs.radius_ and lhs.sphericity_ == rhs.sphericity_ and
-         lhs.use_equiangular_map_ == rhs.use_equiangular_map_;
+         lhs.use_equiangular_map_ == rhs.use_equiangular_map_ and
+         lhs.is_identity_ == rhs.is_identity_;
 }
 
 bool operator!=(const BulgedCube& lhs, const BulgedCube& rhs) noexcept {

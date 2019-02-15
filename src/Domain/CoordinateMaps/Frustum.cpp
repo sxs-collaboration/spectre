@@ -27,7 +27,15 @@ Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
                  const bool with_equiangular_map) noexcept
     // clang-tidy: trivially copyable
     : orientation_of_frustum_(std::move(orientation_of_frustum)),  // NOLINT
-      with_equiangular_map_(with_equiangular_map) {
+      with_equiangular_map_(with_equiangular_map),
+      is_identity_(face_vertices ==
+                       std::array<std::array<double, 2>, 4>{{{{-1.0, -1.0}},
+                                                             {{1.0, 1.0}},
+                                                             {{-1.0, -1.0}},
+                                                             {{1.0, 1.0}}}} and
+                   lower_bound == -1.0 and upper_bound == 1.0 and
+                   orientation_of_frustum_ == OrientationMap<3>{} and
+                   not with_equiangular_map) {
   const double& lower_x_lower_base = face_vertices[0][0];
   const double& lower_y_lower_base = face_vertices[0][1];
   const double& upper_x_lower_base = face_vertices[1][0];
@@ -206,6 +214,7 @@ void Frustum::pup(PUP::er& p) noexcept {
   p | midpoint_z_;
   p | half_length_z_;
   p | with_equiangular_map_;
+  p | is_identity_;
 }
 
 bool operator==(const Frustum& lhs, const Frustum& rhs) noexcept {
@@ -220,7 +229,8 @@ bool operator==(const Frustum& lhs, const Frustum& rhs) noexcept {
          lhs.dif_half_length_y_ == lhs.dif_half_length_y_ and
          lhs.midpoint_z_ == rhs.midpoint_z_ and
          lhs.half_length_z_ == rhs.half_length_z_ and
-         lhs.with_equiangular_map_ == rhs.with_equiangular_map_;
+         lhs.with_equiangular_map_ == rhs.with_equiangular_map_ and
+         lhs.is_identity_ == rhs.is_identity_;
 }
 
 bool operator!=(const Frustum& lhs, const Frustum& rhs) noexcept {

@@ -58,13 +58,17 @@ class DiscreteRotation {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  bool is_identity() const noexcept { return is_identity_; }
+
  private:
   friend bool operator==(const DiscreteRotation& lhs,
                          const DiscreteRotation& rhs) noexcept {
-    return lhs.orientation_ == rhs.orientation_;
+    return lhs.orientation_ == rhs.orientation_ and
+           lhs.is_identity_ == rhs.is_identity_;
   }
 
   OrientationMap<VolumeDim> orientation_{};
+  bool is_identity_ = false;
 };
 
 template <size_t VolumeDim>

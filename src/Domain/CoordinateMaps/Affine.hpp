@@ -62,6 +62,8 @@ class Affine {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p);  // NOLINT
 
+  bool is_identity() const noexcept { return is_identity_; }
+
  private:
   friend bool operator==(const Affine& lhs, const Affine& rhs) noexcept;
 
@@ -73,6 +75,7 @@ class Affine {
   double length_of_range_{2.0};   // b-a
   double jacobian_{length_of_range_ / length_of_domain_};
   double inverse_jacobian_{length_of_domain_ / length_of_range_};
+  bool is_identity_{false};
 };
 
 inline bool operator!=(const CoordinateMaps::Affine& lhs,

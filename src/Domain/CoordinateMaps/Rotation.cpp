@@ -14,7 +14,8 @@ namespace CoordinateMaps {
 
 Rotation<2>::Rotation(const double rotation_angle)
     : rotation_angle_(rotation_angle),
-      rotation_matrix_(std::numeric_limits<double>::signaling_NaN()) {
+      rotation_matrix_(std::numeric_limits<double>::signaling_NaN()),
+      is_identity_(rotation_angle_ == 0.0) {
   const double cos_alpha = cos(rotation_angle_);
   const double sin_alpha = sin(rotation_angle_);
   get<0, 0>(rotation_matrix_) = cos_alpha;
@@ -70,10 +71,12 @@ Rotation<2>::inv_jacobian(const std::array<T, 2>& source_coords) const
 void Rotation<2>::pup(PUP::er& p) {
   p | rotation_angle_;
   p | rotation_matrix_;
+  p | is_identity_;
 }
 
 bool operator==(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept {
-  return lhs.rotation_angle_ == rhs.rotation_angle_;
+  return lhs.rotation_angle_ == rhs.rotation_angle_ and
+         lhs.is_identity_ == rhs.is_identity_;
 }
 
 bool operator!=(const Rotation<2>& lhs, const Rotation<2>& rhs) noexcept {
@@ -86,7 +89,10 @@ Rotation<3>::Rotation(const double rotation_about_z,
     : rotation_about_z_(rotation_about_z),
       rotation_about_rotated_y_(rotation_about_rotated_y),
       rotation_about_rotated_z_(rotation_about_rotated_z),
-      rotation_matrix_(std::numeric_limits<double>::signaling_NaN()) {
+      rotation_matrix_(std::numeric_limits<double>::signaling_NaN()),
+      is_identity_(rotation_about_z_ == 0.0 and
+                   rotation_about_rotated_y_ == 0.0 and
+                   rotation_about_rotated_z_ == 0.0) {
   const double cos_alpha = cos(rotation_about_z_);
   const double sin_alpha = sin(rotation_about_z_);
   const double cos_beta = cos(rotation_about_rotated_y_);
@@ -178,12 +184,14 @@ void Rotation<3>::pup(PUP::er& p) {  // NOLINT
   p | rotation_about_rotated_y_;
   p | rotation_about_rotated_z_;
   p | rotation_matrix_;
+  p | is_identity_;
 }
 
 bool operator==(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept {
   return lhs.rotation_about_z_ == rhs.rotation_about_z_ and
          lhs.rotation_about_rotated_y_ == rhs.rotation_about_rotated_y_ and
-         lhs.rotation_about_rotated_z_ == rhs.rotation_about_rotated_z_;
+         lhs.rotation_about_rotated_z_ == rhs.rotation_about_rotated_z_ and
+         lhs.is_identity_ == rhs.is_identity_;
 }
 
 bool operator!=(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept {

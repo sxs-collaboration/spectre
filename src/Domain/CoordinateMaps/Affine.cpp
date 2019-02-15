@@ -21,7 +21,8 @@ Affine::Affine(const double A, const double B, const double a, const double b)
       length_of_domain_(B - A),
       length_of_range_(b - a),
       jacobian_(length_of_range_ / length_of_domain_),
-      inverse_jacobian_(length_of_domain_ / length_of_range_) {}
+      inverse_jacobian_(length_of_domain_ / length_of_range_),
+      is_identity_(A == a and B == b) {}
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 1> Affine::operator()(
@@ -61,6 +62,7 @@ void Affine::pup(PUP::er& p) {
   p | length_of_range_;
   p | jacobian_;
   p | inverse_jacobian_;
+  p | is_identity_;
 }
 
 bool operator==(const CoordinateMaps::Affine& lhs,
@@ -69,7 +71,8 @@ bool operator==(const CoordinateMaps::Affine& lhs,
          lhs.b_ == rhs.b_ and lhs.length_of_domain_ == rhs.length_of_domain_ and
          lhs.length_of_range_ == rhs.length_of_range_ and
          lhs.jacobian_ == rhs.jacobian_ and
-         lhs.inverse_jacobian_ == rhs.inverse_jacobian_;
+         lhs.inverse_jacobian_ == rhs.inverse_jacobian_ and
+         lhs.is_identity_ == rhs.is_identity_;
 }
 
 // Explicit instantiations

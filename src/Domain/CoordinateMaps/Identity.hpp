@@ -50,6 +50,8 @@ class Identity {
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& /*p*/) {}  // NOLINT
+
+  bool is_identity() const noexcept { return true; }
 };
 
 template <size_t Dim>

@@ -31,9 +31,12 @@ void test_identity() {
   test_serialization(identity_map);
 
   test_coordinate_map_argument_types(identity_map, xi);
+
+  check_if_map_is_identity(CoordinateMaps::Identity<Dim>{});
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Identity", "[Domain][Unit]") {
   test_identity<1>();
   test_identity<2>();
+  test_identity<3>();
 }

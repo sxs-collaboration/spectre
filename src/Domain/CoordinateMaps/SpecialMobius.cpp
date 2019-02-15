@@ -20,7 +20,8 @@
 
 namespace CoordinateMaps {
 
-SpecialMobius::SpecialMobius(const double mu) noexcept : mu_(mu) {
+SpecialMobius::SpecialMobius(const double mu) noexcept
+    : mu_(mu), is_identity_(mu_ == 0.0) {
   // Note: Empirically we have found that the map is accurate
   // to 12 decimal places for mu = 0.96.
   ASSERT(abs(mu) < 0.96, "The magnitude of mu must be less than 0.96.");
@@ -106,10 +107,13 @@ SpecialMobius::inv_jacobian(const std::array<T, 3>& source_coords) const
   return mobius_distortion_jacobian((*this)(source_coords), -mu_);
 }
 
-void SpecialMobius::pup(PUP::er& p) noexcept { p | mu_; }
+void SpecialMobius::pup(PUP::er& p) noexcept {
+  p | mu_;
+  p | is_identity_;
+}
 
 bool operator==(const SpecialMobius& lhs, const SpecialMobius& rhs) noexcept {
-  return lhs.mu_ == rhs.mu_;
+  return lhs.mu_ == rhs.mu_ and lhs.is_identity_ == rhs.is_identity_;
 }
 
 bool operator!=(const SpecialMobius& lhs, const SpecialMobius& rhs) noexcept {
