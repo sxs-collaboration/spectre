@@ -145,6 +145,7 @@ standard_checks=()
 long_lines() {
     whitelist "$1" \
               '.cmake$' \
+              '.h5$' \
               '.html$' \
               '.min.js$' \
               '.travis.yml$' \
