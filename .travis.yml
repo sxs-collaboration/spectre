@@ -264,6 +264,10 @@ script:
 - export UPSTREAM_BRANCH="develop"
 - export GH_PAGES_REPO="git@github.com:sxs-collaboration/spectre.git"
 - export GH_PAGES_SOURCE_BRANCH="develop"
+- export CXXFLAGS="-Werror -march=x86-64"
+- if [ "$BUILD_TYPE" == "Debug" ]; then
+    export CXXFLAGS="$CXXFLAGS -DBLAZE_USE_VECTORIZATION=0";
+  fi
 - printenv
 - if [ "${CHECK_COMMITS}" == "true" ]; then
     ./tools/CheckCommits.sh;
@@ -282,7 +286,7 @@ script:
     && mv ${HOME}/ccache/build_${CC}_${BUILD_TYPE} ${HOME}/docker/ccache
     && cp ${HOME}/.ssh/known_hosts ${HOME}/docker/known_hosts
     && docker build
-        --build-arg CXXFLAGS="-Werror -march=x86-64"
+        --build-arg CXXFLAGS="${CXXFLAGS}"
         --build-arg COVERAGE=${COVERAGE}
         --build-arg BUILD_TYPE=${BUILD_TYPE}
         --build-arg CC=${CC}
