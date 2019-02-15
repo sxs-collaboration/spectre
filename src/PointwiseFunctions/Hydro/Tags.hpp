@@ -66,6 +66,13 @@ struct LorentzFactor : db::SimpleTag {
   static std::string name() noexcept { return "LorentzFactor"; }
 };
 
+/// The square of the Lorentz factor \f$W^2\f$.
+template <typename DataType>
+struct LorentzFactorSquared {
+  using type = Scalar<DataType>;
+  static std::string name() noexcept { return "LorentzFactorSquared"; }
+};
+
 /// The magnetic field \f$B^i = n_\mu F^{i \mu}\f$ measured by an Eulerian
 /// observer, where \f$n_\mu\f$ is the normal to the spatial hypersurface and
 /// \f$F^{\mu \nu}\f$ is the Faraday tensor.

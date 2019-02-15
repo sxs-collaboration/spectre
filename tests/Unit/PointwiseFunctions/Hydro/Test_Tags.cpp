@@ -28,6 +28,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
   CHECK(hydro::Tags::EquationOfState<IdealFluid<true>>::name() ==
         "EquationOfState");
   CHECK(hydro::Tags::LorentzFactor<DataVector>::name() == "LorentzFactor");
+  CHECK(hydro::Tags::LorentzFactorSquared<DataVector>::name() ==
+        "LorentzFactorSquared");
   CHECK(hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>::name() ==
         "MagneticField");
   CHECK(hydro::Tags::MagneticField<DataVector, 3, Frame::Distorted>::name() ==
