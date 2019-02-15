@@ -293,10 +293,11 @@ SPECTRE_TEST_CASE(
   tuples::TaggedTuple<observers::OptionTags::ReductionFileName,
                       metavars::SurfaceA, metavars::SurfaceB,
                       metavars::SurfaceC>
-      tuple_of_opts(h5_file_prefix, kerr_horizon_opts_A, kerr_horizon_opts_B,
-                    kerr_horizon_opts_C);
+      tuple_of_opts(h5_file_prefix, std::move(kerr_horizon_opts_A),
+                    std::move(kerr_horizon_opts_B),
+                    std::move(kerr_horizon_opts_C));
 
-  MockRuntimeSystem runner{tuple_of_opts, std::move(dist_objects)};
+  MockRuntimeSystem runner{std::move(tuple_of_opts), std::move(dist_objects)};
 
   const auto domain_creator =
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);

@@ -66,8 +66,8 @@ struct LineSegment {
               size_t number_of_points_in) noexcept;
 
   LineSegment() = default;
-  LineSegment(const LineSegment& /*rhs*/) = default;
-  LineSegment& operator=(const LineSegment& /*rhs*/) = default;
+  LineSegment(const LineSegment& /*rhs*/) = delete;
+  LineSegment& operator=(const LineSegment& /*rhs*/) = delete;
   LineSegment(LineSegment&& /*rhs*/) noexcept = default;
   LineSegment& operator=(LineSegment&& /*rhs*/) noexcept = default;
   ~LineSegment() = default;

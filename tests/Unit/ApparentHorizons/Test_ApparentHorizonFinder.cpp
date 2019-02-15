@@ -3,6 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <pup.h>
@@ -236,9 +237,9 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       Verbosity::Verbose);
 
   tuples::TaggedTuple<typename metavars::AhA> tuple_of_opts(
-      apparent_horizon_opts);
+      std::move(apparent_horizon_opts));
 
-  MockRuntimeSystem runner{tuple_of_opts, std::move(dist_objects)};
+  MockRuntimeSystem runner{std::move(tuple_of_opts), std::move(dist_objects)};
 
   // The test finds an apparent horizon for a Schwarzschild or Kerr
   // metric with M=1.  We choose a spherical shell domain extending

@@ -65,7 +65,7 @@ struct ApparentHorizon {
                   Verbosity verbosity_in) noexcept;
 
   ApparentHorizon() = default;
-  ApparentHorizon(const ApparentHorizon& /*rhs*/) = default;
+  ApparentHorizon(const ApparentHorizon& /*rhs*/) = delete;
   ApparentHorizon& operator=(const ApparentHorizon& /*rhs*/) = delete;
   ApparentHorizon(ApparentHorizon&& /*rhs*/) noexcept = default;
   ApparentHorizon& operator=(ApparentHorizon&& /*rhs*/) noexcept = default;

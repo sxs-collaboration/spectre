@@ -129,8 +129,8 @@ struct WedgeSectionTorus {
                     const OptionContext& context = {});
 
   WedgeSectionTorus() = default;
-  WedgeSectionTorus(const WedgeSectionTorus& /*rhs*/) = default;
-  WedgeSectionTorus& operator=(const WedgeSectionTorus& /*rhs*/) = default;
+  WedgeSectionTorus(const WedgeSectionTorus& /*rhs*/) = delete;
+  WedgeSectionTorus& operator=(const WedgeSectionTorus& /*rhs*/) = delete;
   WedgeSectionTorus(WedgeSectionTorus&& /*rhs*/) noexcept = default;
   WedgeSectionTorus& operator=(WedgeSectionTorus&& /*rhs*/) noexcept = default;
   ~WedgeSectionTorus() = default;

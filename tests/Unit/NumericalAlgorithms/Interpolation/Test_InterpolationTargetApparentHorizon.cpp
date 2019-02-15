@@ -3,6 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
@@ -118,5 +119,6 @@ SPECTRE_TEST_CASE(
   ();
 
   InterpTargetTestHelpers::test_interpolation_target<MockMetavariables>(
-      domain_creator, apparent_horizon_opts, expected_block_coord_holders);
+      domain_creator, std::move(apparent_horizon_opts),
+      expected_block_coord_holders);
 }
