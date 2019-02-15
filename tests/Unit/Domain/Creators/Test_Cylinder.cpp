@@ -187,10 +187,9 @@ void test_cylinder_construction(
 
   test_initial_domain(domain, cylinder.initial_refinement_levels());
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Boundaries.Equiangular",
-                  "[Domain][Unit]") {
+void test_cylinder_boundaries_equiangular() {
+  INFO("Cylinder boundaries equiangular");
   const double inner_radius = 1.0, outer_radius = 2.0;
   const double lower_bound = -2.5, upper_bound = 5.0;
   const size_t refinement_level = 2;
@@ -205,8 +204,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Boundaries.Equiangular",
                              {5, make_array<3>(refinement_level)}, true);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Factory.Equiangular",
-                  "[Domain][Unit]") {
+void test_cylinder_factory_equiangular() {
+  INFO("Cylinder factory equiangular");
   const auto cylinder =
       test_factory_creation<DomainCreator<3, Frame::Inertial>>(
           "  Cylinder:\n"
@@ -229,8 +228,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Factory.Equiangular",
       {5, make_array<3>(refinement_level)}, true);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Boundaries.Equidistant",
-                  "[Domain][Unit]") {
+void test_cylinder_boundaries_equidistant() {
+  INFO("Cylinder boundaries equidistant");
   const double inner_radius = 1.0, outer_radius = 2.0;
   const double lower_bound = -2.5, upper_bound = 5.0;
   const size_t refinement_level = 2;
@@ -245,8 +244,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Boundaries.Equidistant",
                              {5, make_array<3>(refinement_level)}, false);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Factory.Equidistant",
-                  "[Domain][Unit]") {
+void test_cylinder_factory_equidistant() {
+  INFO("Cylinder factory equidistant");
   const auto cylinder =
       test_factory_creation<DomainCreator<3, Frame::Inertial>>(
           "  Cylinder:\n"
@@ -269,9 +268,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder.Factory.Equidistant",
       {5, make_array<3>(refinement_level)}, false);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.Creators.Cylinder.Boundaries.Equiangular.NotPeriodicInZ",
-    "[Domain][Unit]") {
+void test_cylinder_boundaries_equiangular_not_periodic_in_z() {
+  INFO("Cylinder boundaries equiangular not periodic in z");
   const double inner_radius = 1.0, outer_radius = 2.0;
   const double lower_bound = -2.5, upper_bound = 5.0;
   const size_t refinement_level = 2;
@@ -286,9 +284,8 @@ SPECTRE_TEST_CASE(
                              {5, make_array<3>(refinement_level)}, true);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.Creators.Cylinder.Factory.Equiangular.NotPeriodicInZ",
-    "[Domain][Unit]") {
+void test_cylinder_factory_equiangular_not_periodic_in_z() {
+  INFO("Cylinder factory equiangular not periodic in z");
   const auto cylinder =
       test_factory_creation<DomainCreator<3, Frame::Inertial>>(
           "  Cylinder:\n"
@@ -312,9 +309,8 @@ SPECTRE_TEST_CASE(
       {5, make_array<3>(refinement_level)}, true);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.Creators.Cylinder.Boundaries.Equidistant.NotPeriodicInZ",
-    "[Domain][Unit]") {
+void test_cylinder_boundaries_equidistant_not_periodic_in_z() {
+  INFO("Cylinder boundaries equidistant not periodic in z");
   const double inner_radius = 1.0, outer_radius = 2.0;
   const double lower_bound = -2.5, upper_bound = 5.0;
   const size_t refinement_level = 2;
@@ -329,9 +325,8 @@ SPECTRE_TEST_CASE(
                              {5, make_array<3>(refinement_level)}, false);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.Creators.Cylinder.Factory.Equidistant.NotPeriodicInZ",
-    "[Domain][Unit]") {
+void test_cylinder_factory_equidistant_not_periodic_in_z() {
+  INFO("Cylinder factory equidistant not periodic in z");
   const auto cylinder =
       test_factory_creation<DomainCreator<3, Frame::Inertial>>(
           "  Cylinder:\n"
@@ -353,4 +348,16 @@ SPECTRE_TEST_CASE(
           *cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, false, grid_points,
       {5, make_array<3>(refinement_level)}, false);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder", "[Domain][Unit]") {
+  test_cylinder_boundaries_equiangular();
+  test_cylinder_factory_equiangular();
+  test_cylinder_boundaries_equidistant();
+  test_cylinder_factory_equidistant();
+  test_cylinder_boundaries_equiangular_not_periodic_in_z();
+  test_cylinder_factory_equiangular_not_periodic_in_z();
+  test_cylinder_boundaries_equidistant_not_periodic_in_z();
+  test_cylinder_factory_equidistant_not_periodic_in_z();
 }

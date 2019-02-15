@@ -50,9 +50,9 @@ void test_interval_construction(
           CoordinateMaps::Affine{-1., 1., lower_bound[0], upper_bound[0]})));
   test_initial_domain(domain, interval.initial_refinement_levels());
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval", "[Domain][Unit]") {
+void test_interval() {
+  INFO("Interval");
   const std::vector<std::array<size_t, 1>> grid_points{{{4}}},
       refinement_level{{{3}}};
   const std::array<double, 1> lower_bound{{-1.2}}, upper_bound{{0.8}};
@@ -94,7 +94,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval", "[Domain][Unit]") {
   CHECK(*dynamic_cast<MapType>(base_map.get()) == coord_map);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval.Factory", "[Domain][Unit]") {
+void test_interval_factory() {
+  INFO("Interval factory");
   const auto domain_creator =
       test_factory_creation<DomainCreator<1, Frame::Inertial>>(
           "  Interval:\n"
@@ -112,4 +113,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval.Factory", "[Domain][Unit]") {
                                  {{Direction<1>::lower_xi(), {0, {}}},
                                   {Direction<1>::upper_xi(), {0, {}}}}},
                              std::vector<std::unordered_set<Direction<1>>>{{}});
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval.Factory", "[Domain][Unit]") {
+  test_interval();
+  test_interval_factory();
 }

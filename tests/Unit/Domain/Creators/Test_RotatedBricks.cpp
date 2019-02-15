@@ -106,9 +106,9 @@ void test_rotated_bricks_construction(
                            expected_external_boundaries, coord_maps);
   test_initial_domain(domain, rotated_bricks.initial_refinement_levels());
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedBricks", "[Domain][Unit]") {
+void test_rotated_bricks() {
+  INFO("Rotated bricks");
   const std::vector<std::array<size_t, 3>> grid_points{
       {{4, 2, 5}}, {{5, 2, 1}}, {{4, 5, 3}}, {{3, 5, 1}},
       {{2, 4, 6}}, {{6, 1, 2}}, {{3, 6, 4}}, {{1, 3, 6}}},
@@ -255,8 +255,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedBricks", "[Domain][Unit]") {
           {}, {}, {}, {}, {}, {}, {}, {}});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedBricks.Factory",
-                  "[Domain][Unit]") {
+void test_rotated_bricks_factory() {
+  INFO("Rotated bricks factory");
   const OrientationMap<3> aligned{};
   const OrientationMap<3> rotation_F{std::array<Direction<3>, 3>{
       {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
@@ -346,4 +346,11 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedBricks.Factory",
            Direction<3>::lower_zeta()},
           {Direction<3>::upper_xi(), Direction<3>::upper_eta(),
            Direction<3>::upper_zeta()}});
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedBricks.Factory",
+                  "[Domain][Unit]") {
+  test_rotated_bricks();
+  test_rotated_bricks_factory();
 }
