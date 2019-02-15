@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_LegendreGaussLobatto.cpp
   Test_Projection.cpp
   Test_Spectral.cpp
+  Test_SwshCollocation.cpp
   )
 
 add_test_library(

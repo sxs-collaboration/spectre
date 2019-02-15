@@ -13,7 +13,7 @@
 namespace Spectral {
 /// \ingroup SpectralGroup
 /// Namespace for spin-weighted spherical harmonic utilities.
-namespace SWSH {
+namespace Swsh {
 
 /// \brief A set of labels for the possible representations of complex numbers
 /// for the `ComplexDataView` and the computations performed in the
@@ -182,5 +182,5 @@ class ComplexDataView {
 };
 
 }  // namespace detail
-}  // namespace SWSH
+}  // namespace Swsh
 }  // namespace Spectral
