@@ -17,6 +17,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 namespace CoordinateMaps {
 
 /// \ingroup CoordinateMapsGroup
@@ -68,3 +69,4 @@ inline constexpr bool operator!=(
   return not(lhs == rhs);
 }
 }  // namespace CoordinateMaps
+}  // namespace domain

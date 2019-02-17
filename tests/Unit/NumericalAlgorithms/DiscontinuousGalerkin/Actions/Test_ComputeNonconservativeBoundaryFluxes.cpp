@@ -136,14 +136,15 @@ auto run_action(
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
 
-  const CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
-  const CoordinateMaps::Affine eta_map{-1., 1., -2., 4.};
+  using Affine = domain::CoordinateMaps::Affine;
+  const Affine xi_map{-1., 1., 3., 7.};
+  const Affine eta_map{-1., 1., -2., 4.};
 
   auto element_map = ElementMap<2, Frame::Inertial>(
-      element.id(), make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                                       CoordinateMaps::Affine>(
-                            xi_map, eta_map)));
+      element.id(),
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
+                                                                 eta_map)));
 
   n_dot_f_tag::type n_dot_f_storage{};
   for (const auto& direction_neighbors : element.neighbors()) {

@@ -41,10 +41,11 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
       {{Direction<2>::lower_eta(), Direction<2>::upper_xi()}},
       {{Direction<2>::upper_xi(), Direction<2>::upper_eta()}});
   Block<2, Frame::Inertial> test_block(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Identity<2>{}),
-      0, {{Direction<2>::upper_xi(), BlockNeighbor<2>{1, aligned}},
-          {Direction<2>::upper_eta(), BlockNeighbor<2>{2, unaligned}}});
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<2>{}),
+      0,
+      {{Direction<2>::upper_xi(), BlockNeighbor<2>{1, aligned}},
+       {Direction<2>::upper_eta(), BlockNeighbor<2>{2, unaligned}}});
 
   // interior element
   test_create_initial_element(

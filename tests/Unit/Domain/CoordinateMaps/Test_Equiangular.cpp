@@ -13,6 +13,7 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Equiangular", "[Domain][Unit]") {
   const double xA = -1.0;
   const double xB = 2.0;
@@ -74,3 +75,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Equiangular", "[Domain][Unit]") {
   test_coordinate_map_argument_types(equiangular_map, point_r2);
   CHECK(not CoordinateMaps::Equiangular{}.is_identity());
 }
+}  // namespace domain

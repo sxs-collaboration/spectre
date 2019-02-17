@@ -25,6 +25,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
+namespace domain {
 namespace CoordinateMaps {
 
 namespace product_detail {
@@ -355,3 +356,4 @@ bool operator!=(const ProductOf3Maps<Map1, Map2, Map3>& lhs,
   return not(lhs == rhs);
 }
 }  // namespace CoordinateMaps
+}  // namespace domain

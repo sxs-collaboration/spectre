@@ -19,6 +19,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
+namespace domain {
 namespace CoordMapsTimeDependent {
 /*!
  * \ingroup CoordMapsTimeDependentGroup
@@ -94,3 +95,4 @@ inline bool operator!=(const CoordMapsTimeDependent::CubicScale& lhs,
 }
 
 }  // namespace CoordMapsTimeDependent
+}  // namespace domain

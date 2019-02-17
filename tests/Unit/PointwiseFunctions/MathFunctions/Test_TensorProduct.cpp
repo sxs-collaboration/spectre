@@ -35,28 +35,28 @@ template <size_t VolumeDim>
 class MathFunction;
 
 namespace {
-using Affine = CoordinateMaps::Affine;
-using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+using Affine = domain::CoordinateMaps::Affine;
+using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <size_t VolumeDim>
 auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                Affine{-1.0, 1.0, 2.3, 2.8}});
 }

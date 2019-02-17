@@ -19,6 +19,7 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
+namespace domain {
 SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
   using Affine2d = CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                                   CoordinateMaps::Affine>;
@@ -327,3 +328,4 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
   CHECK(x_3d_ub_zeta[2][12] == 74.0);
   CHECK(x_3d_ub_zeta[2][14] == 74.0);
 }
+}  // namespace domain

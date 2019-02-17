@@ -29,11 +29,12 @@
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 using Affine = CoordinateMaps::Affine;
 using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 void test_rectangle_construction(
-    const domain::creators::Rectangle<Frame::Inertial>& rectangle,
+    const creators::Rectangle<Frame::Inertial>& rectangle,
     const std::array<double, 2>& lower_bound,
     const std::array<double, 2>& upper_bound,
     const std::vector<std::array<size_t, 2>>& expected_extents,
@@ -63,7 +64,7 @@ void test_rectangle() {
   // default OrientationMap is aligned
   const OrientationMap<2> aligned_orientation{};
 
-  const domain::creators::Rectangle<Frame::Inertial> rectangle{
+  const creators::Rectangle<Frame::Inertial> rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{false, false}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -75,7 +76,7 @@ void test_rectangle() {
            {Direction<2>::lower_eta()},
            {Direction<2>::upper_eta()}}});
 
-  const domain::creators::Rectangle<Frame::Inertial> periodic_x_rectangle{
+  const creators::Rectangle<Frame::Inertial> periodic_x_rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{true, false}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -87,7 +88,7 @@ void test_rectangle() {
       std::vector<std::unordered_set<Direction<2>>>{
           {{Direction<2>::lower_eta()}, {Direction<2>::upper_eta()}}});
 
-  const domain::creators::Rectangle<Frame::Inertial> periodic_y_rectangle{
+  const creators::Rectangle<Frame::Inertial> periodic_y_rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{false, true}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -99,7 +100,7 @@ void test_rectangle() {
       std::vector<std::unordered_set<Direction<2>>>{
           {{Direction<2>::lower_xi()}, {Direction<2>::upper_xi()}}});
 
-  const domain::creators::Rectangle<Frame::Inertial> periodic_xy_rectangle{
+  const creators::Rectangle<Frame::Inertial> periodic_xy_rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{true, true}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -113,7 +114,7 @@ void test_rectangle() {
       std::vector<std::unordered_set<Direction<2>>>{{}});
 
   // Test serialization of the map
-  domain::creators::register_derived_with_charm();
+  creators::register_derived_with_charm();
 
   const auto base_map =
       make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
@@ -140,7 +141,7 @@ void test_rectangle_factory() {
           "    InitialGridPoints: [3,4]\n"
           "    InitialRefinement: [2,3]\n");
   const auto* rectangle_creator =
-      dynamic_cast<const domain::creators::Rectangle<Frame::Inertial>*>(
+      dynamic_cast<const creators::Rectangle<Frame::Inertial>*>(
           domain_creator.get());
   test_rectangle_construction(
       *rectangle_creator, {{0., 0.}}, {{1., 2.}}, {{{3, 4}}}, {{{2, 3}}},
@@ -156,3 +157,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Rectangle.Factory", "[Domain][Unit]") {
   test_rectangle();
   test_rectangle_factory();
 }
+}  // namespace domain

@@ -237,13 +237,13 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   // actions are only sensitive to the ElementMap, which does differ),
   // we need to make the xi and eta maps line up along the block
   // interface.
-  const CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
-  const CoordinateMaps::Affine eta_map{-1., 1., 7., 3.};
+  using Affine = domain::CoordinateMaps::Affine;
+  const Affine xi_map{-1., 1., 3., 7.};
+  const Affine eta_map{-1., 1., 7., 3.};
 
   const auto coordmap =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Affine>(xi_map,
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
                                                                  eta_map));
 
   const auto neighbor_directions = {Direction<2>::lower_xi(),
@@ -539,11 +539,12 @@ SPECTRE_TEST_CASE(
 
   const Element<2> element(self_id, {});
 
+  using Affine = domain::CoordinateMaps::Affine;
   auto map = ElementMap<2, Frame::Inertial>(
-      self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                   CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                                  CoordinateMaps::Affine>(
-                       {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
+      self_id,
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(
+              {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using MockDistributedObjectsTag =
@@ -604,8 +605,9 @@ SPECTRE_TEST_CASE(
                         Direction<3>::lower_eta()}}}}}});
 
   ElementMap<3, Frame::Inertial> map(
-      self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                   CoordinateMaps::Identity<3>{}));
+      self_id,
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<3>{}));
 
   const Mesh<3> mesh({{2, 3, 4}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -752,10 +754,11 @@ SPECTRE_TEST_CASE(
                                         Direction<2>::lower_eta()}}}}}});
 
     ElementMap<2, Frame::Inertial> map(
-        self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                     CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                                    CoordinateMaps::Affine>(
-                         {-1., 1., -1., 1.}, {-1., 1., -1., 1.})));
+        self_id,
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+            domain::CoordinateMaps::ProductOf2Maps<
+                domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine>(
+                {-1., 1., -1., 1.}, {-1., 1., -1., 1.})));
 
     const Mesh<2> mesh(2, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);

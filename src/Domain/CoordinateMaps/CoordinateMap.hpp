@@ -35,6 +35,7 @@ class DataVector;
 class FunctionOfTime;
 /// \endcond
 
+namespace domain {
 /// Contains all coordinate maps.
 namespace CoordinateMaps {
 template <typename FirstMap, typename... Maps>
@@ -671,3 +672,4 @@ PUP::able::PUP_ID
     CoordinateMap<SourceFrame, TargetFrame, Maps...>::my_PUP_ID =  // NOLINT
     0;
 /// \endcond
+}  // namespace domain

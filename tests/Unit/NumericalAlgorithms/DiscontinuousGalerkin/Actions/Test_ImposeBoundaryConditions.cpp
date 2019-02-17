@@ -284,13 +284,13 @@ void run_test() {
   const ElementId<2> east_id(1, {{{2, 1}, {1, 0}}});
   const ElementId<2> south_id(1, {{{2, 0}, {1, 1}}});
 
-  const CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
-  const CoordinateMaps::Affine eta_map{-1., 1., 7., 3.};
+  using Affine = domain::CoordinateMaps::Affine;
+  const Affine xi_map{-1., 1., 3., 7.};
+  const Affine eta_map{-1., 1., 7., 3.};
 
   const auto coordmap =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Affine>(xi_map,
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
                                                                  eta_map));
 
   const auto external_directions = {Direction<2>::lower_eta(),

@@ -15,6 +15,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 namespace CoordinateMaps {
 
 /*!
@@ -128,3 +129,4 @@ class SpecialMobius {
 };
 bool operator!=(const SpecialMobius& lhs, const SpecialMobius& rhs) noexcept;
 }  // namespace CoordinateMaps
+}  // namespace domain

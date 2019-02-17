@@ -383,8 +383,8 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
 
   ElementMap<2, Frame::Inertial> element_map(
       ElementId<2>(0),
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Rotation<2>(atan2(4., 3.))));
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::Rotation<2>(atan2(4., 3.))));
 
   const std::unordered_map<Direction<dim>, Mesh<dim - 1>>
       expected_interface_mesh{

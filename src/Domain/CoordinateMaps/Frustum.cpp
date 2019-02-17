@@ -20,6 +20,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+namespace domain {
 namespace CoordinateMaps {
 Frustum::Frustum(const std::array<std::array<double, 2>, 4>& face_vertices,
                  const double lower_bound, const double upper_bound,
@@ -258,3 +259,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 #undef INSTANTIATE
 /// \endcond
 }  // namespace CoordinateMaps
+}  // namespace domain

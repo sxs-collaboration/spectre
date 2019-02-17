@@ -81,10 +81,11 @@ void test_gauge_constraint_analytic(
   Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
           Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
           Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
           Affine{-1.0, 1.0, lower_bound[2], upper_bound[2]},
@@ -191,10 +192,11 @@ void test_two_index_constraint_analytic(
   Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
           Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
           Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
           Affine{-1.0, 1.0, lower_bound[2], upper_bound[2]},
@@ -319,10 +321,11 @@ void test_four_index_constraint_analytic(
   Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
           Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
           Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
           Affine{-1.0, 1.0, lower_bound[2], upper_bound[2]},
@@ -418,10 +421,11 @@ void test_f_constraint_analytic(const Solution& solution,
   Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
           Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
           Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
           Affine{-1.0, 1.0, lower_bound[2], upper_bound[2]},
@@ -556,10 +560,11 @@ void test_constraint_energy_analytic(const Solution& solution,
   Mesh<3> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
           Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
           Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
           Affine{-1.0, 1.0, lower_bound[2], upper_bound[2]},

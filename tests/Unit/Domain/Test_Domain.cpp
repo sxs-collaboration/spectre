@@ -31,6 +31,7 @@
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 void test_1d_domains() {
   {
@@ -282,3 +283,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear3D", "[Domain][Unit]") {
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
+}  // namespace domain

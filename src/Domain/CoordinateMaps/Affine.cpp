@@ -11,6 +11,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+namespace domain {
 namespace CoordinateMaps {
 
 Affine::Affine(const double A, const double B, const double a, const double b)
@@ -96,3 +97,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 #undef INSTANTIATE
 /// \endcond
 }  // namespace CoordinateMaps
+}  // namespace domain

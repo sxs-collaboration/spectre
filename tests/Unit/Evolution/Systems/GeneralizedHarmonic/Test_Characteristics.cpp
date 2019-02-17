@@ -92,10 +92,11 @@ void test_characteristic_speeds_analytic(
   Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto};
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -215,10 +216,11 @@ void test_characteristic_fields_analytic(
   Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto};
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -382,10 +384,11 @@ void test_evolved_from_characteristic_fields_analytic(
   Mesh<spatial_dim> mesh{grid_size_each_dimension, Spectral::Basis::Legendre,
                          Spectral::Quadrature::GaussLobatto};
 
-  using Affine = CoordinateMaps::Affine;
-  using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+  using Affine = domain::CoordinateMaps::Affine;
+  using Affine3D =
+      domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},

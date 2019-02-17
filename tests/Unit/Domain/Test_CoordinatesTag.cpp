@@ -22,6 +22,7 @@ struct Inertial;
 struct Logical;
 }  // namespace Frame
 
+namespace domain {
 namespace {
 template <size_t Dim, typename T>
 void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) noexcept {
@@ -67,3 +68,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinatesTag", "[Unit][Domain]") {
       Affine3d{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                Affine{-1.0, 1.0, 2.3, 2.8}});
 }
+}  // namespace domain

@@ -22,6 +22,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 template <size_t Dim>
 void test_block() {
@@ -104,3 +105,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
   CHECK(block != neighborless_block);
   CHECK(neighborless_block == neighborless_block);
 }
+}  // namespace domain

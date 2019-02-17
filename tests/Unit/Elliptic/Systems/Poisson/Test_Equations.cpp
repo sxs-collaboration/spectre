@@ -337,36 +337,32 @@ using compute_tags = db::AddComputeTags<
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.FirstOrder",
                   "[Unit][Elliptic]") {
+  using Affine = domain::CoordinateMaps::Affine;
   Mesh<1> mesh_1d{5, Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto};
   ElementMap<1, Frame::Inertial> element_map_1d{
       ElementId<1>{0, make_array<1>(SegmentId{0, 0})},
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Affine{-1., 1., 0., M_PI})};
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          Affine{-1., 1., 0., M_PI})};
   auto domain_box_1d = db::create<simple_tags<1>, compute_tags<1>>(
       mesh_1d, std::move(element_map_1d));
   Mesh<2> mesh_2d{5, Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto};
   ElementMap<2, Frame::Inertial> element_map_2d{
       ElementId<2>{0, make_array<2>(SegmentId{0, 0})},
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Affine>(
-              CoordinateMaps::Affine{-1., 1., 0., M_PI},
-              CoordinateMaps::Affine{-1., 1., 0., M_PI}))};
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(
+              Affine{-1., 1., 0., M_PI}, Affine{-1., 1., 0., M_PI}))};
   auto domain_box_2d = db::create<simple_tags<2>, compute_tags<2>>(
       mesh_2d, std::move(element_map_2d));
   Mesh<3> mesh_3d{5, Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto};
   ElementMap<3, Frame::Inertial> element_map_3d{
       ElementId<3>{0, make_array<3>(SegmentId{0, 0})},
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Affine,
-                                         CoordinateMaps::Affine>(
-              CoordinateMaps::Affine{-1., 1., 0., M_PI},
-              CoordinateMaps::Affine{-1., 1., 0., M_PI},
-              CoordinateMaps::Affine{-1., 1., 0., M_PI}))};
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>(
+              Affine{-1., 1., 0., M_PI}, Affine{-1., 1., 0., M_PI},
+              Affine{-1., 1., 0., M_PI}))};
   auto domain_box_3d = db::create<simple_tags<3>, compute_tags<3>>(
       mesh_3d, std::move(element_map_3d));
 

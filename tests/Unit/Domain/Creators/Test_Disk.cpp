@@ -29,10 +29,11 @@
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 
+namespace domain {
 namespace {
 void test_disk_construction(
-    const domain::creators::Disk<Frame::Inertial>& disk,
-    const double inner_radius, const double outer_radius,
+    const creators::Disk<Frame::Inertial>& disk, const double inner_radius,
+    const double outer_radius,
     const std::array<size_t, 2>& expected_wedge_extents,
     const std::vector<std::array<size_t, 2>>& expected_refinement_level,
     const bool use_equiangular_map) {
@@ -131,7 +132,7 @@ void test_disk_boundaries_equiangular() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{4, 4}};
 
-  const domain::creators::Disk<Frame::Inertial> disk{
+  const creators::Disk<Frame::Inertial> disk{
       inner_radius, outer_radius, refinement_level, grid_points, true};
   test_physical_separation(disk.create_domain().blocks());
   test_disk_construction(disk, inner_radius, outer_radius, grid_points,
@@ -152,9 +153,8 @@ void test_disk_factory_equiangular() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{2, 3}};
   test_disk_construction(
-      dynamic_cast<const domain::creators::Disk<Frame::Inertial>&>(*disk),
-      inner_radius, outer_radius, grid_points,
-      {5, make_array<2>(refinement_level)}, true);
+      dynamic_cast<const creators::Disk<Frame::Inertial>&>(*disk), inner_radius,
+      outer_radius, grid_points, {5, make_array<2>(refinement_level)}, true);
 }
 
 void test_disk_boundaries_equidistant() {
@@ -163,7 +163,7 @@ void test_disk_boundaries_equidistant() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{4, 4}};
 
-  const domain::creators::Disk<Frame::Inertial> disk{
+  const creators::Disk<Frame::Inertial> disk{
       inner_radius, outer_radius, refinement_level, grid_points, false};
   test_physical_separation(disk.create_domain().blocks());
   test_disk_construction(disk, inner_radius, outer_radius, grid_points,
@@ -184,9 +184,8 @@ void test_disk_factory_equidistant() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{2, 3}};
   test_disk_construction(
-      dynamic_cast<const domain::creators::Disk<Frame::Inertial>&>(*disk),
-      inner_radius, outer_radius, grid_points,
-      {5, make_array<2>(refinement_level)}, false);
+      dynamic_cast<const creators::Disk<Frame::Inertial>&>(*disk), inner_radius,
+      outer_radius, grid_points, {5, make_array<2>(refinement_level)}, false);
 }
 }  // namespace
 
@@ -197,3 +196,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Factory.Equidistant",
   test_disk_boundaries_equidistant();
   test_disk_factory_equidistant();
 }
+}  // namespace domain

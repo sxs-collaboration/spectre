@@ -17,8 +17,10 @@ template <size_t VolumeDim, typename TargetFrame>
 class Block;
 template <size_t VolumeDim>
 class BlockNeighbor;
+namespace domain {
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
+}  // namespace domain
 class DataVector;
 template <size_t VolumeDim>
 class Direction;
@@ -38,8 +40,8 @@ void test_domain_construction(
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
-    const std::vector<
-        std::unique_ptr<CoordinateMapBase<Frame::Logical, Fr, VolumeDim>>>&
+    const std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Logical, Fr, VolumeDim>>>&
         expected_maps) noexcept;
 
 // Test that two neighboring Blocks abut each other.

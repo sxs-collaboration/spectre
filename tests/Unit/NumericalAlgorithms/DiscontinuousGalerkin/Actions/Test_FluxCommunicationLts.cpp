@@ -221,8 +221,9 @@ void insert_neighbor(const gsl::not_null<LocalAlg*> local_alg,
                      Spectral::Quadrature::GaussLobatto};
 
   ElementMap<2, Frame::Inertial> map(
-      element.id(), make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::Identity<2>{}));
+      element.id(),
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<2>{}));
 
   db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>> fluxes;
   fluxes[send_direction].initialize(2, n_dot_f);
@@ -329,9 +330,9 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
                       Spectral::Quadrature::GaussLobatto},
               Element<2>{},
               ElementMap<2, Frame::Inertial>{
-                  self_id,
-                  make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                      CoordinateMaps::Identity<2>{})},
+                  self_id, domain::make_coordinate_map_base<Frame::Logical,
+                                                            Frame::Inertial>(
+                               domain::CoordinateMaps::Identity<2>{})},
               db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
               db::item_type<other_data_tag<2>>{},
               db::item_type<mortar_meshes_tag<2>>{},

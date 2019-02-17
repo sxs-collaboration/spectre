@@ -32,9 +32,10 @@
  * downcast fails.
  */
 template <typename Map>
-bool are_maps_equal(const Map& map,
-                    const CoordinateMapBase<Frame::Logical, Frame::Inertial,
-                                            Map::dim>& map_base) {
+bool are_maps_equal(
+    const Map& map,
+    const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, Map::dim>&
+        map_base) {
   const auto* map_derived = dynamic_cast<const Map*>(&map_base);
   return map_derived == nullptr ? false : (*map_derived == map);
 }
@@ -44,8 +45,10 @@ bool are_maps_equal(const Map& map,
 /// are equal by evaluating them at a random set of points.
 template <typename SourceFrame, typename TargetFrame, size_t VolumeDim>
 void check_if_maps_are_equal(
-    const CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>& map_one,
-    const CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>& map_two) {
+    const domain::CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>&
+        map_one,
+    const domain::CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>&
+        map_two) {
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
 
@@ -68,10 +71,10 @@ void check_if_maps_are_equal(
 /// by evaluating the map at a random set of points.
 template <typename Map>
 void check_if_map_is_identity(const Map& map) {
-  using IdentityMap = CoordinateMaps::Identity<Map::dim>;
+  using IdentityMap = domain::CoordinateMaps::Identity<Map::dim>;
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::Inertial, Frame::Grid>(IdentityMap{}),
-      make_coordinate_map<Frame::Inertial, Frame::Grid>(map));
+      domain::make_coordinate_map<Frame::Inertial, Frame::Grid>(IdentityMap{}),
+      domain::make_coordinate_map<Frame::Inertial, Frame::Grid>(map));
   CHECK(map.is_identity());
 }
 
@@ -136,7 +139,8 @@ void test_inv_jacobian(const Map& map,
  */
 template <typename Map, typename... Args>
 void test_coordinate_map_implementation(const Map& map) {
-  const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Grid>(map);
+  const auto coord_map =
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map);
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
 
@@ -275,8 +279,8 @@ void test_coordinate_map_argument_types(
 
   jac_overloader(
       make_array_data_vector, add_reference_wrapper, map, test_point,
-      CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
-                                                         double>{},
+      domain::CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
+                                                                 double>{},
       args...);
 }
 
@@ -333,8 +337,8 @@ void test_suite_for_map_on_unit_cube(const Map& map) {
   test_helper(map);
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::Logical, Frame::Grid>(map),
-      make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
   test_helper(map2);
 }
 
@@ -414,8 +418,8 @@ void test_suite_for_map_on_sphere(const Map& map,
   test_helper(map);
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::Logical, Frame::Grid>(map),
-      make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
   test_helper(map2);
 }
 

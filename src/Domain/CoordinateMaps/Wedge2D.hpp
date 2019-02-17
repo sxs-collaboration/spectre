@@ -19,6 +19,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 namespace CoordinateMaps {
 
 /*!
@@ -168,3 +169,4 @@ class Wedge2D {
 };
 bool operator!=(const Wedge2D& lhs, const Wedge2D& rhs) noexcept;
 }  // namespace CoordinateMaps
+}  // namespace domain

@@ -10,6 +10,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+namespace domain {
 namespace CoordinateMaps {
 
 Rotation<2>::Rotation(const double rotation_angle)
@@ -225,3 +226,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3),
 /// \endcond
 
 }  // namespace CoordinateMaps
+}  // namespace domain

@@ -35,6 +35,9 @@
 // IWYU pragma: no_forward_declare Variables
 
 namespace {
+using Affine = domain::CoordinateMaps::Affine;
+using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 template <size_t Dim, class Frame = ::Frame::Grid>
 struct Var1 : db::SimpleTag {
@@ -245,9 +248,9 @@ void test_logical_partial_derivatives_3d(const Mesh<3>& mesh) {
 template <typename VariableTags, typename GradientTags = VariableTags>
 void test_partial_derivatives_1d(const Mesh<1>& mesh) {
   const size_t number_of_grid_points = mesh.number_of_grid_points();
-  const CoordinateMaps::Affine x_map{-1.0, 1.0, -0.3, 0.7};
-  const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      CoordinateMaps::Affine{x_map});
+  const Affine x_map{-1.0, 1.0, -0.3, 0.7};
+  const auto map_1d =
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(Affine{x_map});
   const auto x = map_1d(logical_coordinates(mesh));
   const InverseJacobian<DataVector, 1, Frame::Logical, Frame::Grid>
       inverse_jacobian(number_of_grid_points, 2.0);
@@ -291,12 +294,10 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
 
 template <typename VariableTags, typename GradientTags = VariableTags>
 void test_partial_derivatives_2d(const Mesh<2>& mesh) {
-  using affine_map = CoordinateMaps::Affine;
-  using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   const auto prod_map2d =
-      make_coordinate_map<Frame::Logical, Frame::Grid>(affine_map_2d{
-          affine_map{-1.0, 1.0, -0.3, 0.7}, affine_map{-1.0, 1.0, 0.3, 0.55}});
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(
+          Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
   const auto x = prod_map2d(logical_coordinates(mesh));
   InverseJacobian<DataVector, 2, Frame::Logical, Frame::Grid> inverse_jacobian(
       number_of_grid_points, 0.0);
@@ -346,14 +347,11 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
 
 template <typename VariableTags, typename GradientTags = VariableTags>
 void test_partial_derivatives_3d(const Mesh<3>& mesh) {
-  using affine_map = CoordinateMaps::Affine;
-  using affine_map_3d =
-      CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   const auto prod_map3d =
-      make_coordinate_map<Frame::Logical, Frame::Grid>(affine_map_3d{
-          affine_map{-1.0, 1.0, -0.3, 0.7}, affine_map{-1.0, 1.0, 0.3, 0.55},
-          affine_map{-1.0, 1.0, 2.3, 2.8}});
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(
+          Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
+                   Affine{-1.0, 1.0, 2.3, 2.8}});
   const auto x = prod_map3d(logical_coordinates(mesh));
   InverseJacobian<DataVector, 3, Frame::Logical, Frame::Grid> inverse_jacobian(
       number_of_grid_points, 0.0);
@@ -552,28 +550,25 @@ void test_partial_derivatives_compute_item(
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  using Affine = CoordinateMaps::Affine;
-  using Affine2d = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  using Affine3d = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
   Index<3> max_extents{10, 10, 5};
 
   for (size_t a = 1; a < max_extents[0]; ++a) {
     test_partial_derivatives_compute_item(
         std::array<size_t, 1>{{a + 1}},
-        make_coordinate_map<Frame::Logical, Frame::Grid>(
-            CoordinateMaps::Affine{-1.0, 1.0, -0.3, 0.7}));
+        domain::make_coordinate_map<Frame::Logical, Frame::Grid>(
+            Affine{-1.0, 1.0, -0.3, 0.7}));
     for (size_t b = 1; b < max_extents[1]; ++b) {
       test_partial_derivatives_compute_item(
           std::array<size_t, 2>{{a + 1, b + 1}},
-          make_coordinate_map<Frame::Logical, Frame::Grid>(Affine2d{
+          domain::make_coordinate_map<Frame::Logical, Frame::Grid>(Affine2D{
               Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}}));
       for (size_t c = 1; a < max_extents[0] / 2 and b < max_extents[1] / 2 and
                          c < max_extents[2];
            ++c) {
         test_partial_derivatives_compute_item(
             std::array<size_t, 3>{{a + 1, b + 1, c + 1}},
-            make_coordinate_map<Frame::Logical, Frame::Grid>(Affine3d{
+            domain::make_coordinate_map<Frame::Logical, Frame::Grid>(Affine3D{
                 Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                 Affine{-1.0, 1.0, 2.3, 2.8}}));
       }

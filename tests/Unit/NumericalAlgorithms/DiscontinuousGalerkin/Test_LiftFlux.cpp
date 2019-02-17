@@ -36,11 +36,13 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
   const Mesh<2> mesh{
       {{3, 5}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
-  const CoordinateMaps::Affine xi_map(-1., 1., -5., 7.);
-  const CoordinateMaps::Affine eta_map(-1., 1., 2., 5.);
-  const auto coordinate_map = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                     CoordinateMaps::Affine>(xi_map, eta_map));
+  using Affine = domain::CoordinateMaps::Affine;
+  const Affine xi_map(-1., 1., -5., 7.);
+  const Affine eta_map(-1., 1., 2., 5.);
+  const auto coordinate_map =
+      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(
+          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
+                                                                 eta_map));
   const double element_length = (eta_map(std::array<double, 1>{{1.}}) -
                                  eta_map(std::array<double, 1>{{-1.}}))[0];
 

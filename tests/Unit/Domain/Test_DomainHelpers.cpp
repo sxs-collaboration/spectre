@@ -35,6 +35,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 
+namespace domain {
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.SameBlock",
                   "[Domain][Unit]") {
   const std::vector<std::array<size_t, 8>> corners_of_all_blocks{
@@ -1501,3 +1502,4 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.WhichWedges", "[Domain][Unit]") {
   CHECK(get_output(ShellWedges::FourOnEquator) == "FourOnEquator");
   CHECK(get_output(ShellWedges::OneAlongMinusX) == "OneAlongMinusX");
 }
+}  // namespace domain

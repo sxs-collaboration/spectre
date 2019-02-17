@@ -17,6 +17,7 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 void test_suite() {  // Set up random number generator
   INFO("Suite");
@@ -101,3 +102,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.EquatorialCompression",
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
+}  // namespace domain

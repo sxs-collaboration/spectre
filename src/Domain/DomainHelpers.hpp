@@ -24,8 +24,10 @@
 /// \cond
 template <size_t VolumeDim>
 class BlockNeighbor;
+namespace domain {
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
+}  // namespace domain
 template <size_t VolumeDim, typename T>
 class DirectionMap;
 template <size_t VolumeDim, typename TargetFrame>
@@ -124,8 +126,8 @@ auto wedge_coordinate_maps(double inner_radius, double outer_radius,
                            bool use_logarithmic_map = false,
                            ShellWedges which_wedges = ShellWedges::All,
                            size_t number_of_layers = 1) noexcept
-    -> std::vector<
-        std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
+    -> std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// These are the ten Frustums used in the DomainCreators for binary compact
@@ -135,8 +137,8 @@ auto wedge_coordinate_maps(double inner_radius, double outer_radius,
 template <typename TargetFrame>
 auto frustum_coordinate_maps(double length_inner_cube, double length_outer_cube,
                              bool use_equiangular_map) noexcept
-    -> std::vector<
-        std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
+    -> std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The corners for a domain with radial layers.
@@ -201,7 +203,7 @@ auto maps_for_rectilinear_domains(
         {},
     bool use_equiangular_map = false) noexcept
     -> std::vector<std::unique_ptr<
-        CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>;
+        domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief Create a rectilinear Domain of multicubes.

@@ -40,6 +40,7 @@
 // IWYU pragma: no_forward_declare CoordinateMaps::Rotation
 // IWYU pragma: no_forward_declare Tensor
 
+namespace domain {
 namespace {
 template <typename Map>
 void check(const Map& map,
@@ -234,3 +235,4 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
                                         Tags::UnnormalizedFaceNormal<2>>>(
             box_with_non_affine_map))));
 }
+}  // namespace domain

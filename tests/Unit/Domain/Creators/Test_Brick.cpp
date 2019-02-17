@@ -30,11 +30,12 @@
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 using Affine = CoordinateMaps::Affine;
 using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 void test_brick_construction(
-    const domain::creators::Brick<Frame::Inertial>& brick,
+    const creators::Brick<Frame::Inertial>& brick,
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& upper_bound,
     const std::vector<std::array<size_t, 3>>& expected_extents,
@@ -67,7 +68,7 @@ void test_brick() {
   // Default OrientationMap is aligned.
   const OrientationMap<3> aligned_orientation{};
 
-  const domain::creators::Brick<Frame::Inertial> brick{
+  const creators::Brick<Frame::Inertial> brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, false, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(brick, lower_bound, upper_bound, grid_points,
@@ -81,7 +82,7 @@ void test_brick() {
                                {Direction<3>::lower_zeta()},
                                {Direction<3>::upper_zeta()}}});
 
-  const domain::creators::Brick<Frame::Inertial> periodic_x_brick{
+  const creators::Brick<Frame::Inertial> periodic_x_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, false, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -95,7 +96,7 @@ void test_brick() {
            {Direction<3>::lower_zeta()},
            {Direction<3>::upper_zeta()}}});
 
-  const domain::creators::Brick<Frame::Inertial> periodic_y_brick{
+  const creators::Brick<Frame::Inertial> periodic_y_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, true, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -109,7 +110,7 @@ void test_brick() {
            {Direction<3>::lower_zeta()},
            {Direction<3>::upper_zeta()}}});
 
-  const domain::creators::Brick<Frame::Inertial> periodic_z_brick{
+  const creators::Brick<Frame::Inertial> periodic_z_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, false, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -123,7 +124,7 @@ void test_brick() {
            {Direction<3>::lower_eta()},
            {Direction<3>::upper_eta()}}});
 
-  const domain::creators::Brick<Frame::Inertial> periodic_xy_brick{
+  const creators::Brick<Frame::Inertial> periodic_xy_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, true, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -137,7 +138,7 @@ void test_brick() {
       std::vector<std::unordered_set<Direction<3>>>{
           {{Direction<3>::lower_zeta()}, {Direction<3>::upper_zeta()}}});
 
-  const domain::creators::Brick<Frame::Inertial> periodic_yz_brick{
+  const creators::Brick<Frame::Inertial> periodic_yz_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, true, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -153,7 +154,7 @@ void test_brick() {
           {Direction<3>::upper_xi()},
       }});
 
-  const domain::creators::Brick<Frame::Inertial> periodic_xz_brick{
+  const creators::Brick<Frame::Inertial> periodic_xz_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, false, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -167,7 +168,7 @@ void test_brick() {
       std::vector<std::unordered_set<Direction<3>>>{
           {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}});
 
-  const domain::creators::Brick<Frame::Inertial> periodic_xyz_brick{
+  const creators::Brick<Frame::Inertial> periodic_xyz_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, true, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -183,7 +184,7 @@ void test_brick() {
       std::vector<std::unordered_set<Direction<3>>>{{}});
 
   // Test serialization of the map
-  domain::creators::register_derived_with_charm();
+  creators::register_derived_with_charm();
 
   const auto base_map =
       make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
@@ -208,7 +209,7 @@ void test_brick_factory() {
           "    InitialGridPoints: [3,4,3]\n"
           "    InitialRefinement: [2,3,2]\n");
   const auto* brick_creator =
-      dynamic_cast<const domain::creators::Brick<Frame::Inertial>*>(
+      dynamic_cast<const creators::Brick<Frame::Inertial>*>(
           domain_creator.get());
   test_brick_construction(
       *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
@@ -227,3 +228,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Brick", "[Domain][Unit]") {
   test_brick();
   test_brick_factory();
 }
+}  // namespace domain

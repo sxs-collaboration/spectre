@@ -20,6 +20,7 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
                   "[Domain][Unit]") {
   // define vars for FunctionOfTime::PiecewisePolynomial f(t) = t**2.
@@ -83,3 +84,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
   test_coordinate_map_argument_types(trans_map, point_xi, t, f_of_t_list);
   CHECK(not CoordMapsTimeDependent::Translation{}.is_identity());
 }
+}  // namespace domain
