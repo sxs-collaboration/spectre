@@ -20,6 +20,8 @@ class not_null;
 }  // namespace gsl
 namespace Tags {
 template <typename Tag>
+struct CharSpeed;
+template <typename Tag>
 struct Normalized;
 }  // namespace Tags
 /// \endcond
@@ -191,4 +193,20 @@ void compute_evolved_fields_from_characteristic_fields(
     const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
 
 // @}
+
+/*!
+ * \ingroup GeneralizedHarmonic
+ * \brief Computes the largest magnitude of the characteristic speeds.
+ */
+template <size_t Dim, typename Frame>
+struct ComputeLargestCharacteristicSpeed {
+  using argument_tags = tmpl::list<::Tags::CharSpeed<Tags::UPsi<Dim, Frame>>,
+                                   ::Tags::CharSpeed<Tags::UZero<Dim, Frame>>,
+                                   ::Tags::CharSpeed<Tags::UPlus<Dim, Frame>>,
+                                   ::Tags::CharSpeed<Tags::UMinus<Dim, Frame>>>;
+  static double apply(const Scalar<DataVector>& u_psi_speed,
+                      const Scalar<DataVector>& u_zero_speed,
+                      const Scalar<DataVector>& u_plus_speed,
+                      const Scalar<DataVector>& u_minus_speed) noexcept;
+};
 }  // namespace GeneralizedHarmonic
