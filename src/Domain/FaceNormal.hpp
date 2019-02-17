@@ -8,7 +8,9 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <functional>
 #include <string>
+#include <unordered_map>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"

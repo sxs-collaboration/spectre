@@ -51,6 +51,8 @@
 // IWYU pragma: no_forward_declare Variables
 // IWYU pragma: no_forward_declare dg::Actions::ReceiveDataForFluxes
 
+// IWYU pragma: no_include <boost/variant/get.hpp>
+
 // Note: Most of this test is adapted from:
 // `NumericalAlgorithms/DiscontinuousGalerkin/Actions/
 // Test_ImposeBoundaryConditions.cpp`

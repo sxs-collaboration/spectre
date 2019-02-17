@@ -43,6 +43,8 @@
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
 
+// IWYU pragma: no_include <boost/variant/get.hpp>
+
 namespace {
 struct Var : db::SimpleTag {
   static std::string name() noexcept { return "Var"; }

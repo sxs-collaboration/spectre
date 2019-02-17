@@ -37,7 +37,7 @@
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_forward_declare CoordinateMaps::Rotation
+// IWYU pragma: no_forward_declare domain::CoordinateMaps::Rotation
 // IWYU pragma: no_forward_declare Tensor
 
 namespace domain {

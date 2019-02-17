@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <array>
-// IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>  // IWYU pragma: keep
@@ -23,6 +22,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/DirectionMap.hpp"
 // IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"  // for Variables
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
@@ -47,6 +47,9 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
+// IWYU pragma: no_include <boost/variant/get.hpp>
 
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables

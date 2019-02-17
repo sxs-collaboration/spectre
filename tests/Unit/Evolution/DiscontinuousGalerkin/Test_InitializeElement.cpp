@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-// IWYU pragma: no_include <pup.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -53,6 +52,9 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <boost/variant/get.hpp>
+// IWYU pragma: no_include <pup.h>
 
 // IWYU pragma: no_forward_declare ElementIndex
 class TimeStepper;

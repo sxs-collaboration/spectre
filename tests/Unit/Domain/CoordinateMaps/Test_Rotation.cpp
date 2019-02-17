@@ -18,7 +18,7 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-// IWYU pragma: no_forward_declare CoordinateMaps::Rotation
+// IWYU pragma: no_forward_declare domain::CoordinateMaps::Rotation
 
 namespace domain {
 namespace {

@@ -30,6 +30,8 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 
+// IWYU pragma: no_forward_declare Tags::deriv
+
 class DataVector;
 template <size_t VolumeDim>
 class MathFunction;
