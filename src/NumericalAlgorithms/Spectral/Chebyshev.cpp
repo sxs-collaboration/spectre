@@ -11,20 +11,20 @@
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/MakeWithValue.hpp"
 
 namespace Spectral {
 
 // Algorithms to compute Chebyshev basis functions
 // These functions specialize the templates declared in `Spectral.hpp`.
 
-/// \cond
-template <>
-DataVector compute_basis_function_values<Basis::Chebyshev>(
-    const size_t k, const DataVector& x) noexcept {
+namespace {
+template <typename T>
+T compute_basis_function_value_impl(const size_t k, const T& x) noexcept {
   // Algorithm 21 in Kopriva, p. 60
   switch (k) {
     case 0:
-      return DataVector(x.size(), 1.);
+      return make_with_value<T>(x, 1.);
     case 1:
       return x;
     default:
@@ -33,9 +33,9 @@ DataVector compute_basis_function_values<Basis::Chebyshev>(
       // Since the trigonometric form is expensive to compute it is useful only
       // for large k. See Kopriva, section 3.1 (p. 59) and Fig. 3.1 (p. 61) for
       // a discussion.
-      DataVector T_k_minus_2(x.size(), 1.);
-      DataVector T_k_minus_1 = x;
-      DataVector T_k(x.size());
+      T T_k_minus_2 = make_with_value<T>(x, 1.);
+      T T_k_minus_1 = x;
+      T T_k = make_with_value<T>(x, 0.);
       for (size_t j = 2; j <= k; j++) {
         T_k = 2 * x * T_k_minus_1 - T_k_minus_2;
         T_k_minus_2 = T_k_minus_1;
@@ -43,6 +43,20 @@ DataVector compute_basis_function_values<Basis::Chebyshev>(
       }
       return T_k;
   }
+}
+}  // namespace
+
+/// \cond
+template <>
+DataVector compute_basis_function_value<Basis::Chebyshev>(
+    const size_t k, const DataVector& x) noexcept {
+  return compute_basis_function_value_impl(k, x);
+}
+
+template <>
+double compute_basis_function_value<Basis::Chebyshev>(
+    const size_t k, const double& x) noexcept {
+  return compute_basis_function_value_impl(k, x);
 }
 
 template <>

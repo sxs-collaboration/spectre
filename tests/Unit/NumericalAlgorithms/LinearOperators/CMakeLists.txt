@@ -5,6 +5,7 @@ set(LIBRARY "Test_LinearOperators")
 
 set(LIBRARY_SOURCES
   Test_ApplyMatrices.cpp
+  Test_CoefficientTransforms.cpp
   Test_DefiniteIntegral.cpp
   Test_Divergence.cpp
   Test_Linearize.cpp

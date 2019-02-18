@@ -99,9 +99,8 @@ constexpr size_t maximum_number_of_points = 12;
  * \brief Compute the function values of the basis function \f$\Phi_k(x)\f$
  * (zero-indexed).
  */
-template <Basis BasisType>
-DataVector compute_basis_function_values(size_t k,
-                                         const DataVector& x) noexcept;
+template <Basis BasisType, typename T>
+T compute_basis_function_value(size_t k, const T& x) noexcept;
 
 /*!
  * \brief Compute the inverse of the weight function \f$w(x)\f$ w.r.t. which

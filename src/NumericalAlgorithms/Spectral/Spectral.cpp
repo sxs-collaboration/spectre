@@ -155,7 +155,7 @@ struct SpectralToGridPointsMatrixGenerator {
     Matrix vandermonde_matrix(num_points, num_points);
     for (size_t j = 0; j < num_points; j++) {
       const auto& basis_function_values =
-          compute_basis_function_values<BasisType>(j, collocation_pts);
+          compute_basis_function_value<BasisType>(j, collocation_pts);
       for (size_t i = 0; i < num_points; i++) {
         vandermonde_matrix(i, j) = basis_function_values[i];
       }

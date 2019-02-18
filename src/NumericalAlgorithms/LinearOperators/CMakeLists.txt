@@ -4,11 +4,12 @@
 set(LIBRARY LinearOperators)
 
 set(LIBRARY_SOURCES
-    ApplyMatrices.cpp
-    DefiniteIntegral.cpp
-    Linearize.cpp
-    MeanValue.cpp
-    )
+  ApplyMatrices.cpp
+  CoefficientTransforms.cpp
+  DefiniteIntegral.cpp
+  Linearize.cpp
+  MeanValue.cpp
+  )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
