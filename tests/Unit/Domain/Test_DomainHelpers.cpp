@@ -304,10 +304,8 @@ void test_wedge_map_generation_against_domain_helpers(
 #endif
 }
 
-
-SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.DefaultSixWedgeDirections.Equiangular",
-    "[Domain][Unit]") {
+void test_default_six_wedge_directions_equiangular() {
+  INFO("Default six wedge directions equiangular");
   const double inner_radius = 1.2;
   const double outer_radius = 2.7;
   const double inner_sphericity = 0.8;
@@ -318,9 +316,8 @@ SPECTRE_TEST_CASE(
       use_equiangular_map);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.DefaultSixWedgeDirections.Equidistant",
-    "[Domain][Unit]") {
+void test_default_six_wedge_directions_equidistant() {
+  INFO("Defaul six wedge directions equidistant");
   const double inner_radius = 0.8;
   const double outer_radius = 7.1;
   const double inner_sphericity = 0.2;
@@ -331,9 +328,8 @@ SPECTRE_TEST_CASE(
       use_equiangular_map);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.TranslatedSixWedgeDirections.Equiangular",
-    "[Domain][Unit]") {
+void test_translated_six_wedge_directions_equiangular() {
+  INFO("Translated six wedge directions equiangular");
   const double inner_radius = 1.2;
   const double outer_radius = 3.1;
   const double inner_sphericity = 0.3;
@@ -345,9 +341,8 @@ SPECTRE_TEST_CASE(
       use_equiangular_map, x_coord_of_shell_center);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.TranslatedSixWedgeDirections.Equidistant",
-    "[Domain][Unit]") {
+void test_translated_six_wedge_directions_equidistant() {
+  INFO("Translated six wedge directions equidistant");
   const double inner_radius = 12.2;
   const double outer_radius = 31.1;
   const double inner_sphericity = 0.9;
@@ -359,8 +354,8 @@ SPECTRE_TEST_CASE(
       use_equiangular_map, x_coord_of_shell_center);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.TenWedgeDirections.Equiangular",
-                  "[Domain][Unit]") {
+void test_ten_wedge_directions_equiangular() {
+  INFO("Ten wedge directions equiangular");
   const double inner_radius = 0.2;
   const double outer_radius = 2.2;
   const double inner_sphericity = 0.0;
@@ -372,8 +367,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.TenWedgeDirections.Equiangular",
       use_equiangular_map, 0.0, use_half_wedges);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.TenWedgeDirections.Equidistant",
-                  "[Domain][Unit]") {
+void test_ten_wedge_directions_equidistant() {
+  INFO("Ten wedge directions equidistant");
   const double inner_radius = 0.2;
   const double outer_radius = 29.2;
   const double inner_sphericity = 0.01;
@@ -385,9 +380,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.TenWedgeDirections.Equidistant",
       use_equiangular_map, 0.0, use_half_wedges);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.SixWedgeDirectionsCompressed.Equiangular",
-    "[Domain][Unit]") {
+void test_six_wedge_directions_compressed_equiangular() {
+  INFO("Six wedge directions compressed equiangular");
   const double inner_radius = 7.2;
   const double outer_radius = 12.2;
   const double inner_sphericity = 0.0;
@@ -400,9 +394,8 @@ SPECTRE_TEST_CASE(
       use_equiangular_map, 0.0, use_half_wedges, aspect_ratio);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.SixWedgeDirectionsCompressed.Equidistant",
-    "[Domain][Unit]") {
+void test_six_wedge_directions_compressed_equidistant() {
+  INFO("Six wedge directions compressed equidistant");
   const double inner_radius = 9.6;
   const double outer_radius = 29.2;
   const double inner_sphericity = 0.0;
@@ -415,10 +408,8 @@ SPECTRE_TEST_CASE(
       use_equiangular_map, 0.0, use_half_wedges, aspect_ratio);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.SixWedgeDirectionsCompressedTranslated."
-    "Equiangular",
-    "[Domain][Unit]") {
+void test_six_wedge_directions_compressed_translated_equiangular() {
+  INFO("Six wedge directions compressed translated equiangular");
   const double inner_radius = 7.2;
   const double outer_radius = 12.2;
   const double inner_sphericity = 0.0;
@@ -433,10 +424,8 @@ SPECTRE_TEST_CASE(
       aspect_ratio);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.SixWedgeDirectionsCompressedTranslated."
-    "Equidistant",
-    "[Domain][Unit]") {
+void test_six_wedge_directions_compressed_translated_equidistant() {
+  INFO("Six wedge directions compressed translated equidistant");
   const double inner_radius = 9.6;
   const double outer_radius = 29.2;
   const double inner_sphericity = 0.0;
@@ -451,10 +440,8 @@ SPECTRE_TEST_CASE(
       aspect_ratio);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.TenWedgeDirectionsCompressedTranslated."
-    "Equiangular",
-    "[Domain][Unit]") {
+void test_ten_wedge_directions_compressed_translated_equiangular() {
+  INFO("Ten wedge directions compressed translated equiangular");
   const double inner_radius = 0.2;
   const double outer_radius = 2.2;
   const double inner_sphericity = 0.0;
@@ -469,10 +456,8 @@ SPECTRE_TEST_CASE(
       aspect_ratio);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.TenWedgeDirectionsCompressedTranslated."
-    "Equidistant",
-    "[Domain][Unit]") {
+void test_ten_wedge_directions_compressed_translated_equidistant() {
+  INFO("Ten wedge directions compressed translated equidistant");
   const double inner_radius = 0.2;
   const double outer_radius = 29.2;
   const double inner_sphericity = 0.01;
@@ -485,6 +470,22 @@ SPECTRE_TEST_CASE(
       inner_radius, outer_radius, inner_sphericity, outer_sphericity,
       use_equiangular_map, x_coord_of_shell_center, use_half_wedges,
       aspect_ratio);
+}
+
+SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.WedgeMapGeneration",
+                  "[Domain][Unit]") {
+  test_default_six_wedge_directions_equiangular();
+  test_default_six_wedge_directions_equidistant();
+  test_translated_six_wedge_directions_equiangular();
+  test_translated_six_wedge_directions_equidistant();
+  test_ten_wedge_directions_equiangular();
+  test_ten_wedge_directions_equidistant();
+  test_six_wedge_directions_compressed_equiangular();
+  test_six_wedge_directions_compressed_equidistant();
+  test_six_wedge_directions_compressed_translated_equiangular();
+  test_six_wedge_directions_compressed_translated_equidistant();
+  test_ten_wedge_directions_compressed_translated_equiangular();
+  test_ten_wedge_directions_compressed_translated_equidistant();
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.AllFrustumDirections",
