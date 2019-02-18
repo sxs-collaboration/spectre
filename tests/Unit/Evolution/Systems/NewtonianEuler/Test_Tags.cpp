@@ -31,6 +31,8 @@ void test_tags() noexcept {
   CHECK(NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>::name() ==
         "SpecificInternalEnergy");
   CHECK(NewtonianEuler::Tags::Pressure<DataVector>::name() == "Pressure");
+  CHECK(NewtonianEuler::Tags::SoundSpeedSquared<DataVector>::name() ==
+        "SoundSpeedSquared");
 }
 }  // namespace
 

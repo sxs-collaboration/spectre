@@ -4,11 +4,12 @@
 set(LIBRARY NewtonianEuler)
 
 set(LIBRARY_SOURCES
-    Characteristics.cpp
-    ConservativeFromPrimitive.cpp
-    Fluxes.cpp
-    PrimitiveFromConservative.cpp
-    )
+  Characteristics.cpp
+  ConservativeFromPrimitive.cpp
+  Fluxes.cpp
+  PrimitiveFromConservative.cpp
+  SoundSpeedSquared.cpp
+  )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
@@ -18,4 +19,5 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE DataStructures
   INTERFACE ErrorHandling
+  INTERFACE Hydro
   )

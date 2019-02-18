@@ -22,6 +22,10 @@ template <typename DataType>
 struct SpecificInternalEnergy;
 template <typename DataType>
 struct Pressure;
+template <typename DataType>
+struct SoundSpeedSquared;
+template <typename DataType>
+struct SoundSpeedSquaredCompute;
 }  // namespace Tags
 }  // namespace NewtonianEuler
 /// \endcond

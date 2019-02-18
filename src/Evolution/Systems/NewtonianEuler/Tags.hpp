@@ -60,5 +60,11 @@ struct Pressure : db::SimpleTag {
   static std::string name() noexcept { return "Pressure"; }
 };
 
+/// The square of the sound speed.
+template <typename DataType>
+struct SoundSpeedSquared : db::SimpleTag {
+  using type = Scalar<DataType>;
+  static std::string name() noexcept { return "SoundSpeedSquared"; }
+};
 }  // namespace Tags
 }  // namespace NewtonianEuler
