@@ -57,11 +57,15 @@ IsentropicVortex<Dim>::IntermediateVariables<DataType>::IntermediateVariables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x, const double t,
     const std::array<double, Dim>& center,
     const std::array<double, Dim>& mean_velocity,
-    const double strength) noexcept {
+    const double perturbation_amplitude, const double strength) noexcept {
   x_tilde = get<0>(x) - center[0] - t * mean_velocity[0];
   y_tilde = get<1>(x) - center[1] - t * mean_velocity[1];
   profile = 0.5 * strength *
             exp(0.5 - 0.5 * (square(x_tilde) + square(y_tilde))) / M_PI;
+  if (Dim == 3) {
+    // Can be any smooth function of z. For testing purpose, we choose sin(z).
+    perturbation = perturbation_amplitude * sin(get<Dim - 1>(x));
+  }
 }
 
 template <size_t Dim>
@@ -89,7 +93,9 @@ IsentropicVortex<Dim>::variables(
   }
   get<0>(velocity) -= vars.y_tilde * vars.profile;
   get<1>(velocity) += vars.x_tilde * vars.profile;
-
+  if (Dim == 3) {
+    get<Dim - 1>(velocity) += vars.perturbation;
+  }
   return velocity;
 }
 

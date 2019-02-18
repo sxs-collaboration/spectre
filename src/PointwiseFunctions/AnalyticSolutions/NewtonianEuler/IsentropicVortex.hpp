@@ -153,7 +153,7 @@ class IsentropicVortex {
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
     IntermediateVariables<DataType> vars(x, t, center_, mean_velocity_,
-                                         strength_);
+                                         perturbation_amplitude_, strength_);
     return {tuples::get<Tags>(variables(tmpl::list<Tags>{}, vars))...};
   }
 
@@ -191,10 +191,13 @@ class IsentropicVortex {
     IntermediateVariables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
                           double t, const std::array<double, Dim>& center,
                           const std::array<double, Dim>& mean_velocity,
+                          double perturbation_amplitude,
                           double strength) noexcept;
     DataType x_tilde{};
     DataType y_tilde{};
     DataType profile{};
+    // (3D only) Extra term in the velocity along z that generates sources.
+    DataType perturbation{};
   };
 
   template <size_t SpatialDim>

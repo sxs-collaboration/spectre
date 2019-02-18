@@ -24,6 +24,8 @@ def velocity(x, t, adiabatic_index, center, mean_velocity,
     velocity = np.copy(mean_velocity)
     velocity[0] -= x_tilde[1] * temp
     velocity[1] += x_tilde[0] * temp
+    if (velocity.size == 3):
+        velocity[2] += perturbation_amplitude * np.sin(x[2])
     return velocity
 
 
