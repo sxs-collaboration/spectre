@@ -72,22 +72,22 @@ struct SpacetimeDerivGaugeH : db::SimpleTag {
 /// \details For details on how these are defined and computed, see
 /// CharacteristicSpeedsCompute
 template <size_t Dim, typename Frame>
-struct UPsi {
+struct UPsi : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
   static std::string name() noexcept { return "UPsi"; }
 };
 template <size_t Dim, typename Frame>
-struct UZero {
+struct UZero : db::SimpleTag {
   using type = tnsr::iaa<DataVector, Dim, Frame>;
   static std::string name() noexcept { return "UZero"; }
 };
 template <size_t Dim, typename Frame>
-struct UPlus {
+struct UPlus : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
   static std::string name() noexcept { return "UPlus"; }
 };
 template <size_t Dim, typename Frame>
-struct UMinus {
+struct UMinus : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
   static std::string name() noexcept { return "UMinus"; }
 };
