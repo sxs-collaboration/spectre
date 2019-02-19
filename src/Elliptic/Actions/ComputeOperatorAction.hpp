@@ -54,13 +54,23 @@ namespace Actions {
  *   - `db::add_tag_prefix<step_prefix, variables_tag>`
  */
 struct ComputeOperatorAction {
+  template <typename MutateTags, typename ArgumentTags, typename Computer,
+            typename DbTags, typename Metavariables, typename... CacheTags>
+  static void mutate_apply_with_cache_tags(
+      const Computer& computer, const gsl::not_null<db::DataBox<DbTags>*> box,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      tmpl::list<CacheTags...> /*meta*/) {
+    db::mutate_apply<MutateTags, ArgumentTags>(computer, box,
+                                               get<CacheTags>(cache)...);
+  }
+
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<tmpl::size<DbTagsList>::value != 0> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -72,11 +82,13 @@ struct ComputeOperatorAction {
     // hard-coding `LinearSolver::Tags::OperatorAppliedTo`) to retain
     // consistency with other actions that do the same (for instance
     // `dg::Actions::ApplyFluxes` that is not specific to elliptic systems)
-    db::mutate_apply<db::split_tag<db::add_tag_prefix<
-                         Metavariables::temporal_id::template step_prefix,
-                         typename system::variables_tag>>,
-                     typename computer::argument_tags>(computer{},
-                                                       make_not_null(&box));
+    mutate_apply_with_cache_tags<
+        db::split_tag<
+            db::add_tag_prefix<Metavariables::temporal_id::template step_prefix,
+                               typename system::variables_tag>>,
+        typename computer::argument_tags>(
+        computer{}, make_not_null(&box), cache,
+        typename computer::const_global_cache_tags{});
     return std::forward_as_tuple(std::move(box));
   }
 };

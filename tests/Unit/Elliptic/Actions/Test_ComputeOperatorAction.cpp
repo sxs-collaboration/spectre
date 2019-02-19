@@ -32,10 +32,17 @@ struct var_tag : db::SimpleTag {
   static std::string name() noexcept { return "var_tag"; }
 };
 
+struct cache_tag : db::SimpleTag {
+  using type = int;
+  static std::string name() noexcept { return "cache_tag"; }
+};
+
 struct ComputeVolumeAx {
   using argument_tags = tmpl::list<var_tag>;
-  static void apply(const gsl::not_null<int*> Ax_var, const int& var) {
-    *Ax_var = var * 2;
+  using const_global_cache_tags = tmpl::list<cache_tag>;
+  static void apply(const gsl::not_null<int*> Ax_var, const int& var,
+                    const int& cache) {
+    *Ax_var = var * 2 + cache;
   }
 };
 
@@ -51,7 +58,7 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndexType;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list = tmpl::list<cache_tag>;
   using action_list = tmpl::list<Elliptic::Actions::ComputeOperatorAction>;
   using initial_databox = db::compute_databox_type<
       tmpl::list<var_tag, LinearSolver::Tags::OperatorAppliedTo<var_tag>>>;
@@ -79,7 +86,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.ComputeOperatorAction",
   MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
   tuples::get<MockDistributedObjectsTag>(dist_objects)
       .emplace(self_id, db::create<simple_tags>(3, -100));
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
+  MockRuntimeSystem runner{{2}, std::move(dist_objects)};
   const auto get_box = [&runner, &self_id]() -> decltype(auto) {
     return runner.algorithms<component<Metavariables>>()
         .at(self_id)
@@ -94,6 +101,6 @@ SPECTRE_TEST_CASE("Unit.Elliptic.ComputeOperatorAction",
   {
     const auto& box = get_box();
     CHECK(db::get<var_tag>(box) == 3);
-    CHECK(db::get<LinearSolver::Tags::OperatorAppliedTo<var_tag>>(box) == 6);
+    CHECK(db::get<LinearSolver::Tags::OperatorAppliedTo<var_tag>>(box) == 8);
   }
 }
