@@ -1607,7 +1607,7 @@ template <typename... ReturnTags, typename... ArgumentTags, typename F,
                   db::item_type<ArgumentTags, BoxTags>>...,
               Args...>> = nullptr>
 inline constexpr auto mutate_apply(
-    F /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> box,
+    F&& /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> box,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... args) noexcept {
   static_assert(
@@ -1620,15 +1620,9 @@ inline constexpr auto mutate_apply(
       box,
       [](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
          const db::item_type<ArgumentTags, BoxTags>&... args_items,
-         decltype(std::forward<Args>(args))... l_args)
-      // clang-format off
-      noexcept(noexcept(F::apply(
-          std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
-          std::declval<const db::item_type<ArgumentTags, BoxTags>&>()...,
-          std::forward<Args>(args)...))) {
-        // clang-format on
-        return F::apply(mutated_items..., args_items...,
-                        std::forward<Args>(l_args)...);
+         decltype(std::forward<Args>(args))... l_args) noexcept {
+        return std::decay_t<F>::apply(mutated_items..., args_items...,
+                                      std::forward<Args>(l_args)...);
       },
       db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
 }
@@ -1641,15 +1635,9 @@ template <typename... ReturnTags, typename... ArgumentTags, typename F,
                   db::item_type<ArgumentTags, BoxTags>>...,
               Args...>> = nullptr>
 inline constexpr auto mutate_apply(
-    F f, const gsl::not_null<db::DataBox<BoxTags>*> box,
+    F&& f, const gsl::not_null<db::DataBox<BoxTags>*> box,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
-    Args&&... args)
-    // clang-format off
-    noexcept(noexcept(f(
-        std::declval<gsl::not_null<db::item_type<ReturnTags>*>>()...,
-        std::declval<const db::item_type<ArgumentTags, BoxTags>&>()...,
-        std::forward<Args>(args)...))) {
-  // clang-format on
+    Args&&... args) noexcept {
   static_assert(
       not tmpl2::flat_any_v<
           cpp17::is_same_v<ArgumentTags, Tags::DataBox>...> and
@@ -1771,7 +1759,7 @@ constexpr bool check_mutate_apply_argument_tags(
 template <typename MutateTags, typename ArgumentTags, typename F,
           typename BoxTags, typename... Args>
 inline constexpr auto mutate_apply(
-    F f, const gsl::not_null<DataBox<BoxTags>*> box,
+    F&& f, const gsl::not_null<DataBox<BoxTags>*> box,
     Args&&... args) noexcept(DataBox_detail::
                                  check_mutate_apply_mutate_tags(
                                      BoxTags{}, MutateTags{}) and
@@ -1786,7 +1774,8 @@ inline constexpr auto mutate_apply(
   // performed.
   DataBox_detail::check_mutate_apply_mutate_tags(BoxTags{}, MutateTags{});
   DataBox_detail::check_mutate_apply_argument_tags(BoxTags{}, ArgumentTags{});
-  return DataBox_detail::mutate_apply(f, box, MutateTags{}, ArgumentTags{},
+  return DataBox_detail::mutate_apply(std::forward<F>(f), box, MutateTags{},
+                                      ArgumentTags{},
                                       std::forward<Args>(args)...);
 }
 
