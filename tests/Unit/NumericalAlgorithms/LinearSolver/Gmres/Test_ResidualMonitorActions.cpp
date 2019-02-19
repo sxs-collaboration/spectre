@@ -487,11 +487,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     // |r| = 0.8804509063256237
     CHECK(get<residual_magnitude_tag>(box) == approx(0.8804509063256237));
     const auto& has_converged = get<LinearSolver::Tags::HasConverged>(box);
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
+    CHECK(has_converged);
+    CHECK(has_converged.reason() ==
           LinearSolver::ConvergenceReason::MaxIterations);
-    CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
-          db::get<LinearSolver::Tags::HasConverged>(box));
+    CHECK(db::get<CheckConvergedTag>(mock_element_box) == has_converged);
   }
 
   SECTION("ConvergeByRelativeResidual") {
