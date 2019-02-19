@@ -86,6 +86,7 @@ class NumericalFlux {
   };
 
   using package_tags = tmpl::list<ExtraData, Var>;
+  using const_global_cache_tags = tmpl::list<>;
 
   using argument_tags =
       tmpl::list<Tags::NormalDotFlux<Var>, OtherData,

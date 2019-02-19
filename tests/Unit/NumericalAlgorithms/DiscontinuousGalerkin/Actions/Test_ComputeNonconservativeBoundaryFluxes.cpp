@@ -71,6 +71,7 @@ struct System {
     using argument_tags =
         tmpl::list<Var, OtherArg, Var2,
                    Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>;
+    using const_global_cache_tags = tmpl::list<>;
     static void apply(
         const gsl::not_null<Scalar<DataVector>*> var_normal_dot_flux,
         const gsl::not_null<tnsr::ii<DataVector, 2>*> var2_normal_dot_flux,

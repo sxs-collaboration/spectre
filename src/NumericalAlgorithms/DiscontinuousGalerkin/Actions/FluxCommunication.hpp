@@ -249,7 +249,7 @@ struct SendDataForFluxes {
 
       const auto packaged_data = DgActions_detail::compute_packaged_data(
           box, direction, normal_dot_numerical_flux_computer,
-          Tags::InternalDirections<volume_dim>{}, Metavariables{});
+          Tags::InternalDirections<volume_dim>{}, cache);
 
       const auto direction_from_neighbor = orientation(direction.opposite());
 

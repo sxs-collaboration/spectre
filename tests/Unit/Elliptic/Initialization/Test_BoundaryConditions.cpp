@@ -63,15 +63,20 @@ struct AnalyticSolution {
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
+struct FluxFactorTag : db::SimpleTag {
+  static std::string name() noexcept { return "FluxFactorTag"; };
+  using type = double;
+};
+
 template <size_t Dim>
 struct NumericalFlux {
+  using boundary_argument_tags = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<FluxFactorTag>;
   void compute_dirichlet_boundary(
       gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-      const Scalar<DataVector>& field,
-      const tnsr::i<DataVector, Dim,
-                    Frame::Inertial>& /*interface_unit_normal*/) const
+      const Scalar<DataVector>& field, const double& flux_factor) const
       noexcept {
-    numerical_flux_for_field->get() = 2. * get(field);
+    numerical_flux_for_field->get() = flux_factor * get(field);
   }
 
   // clang-tidy: do not use references
@@ -87,7 +92,8 @@ struct Metavariables {
       OptionTags::NumericalFluxParams<NumericalFlux<Dim>>;
   using component_list = tmpl::list<>;
   using const_global_cache_tag_list =
-      tmpl::list<analytic_solution_tag, normal_dot_numerical_flux>;
+      tmpl::list<analytic_solution_tag, normal_dot_numerical_flux,
+                 FluxFactorTag>;
 };
 
 template <size_t Dim>
@@ -103,10 +109,7 @@ using arguments_compute_tags = db::AddComputeTags<
                                Tags::UnnormalizedFaceNormal<Dim>>,
     Tags::InterfaceComputeItem<
         Tags::BoundaryDirectionsInterior<Dim>,
-        Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
-    Tags::InterfaceComputeItem<
-        Tags::BoundaryDirectionsInterior<Dim>,
-        Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+        Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
@@ -135,16 +138,16 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
                                                    std::move(sources));
 
     ActionTesting::MockRuntimeSystem<Metavariables<1>> runner{
-        {AnalyticSolution<1>{}, NumericalFlux<1>{}}, {}};
+        {AnalyticSolution<1>{}, NumericalFlux<1>{}, 2.}, {}};
 
     const auto box = Elliptic::Initialization::BoundaryConditions<
         Metavariables<1>>::initialize(std::move(arguments_box), runner.cache());
 
     // Expected boundary contribution to source in element X:
     // [ -24 0 0 0 | -xi->
-    // -0.5 (field) * 2. (num. flux) * 6. (inverse logical mass) * 4. (jacobian
-    // for mass) = -24.
-    // This expectation assumes the diagonal mass matrix approximation.
+    // -0.5 (field) * 2. (flux_factor) * 6. (inverse logical mass) * 4.
+    // (jacobian for mass) = -24. This expectation assumes the diagonal mass
+    // matrix approximation.
     const DataVector source_expected{-24., 0., 0., 0.};
     CHECK(get<Tags::Source<ScalarFieldTag>>(box) ==
           Scalar<DataVector>(source_expected));
@@ -178,7 +181,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
                                                    std::move(sources));
 
     ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
-        {AnalyticSolution<2>{}, NumericalFlux<2>{}}, {}};
+        {AnalyticSolution<2>{}, NumericalFlux<2>{}, 2.}, {}};
 
     const auto box = Elliptic::Initialization::BoundaryConditions<
         Metavariables<2>>::initialize(std::move(arguments_box), runner.cache());
@@ -221,7 +224,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
                                                    std::move(sources));
 
     ActionTesting::MockRuntimeSystem<Metavariables<3>> runner{
-        {AnalyticSolution<3>{}, NumericalFlux<3>{}}, {}};
+        {AnalyticSolution<3>{}, NumericalFlux<3>{}, 2.}, {}};
 
     const auto box = Elliptic::Initialization::BoundaryConditions<
         Metavariables<3>>::initialize(std::move(arguments_box), runner.cache());

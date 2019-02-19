@@ -45,13 +45,15 @@ template <typename DirectionsTag>
 struct ComputeNonconservativeBoundaryFluxes {
  private:
   template <typename Metavariables, typename... NormalDotFluxTags,
-            typename... Args>
+            typename... Args, typename... CacheArgs>
   static void apply_flux(
       gsl::not_null<Variables<tmpl::list<NormalDotFluxTags...>>*> boundary_flux,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      tmpl::list<CacheArgs...> /*meta*/,
       const Args&... boundary_variables) noexcept {
     Metavariables::system::normal_dot_fluxes::apply(
         make_not_null(&get<NormalDotFluxTags>(*boundary_flux))...,
-        boundary_variables...);
+        boundary_variables..., get<CacheArgs>(cache)...);
   }
 
  public:
@@ -60,7 +62,7 @@ struct ComputeNonconservativeBoundaryFluxes {
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
@@ -77,14 +79,16 @@ struct ComputeNonconservativeBoundaryFluxes {
                                          tmpl::bind<Tags::Interface,
                                                     DirectionsTag, tmpl::_1>>,
                          DirectionsTag>>(
-        [](const gsl::not_null<db::item_type<interface_normal_dot_fluxes_tag>*>
-               boundary_fluxes,
-           const db::item_type<DirectionsTag>& internal_directions,
-           const auto&... tensors) noexcept {
+        [&cache](
+            const gsl::not_null<db::item_type<interface_normal_dot_fluxes_tag>*>
+                boundary_fluxes,
+            const db::item_type<DirectionsTag>& internal_directions,
+            const auto&... tensors) noexcept {
           for (const auto& direction : internal_directions) {
             // Prepending the type name works around an issue with gcc-6
-            ComputeNonconservativeBoundaryFluxes::apply_flux<Metavariables>(
-                make_not_null(&boundary_fluxes->at(direction)),
+            ComputeNonconservativeBoundaryFluxes::apply_flux(
+                make_not_null(&boundary_fluxes->at(direction)), cache,
+                typename system::normal_dot_fluxes::const_global_cache_tags{},
                 tensors.at(direction)...);
           }
           return boundary_fluxes;

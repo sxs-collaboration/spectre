@@ -79,6 +79,7 @@ class NumericalFlux {
   };
 
   using package_tags = tmpl::list<ExtraData, Var>;
+  using const_global_cache_tags = tmpl::list<>;
   // This is a silly set of things to request, but it tests not
   // requesting the evolved variables and requesting multiple other
   // things.

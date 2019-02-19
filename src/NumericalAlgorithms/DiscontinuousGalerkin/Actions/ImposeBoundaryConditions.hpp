@@ -133,11 +133,11 @@ struct ImposeDirichletBoundaryConditions {
 
       auto interior_data = DgActions_detail::compute_local_mortar_data(
           *box, direction, normal_dot_numerical_flux_computer,
-          Tags::BoundaryDirectionsInterior<volume_dim>{}, Metavariables{});
+          Tags::BoundaryDirectionsInterior<volume_dim>{}, cache);
 
       auto exterior_data = DgActions_detail::compute_packaged_data(
           *box, direction, normal_dot_numerical_flux_computer,
-          Tags::BoundaryDirectionsExterior<volume_dim>{}, Metavariables{});
+          Tags::BoundaryDirectionsExterior<volume_dim>{}, cache);
 
       db::mutate<Tags::VariablesBoundaryData>(
           box, [&mortar_id, &temporal_id, &interior_data, &exterior_data ](
