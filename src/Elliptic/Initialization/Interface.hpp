@@ -100,6 +100,9 @@ struct Interface {
               db::variables_tag_with_tags_list<typename System::variables_tag,
                                                typename System::gradient_tags>,
               tmpl::size_t<volume_dim>, Frame::Inertial>>,
+      Tags::InterfaceComputeItem<
+          Tags::BoundaryDirectionsExterior<volume_dim>,
+          Tags::BoundaryCoordinates<volume_dim, Frame::Inertial>>,
       Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<volume_dim>,
                                  Tags::UnnormalizedFaceNormal<volume_dim>>,
       Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<volume_dim>,
