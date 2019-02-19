@@ -19,6 +19,7 @@
 
 namespace {
 void test_suite() {  // Set up random number generator
+  INFO("Suite");
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> aspect_ratio_dis(0.1, 10);
 
@@ -30,6 +31,7 @@ void test_suite() {  // Set up random number generator
 }
 
 void test_radius() {
+  INFO("Radius");
   // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-10, 10);
@@ -76,6 +78,7 @@ void test_radius() {
 }
 
 void test_is_identity() {
+  INFO("Is identity");
   check_if_map_is_identity(CoordinateMaps::EquatorialCompression{1.0});
   CHECK(not CoordinateMaps::EquatorialCompression{0.9}.is_identity());
 }

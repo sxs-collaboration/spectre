@@ -76,6 +76,7 @@ auto compose_inv_jacobians(const Map1& map1, const Map2& map2,
 }
 
 void test_single_coordinate_map() {
+  INFO("Single coordinate map");
   using affine_map1d = CoordinateMaps::Affine;
 
   const auto affine1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
@@ -241,6 +242,7 @@ void test_single_coordinate_map() {
 }
 
 void test_coordinate_map_with_affine_map() {
+  INFO("Coordinate map with affine map");
   using affine_map = CoordinateMaps::Affine;
   using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
   using affine_map_3d =
@@ -366,6 +368,7 @@ void test_coordinate_map_with_affine_map() {
 }
 
 void test_coordinate_map_with_rotation_map() {
+  INFO("Coordinate map with rotation map");
   using rotate2d = CoordinateMaps::Rotation<2>;
   using rotate3d = CoordinateMaps::Rotation<3>;
 
@@ -450,6 +453,7 @@ void test_coordinate_map_with_rotation_map() {
 }
 
 void test_coordinate_map_with_rotation_map_datavector() {
+  INFO("Coordinate map with rotation map datavector");
   using rotate2d = CoordinateMaps::Rotation<2>;
   using rotate3d = CoordinateMaps::Rotation<3>;
 
@@ -531,6 +535,7 @@ void test_coordinate_map_with_rotation_map_datavector() {
 }
 
 void test_coordinate_map_with_rotation_wedge() {
+  INFO("Coordinate map with rotation wedge");
   using Rotate = CoordinateMaps::Rotation<2>;
   using Wedge2D = CoordinateMaps::Wedge2D;
 
@@ -563,6 +568,7 @@ void test_coordinate_map_with_rotation_wedge() {
 }
 
 void test_make_vector_coordinate_map_base() {
+  INFO("Make vector coordinate map base");
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 
@@ -757,6 +763,7 @@ void test_make_vector_coordinate_map_base() {
 }
 
 void test_coordinate_maps_are_identity() {
+  INFO("Coordinate maps are identity");
   const auto giant_identity_map =
       make_coordinate_map<Frame::Logical, Frame::Inertial>(
           CoordinateMaps::Identity<3>{},

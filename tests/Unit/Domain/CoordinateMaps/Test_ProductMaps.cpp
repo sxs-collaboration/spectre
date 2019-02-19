@@ -23,6 +23,7 @@
 
 namespace {
 void test_product_two_maps_fail() {
+  INFO("Product two maps fail");
   const CoordinateMaps::Affine affine(-1.0, 1.0, 3.0, 4.0);
   const CoordinateMaps::Wedge2D wedge(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{},
                                       true);
@@ -57,6 +58,7 @@ void test_product_two_maps_fail() {
   }
 }
 void test_product_of_2_maps() {
+  INFO("Product of two maps");
   using affine_map = CoordinateMaps::Affine;
   using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
 
@@ -183,6 +185,7 @@ void test_product_of_2_maps() {
 }
 
 void test_product_of_3_maps() {
+  INFO("Product of 3 maps");
   using affine_map = CoordinateMaps::Affine;
   using affine_map_3d =
       CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;

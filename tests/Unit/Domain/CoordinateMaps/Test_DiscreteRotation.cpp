@@ -21,6 +21,7 @@
 
 namespace {
 void test_1d() {
+  INFO("1d");
   const CoordinateMaps::DiscreteRotation<1> identity_map1d{};
   const CoordinateMaps::DiscreteRotation<1> rotation_nx{OrientationMap<1>{
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}}};
@@ -40,6 +41,7 @@ void test_1d() {
 }
 
 void test_2d() {
+  INFO("2d");
   const CoordinateMaps::DiscreteRotation<2> identity_map2d{};
   const CoordinateMaps::DiscreteRotation<2> rotation_ny_px{
       OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -60,6 +62,7 @@ void test_2d() {
 }
 
 void test_3d() {
+  INFO("3d");
   const CoordinateMaps::DiscreteRotation<3> identity_map3d{};
   const CoordinateMaps::DiscreteRotation<3> rotation_ny_nz_px{
       OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -87,6 +90,7 @@ void test_3d() {
 }
 
 void test_with_orientation() {
+  INFO("With orientation");
   for (OrientationMapIterator<2> map_i{}; map_i; ++map_i) {
     const CoordinateMaps::DiscreteRotation<2> coord_map{map_i()};
     test_suite_for_map_on_unit_cube(coord_map);
@@ -98,6 +102,7 @@ void test_with_orientation() {
 }
 
 void test_is_identity() {
+  INFO("Is identity");
   check_if_map_is_identity(
       CoordinateMaps::DiscreteRotation<1>{OrientationMap<1>{}});
   CHECK(not CoordinateMaps::DiscreteRotation<1>{

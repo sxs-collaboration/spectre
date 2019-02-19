@@ -18,6 +18,7 @@
 
 namespace {
 void test_wedge3d_all_directions() {
+  INFO("Wedge3d all directions");
   // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> unit_dis(0, 1);
@@ -52,6 +53,7 @@ void test_wedge3d_all_directions() {
 }
 
 void test_wedge3d_alignment() {
+  INFO("Wedge3d alignment");
   // This test tests that the logical axes point along the expected directions
   // in physical space
 
@@ -152,6 +154,7 @@ void test_wedge3d_alignment() {
 }
 
 void test_wedge3d_random_radii() {
+  INFO("Wedge3d random radii");
   // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
@@ -266,6 +269,7 @@ void test_wedge3d_random_radii() {
 }
 
 void test_wedge3d_fail() noexcept {
+  INFO("Wedge3d fail");
   const CoordinateMaps::Wedge3D map(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0,
                                     true);
   // Any point with z=0 should fail the inverse map.

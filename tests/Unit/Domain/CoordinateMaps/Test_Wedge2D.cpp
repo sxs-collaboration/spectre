@@ -20,6 +20,7 @@
 
 namespace {
 void test_wedge2d_all_orientations(const bool with_equiangular_map) {
+  INFO("Wedge2d all orientations");
   // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
@@ -125,6 +126,7 @@ void test_wedge2d_all_orientations(const bool with_equiangular_map) {
 }
 
 void test_wedge2d_fail() noexcept {
+  INFO("Wedge2d fail");
   const auto map =
       CoordinateMaps::Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
 
@@ -148,6 +150,7 @@ void test_wedge2d_fail() noexcept {
 }
 
 void test_equality() {
+  INFO("Equality");
   const auto wedge2d =
       CoordinateMaps::Wedge2D(0.2, 4.0, 0.0, 1.0, OrientationMap<2>{}, true);
   const auto wedge2d_inner_radius_changed =

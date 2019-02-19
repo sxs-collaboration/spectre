@@ -65,6 +65,7 @@ void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
 }
 
 void test_rotation_2() {
+  INFO("Rotation 2");
   CoordinateMaps::Rotation<2> half_pi_rotation_map(M_PI_2);
 
   const auto xi0 = make_array<2>(0.0);
@@ -116,6 +117,7 @@ void test_rotation_2() {
 }
 
 void test_rotation_3() {
+  INFO("Rotation 3");
   test_rotation_3(CoordinateMaps::Rotation<3>(0.0, 0.0, 0.0),
                   std::array<double, 3>{{1.0, 0.0, 0.0}},
                   std::array<double, 3>{{0.0, 1.0, 0.0}},
