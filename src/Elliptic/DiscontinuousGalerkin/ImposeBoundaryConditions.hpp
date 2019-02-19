@@ -130,10 +130,11 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
                   tmpl::type_from<decltype(dirichlet_tag_val)>;
               using dirichlet_operand_tag =
                   LinearSolver::Tags::Operand<dirichlet_tag>;
-              // Use mirror principle. This only works for scalars right now.
-              get(get<dirichlet_operand_tag>(exterior_vars)) =
-                  -1. *
-                  get<dirichlet_operand_tag>(interior_vars.at(direction)).get();
+              // Use mirror principle
+              const db::item_type<typename system::variables_tag>
+                  mirrored_interior_vars(-1. * interior_vars.at(direction));
+              get<dirichlet_operand_tag>(exterior_vars) =
+                  get<dirichlet_operand_tag>(mirrored_interior_vars);
             });
           }
         },
@@ -153,11 +154,11 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
 
       auto interior_data = DgActions_detail::compute_local_mortar_data(
           box, direction, normal_dot_numerical_flux_computer,
-          Tags::BoundaryDirectionsInterior<volume_dim>{}, Metavariables{});
+          Tags::BoundaryDirectionsInterior<volume_dim>{}, cache);
 
       auto exterior_data = DgActions_detail::compute_packaged_data(
           box, direction, normal_dot_numerical_flux_computer,
-          Tags::BoundaryDirectionsExterior<volume_dim>{}, Metavariables{});
+          Tags::BoundaryDirectionsExterior<volume_dim>{}, cache);
 
       db::mutate<Tags::VariablesBoundaryData>(
           make_not_null(&box),
