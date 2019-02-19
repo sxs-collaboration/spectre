@@ -21,6 +21,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/TypeTraits.hpp"
+#include "Utilities/Formaline.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -97,10 +98,27 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
   namespace bpo = boost::program_options;
   try {
     bpo::options_description command_line_options;
+    // disable clang-format because it combines the repeated call operator
+    // invocations making the code more difficult to parse.
+    // clang-format off
     command_line_options.add_options()
         ("help,h", "Describe program options")
         ("check-options", "Check input file options")
+        ("dump-source-tree-as", bpo::value<std::string>(),
+         "If specified, then a gzip archive of the source tree is dumped "
+         "with the specified name. The archive can be expanded using "
+         "'tar -xzf ARCHIVE.tar.gz'")
+        ("dump-paths",
+         "Dump the PATH, CPATH, LD_LIBRARY_PATH, LIBRARY_PATH, and "
+         "CMAKE_PREFIX_PATH at compile time.")
+        ("dump-environment",
+         "Dump the result of printenv at compile time.")
+        ("dump-library-versions",
+         "Dump the contents of SpECTRE's LibraryVersions.txt")
+        ("dump-only",
+         "Exit after dumping requested information.")
         ;
+    // clang-format on
 
     constexpr bool has_options = tmpl::size<option_list>::value > 0;
     // Add input-file option if it makes sense
@@ -164,6 +182,27 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
 
     if (parsed_command_line_options.count("help") != 0) {
       Parallel::printf("%s\n%s", command_line_options, options_.help());
+      Parallel::exit();
+    }
+
+    if (parsed_command_line_options.count("dump-source-tree-as") != 0) {
+      formaline::write_to_file(
+          parsed_command_line_options["dump-source-tree-as"].as<std::string>());
+      Parallel::printf("Dumping archive of source tree at link time.\n");
+    }
+    if (parsed_command_line_options.count("dump-paths") != 0) {
+      Parallel::printf("Paths at link time were:\n%s\n",
+                       formaline::get_paths());
+    }
+    if (parsed_command_line_options.count("dump-environment") != 0) {
+      Parallel::printf("Environment variables at link time were:\n%s\n",
+                       formaline::get_environment_variables());
+    }
+    if (parsed_command_line_options.count("dump-library-versions") != 0) {
+      Parallel::printf("LibraryVersions.txt at link time was:\n%s\n",
+                       formaline::get_library_versions());
+    }
+    if (parsed_command_line_options.count("dump-only") != 0) {
       Parallel::exit();
     }
 

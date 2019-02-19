@@ -152,6 +152,7 @@ class H5File {
       const std::unique_ptr<h5::Object>& current_object) const;
 
   void insert_header();
+  void insert_source_archive() noexcept;
 
   template <typename ObjectType>
   std::tuple<bool, detail::OpenGroup, std::string> check_if_object_exists(

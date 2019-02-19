@@ -26,11 +26,14 @@
 #include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/OpenGroup.hpp"
+#include "IO/H5/SourceArchive.hpp"  // IWYU pragma: keep
 #include "IO/H5/Version.hpp"
 #include "IO/H5/Wrappers.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Utilities/FileSystem.hpp"
+#include "Utilities/Formaline.hpp"
 #include "Utilities/GetOutput.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include <boost/iterator/iterator_facade.hpp>
@@ -52,23 +55,41 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
     file_system::rm(h5_file_name, true);
   }
   /// [h5file_readwrite_get_header]
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+  h5::H5File<h5::AccessType::ReadWrite> my_file0(h5_file_name);
   // Check that the header was written correctly
-  const std::string& header = my_file.get<h5::Header>("/header").get_header();
+  const std::string header = my_file0.get<h5::Header>("/header").get_header();
   /// [h5file_readwrite_get_header]
+  my_file0.close_current_object();
 
-  CHECK(my_file.name() == h5_file_name);
+  const auto check_header = [&h5_file_name](const auto& my_file) noexcept {
+    // Check that the header was written correctly
+    const std::string my_header =
+        my_file.template get<h5::Header>("/header").get_header();
 
-  std::stringstream ss;
-  ss << "# ";
-  auto build_info = info_from_build();
-  ss << std::regex_replace(build_info, std::regex{"\n"}, "\n# ");
+    CHECK(my_file.name() == h5_file_name);
 
-  CHECK("#\n# File created on "s ==
-        header.substr(0, header.find("File created on ") + 16));
-  CHECK(ss.str() == header.substr(header.find("# SpECTRE Build Information:")));
+    CHECK("#\n# File created on "s ==
+          my_header.substr(0, my_header.find("File created on ") + 16));
+    CHECK(my_header.substr(my_header.find("# SpECTRE Build Information:")) ==
+          std::string{MakeString{}
+                      << "# "
+                      << std::regex_replace(info_from_build(), std::regex{"\n"},
+                                            "\n# ")});
+    CHECK(my_file.template get<h5::Header>("/header").get_env_variables() ==
+          formaline::get_environment_variables());
+    CHECK(my_file.template get<h5::Header>("/header").get_library_versions() ==
+          formaline::get_library_versions());
+  };
+  check_header(my_file0);
+  check_header(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
 
-  my_file.close_current_object();
+  const auto check_source_archive = [](const auto& my_file) noexcept {
+    const std::vector<char> archive =
+        my_file.template get<h5::SourceArchive>("/src").get_archive();
+    CHECK(archive == formaline::get_archive());
+  };
+  check_source_archive(my_file0);
+  check_source_archive(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
 
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);

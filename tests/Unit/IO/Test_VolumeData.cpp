@@ -124,6 +124,9 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   for (size_t i = 0; i < observation_ids.size(); ++i) {
     check_time(observation_ids[i], observation_values[i]);
   }
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
 }
 
 // [[OutputRegex, The expected format of the tensor component names is

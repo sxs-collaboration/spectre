@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   H5/Header.cpp
   H5/Helpers.cpp
   H5/OpenGroup.cpp
+  H5/SourceArchive.cpp
   H5/StellarCollapseEos.cpp
   H5/Version.cpp
   H5/VolumeData.cpp

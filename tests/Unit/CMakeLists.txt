@@ -45,7 +45,7 @@ get_property(
   PROPERTY
   SPECTRE_TESTS_LIBS_PROPERTY)
 
-add_executable(
+add_spectre_executable(
   ${executable}
   ${executable}.cpp
   ${executable}.decl.h
@@ -97,7 +97,7 @@ endif()
 
 set(EXECUTABLE compilation-failure-tests)
 
-add_executable(${EXECUTABLE} ${SPECTRE_COMPILATION_TESTS})
+add_spectre_executable(${EXECUTABLE} ${SPECTRE_COMPILATION_TESTS})
 
 set_target_properties(
   ${EXECUTABLE}

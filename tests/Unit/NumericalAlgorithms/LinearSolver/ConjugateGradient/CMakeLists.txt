@@ -21,7 +21,7 @@ function(add_algorithm_test TEST_NAME)
   set(EXECUTABLE_NAME Test_${TEST_NAME})
   set(TEST_IDENTIFIER Integration.LinearSolver.${TEST_NAME})
 
-  add_executable(
+  add_spectre_executable(
     ${EXECUTABLE_NAME}
     ${EXECUTABLE_NAME}.cpp
     )

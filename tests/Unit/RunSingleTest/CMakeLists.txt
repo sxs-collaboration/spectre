@@ -3,7 +3,7 @@
 
 set(EXECUTABLE "RunSingleTest")
 
-add_executable(
+add_spectre_executable(
   ${EXECUTABLE}
   EXCLUDE_FROM_ALL
   ${EXECUTABLE}.cpp

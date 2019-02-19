@@ -78,6 +78,13 @@ include(SetupLIBCXXCharm)
 # The precompiled header must be setup after all libraries have been found
 include(SetupPch)
 
+# All special targets and configs that need to be applied to *all*
+# executables must be added at once in the 'UpdateAddExecutables' file.
+# This is because of what is likely a bug in CMake where if a function is
+# overridden multiple times (using the _function_name(...) method) then some
+# versions of CMake (at least 3.13.2) segfault.
+include(UpdateAddExecutables)
+
 # The ClangFormat, clang-tidy, CppCheck, Doxygen, and CodeCov are intentionally
 # after the PCH setup because that way they are able to change their
 # dependencies on the PCH if necessary.

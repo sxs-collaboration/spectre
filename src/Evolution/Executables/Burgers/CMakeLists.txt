@@ -14,7 +14,7 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-add_spectre_executable(
+add_spectre_parallel_executable(
   EvolveBurgers
   EvolveBurgers
   Evolution/Executables/Burgers

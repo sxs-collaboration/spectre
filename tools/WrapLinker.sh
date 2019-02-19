@@ -24,8 +24,22 @@ if [ -z "${oindex}" ] ; then
 fi
 # Construct a filename from the next argument
 let ++oindex
-InfoFromBuild_file=$(basename "${!oindex}")_InfoFromBuild.cpp
+InfoFromBuild_file=@CMAKE_BINARY_DIR@/tmp/\
+$(basename "${!oindex}")_InfoFromBuild.cpp
 cp @CMAKE_BINARY_DIR@/Informer/InfoFromBuild.cpp "${InfoFromBuild_file}"
 
-"$@" -DGIT_COMMIT_HASH=$git_commit_hash -DGIT_BRANCH=$git_branch \
-     "${InfoFromBuild_file}"
+# Formaline through the linker doesn't work on macOS and since we won't
+# be doing production runs on macOS we disable it.
+if [ -f @CMAKE_BINARY_DIR@/tmp/Formaline.sh ]; then
+    . @CMAKE_BINARY_DIR@/tmp/Formaline.sh $(basename "${!oindex}")
+    "$@" -DGIT_COMMIT_HASH=$git_commit_hash -DGIT_BRANCH=$git_branch \
+         "${InfoFromBuild_file}" "${formaline_output}" \
+         ${formaline_object_output}
+    rm ${formaline_output}
+    rm ${formaline_object_output}
+else
+    "$@" -DGIT_COMMIT_HASH=$git_commit_hash -DGIT_BRANCH=$git_branch \
+         "${InfoFromBuild_file}"
+fi
+
+rm ${InfoFromBuild_file}
