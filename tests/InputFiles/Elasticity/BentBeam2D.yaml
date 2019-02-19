@@ -1,0 +1,41 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: SolveElasticityProblem2D
+# Check: execute
+# ExpectedOutput:
+#   BentBeam2DReductions.h5
+#   BentBeam2DVolume0.h5
+
+AnalyticSolution:
+  Length: 5.
+  Height: 1.
+  BendingMoment: 1.
+  Material:
+    BulkModulus: 1.
+    ShearModulus: 1.
+
+Material:
+  BulkModulus: 1.
+  ShearModulus: 1.
+
+DomainCreator:
+  Rectangle:
+    LowerBound: [-5., -1.]
+    UpperBound: [5., 1.]
+    IsPeriodicIn: [false, false]
+    InitialRefinement: [1, 1]
+    InitialGridPoints: [3, 3]
+
+NumericalFluxParams:
+  PenaltyParameter: 9. # p^2 / h
+
+Verbosity: Verbose
+
+ConvergenceCriteria:
+  MaxIterations: 100
+  AbsoluteResidual: 0
+  RelativeResidual: 1e-15
+
+VolumeFileName: "./BentBeam2DVolume"
+ReductionFileName: "./BentBeam2DReductions"

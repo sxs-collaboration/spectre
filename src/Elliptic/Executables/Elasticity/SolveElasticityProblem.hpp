@@ -10,11 +10,10 @@
 #include "Elliptic/Actions/ComputeOperatorAction.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
-#include "Elliptic/Systems/Poisson/Actions/Observe.hpp"
-#include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
+#include "Elliptic/Systems/Elasticity/Actions/Observe.hpp"
+#include "Elliptic/Systems/Elasticity/FirstOrderSystem.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "IO/Observer/Actions.hpp"
-#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"
@@ -22,13 +21,14 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/Gmres.hpp"
+#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Elasticity/BentBeam.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
@@ -36,18 +36,18 @@
 template <size_t Dim>
 struct Metavariables {
   static constexpr OptionString help{
-      "Find the solution to a Poisson problem in Dim spatial dimensions.\n"
-      "Analytic solution: ProductOfSinusoids\n"
+      "Find the solution to an elasticity problem in Dim spatial dimensions.\n"
+      "Analytic solution: BentBeam\n"
       "Linear solver: GMRES\n"
       "Numerical flux: FirstOrderInternalPenaltyFlux"};
 
   // The system provides all equations specific to the problem.
-  using system = Poisson::FirstOrderSystem<Dim>;
+  using system = Elasticity::FirstOrderSystem<Dim>;
 
-  // The analytic solution and corresponding source to solve the Poisson
-  // equation for
+  // The analytic solution and corresponding source to solve the elasticity
+  // equations for
   using analytic_solution_tag =
-      OptionTags::AnalyticSolution<Poisson::Solutions::ProductOfSinusoids<Dim>>;
+      OptionTags::AnalyticSolution<Elasticity::Solutions::BentBeam>;
 
   // The linear solver algorithm. We must use GMRES since the operator is
   // not positive-definite for the first-order system.
@@ -56,23 +56,27 @@ struct Metavariables {
 
   // Parse numerical flux parameters from the input file to store in the cache.
   using normal_dot_numerical_flux = OptionTags::NumericalFluxParams<
-      Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
+      Elasticity::FirstOrderInternalPenaltyFlux<Dim>>;
 
   // Set up the domain creator from the input file.
   using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
 
   // Collect all items to store in the cache.
-  using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
+  using const_global_cache_tag_list = tmpl::list<
+      analytic_solution_tag,
+      Elasticity::Tags::ConstitutiveRelation<
+          typename analytic_solution_tag::type::constitutive_relation_type>>;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::list<Poisson::Actions::Observe, linear_solver>>;
+      tmpl::list<Elasticity::Actions::Observe, linear_solver>>;
+  struct element_observation_type {};
 
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::append<
       tmpl::list<Elliptic::DgElementArray<
           Metavariables,
           tmpl::list<
-              Poisson::Actions::Observe,
+              Elasticity::Actions::Observe,
               LinearSolver::Actions::TerminateIfConverged,
               dg::Actions::ComputeNonconservativeBoundaryFluxes<
                   Tags::InternalDirections<Dim>>,
