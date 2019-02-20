@@ -5,6 +5,7 @@ set(LIBRARY "Test_ConstitutiveRelations")
 
 set(LIBRARY_SOURCES
   Test_IsotropicHomogeneous.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(
