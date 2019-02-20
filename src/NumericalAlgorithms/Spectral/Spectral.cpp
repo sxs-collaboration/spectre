@@ -25,7 +25,10 @@ namespace Spectral {
 std::ostream& operator<<(std::ostream& os,
                          const Basis& basis) noexcept {
   switch (basis) {
-    case Basis::Legendre: return os << "Legendre";
+    case Basis::Legendre:
+      return os << "Legendre";
+    case Basis::Chebyshev:
+      return os << "Chebyshev";
     default: ERROR("Invalid basis");
   }
 }
@@ -33,8 +36,10 @@ std::ostream& operator<<(std::ostream& os,
 std::ostream& operator<<(std::ostream& os,
                          const Quadrature& quadrature) noexcept {
   switch (quadrature) {
-    case Quadrature::Gauss: return os << "Gauss";
-    case Quadrature::GaussLobatto: return os << "GaussLobatto";
+    case Quadrature::Gauss:
+      return os << "Gauss";
+    case Quadrature::GaussLobatto:
+      return os << "GaussLobatto";
     default: ERROR("Invalid quadrature");
   }
 }
@@ -338,6 +343,23 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f,
         case Quadrature::GaussLobatto:
           return f(
               std::integral_constant<Basis, Basis::Legendre>{},
+              std::integral_constant<Quadrature, Quadrature::GaussLobatto>{},
+              num_points);
+          break;
+        default:
+          ERROR("Missing quadrature case for spectral quantity");
+      }
+      break;
+    case Basis::Chebyshev:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::Gauss:
+          return f(std::integral_constant<Basis, Basis::Chebyshev>{},
+                   std::integral_constant<Quadrature, Quadrature::Gauss>{},
+                   num_points);
+          break;
+        case Quadrature::GaussLobatto:
+          return f(
+              std::integral_constant<Basis, Basis::Chebyshev>{},
               std::integral_constant<Quadrature, Quadrature::GaussLobatto>{},
               num_points);
           break;
