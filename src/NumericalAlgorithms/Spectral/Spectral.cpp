@@ -44,6 +44,9 @@ std::ostream& operator<<(std::ostream& os,
   }
 }
 
+template <Basis BasisType>
+Matrix spectral_indefinite_integral_matrix(size_t num_points) noexcept;
+
 namespace {
 
 // Caching mechanism
@@ -146,6 +149,17 @@ struct DifferentiationMatrixGenerator {
       }
     }
     return diff_matrix;
+  }
+};
+
+template <Basis BasisType, Quadrature QuadratureType>
+struct IntegrationMatrixGenerator {
+  Matrix operator()(const size_t num_points) const noexcept {
+    return Spectral::spectral_to_grid_points_matrix<BasisType, QuadratureType>(
+               num_points) *
+           spectral_indefinite_integral_matrix<BasisType>(num_points) *
+           Spectral::grid_points_to_spectral_matrix<BasisType, QuadratureType>(
+               num_points);
   }
 };
 
@@ -264,6 +278,8 @@ const DataVector& quadrature_weights(const size_t num_points) noexcept {
 
 PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix, Matrix,
                               DifferentiationMatrixGenerator)
+PRECOMPUTED_SPECTRAL_QUANTITY(integration_matrix, Matrix,
+                              IntegrationMatrixGenerator)
 PRECOMPUTED_SPECTRAL_QUANTITY(spectral_to_grid_points_matrix, Matrix,
                               SpectralToGridPointsMatrixGenerator)
 PRECOMPUTED_SPECTRAL_QUANTITY(grid_points_to_spectral_matrix, Matrix,
@@ -391,6 +407,7 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f,
 SPECTRAL_QUANTITY_FOR_MESH(collocation_points, DataVector)
 SPECTRAL_QUANTITY_FOR_MESH(quadrature_weights, DataVector)
 SPECTRAL_QUANTITY_FOR_MESH(differentiation_matrix, Matrix)
+SPECTRAL_QUANTITY_FOR_MESH(integration_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(spectral_to_grid_points_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(grid_points_to_spectral_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(linear_filter_matrix, Matrix)
@@ -424,6 +441,8 @@ Matrix interpolation_matrix(const Mesh<1>& mesh,
   template const Matrix&                                                      \
       Spectral::differentiation_matrix<BASIS(data), QUAD(data)>(              \
           size_t) noexcept;                                                   \
+  template const Matrix&                                                      \
+      Spectral::integration_matrix<BASIS(data), QUAD(data)>(size_t) noexcept; \
   template const Matrix&                                                      \
       Spectral::grid_points_to_spectral_matrix<BASIS(data), QUAD(data)>(      \
           size_t) noexcept;                                                   \

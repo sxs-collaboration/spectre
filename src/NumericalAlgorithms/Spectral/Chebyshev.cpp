@@ -5,13 +5,16 @@
 
 #include <cmath>
 #include <cstddef>
-// IWYU pragma: no_include <type_traits>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Matrix.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+
+// IWYU pragma: no_include <type_traits>
 
 namespace Spectral {
 
@@ -116,6 +119,37 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
   w[0] *= 0.5;
   w[num_points - 1] *= 0.5;
   return std::make_pair(std::move(x), std::move(w));
+}
+
+template <Basis BasisType>
+Matrix spectral_indefinite_integral_matrix(size_t num_points) noexcept;
+
+template <>
+Matrix spectral_indefinite_integral_matrix<Basis::Chebyshev>(
+    const size_t num_points) noexcept {
+  // Tridiagonal matrix that gives the indefinite integral modulo a constant
+  Matrix indef_int(num_points, num_points, 0.0);
+  if (LIKELY(num_points > 1)) {
+    indef_int(1, 0) = 1.0;
+  }
+  if (LIKELY(num_points > 2)) {
+    indef_int(1, 2) = -0.5;
+    indef_int(num_points - 1, num_points - 2) = 1.0 / (2.0 * (num_points - 1));
+  }
+  for (size_t i = 2; i < num_points - 1; ++i) {
+    indef_int(i, i - 1) = 1.0 / (2.0 * i);
+    indef_int(i, i + 1) = -1.0 / (2.0 * i);
+  }
+
+  // Matrix that ensures that BC at left of interval is 0.0
+  Matrix constant(num_points, num_points, 0.0);
+  double fac = 1.0;
+  for (size_t i = 1; i < num_points; ++i) {
+    constant(i, i) = 1.0;
+    constant(0, i) = fac;
+    fac = -fac;
+  }
+  return constant * indef_int;
 }
 /// \endcond
 
