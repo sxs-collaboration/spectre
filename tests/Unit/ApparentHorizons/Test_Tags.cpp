@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <string>
 
 #include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
@@ -287,4 +288,5 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperDataBox",
   test_average_radius();
   test_radius_and_derivs();
   test_normals();
+  CHECK(ah::Tags::FastFlow::name() == "FastFlow");
 }

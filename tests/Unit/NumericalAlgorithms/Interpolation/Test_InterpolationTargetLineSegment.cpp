@@ -3,6 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <vector>
@@ -72,5 +73,6 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
   ();
 
   InterpTargetTestHelpers::test_interpolation_target<MockMetavariables>(
-      domain_creator, line_segment_opts, expected_block_coord_holders);
+      domain_creator, std::move(line_segment_opts),
+      expected_block_coord_holders);
 }

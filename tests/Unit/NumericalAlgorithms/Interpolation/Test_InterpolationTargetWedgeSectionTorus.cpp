@@ -3,6 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
@@ -87,7 +88,8 @@ void test_r_theta_lgl() noexcept {
   ();
 
   InterpTargetTestHelpers::test_interpolation_target<MockMetavariables>(
-      domain_creator, wedge_section_torus_opts, expected_block_coord_holders);
+      domain_creator, std::move(wedge_section_torus_opts),
+      expected_block_coord_holders);
 }
 
 void test_r_theta_uniform() noexcept {
@@ -124,7 +126,8 @@ void test_r_theta_uniform() noexcept {
   ();
 
   InterpTargetTestHelpers::test_interpolation_target<MockMetavariables>(
-      domain_creator, wedge_section_torus_opts, expected_block_coord_holders);
+      domain_creator, std::move(wedge_section_torus_opts),
+      expected_block_coord_holders);
 }
 }  // namespace
 

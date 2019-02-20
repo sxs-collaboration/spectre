@@ -295,10 +295,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   tuples::TaggedTuple<metavars::InterpolationTargetA,
                       metavars::InterpolationTargetB,
                       metavars::InterpolationTargetC>
-      tuple_of_opts(line_segment_opts_A, line_segment_opts_B,
-                    kerr_horizon_opts_C);
+      tuple_of_opts(std::move(line_segment_opts_A),
+                    std::move(line_segment_opts_B),
+                    std::move(kerr_horizon_opts_C));
 
-  MockRuntimeSystem runner{tuple_of_opts, std::move(dist_objects)};
+  MockRuntimeSystem runner{std::move(tuple_of_opts), std::move(dist_objects)};
 
   const auto domain_creator =
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);

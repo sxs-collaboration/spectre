@@ -5,25 +5,18 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <array>
 #include <cstddef>
 #include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/BlockLogicalCoordinates.hpp"
-#include "Domain/Creators/Shell.hpp"
-#include "Domain/Domain.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
-#include "Options/Options.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
@@ -141,8 +134,7 @@ struct mock_interpolator {
 template <typename MetaVariables, typename DomainCreator,
           typename InterpolationTargetOption, typename BlockCoordHolder>
 void test_interpolation_target(
-    const DomainCreator& domain_creator,
-    const InterpolationTargetOption& options,
+    const DomainCreator& domain_creator, InterpolationTargetOption options,
     const BlockCoordHolder& expected_block_coord_holders) noexcept {
   using metavars = MetaVariables;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
@@ -165,9 +157,9 @@ void test_interpolation_target(
                       mock_interpolator<metavars>>{});
 
   tuples::TaggedTuple<typename metavars::InterpolationTargetA> tuple_of_opts(
-      options);
+      std::move(options));
 
-  MockRuntimeSystem runner{tuple_of_opts, std::move(dist_objects)};
+  MockRuntimeSystem runner{std::move(tuple_of_opts), std::move(dist_objects)};
 
   runner.template simple_action<
       mock_interpolation_target<metavars,

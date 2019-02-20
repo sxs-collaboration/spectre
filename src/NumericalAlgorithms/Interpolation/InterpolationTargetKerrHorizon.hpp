@@ -67,8 +67,8 @@ struct KerrHorizon {
               const OptionContext& context = {});
 
   KerrHorizon() = default;
-  KerrHorizon(const KerrHorizon& /*rhs*/) = default;
-  KerrHorizon& operator=(const KerrHorizon& /*rhs*/) = default;
+  KerrHorizon(const KerrHorizon& /*rhs*/) = delete;
+  KerrHorizon& operator=(const KerrHorizon& /*rhs*/) = delete;
   KerrHorizon(KerrHorizon&& /*rhs*/) noexcept = default;
   KerrHorizon& operator=(KerrHorizon&& /*rhs*/) noexcept = default;
   ~KerrHorizon() = default;

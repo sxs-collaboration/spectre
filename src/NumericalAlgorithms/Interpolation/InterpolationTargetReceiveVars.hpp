@@ -44,11 +44,39 @@ struct Variables;
 namespace intrp {
 
 namespace InterpolationTarget_detail {
+
+// apply_callback accomplishes the overload for the
+// two signatures of callback functions.
+// Uses SFINAE on return type.
+template <typename T, typename DbTags, typename Metavariables>
+auto apply_callback(
+    const gsl::not_null<db::DataBox<DbTags>*> box,
+    const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
+    const typename Metavariables::temporal_id::type& temporal_id) noexcept
+    -> decltype(T::post_interpolation_callback::apply(box, cache, temporal_id),
+                bool()) {
+  return T::post_interpolation_callback::apply(box, cache, temporal_id);
+}
+
+template <typename T, typename DbTags, typename Metavariables>
+auto apply_callback(
+    const gsl::not_null<db::DataBox<DbTags>*> box,
+    const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
+    const typename Metavariables::temporal_id::type& temporal_id) noexcept
+    -> decltype(T::post_interpolation_callback::apply(*box, *cache,
+                                                      temporal_id),
+                bool()) {
+  T::post_interpolation_callback::apply(*box, *cache, temporal_id);
+  // For the simpler callback function, we will always clean up volume data, so
+  // we return true here.
+  return true;
+}
+
 /// Calls the callback function, tells interpolators to clean up the current
 /// temporal_id, and then if there are more temporal_ids to be interpolated,
 /// starts the next one.
-template <typename InterpolationTargetTag,
-          typename DbTags, typename Metavariables>
+template <typename InterpolationTargetTag, typename DbTags,
+          typename Metavariables>
 void callback_and_cleanup(
     const gsl::not_null<db::DataBox<DbTags>*> box,
     const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*>
@@ -56,18 +84,34 @@ void callback_and_cleanup(
   const auto temporal_id =
       db::get<Tags::TemporalIds<Metavariables>>(*box).front();
 
-  // Do the callback
-  const auto& new_box = db::create_from<
+  // Add compute_items_on_target to the box.
+  auto box_with_more_items = db::create_from<
       db::RemoveTags<>, db::AddSimpleTags<>,
       db::AddComputeTags<
-          typename InterpolationTargetTag::compute_items_on_target>>(*box);
-  InterpolationTargetTag::post_interpolation_callback::apply(new_box, *cache,
-                                                             temporal_id);
+          typename InterpolationTargetTag::compute_items_on_target>>(
+      std::move(*box));
 
-  // In the future, when generalizing this function to accommodate
-  // horizon finding, we will need to think more carefully about
-  // control flow and the point at which the temporal_id should be
-  // popped from the list.
+  // apply_callback should return true if we are done with this
+  // temporal_id.  It should return false only if the callback
+  // calls another `intrp::Action` that needs the volume data at this
+  // same temporal_id.  If it returns false, we exit here and do not
+  // clean up.
+  const bool done_with_temporal_id = apply_callback<InterpolationTargetTag>(
+      make_not_null(&box_with_more_items), cache, temporal_id);
+
+  // Remove compute_items_on_target from the box.
+  *box = db::create_from<
+      db::RemoveTags<typename InterpolationTargetTag::compute_items_on_target>,
+      db::AddSimpleTags<>, db::AddComputeTags<>>(
+      std::move(box_with_more_items));
+
+  if (not done_with_temporal_id) {
+    return;
+  }
+
+  // We are now done with this temporal_id, so we can pop it and
+  // clean up volume data associated with it.
+
   db::mutate<Tags::TemporalIds<Metavariables>>(
       box, [](const gsl::not_null<
                db::item_type<Tags::TemporalIds<Metavariables>>*>

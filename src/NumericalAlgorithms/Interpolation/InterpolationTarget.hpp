@@ -60,16 +60,26 @@ namespace intrp {
 /// - post_interpolation_callback:   a struct with a type alias
 ///                                  `const_global_cache_tags` (listing tags
 ///                                  that should be read from option parsing)
-///                                  and with a function
+///                                  and with a static function
 ///```
-///       static void apply(const DataBox<DbTags>&,
-///                         const intrp::ConstGlobalCache<Metavariables>&,
-///                         const Metavariables::temporal_id::type&) noexcept;
+///     void apply(const DataBox<DbTags>&,
+///                const intrp::ConstGlobalCache<Metavariables>&,
+///                const Metavariables::temporal_id&) noexcept;
 ///```
-///                                  that will be called when interpolation
-///                                  is complete. `DbTags` includes everything
-///                                  in `vars_to_interpolate_to_target`
-///                                  and `compute_items_on_target`.
+/// or
+///```
+///     bool apply(const gsl::not_null<db::DataBox<DbTags>*>,
+///                const gsl::not_null<intrp::ConstGlobalCache<Metavariables>*>,
+///                const Metavariables::temporal_id&) noexcept;
+///```
+///                            that will be called when interpolation is
+///                            complete.  `DbTags` includes everything in
+///                            `vars_to_interpolate_to_target`, plus everything
+///                            in `compute_items_on_target`.  The second form
+///                            of the `apply` function should return false only
+///                            if it calls another `intrp::Action` that still
+///                            needs the volume data at this temporal_id (such
+///                            as another iteration of the horizon finder).
 ///
 /// `Metavariables` must contain the following type aliases:
 /// - interpolator_source_vars:   a `tmpl::list` of tags that define a
