@@ -177,6 +177,9 @@ run_tests() {
 standard_checks=()
 
 # Check for lines longer than 80 characters
+long_lines_exclude() {
+    grep -Ev 'https?://' | grep -v '// IWYU pragma:' | grep -v '// NOLINT'
+}
 long_lines() {
     whitelist "$1" \
               '.cmake$' \
@@ -190,15 +193,11 @@ long_lines() {
               'docs/MainSite/Main.md' \
               'docs/DevGuide/Travis.md' \
               'tools/Iwyu/boost-all.imp$' && \
-        staged_grep '^[^#].\{80,\}' "$1" | grep -Ev 'https?://' | \
-            grep -v '// IWYU pragma:' | grep -v '// NOLINT' >/dev/null
+        staged_grep '^[^#].\{80,\}' "$1" | long_lines_exclude >/dev/null
 }
 long_lines_report() {
     echo "Found lines over 80 characters:"
-    # This doesn't filter out URLs, but I can't think of a way to do
-    # that without breaking the highlighting.  They only get printed
-    # if there's another problem in the file.
-    pretty_grep '^[^#].\{80,\}' "$@"
+    pretty_grep '^[^#].\{80,\}' "$@" | long_lines_exclude
 }
 long_lines_test() {
     local ten=xxxxxxxxxx
