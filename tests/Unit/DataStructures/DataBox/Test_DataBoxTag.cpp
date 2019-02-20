@@ -167,3 +167,23 @@ static_assert(
         db::split_tag<Prefix<Tags::Variables<tmpl::list<Var, Prefix<Var>>>>>,
         tmpl::list<Var, Prefix<Var>>>,
     "Failed testing split_tag");
+
+/// [prefix_tag_wraps_specified_tag]
+static_assert(db::prefix_tag_wraps_specified_tag<Prefix<Var>, Var>::value,
+              "failed testing prefix_tag_wraps_specified_tag");
+
+static_assert(not db::prefix_tag_wraps_specified_tag<Prefix<Var2>, Var>::value,
+              "failed testing prefix_tag_wraps_specified_tag");
+
+static_assert(db::prefix_tag_wraps_specified_tag<PrefixWithArgs<Var, int, int>,
+                                                 Var>::value,
+              "failed testing prefix_tag_wraps_specified_tag");
+
+static_assert(
+    cpp17::is_same_v<tmpl::filter<tmpl::list<Prefix<Var>, Prefix<Var2>,
+                                             PrefixWithArgs<Var, int, int>>,
+                                  db::prefix_tag_wraps_specified_tag<
+                                      tmpl::_1, tmpl::pin<Var>>>,
+                     tmpl::list<Prefix<Var>, PrefixWithArgs<Var, int, int>>>,
+    "failed testing prefix_tag_wraps_specified_tag");
+/// [prefix_tag_wraps_specified_tag]

@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
     Projection.cpp
     Spectral.cpp
     SwshCollocation.cpp
+    SwshTags.cpp
     )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
