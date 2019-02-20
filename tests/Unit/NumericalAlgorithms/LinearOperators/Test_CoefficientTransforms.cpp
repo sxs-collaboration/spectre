@@ -139,7 +139,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.CoefficientTransforms",
   test_2d<Spectral::Basis::Legendre, Spectral::Quadrature::Gauss>();
   test_3d<Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>();
   test_3d<Spectral::Basis::Legendre, Spectral::Quadrature::Gauss>();
-  // We can't test Chebyshev because our Chebyshev matrices implementation is
-  // incomplete. What appears to be missing is an entry for Chebyshev in the
-  // `get_spectral_quantity_for_mesh` function.
+
+  test_1d<Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>();
+  test_1d<Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss>();
+  test_2d<Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>();
+  test_2d<Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss>();
+  test_3d<Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>();
+  test_3d<Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss>();
 }
