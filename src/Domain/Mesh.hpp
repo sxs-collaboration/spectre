@@ -124,6 +124,18 @@ class Mesh {
   size_t number_of_grid_points() const noexcept { return extents_.product(); }
 
   /*!
+   * \brief Returns the 1-dimensional index corresponding to the `Dim`
+   * dimensional `index`.
+   *
+   * The first dimension varies fastest.
+   *
+   * \see collapsed_index()
+   */
+  size_t storage_index(const Index<Dim>& index) const noexcept {
+    return collapsed_index(index, extents_);
+  }
+
+  /*!
    * \brief The basis chosen in each dimension of the grid.
    */
   const std::array<Spectral::Basis, Dim>& basis() const noexcept {

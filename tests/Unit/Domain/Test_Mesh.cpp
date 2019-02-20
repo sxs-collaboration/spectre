@@ -10,6 +10,7 @@
 #include <string>
 
 #include "DataStructures/Index.hpp"
+#include "DataStructures/IndexIterator.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -25,6 +26,10 @@ void test_extents_basis_and_quadrature(
     const Mesh<Dim>& mesh, const std::array<size_t, Dim>& extents,
     const std::array<Spectral::Basis, Dim>& basis,
     const std::array<Spectral::Quadrature, Dim>& quadrature) {
+  CAPTURE(Dim);
+  CAPTURE(extents);
+  CAPTURE(basis);
+  CAPTURE(quadrature);
   CHECK(mesh.number_of_grid_points() ==
         std::accumulate(extents.begin(), extents.end(), size_t{1},
                         std::multiplies<size_t>()));
@@ -38,6 +43,14 @@ void test_extents_basis_and_quadrature(
     CHECK(gsl::at(mesh.slices(), d) == mesh.slice_through(d));
   }
   CHECK(get_output(mesh) == get_output(extents));
+  for (IndexIterator<Dim> index_it(mesh.extents()); index_it; ++index_it) {
+    CAPTURE(*index_it);
+    Index<Dim> index{};
+    for (size_t d = 0; d < Dim; ++d) {
+      index[d] = (*index_it)[d];
+    }
+    CHECK(index_it.collapsed_index() == mesh.storage_index(index));
+  }
 }
 
 void test_uniform_lgl_mesh() noexcept {
