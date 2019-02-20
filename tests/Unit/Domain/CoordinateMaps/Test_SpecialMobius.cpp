@@ -19,6 +19,7 @@
 
 namespace {
 void test_suite() {  // Set up random number generator
+  INFO("Suite");
   MAKE_GENERATOR(gen);
   // Note: Empirically we have found that the map is accurate
   // to 12 decimal places for mu = 0.96.
@@ -33,6 +34,7 @@ void test_suite() {  // Set up random number generator
 }
 
 void test_map() {
+  INFO("Map");
   // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> radius_dis(0, 1);
@@ -87,6 +89,7 @@ void test_map() {
 }
 
 void test_large_mu() {
+  INFO("Large mu");
   const double mu = 0.95;
   CAPTURE_PRECISE(mu);
   // A point on the unit sphere with x=0, y!=z:
@@ -111,6 +114,7 @@ void test_large_mu() {
 }
 
 void test_is_identity() {
+  INFO("Is identity");
   check_if_map_is_identity(CoordinateMaps::SpecialMobius{0.0});
   CHECK(not CoordinateMaps::SpecialMobius{0.1}.is_identity());
 }

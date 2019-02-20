@@ -19,6 +19,7 @@
 
 namespace {
 void test_suite_for_frustum(const bool with_equiangular_map) {
+  INFO("Suite for frustum");
   // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> lower_bound_dis(-14, -2);
@@ -54,6 +55,7 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
 }
 
 void test_frustum_fail() noexcept {
+  INFO("Frustum fail");
   const std::array<std::array<double, 2>, 4> face_vertices{
       {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
   const CoordinateMaps::Frustum map(face_vertices, 2.0, 5.0,
@@ -79,6 +81,7 @@ void test_frustum_fail() noexcept {
 }
 
 void test_alignment() {
+  INFO("Alignment");
   // This test tests that the logical axes point along the expected directions
   // in physical space
 
@@ -168,6 +171,7 @@ void test_alignment() {
 }
 
 void test_is_identity() {
+  INFO("Is identity");
   check_if_map_is_identity(CoordinateMaps::Frustum{
       std::array<std::array<double, 2>, 4>{
           {{{-1.0, -1.0}}, {{1.0, 1.0}}, {{-1.0, -1.0}}, {{1.0, 1.0}}}},

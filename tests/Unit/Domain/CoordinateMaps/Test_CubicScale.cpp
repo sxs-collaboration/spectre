@@ -55,6 +55,7 @@ void cubic_scale_non_invertible(const double a0, const double b0,
 }
 
 void test_map() {
+  INFO("Map");
   static constexpr size_t deriv_order = 2;
 
   const auto run_tests = [](const std::array<DataVector, deriv_order + 1>&
@@ -187,6 +188,7 @@ void test_map() {
 }
 
 void test_boundaries() {
+  INFO("Boundaries");
   static constexpr size_t deriv_order = 2;
 
   const auto run_tests = [](const double x0) {

@@ -18,6 +18,7 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 void test_bulged_cube_fail() {
+  INFO("Bulged cube fail");
   const CoordinateMaps::BulgedCube map(2.0 * sqrt(3.0), 0.5, false);
 
   // The corners of the mapped cube have coordinates +/- 2 in each
@@ -47,6 +48,7 @@ void test_bulged_cube_fail() {
 }
 
 void test_bulged_cube(bool with_equiangular_map) {
+  INFO("Bulged cube");
   const std::array<double, 3> lower_corner{{-1.0, -1.0, -1.0}};
   const std::array<double, 3> upper_corner{{1.0, 1.0, 1.0}};
   const CoordinateMaps::BulgedCube map(2.0 * sqrt(3.0), 0.5,
