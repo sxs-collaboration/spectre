@@ -251,9 +251,9 @@ void test_shell_construction(
 
   test_initial_domain(domain, shell.initial_refinement_levels());
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Boundaries", "[Domain][Unit]") {
+void test_shell_boundaries() {
+  INFO("Shell boundaries");
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
@@ -269,8 +269,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Boundaries", "[Domain][Unit]") {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.Equiangular",
-                  "[Domain][Unit]") {
+void test_shell_factory_equiangular() {
+  INFO("Shell factory equiangular");
   const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
@@ -286,8 +286,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.Equiangular",
       {6, make_array<3>(refinement_level)});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.Equidistant",
-                  "[Domain][Unit]") {
+void test_shell_factory_equidistant() {
+  INFO("Shell factory equidistant");
   const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
@@ -304,8 +304,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.Equidistant",
       {6, make_array<3>(refinement_level)});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Boundaries.AspectRatio",
-                  "[Domain][Unit]") {
+void test_shell_boundaries_aspect_ratio() {
+  INFO("Shell boundaries aspect ratio");
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
@@ -320,8 +320,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Boundaries.AspectRatio",
                           {6, make_array<3>(refinement_level)}, aspect_ratio);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.AspectRatio",
-                  "[Domain][Unit]") {
+void test_shell_factory_aspect_ratio() {
+  INFO("Shell factory aspect ratio");
   const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
@@ -340,8 +340,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.AspectRatio",
       {6, make_array<3>(refinement_level)}, aspect_ratio);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Boundaries.LogarithmicMap",
-                  "[Domain][Unit]") {
+void test_shell_boundaries_logarithmic_map() {
+  INFO("Shell boundaries logarithmic map");
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
@@ -357,8 +357,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Boundaries.LogarithmicMap",
       {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.LogarithmicMap",
-                  "[Domain][Unit]") {
+void test_shell_factory_logarithmic_map() {
+  INFO("Shell factory logarithmic map");
   const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
@@ -379,57 +379,56 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.LogarithmicMap",
       {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Shell.Factory.ShellWedges",
-                  "[Domain][Unit]") {
-  {
-    const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
-        "  Shell:\n"
-        "    InnerRadius: 1\n"
-        "    OuterRadius: 3\n"
-        "    InitialRefinement: 2\n"
-        "    InitialGridPoints: [2,3]\n"
-        "    UseEquiangularMap: false\n"
-        "    AspectRatio: 2.0        \n"
-        "    UseLogarithmicMap: true\n"
-        "    WhichWedges: FourOnEquator\n");
-    const double inner_radius = 1.0, outer_radius = 3.0;
-    const size_t refinement_level = 2;
-    const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
-    const double aspect_ratio = 2.0;
-    const bool use_logarithmic_map = true;
-    const ShellWedges which_wedges = ShellWedges::FourOnEquator;
-    test_shell_construction(
-        dynamic_cast<const domain::creators::Shell<Frame::Inertial>&>(*shell),
-        inner_radius, outer_radius, false, grid_points_r_angular,
-        {4, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
-        which_wedges);
-  }
-  {
-    const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
-        "  Shell:\n"
-        "    InnerRadius: 2\n"
-        "    OuterRadius: 3\n"
-        "    InitialRefinement: 2\n"
-        "    InitialGridPoints: [2,3]\n"
-        "    UseEquiangularMap: true\n"
-        "    AspectRatio: 2.7        \n"
-        "    UseLogarithmicMap: false\n"
-        "    WhichWedges: OneAlongMinusX \n");
-    const double inner_radius = 2.0, outer_radius = 3.0;
-    const size_t refinement_level = 2;
-    const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
-    const double aspect_ratio = 2.7;
-    const bool use_logarithmic_map = false;
-    const ShellWedges which_wedges = ShellWedges::OneAlongMinusX;
-    test_shell_construction(
-        dynamic_cast<const domain::creators::Shell<Frame::Inertial>&>(*shell),
-        inner_radius, outer_radius, true, grid_points_r_angular,
-        {1, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
-        which_wedges);
-  }
+void test_shell_factory_wedges_four_on_equator() {
+  INFO("Shell factory wedges four on equator");
+  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      "  Shell:\n"
+      "    InnerRadius: 1\n"
+      "    OuterRadius: 3\n"
+      "    InitialRefinement: 2\n"
+      "    InitialGridPoints: [2,3]\n"
+      "    UseEquiangularMap: false\n"
+      "    AspectRatio: 2.0        \n"
+      "    UseLogarithmicMap: true\n"
+      "    WhichWedges: FourOnEquator\n");
+  const double inner_radius = 1.0, outer_radius = 3.0;
+  const size_t refinement_level = 2;
+  const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
+  const double aspect_ratio = 2.0;
+  const bool use_logarithmic_map = true;
+  const ShellWedges which_wedges = ShellWedges::FourOnEquator;
+  test_shell_construction(
+      dynamic_cast<const domain::creators::Shell<Frame::Inertial>&>(*shell),
+      inner_radius, outer_radius, false, grid_points_r_angular,
+      {4, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
+      which_wedges);
 }
 
-namespace {
+void test_shell_factory_wedges_one_along_minus_x() {
+  INFO("Shell factory wedges one along minus x");
+  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      "  Shell:\n"
+      "    InnerRadius: 2\n"
+      "    OuterRadius: 3\n"
+      "    InitialRefinement: 2\n"
+      "    InitialGridPoints: [2,3]\n"
+      "    UseEquiangularMap: true\n"
+      "    AspectRatio: 2.7        \n"
+      "    UseLogarithmicMap: false\n"
+      "    WhichWedges: OneAlongMinusX \n");
+  const double inner_radius = 2.0, outer_radius = 3.0;
+  const size_t refinement_level = 2;
+  const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
+  const double aspect_ratio = 2.7;
+  const bool use_logarithmic_map = false;
+  const ShellWedges which_wedges = ShellWedges::OneAlongMinusX;
+  test_shell_construction(
+      dynamic_cast<const domain::creators::Shell<Frame::Inertial>&>(*shell),
+      inner_radius, outer_radius, true, grid_points_r_angular,
+      {1, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
+      which_wedges);
+}
+
 // Tests that the underlying element structure is the same regardless of
 // whether they are created through InitialRefinement or RadialBlockLayers.
 // This is done by constructing a set of expected boundary points dependent on
@@ -513,22 +512,45 @@ void test_radial_block_layers(const double inner_radius,
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell.RadialBlockLayers",
-                  "[Domain][Unit]") {
-  const auto log_shell =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
-          "  Shell:\n"
-          "    InnerRadius: 1\n"
-          "    OuterRadius: 3\n"
-          "    InitialRefinement: 2\n"
-          "    InitialGridPoints: [2,3]\n"
-          "    UseEquiangularMap: false\n"
-          "    AspectRatio: 2.0        \n"
-          "    UseLogarithmicMap: true\n"
-          "    RadialBlockLayers: 6\n");
+SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell", "[Domain][Unit]") {
+  test_shell_boundaries();
+  test_shell_factory_equiangular();
+  test_shell_factory_equidistant();
+  test_shell_boundaries_aspect_ratio();
+  test_shell_factory_aspect_ratio();
+  test_shell_boundaries_logarithmic_map();
+  test_shell_factory_logarithmic_map();
+  test_shell_factory_wedges_four_on_equator();
+  test_shell_factory_wedges_one_along_minus_x();
 
-   test_radial_block_layers(1.0, 10.0, 0, true, 8, {0, 1, 2, 3, 4, 5, 6, 7});
-   test_radial_block_layers(2.0, 9.0, 0, false, 8, {0, 1, 2, 3, 4, 5, 6, 7});
-   test_radial_block_layers(4.0, 9.0, 3, true, 1, {0, 0, 0, 0, 0, 0, 0, 0});
-   test_radial_block_layers(3.0, 6.0, 3, false, 1, {0, 0, 0, 0, 0, 0, 0, 0});
+  {
+    INFO("shell factory logarithmic block layers");
+    const auto log_shell =
+        test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+            "  Shell:\n"
+            "    InnerRadius: 1\n"
+            "    OuterRadius: 3\n"
+            "    InitialRefinement: 2\n"
+            "    InitialGridPoints: [2,3]\n"
+            "    UseEquiangularMap: false\n"
+            "    AspectRatio: 2.0        \n"
+            "    UseLogarithmicMap: true\n"
+            "    RadialBlockLayers: 6\n");
+  }
+  {
+    INFO("Radial block layers 1");
+    test_radial_block_layers(1.0, 10.0, 0, true, 8, {0, 1, 2, 3, 4, 5, 6, 7});
+  }
+  {
+    INFO("Radial block layers 2");
+    test_radial_block_layers(2.0, 9.0, 0, false, 8, {0, 1, 2, 3, 4, 5, 6, 7});
+  }
+  {
+    INFO("Radial block layers 3");
+    test_radial_block_layers(4.0, 9.0, 3, true, 1, {0, 0, 0, 0, 0, 0, 0, 0});
+  }
+  {
+    INFO("Radial block layers 4");
+    test_radial_block_layers(3.0, 6.0, 3, false, 1, {0, 0, 0, 0, 0, 0, 0, 0});
+  }
 }

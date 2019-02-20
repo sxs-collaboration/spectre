@@ -54,9 +54,9 @@ void test_rectangle_construction(
                    Affine{-1., 1., lower_bound[1], upper_bound[1]}})));
   test_initial_domain(domain, rectangle.initial_refinement_levels());
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Rectangle", "[Domain][Unit]") {
+void test_rectangle() {
+  INFO("Rectangle");
   const std::vector<std::array<size_t, 2>> grid_points{{{4, 6}}},
       refinement_level{{{3, 2}}};
   const std::array<double, 2> lower_bound{{-1.2, 3.0}}, upper_bound{{0.8, 5.0}};
@@ -129,7 +129,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Rectangle", "[Domain][Unit]") {
   CHECK(*dynamic_cast<MapType>(base_map.get()) == coord_map);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Rectangle.Factory", "[Domain][Unit]") {
+void test_rectangle_factory() {
+  INFO("Rectangle factory");
   const auto domain_creator =
       test_factory_creation<DomainCreator<2, Frame::Inertial>>(
           "  Rectangle:\n"
@@ -148,4 +149,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Rectangle.Factory", "[Domain][Unit]") {
            {Direction<2>::upper_xi(), {0, {}}}}},
       std::vector<std::unordered_set<Direction<2>>>{
           {{Direction<2>::lower_eta()}, {Direction<2>::upper_eta()}}});
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Rectangle.Factory", "[Domain][Unit]") {
+  test_rectangle();
+  test_rectangle_factory();
 }

@@ -188,10 +188,9 @@ void test_sphere_construction(
                            expected_external_boundaries, coord_maps);
   test_initial_domain(domain, sphere.initial_refinement_levels());
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Boundaries.Equiangular",
-                  "[Domain][Unit]") {
+void test_sphere_boundaries_equiangular() {
+  INFO("Sphere boundaries equiangular");
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
@@ -205,8 +204,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Boundaries.Equiangular",
                            {7, make_array<3>(refinement)});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Factory.Equiangular",
-                  "[Domain][Unit]") {
+void test_sphere_factory_equiangular() {
+  INFO("Sphere factory equiangular");
   const auto sphere = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Sphere:\n"
       "    InnerRadius: 1\n"
@@ -223,8 +222,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Factory.Equiangular",
       {7, make_array<3>(refinement_level)});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Boundaries.Equidistant",
-                  "[Domain][Unit]") {
+void test_sphere_boundaries_equidistant() {
+  INFO("Sphere boundaries equidistant");
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
@@ -238,8 +237,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Boundaries.Equidistant",
                            {7, make_array<3>(refinement)});
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Factory.Equidistant",
-                  "[Domain][Unit]") {
+void test_sphere_factory_equidistant() {
+  INFO("Sphere factory equidistant");
   const auto sphere = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
       "  Sphere:\n"
       "    InnerRadius: 1\n"
@@ -254,4 +253,12 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere.Factory.Equidistant",
       dynamic_cast<const domain::creators::Sphere<Frame::Inertial>&>(*sphere),
       inner_radius, outer_radius, false, grid_points_r_angular,
       {7, make_array<3>(refinement_level)});
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Sphere", "[Domain][Unit]") {
+  test_sphere_boundaries_equiangular();
+  test_sphere_factory_equiangular();
+  test_sphere_boundaries_equidistant();
+  test_sphere_factory_equidistant();
 }

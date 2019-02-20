@@ -124,10 +124,9 @@ void test_disk_construction(
 
   test_initial_domain(domain, disk.initial_refinement_levels());
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Boundaries.Equiangular",
-                  "[Domain][Unit]") {
+void test_disk_boundaries_equiangular() {
+  INFO("Disk boundaries equiangular");
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{4, 4}};
@@ -139,8 +138,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Boundaries.Equiangular",
                          {5, make_array<2>(refinement_level)}, true);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Factory.Equiangular",
-                  "[Domain][Unit]") {
+void test_disk_factory_equiangular() {
+  INFO("Disk factory equiangular");
   const auto disk = test_factory_creation<DomainCreator<2, Frame::Inertial>>(
       "  Disk:\n"
       "    InnerRadius: 1\n"
@@ -158,8 +157,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Factory.Equiangular",
       {5, make_array<2>(refinement_level)}, true);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Boundaries.Equidistant",
-                  "[Domain][Unit]") {
+void test_disk_boundaries_equidistant() {
+  INFO("Disk boundaries equidistant");
   const double inner_radius = 1.0, outer_radius = 2.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{4, 4}};
@@ -171,8 +170,8 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Boundaries.Equidistant",
                          {5, make_array<2>(refinement_level)}, false);
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Factory.Equidistant",
-                  "[Domain][Unit]") {
+void test_disk_factory_equidistant() {
+  INFO("Disk factory equidistant");
   const auto disk = test_factory_creation<DomainCreator<2, Frame::Inertial>>(
       "  Disk:\n"
       "    InnerRadius: 1\n"
@@ -188,4 +187,13 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Factory.Equidistant",
       dynamic_cast<const domain::creators::Disk<Frame::Inertial>&>(*disk),
       inner_radius, outer_radius, grid_points,
       {5, make_array<2>(refinement_level)}, false);
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Domain.Creators.Disk.Factory.Equidistant",
+                  "[Domain][Unit]") {
+  test_disk_boundaries_equiangular();
+  test_disk_factory_equiangular();
+  test_disk_boundaries_equidistant();
+  test_disk_factory_equidistant();
 }

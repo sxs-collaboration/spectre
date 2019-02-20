@@ -510,12 +510,6 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
   ASSERT(number_of_layers == 1 or inner_sphericity == outer_sphericity,
          "If we are using more than one layer the inner and outer sphericities "
          "must match.");
-  // At most one of these options can be turned on, if any.
-  ASSERT((x_coord_of_shell_center != 0.0) + use_half_wedges +
-                 (aspect_ratio != 1.0) <=
-             1,
-         "Only one of: using a non-zero translation, using half wedges, or "
-         "using a non-unity aspect_ratio, can be done at a time.");
 
   const auto wedge_orientations = orientations_for_wrappings();
 
@@ -523,6 +517,7 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
   using Halves = Wedge3DMap::WedgeHalves;
   std::vector<Wedge3DMap> wedges{};
 
+  // Set up layers:
   const double delta_zeta = 2.0 / number_of_layers;
   for (size_t layer_i = 0; layer_i < number_of_layers; layer_i++) {
     // Linear interpolation variables in the radial direction from -1 to 1
@@ -549,6 +544,18 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
     }
   }
 
+  // Set up translation map:
+  using Identity2D = CoordinateMaps::Identity<2>;
+  using Affine = CoordinateMaps::Affine;
+  const auto translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
+      Affine{-1.0, 1.0, -1.0 + x_coord_of_shell_center,
+             1.0 + x_coord_of_shell_center},
+      Identity2D{});
+
+  // Set up compression map:
+  const auto compression =
+      CoordinateMaps::EquatorialCompression{aspect_ratio};
+
   if (use_half_wedges) {
     std::vector<Wedge3DMap> wedges_and_half_wedges{};
     for (size_t i = 0; i < 4; i++) {
@@ -566,32 +573,12 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
 
     // clang-tidy: trivially copyable
     return make_vector_coordinate_map_base<Frame::Logical, TargetFrame, 3>(
-        std::move(wedges_and_half_wedges));  // NOLINT
+        std::move(wedges_and_half_wedges), std::move(compression), std::move(translation));  // NOLINT
   }
 
-  if (x_coord_of_shell_center != 0.0) {
-    using Identity2D = CoordinateMaps::Identity<2>;
-    using Affine = CoordinateMaps::Affine;
-    auto shift_1d = Affine{-1.0, 1.0, -1.0 + x_coord_of_shell_center,
-                           1.0 + x_coord_of_shell_center};
-    // clang-tidy: trivially copyable
-    const auto translation = CoordinateMaps::ProductOf2Maps<Affine, Identity2D>(
-        std::move(shift_1d), Identity2D{});  // NOLINT
-    return make_vector_coordinate_map_base<Frame::Logical, TargetFrame, 3>(
-        std::move(wedges), std::move(translation));  // NOLINT
-  }
-
-  if (aspect_ratio != 1.0) {
-    const auto compression =
-        CoordinateMaps::EquatorialCompression{aspect_ratio};
     // clang-tidy: trivially copyable
     return make_vector_coordinate_map_base<Frame::Logical, TargetFrame, 3>(
-        std::move(wedges), std::move(compression));  // NOLINT
-  }
-
-  // clang-tidy: trivially copyable
-  return make_vector_coordinate_map_base<Frame::Logical, TargetFrame, 3>(
-      std::move(wedges));  // NOLINT
+        std::move(wedges), std::move(compression), std::move(translation));  // NOLINT
 }
 
 template <typename TargetFrame>
