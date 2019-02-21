@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp" // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/CylindricalBlastWave.hpp"
@@ -121,27 +121,18 @@ void test_variables(const DataType& used_for_size) noexcept {
   pypp::check_with_random_values<
       1, CylindricalBlastWaveProxy::hydro_variables_tags<DataType>>(
       &CylindricalBlastWaveProxy::hydro_variables<DataType>,
-      cylindrical_blast_wave, "AnalyticData.GrMhd.TestFunctions",
-      {"cylindrical_blast_wave_rest_mass_density",
-       "cylindrical_blast_wave_spatial_velocity",
-       "cylindrical_blast_wave_specific_internal_energy",
-       "cylindrical_blast_wave_pressure",
-       "cylindrical_blast_wave_lorentz_factor",
-       "cylindrical_blast_wave_specific_enthalpy"},
+      cylindrical_blast_wave, "CylindricalBlastWave",
+      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
+       "pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-1.1, 1.1}}}, member_variables, used_for_size);
 
   pypp::check_with_random_values<
       1, CylindricalBlastWaveProxy::grmhd_variables_tags<DataType>>(
       &CylindricalBlastWaveProxy::grmhd_variables<DataType>,
-      cylindrical_blast_wave, "AnalyticData.GrMhd.TestFunctions",
-      {"cylindrical_blast_wave_rest_mass_density",
-       "cylindrical_blast_wave_spatial_velocity",
-       "cylindrical_blast_wave_specific_internal_energy",
-       "cylindrical_blast_wave_pressure",
-       "cylindrical_blast_wave_lorentz_factor",
-       "cylindrical_blast_wave_specific_enthalpy",
-       "cylindrical_blast_wave_magnetic_field",
-       "cylindrical_blast_wave_divergence_cleaning_field"},
+      cylindrical_blast_wave, "CylindricalBlastWave",
+      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
+       "pressure", "lorentz_factor", "specific_enthalpy", "magnetic_field",
+       "divergence_cleaning_field"},
       {{{-1.1, 1.1}}}, member_variables, used_for_size);
 }
 
@@ -198,7 +189,7 @@ SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticData.GrMhd.CylindricalBlastWave",
     "[Unit][PointwiseFunctions]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
-      "PointwiseFunctions"};
+      "PointwiseFunctions/AnalyticData/GrMhd"};
 
   test_create_from_options();
   test_serialize();

@@ -35,13 +35,12 @@ void test_variables(const DataType& used_for_size) noexcept {
                           hydro::Tags::MagneticField<DataType, 3>,
                           hydro::Tags::DivergenceCleaningField<DataType>>;
   const auto names = make_array(
-      "orszag_tang_rest_mass_density"s, "orszag_tang_spatial_velocity"s,
-      "orszag_tang_specific_internal_energy"s, "orszag_tang_pressure"s,
-      "orszag_tang_lorentz_factor"s, "orszag_tang_specific_enthalpy"s,
-      "orszag_tang_magnetic_field"s, "orszag_tang_divergence_cleaning_field"s);
+      "rest_mass_density"s, "spatial_velocity"s, "specific_internal_energy"s,
+      "pressure"s, "lorentz_factor"s, "specific_enthalpy"s, "magnetic_field"s,
+      "divergence_cleaning_field"s);
 
   tmpl::for_each<tags>([&used_for_size,
-                        name = names.begin()](auto tag) mutable noexcept {
+                        name = names.begin() ](auto tag) mutable noexcept {
     using Tag = tmpl::type_from<decltype(tag)>;
     pypp::check_with_random_values<1>(
         +[](const tnsr::I<DataType, 3>& x) noexcept {
@@ -50,8 +49,7 @@ void test_variables(const DataType& used_for_size) noexcept {
           CHECK(result == get<Tag>(OrszagTangVortex{}.variables(x, tags{})));
           return result;
         },
-        "AnalyticData.GrMhd.TestFunctions", *name++, {{{-10., 10.}}},
-        used_for_size);
+        "OrszagTangVortex", *name++, {{{-10., 10.}}}, used_for_size);
   });
 
   // Check that metric variables are being forwarded
@@ -66,7 +64,8 @@ void test_variables(const DataType& used_for_size) noexcept {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.OrszagTangVortex",
                   "[Unit][PointwiseFunctions]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{"PointwiseFunctions"};
+  pypp::SetupLocalPythonEnvironment local_python_env{
+      "PointwiseFunctions/AnalyticData/GrMhd"};
 
   test_variables(std::numeric_limits<double>::signaling_NaN());
   test_variables(DataVector(5));
