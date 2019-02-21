@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
     Legendre.cpp
     Projection.cpp
     Spectral.cpp
+    SwshCoefficients.cpp
     SwshCollocation.cpp
     SwshTags.cpp
     )

@@ -45,9 +45,11 @@
   { include: ["<pythonrun.h>", private,
               "<Python.h>", public]},
 
-  { include: ["<sharp_lowlevel.h>", public,
+  { include: ["<sharp_almhelpers.h>", public,
               "<sharp_cxx.h>", public]},
   { include: ["<sharp_geomhelpers.h>", public,
+              "<sharp_cxx.h>", public]},
+  { include: ["<sharp_lowlevel.h>", public,
               "<sharp_cxx.h>", public]},
 
   { include: ["<boost/optional/optional.hpp>", public,
