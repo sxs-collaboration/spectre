@@ -29,9 +29,10 @@
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 
+namespace domain {
 namespace {
 void test_cylinder_construction(
-    const domain::creators::Cylinder<Frame::Inertial>& cylinder,
+    const creators::Cylinder<Frame::Inertial>& cylinder,
     const double inner_radius, const double outer_radius,
     const double lower_bound, const double upper_bound,
     const bool is_periodic_in_z,
@@ -195,7 +196,7 @@ void test_cylinder_boundaries_equiangular() {
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const domain::creators::Cylinder<Frame::Inertial> cylinder{
+  const creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       true,         refinement_level, grid_points, true};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -222,8 +223,7 @@ void test_cylinder_factory_equiangular() {
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
-          *cylinder),
+      dynamic_cast<const creators::Cylinder<Frame::Inertial>&>(*cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, true, grid_points,
       {5, make_array<3>(refinement_level)}, true);
 }
@@ -235,7 +235,7 @@ void test_cylinder_boundaries_equidistant() {
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const domain::creators::Cylinder<Frame::Inertial> cylinder{
+  const creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       true,         refinement_level, grid_points, false};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -262,8 +262,7 @@ void test_cylinder_factory_equidistant() {
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
-          *cylinder),
+      dynamic_cast<const creators::Cylinder<Frame::Inertial>&>(*cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, true, grid_points,
       {5, make_array<3>(refinement_level)}, false);
 }
@@ -275,7 +274,7 @@ void test_cylinder_boundaries_equiangular_not_periodic_in_z() {
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const domain::creators::Cylinder<Frame::Inertial> cylinder{
+  const creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       false,        refinement_level, grid_points, true};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -303,8 +302,7 @@ void test_cylinder_factory_equiangular_not_periodic_in_z() {
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
-          *cylinder),
+      dynamic_cast<const creators::Cylinder<Frame::Inertial>&>(*cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, false, grid_points,
       {5, make_array<3>(refinement_level)}, true);
 }
@@ -316,7 +314,7 @@ void test_cylinder_boundaries_equidistant_not_periodic_in_z() {
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{4, 4, 3}};
 
-  const domain::creators::Cylinder<Frame::Inertial> cylinder{
+  const creators::Cylinder<Frame::Inertial> cylinder{
       inner_radius, outer_radius,     lower_bound, upper_bound,
       false,        refinement_level, grid_points, false};
   test_physical_separation(cylinder.create_domain().blocks());
@@ -344,8 +342,7 @@ void test_cylinder_factory_equidistant_not_periodic_in_z() {
   const size_t refinement_level = 2;
   const std::array<size_t, 3> grid_points{{2, 3, 4}};
   test_cylinder_construction(
-      dynamic_cast<const domain::creators::Cylinder<Frame::Inertial>&>(
-          *cylinder),
+      dynamic_cast<const creators::Cylinder<Frame::Inertial>&>(*cylinder),
       inner_radius, outer_radius, lower_bound, upper_bound, false, grid_points,
       {5, make_array<3>(refinement_level)}, false);
 }
@@ -361,3 +358,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Cylinder", "[Domain][Unit]") {
   test_cylinder_boundaries_equidistant_not_periodic_in_z();
   test_cylinder_factory_equidistant_not_periodic_in_z();
 }
+}  // namespace domain

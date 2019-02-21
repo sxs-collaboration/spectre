@@ -17,6 +17,7 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 void test_suite_for_frustum(const bool with_equiangular_map) {
   INFO("Suite for frustum");
@@ -286,3 +287,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
+}  // namespace domain

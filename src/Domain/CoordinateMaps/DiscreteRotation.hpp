@@ -17,6 +17,7 @@ class er;
 }  // namespace PUP
 /// \endcond
 
+namespace domain {
 namespace CoordinateMaps {
 
 /*!
@@ -79,3 +80,4 @@ inline bool operator!=(
 }
 
 }  // namespace CoordinateMaps
+}  // namespace domain

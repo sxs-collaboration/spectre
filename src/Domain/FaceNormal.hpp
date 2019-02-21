@@ -8,7 +8,9 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <functional>
 #include <string>
+#include <unordered_map>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -16,8 +18,10 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+namespace domain {
 template <typename, typename, size_t>
 class CoordinateMapBase;
+}  // namespace domain
 class DataVector;
 template <size_t>
 class Direction;
@@ -51,7 +55,8 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
 template <size_t VolumeDim, typename TargetFrame>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
-    const CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>& map,
+    const domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
+        map,
     const Direction<VolumeDim>& direction) noexcept;
 // @}
 

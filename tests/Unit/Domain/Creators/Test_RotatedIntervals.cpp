@@ -26,10 +26,10 @@
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 
+namespace domain {
 namespace {
 void test_rotated_intervals_construction(
-    const domain::creators::RotatedIntervals<Frame::Inertial>&
-        rotated_intervals,
+    const creators::RotatedIntervals<Frame::Inertial>& rotated_intervals,
     const std::array<double, 1>& lower_bound,
     const std::array<double, 1>& midpoint,
     const std::array<double, 1>& upper_bound,
@@ -68,7 +68,7 @@ void test_rotated_intervals() {
   const OrientationMap<1> flipped{
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
 
-  const domain::creators::RotatedIntervals<Frame::Inertial> rotated_intervals{
+  const creators::RotatedIntervals<Frame::Inertial> rotated_intervals{
       lower_bound,         midpoint,
       upper_bound,         std::array<bool, 1>{{false}},
       refinement_level[0], {{{{grid_points[0][0], grid_points[1][0]}}}}};
@@ -82,11 +82,10 @@ void test_rotated_intervals() {
           {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}});
   test_physical_separation(rotated_intervals.create_domain().blocks());
 
-  const domain::creators::RotatedIntervals<Frame::Inertial>
-      periodic_rotated_intervals{
-          lower_bound,         midpoint,
-          upper_bound,         std::array<bool, 1>{{true}},
-          refinement_level[0], {{{{grid_points[0][0], grid_points[1][0]}}}}};
+  const creators::RotatedIntervals<Frame::Inertial> periodic_rotated_intervals{
+      lower_bound,         midpoint,
+      upper_bound,         std::array<bool, 1>{{true}},
+      refinement_level[0], {{{{grid_points[0][0], grid_points[1][0]}}}}};
   test_rotated_intervals_construction(
       periodic_rotated_intervals, lower_bound, midpoint, upper_bound,
       grid_points, refinement_level,
@@ -112,7 +111,7 @@ void test_rotated_intervals_factory() {
           "    InitialGridPoints: [[3,2]]\n"
           "    InitialRefinement: [2]\n");
   const auto* rotated_intervals_creator =
-      dynamic_cast<const domain::creators::RotatedIntervals<Frame::Inertial>*>(
+      dynamic_cast<const creators::RotatedIntervals<Frame::Inertial>*>(
           domain_creator.get());
   test_rotated_intervals_construction(
       *rotated_intervals_creator, {{0.0}}, {{0.5}}, {{1.0}}, {{{3}}, {{2}}},
@@ -131,3 +130,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedIntervals.Factory",
   test_rotated_intervals();
   test_rotated_intervals_factory();
 }
+}  // namespace domain

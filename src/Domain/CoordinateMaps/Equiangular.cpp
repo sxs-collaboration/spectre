@@ -13,6 +13,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+namespace domain {
 namespace CoordinateMaps {
 
 Equiangular::Equiangular(const double A, const double B, const double a,
@@ -125,3 +126,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 #undef INSTANTIATE
 /// \endcond
 }  // namespace CoordinateMaps
+}  // namespace domain

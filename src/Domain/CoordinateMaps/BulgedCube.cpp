@@ -94,6 +94,7 @@ boost::optional<double> scaling_factor(RootFunction&& rootfunction) noexcept {
 }
 }  // namespace
 
+namespace domain {
 namespace CoordinateMaps {
 BulgedCube::BulgedCube(const double radius, const double sphericity,
                        const bool use_equiangular_map) noexcept
@@ -298,3 +299,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 #undef INSTANTIATE
 /// \endcond
 }  // namespace CoordinateMaps
+}  // namespace domain

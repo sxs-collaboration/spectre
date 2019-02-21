@@ -18,6 +18,7 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
+namespace domain {
 namespace CoordinateMaps {
 
 /// \cond HIDDEN_SYMBOLS
@@ -166,3 +167,4 @@ class Rotation<3> {
 bool operator!=(const Rotation<3>& lhs, const Rotation<3>& rhs) noexcept;
 
 }  // namespace CoordinateMaps
+}  // namespace domain

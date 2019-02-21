@@ -19,6 +19,7 @@
 #include "Domain/OrientationMap.hpp"
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 
+namespace domain {
 namespace {
 void test_1d() {
   INFO("1d");
@@ -135,3 +136,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.DiscreteRotation",
   test_with_orientation();
   test_is_identity();
 }
+}  // namespace domain

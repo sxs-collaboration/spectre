@@ -17,6 +17,8 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
+namespace {
 void test_bulged_cube_fail() {
   INFO("Bulged cube fail");
   const CoordinateMaps::BulgedCube map(2.0 * sqrt(3.0), 0.5, false);
@@ -37,11 +39,11 @@ void test_bulged_cube_fail() {
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point1)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point2)));
   CHECK_FALSE(static_cast<bool>(map.inverse(test_mapped_point3)));
-  if(map.inverse(test_mapped_point4)) {
+  if (map.inverse(test_mapped_point4)) {
     CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point4).get()),
                           test_mapped_point4);
   }
-  if(map.inverse(test_mapped_point5)) {
+  if (map.inverse(test_mapped_point5)) {
     CHECK_ITERABLE_APPROX(map(map.inverse(test_mapped_point5).get()),
                           test_mapped_point5);
   }
@@ -96,6 +98,7 @@ void test_bulged_cube(bool with_equiangular_map) {
   test_inverse_map(map, test_point3);
   test_inverse_map(map, test_point4);
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube", "[Domain][Unit]") {
   const CoordinateMaps::BulgedCube map(sqrt(3.0), 0, false);
@@ -131,3 +134,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.BulgedCube", "[Domain][Unit]") {
 
   check_if_map_is_identity(CoordinateMaps::BulgedCube{sqrt(3.0), 0, false});
 }
+}  // namespace domain

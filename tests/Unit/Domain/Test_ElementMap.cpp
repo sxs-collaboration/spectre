@@ -26,6 +26,7 @@
 #include "Domain/Tags.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 using DV = DataVector;
 
@@ -35,8 +36,7 @@ void test_element_impl(
     const T& first_map, const U& second_map,
     const tnsr::I<double, Dim, Frame::Logical>& logical_point_double,
     const tnsr::I<DV, Dim, Frame::Logical>& logical_point_dv) {
-  PUPable_reg(
-      SINGLE_ARG(::CoordinateMap<Frame::Logical, Frame::Inertial, T, U>));
+  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial, T, U>));
   const auto composed_map =
       make_coordinate_map<Frame::Logical, Frame::Inertial>(
           affine_map, first_map, second_map);
@@ -195,3 +195,4 @@ SPECTRE_TEST_CASE("Unit.Domain.ElementMap", "[Unit][Domain]") {
   test_element_map<2>();
   test_element_map<3>();
 }
+}  // namespace domain

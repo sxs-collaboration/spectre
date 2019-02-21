@@ -34,6 +34,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
+namespace domain {
 namespace {
 template <typename Map1, typename Map2, typename DataType, size_t Dim>
 auto compose_jacobians(const Map1& map1, const Map2& map2,
@@ -898,3 +899,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
   test_make_vector_coordinate_map_base();
   test_coordinate_maps_are_identity();
 }
+}  // namespace domain

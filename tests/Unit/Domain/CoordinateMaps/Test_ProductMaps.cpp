@@ -21,6 +21,7 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 void test_product_two_maps_fail() {
   INFO("Product two maps fail");
@@ -367,3 +368,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.ProductMaps", "[Domain][Unit]") {
   test_product_of_2_maps();
   test_product_of_3_maps();
 }
+}  // namespace domain

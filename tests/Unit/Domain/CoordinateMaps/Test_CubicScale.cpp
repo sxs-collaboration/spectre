@@ -20,6 +20,7 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 // We will call with this function with arguments that are designed
 // to fail in a certain way.
@@ -279,3 +280,4 @@ SPECTRE_TEST_CASE(
   ERROR_TEST();
   cubic_scale_non_invertible(0.96, 1.0, 0.0);
 }
+}  // namespace domain

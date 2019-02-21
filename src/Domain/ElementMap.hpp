@@ -17,8 +17,10 @@ namespace PUP {
 class er;
 }  // namespace PUP
 /// \cond
+namespace domain {
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
+}  // namespace domain
 /// \endcond
 
 /*!
@@ -43,13 +45,13 @@ class ElementMap {
   ElementMap() = default;
   /// \endcond
 
-  ElementMap(
-      ElementId<Dim> element_id,
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, Dim>>
-          block_map) noexcept;
+  ElementMap(ElementId<Dim> element_id,
+             std::unique_ptr<
+                 domain::CoordinateMapBase<Frame::Logical, TargetFrame, Dim>>
+                 block_map) noexcept;
 
-  const CoordinateMapBase<Frame::Logical, TargetFrame, Dim>& block_map() const
-      noexcept {
+  const domain::CoordinateMapBase<Frame::Logical, TargetFrame, Dim>& block_map()
+      const noexcept {
     return *block_map_;
   }
 
@@ -115,7 +117,7 @@ class ElementMap {
     }
   }
 
-  std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, Dim>>
+  std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, Dim>>
       block_map_{nullptr};
   ElementId<Dim> element_id_{};
   // map_slope_[i] = 0.5 * (segment_ids[i].endpoint(Side::Upper) -

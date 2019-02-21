@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <array>
-// IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>  // IWYU pragma: keep
@@ -23,6 +22,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/DirectionMap.hpp"
 // IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"  // for Variables
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
@@ -47,6 +47,9 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
+// IWYU pragma: no_include <boost/variant/get.hpp>
 
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
@@ -221,8 +224,9 @@ void insert_neighbor(const gsl::not_null<LocalAlg*> local_alg,
                      Spectral::Quadrature::GaussLobatto};
 
   ElementMap<2, Frame::Inertial> map(
-      element.id(), make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                        CoordinateMaps::Identity<2>{}));
+      element.id(),
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<2>{}));
 
   db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>> fluxes;
   fluxes[send_direction].initialize(2, n_dot_f);
@@ -329,9 +333,9 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
                       Spectral::Quadrature::GaussLobatto},
               Element<2>{},
               ElementMap<2, Frame::Inertial>{
-                  self_id,
-                  make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                      CoordinateMaps::Identity<2>{})},
+                  self_id, domain::make_coordinate_map_base<Frame::Logical,
+                                                            Frame::Inertial>(
+                               domain::CoordinateMaps::Identity<2>{})},
               db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
               db::item_type<other_data_tag<2>>{},
               db::item_type<mortar_meshes_tag<2>>{},

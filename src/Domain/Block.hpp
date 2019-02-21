@@ -45,8 +45,8 @@ class Block {
   /// \param id a unique ID.
   /// \param neighbors info about the Blocks that share a codimension 1
   /// boundary with this Block.
-  Block(std::unique_ptr<
-            CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>&& map,
+  Block(std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame,
+                                                  VolumeDim>>&& map,
         size_t id,
         DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors) noexcept;
 
@@ -57,7 +57,7 @@ class Block {
   Block& operator=(const Block&) = delete;
   Block& operator=(Block&&) = default;
 
-  const CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
+  const domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
   coordinate_map() const noexcept {
     return *map_;
   }
@@ -83,7 +83,8 @@ class Block {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
-  std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>
+  std::unique_ptr<
+      domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>
       map_;
   size_t id_{0};
   DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;

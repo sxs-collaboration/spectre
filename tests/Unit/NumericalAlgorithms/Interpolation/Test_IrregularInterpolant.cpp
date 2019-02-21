@@ -38,9 +38,9 @@
 
 namespace {
 
-using Affine = CoordinateMaps::Affine;
-using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
+using Affine = domain::CoordinateMaps::Affine;
+using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
 const double inertial_coord_min = -0.3;
 const double inertial_coord_max = 0.7;
@@ -50,20 +50,20 @@ auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});

@@ -155,13 +155,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
   // actions are only sensitive to the ElementMap, which does differ),
   // we need to make the xi and eta maps line up along the block
   // interface.
-  const CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
-  const CoordinateMaps::Affine eta_map{-1., 1., 7., 3.};
+  using Affine = domain::CoordinateMaps::Affine;
+  const Affine xi_map{-1., 1., 3., 7.};
+  const Affine eta_map{-1., 1., 7., 3.};
 
   const auto coordmap =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                         CoordinateMaps::Affine>(xi_map,
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
                                                                  eta_map));
 
   const struct {
@@ -315,13 +315,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.NoNeighbors",
 
   auto input_var = Scalar<DataVector>(mesh.number_of_grid_points(), 1234.);
 
-  const CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
-  const CoordinateMaps::Affine eta_map{-1., 1., 7., 3.};
+  using Affine = domain::CoordinateMaps::Affine;
+  const Affine xi_map{-1., 1., 3., 7.};
+  const Affine eta_map{-1., 1., 7., 3.};
   auto map = ElementMap<2, Frame::Inertial>(
-      self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                   CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                                  CoordinateMaps::Affine>(
-                       xi_map, eta_map)));
+      self_id,
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
+                                                                 eta_map)));
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
   using MockDistributedObjectsTag =

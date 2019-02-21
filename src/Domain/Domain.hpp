@@ -23,8 +23,10 @@ namespace PUP {
 class er;
 }  // namespace PUP
 /// \cond
+namespace domain {
 template <typename SourceFrame, typename TargetFrame, size_t Dim>
 class CoordinateMapBase;
+}  // namespace domain
 /// \endcond
 
 /*!
@@ -55,7 +57,7 @@ class Domain {
    * `identifications.size()` is even.
    */
   Domain(std::vector<std::unique_ptr<
-             CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
+             domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
              maps,
          const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
              corners_of_all_blocks,

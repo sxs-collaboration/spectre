@@ -18,6 +18,7 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 void test_wedge2d_all_orientations(const bool with_equiangular_map) {
   INFO("Wedge2d all orientations");
@@ -246,3 +247,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge2D.Map", "[Domain][Unit]") {
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
+}  // namespace domain

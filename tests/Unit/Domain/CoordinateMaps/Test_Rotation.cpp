@@ -18,8 +18,9 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-// IWYU pragma: no_forward_declare CoordinateMaps::Rotation
+// IWYU pragma: no_forward_declare domain::CoordinateMaps::Rotation
 
+namespace domain {
 namespace {
 template <typename T>
 void test_rotation_3(const CoordinateMaps::Rotation<3>& three_dim_rotation_map,
@@ -156,3 +157,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Rotation", "[Domain][Unit]") {
   test_rotation_2();
   test_rotation_3();
 }
+}  // namespace domain

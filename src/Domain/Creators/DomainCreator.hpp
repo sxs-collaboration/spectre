@@ -16,8 +16,10 @@
 /// \cond
 template <size_t, typename>
 class Block;
+namespace domain {
 template <typename, typename, size_t>
 class CoordinateMapBase;
+}  // namespace domain
 template <size_t, typename>
 class Domain;
 /// \endcond

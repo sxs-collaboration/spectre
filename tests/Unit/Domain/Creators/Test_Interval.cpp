@@ -28,9 +28,10 @@
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 void test_interval_construction(
-    const domain::creators::Interval<Frame::Inertial>& interval,
+    const creators::Interval<Frame::Inertial>& interval,
     const std::array<double, 1>& lower_bound,
     const std::array<double, 1>& upper_bound,
     const std::vector<std::array<size_t, 1>>& expected_extents,
@@ -59,7 +60,7 @@ void test_interval() {
   // default Orientation is aligned
   const OrientationMap<1> aligned_orientation{};
 
-  const domain::creators::Interval<Frame::Inertial> interval{
+  const creators::Interval<Frame::Inertial> interval{
       lower_bound, upper_bound, std::array<bool, 1>{{false}},
       refinement_level[0], grid_points[0]};
   test_interval_construction(
@@ -68,7 +69,7 @@ void test_interval() {
       std::vector<std::unordered_set<Direction<1>>>{
           {{Direction<1>::lower_xi()}, {Direction<1>::upper_xi()}}});
 
-  const domain::creators::Interval<Frame::Inertial> periodic_interval{
+  const creators::Interval<Frame::Inertial> periodic_interval{
       lower_bound, upper_bound, std::array<bool, 1>{{true}},
       refinement_level[0], grid_points[0]};
   test_interval_construction(
@@ -80,7 +81,7 @@ void test_interval() {
       std::vector<std::unordered_set<Direction<1>>>{{}});
 
   // Test serialization of the map
-  domain::creators::register_derived_with_charm();
+  creators::register_derived_with_charm();
 
   const auto base_map =
       make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
@@ -105,7 +106,7 @@ void test_interval_factory() {
           "    InitialGridPoints: [3]\n"
           "    InitialRefinement: [2]\n");
   const auto* interval_creator =
-      dynamic_cast<const domain::creators::Interval<Frame::Inertial>*>(
+      dynamic_cast<const creators::Interval<Frame::Inertial>*>(
           domain_creator.get());
   test_interval_construction(*interval_creator, {{0.}}, {{1.}}, {{{3}}},
                              {{{2}}},
@@ -120,3 +121,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.Interval.Factory", "[Domain][Unit]") {
   test_interval();
   test_interval_factory();
 }
+}  // namespace domain

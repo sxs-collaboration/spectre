@@ -25,10 +25,10 @@
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 
+namespace domain {
 namespace {
 void test_rotated_rectangles_construction(
-    const domain::creators::RotatedRectangles<Frame::Inertial>&
-        rotated_rectangles,
+    const creators::RotatedRectangles<Frame::Inertial>& rotated_rectangles,
     const std::array<double, 2>& lower_bound,
     const std::array<double, 2>& midpoint,
     const std::array<double, 2>& upper_bound,
@@ -94,7 +94,7 @@ void test_rotated_rectangles() {
   const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
 
-  const domain::creators::RotatedRectangles<Frame::Inertial> rotated_rectangles{
+  const creators::RotatedRectangles<Frame::Inertial> rotated_rectangles{
       lower_bound,
       midpoint,
       upper_bound,
@@ -121,7 +121,7 @@ void test_rotated_rectangles() {
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
   test_physical_separation(rotated_rectangles.create_domain().blocks());
 
-  const domain::creators::RotatedRectangles<Frame::Inertial>
+  const creators::RotatedRectangles<Frame::Inertial>
       rotated_periodic_rectangles{
           lower_bound,
           midpoint,
@@ -172,7 +172,7 @@ void test_rotated_rectangles_factory() {
           "    InitialGridPoints: [[3,2],[1,4]]\n"
           "    InitialRefinement: [2,1]\n");
   const auto* rotated_rectangles_creator =
-      dynamic_cast<const domain::creators::RotatedRectangles<Frame::Inertial>*>(
+      dynamic_cast<const creators::RotatedRectangles<Frame::Inertial>*>(
           domain_creator.get());
   test_rotated_rectangles_construction(
       *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
@@ -200,3 +200,4 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.RotatedRectangles.Factory",
   test_rotated_rectangles();
   test_rotated_rectangles_factory();
 }
+}  // namespace domain

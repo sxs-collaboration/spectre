@@ -28,7 +28,7 @@ Domain<VolumeDim, TargetFrame>::Domain(
 template <size_t VolumeDim, typename TargetFrame>
 Domain<VolumeDim, TargetFrame>::Domain(
     std::vector<std::unique_ptr<
-        CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
+        domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
         maps,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,

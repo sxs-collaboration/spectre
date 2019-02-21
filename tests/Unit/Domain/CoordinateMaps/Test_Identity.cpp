@@ -11,6 +11,8 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
+namespace {
 template <size_t Dim>
 void test_identity() {
   CoordinateMaps::Identity<Dim> identity_map;
@@ -34,9 +36,11 @@ void test_identity() {
 
   check_if_map_is_identity(CoordinateMaps::Identity<Dim>{});
 }
+}  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Identity", "[Domain][Unit]") {
   test_identity<1>();
   test_identity<2>();
   test_identity<3>();
 }
+}  // namespace domain

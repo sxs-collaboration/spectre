@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
-// IWYU pragma: no_include <pup.h>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -53,6 +52,9 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <boost/variant/get.hpp>
+// IWYU pragma: no_include <pup.h>
 
 // IWYU pragma: no_forward_declare ElementIndex
 class TimeStepper;
@@ -363,8 +365,9 @@ void test_mortar_orientation() noexcept {
   // This is the domain from the OrientationMap and corner numbering
   // tutorial.
   Domain<3, Frame::Inertial> domain(
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          CoordinateMaps::Identity<3>{}, CoordinateMaps::Identity<3>{}),
+      domain::make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::Identity<3>{},
+          domain::CoordinateMaps::Identity<3>{}),
       {{{0, 1, 3, 4, 6, 7, 9, 10}}, {{1, 4, 7, 10, 2, 5, 8, 11}}});
   const auto neighbor_direction = Direction<3>::upper_xi();
   const auto mortar_id = std::make_pair(neighbor_direction, ElementId<3>(1));

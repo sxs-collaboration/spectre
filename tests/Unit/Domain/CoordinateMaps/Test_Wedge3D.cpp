@@ -16,6 +16,7 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 void test_wedge3d_all_directions() {
   INFO("Wedge3d all directions");
@@ -386,3 +387,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Wedge3D.Map", "[Domain][Unit]") {
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
+}  // namespace domain

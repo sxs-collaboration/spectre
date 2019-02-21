@@ -99,13 +99,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Minmod",
   const ElementId<2> self_id(1, {{{2, 0}, {1, 0}}});
   const Element<2> element(self_id, {});
 
-  const CoordinateMaps::Affine xi_map{-1., 1., 3., 7.};
-  const CoordinateMaps::Affine eta_map{-1., 1., 7., 3.};
+  using Affine = domain::CoordinateMaps::Affine;
+  const Affine xi_map{-1., 1., 3., 7.};
+  const Affine eta_map{-1., 1., 7., 3.};
   auto map = ElementMap<2, Frame::Inertial>(
-      self_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-                   CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
-                                                  CoordinateMaps::Affine>(
-                       xi_map, eta_map)));
+      self_id,
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
+                                                                 eta_map)));
 
   auto logical_coords = logical_coordinates(mesh);
   auto inertial_coords = map(logical_coords);

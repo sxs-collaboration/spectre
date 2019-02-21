@@ -34,6 +34,7 @@
 template <size_t VolumeDim>
 class Element;
 
+namespace domain {
 namespace {
 template <size_t VolumeDim>
 boost::rational<size_t> fraction_of_block_face_area(
@@ -280,6 +281,7 @@ double physical_separation(
   return max_separation;
 }
 }  // namespace
+}  // namespace domain
 
 template <size_t VolumeDim, typename Fr>
 void test_domain_construction(
@@ -288,8 +290,8 @@ void test_domain_construction(
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
-    const std::vector<
-        std::unique_ptr<CoordinateMapBase<Frame::Logical, Fr, VolumeDim>>>&
+    const std::vector<std::unique_ptr<
+        domain::CoordinateMapBase<Frame::Logical, Fr, VolumeDim>>>&
         expected_maps) noexcept {
   const auto& blocks = domain.blocks();
   CHECK(blocks.size() == expected_external_boundaries.size());
@@ -314,8 +316,8 @@ void test_physical_separation(
   double tolerance = 1e-10;
   for (size_t i = 0; i < blocks.size() - 1; i++) {
     for (size_t j = i + 1; j < blocks.size(); j++) {
-      if (blocks_are_neighbors(blocks[i], blocks[j])) {
-        CHECK(physical_separation(blocks[i], blocks[j]) < tolerance);
+      if (domain::blocks_are_neighbors(blocks[i], blocks[j])) {
+        CHECK(domain::physical_separation(blocks[i], blocks[j]) < tolerance);
       }
     }
   }
@@ -345,8 +347,8 @@ void test_initial_domain(const Domain<VolumeDim, Frame>& domain,
         element_id,
         create_initial_element(element_id, blocks[element_id.block_id()]));
   }
-  test_domain_connectivity(domain, elements);
-  test_refinement_levels_of_neighbors<0>(elements);
+  domain::test_domain_connectivity(domain, elements);
+  domain::test_refinement_levels_of_neighbors<0>(elements);
 }
 
 template <size_t SpatialDim, typename Fr>
@@ -378,7 +380,7 @@ tnsr::i<DataVector, SpatialDim, Fr> euclidean_basis_vector(
       const std::vector<std::unordered_set<Direction<DIM(data)>>>&             \
           expected_external_boundaries,                                        \
       const std::vector<std::unique_ptr<                                       \
-          CoordinateMapBase<Frame::Logical, FRAME(data), DIM(data)>>>&         \
+          domain::CoordinateMapBase<Frame::Logical, FRAME(data), DIM(data)>>>& \
           expected_maps) noexcept;                                             \
   template void test_initial_domain(                                           \
       const Domain<DIM(data), FRAME(data)>& domain,                            \

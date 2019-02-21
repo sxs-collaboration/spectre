@@ -13,6 +13,7 @@
 #include "tests/Unit/Domain/CoordinateMaps/TestMapHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {
   const double xA = -1.0;
   const double xB = 1.0;
@@ -58,3 +59,4 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Affine", "[Domain][Unit]") {
 
   check_if_map_is_identity(CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0});
 }
+}  // namespace domain

@@ -15,6 +15,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+namespace domain {
 namespace CoordinateMaps {
 
 Wedge2D::Wedge2D(double radius_inner, double radius_outer,
@@ -225,3 +226,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
 #undef INSTANTIATE
 /// \endcond
 }  // namespace CoordinateMaps
+}  // namespace domain

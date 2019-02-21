@@ -48,7 +48,8 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
 template <size_t VolumeDim, typename TargetFrame>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
-    const CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>& map,
+    const domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
+        map,
     const Direction<VolumeDim>& direction) noexcept {
   return unnormalized_face_normal_impl<TargetFrame>(interface_mesh, map,
                                                     direction);
@@ -65,8 +66,8 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
   template tnsr::i<DataVector, GET_DIM(data), GET_FRAME(data)>                \
   unnormalized_face_normal(                                                   \
       const Mesh<GET_DIM(data) - 1>&,                                         \
-      const CoordinateMapBase<Frame::Logical, GET_FRAME(data),                \
-                              GET_DIM(data)>&,                                \
+      const domain::CoordinateMapBase<Frame::Logical, GET_FRAME(data),        \
+                                      GET_DIM(data)>&,                        \
       const Direction<GET_DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
