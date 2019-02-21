@@ -8,10 +8,20 @@
 #include <sharp_cxx.h>
 
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
+#include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 
 namespace Spectral {
 namespace Swsh {
+
+/// \ingroup SwshGroup
+/// \brief Convenience function for determining the number of spin-weighted
+/// spherical harmonic collocation values that are stored for a given `l_max`
+/// for a libsharp-compatible set of collocation points.
+constexpr SPECTRE_ALWAYS_INLINE size_t
+number_of_swsh_collocation_points(const size_t l_max) noexcept {
+  return (l_max + 1) * (2 * l_max + 1);
+}
 
 // In the static caching mechanism, we permit an l_max up to this macro
 // value. Higher l_max values may still be created manually using the
@@ -190,7 +200,7 @@ class Collocation {
 /// generated, it's returned by reference. Otherwise, the new grid is generated
 /// and put in the lookup table before it is returned by reference.
 template <ComplexRepresentation Representation>
-const Collocation<Representation>& precomputed_spherical_harmonic_collocation(
+const Collocation<Representation>& precomputed_collocation(
     size_t l_max) noexcept;
 }  // namespace Swsh
 }  // namespace Spectral
