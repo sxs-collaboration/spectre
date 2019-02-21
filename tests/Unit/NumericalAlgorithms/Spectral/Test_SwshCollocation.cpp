@@ -139,9 +139,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshCollocation",
     "Unit.NumericalAlgorithms.Spectral.SwshCollocation.PrecomputationOverrun",
     "[Unit][NumericalAlgorithms]") {
   ERROR_TEST();
-  const Collocation<ComplexRepresentation::RealsThenImags>&
-      precomputed_collocation = precomputed_spherical_harmonic_collocation<
-          ComplexRepresentation::RealsThenImags>(collocation_maximum_l_max + 1);
+  precomputed_spherical_harmonic_collocation<
+      ComplexRepresentation::RealsThenImags>(collocation_maximum_l_max + 1);
   ERROR("Failed to trigger ERROR in an error test");
 }
 }  // namespace
