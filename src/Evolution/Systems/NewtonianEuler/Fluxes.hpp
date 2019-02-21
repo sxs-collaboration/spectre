@@ -5,7 +5,9 @@
 
 #include <cstddef>
 
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"    // IWYU pragma: keep
+#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -17,21 +19,6 @@ class not_null;
 }  // namespace gsl
 
 class DataVector;
-
-namespace Tags {
-template <typename>
-struct Fluxes;
-}  // namespace Tags
-
-namespace NewtonianEuler {
-struct MassDensity;
-template <size_t Dim>
-struct MomentumDensity;
-struct EnergyDensity;
-template <size_t Dim>
-struct Velocity;
-struct Pressure;
-}  // namespace NewtonianEuler
 /// \endcond
 
 namespace NewtonianEuler {
@@ -61,11 +48,17 @@ namespace NewtonianEuler {
 template <size_t Dim>
 struct ComputeFluxes {
   using return_tags =
-      tmpl::list<Tags::Fluxes<MassDensity>, Tags::Fluxes<MomentumDensity<Dim>>,
-                 Tags::Fluxes<EnergyDensity>>;
+      tmpl::list<::Tags::Flux<Tags::MassDensity<DataVector>, tmpl::size_t<Dim>,
+                              Frame::Inertial>,
+                 ::Tags::Flux<Tags::MomentumDensity<DataVector, Dim>,
+                              tmpl::size_t<Dim>, Frame::Inertial>,
+                 ::Tags::Flux<Tags::EnergyDensity<DataVector>,
+                              tmpl::size_t<Dim>, Frame::Inertial>>;
 
   using argument_tags =
-      tmpl::list<MomentumDensity<Dim>, EnergyDensity, Velocity<Dim>, Pressure>;
+      tmpl::list<Tags::MomentumDensity<DataVector, Dim>,
+                 Tags::EnergyDensity<DataVector>,
+                 Tags::Velocity<DataVector, Dim>, Tags::Pressure<DataVector>>;
 
   static void apply(
       gsl::not_null<tnsr::I<DataVector, Dim>*> mass_density_flux,

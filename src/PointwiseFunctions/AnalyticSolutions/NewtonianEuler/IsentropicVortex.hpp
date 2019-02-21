@@ -4,15 +4,28 @@
 #pragma once
 
 #include <array>
+#include <cstddef>
 #include <limits>
-#include <pup.h>
 
+#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeArray.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+// IWYU pragma: no_include <pup.h>
+
+/// \cond
+namespace PUP {
+class er;  // IWYU pragma: keep
+}  // namespace PUP
+/// \endcond
+
+// IWYU pragma: no_forward_declare NewtonianEuler::Solutions::IsentropicVortex::IntermediateVariables
 
 namespace NewtonianEuler {
 namespace Solutions {
@@ -22,7 +35,7 @@ namespace Solutions {
  *
  * The analytic solution to the 2-D Newtonian Euler system
  * representing the slow advection of an incompressible, isentropic
- * vortex \ref vortex_ref "[1]". The initial condition is the superposition of a
+ * vortex \cite Yee1999. The initial condition is the superposition of a
  * mean uniform flow with a gaussian-profile vortex. When embedded in
  * 3-D space, the isentropic vortex is still a solution to the corresponding 3-D
  * system if the velocity along the third axis is a constant. In Cartesian
@@ -71,33 +84,31 @@ namespace Solutions {
  * where \f$\epsilon\f$ is the amplitude of the perturbation. The resulting
  * source for the Newtonian Euler system will then be proportional to
  * \f$\epsilon \cos{z}\f$.
- *
- * \anchor vortex_ref [1] H.C Yee, N.D Sandham, M.J Djomehri, Low-dissipative
- * high-order shock-capturing methods using characteristic-based filters, J.
- * Comput. Phys. [150 (1999) 199](http://dx.doi.org/10.1006/jcph.1998.6177)
  */
+template <size_t Dim>
 class IsentropicVortex {
+  template <typename DataType>
+  struct IntermediateVariables;
+
  public:
+  using equation_of_state_type = EquationsOfState::PolytropicFluid<false>;
+
   /// The adiabatic index of the fluid.
   struct AdiabaticIndex {
     using type = double;
     static constexpr OptionString help = {"The adiabatic index of the fluid."};
-    // Note: bounds only valid for an ideal gas.
-    static type lower_bound() noexcept { return 1.0; }
-    static type upper_bound() noexcept { return 2.0; }
   };
 
   /// The position of the center of the vortex at \f$t = 0\f$
   struct Center {
-    using type = std::array<double, 3>;
+    using type = std::array<double, Dim>;
     static constexpr OptionString help = {
         "The coordinates of the center of the vortex at t = 0."};
-    static type default_value() noexcept { return {{0.0, 0.0, 0.0}}; }
   };
 
   /// The mean flow velocity.
   struct MeanVelocity {
-    using type = std::array<double, 3>;
+    using type = std::array<double, Dim>;
     static constexpr OptionString help = {"The mean flow velocity."};
   };
 
@@ -117,7 +128,8 @@ class IsentropicVortex {
 
   using options = tmpl::list<AdiabaticIndex, Center, MeanVelocity,
                              PerturbAmplitude, Strength>;
-  static constexpr OptionString help = {"Newtonian Isentropic Vortex."};
+  static constexpr OptionString help = {
+      "Newtonian Isentropic Vortex. Works in 2 and 3 dimensions."};
 
   IsentropicVortex() = default;
   IsentropicVortex(const IsentropicVortex& /*rhs*/) = delete;
@@ -126,69 +138,91 @@ class IsentropicVortex {
   IsentropicVortex& operator=(IsentropicVortex&& /*rhs*/) noexcept = default;
   ~IsentropicVortex() = default;
 
-  IsentropicVortex(double adiabatic_index, Center::type center,
-                   MeanVelocity::type mean_velocity,
+  IsentropicVortex(double adiabatic_index,
+                   const std::array<double, Dim>& center,
+                   const std::array<double, Dim>& mean_velocity,
                    double perturbation_amplitude, double strength);
 
-  explicit IsentropicVortex(CkMigrateMessage* /*unused*/) noexcept {}
+  /// Retrieve a collection of hydrodynamic variables at position x and time t
+  template <typename DataType, typename... Tags>
+  tuples::TaggedTuple<Tags...> variables(
+      const tnsr::I<DataType, Dim, Frame::Inertial>& x,
+      const double t,  // NOLINT
+      tmpl::list<Tags...> /*meta*/) const noexcept {
+    static_assert(sizeof...(Tags) > 1,
+                  "The generic template will recurse infinitely if only one "
+                  "tag is being retrieved.");
+    IntermediateVariables<DataType> vars(x, t, center_, mean_velocity_,
+                                         perturbation_amplitude_, strength_);
+    return {tuples::get<Tags>(variables(tmpl::list<Tags>{}, vars))...};
+  }
 
-  template <typename DataType>
-  using primitive_t =
-      tmpl::list<Tags::MassDensity<DataType>, Tags::Velocity<DataType, 3>,
-                 Tags::SpecificInternalEnergy<DataType>>;
-
-  template <typename DataType>
-  using conservative_t = tmpl::list<Tags::MassDensity<DataType>,
-                                    Tags::MomentumDensity<DataType, 3>,
-                                    Tags::EnergyDensity<DataType>>;
-
-  template <typename DataType>
-  Scalar<DataType> perturbation(const DataType& coord_z) const noexcept;
-
-  template <typename DataType>
-  tuples::tagged_tuple_from_typelist<primitive_t<DataType>> primitive_variables(
-      const tnsr::I<DataType, 3>& x, double t) const noexcept;
-
-  template <typename DataType>
-  tuples::tagged_tuple_from_typelist<conservative_t<DataType>>
-  conservative_variables(const tnsr::I<DataType, 3>& x, double t) const
-      noexcept;
+  const EquationsOfState::PolytropicFluid<false>& equation_of_state() const
+      noexcept {
+    return equation_of_state_;
+  }
 
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
 
-  constexpr double adiabatic_index() const noexcept { return adiabatic_index_; }
-  constexpr const Center::type& center() const noexcept { return center_; }
-  constexpr const MeanVelocity::type& mean_velocity() const noexcept {
-    return mean_velocity_;
-  }
-  constexpr double perturbation_amplitude() const noexcept {
-    return perturbation_amplitude_;
-  }
-  constexpr double strength() const noexcept { return strength_; }
-
  private:
+  // @{
+  /// Retrieve hydro variable at `(x, t)`
+  template <typename DataType>
+  auto variables(tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
+                 const IntermediateVariables<DataType>& vars) const noexcept
+      -> tuples::TaggedTuple<Tags::MassDensity<DataType>>;
+
+  template <typename DataType>
+  auto variables(
+      tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/,
+      const IntermediateVariables<DataType>& vars) const noexcept
+      -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>;
+
+  template <typename DataType>
+  auto variables(tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
+                 const IntermediateVariables<DataType>& vars) const noexcept
+      -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
+  // @}
+
+  // Intermediate variables needed to compute the primitives
+  template <typename DataType>
+  struct IntermediateVariables {
+    IntermediateVariables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
+                          double t, const std::array<double, Dim>& center,
+                          const std::array<double, Dim>& mean_velocity,
+                          double perturbation_amplitude,
+                          double strength) noexcept;
+    DataType x_tilde{};
+    DataType y_tilde{};
+    DataType profile{};
+    // (3D only) Extra term in the velocity along z that generates sources.
+    DataType perturbation{};
+  };
+
+  template <size_t SpatialDim>
+  friend bool
+  operator==(  // NOLINT (clang-tidy: readability-redundant-declaration)
+      const IsentropicVortex<SpatialDim>& lhs,
+      const IsentropicVortex<SpatialDim>& rhs) noexcept;
+
   double adiabatic_index_ = std::numeric_limits<double>::signaling_NaN();
-  Center::type center_ = {{0.0, 0.0, 0.0}};
-  MeanVelocity::type mean_velocity_ =
-      make_array<3>(std::numeric_limits<double>::signaling_NaN());
+  std::array<double, Dim> center_ =
+      make_array<Dim>(std::numeric_limits<double>::signaling_NaN());
+  std::array<double, Dim> mean_velocity_ =
+      make_array<Dim>(std::numeric_limits<double>::signaling_NaN());
   double perturbation_amplitude_ = std::numeric_limits<double>::signaling_NaN();
   double strength_ = std::numeric_limits<double>::signaling_NaN();
+
+  // This is an ideal gas undergoing an isentropic process,
+  // so the relation between the pressure and the mass density is polytropic,
+  // where the polytropic exponent corresponds to the adiabatic index.
+  EquationsOfState::PolytropicFluid<false> equation_of_state_{};
 };
 
-inline constexpr bool operator==(const IsentropicVortex& lhs,
-                                 const IsentropicVortex& rhs) noexcept {
-  return lhs.adiabatic_index() == rhs.adiabatic_index() and
-         lhs.center() == rhs.center() and
-         lhs.mean_velocity() == rhs.mean_velocity() and
-         lhs.perturbation_amplitude() == rhs.perturbation_amplitude() and
-         lhs.strength() == rhs.strength();
-}
-
-inline constexpr bool operator!=(const IsentropicVortex& lhs,
-                                 const IsentropicVortex& rhs) noexcept {
-  return not(lhs == rhs);
-}
+template <size_t Dim>
+bool operator!=(const IsentropicVortex<Dim>& lhs,
+                const IsentropicVortex<Dim>& rhs) noexcept;
 
 }  // namespace Solutions
 }  // namespace NewtonianEuler

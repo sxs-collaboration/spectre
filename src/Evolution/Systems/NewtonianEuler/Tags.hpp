@@ -8,8 +8,10 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"
 
 namespace NewtonianEuler {
+/// %Tags for the conservative formulation of the Newtonian Euler system
 namespace Tags {
 
 /// The mass density of the fluid.
@@ -20,10 +22,12 @@ struct MassDensity : db::SimpleTag {
 };
 
 /// The momentum density of the fluid.
-template <typename DataType, size_t Dim, typename VolumeFrame = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr>
 struct MomentumDensity : db::SimpleTag {
-  using type = tnsr::I<DataType, Dim, VolumeFrame>;
-  static std::string name() noexcept { return "MomentumDensity"; }
+  using type = tnsr::I<DataType, Dim, Fr>;
+  static std::string name() noexcept {
+    return Frame::prefix<Fr>() + "MomentumDensity";
+  }
 };
 
 /// The energy density of the fluid.
@@ -34,10 +38,12 @@ struct EnergyDensity : db::SimpleTag {
 };
 
 /// The macroscopic or flow velocity of the fluid.
-template <typename DataType, size_t Dim, typename VolumeFrame = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr>
 struct Velocity : db::SimpleTag {
-  using type = tnsr::I<DataType, Dim, VolumeFrame>;
-  static std::string name() noexcept { return "Velocity"; }
+  using type = tnsr::I<DataType, Dim, Fr>;
+  static std::string name() noexcept {
+    return Frame::prefix<Fr>() + "Velocity";
+  }
 };
 
 /// The specific internal energy of the fluid.
