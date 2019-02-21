@@ -190,12 +190,13 @@ struct CleanOutput {
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ParallelComponent* const /*meta*/,
+                    const bool check_expected_output) noexcept {
     const auto& reductions_file_name =
         get<observers::OptionTags::ReductionFileName>(cache) + ".h5";
     if (file_system::check_if_file_exists(reductions_file_name)) {
       file_system::rm(reductions_file_name, true);
-    } else {
+    } else if (check_expected_output) {
       ERROR("Expected reductions file '" << reductions_file_name
                                          << "' does not exist");
     }
@@ -211,8 +212,12 @@ struct OutputCleaner {
   using options = tmpl::list<>;
   using const_global_cache_tag_list = tmpl::list<>;
 
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
-                         Metavariables>& /*global_cache*/) noexcept {}
+  static void initialize(
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+    Parallel::simple_action<CleanOutput>(
+        Parallel::get_parallel_component<OutputCleaner>(
+            *(global_cache.ckLocalBranch())), false);
+  }
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
@@ -220,7 +225,7 @@ struct OutputCleaner {
     if (next_phase == Metavariables::Phase::CleanOutput) {
       Parallel::simple_action<CleanOutput>(
           Parallel::get_parallel_component<OutputCleaner>(
-              *(global_cache.ckLocalBranch())));
+              *(global_cache.ckLocalBranch())), true);
     }
   }
 };
