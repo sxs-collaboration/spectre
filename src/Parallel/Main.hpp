@@ -219,7 +219,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
 
     if (parsed_command_line_options.count("check-options") != 0) {
       // Force all the options to be created.
-      options_.template apply<option_list>([](auto... args) {
+      options_.template apply<option_list, Metavariables>([](auto... args) {
         (void)std::initializer_list<char>{((void)args, '0')...};
       });
       if (has_options) {
@@ -236,11 +236,12 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
   }
 
   const_global_cache_proxy_ =
-      options_.template apply<const_global_cache_tags>([](auto... args) {
-        return CProxy_ConstGlobalCache<Metavariables>::ckNew(
-            tuples::tagged_tuple_from_typelist<const_global_cache_tags>(
-                std::move(args)...));
-      });
+      options_.template apply<const_global_cache_tags, Metavariables>(
+          [](auto... args) {
+            return CProxy_ConstGlobalCache<Metavariables>::ckNew(
+                tuples::tagged_tuple_from_typelist<const_global_cache_tags>(
+                    std::move(args)...));
+          });
 
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
@@ -326,7 +327,7 @@ template <typename Metavariables>
 void Main<Metavariables>::initialize() noexcept {
   tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
     using ParallelComponent = tmpl::type_from<decltype(parallel_component)>;
-    options_.template apply<typename ParallelComponent::options>(
+    options_.template apply<typename ParallelComponent::options, Metavariables>(
         [this](auto... opts) {
           ParallelComponent::initialize(const_global_cache_proxy_,
                                         std::move(opts)...);

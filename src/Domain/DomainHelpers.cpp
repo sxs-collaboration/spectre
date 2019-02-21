@@ -1021,7 +1021,8 @@ std::ostream& operator<<(std::ostream& os,
   }
 }
 
-ShellWedges create_from_yaml<ShellWedges>::create(const Option& options) {
+template <>
+ShellWedges create_from_yaml<ShellWedges>::create<void>(const Option& options) {
   const std::string which_wedges = options.parse_as<std::string>();
   if (which_wedges == "All") {
     return ShellWedges::All;

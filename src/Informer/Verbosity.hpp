@@ -19,5 +19,10 @@ std::ostream& operator<<(std::ostream& os, const Verbosity& verbosity) noexcept;
 
 template <>
 struct create_from_yaml<Verbosity> {
-  static Verbosity create(const Option& options);
+  template <typename Metavariables>
+  static Verbosity create(const Option& options) {
+    return create<void>(options);
+  }
 };
+template <>
+Verbosity create_from_yaml<Verbosity>::create<void>(const Option& options);

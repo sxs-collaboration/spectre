@@ -15,6 +15,7 @@
 #include <utility>
 
 #include "ErrorHandling/Error.hpp"
+#include "Utilities/NoSuchType.hpp"
 
 /// \cond
 namespace YAML {
@@ -108,7 +109,7 @@ class Option {
   void append_context(const std::string& context) noexcept;
 
   /// Convert to an object of type `T`.
-  template <typename T>
+  template <typename T, typename Metavariables = NoSuchType>
   T parse_as() const;
 
   /// \note This constructor overwrites the mark data in the supplied
@@ -141,5 +142,6 @@ class Option {
 /// Do not call create directly.  Use Option::parse_as instead.
 template <typename T>
 struct create_from_yaml {
+  template <typename Metavariables>
   static T create(const Option& options);
 };

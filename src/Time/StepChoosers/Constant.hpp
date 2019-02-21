@@ -72,6 +72,7 @@ double parse_options(const Option& options);
 
 template <typename StepChooserRegistrars>
 struct create_from_yaml<StepChoosers::Constant<StepChooserRegistrars>> {
+  template <typename Metavariables>
   static StepChoosers::Constant<StepChooserRegistrars> create(
       const Option& options) {
     return StepChoosers::Constant<StepChooserRegistrars>(

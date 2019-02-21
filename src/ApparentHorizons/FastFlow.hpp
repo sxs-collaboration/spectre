@@ -209,5 +209,11 @@ SPECTRE_ALWAYS_INLINE bool operator!=(const FastFlow& lhs,
 
 template <>
 struct create_from_yaml<FastFlow::FlowType> {
-  static FastFlow::FlowType create(const Option& options);
+  template <typename Metavariables>
+  static FastFlow::FlowType create(const Option& options) {
+    return create<void>(options);
+  }
 };
+template <>
+FastFlow::FlowType create_from_yaml<FastFlow::FlowType>::create<void>(
+    const Option& options);

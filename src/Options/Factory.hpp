@@ -21,27 +21,29 @@
 #include "Utilities/TMPL.hpp"
 
 namespace Factory_detail {
-template <typename BaseClass, typename CreateList,
+template <typename BaseClass, typename CreateList, typename Metavariables,
           Requires<(tmpl::size<CreateList>::value == 0)> = nullptr>
-std::unique_ptr<BaseClass> create_derived(
-    const std::string& /*id*/, const Option& /*opts*/) noexcept {
+std::unique_ptr<BaseClass> create_derived(const std::string& /*id*/,
+                                          const Option& /*opts*/) noexcept {
   return std::unique_ptr<BaseClass>{};
 }
 
-template <typename BaseClass, typename CreateList,
+template <typename BaseClass, typename CreateList, typename Metavariables,
           Requires<(tmpl::size<CreateList>::value != 0)> = nullptr>
 std::unique_ptr<BaseClass> create_derived(const std::string& id,
                                           const Option& opts) {
   using derived = tmpl::front<CreateList>;
 
   if (pretty_type::short_name<derived>() != id) {
-    return create_derived<BaseClass, tmpl::pop_front<CreateList>>(id, opts);
+    return create_derived<BaseClass, tmpl::pop_front<CreateList>,
+                          Metavariables>(id, opts);
   }
 
-  ASSERT((not create_derived<BaseClass, tmpl::pop_front<CreateList>>(id, opts)),
+  ASSERT((not create_derived<BaseClass, tmpl::pop_front<CreateList>,
+                             Metavariables>(id, opts)),
          "Duplicate factory id: " << id);
 
-  return std::make_unique<derived>(opts.parse_as<derived>());
+  return std::make_unique<derived>(opts.parse_as<derived, Metavariables>());
 }
 
 struct print_derived {
@@ -82,7 +84,7 @@ std::string help_derived() noexcept {
              .value;
 }
 
-template <typename BaseClass>
+template <typename BaseClass, typename Metavariables>
 std::unique_ptr<BaseClass> create(const Option& options) {
   const auto& node = options.node();
   Option derived_opts(options.context());
@@ -108,8 +110,8 @@ std::unique_ptr<BaseClass> create(const Option& options) {
                 << node);
   }
   auto derived =
-      create_derived<BaseClass, typename BaseClass::creatable_classes>(
-          id, derived_opts);
+      create_derived<BaseClass, typename BaseClass::creatable_classes,
+                     Metavariables>(id, derived_opts);
   if (derived != nullptr) {
     return derived;
   }
@@ -120,7 +122,8 @@ std::unique_ptr<BaseClass> create(const Option& options) {
 
 template <typename T>
 struct create_from_yaml<std::unique_ptr<T>> {
+  template <typename Metavariables>
   static std::unique_ptr<T> create(const Option& options) {
-    return Factory_detail::create<T>(options);
+    return Factory_detail::create<T, Metavariables>(options);
   }
 };

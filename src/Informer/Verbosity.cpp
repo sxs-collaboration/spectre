@@ -10,7 +10,8 @@
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 
-Verbosity create_from_yaml<Verbosity>::create(const Option& options) {
+template <>
+Verbosity create_from_yaml<Verbosity>::create<void>(const Option& options) {
   const std::string type_read = options.parse_as<std::string>();
   if ("Silent" == type_read) {
     return Verbosity::Silent;

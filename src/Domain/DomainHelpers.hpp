@@ -381,5 +381,10 @@ std::ostream& operator<<(std::ostream& os,
 
 template <>
 struct create_from_yaml<ShellWedges> {
-  static ShellWedges create(const Option& options);
+  template <typename Metavariables>
+  static ShellWedges create(const Option& options) {
+    return create<void>(options);
+  }
 };
+template <>
+ShellWedges create_from_yaml<ShellWedges>::create<void>(const Option& options);
