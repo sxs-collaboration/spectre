@@ -393,5 +393,19 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
 
   // Check whether test function was called.
   CHECK(num_test_function_calls == 3);
+
+  // Tell one InterpolationTarget that we want to interpolate at the same
+  // temporal_id that we already interpolated at.
+  // This call should be ignored by the InterpolationTarget...
+  runner.simple_action<
+      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
+      intrp::Actions::AddTemporalIdsToInterpolationTarget<
+          metavars::InterpolationTargetA>>(0, std::vector<TimeId>{temporal_id});
+  // ...so make sure it was ignored by checking that there isn't anything
+  // else in the simple_action queue of the target or the interpolator.
+  CHECK(runner.is_simple_action_queue_empty<
+        mock_interpolation_target<metavars, metavars::InterpolationTargetA>>(
+      0));
+  CHECK(runner.is_simple_action_queue_empty<mock_interpolator<metavars>>(0));
 }
 }  // namespace

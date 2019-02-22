@@ -150,6 +150,15 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
   CHECK(db::get<::intrp::Tags::TemporalIds<metavars>>(box) ==
         std::deque<TimeId>(temporal_ids.begin(), temporal_ids.end()));
 
+  // Add the same temporal_ids again, which should do nothing...
+  runner.simple_action<
+      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
+      ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+          metavars::InterpolationTargetA>>(0, temporal_ids);
+  // ...and check that it indeed did nothing.
+  CHECK(db::get<::intrp::Tags::TemporalIds<metavars>>(box) ==
+        std::deque<TimeId>(temporal_ids.begin(), temporal_ids.end()));
+
   runner.invoke_queued_simple_action<
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>>(0);
 

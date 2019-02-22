@@ -32,6 +32,8 @@ struct CleanUpInterpolator;
 namespace Tags {
 struct IndicesOfFilledInterpPoints;
 template <typename Metavariables>
+struct CompletedTemporalIds;
+template <typename Metavariables>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
@@ -111,11 +113,27 @@ void callback_and_cleanup(
 
   // We are now done with this temporal_id, so we can pop it and
   // clean up volume data associated with it.
-
-  db::mutate<Tags::TemporalIds<Metavariables>>(
+  db::mutate<Tags::TemporalIds<Metavariables>,
+             Tags::CompletedTemporalIds<Metavariables>>(
       box, [](const gsl::not_null<
-               db::item_type<Tags::TemporalIds<Metavariables>>*>
-                  ids) noexcept { ids->pop_front(); });
+                  db::item_type<Tags::TemporalIds<Metavariables>>*>
+                  ids,
+              const gsl::not_null<
+                  db::item_type<Tags::CompletedTemporalIds<Metavariables>>*>
+                  completed_ids) noexcept {
+        completed_ids->push_back(ids->front());
+        ids->pop_front();
+        // We want to keep track of all completed temporal_ids to deal with
+        // the possibility of late calls to
+        // AddTemporalIdsToInterpolationTarget.  We could keep all
+        // completed_ids forever, but we probably don't want it to get too
+        // large, so we limit its size.  We assume that
+        // asynchronous calls to AddTemporalIdsToInterpolationTarget do not span
+        // more than 10 temporal_ids.
+        if(completed_ids->size() > 10) {
+          completed_ids->pop_front();
+        }
+      });
 
   // Tell interpolators to clean up at this temporal_id for this
   // InterpolationTargetTag.
@@ -164,6 +182,7 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies:
 ///   - `Tags::TemporalIds<Metavariables>`
+///   - `Tags::CompletedTemporalIds<Metavariables>`
 ///   - `Tags::IndicesOfFilledInterpPoints`
 ///   - `::Tags::Variables<typename
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`

@@ -93,6 +93,7 @@ auto make_tuple_of_box(
 /// - Adds:
 ///   - `Tags::IndicesOfFilledInterpPoints`
 ///   - `Tags::TemporalIds<Metavariables>`
+///   - `Tags::CompletedTemporalIds<Metavariables>`
 ///   - `::Tags::Domain<VolumeDim, Frame>`
 ///   - `::Tags::Variables<typename
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
@@ -106,6 +107,7 @@ struct InitializeInterpolationTarget {
   template <typename Metavariables>
   using return_tag_list_initial = tmpl::list<
       Tags::IndicesOfFilledInterpPoints, Tags::TemporalIds<Metavariables>,
+      Tags::CompletedTemporalIds<Metavariables>,
       ::Tags::Domain<Metavariables::domain_dim,
                      typename Metavariables::domain_frame>,
       ::Tags::Variables<
@@ -128,7 +130,9 @@ struct InitializeInterpolationTarget {
     auto box = db::create<
         db::get_items<return_tag_list_initial<Metavariables>>>(
         db::item_type<Tags::IndicesOfFilledInterpPoints>{},
-        db::item_type<Tags::TemporalIds<Metavariables>>{}, std::move(domain),
+        db::item_type<Tags::TemporalIds<Metavariables>>{},
+        db::item_type<Tags::CompletedTemporalIds<Metavariables>>{},
+        std::move(domain),
         db::item_type<::Tags::Variables<
             typename InterpolationTargetTag::vars_to_interpolate_to_target>>{});
 

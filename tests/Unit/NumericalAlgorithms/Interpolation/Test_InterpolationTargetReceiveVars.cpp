@@ -59,6 +59,8 @@ struct IndicesOfFilledInterpPoints;
 struct NumberOfElements;
 template <typename Metavariables>
 struct TemporalIds;
+template <typename Metavariables>
+struct CompletedTemporalIds;
 }  // namespace Tags
 }  // namespace intrp
 /// \endcond
@@ -252,20 +254,23 @@ void test_interpolation_target_receive_vars() noexcept {
   // Set databox to contain two temporal_ids and a vars of num_points points.
   tuples::get<MockDistributedObjectsTagTarget>(dist_objects)
       .emplace(
-          0, ActionTesting::MockDistributedObject<mock_interpolation_target<
-                 metavars, typename metavars::InterpolationTargetA>>{
-                 db::create<db::get_items<
-                     typename intrp::Actions::InitializeInterpolationTarget<
-                         typename metavars::InterpolationTargetA>::
-                         template return_tag_list<metavars>>>(
-                     db::item_type<intrp::Tags::IndicesOfFilledInterpPoints>{},
-                     db::item_type<typename intrp::Tags::TemporalIds<metavars>>{
-                         TimeId(true, 0, Time(slab, Rational(13, 15))),
-                         TimeId(true, 0, Time(slab, Rational(14, 15)))},
-                     domain_creator.create_domain(),
-                     db::item_type<::Tags::Variables<
-                         typename metavars::InterpolationTargetA::
-                             vars_to_interpolate_to_target>>{num_points})});
+          0,
+          ActionTesting::MockDistributedObject<mock_interpolation_target<
+              metavars, typename metavars::InterpolationTargetA>>{
+              db::create<db::get_items<
+                  typename intrp::Actions::InitializeInterpolationTarget<
+                      typename metavars::InterpolationTargetA>::
+                      template return_tag_list<metavars>>>(
+                  db::item_type<intrp::Tags::IndicesOfFilledInterpPoints>{},
+                  db::item_type<typename intrp::Tags::TemporalIds<metavars>>{
+                      TimeId(true, 0, Time(slab, Rational(13, 15))),
+                      TimeId(true, 0, Time(slab, Rational(14, 15)))},
+                  db::item_type<
+                      typename intrp::Tags::CompletedTemporalIds<metavars>>{},
+                  domain_creator.create_domain(),
+                  db::item_type<::Tags::Variables<
+                      typename metavars::InterpolationTargetA::
+                          vars_to_interpolate_to_target>>{num_points})});
 
   tuples::get<MockDistributedObjectsTagInterpolator>(dist_objects)
       .emplace(
@@ -390,6 +395,11 @@ void test_interpolation_target_receive_vars() noexcept {
     // clean up one of them.
     CHECK(db::get<intrp::Tags::TemporalIds<metavars>>(box_target).size() == 2);
 
+    // And there should be 0 CompletedTemporalIds because we did not
+    // clean up TemporalIds.
+    CHECK(db::get<intrp::Tags::CompletedTemporalIds<metavars>>(box_target)
+              .empty());
+
   } else {
     // This is the (usual) case where we want a cleanup.
 
@@ -403,6 +413,13 @@ void test_interpolation_target_receive_vars() noexcept {
 
     // Also, there should be only 1 TemporalId left.
     CHECK(db::get<intrp::Tags::TemporalIds<metavars>>(box_target).size() == 1);
+
+    // And there should be 1 CompletedTemporalId, and its value
+    // should be the value of the initial TemporalId.
+    CHECK(db::get<intrp::Tags::CompletedTemporalIds<metavars>>(box_target)
+              .size() == 1);
+    CHECK(db::get<intrp::Tags::CompletedTemporalIds<metavars>>(box_target)
+              .front() == TimeId(true, 0, Time(slab, Rational(13, 15))));
 
     // And there is yet one more simple action, compute_target_points,
     // which here we mock just to check that it is called.
