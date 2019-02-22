@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Spectral")
 
 set(LIBRARY_SOURCES
+  SwshTestHelpers.cpp
   Test_ChebyshevGauss.cpp
   Test_ChebyshevGaussLobatto.cpp
   Test_ComplexDataView.cpp
@@ -15,6 +16,7 @@ set(LIBRARY_SOURCES
   Test_SwshCoefficients.cpp
   Test_SwshCollocation.cpp
   Test_SwshTags.cpp
+  Test_SwshTestHelpers.cpp
   )
 
 add_test_library(
