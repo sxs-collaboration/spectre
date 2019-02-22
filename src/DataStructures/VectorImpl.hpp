@@ -27,6 +27,8 @@
 // have VectorImpl.hpp to expose PointerVector.hpp without including Blaze
 // directly in VectorImpl.hpp
 //
+// IWYU pragma: no_include <blaze/math/AlignmentFlag.h>
+// IWYU pragma: no_include <blaze/math/PaddingFlag.h>
 // IWYU pragma: no_include <blaze/math/dense/DenseVector.h>
 // IWYU pragma: no_include <blaze/math/expressions/DVecDVecAddExpr.h>
 // IWYU pragma: no_include <blaze/math/expressions/DVecDVecDivExpr.h>
@@ -36,19 +38,17 @@
 // IWYU pragma: no_include <blaze/math/expressions/DVecScalarDivExpr.h>
 // IWYU pragma: no_include <blaze/math/expressions/DVecScalarMultExpr.h>
 // IWYU pragma: no_include <blaze/math/expressions/DenseVector.h>
-// IWYU pragma: no_include <blaze/math/expressions/Vector.h>
-// IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
 // IWYU pragma: no_include <blaze/math/expressions/Forward.h>
-// IWYU pragma: no_include <blaze/math/AlignmentFlag.h>
-// IWYU pragma: no_include <blaze/math/PaddingFlag.h>
+// IWYU pragma: no_include <blaze/math/expressions/Vector.h>
 // IWYU pragma: no_include <blaze/math/traits/AddTrait.h>
 // IWYU pragma: no_include <blaze/math/traits/DivTrait.h>
 // IWYU pragma: no_include <blaze/math/traits/MultTrait.h>
 // IWYU pragma: no_include <blaze/math/traits/SubTrait.h>
+// IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
 // IWYU pragma: no_include <blaze/system/TransposeFlag.h>
 #if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-// IWYU pragma: no_include <blaze/math/traits/UnaryMapTrait.h>
 // IWYU pragma: no_include <blaze/math/traits/BinaryMapTrait.h>
+// IWYU pragma: no_include <blaze/math/traits/UnaryMapTrait.h>
 #else
 // IWYU pragma: no_include <blaze/math/traits/MapTrait.h>
 #endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))

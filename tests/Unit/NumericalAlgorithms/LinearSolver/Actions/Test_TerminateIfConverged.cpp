@@ -5,7 +5,6 @@
 
 #include <algorithm>
 #include <unordered_map>
-// IWYU pragma: no_include <boost/variant/get.hpp>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"  // IWYU pragma: keep
@@ -15,6 +14,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <boost/variant/get.hpp>
 
 namespace {
 

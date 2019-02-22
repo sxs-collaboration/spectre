@@ -14,6 +14,7 @@
 
 // IWYU pragma: no_include <blaze/math/expressions/DVecMapExpr.h>
 // IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
+
 // IWYU pragma: no_forward_declare ConstantExpressions_detail::pow
 
 /*!

@@ -12,8 +12,9 @@
 #include "Utilities/TMPL.hpp"
 
 // IWYU wants to include things we definitely don't need...
-// IWYU pragma: no_include <pup.h>  // Not needed
 // IWYU pragma: no_include <memory> // Needed in cpp file
+// IWYU pragma: no_include <pup.h>  // Not needed
+
 // IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp" // Not needed
 
 /// \cond

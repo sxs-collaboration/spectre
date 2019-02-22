@@ -5,10 +5,8 @@
 
 #include <array>
 #include <cstddef>
-// IWYU pragma: no_include <initializer_list>
 #include <memory>
 #include <utility>
-// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
@@ -23,6 +21,9 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <initializer_list>
+// IWYU pragma: no_include <unordered_map>
 
 class TimeStepper;
 // IWYU pragma: no_forward_declare db::DataBox

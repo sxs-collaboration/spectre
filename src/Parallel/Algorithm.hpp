@@ -3,8 +3,6 @@
 
 #pragma once
 
-// <array> wanted for tuple_size
-// IWYU pragma: no_include <array>
 #include <boost/variant/variant.hpp>
 #include <cstddef>
 #include <exception>
@@ -19,8 +17,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
-// Include... ourself?
-// IWYU pragma: no_include "Parallel/Algorithm.hpp"
 #include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/NodeLock.hpp"
@@ -37,6 +33,10 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+// IWYU pragma: no_include <array>  // for tuple_size
+
+// IWYU pragma: no_include "Parallel/Algorithm.hpp"  // Include... ourself?
 
 /// \cond
 namespace Parallel {

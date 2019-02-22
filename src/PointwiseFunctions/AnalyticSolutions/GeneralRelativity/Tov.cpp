@@ -18,14 +18,15 @@
 #include "DataStructures/DataVector.hpp"
 #include "Utilities/Gsl.hpp"
 
-// IWYU pragma: no_forward_declare boost::numeric::odeint::controlled_runge_kutta
-// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
-// IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_include <boost/numeric/odeint/integrate/integrate_adaptive.hpp>
 // IWYU pragma: no_include <boost/numeric/odeint/stepper/controlled_runge_kutta.hpp>
 // IWYU pragma: no_include <boost/numeric/odeint/stepper/dense_output_runge_kutta.hpp>
 // IWYU pragma: no_include <boost/numeric/odeint/stepper/generation/make_dense_output.hpp>
 // IWYU pragma: no_include <boost/numeric/odeint/stepper/runge_kutta_dopri5.hpp>
+
+// IWYU pragma: no_forward_declare boost::numeric::odeint::controlled_runge_kutta
+// IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
+// IWYU pragma: no_forward_declare Tensor
 
 /// \cond
 namespace {

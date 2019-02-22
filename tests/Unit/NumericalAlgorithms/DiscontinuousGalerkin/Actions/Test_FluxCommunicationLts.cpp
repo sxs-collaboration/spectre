@@ -22,11 +22,10 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "Domain/DirectionMap.hpp"
-// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"  // for Variables
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/DirectionMap.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
@@ -37,11 +36,9 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
-// IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -50,6 +47,10 @@
 
 // IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
 // IWYU pragma: no_include <boost/variant/get.hpp>
+
+// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"  // for Variables
+// IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
+// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables

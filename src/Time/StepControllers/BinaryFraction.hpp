@@ -18,8 +18,9 @@
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Utilities/ConstantExpressions.hpp"
-// IWYU pragma: no_include "Utilities/Rational.hpp"
 #include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_include "Utilities/Rational.hpp"
 
 namespace StepControllers {
 

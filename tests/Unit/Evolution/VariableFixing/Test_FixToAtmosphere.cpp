@@ -13,6 +13,7 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_include <array>
+
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare VariableFixing::FixToAtmosphere
 

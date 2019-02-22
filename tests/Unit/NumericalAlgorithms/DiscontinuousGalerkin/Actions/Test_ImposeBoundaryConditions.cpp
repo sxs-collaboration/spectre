@@ -4,7 +4,6 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
-// IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
 #include <cstddef>
 #include <functional>
 #include <initializer_list>  // IWYU pragma: keep
@@ -21,7 +20,6 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"  // for Variables
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
@@ -36,11 +34,9 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
-// IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -51,6 +47,11 @@
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+// IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
+
+// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"  // for Variables
+// IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
+// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables

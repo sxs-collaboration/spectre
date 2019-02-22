@@ -4,10 +4,8 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <memory>
-// IWYU pragma: no_include <pup.h>
 #include <string>
 #include <utility>
-// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -27,6 +25,9 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <pup.h>
+// IWYU pragma: no_include <unordered_map>
 
 namespace {
 using step_choosers = tmpl::list<StepChoosers::Registrars::Constant>;

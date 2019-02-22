@@ -10,7 +10,6 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-// IWYU pragma: no_include <boost/variant/get.hpp>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -29,6 +28,9 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/NumericalAlgorithms/LinearSolver/ResidualMonitorActionsTestHelpers.hpp"
+
+// IWYU pragma: no_include <boost/variant/get.hpp>
+
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace Parallel {

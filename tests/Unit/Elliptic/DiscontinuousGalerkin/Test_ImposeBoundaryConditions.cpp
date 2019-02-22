@@ -4,7 +4,6 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
-// IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
 #include <cstddef>
 #include <functional>
 #include <memory>
@@ -34,7 +33,6 @@
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
-// IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
@@ -45,6 +43,10 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
+
+// IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 // IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 
 // IWYU pragma: no_forward_declare Tensor

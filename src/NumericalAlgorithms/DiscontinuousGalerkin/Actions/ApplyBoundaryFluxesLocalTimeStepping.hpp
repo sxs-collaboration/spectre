@@ -16,9 +16,10 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"  // IWYU pragma: keep // for db::item_type<Tags::Mortars<...>>
 #include "Time/Tags.hpp"  // IWYU pragma: keep // for db::item_type<Tags::TimeStep>
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
-// IWYU pragma: no_include "Time/Time.hpp" // for TimeDelta
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+// IWYU pragma: no_include "Time/Time.hpp" // for TimeDelta
 
 /// \cond
 // IWYU pragma: no_forward_declare TimeDelta

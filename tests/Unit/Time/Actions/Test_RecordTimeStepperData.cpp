@@ -5,13 +5,11 @@
 
 #include <string>
 #include <utility>
-// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
-// IWYU pragma: no_include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -19,6 +17,10 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <unordered_map>
+
+// IWYU pragma: no_include "Time/History.hpp"
 
 namespace {
 struct Var : db::SimpleTag {

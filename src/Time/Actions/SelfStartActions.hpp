@@ -10,7 +10,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-// IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp"
 #include "Parallel/GotoAction.hpp"  // IWYU pragma: keep
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
@@ -21,6 +20,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+// IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp"
 
 /// \cond
 namespace Parallel {

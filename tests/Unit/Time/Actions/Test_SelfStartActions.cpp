@@ -10,20 +10,17 @@
 #include <memory>
 #include <string>
 #include <tuple>
-// IWYU pragma: no_include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-// IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
-// IWYU pragma: no_include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -35,6 +32,11 @@
 #include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <unordered_map>
+
+// IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp"
+// IWYU pragma: no_include "Time/History.hpp"
 
 class TimeStepper;
 namespace Parallel {

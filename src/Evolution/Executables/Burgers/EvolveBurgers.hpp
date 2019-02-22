@@ -3,7 +3,6 @@
 
 #pragma once
 
-// IWYU pragma: no_include <pup.h>
 #include <vector>
 
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -47,6 +46,8 @@
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_include <pup.h>
 
 /// \cond
 namespace Frame {

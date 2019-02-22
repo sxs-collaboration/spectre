@@ -35,7 +35,9 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
 // IWYU pragma: no_include <pup.h>
+
 // IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tags::deriv
 // IWYU pragma: no_forward_declare Tags::div

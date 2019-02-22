@@ -12,6 +12,7 @@
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
+
 // IWYU pragma: no_include "Utilities/Array.hpp"
 
 namespace {

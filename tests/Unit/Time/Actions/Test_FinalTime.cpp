@@ -5,7 +5,6 @@
 
 #include <array>
 #include <utility>
-// IWYU pragma: no_include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Time/Actions/FinalTime.hpp"  // IWYU pragma: keep
@@ -17,6 +16,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <unordered_map>
 
 namespace {
 struct Metavariables;

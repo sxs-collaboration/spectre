@@ -16,9 +16,6 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"                   // IWYU pragma: keep
-#include "Domain/Mesh.hpp"
-#include "Domain/MinimumGridSpacing.hpp"
-// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/CreateInitialElement.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Element.hpp"
@@ -26,6 +23,8 @@
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/LogicalCoordinates.hpp"  // IWYU pragma: keep
+#include "Domain/Mesh.hpp"
+#include "Domain/MinimumGridSpacing.hpp"
 #include "Domain/OrientationMap.hpp"  // IWYU pragma: keep
 #include "Domain/SizeOfElement.hpp"
 #include "Domain/Tags.hpp"
@@ -46,6 +45,8 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
 
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox

@@ -3,8 +3,8 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <string>
 #include <fstream>
+#include <string>
 
 #include "Utilities/FileSystem.hpp"
 

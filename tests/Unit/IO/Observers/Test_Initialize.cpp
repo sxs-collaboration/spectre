@@ -7,7 +7,6 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
-// IWYU pragma: no_include <exception>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"  // IWYU pragma: keep
@@ -16,6 +15,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <exception>
 
 namespace {
 template <typename Metavariables>

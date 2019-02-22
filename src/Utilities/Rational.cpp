@@ -3,7 +3,6 @@
 
 #include "Utilities/Rational.hpp"
 
-// IWYU pragma: no_include <boost/cstdint.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/integer/common_factor_rt.hpp>
 #include <ostream>
@@ -11,6 +10,8 @@
 #include <tuple>
 
 #include "ErrorHandling/Assert.hpp"
+
+// IWYU pragma: no_include <boost/cstdint.hpp>
 
 namespace {
 // This is needed a lot, so define a shorter name.

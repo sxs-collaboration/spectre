@@ -5,7 +5,6 @@
 
 #include <cstddef>
 #include <memory>
-// IWYU pragma: no_include <pup.h>
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -17,7 +16,6 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
@@ -26,6 +24,10 @@
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_include <pup.h>
+
+// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 
 class TimeStepper;
 

@@ -24,9 +24,10 @@
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 #include "tests/Utilities/RandomUnitNormal.hpp"
 
+// IWYU pragma: no_include <array>
+
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_include <array>
 
 namespace grmhd {
 namespace ValenciaDivClean {

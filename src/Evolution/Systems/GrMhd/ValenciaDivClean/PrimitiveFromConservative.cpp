@@ -28,9 +28,10 @@
 #include "Utilities/Overloader.hpp"
 #include "Utilities/TMPL.hpp"
 
+// IWYU pragma: no_include <array>
+
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_include <array>
 
 /// \cond
 namespace grmhd {

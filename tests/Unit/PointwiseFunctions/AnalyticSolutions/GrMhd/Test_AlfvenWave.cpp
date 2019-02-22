@@ -24,8 +24,9 @@
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-// IWYU pragma: no_forward_declare Tags::dt
 // IWYU pragma: no_include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
+
+// IWYU pragma: no_forward_declare Tags::dt
 
 namespace {
 

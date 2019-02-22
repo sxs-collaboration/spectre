@@ -5,7 +5,6 @@
 
 #include <memory>
 #include <pup.h>
-// IWYU pragma: no_include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
@@ -19,6 +18,8 @@
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_include <vector>
 
 SPECTRE_TEST_CASE("Unit.Time.Triggers.PastTime", "[Unit][Time]") {
   using TriggerType = Trigger<tmpl::list<Triggers::Registrars::PastTime>>;

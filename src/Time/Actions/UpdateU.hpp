@@ -14,10 +14,11 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Tags.hpp"
-// IWYU pragma: no_include "Time/Time.hpp" // for TimeDelta
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+// IWYU pragma: no_include "Time/Time.hpp" // for TimeDelta
 
 /// \cond
 // IWYU pragma: no_forward_declare TimeDelta

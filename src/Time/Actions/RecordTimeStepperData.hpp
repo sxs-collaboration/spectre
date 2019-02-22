@@ -10,9 +10,10 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Time/Tags.hpp"
-// IWYU pragma: no_include "Time/Time.hpp" // for Time
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+// IWYU pragma: no_include "Time/Time.hpp" // for Time
 
 /// \cond
 // IWYU pragma: no_forward_declare Time
