@@ -12,15 +12,16 @@ as the logical directions \f$\xi\f$, \f$\eta\f$, and \f$\zeta\f$, where
 \f$\zeta\f$ is the third dimension. In a
 domain with multiple elements, the logical directions are not necessarily
 aligned on the interfaces between two elements, as shown in the figure below.
-As fluxes need to be communicated across the boundaries of adjacent elements,
-there needs to be a system in place that organizes the relative orientations of
-elements with respect to their neighbors. This is handled by OrientationMap.
+As certain operations (e.g. fluxes, limiting) communicate information across
+the boundaries of adjacent elements, there needs to be a class that takes
+into account the relative orientations of elements which neighbor each other.
+This class is OrientationMap.
 
 ### %OrientationMaps between %Blocks
 Each Block in a Domain has a set of BlockNeighbors, which each hold an
 OrientationMap. In this scenario, the Block is referred to as the host, and
 the OrientationMap held by each BlockNeighbor is referred to as "the
-orientation the host Block has with respect to this BlockNeighbor." This is
+orientation the BlockNeighbor has with respect to the host Block." This is
 a convention, so we give an example of constructing and assigning the correct
 OrientationMaps:
 
@@ -176,7 +177,8 @@ Now we know that `Direction<3>::%upper_xi()`
 in Block1 corresponds to `Direction<3>::%lower_zeta().%opposite()` in Block2.
 
 The use of `.%opposite()` is a result of the Directions to a Block face being
-anti-parallel because each Block lies on the opposite side of the shared face.<br>
+anti-parallel because each Block lies on the opposite side of the shared face.
+<br>
 
 The remaining two correspondences are given by the alignment of the shared
 face. It is useful to know the following information:<br>
