@@ -1,10 +1,10 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <array>
 #include <cmath>
 #include <ostream>
 #include <sharp_cxx.h>
-#include <type_traits>
 #include <utility>
 
 #include "ErrorHandling/Assert.hpp"
@@ -12,7 +12,7 @@
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "Utilities/ForceInline.hpp"
-#include "Utilities/TMPL.hpp"
+#include "Utilities/Gsl.hpp"
 
 namespace Spectral {
 namespace Swsh {
@@ -58,18 +58,20 @@ double Collocation<Representation>::phi(const size_t offset) const noexcept {
   return 2.0 * M_PI * ((offset % (2 * l_max_ + 1)) / (2.0 * l_max_ + 1.0));
 }
 
-namespace detail {
-// We use a `std::index_sequence` to loop over the function lambdas
-// for the cases we want to evaluate in order to only compute and store
-// a specific `l_max` that is requested, not all values up to
-// `collocation_maximum_l_max`. This cannot be done in the more traditional
-// way of either having a `std::vector` or `std::undordered_map` that is
-// `static` because only the construction phase is guaranteed to be thread-safe,
-// not the access. This would mean were we to use a `std::vector` or
-// `std::unordered_map` we would need to compute all values up to
-// `collocation_maximum_l_max` immediately. By doing the loop over `Is` we
-// are able to generate `sizeof...(Is)` different static objects and thus each
-// one can be constructed only when it is needed and in a thread-safe manner.
+namespace {
+// We use a `std::index_sequence` to generate functions that cache the
+// collocation info for all the l's up to l_max. Each element in the cache is
+// not computed until it is retrieved in order to reduce the overall memory
+// footprint. However, when doing so we still need to guarantee thread-safety.
+// static variables are guaranteed to be thread-safe only on construction and so
+// we store a std::array of function pointers to functions (cache_impl) that
+// then have a `static Collocation` that they return and is constructed lazily
+// in a thread-safe manner.
+template <ComplexRepresentation Representation, size_t I>
+const Collocation<Representation>& cache_impl() noexcept {
+  static const Collocation<Representation> precomputed_collocation{I};
+  return precomputed_collocation;
+}
 
 template <ComplexRepresentation Representation, size_t... Is>
 SPECTRE_ALWAYS_INLINE const Collocation<Representation>&
@@ -84,28 +86,17 @@ dispatch_to_precomputed_static_collocation_impl(
              "construct the Collocation manually, or consider (with caution) "
              "increasing `collocation_maximum_l_max`.");
   }
-  const Collocation<Representation>* collocation = nullptr;
-  auto get_collocation_if_match = [&collocation, &index ](auto i) noexcept {
-    if (UNLIKELY(decltype(i)::value == index)) {
-      static const Collocation<Representation> precomputed_collocation =
-          Collocation<Representation>{decltype(i)::value};
-      collocation = &precomputed_collocation;
-    }
-    return 0;
-  };
-  expand_pack(
-      get_collocation_if_match(std::integral_constant<size_t, Is>{})...);
-  // clang-tidy warns about null reference return, but will only return null in
-  // the erroring execution path.
-  return *collocation;  // NOLINT
+  static const std::array<const Collocation<Representation>& (*)(),
+                          sizeof...(Is)>
+      cache{{&cache_impl<Representation, Is>...}};
+  return gsl::at(cache, index)();
 }
-}  // namespace detail
+}  // namespace
 
 template <ComplexRepresentation Representation>
 const Collocation<Representation>& precomputed_spherical_harmonic_collocation(
     const size_t l_max) noexcept {
-  return detail::dispatch_to_precomputed_static_collocation_impl<
-      Representation>(
+  return dispatch_to_precomputed_static_collocation_impl<Representation>(
       l_max, std::make_index_sequence<collocation_maximum_l_max + 1>{});
 }
 
