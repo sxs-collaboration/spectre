@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cmath>
+#include <complex>
 #include <cstddef>
 #include <random>
 #include <string>
@@ -12,6 +13,7 @@
 #include <type_traits>
 #include <vector>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
@@ -135,6 +137,25 @@ SPECTRE_TEST_CASE("Unit.Pypp.DataVector", "[Pypp][Unit]") {
       "numpy", "multiply", DataVector{1.3, 4.9}, DataVector{4.2, 6.8}));
   CHECK_THROWS(pypp::call<DataVector>("PyppPyTests", "two_dim_ndarray"));
   CHECK_THROWS(pypp::call<DataVector>("PyppPyTests", "ndarray_of_floats"));
+}
+
+SPECTRE_TEST_CASE("Unit.Pypp.ComplexDataVector", "[Pypp][Unit]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};
+  std::complex<double> test_value_0{1.3, 2.2};
+  std::complex<double> test_value_1{4.0, 3.1};
+  std::complex<double> test_value_2{4.2, 5.7};
+  std::complex<double> test_value_3{6.8, 7.3};
+  const auto ret = pypp::call<ComplexDataVector>(
+      "numpy", "multiply", ComplexDataVector{test_value_0, test_value_1},
+      ComplexDataVector{test_value_2, test_value_3});
+  CHECK_ITERABLE_APPROX(ret[0], test_value_0 * test_value_2);
+  CHECK_ITERABLE_APPROX(ret[1], test_value_1 * test_value_3);
+  CHECK_THROWS(pypp::call<std::string>(
+      "numpy", "multiply", ComplexDataVector{test_value_0, test_value_1},
+      ComplexDataVector{test_value_2, test_value_3}));
+  CHECK_THROWS(pypp::call<ComplexDataVector>("PyppPyTests", "two_dim_ndarray"));
+  CHECK_THROWS(
+      pypp::call<ComplexDataVector>("PyppPyTests", "ndarray_of_floats"));
 }
 
 SPECTRE_TEST_CASE("Unit.Pypp.Tensor.Double", "[Pypp][Unit]") {

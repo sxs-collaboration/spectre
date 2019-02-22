@@ -213,6 +213,32 @@ struct ToPyObject<DataVector, std::nullptr_t> {
 };
 
 template <>
+struct ToPyObject<ComplexDataVector, std::nullptr_t> {
+  static PyObject* convert(const ComplexDataVector& t) {
+    PyObject* npy_array = PyArray_SimpleNew(  // NOLINT
+        1, (std::array<long, 1>{{static_cast<long>(t.size())}}.data()),
+        NPY_COMPLEX128);
+
+    if (npy_array == nullptr) {
+      throw std::runtime_error{"Failed to convert argument."};
+    }
+    for (size_t i = 0; i < t.size(); ++i) {
+      // clang-tidy: Do not use pointer arithmetic
+      // clang-tidy: Do not use reinterpret cast
+      const auto data =
+          static_cast<std::complex<double>*>(PyArray_GETPTR1(  // NOLINT
+              reinterpret_cast<PyArrayObject*>(npy_array),     // NOLINT
+              static_cast<long>(i)));
+      if (data == nullptr) {
+        throw std::runtime_error{"Failed to access argument of PyArray."};
+      }
+      *data = t[i];
+    }
+    return npy_array;
+  }
+};
+
+template <>
 struct FromPyObject<long, std::nullptr_t> {
   static long convert(PyObject* t) {
     if (t == nullptr) {
@@ -387,6 +413,42 @@ struct FromPyObject<DataVector, std::nullptr_t> {
     for (size_t i = 0; i < t.size(); ++i) {
       // clang-tidy: pointer arithmetic. (Expanded from macro)
       const auto value = static_cast<const double*>(
+          PyArray_GETPTR1(npy_array, static_cast<long>(i)));  // NOLINT
+      if (value == nullptr) {
+        throw std::runtime_error{"Failed to get argument from PyArray."};
+      }
+      t[i] = *value;
+    }
+    return t;
+  }
+};
+
+template <>
+struct FromPyObject<ComplexDataVector, std::nullptr_t> {
+  static ComplexDataVector convert(PyObject* p) {
+    if (p == nullptr) {
+      throw std::runtime_error{"Received null PyObject."};
+    }
+    // clang-tidy: c-style casts. (Expanded from macro)
+    if (not PyArray_CheckExact(p)) {  // NOLINT
+      throw std::runtime_error{
+          "Cannot convert non-array type to ComplexDataVector."};
+    }
+    // clang-tidy: reinterpret_cast
+    const auto npy_array = reinterpret_cast<PyArrayObject*>(p);  // NOLINT
+    if (PyArray_TYPE(npy_array) != NPY_COMPLEX128) {
+      throw std::runtime_error{
+          "Cannot convert array of non-complex type to ComplexDataVector."};
+    }
+    if (PyArray_NDIM(npy_array) != 1) {
+      throw std::runtime_error{
+          "Cannot convert array of ndim != 1 to ComplexDataVector."};
+    }
+    // clang-tidy: c-style casts, pointer arithmetic. (Expanded from macro)
+    ComplexDataVector t(static_cast<size_t>(PyArray_Size(p)));  // NOLINT
+    for (size_t i = 0; i < t.size(); ++i) {
+      // clang-tidy: pointer arithmetic. (Expanded from macro)
+      const auto value = static_cast<const std::complex<double>*>(
           PyArray_GETPTR1(npy_array, static_cast<long>(i)));  // NOLINT
       if (value == nullptr) {
         throw std::runtime_error{"Failed to get argument from PyArray."};
