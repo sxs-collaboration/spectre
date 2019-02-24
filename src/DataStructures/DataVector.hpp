@@ -3,19 +3,14 @@
 
 #pragma once
 
-#include <cstddef>
-#include <functional>  // for std::reference_wrapper
+#include <cmath>
 
 #include "DataStructures/VectorImpl.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/PointerVector.hpp"
-#include "Utilities/Requires.hpp"
 
 // IWYU pragma: no_include <blaze/math/expressions/DVecMapExpr.h>
 // IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
-
-// IWYU pragma: no_forward_declare ConstantExpressions_detail::pow
 
 /*!
  * \ingroup DataStructuresGroup

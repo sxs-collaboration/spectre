@@ -3,9 +3,9 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <cstddef>
 #include <string>
+#include <utility>
 
 #include "DataStructures/DenseVector.hpp"
 #include "Options/Options.hpp"

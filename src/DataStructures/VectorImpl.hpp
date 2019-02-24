@@ -3,13 +3,14 @@
 
 #pragma once
 
-#include <algorithm>
+#include <algorithm>  // IWYU pragma: keep  // for std::fill
 #include <array>
-#include <complex>
 #include <cstddef>
 #include <cstdlib>
-#include <functional>  // for std::reference_wrapper
+#include <cstring>
+#include <functional>  // IWYU pragma: keep  // for std::plus, etc.
 #include <initializer_list>
+#include <limits>
 #include <memory>
 #include <ostream>
 #include <pup.h>
@@ -17,6 +18,7 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp" // IWYU pragma: keep
 #include "Utilities/PointerVector.hpp" // IWYU pragma: keep
 #include "Utilities/PrintHelpers.hpp"
@@ -63,6 +65,8 @@
 #endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 // IWYU pragma: no_forward_declare blaze::IsVector
 // IWYU pragma: no_forward_declare blaze::TransposeFlag
+
+// IWYU pragma: no_include "DataStructures/DataVector.hpp"
 
 /*!
  * \ingroup DataStructuresGroup

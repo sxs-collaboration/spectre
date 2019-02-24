@@ -3,8 +3,8 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <unordered_map>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"  // IWYU pragma: keep

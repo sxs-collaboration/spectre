@@ -15,7 +15,6 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 // IWYU pragma: no_include "Time/Time.hpp" // for TimeDelta

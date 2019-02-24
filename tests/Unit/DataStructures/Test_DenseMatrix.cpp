@@ -3,8 +3,8 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <string>
+#include <utility>
 
 #include "DataStructures/DenseMatrix.hpp"  // IWYU pragma: keep
 #include "DataStructures/DenseVector.hpp"
