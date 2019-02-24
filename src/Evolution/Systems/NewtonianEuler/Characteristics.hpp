@@ -7,9 +7,11 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"               // for get
+#include "DataStructures/Tensor/TypeAliases.hpp"          // IWYU pragma: keep
 #include "Domain/FaceNormal.hpp"
-#include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -23,11 +25,6 @@
 
 /// \cond
 class DataVector;
-
-namespace Tags {
-template <typename Tag>
-struct Normalized;
-}  // namespace Tags
 /// \endcond
 
 // IWYU pragma: no_forward_declare Tensor
@@ -84,5 +81,16 @@ struct CharacteristicSpeedsCompute : CharacteristicSpeeds<Dim>, db::ComputeTag {
   }
 };
 }  // namespace Tags
+
+template <size_t Dim>
+struct ComputeLargestCharacteristicSpeed {
+  using argument_tags =
+      tmpl::list<Tags::Velocity<DataVector, Dim>, Tags::SoundSpeed<DataVector>>;
+
+  static double apply(const tnsr::I<DataVector, Dim>& velocity,
+                      const Scalar<DataVector>& sound_speed) noexcept {
+    return max(get(magnitude(velocity)) + get(sound_speed));
+  }
+};
 
 }  // namespace NewtonianEuler

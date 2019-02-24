@@ -55,7 +55,8 @@ std::array<DataVector, Dim + 2> characteristic_speeds(
   NewtonianEuler::characteristic_speeds(                                       \
       const tnsr::I<DataVector, DIM(data)>& velocity,                          \
       const Scalar<DataVector>& sound_speed,                                   \
-      const tnsr::i<DataVector, DIM(data)>& normal) noexcept;
+      const tnsr::i<DataVector, DIM(data)>& normal) noexcept;                  \
+  template struct NewtonianEuler::ComputeLargestCharacteristicSpeed<DIM(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
