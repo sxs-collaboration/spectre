@@ -195,6 +195,9 @@ struct Metavariables {
   using component_list = tmpl::list<MockResidualMonitor<Metavariables>,
                                     MockElementArray<Metavariables>,
                                     MockObserverWriter<Metavariables>>;
+  struct ObservationType {};
+  using element_observation_type = ObservationType;
+
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -286,7 +289,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
           db::get<LinearSolver::Tags::HasConverged>(box));
     const auto& mock_observer_writer_box = get_mock_observer_writer_box();
     CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
-          observers::ObservationId{LinearSolver::IterationId{0}});
+          observers::ObservationId{
+              LinearSolver::IterationId{0},
+              typename Metavariables::element_observation_type{}});
     CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
           "/linear_residuals");
     CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
@@ -384,7 +389,9 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     CHECK(db::get<CheckValueTag>(mock_element_box) == approx(2.));
     const auto& mock_observer_writer_box = get_mock_observer_writer_box();
     CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
-          observers::ObservationId{LinearSolver::IterationId{1}});
+          observers::ObservationId{
+              LinearSolver::IterationId{1},
+              typename Metavariables::element_observation_type{}});
     CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
           "/linear_residuals");
     CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==

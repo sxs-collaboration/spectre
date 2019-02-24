@@ -74,6 +74,9 @@ struct Metavariables {
                                     observer_writer_component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
 
+  struct ObservationType {};
+  using element_observation_type = ObservationType;
+
   /// [make_reduction_data_tags]
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<reduction_data>>;

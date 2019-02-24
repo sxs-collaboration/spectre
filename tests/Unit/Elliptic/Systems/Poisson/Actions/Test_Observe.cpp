@@ -115,6 +115,9 @@ struct Metavariables {
   using analytic_solution_tag = AnalyticSolutionTag;
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
 
+  struct ObservationType {};
+  using element_observation_type = ObservationType;
+
   /// [collect_reduction_data_tags]
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::list<Poisson::Actions::Observe>>;

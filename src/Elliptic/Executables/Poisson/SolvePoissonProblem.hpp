@@ -65,6 +65,9 @@ struct Metavariables {
   // Collect all items to store in the cache.
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
 
+  struct ObservationType {};
+  using element_observation_type = ObservationType;
+
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::list<Poisson::Actions::Observe, linear_solver>>;
 

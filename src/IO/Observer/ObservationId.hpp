@@ -45,11 +45,31 @@ class ObservationId {
   ObservationId() = default;
 
   /*!
-   * \brief Construct from an ID of type `Id`
+   * \brief Construct from an ID of type `Id` and an `ObservationType`.
+   *
+   * `ObservationType` is used to distinguish different classes that
+   * do observing, so that messages to ObserverWriter do not collide.
+   * Any class that uses the Observer or ObserverWriter infrastructure
+   * should pass itself (or some other type that uniquely identifies
+   * who is doing the observing) as the ObservationType when creating
+   * `ObservationId`s.  If a single class is responsible for different
+   * kinds of observation that can be distinguished only at runtime,
+   * these different kinds of observation should be denoted by passing
+   * the optional `observation_subtype` string.
    */
-  template <typename Id>
-  explicit ObservationId(const Id& t) noexcept;
+  template <typename Id, typename ObservationType>
+  explicit ObservationId(const Id& t, const ObservationType& meta,
+                         const std::string& observation_subtype = "") noexcept;
 
+  /// Hash used to distinguish between ObservationIds of different
+  /// types and subtypes. This hash does not contain any information about the
+  /// `Id` or its value.
+  size_t observation_type_hash() const noexcept {
+    return observation_type_hash_;
+  }
+
+  /// Hash distinguishing different ObservationIds, including
+  /// the value of the `Id`.
   size_t hash() const noexcept { return combined_hash_; }
 
   double value() const noexcept { return value_; }
@@ -58,17 +78,21 @@ class ObservationId {
   void pup(PUP::er& p) noexcept;
 
  private:
+  size_t observation_type_hash_;
   size_t combined_hash_;
   double value_;
 };
 
-template <typename Id>
-ObservationId::ObservationId(const Id& t) noexcept
-    : combined_hash_([&t]() {
-        size_t combined = std::hash<std::string>{}(pretty_type::get_name<Id>());
+template <typename Id, typename ObservationType>
+ObservationId::ObservationId(const Id& t, const ObservationType& /*meta*/,
+                             const std::string& observation_subtype) noexcept
+    : observation_type_hash_(std::hash<std::string>{}(
+          pretty_type::get_name<ObservationType>() + observation_subtype)),
+      combined_hash_([&t](size_t type_hash) {
+        size_t combined = type_hash;
         boost::hash_combine(combined, t);
         return combined;
-      }()),
+      }(observation_type_hash_)),
       value_(t.value()) {}
 
 bool operator==(const ObservationId& lhs, const ObservationId& rhs) noexcept;

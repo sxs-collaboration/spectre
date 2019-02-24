@@ -97,7 +97,11 @@ struct ObserveTimeSeriesOnSurface {
     // We call this on proxy[0] because the 0th element of a NodeGroup is
     // always guaranteed to be present.
     Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
-        proxy[0], observers::ObservationId(temporal_id.time()),
+        proxy[0],
+        observers::ObservationId(
+            temporal_id.time(),
+            ObserveTimeSeriesOnSurface<TagsToObserve,
+                                       InterpolationTargetTag>{}),
         std::string{"/" + pretty_type::short_name<InterpolationTargetTag>()},
         detail::make_legend(TagsToObserve{}),
         detail::make_reduction_data(box, temporal_id.time().value(),

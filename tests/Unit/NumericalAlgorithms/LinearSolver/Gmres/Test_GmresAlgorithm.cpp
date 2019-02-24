@@ -31,6 +31,9 @@ struct Metavariables {
                    typename linear_solver::component_list>;
   using const_global_cache_tag_list = tmpl::list<>;
 
+  struct ObservationType {};
+  using element_observation_type = ObservationType;
+
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::list<linear_solver>>;
 

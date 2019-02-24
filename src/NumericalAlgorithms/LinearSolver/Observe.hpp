@@ -47,8 +47,9 @@ void contribute_to_reduction_observer(
       LinearSolver::Tags::Magnitude,
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
-  const auto observation_id =
-      observers::ObservationId(get<LinearSolver::Tags::IterationId>(box));
+  const auto observation_id = observers::ObservationId(
+      get<LinearSolver::Tags::IterationId>(box),
+      typename Metavariables::element_observation_type{});
   auto& reduction_writer = Parallel::get_parallel_component<
       observers::ObserverWriter<Metavariables>>(cache);
   Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
