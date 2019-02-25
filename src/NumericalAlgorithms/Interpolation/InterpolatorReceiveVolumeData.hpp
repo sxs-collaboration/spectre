@@ -11,6 +11,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
+#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -54,18 +55,21 @@ struct InterpolatorReceiveVolumeData {
       const ElementId<VolumeDim>& element_id, const ::Mesh<VolumeDim>& mesh,
       Variables<typename Metavariables::interpolator_source_vars>&&
           vars) noexcept {
+    bool add_temporal_ids_to_targets = false;
     db::mutate<Tags::VolumeVarsInfo<Metavariables>>(
         make_not_null(&box),
-        [&temporal_id, &element_id, &mesh,
-         &vars ](const gsl::not_null<
-                 db::item_type<Tags::VolumeVarsInfo<Metavariables>>*>
-                     container) noexcept {
+        [
+          &add_temporal_ids_to_targets, &temporal_id, &element_id, &mesh, &vars
+        ](const gsl::not_null<
+            db::item_type<Tags::VolumeVarsInfo<Metavariables>>*>
+              container) noexcept {
           if (container->find(temporal_id) == container->end()) {
+            add_temporal_ids_to_targets = true;
             container->emplace(
                 temporal_id,
-                std::unordered_map<ElementId<VolumeDim>,
-                                   typename Tags::VolumeVarsInfo<
-                                       Metavariables>::Info>{});
+                std::unordered_map<
+                    ElementId<VolumeDim>,
+                    typename Tags::VolumeVarsInfo<Metavariables>::Info>{});
           }
           container->at(temporal_id)
               .emplace(std::make_pair(
@@ -75,12 +79,26 @@ struct InterpolatorReceiveVolumeData {
         });
 
     // Try to interpolate data for all InterpolationTargets.
-    tmpl::for_each<typename Metavariables::interpolation_target_tags>(
-        [&box, &cache, &temporal_id ](auto x) noexcept {
-          using tag = typename decltype(x)::type;
-          try_to_interpolate<tag>(make_not_null(&box), make_not_null(&cache),
-                                  temporal_id);
-        });
+    tmpl::for_each<typename Metavariables::interpolation_target_tags>([
+      &add_temporal_ids_to_targets, &box, &cache, &temporal_id
+    ](auto tag_v) noexcept {
+      using tag = typename decltype(tag_v)::type;
+
+      // The first time (and only the first time) that this interpolator
+      // is called at this temporal_id, tell all the
+      // InterpolationTargets that they will interpolate at this
+      // temporal_id.
+      if (add_temporal_ids_to_targets) {
+        auto& target = Parallel::get_parallel_component<
+            InterpolationTarget<Metavariables, tag>>(cache);
+        Parallel::simple_action<AddTemporalIdsToInterpolationTarget<tag>>(
+            target, std::vector<typename Metavariables::temporal_id::type>{
+                        temporal_id});
+      }
+
+      try_to_interpolate<tag>(make_not_null(&box), make_not_null(&cache),
+                              temporal_id);
+    });
   }
 };
 
