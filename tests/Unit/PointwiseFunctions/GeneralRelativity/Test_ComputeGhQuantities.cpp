@@ -44,14 +44,28 @@ using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 template <size_t Dim, typename DataType>
 void test_compute_phi(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &GeneralizedHarmonic::phi<Dim, Frame::Inertial, DataType>,
+      static_cast<tnsr::iaa<DataType, Dim, Frame::Inertial> (*)(
+          const Scalar<DataType>&,
+          const tnsr::i<DataType, Dim, Frame::Inertial>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::iJ<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ijj<DataType, Dim, Frame::Inertial>&)>(
+          &::GeneralizedHarmonic::phi<Dim, Frame::Inertial, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "phi", {{{-10., 10.}}},
       used_for_size);
 }
 template <size_t Dim, typename DataType>
 void test_compute_pi(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &GeneralizedHarmonic::pi<Dim, Frame::Inertial, DataType>,
+      static_cast<tnsr::aa<DataType, Dim, Frame::Inertial> (*)(
+          const Scalar<DataType>&, const Scalar<DataType>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const tnsr::iaa<DataType, Dim, Frame::Inertial>&)>(
+          &::GeneralizedHarmonic::pi<Dim, Frame::Inertial, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "pi", {{{-10., 10.}}},
       used_for_size);
 }
