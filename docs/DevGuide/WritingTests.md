@@ -137,24 +137,39 @@ the target `rebuild_cache`, e.g. by running `make rebuild_cache`.
 
 Pointwise functions should generally be tested in two different ways. The first
 is by taking input from an analytic solution and checking that the computed
-result is correct. The second is to use the random number generation
-comparison with python infrastructure. In this approach the C++ function being
-tested is re-implemented in python and the results are compared. If the function
-does sums over tensor indices then the einsum package should be used in python
-to provide an alternative implementation of the loop structure. The python
-implementations should be in a file name `TestFunctions.py` in the same
-directory as the `Test_*.cpp` source file and have the same name as the C++
-function being tested. It is possible to test C++ functions that return by value
-and ones that return by `gsl::not_null`. In the latter case, since it is
-possible to return multiple values, one python function taking all
-non-`gsl::not_null` arguments must be supplied for each `gsl::not_null` argument
-to the C++. To perform the test the `pypp::check_with_random_values()` function
-must be called. For example, the following checks various C++ functions by
-calling into `pypp`:
+result is correct. The second is to use the random number generation comparison
+with Python infrastructure. In this approach the C++ function being tested is
+re-implemented in Python and the results are compared. Please follow these
+guidelines:
+
+- The Python implementation should be in a file with the same name as the source
+  file that is being re-implemented and placed in the same directory as its
+  corresponding `Test_*.cpp` source file.
+- The functions should have the same names as the C++ functions they
+  re-implement.
+- If a function does sums over tensor indices then
+  [`numpy.einsum`](https://docs.scipy.org/doc/numpy/reference/generated/numpy.einsum.html)
+  should be used in Python to provide an alternative implementation of the loop
+  structure.
+- You can import Python functions from other re-implementations in the
+  `tests/Unit/` directory to reduce code duplication. Note that the path you
+  pass to `pypp::SetupLocalPythonEnvironment` determines the directory from
+  which you can import Python modules. Either import modules directly from the
+  `tests/Unit/` directory (e.g. `import
+  PointwiseFunction.GeneralRelativity.Christoffel as christoffel`) or use
+  relative imports like `from . import Christoffel as christoffel`. Don't assume
+  the Python environment is set up in a subdirectory of `tests/Unit/`.
+
+It is possible to test C++ functions that return by value and ones that return
+by `gsl::not_null`. In the latter case, since it is possible to return multiple
+values, one Python function taking all non-`gsl::not_null` arguments must be
+supplied for each `gsl::not_null` argument to the C++. To perform the test the
+`pypp::check_with_random_values()` function must be called. For example, the
+following checks various C++ functions by calling into `pypp`:
 
 \snippet Test_Pypp.cpp cxx_two_not_null
 
-The corresponding python functions are:
+The corresponding Python functions are:
 
 \snippet PyppPyTests.py python_two_not_null
 
