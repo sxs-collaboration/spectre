@@ -102,5 +102,15 @@ struct TraceExtrinsicCurvature : db::SimpleTag {
   using type = Scalar<DataType>;
   static std::string name() noexcept { return "TraceExtrinsicCurvature"; }
 };
+
+/*!
+ * \brief The energy density \f$\rho=n_a n_b T^{ab}\f$
+ */
+template <typename DataType>
+struct EnergyDensity : db::SimpleTag {
+  using type = Scalar<DataType>;
+  static std::string name() noexcept { return "EnergyDensity"; }
+};
+
 }  // namespace Tags
 }  // namespace gr
