@@ -125,58 +125,71 @@ void HelloWorld<Metavariables>::execute_next_phase(
 
 /// [executable_example_metavariables]
 struct EvolutionMetavars {
-  static constexpr int Dim = 3;
-  using system = GeneralizedHarmonic::System<Dim>;
+  static constexpr int dim = 3;
+  using frame = Frame::Inertial;
+  using system = GeneralizedHarmonic::System<dim>;
+  using temporal_id = Tags::TimeId;
 
-  using analytic_solution = gr::Solutions::KerrSchild; // FIXME
+  using analytic_solution = gr::Solutions::KerrSchild;  // FIXME
   using analytic_solution_tag = OptionTags::AnalyticSolution<analytic_solution>;
-  using analytic_variables_tags = typename system::variables_tags;
-  //using temporal_id = Tags::TimeID;
-  static constexpr bool local_time_stepping = false;
+  using analytic_variables_tags = typename system::variables_tag;
 
-/*
-  // FIXME - where are the fluxes?
+  // FIXME - Is LLF ok for GH?
   using normal_dot_numerical_flux = OptionTags::NumericalFluxParams<
-      dg::NumericalFluxes::UpwindGeneralizedHarmonic<system>>;
-*/
+      dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
+
   // Timestep choice?
-  using step_choosers =
-      tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
-                 StepChoosers::Registrars::Constant,
-                 StepChoosers::Registrars::Increase>;
+  static constexpr bool local_time_stepping = false;
+  using step_choosers = tmpl::list<StepChoosers::Registrars::Cfl<dim, frame>,
+                                   StepChoosers::Registrars::Constant,
+                                   StepChoosers::Registrars::Increase>;
 
   // RHS computation sequence
-  using compute_rhs = tmpl::flatten<tmpl::list<>>; // FIXME
+  // using compute_rhs = tmpl::flatten<tmpl::list<>>; // FIXME
 
   // Update variables
-  using update_variables = tmpl::flatten<tmpl::list<>>;
+  // using update_variables = tmpl::flatten<tmpl::list<>>;
 
-  // FIXME: what is the purpose of this?
-  struct EvolvePhaseStart;
+  // Goto tag for repeating actions in component list
+  // struct EvolvePhaseStart;
 
-  // Global cache (things that live in global boxes?)
-  using const_global_cache_tag_list = tmpl::list<>;
+  // Global cache (things that live in ...?)
+  using const_global_cache_tag_list =
+      tmpl::list<analytic_solution_tag,
+                 OptionTags::TypedTimeStepper<tmpl::conditional_t<
+                     local_time_stepping, LtsTimeStepper, TimeStepper>>>;
 
   // List of components to execute, in given order
-  using component_list = tmpl::list<HelloWorld<EvolutionMetavars>>;
+  using component_list =
+      tmpl::list<HelloWorld<EvolutionMetavars>,
+                 DgElementArray<EvolutionMetavars,
+                                GeneralizedHarmonic::Actions::Initialize<dim>,
+                                tmpl::flatten<tmpl::list<>>>>;
+
+  using domain_creator_tag = OptionTags::DomainCreator<dim, frame>;
 
   static constexpr OptionString help{
       "Say hello from a singleton parallel component."};
 
-  enum class Phase { Initialization, Execute, Exit };
+  enum class Phase { Initialization, Evolve, Exit };
 
-  static Phase determine_next_phase(const Phase& current_phase,
-                                    const Parallel::CProxy_ConstGlobalCache<
-                            EvolutionMetavars>& /*cache_proxy*/) noexcept {
-    return current_phase == Phase::Initialization ? Phase::Execute
-                                                  : Phase::Exit;
+  static Phase determine_next_phase(
+      const Phase& current_phase,
+      const Parallel::CProxy_ConstGlobalCache<
+          EvolutionMetavars>& /*cache_proxy*/) noexcept {
+    return current_phase == Phase::Initialization ? Phase::Evolve : Phase::Exit;
   }
 };
 /// [executable_example_metavariables]
 
 /// [executable_example_charm_init]
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling};
+    &setup_error_handling, &domain::creators::register_derived_with_charm,
+    &Parallel::register_derived_classes_with_charm<
+        StepChooser<EvolutionMetavars::step_choosers>>,
+    &Parallel::register_derived_classes_with_charm<StepController>,
+    &Parallel::register_derived_classes_with_charm<TimeStepper>};
+
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 /// [executable_example_charm_init]

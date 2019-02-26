@@ -18,6 +18,7 @@ class not_null;
 /// \endcond
 
 namespace GeneralizedHarmonic {
+// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the auxiliary variable \f$\Phi_{iab}\f$ used by the
@@ -36,6 +37,16 @@ namespace GeneralizedHarmonic {
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
+void phi(gsl::not_null<tnsr::iaa<DataType, SpatialDim, Frame>*> phi,
+         const Scalar<DataType>& lapse,
+         const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
+         const tnsr::I<DataType, SpatialDim, Frame>& shift,
+         const tnsr::iJ<DataType, SpatialDim, Frame>& deriv_shift,
+         const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+         const tnsr::ijj<DataType, SpatialDim, Frame>&
+             deriv_spatial_metric) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::iaa<DataType, SpatialDim, Frame> phi(
     const Scalar<DataType>& lapse,
     const tnsr::i<DataType, SpatialDim, Frame>& deriv_lapse,
@@ -44,7 +55,9 @@ tnsr::iaa<DataType, SpatialDim, Frame> phi(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ijj<DataType, SpatialDim, Frame>&
         deriv_spatial_metric) noexcept;
+// @}
 
+// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the conjugate momentum \f$\Pi_{ab}\f$ of the spacetime metric
@@ -66,6 +79,15 @@ tnsr::iaa<DataType, SpatialDim, Frame> phi(
  * \f}
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
+void pi(gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> pi,
+        const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
+        const tnsr::I<DataType, SpatialDim, Frame>& shift,
+        const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
+        const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+        const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
+        const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::aa<DataType, SpatialDim, Frame> pi(
     const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
@@ -73,6 +95,7 @@ tnsr::aa<DataType, SpatialDim, Frame> pi(
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
     const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric,
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi) noexcept;
+// @}
 
 /*!
  * \ingroup GeneralRelativityGroup
