@@ -3,4 +3,5 @@
 
 add_subdirectory(Burgers)
 add_subdirectory(GrMhd)
+add_subdirectory(NewtonianEuler)
 add_subdirectory(ScalarWave)
