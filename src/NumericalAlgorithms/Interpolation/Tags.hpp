@@ -40,6 +40,15 @@ struct TemporalIds : db::SimpleTag {
   static std::string name() noexcept { return "TemporalIds"; }
 };
 
+/// `temporal_id`s that we have already interpolated onto.
+///  This is used to prevent problems with multiple late calls to
+///  AddTemporalIdsToInterpolationTarget.
+template <typename Metavariables>
+struct CompletedTemporalIds : db::SimpleTag {
+  using type = std::deque<typename Metavariables::temporal_id::type>;
+  static std::string name() noexcept { return "CompletedTemporalIds"; }
+};
+
 /// Volume variables at all `temporal_id`s for all local `Element`s.
 template <typename Metavariables>
 struct VolumeVarsInfo : db::SimpleTag {
@@ -49,8 +58,7 @@ struct VolumeVarsInfo : db::SimpleTag {
   };
   using type = std::unordered_map<
       typename Metavariables::temporal_id::type,
-      std::unordered_map<
-          ElementId<Metavariables::domain_dim>, Info>>;
+      std::unordered_map<ElementId<Metavariables::domain_dim>, Info>>;
   static std::string name() noexcept { return "VolumeVarsInfo"; }
 };
 
