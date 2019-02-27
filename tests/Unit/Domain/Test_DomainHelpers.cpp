@@ -926,18 +926,6 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.VolumeCornerIterator",
   test_vci_3d();
 }
 
-// [[OutputRegex, Index out of range.]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Domain.DomainHelpers.VolumeCornerIterator.Assert", "[Domain][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  auto extents = Index<3>{4, 4, 4};
-  auto failed_index_with = Index<3>{2, 3, 4};
-  static_cast<void>(VolumeCornerIterator<3>{failed_index_with, extents});
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
 namespace {
 void test_fci_1d() {
   FaceCornerIterator<1> fci{Direction<1>::upper_xi()};

@@ -16,6 +16,23 @@
 #include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace {
+template <size_t Dim>
+void test_collapsed_index(const Index<Dim> extents) noexcept {
+  for (IndexIterator<Dim> index_it(extents); index_it; ++index_it) {
+    CAPTURE(*index_it);
+    Index<Dim> index;
+    for (size_t d = 0; d < Dim; ++d) {
+      index[d] = (*index_it)[d];
+    }
+    // Compare the collapsed index of the IndexIterator to the collapsed index
+    // computed by the free function to make sure the two implementations are
+    // consistent.
+    CHECK(index_it.collapsed_index() == collapsed_index(index, extents));
+  }
+}
+}  // namespace
+
 SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   Index<0> index_0d;
   CHECK(index_0d.product() == 1);
@@ -93,7 +110,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Index", "[DataStructures][Unit]") {
   }
 }
 
-// [[OutputRegex, Index out of range.]]
+// [[OutputRegex, The requested index in the dimension]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.Index.Assert",
                                "[DataStructures][Unit]") {
   ASSERTION_TEST();

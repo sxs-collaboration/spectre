@@ -12,10 +12,12 @@
 #include <ostream>
 
 #include "ErrorHandling/Assert.hpp"
+#include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
+
 namespace PUP {
 class er;
 }  // namespace PUP
@@ -124,6 +126,70 @@ template <size_t N>
 std::ostream& operator<<(std::ostream& os, const Index<N>& i);
 
 /// \cond HIDDEN_SYMBOLS
+#ifdef SPECTRE_DEBUG
+namespace Index_detail {
+template <size_t Dim>
+void collapsed_index_check(const Index<Dim>& index,
+                           const Index<Dim>& extents) noexcept {
+  for (size_t d = 0; d < Dim; ++d) {
+    ASSERT(index[d] < extents[d], "The requested index in the dimension "
+                                      << d << " with value " << index[d]
+                                      << " exceeds the number of grid "
+                                         "points "
+                                      << extents[d]);
+  }
+}
+}  // namespace Index_detail
+#endif
+
+// the specializations are in the header file so they can be inlined. We use
+// specializations to avoid having loops since this computation is very
+// straightforward.
+template <>
+SPECTRE_ALWAYS_INLINE size_t collapsed_index(
+    const Index<0>& /*index*/, const Index<0>& /*extents*/) noexcept {
+  return 0;
+}
+
+template <>
+SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<1>& index,
+                                             const Index<1>& extents) noexcept {
+  (void)extents;
+#ifdef SPECTRE_DEBUG
+  Index_detail::collapsed_index_check(index, extents);
+#endif
+  return index[0];
+}
+
+template <>
+SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<2>& index,
+                                             const Index<2>& extents) noexcept {
+#ifdef SPECTRE_DEBUG
+  Index_detail::collapsed_index_check(index, extents);
+#endif
+  return index[0] + extents[0] * index[1];
+}
+
+template <>
+SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<3>& index,
+                                             const Index<3>& extents) noexcept {
+#ifdef SPECTRE_DEBUG
+  Index_detail::collapsed_index_check(index, extents);
+#endif
+  return index[0] + extents[0] * (index[1] + extents[1] * index[2]);
+}
+
+template <>
+SPECTRE_ALWAYS_INLINE size_t collapsed_index(const Index<4>& index,
+                                             const Index<4>& extents) noexcept {
+#ifdef SPECTRE_DEBUG
+  Index_detail::collapsed_index_check(index, extents);
+#endif
+  return index[0] +
+         extents[0] *
+             (index[1] + extents[1] * (index[2] + extents[2] * index[3]));
+}
+
 template <size_t N>
 bool operator==(const Index<N>& lhs, const Index<N>& rhs) noexcept;
 
