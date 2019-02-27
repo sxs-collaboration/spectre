@@ -12,6 +12,7 @@
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
 #include "Elliptic/Systems/Poisson/Actions/Observe.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
+#include "Elliptic/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -52,7 +53,8 @@ struct Metavariables {
   // The linear solver algorithm. We must use GMRES since the operator is
   // not positive-definite for the first-order system.
   using linear_solver = LinearSolver::Gmres<Metavariables>;
-  using temporal_id = LinearSolver::Tags::IterationId;
+  using temporal_id =
+      Elliptic::Tags::IterationId<LinearSolver::Tags::IterationId>;
 
   // Parse numerical flux parameters from the input file to store in the cache.
   using normal_dot_numerical_flux = OptionTags::NumericalFluxParams<

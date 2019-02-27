@@ -83,7 +83,7 @@ struct Observe {
                     const ElementIndex<Dim>& array_index,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const auto& iteration_id = get<LinearSolver::Tags::IterationId>(box);
+    const auto& iteration_id = get<typename Metavariables::temporal_id>(box);
     const auto& mesh = get<Tags::Mesh<Dim>>(box);
     const std::string element_name = MakeString{} << ElementId<Dim>(array_index)
                                                   << '/';
@@ -133,7 +133,8 @@ struct Observe {
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer,
         observers::ObservationId(
-            iteration_id, typename Metavariables::element_observation_type{}),
+            iteration_id.value(),
+            typename Metavariables::element_observation_type{}),
         std::string{"/element_data"},
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
@@ -144,11 +145,13 @@ struct Observe {
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer,
         observers::ObservationId(
-            iteration_id, typename Metavariables::element_observation_type{}),
+            iteration_id.value(),
+            typename Metavariables::element_observation_type{}),
         std::string{"/element_data"},
         std::vector<std::string>{"Iteration", "NumberOfPoints", "L2Error"},
-        observed_reduction_data{iteration_id, mesh.number_of_grid_points(),
-                                local_l2_error_square});
+        observed_reduction_data{
+            get<LinearSolver::Tags::IterationId>(iteration_id),
+            mesh.number_of_grid_points(), local_l2_error_square});
 
     return std::forward_as_tuple(std::move(box));
   }
