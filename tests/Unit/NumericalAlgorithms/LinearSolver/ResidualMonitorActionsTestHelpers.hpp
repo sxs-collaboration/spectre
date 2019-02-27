@@ -4,13 +4,17 @@
 #pragma once
 
 #include <cmath>
+#include <converse.h>
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "IO/Observer/ObservationId.hpp"
+#include "IO/Observer/ReductionActions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/ActionTesting.hpp"
 
 namespace Parallel {
 template <typename Metavariables>

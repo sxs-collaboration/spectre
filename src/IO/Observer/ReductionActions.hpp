@@ -31,6 +31,12 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace observers {
+
+/// \cond
+template <class Metavariables>
+struct ObserverWriter;
+/// \endcond
+
 namespace ThreadedActions {
 /// \cond
 struct WriteReductionData;
