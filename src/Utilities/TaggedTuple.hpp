@@ -349,6 +349,8 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
  public:
   static constexpr size_t size() noexcept { return sizeof...(Tags); }
 
+  using tags_list = tmpl::list<Tags...>;
+
   // clang-tidy: runtime-references
   void pup(PUP::er& p) {  // NOLINT
     static_cast<void>(std::initializer_list<char>{
