@@ -1040,10 +1040,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables.extra_reset",
 
 namespace {
 /// [mutate_apply_struct_definition_example]
-struct test_databox_mutate_apply {
+struct TestDataboxMutateApply {
+  // delete copy semantics just to make sure it works. Not necessary in general.
+  TestDataboxMutateApply() = default;
+  TestDataboxMutateApply(const TestDataboxMutateApply&) = delete;
+  TestDataboxMutateApply& operator=(const TestDataboxMutateApply&) = delete;
+  TestDataboxMutateApply(TestDataboxMutateApply&&) = default;
+  TestDataboxMutateApply& operator=(TestDataboxMutateApply&&) = default;
+  ~TestDataboxMutateApply() = default;
+
   static void apply(const gsl::not_null<Scalar<DataVector>*> scalar,
                     const gsl::not_null<tnsr::I<DataVector, 3>*> vector,
-                    const std::string& tag2) {
+                    const std::string& tag2) noexcept {
     scalar->get() *= 2.0;
     get<0>(*vector) *= 3.0;
     get<1>(*vector) *= 4.0;
@@ -1081,7 +1089,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
   /// [mutate_apply_struct_example]
   db::mutate_apply<
       tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>,
-      tmpl::list<>>(test_databox_mutate_apply{}, make_not_null(&box),
+      tmpl::list<>>(TestDataboxMutateApply{}, make_not_null(&box),
                     db::get<test_databox_tags::Tag2>(box));
   /// [mutate_apply_struct_example]
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
