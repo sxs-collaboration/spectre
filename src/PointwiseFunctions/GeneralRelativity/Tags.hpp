@@ -4,6 +4,7 @@
 #pragma once
 
 #include <string>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
@@ -36,6 +37,11 @@ template <typename DataType>
 struct SqrtDetSpatialMetric : db::SimpleTag {
   using type = Scalar<DataType>;
   static std::string name() noexcept { return "SqrtDetSpatialMetric"; }
+};
+template <size_t Dim, typename Frame, typename DataType>
+struct DetAndInverseSpatialMetric : db::SimpleTag {
+  using type = std::pair<Scalar<DataType>, tnsr::II<DataType, Dim, Frame>>;
+  static std::string name() noexcept { return "DetAndInverseSpatialMetric"; }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct Shift : db::SimpleTag {

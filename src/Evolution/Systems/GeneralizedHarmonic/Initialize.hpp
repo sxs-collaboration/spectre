@@ -18,7 +18,8 @@
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Domain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Interface.hpp"
+#include "Evolution/Initialization/Limiter.hpp"
+#include "Evolution/Initialization/NonConservativeInterface.hpp"
 #include "Evolution/Initialization/NonConservativeSystem.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
@@ -56,16 +57,25 @@ template <size_t Dim>
 struct Initialize {
   template <typename System>
   struct GhTags {
+    using frame = Frame::Inertial;
     using gh_tags = typename System::variables_tag;
-    using simple_tags = db::AddSimpleTags<gh_tags>;
-    using compute_tags = db::AddComputeTags<>;
+    using simple_tags =
+        db::AddSimpleTags<gh_tags, GeneralizedHarmonic::Tags::ConstraintGamma0,
+                          GeneralizedHarmonic::Tags::ConstraintGamma1,
+                          GeneralizedHarmonic::Tags::ConstraintGamma2>;
+    using compute_tags = db::AddComputeTags<
+        gr::Tags::SpatialMetricCompute<Dim, frame, DataVector>,
+        // gr::Tags::DetAndInverseSpatialMetricCompute<Dim, frame, DataVector>,
+        gr::Tags::SqrtDetSpatialMetricCompute<Dim, frame, DataVector>,
+        gr::Tags::InverseSpatialMetricCompute<Dim, frame, DataVector>,
+        gr::Tags::ShiftCompute<Dim, frame, DataVector>,
+        gr::Tags::LapseCompute<Dim, frame, DataVector>>;
 
     template <typename TagsList, typename Metavariables>
     static auto initialize(
         db::DataBox<TagsList>&& box,
         const Parallel::ConstGlobalCache<Metavariables>& cache,
         const double initial_time) noexcept {
-      using frame = Frame::Inertial;
       using GhVars = typename gh_tags::type;
 
       const size_t num_grid_points =
@@ -81,12 +91,12 @@ struct Initialize {
                           const auto& local_cache) noexcept {
         using analytic_solution_tag = OptionTags::AnalyticSolutionBase;
         /*
-         * It is assumed here that the analytic solution adds the following
-         * foliation-related variables to the databox (only):
-         * 1. Lapse, \partial_t Lapse, \partial_i Lapse
-         * 2. Shift, \partial_t Shift, \partial_i Shift
-         * 3. SpatialMetric, \partial_0 SpatialMetric,
-         *    \partial_i SpatialMetric.
+         * It is assumed here that the analytic solution makes available the
+         * following foliation-related variables (only):
+         * 1. Lapse,
+         * 2. Shift,
+         * 3. SpatialMetric,
+         * and their spatial + temporal derivatives.
          */
         const auto& solution_vars =
             Parallel::get<analytic_solution_tag>(local_cache)
@@ -98,6 +108,7 @@ struct Initialize {
         const auto& dt_lapse =
             get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(solution_vars);
         const auto& deriv_lapse =
+
             get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
                               frame>>(solution_vars);
 
@@ -119,6 +130,7 @@ struct Initialize {
             get<::Tags::deriv<gr::Tags::SpatialMetric<Dim, frame, DataVector>,
                               tmpl::size_t<Dim>, frame>>(solution_vars);
 
+        // Next, compute Gh evolution variables from them
         const auto& spacetime_metric =
             ::gr::spacetime_metric<Dim, frame, DataVector>(lapse, shift,
                                                            spatial_metric);
@@ -148,8 +160,24 @@ struct Initialize {
                       })(detail::has_analytic_solution_alias<Metavariables>{},
                          make_not_null(&gh_vars), cache);
 
+      // Finally, compute constraint damping parameters. Ideally, they should
+      // be computed in compute items of their own.
+      const auto& gamma1 = make_with_value<
+          typename GeneralizedHarmonic::Tags::ConstraintGamma1::type>(
+          inertial_coords, -1.);
+      const Scalar<DataVector>& r_sq =
+          dot_product(inertial_coords, inertial_coords);
+      const auto& common_factor = exp(-0.0078125 * get(r_sq));  // = (0.5 / 64)
+      const auto& _gamma0 = 3. * common_factor + 0.001;
+      const typename GeneralizedHarmonic::Tags::ConstraintGamma0::type gamma0{
+          _gamma0};
+      const auto& _gamma2 = common_factor + 0.001;
+      const typename GeneralizedHarmonic::Tags::ConstraintGamma2::type gamma2{
+          _gamma2};
+
       return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
-          std::move(box), std::move(gh_vars));
+          std::move(box), std::move(gh_vars), std::move(gamma0),
+          std::move(gamma1), std::move(gamma2));
     }  // initialize
   };
 
@@ -157,15 +185,12 @@ struct Initialize {
   // Initialization phase, and returned
   template <class Metavariables>
   using return_tag_list = tmpl::append<
-      // Domain - simple tags
+      // Simple tags
       typename Initialization::Domain<Dim>::simple_tags,
-      // GH - simple tags
       typename GhTags<typename Metavariables::system>::simple_tags,
-      // NonConservative system - simple tags
       typename Initialization::NonConservativeSystem<
           typename Metavariables::system>::simple_tags,
-      // Interface - simple tags
-      // typename Initialization::Interface<
+      // typename Initialization::InterfaceForNonConservativeSystem<
       // typename Metavariables::system>::simple_tags,
       // Evolution - simple tags
       // typename Initialization::Evolution<
@@ -173,22 +198,21 @@ struct Initialize {
       // DG - simple tags
       // typename Initialization::DiscontinuousGalerkin<
       // Metavariables>::simple_tags,
-      // Domain - compute tags
+      // typename Initialization::MinMod<Dim>::simple_tags,
+      // Compute tags
       typename Initialization::Domain<Dim>::compute_tags,
-      // GH - simple tags
       typename GhTags<typename Metavariables::system>::compute_tags,
-      // NonConservaive system - compute tags
       typename Initialization::NonConservativeSystem<
           typename Metavariables::system>::compute_tags
-      // Interface - compute tags
-      // typename Initialization::Interface<
-      // typename Metavariables::system>::compute_tags,
+      // typename Initialization::InterfaceForNonConservativeSystem<
+      // typename Metavariables::system>::compute_tags
       // Evolution - compute tags
       // typename Initialization::Evolution<
       // typename Metavariables::system>::compute_tags,
       // DG - compute tags
       // typename Initialization::DiscontinuousGalerkin<
-      // Metavariables>::compute_tags
+      // Metavariables>::compute_tags,
+      // typename Initialization::MinMod<Dim>::compute_tags
       >;
 
   template <typename... InboxTags, typename Metavariables, typename ActionList,
@@ -204,27 +228,23 @@ struct Initialize {
                     const double initial_time, const double initial_dt,
                     const double initial_slab_size) noexcept {
     using system = typename Metavariables::system;
-    // Domain box
     auto domain_box = Initialization::Domain<Dim>::initialize(
         db::DataBox<tmpl::list<>>{}, array_index, initial_extents, domain);
-    // Generalized Harmonic box
     auto gh_box =
         GhTags<system>::initialize(std::move(domain_box), cache, initial_time);
-    // Evolution system box
     auto system_box = Initialization::NonConservativeSystem<system>::initialize(
         std::move(gh_box));
-    // Interface box
     // auto domain_interface_box =
-    // Initialization::Interface<system>::initialize(std::move(system_box));
-    // Evolution box
+    // Initialization::InterfaceForNonConservativeSystem<system>::initialize(
+    // std::move(system_box));
     // auto evolution_box = Initialization::Evolution<system>::initialize(
     // std::move(domain_interface_box), cache, initial_time, initial_dt,
     // initial_slab_size);
-    // DG box
     // auto dg_box =
     // Initialization::DiscontinuousGalerkin<Metavariables>::initialize(
     // std::move(evolution_box), initial_extents);
-
+    // auto limiter_box =
+    // Initialization::MinMod<Dim>::initialize(std::move(dg_box));
     return std::make_tuple(std::move(system_box));
   }
 };

@@ -134,7 +134,7 @@ struct EvolutionMetavars {
   using analytic_solution_tag = OptionTags::AnalyticSolution<analytic_solution>;
   using analytic_variables_tags = typename system::variables_tag;
 
-  // FIXME - Is LLF ok for GH?
+  // FIXME - LLF for GH?
   using normal_dot_numerical_flux = OptionTags::NumericalFluxParams<
       dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
 

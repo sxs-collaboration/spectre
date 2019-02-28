@@ -8,7 +8,11 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 
 /// \cond
 namespace gsl {
@@ -190,4 +194,107 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::ijj<DataType, SpatialDim, Frame>&
         deriv_spatial_metric) noexcept;
 
+/*!
+ * Compute items below can be added to databoxes, and their return values be
+ * retrieved using their (respective) Tags. For e.g., adding `LapseCompute`
+ * to a databox will allow us to retrieve lapse with `gr::Tags::Lapse`.
+ */
+namespace Tags {
+/*!
+ * Compute item for lapse
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct LapseCompute : Lapse<DataType>, db::ComputeTag {
+  using argument_tags =
+      tmpl::list<Shift<SpatialDim, Frame, DataType>,
+                 SpacetimeMetric<SpatialDim, Frame, DataType>>;
+  using base = Lapse<DataType>;
+  static constexpr auto function = &lapse<SpatialDim, Frame, DataType>;
+};
+/*!
+ * Compute item for shift
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct ShiftCompute : Shift<SpatialDim, Frame, DataType>, db::ComputeTag {
+  using argument_tags =
+      tmpl::list<SpacetimeMetric<SpatialDim, Frame, DataType>,
+                 InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+  using base = Shift<SpatialDim, Frame, DataType>;
+  static constexpr auto function = &shift<SpatialDim, Frame, DataType>;
+};
+/*!
+ * Compute item for spatial metric
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct SpatialMetricCompute : SpatialMetric<SpatialDim, Frame, DataType>,
+                              db::ComputeTag {
+  using argument_tags =
+      tmpl::list<SpacetimeMetric<SpatialDim, Frame, DataType>>;
+  using base = SpatialMetric<SpatialDim, Frame, DataType>;
+  static constexpr auto function = &spatial_metric<SpatialDim, Frame, DataType>;
+};
+/*!
+ * Compute item for spatial metric's determinant \f$\g\f$ and inverse
+ * \f$g^{ij}\f$.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct DetAndInverseSpatialMetricCompute
+    : DetAndInverseSpatialMetric<SpatialDim, Frame, DataType>,
+      db::ComputeTag {
+  using argument_tags = tmpl::list<SpatialMetric<SpatialDim, Frame, DataType>>;
+  using base = DetAndInverseSpatialMetric<SpatialDim, Frame, DataType>;
+  static constexpr auto function =
+      &determinant_and_inverse<DataType,
+                               tmpl::integral_list<std::int32_t, 1, 1>,
+                               SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
+                               SpatialIndex<SpatialDim, UpLo::Lo, Frame>>;
+};
+/*!
+ * Compute item for square root of the determinant of the spatial metric
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct SqrtDetSpatialMetricCompute : SqrtDetSpatialMetric<DataType>,
+                                     db::ComputeTag {
+  using argument_tags = tmpl::list<SpatialMetric<SpatialDim, Frame, DataType>>;
+  using base = SqrtDetSpatialMetric<DataType>;
+  static auto function(
+      const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric) noexcept {
+    const auto det_and_inverse_spatial_metric =
+        determinant_and_inverse(spatial_metric);
+    return Scalar<DataType>{sqrt(get(det_and_inverse_spatial_metric.first))};
+  }
+};
+
+/*!
+ * Compute item for inverse spatial metric \f$\g^{ij}\f$
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct InverseSpatialMetricCompute
+    : InverseSpatialMetric<SpatialDim, Frame, DataType>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<SpatialMetricCompute<SpatialDim, Frame, DataType>>;
+  using base = InverseSpatialMetric<SpatialDim, Frame, DataType>;
+  static auto function(
+      const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric) noexcept {
+    const auto det_and_inverse_spatial_metric =
+        determinant_and_inverse(spatial_metric);
+    return det_and_inverse_spatial_metric.second;
+  }
+};
+/*!
+ * Compute item for inverse spacetime metric
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct InverseSpacetimeMetricCompute
+    : InverseSpacetimeMetric<SpatialDim, Frame, DataType>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<Lapse<DataType>, Shift<SpatialDim, Frame, DataType>,
+                 InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+  using base = InverseSpacetimeMetric<SpatialDim, Frame, DataType>;
+  static constexpr auto function =
+      &inverse_spacetime_metric<SpatialDim, Frame, DataType>;
+};
+}  // namespace Tags
 }  // namespace gr

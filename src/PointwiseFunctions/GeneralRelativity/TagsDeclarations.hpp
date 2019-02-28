@@ -28,6 +28,9 @@ template <typename DataType = DataVector>
 struct SqrtDetSpatialMetric;
 template <size_t Dim, typename Frame = Frame::Inertial,
           typename DataType = DataVector>
+struct DetAndInverseSpatialMetric;
+template <size_t Dim, typename Frame = Frame::Inertial,
+          typename DataType = DataVector>
 struct Shift;
 template <typename DataType = DataVector>
 struct Lapse;
