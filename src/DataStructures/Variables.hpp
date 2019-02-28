@@ -184,9 +184,9 @@ class Variables<tmpl::list<Tags...>> {
   // @{
   /// Copy and move semantics for wrapped variables
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all_v<std::is_same<
+            Requires<tmpl2::flat_all<std::is_same<
                 db::remove_all_prefixes<WrappedTags>,
-                db::remove_all_prefixes<Tags>>::value...>> = nullptr>
+                db::remove_all_prefixes<Tags>>::value...>::value> = nullptr>
   explicit Variables(Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept;
   template <typename... WrappedTags,
             Requires<tmpl2::flat_all_v<std::is_same<
@@ -596,9 +596,9 @@ Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
 
 template <typename... Tags>
 template <typename... WrappedTags,
-          Requires<tmpl2::flat_all_v<
+          Requires<tmpl2::flat_all<
               std::is_same<db::remove_all_prefixes<WrappedTags>,
-                           db::remove_all_prefixes<Tags>>::value...>>>
+                           db::remove_all_prefixes<Tags>>::value...>::value>>
 Variables<tmpl::list<Tags...>>::Variables(
     Variables<tmpl::list<WrappedTags...>>&& rhs) noexcept
     : variable_data_impl_(std::move(rhs.variable_data_impl_)),
