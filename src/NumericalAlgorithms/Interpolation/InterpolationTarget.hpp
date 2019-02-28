@@ -32,43 +32,37 @@ namespace intrp {
 /// Each InterpolationTarget will communicate with the `Interpolator`.
 ///
 /// `InterpolationTargetTag` must contain the following type aliases:
-/// - vars_to_interpolate_to_target: a `tmpl::list` of tags describing
-///                                  variables to interpolate.  Will be used
-///                                  to construct a `Variables`.
-/// - compute_items_on_source:       a `tmpl::list` of compute items that uses
-///                                  `Metavariables::interpolator_source_vars`
-///                                  as input and computes the `Variables`
-///                                  defined by `vars_to_interpolate_to_target`.
-/// - compute_items_on_target:       a `tmpl::list` of compute items that uses
-///                                 `vars_to_interpolate_to_target` as input.
-/// - compute_target_points:         a `simple_action` of `InterpolationTarget`
-///                                  that computes the target points and
-///                                  sends them to `Interpolators`.
-///                                  It takes a `temporal_id` as an extra
-///                                  argument.  `compute_target_points` can
-///                                  (optionally) have an additional function
+/// - vars_to_interpolate_to_target:
+///      A `tmpl::list` of tags describing variables to interpolate.
+///      Will be used to construct a `Variables`.
+/// - compute_items_on_source:
+///      A `tmpl::list` of compute items that uses
+///      `Metavariables::interpolator_source_vars` as input and computes the
+///      `Variables` defined by `vars_to_interpolate_to_target`.
+/// - compute_items_on_target:
+///      A `tmpl::list` of compute items that uses
+///      `vars_to_interpolate_to_target` as input.
+/// - compute_target_points:
+///      A `simple_action` of `InterpolationTarget`
+///      that computes the target points and sends them to `Interpolators`. It
+///      takes a `temporal_id` as an extra argument. `compute_target_points`
+///      can (optionally) have an additional function
 ///```
 ///   static auto initialize(db::DataBox<DbTags>&&,
 ///                          const Parallel::ConstGlobalCache<Metavariables>&)
 ///                          noexcept;
 ///```
-///                                  that adds arbitrary tags to the `DataBox`
-///                                  when the `InterpolationTarget` is
-///                                  initialized.  If `compute_target_points`
-///                                  has an `initialize` function, it
-///                                  must also have a type alias
-///                                  `initialization_tags`
-///                                  which is a `tmpl::list` of the tags that
-///                                  are added by `initialize`.
-/// - post_interpolation_callback:   a struct with a type alias
-///                                  `const_global_cache_tags` (listing tags
-///                                  that should be read from option parsing),
-///                                  with a type alias `observation_types`
-///                                  (listing any ObservationTypes that the
-///                                  callback will use in constructing
-///                                  ObserverIds to call
-///                             observers::ThreadedActions::WriteReductionData),
-///                                  and with a function
+///      that adds arbitrary tags to the `DataBox` when the
+///      `InterpolationTarget` is initialized.  If `compute_target_points` has
+///      an `initialize` function, it must also have a type alias
+///      `initialization_tags` which is a `tmpl::list` of the tags that are
+///      added by `initialize`.
+/// - post_interpolation_callback:
+///      A struct with a type alias `const_global_cache_tags` (listing tags that
+///      should be read from option parsing), with a type alias
+///      `observation_types` (listing any ObservationTypes that the callback
+///      will use in constructing ObserverIds to call
+///      observers::ThreadedActions::WriteReductionData), and with a function
 ///```
 ///     void apply(const DataBox<DbTags>&,
 ///                const intrp::ConstGlobalCache<Metavariables>&,
@@ -80,25 +74,27 @@ namespace intrp {
 ///                const gsl::not_null<intrp::ConstGlobalCache<Metavariables>*>,
 ///                const Metavariables::temporal_id&) noexcept;
 ///```
-///                            that will be called when interpolation is
-///                            complete.  `DbTags` includes everything in
-///                            `vars_to_interpolate_to_target`, plus everything
-///                            in `compute_items_on_target`.  The second form
-///                            of the `apply` function should return false only
-///                            if it calls another `intrp::Action` that still
-///                            needs the volume data at this temporal_id (such
-///                            as another iteration of the horizon finder).
+///      that will be called when interpolation is complete.  `DbTags` includes
+///      everything in `vars_to_interpolate_to_target`, plus everything in
+///      `compute_items_on_target`.  The second form of the `apply` function
+///      should return false only if it calls another `intrp::Action` that still
+///      needs the volume data at this temporal_id (such as another iteration of
+///      the horizon finder).
 ///
 /// `Metavariables` must contain the following type aliases:
-/// - interpolator_source_vars:   a `tmpl::list` of tags that define a
-///                               `Variables` sent from all `Element`s
-///                               to the local `Interpolator`.
-/// - interpolation_target_tags:  a `tmpl::list` of all
-///                               `InterpolationTargetTag`s.
-/// - temporal_id:                the type held by ::intrp::Tags::TemporalIds.
-/// - domain_frame:               The `::Frame` of the Domain.
+/// - interpolator_source_vars:
+///      A `tmpl::list` of tags that define a `Variables` sent from all
+///      `Element`s to the local `Interpolator`.
+/// - interpolation_target_tags:
+///      A `tmpl::list` of all `InterpolationTargetTag`s.
+/// - temporal_id:
+///      The type held by ::intrp::Tags::TemporalIds.
+/// - domain_frame:
+///      The `::Frame` of the Domain.
+///
 /// `Metavariables` must contain the following static constexpr members:
-/// - size_t domain_dim:    The dimension of the Domain.
+/// - size_t domain_dim:
+///      The dimension of the Domain.
 template <class Metavariables, typename InterpolationTargetTag>
 struct InterpolationTarget {
   using chare_type = ::Parallel::Algorithms::Singleton;
