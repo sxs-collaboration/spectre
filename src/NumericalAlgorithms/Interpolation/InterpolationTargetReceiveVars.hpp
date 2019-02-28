@@ -191,17 +191,14 @@ namespace Actions {
 template <typename InterpolationTargetTag>
 struct InterpolationTargetReceiveVars {
   /// For requirements on Metavariables, see InterpolationTarget
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex,
             Requires<tmpl::list_contains_v<
-                DbTags, typename Tags::TemporalIds<Metavariables>>> = nullptr>
+                DbTags, Tags::TemporalIds<Metavariables>>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::ConstGlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/,
+      const ArrayIndex& /*array_index*/,
       const std::vector<db::item_type<::Tags::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>>&
           vars_src,

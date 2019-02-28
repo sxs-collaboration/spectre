@@ -108,8 +108,6 @@ struct InitializeInterpolationTarget {
   using return_tag_list_initial = tmpl::list<
       Tags::IndicesOfFilledInterpPoints, Tags::TemporalIds<Metavariables>,
       Tags::CompletedTemporalIds<Metavariables>,
-      ::Tags::Domain<Metavariables::domain_dim,
-                     typename Metavariables::domain_frame>,
       ::Tags::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>;
   template <typename Metavariables>
@@ -117,27 +115,62 @@ struct InitializeInterpolationTarget {
       tmpl::append<return_tag_list_initial<Metavariables>,
                    typename initialize_interpolation_target_detail::
                        initialization_tags<InterpolationTargetTag>::type>;
-  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
-  static auto apply(
-      const db::DataBox<tmpl::list<>>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/,
-      Domain<Metavariables::domain_dim, typename Metavariables::domain_frame>&&
-          domain) noexcept {
-    auto box = db::create<
-        db::get_items<return_tag_list_initial<Metavariables>>>(
-        db::item_type<Tags::IndicesOfFilledInterpPoints>{},
-        db::item_type<Tags::TemporalIds<Metavariables>>{},
-        db::item_type<Tags::CompletedTemporalIds<Metavariables>>{},
-        std::move(domain),
-        db::item_type<::Tags::Variables<
-            typename InterpolationTargetTag::vars_to_interpolate_to_target>>{});
 
+  template <typename Metavariables>
+  struct AddOptionsToDataBox {
+    using simple_tags =
+        tmpl::list<::Tags::Domain<Metavariables::domain_dim,
+                                  typename Metavariables::domain_frame>>;
+    template <typename DbTagsList>
+    static auto apply(db::DataBox<DbTagsList>&& box,
+                      ::Domain<Metavariables::domain_dim,
+                               typename Metavariables::domain_frame>
+                          domain) noexcept {
+      return db::create_from<db::RemoveTags<>, simple_tags>(std::move(box),
+                                                            std::move(domain));
+    }
+  };
+
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<tmpl::list_contains_v<
+                   DbTagsList,
+                   ::Tags::Domain<Metavariables::domain_dim,
+                                  typename Metavariables::domain_frame>> and
+               not tmpl::list_contains_v<
+                   DbTagsList, Tags::IndicesOfFilledInterpPoints>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/,
+                    const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
     return initialize_interpolation_target_detail::make_tuple_of_box<
-        InterpolationTargetTag>(std::move(box), cache);
+        InterpolationTargetTag>(
+        db::create_from<db::RemoveTags<>,
+                        db::get_items<return_tag_list_initial<Metavariables>>>(
+            std::move(box), db::item_type<Tags::IndicesOfFilledInterpPoints>{},
+            db::item_type<Tags::TemporalIds<Metavariables>>{},
+            db::item_type<Tags::CompletedTemporalIds<Metavariables>>{},
+            db::item_type<
+                ::Tags::Variables<typename InterpolationTargetTag::
+                                      vars_to_interpolate_to_target>>{}),
+        cache);
+  }
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
+            Requires<tmpl::list_contains_v<
+                DbTagsList, Tags::IndicesOfFilledInterpPoints>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {std::move(box)};
   }
 };
 

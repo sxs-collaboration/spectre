@@ -57,16 +57,13 @@ namespace Actions {
 template <typename InterpolationTargetTag>
 struct CleanUpInterpolator {
   template <
-      typename DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTags, typename Tags::NumberOfElements>> =
-          nullptr>
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<DbTags, Tags::NumberOfElements>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,  // HorizonManager's box
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/,
+      const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     // Signal that this InterpolationTarget is done at this time.
     db::mutate<Tags::InterpolatedVarsHolders<Metavariables>>(

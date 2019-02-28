@@ -72,6 +72,18 @@ struct Observe {
 
  public:
   // Compile-time interface for observers
+  struct ElementObservationType {};
+  template <typename ParallelComponent, typename DbTagsList,
+            typename ArrayIndex>
+  static std::pair<observers::TypeOfObservation, observers::ObservationId>
+  register_info(const db::DataBox<DbTagsList>& box,
+                const ArrayIndex& /*array_index*/) noexcept {
+    return {
+        observers::TypeOfObservation::ReductionAndVolume,
+        observers::ObservationId{
+            static_cast<double>(db::get<LinearSolver::Tags::IterationId>(box)),
+            ElementObservationType{}}};
+  }
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<observed_reduction_data>>;
 
@@ -132,8 +144,7 @@ struct Observe {
              .ckLocalBranch();
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer,
-        observers::ObservationId(
-            iteration_id, typename Metavariables::element_observation_type{}),
+        observers::ObservationId(iteration_id, ElementObservationType{}),
         std::string{"/element_data"},
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
@@ -143,8 +154,7 @@ struct Observe {
     // Send data to reduction observer
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer,
-        observers::ObservationId(
-            iteration_id, typename Metavariables::element_observation_type{}),
+        observers::ObservationId(iteration_id, ElementObservationType{}),
         std::string{"/element_data"},
         std::vector<std::string>{"Iteration", "NumberOfPoints", "L2Error"},
         observed_reduction_data{iteration_id, mesh.number_of_grid_points(),

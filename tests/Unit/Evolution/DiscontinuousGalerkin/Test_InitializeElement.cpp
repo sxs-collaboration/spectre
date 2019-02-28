@@ -12,7 +12,6 @@
 #include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
@@ -43,6 +42,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"          // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Time/StepControllers/SplitRemaining.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
@@ -129,10 +129,12 @@ struct component {
   using const_global_cache_tag_list =
       tmpl::list<OptionTags::TypedTimeStepper<TimeStepper>,
                  OptionTags::AnalyticSolution<SystemAnalyticSolution>>;
-  using action_list = tmpl::list<>;
-  using initial_databox =
-      db::compute_databox_type<typename dg::Actions::InitializeElement<
-          Dim>::template return_tag_list<Metavariables>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<dg::Actions::InitializeElement<Dim>>>>;
+
+  using add_options_to_databox =
+      typename dg::Actions::InitializeElement<Dim>::AddOptionsToDataBox;
 };
 
 template <size_t Dim, bool IsConservative, bool LocalTimeStepping,
@@ -144,88 +146,97 @@ struct Metavariables {
   static constexpr bool local_time_stepping = LocalTimeStepping;
   using normal_dot_numerical_flux = NormalDotNumericalFluxTag;
   using const_global_cache_tag_list = ConstGlobalCacheTagList;
+  enum class Phase { Initialization, Exit };
 };
-
-template <typename Tag, typename Box>
-bool box_contains(const Box& /*box*/) noexcept {
-  return tmpl::list_contains_v<typename Box::tags_list, Tag>;
-}
-
-template <typename Tag, typename Box, typename = cpp17::void_t<>>
-struct tag_is_retrievable : std::false_type {};
-
-template <typename Tag, typename Box>
-struct tag_is_retrievable<Tag, Box,
-                          cpp17::void_t<decltype(db::get<Tag>(Box{}))>>
-    : std::true_type {};
-
-template <typename Tag, typename Box>
-constexpr bool tag_is_retrievable_v = tag_is_retrievable<Tag, Box>::value;
 
 template <bool IsConservative>
 struct TestConservativeOrNonconservativeParts {
-  template <typename Metavariables, typename DbTags>
-  static void apply(const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
+  template <typename Component, typename Metavariables>
+  static void apply(
+      const gsl::not_null<ActionTesting::MockRuntimeSystem<Metavariables>*>
+          runner,
+      const typename Component::array_index& element_id) noexcept {
     using system = typename Metavariables::system;
     constexpr size_t dim = system::volume_dim;
 
-    CHECK(box_contains<Tags::DerivCompute<
-              typename system::variables_tag,
-              Tags::InverseJacobian<Tags::ElementMap<dim>,
-                                    Tags::LogicalCoordinates<dim>>,
-              typename system::gradients_tags>>(*box));
+    CHECK(ActionTesting::box_contains<
+          Component, Tags::DerivCompute<
+                         typename system::variables_tag,
+                         Tags::InverseJacobian<Tags::ElementMap<dim>,
+                                               Tags::LogicalCoordinates<dim>>,
+                         typename system::gradients_tags>>(*runner,
+                                                           element_id));
   }
 };
 
 template <>
 struct TestConservativeOrNonconservativeParts<true> {
-  template <typename Metavariables, typename DbTags>
-  static void apply(const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
+  template <typename Component, typename Metavariables>
+  static void apply(
+      const gsl::not_null<ActionTesting::MockRuntimeSystem<Metavariables>*>
+          runner,
+      const typename Component::array_index& element_id) noexcept {
     using system = typename Metavariables::system;
     constexpr size_t dim = system::volume_dim;
     using variables_tag = typename system::variables_tag;
 
     const size_t number_of_grid_points =
-        get<Tags::Mesh<dim>>(*box).number_of_grid_points();
+        ActionTesting::get_databox_tag<Component, Tags::Mesh<dim>>(*runner,
+                                                                   element_id)
+            .number_of_grid_points();
 
-    CHECK(
-        db::get<db::add_tag_prefix<Tags::Flux, Tags::Variables<tmpl::list<Var>>,
-                                   tmpl::size_t<dim>, Frame::Inertial>>(*box)
-            .number_of_grid_points() == number_of_grid_points);
-    CHECK(db::get<db::add_tag_prefix<Tags::Source, variables_tag>>(*box)
+    CHECK(ActionTesting::get_databox_tag<
+              Component,
+              db::add_tag_prefix<Tags::Flux, Tags::Variables<tmpl::list<Var>>,
+                                 tmpl::size_t<dim>, Frame::Inertial>>(
+              *runner, element_id)
+              .number_of_grid_points() == number_of_grid_points);
+    CHECK(ActionTesting::get_databox_tag<
+              Component, db::add_tag_prefix<Tags::Source, variables_tag>>(
+              *runner, element_id)
               .number_of_grid_points() == number_of_grid_points);
 
-    CHECK(box_contains<Tags::DivCompute<
-              db::add_tag_prefix<Tags::Flux, variables_tag, tmpl::size_t<dim>,
-                                 Frame::Inertial>,
-              Tags::InverseJacobian<Tags::ElementMap<dim>,
-                                    Tags::LogicalCoordinates<dim>>>>(*box));
+    CHECK(ActionTesting::box_contains<
+          Component, Tags::DivCompute<
+                         db::add_tag_prefix<Tags::Flux, variables_tag,
+                                            tmpl::size_t<dim>, Frame::Inertial>,
+                         Tags::InverseJacobian<Tags::ElementMap<dim>,
+                                               Tags::LogicalCoordinates<dim>>>>(
+        *runner, element_id));
 
-    CHECK(tag_is_retrievable_v<
-          Tags::Interface<
-              Tags::InternalDirections<dim>,
-              Tags::ComputeNormalDotFlux<variables_tag, dim, Frame::Inertial>>,
-          std::decay_t<decltype(*box)>>);
+    CHECK(ActionTesting::tag_is_retrievable<
+          Component, Tags::Interface<Tags::InternalDirections<dim>,
+                                     Tags::ComputeNormalDotFlux<
+                                         variables_tag, dim, Frame::Inertial>>>(
+        *runner, element_id));
   }
 };
 
-template <typename DirectionsTag, typename System, typename DataBox_t>
-void test_interface_tags() {
-  const auto dim = System::volume_dim;
-  CHECK(tag_is_retrievable_v<
-        Tags::Interface<DirectionsTag, Tags::UnnormalizedFaceNormal<dim>>,
-        DataBox_t>);
+template <typename DirectionsTag, typename Component, typename Metavariables>
+void test_interface_tags(
+    const gsl::not_null<ActionTesting::MockRuntimeSystem<Metavariables>*>
+        runner,
+    const typename Component::array_index& element_id) noexcept {
+  using system = typename Metavariables::system;
+  const auto dim = system::volume_dim;
+  CHECK(ActionTesting::tag_is_retrievable<
+        Component,
+        Tags::Interface<DirectionsTag, Tags::UnnormalizedFaceNormal<dim>>>(
+      *runner, element_id));
   using magnitude_tag =
       Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<dim>>;
-  CHECK(tag_is_retrievable_v<Tags::Interface<DirectionsTag, magnitude_tag>,
-                             DataBox_t>);
-  CHECK(tag_is_retrievable_v<
+  CHECK(ActionTesting::tag_is_retrievable<
+        Component, Tags::Interface<DirectionsTag, magnitude_tag>>(*runner,
+                                                                  element_id));
+  CHECK(ActionTesting::tag_is_retrievable<
+        Component,
         Tags::Interface<DirectionsTag,
-                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>,
-        DataBox_t>);
-  CHECK(tag_is_retrievable_v<
-        Tags::Interface<DirectionsTag, typename System::variables_tag>,
-        DataBox_t>);
+                        Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>>(
+      *runner, element_id));
+  CHECK(ActionTesting::tag_is_retrievable<
+        Component,
+        Tags::Interface<DirectionsTag, typename system::variables_tag>>(
+      *runner, element_id));
 }
 
 template <typename Metavariables, typename DomainCreatorType,
@@ -240,56 +251,70 @@ void test_initialize_element(
 
   const auto domain = domain_creator.create_domain();
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using my_component = component<dim, Metavariables>;
-  using MockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          my_component>;
-  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(element_id,
-               ActionTesting::MockDistributedObject<my_component>{});
-
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      std::move(cache_tuple), std::move(dist_objects)};
-
-  runner.template simple_action<my_component,
-                                dg::Actions::InitializeElement<dim>>(
-      element_id, domain_creator.initial_extents(),
+      std::move(cache_tuple)};
+  ActionTesting::emplace_component<my_component>(
+      &runner, element_id, domain_creator.initial_extents(),
       domain_creator.create_domain(), start_time, dt, slab_size);
-  auto& box =
-      runner.template algorithms<my_component>()
-          .at(element_id)
-          .template get_databox<typename my_component::initial_databox>();
+  runner.set_phase(Metavariables::Phase::Initialization);
+  ActionTesting::next_action<my_component>(make_not_null(&runner), element_id);
 
   const auto& stepper = Parallel::get<OptionTags::TimeStepper>(runner.cache());
 
-  CHECK(db::get<Tags::TimeStep>(box).value() == dt);
-  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time_runs_forward());
-  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).slab_number() ==
+  CHECK(ActionTesting::get_databox_tag<my_component, Tags::TimeStep>(runner,
+                                                                     element_id)
+            .value() == dt);
+  CHECK(ActionTesting::get_databox_tag<my_component,
+  Tags::Next<Tags::TimeId>>(
+            runner, element_id)
+            .time_runs_forward());
+  CHECK(ActionTesting::get_databox_tag<my_component,
+  Tags::Next<Tags::TimeId>>(
+            runner, element_id)
+            .slab_number() ==
         -static_cast<int64_t>(stepper.number_of_past_steps()));
-  CHECK(db::get<Tags::Next<Tags::TimeId>>(box).time().value() == start_time);
-  CHECK(
-      db::get<Tags::Next<Tags::TimeId>>(box).time().slab().duration().value() ==
-      slab_size);
+  CHECK(ActionTesting::get_databox_tag<my_component,
+  Tags::Next<Tags::TimeId>>(
+            runner, element_id)
+            .time()
+            .value() == start_time);
+  CHECK(ActionTesting::get_databox_tag<my_component,
+  Tags::Next<Tags::TimeId>>(
+            runner, element_id)
+            .time()
+            .slab()
+            .duration()
+            .value() == slab_size);
+
   // The TimeId is uninitialized and is updated immediately by the
   // algorithm loop.
-  CHECK(box_contains<Tags::TimeId>(box));
-  CHECK(box_contains<Tags::Time>(box));
+  CHECK(ActionTesting::box_contains<my_component, Tags::TimeId>(runner,
+                                                                element_id));
+  CHECK(ActionTesting::box_contains<my_component, Tags::Time>(runner,
+                                                              element_id));
 
   const auto& my_block = domain.blocks()[element_id.block_id()];
   ElementMap<dim, Frame::Inertial> map{element_id,
                                        my_block.coordinate_map().get_clone()};
   Element<dim> element = create_initial_element(element_id, my_block);
   Mesh<dim> mesh{domain_creator.initial_extents()[element_id.block_id()],
-                 Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
+                 Spectral::Basis::Legendre,
+                 Spectral::Quadrature::GaussLobatto};
   auto logical_coords = logical_coordinates(mesh);
   auto inertial_coords = map(logical_coords);
-  CHECK(db::get<Tags::LogicalCoordinates<dim>>(box) == logical_coords);
-  CHECK(db::get<Tags::Mesh<dim>>(box) == mesh);
-  CHECK(db::get<Tags::Element<dim>>(box) == element);
-  CHECK(box_contains<Tags::ElementMap<dim>>(box));
-  CHECK(db::get<Var>(box) == ([&inertial_coords, &start_time]() {
+  CHECK(ActionTesting::get_databox_tag<my_component,
+                                       Tags::LogicalCoordinates<dim>>(
+            runner, element_id) == logical_coords);
+  CHECK(ActionTesting::get_databox_tag<my_component, Tags::Mesh<dim>>(
+            runner, element_id) == mesh);
+  CHECK(ActionTesting::get_databox_tag<my_component, Tags::Element<dim>>(
+            runner, element_id) == element);
+  CHECK(ActionTesting::box_contains<my_component, Tags::ElementMap<dim>>(
+      runner, element_id));
+  CHECK(ActionTesting::get_databox_tag<my_component, Var>(runner, element_id)
+  ==
+        ([&inertial_coords, &start_time]() {
           Scalar<DataVector> var{inertial_coords.get(0) + start_time};
           for (size_t d = 1; d < dim; ++d) {
             get(var) += inertial_coords.get(d) + start_time;
@@ -297,10 +322,12 @@ void test_initialize_element(
           return var;
         }()));
   {
-    const auto& history = db::get<Tags::HistoryEvolvedVariables<
-        typename system::variables_tag,
-        db::add_tag_prefix<Tags::dt, typename system::variables_tag>>>(
-        box);
+    const auto& history = ActionTesting::get_databox_tag<
+        my_component,
+        Tags::HistoryEvolvedVariables<
+            typename system::variables_tag,
+            db::add_tag_prefix<Tags::dt, typename system::variables_tag>>>(
+        runner, element_id);
     CHECK(history.size() == 0);
     const SystemAnalyticSolution solution{};
     double past_t = start_time;
@@ -308,7 +335,8 @@ void test_initialize_element(
       const auto entry =
           history.begin() +
           static_cast<
-              typename std::decay_t<decltype(history)>::difference_type>(i - 1);
+              typename std::decay_t<decltype(history)>::difference_type>(i -
+              1);
       past_t -= dt;
 
       CHECK(entry->value() == past_t);
@@ -320,42 +348,59 @@ void test_initialize_element(
                 inertial_coords, past_t, tmpl::list<Tags::dt<Var>>{})));
     }
   }
-  CHECK((db::get<Tags::MappedCoordinates<Tags::ElementMap<dim>,
-                                         Tags::LogicalCoordinates<dim>>>(
-            box)) == inertial_coords);
-  CHECK((db::get<Tags::InverseJacobian<Tags::ElementMap<dim>,
-                                       Tags::LogicalCoordinates<dim>>>(box)) ==
-        map.inv_jacobian(logical_coords));
-  CHECK(db::get<
+  CHECK(
+      (ActionTesting::get_databox_tag<
+          my_component, Tags::MappedCoordinates<Tags::ElementMap<dim>,
+                                                Tags::LogicalCoordinates<dim>>>(
+          runner, element_id)) == inertial_coords);
+  CHECK((ActionTesting::get_databox_tag<
+            my_component, Tags::InverseJacobian<Tags::ElementMap<dim>,
+                                                Tags::LogicalCoordinates<dim>>>(
+            runner, element_id)) == map.inv_jacobian(logical_coords));
+  CHECK(ActionTesting::get_databox_tag<
+            my_component,
             db::add_tag_prefix<Tags::dt, typename system::variables_tag>>(
-            box)
+            runner, element_id)
             .size() == mesh.number_of_grid_points());
 
   if (Metavariables::local_time_stepping) {
-    CHECK(box_contains<typename dg::FluxCommunicationTypes<
-              Metavariables>::local_time_stepping_mortar_data_tag>(box));
+    CHECK(ActionTesting::box_contains<
+          my_component, typename dg::FluxCommunicationTypes<Metavariables>::
+                            local_time_stepping_mortar_data_tag>(runner,
+                                                                 element_id));
   } else {
-    CHECK(box_contains<typename dg::FluxCommunicationTypes<
-              Metavariables>::simple_mortar_data_tag>(box));
+    CHECK(
+        ActionTesting::box_contains<my_component,
+                                    typename dg::FluxCommunicationTypes<
+                                        Metavariables>::simple_mortar_data_tag>(
+            runner, element_id));
   }
-  CHECK(db::get<Tags::VariablesBoundaryData>(box).size() ==
-        2 * dim);
-  CHECK(db::get<Tags::Mortars<Tags::Next<Tags::TimeId>, dim>>(box).size() ==
-        2 * dim);
-  CHECK(db::get<Tags::Mortars<Tags::Mesh<dim - 1>, dim>>(box).size() ==
-        2 * dim);
-  CHECK(db::get<Tags::Mortars<Tags::MortarSize<dim - 1>, dim>>(box).size() ==
-        2 * dim);
+  CHECK(
+      ActionTesting::get_databox_tag<my_component, Tags::VariablesBoundaryData>(
+          runner, element_id)
+          .size() == 2 * dim);
+  CHECK(ActionTesting::get_databox_tag<
+            my_component, Tags::Mortars<Tags::Next<Tags::TimeId>, dim>>(
+            runner, element_id)
+            .size() == 2 * dim);
+  CHECK(ActionTesting::get_databox_tag<my_component,
+                                       Tags::Mortars<Tags::Mesh<dim - 1>, dim>>(
+            runner, element_id)
+            .size() == 2 * dim);
+  CHECK(ActionTesting::get_databox_tag<
+            my_component, Tags::Mortars<Tags::MortarSize<dim - 1>, dim>>(
+            runner, element_id)
+            .size() == 2 * dim);
 
-  using databox_t = std::decay_t<decltype(box)>;
-  test_interface_tags<Tags::InternalDirections<dim>, system, databox_t>();
-  test_interface_tags<Tags::BoundaryDirectionsInterior<dim>, system,
-                      databox_t>();
-  test_interface_tags<Tags::BoundaryDirectionsExterior<dim>, system,
-                      databox_t>();
+  test_interface_tags<Tags::InternalDirections<dim>, my_component>(
+      make_not_null(&runner), element_id);
+  test_interface_tags<Tags::BoundaryDirectionsInterior<dim>, my_component>(
+      make_not_null(&runner), element_id);
+  test_interface_tags<Tags::BoundaryDirectionsExterior<dim>, my_component>(
+      make_not_null(&runner), element_id);
 
   TestConservativeOrNonconservativeParts<system::is_in_flux_conservative_form>::
-      template apply<Metavariables>(make_not_null(&box));
+      template apply<my_component>(make_not_null(&runner), element_id);
 }
 
 void test_mortar_orientation() noexcept {
@@ -374,29 +419,20 @@ void test_mortar_orientation() noexcept {
   const std::vector<std::array<size_t, 3>> extents{{{2, 2, 2}}, {{3, 4, 5}}};
 
   using my_component = component<3, metavariables>;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using MockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          my_component>;
-  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(ElementIndex<3>{element_id},
-               ActionTesting::MockDistributedObject<my_component>{});
-
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(4),
-       SystemAnalyticSolution{}},
-      std::move(dist_objects)};
+       SystemAnalyticSolution{}}};
 
-  runner.simple_action<my_component, dg::Actions::InitializeElement<3>>(
-      element_id, extents, std::move(domain), 0., 1., 1.);
-  const auto& box =
-      runner.template algorithms<my_component>()
-          .at(element_id)
-          .template get_databox<typename my_component::initial_databox>();
+  ActionTesting::emplace_component<my_component>(&runner, element_id, extents,
+                                                 std::move(domain), 0., 1., 1.);
+  runner.set_phase(metavariables::Phase::Initialization);
+  ActionTesting::next_action<my_component>(make_not_null(&runner), element_id);
 
-  CHECK(db::get<Tags::Mortars<Tags::Mesh<2>, 3>>(box).at(mortar_id).extents() ==
-        Index<2>{{{3, 4}}});
+  CHECK(ActionTesting::get_databox_tag<my_component,
+                                       Tags::Mortars<Tags::Mesh<2>, 3>>(
+            runner, element_id)
+            .at(mortar_id)
+            .extents() == Index<2>{{{3, 4}}});
 }
 }  // namespace
 

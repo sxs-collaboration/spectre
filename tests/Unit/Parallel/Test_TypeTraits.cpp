@@ -7,6 +7,7 @@
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/TypeTraits.hpp"
 
 namespace PUP {
@@ -21,19 +22,25 @@ class PupableClass {
 
 class NonpupableClass {};
 
-struct MV {};
+struct Metavariables {
+  enum class Phase { Initialization, Exit };
+};
 
 struct SingletonParallelComponent {
-  using metavariables = MV;
+  using metavariables = Metavariables;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 };
 struct ArrayParallelComponent {
-  using metavariables = MV;
+  using metavariables = Metavariables;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 };
 struct GroupParallelComponent {
-  using metavariables = MV;
+  using metavariables = Metavariables;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 };
 struct NodegroupParallelComponent {
-  using metavariables = MV;
+  using metavariables = Metavariables;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 };
 
 using singleton_proxy =

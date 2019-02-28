@@ -37,6 +37,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
@@ -53,6 +55,7 @@
 // IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 // IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
 // IWYU pragma: no_forward_declare dg::Actions::ImposeDirichletBoundaryConditions
@@ -214,9 +217,7 @@ struct component {
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tag_list =
       tmpl::list<NumericalFluxTag, BoundaryConditionTag>;
-  using action_list =
-      tmpl::list<dg::Actions::ImposeDirichletBoundaryConditions<Metavariables>,
-                 dg::Actions::ReceiveDataForFluxes<Metavariables>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   using simple_tags = db::AddSimpleTags<
@@ -246,8 +247,16 @@ struct component {
       external_boundary_compute_tag<
           Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>>;
 
-  using initial_databox =
-      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<
+              dg::Actions::ImposeDirichletBoundaryConditions<Metavariables>,
+              dg::Actions::ReceiveDataForFluxes<Metavariables>>>>;
 };
 
 template <bool HasPrimitiveAndConservativeVars>
@@ -260,6 +269,7 @@ struct Metavariables {
   using normal_dot_numerical_flux = NumericalFluxTag;
   using boundary_condition_tag = BoundaryConditionTag;
   using analytic_solution_tag = boundary_condition_tag;
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 template <typename Component>
@@ -270,6 +280,8 @@ void run_test() {
   using metavariables = Metavariables<HasConservativeAndPrimitiveVars>;
   using flux_comm_types = typename component<metavariables>::flux_comm_types;
   using my_component = component<metavariables>;
+  using simple_tags = typename my_component::simple_tags;
+  using compute_tags = typename my_component::compute_tags;
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
 
@@ -289,11 +301,13 @@ void run_test() {
   using Affine = domain::CoordinateMaps::Affine;
   const Affine xi_map{-1., 1., 3., 7.};
   const Affine eta_map{-1., 1., 7., 3.};
+  using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
 
   const auto coordmap =
       domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
-                                                                 eta_map));
+          Affine2D(xi_map, eta_map));
 
   const auto external_directions = {Direction<2>::lower_eta(),
                                     Direction<2>::upper_xi()};
@@ -322,10 +336,9 @@ void run_test() {
          {{Direction<2>::lower_eta(), Scalar<DataVector>{{{{13., 14., 15.}}}}},
           {Direction<2>::upper_xi(), Scalar<DataVector>{{{{33., 34., 35.}}}}}}};
 
-  auto start_box = [
-    &mesh, &self_id, &west_id, &south_id, &coordmap, &data,
-    &external_directions, &external_mortar_ids
-  ]() noexcept {
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      {NumericalFlux{}, BoundaryCondition{}}};
+  {
     const Element<2> element(self_id,
                              {{Direction<2>::lower_xi(), {{west_id}, {}}},
                               {Direction<2>::upper_eta(), {{south_id}, {}}}});
@@ -389,56 +402,24 @@ void run_test() {
       mortar_sizes.insert({mortar_id, {{Spectral::MortarSize::Full}}});
     }
 
-    return db::create<
-        db::AddSimpleTags<
-            TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>, Tags::Element<2>,
-            Tags::ElementMap<2>, bdry_normal_dot_fluxes_tag<flux_comm_types>,
-            bdry_other_data_tag,
-            external_bdry_normal_dot_fluxes_tag<flux_comm_types>,
-            external_bdry_other_data_tag, external_bdry_vars_tag,
-            mortar_data_tag<flux_comm_types>, mortar_next_temporal_ids_tag,
-            mortar_meshes_tag, mortar_sizes_tag>,
-        compute_items<my_component>>(
-        initial_time, next_time, mesh, element, std::move(map),
-        std::move(bdry_normal_dot_fluxes), std::move(bdry_other_data),
-        std::move(external_bdry_normal_dot_fluxes),
-        std::move(external_bdry_other_data), std::move(external_bdry_vars),
-        std::move(mortar_history), std::move(mortar_next_temporal_ids),
-        std::move(mortar_meshes), std::move(mortar_sizes));
+    ActionTesting::emplace_component_and_initialize<my_component>(
+        &runner, self_id,
+        {initial_time, next_time, mesh, element, std::move(map),
+         std::move(bdry_normal_dot_fluxes), std::move(bdry_other_data),
+         std::move(external_bdry_normal_dot_fluxes),
+         std::move(external_bdry_other_data), std::move(external_bdry_vars),
+         std::move(mortar_history), std::move(mortar_next_temporal_ids),
+         std::move(mortar_meshes), std::move(mortar_sizes)});
   }
-  ();
+  runner.set_phase(metavariables::Phase::Testing);
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using MockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          my_component>;
-  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(self_id, std::move(start_box));
-
-  ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {NumericalFlux{}, BoundaryCondition{}}, std::move(dist_objects)};
-
-  using initial_databox_type = db::compute_databox_type<tmpl::append<
-      db::AddSimpleTags<
-          TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>, Tags::Element<2>,
-          Tags::ElementMap<2>, bdry_normal_dot_fluxes_tag<flux_comm_types>,
-          bdry_other_data_tag,
-          external_bdry_normal_dot_fluxes_tag<flux_comm_types>,
-          external_bdry_other_data_tag, external_bdry_vars_tag,
-          mortar_data_tag<flux_comm_types>, mortar_next_temporal_ids_tag,
-          mortar_meshes_tag, mortar_sizes_tag>,
-      compute_items<my_component>>>;
-
-  runner.template next_action<my_component>(self_id);
-
-  CHECK(runner.template is_ready<my_component>(self_id));
+  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
+  CHECK(ActionTesting::is_ready<my_component>(runner, self_id));
 
   // Check that BC's were indeed applied.
-  const auto& external_vars = db::get<external_bdry_vars_tag>(
-      runner.template algorithms<my_component>()
-          .at(self_id)
-          .template get_databox<initial_databox_type>());
+  const auto& external_vars =
+      ActionTesting::get_databox_tag<my_component, external_bdry_vars_tag>(
+          runner, self_id);
 
   db::item_type<external_bdry_vars_tag> expected_vars{};
   for (const auto& direction : external_directions) {
@@ -451,10 +432,11 @@ void run_test() {
   CHECK(external_vars == expected_vars);
 
   // ReceiveDataForFluxes
-  runner.template next_action<my_component>(self_id);
-  const auto& self_box = runner.template algorithms<my_component>()
-                             .at(self_id)
-                             .template get_databox<initial_databox_type>();
+  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
+  const auto& self_box =
+      ActionTesting::get_databox<my_component,
+                                 tmpl::append<simple_tags, compute_tags>>(
+          runner, self_id);
 
   auto mortar_history = serialize_and_deserialize(
       db::get<mortar_data_tag<flux_comm_types>>(self_box));

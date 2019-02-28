@@ -3,28 +3,35 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <cstddef>
 #include <string>
-#include <unordered_map>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/NodeLock.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_forward_declare db::DataBox
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
+
+// IWYU pragma: no_include <lrtslock.h>
 
 namespace {
 struct simple_action_a;
 struct simple_action_a_mock;
 struct simple_action_c;
 struct simple_action_c_mock;
+
+struct threaded_action_b;
+struct threaded_action_b_mock;
 
 struct ValueTag : db::SimpleTag {
   using type = int;
@@ -42,25 +49,32 @@ struct component_for_simple_action_mock {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
-  using initial_databox =
-      db::compute_databox_type<tmpl::list<ValueTag, PassedToB>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<ActionTesting::InitializeDataBox<
+                                 db::AddSimpleTags<ValueTag, PassedToB>>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
 
   using replace_these_simple_actions =
-      tmpl::list<simple_action_a, simple_action_c>;
+      tmpl::list<simple_action_a, simple_action_c, threaded_action_b>;
   using with_these_simple_actions =
-      tmpl::list<simple_action_a_mock, simple_action_c_mock>;
+      tmpl::list<simple_action_a_mock, simple_action_c_mock,
+                 threaded_action_b_mock>;
+  using replace_these_threaded_actions = tmpl::list<threaded_action_b>;
+  using with_these_threaded_actions = tmpl::list<threaded_action_b_mock>;
 };
 
 struct simple_action_a_mock {
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent, typename ArrayIndex>
-  static void apply(
-      db::DataBox<tmpl::list<ValueTag, PassedToB>>& box,  // NOLINT
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/, const int value) noexcept {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const int value) noexcept {
     db::mutate<ValueTag>(
         make_not_null(&box), [&value](
                                  const gsl::not_null<int*> value_box) noexcept {
@@ -70,14 +84,13 @@ struct simple_action_a_mock {
 };
 
 struct simple_action_b {
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent, typename ArrayIndex>
-  static void apply(
-      db::DataBox<tmpl::list<ValueTag, PassedToB>>& box,  // NOLINT
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      Parallel::ConstGlobalCache<Metavariables>& cache,  // NOLINT
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/, const int to_call) noexcept {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            Requires<tmpl::list_contains_v<DbTagsList, PassedToB>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,                      // NOLINT
+                    Parallel::ConstGlobalCache<Metavariables>& cache,  // NOLINT
+                    const ArrayIndex& /*array_index*/,
+                    const int to_call) noexcept {
     // simple_action_b is the action that we are testing, but it calls some
     // other actions that we don't want to test. Those are mocked where the body
     // of the mock actions records something in the DataBox that we check to
@@ -114,18 +127,48 @@ struct simple_action_b {
 };
 
 struct simple_action_c_mock {
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent, typename ArrayIndex>
-  static void apply(
-      db::DataBox<tmpl::list<ValueTag, PassedToB>>& box,  // NOLINT
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/) noexcept {
     db::mutate<ValueTag>(
         make_not_null(&box), [](const gsl::not_null<int*> value_box) noexcept {
           *value_box = 25;
         });
+  }
+};
+
+struct threaded_action_a {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<CmiNodeLock*> /*node_lock*/) noexcept {
+    db::mutate<ValueTag>(make_not_null(&box), [
+    ](const gsl::not_null<int*> value_box) noexcept { *value_box = 35; });
+  }
+};
+
+struct threaded_action_b_mock {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/,
+                    const gsl::not_null<CmiNodeLock*> node_lock,
+                    const int tag) noexcept {
+    Parallel::lock(node_lock);
+    db::mutate<ValueTag>(
+        make_not_null(&box), [tag](
+                                 const gsl::not_null<int*> value_box) noexcept {
+          *value_box = tag;
+        });
+    Parallel::unlock(node_lock);
   }
 };
 
@@ -134,34 +177,25 @@ struct SimpleActionMockMetavariables {
       component_for_simple_action_mock<SimpleActionMockMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
 
-  enum class Phase { Initialize, Exit };
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   using metavars = SimpleActionMockMetavariables;
-  using TupleOfMockDistributedObjects =
-      typename ActionTesting::MockRuntimeSystem<
-          metavars>::TupleOfMockDistributedObjects;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  TupleOfMockDistributedObjects dist_objects{};
-  using LocalAlgTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          component_for_simple_action_mock<metavars>>;
-  tuples::get<LocalAlgTag>(dist_objects)
-      .emplace(0,
-               ActionTesting::MockDistributedObject<
-                   component_for_simple_action_mock<metavars>>{
-                   db::create<db::AddSimpleTags<ValueTag, PassedToB>>(0, -1)});
-  ActionTesting::MockRuntimeSystem<metavars> runner{{},
-                                                    std::move(dist_objects)};
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  ActionTesting::emplace_component_and_initialize<
+      component_for_simple_action_mock<metavars>>(&runner, 0, {0, -1});
+  runner.set_phase(metavars::Phase::Testing);
+
   const auto& box =
-      runner.template algorithms<component_for_simple_action_mock<metavars>>()
-          .at(0)
-          .template get_databox<typename component_for_simple_action_mock<
-              metavars>::initial_databox>();
+      ActionTesting::get_databox<component_for_simple_action_mock<metavars>,
+                                 db::AddSimpleTags<ValueTag, PassedToB>>(runner,
+                                                                         0);
   CHECK(db::get<PassedToB>(box) == -1);
   runner.simple_action<component_for_simple_action_mock<metavars>,
                        simple_action_b>(0, 0);
+  REQUIRE(not runner.is_simple_action_queue_empty<
+              component_for_simple_action_mock<metavars>>(0));
   runner
       .invoke_queued_simple_action<component_for_simple_action_mock<metavars>>(
           0);
@@ -169,6 +203,8 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   CHECK(db::get<ValueTag>(box) == 11);
   runner.simple_action<component_for_simple_action_mock<metavars>,
                        simple_action_b>(0, 2);
+  REQUIRE(not runner.is_simple_action_queue_empty<
+              component_for_simple_action_mock<metavars>>(0));
   runner
       .invoke_queued_simple_action<component_for_simple_action_mock<metavars>>(
           0);
@@ -176,6 +212,8 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   CHECK(db::get<ValueTag>(box) == 25);
   runner.simple_action<component_for_simple_action_mock<metavars>,
                        simple_action_b>(0, 1);
+  REQUIRE(not runner.is_simple_action_queue_empty<
+              component_for_simple_action_mock<metavars>>(0));
   runner
       .invoke_queued_simple_action<component_for_simple_action_mock<metavars>>(
           0);
@@ -193,5 +231,14 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
         component_for_simple_action_mock<metavars>>(0));
   CHECK(db::get<PassedToB>(box) == 3);
   CHECK(db::get<ValueTag>(box) == 25);
+
+  ActionTesting::threaded_action<component_for_simple_action_mock<metavars>,
+                                 threaded_action_a>(make_not_null(&runner), 0);
+  CHECK(db::get<ValueTag>(box) == 35);
+
+  ActionTesting::threaded_action<component_for_simple_action_mock<metavars>,
+                                 threaded_action_b>(make_not_null(&runner), 0,
+                                                    -50);
+  CHECK(db::get<ValueTag>(box) == -50);
 }
 }  // namespace

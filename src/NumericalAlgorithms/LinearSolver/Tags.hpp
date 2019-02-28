@@ -289,5 +289,4 @@ struct Verbosity {
 };
 
 }  // namespace OptionTags
-
 }  // namespace LinearSolver

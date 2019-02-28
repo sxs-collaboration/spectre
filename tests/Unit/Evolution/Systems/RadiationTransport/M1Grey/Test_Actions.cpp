@@ -6,23 +6,24 @@
 #include <array>
 #include <boost/variant/get.hpp> // IWYU pragma: keep
 #include <cstddef>
-#include <unordered_map>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Tags.hpp"
+#include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/M1Grey/M1Closure.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/M1Grey/UpdateM1Closure.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"  // IWYU pragma: keep
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 namespace {
 
@@ -33,12 +34,19 @@ struct mock_component {
   using array_index = size_t;
   using Closure = typename RadiationTransport::M1Grey::ComputeM1Closure<
       typename Metavariables::neutrino_species>;
-  using action_list = tmpl::list<Actions::UpdateM1Closure>;
-  using const_global_cache_tag_list =
-      Parallel::get_const_global_cache_tags<action_list>;
-  using initial_databox = db::compute_databox_type<tmpl::flatten<
+  using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
+      tmpl::list<Actions::UpdateM1Closure>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using simple_tags = db::AddSimpleTags<tmpl::flatten<
       tmpl::list<typename Closure::return_tags, typename Closure::argument_tags,
-                 ::Tags::Coordinates<3, Frame::Inertial>>>>;
+                 Tags::Coordinates<3, Frame::Inertial>>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing,
+                             tmpl::list<Actions::UpdateM1Closure>>>;
 };
 
 struct Metavariables {
@@ -46,19 +54,13 @@ struct Metavariables {
   using const_global_cache_tag_list = tmpl::list<>;
   using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>,
                                       neutrinos::HeavyLeptonNeutrinos<0>>;
-  enum class Phase { Initialize, Exit };
+  enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.Actions", "[Unit][M1Grey]") {
-  using TupleOfMockDistributedObjects =
-      typename ActionTesting::MockRuntimeSystem<
-          Metavariables>::TupleOfMockDistributedObjects;
   using component = mock_component<Metavariables>;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<component>;
-  TupleOfMockDistributedObjects dist_objects{};
+
   const DataVector x{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector y{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector z{-2.0, -1.0, 0.0, 1.0, 2.0};
@@ -98,40 +100,38 @@ SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.Actions", "[Unit][M1Grey]") {
   get<1, 1>(inverse_metric) = 1.;
   get<2, 2>(inverse_metric) = 1.;
 
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(
-          0, ActionTesting::MockDistributedObject<component>{
-                 db::create<db::AddSimpleTags<tmpl::flatten<
-                     tmpl::list<component::Closure::return_tags,
-                                component::Closure::argument_tags,
-                                ::Tags::Coordinates<3, Frame::Inertial>>>>>(
-                     Scalar<DataVector>{xi}, Scalar<DataVector>{xi}, tildeP,
-                     tildeP, Scalar<DataVector>{J}, Scalar<DataVector>{J},
-                     Scalar<DataVector>{Hn}, Scalar<DataVector>{Hn},
-                     tnsr::i<DataVector, 3, Frame::Inertial>{{{Hx, Hy, Hz}}},
-                     tnsr::i<DataVector, 3, Frame::Inertial>{{{Hx, Hy, Hz}}},
-                     Scalar<DataVector>{E0}, Scalar<DataVector>{E1},
-                     tnsr::i<DataVector, 3, Frame::Inertial>{{{Sx0, Sy0, Sz0}}},
-                     tnsr::i<DataVector, 3, Frame::Inertial>{{{Sx1, Sy1, Sz1}}},
-                     tnsr::I<DataVector, 3, Frame::Inertial>{{{vx, vy, vz}}},
-                     Scalar<DataVector>{W}, metric, inverse_metric,
-                     tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}})});
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
-  auto& box = runner.template algorithms<component>()
-                  .at(0)
-                  .template get_databox<typename component::initial_databox>();
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
+  ActionTesting::emplace_component_and_initialize<component>(
+      &runner, 0,
+      {Scalar<DataVector>{xi}, Scalar<DataVector>{xi}, tildeP, tildeP,
+       Scalar<DataVector>{J}, Scalar<DataVector>{J}, Scalar<DataVector>{Hn},
+       Scalar<DataVector>{Hn},
+       tnsr::i<DataVector, 3, Frame::Inertial>{{{Hx, Hy, Hz}}},
+       tnsr::i<DataVector, 3, Frame::Inertial>{{{Hx, Hy, Hz}}},
+       Scalar<DataVector>{E0}, Scalar<DataVector>{E1},
+       tnsr::i<DataVector, 3, Frame::Inertial>{{{Sx0, Sy0, Sz0}}},
+       tnsr::i<DataVector, 3, Frame::Inertial>{{{Sx1, Sy1, Sz1}}},
+       tnsr::I<DataVector, 3, Frame::Inertial>{{{vx, vy, vz}}},
+       Scalar<DataVector>{W}, metric, inverse_metric,
+       tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}}});
+  runner.set_phase(Metavariables::Phase::Testing);
+
   runner.next_action<component>(0);
 
   // Check that first species return xi=0 (optically thick)
   const DataVector expected_xi0{0.0, 0.0, 0.0, 0.0, 0.0};
-  CHECK_ITERABLE_APPROX(db::get<RadiationTransport::M1Grey::Tags::ClosureFactor<
-                            neutrinos::ElectronNeutrinos<1>>>(box)
-                            .get(),
-                        expected_xi0);
+  CHECK_ITERABLE_APPROX(
+      (ActionTesting::get_databox_tag<
+           component, RadiationTransport::M1Grey::Tags::ClosureFactor<
+                          neutrinos::ElectronNeutrinos<1>>>(runner, 0)
+           .get()),
+      expected_xi0);
   // Check that second species return xi=1 (optically thin)
   const DataVector expected_xi1{1.0, 1.0, 1.0, 1.0, 1.0};
-  CHECK_ITERABLE_APPROX(db::get<RadiationTransport::M1Grey::Tags::ClosureFactor<
-                            neutrinos::HeavyLeptonNeutrinos<0>>>(box)
-                            .get(),
-                        expected_xi1);
+  CHECK_ITERABLE_APPROX(
+      (ActionTesting::get_databox_tag<
+           component, RadiationTransport::M1Grey::Tags::ClosureFactor<
+                          neutrinos::HeavyLeptonNeutrinos<0>>>(runner, 0)
+           .get()),
+      expected_xi1);
 }

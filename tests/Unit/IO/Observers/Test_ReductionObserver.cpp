@@ -28,6 +28,7 @@
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/FileSystem.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -36,29 +37,25 @@
 namespace helpers = TestObservers_detail;
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
-  using Metavariables = helpers::Metavariables;
-  using TupleOfMockDistributedObjects =
-      typename ActionTesting::MockRuntimeSystem<
-          Metavariables>::TupleOfMockDistributedObjects;
-  using obs_component = helpers::observer_component<Metavariables>;
-  using obs_writer = helpers::observer_writer_component<Metavariables>;
-  using element_comp = helpers::element_component<Metavariables>;
+  constexpr observers::TypeOfObservation type_of_observation =
+      observers::TypeOfObservation::Reduction;
+  using metavariables = helpers::Metavariables<type_of_observation>;
+  using obs_component = helpers::observer_component<metavariables>;
+  using obs_writer = helpers::observer_writer_component<metavariables>;
+  using element_comp =
+      helpers::element_component<metavariables, type_of_observation>;
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using ObserverMockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          obs_component>;
-  using WriterMockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          obs_writer>;
-  using ElementMockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          element_comp>;
-  TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<ObserverMockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
-  tuples::get<WriterMockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<obs_writer>{});
+  tuples::TaggedTuple<observers::OptionTags::ReductionFileName,
+                      observers::OptionTags::VolumeFileName>
+      cache_data{};
+  const auto& output_file_prefix =
+      tuples::get<observers::OptionTags::ReductionFileName>(cache_data) =
+          "./Unit.IO.Observers.ReductionObserver";
+  ActionTesting::MockRuntimeSystem<metavariables> runner{cache_data};
+  ActionTesting::emplace_component<obs_component>(&runner, 0);
+  ActionTesting::next_action<obs_component>(make_not_null(&runner), 0);
+  ActionTesting::emplace_component<obs_writer>(&runner, 0);
+  ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
 
   // Specific IDs have no significance, just need different IDs.
   const std::vector<ElementId<2>> element_ids{{1, {{{1, 0}, {1, 0}}}},
@@ -67,38 +64,22 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
                                               {1, {{{1, 0}, {5, 4}}}},
                                               {0, {{{1, 0}, {1, 0}}}}};
   for (const auto& id : element_ids) {
-    tuples::get<ElementMockDistributedObjectsTag>(dist_objects)
-        .emplace(ElementIndex<2>{id},
-                 ActionTesting::MockDistributedObject<element_comp>{});
+    ActionTesting::emplace_component<element_comp>(&runner, id);
   }
-
-  tuples::TaggedTuple<observers::OptionTags::ReductionFileName,
-                      observers::OptionTags::VolumeFileName>
-      cache_data{};
-  const auto& output_file_prefix =
-      tuples::get<observers::OptionTags::ReductionFileName>(cache_data) =
-          "./Unit.IO.Observers.ReductionObserver";
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      cache_data, std::move(dist_objects)};
-
-  runner.simple_action<obs_component,
-                       observers::Actions::Initialize<Metavariables>>(0);
-  runner.simple_action<obs_writer,
-                       observers::Actions::InitializeWriter<Metavariables>>(0);
+  runner.set_phase(metavariables::Phase::RegisterWithObservers);
 
   // Register elements
   for (const auto& id : element_ids) {
-    runner.simple_action<element_comp,
-                         observers::Actions::RegisterWithObservers<
-                             observers::TypeOfObservation::Reduction>>(
-        id, observers::ObservationId(
-                3., typename Metavariables::element_observation_type{}));
+    ActionTesting::next_action<element_comp>(make_not_null(&runner), id);
     // Invoke the simple_action RegisterSenderWithSelf that was called
     // on the observer component by the RegisterWithObservers action.
-    runner.invoke_queued_simple_action<obs_component>(0);
+    ActionTesting::invoke_queued_simple_action<obs_component>(
+        make_not_null(&runner), 0);
     // Invoke the simple_action RegisterReductionContributorWithObserverWriter.
-    runner.invoke_queued_simple_action<obs_writer>(0);
+    ActionTesting::invoke_queued_simple_action<obs_writer>(
+        make_not_null(&runner), 0);
   }
+  runner.set_phase(metavariables::Phase::Testing);
 
   const std::string h5_file_name = output_file_prefix + ".h5";
   if (file_system::check_if_file_exists(h5_file_name)) {
@@ -130,13 +111,15 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
                          observers::Actions::ContributeReductionData>(
         0,
         observers::ObservationId{
-            time, typename Metavariables::element_observation_type{}},
+            time, typename TestObservers_detail::RegisterThisObsType<
+                      type_of_observation>::ElementObservationType{}},
         "/element_data", legend, std::move(reduction_data_fakes));
   }
   // Invoke the threaded action 'WriteReductionData' to write reduction data to
   // disk.
   runner.invoke_queued_threaded_action<obs_writer>(0);
 
+  REQUIRE(file_system::check_if_file_exists(h5_file_name));
   // Check that the H5 file was written correctly.
   {
     const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);

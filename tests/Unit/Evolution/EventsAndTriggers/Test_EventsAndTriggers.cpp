@@ -11,7 +11,6 @@
 #include <unordered_map>
 #include <utility>
 
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Completion.hpp"
 #include "Evolution/EventsAndTriggers/Event.hpp"
@@ -19,10 +18,12 @@
 #include "Evolution/EventsAndTriggers/LogicalTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Tags.hpp"
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -31,25 +32,26 @@
 
 // IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 
-// IWYU pragma: no_forward_declare db::DataBox
-
 namespace {
 using events_and_triggers_tag =
     OptionTags::EventsAndTriggers<tmpl::list<>, tmpl::list<>>;
 
-struct Metavariables;
-struct component {
+template <typename Metavariables>
+struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<events_and_triggers_tag>;
-  using action_list = tmpl::list<Actions::RunEventsAndTriggers>;
-  using initial_databox = db::DataBox<tmpl::list<>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Testing,
+      tmpl::list<Actions::RunEventsAndTriggers>>>;
 };
 
 struct Metavariables {
-  using component_list = tmpl::list<component>;
+  using component_list = tmpl::list<Component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 using EventsAndTriggersType = EventsAndTriggers<tmpl::list<>, tmpl::list<>>;
@@ -60,21 +62,15 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
   Parallel::register_derived_classes_with_charm<Event<tmpl::list<>>>();
   Parallel::register_derived_classes_with_charm<Trigger<tmpl::list<>>>();
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using my_component = component;
-  using MockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          my_component>;
-  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(0, db::DataBox<tmpl::list<>>{});
+  using my_component = Component<Metavariables>;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {serialize_and_deserialize(events_and_triggers)},
-      std::move(dist_objects)};
+      {serialize_and_deserialize(events_and_triggers)}};
+  ActionTesting::emplace_component<my_component>(&runner, 0);
+  runner.set_phase(Metavariables::Phase::Testing);
 
-  runner.next_action<component>(0);
+  runner.next_action<my_component>(0);
 
-  CHECK(runner.algorithms<component>()[0].get_terminate() == expected);
+  CHECK(runner.algorithms<my_component>()[0].get_terminate() == expected);
 }
 
 void check_trigger(const bool expected, const std::string& trigger_string) {

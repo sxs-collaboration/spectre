@@ -20,13 +20,14 @@ void register_pupables();
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Abort.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Exit.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Printf.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -97,8 +98,10 @@ struct SingletonParallelComponent {
   using const_global_cache_tag_list = tmpl::list<name, age, height>;
   using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::DataBox<tmpl::list<>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
 };
 
 template <class Metavariables>
@@ -108,8 +111,10 @@ struct ArrayParallelComponent {
   using array_index = int;
   using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::DataBox<tmpl::list<>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
 };
 
 template <class Metavariables>
@@ -118,8 +123,10 @@ struct GroupParallelComponent {
   using const_global_cache_tag_list = tmpl::list<name>;
   using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::DataBox<tmpl::list<>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
 };
 
 template <class Metavariables>
@@ -128,8 +135,10 @@ struct NodegroupParallelComponent {
   using const_global_cache_tag_list = tmpl::list<height>;
   using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::DataBox<tmpl::list<>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
 };
 
 struct TestMetavariables {
@@ -139,14 +148,15 @@ struct TestMetavariables {
                  GroupParallelComponent<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
+  enum class Phase { Testing, Exit };
 };
 
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
   {
-    using tag_list =
-        typename Parallel::ConstGlobalCache<TestMetavariables>::tag_list;
+    using tag_list = typename Parallel::ConstGlobalCache_detail::make_tag_list<
+        TestMetavariables>;
     static_assert(
         cpp17::is_same_v<tag_list,
                          tmpl::list<name, age, height, shape_of_nametag>>,
@@ -164,8 +174,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
   }
 
   {
-    using tag_list =
-        typename Parallel::ConstGlobalCache<TestMetavariables>::tag_list;
+    using tag_list = typename Parallel::ConstGlobalCache_detail::make_tag_list<
+        TestMetavariables>;
     static_assert(
         cpp17::is_same_v<tag_list,
                          tmpl::list<name, age, height, shape_of_nametag>>,

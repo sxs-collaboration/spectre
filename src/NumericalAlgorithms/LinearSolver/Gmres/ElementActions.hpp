@@ -36,16 +36,14 @@ namespace LinearSolver {
 namespace gmres_detail {
 
 struct NormalizeInitialOperand {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<
+          DbTagsList, typename Metavariables::system::fields_tag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const double residual_magnitude,
                     const db::item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
@@ -76,7 +74,7 @@ struct PerformStep {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
@@ -110,15 +108,14 @@ struct PerformStep {
 };
 
 struct OrthogonalizeOperand {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<
+          DbTagsList, typename Metavariables::system::fields_tag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
+                    const ArrayIndex& array_index,
                     const double orthogonalization) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using operand_tag =
@@ -174,16 +171,14 @@ struct OrthogonalizeOperand {
 };
 
 struct NormalizeOperandAndUpdateField {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<
+          DbTagsList, typename Metavariables::system::fields_tag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    const double normalization,
+                    const ArrayIndex& array_index, const double normalization,
                     const DenseVector<double>& minres,
                     const db::item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {

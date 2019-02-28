@@ -51,20 +51,45 @@ struct InitializeInterpolator {
       tmpl::list<Tags::NumberOfElements,
                  Tags::VolumeVarsInfo<Metavariables>,
                  Tags::InterpolatedVarsHolders<Metavariables>>;
-  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
+
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<not tmpl::list_contains_v<DbTagsList, Tags::NumberOfElements> and
+               not tmpl::list_contains_v<
+                   DbTagsList, Tags::VolumeVarsInfo<Metavariables>> and
+               not tmpl::list_contains_v<
+                   DbTagsList, Tags::InterpolatedVarsHolders<Metavariables>>> =
+          nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(
-        db::create<db::get_items<return_tag_list<Metavariables>>>(
-            0_st,
+        db::create_from<db::RemoveTags<>,
+                        db::get_items<return_tag_list<Metavariables>>>(
+            std::move(box), 0_st,
             db::item_type<Tags::VolumeVarsInfo<Metavariables>>{},
-            db::item_type<
-                Tags::InterpolatedVarsHolders<Metavariables>>{}));
+            db::item_type<Tags::InterpolatedVarsHolders<Metavariables>>{}));
+  }
+
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<tmpl::list_contains_v<DbTagsList, Tags::NumberOfElements> and
+               tmpl::list_contains_v<DbTagsList,
+                                     Tags::VolumeVarsInfo<Metavariables>> and
+               tmpl::list_contains_v<DbTagsList, Tags::InterpolatedVarsHolders<
+                                                     Metavariables>>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {std::move(box)};
   }
 };
 

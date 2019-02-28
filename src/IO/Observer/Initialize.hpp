@@ -40,9 +40,13 @@ struct Initialize {
 
   using return_tag_list = tmpl::append<simple_tags, compute_tags>;
 
-  template <typename... InboxTags, typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
+  template <
+      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+      typename ActionList, typename ParallelComponent,
+      Requires<not tmpl::list_contains_v<DbTagsList, Tags::NumberOfEvents> and
+               not tmpl::list_contains_v<DbTagsList, Tags::TensorData>> =
+          nullptr>
+  static auto apply(const db::DataBox<DbTagsList>& /*box*/,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -51,18 +55,34 @@ struct Initialize {
     return helper(typename Metavariables::observed_reduction_data_tags{});
   }
 
+  template <
+      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+      typename ActionList, typename ParallelComponent,
+      Requires<tmpl::list_contains_v<DbTagsList, Tags::NumberOfEvents> and
+               tmpl::list_contains_v<DbTagsList, Tags::TensorData>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {std::move(box), true};
+  }
+
  private:
   template <typename... ReductionTags>
   static auto helper(tmpl::list<ReductionTags...> /*meta*/) noexcept {
-    return std::make_tuple(db::create<simple_tags>(
-        db::item_type<Tags::NumberOfEvents>{},
-        db::item_type<Tags::ReductionArrayComponentIds>{},
-        db::item_type<Tags::VolumeArrayComponentIds>{},
-        db::item_type<Tags::TensorData>{},
-        db::item_type<Tags::ReductionObserversContributed>{},
-        db::item_type<ReductionTags>{}...,
-        db::item_type<
-            detail::reduction_data_to_reduction_names<ReductionTags>>{}...));
+    return std::make_tuple(
+        db::create<simple_tags>(
+            db::item_type<Tags::NumberOfEvents>{},
+            db::item_type<Tags::ReductionArrayComponentIds>{},
+            db::item_type<Tags::VolumeArrayComponentIds>{},
+            db::item_type<Tags::TensorData>{},
+            db::item_type<Tags::ReductionObserversContributed>{},
+            db::item_type<ReductionTags>{}...,
+            db::item_type<
+                detail::reduction_data_to_reduction_names<ReductionTags>>{}...),
+        true);
   }
 };
 
@@ -90,9 +110,13 @@ struct InitializeWriter {
 
   using return_tag_list = tmpl::append<simple_tags, compute_tags>;
 
-  template <typename... InboxTags, typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
+  template <
+      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+      typename ActionList, typename ParallelComponent,
+      Requires<not tmpl::list_contains_v<DbTagsList, Tags::TensorData> and
+               not tmpl::list_contains_v<
+                   DbTagsList, Tags::VolumeObserversRegistered>> = nullptr>
+  static auto apply(const db::DataBox<DbTagsList>& /*box*/,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -101,19 +125,36 @@ struct InitializeWriter {
     return helper(typename Metavariables::observed_reduction_data_tags{});
   }
 
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent,
+            Requires<tmpl::list_contains_v<DbTagsList, Tags::TensorData> and
+                     tmpl::list_contains_v<DbTagsList,
+                                           Tags::VolumeObserversRegistered>> =
+                nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {std::move(box), true};
+  }
+
  private:
   template <typename... ReductionTags>
   static auto helper(tmpl::list<ReductionTags...> /*meta*/) noexcept {
-    return std::make_tuple(db::create<simple_tags>(
-        db::item_type<Tags::TensorData>{},
-        db::item_type<Tags::VolumeObserversRegistered>{},
-        db::item_type<Tags::VolumeObserversContributed>{},
-        db::item_type<Tags::ReductionObserversRegistered>{},
-        db::item_type<Tags::ReductionObserversRegisteredNodes>{},
-        db::item_type<Tags::ReductionObserversContributed>{},
-        Parallel::create_lock(), db::item_type<ReductionTags>{}...,
-        db::item_type<
-            detail::reduction_data_to_reduction_names<ReductionTags>>{}...));
+    return std::make_tuple(
+        db::create<simple_tags>(
+            db::item_type<Tags::TensorData>{},
+            db::item_type<Tags::VolumeObserversRegistered>{},
+            db::item_type<Tags::VolumeObserversContributed>{},
+            db::item_type<Tags::ReductionObserversRegistered>{},
+            db::item_type<Tags::ReductionObserversRegisteredNodes>{},
+            db::item_type<Tags::ReductionObserversContributed>{},
+            Parallel::create_lock(), db::item_type<ReductionTags>{}...,
+            db::item_type<
+                detail::reduction_data_to_reduction_names<ReductionTags>>{}...),
+        true);
   }
 };
 }  // namespace Actions

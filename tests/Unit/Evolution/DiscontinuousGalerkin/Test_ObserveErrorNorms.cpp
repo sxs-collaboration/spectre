@@ -22,6 +22,8 @@
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
@@ -31,6 +33,7 @@
 #include "Time/TimeId.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Numeric.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -71,15 +74,11 @@ struct MockContributeReductionData {
   };
   static Results results;
 
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent, typename... Ts>
+  template <typename ParallelComponent, typename... DbTags,
+            typename Metavariables, typename ArrayIndex, typename... Ts>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,
                     const std::vector<std::string>& reduction_names,
@@ -100,43 +99,47 @@ struct MockContributeReductionData {
 
 MockContributeReductionData::Results MockContributeReductionData::results{};
 
-template <typename System>
-struct Metavariables;
-
-template <typename System>
+template <typename Metavariables>
 struct ElementComponent {
   using component_being_mocked = void;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
-  using metavariables = Metavariables<System>;
+  using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<db::AddSimpleTags<>>;
-  using action_list = tmpl::list<>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Initialization,
+                                        tmpl::list<>>>;
 };
 
-template <typename System>
+template <typename Metavariables>
 struct MockObserverComponent {
-  using component_being_mocked = observers::Observer<Metavariables<System>>;
+  using component_being_mocked = observers::Observer<Metavariables>;
   using replace_these_simple_actions =
       tmpl::list<observers::Actions::ContributeReductionData>;
   using with_these_simple_actions = tmpl::list<MockContributeReductionData>;
 
-  using metavariables = Metavariables<System>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<db::AddSimpleTags<>>;
-  using action_list = tmpl::list<>;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Initialization,
+                                        tmpl::list<>>>;
 };
 
 template <typename System>
 struct Metavariables {
   using system = System;
-  using component_list =
-      tmpl::list<ElementComponent<System>, MockObserverComponent<System>>;
+  using component_list = tmpl::list<ElementComponent<Metavariables>,
+                                    MockObserverComponent<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<
       OptionTags::AnalyticSolution<typename System::solution_for_test>>;
+  enum class Phase { Initialization, Testing, Exit };
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
@@ -219,8 +222,9 @@ struct ComplicatedSystem {
 template <typename System, typename ObserveEvent>
 void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   constexpr size_t volume_dim = System::volume_dim;
-  using element_component = ElementComponent<System>;
-  using observer_component = MockObserverComponent<System>;
+  using metavariables = Metavariables<System>;
+  using element_component = ElementComponent<metavariables>;
+  using observer_component = MockObserverComponent<metavariables>;
   using coordinates_tag = Tags::Coordinates<volume_dim, Frame::Inertial>;
 
   const typename element_component::array_index array_index(0);
@@ -241,19 +245,13 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
       variables_from_tagged_tuple(analytic_solution.variables(
           get<coordinates_tag>(vars), observation_time, solution_variables{}));
 
-  using MockRuntimeSystem =
-      ActionTesting::MockRuntimeSystem<Metavariables<System>>;
-
-  typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<typename MockRuntimeSystem::template MockDistributedObjectsTag<
-      element_component>>(dist_objects)
-      .emplace(array_index,
-               ActionTesting::MockDistributedObject<element_component>{});
-  tuples::get<typename MockRuntimeSystem::template MockDistributedObjectsTag<
-      observer_component>>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<observer_component>{});
-  MockRuntimeSystem runner({std::move(analytic_solution)},
-                           std::move(dist_objects));
+  ActionTesting::MockRuntimeSystem<metavariables> runner(
+      tuples::TaggedTuple<
+          OptionTags::AnalyticSolution<typename System::solution_for_test>>{
+          std::move(analytic_solution)});
+  ActionTesting::emplace_component<element_component>(make_not_null(&runner),
+                                                      0);
+  ActionTesting::emplace_component<observer_component>(&runner, 0);
 
   const auto box = db::create<
       db::AddSimpleTags<Tags::TimeId,

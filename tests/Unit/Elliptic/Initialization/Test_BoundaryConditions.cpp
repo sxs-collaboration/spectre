@@ -88,6 +88,7 @@ struct Metavariables {
   using component_list = tmpl::list<>;
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag, normal_dot_numerical_flux>;
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 template <size_t Dim>
@@ -135,7 +136,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
                                                    std::move(sources));
 
     ActionTesting::MockRuntimeSystem<Metavariables<1>> runner{
-        {AnalyticSolution<1>{}, NumericalFlux<1>{}}, {}};
+        {AnalyticSolution<1>{}, NumericalFlux<1>{}}};
 
     const auto box = Elliptic::Initialization::BoundaryConditions<
         Metavariables<1>>::initialize(std::move(arguments_box), runner.cache());
@@ -178,7 +179,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
                                                    std::move(sources));
 
     ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
-        {AnalyticSolution<2>{}, NumericalFlux<2>{}}, {}};
+        {AnalyticSolution<2>{}, NumericalFlux<2>{}}};
 
     const auto box = Elliptic::Initialization::BoundaryConditions<
         Metavariables<2>>::initialize(std::move(arguments_box), runner.cache());
@@ -221,7 +222,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
                                                    std::move(sources));
 
     ActionTesting::MockRuntimeSystem<Metavariables<3>> runner{
-        {AnalyticSolution<3>{}, NumericalFlux<3>{}}, {}};
+        {AnalyticSolution<3>{}, NumericalFlux<3>{}}};
 
     const auto box = Elliptic::Initialization::BoundaryConditions<
         Metavariables<3>>::initialize(std::move(arguments_box), runner.cache());

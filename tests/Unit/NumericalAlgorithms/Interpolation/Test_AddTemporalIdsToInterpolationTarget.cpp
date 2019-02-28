@@ -3,10 +3,8 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <cstddef>
 #include <deque>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -16,6 +14,7 @@
 #include "Domain/Domain.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
@@ -25,7 +24,6 @@
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 // IWYU pragma: no_forward_declare db::DataBox
 
@@ -38,14 +36,13 @@ namespace Tags {
 struct IndicesOfFilledInterpPoints;
 template <typename Metavariables>
 struct TemporalIds;
-} // namespace Tags
-} // namespace intrp
+}  // namespace Tags
+}  // namespace intrp
 namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
-} // namespace Parallel
+}  // namespace Parallel
 /// \endcond
-
 
 namespace {
 
@@ -55,24 +52,27 @@ struct mock_interpolation_target {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<
-      typename ::intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+              InterpolationTargetTag>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
+  using add_options_to_databox =
+      typename intrp::Actions::InitializeInterpolationTarget<
+          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
 };
 
 struct MockComputeTargetPoints {
-  template <
-      typename DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<
-          DbTags, typename intrp::Tags::TemporalIds<Metavariables>>> = nullptr>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex,
+            Requires<tmpl::list_contains_v<
+                DbTags, intrp::Tags::TemporalIds<Metavariables>>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/,
+      const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
     CHECK(temporal_id == TimeId(true, 0, Time(slab, 0)));
@@ -100,84 +100,70 @@ struct MockMetavariables {
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>>;
   using const_global_cache_tag_list = tmpl::list<>;
-  enum class Phase { Initialize, Exit };
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
                   "[Unit]") {
   using metavars = MockMetavariables;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  using TupleOfMockDistributedObjects =
-      MockRuntimeSystem::TupleOfMockDistributedObjects;
-  TupleOfMockDistributedObjects dist_objects{};
-  using MockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          mock_interpolation_target<metavars, metavars::InterpolationTargetA>>;
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(0,
-               ActionTesting::MockDistributedObject<mock_interpolation_target<
-                   metavars, metavars::InterpolationTargetA>>{});
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
+  using target_component =
+      mock_interpolation_target<metavars, metavars::InterpolationTargetA>;
 
   const auto domain_creator =
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
 
-  runner.simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
-      ::intrp::Actions::InitializeInterpolationTarget<
-          metavars::InterpolationTargetA>>(0, domain_creator.create_domain());
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  ActionTesting::emplace_component<target_component>(
+      &runner, 0, domain_creator.create_domain());
+  ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
+  runner.set_phase(metavars::Phase::Testing);
 
-  const auto& box =
-      runner
-          .template algorithms<mock_interpolation_target<
-              metavars, metavars::InterpolationTargetA>>()
-          .at(0)
-          .template get_databox<typename mock_interpolation_target<
-              metavars, metavars::InterpolationTargetA>::initial_databox>();
-
-  CHECK(db::get<::intrp::Tags::TemporalIds<metavars>>(box).empty());
+  CHECK(ActionTesting::get_databox_tag<target_component,
+                                       ::intrp::Tags::TemporalIds<metavars>>(
+            runner, 0)
+            .empty());
 
   Slab slab(0.0, 1.0);
   const std::vector<TimeId> temporal_ids = {
       TimeId(true, 0, Time(slab, 0)),
       TimeId(true, 0, Time(slab, Rational(1, 3)))};
 
-  runner.simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
-      ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
-          metavars::InterpolationTargetA>>(0, temporal_ids);
+  runner.simple_action<target_component,
+                       ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                           metavars::InterpolationTargetA>>(0, temporal_ids);
 
-  CHECK(db::get<::intrp::Tags::TemporalIds<metavars>>(box) ==
+  CHECK(ActionTesting::get_databox_tag<target_component,
+                                       ::intrp::Tags::TemporalIds<metavars>>(
+            runner, 0) ==
         std::deque<TimeId>(temporal_ids.begin(), temporal_ids.end()));
 
   // Add the same temporal_ids again, which should do nothing...
-  runner.simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
-      ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
-          metavars::InterpolationTargetA>>(0, temporal_ids);
+  runner.simple_action<target_component,
+                       ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                           metavars::InterpolationTargetA>>(0, temporal_ids);
   // ...and check that it indeed did nothing.
-  CHECK(db::get<::intrp::Tags::TemporalIds<metavars>>(box) ==
+  CHECK(ActionTesting::get_databox_tag<target_component,
+                                       ::intrp::Tags::TemporalIds<metavars>>(
+            runner, 0) ==
         std::deque<TimeId>(temporal_ids.begin(), temporal_ids.end()));
 
-  runner.invoke_queued_simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>>(0);
+  runner.invoke_queued_simple_action<target_component>(0);
 
   // Check that MockComputeTargetPoints was called.
-  CHECK(db::get<::intrp::Tags::IndicesOfFilledInterpPoints>(box).size() == 1);
+  CHECK(ActionTesting::get_databox_tag<
+            target_component, ::intrp::Tags::IndicesOfFilledInterpPoints>(
+            runner, 0)
+            .size() == 1);
 
   // Call again; it should not call MockComputeTargetPoints this time.
   const std::vector<TimeId> temporal_ids_2 = {
       TimeId(true, 0, Time(slab, Rational(2, 3))),
       TimeId(true, 0, Time(slab, Rational(3, 3)))};
-  runner.simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
-      ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
-          metavars::InterpolationTargetA>>(0, temporal_ids_2);
+  runner.simple_action<target_component,
+                       ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                           metavars::InterpolationTargetA>>(0, temporal_ids_2);
 
   // Check that MockComputeTargetPoints was not called.
-  CHECK(runner.is_simple_action_queue_empty<
-        mock_interpolation_target<metavars, metavars::InterpolationTargetA>>(
-      0));
+  CHECK(runner.is_simple_action_queue_empty<target_component>(0));
 }
-
 }  // namespace

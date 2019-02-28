@@ -40,17 +40,13 @@ namespace Actions {
 ///   - `Tags::InterpolatedVarsHolders<Metavariables>`
 struct InterpolatorReceiveVolumeData {
   template <
-      typename DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      size_t VolumeDim,
-      Requires<tmpl::list_contains_v<DbTags, typename Tags::NumberOfElements>> =
-          nullptr>
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex, size_t VolumeDim,
+      Requires<tmpl::list_contains_v<DbTags, Tags::NumberOfElements>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::ConstGlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/,
+      const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id,
       const ElementId<VolumeDim>& element_id, const ::Mesh<VolumeDim>& mesh,
       Variables<typename Metavariables::interpolator_source_vars>&&

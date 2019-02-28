@@ -10,6 +10,7 @@
 #include "Elliptic/Actions/ComputeOperatorAction.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
+#include "Elliptic/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "Elliptic/Systems/Poisson/Actions/Observe.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
@@ -26,6 +27,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
@@ -65,35 +67,49 @@ struct Metavariables {
   // Collect all items to store in the cache.
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
 
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
-
+  // Collect all reduction tags for observers
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       tmpl::list<Poisson::Actions::Observe, linear_solver>>;
+
+  // Specify all global synchronization points.
+  enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
 
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::append<
       tmpl::list<Elliptic::DgElementArray<
           Metavariables,
           tmpl::list<
-              Poisson::Actions::Observe,
-              LinearSolver::Actions::TerminateIfConverged,
-              dg::Actions::ComputeNonconservativeBoundaryFluxes<
-                  Tags::InternalDirections<Dim>>,
-              dg::Actions::SendDataForFluxes<Metavariables>,
-              Elliptic::Actions::ComputeOperatorAction,
-              dg::Actions::ComputeNonconservativeBoundaryFluxes<
-                  Tags::BoundaryDirectionsInterior<Dim>>,
-              Elliptic::dg::Actions::
-                  ImposeHomogeneousDirichletBoundaryConditions<Metavariables>,
-              dg::Actions::ReceiveDataForFluxes<Metavariables>,
-              dg::Actions::ApplyFluxes, typename linear_solver::perform_step>>>,
+              Parallel::PhaseActions<
+                  Phase, Phase::Initialization,
+                  tmpl::list<Elliptic::dg::Actions::InitializeElement<Dim>>>,
+
+              Parallel::PhaseActions<
+                  Phase, Phase::RegisterWithObserver,
+                  tmpl::list<observers::Actions::RegisterWithObservers<
+                      Poisson::Actions::Observe>>>,
+
+              Parallel::PhaseActions<
+                  Phase, Phase::Solve,
+                  tmpl::list<Poisson::Actions::Observe,
+                             LinearSolver::Actions::TerminateIfConverged,
+                             dg::Actions::ComputeNonconservativeBoundaryFluxes<
+                                 Tags::InternalDirections<Dim>>,
+                             dg::Actions::SendDataForFluxes<Metavariables>,
+                             Elliptic::Actions::ComputeOperatorAction,
+                             dg::Actions::ComputeNonconservativeBoundaryFluxes<
+                                 Tags::BoundaryDirectionsInterior<Dim>>,
+                             Elliptic::dg::Actions::
+                                 ImposeHomogeneousDirichletBoundaryConditions<
+                                     Metavariables>,
+                             dg::Actions::ReceiveDataForFluxes<Metavariables>,
+                             dg::Actions::ApplyFluxes,
+                             typename linear_solver::perform_step>>>,
+
+          typename Elliptic::dg::Actions::InitializeElement<
+              Dim>::AddOptionsToDataBox>>,
       typename linear_solver::component_list,
       tmpl::list<observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>>;
-
-  // Specify all global synchronization points.
-  enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
 
   // Specify the transitions between phases.
   static Phase determine_next_phase(

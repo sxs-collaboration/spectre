@@ -3,18 +3,19 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <unordered_map>
-#include <utility>
-
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <boost/variant/get.hpp>
+
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 namespace {
 
@@ -26,13 +27,20 @@ struct ElementArray {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<LinearSolver::Actions::TerminateIfConverged>;
-  using initial_databox = db::compute_databox_type<simple_tags>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<LinearSolver::Actions::TerminateIfConverged>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 }  // namespace
@@ -40,53 +48,45 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Actions.TerminateIfConverged",
                   "[Unit][NumericalAlgorithms][LinearSolver][Actions]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<ElementArray<Metavariables>>;
-
+  using component = ElementArray<Metavariables>;
   const int self_id{0};
 
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  {
+    INFO("ProceedIfNotConverged");
+    MockRuntimeSystem runner{{}};
+    ActionTesting::emplace_component_and_initialize<component>(
+        &runner, self_id, {db::item_type<LinearSolver::Tags::HasConverged>{}});
+    runner.set_phase(Metavariables::Phase::Testing);
 
-  SECTION("ProceedIfNotConverged") {
-    tuples::get<MockDistributedObjectsTag>(dist_objects)
-        .emplace(self_id,
-                 db::create<simple_tags>(
-                     db::item_type<LinearSolver::Tags::HasConverged>{}));
-    MockRuntimeSystem runner{{}, std::move(dist_objects)};
-    const auto get_box = [&runner, &self_id]() -> decltype(auto) {
-      return runner.algorithms<ElementArray<Metavariables>>()
-          .at(self_id)
-          .get_databox<ElementArray<Metavariables>::initial_databox>();
-    };
-    CHECK_FALSE(db::get<LinearSolver::Tags::HasConverged>(get_box()));
+    CHECK_FALSE(ActionTesting::get_databox_tag<
+                component, LinearSolver::Tags::HasConverged>(runner, self_id));
 
     // This should do nothing
-    runner.next_action<ElementArray<Metavariables>>(self_id);
+    runner.next_action<component>(self_id);
 
-    CHECK_FALSE(db::get<LinearSolver::Tags::HasConverged>(get_box()));
-    CHECK_FALSE(runner.algorithms<ElementArray<Metavariables>>()
-                    .at(self_id)
-                    .get_terminate());
+    CHECK_FALSE(ActionTesting::get_databox_tag<
+                component, LinearSolver::Tags::HasConverged>(runner, self_id));
+    CHECK_FALSE(ActionTesting::get_terminate<component>(runner, self_id));
   }
-  SECTION("TerminateIfConverged") {
-    tuples::get<MockDistributedObjectsTag>(dist_objects)
-        .emplace(self_id, db::create<simple_tags>(
-                              db::item_type<LinearSolver::Tags::HasConverged>{
-                                  {1, 0., 0.}, 1, 0., 0.}));
-    MockRuntimeSystem runner{{}, std::move(dist_objects)};
-    const auto get_box = [&runner, &self_id]() -> decltype(auto) {
-      return runner.algorithms<ElementArray<Metavariables>>()
-          .at(self_id)
-          .get_databox<ElementArray<Metavariables>::initial_databox>();
-    };
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(get_box()));
+  {
+    INFO("TerminateIfConverged");
+    MockRuntimeSystem runner{{}};
+    ActionTesting::emplace_component_and_initialize<component>(
+        &runner, self_id,
+        {db::item_type<LinearSolver::Tags::HasConverged>{
+            {1, 0., 0.}, 1, 0., 0.}});
+    runner.set_phase(Metavariables::Phase::Testing);
+
+    CHECK(ActionTesting::get_databox_tag<component,
+                                         LinearSolver::Tags::HasConverged>(
+        runner, self_id));
 
     // This should terminate the algorithm
-    runner.next_action<ElementArray<Metavariables>>(self_id);
+    runner.next_action<component>(self_id);
 
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(get_box()));
-    CHECK(runner.algorithms<ElementArray<Metavariables>>()
-              .at(self_id)
-              .get_terminate());
+    CHECK(ActionTesting::get_databox_tag<component,
+                                         LinearSolver::Tags::HasConverged>(
+        runner, self_id));
+    CHECK(ActionTesting::get_terminate<component>(runner, self_id));
   }
 }

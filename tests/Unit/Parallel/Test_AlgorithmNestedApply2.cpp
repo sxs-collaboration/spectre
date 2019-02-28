@@ -4,15 +4,16 @@
 #include <vector>
 
 #include "AlgorithmSingleton.hpp"
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace db {
 template <typename TagsList>
@@ -20,27 +21,19 @@ class DataBox;
 }  // namespace db
 
 struct another_action {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+  template <typename ParallelComponent, typename... DbTags,
+            typename Metavariables, typename ArrayIndex>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {}
+                    const ArrayIndex& /*array_index*/) {}
 };
 
 struct error_call_single_action_from_action {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+  template <typename ParallelComponent, typename... DbTags,
+            typename Metavariables, typename ArrayIndex>
   static auto apply(db::DataBox<tmpl::list<DbTags...>>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+                    const ArrayIndex& /*array_index*/) {
     Parallel::simple_action<another_action>(*(
         Parallel::get_parallel_component<ParallelComponent>(cache).ckLocal()));
   }
@@ -50,8 +43,11 @@ template <class Metavariables>
 struct Component {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::DataBox<tmpl::list<>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Initialization,
+                                        tmpl::list<>>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 

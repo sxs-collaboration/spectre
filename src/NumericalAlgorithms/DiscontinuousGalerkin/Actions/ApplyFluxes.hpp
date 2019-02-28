@@ -72,8 +72,8 @@ struct ApplyFluxes {
       db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     using system = typename Metavariables::system;
     constexpr size_t volume_dim = system::volume_dim;
     using variables_tag = typename system::variables_tag;

@@ -26,14 +26,15 @@
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/RegisterObservers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/GotoAction.hpp"  // IWYU pragma: keep
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -119,33 +120,48 @@ struct EvolutionMetavars {
       Actions::UpdateU, SlopeLimiters::Actions::SendData<EvolutionMetavars>,
       SlopeLimiters::Actions::Limit<EvolutionMetavars>>>;
 
-  struct EvolvePhaseStart;
+  enum class Phase {
+    Initialization,
+    RegisterWithObserver,
+    InitializeTimeStepperHistory,
+    Evolve,
+    Exit
+  };
+
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
-          EvolutionMetavars, dg::Actions::InitializeElement<1>,
-          tmpl::flatten<tmpl::list<
-              SelfStart::self_start_procedure<compute_rhs, update_variables>,
-              Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
-              Actions::RunEventsAndTriggers,
-              tmpl::conditional_t<local_time_stepping,
-                                  Actions::ChangeStepSize<step_choosers>,
-                                  tmpl::list<>>,
-              compute_rhs, update_variables,
-              Actions::Goto<EvolvePhaseStart>>>>>;
+          EvolutionMetavars,
+          tmpl::list<
+              Parallel::PhaseActions<
+                  Phase, Phase::Initialization,
+                  tmpl::list<dg::Actions::InitializeElement<1>>>,
+
+              Parallel::PhaseActions<
+                  Phase, Phase::RegisterWithObserver,
+                  tmpl::list<observers::Actions::RegisterWithObservers<
+                      observers::RegisterObservers<element_observation_type>>>>,
+
+              Parallel::PhaseActions<
+                  Phase, Phase::InitializeTimeStepperHistory,
+                  tmpl::flatten<tmpl::list<SelfStart::self_start_procedure<
+                      compute_rhs, update_variables>>>>,
+
+              Parallel::PhaseActions<
+                  Phase, Phase::Evolve,
+                  tmpl::flatten<tmpl::list<
+                      Actions::AdvanceTime, Actions::RunEventsAndTriggers,
+                      tmpl::conditional_t<
+                          local_time_stepping,
+                          Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
+                      compute_rhs, update_variables>>>>,
+          typename dg::Actions::InitializeElement<1>::AddOptionsToDataBox>>;
 
   static constexpr OptionString help{
       "Evolve the Burgers equation.\n\n"
       "The analytic solution is: Linear\n"
       "The numerical flux is:    LocalLaxFriedrichs\n"};
-
-  enum class Phase {
-    Initialization,
-    RegisterWithObserver,
-    Evolve,
-    Exit
-  };
 
   static Phase determine_next_phase(
       const Phase& current_phase,
@@ -153,6 +169,8 @@ struct EvolutionMetavars {
           EvolutionMetavars>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:
+        return Phase::InitializeTimeStepperHistory;
+      case Phase::InitializeTimeStepperHistory:
         return Phase::RegisterWithObserver;
       case Phase::RegisterWithObserver:
         return Phase::Evolve;

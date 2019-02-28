@@ -27,16 +27,12 @@ namespace Actions {
 /// For requirements on Metavariables, see InterpolationTarget.
 struct RegisterElement {
   template <
-      typename DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTags, typename Tags::NumberOfElements>> =
-          nullptr>
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<DbTags, Tags::NumberOfElements>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ArrayIndex& /*array_index*/) noexcept {
     db::mutate<Tags::NumberOfElements>(
         make_not_null(&box), [](const gsl::not_null<
                                  db::item_type<Tags::NumberOfElements>*>

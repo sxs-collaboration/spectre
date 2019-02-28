@@ -24,6 +24,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Requires.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace observers {
@@ -57,16 +58,13 @@ struct ContributeVolumeDataToWriter;
  * feature implemented in the future.
  */
 struct ContributeVolumeData {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent, size_t Dim,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex, size_t Dim,
+      Requires<tmpl::list_contains_v<DbTagsList, Tags::TensorData>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,
                     const observers::ArrayComponentId& array_component_id,
@@ -127,16 +125,15 @@ struct ContributeVolumeData {
  * \brief Move data to the observer writer for writing to disk.
  */
 struct ContributeVolumeDataToWriter {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            Requires<tmpl::list_contains_v<DbTagsList, Tags::TensorData> and
+                     tmpl::list_contains_v<DbTagsList,
+                                           Tags::VolumeObserversContributed>> =
+                nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,
                     std::unordered_map<observers::ArrayComponentId,
@@ -194,16 +191,14 @@ namespace ThreadedActions {
  * \brief Writes volume data at the `observation_id` to disk.
  */
 struct WriteVolumeData {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<DbTagsList, Tags::H5FileLock> and
+               tmpl::list_contains_v<DbTagsList, Tags::TensorData>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const gsl::not_null<CmiNodeLock*> node_lock,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name) noexcept {

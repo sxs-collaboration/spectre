@@ -101,7 +101,7 @@ add_algorithm_test("AlgorithmCore" "")
 add_algorithm_test(
   "AlgorithmBadBoxApply"
   "Cannot call apply function of 'error_size_zero' with DataBox \
-type 'db::DataBox<brigand::list<> >'")
+type 'db::DataBox<brigand::list<")
 add_algorithm_test(
   "AlgorithmNestedApply1"
   "Already performing an Action and cannot execute additional Actions \

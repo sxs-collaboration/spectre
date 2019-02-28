@@ -71,6 +71,8 @@ struct Metavariables {
       }
     };
   };
+
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 struct MockParallelComponent {};
@@ -86,7 +88,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.LinearSolver",
       db::add_tag_prefix<Tags::Source, typename System::fields_tag>>>(
       std::move(sources));
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{{}, {}};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   MockParallelComponent component{};
   const auto box =
       Elliptic::Initialization::LinearSolver<Metavariables>::initialize(
