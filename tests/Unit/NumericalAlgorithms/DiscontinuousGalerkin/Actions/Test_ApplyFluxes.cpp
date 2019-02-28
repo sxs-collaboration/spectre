@@ -6,7 +6,6 @@
 #include <array>
 #include <cstddef>
 #include <string>
-// IWYU pragma: no_include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -40,6 +39,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <unordered_map>
 
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox

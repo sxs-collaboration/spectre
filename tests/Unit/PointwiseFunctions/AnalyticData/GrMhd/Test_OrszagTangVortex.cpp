@@ -5,7 +5,6 @@
 
 #include <array>
 #include <limits>
-// IWYU pragma: no_include <pup.h>
 #include <string>
 
 #include "DataStructures/DataVector.hpp"
@@ -20,6 +19,8 @@
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_include <pup.h>
 
 namespace {
 using grmhd::AnalyticData::OrszagTangVortex;

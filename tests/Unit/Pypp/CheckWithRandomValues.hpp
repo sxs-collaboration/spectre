@@ -143,6 +143,7 @@ void check_with_random_values_impl(
     std::index_sequence<ResultIs...> /*index_return_types*/,
     std::index_sequence<ArgumentIs...> /*index_argument_types*/,
     std::index_sequence<MemberArgsIs...> /*index_member_args*/,
+    // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
     TagsList /*meta*/, const double epsilon = 1.0e-12) {
   // Note: generator and distributions cannot be const.
   std::tuple<ArgumentTypes...> args{

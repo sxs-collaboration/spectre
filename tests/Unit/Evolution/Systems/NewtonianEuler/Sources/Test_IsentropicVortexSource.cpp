@@ -9,6 +9,7 @@
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
 // IWYU pragma: no_include <string>
+
 // IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp"
 // IWYU pragma: no_include "Utilities/Gsl.hpp"
 

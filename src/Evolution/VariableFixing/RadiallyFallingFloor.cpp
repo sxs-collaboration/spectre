@@ -7,12 +7,13 @@
 #include <pup.h>      // IWYU pragma: keep
 
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 
 // IWYU pragma: no_include <array>
+
 // IWYU pragma: no_forward_declare Tensor
 
 namespace VariableFixing {

@@ -19,6 +19,7 @@
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include <array>
+
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {

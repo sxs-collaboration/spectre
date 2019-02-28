@@ -3,11 +3,11 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
 #include <memory>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -35,7 +35,9 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
 // IWYU pragma: no_include <pup.h>
+
 // IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tags::deriv
 // IWYU pragma: no_forward_declare Tags::div

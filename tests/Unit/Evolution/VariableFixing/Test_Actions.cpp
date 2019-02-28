@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <unordered_map>
 #include <utility>
-// IWYU pragma: no_include <exception>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -19,6 +18,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <exception>
 
 // IWYU pragma: no_forward_declare VariableFixing::Actions::FixVariables
 

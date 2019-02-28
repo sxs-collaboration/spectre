@@ -15,6 +15,8 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
+// IWYU pragma: no_include <array>
+
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Tags::CharSpeed
 // IWYU pragma: no_forward_declare Tags::Pi

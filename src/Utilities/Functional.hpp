@@ -3,12 +3,16 @@
 
 #pragma once
 
+#include <algorithm>
 #include <cmath>
+#include <complex>
 #include <cstddef>
 #include <tuple>
+#include <utility>
 
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/StaticAssert.hpp"
+#include "Utilities/ConstantExpressions.hpp"  // IWYU pragma: keep  // for pow<>
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Math.hpp"
 

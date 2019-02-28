@@ -16,5 +16,6 @@ using index = std::size_t;
 } // namespace multi_array
 } // namespace detail
 } // namespace boost
+
 #include <boost/multi_array.hpp>
 

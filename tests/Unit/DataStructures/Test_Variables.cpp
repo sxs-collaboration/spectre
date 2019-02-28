@@ -30,9 +30,11 @@
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
-// IWYU pragma: no_forward_declare Variables
 // IWYU pragma: no_include <boost/tuple/tuple.hpp>
+
 // IWYU pragma: no_include "DataStructures/VariablesForwardDecl.hpp"
+
+// IWYU pragma: no_forward_declare Variables
 
 namespace VariablesTestTags_detail {
 /// [simple_variables_tag]

@@ -3,17 +3,18 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <cstddef>
 #include <string>
+#include <utility>
 
-// IWYU pragma: no_include "DataStructures/DataVector.hpp"
 #include "DataStructures/DenseVector.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_include "DataStructures/DataVector.hpp"
 
 namespace {
 struct DenseVectorOption {

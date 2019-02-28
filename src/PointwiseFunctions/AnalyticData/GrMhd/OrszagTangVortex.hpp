@@ -6,12 +6,13 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
-// IWYU pragma: no_include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // for IdealFluid
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+
+// IWYU pragma: no_include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // for IdealFluid
 
 /// \cond
 namespace PUP {

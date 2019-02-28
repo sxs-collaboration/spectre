@@ -15,6 +15,7 @@
 // IWYU pragma: no_include <boost/preprocessor/arithmetic/dec.hpp>
 // IWYU pragma: no_include <boost/preprocessor/repetition/enum.hpp>
 // IWYU pragma: no_include <boost/preprocessor/tuple/reverse.hpp>
+
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {

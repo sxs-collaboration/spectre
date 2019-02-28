@@ -4,7 +4,6 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
-// IWYU pragma: no_include <cmath>  // for abs
 #include <functional>
 #include <initializer_list>  // IWYU pragma: keep
 #include <string>
@@ -13,8 +12,11 @@
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/GetOutput.hpp"
-// IWYU pragma: no_include "Utilities/Rational.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_include <cmath>  // for abs
+
+// IWYU pragma: no_include "Utilities/Rational.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.Time", "[Unit][Time]") {
   using rational_t = Time::rational_t;

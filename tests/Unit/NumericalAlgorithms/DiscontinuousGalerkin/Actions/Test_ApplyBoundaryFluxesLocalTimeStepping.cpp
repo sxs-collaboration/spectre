@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <memory>
 #include <string>
-// IWYU pragma: no_include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -39,6 +38,8 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <unordered_map>
 
 class LtsTimeStepper;
 // IWYU pragma: no_forward_declare db::DataBox

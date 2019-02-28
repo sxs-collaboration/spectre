@@ -5,13 +5,14 @@
 
 #include <cmath>
 #include <cstddef>
-// IWYU pragma: no_include <type_traits>
 #include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
+
+// IWYU pragma: no_include <type_traits>
 
 namespace Spectral {
 

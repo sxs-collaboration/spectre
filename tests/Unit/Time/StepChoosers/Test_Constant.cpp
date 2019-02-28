@@ -4,17 +4,19 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <memory>
-// IWYU pragma: no_include <pup.h>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_include <pup.h>
+
+// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 
 namespace {
 struct Metavariables {

@@ -5,14 +5,14 @@
 
 #include <cstddef>
 #include <string>
-// for __decay_and_strip<>::__type
-// IWYU pragma: no_include <type_traits>
 #include <utility>
 
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 #include "Utilities/Literals.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_include <type_traits>  // for __decay_and_strip<>::__type
 
 SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData", "[Unit][Time]") {
   dg::SimpleBoundaryData<size_t, std::string, double> data;

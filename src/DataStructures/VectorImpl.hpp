@@ -3,13 +3,14 @@
 
 #pragma once
 
-#include <algorithm>
+#include <algorithm>  // IWYU pragma: keep  // for std::fill
 #include <array>
-#include <complex>
 #include <cstddef>
 #include <cstdlib>
-#include <functional>  // for std::reference_wrapper
+#include <cstring>
+#include <functional>  // IWYU pragma: keep  // for std::plus, etc.
 #include <initializer_list>
+#include <limits>
 #include <memory>
 #include <ostream>
 #include <pup.h>
@@ -17,6 +18,7 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp" // IWYU pragma: keep
 #include "Utilities/PointerVector.hpp" // IWYU pragma: keep
 #include "Utilities/PrintHelpers.hpp"
@@ -27,6 +29,8 @@
 // have VectorImpl.hpp to expose PointerVector.hpp without including Blaze
 // directly in VectorImpl.hpp
 //
+// IWYU pragma: no_include <blaze/math/AlignmentFlag.h>
+// IWYU pragma: no_include <blaze/math/PaddingFlag.h>
 // IWYU pragma: no_include <blaze/math/dense/DenseVector.h>
 // IWYU pragma: no_include <blaze/math/expressions/DVecDVecAddExpr.h>
 // IWYU pragma: no_include <blaze/math/expressions/DVecDVecDivExpr.h>
@@ -36,19 +40,17 @@
 // IWYU pragma: no_include <blaze/math/expressions/DVecScalarDivExpr.h>
 // IWYU pragma: no_include <blaze/math/expressions/DVecScalarMultExpr.h>
 // IWYU pragma: no_include <blaze/math/expressions/DenseVector.h>
-// IWYU pragma: no_include <blaze/math/expressions/Vector.h>
-// IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
 // IWYU pragma: no_include <blaze/math/expressions/Forward.h>
-// IWYU pragma: no_include <blaze/math/AlignmentFlag.h>
-// IWYU pragma: no_include <blaze/math/PaddingFlag.h>
+// IWYU pragma: no_include <blaze/math/expressions/Vector.h>
 // IWYU pragma: no_include <blaze/math/traits/AddTrait.h>
 // IWYU pragma: no_include <blaze/math/traits/DivTrait.h>
 // IWYU pragma: no_include <blaze/math/traits/MultTrait.h>
 // IWYU pragma: no_include <blaze/math/traits/SubTrait.h>
+// IWYU pragma: no_include <blaze/math/typetraits/IsVector.h>
 // IWYU pragma: no_include <blaze/system/TransposeFlag.h>
 #if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
-// IWYU pragma: no_include <blaze/math/traits/UnaryMapTrait.h>
 // IWYU pragma: no_include <blaze/math/traits/BinaryMapTrait.h>
+// IWYU pragma: no_include <blaze/math/traits/UnaryMapTrait.h>
 #else
 // IWYU pragma: no_include <blaze/math/traits/MapTrait.h>
 #endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
@@ -63,6 +65,8 @@
 #endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 // IWYU pragma: no_forward_declare blaze::IsVector
 // IWYU pragma: no_forward_declare blaze::TransposeFlag
+
+// IWYU pragma: no_include "DataStructures/DataVector.hpp"
 
 /*!
  * \ingroup DataStructuresGroup

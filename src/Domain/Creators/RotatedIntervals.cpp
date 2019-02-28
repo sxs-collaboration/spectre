@@ -2,6 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "Domain/Creators/RotatedIntervals.hpp"
+
 #include "DataStructures/Index.hpp"
 #include "Domain/Block.hpp"                   // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"           // IWYU pragma: keep

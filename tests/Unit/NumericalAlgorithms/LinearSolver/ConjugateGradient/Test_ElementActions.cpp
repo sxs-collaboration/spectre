@@ -3,10 +3,9 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <string>
 #include <unordered_map>
-// IWYU pragma: no_include <boost/variant/get.hpp>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -20,6 +19,9 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <boost/variant/get.hpp>
+
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace {

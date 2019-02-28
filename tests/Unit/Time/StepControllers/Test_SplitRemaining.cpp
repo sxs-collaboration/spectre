@@ -6,7 +6,6 @@
 #include <limits>
 #include <memory>
 
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/SplitRemaining.hpp"
@@ -14,6 +13,8 @@
 #include "Time/Time.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.SplitRemaining", "[Unit][Time]") {
   Parallel::register_derived_classes_with_charm<StepController>();
