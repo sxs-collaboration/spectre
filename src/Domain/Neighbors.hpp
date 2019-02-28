@@ -21,16 +21,19 @@ class ElementId;
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup
-/// Information about the neighbors of an Element in a particular direction.
+/// Information about the neighbors of a host Element in a particular direction.
 ///
 /// \tparam VolumeDim the volume dimension.
 template <size_t VolumeDim>
 class Neighbors {
  public:
-  /// Construct with the ids and orientation of the neighbors.
+  /// Construct with the ids and orientation of the neighbors relative to the
+  /// host.
   ///
   /// \param ids the ids of the neighbors.
-  /// \param orientation the OrientationMap of the neighbors.
+  /// \param orientation This OrientationMap takes objects in the logical
+  /// coordinate frame of the host Element and maps them to the logical
+  /// coordinate frame of the neighbor Element.
   Neighbors(std::unordered_set<ElementId<VolumeDim>> ids,
             OrientationMap<VolumeDim> orientation) noexcept;
 

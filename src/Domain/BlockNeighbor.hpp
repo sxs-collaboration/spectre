@@ -18,7 +18,7 @@ class er;
 /// \endcond
 
 /// \ingroup ComputationalDomainGroup
-/// Information about the neighbor of a Block in a particular direction.
+/// Information about the neighbor of a host Block in a particular direction.
 ///
 /// \tparam VolumeDim the volume dimension.
 template <size_t VolumeDim>
@@ -26,10 +26,13 @@ class BlockNeighbor {
  public:
   BlockNeighbor() = default;
 
-  /// Construct with the Id and orientation of the neighbor.
+  /// Construct with the Id and orientation of the neighbor relative to the
+  /// host.
   ///
   /// \param id the Id of the neighbor.
-  /// \param orientation the OrientationMap of the neighbor.
+  /// \param orientation This OrientationMap takes objects in the logical
+  /// coordinate frame of the host Block and maps them to the logical
+  /// coordinate frame of the neighbor Block.
   BlockNeighbor(size_t id, OrientationMap<VolumeDim> orientation) noexcept;
   ~BlockNeighbor() = default;
   BlockNeighbor(const BlockNeighbor<VolumeDim>& neighbor) = default;
