@@ -403,22 +403,19 @@ void test_limiter_action_on_quadratic_function(
   const double mean = mean_value(get(input), mesh);
 
   // Steepness test
-  // Because the mesh is higher-than-linear order, the limiter will generally
-  // activate due to linearizing the solution, even in cases where slope is OK.
-  if (minmod.minmod_type() == SlopeLimiters::MinmodType::LambdaPiN) {
-    // However, the LambdaPiN limiter's troubled cell detector will avoid
-    // limiting certain smooth solutions; this avoidance will kick in here if,
-    // max(u_mean - u_left AND u_right - u_mean) < min(difference of means)
-    const double du_left = mean - get(input)[0];
-    const double du_right = get(input)[mesh.extents(0) - 1] - mean;
-    const double du = std::max(du_left, du_right);
-    test_limiter_does_not_activate(input, mean - du - 2.0, mean + du + 2.0);
-    test_limiter_does_not_activate(input, mean - du, mean + du);
+  if (minmod.minmod_type() != SlopeLimiters::MinmodType::LambdaPiN) {
+    // Because the mesh is higher-than-linear order, the limiter will generally
+    // activate to linearize the solution, even in cases where slope is OK.
+    test_limiter_activates(input, mean - 5.0, mean + 5.0,
+                           4.0 * muscl_slope_factor);
+    test_limiter_activates(input, mean - 4.01, mean + 4.01,
+                           4.0 * muscl_slope_factor);
+  } else {
+    // However, the LambdaPiN limiter does not activate purely to linearize the
+    // solution, so in these same cases where the slope is OK, it does nothing.
+    test_limiter_does_not_activate(input, mean - 5.0, mean + 5.0);
+    test_limiter_does_not_activate(input, mean - 4.01, mean + 4.01);
   }
-  test_limiter_activates(input, mean - 5.0, mean + 5.0,
-                         4.0 * muscl_slope_factor);
-  test_limiter_activates(input, mean - 4.01, mean + 4.01,
-                         4.0 * muscl_slope_factor);
   // Cases where slope is too steep and needs to be reduced
   test_limiter_activates(input, mean - 3.99, mean + 3.99,
                          3.99 * muscl_slope_factor);
