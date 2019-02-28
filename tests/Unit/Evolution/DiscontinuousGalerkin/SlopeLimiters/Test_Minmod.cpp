@@ -16,6 +16,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
@@ -929,13 +930,10 @@ void test_package_data_work(
                       modified_vector, mesh, element_size, {});
 
   // Should not normally look inside the package, but we do so here for testing.
-  double lhs =
-      get(get<Minmod_detail::to_tensor_double<ScalarTag>>(packaged_data.means));
+  double lhs = get(get<Tags::Mean<ScalarTag>>(packaged_data.means));
   CHECK(lhs == approx(mean_value(get(input_scalar), mesh)));
   for (size_t d = 0; d < VolumeDim; ++d) {
-    lhs = get<Minmod_detail::to_tensor_double<VectorTag<VolumeDim>>>(
-              packaged_data.means)
-              .get(d);
+    lhs = get<Tags::Mean<VectorTag<VolumeDim>>>(packaged_data.means).get(d);
     CHECK(lhs == approx(mean_value(modified_vector.get(d), mesh)));
   }
   CHECK(packaged_data.element_size == element_size);
@@ -943,13 +941,10 @@ void test_package_data_work(
   // Then we test with a reorientation, as if sending the data to another Block
   minmod.package_data(make_not_null(&packaged_data), input_scalar,
                       modified_vector, mesh, element_size, orientation_map);
-  lhs =
-      get(get<Minmod_detail::to_tensor_double<ScalarTag>>(packaged_data.means));
+  lhs = get(get<Tags::Mean<ScalarTag>>(packaged_data.means));
   CHECK(lhs == approx(mean_value(get(input_scalar), mesh)));
   for (size_t d = 0; d < VolumeDim; ++d) {
-    lhs = get<Minmod_detail::to_tensor_double<VectorTag<VolumeDim>>>(
-              packaged_data.means)
-              .get(d);
+    lhs = get<Tags::Mean<VectorTag<VolumeDim>>>(packaged_data.means).get(d);
     CHECK(lhs == approx(mean_value(modified_vector.get(d), mesh)));
   }
   CHECK(packaged_data.element_size ==
@@ -1052,21 +1047,17 @@ SPECTRE_TEST_CASE(
 
   // The scalar we treat as a shock: we want the slope to be reduced
   const auto target_scalar_slope = std::array<double, 1>{{1.2}};
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[0]].means) =
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[0]].means) =
       Scalar<double>(mean - target_scalar_slope[0]);
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[1]].means) =
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[1]].means) =
       Scalar<double>(mean + target_scalar_slope[0]);
 
   // The vector x-component we treat as a smooth function: no limiter action
   const auto target_vector_slope =
       std::array<std::array<double, 1>, 1>{{true_slope}};
-  get<Minmod_detail::to_tensor_double<VectorTag<1>>>(
-      neighbor_data[dir_keys[0]].means) =
+  get<Tags::Mean<VectorTag<1>>>(neighbor_data[dir_keys[0]].means) =
       tnsr::I<double, 1>(mean - 2.0 * true_slope[0]);
-  get<Minmod_detail::to_tensor_double<VectorTag<1>>>(
-      neighbor_data[dir_keys[1]].means) =
+  get<Tags::Mean<VectorTag<1>>>(neighbor_data[dir_keys[1]].means) =
       tnsr::I<double, 1>(mean + 2.0 * true_slope[0]);
 
   test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
@@ -1128,14 +1119,14 @@ SPECTRE_TEST_CASE(
                                         const size_t dim, const int sign) {
     return Scalar<double>(mean + sign * gsl::at(target_scalar_slope, dim));
   };
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[0]].means) = neighbor_scalar_func(0, -1);
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[1]].means) = neighbor_scalar_func(0, 1);
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[2]].means) = neighbor_scalar_func(1, -1);
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[3]].means) = neighbor_scalar_func(1, 1);
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[0]].means) =
+      neighbor_scalar_func(0, -1);
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[1]].means) =
+      neighbor_scalar_func(0, 1);
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[2]].means) =
+      neighbor_scalar_func(1, -1);
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[3]].means) =
+      neighbor_scalar_func(1, 1);
 
   // The vector we treat differently in each component, to check the limiter
   // acts independently on each:
@@ -1156,14 +1147,14 @@ SPECTRE_TEST_CASE(
         {{mean + sign * gsl::at(neighbor_vector_slope[0], dim),
           mean + sign * gsl::at(neighbor_vector_slope[1], dim)}}};
   };
-  get<Minmod_detail::to_tensor_double<VectorTag<2>>>(
-      neighbor_data[dir_keys[0]].means) = neighbor_vector_func(0, -1);
-  get<Minmod_detail::to_tensor_double<VectorTag<2>>>(
-      neighbor_data[dir_keys[1]].means) = neighbor_vector_func(0, 1);
-  get<Minmod_detail::to_tensor_double<VectorTag<2>>>(
-      neighbor_data[dir_keys[2]].means) = neighbor_vector_func(1, -1);
-  get<Minmod_detail::to_tensor_double<VectorTag<2>>>(
-      neighbor_data[dir_keys[3]].means) = neighbor_vector_func(1, 1);
+  get<Tags::Mean<VectorTag<2>>>(neighbor_data[dir_keys[0]].means) =
+      neighbor_vector_func(0, -1);
+  get<Tags::Mean<VectorTag<2>>>(neighbor_data[dir_keys[1]].means) =
+      neighbor_vector_func(0, 1);
+  get<Tags::Mean<VectorTag<2>>>(neighbor_data[dir_keys[2]].means) =
+      neighbor_vector_func(1, -1);
+  get<Tags::Mean<VectorTag<2>>>(neighbor_data[dir_keys[3]].means) =
+      neighbor_vector_func(1, 1);
 
   test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
             element_size, target_scalar_slope, target_vector_slope);
@@ -1245,18 +1236,18 @@ SPECTRE_TEST_CASE(
     // because the center-to-center distance to the neighbor element is 2.0:
     return Scalar<double>(mean + sign * gsl::at(target_scalar_slope, dim));
   };
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[0]].means) = neighbor_scalar_func(0, -1);
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[1]].means) = neighbor_scalar_func(0, 1);
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[2]].means) = neighbor_scalar_func(1, -1);
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[3]].means) = neighbor_scalar_func(1, 1);
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[4]].means) = neighbor_scalar_func(2, -1);
-  get<Minmod_detail::to_tensor_double<ScalarTag>>(
-      neighbor_data[dir_keys[5]].means) = neighbor_scalar_func(2, 1);
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[0]].means) =
+      neighbor_scalar_func(0, -1);
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[1]].means) =
+      neighbor_scalar_func(0, 1);
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[2]].means) =
+      neighbor_scalar_func(1, -1);
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[3]].means) =
+      neighbor_scalar_func(1, 1);
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[4]].means) =
+      neighbor_scalar_func(2, -1);
+  get<Tags::Mean<ScalarTag>>(neighbor_data[dir_keys[5]].means) =
+      neighbor_scalar_func(2, 1);
 
   // The vector we treat differently in each component, to verify that the
   // limiter acts independently on each:
@@ -1286,18 +1277,18 @@ SPECTRE_TEST_CASE(
           mean + sign * gsl::at(neighbor_vector_slope[1], dim),
           mean - 1.1 - dim - sign}}};  // arbitrary, but smaller than mean
   };
-  get<Minmod_detail::to_tensor_double<VectorTag<3>>>(
-      neighbor_data[dir_keys[0]].means) = neighbor_vector_func(0, -1);
-  get<Minmod_detail::to_tensor_double<VectorTag<3>>>(
-      neighbor_data[dir_keys[1]].means) = neighbor_vector_func(0, 1);
-  get<Minmod_detail::to_tensor_double<VectorTag<3>>>(
-      neighbor_data[dir_keys[2]].means) = neighbor_vector_func(1, -1);
-  get<Minmod_detail::to_tensor_double<VectorTag<3>>>(
-      neighbor_data[dir_keys[3]].means) = neighbor_vector_func(1, 1);
-  get<Minmod_detail::to_tensor_double<VectorTag<3>>>(
-      neighbor_data[dir_keys[4]].means) = neighbor_vector_func(2, -1);
-  get<Minmod_detail::to_tensor_double<VectorTag<3>>>(
-      neighbor_data[dir_keys[5]].means) = neighbor_vector_func(2, 1);
+  get<Tags::Mean<VectorTag<3>>>(neighbor_data[dir_keys[0]].means) =
+      neighbor_vector_func(0, -1);
+  get<Tags::Mean<VectorTag<3>>>(neighbor_data[dir_keys[1]].means) =
+      neighbor_vector_func(0, 1);
+  get<Tags::Mean<VectorTag<3>>>(neighbor_data[dir_keys[2]].means) =
+      neighbor_vector_func(1, -1);
+  get<Tags::Mean<VectorTag<3>>>(neighbor_data[dir_keys[3]].means) =
+      neighbor_vector_func(1, 1);
+  get<Tags::Mean<VectorTag<3>>>(neighbor_data[dir_keys[4]].means) =
+      neighbor_vector_func(2, -1);
+  get<Tags::Mean<VectorTag<3>>>(neighbor_data[dir_keys[5]].means) =
+      neighbor_vector_func(2, 1);
 
   test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
             element_size, target_scalar_slope, target_vector_slope);

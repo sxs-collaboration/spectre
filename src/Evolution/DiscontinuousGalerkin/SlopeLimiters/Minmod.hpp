@@ -17,6 +17,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/SliceIterator.hpp"
+#include "DataStructures/Tags.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "Domain/MaxNumberOfNeighbors.hpp"
@@ -115,15 +116,6 @@ bool limit_one_tensor(
     const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                                gsl::span<std::pair<size_t, size_t>>>,
                      VolumeDim>& volume_and_slice_indices) noexcept;
-
-template <typename Tag>
-struct to_tensor_double : db::PrefixTag, db::SimpleTag {
-  using type = TensorMetafunctions::swap_type<double, db::item_type<Tag>>;
-  using tag = Tag;
-  static std::string name() noexcept {
-    return "TensorDouble(" + Tag::name() + ")";
-  }
-};
 }  // namespace Minmod_detail
 
 namespace SlopeLimiters {
@@ -263,7 +255,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
 
   /// \brief Data to send to neighbor elements.
   struct PackagedData {
-    tuples::TaggedTuple<Minmod_detail::to_tensor_double<Tags>...> means;
+    tuples::TaggedTuple<::Tags::Mean<Tags>...> means;
     std::array<double, VolumeDim> element_size =
         make_array<VolumeDim>(std::numeric_limits<double>::signaling_NaN());
 
@@ -307,8 +299,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
         // Compute the mean using the local orientation of the tensor and mesh:
         // this avoids the work of reorienting the tensor while giving the same
         // result.
-        get<Minmod_detail::to_tensor_double<decltype(tag)>>(
-            packaged_data->means)[i] = mean_value(tensor[i], mesh);
+        get<::Tags::Mean<decltype(tag)>>(packaged_data->means)[i] =
+            mean_value(tensor[i], mesh);
       }
       return '0';
     };
@@ -417,11 +409,11 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
             boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
             result;
         for (const auto& neighbor_and_data : neighbor_data) {
-          result.insert(std::make_pair(
-              neighbor_and_data.first,
-              make_not_null(get<Minmod_detail::to_tensor_double<decltype(tag)>>(
-                                neighbor_and_data.second.means)
-                                .cbegin())));
+          result.insert(
+              std::make_pair(neighbor_and_data.first,
+                             make_not_null(get<::Tags::Mean<decltype(tag)>>(
+                                               neighbor_and_data.second.means)
+                                               .cbegin())));
         }
         return result;
       }
