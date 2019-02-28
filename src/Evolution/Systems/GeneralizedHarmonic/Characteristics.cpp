@@ -3,6 +3,9 @@
 
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
 
+#include <algorithm>
+#include <array>
+
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
@@ -20,7 +23,6 @@
 // IWYU pragma: no_forward_declare Tags::UZero
 // IWYU pragma: no_forward_declare Tags::UMinus
 // IWYU pragma: no_forward_declare Tags::UPlus
-// IWYU pragma: no_include <array>
 
 namespace GeneralizedHarmonic {
 
@@ -172,6 +174,18 @@ EvolvedFieldsFromCharacteristicFieldsCompute<Dim, Frame>::function(
       unit_normal_one_form);
   return evolved_fields;
 }
+
+template <size_t Dim, typename Frame>
+double ComputeLargestCharacteristicSpeed<Dim, Frame>::apply(
+    const Scalar<DataVector>& u_psi_speed,
+    const Scalar<DataVector>& u_zero_speed,
+    const Scalar<DataVector>& u_plus_speed,
+    const Scalar<DataVector>& u_minus_speed) noexcept {
+  std::array<double, 4> max_speeds{
+      {max(abs(get(u_psi_speed))), max(abs(get(u_zero_speed))),
+       max(abs(get(u_plus_speed))), max(abs(get(u_minus_speed)))}};
+  return *std::max_element(max_speeds.begin(), max_speeds.end());
+}
 }  // namespace GeneralizedHarmonic
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
@@ -216,7 +230,9 @@ EvolvedFieldsFromCharacteristicFieldsCompute<Dim, Frame>::function(
       const tnsr::i<DataVector, DIM(data), FRAME(data)>&                       \
           unit_normal_one_form) noexcept;                                      \
   template struct GeneralizedHarmonic::                                        \
-      EvolvedFieldsFromCharacteristicFieldsCompute<DIM(data), FRAME(data)>;
+      EvolvedFieldsFromCharacteristicFieldsCompute<DIM(data), FRAME(data)>;    \
+  template struct GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<      \
+      DIM(data), FRAME(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
                         (Frame::Inertial, Frame::Grid))
