@@ -33,13 +33,13 @@ struct VectorTag : db::SimpleTag {
 void test_modal_tag() noexcept {
   static_assert(cpp17::is_same_v<typename Tags::Modal<ScalarTag>::type,
                                  Scalar<ModalVector>>,
-                "Failed testing tags::ModalTag");
+                "Failed testing Tags::Modal<ScalarTag>");
   static_assert(cpp17::is_same_v<typename Tags::Modal<VectorTag<1>>::type,
                                  tnsr::I<ModalVector, 1>>,
-                "Failed testing tags::ModalTag");
+                "Failed testing Tags::Modal<VectorTag<1>>");
   static_assert(cpp17::is_same_v<typename Tags::Modal<VectorTag<3>>::type,
                                  tnsr::I<ModalVector, 3>>,
-                "Failed testing tags::ModalTag");
+                "Failed testing Tags::Modal<VectorTag<3>>");
   CHECK(Tags::Modal<ScalarTag>::name() == "Modal(Scalar)");
   CHECK(Tags::Modal<VectorTag<1>>::name() == "Modal(I<1>)");
   CHECK(Tags::Modal<VectorTag<3>>::name() == "Modal(I<3>)");
