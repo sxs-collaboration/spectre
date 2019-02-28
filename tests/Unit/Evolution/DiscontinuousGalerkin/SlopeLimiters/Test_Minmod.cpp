@@ -3,7 +3,6 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <array>
 #include <boost/functional/hash.hpp>
 #include <cstddef>

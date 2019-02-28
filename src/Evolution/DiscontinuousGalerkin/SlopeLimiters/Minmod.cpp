@@ -75,11 +75,9 @@ bool limit_one_tensor(
   const bool mesh_is_linear = (mesh.extents() == Index<VolumeDim>(2));
 
   const double tvbm_scale = [&tvbm_constant, &element_size ]() noexcept {
-    double max_h_sqr = 0.0;
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      max_h_sqr = std::max(max_h_sqr, square(gsl::at(element_size, d)));
-    }
-    return tvbm_constant * max_h_sqr;
+    const double max_h =
+        *std::max_element(element_size.begin(), element_size.end());
+    return tvbm_constant * square(max_h);
   }
   ();
 

@@ -8,7 +8,6 @@
 #include <cstdlib>
 #include <limits>
 #include <memory>
-#include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
@@ -288,7 +287,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
                     const std::array<double, VolumeDim>& element_size,
                     const OrientationMap<VolumeDim>& orientation_map) const
       noexcept {
-    if (disable_for_debugging_) {
+    if (UNLIKELY(disable_for_debugging_)) {
       // Do not initialize packaged_data
       return;
     }
@@ -349,7 +348,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
           boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
           neighbor_data) const noexcept {
-    if (disable_for_debugging_) {
+    if (UNLIKELY(disable_for_debugging_)) {
       // Do not modify input tensors
       return false;
     }
