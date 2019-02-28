@@ -247,6 +247,40 @@ void test_area_element(const Solution& solution, const double& surface_radius,
   CHECK_ITERABLE_APPROX(get(area_element), expected(get(area_element).size()));
 }
 
+void test_euclidean_area_element(
+    const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept {
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
+
+  // Create a Minkowski metric.
+  const gr::Solutions::Minkowski<3> solution{};
+  const double t = 0.0;
+  const auto& cart_coords =
+      db::get<StrahlkorperTags::CartesianCoords<Frame::Inertial>>(box);
+  const auto vars = solution.variables(
+      cart_coords, t, gr::Solutions::Minkowski<3>::tags<DataVector>{});
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+
+  const auto& normal_one_form =
+      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
+  const auto& r_hat = db::get<StrahlkorperTags::Rhat<Frame::Inertial>>(box);
+  const auto& radius = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+  const auto& jacobian =
+      db::get<StrahlkorperTags::Jacobian<Frame::Inertial>>(box);
+
+  // We are using a flat metric, so area_element and euclidean_area_element
+  // should be the same, and this is what we test.
+  const auto area_element = StrahlkorperGr::area_element(
+      spatial_metric, jacobian, normal_one_form, radius, r_hat);
+  const auto euclidean_area_element = StrahlkorperGr::euclidean_area_element(
+      jacobian, normal_one_form, radius, r_hat);
+
+  CHECK_ITERABLE_APPROX(get(euclidean_area_element), get(area_element));
+}
+
 template <typename Solution, typename Fr>
 void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
                const double expected,
@@ -596,15 +630,15 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.ExtrinsicCurvature",
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.RicciScalar",
                   "[ApparentHorizons][Unit]") {
   const double mass = 1.0;
-  test_ricci_scalar(gr::Solutions::KerrSchild(mass, {{0.0, 0.0, 0.0}},
-                                              {{0.0, 0.0, 0.0}}),
-                    [&mass](const auto& cartesian_coords) noexcept {
-                      return TestHelpers::Schwarzschild::spatial_ricci(
-                          cartesian_coords, mass);
-                    },
-                    [&mass](const size_t size) noexcept {
-                      return DataVector(size, 0.5 / square(mass));
-                    });
+  test_ricci_scalar(
+      gr::Solutions::KerrSchild(mass, {{0.0, 0.0, 0.0}}, {{0.0, 0.0, 0.0}}),
+      [&mass](const auto& cartesian_coords) noexcept {
+        return TestHelpers::Schwarzschild::spatial_ricci(cartesian_coords,
+                                                         mass);
+      },
+      [&mass](const size_t size) noexcept {
+        return DataVector(size, 0.5 / square(mass));
+      });
   test_ricci_scalar(
       gr::Solutions::Minkowski<3>{},
       [](const auto& cartesian_coords) noexcept {
@@ -649,6 +683,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
 
   test_area(gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
             expected_area, expected_irreducible_mass);
+
+  test_euclidean_area_element(kerr_horizon);
 }
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SurfaceInteralOfScalar",
