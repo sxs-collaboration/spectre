@@ -65,16 +65,6 @@ struct SizeOfElement;
 namespace SlopeLimiters {
 
 namespace Minmod_detail {
-// Encodes the return status of the minmod_tvbm function.
-struct MinmodResult {
-  const double value;
-  const bool activated;
-};
-
-// The TVBM-corrected minmod function, see e.g. Cockburn reference Eq. 2.26.
-MinmodResult minmod_tvbm(double a, double b, double c,
-                         double tvbm_scale) noexcept;
-
 // Implements the minmod limiter for one Tensor<DataVector>.
 //
 // The interface is designed to erase the tensor structure information, because
