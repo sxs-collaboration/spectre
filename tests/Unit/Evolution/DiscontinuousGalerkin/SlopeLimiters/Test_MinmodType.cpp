@@ -8,6 +8,7 @@
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Utilities/GetOutput.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -25,11 +26,15 @@ void check_minmod_type_parse(
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.MinmodType.OptionParse",
+SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.MinmodType",
                   "[SlopeLimiters][Unit]") {
   check_minmod_type_parse("LambdaPi1", SlopeLimiters::MinmodType::LambdaPi1);
   check_minmod_type_parse("LambdaPiN", SlopeLimiters::MinmodType::LambdaPiN);
   check_minmod_type_parse("Muscl", SlopeLimiters::MinmodType::Muscl);
+
+  CHECK(get_output(SlopeLimiters::MinmodType::LambdaPi1) == "LambdaPi1");
+  CHECK(get_output(SlopeLimiters::MinmodType::LambdaPiN) == "LambdaPiN");
+  CHECK(get_output(SlopeLimiters::MinmodType::Muscl) == "Muscl");
 }
 
 // [[OutputRegex, Failed to convert "BadType" to MinmodType]]

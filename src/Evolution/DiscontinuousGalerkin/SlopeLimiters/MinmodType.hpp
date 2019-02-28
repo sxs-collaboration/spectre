@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <ostream>
+
 class Option;
 template <typename T>
 struct create_from_yaml;
@@ -14,6 +16,9 @@ namespace SlopeLimiters {
 ///
 /// \see SlopeLimiters::Minmod for a description and reference.
 enum class MinmodType { LambdaPi1, LambdaPiN, Muscl };
+
+std::ostream& operator<<(std::ostream& os,
+                         const SlopeLimiters::MinmodType& minmod_type);
 }  // namespace SlopeLimiters
 
 template <>

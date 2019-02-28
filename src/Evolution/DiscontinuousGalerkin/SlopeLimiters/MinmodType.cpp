@@ -6,8 +6,25 @@
 #include <ostream>
 #include <string>
 
+#include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+
+std::ostream& SlopeLimiters::operator<<(
+    std::ostream& os, const SlopeLimiters::MinmodType& minmod_type) {
+  switch (minmod_type) {
+    case SlopeLimiters::MinmodType::LambdaPi1:
+      return os << "LambdaPi1";
+    case SlopeLimiters::MinmodType::LambdaPiN:
+      return os << "LambdaPiN";
+    case SlopeLimiters::MinmodType::Muscl:
+      return os << "Muscl";
+    default:  // LCOV_EXCL_LINE
+      // LCOV_EXCL_START
+      ERROR("Missing a case for operator<<(MinmodType)");
+      // LCOV_EXCL_STOP
+  }
+}
 
 template <>
 SlopeLimiters::MinmodType
