@@ -7,7 +7,6 @@
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -22,6 +21,8 @@ using reduction_data = Parallel::ReductionData<
     Parallel::ReductionDatum<size_t, funcl::AssertEqual<>>,
     // Residual
     Parallel::ReductionDatum<double, funcl::AssertEqual<>>>;
+
+struct ObservationType {};
 
 /*!
  * \brief Contributes data from the residual monitor to the reduction observer
@@ -48,8 +49,7 @@ void contribute_to_reduction_observer(
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
 
   const auto observation_id = observers::ObservationId(
-      get<LinearSolver::Tags::IterationId>(box),
-      typename Metavariables::element_observation_type{});
+      get<LinearSolver::Tags::IterationId>(box), ObservationType{});
   auto& reduction_writer = Parallel::get_parallel_component<
       observers::ObserverWriter<Metavariables>>(cache);
   Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
@@ -61,7 +61,7 @@ void contribute_to_reduction_observer(
       // `/linear_residuals/<nonlinear_iteration_id>`
       std::string{"/linear_residuals"},
       std::vector<std::string>{"Iteration", "Residual"},
-      reduction_data{get<LinearSolver::Tags::IterationId>(box).step_number,
+      reduction_data{get<LinearSolver::Tags::IterationId>(box),
                      get<residual_magnitude_tag>(box)});
 }
 

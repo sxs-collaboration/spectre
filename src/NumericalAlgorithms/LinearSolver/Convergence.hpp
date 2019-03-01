@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <iosfwd>
 
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -84,12 +83,12 @@ struct ConvergenceCriteria {
   using options = tmpl::list<MaxIterations, AbsoluteResidual, RelativeResidual>;
 
   ConvergenceCriteria() = default;
-  ConvergenceCriteria(double max_iterations_in, double absolute_residual_in,
+  ConvergenceCriteria(size_t max_iterations_in, double absolute_residual_in,
                       double relative_residual_in) noexcept;
 
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  double max_iterations{};
+  size_t max_iterations{};
   double absolute_residual{};
   double relative_residual{};
 };
@@ -128,9 +127,8 @@ std::ostream& operator<<(std::ostream& os,
  * `boost::none` otherwise.
  */
 boost::optional<ConvergenceReason> convergence_criteria_match(
-    const ConvergenceCriteria& convergence_criteria,
-    const IterationId& iteration_id, double residual_magnitude,
-    double initial_residual_magnitude) noexcept;
+    const ConvergenceCriteria& convergence_criteria, const size_t iteration_id,
+    double residual_magnitude, double initial_residual_magnitude) noexcept;
 
 /*!
  * \brief Signals convergence of the linear solver.
@@ -154,7 +152,7 @@ struct HasConverged {
    * `LinearSolver::convergence_criteria_match`.
    */
   HasConverged(const ConvergenceCriteria& convergence_criteria,
-               const IterationId& iteration_id, double residual_magnitude,
+               const size_t iteration_id, double residual_magnitude,
                double initial_residual_magnitude) noexcept;
 
   explicit operator bool() const noexcept { return static_cast<bool>(reason_); }
@@ -180,7 +178,7 @@ struct HasConverged {
  private:
   boost::optional<ConvergenceReason> reason_{boost::none};
   ConvergenceCriteria convergence_criteria_{};
-  IterationId iteration_id_{};
+  size_t iteration_id_{};
   double residual_magnitude_{};
   double initial_residual_magnitude_{};
 };

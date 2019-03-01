@@ -5,7 +5,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -80,8 +79,10 @@ struct InitializeElement {
     db::item_type<basis_history_tag> basis_history{};
 
     return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
-        std::move(box), IterationId{0}, IterationId{1}, std::move(x0),
-        IterationId{0}, std::move(basis_history),
+        std::move(box), db::item_type<LinearSolver::Tags::IterationId>{0},
+        db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>{1},
+        std::move(x0), db::item_type<orthogonalization_iteration_id_tag>{0},
+        std::move(basis_history),
         db::item_type<LinearSolver::Tags::HasConverged>{});
   }
 };

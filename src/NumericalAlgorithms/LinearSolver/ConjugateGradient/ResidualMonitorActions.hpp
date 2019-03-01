@@ -7,7 +7,6 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Observe.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -141,13 +140,14 @@ struct UpdateResidual {
     const double res_ratio = residual_square / get<residual_square_tag>(box);
 
     db::mutate<residual_square_tag, LinearSolver::Tags::IterationId>(
-        make_not_null(&box), [residual_square](const gsl::not_null<double*>
-                                                   local_residual_square,
-                                               const gsl::not_null<IterationId*>
-                                                   iteration_id) noexcept {
+        make_not_null(&box),
+        [residual_square](
+            const gsl::not_null<double*> local_residual_square,
+            const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
+                iteration_id) noexcept {
           *local_residual_square = residual_square;
           // Prepare for the next iteration
-          iteration_id->step_number++;
+          (*iteration_id)++;
         });
 
     // At this point, the iteration is complete. We proceed with observing,
@@ -165,7 +165,7 @@ struct UpdateResidual {
                  static_cast<int>(::Verbosity::Verbose))) {
       Parallel::printf(
           "Linear solver iteration %d done. Remaining residual: %e\n",
-          get<LinearSolver::Tags::IterationId>(box).step_number,
+          get<LinearSolver::Tags::IterationId>(box),
           get<residual_magnitude_tag>(box));
     }
     if (UNLIKELY(has_converged and

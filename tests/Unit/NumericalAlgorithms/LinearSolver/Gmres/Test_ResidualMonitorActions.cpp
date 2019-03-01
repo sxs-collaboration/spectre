@@ -21,7 +21,6 @@
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ResidualMonitor.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ResidualMonitorActions.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -225,8 +224,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
                   Metavariables>::compute_tags>(
               Verbosity::Verbose, LinearSolver::ConvergenceCriteria{2, 0., 0.5},
               std::numeric_limits<double>::signaling_NaN(),
-              std::numeric_limits<double>::signaling_NaN(),
-              LinearSolver::IterationId{0}, LinearSolver::IterationId{0},
+              std::numeric_limits<double>::signaling_NaN(), 0, 0,
               DenseMatrix<double>{2, 1, 0.}));
 
   // Setup mock element array
@@ -283,7 +281,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
         element_id);
     const auto& box = get_box();
     CHECK(db::get<residual_magnitude_tag>(box) == 2.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 0);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
     CHECK_FALSE(db::get<LinearSolver::Tags::HasConverged>(box));
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckValueTag>(mock_element_box) == 2.);
@@ -292,8 +290,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     const auto& mock_observer_writer_box = get_mock_observer_writer_box();
     CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
           observers::ObservationId{
-              LinearSolver::IterationId{0},
-              typename Metavariables::element_observation_type{}});
+              0, typename Metavariables::element_observation_type{}});
     CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
           "/linear_residuals");
     CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
@@ -313,7 +310,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
         element_id);
     const auto& box = get_box();
     CHECK(db::get<residual_magnitude_tag>(box) == 0.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 0);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
           LinearSolver::ConvergenceReason::AbsoluteResidual);
@@ -332,8 +329,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
         element_id);
     const auto& box = get_box();
     CHECK(db::get<orthogonalization_history_tag>(box)(0, 0) == 2.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 0);
-    CHECK(db::get<orthogonalization_iteration_id_tag>(box).step_number == 1);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
+    CHECK(db::get<orthogonalization_iteration_id_tag>(box) == 1);
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckValueTag>(mock_element_box) == 2.);
   }
@@ -357,10 +354,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     CHECK(db::get<residual_magnitude_tag>(intermediate_box) == 2.);
     CHECK(db::get<orthogonalization_history_tag>(intermediate_box) ==
           DenseMatrix<double>({{3.}, {0.}}));
-    CHECK(db::get<LinearSolver::Tags::IterationId>(intermediate_box)
-              .step_number == 0);
-    CHECK(db::get<orthogonalization_iteration_id_tag>(intermediate_box)
-              .step_number == 1);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(intermediate_box) == 0);
+    CHECK(db::get<orthogonalization_iteration_id_tag>(intermediate_box) == 1);
     runner
         .simple_action<MockResidualMonitor<Metavariables>,
                        LinearSolver::gmres_detail::StoreFinalOrthogonalization<
@@ -371,8 +366,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
         singleton_id);
     const auto& box = get_box();
     // Iteration ids should be prepared for next iteration
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
-    CHECK(db::get<orthogonalization_iteration_id_tag>(box).step_number == 0);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
+    CHECK(db::get<orthogonalization_iteration_id_tag>(box) == 0);
     // H = [[3.], [2.]] and added a zero row and column
     CHECK(db::get<orthogonalization_history_tag>(box) ==
           DenseMatrix<double>({{3., 0.}, {2., 0.}, {0., 0.}}));
@@ -392,8 +387,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     const auto& mock_observer_writer_box = get_mock_observer_writer_box();
     CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
           observers::ObservationId{
-              LinearSolver::IterationId{1},
-              typename Metavariables::element_observation_type{}});
+              1, typename Metavariables::element_observation_type{}});
     CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
           "/linear_residuals");
     CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==

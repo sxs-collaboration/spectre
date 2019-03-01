@@ -29,7 +29,6 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Algorithm.hpp"
@@ -162,7 +161,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions.Observe",
                  ActionTesting::MockDistributedObject<element_comp>{
                      db::create<element_comp::simple_tags,
                                 element_comp::compute_tags>(
-                         LinearSolver::IterationId{1},
+                         db::item_type<LinearSolver::Tags::IterationId>{1},
                          Mesh<2>{{{3, 2}},
                                  Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto},

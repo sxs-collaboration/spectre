@@ -14,7 +14,6 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -68,7 +67,7 @@ struct IterationId : db::SimpleTag {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
     return "LinearIterationId";
   }
-  using type = LinearSolver::IterationId;
+  using type = size_t;
   template <typename Tag>
   using step_prefix = OperatorAppliedTo<Tag>;
 };
@@ -226,7 +225,7 @@ struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
                  initial_residual_magnitude_tag>;
   static db::item_type<LinearSolver::Tags::HasConverged> function(
       const LinearSolver::ConvergenceCriteria& convergence_criteria,
-      const LinearSolver::IterationId& iteration_id,
+      const db::item_type<LinearSolver::Tags::IterationId>& iteration_id,
       const double& residual_magnitude,
       const double& initial_residual_magnitude) noexcept {
     return LinearSolver::HasConverged(convergence_criteria, iteration_id,
