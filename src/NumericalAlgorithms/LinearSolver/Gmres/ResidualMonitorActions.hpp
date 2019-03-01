@@ -9,7 +9,6 @@
 #include "DataStructures/DenseVector.hpp"
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Observe.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -112,12 +111,14 @@ struct StoreOrthogonalization {
         [orthogonalization](
             const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
                 orthogonalization_history,
-            const gsl::not_null<IterationId*> orthogonalization_iteration_id,
-            const IterationId& iteration_id) noexcept {
-          (*orthogonalization_history)(
-              orthogonalization_iteration_id->step_number,
-              iteration_id.step_number) = orthogonalization;
-          orthogonalization_iteration_id->step_number++;
+            const gsl::not_null<
+                db::item_type<orthogonalization_iteration_id_tag>*>
+                orthogonalization_iteration_id,
+            const db::item_type<LinearSolver::Tags::IterationId>&
+                iteration_id) noexcept {
+          (*orthogonalization_history)(*orthogonalization_iteration_id,
+                                       iteration_id) = orthogonalization;
+          (*orthogonalization_iteration_id)++;
         },
         get<LinearSolver::Tags::IterationId>(box));
 
@@ -158,11 +159,11 @@ struct StoreFinalOrthogonalization {
         [orthogonalization](
             const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
                 orthogonalization_history,
-            const IterationId& iteration_id,
-            const IterationId& orthogonalization_iteration_id) noexcept {
-          (*orthogonalization_history)(
-              orthogonalization_iteration_id.step_number,
-              iteration_id.step_number) = sqrt(orthogonalization);
+            const db::item_type<LinearSolver::Tags::IterationId>& iteration_id,
+            const db::item_type<orthogonalization_iteration_id_tag>&
+                orthogonalization_iteration_id) noexcept {
+          (*orthogonalization_history)(orthogonalization_iteration_id,
+                                       iteration_id) = sqrt(orthogonalization);
         },
         get<LinearSolver::Tags::IterationId>(box),
         get<orthogonalization_iteration_id_tag>(box));
@@ -171,8 +172,7 @@ struct StoreFinalOrthogonalization {
     // the orthogonalization
     const auto& orthogonalization_history =
         get<orthogonalization_history_tag>(box);
-    const auto num_rows =
-        get<orthogonalization_iteration_id_tag>(box).step_number + 1;
+    const auto num_rows = get<orthogonalization_iteration_id_tag>(box) + 1;
     DenseMatrix<double> qr_Q;
     DenseMatrix<double> qr_R;
     blaze::qr(orthogonalization_history, qr_Q, qr_R);
@@ -191,16 +191,19 @@ struct StoreFinalOrthogonalization {
         make_not_null(&box),
         [residual_magnitude](
             const gsl::not_null<double*> local_residual_magnitude,
-            const gsl::not_null<IterationId*> iteration_id,
-            const gsl::not_null<IterationId*> orthogonalization_iteration_id,
+            const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
+                iteration_id,
+            const gsl::not_null<
+                db::item_type<orthogonalization_iteration_id_tag>*>
+                orthogonalization_iteration_id,
             const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
                 local_orthogonalization_history) noexcept {
           *local_residual_magnitude = residual_magnitude;
           // Prepare for the next iteration
-          iteration_id->step_number++;
-          orthogonalization_iteration_id->step_number = 0;
-          local_orthogonalization_history->resize(
-              iteration_id->step_number + 2, iteration_id->step_number + 1);
+          (*iteration_id)++;
+          *orthogonalization_iteration_id = 0;
+          local_orthogonalization_history->resize(*iteration_id + 2,
+                                                  *iteration_id + 1);
           // Make sure the new entries are zero
           for (size_t i = 0; i < local_orthogonalization_history->rows(); i++) {
             (*local_orthogonalization_history)(
@@ -228,8 +231,7 @@ struct StoreFinalOrthogonalization {
                  static_cast<int>(::Verbosity::Verbose))) {
       Parallel::printf(
           "Linear solver iteration %d done. Remaining residual: %e\n",
-          get<LinearSolver::Tags::IterationId>(box).step_number,
-          residual_magnitude);
+          get<LinearSolver::Tags::IterationId>(box), residual_magnitude);
     }
     if (UNLIKELY(has_converged and
                  static_cast<int>(get<::Tags::Verbosity>(box)) >=

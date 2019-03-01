@@ -10,7 +10,6 @@
 #include "Elliptic/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
@@ -113,8 +112,7 @@ struct DgElementArray {
       // elements migrate around the system they will need to register and
       // unregister themselves at specific times.
       const observers::ObservationId observation_id_with_fake_time(
-          LinearSolver::IterationId{},
-          typename Metavariables::element_observation_type{});
+          0., typename Metavariables::element_observation_type{});
       Parallel::simple_action<observers::Actions::RegisterWithObservers<
           observers::TypeOfObservation::ReductionAndVolume>>(
           Parallel::get_parallel_component<DgElementArray>(local_cache),

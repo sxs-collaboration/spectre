@@ -9,12 +9,11 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 
 namespace LinearSolver {
 
 ConvergenceCriteria::ConvergenceCriteria(
-    const double max_iterations_in, const double absolute_residual_in,
+    const size_t max_iterations_in, const double absolute_residual_in,
     const double relative_residual_in) noexcept
     : max_iterations(max_iterations_in),
       absolute_residual(absolute_residual_in),
@@ -53,8 +52,8 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 boost::optional<ConvergenceReason> convergence_criteria_match(
-    const ConvergenceCriteria& convergence_criteria,
-    const IterationId& iteration_id, const double residual_magnitude,
+    const ConvergenceCriteria& convergence_criteria, const size_t iteration_id,
+    const double residual_magnitude,
     const double initial_residual_magnitude) noexcept {
   if (residual_magnitude <= convergence_criteria.absolute_residual) {
     return ConvergenceReason::AbsoluteResidual;
@@ -63,14 +62,14 @@ boost::optional<ConvergenceReason> convergence_criteria_match(
       convergence_criteria.relative_residual) {
     return ConvergenceReason::RelativeResidual;
   }
-  if (iteration_id.step_number >= convergence_criteria.max_iterations) {
+  if (iteration_id >= convergence_criteria.max_iterations) {
     return ConvergenceReason::MaxIterations;
   }
   return boost::none;
 }
 
 HasConverged::HasConverged(const ConvergenceCriteria& convergence_criteria,
-                           const IterationId& iteration_id,
+                           const size_t iteration_id,
                            const double residual_magnitude,
                            const double initial_residual_magnitude) noexcept
     : reason_(convergence_criteria_match(convergence_criteria, iteration_id,
@@ -99,7 +98,7 @@ std::ostream& operator<<(std::ostream& os,
                   << ").\n";
       case ConvergenceReason::AbsoluteResidual:
         return os << "The linear solver has converged in "
-                  << has_converged.iteration_id_.step_number
+                  << has_converged.iteration_id_
                   << " iterations: AbsoluteResidual - The residual magnitude "
                      "has decreased to "
                   << has_converged.convergence_criteria_.absolute_residual
@@ -107,7 +106,7 @@ std::ostream& operator<<(std::ostream& os,
                   << ").\n";
       case ConvergenceReason::RelativeResidual:
         return os << "The linear solver has converged in "
-                  << has_converged.iteration_id_.step_number
+                  << has_converged.iteration_id_
                   << " iterations: RelativeResidual - The residual magnitude "
                      "has decreased to a fraction of "
                   << has_converged.convergence_criteria_.relative_residual

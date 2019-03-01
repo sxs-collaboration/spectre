@@ -5,7 +5,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
+#include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -55,9 +55,6 @@ struct InitializeElement {
       const db::item_type<db::add_tag_prefix<::Tags::Source, fields_tag>>& b,
       const db::item_type<db::add_tag_prefix<
           LinearSolver::Tags::OperatorAppliedTo, fields_tag>>& Ax) noexcept {
-    LinearSolver::IterationId iteration_id{0};
-    LinearSolver::IterationId next_iteration_id{1};
-
     db::mutate<operand_tag>(make_not_null(&box), [
       &b, &Ax
     ](const gsl::not_null<db::item_type<operand_tag>*> p) noexcept {
@@ -77,8 +74,9 @@ struct InitializeElement {
             cache));
 
     return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
-        std::move(box), iteration_id, next_iteration_id, std::move(r),
-        db::item_type<LinearSolver::Tags::HasConverged>{});
+        std::move(box), db::item_type<LinearSolver::Tags::IterationId>{0},
+        db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>{1},
+        std::move(r), db::item_type<LinearSolver::Tags::HasConverged>{});
   }
 };
 

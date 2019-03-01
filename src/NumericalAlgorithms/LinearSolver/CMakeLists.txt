@@ -5,7 +5,6 @@ set(LIBRARY LinearSolver)
 
 set(LIBRARY_SOURCES
   Convergence.cpp
-  IterationId.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})

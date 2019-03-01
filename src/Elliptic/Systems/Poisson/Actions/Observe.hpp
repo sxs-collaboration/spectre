@@ -147,8 +147,7 @@ struct Observe {
             iteration_id, typename Metavariables::element_observation_type{}),
         std::string{"/element_data"},
         std::vector<std::string>{"Iteration", "NumberOfPoints", "L2Error"},
-        observed_reduction_data{iteration_id.step_number,
-                                mesh.number_of_grid_points(),
+        observed_reduction_data{iteration_id, mesh.number_of_grid_points(),
                                 local_l2_error_square});
 
     return std::forward_as_tuple(std::move(box));
