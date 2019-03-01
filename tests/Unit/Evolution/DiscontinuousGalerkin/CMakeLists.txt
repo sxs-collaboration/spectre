@@ -5,6 +5,7 @@ set(LIBRARY "Test_EvolutionDiscontinuousGalerkin")
 
 set(LIBRARY_SOURCES
   Test_InitializeElement.cpp
+  Test_Observe.cpp
   )
 
 add_subdirectory(SlopeLimiters)
