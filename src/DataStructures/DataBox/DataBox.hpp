@@ -1228,6 +1228,20 @@ using AddSimpleTags = tmpl::flatten<tmpl::list<Tags...>>;
 
 /*!
  * \ingroup DataBoxGroup
+ * \brief List of Tags to mutate in the DataBox
+ */
+template <typename... Tags>
+using MutateTags = tmpl::flatten<tmpl::list<Tags...>>;
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief List of Tags to get from the DataBox to be used as arguments
+ */
+template <typename... Tags>
+using ArgumentTags = tmpl::flatten<tmpl::list<Tags...>>;
+
+/*!
+ * \ingroup DataBoxGroup
  * \brief List of Compute Item Tags to add to the DataBox
  */
 template <typename... Tags>
