@@ -102,16 +102,24 @@ struct ComputeFirstOrderNormalDotFluxes {
  * \brief The internal penalty flux for the first oder formulation of the
  * Poisson equation.
  *
- * \details For the sourced equation this is \f$-\frac{\nabla u_\mathrm{int} +
- * \nabla u_\mathrm{ext}}{2} + \sigma \left(u_\mathrm{int} -
- * u_\mathrm{ext}\right)\f$ and for the auxiliary equation it is \f$\frac{
- * u_\mathrm{int} + u_\mathrm{ext}}{2}\f$. The penalty factor \f$\sigma\f$ is
- * responsible for removing zero eigenmodes and impacts the conditioning of the
- * linear operator to be solved. It can be chosen as
- * \f$\sigma=C\frac{N_\mathrm{points}^2}{h}\f$ where \f$N_\mathrm{points}\f$ is
- * the number of collocation points (i.e. the polynomial degree plus 1),
- * \f$h\f$ is a measure of the element size in inertial coordinates and \f$C\leq
- * 1\f$ is a free parameter (see e.g. \cite HesthavenWarburton, section 7.2).
+ * \details For the sourced equation this is
+ * \f[
+ * \boldsymbol{v}^* = -\frac{\nabla u^\mathrm{int} +
+ * \nabla u^\mathrm{ext}}{2} + \sigma \left(
+ * \boldsymbol{n}^\mathrm{int} u^\mathrm{int} - \boldsymbol{n}^\mathrm{ext}
+ * u^\mathrm{ext} \right)
+ * \f]
+ * and for the auxiliary equation it is
+ * \f[
+ * u^* = \frac{u^\mathrm{int} + u^\mathrm{ext}}{2} \text{.}
+ * \f]
+ * The penalty factor \f$\sigma\f$ is responsible for removing zero eigenmodes
+ * and impacts the conditioning of the linear operator to be solved. It can be
+ * chosen as \f$\sigma=C\frac{N_\mathrm{points}^2}{h}\f$ where
+ * \f$N_\mathrm{points}\f$ is the number of collocation points (i.e. the
+ * polynomial degree plus 1), \f$h\f$ is a measure of the element size in
+ * inertial coordinates and \f$C\geq 1\f$ is a free parameter (see e.g.
+ * \cite HesthavenWarburton, section 7.2).
  */
 template <size_t Dim>
 struct FirstOrderInternalPenaltyFlux {
