@@ -119,37 +119,41 @@ bool limit_one_tensor(
 
 namespace SlopeLimiters {
 /// \ingroup SlopeLimitersGroup
-/// \brief A generic Minmod slope limiter
+/// \brief A general minmod slope limiter
 ///
-/// Implements the minmod-based slope limiter from
-/// \ref cockburn_ref "Cockburn (1999)", Section 2.4.
-/// Three types of minmod limiter from the reference are implemented:
-/// \f$\Lambda\Pi^1\f$, \f$\Lambda\Pi^N\f$, and MUSCL.
+/// Provides an implementation for the three minmod-based generalized slope
+/// limiters from \cite Cockburn1999 Sec. 2.4: \f$\Lambda\Pi^1\f$,
+/// \f$\Lambda\Pi^N\f$, and MUSCL. Below we summarize these three limiters, but
+/// the reader should refer to the reference for full details. The limiter has a
+/// general implementation that can work on an arbitrary set of tensors; the
+/// limiting algorithm is applied to each component of each tensor
+/// independently.
 ///
-/// This minmod limiter has a generic implementation that can work on an
-/// arbitrary set of tensors. The minmod limiting algorithm is applied to each
-/// component of each tensor independently. In general, the limiter linearizes
-/// the tensors on every DG element, each time it is applied; additionally, the
-/// limiter may reduce the spatial slope of some tensor components if the data
-/// look like they may contain oscillations.
+/// The MUSCL and \f$\Lambda\Pi^1\f$ limiters are both intended for use on
+/// piecewise-linear solutions, i.e., on linear-order elements with two points
+/// per dimension. These limiters operate by reducing the spatial slope of the
+/// tensor components if the data look like they may contain oscillations.
+/// Between these two, MUSCL is more dissipative --- it more aggressively
+/// reduces the slopes of the data, so it may better handle strong shocks, but
+/// it correspondingly produces the most broadening of features in the solution.
 ///
-/// The key features differentiating the three minmod limiter types are:
-/// 1. The `Muscl` limiter is the most dissipative; it more aggressively reduces
-///    the slopes of the data. This limiter may better handle strong shocks, but
-///    also produces the most broadening of features.
-/// 2. The `LambdaPiN` limiter is the least aggressive; its "troubled cell"
-///    detector tries to avoid limiting in DG elements where the data look
-///    smooth enough. Where `LambdaPiN` is able to avoid limiting, the data are
-///    _not_ linearized, and the post-limiter data are identical to the
-///    pre-limiter data.
-/// 3. The `LambdaPi1` limiter is a middle-ground option between the other two.
-///    It does not try to avoid limiting as much as `LambdaPiN`, but it allows
-///    larger slopes in the data than `Muscl`.
+/// Note that we do not _require_ the MUSCL and \f$\Lambda\Pi^1\f$ limiters to
+/// be used on linear-order elements. However, when they are used on a
+/// higher-resolution grid, the limiters act to linearize the solution (by
+/// discarding higher-order mode content) whether or not the slopes must be
+/// reduced.
+///
+/// The \f$\Lambda\Pi^N\f$ limiter is intended for use with higher-order
+/// elements (with more than two points per dimension), where the solution is a
+/// piecewise polynomial of higher-than-linear order. This limiter generalizes
+/// \f$\Lambda\Pi^1\f$: the post-limiter solution is the linearized solution of
+/// \f$\Lambda\Pi^1\f$ in the case that the slopes must be reduced, but is the
+/// original (higher-order) data in the case that the slopes are acceptable.
 ///
 /// For all three types of minmod limiter the "total variation bound in the
 /// means" (TVBM) correction is implemented, enabling the limiter to avoid
 /// limiting away smooth extrema in the solution that would otherwise look like
-/// spurious oscillations. The limiter will not reduce the slope (but will still
+/// spurious oscillations. The limiter will not reduce the slope (but may still
 /// linearize) on elements where the slope is less than \f$m h^2\f$, where
 /// \f$m\f$ is the TVBM constant and \f$h\f$ is the size of the DG element.
 ///
@@ -176,17 +180,14 @@ namespace SlopeLimiters {
 ///
 /// \tparam VolumeDim The number of spatial dimensions.
 /// \tparam Tags A typelist of tags specifying the tensors to limit.
-///
-/// \anchor cockburn_ref [1] B. Cockburn,
-/// Discontinuous Galerkin Methods for Convection-Dominated Problems,
-/// [Springer (1999)](https://doi.org/10.1007/978-3-662-03882-6_2)
 template <size_t VolumeDim, typename... Tags>
 class Minmod<VolumeDim, tmpl::list<Tags...>> {
  public:
   /// \brief The MinmodType
   ///
   /// One of `SlopeLimiters::MinmodType`. See `SlopeLimiters::Minmod`
-  /// documentation for details.
+  /// documentation for details. Note in particular that on grids with more than
+  /// two points per dimension, the recommended type is `LambdaPiN`.
   struct Type {
     using type = MinmodType;
     static constexpr OptionString help = {"Type of minmod"};
