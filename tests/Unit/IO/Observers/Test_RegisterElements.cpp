@@ -111,7 +111,7 @@ void check_observer_registration() {
         element_comp,
         observers::Actions::RegisterWithObservers<TypeOfObservation>>(
         id, observers::ObservationId(
-                TimeId(3), typename Metavariables::element_observation_type{}));
+                3., typename Metavariables::element_observation_type{}));
     // Invoke the simple_action RegisterSenderWithSelf that was called on the
     // observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);
@@ -159,7 +159,7 @@ void check_observer_registration() {
             .empty());
     const auto hash =
         observers::ObservationId(
-            TimeId(3), typename Metavariables::element_observation_type{})
+            3., typename Metavariables::element_observation_type{})
             .observation_type_hash();
     CHECK(db::get<observers::Tags::ReductionObserversRegistered>(writer_box)
               .at(hash)
@@ -168,7 +168,7 @@ void check_observer_registration() {
   if (TypeOfObservation != observers::TypeOfObservation::Reduction) {
     const auto hash =
         observers::ObservationId(
-            TimeId(3), typename Metavariables::element_observation_type{})
+            3., typename Metavariables::element_observation_type{})
             .observation_type_hash();
     CHECK(db::get<observers::Tags::VolumeObserversRegistered>(writer_box)
               .at(hash)

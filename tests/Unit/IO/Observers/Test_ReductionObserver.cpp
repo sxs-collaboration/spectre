@@ -92,8 +92,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
                          observers::Actions::RegisterWithObservers<
                              observers::TypeOfObservation::Reduction>>(
         id, observers::ObservationId(
-                helpers::TimeId{3},
-                typename Metavariables::element_observation_type{}));
+                3., typename Metavariables::element_observation_type{}));
     // Invoke the simple_action RegisterSenderWithSelf that was called
     // on the observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);
@@ -116,7 +115,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
     return helpers::reduction_data{time, number_of_grid_points, error0, error1};
   };
 
-  const helpers::TimeId time(3);
+  const double time = 3.;
   const std::vector<std::string> legend{"Time", "NumberOfPoints", "Error0",
                                         "Error1"};
   // Test passing reduction data.
@@ -126,7 +125,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
         Parallel::ArrayIndex<ElementIndex<2>>{ElementIndex<2>{id}});
 
     auto reduction_data_fakes =
-        make_fake_reduction_data(array_id, time.value());
+        make_fake_reduction_data(array_id, time);
     runner.simple_action<obs_component,
                          observers::Actions::ContributeReductionData>(
         0,
@@ -147,7 +146,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
     CHECK(written_legend == legend);
     const auto expected =
         alg::accumulate(
-            element_ids, helpers::reduction_data(time.value(), 0, 0.0, 0.0),
+            element_ids, helpers::reduction_data(time, 0, 0.0, 0.0),
             [
               &time, &make_fake_reduction_data
             ](helpers::reduction_data state, const ElementId<2>& id) noexcept {
@@ -155,7 +154,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
                   std::add_pointer_t<element_comp>{nullptr},
                   Parallel::ArrayIndex<ElementIndex<2>>{ElementIndex<2>{id}});
               return state.combine(
-                  make_fake_reduction_data(array_id, time.value()));
+                  make_fake_reduction_data(array_id, time));
             })
             .finalize()
             .data();
