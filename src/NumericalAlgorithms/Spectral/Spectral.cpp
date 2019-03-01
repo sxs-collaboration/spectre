@@ -25,7 +25,10 @@ namespace Spectral {
 std::ostream& operator<<(std::ostream& os,
                          const Basis& basis) noexcept {
   switch (basis) {
-    case Basis::Legendre: return os << "Legendre";
+    case Basis::Legendre:
+      return os << "Legendre";
+    case Basis::Chebyshev:
+      return os << "Chebyshev";
     default: ERROR("Invalid basis");
   }
 }
@@ -33,11 +36,16 @@ std::ostream& operator<<(std::ostream& os,
 std::ostream& operator<<(std::ostream& os,
                          const Quadrature& quadrature) noexcept {
   switch (quadrature) {
-    case Quadrature::Gauss: return os << "Gauss";
-    case Quadrature::GaussLobatto: return os << "GaussLobatto";
+    case Quadrature::Gauss:
+      return os << "Gauss";
+    case Quadrature::GaussLobatto:
+      return os << "GaussLobatto";
     default: ERROR("Invalid quadrature");
   }
 }
+
+template <Basis BasisType>
+Matrix spectral_indefinite_integral_matrix(size_t num_points) noexcept;
 
 namespace {
 
@@ -141,6 +149,17 @@ struct DifferentiationMatrixGenerator {
       }
     }
     return diff_matrix;
+  }
+};
+
+template <Basis BasisType, Quadrature QuadratureType>
+struct IntegrationMatrixGenerator {
+  Matrix operator()(const size_t num_points) const noexcept {
+    return Spectral::spectral_to_grid_points_matrix<BasisType, QuadratureType>(
+               num_points) *
+           spectral_indefinite_integral_matrix<BasisType>(num_points) *
+           Spectral::grid_points_to_spectral_matrix<BasisType, QuadratureType>(
+               num_points);
   }
 };
 
@@ -259,6 +278,8 @@ const DataVector& quadrature_weights(const size_t num_points) noexcept {
 
 PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix, Matrix,
                               DifferentiationMatrixGenerator)
+PRECOMPUTED_SPECTRAL_QUANTITY(integration_matrix, Matrix,
+                              IntegrationMatrixGenerator)
 PRECOMPUTED_SPECTRAL_QUANTITY(spectral_to_grid_points_matrix, Matrix,
                               SpectralToGridPointsMatrixGenerator)
 PRECOMPUTED_SPECTRAL_QUANTITY(grid_points_to_spectral_matrix, Matrix,
@@ -345,6 +366,23 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f,
           ERROR("Missing quadrature case for spectral quantity");
       }
       break;
+    case Basis::Chebyshev:
+      switch (mesh.quadrature(0)) {
+        case Quadrature::Gauss:
+          return f(std::integral_constant<Basis, Basis::Chebyshev>{},
+                   std::integral_constant<Quadrature, Quadrature::Gauss>{},
+                   num_points);
+          break;
+        case Quadrature::GaussLobatto:
+          return f(
+              std::integral_constant<Basis, Basis::Chebyshev>{},
+              std::integral_constant<Quadrature, Quadrature::GaussLobatto>{},
+              num_points);
+          break;
+        default:
+          ERROR("Missing quadrature case for spectral quantity");
+      }
+      break;
     default:
       ERROR("Missing basis case for spectral quantity");
   }
@@ -369,6 +407,7 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f,
 SPECTRAL_QUANTITY_FOR_MESH(collocation_points, DataVector)
 SPECTRAL_QUANTITY_FOR_MESH(quadrature_weights, DataVector)
 SPECTRAL_QUANTITY_FOR_MESH(differentiation_matrix, Matrix)
+SPECTRAL_QUANTITY_FOR_MESH(integration_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(spectral_to_grid_points_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(grid_points_to_spectral_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(linear_filter_matrix, Matrix)
@@ -402,6 +441,8 @@ Matrix interpolation_matrix(const Mesh<1>& mesh,
   template const Matrix&                                                      \
       Spectral::differentiation_matrix<BASIS(data), QUAD(data)>(              \
           size_t) noexcept;                                                   \
+  template const Matrix&                                                      \
+      Spectral::integration_matrix<BASIS(data), QUAD(data)>(size_t) noexcept; \
   template const Matrix&                                                      \
       Spectral::grid_points_to_spectral_matrix<BASIS(data), QUAD(data)>(      \
           size_t) noexcept;                                                   \
