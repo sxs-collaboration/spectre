@@ -33,7 +33,7 @@ void test_raise_or_lower_first_index(const DataType& used_for_size) {
                    index_list<change_index_up_lo<Index0>,
                               change_index_up_lo<Index0>>>&) =
       &raise_or_lower_first_index<DataType, Index0, Index1>;
-  pypp::check_with_random_values<1>(f, "TestFunctions",
+  pypp::check_with_random_values<1>(f, "IndexManipulation",
                                     "raise_or_lower_first_index",
                                     {{{-10., 10.}}}, used_for_size);
 }
@@ -63,8 +63,9 @@ void test_trace_last_indices(const DataType& used_for_size) {
                    index_list<change_index_up_lo<Index1>,
                               change_index_up_lo<Index1>>>&) =
       &trace_last_indices<DataType, Index0, Index1>;
-  pypp::check_with_random_values<1>(f, "TestFunctions", "trace_last_indices",
-                                    {{{-10., 10.}}}, used_for_size);
+  pypp::check_with_random_values<1>(f, "IndexManipulation",
+                                    "trace_last_indices", {{{-10., 10.}}},
+                                    used_for_size);
 }
 template <size_t Dim, UpLo UpOrLo, typename Fr, IndexType TypeOfIndex,
           typename DataType>

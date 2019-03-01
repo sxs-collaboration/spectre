@@ -31,14 +31,13 @@ void test_kerr_schild_coords(const DataType& used_for_size) noexcept {
 
   pypp::check_with_random_values<1>(
       &gr::KerrSchildCoords::r_coord_squared<DataType>, kerr_schild_coords,
-      "TestFunctions", "ks_coords_r_squared", {{{-10.0, 10.0}}},
+      "KerrSchildCoords", "r_coord_squared", {{{-10.0, 10.0}}},
       member_variables, used_for_size);
 
   pypp::check_with_random_values<1>(
       &gr::KerrSchildCoords::cartesian_from_spherical_ks<DataType>,
-      kerr_schild_coords, "TestFunctions",
-      "ks_coords_cartesian_from_spherical_ks", {{{-10.0, 10.0}}},
-      member_variables, used_for_size);
+      kerr_schild_coords, "KerrSchildCoords", "cartesian_from_spherical_ks",
+      {{{-10.0, 10.0}}}, member_variables, used_for_size);
 }
 
 template <typename DataType>
@@ -73,7 +72,7 @@ void test_coord_transformation_on_xy_plane(
            .cartesian_from_spherical_ks(random_vector_to_transform,
                                         random_point_on_xy_plane)),
       (pypp::call<tnsr::I<DataType, 3>>(
-          "TestFunctions", "ks_coords_cartesian_from_spherical_ks",
+          "KerrSchildCoords", "cartesian_from_spherical_ks",
           random_vector_to_transform, random_point_on_xy_plane, bh_mass,
           bh_dimless_spin)));
 }

@@ -105,20 +105,18 @@ void test_variables(const DataType& used_for_size) {
   pypp::check_with_random_values<
       1, BondiHoyleAccretionProxy::hydro_variables_tags<DataType>>(
       &BondiHoyleAccretionProxy::hydro_variables<DataType>, accretion,
-      "AnalyticData.GrMhd.TestFunctions",
-      {"bondi_hoyle_rest_mass_density", "bondi_hoyle_spatial_velocity",
-       "bondi_hoyle_specific_internal_energy", "bondi_hoyle_pressure",
-       "bondi_hoyle_lorentz_factor", "bondi_hoyle_specific_enthalpy"},
+      "PointwiseFunctions.AnalyticData.GrMhd.BondiHoyleAccretion",
+      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
+       "pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-10., 10.}}}, member_variables, used_for_size);
 
   pypp::check_with_random_values<
       1, BondiHoyleAccretionProxy::grmhd_variables_tags<DataType>>(
       &BondiHoyleAccretionProxy::grmhd_variables<DataType>, accretion,
-      "AnalyticData.GrMhd.TestFunctions",
-      {"bondi_hoyle_rest_mass_density", "bondi_hoyle_spatial_velocity",
-       "bondi_hoyle_specific_internal_energy", "bondi_hoyle_pressure",
-       "bondi_hoyle_lorentz_factor", "bondi_hoyle_specific_enthalpy",
-       "bondi_hoyle_magnetic_field", "bondi_hoyle_divergence_cleaning_field"},
+      "PointwiseFunctions.AnalyticData.GrMhd.BondiHoyleAccretion",
+      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
+       "pressure", "lorentz_factor", "specific_enthalpy", "magnetic_field",
+       "divergence_cleaning_field"},
       {{{-10., 10.}}}, member_variables, used_for_size);
 }
 
@@ -126,7 +124,7 @@ void test_variables(const DataType& used_for_size) {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.BondiHoyle",
                   "[Unit][PointwiseFunctions]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{"PointwiseFunctions"};
+  pypp::SetupLocalPythonEnvironment local_python_env{""};
 
   test_create_from_options();
   test_serialize();
