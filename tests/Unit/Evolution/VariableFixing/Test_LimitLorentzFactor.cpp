@@ -50,8 +50,8 @@ void test_variable_fixer(const LimitLorentzFactor& variable_fixer) {
         DataVector{1.3567, 1.3566, 1.3567 * rescale_velocity_factor, 1.3566},
         DataVector{-0.200, -0.200, -0.200 * rescale_velocity_factor, -0.200}}}};
 
-  variable_fixer(make_not_null(&spatial_velocity),
-                 make_not_null(&lorentz_factor), density);
+  variable_fixer(make_not_null(&lorentz_factor),
+                 make_not_null(&spatial_velocity), density);
 
   CHECK(lorentz_factor == expected_lorentz_factor);
   CHECK(spatial_velocity == expected_spatial_velocity);
