@@ -24,9 +24,12 @@ struct AlfvenSpeedSquared : db::SimpleTag {
   static std::string name() noexcept { return "AlfvenSpeedSquared"; }
 };
 
-/// The magnetic field \f$b^\mu = u_\nu F^{\mu \nu}\f$ measured by an observer
-/// comoving with the fluid with 4-velocity \f$u_\nu\f$ where \f$F^{\mu \nu}\f$
-/// is the Faraday tensor.
+/// The magnetic field \f$b^\mu = u_\nu {}^\star\!F^{\mu \nu}\f$
+/// measured by an observer comoving with the fluid with 4-velocity
+/// \f$u_\nu\f$ where \f${}^\star\!F^{\mu \nu}\f$
+/// is the dual of the Faraday tensor.  Note that \f$b^\mu\f$ has a
+/// time component (that is, \f$b^\mu n_\mu \neq 0\f$, where \f$n_\mu\f$ is
+/// the normal to the spacelike hypersurface).
 template <typename DataType, size_t Dim, typename Fr>
 struct ComovingMagneticField : db::SimpleTag {
   using type = tnsr::A<DataType, Dim, Fr>;
@@ -59,7 +62,8 @@ struct EquationOfState : EquationOfStateBase, db::SimpleTag {
   static std::string name() noexcept { return "EquationOfState"; }
 };
 
-/// The Lorentz factor \f$W\f$.
+/// The Lorentz factor \f$W = (1-v^iv_i)^{-1/2}\f$, where \f$v^i\f$ is
+/// the spatial velocity of the fluid.
 template <typename DataType>
 struct LorentzFactor : db::SimpleTag {
   using type = Scalar<DataType>;
@@ -73,9 +77,11 @@ struct LorentzFactorSquared {
   static std::string name() noexcept { return "LorentzFactorSquared"; }
 };
 
-/// The magnetic field \f$B^i = n_\mu F^{i \mu}\f$ measured by an Eulerian
-/// observer, where \f$n_\mu\f$ is the normal to the spatial hypersurface and
-/// \f$F^{\mu \nu}\f$ is the Faraday tensor.
+/// The magnetic field \f$B^i = n_\mu {}^\star\!F^{i \mu}\f$ measured by an
+/// Eulerian observer, where \f$n_\mu\f$ is the normal to the spatial
+/// hypersurface and \f${}^\star\!F^{\mu \nu}\f$ is the dual of the
+/// Faraday tensor.  Note that \f$B^i\f$ is purely spatial, and it
+/// can be lowered using the spatial metric.
 template <typename DataType, size_t Dim, typename Fr>
 struct MagneticField : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
@@ -85,7 +91,7 @@ struct MagneticField : db::SimpleTag {
 };
 
 /// The magnetic field dotted into the spatial velocity, \f$B^iv_i\f$ where
-/// \f$v_i\f$ is the spatial velocity oneform.
+/// \f$v_i\f$ is the spatial velocity one-form.
 template <typename DataType>
 struct MagneticFieldDotSpatialVelocity : db::SimpleTag {
   using type = Scalar<DataType>;
@@ -94,7 +100,8 @@ struct MagneticFieldDotSpatialVelocity : db::SimpleTag {
   }
 };
 
-/// The oneform of the magnetic field.
+/// The one-form of the magnetic field.  Note that \f$B^i\f$ is raised
+/// and lowered with the spatial metric.
 /// \see hydro::Tags::MagneticField
 template <typename DataType, size_t Dim, typename Fr>
 struct MagneticFieldOneForm : db::SimpleTag {
@@ -139,7 +146,12 @@ struct SoundSpeedSquared : db::SimpleTag {
   static std::string name() noexcept { return "SoundSpeedSquared"; }
 };
 
-/// The spatial velocity \f$v^i\f$.
+/// The spatial velocity \f$v^i\f$ of the fluid,
+/// where \f$v^i=u^i/W + \beta^i/\alpha\f$.
+/// Here \f$u^i\f$ is the spatial part of the 4-velocity of the fluid,
+/// \f$W\f$ is the Lorentz factor, \f$\beta^i\f$ is the shift vector,
+/// and \f$\alpha\f$ is the lapse function. Note that \f$v^i\f$ is raised
+/// and lowered with the spatial metric.
 template <typename DataType, size_t Dim, typename Fr>
 struct SpatialVelocity : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Fr>;
@@ -148,7 +160,8 @@ struct SpatialVelocity : db::SimpleTag {
   }
 };
 
-/// The spatial velocity one-form \f$v_i\f$.
+/// The spatial velocity one-form \f$v_i\f$, where \f$v_i\f$ is raised
+/// and lowered with the spatial metric.
 template <typename DataType, size_t Dim, typename Fr>
 struct SpatialVelocityOneForm : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Fr>;
