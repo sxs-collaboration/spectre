@@ -68,7 +68,7 @@ struct ContributeReductionDataToWriter;
  * Then, in the `Metavariables` collect them from all observing Actions like
  * this:
  *
- * \snippet Test_Observe.cpp collect_reduction_data_tags
+ * \snippet tests/Unit/Elliptic/Systems/Poisson/Actions/Test_Observe.cpp collect_reduction_data_tags
  */
 struct ContributeReductionData {
   template <typename... DbTags, typename... InboxTags, typename Metavariables,
