@@ -105,20 +105,18 @@ void test_variables(const DataType& used_for_size) noexcept {
   pypp::check_with_random_values<
       1, FishboneMoncriefDiskProxy::hydro_variables_tags<DataType>>(
       &FishboneMoncriefDiskProxy::hydro_variables<DataType>, disk,
-      "TestFunctions",
-      {"fishbone_rest_mass_density", "fishbone_spatial_velocity",
-       "fishbone_specific_internal_energy", "fishbone_pressure",
-       "fishbone_lorentz_factor", "fishbone_specific_enthalpy"},
+      "FishboneMoncriefDisk",
+      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
+       "pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-15., 15.}}}, member_variables, used_for_size);
 
   pypp::check_with_random_values<
       1, FishboneMoncriefDiskProxy::grmhd_variables_tags<DataType>>(
       &FishboneMoncriefDiskProxy::grmhd_variables<DataType>, disk,
-      "TestFunctions",
-      {"fishbone_rest_mass_density", "fishbone_spatial_velocity",
-       "fishbone_specific_internal_energy", "fishbone_pressure",
-       "fishbone_lorentz_factor", "fishbone_specific_enthalpy",
-       "magnetic_field", "divergence_cleaning_field"},
+      "FishboneMoncriefDisk",
+      {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
+       "pressure", "lorentz_factor", "specific_enthalpy", "magnetic_field",
+       "divergence_cleaning_field"},
       {{{-15., 15.}}}, member_variables, used_for_size);
 
   // Test a few of the GR components to make sure that the implementation

@@ -4,7 +4,6 @@
 import numpy as np
 
 
-# Functions for testing FishboneMoncriefDisk.cpp
 def delta(r_sqrd, m, a):
     return r_sqrd - 2.0 * m * np.sqrt(r_sqrd) + a**2
 
@@ -100,9 +99,8 @@ def potential(angular_momentum, r_sqrd, sin_theta_sqrd, m, a):
             u_t(angular_momentum, r_sqrd, sin_theta_sqrd, m, a)))
 
 
-def fishbone_specific_enthalpy(x, t, bh_mass, bh_dimless_a, dimless_r_in,
-                               dimless_r_max, polytropic_constant,
-                               polytropic_exponent):
+def specific_enthalpy(x, t, bh_mass, bh_dimless_a, dimless_r_in, dimless_r_max,
+                      polytropic_constant, polytropic_exponent):
     r_in = bh_mass * dimless_r_in
     bh_spin_a = bh_mass * bh_dimless_a
     l = angular_momentum(bh_mass, bh_spin_a, bh_mass * dimless_r_max)
@@ -118,37 +116,35 @@ def fishbone_specific_enthalpy(x, t, bh_mass, bh_dimless_a, dimless_r_in,
     return result
 
 
-def fishbone_rest_mass_density(x, t, bh_mass, bh_dimless_a, dimless_r_in,
-                               dimless_r_max, polytropic_constant,
-                               polytropic_exponent):
-    return np.power((polytropic_exponent - 1.0) * (fishbone_specific_enthalpy(
+def rest_mass_density(x, t, bh_mass, bh_dimless_a, dimless_r_in, dimless_r_max,
+                      polytropic_constant, polytropic_exponent):
+    return np.power((polytropic_exponent - 1.0) * (specific_enthalpy(
         x, t, bh_mass, bh_dimless_a, dimless_r_in, dimless_r_max,
         polytropic_constant, polytropic_exponent) - 1.0) /
                     (polytropic_exponent * polytropic_constant),
                     1.0 / (polytropic_exponent - 1.0))
 
 
-def fishbone_specific_internal_energy(x, t, bh_mass, bh_dimless_a, dimless_r_in,
-                                      dimless_r_max, polytropic_constant,
-                                      polytropic_exponent):
+def specific_internal_energy(x, t, bh_mass, bh_dimless_a, dimless_r_in,
+                             dimless_r_max, polytropic_constant,
+                             polytropic_exponent):
     return (polytropic_constant * np.power(
-        fishbone_rest_mass_density(x, t, bh_mass, bh_dimless_a, dimless_r_in,
-                                   dimless_r_max, polytropic_constant,
-                                   polytropic_exponent),
+        rest_mass_density(x, t, bh_mass, bh_dimless_a, dimless_r_in,
+                          dimless_r_max, polytropic_constant,
+                          polytropic_exponent),
         polytropic_exponent - 1.0) / (polytropic_exponent - 1.0))
 
 
-def fishbone_pressure(x, t, bh_mass, bh_dimless_a, dimless_r_in, dimless_r_max,
-                      polytropic_constant, polytropic_exponent):
+def pressure(x, t, bh_mass, bh_dimless_a, dimless_r_in, dimless_r_max,
+             polytropic_constant, polytropic_exponent):
     return (polytropic_constant * np.power(
-        fishbone_rest_mass_density(x, t, bh_mass, bh_dimless_a, dimless_r_in,
-                                   dimless_r_max, polytropic_constant,
-                                   polytropic_exponent), polytropic_exponent))
+        rest_mass_density(x, t, bh_mass, bh_dimless_a, dimless_r_in,
+                          dimless_r_max, polytropic_constant,
+                          polytropic_exponent), polytropic_exponent))
 
 
-def fishbone_spatial_velocity(x, t, bh_mass, bh_dimless_a, dimless_r_in,
-                              dimless_r_max, polytropic_constant,
-                              polytropic_exponent):
+def spatial_velocity(x, t, bh_mass, bh_dimless_a, dimless_r_in, dimless_r_max,
+                     polytropic_constant, polytropic_exponent):
     r_in = bh_mass * dimless_r_in
     bh_spin_a = bh_mass * bh_dimless_a
     l = angular_momentum(bh_mass, bh_spin_a, bh_mass * dimless_r_max)
@@ -167,22 +163,15 @@ def fishbone_spatial_velocity(x, t, bh_mass, bh_dimless_a, dimless_r_in,
     return result
 
 
-def fishbone_lorentz_factor(x, t, bh_mass, bh_dimless_a, dimless_r_in,
-                            dimless_r_max, polytropic_constant,
-                            polytropic_exponent):
+def lorentz_factor(x, t, bh_mass, bh_dimless_a, dimless_r_in, dimless_r_max,
+                   polytropic_constant, polytropic_exponent):
     bh_spin_a = bh_mass * bh_dimless_a
     spatial_metric = kerr_schild_spatial_metric(x, bh_mass, bh_spin_a)
-    velocity = fishbone_spatial_velocity(
+    velocity = spatial_velocity(
         x, t, bh_mass, bh_dimless_a, dimless_r_in, dimless_r_max,
         polytropic_constant, polytropic_exponent)
     return 1.0 / np.sqrt(
         1.0 - np.einsum("i,j,ij", velocity, velocity, spatial_metric))
-
-
-# End functions for testing FishboneMoncriefDisk.cpp
-
-# Functions for testing the zero magnetic field components of
-# relativistic Euler solutions
 
 
 def magnetic_field(*args):
@@ -191,7 +180,3 @@ def magnetic_field(*args):
 
 def divergence_cleaning_field(*args):
     return 0.0
-
-
-# End functions for testing the zero magnetic field components of
-# relativistic Euler solutions
