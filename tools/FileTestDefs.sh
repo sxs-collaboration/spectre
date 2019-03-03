@@ -178,7 +178,10 @@ standard_checks=()
 
 # Check for lines longer than 80 characters
 long_lines_exclude() {
-    grep -Ev 'https?://' | grep -v '// IWYU pragma:' | grep -v '// NOLINT'
+    grep -Ev 'https?://' | \
+        grep -v '// IWYU pragma:' | \
+        grep -v '// NOLINT' | \
+        grep -v '\\snippet'
 }
 long_lines() {
     whitelist "$1" \

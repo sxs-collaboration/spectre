@@ -6,11 +6,10 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <memory>
-#include <pup.h>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
@@ -20,6 +19,7 @@
 #include "Evolution/EventsAndTriggers/LogicalTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "Time/Tags.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -27,11 +27,15 @@
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+// IWYU pragma: no_include <pup.h>
+
+// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
+
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
 using events_and_triggers_tag =
-    Tags::EventsAndTriggers<tmpl::list<>, tmpl::list<>>;
+    OptionTags::EventsAndTriggers<tmpl::list<>, tmpl::list<>>;
 
 struct Metavariables;
 struct component {
