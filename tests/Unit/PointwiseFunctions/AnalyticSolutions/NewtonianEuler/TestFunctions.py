@@ -36,4 +36,11 @@ def specific_internal_energy(x, t, adiabatic_index, center, mean_velocity,
                      adiabatic_index - 1.0) / (adiabatic_index - 1.0))
 
 
+def pressure(x, t, adiabatic_index, center, mean_velocity,
+             perturbation_amplitude, strength):
+    return np.power(mass_density(x, t, adiabatic_index, center, mean_velocity,
+                                  perturbation_amplitude, strength),
+                    adiabatic_index)
+
+
 # End functions for testing IsentropicVortex.cpp
