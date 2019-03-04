@@ -41,8 +41,7 @@ StepChoosers:
 
 NumericalFluxParams:
 
+EventsAndTriggers:
+
 VolumeFileName: "./ScalarWave3DPeriodicVolume"
 ReductionFileName: "./ScalarWave3DPeriodicReductions"
-
-ObserveNSlabs: 10
-ObserveAtT0: false

@@ -13,8 +13,11 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/Observe.hpp"  // IWYU pragma: keep
+#include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "Evolution/EventsAndTriggers/Event.hpp"
+#include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
-#include "Evolution/Systems/ScalarWave/Observe.hpp"    // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "IO/Observer/Actions.hpp"            // IWYU pragma: keep
 #include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
@@ -46,6 +49,7 @@
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Time/Triggers/TimeTriggers.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -71,19 +75,27 @@ struct EvolutionMetavars {
   using boundary_condition_tag = analytic_solution_tag;
   using normal_dot_numerical_flux =
       OptionTags::NumericalFluxParams<ScalarWave::UpwindFlux<Dim>>;
+
+  // public for use by the Charm++ registration code
+  using events = tmpl::list<dg::Events::Registrars::Observe<
+      Dim, db::get_variables_tags_list<typename system::variables_tag>,
+      db::get_variables_tags_list<typename system::variables_tag>>>;
+  using triggers = Triggers::time_triggers;
+
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,
                  OptionTags::TypedTimeStepper<tmpl::conditional_t<
-                     local_time_stepping, LtsTimeStepper, TimeStepper>>>;
+                     local_time_stepping, LtsTimeStepper, TimeStepper>>,
+                 OptionTags::EventsAndTriggers<events, triggers>>;
   using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::list<ScalarWave::Actions::Observe>>;
+      typename Event<events>::creatable_classes>;
 
   using step_choosers =
       tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
@@ -117,7 +129,7 @@ struct EvolutionMetavars {
           tmpl::flatten<tmpl::list<
               SelfStart::self_start_procedure<compute_rhs, update_variables>,
               Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
-              ScalarWave::Actions::Observe, Actions::FinalTime,
+              Actions::RunEventsAndTriggers, Actions::FinalTime,
               tmpl::conditional_t<local_time_stepping,
                                   Actions::ChangeStepSize<step_choosers>,
                                   tmpl::list<>>,
@@ -162,10 +174,14 @@ struct EvolutionMetavars {
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling,
     &domain::creators::register_derived_with_charm,
+    &Parallel::register_derived_classes_with_charm<
+        Event<metavariables::events>>,
     &Parallel::register_derived_classes_with_charm<MathFunction<1>>,
     &Parallel::register_derived_classes_with_charm<
         StepChooser<metavariables::step_choosers>>,
     &Parallel::register_derived_classes_with_charm<StepController>,
-    &Parallel::register_derived_classes_with_charm<TimeStepper>};
+    &Parallel::register_derived_classes_with_charm<TimeStepper>,
+    &Parallel::register_derived_classes_with_charm<
+        Trigger<metavariables::triggers>>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

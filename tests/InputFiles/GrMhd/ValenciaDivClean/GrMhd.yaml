@@ -62,8 +62,7 @@ FixToAtmosphere:
   DensityOfAtmosphere: 1.0e-12
   DensityCutoff: 1.0e-12
 
+EventsAndTriggers:
+
 VolumeFileName: "./GrMhdVolume"
 ReductionFileName: "./GrMhdReductions"
-
-ObserveNSlabs: 1000
-ObserveAtT0: false
