@@ -44,13 +44,13 @@ template <typename SystemType>
 struct Derivatives {
   static constexpr size_t Dim = SystemType::volume_dim;
   using inv_jac_tag =
-      Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                            Tags::Coordinates<Dim, Frame::Logical>>;
+      ::Tags::InverseJacobian<::Tags::ElementMap<Dim>,
+                              ::Tags::Coordinates<Dim, Frame::Logical>>;
 
   using simple_tags = db::AddSimpleTags<>;
   using compute_tags = db::AddComputeTags<
-      Tags::DerivCompute<typename SystemType::variables_tag, inv_jac_tag,
-                         typename SystemType::gradient_tags>>;
+      ::Tags::DerivCompute<typename SystemType::variables_tag, inv_jac_tag,
+                           typename SystemType::gradient_tags>>;
 
   template <typename TagsList>
   static auto initialize(db::DataBox<TagsList>&& box) noexcept {

@@ -53,7 +53,7 @@ struct Source {
   using system = typename Metavariables::system;
 
   using sources_tag =
-      db::add_tag_prefix<Tags::Source, typename system::fields_tag>;
+      db::add_tag_prefix<::Tags::Source, typename system::fields_tag>;
 
   using simple_tags = db::AddSimpleTags<sources_tag>;
   using compute_tags = db::AddComputeTags<>;
@@ -63,9 +63,9 @@ struct Source {
       db::DataBox<TagsList>&& box,
       const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
     const auto& inertial_coords =
-        get<Tags::Coordinates<system::volume_dim, Frame::Inertial>>(box);
+        get<::Tags::Coordinates<system::volume_dim, Frame::Inertial>>(box);
     const auto num_grid_points =
-        get<Tags::Mesh<system::volume_dim>>(box).number_of_grid_points();
+        get<::Tags::Mesh<system::volume_dim>>(box).number_of_grid_points();
 
     db::item_type<sources_tag> sources(num_grid_points, 0.);
     // This actually sets the complete set of tags in the Variables, but there

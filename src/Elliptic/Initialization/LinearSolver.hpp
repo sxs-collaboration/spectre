@@ -52,7 +52,7 @@ struct LinearSolver {
   using system = typename Metavariables::system;
 
   using sources_tag =
-      db::add_tag_prefix<Tags::Source, typename system::fields_tag>;
+      db::add_tag_prefix<::Tags::Source, typename system::fields_tag>;
   using fields_operator_tag =
       db::add_tag_prefix<::LinearSolver::Tags::OperatorAppliedTo,
                          typename system::fields_tag>;

@@ -50,7 +50,7 @@ struct System {
   template <typename TagsList>
   static auto initialize(db::DataBox<TagsList>&& box) noexcept {
     const size_t num_grid_points =
-        db::get<Tags::Mesh<Dim>>(box).number_of_grid_points();
+        db::get<::Tags::Mesh<Dim>>(box).number_of_grid_points();
 
     // Set initial data to zero. Non-zero initial data would require the
     // linear solver initialization to also compute the Ax term.

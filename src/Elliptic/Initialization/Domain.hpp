@@ -47,14 +47,15 @@ namespace Initialization {
  */
 template <size_t Dim>
 struct Domain {
-  using simple_tags = db::AddSimpleTags<Tags::Mesh<Dim>, Tags::Element<Dim>,
-                                        Tags::ElementMap<Dim, Frame::Inertial>>;
+  using simple_tags =
+      db::AddSimpleTags<::Tags::Mesh<Dim>, ::Tags::Element<Dim>,
+                        ::Tags::ElementMap<Dim, Frame::Inertial>>;
   using compute_tags = db::AddComputeTags<
-      Tags::LogicalCoordinates<Dim>,
-      Tags::MappedCoordinates<Tags::ElementMap<Dim>,
-                              Tags::Coordinates<Dim, Frame::Logical>>,
-      Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                            Tags::Coordinates<Dim, Frame::Logical>>>;
+      ::Tags::LogicalCoordinates<Dim>,
+      ::Tags::MappedCoordinates<::Tags::ElementMap<Dim>,
+                                ::Tags::Coordinates<Dim, Frame::Logical>>,
+      ::Tags::InverseJacobian<::Tags::ElementMap<Dim>,
+                              ::Tags::Coordinates<Dim, Frame::Logical>>>;
 
   template <typename TagsList>
   static auto initialize(
