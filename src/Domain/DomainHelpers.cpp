@@ -588,7 +588,8 @@ std::vector<
     std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
-                        const bool use_equiangular_map) noexcept {
+                        const bool use_equiangular_map,
+                        const std::array<double, 3>& origin_preimage) noexcept {
   const auto frustum_orientations = orientations_for_wrappings();
   const double lower = 0.5 * length_inner_cube;
   const double top = 0.5 * length_outer_cube;
@@ -599,38 +600,56 @@ frustum_coordinate_maps(const double length_inner_cube,
   std::vector<FrustumMap> frustums{};
   for (size_t i = 0; i < 4; i++) {
     // frustums on the left
-    frustums.push_back(FrustumMap{{{{{-2.0 * lower, -lower}},
-                                    {{0.0, lower}},
-                                    {{-top, -top}},
-                                    {{0.0, top}}}},
-                                  lower,
-                                  top,
-                                  gsl::at(frustum_orientations, i),
-                                  use_equiangular_map});
+    std::array<double, 3> displacement_from_origin =
+        discrete_rotation(gsl::at(frustum_orientations, i), origin_preimage);
+    frustums.push_back(FrustumMap{
+        {{{{-2.0 * lower + displacement_from_origin[0],
+            -lower + displacement_from_origin[1]}},
+          {{displacement_from_origin[0], lower + displacement_from_origin[1]}},
+          {{-top, -top}},
+          {{0.0, top}}}},
+        lower + displacement_from_origin[2],
+        top,
+        gsl::at(frustum_orientations, i),
+        use_equiangular_map});
     // frustums on the right
-    frustums.push_back(FrustumMap{{{{{0.0, -lower}},
-                                    {{2.0 * lower, lower}},
-                                    {{0.0, -top}},
-                                    {{top, top}}}},
-                                  lower,
-                                  top,
-                                  gsl::at(frustum_orientations, i),
-                                  use_equiangular_map});
+    frustums.push_back(FrustumMap{
+        {{{{displacement_from_origin[0], -lower + displacement_from_origin[1]}},
+          {{2.0 * lower + displacement_from_origin[0],
+            lower + displacement_from_origin[1]}},
+          {{0.0, -top}},
+          {{top, top}}}},
+        lower + displacement_from_origin[2],
+        top,
+        gsl::at(frustum_orientations, i),
+        use_equiangular_map});
   }
-  // frustum on the right
-  frustums.push_back(FrustumMap{
-      {{{{-lower, -lower}}, {{lower, lower}}, {{-top, -top}}, {{top, top}}}},
-      2.0 * lower,
-      top,
-      frustum_orientations[4],
-      use_equiangular_map});
-  // frustum on the left
-  frustums.push_back(FrustumMap{
-      {{{{-lower, -lower}}, {{lower, lower}}, {{-top, -top}}, {{top, top}}}},
-      2.0 * lower,
-      top,
-      frustum_orientations[5],
-      use_equiangular_map});
+  // end cap frustum on the right
+  std::array<double, 3> displacement_from_origin =
+      discrete_rotation(frustum_orientations[4], origin_preimage);
+  frustums.push_back(FrustumMap{{{{{-lower + displacement_from_origin[0],
+                                    -lower + displacement_from_origin[1]}},
+                                  {{lower + displacement_from_origin[0],
+                                    lower + displacement_from_origin[1]}},
+                                  {{-top, -top}},
+                                  {{top, top}}}},
+                                2.0 * lower + displacement_from_origin[2],
+                                top,
+                                frustum_orientations[4],
+                                use_equiangular_map});
+  // end cap frustum on the left
+  displacement_from_origin =
+      discrete_rotation(frustum_orientations[5], origin_preimage);
+  frustums.push_back(FrustumMap{{{{{-lower + displacement_from_origin[0],
+                                    -lower + displacement_from_origin[1]}},
+                                  {{lower + displacement_from_origin[0],
+                                    lower + displacement_from_origin[1]}},
+                                  {{-top, -top}},
+                                  {{top, top}}}},
+                                2.0 * lower + displacement_from_origin[2],
+                                top,
+                                frustum_orientations[5],
+                                use_equiangular_map});
 
   // clang-tidy: trivially copyable
   return domain::make_vector_coordinate_map_base<Frame::Logical, TargetFrame,
@@ -1107,12 +1126,14 @@ template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
-                        const bool use_equiangular_map) noexcept;
+                        const bool use_equiangular_map,
+                        const std::array<double, 3>& origin_preimage) noexcept;
 template std::vector<
     std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
-                        const bool use_equiangular_map) noexcept;
+                        const bool use_equiangular_map,
+                        const std::array<double, 3>& origin_preimage) noexcept;
 // Explicit instantiations
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
