@@ -16,6 +16,7 @@
 #include "Elliptic/Initialization/LinearSolver.hpp"
 #include "Elliptic/Initialization/Source.hpp"
 #include "Elliptic/Initialization/System.hpp"
+#include "Elliptic/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -82,6 +83,10 @@ struct InitializeElement {
           Metavariables>::compute_tags,
       typename Elliptic::Initialization::LinearSolver<
           Metavariables>::compute_tags,
+      tmpl::list<
+          Elliptic::Tags::IterationIdCompute<LinearSolver::Tags::IterationId>,
+          Elliptic::Tags::NextIterationIdCompute<
+              LinearSolver::Tags::IterationId>>,
       typename Elliptic::Initialization::DiscontinuousGalerkin<
           Metavariables>::compute_tags>;
 
@@ -114,9 +119,15 @@ struct InitializeElement {
         Elliptic::Initialization::LinearSolver<Metavariables>::initialize(
             std::move(boundary_conditions_box), cache, array_index,
             parallel_component_meta);
+    auto temporal_id_box = db::create_from<
+        db::RemoveTags<>, db::AddSimpleTags<>,
+        db::AddComputeTags<
+            Elliptic::Tags::IterationIdCompute<LinearSolver::Tags::IterationId>,
+            Elliptic::Tags::NextIterationIdCompute<
+                LinearSolver::Tags::IterationId>>>(
+        std::move(linear_solver_box));
     auto dg_box = Elliptic::Initialization::DiscontinuousGalerkin<
-        Metavariables>::initialize(std::move(linear_solver_box),
-                                   initial_extents);
+        Metavariables>::initialize(std::move(temporal_id_box), initial_extents);
     return std::make_tuple(std::move(dg_box));
   }
 };
