@@ -59,7 +59,7 @@ void test_solution(const DataType& used_for_size,
       typename IsentropicVortexProxy<Dim>::template variables_tags<DataType>>(
       &IsentropicVortexProxy<Dim>::template primitive_variables<DataType>,
       vortex, "TestFunctions",
-      {"mass_density", "velocity", "specific_internal_energy"}, {{{-15., 15.}}},
+      {"mass_density", "velocity", "specific_internal_energy"}, {{{-1., 1.}}},
       std::make_tuple(1.43, center, mean_velocity, 0.5, 3.76), used_for_size);
 
   const auto vortex_from_options =
