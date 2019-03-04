@@ -1049,6 +1049,12 @@ struct TestDataboxMutateApply {
   TestDataboxMutateApply& operator=(TestDataboxMutateApply&&) = default;
   ~TestDataboxMutateApply() = default;
 
+  // These typelists are used by the `db::mutate_apply` overload that does not
+  // require these lists as template arguments
+  using return_tags =
+      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>;
+  using argument_tags = tmpl::list<test_databox_tags::Tag2>;
+
   static void apply(const gsl::not_null<Scalar<DataVector>*> scalar,
                     const gsl::not_null<tnsr::I<DataVector, 3>*> vector,
                     const std::string& tag2) noexcept {
@@ -1086,74 +1092,89 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
   CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
         (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
 
-  /// [mutate_apply_struct_example]
-  db::mutate_apply<
-      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>,
-      tmpl::list<>>(TestDataboxMutateApply{}, make_not_null(&box),
-                    db::get<test_databox_tags::Tag2>(box));
-  /// [mutate_apply_struct_example]
-  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
-  CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
-        Scalar<DataVector>(DataVector(2, 6.)));
-  CHECK(db::get<test_databox_tags::VectorTag>(box) ==
-        (tnsr::I<DataVector, 3>{
-            {{DataVector(2, 9.), DataVector(2, 12.), DataVector(2, 15.)}}}));
-  CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
-        Scalar<DataVector>(DataVector(2, 12.)));
-  CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
-  /// [mutate_apply_lambda_example]
-  db::mutate_apply<
-      tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>,
-      tmpl::list<test_databox_tags::Tag2>>(
-      [](const gsl::not_null<Scalar<DataVector>*> scalar,
-         const gsl::not_null<tnsr::I<DataVector, 3>*> vector,
-         const std::string& tag2) {
-        scalar->get() *= 2.0;
-        get<0>(*vector) *= 3.0;
-        get<1>(*vector) *= 4.0;
-        get<2>(*vector) *= 5.0;
-        CHECK(tag2 == "My Sample String"s);
-      },
-      make_not_null(&box));
-  /// [mutate_apply_lambda_example]
-  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
-  CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
-        Scalar<DataVector>(DataVector(2, 12.)));
-  CHECK(db::get<test_databox_tags::VectorTag>(box) ==
-        (tnsr::I<DataVector, 3>{
-            {{DataVector(2, 27.), DataVector(2, 48.), DataVector(2, 75.)}}}));
-  CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
-        Scalar<DataVector>(DataVector(2, 24.)));
-  CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+  SECTION("Apply function or lambda") {
+    /// [mutate_apply_struct_example_stateful]
+    db::mutate_apply(TestDataboxMutateApply{}, make_not_null(&box));
+    /// [mutate_apply_struct_example_stateful]
+    CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+    CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
+          Scalar<DataVector>(DataVector(2, 6.)));
+    CHECK(db::get<test_databox_tags::VectorTag>(box) ==
+          (tnsr::I<DataVector, 3>{
+              {{DataVector(2, 9.), DataVector(2, 12.), DataVector(2, 15.)}}}));
+    CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
+          Scalar<DataVector>(DataVector(2, 12.)));
+    CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
+          (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+    /// [mutate_apply_lambda_example]
+    db::mutate_apply<
+        tmpl::list<test_databox_tags::ScalarTag, test_databox_tags::VectorTag>,
+        tmpl::list<test_databox_tags::Tag2>>(
+        [](const gsl::not_null<Scalar<DataVector>*> scalar,
+           const gsl::not_null<tnsr::I<DataVector, 3>*> vector,
+           const std::string& tag2) {
+          scalar->get() *= 2.0;
+          get<0>(*vector) *= 3.0;
+          get<1>(*vector) *= 4.0;
+          get<2>(*vector) *= 5.0;
+          CHECK(tag2 == "My Sample String"s);
+        },
+        make_not_null(&box));
+    /// [mutate_apply_lambda_example]
+    CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+    CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
+          Scalar<DataVector>(DataVector(2, 12.)));
+    CHECK(db::get<test_databox_tags::VectorTag>(box) ==
+          (tnsr::I<DataVector, 3>{
+              {{DataVector(2, 27.), DataVector(2, 48.), DataVector(2, 75.)}}}));
+    CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
+          Scalar<DataVector>(DataVector(2, 24.)));
+    CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
+          (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
 
-  db::mutate_apply<
-      tmpl::list<Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
-                                            test_databox_tags::VectorTag>>>,
-      tmpl::list<test_databox_tags::Tag2>>(
-      [](const gsl::not_null<Variables<tmpl::list<
-             test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>*>
-             vars,
-         const std::string& tag2) {
-        get<test_databox_tags::ScalarTag>(*vars).get() *= 2.0;
-        get<0>(get<test_databox_tags::VectorTag>(*vars)) *= 3.0;
-        get<1>(get<test_databox_tags::VectorTag>(*vars)) *= 4.0;
-        get<2>(get<test_databox_tags::VectorTag>(*vars)) *= 5.0;
-        CHECK(tag2 == "My Sample String"s);
-      },
-      make_not_null(&box));
+    db::mutate_apply<
+        tmpl::list<Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                              test_databox_tags::VectorTag>>>,
+        tmpl::list<test_databox_tags::Tag2>>(
+        [](const gsl::not_null<Variables<tmpl::list<
+               test_databox_tags::ScalarTag, test_databox_tags::VectorTag>>*>
+               vars,
+           const std::string& tag2) {
+          get<test_databox_tags::ScalarTag>(*vars).get() *= 2.0;
+          get<0>(get<test_databox_tags::VectorTag>(*vars)) *= 3.0;
+          get<1>(get<test_databox_tags::VectorTag>(*vars)) *= 4.0;
+          get<2>(get<test_databox_tags::VectorTag>(*vars)) *= 5.0;
+          CHECK(tag2 == "My Sample String"s);
+        },
+        make_not_null(&box));
 
-  CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
-  CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
-        Scalar<DataVector>(DataVector(2, 24.)));
-  CHECK(db::get<test_databox_tags::VectorTag>(box) ==
-        (tnsr::I<DataVector, 3>{
-            {{DataVector(2, 81.), DataVector(2, 192.), DataVector(2, 375.)}}}));
-  CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
-        Scalar<DataVector>(DataVector(2, 48.)));
-  CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
-        (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+    CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+    CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
+          Scalar<DataVector>(DataVector(2, 24.)));
+    CHECK(db::get<test_databox_tags::VectorTag>(box) ==
+          (tnsr::I<DataVector, 3>{{{DataVector(2, 81.), DataVector(2, 192.),
+                                    DataVector(2, 375.)}}}));
+    CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
+          Scalar<DataVector>(DataVector(2, 48.)));
+    CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
+          (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+  }
+
+  SECTION("Stateless struct with tags lists") {
+    /// [mutate_apply_struct_example_stateless]
+    db::mutate_apply<TestDataboxMutateApply>(make_not_null(&box));
+    /// [mutate_apply_struct_example_stateless]
+    CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+    CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
+          Scalar<DataVector>(DataVector(2, 6.)));
+    CHECK(db::get<test_databox_tags::VectorTag>(box) ==
+          (tnsr::I<DataVector, 3>{
+              {{DataVector(2, 9.), DataVector(2, 12.), DataVector(2, 15.)}}}));
+    CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
+          Scalar<DataVector>(DataVector(2, 12.)));
+    CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
+          (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+  }
 }
 
 namespace {

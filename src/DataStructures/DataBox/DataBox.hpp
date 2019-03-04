@@ -1737,20 +1737,35 @@ constexpr bool check_mutate_apply_argument_tags(
   expand_pack(check_mutate_apply_apply_tag<ApplyTags, BoxTags>()...);
   return true;
 }
+
+template <typename F, typename = cpp17::void_t<>>
+struct has_return_tags_and_argument_tags : std::false_type {};
+
+template <typename F>
+struct has_return_tags_and_argument_tags<
+    F, cpp17::void_t<typename F::return_tags, typename F::argument_tags>>
+    : std::true_type {};
+
+template <typename F>
+constexpr bool has_return_tags_and_argument_tags_v =
+    has_return_tags_and_argument_tags<F>::value;
 }  // namespace DataBox_detail
 
+// @{
 /*!
  * \ingroup DataBoxGroup
- * \brief Apply the function `f` mutating items `MutateTags` and taking as
+ * \brief Apply the invokable `f` mutating items `MutateTags` and taking as
  * additional arguments `ArgumentTags` and `args`.
  *
  * \details
  * `f` must either be invokable with the arguments of type
  * `gsl::not_null<db::item_type<MutateTags>*>...,
  * db::item_type<ArgumentTags>..., Args...`
- * where the first two pack expansions are over the elements in the type lists
+ * where the first two pack expansions are over the elements in the typelists
  * `MutateTags` and `ArgumentTags`, or have a static `apply` function that is
- * callable with the same types.
+ * callable with the same types. If the type of `f` specifies `return_tags` and
+ * `argument_tags` typelists, these are used for the `MutateTags` and
+ * `ArgumentTags`, respectively.
  *
  * \example
  * An example of using `mutate_apply` with a lambda:
@@ -1759,9 +1774,13 @@ constexpr bool check_mutate_apply_argument_tags(
  * An example of a class with a static `apply` function
  * \snippet Test_DataBox.cpp mutate_apply_struct_definition_example
  * and how to use `mutate_apply` with the above class
- * \snippet Test_DataBox.cpp mutate_apply_struct_example
+ * \snippet Test_DataBox.cpp mutate_apply_struct_example_stateful
+ * Note that the class exposes `return_tags` and `argument_tags` typelists, so
+ * we don't specify the template parameters explicitly.
+ * If the class `F` has no state, like in this example, you can also use the
+ * stateless overload of `mutate_apply`:
+ * \snippet Test_DataBox.cpp mutate_apply_struct_example_stateless
  *
- * \see box
  * \tparam MutateTags typelist of Tags to mutate
  * \tparam ArgumentTags typelist of additional items to retrieve from the
  * DataBox
@@ -1771,7 +1790,9 @@ constexpr bool check_mutate_apply_argument_tags(
  * DataBox, `box`
  */
 template <typename MutateTags, typename ArgumentTags, typename F,
-          typename BoxTags, typename... Args>
+          typename BoxTags, typename... Args,
+          Requires<not DataBox_detail::has_return_tags_and_argument_tags_v<
+              std::decay_t<F>>> = nullptr>
 inline constexpr auto mutate_apply(
     F&& f, const gsl::not_null<DataBox<BoxTags>*> box,
     Args&&... args) noexcept(DataBox_detail::
@@ -1791,6 +1812,66 @@ inline constexpr auto mutate_apply(
   return DataBox_detail::mutate_apply(std::forward<F>(f), box, MutateTags{},
                                       ArgumentTags{},
                                       std::forward<Args>(args)...);
+}
+
+template <typename F, typename BoxTags, typename... Args,
+          Requires<DataBox_detail::has_return_tags_and_argument_tags_v<
+              std::decay_t<F>>> = nullptr,
+          typename MutateTags = typename std::decay_t<F>::return_tags,
+          typename ArgumentTags = typename std::decay_t<F>::argument_tags>
+inline constexpr auto mutate_apply(
+    F&& f, const gsl::not_null<DataBox<BoxTags>*> box,
+    Args&&... args) noexcept(DataBox_detail::
+                                 check_mutate_apply_mutate_tags(
+                                     BoxTags{}, MutateTags{}) and
+                             DataBox_detail::check_mutate_apply_argument_tags(
+                                 BoxTags{}, ArgumentTags{}) and
+                             noexcept(DataBox_detail::mutate_apply(
+                                 f, box, MutateTags{}, ArgumentTags{},
+                                 std::forward<Args>(args)...))) {
+  // These checks are duplicated in the noexcept specification above
+  // because the noexcept(DataBox_detail::mutate_apply(...)) can cause
+  // a compilation error before the checks in the function body are
+  // performed.
+  DataBox_detail::check_mutate_apply_mutate_tags(BoxTags{}, MutateTags{});
+  DataBox_detail::check_mutate_apply_argument_tags(BoxTags{}, ArgumentTags{});
+  return DataBox_detail::mutate_apply(std::forward<F>(f), box, MutateTags{},
+                                      ArgumentTags{},
+                                      std::forward<Args>(args)...);
+}
+// @}
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Apply the stateless function `F::apply` mutating the `F::return_tags`
+ * and taking as additional arguments the `F::argument_tags` and `args`.
+ *
+ * \details
+ * `F` must have `tmpl::list` type aliases `return_tags` and `argument_tags`, as
+ * well as a static `apply` function. The `apply` function must take the types
+ * of the `return_tags` as `gsl::not_null` pointers, followed by the types of
+ * the `argument_tags` as constant references. It can also take the `Args` as
+ * additional arguments.
+ *
+ * \example
+ * \snippet Test_DataBox.cpp mutate_apply_struct_definition_example
+ * This is how to use `mutate_apply` with the above class:
+ * \snippet Test_DataBox.cpp mutate_apply_struct_example_stateless
+ *
+ * \tparam F The function to apply
+ * \param box The DataBox out of which to retrieve the Tags to pass to `F`
+ * \param args The arguments to pass to the function that are not in the
+ * DataBox, `box`
+ */
+template <typename F, typename BoxTags, typename... Args>
+inline constexpr auto mutate_apply(const gsl::not_null<DataBox<BoxTags>*> box,
+                                   Args&&... args) noexcept {
+  static_assert(
+      DataBox_detail::has_return_tags_and_argument_tags_v<F>,
+      "The stateless mutator does not specify both 'argument_tags' and "
+      "'return_tags'. Did you forget to add these tag lists to the mutator "
+      "class? The class is listed as the first template parameter below.");
+  mutate_apply(F{}, box, std::forward<Args>(args)...);
 }
 
 /*!
