@@ -79,8 +79,8 @@ class LimitLorentzFactor {
   using argument_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>>;
 
   void operator()(
-      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
       const Scalar<DataVector>& rest_mass_density) const noexcept;
 
  private:
