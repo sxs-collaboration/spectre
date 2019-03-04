@@ -41,11 +41,9 @@ struct UpdateConservatives {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
     db::mutate_apply<
-        typename system::conservative_from_primitive::return_tags,
-        typename system::conservative_from_primitive::argument_tags>(
-        typename system::conservative_from_primitive{}, make_not_null(&box));
+        typename Metavariables::system::conservative_from_primitive>(
+        make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
 };

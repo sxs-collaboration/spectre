@@ -80,10 +80,8 @@ template <typename System>
 struct ConservativeVars {
   template <typename TagsList>
   static auto initialize(db::DataBox<TagsList>&& box) noexcept {
-    db::mutate_apply<
-        typename System::conservative_from_primitive::return_tags,
-        typename System::conservative_from_primitive::argument_tags>(
-        typename System::conservative_from_primitive{}, make_not_null(&box));
+    db::mutate_apply<typename System::conservative_from_primitive>(
+        make_not_null(&box));
     return std::move(box);
   }
 };

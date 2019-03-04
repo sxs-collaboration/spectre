@@ -47,9 +47,7 @@ struct UpdatePrimitives {
     using PrimFromCon =
         typename Metavariables::system::template primitive_from_conservative<
             typename Metavariables::ordered_list_of_primitive_recovery_schemes>;
-    db::mutate_apply<typename PrimFromCon::return_tags,
-                     typename PrimFromCon::argument_tags>(PrimFromCon{},
-                                                          make_not_null(&box));
+    db::mutate_apply<PrimFromCon>(make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
 };
