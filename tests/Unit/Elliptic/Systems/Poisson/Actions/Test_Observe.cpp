@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"

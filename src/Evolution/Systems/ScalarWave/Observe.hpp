@@ -142,7 +142,7 @@ struct Observe {
       Parallel::simple_action<observers::Actions::ContributeVolumeData>(
           local_observer,
           observers::ObservationId(
-              time, typename Metavariables::element_observation_type{}),
+              time.value(), typename Metavariables::element_observation_type{}),
           std::string{"/element_data"},
           observers::ArrayComponentId(
               std::add_pointer_t<ParallelComponent>{nullptr},
@@ -153,7 +153,7 @@ struct Observe {
       Parallel::simple_action<observers::Actions::ContributeReductionData>(
           local_observer,
           observers::ObservationId(
-              time, typename Metavariables::element_observation_type{}),
+              time.value(), typename Metavariables::element_observation_type{}),
           std::string{"/element_data"},
           std::vector<std::string>{"Time", "NumberOfPoints", "PsiError",
                                    "PiError"},

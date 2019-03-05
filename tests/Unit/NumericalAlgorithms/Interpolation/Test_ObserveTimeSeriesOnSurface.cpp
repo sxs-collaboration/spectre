@@ -349,17 +349,17 @@ SPECTRE_TEST_CASE(
   runner
       .simple_action<MockInterpolationTarget<metavars, metavars::SurfaceA>,
                      ::observers::Actions::RegisterSingletonWithObserverWriter>(
-          0, observers::ObservationId(temporal_id.time(),
+          0, observers::ObservationId(temporal_id.time().value(),
                                       typename metavars::SurfaceA{}));
   runner
       .simple_action<MockInterpolationTarget<metavars, metavars::SurfaceB>,
                      ::observers::Actions::RegisterSingletonWithObserverWriter>(
-          0, observers::ObservationId(temporal_id.time(),
+          0, observers::ObservationId(temporal_id.time().value(),
                                       typename metavars::SurfaceB{}));
   runner
       .simple_action<MockInterpolationTarget<metavars, metavars::SurfaceC>,
                      ::observers::Actions::RegisterSingletonWithObserverWriter>(
-          0, observers::ObservationId(temporal_id.time(),
+          0, observers::ObservationId(temporal_id.time().value(),
                                       typename metavars::SurfaceC{}));
 
   // Tell the InterpolationTargets that we want to interpolate at
