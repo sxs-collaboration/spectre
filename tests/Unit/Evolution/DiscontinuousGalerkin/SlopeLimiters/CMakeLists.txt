@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_Minmod.cpp
   Test_MinmodType.cpp
   Test_WenoGridHelpers.cpp
+  Test_WenoHelpers.cpp
   )
 
 add_test_library(
