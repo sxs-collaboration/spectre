@@ -58,4 +58,16 @@ def specific_internal_energy(mass_density, momentum_density, energy_density):
     return (energy_density / mass_density - 0.5 * np.dot(veloc, veloc))
 
 
+# Hard-coded for PolytropicFluid (representative ThermoDim = 1 case)
+def pressure_1d(mass_density, momentum_density, energy_density):
+    return 1.4 * np.power(mass_density, 5.0 / 3.0)
+
+
+# Hard-coded for IdealFluid (representative ThermoDim = 2 case)
+def pressure_2d(mass_density, momentum_density, energy_density):
+    return ((2.0 / 3.0) * mass_density *
+            specific_internal_energy(mass_density, momentum_density,
+                                     energy_density))
+
+
 # End functions for testing PrimitiveFromConservative.cpp
