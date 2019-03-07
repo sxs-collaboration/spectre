@@ -280,6 +280,18 @@ class Variables<tmpl::list<Tags...>> {
   }
   // @}
 
+  /// Create a Variables from a subset of the `Tensor`s in this
+  /// Variables
+  template <typename SubsetOfTags>
+  Variables<SubsetOfTags> extract_subset() const noexcept {
+    Variables<SubsetOfTags> sub_vars(number_of_grid_points());
+    tmpl::for_each<SubsetOfTags>([&](const auto tag_v) noexcept {
+      using tag = tmpl::type_from<decltype(tag_v)>;
+      get<tag>(sub_vars) = get<tag>(*this);
+    });
+    return sub_vars;
+  }
+
   /// Converting constructor for an expression to a Variables class
   // clang-tidy: mark as explicit (we want conversion to Variables)
   template <typename VT, bool VF>
@@ -815,6 +827,17 @@ template <typename TagsList>
 bool operator!=(const Variables<TagsList>& lhs,
                 const Variables<TagsList>& rhs) noexcept {
   return not(lhs == rhs);
+}
+
+/// \ingroup DataStructuresGroup
+/// Construct a variables from the `Tensor`s in a `TaggedTuple`.
+template <typename... Tags>
+Variables<tmpl::list<Tags...>> variables_from_tagged_tuple(
+    const tuples::TaggedTuple<Tags...>& tuple) noexcept {
+  auto result = make_with_value<Variables<tmpl::list<Tags...>>>(
+      get<tmpl::front<tmpl::list<Tags...>>>(tuple), 0.0);
+  result.assign_subset(tuple);
+  return result;
 }
 
 namespace MakeWithValueImpls {
