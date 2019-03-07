@@ -196,13 +196,35 @@ struct WriteReductionData {
     bool write_to_disk = false;
     std::vector<std::string> legend{};
     Parallel::lock(node_lock);
+    const auto expected_calls_from_this_node =
+        [&box, &observation_id ]() noexcept {
+      const auto hash = observation_id.observation_type_hash();
+      const auto& registered_reduction_observers =
+          db::get<Tags::ReductionObserversRegistered>(box);
+      return (registered_reduction_observers.count(hash) == 1)
+                 ? registered_reduction_observers.at(hash).size()
+                 : 0;
+    }
+    ();
+    const auto expected_calls_from_other_nodes =
+        [&box, &observation_id ]() noexcept {
+      const auto hash = observation_id.observation_type_hash();
+      const auto& registered_reduction_observers =
+          db::get<Tags::ReductionObserversRegisteredNodes>(box);
+      return (registered_reduction_observers.count(hash) == 1)
+                 ? registered_reduction_observers.at(hash).size()
+                 : 0;
+    }
+    ();
     db::mutate<Tags::ReductionData<ReductionDatums...>,
                Tags::ReductionDataNames<ReductionDatums...>,
                Tags::ReductionObserversContributed, Tags::H5FileLock>(
         make_not_null(&box),
         [
-          &cache, &file_lock, &in_reduction_data, &legend, &observation_id,
-          &reduction_names, &subfile_name, &write_to_disk
+          &cache, &expected_calls_from_this_node,
+          &expected_calls_from_other_nodes, &file_lock, &in_reduction_data,
+          &legend, &observation_id, &reduction_names, &subfile_name,
+          &write_to_disk
         ](const gsl::not_null<
               db::item_type<Tags::ReductionData<ReductionDatums...>>*>
               reduction_data,
@@ -216,34 +238,36 @@ struct WriteReductionData {
           auto& contribute_count =
               (*reduction_observers_contributed)[observation_id];
           const auto node_id = Parallel::my_node();
-          const auto number_of_nodes =
-              static_cast<size_t>(Parallel::number_of_nodes());
-          const auto procs_on_node =
-              static_cast<size_t>(Parallel::procs_on_node(node_id));
 
           if (node_id == 0 and not reduction_names.empty()) {
             reduction_names_map->emplace(observation_id,
                                          std::move(reduction_names));
           }
 
-          if (UNLIKELY(procs_on_node == 1 and number_of_nodes == 1)) {
+          if (UNLIKELY(node_id == 0 and expected_calls_from_other_nodes == 0 and
+                       expected_calls_from_this_node == 1)) {
+            // Here this Action will be called only once, so we take
+            // a shortcut and just write to disk.
             write_to_disk = true;
             file_lock = *reduction_file_lock;
             legend = std::move(reduction_names_map->operator[](observation_id));
             reduction_names_map->erase(observation_id);
           } else if (reduction_data->count(observation_id) == 0) {
+            // This Action has been called for the first time,
+            // so all we need to do is move the input data to the
+            // reduction_data in the DataBox.
             reduction_data->operator[](observation_id) =
                 std::move(in_reduction_data);
             contribute_count = 1;
-          } else if (contribute_count ==
-                     (procs_on_node - 1) + (number_of_nodes - 1)) {
-            ASSERT(node_id == 0,
-                   "Should only receive additional reduction data on node 0 "
-                   "but received it on node "
-                       << node_id);
-            // On node 0 we are collecting data from all other nodes so we
-            // should get procs_on_node data from the group on our node plus
-            // (number_of_nodes - 1) contributions from other nodes.
+          } else if (node_id == 0 and
+                     contribute_count == expected_calls_from_this_node +
+                                             expected_calls_from_other_nodes -
+                                             1) {
+            // This is the final time this Action is called on node 0.
+            // The `-1` in the above `if` statement is because on the final
+            // step, contribute_count (which was incremented at the end of each
+            // previous call) should be one less than the expected number of
+            // calls.
             in_reduction_data.combine(
                 std::move(reduction_data->operator[](observation_id)));
             reduction_data->erase(observation_id);
@@ -253,6 +277,8 @@ struct WriteReductionData {
             legend = std::move(reduction_names_map->operator[](observation_id));
             reduction_names_map->erase(observation_id);
           } else {
+            // This Action is being called at least the second time
+            // (but not the final time if on node 0).
             reduction_data->at(observation_id)
                 .combine(std::move(in_reduction_data));
             contribute_count++;
@@ -260,8 +286,9 @@ struct WriteReductionData {
 
           // Check if we have received all reduction data from the Observer
           // group. If so we reduce to node 0 for writing to disk.
-          if (node_id != 0 and reduction_observers_contributed->at(
-                                   observation_id) == procs_on_node) {
+          if (node_id != 0 and
+              reduction_observers_contributed->at(observation_id) ==
+                  expected_calls_from_this_node) {
             Parallel::threaded_action<WriteReductionData>(
                 Parallel::get_parallel_component<ObserverWriter<Metavariables>>(
                     cache)[0],

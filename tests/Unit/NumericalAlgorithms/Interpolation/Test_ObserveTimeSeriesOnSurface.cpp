@@ -30,8 +30,10 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Helpers.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Initialize.hpp"
+#include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"              // IWYU pragma: keep
@@ -173,7 +175,7 @@ struct MockMetavariables {
         intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
                 Tags::Square, ::Frame::Inertial>>,
-            SurfaceA>;
+            SurfaceA, SurfaceA>;
     // This `type` is so this tag can be used to read options.
     using type = typename compute_target_points::options_type;
   };
@@ -195,7 +197,7 @@ struct MockMetavariables {
                                                              ::Frame::Inertial>,
                        StrahlkorperGr::Tags::SurfaceIntegral<
                            Tags::Negate, ::Frame::Inertial>>,
-            SurfaceB>;
+            SurfaceB, SurfaceB>;
     // This `type` is so this tag can be used to read options.
     using type = typename compute_target_points::options_type;
   };
@@ -214,7 +216,7 @@ struct MockMetavariables {
         intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
                 Tags::Negate, ::Frame::Inertial>>,
-            SurfaceC>;
+            SurfaceC, SurfaceC>;
     // This `type` is so this tag can be used to read options.
     using type = typename compute_target_points::options_type;
   };
@@ -242,13 +244,13 @@ struct MockMetavariables {
 };
 
 SPECTRE_TEST_CASE(
-    "Unit.NumericalAlgorithms.Interpolator.ObserveSurfaceIntegrals", "[Unit]") {
-  const std::string h5_file_prefix = "Test_ObserveSurfaceIntegrals";
+    "Unit.NumericalAlgorithms.Interpolator.ObserveTimeSeriesOnSurface",
+    "[Unit]") {
+  const std::string h5_file_prefix = "Test_ObserveTimeSeriesOnSurface";
   const auto h5_file_name = h5_file_prefix + ".h5";
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
-
   using metavars = MockMetavariables;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
   using TupleOfMockDistributedObjects =
@@ -343,6 +345,23 @@ SPECTRE_TEST_CASE(
                          intrp::Actions::RegisterElement>(0);
   }
 
+  // Register the InterpolationTargets with the ObserverWriter.
+  runner
+      .simple_action<MockInterpolationTarget<metavars, metavars::SurfaceA>,
+                     ::observers::Actions::RegisterSingletonWithObserverWriter>(
+          0, observers::ObservationId(temporal_id.time(),
+                                      typename metavars::SurfaceA{}));
+  runner
+      .simple_action<MockInterpolationTarget<metavars, metavars::SurfaceB>,
+                     ::observers::Actions::RegisterSingletonWithObserverWriter>(
+          0, observers::ObservationId(temporal_id.time(),
+                                      typename metavars::SurfaceB{}));
+  runner
+      .simple_action<MockInterpolationTarget<metavars, metavars::SurfaceC>,
+                     ::observers::Actions::RegisterSingletonWithObserverWriter>(
+          0, observers::ObservationId(temporal_id.time(),
+                                      typename metavars::SurfaceC{}));
+
   // Tell the InterpolationTargets that we want to interpolate at
   // temporal_id.
   runner.simple_action<
@@ -357,6 +376,13 @@ SPECTRE_TEST_CASE(
       MockInterpolationTarget<metavars, metavars::SurfaceC>,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceC>>(
       0, std::vector<TimeId>{temporal_id});
+
+  // There should be three queued simple actions (registration), so invoke
+  // them and check that there are no more.
+  runner.invoke_queued_simple_action<MockObserverWriter<metavars>>(0);
+  runner.invoke_queued_simple_action<MockObserverWriter<metavars>>(0);
+  runner.invoke_queued_simple_action<MockObserverWriter<metavars>>(0);
+  CHECK(runner.is_simple_action_queue_empty<MockObserverWriter<metavars>>(0));
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {

@@ -15,14 +15,16 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.Tags", "[Unit][Observers]") {
   CHECK(ReductionArrayComponentIds::name() == "ReductionArrayComponentIds");
   CHECK(VolumeArrayComponentIds::name() == "VolumeArrayComponentIds");
   CHECK(TensorData::name() == "TensorData");
+  CHECK(VolumeObserversRegistered::name() == "VolumeObserversRegistered");
   CHECK(VolumeObserversContributed::name() == "VolumeObserversContributed");
   CHECK(H5FileLock::name() == "H5FileLock");
   CHECK(ReductionData<double>::name() == "ReductionData");
   CHECK(ReductionDataNames<double>::name() == "ReductionDataNames");
-  CHECK(NumberOfNodesContributedToReduction::name() ==
-        "NumberOfNodesContributedToReduction");
   CHECK(ReductionObserversContributed::name() ==
         "ReductionObserversContributed");
+  CHECK(ReductionObserversRegistered::name() == "ReductionObserversRegistered");
+  CHECK(ReductionObserversRegisteredNodes::name() ==
+        "ReductionObserversRegisteredNodes");
   static_assert(
       cpp17::is_same_v<typename ReductionData<double, int, char>::names_tag,
                        ReductionDataNames<double, int, char>>,

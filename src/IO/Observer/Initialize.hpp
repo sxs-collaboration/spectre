@@ -77,7 +77,10 @@ struct Initialize {
 template <class Metavariables>
 struct InitializeWriter {
   using simple_tags = tmpl::append<
-      db::AddSimpleTags<Tags::TensorData, Tags::VolumeObserversContributed,
+      db::AddSimpleTags<Tags::TensorData, Tags::VolumeObserversRegistered,
+                        Tags::VolumeObserversContributed,
+                        Tags::ReductionObserversRegistered,
+                        Tags::ReductionObserversRegisteredNodes,
                         Tags::ReductionObserversContributed, Tags::H5FileLock>,
       typename Metavariables::observed_reduction_data_tags,
       tmpl::transform<
@@ -103,7 +106,10 @@ struct InitializeWriter {
   static auto helper(tmpl::list<ReductionTags...> /*meta*/) noexcept {
     return std::make_tuple(db::create<simple_tags>(
         db::item_type<Tags::TensorData>{},
+        db::item_type<Tags::VolumeObserversRegistered>{},
         db::item_type<Tags::VolumeObserversContributed>{},
+        db::item_type<Tags::ReductionObserversRegistered>{},
+        db::item_type<Tags::ReductionObserversRegisteredNodes>{},
         db::item_type<Tags::ReductionObserversContributed>{},
         Parallel::create_lock(), db::item_type<ReductionTags>{}...,
         db::item_type<

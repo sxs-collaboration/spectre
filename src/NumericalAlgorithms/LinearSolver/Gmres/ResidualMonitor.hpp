@@ -7,6 +7,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DenseMatrix.hpp"
+#include "IO/Observer/Actions.hpp"
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
@@ -61,6 +62,14 @@ struct ResidualMonitor {
         // clang-tidy: std::move of trivially-copyable type
         std::move(verbosity),              // NOLINT
         std::move(convergence_criteria));  // NOLINT
+
+    const auto initial_observation_id = observers::ObservationId(
+        IterationId{}, typename Metavariables::element_observation_type{});
+    Parallel::simple_action<
+        observers::Actions::RegisterSingletonWithObserverWriter>(
+        Parallel::get_parallel_component<ResidualMonitor>(
+            *(global_cache.ckLocalBranch())),
+        initial_observation_id);
   }
 
   static void execute_next_phase(

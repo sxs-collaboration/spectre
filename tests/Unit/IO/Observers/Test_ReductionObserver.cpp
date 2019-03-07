@@ -90,10 +90,15 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
   for (const auto& id : element_ids) {
     runner.simple_action<element_comp,
                          observers::Actions::RegisterWithObservers<
-                             observers::TypeOfObservation::Reduction>>(id, 0);
-    // Invoke the simple_action RegisterSenderWithSelf that was called on the
-    // observer component by the RegisterWithObservers action.
+                             observers::TypeOfObservation::Reduction>>(
+        id, observers::ObservationId(
+                helpers::TimeId{3},
+                typename Metavariables::element_observation_type{}));
+    // Invoke the simple_action RegisterSenderWithSelf that was called
+    // on the observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);
+    // Invoke the simple_action RegisterReductionContributorWithObserverWriter.
+    runner.invoke_queued_simple_action<obs_writer>(0);
   }
 
   const std::string h5_file_name = output_file_prefix + ".h5";
@@ -129,7 +134,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
             time, typename Metavariables::element_observation_type{}},
         "/element_data", legend, std::move(reduction_data_fakes));
   }
-  // Invke the threaded action 'WriteReductionData' to write reduction data to
+  // Invoke the threaded action 'WriteReductionData' to write reduction data to
   // disk.
   runner.invoke_queued_threaded_action<obs_writer>(0);
 

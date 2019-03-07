@@ -79,12 +79,18 @@ auto make_reduction_data(const db::DataBox<DbTags>& box, double time,
 /// - DataBox:
 ///   - `TagsToObserve`
 ///
+/// `ObservationType` is a type that distinguishes this observation
+/// from other things that call observers::ThreadedActions::ObserverWriter,
+/// so that different observations do not collide.
+///
 /// This is an InterpolationTargetTag::post_interpolation_callback;
 /// see InterpolationTarget for a description of InterpolationTargetTag.
-template <typename TagsToObserve, typename InterpolationTargetTag>
+template <typename TagsToObserve, typename ObservationType,
+          typename InterpolationTargetTag>
 struct ObserveTimeSeriesOnSurface {
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<typename detail::reduction_data_type<TagsToObserve>::type>>;
+  using observation_types = tmpl::list<ObservationType>;
 
   template <typename DbTags, typename Metavariables>
   static void apply(
@@ -98,10 +104,7 @@ struct ObserveTimeSeriesOnSurface {
     // always guaranteed to be present.
     Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
         proxy[0],
-        observers::ObservationId(
-            temporal_id.time(),
-            ObserveTimeSeriesOnSurface<TagsToObserve,
-                                       InterpolationTargetTag>{}),
+        observers::ObservationId(temporal_id.time(), ObservationType{}),
         std::string{"/" + pretty_type::short_name<InterpolationTargetTag>()},
         detail::make_legend(TagsToObserve{}),
         detail::make_reduction_data(box, temporal_id.time().value(),
