@@ -65,5 +65,49 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
       dynamic_cast<const creators::AlignedLattice<3, Frame::Inertial>*>(
           domain_creator_3d.get());
   test_aligned_blocks(*aligned_blocks_creator_3d);
+
+  const auto cubical_shell_domain =
+      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+          "  AlignedLattice:\n"
+          "    BlockBounds: [[0.1, 2.6, 5.1, 6.0], [-0.4, 3.2, 6.2, 7.0], "
+          "[-0.2, 3.2, 4.0, 5.2]]\n"
+          "    IsPeriodicIn: [false, false, false]\n"
+          "    InitialGridPoints: [3, 4, 5]\n"
+          "    InitialRefinement: [2, 1, 0]\n"
+          "    BlocksToExclude: [[1, 1, 1]]");
+  const auto* cubical_shell_creator_3d =
+      dynamic_cast<const creators::AlignedLattice<3, Frame::Inertial>*>(
+          cubical_shell_domain.get());
+  test_aligned_blocks(*cubical_shell_creator_3d);
+
+  const auto unit_cubical_shell_domain =
+      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+          "  AlignedLattice:\n"
+          "    BlockBounds: [[-1.5, -0.5, 0.5, 1.5], [-1.5, -0.5, 0.5, 1.5], "
+          "[-1.5, -0.5, 0.5, 1.5]]\n"
+          "    IsPeriodicIn: [false, false, false]\n"
+          "    InitialGridPoints: [5, 5, 5]\n"
+          "    InitialRefinement: [1, 1, 1]\n"
+          "    BlocksToExclude: [[1, 1, 1]]");
+  const auto* unit_cubical_shell_creator_3d =
+      dynamic_cast<const creators::AlignedLattice<3, Frame::Inertial>*>(
+          unit_cubical_shell_domain.get());
+  test_aligned_blocks(*unit_cubical_shell_creator_3d);
+}
+
+// [[OutputRegex, Cannot exclude blocks as well as have periodic boundary
+// conditions!]]
+SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice.Error",
+                  "[Unit][ErrorHandling]") {
+  ERROR_TEST();
+  const auto failed_cubical_shell_domain =
+      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+          "  AlignedLattice:\n"
+          "    BlockBounds: [[-1.5, -0.5, 0.5, 1.5], [-1.5, -0.5, 0.5, 1.5], "
+          "[-1.5, -0.5, 0.5, 1.5]]\n"
+          "    IsPeriodicIn: [true, false, false]\n"
+          "    InitialGridPoints: [5, 5, 5]\n"
+          "    InitialRefinement: [1, 1, 1]\n"
+          "    BlocksToExclude: [[1, 1, 1]]");
 }
 }  // namespace domain
