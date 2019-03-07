@@ -29,6 +29,8 @@ struct Pressure;
 template <typename DataType>
 struct SoundSpeed;
 template <typename DataType>
+struct SoundSpeedCompute;
+template <typename DataType>
 struct SoundSpeedSquared;
 template <typename DataType>
 struct SoundSpeedSquaredCompute;
