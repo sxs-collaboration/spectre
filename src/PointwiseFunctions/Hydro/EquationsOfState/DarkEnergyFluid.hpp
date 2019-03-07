@@ -39,6 +39,8 @@ namespace EquationsOfState {
 template <bool IsRelativistic>
 class DarkEnergyFluid : public EquationOfState<IsRelativistic, 2> {
  public:
+  static constexpr size_t thermodynamic_dim = 2;
+  static constexpr bool is_relativistic = IsRelativistic;
   static_assert(IsRelativistic,
                 "Dark energy fluid equation of state only makes sense in a "
                 "relativistic setting.");
