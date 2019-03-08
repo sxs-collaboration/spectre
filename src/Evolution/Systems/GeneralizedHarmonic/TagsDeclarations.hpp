@@ -21,6 +21,19 @@ template <size_t Dim, typename Frame = Frame::Inertial>
 struct GaugeH;
 template <size_t Dim, typename Frame = Frame::Inertial>
 struct SpacetimeDerivGaugeH;
+template <size_t Dim, typename Frame = Frame::Inertial>
+struct DerivSpatialMetric;
+template <size_t Dim, typename Frame = Frame::Inertial>
+struct TimeDerivSpatialMetric;
+template <size_t Dim, typename Frame = Frame::Inertial>
+struct DerivLapse;
+struct TimeDerivLapse;
+template <size_t Dim, typename Frame = Frame::Inertial>
+struct DerivShift;
+template <size_t Dim, typename Frame = Frame::Inertial>
+struct TimeDerivShift;
+template <size_t Dim, typename Frame = Frame::Inertial>
+struct TraceExtrinsicCurvature;
 
 template<size_t Dim, typename Frame>
 struct UPsi;

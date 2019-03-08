@@ -229,6 +229,8 @@ class KerrSchild {
   using options = tmpl::list<Mass, Spin, Center>;
   static constexpr OptionString help{"Black hole in Kerr-Schild coordinates"};
 
+  static constexpr size_t volume_dim = 3;
+
   KerrSchild(double mass, Spin::type dimensionless_spin, Center::type center,
              const OptionContext& context = {});
 

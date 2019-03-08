@@ -1,0 +1,33 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveGeneralizedHarmonic
+# Check: execute
+
+InitialTime: 0.0
+InitialTimeStep: 0.01
+FinalTime: 0.02
+
+DomainCreator:
+    Shell:
+      InnerRadius: 1.9
+      OuterRadius: 4.9
+      InitialRefinement: 1
+      InitialGridPoints: [5, 5]
+      UseEquiangularMap: false
+      AspectRatio: 1.0
+      UseLogarithmicMap: false
+
+AnalyticSolution:
+    Mass: 1.0
+    Spin: [0.0, 0.0, 0.0]
+    Center: [0.0, 0.0, 0.0]
+
+TimeStepper: RungeKutta3
+
+NumericalFluxParams:
+
+ReductionFileName: ReductionData
+VolumeFileName: VolumeData
+ObserveNSlabs: 100000000
+ObserveAtT0: false

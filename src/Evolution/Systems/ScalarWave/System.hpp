@@ -29,6 +29,7 @@ struct System {
   static constexpr bool is_in_flux_conservative_form = false;
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;
+  static constexpr bool is_euclidean = true;
 
   using variables_tag = Tags::Variables<tmpl::list<Pi, Phi<Dim>, Psi>>;
   // Typelist of which subset of the variables to take the gradient of.

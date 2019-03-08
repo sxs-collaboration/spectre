@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_Constraints.cpp
   Test_DuDt.cpp
   Test_Fluxes.cpp
+  Test_UpwindFlux.cpp
   )
 
 add_test_library(

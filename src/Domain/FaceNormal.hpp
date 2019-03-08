@@ -13,8 +13,12 @@
 #include <unordered_map>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -74,6 +78,53 @@ struct UnnormalizedFaceNormal : db::ComputeTag {
       tmpl::list<Mesh<VolumeDim - 1>, ElementMap<VolumeDim, Frame>,
                  Direction<VolumeDim>>;
   using volume_tags = tmpl::list<ElementMap<VolumeDim, Frame>>;
+};
+
+template <size_t Dim, typename Frame>
+struct UnitFaceNormal : db::SimpleTag {
+  using type = tnsr::i<DataVector, Dim, Frame>;
+  static std::string name() noexcept { return "UnitFaceNormal"; }
+};
+
+template <size_t Dim, typename Frame>
+struct UnitFaceNormalCompute : UnitFaceNormal<Dim, Frame>, db::ComputeTag {
+  static constexpr auto function(
+      const db::item_type<UnnormalizedFaceNormal<Dim, Frame>>&
+          vector_in,  // Compute items need to take const references
+      const db::item_type<Magnitude<UnnormalizedFaceNormal<Dim, Frame>>>&
+          magnitude) noexcept {
+    auto vector = vector_in;
+    for (size_t d = 0; d < vector.index_dim(0); ++d) {
+      vector.get(d) /= get(magnitude);
+    }
+    return vector;
+  }
+  using argument_tags =
+      tmpl::list<UnnormalizedFaceNormal<Dim, Frame>,
+                 Magnitude<UnnormalizedFaceNormal<Dim, Frame>>>;
+  using base = UnitFaceNormal<Dim, Frame>;
+  using type = typename base::type;
+};
+
+template <size_t Dim, typename Frame>
+struct UnitFaceNormalVector : db::SimpleTag {
+  using type = tnsr::I<DataVector, Dim, Frame>;
+  static std::string name() noexcept { return "UnitFaceNormalVector"; }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct UnitFaceNormalVectorCompute : UnitFaceNormalVector<SpatialDim, Frame>,
+                                     db::ComputeTag {
+  static constexpr tnsr::I<DataVector, SpatialDim, Frame> (*function)(
+      const tnsr::i<DataVector, SpatialDim, Frame>&,
+      const tnsr::II<DataVector, SpatialDim, Frame>&) =
+      &raise_or_lower_index<DataVector,
+                            SpatialIndex<SpatialDim, UpLo::Lo, Frame>>;
+  using argument_tags =
+      tmpl::list<UnitFaceNormal<SpatialDim, Frame>,
+                 gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>>;
+  using base = UnitFaceNormalVector<SpatialDim, Frame>;
+  using type = typename base::type;
 };
 
 /// \ingroup DataBoxTagsGroup

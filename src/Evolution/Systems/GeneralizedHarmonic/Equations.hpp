@@ -8,27 +8,37 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "Domain/FaceNormal.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  // IWYU pragma: keep
+#include "Options/Options.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
 
-namespace Tags {
-template <typename>
-class dt;
-template <typename>
-struct NormalDotFlux;
-}  // namespace Tags
+namespace PUP {
+class er;
+}
 
 namespace gsl {
 template <class T>
 class not_null;
 }  // namespace gsl
+
+template <typename TagsList>
+class Variables;
+
+template <typename, typename, typename>
+class Tensor;
 /// \endcond
+
+// IWYU pragma: no_forward_declare Tags::deriv
 
 namespace GeneralizedHarmonic {
 /*!
@@ -108,11 +118,11 @@ struct ComputeDuDt {
 template <size_t Dim>
 struct ComputeNormalDotFluxes {
  public:
-  using argument_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<Dim>, Tags::Pi<Dim>, Tags::Phi<Dim>,
-                 Tags::ConstraintGamma1, Tags::ConstraintGamma2,
-                 gr::Tags::Lapse<>, gr::Tags::Shift<Dim>,
-                 gr::Tags::InverseSpatialMetric<Dim>>;
+  using argument_tags = tmpl::list<
+      gr::Tags::SpacetimeMetric<Dim>, Tags::Pi<Dim>, Tags::Phi<Dim>,
+      Tags::ConstraintGamma1, Tags::ConstraintGamma2, gr::Tags::Lapse<>,
+      gr::Tags::Shift<Dim>, gr::Tags::InverseSpatialMetric<Dim>,
+      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>;
 
   static void apply(
       gsl::not_null<tnsr::aa<DataVector, Dim>*>
@@ -126,5 +136,146 @@ struct ComputeNormalDotFluxes {
       const tnsr::I<DataVector, Dim>& shift,
       const tnsr::II<DataVector, Dim>& inverse_spatial_metric,
       const tnsr::i<DataVector, Dim>& unit_normal) noexcept;
+};
+
+/*!
+ * \ingroup NumericalFluxesGroup
+ * \brief Computes the generalized-harmonic upwind flux
+ *
+ * The upwind flux in general is given by Eq. (6.3) of \cite Teukolsky2015ega :
+ * \f{eqnarray}{
+ * F^* = S \Lambda^+ S^{-1} u^- + S \Lambda^- S^{-1} u^+,
+ * \f}
+ * where \f$u\f$ is a vector of the evolved variables, \f$S^{-1}\f$
+ * maps the evolved variables into the characteristic variables \f$S^{-1}u\f$,
+ * \f$S\f$ maps the characteristic variables into the evolved variables,
+ * and \f$\Lambda\f$ is a diagonal matrix of the average characteristic
+ * speed at the interface.
+ *
+ * Here, \f$S^{-1}u^-\f$ represents the
+ * characteristic variables at the element interface, computed using
+ * evolved variables from the element interior;
+ * \f$S^{-1}u^+\f$ represents the characteristic variables at the element
+ * interface, computed using evolved variables from the exterior, neighboring
+ * element; \f$\Lambda^+\f$ is a diagonal
+ * matrix whose nonzero entries are the average characteristic speeds
+ * that are positive ("outgoing", i.e. leaving the element); and
+ * \f$\Lambda^-\f$ is a diagonal matrix whose nonzero entries are the average
+ * characteristic speeds that are negative ("incoming", i.e. entering the
+ * element). If a characteristic field
+ * \f$U^-\f$ has a characteristic speed \f$v^-\f$ and the same
+ * field in the exterior \f$U^+\f$ has speed \f$v^+\f$, then the
+ * average characteristic speed is \f$v^{\rm avg} = (1/2)(v^- + v^+)\f$.
+ *
+ * This function implements the upwind flux for the generalized harmonic
+ * system. First, it computes the characteristic variables using i) the
+ * evolved variables from the interior and ii) the evolved variables from the
+ * exterior. Then, it computes \f$\Lambda^+\f$ and \f$\Lambda^-\f$
+ * from the average characteristic speeds. Then, it computes the
+ * combination \f$\Lambda^+ S^{-1} u^- + \Lambda^- S^{-1} u^+\f$. Finally, it
+ * applies \f$S\f$ by converting the result back from characteristic to
+ * evolved variables, using the unit normal vector of the element and
+ * the average value of the field
+ * \f$\gamma_2^{\rm avg} = (1/2)(\gamma_2^- + \gamma_2^+)\f$, where here
+ * \f$\gamma_2^-\f$ is the value of \f$\gamma_2\f$ in the interior and
+ * \f$\gamma_2^+\f$ is the vaule of \f$\gamma_2\f$ in the exterior.
+ */
+template <size_t Dim>
+struct UpwindFlux {
+ public:
+  using options = tmpl::list<>;
+  static constexpr OptionString help = {
+      "Computes the generalized harmonic upwind flux. It requires no "
+      "options."};
+
+  // clang-tidy: non-const reference
+  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+
+  // This is the data needed to compute the numerical flux.
+  // `dg::SendBoundaryFluxes` calls `package_data` to store these tags in a
+  // Variables. Local and remote values of this data are then combined in the
+  // `()` operator.
+
+  using package_tags =
+      tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
+                 Tags::Pi<Dim, Frame::Inertial>,
+                 Tags::Phi<Dim, Frame::Inertial>, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
+                 Tags::ConstraintGamma1, Tags::ConstraintGamma2,
+                 ::Tags::UnitFaceNormal<Dim, Frame::Inertial>,
+                 ::Tags::UnitFaceNormalVector<Dim, Frame::Inertial>>;
+
+  // These tags on the interface of the element are passed to
+  // `package_data` to provide the data needed to compute the numerical fluxes.
+  using argument_tags =
+      tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
+                 Tags::Pi<Dim, Frame::Inertial>,
+                 Tags::Phi<Dim, Frame::Inertial>, gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
+                 Tags::ConstraintGamma1, Tags::ConstraintGamma2,
+                 ::Tags::UnitFaceNormal<Dim, Frame::Inertial>,
+                 ::Tags::UnitFaceNormalVector<Dim, Frame::Inertial>>;
+
+  // pseudo-interface: used internally by Algorithm infrastructure, not
+  // user-level code
+  // Following the not-null pointer to packaged_data, this function expects as
+  // arguments the databox types of the `argument_tags`.
+  void package_data(
+      gsl::not_null<Variables<package_tags>*> packaged_data,
+      const typename gr::Tags::SpacetimeMetric<
+          Dim, Frame::Inertial, DataVector>::type& spacetime_metric,
+      const typename Tags::Pi<Dim, Frame::Inertial>::type& pi,
+      const typename Tags::Phi<Dim, Frame::Inertial>::type& phi,
+      const typename gr::Tags::Lapse<DataVector>::type& lapse,
+      const typename gr::Tags::Shift<Dim, Frame::Inertial, DataVector>::type&
+          shift,
+      const typename Tags::ConstraintGamma1::type& gamma1,
+      const typename Tags::ConstraintGamma2::type& gamma2,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>&
+          interface_unit_normal_vector) const noexcept;
+
+  // pseudo-interface: used internally by Algorithm infrastructure, not
+  // user-level code
+  // The arguments are first the system::variables_tag::tags_list wrapped in
+  // Tags::NormalDotNumericalFlux as not-null pointers to write the results
+  // into, then the package_tags on the interior side of the mortar followed by
+  // the package_tags on the exterior side.
+  void operator()(
+      gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
+          gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>>*>
+          psi_normal_dot_numerical_flux,
+      gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
+          GeneralizedHarmonic::Tags::Pi<Dim, Frame::Inertial>>>*>
+          pi_normal_dot_numerical_flux,
+      gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
+          GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>>*>
+          phi_normal_dot_numerical_flux,
+      const typename gr::Tags::SpacetimeMetric<
+          Dim, Frame::Inertial, DataVector>::type& spacetime_metric_int,
+      const typename Tags::Pi<Dim, Frame::Inertial>::type& pi_int,
+      const typename Tags::Phi<Dim, Frame::Inertial>::type& phi_int,
+      const typename gr::Tags::Lapse<DataVector>::type& lapse_int,
+      const typename gr::Tags::Shift<Dim, Frame::Inertial, DataVector>::type&
+          shift_int,
+      const typename Tags::ConstraintGamma2::type& gamma1_int,
+      const typename Tags::ConstraintGamma2::type& gamma2_int,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+          interface_unit_normal_int,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>&
+          interface_unit_normal_vector_int,
+      const typename gr::Tags::SpacetimeMetric<
+          Dim, Frame::Inertial, DataVector>::type& spacetime_metric_ext,
+      const typename Tags::Pi<Dim, Frame::Inertial>::type& pi_ext,
+      const typename Tags::Phi<Dim, Frame::Inertial>::type& phi_ext,
+      const typename gr::Tags::Lapse<DataVector>::type& lapse_ext,
+      const typename gr::Tags::Shift<Dim, Frame::Inertial, DataVector>::type&
+          shift_ext,
+      const typename Tags::ConstraintGamma2::type& gamma1_ext,
+      const typename Tags::ConstraintGamma2::type& gamma2_ext,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+          interface_unit_normal_ext,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>&
+          interface_unit_normal_vector_ext) const noexcept;
 };
 }  // namespace GeneralizedHarmonic

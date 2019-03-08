@@ -60,7 +60,10 @@ namespace GeneralizedHarmonic {
  * surface.
  */
 template <size_t Dim, typename Frame>
-struct CharacteristicSpeedsCompute : db::ComputeTag {
+struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
+                                     db::ComputeTag {
+  using base = Tags::CharacteristicSpeeds<Dim, Frame>;
+  using type = typename base::type;
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<Dim, Frame, DataVector>,
@@ -129,12 +132,14 @@ void compute_characteristic_speeds(
  * \ref CharacteristicSpeedsCompute .
  */
 template <size_t Dim, typename Frame>
-struct CharacteristicFieldsCompute : db::ComputeTag {
-  using argument_tags = tmpl::list<
-      Tags::ConstraintGamma2, gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame, DataVector>,
-      Tags::Pi<Dim, Frame>, Tags::Phi<Dim, Frame>,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
+struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
+                                     db::ComputeTag {
+  using argument_tags =
+      tmpl::list<Tags::ConstraintGamma2,
+                 gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>,
+                 Tags::Pi<Dim, Frame>, Tags::Phi<Dim, Frame>,
+                 ::Tags::UnitFaceNormal<Dim, Frame>,
+                 ::Tags::UnitFaceNormalVector<Dim, Frame>>;
 
   static typename Tags::CharacteristicFields<Dim, Frame>::type function(
       const Scalar<DataVector>& gamma_2,
@@ -164,7 +169,9 @@ void compute_characteristic_fields(
  * characteristic ones, see \ref CharacteristicFieldsCompute.
  */
 template <size_t Dim, typename Frame>
-struct EvolvedFieldsFromCharacteristicFieldsCompute : db::ComputeTag {
+struct EvolvedFieldsFromCharacteristicFieldsCompute
+    : Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>,
+      db::ComputeTag {
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma2, Tags::UPsi<Dim, Frame>, Tags::UZero<Dim, Frame>,
       Tags::UPlus<Dim, Frame>, Tags::UMinus<Dim, Frame>,

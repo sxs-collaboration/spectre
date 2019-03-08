@@ -59,6 +59,16 @@ struct GaugeH : db::SimpleTag {
   static std::string name() noexcept { return "GaugeH"; }
 };
 template <size_t Dim, typename Frame>
+struct GaugeHInVariables : db::SimpleTag {
+  using type = Variables<tmpl::list<tnsr::a<DataVector, Dim, Frame>>>;
+  static std::string name() noexcept { return "GaugeHInVariables"; }
+};
+template <size_t Dim, typename Frame>
+struct TimeDerivGaugeH : db::SimpleTag {
+  using type = tnsr::a<DataVector, Dim, Frame>;
+  static std::string name() noexcept { return "GaugeH"; }
+};
+template <size_t Dim, typename Frame>
 struct SpacetimeDerivGaugeH : db::SimpleTag {
   using type = tnsr::ab<DataVector, Dim, Frame>;
   static std::string name() noexcept { return "SpacetimeDerivGaugeH"; }
@@ -95,9 +105,7 @@ struct UMinus : db::SimpleTag {
 
 template <size_t Dim, typename Frame>
 struct CharacteristicSpeeds : db::SimpleTag {
-  using type = Variables<db::wrap_tags_in<
-      ::Tags::CharSpeed, tmpl::list<UPsi<Dim, Frame>, UZero<Dim, Frame>,
-                                    UPlus<Dim, Frame>, UMinus<Dim, Frame>>>>;
+  using type = std::array<DataVector, 4>;
   static std::string name() noexcept { return "CharacteristicSpeeds"; }
 };
 
@@ -116,6 +124,77 @@ struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
   static std::string name() noexcept {
     return "EvolvedFieldsFromCharacteristicFields";
   }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct GaugeConstraint : db::SimpleTag {
+  using type = tnsr::a<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "GaugeConstraint"; }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct FConstraint : db::SimpleTag {
+  using type = tnsr::a<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "FConstraint"; }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct TwoIndexConstraint : db::SimpleTag {
+  using type = tnsr::ia<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "TwoIndexConstraint"; }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct ThreeIndexConstraint : db::SimpleTag {
+  using type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "ThreeIndexConstraint"; }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct FourIndexConstraint : db::SimpleTag {
+  using type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "FourIndexConstraint"; }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct ConstraintEnergy : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept { return "ConstraintEnergy"; }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct DerivSpatialMetric : db::SimpleTag {
+  using type = tnsr::ijj<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "DerivSpatialMetric"; }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct TimeDerivSpatialMetric : db::SimpleTag {
+  using type = tnsr::ii<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "TimeDerivSpatialMetric"; }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct DerivLapse : db::SimpleTag {
+  using type = tnsr::i<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "DerivLapse"; }
+};
+
+struct TimeDerivLapse : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept { return "TimeDerivLapse"; }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct DerivShift : db::SimpleTag {
+  using type = tnsr::iJ<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "DerivShift"; }
+};
+
+template <size_t SpatialDim, typename Frame>
+struct TimeDerivShift : db::SimpleTag {
+  using type = tnsr::I<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "TimeDerivShift"; }
 };
 }  // namespace Tags
 }  // namespace GeneralizedHarmonic

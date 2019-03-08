@@ -4,9 +4,12 @@
 #pragma once
 
 #include <string>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "TagsDeclarations.hpp"
 
 namespace gr {
@@ -28,9 +31,19 @@ struct SpatialMetric : db::SimpleTag {
   static std::string name() noexcept { return "SpatialMetric"; }
 };
 template <size_t Dim, typename Frame, typename DataType>
+struct DetAndInverseSpatialMetric : db::SimpleTag {
+  using type = std::pair<Scalar<DataType>, tnsr::II<DataType, Dim, Frame>>;
+  static std::string name() noexcept { return "DetAndInverseSpatialMetric"; }
+};
+template <size_t Dim, typename Frame, typename DataType>
 struct InverseSpatialMetric : db::SimpleTag {
   using type = tnsr::II<DataType, Dim, Frame>;
   static std::string name() noexcept { return "InverseSpatialMetric"; }
+};
+template <typename DataType>
+struct DetSpatialMetric : db::SimpleTag {
+  using type = Scalar<DataType>;
+  static std::string name() noexcept { return "DetSpatialMetric"; }
 };
 template <typename DataType>
 struct SqrtDetSpatialMetric : db::SimpleTag {
@@ -47,7 +60,16 @@ struct Lapse : db::SimpleTag {
   using type = Scalar<DataType>;
   static std::string name() noexcept { return "Lapse"; }
 };
-
+template <size_t SpatialDim, typename Frame>
+struct DerivSpacetimeMetric : db::SimpleTag {
+  using type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "DerivSpacetimeMetric"; }
+};
+template <size_t Dim, typename Frame, typename DataType>
+struct DerivativesOfSpacetimeMetric : db::SimpleTag {
+  using type = tnsr::abb<DataType, Dim, Frame>;
+  static std::string name() noexcept { return "DerivativesOfSpacetimeMetric"; }
+};
 template <size_t Dim, typename Frame, typename DataType>
 struct SpacetimeChristoffelFirstKind : db::SimpleTag {
   using type = tnsr::abb<DataType, Dim, Frame>;
@@ -56,7 +78,9 @@ struct SpacetimeChristoffelFirstKind : db::SimpleTag {
 template <size_t Dim, typename Frame, typename DataType>
 struct SpacetimeChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::Abb<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "SpactimeChristoffelSecondKind"; }
+  static std::string name() noexcept {
+    return "SpacetimeChristoffelSecondKind";
+  }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct SpatialChristoffelFirstKind : db::SimpleTag {
@@ -86,6 +110,13 @@ struct TraceSpacetimeChristoffelFirstKind : db::SimpleTag {
   }
 };
 template <size_t Dim, typename Frame, typename DataType>
+struct TraceSpatialChristoffelFirstKind : db::SimpleTag {
+  using type = tnsr::i<DataType, Dim, Frame>;
+  static std::string name() noexcept {
+    return "TraceSpatialChristoffelFirstKind";
+  }
+};
+template <size_t Dim, typename Frame, typename DataType>
 struct TraceSpatialChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
   static std::string name() noexcept {
@@ -103,4 +134,22 @@ struct TraceExtrinsicCurvature : db::SimpleTag {
   static std::string name() noexcept { return "TraceExtrinsicCurvature"; }
 };
 }  // namespace Tags
+
+/// The tags for the variables returned by GR analytic solutions.
+template <size_t Dim, typename DataType>
+using analytic_solution_tags = tmpl::list<
+    gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
+    ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
+                  Frame::Inertial>,
+    gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
+    ::Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>,
+    ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial>,
+    gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+    ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>,
+    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial>,
+    gr::Tags::SqrtDetSpatialMetric<DataType>,
+    gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>,
+    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>;
 }  // namespace gr

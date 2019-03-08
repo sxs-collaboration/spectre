@@ -36,14 +36,10 @@ void compute_characteristic_speeds(
     const tnsr::I<DataVector, Dim, Frame>& shift,
     const tnsr::i<DataVector, Dim, Frame>& normal) noexcept {
   const auto shift_dot_normal = get(dot_product(shift, normal));
-  get(get<::Tags::CharSpeed<Tags::UPsi<Dim, Frame>>>(*char_speeds)) =
-      -(1. + get(gamma_1)) * shift_dot_normal;
-  get(get<::Tags::CharSpeed<Tags::UZero<Dim, Frame>>>(*char_speeds)) =
-      -shift_dot_normal;
-  get(get<::Tags::CharSpeed<Tags::UPlus<Dim, Frame>>>(*char_speeds)) =
-      -shift_dot_normal + get(lapse);
-  get(get<::Tags::CharSpeed<Tags::UMinus<Dim, Frame>>>(*char_speeds)) =
-      -shift_dot_normal - get(lapse);
+  (*char_speeds)[0] = -(1. + get(gamma_1)) * shift_dot_normal;  // v(UPsi)
+  (*char_speeds)[1] = -shift_dot_normal;                        // v(UZero)
+  (*char_speeds)[2] = -shift_dot_normal + get(lapse);           // v(UPlus)
+  (*char_speeds)[3] = -shift_dot_normal - get(lapse);           // v(UMinus)
 }
 
 template <size_t Dim, typename Frame>

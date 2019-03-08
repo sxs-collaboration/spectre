@@ -12,26 +12,38 @@
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
-#include "Evolution/Systems/ScalarWave/Initialize.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/ScalarWave/Observe.hpp"    // IWYU pragma: keep
-#include "Evolution/Systems/ScalarWave/System.hpp"
-#include "IO/Observer/Actions.hpp"            // IWYU pragma: keep
-#include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
+#include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
+#include "Evolution/Systems/GeneralizedHarmonic/Initialize.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Observe.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/GotoAction.hpp"  // IWYU pragma: keep
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrapGh.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
 #include "Time/Actions/ChangeStepSize.hpp"         // IWYU pragma: keep
@@ -60,43 +72,44 @@ class CProxy_ConstGlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <size_t Dim>
 struct EvolutionMetavars {
   // Customization/"input options" to simulation
-  using system = ScalarWave::System<Dim>;
+  static constexpr int dim = 3;
+  using Inertial = Frame::Inertial;
+  using system = GeneralizedHarmonic::System<dim>;
   using temporal_id = Tags::TimeId;
-  static constexpr bool local_time_stepping = true;
-  using analytic_solution_tag =
-      OptionTags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
+  static constexpr bool local_time_stepping = false;
+  using analytic_solution_tag = OptionTags::AnalyticSolution<
+      GeneralizedHarmonic::Solutions::WrapGh<gr::Solutions::KerrSchild>>;
   using boundary_condition_tag = analytic_solution_tag;
-  using normal_dot_numerical_flux =
-      OptionTags::NumericalFluxParams<ScalarWave::UpwindFlux<Dim>>;
+  using normal_dot_numerical_flux = OptionTags::NumericalFluxParams<
+      // dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
+      GeneralizedHarmonic::UpwindFlux<dim>>;
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,
                  OptionTags::TypedTimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>>;
-  using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
+  using domain_creator_tag = OptionTags::DomainCreator<dim, Inertial>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::list<ScalarWave::Actions::Observe>>;
+      tmpl::list<GeneralizedHarmonic::Actions::Observe>>;
 
-  using step_choosers =
-      tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
-                 StepChoosers::Registrars::Constant,
-                 StepChoosers::Registrars::Increase>;
+  using step_choosers = tmpl::list<StepChoosers::Registrars::Cfl<dim, Inertial>,
+                                   StepChoosers::Registrars::Constant,
+                                   StepChoosers::Registrars::Increase>;
 
   using compute_rhs = tmpl::flatten<tmpl::list<
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
-          Tags::InternalDirections<Dim>>,
+          Tags::InternalDirections<dim>>,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       Actions::ComputeTimeDerivative,
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
-          Tags::BoundaryDirectionsInterior<Dim>>,
+          Tags::BoundaryDirectionsInterior<dim>>,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
@@ -113,11 +126,11 @@ struct EvolutionMetavars {
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
-          EvolutionMetavars, ScalarWave::Actions::Initialize<Dim>,
+          EvolutionMetavars, GeneralizedHarmonic::Actions::Initialize<dim>,
           tmpl::flatten<tmpl::list<
               SelfStart::self_start_procedure<compute_rhs, update_variables>,
               Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
-              ScalarWave::Actions::Observe, Actions::FinalTime,
+              GeneralizedHarmonic::Actions::Observe, Actions::FinalTime,
               tmpl::conditional_t<local_time_stepping,
                                   Actions::ChangeStepSize<step_choosers>,
                                   tmpl::list<>>,
@@ -125,16 +138,11 @@ struct EvolutionMetavars {
               Actions::Goto<EvolvePhaseStart>>>>>;
 
   static constexpr OptionString help{
-      "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
-      "The analytic solution is: PlaneWave\n"
+      "Evolve a generalized harmonic analytic solution.\n\n"
+      "The analytic solution is: Minkowski\n"
       "The numerical flux is:    UpwindFlux\n"};
 
-  enum class Phase {
-    Initialization,
-    RegisterWithObserver,
-    Evolve,
-    Exit
-  };
+  enum class Phase { Initialization, RegisterWithObserver, Evolve, Exit };
 
   static Phase determine_next_phase(
       const Phase& current_phase,
@@ -167,5 +175,6 @@ static const std::vector<void (*)()> charm_init_node_funcs{
         StepChooser<metavariables::step_choosers>>,
     &Parallel::register_derived_classes_with_charm<StepController>,
     &Parallel::register_derived_classes_with_charm<TimeStepper>};
+
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
