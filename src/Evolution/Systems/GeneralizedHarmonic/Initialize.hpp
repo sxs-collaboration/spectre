@@ -53,6 +53,22 @@ struct has_analytic_solution_alias<
 template <size_t Dim>
 struct Initialize {
   template <typename Metavariables>
+  struct ConstraintsTags {
+    using Inertial = Frame::Inertial;
+    using simple_tags = db::AddSimpleTags<>;
+    using compute_tags = db::AddComputeTags<
+        GeneralizedHarmonic::Tags::FConstraintCompute<Dim, Inertial>,
+        GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<Dim, Inertial>,
+        GeneralizedHarmonic::Tags::FourIndexConstraintCompute<Dim, Inertial>,
+        GeneralizedHarmonic::Tags::ConstraintEnergyCompute<Dim, Inertial>>;
+    template <typename TagsList>
+    static auto initialize(db::DataBox<TagsList>&& box) noexcept {
+      return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
+          std::move(box));
+    }
+  };
+
+  template <typename Metavariables>
   struct VariablesTags {
     using Inertial = Frame::Inertial;
     using system = typename Metavariables::system;
@@ -65,6 +81,7 @@ struct Initialize {
     using compute_tags = db::AddComputeTags<
         gr::Tags::SpatialMetricCompute<Dim, Inertial, DataVector>,
         gr::Tags::DetAndInverseSpatialMetricCompute<Dim, Inertial, DataVector>,
+        gr::Tags::DetSpatialMetricCompute<Dim, Inertial, DataVector>,
         gr::Tags::InverseSpatialMetricCompute<Dim, Inertial, DataVector>,
         gr::Tags::ShiftCompute<Dim, Inertial, DataVector>,
         gr::Tags::LapseCompute<Dim, Inertial, DataVector>,
@@ -267,6 +284,7 @@ struct Initialize {
                        typename Metavariables::system>::simple_tags,
                    typename Initialization::Evolution<
                        typename Metavariables::system>::simple_tags,
+                   typename ConstraintsTags<Metavariables>::simple_tags,
                    typename Initialization::DiscontinuousGalerkin<
                        Metavariables>::simple_tags,
                    typename Initialization::MinMod<Dim>::simple_tags,
@@ -276,6 +294,7 @@ struct Initialize {
                        typename Metavariables::system>::compute_tags,
                    typename Initialization::Evolution<
                        typename Metavariables::system>::compute_tags,
+                   typename ConstraintsTags<Metavariables>::compute_tags,
                    typename Initialization::DiscontinuousGalerkin<
                        Metavariables>::compute_tags,
                    typename Initialization::MinMod<Dim>::compute_tags>;
@@ -303,9 +322,11 @@ struct Initialize {
     auto evolution_box = Initialization::Evolution<system>::initialize(
         std::move(domain_interface_box), cache, initial_time, initial_dt,
         initial_slab_size);
+    auto constraints_box = ConstraintsTags<Metavariables>::initialize(
+          std::move(evolution_box));
     auto dg_box =
         Initialization::DiscontinuousGalerkin<Metavariables>::initialize(
-            std::move(evolution_box), initial_extents);
+            std::move(constraints_box), initial_extents);
     auto limiter_box =
         Initialization::MinMod<Dim>::initialize(std::move(dg_box));
     return std::make_tuple(std::move(limiter_box));

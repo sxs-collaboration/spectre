@@ -805,15 +805,19 @@ struct ConstraintEnergyCompute : ConstraintEnergy<SpatialDim, Frame>,
                                  db::ComputeTag {
   using base = ConstraintEnergy<SpatialDim, Frame>;
   using type = typename base::type;
-  static constexpr Scalar<DataVector> (*function)(
-      const tnsr::a<DataVector, SpatialDim, Frame>&,
-      const tnsr::a<DataVector, SpatialDim, Frame>&,
-      const tnsr::ia<DataVector, SpatialDim, Frame>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>&,
-      const tnsr::II<DataVector, SpatialDim, Frame>&,
-      const Scalar<DataVector>&) =
-      &constraint_energy<SpatialDim, Frame, DataVector>;
+  static constexpr auto function(
+    const tnsr::a<DataVector, SpatialDim, Frame>& gauge_constraint,
+    const tnsr::a<DataVector, SpatialDim, Frame>& f_constraint,
+    const tnsr::ia<DataVector, SpatialDim, Frame>& two_index_constraint,
+    const tnsr::iaa<DataVector, SpatialDim, Frame>& three_index_constraint,
+    const tnsr::iaa<DataVector, SpatialDim, Frame>& four_index_constraint,
+    const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
+    const Scalar<DataVector>& spatial_metric_determinant) noexcept {
+  return constraint_energy<SpatialDim, Frame, DataVector>(gauge_constraint,
+                f_constraint, two_index_constraint, three_index_constraint,
+                four_index_constraint, inverse_spatial_metric,
+                spatial_metric_determinant);
+  }
   using argument_tags =
       tmpl::list<GaugeConstraint<SpatialDim, Frame>,
                  FConstraint<SpatialDim, Frame>,
