@@ -10,10 +10,10 @@
 #include <boost/preprocessor/logical/not.hpp>
 #include <boost/preprocessor/punctuation/comma_if.hpp>
 #include <boost/preprocessor/repetition/repeat.hpp>
+#include <converse.h>
 #include <cstddef>
 #include <deque>
 #include <exception>
-#include <lrtslock.h>
 #include <memory>
 #include <ostream>
 #include <random>

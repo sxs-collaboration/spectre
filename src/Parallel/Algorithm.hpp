@@ -4,10 +4,10 @@
 #pragma once
 
 #include <boost/variant/variant.hpp>
+#include <converse.h>
 #include <cstddef>
 #include <exception>
 #include <initializer_list>
-#include <lrtslock.h>
 #include <ostream>
 #include <pup.h>
 #include <tuple>

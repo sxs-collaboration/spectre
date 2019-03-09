@@ -3,8 +3,8 @@
 
 #pragma once
 
+#include <converse.h>
 #include <cstddef>
-#include <lrtslock.h>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
