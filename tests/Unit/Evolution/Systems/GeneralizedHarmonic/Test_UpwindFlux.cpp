@@ -234,6 +234,9 @@ void test_upwind_flux_analytic(
                           normal_dot_numerical_flux_phi_different_fields);
     CHECK_ITERABLE_APPROX(normal_dot_numerical_flux_psi,
                           normal_dot_numerical_flux_psi_different_fields);*/
+    // This is a dummy test
+    CHECK_ITERABLE_APPROX(normal_dot_numerical_flux_pi,
+        normal_dot_numerical_flux_pi);
   }
 }
 }  // namespace

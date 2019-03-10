@@ -77,7 +77,7 @@ template <size_t Dim, typename DataType>
 void test_compute_gauge_source(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &GeneralizedHarmonic::gauge_source<Dim, Frame::Inertial, DataType>,
-      "GeneralRelativity.ComputeGhQuantities", "gauge_source", {{{-10., 10.}}},
+      "ComputeGhQuantities", "gauge_source", {{{-10., 10.}}},
       used_for_size);
 }
 
@@ -153,7 +153,7 @@ void test_lapse_deriv_functions(const DataVector& used_for_size) noexcept {
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &::GeneralizedHarmonic::spatial_deriv_of_lapse<SpatialDim, Frame,
                                                          DataType>),
-      "GeneralRelativity.ComputeGhQuantities", "deriv_lapse",
+      "ComputeGhQuantities", "deriv_lapse",
       {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
   // time_deriv_of_lapse
   pypp::check_with_random_values<1>(
@@ -164,7 +164,7 @@ void test_lapse_deriv_functions(const DataVector& used_for_size) noexcept {
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
           &::GeneralizedHarmonic::time_deriv_of_lapse<SpatialDim, Frame,
                                                       DataType>),
-      "GeneralRelativity.ComputeGhQuantities", "dt_lapse",
+      "ComputeGhQuantities", "dt_lapse",
       {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size,
       1.e-11);
 }
@@ -179,7 +179,7 @@ void test_gij_deriv_functions(const DataVector& used_for_size) noexcept {
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
           &::GeneralizedHarmonic::time_deriv_of_spatial_metric<
               SpatialDim, Frame, DataType>),
-      "GeneralRelativity.ComputeGhQuantities", "dt_spatial_metric",
+      "ComputeGhQuantities", "dt_spatial_metric",
       {{{std::numeric_limits<double>::denorm_min(), 10.0}}}, used_for_size);
   // spacetime_deriv_of_det_spatial_metric
   pypp::check_with_random_values<1>(
@@ -189,7 +189,7 @@ void test_gij_deriv_functions(const DataVector& used_for_size) noexcept {
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &::GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric<
               SpatialDim, Frame, DataType>),
-      "GeneralRelativity.ComputeGhQuantities", "spacetime_deriv_detg",
+      "ComputeGhQuantities", "spacetime_deriv_detg",
       {{{std::numeric_limits<double>::denorm_min(), 10.0}}}, used_for_size);
 }
 
@@ -268,7 +268,7 @@ void test_shift_deriv_functions(const DataVector& used_for_size) noexcept {
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &::GeneralizedHarmonic::spatial_deriv_of_shift<SpatialDim, Frame,
                                                          DataType>),
-      "GeneralRelativity.ComputeGhQuantities", "deriv_shift",
+      "ComputeGhQuantities", "deriv_shift",
       {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
   // time_deriv_of_shift
   pypp::check_with_random_values<1>(
@@ -281,7 +281,7 @@ void test_shift_deriv_functions(const DataVector& used_for_size) noexcept {
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
           &::GeneralizedHarmonic::time_deriv_of_shift<SpatialDim, Frame,
                                                       DataType>),
-      "GeneralRelativity.ComputeGhQuantities", "dt_shift",
+      "ComputeGhQuantities", "dt_shift",
       {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size,
       1.e-10);
   // time_deriv_of_lower_shift
@@ -294,7 +294,7 @@ void test_shift_deriv_functions(const DataVector& used_for_size) noexcept {
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
           &::GeneralizedHarmonic::time_deriv_of_lower_shift<SpatialDim, Frame,
                                                             DataType>),
-      "GeneralRelativity.ComputeGhQuantities", "dt_lower_shift",
+      "ComputeGhQuantities", "dt_lower_shift",
       {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size,
       1.e-9);
   // spacetime_deriv_of_norm_of_shift
@@ -309,7 +309,7 @@ void test_shift_deriv_functions(const DataVector& used_for_size) noexcept {
           const tnsr::aa<DataType, SpatialDim, Frame>&)>(
           &::GeneralizedHarmonic::spacetime_deriv_of_norm_of_shift<
               SpatialDim, Frame, DataType>),
-      "GeneralRelativity.ComputeGhQuantities", "spacetime_deriv_norm_shift",
+      "ComputeGhQuantities", "spacetime_deriv_norm_shift",
       {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size,
       1.e-11);
 }

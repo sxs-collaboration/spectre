@@ -3,7 +3,7 @@
 
 import numpy as np
 
-from .ComputeSpacetimeQuantities import (
+from ComputeSpacetimeQuantities import (
     spatial_deriv_spacetime_metric, dt_spacetime_metric)
 
 
