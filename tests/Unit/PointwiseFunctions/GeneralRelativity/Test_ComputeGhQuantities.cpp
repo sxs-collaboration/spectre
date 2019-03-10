@@ -57,8 +57,8 @@ void test_compute_phi(const DataType& used_for_size) {
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const tnsr::ijj<DataType, Dim, Frame::Inertial>&)>(
           &::GeneralizedHarmonic::phi<Dim, Frame::Inertial, DataType>),
-      "TestFunctions", "spatial_deriv_spacetime_metric", {{{-10., 10.}}},
-      used_for_size);
+      "ComputeSpacetimeQuantities", "spatial_deriv_spacetime_metric",
+      {{{-10., 10.}}}, used_for_size);
 }
 template <size_t Dim, typename DataType>
 void test_compute_pi(const DataType& used_for_size) {
@@ -71,7 +71,7 @@ void test_compute_pi(const DataType& used_for_size) {
           const tnsr::ii<DataType, Dim, Frame::Inertial>&,
           const tnsr::iaa<DataType, Dim, Frame::Inertial>&)>(
           &::GeneralizedHarmonic::pi<Dim, Frame::Inertial, DataType>),
-      "TestFunctions", "gh_pi", {{{-10., 10.}}}, used_for_size);
+      "ComputeGhQuantities", "pi", {{{-10., 10.}}}, used_for_size);
 }
 template <size_t Dim, typename DataType>
 void test_compute_gauge_source(const DataType& used_for_size) {
@@ -532,7 +532,8 @@ void test_gij_deriv_functions_analytic(
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
                   "[PointwiseFunctions][Unit]") {
-  pypp::SetupLocalPythonEnvironment local_python_env("PointwiseFunctions/");
+  pypp::SetupLocalPythonEnvironment local_python_env(
+      "PointwiseFunctions/GeneralRelativity/");
 
   GENERATE_UNINITIALIZED_DOUBLE_AND_DATAVECTOR;
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_phi, (1, 2, 3));

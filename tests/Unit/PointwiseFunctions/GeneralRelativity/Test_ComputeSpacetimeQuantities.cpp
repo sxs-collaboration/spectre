@@ -38,7 +38,8 @@ void test_compute_spacetime_metric(const DataType& used_for_size) {
           const tnsr::I<DataType, Dim, Frame::Inertial>&,
           const tnsr::ii<DataType, Dim, Frame::Inertial>&)>(
           &gr::spacetime_metric<Dim, Frame::Inertial, DataType>),
-      "TestFunctions", "spacetime_metric", {{{-10., 10.}}}, used_for_size);
+      "ComputeSpacetimeQuantities", "spacetime_metric", {{{-10., 10.}}},
+      used_for_size);
 }
 template <size_t Dim, typename DataType>
 void test_compute_inverse_spacetime_metric(const DataType& used_for_size) {
