@@ -73,13 +73,15 @@ bool limit_one_tensor(
                      VolumeDim>& volume_and_slice_indices) noexcept {
   // True if the mesh is linear-order in every direction
   const bool mesh_is_linear = (mesh.extents() == Index<VolumeDim>(2));
+  const bool minmod_type_is_linear =
+      (minmod_type != SlopeLimiters::MinmodType::LambdaPiN);
+  const bool using_linear_limiter_on_non_linear_mesh =
+      minmod_type_is_linear and not mesh_is_linear;
 
   const double tvbm_scale = [&tvbm_constant, &element_size ]() noexcept {
-    double max_h_sqr = 0.0;
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      max_h_sqr = std::max(max_h_sqr, square(gsl::at(element_size, d)));
-    }
-    return tvbm_constant * max_h_sqr;
+    const double max_h =
+        *std::max_element(element_size.begin(), element_size.end());
+    return tvbm_constant * square(max_h);
   }
   ();
 
@@ -233,7 +235,7 @@ bool limit_one_tensor(
     }
 
     linearize(u_lin_buffer, u, mesh);
-    bool this_component_was_limited = false;
+    bool reduce_slope = false;
     auto u_limited_slopes = make_array<VolumeDim>(0.0);
 
     for (size_t d = 0; d < VolumeDim; ++d) {
@@ -255,25 +257,18 @@ bool limit_one_tensor(
           minmod_tvbm(local_slope, max_slope_factor * upper_slope,
                       max_slope_factor * lower_slope, tvbm_scale);
       gsl::at(u_limited_slopes, d) = result.value;
-      if (result.activated or not mesh_is_linear) {
-        this_component_was_limited = true;
+      if (result.activated) {
+        reduce_slope = true;
       }
     }
 
-    // Optimization: if the mesh is linear (so that linearization is a no-op),
-    // and the limiter did not request a reduced slope, then there is no need to
-    // overwite u = u_mean + (new limited slope in x) * x + etc., in the
-    // loop below, so skip it.
-    if (mesh_is_linear and not this_component_was_limited) {
-      continue;
+    if (reduce_slope or using_linear_limiter_on_non_linear_mesh) {
+      u = u_mean;
+      for (size_t d = 0; d < VolumeDim; ++d) {
+        u += logical_coords.get(d) * gsl::at(u_limited_slopes, d);
+      }
+      some_component_was_limited = true;
     }
-
-    u = u_mean;
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      u += logical_coords.get(d) * gsl::at(u_limited_slopes, d);
-    }
-    some_component_was_limited =
-        (some_component_was_limited or this_component_was_limited);
   }
 
   return some_component_was_limited;
