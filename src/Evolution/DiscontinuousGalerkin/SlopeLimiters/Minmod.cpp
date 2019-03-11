@@ -18,6 +18,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeArray.hpp"
 
+namespace SlopeLimiters {
 namespace Minmod_detail {
 
 MinmodResult minmod_tvbm(const double a, const double b, const double c,
@@ -303,3 +304,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 }  // namespace Minmod_detail
+}  // namespace SlopeLimiters

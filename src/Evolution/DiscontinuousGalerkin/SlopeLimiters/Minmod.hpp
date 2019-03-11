@@ -62,6 +62,8 @@ struct SizeOfElement;
 }  // namespace Tags
 /// \endcond
 
+namespace SlopeLimiters {
+
 namespace Minmod_detail {
 // Encodes the return status of the minmod_tvbm function.
 struct MinmodResult {
@@ -110,7 +112,6 @@ bool limit_one_tensor(
                      VolumeDim>& volume_and_slice_indices) noexcept;
 }  // namespace Minmod_detail
 
-namespace SlopeLimiters {
 /// \ingroup SlopeLimitersGroup
 /// \brief A general minmod slope limiter
 ///
