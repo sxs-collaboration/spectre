@@ -14,8 +14,8 @@ add_dependencies(test-libs-stage1
   Test_CoordinateMaps
   Test_DomainCreators
   Test_Domain
+  Test_Elasticity
   Test_Poisson
-  Test_ThermalNoise
   Test_Xcts
   Test_ErrorHandling
   Test_EvolutionActions
