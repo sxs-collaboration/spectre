@@ -12,7 +12,6 @@
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"  // IWYU pragma: keep
-#include "Domain/Mesh.hpp"     // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"

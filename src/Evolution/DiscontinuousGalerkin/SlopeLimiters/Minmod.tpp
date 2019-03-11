@@ -27,6 +27,7 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodTci.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
@@ -68,31 +69,8 @@ bool limit_one_tensor(
   // does not depend on the solution on the neighboring elements, so could be
   // precomputed outside of `limit_one_tensor`. Changing the code to
   // precompute the average may or may not be a measurable optimization.
-  const auto effective_neighbor_sizes = [&neighbor_data, &element ]() noexcept {
-    DirectionMap<VolumeDim, double> result;
-    for (const auto& dir : Direction<VolumeDim>::all_directions()) {
-      const auto& externals = element.external_boundaries();
-      const bool neighbors_in_this_dir =
-          (externals.find(dir) == externals.end());
-      if (neighbors_in_this_dir) {
-        const double effective_neighbor_size =
-            [&neighbor_data, &dir, &element ]() noexcept {
-          const size_t dim = dir.dimension();
-          const auto& neighbor_ids = element.neighbors().at(dir).ids();
-          double size_accumulate = 0.0;
-          for (const auto& id : neighbor_ids) {
-            size_accumulate += gsl::at(
-                neighbor_data.at(std::make_pair(dir, id)).element_size, dim);
-          }
-          return size_accumulate / neighbor_ids.size();
-        }
-        ();
-        result.insert(std::make_pair(dir, effective_neighbor_size));
-      }
-    }
-    return result;
-  }
-  ();
+  const auto effective_neighbor_sizes =
+      compute_effective_neighbor_sizes(element, neighbor_data);
 
   bool some_component_was_limited = false;
   for (size_t i = 0; i < tensor->size(); ++i) {
@@ -100,30 +78,7 @@ bool limit_one_tensor(
     // all different neighbors in that direction. This produces one effective
     // neighbor per direction.
     const auto effective_neighbor_means =
-        [&neighbor_data, &element, &i ]() noexcept {
-      DirectionMap<VolumeDim, double> result;
-      for (const auto& dir : Direction<VolumeDim>::all_directions()) {
-        const auto& externals = element.external_boundaries();
-        const bool neighbors_in_this_dir =
-            (externals.find(dir) == externals.end());
-        if (neighbors_in_this_dir) {
-          const double effective_neighbor_mean =
-              [&neighbor_data, &dir, &element, &i ]() noexcept {
-            const auto& neighbor_ids = element.neighbors().at(dir).ids();
-            double mean_accumulate = 0.0;
-            for (const auto& id : neighbor_ids) {
-              mean_accumulate += get<::Tags::Mean<Tag>>(
-                  neighbor_data.at(std::make_pair(dir, id)).means)[i];
-            }
-            return mean_accumulate / neighbor_ids.size();
-          }
-          ();
-          result.insert(std::make_pair(dir, effective_neighbor_mean));
-        }
-      }
-      return result;
-    }
-    ();
+        compute_effective_neighbor_means<Tag>(element, i, neighbor_data);
 
     DataVector& u = (*tensor)[i];
     double u_mean;
@@ -207,32 +162,16 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
     return false;
   }
 
-  // Allocate temporary buffer to be used in `limit_one_tensor` where we
-  // otherwise make 1 + 2 * VolumeDim allocations per tensor component for
-  // MUSCL and LambdaPi1, and 1 + 4 * VolumeDim allocations per tensor
-  // component for LambdaPiN.
-  const size_t half_number_boundary_points = alg::accumulate(
-      alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st),
-      0_st, [&mesh](const size_t state, const size_t d) noexcept {
-        return state + mesh.slice_away(d).number_of_grid_points();
-      });
-  std::unique_ptr<double[], decltype(&free)> temp_buffer(
-      static_cast<double*>(
-          malloc(sizeof(double) *
-                 (mesh.number_of_grid_points() + half_number_boundary_points))),
-      &free);
-  size_t alloc_offset = 0;
-  DataVector u_lin_buffer(temp_buffer.get() + alloc_offset,
-                          mesh.number_of_grid_points());
-  alloc_offset += mesh.number_of_grid_points();
+  // Optimization: allocate temporary buffer to be used in `limit_one_tensor`
+  std::unique_ptr<double[], decltype(&free)> contiguous_buffer(nullptr, &free);
+  DataVector u_lin_buffer{};
   std::array<DataVector, VolumeDim> boundary_buffer{};
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    const size_t num_points = mesh.slice_away(d).number_of_grid_points();
-    gsl::at(boundary_buffer, d)
-        .set_data_ref(temp_buffer.get() + alloc_offset, num_points);
-    alloc_offset += num_points;
-  }
-  // Compute the slice indices once since this is (surprisingly) expensive
+  Minmod_detail::allocate_buffers(make_not_null(&contiguous_buffer),
+                                  make_not_null(&u_lin_buffer),
+                                  make_not_null(&boundary_buffer), mesh);
+
+  // Optimization: precompute the slice indices since this is (surprisingly)
+  // expensive
   const auto volume_and_slice_buffer_and_indices =
       volume_and_slice_indices(mesh.extents());
   const auto& volume_and_slice_indices =
