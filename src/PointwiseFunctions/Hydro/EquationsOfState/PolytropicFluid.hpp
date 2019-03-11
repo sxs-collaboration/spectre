@@ -38,6 +38,9 @@ namespace EquationsOfState {
 template <bool IsRelativistic>
 class PolytropicFluid : public EquationOfState<IsRelativistic, 1> {
  public:
+  static constexpr size_t thermodynamic_dim = 1;
+  static constexpr bool is_relativistic = IsRelativistic;
+
   struct PolytropicConstant {
     using type = double;
     static constexpr OptionString help = {"Polytropic constant K"};

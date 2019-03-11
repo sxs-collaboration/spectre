@@ -9,16 +9,18 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
+// IWYU pragma: no_forward_declare Tensor
+
 /// \cond
 namespace NewtonianEuler {
 
-template <size_t Dim, typename DataType>
-void conservative_from_primitive(
-    const gsl::not_null<tnsr::I<DataType, Dim>*> momentum_density,
-    const gsl::not_null<Scalar<DataType>*> energy_density,
-    const Scalar<DataType>& mass_density,
-    const tnsr::I<DataType, Dim>& velocity,
-    const Scalar<DataType>& specific_internal_energy) noexcept {
+template <size_t Dim>
+void ConservativeFromPrimitive<Dim>::apply(
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> momentum_density,
+    const gsl::not_null<Scalar<DataVector>*> energy_density,
+    const Scalar<DataVector>& mass_density,
+    const tnsr::I<DataVector, Dim>& velocity,
+    const Scalar<DataVector>& specific_internal_energy) noexcept {
   for (size_t i = 0; i < Dim; ++i) {
     momentum_density->get(i) = get(mass_density) * velocity.get(i);
   }
@@ -31,19 +33,12 @@ void conservative_from_primitive(
 }  // namespace NewtonianEuler
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template void NewtonianEuler::conservative_from_primitive(                  \
-      const gsl::not_null<tnsr::I<DTYPE(data), DIM(data)>*> momentum_density, \
-      const gsl::not_null<Scalar<DTYPE(data)>*> energy_density,               \
-      const Scalar<DTYPE(data)>& mass_density,                                \
-      const tnsr::I<DTYPE(data), DIM(data)>& velocity,                        \
-      const Scalar<DTYPE(data)>& specific_internal_energy) noexcept;
+#define INSTANTIATE(_, data) \
+  template struct NewtonianEuler::ConservativeFromPrimitive<DIM(data)>;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
-#undef DTYPE
 #undef INSTANTIATE
 /// \endcond

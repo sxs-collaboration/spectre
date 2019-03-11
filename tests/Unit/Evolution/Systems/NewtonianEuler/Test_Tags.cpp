@@ -14,6 +14,8 @@ class DataVector;
 namespace {
 template <size_t Dim>
 void test_tags() noexcept {
+  CHECK(NewtonianEuler::Tags::CharacteristicSpeeds<Dim>::name() ==
+        "CharacteristicSpeeds");
   CHECK(NewtonianEuler::Tags::MassDensity<DataVector>::name() == "MassDensity");
   CHECK(NewtonianEuler::Tags::MomentumDensity<DataVector, Dim,
                                               Frame::Inertial>::name() ==
@@ -31,6 +33,9 @@ void test_tags() noexcept {
   CHECK(NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>::name() ==
         "SpecificInternalEnergy");
   CHECK(NewtonianEuler::Tags::Pressure<DataVector>::name() == "Pressure");
+  CHECK(NewtonianEuler::Tags::SoundSpeed<DataVector>::name() == "SoundSpeed");
+  CHECK(NewtonianEuler::Tags::SoundSpeedSquared<DataVector>::name() ==
+        "SoundSpeedSquared");
 }
 }  // namespace
 

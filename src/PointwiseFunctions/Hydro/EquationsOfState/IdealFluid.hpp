@@ -38,6 +38,9 @@ namespace EquationsOfState {
 template <bool IsRelativistic>
 class IdealFluid : public EquationOfState<IsRelativistic, 2> {
  public:
+  static constexpr size_t thermodynamic_dim = 2;
+  static constexpr bool is_relativistic = IsRelativistic;
+
   struct AdiabaticIndex {
     using type = double;
     static constexpr OptionString help = {"Adiabatic index gamma"};

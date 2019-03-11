@@ -6,29 +6,27 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::EnergyDensity
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MassDensity
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MomentumDensity
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::SpecificInternalEnergy
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::Velocity
 
 /// \cond
 namespace gsl {
 template <typename T>
 class not_null;
 }  // namespace gsl
+
+class DataVector;
 /// \endcond
 
-namespace NewtonianEuler {
-// @{
-/*!
- * \brief Compute the velocity from the conservative variables.
- */
-template <size_t Dim, typename DataType>
-void velocity(gsl::not_null<tnsr::I<DataType, Dim>*> velocity,
-              const Scalar<DataType>& mass_density,
-              const tnsr::I<DataType, Dim>& momentum_density) noexcept;
+// IWYU pragma: no_forward_declare Tensor
 
-template <size_t Dim, typename DataType>
-tnsr::I<DataType, Dim> velocity(
-    const Scalar<DataType>& mass_density,
-    const tnsr::I<DataType, Dim>& momentum_density) noexcept;
-// @}
+namespace NewtonianEuler {
 
 /*!
  * \brief Compute the primitive variables from the conservative variables.
@@ -43,12 +41,19 @@ tnsr::I<DataType, Dim> velocity(
  * is the mass density, \f$S^i\f$ is the momentum density, and
  * \f$S^2\f$ is the momentum density squared.
  */
-template <size_t Dim, typename DataType>
-void primitive_from_conservative(
-    gsl::not_null<tnsr::I<DataType, Dim>*> velocity,
-    gsl::not_null<Scalar<DataType>*> specific_internal_energy,
-    const Scalar<DataType>& mass_density,
-    const tnsr::I<DataType, Dim>& momentum_density,
-    const Scalar<DataType>& energy_density) noexcept;
+template <size_t Dim>
+struct PrimitiveFromConservative {
+  using return_tags = tmpl::list<Tags::Velocity<DataVector, Dim>,
+                                 Tags::SpecificInternalEnergy<DataVector>>;
 
+  using argument_tags = tmpl::list<Tags::MassDensity<DataVector>,
+                                   Tags::MomentumDensity<DataVector, Dim>,
+                                   Tags::EnergyDensity<DataVector>>;
+
+  static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> velocity,
+                    gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+                    const Scalar<DataVector>& mass_density,
+                    const tnsr::I<DataVector, Dim>& momentum_density,
+                    const Scalar<DataVector>& energy_density) noexcept;
+};
 }  // namespace NewtonianEuler
