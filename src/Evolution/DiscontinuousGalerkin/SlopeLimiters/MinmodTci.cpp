@@ -9,7 +9,6 @@
 #include <limits>
 #include <utility>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
