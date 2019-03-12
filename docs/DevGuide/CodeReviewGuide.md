@@ -73,6 +73,7 @@ Code Quality Items:
   tests used to obtain said evidence.
 * Never include `<iostream>`, use `Parallel::printf` inside
   `Parallel/Printf.hpp` instead, which is safe to use in parallel.
+* When using charm++ nodelocks include `<converse.h>` instead of `<lrtslock.h>`.
 * Do not add anything to [the `std` namespace]
   (http://en.cppreference.com/w/cpp/language/extending_std).
 * Virtual functions are explicitly overridden using the `override` keyword.

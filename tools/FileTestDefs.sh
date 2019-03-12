@@ -220,6 +220,20 @@ long_lines_test() {
 }
 standard_checks+=(long_lines)
 
+# Check for lrtslock header
+lrtslock() {
+    is_c++ "$1" && grep -q '#include <lrtslock.h>' "$1"
+}
+lrtslock_report() {
+    echo "Found lrtslock header (include converse.h instead):"
+    pretty_grep '#include <lrtslock.h>' "$@"
+}
+lrtslock_test() {
+    test_check pass foo.cpp '#include <vector>'$'\n'
+    test_check fail foo.cpp '#include <lrtslock.h>'$'\n'
+}
+standard_checks+=(lrtslock)
+
 # Check for files containing tabs
 tabs() {
     whitelist "$1" '.h5' '.png' &&
