@@ -5,8 +5,6 @@
 
 #include <cmath>
 #include <cstddef>
-#include <memory>
-#include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -35,14 +33,13 @@ double expected_newtonian_mass(const double central_mass_density) noexcept {
          (cube(sqrt(2.0 * M_PI / polytropic_constant)));
 }
 
-void test_tov(const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
-                  equation_of_state,
-              const double central_mass_density, const size_t num_pts,
-              const size_t current_iteration,
-              const bool newtonian_limit) noexcept {
+void test_tov(
+    const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
+    const double central_mass_density, const size_t num_pts,
+    const size_t current_iteration, const bool newtonian_limit) noexcept {
   Approx custom_approx = Approx::custom().epsilon(1.0e-08).scale(1.0);
   const double initial_log_enthalpy =
-      std::log(get(equation_of_state->specific_enthalpy_from_density(
+      std::log(get(equation_of_state.specific_enthalpy_from_density(
           Scalar<double>{central_mass_density})));
   const double surface_log_enthalpy = 0.0;
   const double step = (surface_log_enthalpy - initial_log_enthalpy) / num_pts;
@@ -134,12 +131,11 @@ void test_tov(const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
   CHECK(intermediate_enthalpy_ds == custom_approx(interpolated_enthalpy_ds));
 }
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.Tov",
-                  "[Unit][PointwiseFunctions]") {
-  std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>
-      equation_of_state =
-          std::make_unique<EquationsOfState::PolytropicFluid<true>>(
-              polytropic_constant, 2.0);
+SPECTRE_TEST_CASE(
+    "Unit.PointwiseFunctions.AnalyticSolutions.EinsteinSolutions.TOV",
+    "[Unit][PointwiseFunctions]") {
+  const auto& equation_of_state =
+      EquationsOfState::PolytropicFluid<true>(polytropic_constant, 2.0);
   /* Each iteration of the loop is for a different value of the final
      log_enthalpy in the integration. This is done to test the interpolation:
      the integration is stopped at some final log_enthalpy between the center

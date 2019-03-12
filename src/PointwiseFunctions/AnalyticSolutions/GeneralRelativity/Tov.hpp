@@ -4,7 +4,6 @@
 #pragma once
 
 #include <limits>
-#include <memory>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
@@ -45,11 +44,10 @@ namespace Solutions {
  */
 class TovSolution {
  public:
-  TovSolution(const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
-                  equation_of_state,
-              double central_mass_density, double final_log_enthalpy,
-              double absolute_tolerance = 1.0e-14,
-              double relative_tolerance = 1.0e-14);
+  TovSolution(
+      const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
+      double central_mass_density, double final_log_enthalpy,
+      double absolute_tolerance = 1.0e-14, double relative_tolerance = 1.0e-14);
 
   TovSolution() = default;
   TovSolution(const TovSolution& /*rhs*/) = delete;
