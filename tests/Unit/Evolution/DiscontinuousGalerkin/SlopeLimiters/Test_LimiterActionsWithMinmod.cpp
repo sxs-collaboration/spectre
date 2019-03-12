@@ -28,6 +28,7 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
+#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

@@ -3,47 +3,18 @@
 
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
 
-#include <algorithm>
-#include <cmath>
 #include <iterator>
-#include <string>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Index.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Mesh.hpp"  // IWYU pragma: keep
-#include "Domain/Side.hpp"
-#include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
-#include "Options/ParseOptions.hpp"
-#include "Utilities/ConstantExpressions.hpp"
+#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodTci.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
-#include "Utilities/MakeArray.hpp"
 
-// IWYU pragma: no_include <ostream>
-
+namespace SlopeLimiters {
 namespace Minmod_detail {
-
-MinmodResult minmod_tvbm(const double a, const double b, const double c,
-                         const double tvbm_scale) noexcept {
-  if (fabs(a) <= tvbm_scale) {
-    return {a, false};
-  }
-  if ((std::signbit(a) == std::signbit(b)) and
-      (std::signbit(a) == std::signbit(c))) {
-    // The if/else group below could be more simply written as
-    //   std::copysign(std::min({fabs(a), fabs(b), fabs(c)}), a);
-    // however, by separating different cases, we gain the ability to
-    // distinguish whether or not the limiter activated.
-    if (fabs(a) <= fabs(b) and fabs(a) <= fabs(c)) {
-      return {a, false};
-    } else {
-      return {std::copysign(std::min(fabs(b), fabs(c)), a), true};
-    }
-  } else {
-    return {0.0, true};
-  }
-}
 
 // Implements the minmod limiter for one Tensor<DataVector> at a time.
 template <size_t VolumeDim>
@@ -77,19 +48,6 @@ bool limit_one_tensor(
       (minmod_type != SlopeLimiters::MinmodType::LambdaPiN);
   const bool using_linear_limiter_on_non_linear_mesh =
       minmod_type_is_linear and not mesh_is_linear;
-
-  const double tvbm_scale = [&tvbm_constant, &element_size ]() noexcept {
-    const double max_h =
-        *std::max_element(element_size.begin(), element_size.end());
-    return tvbm_constant * square(max_h);
-  }
-  ();
-
-  // Results from SpECTRE paper (https://arxiv.org/abs/1609.00098) used a
-  // max_slope_factor a factor of 2.0 too small, so that LambdaPi1 behaved
-  // like MUSCL, and MUSCL was even more dissipative.
-  const double max_slope_factor =
-      (minmod_type == SlopeLimiters::MinmodType::Muscl) ? 1.0 : 2.0;
 
   // In each direction, average the size of all different neighbors in that
   // direction. Note that only the component of neighor_size that is normal
@@ -126,10 +84,8 @@ bool limit_one_tensor(
 
   bool some_component_was_limited = false;
   for (auto iter = tensor_begin.get(); iter != tensor_end.get(); ++iter) {
-    DataVector& u = *iter;
-    const double u_mean = mean_value(u, mesh);
-
     const auto iter_offset = std::distance(tensor_begin.get(), iter);
+
     // In each direction, average the mean of the `iter` tensor component over
     // all different neighbors in that direction. This produces one effective
     // neighbor per direction.
@@ -162,105 +118,14 @@ bool limit_one_tensor(
     }
     ();
 
-    const auto difference_to_neighbor = [
-      &u_mean, &element, &element_size, &effective_neighbor_means, &
-      effective_neighbor_sizes
-    ](const size_t dim, const Side& side) noexcept {
-      const auto& externals = element.external_boundaries();
-      const auto dir = Direction<VolumeDim>(dim, side);
-      const bool has_neighbors = (externals.find(dir) == externals.end());
-      if (has_neighbors) {
-        const double neighbor_size = effective_neighbor_sizes.at(dir);
-        const double neighbor_mean = effective_neighbor_means.at(dir);
-
-        // Compute an effective element-center-to-neighbor-center distance
-        // that accounts for the possibility of different refinement levels
-        // or discontinuous maps (e.g., at Block boundaries). Treated naively,
-        // these domain features can make a smooth solution appear to be
-        // non-smooth in the logical coordinates, which could potentially lead
-        // to the limiter triggering erroneously. This effective distance is
-        // used to scale the difference in the means, so that a linear function
-        // at a refinement or Block boundary will still appear smooth to the
-        // limiter. The factor is normalized to be 1.0 on a uniform grid.
-        // Note that this is not "by the book" Minmod, but an attempt to
-        // generalize Minmod to work on non-uniform grids.
-        const double distance_factor =
-            0.5 * (1.0 + neighbor_size / gsl::at(element_size, dim));
-        return (side == Side::Lower ? -1.0 : 1.0) * (neighbor_mean - u_mean) /
-               distance_factor;
-      } else {
-        return 0.0;
-      }
-    };
-
-    // The LambdaPiN limiter allows high-order solutions to escape limiting if
-    // the boundary values are not too different from the mean value:
-    if (minmod_type == SlopeLimiters::MinmodType::LambdaPiN) {
-      bool u_needs_limiting = false;
-      for (size_t d = 0; d < VolumeDim; ++d) {
-        const double u_lower =
-            mean_value_on_boundary(&(gsl::at(*boundary_buffer, d)),
-                                   gsl::at(volume_and_slice_indices, d).first,
-                                   u, mesh, d, Side::Lower);
-        const double u_upper =
-            mean_value_on_boundary(&(gsl::at(*boundary_buffer, d)),
-                                   gsl::at(volume_and_slice_indices, d).second,
-                                   u, mesh, d, Side::Upper);
-        const double diff_lower = difference_to_neighbor(d, Side::Lower);
-        const double diff_upper = difference_to_neighbor(d, Side::Upper);
-
-        // Results from SpECTRE paper (https://arxiv.org/abs/1609.00098) used
-        // minmod_tvbm(..., 0.0), rather than minmod_tvbm(..., tvbm_scale)
-        const double v_lower =
-            u_mean -
-            minmod_tvbm(u_mean - u_lower, diff_lower, diff_upper, tvbm_scale)
-                .value;
-        const double v_upper =
-            u_mean +
-            minmod_tvbm(u_upper - u_mean, diff_lower, diff_upper, tvbm_scale)
-                .value;
-        // Value of epsilon from Hesthaven & Warburton, Chapter 5, in the
-        // SlopeLimitN.m code sample.
-        const double eps = 1.e-8;
-        if (fabs(v_lower - u_lower) > eps or fabs(v_upper - u_upper) > eps) {
-          u_needs_limiting = true;
-          break;
-        }
-      }
-
-      if (not u_needs_limiting) {
-        // Skip the limiting step for this tensor component
-        continue;
-      }
-    }
-
-    linearize(u_lin_buffer, u, mesh);
-    bool reduce_slope = false;
-    auto u_limited_slopes = make_array<VolumeDim>(0.0);
-
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      const double u_lower =
-          mean_value_on_boundary(&(gsl::at(*boundary_buffer, d)),
-                                 gsl::at(volume_and_slice_indices, d).first,
-                                 *u_lin_buffer, mesh, d, Side::Lower);
-      const double u_upper =
-          mean_value_on_boundary(&(gsl::at(*boundary_buffer, d)),
-                                 gsl::at(volume_and_slice_indices, d).second,
-                                 *u_lin_buffer, mesh, d, Side::Upper);
-
-      // Divide by element's width (2.0 in logical coordinates) to get a slope
-      const double local_slope = 0.5 * (u_upper - u_lower);
-      const double upper_slope = 0.5 * difference_to_neighbor(d, Side::Upper);
-      const double lower_slope = 0.5 * difference_to_neighbor(d, Side::Lower);
-
-      const MinmodResult& result =
-          minmod_tvbm(local_slope, max_slope_factor * upper_slope,
-                      max_slope_factor * lower_slope, tvbm_scale);
-      gsl::at(u_limited_slopes, d) = result.value;
-      if (result.activated) {
-        reduce_slope = true;
-      }
-    }
+    DataVector& u = *iter;
+    double u_mean;
+    std::array<double, VolumeDim> u_limited_slopes{};
+    const bool reduce_slope = troubled_cell_indicator(
+        make_not_null(&u_mean), make_not_null(&u_limited_slopes), u_lin_buffer,
+        boundary_buffer, minmod_type, tvbm_constant, u, element, mesh,
+        element_size, effective_neighbor_means, effective_neighbor_sizes,
+        volume_and_slice_indices);
 
     if (reduce_slope or using_linear_limiter_on_non_linear_mesh) {
       u = u_mean;
@@ -269,7 +134,7 @@ bool limit_one_tensor(
       }
       some_component_was_limited = true;
     }
-  }
+  }  // end for loop over tensor components
 
   return some_component_was_limited;
 }
@@ -307,21 +172,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef DIM
 #undef INSTANTIATE
 }  // namespace Minmod_detail
-
-template <>
-SlopeLimiters::MinmodType
-create_from_yaml<SlopeLimiters::MinmodType>::create<void>(
-    const Option& options) {
-  const std::string minmod_type_read = options.parse_as<std::string>();
-  if (minmod_type_read == "LambdaPi1") {
-    return SlopeLimiters::MinmodType::LambdaPi1;
-  } else if (minmod_type_read == "LambdaPiN") {
-    return SlopeLimiters::MinmodType::LambdaPiN;
-  } else if (minmod_type_read == "Muscl") {
-    return SlopeLimiters::MinmodType::Muscl;
-  }
-  PARSE_ERROR(options.context(), "Failed to convert \""
-                                     << minmod_type_read
-                                     << "\" to MinmodType. Expected one of: "
-                                        "{LambdaPi1, LambdaPiN, Muscl}.");
-}
+}  // namespace SlopeLimiters

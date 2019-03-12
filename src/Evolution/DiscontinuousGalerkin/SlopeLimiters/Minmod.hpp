@@ -21,6 +21,7 @@
 #include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "Domain/MaxNumberOfNeighbors.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
@@ -62,24 +63,8 @@ struct SizeOfElement;
 /// \endcond
 
 namespace SlopeLimiters {
-/// \ingroup SlopeLimitersGroup
-/// \brief Possible types of the minmod slope limiter.
-///
-/// \see SlopeLimiters::Minmod
-enum class MinmodType { LambdaPi1, LambdaPiN, Muscl };
-}  // namespace SlopeLimiters
 
 namespace Minmod_detail {
-// Encodes the return status of the minmod_tvbm function.
-struct MinmodResult {
-  const double value;
-  const bool activated;
-};
-
-// The TVBM-corrected minmod function, see e.g. Cockburn reference Eq. 2.26.
-MinmodResult minmod_tvbm(double a, double b, double c,
-                         double tvbm_scale) noexcept;
-
 // Implements the minmod limiter for one Tensor<DataVector>.
 //
 // The interface is designed to erase the tensor structure information, because
@@ -117,7 +102,6 @@ bool limit_one_tensor(
                      VolumeDim>& volume_and_slice_indices) noexcept;
 }  // namespace Minmod_detail
 
-namespace SlopeLimiters {
 /// \ingroup SlopeLimitersGroup
 /// \brief A general minmod slope limiter
 ///
@@ -472,15 +456,3 @@ bool operator!=(const Minmod<VolumeDim, TagList>& lhs,
 }
 
 }  // namespace SlopeLimiters
-
-template <>
-struct create_from_yaml<SlopeLimiters::MinmodType> {
-  template <typename Metavariables>
-  static SlopeLimiters::MinmodType create(const Option& options) {
-    return create<void>(options);
-  }
-};
-template <>
-SlopeLimiters::MinmodType
-create_from_yaml<SlopeLimiters::MinmodType>::create<void>(
-    const Option& options);

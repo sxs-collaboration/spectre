@@ -5,6 +5,8 @@ set(LIBRARY SlopeLimiters)
 
 set(LIBRARY_SOURCES
   Minmod.cpp
+  MinmodTci.cpp
+  MinmodType.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
