@@ -3,3 +3,4 @@
 
 add_subdirectory(HelloWorld)
 add_subdirectory(HelloWorldNoCharm)
+add_subdirectory(SingletonTovProfile)
