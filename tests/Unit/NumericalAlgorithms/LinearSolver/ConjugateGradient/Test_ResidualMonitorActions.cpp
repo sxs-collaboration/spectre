@@ -17,9 +17,11 @@
 #include "DataStructures/DenseVector.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "Informer/Verbosity.hpp"
+#include "NumericalAlgorithms/Convergence/Criteria.hpp"
+#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitor.hpp"
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitorActions.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/Observe.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -189,16 +191,15 @@ SPECTRE_TEST_CASE(
       MockResidualMonitor<Metavariables>>;
   const int singleton_id{0};
   tuples::get<MockSingletonObjectsTag>(dist_objects)
-      .emplace(
-          singleton_id,
-          db::create<
-              typename LinearSolver::cg_detail::InitializeResidualMonitor<
-                  Metavariables>::simple_tags,
-              typename LinearSolver::cg_detail::InitializeResidualMonitor<
-                  Metavariables>::compute_tags>(
-              Verbosity::Verbose, LinearSolver::ConvergenceCriteria{2, 0., 0.5},
-              0_st, std::numeric_limits<double>::signaling_NaN(),
-              std::numeric_limits<double>::signaling_NaN()));
+      .emplace(singleton_id,
+               db::create<
+                   typename LinearSolver::cg_detail::InitializeResidualMonitor<
+                       Metavariables>::simple_tags,
+                   typename LinearSolver::cg_detail::InitializeResidualMonitor<
+                       Metavariables>::compute_tags>(
+                   Verbosity::Verbose, Convergence::Criteria{2, 0., 0.5}, 0_st,
+                   std::numeric_limits<double>::signaling_NaN(),
+                   std::numeric_limits<double>::signaling_NaN()));
 
   // Setup mock element array
   using MockDistributedObjectsTag =
@@ -376,7 +377,7 @@ SPECTRE_TEST_CASE(
     CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
-          LinearSolver::ConvergenceReason::AbsoluteResidual);
+          Convergence::Reason::AbsoluteResidual);
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckValueTag>(mock_element_box) == 0.);
     CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
@@ -409,7 +410,7 @@ SPECTRE_TEST_CASE(
     CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 2);
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
-          LinearSolver::ConvergenceReason::MaxIterations);
+          Convergence::Reason::MaxIterations);
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckValueTag>(mock_element_box) == 1.);
     CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
@@ -435,7 +436,7 @@ SPECTRE_TEST_CASE(
     CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
-          LinearSolver::ConvergenceReason::RelativeResidual);
+          Convergence::Reason::RelativeResidual);
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckValueTag>(mock_element_box) == 0.25);
     CHECK(db::get<CheckConvergedTag>(mock_element_box) ==

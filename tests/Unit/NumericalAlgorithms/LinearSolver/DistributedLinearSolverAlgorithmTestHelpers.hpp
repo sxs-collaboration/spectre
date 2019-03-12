@@ -22,6 +22,7 @@
 #include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -171,7 +172,7 @@ struct TestResult {
     const auto& has_converged = get<LinearSolver::Tags::HasConverged>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
     SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
-                             LinearSolver::ConvergenceReason::AbsoluteResidual);
+                             Convergence::Reason::AbsoluteResidual);
     const auto& expected_result =
         gsl::at(get<ExpectedResult>(cache), array_index);
     const auto& result = get<ScalarFieldTag>(box).get();

@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
