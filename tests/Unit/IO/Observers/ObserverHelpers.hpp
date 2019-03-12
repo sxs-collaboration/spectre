@@ -84,23 +84,4 @@ struct Metavariables {
 
   enum class Phase { Initialize, Exit };
 };
-
-class TimeId {
- public:
-  explicit TimeId(const size_t value) : value_(value) {}
-  size_t value() const { return value_; }
-
- private:
-  size_t value_;
-};
-inline size_t hash_value(const TimeId& id) noexcept { return id.value(); }
 }  // namespace TestObservers_detail
-
-namespace std {
-template <>
-struct hash<TestObservers_detail::TimeId> {
-  size_t operator()(const TestObservers_detail::TimeId& id) const noexcept {
-    return id.value();
-  }
-};
-}  // namespace std

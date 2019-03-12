@@ -95,9 +95,8 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
     runner
         .simple_action<element_comp, observers::Actions::RegisterWithObservers<
                                          observers::TypeOfObservation::Volume>>(
-            id,
-            observers::ObservationId(
-                TimeId(3), typename Metavariables::element_observation_type{}));
+            id, observers::ObservationId(
+                    3., typename Metavariables::element_observation_type{}));
     // Invoke the simple_action RegisterSenderWithSelf that was called on the
     // observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);
@@ -150,7 +149,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
         .simple_action<obs_component, observers::Actions::ContributeVolumeData>(
             0,
             observers::ObservationId(
-                TimeId(3), typename Metavariables::element_observation_type{}),
+                3., typename Metavariables::element_observation_type{}),
             std::string{"/element_data"}, array_id,
             /* get<1> = volume tensor data */
             std::move(std::get<1>(volume_data_fakes)),
@@ -170,7 +169,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
 
     const auto temporal_id =
         observers::ObservationId(
-            TimeId(3), typename Metavariables::element_observation_type{})
+            3., typename Metavariables::element_observation_type{})
             .hash();
     CHECK(volume_file.list_observation_ids() ==
           std::vector<size_t>{temporal_id});

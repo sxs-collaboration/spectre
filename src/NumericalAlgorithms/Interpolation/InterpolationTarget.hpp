@@ -139,13 +139,12 @@ struct InterpolationTarget {
       tmpl::for_each<
           typename InterpolationTargetTag::post_interpolation_callback::
               observation_types>([&local_cache](auto type_v) noexcept {
-         using type = typename decltype(type_v)::type;
+        using type = typename decltype(type_v)::type;
         // The 'time' value of the observation_id doesn't matter here and
         // is currently not used.
         // In the future when we do load balancing, we will need to register
         // and unregister at specific times.
-        const observers::ObservationId observation_id(Time(Slab(0.0, 0.1), 0),
-                                                      type{});
+        const observers::ObservationId observation_id(0., type{});
         Parallel::simple_action<
             observers::Actions::RegisterSingletonWithObserverWriter>(
             Parallel::get_parallel_component<

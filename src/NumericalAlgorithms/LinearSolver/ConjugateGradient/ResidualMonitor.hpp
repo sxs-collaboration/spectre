@@ -10,7 +10,7 @@
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
+#include "NumericalAlgorithms/LinearSolver/Observe.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -63,7 +63,8 @@ struct ResidualMonitor {
         std::move(convergence_criteria));  // NOLINT
 
     const auto initial_observation_id = observers::ObservationId(
-        IterationId{}, typename Metavariables::element_observation_type{});
+        db::item_type<LinearSolver::Tags::IterationId>{0},
+        typename LinearSolver::observe_detail::ObservationType{});
     Parallel::simple_action<
         observers::Actions::RegisterSingletonWithObserverWriter>(
         Parallel::get_parallel_component<ResidualMonitor>(
@@ -113,7 +114,7 @@ struct InitializeResidualMonitor {
         // clang-tidy: std::move of trivially-copyable type
         std::move(verbosity),             // NOLINT
         std::move(convergence_criteria),  // NOLINT
-        LinearSolver::IterationId{0},
+        db::item_type<LinearSolver::Tags::IterationId>{0},
         std::numeric_limits<double>::signaling_NaN(),
         std::numeric_limits<double>::signaling_NaN());
     return std::make_tuple(std::move(box));

@@ -22,7 +22,6 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/Gmres.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"

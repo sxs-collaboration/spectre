@@ -10,7 +10,6 @@
 #include "DataStructures/DenseVector.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ResidualMonitorActions.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -134,19 +133,19 @@ struct OrthogonalizeOperand {
         make_not_null(&box),
         [orthogonalization](
             const gsl::not_null<db::item_type<operand_tag>*> operand,
-            const gsl::not_null<IterationId*> orthogonalization_iteration_id,
+            const gsl::not_null<
+                db::item_type<orthogonalization_iteration_id_tag>*>
+                orthogonalization_iteration_id,
             const db::item_type<basis_history_tag>& basis_history) noexcept {
           *operand -= orthogonalization *
-                      gsl::at(basis_history,
-                              orthogonalization_iteration_id->step_number);
-          orthogonalization_iteration_id->step_number++;
+                      gsl::at(basis_history, *orthogonalization_iteration_id);
+          (*orthogonalization_iteration_id)++;
         },
         get<basis_history_tag>(box));
 
-    const auto next_orthogonalization_iteration_id =
-        get<orthogonalization_iteration_id_tag>(box).step_number;
-    const auto iteration_id =
-        get<LinearSolver::Tags::IterationId>(box).step_number;
+    const auto& next_orthogonalization_iteration_id =
+        get<orthogonalization_iteration_id_tag>(box);
+    const auto& iteration_id = get<LinearSolver::Tags::IterationId>(box);
 
     if (next_orthogonalization_iteration_id <= iteration_id) {
       Parallel::contribute_to_reduction<
@@ -206,18 +205,23 @@ struct NormalizeOperandAndUpdateField {
         make_not_null(&box),
         [
           normalization, &minres, &has_converged
-        ](const gsl::not_null<IterationId*> iteration_id,
-          const gsl::not_null<IterationId*> next_iteration_id,
-          const gsl::not_null<IterationId*> orthogonalization_iteration_id,
+        ](const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
+              iteration_id,
+          const gsl::not_null<
+              db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>*>
+              next_iteration_id,
+          const gsl::not_null<
+              db::item_type<orthogonalization_iteration_id_tag>*>
+              orthogonalization_iteration_id,
           const gsl::not_null<db::item_type<operand_tag>*> operand,
           const gsl::not_null<db::item_type<basis_history_tag>*> basis_history,
           const gsl::not_null<db::item_type<fields_tag>*> field,
           const gsl::not_null<db::item_type<LinearSolver::Tags::HasConverged>*>
               local_has_converged,
           const db::item_type<initial_fields_tag>& initial_field) noexcept {
-          iteration_id->step_number++;
-          next_iteration_id->step_number = iteration_id->step_number + 1;
-          orthogonalization_iteration_id->step_number = 0;
+          (*iteration_id)++;
+          *next_iteration_id = *iteration_id + 1;
+          *orthogonalization_iteration_id = 0;
           *operand /= normalization;
           basis_history->push_back(*operand);
           *field = initial_field;

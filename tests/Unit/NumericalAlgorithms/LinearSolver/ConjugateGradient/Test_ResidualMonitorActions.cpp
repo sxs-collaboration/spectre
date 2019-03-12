@@ -20,9 +20,10 @@
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitor.hpp"
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitorActions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
+#include "NumericalAlgorithms/LinearSolver/Observe.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -172,9 +173,6 @@ struct Metavariables {
   using component_list = tmpl::list<MockResidualMonitor<Metavariables>,
                                     MockElementArray<Metavariables>,
                                     MockObserverWriter<Metavariables>>;
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
-
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
 };
@@ -199,8 +197,7 @@ SPECTRE_TEST_CASE(
               typename LinearSolver::cg_detail::InitializeResidualMonitor<
                   Metavariables>::compute_tags>(
               Verbosity::Verbose, LinearSolver::ConvergenceCriteria{2, 0., 0.5},
-              LinearSolver::IterationId{0},
-              std::numeric_limits<double>::signaling_NaN(),
+              0_st, std::numeric_limits<double>::signaling_NaN(),
               std::numeric_limits<double>::signaling_NaN()));
 
   // Setup mock element array
@@ -266,15 +263,14 @@ SPECTRE_TEST_CASE(
     const auto& box = get_box();
     CHECK(db::get<residual_square_tag>(box) == 4.);
     CHECK(db::get<initial_residual_magnitude_tag>(box) == 2.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 0);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
     CHECK_FALSE(get<LinearSolver::Tags::HasConverged>(box));
     const auto& mock_element_box = get_mock_element_box();
     CHECK_FALSE(db::get<CheckConvergedTag>(mock_element_box));
     const auto& mock_observer_writer_box = get_mock_observer_writer_box();
     CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
           observers::ObservationId{
-              LinearSolver::IterationId{0},
-              typename Metavariables::element_observation_type{}});
+              0, LinearSolver::observe_detail::ObservationType{}});
     CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
           "/linear_residuals");
     CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
@@ -295,7 +291,7 @@ SPECTRE_TEST_CASE(
     const auto& box = get_box();
     CHECK(db::get<residual_square_tag>(box) == 0.);
     CHECK(db::get<initial_residual_magnitude_tag>(box) == 0.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 0);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
     CHECK(get<LinearSolver::Tags::HasConverged>(box));
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckConvergedTag>(mock_element_box));
@@ -316,7 +312,7 @@ SPECTRE_TEST_CASE(
         element_id);
     const auto& box = get_box();
     CHECK(db::get<residual_square_tag>(box) == 1.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 0);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckValueTag>(mock_element_box) == 0.5);
   }
@@ -341,7 +337,7 @@ SPECTRE_TEST_CASE(
     const auto& box = get_box();
     CHECK(db::get<residual_square_tag>(box) == 4.);
     CHECK(db::get<initial_residual_magnitude_tag>(box) == 3.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
     CHECK_FALSE(get<LinearSolver::Tags::HasConverged>(box));
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckValueTag>(mock_element_box) == approx(4. / 9.));
@@ -350,8 +346,7 @@ SPECTRE_TEST_CASE(
     const auto& mock_observer_writer_box = get_mock_observer_writer_box();
     CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
           observers::ObservationId{
-              LinearSolver::IterationId{1},
-              typename Metavariables::element_observation_type{}});
+              1, LinearSolver::observe_detail::ObservationType{}});
     CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
           "/linear_residuals");
     CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
@@ -378,7 +373,7 @@ SPECTRE_TEST_CASE(
     const auto& box = get_box();
     CHECK(db::get<residual_square_tag>(box) == 0.);
     CHECK(db::get<initial_residual_magnitude_tag>(box) == 1.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
           LinearSolver::ConvergenceReason::AbsoluteResidual);
@@ -411,7 +406,7 @@ SPECTRE_TEST_CASE(
     const auto& box = get_box();
     CHECK(db::get<residual_square_tag>(box) == 1.);
     CHECK(db::get<initial_residual_magnitude_tag>(box) == 1.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 2);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 2);
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
           LinearSolver::ConvergenceReason::MaxIterations);
@@ -437,7 +432,7 @@ SPECTRE_TEST_CASE(
     const auto& box = get_box();
     CHECK(db::get<residual_square_tag>(box) == 0.25);
     CHECK(db::get<initial_residual_magnitude_tag>(box) == 1.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
           LinearSolver::ConvergenceReason::RelativeResidual);

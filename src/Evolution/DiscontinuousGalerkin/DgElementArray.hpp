@@ -106,8 +106,7 @@ struct DgElementArray {
       // elements migrate around the system they will need to register and
       // unregister themselves at specific times.
       const observers::ObservationId observation_id_with_fake_time(
-          Time(Slab(0.0, 0.1), 0),
-          typename Metavariables::element_observation_type{});
+          0., typename Metavariables::element_observation_type{});
       Parallel::simple_action<observers::Actions::RegisterWithObservers<
           observers::TypeOfObservation::ReductionAndVolume>>(
           Parallel::get_parallel_component<DgElementArray>(local_cache),

@@ -8,8 +8,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace {
@@ -55,8 +55,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Tags",
                           residual_magnitude_tag,
                           initial_residual_magnitude_tag>,
         db::AddComputeTags<LinearSolver::Tags::HasConvergedCompute<Tag>>>(
-        LinearSolver::ConvergenceCriteria{2, 0., 0.5},
-        LinearSolver::IterationId{2}, 1., 1.);
+        LinearSolver::ConvergenceCriteria{2, 0., 0.5}, 2_st, 1., 1.);
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
           LinearSolver::ConvergenceReason::MaxIterations);
@@ -72,8 +71,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Tags",
                           residual_magnitude_tag,
                           initial_residual_magnitude_tag>,
         db::AddComputeTags<LinearSolver::Tags::HasConvergedCompute<Tag>>>(
-        LinearSolver::ConvergenceCriteria{2, 0., 0.5},
-        LinearSolver::IterationId{1}, 0., 0.);
+        LinearSolver::ConvergenceCriteria{2, 0., 0.5}, 1_st, 0., 0.);
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
           LinearSolver::ConvergenceReason::AbsoluteResidual);

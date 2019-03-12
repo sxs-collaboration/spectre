@@ -32,10 +32,9 @@ namespace observers {
  * dense output observations that increments the counter for each observation
  * but has a value equal to the physical time.
  *
- * The identifier must have a `value()` method that returns a double
- * representing the current "time" at which we are observing. For an evolution
- * this could be the physical time, while for an elliptic solve this could be a
- * combination of nonlinear and linear iteration.
+ * The constructor takes a `double` representing the current "time" at which we
+ * are observing. For an evolution this could be the physical time, while for an
+ * elliptic solve this could be a combination of nonlinear and linear iteration.
  *
  * A specialization of `std::hash` is provided to allow using `ObservationId`
  * as a key in associative containers.
@@ -45,7 +44,7 @@ class ObservationId {
   ObservationId() = default;
 
   /*!
-   * \brief Construct from an ID of type `Id` and an `ObservationType`.
+   * \brief Construct from a value and an `ObservationType`.
    *
    * `ObservationType` is used to distinguish different classes that
    * do observing, so that messages to ObserverWriter do not collide.
@@ -57,8 +56,8 @@ class ObservationId {
    * these different kinds of observation should be denoted by passing
    * the optional `observation_subtype` string.
    */
-  template <typename Id, typename ObservationType>
-  explicit ObservationId(const Id& t, const ObservationType& meta,
+  template <typename ObservationType>
+  explicit ObservationId(double t, const ObservationType& meta,
                          const std::string& observation_subtype = "") noexcept;
 
   /// Hash used to distinguish between ObservationIds of different
@@ -83,8 +82,8 @@ class ObservationId {
   double value_;
 };
 
-template <typename Id, typename ObservationType>
-ObservationId::ObservationId(const Id& t, const ObservationType& /*meta*/,
+template <typename ObservationType>
+ObservationId::ObservationId(const double t, const ObservationType& /*meta*/,
                              const std::string& observation_subtype) noexcept
     : observation_type_hash_(std::hash<std::string>{}(
           pretty_type::get_name<ObservationType>() + observation_subtype)),
@@ -93,7 +92,7 @@ ObservationId::ObservationId(const Id& t, const ObservationType& /*meta*/,
         boost::hash_combine(combined, t);
         return combined;
       }(observation_type_hash_)),
-      value_(t.value()) {}
+      value_(t) {}
 
 bool operator==(const ObservationId& lhs, const ObservationId& rhs) noexcept;
 bool operator!=(const ObservationId& lhs, const ObservationId& rhs) noexcept;

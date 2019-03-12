@@ -11,7 +11,6 @@
 
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -38,16 +37,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Convergence",
 
   {
     INFO("Convergence logic");
-    CHECK(LinearSolver::convergence_criteria_match(
-              criteria, LinearSolver::IterationId{1}, 1., 1.) == boost::none);
-    CHECK(LinearSolver::convergence_criteria_match(
-              criteria, LinearSolver::IterationId{2}, 1., 1.) ==
+    CHECK(LinearSolver::convergence_criteria_match(criteria, 1, 1., 1.) ==
+          boost::none);
+    CHECK(LinearSolver::convergence_criteria_match(criteria, 2, 1., 1.) ==
           LinearSolver::ConvergenceReason::MaxIterations);
-    CHECK(LinearSolver::convergence_criteria_match(
-              criteria, LinearSolver::IterationId{1}, 0., 1.) ==
+    CHECK(LinearSolver::convergence_criteria_match(criteria, 1, 0., 1.) ==
           LinearSolver::ConvergenceReason::AbsoluteResidual);
-    CHECK(LinearSolver::convergence_criteria_match(
-              criteria, LinearSolver::IterationId{1}, 1., 2.) ==
+    CHECK(LinearSolver::convergence_criteria_match(criteria, 1, 1., 2.) ==
           LinearSolver::ConvergenceReason::RelativeResidual);
   }
 
@@ -57,8 +53,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Convergence",
     CHECK_FALSE(has_not_converged_by_default);
     test_serialization(has_not_converged_by_default);
     test_copy_semantics(has_not_converged_by_default);
-    const LinearSolver::HasConverged has_not_converged{
-        criteria, LinearSolver::IterationId{1}, 1., 1.};
+    const LinearSolver::HasConverged has_not_converged{criteria, 1, 1., 1.};
     CHECK_FALSE(has_not_converged);
     CHECK(get_output(has_not_converged) ==
           "The linear solver has not yet converged.\n");
@@ -68,8 +63,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Convergence",
 
   {
     INFO("HasConverged - MaxIterations")
-    const LinearSolver::HasConverged has_converged{
-        criteria, LinearSolver::IterationId{2}, 1., 1.};
+    const LinearSolver::HasConverged has_converged{criteria, 2, 1., 1.};
     CHECK(has_converged);
     CHECK(has_converged.reason() ==
           LinearSolver::ConvergenceReason::MaxIterations);
@@ -82,8 +76,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Convergence",
 
   {
     INFO("HasConverged - AbsoluteResidual")
-    const LinearSolver::HasConverged has_converged{
-        criteria, LinearSolver::IterationId{1}, 0., 1.};
+    const LinearSolver::HasConverged has_converged{criteria, 1, 0., 1.};
     CHECK(has_converged);
     CHECK(has_converged.reason() ==
           LinearSolver::ConvergenceReason::AbsoluteResidual);
@@ -96,8 +89,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Convergence",
 
   {
     INFO("HasConverged - RelativeResidual")
-    const LinearSolver::HasConverged has_converged{
-        criteria, LinearSolver::IterationId{1}, 1., 2.};
+    const LinearSolver::HasConverged has_converged{criteria, 1, 1., 2.};
     CHECK(has_converged);
     CHECK(has_converged.reason() ==
           LinearSolver::ConvergenceReason::RelativeResidual);
@@ -117,9 +109,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Convergence",
     "[Unit][NumericalAlgorithms][LinearSolver]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const LinearSolver::HasConverged has_not_converged{
-      LinearSolver::ConvergenceCriteria{2, 0., 0.5},
-      LinearSolver::IterationId{1}, 1., 1.};
+  const LinearSolver::HasConverged has_not_converged{{2, 0., 0.5}, 1, 1., 1.};
   has_not_converged.reason();
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif

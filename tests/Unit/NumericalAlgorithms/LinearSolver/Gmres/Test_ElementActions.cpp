@@ -15,11 +15,13 @@
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ElementActions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
+#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
+
+// IWYU pragma: no_include <boost/variant/get.hpp>
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
@@ -85,10 +87,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
                                InitializeElement<Metavariables>::simple_tags>,
               typename LinearSolver::gmres_detail::InitializeElement<
                   Metavariables>::compute_tags>(
-              DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
-              LinearSolver::IterationId{0}, LinearSolver::IterationId{0},
-              DenseVector<double>(3, -1.),
-              LinearSolver::IterationId{0},
+              DenseVector<double>(3, 0.), DenseVector<double>(3, 2.), 0_st,
+              0_st, DenseVector<double>(3, -1.), 0_st,
               std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
                                                DenseVector<double>(3, 1.5)},
               db::item_type<LinearSolver::Tags::HasConverged>{}));
@@ -100,7 +100,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
   };
   {
     const auto& box = get_box();
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 0);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
     CHECK(db::get<initial_fields_tag>(box) == DenseVector<double>(3, -1.));
     CHECK(db::get<operand_tag>(box) == DenseVector<double>(3, 2.));
     CHECK(db::get<basis_history_tag>(box).size() == 2);
@@ -116,8 +116,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
                          LinearSolver::gmres_detail::NormalizeInitialOperand>(
         self_id, 4.,
         db::item_type<LinearSolver::Tags::HasConverged>{
-            LinearSolver::ConvergenceCriteria{1, 0., 0.},
-            LinearSolver::IterationId{1}, 0., 0.});
+            {1, 0., 0.}, 1, 0., 0.});
     const auto& box = get_box();
     CHECK_ITERABLE_APPROX(db::get<operand_tag>(box),
                           DenseVector<double>(3, 0.5));
@@ -131,11 +130,10 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
         LinearSolver::gmres_detail::NormalizeOperandAndUpdateField>(
         self_id, 4., DenseVector<double>{2., 4.},
         db::item_type<LinearSolver::Tags::HasConverged>{
-            LinearSolver::ConvergenceCriteria{1, 0., 0.},
-            LinearSolver::IterationId{1}, 0., 0.});
+            {1, 0., 0.}, 1, 0., 0.});
     const auto& box = get_box();
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
-    CHECK(db::get<orthogonalization_iteration_id_tag>(box).step_number == 0);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
+    CHECK(db::get<orthogonalization_iteration_id_tag>(box) == 0);
     CHECK_ITERABLE_APPROX(db::get<operand_tag>(box),
                           DenseVector<double>(3, 0.5));
     CHECK(db::get<basis_history_tag>(box).size() == 3);

@@ -14,14 +14,13 @@
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/InitializeElement.hpp"
 #include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
-#include "NumericalAlgorithms/LinearSolver/IterationId.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
+#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <boost/variant/get.hpp>
-
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
@@ -83,9 +82,8 @@ SPECTRE_TEST_CASE(
                                Metavariables>::simple_tags>,
               typename LinearSolver::cg_detail::InitializeElement<
                   Metavariables>::compute_tags>(
-              DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
-              LinearSolver::IterationId{0}, LinearSolver::IterationId{0},
-              DenseVector<double>(3, 1.),
+              DenseVector<double>(3, 0.), DenseVector<double>(3, 2.), 0_st,
+              0_st, DenseVector<double>(3, 1.),
               db::item_type<LinearSolver::Tags::HasConverged>{}));
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
   const auto get_box = [&runner, &self_id]() -> decltype(auto) {
@@ -95,7 +93,7 @@ SPECTRE_TEST_CASE(
   };
   {
     const auto& box = get_box();
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 0);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
     CHECK(db::get<LinearSolver::Tags::Operand<VectorTag>>(box) ==
           DenseVector<double>(3, 2.));
   }
@@ -109,8 +107,7 @@ SPECTRE_TEST_CASE(
     runner.simple_action<ElementArray<Metavariables>,
                          LinearSolver::cg_detail::InitializeHasConverged>(
         self_id, db::item_type<LinearSolver::Tags::HasConverged>{
-                     LinearSolver::ConvergenceCriteria{1, 0., 0.},
-                     LinearSolver::IterationId{1}, 0., 0.});
+                     {1, 0., 0.}, 1, 0., 0.});
     const auto& box = get_box();
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
   }
@@ -119,10 +116,9 @@ SPECTRE_TEST_CASE(
                          LinearSolver::cg_detail::UpdateOperand>(
         self_id, 2.,
         db::item_type<LinearSolver::Tags::HasConverged>{
-            LinearSolver::ConvergenceCriteria{1, 0., 0.},
-            LinearSolver::IterationId{1}, 0., 0.});
+            {1, 0., 0.}, 1, 0., 0.});
     const auto& box = get_box();
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box).step_number == 1);
+    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
     CHECK(db::get<LinearSolver::Tags::Operand<VectorTag>>(box) ==
           DenseVector<double>(3, 5.));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));

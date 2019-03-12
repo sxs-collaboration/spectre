@@ -104,7 +104,7 @@ struct ObserveTimeSeriesOnSurface {
     // always guaranteed to be present.
     Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
         proxy[0],
-        observers::ObservationId(temporal_id.time(), ObservationType{}),
+        observers::ObservationId(temporal_id.time().value(), ObservationType{}),
         std::string{"/" + pretty_type::short_name<InterpolationTargetTag>()},
         detail::make_legend(TagsToObserve{}),
         detail::make_reduction_data(box, temporal_id.time().value(),
