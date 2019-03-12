@@ -265,6 +265,20 @@ struct Var : db::SimpleTag {
       N == 2 or N == 20;    // sliced_compute_item_tag below
 };
 
+template <size_t N>
+struct VarPlusFive : db::SimpleTag {
+  static std::string name() noexcept { return "VarPlusFive"; }
+  using type = Scalar<DataVector>;
+};
+
+template <size_t N>
+struct VarPlusFiveCompute : VarPlusFive<N>, db::ComputeTag {
+  static Scalar<DataVector> function(const Scalar<DataVector>& var) noexcept {
+    return Scalar<DataVector>{get(var) + 5.0};
+  }
+  using argument_tags = tmpl::list<Var<N>>;
+};
+
 template <size_t VolumeDim>
 struct Compute : db::ComputeTag {
   static std::string name() noexcept { return "Compute"; }
@@ -334,16 +348,26 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
     return volume_data;
   }();
 
+  const auto volume_tensor = [&mesh]() {
+    DataVector result(mesh.number_of_grid_points());
+    for (size_t i = 0; i < mesh.number_of_grid_points(); ++i) {
+      result[i] = i;
+    }
+    return Scalar<DataVector>{result};
+  }();
+
   auto box = db::create<
       db::AddSimpleTags<
-          Tags::Mesh<dim>, Tags::Variables<tmpl::list<Var<2>>>,
+          Tags::Mesh<dim>, Tags::Variables<tmpl::list<Var<2>>>, Var<3>,
           Tags::Interface<Dirs, Tags::Variables<tmpl::list<Var<0>>>>>,
       db::AddComputeTags<
-          Dirs, Tags::InterfaceComputeItem<Dirs, Tags::Direction<dim>>,
+          Dirs, VarPlusFiveCompute<3>,
+          Tags::InterfaceComputeItem<Dirs, Tags::Direction<dim>>,
           Tags::InterfaceComputeItem<Dirs, Tags::InterfaceMesh<dim>>,
           Tags::InterfaceComputeItem<Dirs, Compute<1>>,
-          Tags::Slice<Dirs, Tags::Variables<tmpl::list<Var<2>>>>>>(
-      mesh, volume_var,
+          Tags::Slice<Dirs, Tags::Variables<tmpl::list<Var<2>>>>,
+          Tags::Slice<Dirs, Var<3>>, Tags::Slice<Dirs, VarPlusFive<3>>>>(
+      mesh, volume_var, volume_tensor,
       make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
 
   CHECK((db::get<Tags::Interface<Dirs, Var<0>>>(box)) ==
@@ -354,6 +378,10 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
         make_interface_tensor({5., 5., 5.}, {5., 5., 5., 5.}));
   CHECK((db::get<Tags::Interface<Dirs, Var<2>>>(box)) ==
         make_interface_tensor({0., 4., 8.}, {8., 9., 10., 11.}));
+  CHECK((db::get<Tags::Interface<Dirs, Var<3>>>(box)) ==
+        make_interface_tensor({0., 4., 8.}, {8., 9., 10., 11.}));
+  CHECK((db::get<Tags::Interface<Dirs, VarPlusFive<3>>>(box)) ==
+        make_interface_tensor({5., 9., 13.}, {13., 14., 15., 16.}));
 
   db::mutate<Tags::Interface<Dirs, Var<0>>>(
       make_not_null(&box), [](const auto boundary_tensor) noexcept {
@@ -374,6 +402,13 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
   const Mesh<dim> mesh{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
 
+  auto volume_tensor = [&mesh]() {
+    DataVector result(mesh.number_of_grid_points());
+    for (size_t i = 0; i < mesh.number_of_grid_points(); ++i) {
+      result[i] = 2.0 * static_cast<double>(i);
+    }
+    return Scalar<DataVector>{result};
+  }();
   db::item_type<sliced_simple_item_tag> volume_vars(
       mesh.number_of_grid_points());
   get<Var<3>>(volume_vars).get() =
@@ -407,17 +442,19 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
 
   auto box = db::create<
       db::AddSimpleTags<Tags::Mesh<dim>, Tags::ElementMap<dim>,
-                        sliced_simple_item_tag,
+                        sliced_simple_item_tag, Var<4>,
                         Tags::Interface<Dirs, simple_item_tag>>,
       db::AddComputeTags<
-          Dirs, sliced_compute_item_tag,
+          Dirs, sliced_compute_item_tag, VarPlusFiveCompute<4>,
           Tags::InterfaceComputeItem<Dirs, Tags::Direction<dim>>,
           Tags::InterfaceComputeItem<Dirs, Tags::InterfaceMesh<dim>>,
           Tags::InterfaceComputeItem<Dirs, compute_item_tag>,
           Tags::InterfaceComputeItem<Dirs, Tags::BoundaryCoordinates<dim>>,
           Tags::Slice<Dirs, sliced_compute_item_tag>,
-          Tags::Slice<Dirs, sliced_simple_item_tag>>>(
+          Tags::Slice<Dirs, sliced_simple_item_tag>, Tags::Slice<Dirs, Var<4>>,
+          Tags::Slice<Dirs, VarPlusFive<4>>>>(
       mesh, std::move(element_map), std::move(volume_vars),
+      std::move(volume_tensor),
       make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
 
   CHECK((db::get<Tags::Interface<Dirs, simple_item_tag>>(box)) ==
@@ -435,6 +472,10 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
              {2., 2., 2., 2.}, {10., 10., 10., 10.})));
   CHECK((db::get<Tags::Interface<Dirs, sliced_simple_item_tag>>(box)) ==
         make_interface_variables<3>({0., 4., 8.}, {8., 9., 10., 11.}));
+  CHECK((db::get<Tags::Interface<Dirs, Var<4>>>(box)) ==
+        make_interface_tensor({0., 8., 16.}, {16., 18., 20., 22.}));
+  CHECK((db::get<Tags::Interface<Dirs, VarPlusFive<4>>>(box)) ==
+        make_interface_tensor({5., 13., 21.}, {21., 23., 25., 27.}));
 }
 
 namespace {

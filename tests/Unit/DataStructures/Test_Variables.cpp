@@ -270,7 +270,6 @@ void test_variables_move() noexcept {
                                                                          100.0};
   UniformCustomDistribution<size_t> sdist{5, 20};
 
-
   const size_t number_of_grid_points1 = sdist(gen);
   const size_t number_of_grid_points2 = sdist(gen);
   const std::array<value_type, 2> initial_fill_values =
@@ -329,8 +328,8 @@ void test_variables_math() noexcept {
   const auto value_in_variables = make_with_random_values<value_type>(
       make_not_null(&gen), make_not_null(&dist));
   const std::array<value_type, 3> rand_vals =
-      make_with_random_values<std::array<value_type,3>>(make_not_null(&gen),
-                                                        make_not_null(&dist));
+      make_with_random_values<std::array<value_type, 3>>(make_not_null(&gen),
+                                                         make_not_null(&dist));
 
   // Test math +, -, *, /
   const TestVariablesType vars{num_points, value_in_variables};
@@ -449,7 +448,7 @@ void test_variables_prefix_semantics() noexcept {
                                                       variables_vals[1]};
   VariablesType vars_to{prefix_vars_copy_construct_from};
   VariablesType move_constructed_vars{
-    std::move(prefix_vars_move_construct_from)};
+      std::move(prefix_vars_move_construct_from)};
 
   VariablesType expected{number_of_grid_points, variables_vals[0]};
   CHECK_VARIABLES_APPROX(vars_to, expected);
@@ -816,6 +815,20 @@ void test_variables_slice() noexcept {
       }
     }
   }
+
+  CHECK(data_on_slice(get<VariablesTestTags_detail::tensor<VectorType>>(vars),
+                      extents, 0, x_offset) ==
+        get<VariablesTestTags_detail::tensor<VectorType>>(
+            expected_vars_sliced_in_x));
+  CHECK(data_on_slice(get<VariablesTestTags_detail::tensor<VectorType>>(vars),
+                      extents, 1, y_offset) ==
+        get<VariablesTestTags_detail::tensor<VectorType>>(
+            expected_vars_sliced_in_y));
+  CHECK(data_on_slice(get<VariablesTestTags_detail::tensor<VectorType>>(vars),
+                      extents, 2, z_offset) ==
+        get<VariablesTestTags_detail::tensor<VectorType>>(
+            expected_vars_sliced_in_z));
+
   CHECK(data_on_slice(vars, extents, 0, x_offset) == expected_vars_sliced_in_x);
   CHECK(data_on_slice(vars, extents, 1, y_offset) == expected_vars_sliced_in_y);
   CHECK(data_on_slice(vars, extents, 2, z_offset) == expected_vars_sliced_in_z);
@@ -990,10 +1003,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
 #endif
 }
 
+    // clang-format off
 // [[OutputRegex, Must copy into same size]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.Variables.assign_to_default",
     "[DataStructures][Unit]") {
+  // clang-format on
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Variables<tmpl::list<VariablesTestTags_detail::scalar<DataVector>>> vars;
@@ -1019,11 +1034,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
 #endif
 }
 
+    // clang-format off
 // [[OutputRegex, vars_on_slice has wrong number of grid points.
 //  Expected 2, got 5]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.DataStructures.Variables.add_slice_to_data.BadSize.slice",
     "[DataStructures][Unit]") {
+  // clang-format on
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   Variables<tmpl::list<VariablesTestTags_detail::tensor<DataVector>>> vars(8,
