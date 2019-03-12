@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_LimiterActionsWithMinmod.cpp
   Test_Minmod.cpp
   Test_MinmodType.cpp
+  Test_WenoGridHelpers.cpp
   )
 
 add_test_library(
