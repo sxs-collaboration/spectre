@@ -590,6 +590,17 @@ frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
                         const std::array<double, 3>& origin_preimage) noexcept {
+  ASSERT(length_inner_cube < 0.5 * length_outer_cube,
+         "The outer cube is too small! The inner cubes will pierce the surface "
+         "of the outer cube.");
+  ASSERT(
+      abs(origin_preimage[0]) + length_inner_cube < 0.5 * length_outer_cube and
+          abs(origin_preimage[1]) + length_inner_cube <
+              0.5 * length_outer_cube and
+          abs(origin_preimage[2]) + 0.5 * length_inner_cube <
+              0.5 * length_outer_cube,
+      "The current choice for `origin_preimage` results in the inner cubes "
+      "piercing the surface of the outer cube.");
   const auto frustum_orientations = orientations_for_wrappings();
   const double lower = 0.5 * length_inner_cube;
   const double top = 0.5 * length_outer_cube;
@@ -600,53 +611,53 @@ frustum_coordinate_maps(const double length_inner_cube,
   std::vector<FrustumMap> frustums{};
   for (size_t i = 0; i < 4; i++) {
     // frustums on the left
-    std::array<double, 3> displacement_from_origin =
-        discrete_rotation(gsl::at(frustum_orientations, i), origin_preimage);
+    std::array<double, 3> displacement_from_origin = discrete_rotation(
+        gsl::at(frustum_orientations, i).inverse_map(), origin_preimage);
     frustums.push_back(FrustumMap{
-        {{{{-2.0 * lower + displacement_from_origin[0],
-            -lower + displacement_from_origin[1]}},
-          {{displacement_from_origin[0], lower + displacement_from_origin[1]}},
+        {{{{-2.0 * lower - displacement_from_origin[0],
+            -lower - displacement_from_origin[1]}},
+          {{-displacement_from_origin[0], lower - displacement_from_origin[1]}},
           {{-top, -top}},
           {{0.0, top}}}},
-        lower + displacement_from_origin[2],
+        lower - displacement_from_origin[2],
         top,
         gsl::at(frustum_orientations, i),
         use_equiangular_map});
     // frustums on the right
-    frustums.push_back(FrustumMap{
-        {{{{displacement_from_origin[0], -lower + displacement_from_origin[1]}},
-          {{2.0 * lower + displacement_from_origin[0],
-            lower + displacement_from_origin[1]}},
-          {{0.0, -top}},
-          {{top, top}}}},
-        lower + displacement_from_origin[2],
-        top,
-        gsl::at(frustum_orientations, i),
-        use_equiangular_map});
+    frustums.push_back(FrustumMap{{{{{-displacement_from_origin[0],
+                                      -lower - displacement_from_origin[1]}},
+                                    {{2.0 * lower - displacement_from_origin[0],
+                                      lower - displacement_from_origin[1]}},
+                                    {{0.0, -top}},
+                                    {{top, top}}}},
+                                  lower - displacement_from_origin[2],
+                                  top,
+                                  gsl::at(frustum_orientations, i),
+                                  use_equiangular_map});
   }
   // end cap frustum on the right
   std::array<double, 3> displacement_from_origin =
-      discrete_rotation(frustum_orientations[4], origin_preimage);
-  frustums.push_back(FrustumMap{{{{{-lower + displacement_from_origin[0],
-                                    -lower + displacement_from_origin[1]}},
-                                  {{lower + displacement_from_origin[0],
-                                    lower + displacement_from_origin[1]}},
+      discrete_rotation(frustum_orientations[4].inverse_map(), origin_preimage);
+  frustums.push_back(FrustumMap{{{{{-lower - displacement_from_origin[0],
+                                    -lower - displacement_from_origin[1]}},
+                                  {{lower - displacement_from_origin[0],
+                                    lower - displacement_from_origin[1]}},
                                   {{-top, -top}},
                                   {{top, top}}}},
-                                2.0 * lower + displacement_from_origin[2],
+                                2.0 * lower - displacement_from_origin[2],
                                 top,
                                 frustum_orientations[4],
                                 use_equiangular_map});
   // end cap frustum on the left
   displacement_from_origin =
-      discrete_rotation(frustum_orientations[5], origin_preimage);
-  frustums.push_back(FrustumMap{{{{{-lower + displacement_from_origin[0],
-                                    -lower + displacement_from_origin[1]}},
-                                  {{lower + displacement_from_origin[0],
-                                    lower + displacement_from_origin[1]}},
+      discrete_rotation(frustum_orientations[5].inverse_map(), origin_preimage);
+  frustums.push_back(FrustumMap{{{{{-lower - displacement_from_origin[0],
+                                    -lower - displacement_from_origin[1]}},
+                                  {{lower - displacement_from_origin[0],
+                                    lower - displacement_from_origin[1]}},
                                   {{-top, -top}},
                                   {{top, top}}}},
-                                2.0 * lower + displacement_from_origin[2],
+                                2.0 * lower - displacement_from_origin[2],
                                 top,
                                 frustum_orientations[5],
                                 use_equiangular_map});
