@@ -70,6 +70,15 @@ struct Source : db::PrefixTag, db::SimpleTag {
 };
 
 /// \ingroup DataBoxTagsGroup
+/// \brief Prefix indicating the initial value of a quantity
+template <typename Tag>
+struct Initial : db::PrefixTag, db::SimpleTag {
+  using type = db::item_type<Tag>;
+  using tag = Tag;
+  static std::string name() noexcept { return "Initial(" + Tag::name() + ")"; }
+};
+
+/// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a boundary unit normal vector dotted into
 /// the flux
 template <typename Tag>
