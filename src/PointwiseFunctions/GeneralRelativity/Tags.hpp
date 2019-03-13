@@ -102,5 +102,16 @@ struct TraceExtrinsicCurvature : db::SimpleTag {
   using type = Scalar<DataType>;
   static std::string name() noexcept { return "TraceExtrinsicCurvature"; }
 };
+
+/*!
+ * \brief The energy density \f$E=t_a t_b T^{ab}\f$, where \f$t_a\f$ denotes the
+ * normal to the spatial hypersurface
+ */
+template <typename DataType>
+struct EnergyDensity : db::SimpleTag {
+  using type = Scalar<DataType>;
+  static std::string name() noexcept { return "EnergyDensity"; }
+};
+
 }  // namespace Tags
 }  // namespace gr
