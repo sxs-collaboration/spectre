@@ -4,7 +4,7 @@
 set(LIBRARY "Test_Xcts")
 
 set(LIBRARY_SOURCES
-  Test_XctsTags.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(
