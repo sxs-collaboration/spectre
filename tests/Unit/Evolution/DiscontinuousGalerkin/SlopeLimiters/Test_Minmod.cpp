@@ -42,6 +42,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
+
 struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() noexcept { return "Scalar"; }
@@ -52,10 +53,8 @@ struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, VolumeDim>;
   static std::string name() noexcept { return "Vector"; }
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.Options",
-                  "[SlopeLimiters][Unit]") {
+void test_minmod_option_parsing() noexcept {
   const auto lambda_pi1_default =
       test_creation<SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "  Type: LambdaPi1");
@@ -85,14 +84,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.Options",
       "  Type: LambdaPiN\n  DisableForDebugging: True");
 }
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.Serialization",
-                  "[SlopeLimiters][Unit]") {
+void test_minmod_serialization() noexcept {
   const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod(
       SlopeLimiters::MinmodType::LambdaPi1);
   test_serialization(minmod);
 }
 
-namespace {
 template <size_t VolumeDim>
 Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) noexcept {
   return {std::unordered_set<ElementId<VolumeDim>>{ElementId<VolumeDim>(id)},
@@ -169,7 +166,7 @@ void test_limiter_activates_work(
 // Make a 2D element with two neighbors in lower_xi, one neighbor in upper_xi.
 // Check that lower_xi data from two neighbors is correctly combined in the
 // limiting operation.
-void test_limiter_action_two_lower_xi_neighbors() noexcept {
+void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
   const auto element = Element<2>{
       ElementId<2>{0},
       Element<2>::Neighbors_t{
@@ -234,7 +231,7 @@ void test_limiter_action_two_lower_xi_neighbors() noexcept {
 // want domains that have more than 2 neighbors across a face; however, because
 // the multi-neighbor averaging is dimension-agnostic, this also can represent a
 // 3D test.
-void test_limiter_action_four_upper_xi_neighbors() noexcept {
+void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
   const auto element = Element<2>{
       ElementId<2>{0},
       Element<2>::Neighbors_t{
@@ -306,16 +303,7 @@ void test_limiter_action_four_upper_xi_neighbors() noexcept {
                               element_size, neighbor_data_two_sizes,
                               0.925 / 0.8125);
 }
-}  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.h_refinement_boundary",
-    "[SlopeLimiters][Unit]") {
-  test_limiter_action_two_lower_xi_neighbors();
-  test_limiter_action_four_upper_xi_neighbors();
-}
-
-namespace {
 // Helper function for testing Minmod::package_data()
 template <size_t VolumeDim>
 void test_package_data_work(
@@ -418,11 +406,8 @@ void test_work(
                                 gsl::at(target_vector_slope, d)));
   }
 }
-}  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.1d_pipeline_test",
-    "[SlopeLimiters][Unit]") {
+void test_minmod_limiter_1d() noexcept {
   // The goals of this test are,
   // 1. check Minmod::package_data
   // 2. check that Minmod::op() limits different tensors independently
@@ -480,9 +465,7 @@ SPECTRE_TEST_CASE(
             element_size, target_scalar_slope, target_vector_slope);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.2d_pipeline_test",
-    "[SlopeLimiters][Unit]") {
+void test_minmod_limiter_2d() noexcept {
   // The goals of this test are,
   // 1. check Minmod::package_data
   // 2. check that Minmod::op() limits different tensors independently
@@ -576,9 +559,7 @@ SPECTRE_TEST_CASE(
             element_size, target_scalar_slope, target_vector_slope);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.3d_pipeline_test",
-    "[SlopeLimiters][Unit]") {
+void test_minmod_limiter_3d() noexcept {
   // The goals of this test are,
   // 1. check Minmod::package_data
   // 2. check that Minmod::op() limits different tensors independently
@@ -708,4 +689,32 @@ SPECTRE_TEST_CASE(
 
   test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
             element_size, target_scalar_slope, target_vector_slope);
+}
+
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod",
+                  "[SlopeLimiters][Unit]") {
+  {
+    INFO("Test Minmod option-parsing and serialization");
+    test_minmod_option_parsing();
+    test_minmod_serialization();
+  }
+
+  {
+    INFO("Test Minmod limiter in 1d");
+    test_minmod_limiter_1d();
+  }
+
+  {
+    INFO("Test Minmod limiter in 2d");
+    test_minmod_limiter_2d();
+    test_minmod_limiter_two_lower_xi_neighbors();
+    test_minmod_limiter_four_upper_xi_neighbors();
+  }
+
+  {
+    INFO("Test Minmod limiter in 3d");
+    test_minmod_limiter_3d();
+  }
 }
