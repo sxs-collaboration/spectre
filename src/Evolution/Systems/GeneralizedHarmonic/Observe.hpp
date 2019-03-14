@@ -58,7 +58,7 @@ struct Observe {
       Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
       Parallel::ReductionDatum<size_t, funcl::Plus<>>, reduction_datum,
       reduction_datum, reduction_datum, reduction_datum, reduction_datum,
-      reduction_datum, reduction_datum>;
+      reduction_datum, reduction_datum, reduction_datum>;
 
  public:
   struct ObserveNSlabs {
@@ -113,6 +113,9 @@ struct Observe {
       const auto& three_index_constraint =
           db::get<GeneralizedHarmonic::Tags::ThreeIndexConstraint<
               Dim, Frame::Inertial>>(box);
+      const auto& constraint_energy = db::get<
+          GeneralizedHarmonic::Tags::ConstraintEnergy<Dim, Frame::Inertial>>(
+          box);
 
       const auto& inertial_coordinates =
           db::get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
@@ -166,7 +169,7 @@ struct Observe {
 
       // Remove tensor types, only storing individual components.
       std::vector<TensorComponent> components;
-      components.reserve(12);  // FIXME
+      components.reserve(13);  // FIXME
 
       using PlusSquare = funcl::Plus<funcl::Identity, funcl::Square<>>;
 
@@ -200,6 +203,8 @@ struct Observe {
           alg::accumulate(gauge_constraint_all_components, 0., PlusSquare{});
       const double three_index_constraint_cumulative = alg::accumulate(
           three_index_constraint_all_components, 0., PlusSquare{});
+      const double constraint_energy_cumulative =
+          alg::accumulate(get(constraint_energy), 0., PlusSquare{});
 
       const double gauge_H_t =
           alg::accumulate(get<0>(gauge_H), 0., PlusSquare{});
@@ -242,15 +247,15 @@ struct Observe {
           *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
                cache)
                .ckLocalBranch();
-      Parallel::simple_action<observers::Actions::ContributeVolumeData>(
-          local_observer,
-          observers::ObservationId(
-              time, typename Metavariables::element_observation_type{}),
-          std::string{"/element_data"},
-          observers::ArrayComponentId(
-              std::add_pointer_t<ParallelComponent>{nullptr},
-              Parallel::ArrayIndex<ElementIndex<Dim>>(array_index)),
-          std::move(components), extents);
+      // Parallel::simple_action<observers::Actions::ContributeVolumeData>(
+      //     local_observer,
+      //     observers::ObservationId(
+      //         time, typename Metavariables::element_observation_type{}),
+      //     std::string{"/element_data"},
+      //     observers::ArrayComponentId(
+      //         std::add_pointer_t<ParallelComponent>{nullptr},
+      //         Parallel::ArrayIndex<ElementIndex<Dim>>(array_index)),
+      //     std::move(components), extents);
 
       // Send data to reduction observer
       Parallel::simple_action<observers::Actions::ContributeReductionData>(
@@ -260,13 +265,14 @@ struct Observe {
           std::string{"/element_data"},
           std::vector<std::string>{
               "Time", "NumberOfPoints", "PsiError", "PhiError", "PiError",
-              "L2NormGaugeConstraint", "L2NormThreeIndexConstraint", "L2NormHt",
-              "L2NormHx"},
+              "L2NormGaugeConstraint", "L2NormThreeIndexConstraint",
+              "L2NormConstraintEnergy", "L2NormHt", "L2NormHx"},
           reduction_data{
               time.value(),
               db::get<::Tags::Mesh<Dim>>(box).number_of_grid_points(),
               psi_error, phi_error, pi_error, gauge_constraint_cumulative,
-              three_index_constraint_cumulative, gauge_H_t, gauge_H_x});
+              three_index_constraint_cumulative, constraint_energy_cumulative,
+              gauge_H_t, gauge_H_x});
     }
     return std::forward_as_tuple(std::move(box));
   }
