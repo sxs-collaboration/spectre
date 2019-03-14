@@ -4,7 +4,6 @@
 set(LIBRARY "Test_LinearSolver")
 
 set(LIBRARY_SOURCES
-  Test_Convergence.cpp
   Test_InnerProduct.cpp
   Test_Tags.cpp
   )
@@ -17,5 +16,5 @@ add_test_library(
   ${LIBRARY}
   "NumericalAlgorithms/LinearSolver/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;LinearSolver"
+  "Convergence;DataStructures"
   )

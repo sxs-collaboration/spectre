@@ -18,7 +18,9 @@
 #include "DataStructures/DenseVector.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "Informer/Verbosity.hpp"
-#include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
+#include "NumericalAlgorithms/Convergence/Criteria.hpp"
+#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
+#include "NumericalAlgorithms/Convergence/Reason.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ResidualMonitor.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ResidualMonitorActions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/Observe.hpp"
@@ -221,7 +223,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
                   Metavariables>::simple_tags,
               typename LinearSolver::gmres_detail::InitializeResidualMonitor<
                   Metavariables>::compute_tags>(
-              Verbosity::Verbose, LinearSolver::ConvergenceCriteria{2, 0., 0.5},
+              Verbosity::Verbose, Convergence::Criteria{2, 0., 0.5},
               std::numeric_limits<double>::signaling_NaN(),
               std::numeric_limits<double>::signaling_NaN(), 0_st, 0_st,
               DenseMatrix<double>{2, 1, 0.}));
@@ -312,7 +314,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
-          LinearSolver::ConvergenceReason::AbsoluteResidual);
+          Convergence::Reason::AbsoluteResidual);
     const auto& mock_element_box = get_mock_element_box();
     CHECK(db::get<CheckValueTag>(mock_element_box) == 0.);
     CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
@@ -431,7 +433,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     CHECK(get<residual_magnitude_tag>(box) == approx(0.));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
-          LinearSolver::ConvergenceReason::AbsoluteResidual);
+          Convergence::Reason::AbsoluteResidual);
     CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
           db::get<LinearSolver::Tags::HasConverged>(box));
   }
@@ -490,8 +492,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     CHECK(get<residual_magnitude_tag>(box) == approx(0.8804509063256237));
     const auto& has_converged = get<LinearSolver::Tags::HasConverged>(box);
     CHECK(has_converged);
-    CHECK(has_converged.reason() ==
-          LinearSolver::ConvergenceReason::MaxIterations);
+    CHECK(has_converged.reason() == Convergence::Reason::MaxIterations);
     CHECK(db::get<CheckConvergedTag>(mock_element_box) == has_converged);
   }
 
@@ -530,7 +531,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ResidualMonitorActions",
     // |r| / |r_initial| = 0.31622776601683794
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
-          LinearSolver::ConvergenceReason::RelativeResidual);
+          Convergence::Reason::RelativeResidual);
     CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
           db::get<LinearSolver::Tags::HasConverged>(box));
   }

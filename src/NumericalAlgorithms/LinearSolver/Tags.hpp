@@ -13,7 +13,8 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DenseMatrix.hpp"
-#include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
+#include "NumericalAlgorithms/Convergence/Criteria.hpp"
+#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -188,21 +189,38 @@ struct KrylovSubspaceBasis : db::PrefixTag, db::SimpleTag {
 /*!
  * \brief `LinearSolver::ConvergenceCriteria` that determine the linear solve
  * has converged
+ *
+ * \note The smallest possible residual magnitude the linear solver can reach is
+ * the product between the machine epsilon and the condition number of the
+ * linear operator that is being inverted. Smaller residuals are numerical
+ * artifacts. Requiring an absolute or relative residual below this limit will
+ * likely lead to termination by `MaxIterations`.
+ *
+ * \note Remember that when the linear operator \f$A\f$ corresponds to a PDE
+ * discretization, decreasing the linear solver residual below the
+ * discretization error will not improve the numerical solution any further.
+ * I.e. the error \f$e_k=x_k-x_\mathrm{analytic}\f$ to an analytic solution
+ * will be dominated by the linear solver residual at first, but even if the
+ * discretization \f$Ax_k=b\f$ was exactly solved after some iteration \f$k\f$,
+ * the discretization residual
+ * \f$Ae_k=b-Ax_\mathrm{analytic}=r_\mathrm{discretization}\f$ would still
+ * remain. Therefore, ideally choose the absolute or relative residual criteria
+ * based on an estimate of the discretization residual.
  */
 struct ConvergenceCriteria : db::SimpleTag {
   static std::string name() noexcept { return "ConvergenceCriteria"; }
   static constexpr OptionString help =
       "Criteria that determine the linear solve has converged";
-  using type = LinearSolver::ConvergenceCriteria;
+  using type = Convergence::Criteria;
 };
 
 /*!
- * \brief Holds a `LinearSolver::HasConverged` flag that signals the linear
+ * \brief Holds a `Convergence::HasConverged` flag that signals the linear
  * solver has converged, along with the reason for convergence.
  */
 struct HasConverged : db::SimpleTag {
   static std::string name() noexcept { return "LinearSolverHasConverged"; }
-  using type = LinearSolver::HasConverged;
+  using type = Convergence::HasConverged;
 };
 
 /*
@@ -224,13 +242,12 @@ struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
                  LinearSolver::Tags::IterationId, residual_magnitude_tag,
                  initial_residual_magnitude_tag>;
   static db::item_type<LinearSolver::Tags::HasConverged> function(
-      const LinearSolver::ConvergenceCriteria& convergence_criteria,
-      const db::item_type<LinearSolver::Tags::IterationId>& iteration_id,
-      const double& residual_magnitude,
+      const Convergence::Criteria& convergence_criteria,
+      const size_t& iteration_id, const double& residual_magnitude,
       const double& initial_residual_magnitude) noexcept {
-    return LinearSolver::HasConverged(convergence_criteria, iteration_id,
-                                      residual_magnitude,
-                                      initial_residual_magnitude);
+    return Convergence::HasConverged(convergence_criteria, iteration_id,
+                                     residual_magnitude,
+                                     initial_residual_magnitude);
   }
 };
 

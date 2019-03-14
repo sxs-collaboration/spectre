@@ -9,7 +9,6 @@
 #include "IO/Observer/Actions.hpp"
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
-#include "NumericalAlgorithms/LinearSolver/Convergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/Observe.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Options/Options.hpp"
@@ -28,6 +27,9 @@ template <typename Metavariables>
 struct InitializeResidualMonitor;
 }  // namespace cg_detail
 }  // namespace LinearSolver
+namespace Convergence {
+struct Criteria;
+}  // namespace Convergence
 /// \endcond
 
 namespace LinearSolver {
@@ -53,14 +55,12 @@ struct ResidualMonitor {
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
-      ::Verbosity verbosity,
-      LinearSolver::ConvergenceCriteria convergence_criteria) noexcept {
+      const ::Verbosity& verbosity,
+      const Convergence::Criteria& convergence_criteria) noexcept {
     Parallel::simple_action<InitializeResidualMonitor<Metavariables>>(
         Parallel::get_parallel_component<ResidualMonitor>(
             *(global_cache.ckLocalBranch())),
-        // clang-tidy: std::move of trivially-copyable type
-        std::move(verbosity),              // NOLINT
-        std::move(convergence_criteria));  // NOLINT
+        verbosity, convergence_criteria);
 
     const auto initial_observation_id = observers::ObservationId(
         db::item_type<LinearSolver::Tags::IterationId>{0},
@@ -108,12 +108,10 @@ struct InitializeResidualMonitor {
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/, ::Verbosity verbosity,
-      LinearSolver::ConvergenceCriteria convergence_criteria) noexcept {
+      const ParallelComponent* const /*meta*/, const ::Verbosity& verbosity,
+      const Convergence::Criteria& convergence_criteria) noexcept {
     auto box = db::create<simple_tags, compute_tags>(
-        // clang-tidy: std::move of trivially-copyable type
-        std::move(verbosity),             // NOLINT
-        std::move(convergence_criteria),  // NOLINT
+        verbosity, convergence_criteria,
         db::item_type<LinearSolver::Tags::IterationId>{0},
         std::numeric_limits<double>::signaling_NaN(),
         std::numeric_limits<double>::signaling_NaN());

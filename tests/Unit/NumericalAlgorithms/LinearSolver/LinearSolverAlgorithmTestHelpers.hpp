@@ -18,6 +18,7 @@
 #include "DataStructures/DenseVector.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
@@ -87,7 +88,7 @@ struct TestResult {
     const auto& has_converged = get<LinearSolver::Tags::HasConverged>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
     SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
-                             LinearSolver::ConvergenceReason::AbsoluteResidual);
+                             Convergence::Reason::AbsoluteResidual);
     const auto& result = get<VectorTag>(box);
     const auto& expected_result = get<ExpectedResult>(cache);
     for (size_t i = 0; i < expected_result.size(); i++) {

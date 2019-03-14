@@ -1,15 +1,17 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_LinearSolverActions")
+set(LIBRARY "Test_Convergence")
 
 set(LIBRARY_SOURCES
-  Test_TerminateIfConverged.cpp
+  Test_Criteria.cpp
+  Test_HasConverged.cpp
+  Test_Reason.cpp
   )
 
 add_test_library(
   ${LIBRARY}
-  "NumericalAlgorithms/LinearSolver/Actions"
+  "NumericalAlgorithms/Convergence/"
   "${LIBRARY_SOURCES}"
   "Convergence;DataStructures"
   )
