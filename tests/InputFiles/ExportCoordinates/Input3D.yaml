@@ -1,0 +1,17 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: ExportCoordinates3D
+# Check: execute
+# ExpectedOutput:
+#   Coordinates0.h5
+
+DomainCreator:
+  Shell:
+    InnerRadius: 1.
+    OuterRadius: 3.
+    InitialRefinement: 1
+    InitialGridPoints: [3, 3]
+
+VolumeFileName: "Coordinates"
+ReductionFileName: "Reductions"

@@ -1,0 +1,18 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: ExportCoordinates2D
+# Check: execute
+# ExpectedOutput:
+#   Coordinates0.h5
+
+DomainCreator:
+  Disk:
+    InnerRadius: 1.
+    OuterRadius: 3.
+    InitialRefinement: 1
+    InitialGridPoints: [3, 3]
+    UseEquiangularMap: true
+
+VolumeFileName: "Coordinates"
+ReductionFileName: "Reductions"
