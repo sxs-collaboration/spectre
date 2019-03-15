@@ -61,5 +61,8 @@ template <size_t Dim, typename Frame = Frame::Inertial,
 struct ExtrinsicCurvature;
 template <typename DataType = DataVector>
 struct TraceExtrinsicCurvature;
+
+template <typename DataType = DataVector>
+struct EnergyDensity;
 }  // namespace Tags
 }  // namespace gr
