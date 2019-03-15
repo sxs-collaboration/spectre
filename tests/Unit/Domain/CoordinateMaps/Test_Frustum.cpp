@@ -5,6 +5,7 @@
 
 #include <array>
 #include <boost/optional.hpp>
+#include <cmath>
 #include <memory>
 #include <pup.h>
 #include <random>
@@ -50,7 +51,7 @@ void test_suite_for_frustum(const bool with_equiangular_map) {
          {{lower_x_upper_base, lower_y_upper_base}},
          {{upper_x_upper_base, upper_y_upper_base}}}};
     const CoordinateMaps::Frustum frustum_map(face_vertices, -1.0, 2.0, map_i(),
-                                              with_equiangular_map);
+                                              with_equiangular_map, 1.01);
     test_suite_for_map_on_unit_cube(frustum_map);
   }
 }
@@ -171,16 +172,73 @@ void test_alignment() {
                         lowest_physical_corner_in_map_lower_xi);
 }
 
+void test_auto_projective_scale_factor() {
+  INFO("Auto projective scale factor");
+  // This test tests that the correct suggested projective scale factor
+  // is computed based on the side lengths of the frustum.
+
+  // Set up random number generator
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> lower_bound_dis(-14, -2);
+  std::uniform_real_distribution<> upper_bound_dis(2, 14);
+  std::uniform_real_distribution<> logical_dis(-1, 1);
+
+  const double lower_x_lower_base = lower_bound_dis(gen);
+  CAPTURE_PRECISE(lower_x_lower_base);
+  const double lower_y_lower_base = lower_bound_dis(gen);
+  CAPTURE_PRECISE(lower_y_lower_base);
+  const double upper_x_lower_base = upper_bound_dis(gen);
+  CAPTURE_PRECISE(upper_x_lower_base);
+  const double upper_y_lower_base = upper_bound_dis(gen);
+  CAPTURE_PRECISE(upper_y_lower_base);
+  const double lower_x_upper_base = lower_bound_dis(gen);
+  CAPTURE_PRECISE(lower_x_upper_base);
+  const double lower_y_upper_base = lower_bound_dis(gen);
+  CAPTURE_PRECISE(lower_y_upper_base);
+  const double upper_x_upper_base = upper_bound_dis(gen);
+  CAPTURE_PRECISE(upper_x_upper_base);
+  const double upper_y_upper_base = upper_bound_dis(gen);
+  CAPTURE_PRECISE(upper_y_upper_base);
+  const double xi = logical_dis(gen);
+  CAPTURE_PRECISE(xi);
+  const double eta = logical_dis(gen);
+  CAPTURE_PRECISE(eta);
+  const double zeta = logical_dis(gen);
+  CAPTURE_PRECISE(zeta);
+
+  const std::array<double, 3> logical_coord{{0.0, 0.0, zeta}};
+  const double lower_bound = 2.0;
+  const double upper_bound = 5.0;
+  const double sigma_z = 0.5 * (upper_bound + lower_bound);
+  const double delta_z = 0.5 * (upper_bound - lower_bound);
+  const double w_delta = sqrt(((upper_x_lower_base - lower_x_lower_base) *
+                               (upper_y_lower_base - lower_y_lower_base)) /
+                              ((upper_x_upper_base - lower_x_upper_base) *
+                               (upper_y_upper_base - lower_y_upper_base)));
+  const double projective_zeta = (w_delta - 1.0 + zeta * (w_delta + 1.0)) /
+                                 (w_delta + 1.0 + zeta * (w_delta - 1.0));
+  const double expected_physical_z = sigma_z + delta_z * (projective_zeta);
+  const std::array<std::array<double, 2>, 4> face_vertices{
+      {{{lower_x_lower_base, lower_y_lower_base}},
+       {{upper_x_lower_base, upper_y_lower_base}},
+       {{lower_x_upper_base, lower_y_upper_base}},
+       {{upper_x_upper_base, upper_y_upper_base}}}};
+
+  const CoordinateMaps::Frustum map(face_vertices, lower_bound, upper_bound, {},
+                                    false, 1.0, true);  // Upper Z frustum
+  CHECK(map(logical_coord)[2] == approx(expected_physical_z));
+}
+
 void test_is_identity() {
   INFO("Is identity");
   check_if_map_is_identity(CoordinateMaps::Frustum{
       std::array<std::array<double, 2>, 4>{
           {{{-1.0, -1.0}}, {{1.0, 1.0}}, {{-1.0, -1.0}}, {{1.0, 1.0}}}},
-      -1.0, 1.0, OrientationMap<3>{}, false});
+      -1.0, 1.0, OrientationMap<3>{}, false, 1.0});
   CHECK(not CoordinateMaps::Frustum{
       std::array<std::array<double, 2>, 4>{
           {{{-1.0, -1.0}}, {{2.0, 1.0}}, {{-1.0, -3.0}}, {{1.0, 1.0}}}},
-      -1.0, 1.0, OrientationMap<3>{}, false}
+      -1.0, 1.0, OrientationMap<3>{}, false, 1.5}
                 .is_identity());
 }
 }  // namespace
@@ -190,7 +248,30 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum", "[Domain][Unit]") {
   test_suite_for_frustum(false);  // Equidistant
   test_suite_for_frustum(true);   // Equiangular
   test_alignment();
+  test_auto_projective_scale_factor();
   test_is_identity();
+}
+
+// [[OutputRegex, A projective scale factor of zero maps all coordinates to
+// zero! Set projective_scale_factor to unity to turn off projective scaling.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.CoordinateMaps.Frustum.Assert0",
+                               "[Domain][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const std::array<std::array<double, 2>, 4> face_vertices{
+      {{{-2.0, -2.0}}, {{2.0, 2.0}}, {{-4.0, -4.0}}, {{4.0, 4.0}}}};
+  const double lower_bound = 2.0;
+  const double upper_bound = 5.0;
+  const double projective_scale_factor = 0.0;
+  const bool with_equiangular_map = false;
+
+  auto failed_frustum = CoordinateMaps::Frustum(
+      face_vertices, lower_bound, upper_bound, OrientationMap<3>{},
+      with_equiangular_map, projective_scale_factor);
+  static_cast<void>(failed_frustum);
+
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
 }
 
 // [[OutputRegex, The lower bound for a coordinate must be numerically less

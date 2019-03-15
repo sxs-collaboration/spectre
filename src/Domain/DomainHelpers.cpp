@@ -137,8 +137,8 @@ logical_coords_of_corners(
   std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
              two_to_the(VolumeDim - 1)>
       result{};
-  std::transform(local_ids.begin(), local_ids.end(), result.begin(),
-                 [](const size_t id) noexcept {
+  std::transform(local_ids.begin(), local_ids.end(),
+                 result.begin(), [](const size_t id) noexcept {
                    tnsr::I<double, VolumeDim, Frame::Logical> point{};
                    for (size_t i = 0; i < VolumeDim; i++) {
                      point[i] = 2.0 * get_nth_bit(id, i) - 1.0;
@@ -165,8 +165,8 @@ Direction<VolumeDim> get_direction_normal_to_face(
                               summed_point.begin(), summed_point.end(), 0.0)),
          "The face_pts passed in do not correspond to a face.");
   const auto index = static_cast<size_t>(
-      alg::find_if(summed_point,
-                   [](const double x) noexcept { return x != 0; }) -
+      alg::find_if(
+          summed_point, [](const double x) noexcept { return x != 0; }) -
       summed_point.begin());
   return Direction<VolumeDim>(
       index, summed_point[index] > 0 ? Side::Upper : Side::Lower);
@@ -589,7 +589,8 @@ std::vector<
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
-                        const std::array<double, 3>& origin_preimage) noexcept {
+                        const std::array<double, 3>& origin_preimage,
+                        const double projective_scale_factor) noexcept {
   ASSERT(length_inner_cube < 0.5 * length_outer_cube,
          "The outer cube is too small! The inner cubes will pierce the surface "
          "of the outer cube.");
@@ -622,7 +623,8 @@ frustum_coordinate_maps(const double length_inner_cube,
         lower - displacement_from_origin[2],
         top,
         gsl::at(frustum_orientations, i),
-        use_equiangular_map});
+        use_equiangular_map,
+        projective_scale_factor});
     // frustums on the right
     frustums.push_back(FrustumMap{{{{{-displacement_from_origin[0],
                                       -lower - displacement_from_origin[1]}},
@@ -633,7 +635,8 @@ frustum_coordinate_maps(const double length_inner_cube,
                                   lower - displacement_from_origin[2],
                                   top,
                                   gsl::at(frustum_orientations, i),
-                                  use_equiangular_map});
+                                  use_equiangular_map,
+                                  projective_scale_factor});
   }
   // end cap frustum on the right
   std::array<double, 3> displacement_from_origin =
@@ -647,7 +650,8 @@ frustum_coordinate_maps(const double length_inner_cube,
                                 2.0 * lower - displacement_from_origin[2],
                                 top,
                                 frustum_orientations[4],
-                                use_equiangular_map});
+                                use_equiangular_map,
+                                projective_scale_factor});
   // end cap frustum on the left
   displacement_from_origin =
       discrete_rotation(frustum_orientations[5].inverse_map(), origin_preimage);
@@ -660,7 +664,8 @@ frustum_coordinate_maps(const double length_inner_cube,
                                 2.0 * lower - displacement_from_origin[2],
                                 top,
                                 frustum_orientations[5],
-                                use_equiangular_map});
+                                use_equiangular_map,
+                                projective_scale_factor});
 
   // clang-tidy: trivially copyable
   return domain::make_vector_coordinate_map_base<Frame::Logical, TargetFrame,
@@ -984,7 +989,8 @@ std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
       gsl::at(result, vci.local_corner_number()) = mapped_corner;
     }
     return result;
-      }();
+  }
+  ();
 
   std::array<size_t, two_to_the(VolumeDim)> result{};
   for (size_t i = 0; i < two_to_the(VolumeDim); i++) {
@@ -1138,13 +1144,15 @@ template std::vector<std::unique_ptr<
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
-                        const std::array<double, 3>& origin_preimage) noexcept;
+                        const std::array<double, 3>& origin_preimage,
+                        const double projective_scale_factor) noexcept;
 template std::vector<
     std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
-                        const std::array<double, 3>& origin_preimage) noexcept;
+                        const std::array<double, 3>& origin_preimage,
+                        const double projective_scale_factor) noexcept;
 // Explicit instantiations
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
