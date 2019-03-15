@@ -232,7 +232,7 @@ struct create_valid_names {
 template <typename T, typename Metavariables>
 struct CreateWrapper {
   using metavariables = Metavariables;
-  T data;
+  T data{};
 };
 #define CREATE_WRAPPER_FORWARD_OP(op)                          \
   template <typename T, typename Metavariables>                \
