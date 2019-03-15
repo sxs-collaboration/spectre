@@ -4,7 +4,7 @@
 # Executable: ExportCoordinates3D
 # Check: execute
 # ExpectedOutput:
-#   Coordinates0.h5
+#   Coordinates3D0.h5
 
 DomainCreator:
   Shell:
@@ -13,5 +13,5 @@ DomainCreator:
     InitialRefinement: 1
     InitialGridPoints: [3, 3]
 
-VolumeFileName: "Coordinates"
+VolumeFileName: "Coordinates3D"
 ReductionFileName: "Reductions"
