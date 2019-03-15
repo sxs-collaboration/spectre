@@ -4,42 +4,44 @@
 #pragma once
 
 #include <array>
-#include <boost/functional/hash.hpp>  // IWYU pragma: keep
 #include <cstdlib>
 #include <limits>
-#include <memory>
+#include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataVector.hpp"
-#include "DataStructures/FixedHashMap.hpp"
-#include "DataStructures/SliceIterator.hpp"
-#include "DataStructures/Tags.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Domain/Element.hpp"  // IWYU pragma: keep
-#include "Domain/MaxNumberOfNeighbors.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
-#include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Options/Options.hpp"
-#include "Utilities/Gsl.hpp"
-#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
-#include "Utilities/Numeric.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
+class DataVector;
 template <size_t VolumeDim>
 class Direction;
+template <size_t VolumeDim>
+class Element;
 template <size_t VolumeDim>
 class ElementId;
 template <size_t VolumeDim>
 class Mesh;
 template <size_t VolumeDim>
 class OrientationMap;
+
+namespace boost {
+template <class T>
+struct hash;
+}  // namespace boost
+
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
 
 namespace PUP {
 class er;
@@ -63,44 +65,6 @@ struct SizeOfElement;
 /// \endcond
 
 namespace SlopeLimiters {
-
-namespace Minmod_detail {
-// Implements the minmod limiter for one Tensor<DataVector>.
-//
-// The interface is designed to erase the tensor structure information, because
-// this way the implementation can be moved out of the header file. This is
-// achieved by receiving Tensor<DataVector>::iterators into the tensor to limit,
-// and Tensor<double>::iterators into the neighbor tensors.
-//
-// Note: because the interface erases the tensor structure information, we can
-// no longer rely on the compiler to enforce that the local and neighbor tensors
-// share the same Structure.
-template <size_t VolumeDim>
-bool limit_one_tensor(
-    gsl::not_null<DataVector*> tensor_begin,
-    gsl::not_null<DataVector*> tensor_end,
-    gsl::not_null<DataVector*> u_lin_buffer,
-    gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const SlopeLimiters::MinmodType& minmod_type, double tvbm_constant,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
-    const std::array<double, VolumeDim>& element_size,
-    const FixedHashMap<
-        maximum_number_of_neighbors(VolumeDim),
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        gsl::not_null<const double*>,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_tensor_begin,
-    const FixedHashMap<
-        maximum_number_of_neighbors(VolumeDim),
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        std::array<double, VolumeDim>,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_sizes,
-    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
-                               gsl::span<std::pair<size_t, size_t>>>,
-                     VolumeDim>& volume_and_slice_indices) noexcept;
-}  // namespace Minmod_detail
 
 /// \ingroup SlopeLimitersGroup
 /// \brief A general minmod slope limiter
@@ -209,14 +173,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \param tvbm_constant The value of the TVBM constant (default: 0).
   /// \param disable_for_debugging Switch to turn the limiter off (default:
   //         false).
-  explicit Minmod(const MinmodType minmod_type,
-                  const double tvbm_constant = 0.0,
-                  const bool disable_for_debugging = false) noexcept
-      : minmod_type_(minmod_type),
-        tvbm_constant_(tvbm_constant),
-        disable_for_debugging_(disable_for_debugging) {
-    ASSERT(tvbm_constant >= 0.0, "The TVBM constant must be non-negative.");
-  }
+  explicit Minmod(MinmodType minmod_type, double tvbm_constant = 0.0,
+                  bool disable_for_debugging = false) noexcept;
 
   Minmod() noexcept = default;
   Minmod(const Minmod& /*rhs*/) = default;
@@ -226,11 +184,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   ~Minmod() = default;
 
   // clang-tidy: google-runtime-references
-  void pup(PUP::er& p) noexcept {  // NOLINT
-    p | minmod_type_;
-    p | tvbm_constant_;
-    p | disable_for_debugging_;
-  }
+  void pup(PUP::er& p) noexcept;  // NOLINT
 
   // To facilitate testing
   /// \cond
@@ -271,27 +225,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
                     const Mesh<VolumeDim>& mesh,
                     const std::array<double, VolumeDim>& element_size,
                     const OrientationMap<VolumeDim>& orientation_map) const
-      noexcept {
-    if (UNLIKELY(disable_for_debugging_)) {
-      // Do not initialize packaged_data
-      return;
-    }
-
-    const auto wrap_compute_means =
-        [&mesh, &packaged_data ](auto tag, const auto& tensor) noexcept {
-      for (size_t i = 0; i < tensor.size(); ++i) {
-        // Compute the mean using the local orientation of the tensor and mesh:
-        // this avoids the work of reorienting the tensor while giving the same
-        // result.
-        get<::Tags::Mean<decltype(tag)>>(packaged_data->means)[i] =
-            mean_value(tensor[i], mesh);
-      }
-      return '0';
-    };
-    expand_pack(wrap_compute_means(Tags{}, tensors)...);
-    packaged_data->element_size =
-        orientation_map.permute_from_neighbor(element_size);
-  }
+      noexcept;
 
   using limit_tags = tmpl::list<Tags...>;
   using limit_argument_tags =
@@ -332,103 +266,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
           boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-          neighbor_data) const noexcept {
-    if (UNLIKELY(disable_for_debugging_)) {
-      // Do not modify input tensors
-      return false;
-    }
-
-    // Allocate temporary buffer to be used in `limit_one_tensor` where we
-    // otherwise make 1 + 2 * VolumeDim allocations per tensor component for
-    // MUSCL and LambdaPi1, and 1 + 4 * VolumeDim allocations per tensor
-    // component for LambdaPiN.
-    const size_t half_number_boundary_points = alg::accumulate(
-        alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st),
-        0_st, [&mesh](const size_t state, const size_t d) noexcept {
-          return state + mesh.slice_away(d).number_of_grid_points();
-        });
-    std::unique_ptr<double[], decltype(&free)> temp_buffer(
-        static_cast<double*>(
-            malloc(sizeof(double) * (mesh.number_of_grid_points() +
-                                     half_number_boundary_points))),
-        &free);
-    size_t alloc_offset = 0;
-    DataVector u_lin_buffer(temp_buffer.get() + alloc_offset,
-                            mesh.number_of_grid_points());
-    alloc_offset += mesh.number_of_grid_points();
-    std::array<DataVector, VolumeDim> boundary_buffer{};
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      const size_t num_points = mesh.slice_away(d).number_of_grid_points();
-      gsl::at(boundary_buffer, d)
-          .set_data_ref(temp_buffer.get() + alloc_offset, num_points);
-      alloc_offset += num_points;
-    }
-    // Compute the slice indices once since this is (surprisingly) expensive
-    const auto volume_and_slice_buffer_and_indices =
-        volume_and_slice_indices(mesh.extents());
-    const auto& volume_and_slice_indices =
-        volume_and_slice_buffer_and_indices.second;
-
-    bool limiter_activated = false;
-    const auto wrap_limit_one_tensor = [
-      this, &limiter_activated, &element, &mesh, &logical_coords, &element_size,
-      &neighbor_data, &u_lin_buffer, &boundary_buffer, &volume_and_slice_indices
-    ](auto tag, const auto& tensor) noexcept {
-      // Because we hide the types of Tags from limit_one_tensor (we do this so
-      // that its implementation isn't templated on Tags and can be moved out of
-      // this header file), we cannot pass it PackagedData as currently
-      // implemented. So we unpack everything from PackagedData. In the future
-      // we may want a PackagedData type that erases types inherently, as this
-      // would avoid the need for unpacking as done here.
-      //
-      // Get iterators into the local and neighbor tensors, because these are
-      // independent from the structure of the tensor being limited.
-      const auto tensor_begin = make_not_null(tensor->begin());
-      const auto tensor_end = make_not_null(tensor->end());
-      const auto neighbor_tensor_begin = [&neighbor_data]() noexcept {
-        FixedHashMap<
-            maximum_number_of_neighbors(VolumeDim),
-            std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-            gsl::not_null<const double*>,
-            boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
-            result;
-        for (const auto& neighbor_and_data : neighbor_data) {
-          result.insert(
-              std::make_pair(neighbor_and_data.first,
-                             make_not_null(get<::Tags::Mean<decltype(tag)>>(
-                                               neighbor_and_data.second.means)
-                                               .cbegin())));
-        }
-        return result;
-      }
-      ();
-      const auto neighbor_sizes = [&neighbor_data]() noexcept {
-        FixedHashMap<
-            maximum_number_of_neighbors(VolumeDim),
-            std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-            std::array<double, VolumeDim>,
-            boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
-            result;
-        for (const auto& neighbor_and_data : neighbor_data) {
-          result.insert(std::make_pair(neighbor_and_data.first,
-                                       neighbor_and_data.second.element_size));
-        }
-        return result;
-      }
-      ();
-
-      limiter_activated =
-          Minmod_detail::limit_one_tensor<VolumeDim>(
-              tensor_begin, tensor_end, &u_lin_buffer, &boundary_buffer,
-              minmod_type_, tvbm_constant_, element, mesh, logical_coords,
-              element_size, neighbor_tensor_begin, neighbor_sizes,
-              volume_and_slice_indices) or
-          limiter_activated;
-      return '0';
-    };
-    expand_pack(wrap_limit_one_tensor(Tags{}, tensors)...);
-    return limiter_activated;
-  }
+          neighbor_data) const noexcept;
 
  private:
   template <size_t LocalDim, typename LocalTagList>
@@ -441,18 +279,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   bool disable_for_debugging_;
 };
 
-template <size_t LocalDim, typename LocalTagList>
-bool operator==(const Minmod<LocalDim, LocalTagList>& lhs,
-                const Minmod<LocalDim, LocalTagList>& rhs) noexcept {
-  return lhs.minmod_type_ == rhs.minmod_type_ and
-         lhs.tvbm_constant_ == rhs.tvbm_constant_ and
-         lhs.disable_for_debugging_ == rhs.disable_for_debugging_;
-}
-
 template <size_t VolumeDim, typename TagList>
 bool operator!=(const Minmod<VolumeDim, TagList>& lhs,
-                const Minmod<VolumeDim, TagList>& rhs) noexcept {
-  return not(lhs == rhs);
-}
+                const Minmod<VolumeDim, TagList>& rhs) noexcept;
 
 }  // namespace SlopeLimiters
