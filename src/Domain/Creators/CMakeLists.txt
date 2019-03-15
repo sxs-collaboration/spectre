@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Brick.cpp
   Cylinder.cpp
   Disk.cpp
+  FrustalCloak.cpp
   Interval.cpp
   Rectangle.cpp
   RegisterDerivedWithCharm.cpp
