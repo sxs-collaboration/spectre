@@ -31,6 +31,10 @@ template <typename Frame>
 struct NormalOneForm;
 template <typename Frame>
 struct Tangents;
+template <typename Frame>
+struct EuclideanAreaElement;
+template <typename IntegrandTag, typename Frame>
+struct EuclideanSurfaceIntegral;
 }  // namespace StrahlkorperTags
 
 namespace StrahlkorperGr {

@@ -7,11 +7,11 @@
 
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "ApparentHorizons/StrahlkorperGr.hpp"
-#include "ApparentHorizons/TagsDeclarations.hpp" // IWYU pragma: keep
+#include "ApparentHorizons/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/TagsTypeAliases.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp" // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -215,6 +215,30 @@ struct Tangents : db::ComputeTag {
                                    Rhat<Frame>, Jacobian<Frame>>;
 };
 
+/// Computes the Euclidean area element on a Strahlkorper.
+/// Useful for flat space integrals.
+template <typename Frame>
+struct EuclideanAreaElement : db::ComputeTag {
+  static std::string name() noexcept { return "EuclideanAreaElement"; }
+  static constexpr auto function =
+      ::StrahlkorperGr::euclidean_area_element<Frame>;
+  using argument_tags = tmpl::list<
+      StrahlkorperTags::Jacobian<Frame>, StrahlkorperTags::NormalOneForm<Frame>,
+      StrahlkorperTags::Radius<Frame>, StrahlkorperTags::Rhat<Frame>>;
+};
+
+/// Computes the flat-space integral of a scalar over a Strahlkorper.
+template <typename IntegrandTag, typename Frame>
+struct EuclideanSurfaceIntegral : db::ComputeTag {
+  static std::string name() noexcept {
+    return "EuclideanSurfaceIntegral" + IntegrandTag::name();
+  }
+  static constexpr auto function =
+      ::StrahlkorperGr::surface_integral_of_scalar<Frame>;
+  using argument_tags = tmpl::list<EuclideanAreaElement<Frame>, IntegrandTag,
+                                   StrahlkorperTags::Strahlkorper<Frame>>;
+};
+
 template <typename Frame>
 using items_tags = tmpl::list<Strahlkorper<Frame>>;
 
@@ -254,5 +278,6 @@ struct SurfaceIntegral : db::ComputeTag {
   using argument_tags = tmpl::list<AreaElement<Frame>, IntegrandTag,
                                    StrahlkorperTags::Strahlkorper<Frame>>;
 };
+
 }  // namespace Tags
 }  // namespace StrahlkorperGr
