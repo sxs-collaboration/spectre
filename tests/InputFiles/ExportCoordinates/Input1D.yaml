@@ -4,7 +4,7 @@
 # Executable: ExportCoordinates1D
 # Check: execute
 # ExpectedOutput:
-#   Coordinates0.h5
+#   Coordinates1D0.h5
 
 DomainCreator:
   Interval:
@@ -14,5 +14,5 @@ DomainCreator:
     InitialRefinement: [1]
     InitialGridPoints: [3]
 
-VolumeFileName: "Coordinates"
+VolumeFileName: "Coordinates1D"
 ReductionFileName: "Reductions"

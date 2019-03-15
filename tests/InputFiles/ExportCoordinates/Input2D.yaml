@@ -4,7 +4,7 @@
 # Executable: ExportCoordinates2D
 # Check: execute
 # ExpectedOutput:
-#   Coordinates0.h5
+#   Coordinates2D0.h5
 
 DomainCreator:
   Disk:
@@ -14,5 +14,5 @@ DomainCreator:
     InitialGridPoints: [3, 3]
     UseEquiangularMap: true
 
-VolumeFileName: "Coordinates"
+VolumeFileName: "Coordinates2D"
 ReductionFileName: "Reductions"
