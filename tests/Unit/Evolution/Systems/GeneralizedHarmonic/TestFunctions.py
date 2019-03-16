@@ -228,26 +228,32 @@ def char_speed_uminus(gamma1, lapse, shift, unit_normal):
 
 
 # Test functions for characteristic fields
-def char_field_upsi(gamma2, spacetime_metric,
-                    pi, phi, normal_one_form, normal_vector):
+def char_field_upsi(gamma2, inverse_spatial_metric, spacetime_metric,
+                    pi, phi, normal_one_form):
     return spacetime_metric
 
 
-def char_field_uzero(gamma2, spacetime_metric,
-                     pi, phi, normal_one_form, normal_vector):
+def char_field_uzero(gamma2, inverse_spatial_metric, spacetime_metric,
+                     pi, phi, normal_one_form):
+    normal_vector =\
+        np.einsum('ij,j', inverse_spatial_metric, normal_one_form)
     projection_tensor = np.identity(len(normal_vector)) -\
         np.einsum('i,j', normal_one_form, normal_vector)
     return np.einsum('ij,jab->iab', projection_tensor, phi)
 
 
-def char_field_uplus(gamma2, spacetime_metric,
-                     pi, phi, normal_one_form, normal_vector):
+def char_field_uplus(gamma2, inverse_spatial_metric, spacetime_metric,
+                     pi, phi, normal_one_form):
+    normal_vector =\
+        np.einsum('ij,j', inverse_spatial_metric, normal_one_form)
     phi_dot_normal = np.einsum('i,iab->ab', normal_vector, phi)
     return pi + 1*phi_dot_normal - (gamma2 * spacetime_metric)
 
 
-def char_field_uminus(gamma2, spacetime_metric,
-                      pi, phi, normal_one_form, normal_vector):
+def char_field_uminus(gamma2, inverse_spatial_metric, spacetime_metric,
+                      pi, phi, normal_one_form):
+    normal_vector =\
+        np.einsum('ij,j', inverse_spatial_metric, normal_one_form)
     phi_dot_normal = np.einsum('i,iab->ab', normal_vector, phi)
     return pi - phi_dot_normal - (gamma2 * spacetime_metric)
 

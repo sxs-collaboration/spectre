@@ -6,25 +6,21 @@
 #include <algorithm>
 #include <array>
 
-#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
-#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
-// IWYU pragma: no_include <array>
+// IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp"
 
-// IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare Tags::CharSpeed
-// IWYU pragma: no_forward_declare Tags::Pi
-// IWYU pragma: no_forward_declare Tags::Phi
-// IWYU pragma: no_forward_declare Tags::UPsi
-// IWYU pragma: no_forward_declare Tags::UZero
-// IWYU pragma: no_forward_declare Tags::UMinus
-// IWYU pragma: no_forward_declare Tags::UPlus
+/// \cond
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
+/// \endcond
 
 namespace GeneralizedHarmonic {
 
@@ -34,16 +30,12 @@ void compute_characteristic_speeds(
         char_speeds,
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
-    const tnsr::i<DataVector, Dim, Frame>& normal) noexcept {
-  const auto shift_dot_normal = get(dot_product(shift, normal));
-  get(get<::Tags::CharSpeed<Tags::UPsi<Dim, Frame>>>(*char_speeds)) =
-      -(1. + get(gamma_1)) * shift_dot_normal;
-  get(get<::Tags::CharSpeed<Tags::UZero<Dim, Frame>>>(*char_speeds)) =
-      -shift_dot_normal;
-  get(get<::Tags::CharSpeed<Tags::UPlus<Dim, Frame>>>(*char_speeds)) =
-      -shift_dot_normal + get(lapse);
-  get(get<::Tags::CharSpeed<Tags::UMinus<Dim, Frame>>>(*char_speeds)) =
-      -shift_dot_normal - get(lapse);
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
+  const auto shift_dot_normal = get(dot_product(shift, unit_normal_one_form));
+  (*char_speeds)[0] = -(1. + get(gamma_1)) * shift_dot_normal;  // v(UPsi)
+  (*char_speeds)[1] = -shift_dot_normal;                        // v(UZero)
+  (*char_speeds)[2] = -shift_dot_normal + get(lapse);           // v(UPlus)
+  (*char_speeds)[3] = -shift_dot_normal - get(lapse);           // v(UMinus)
 }
 
 template <size_t Dim, typename Frame>
@@ -51,12 +43,12 @@ typename Tags::CharacteristicSpeeds<Dim, Frame>::type
 CharacteristicSpeedsCompute<Dim, Frame>::function(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
-    const tnsr::i<DataVector, Dim, Frame>& normal) noexcept {
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
   auto char_speeds =
       make_with_value<typename Tags::CharacteristicSpeeds<Dim, Frame>::type>(
           get(lapse), 0.);
   compute_characteristic_speeds(make_not_null(&char_speeds), gamma_1, lapse,
-                                shift, normal);
+                                shift, unit_normal_one_form);
   return char_speeds;
 }
 
@@ -65,13 +57,15 @@ void compute_characteristic_fields(
     const gsl::not_null<typename Tags::CharacteristicFields<Dim, Frame>::type*>
         char_fields,
     const Scalar<DataVector>& gamma_2,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
     const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form,
-    const tnsr::I<DataVector, Dim, Frame>& unit_normal_vector) noexcept {
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
   auto phi_dot_normal =
       make_with_value<tnsr::aa<DataVector, Dim, Frame>>(pi, 0.);
+  auto unit_normal_vector =
+      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric);
 
   // Compute phi_dot_normal_{ab} = n^i \Phi_{iab}
   for (size_t a = 0; a < Dim + 1; ++a) {
@@ -114,17 +108,17 @@ template <size_t Dim, typename Frame>
 typename Tags::CharacteristicFields<Dim, Frame>::type
 CharacteristicFieldsCompute<Dim, Frame>::function(
     const Scalar<DataVector>& gamma_2,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
     const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form,
-    const tnsr::I<DataVector, Dim, Frame>& unit_normal_vector) noexcept {
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
   auto char_fields =
       make_with_value<typename Tags::CharacteristicFields<Dim, Frame>::type>(
           get(gamma_2), 0.);
   compute_characteristic_fields(make_not_null(&char_fields), gamma_2,
-                                spacetime_metric, pi, phi, unit_normal_one_form,
-                                unit_normal_vector);
+                                inverse_spatial_metric, spacetime_metric, pi,
+                                phi, unit_normal_one_form);
   return char_fields;
 }
 
@@ -193,47 +187,49 @@ double ComputeLargestCharacteristicSpeed<Dim, Frame>::apply(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(_, data)                                                 \
-  template void GeneralizedHarmonic::compute_characteristic_speeds(            \
-      const gsl::not_null<                                                     \
-          typename GeneralizedHarmonic::Tags::CharacteristicSpeeds<            \
-              DIM(data), FRAME(data)>::type*>                                  \
-          char_speeds,                                                         \
-      const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,      \
-      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
-      const tnsr::i<DataVector, DIM(data), FRAME(data)>& normal) noexcept;     \
-  template struct GeneralizedHarmonic::CharacteristicSpeedsCompute<            \
-      DIM(data), FRAME(data)>;                                                 \
-  template void GeneralizedHarmonic::compute_characteristic_fields(            \
-      const gsl::not_null<                                                     \
-          typename GeneralizedHarmonic::Tags::CharacteristicFields<            \
-              DIM(data), FRAME(data)>::type*>                                  \
-          char_fields,                                                         \
-      const Scalar<DataVector>& gamma_2,                                       \
-      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& spacetime_metric,    \
-      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& pi,                  \
-      const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& phi,                \
-      const tnsr::i<DataVector, DIM(data), FRAME(data)>& unit_normal_one_form, \
-      const tnsr::I<DataVector, DIM(data), FRAME(data)>&                       \
-          unit_normal_vector) noexcept;                                        \
-  template struct GeneralizedHarmonic::CharacteristicFieldsCompute<            \
-      DIM(data), FRAME(data)>;                                                 \
-  template void                                                                \
-  GeneralizedHarmonic::compute_evolved_fields_from_characteristic_fields(      \
-      const gsl::not_null<typename GeneralizedHarmonic::Tags::                 \
-                              EvolvedFieldsFromCharacteristicFields<           \
-                                  DIM(data), FRAME(data)>::type*>              \
-          evolved_fields,                                                      \
-      const Scalar<DataVector>& gamma_2,                                       \
-      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_psi,               \
-      const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& u_zero,             \
-      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_plus,              \
-      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_minus,             \
-      const tnsr::i<DataVector, DIM(data), FRAME(data)>&                       \
-          unit_normal_one_form) noexcept;                                      \
-  template struct GeneralizedHarmonic::                                        \
-      EvolvedFieldsFromCharacteristicFieldsCompute<DIM(data), FRAME(data)>;    \
-  template struct GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<      \
+#define INSTANTIATION(_, data)                                              \
+  template void GeneralizedHarmonic::compute_characteristic_speeds(         \
+      const gsl::not_null<                                                  \
+          typename GeneralizedHarmonic::Tags::CharacteristicSpeeds<         \
+              DIM(data), FRAME(data)>::type*>                               \
+          char_speeds,                                                      \
+      const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,   \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,             \
+      const tnsr::i<DataVector, DIM(data), FRAME(data)>&                    \
+          unit_normal_one_form) noexcept;                                   \
+  template struct GeneralizedHarmonic::CharacteristicSpeedsCompute<         \
+      DIM(data), FRAME(data)>;                                              \
+  template void GeneralizedHarmonic::compute_characteristic_fields(         \
+      const gsl::not_null<                                                  \
+          typename GeneralizedHarmonic::Tags::CharacteristicFields<         \
+              DIM(data), FRAME(data)>::type*>                               \
+          char_fields,                                                      \
+      const Scalar<DataVector>& gamma_2,                                    \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                   \
+          inverse_spatial_metric,                                           \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& spacetime_metric, \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& pi,               \
+      const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& phi,             \
+      const tnsr::i<DataVector, DIM(data), FRAME(data)>&                    \
+          unit_normal_one_form) noexcept;                                   \
+  template struct GeneralizedHarmonic::CharacteristicFieldsCompute<         \
+      DIM(data), FRAME(data)>;                                              \
+  template void                                                             \
+  GeneralizedHarmonic::compute_evolved_fields_from_characteristic_fields(   \
+      const gsl::not_null<typename GeneralizedHarmonic::Tags::              \
+                              EvolvedFieldsFromCharacteristicFields<        \
+                                  DIM(data), FRAME(data)>::type*>           \
+          evolved_fields,                                                   \
+      const Scalar<DataVector>& gamma_2,                                    \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_psi,            \
+      const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& u_zero,          \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_plus,           \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& u_minus,          \
+      const tnsr::i<DataVector, DIM(data), FRAME(data)>&                    \
+          unit_normal_one_form) noexcept;                                   \
+  template struct GeneralizedHarmonic::                                     \
+      EvolvedFieldsFromCharacteristicFieldsCompute<DIM(data), FRAME(data)>; \
+  template struct GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<   \
       DIM(data), FRAME(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),

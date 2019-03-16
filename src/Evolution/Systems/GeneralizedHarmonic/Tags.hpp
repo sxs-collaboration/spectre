@@ -95,9 +95,7 @@ struct UMinus : db::SimpleTag {
 
 template <size_t Dim, typename Frame>
 struct CharacteristicSpeeds : db::SimpleTag {
-  using type = Variables<db::wrap_tags_in<
-      ::Tags::CharSpeed, tmpl::list<UPsi<Dim, Frame>, UZero<Dim, Frame>,
-                                    UPlus<Dim, Frame>, UMinus<Dim, Frame>>>>;
+  using type = std::array<DataVector, 4>;
   static std::string name() noexcept { return "CharacteristicSpeeds"; }
 };
 
