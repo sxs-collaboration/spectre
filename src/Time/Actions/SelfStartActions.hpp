@@ -231,22 +231,23 @@ struct CheckForCompletion {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&, bool, size_t> apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     // The self start procedure begins with slab number
     // -number_of_past_steps and counts up.  When we reach 0 we should
     // start the evolution proper.  The first thing the evolution loop
     // will do is update the time, so here we need to check if the
     // next time should be the first real step.
-    return std::tuple<db::DataBox<DbTags>&&, bool, size_t>(
-        std::move(box), false,
-        db::get<::Tags::Next<::Tags::TimeId>>(box).slab_number() == 0
-            ? tmpl::index_of<ActionList, ::Actions::Label<ExitTag>>::value
-            : tmpl::index_of<ActionList, CheckForCompletion>::value + 1);
+    if (db::get<::Tags::Next<::Tags::TimeId>>(box).slab_number() == 0) {
+      return {std::move(box), false,
+              tmpl::index_of<ActionList, ::Actions::Label<ExitTag>>::value};
+    }
+    return {std::move(box), false,
+            tmpl::index_of<ActionList, CheckForCompletion>::value + 1};
     // Once we have full support for phases this action should
     // terminate the phase:
     // return std::tuple<db::DataBox<DbTags>&&, bool>(
@@ -276,12 +277,12 @@ struct CheckForOrderIncrease {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&> apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     using variables_tag = typename Metavariables::system::variables_tag;
 
     const auto& time = db::get<::Tags::Time>(box);
@@ -310,7 +311,7 @@ struct CheckForOrderIncrease {
           db::get<::Tags::TimeId>(box));
     }
 
-    return std::forward_as_tuple(std::move(box));
+    return {std::move(box)};
   }
 };
 
@@ -340,12 +341,12 @@ struct StartNextOrderIfReady {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTags>&&, bool, size_t> apply(
+      db::DataBox<DbTags>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
 
     constexpr size_t restart_index =
@@ -370,9 +371,8 @@ struct StartNextOrderIfReady {
       });
     }
 
-    return std::tuple<db::DataBox<DbTags>&&, bool, size_t>(
-        std::move(box), false,
-        done_with_order ? restart_index : continue_index);
+    return {std::move(box), false,
+            done_with_order ? restart_index : continue_index};
   }
 };
 
