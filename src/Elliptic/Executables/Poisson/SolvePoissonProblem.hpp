@@ -33,6 +33,7 @@
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
 template <size_t Dim>
 struct Metavariables {
   static constexpr OptionString help{
@@ -122,3 +123,4 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &domain::creators::register_derived_with_charm};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
+/// \endcond

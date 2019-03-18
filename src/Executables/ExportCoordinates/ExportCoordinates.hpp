@@ -28,6 +28,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
+/// \cond
 namespace {
 struct ObservationType {};
 }  // namespace
@@ -198,3 +199,4 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &domain::creators::register_derived_with_charm};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
+/// \endcond
