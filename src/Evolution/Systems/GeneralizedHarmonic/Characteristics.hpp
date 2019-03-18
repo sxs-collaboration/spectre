@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -19,8 +20,6 @@ template <class T>
 class not_null;
 }  // namespace gsl
 namespace Tags {
-template <typename Tag>
-struct CharSpeed;
 template <typename Tag>
 struct Normalized;
 }  // namespace Tags
@@ -134,6 +133,8 @@ void compute_characteristic_speeds(
 template <size_t Dim, typename Frame>
 struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
                                      db::ComputeTag {
+  using base = Tags::CharacteristicFields<Dim, Frame>;
+  using type = typename base::type;
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma2,
       gr::Tags::InverseSpatialMetric<Dim, Frame, DataVector>,
@@ -172,6 +173,8 @@ template <size_t Dim, typename Frame>
 struct EvolvedFieldsFromCharacteristicFieldsCompute
     : Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>,
       db::ComputeTag {
+  using base = Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>;
+  using type = typename base::type;
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma2, Tags::UPsi<Dim, Frame>, Tags::UZero<Dim, Frame>,
       Tags::UPlus<Dim, Frame>, Tags::UMinus<Dim, Frame>,
@@ -207,13 +210,7 @@ void compute_evolved_fields_from_characteristic_fields(
  */
 template <size_t Dim, typename Frame>
 struct ComputeLargestCharacteristicSpeed {
-  using argument_tags = tmpl::list<::Tags::CharSpeed<Tags::UPsi<Dim, Frame>>,
-                                   ::Tags::CharSpeed<Tags::UZero<Dim, Frame>>,
-                                   ::Tags::CharSpeed<Tags::UPlus<Dim, Frame>>,
-                                   ::Tags::CharSpeed<Tags::UMinus<Dim, Frame>>>;
-  static double apply(const Scalar<DataVector>& u_psi_speed,
-                      const Scalar<DataVector>& u_zero_speed,
-                      const Scalar<DataVector>& u_plus_speed,
-                      const Scalar<DataVector>& u_minus_speed) noexcept;
+  using argument_tags = tmpl::list<Tags::CharacteristicSpeeds<Dim, Frame>>;
+  static double apply(const std::array<DataVector, 4>& char_speeds) noexcept;
 };
 }  // namespace GeneralizedHarmonic

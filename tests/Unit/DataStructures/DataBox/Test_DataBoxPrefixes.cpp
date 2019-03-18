@@ -23,6 +23,5 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Prefixes",
   /// [next_name]
   CHECK(Tags::Next<Tag>::name() == "Next(" + Tag::name() + ")");
   /// [next_name]
-  CHECK(Tags::CharSpeed<Tag>::name() == "CharSpeed(Tag)");
   CHECK(Tags::dt<Tag>::name() == "dt(Tag)");
 }

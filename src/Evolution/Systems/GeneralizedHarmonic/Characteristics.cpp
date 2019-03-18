@@ -8,14 +8,13 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-
-// IWYU pragma: no_include "DataStructures/Tensor/Tensor.hpp"
 
 /// \cond
 template <typename X, typename Symm, typename IndexList>
@@ -173,13 +172,10 @@ EvolvedFieldsFromCharacteristicFieldsCompute<Dim, Frame>::function(
 
 template <size_t Dim, typename Frame>
 double ComputeLargestCharacteristicSpeed<Dim, Frame>::apply(
-    const Scalar<DataVector>& u_psi_speed,
-    const Scalar<DataVector>& u_zero_speed,
-    const Scalar<DataVector>& u_plus_speed,
-    const Scalar<DataVector>& u_minus_speed) noexcept {
+    const std::array<DataVector, 4>& char_speeds) noexcept {
   std::array<double, 4> max_speeds{
-      {max(abs(get(u_psi_speed))), max(abs(get(u_zero_speed))),
-       max(abs(get(u_plus_speed))), max(abs(get(u_minus_speed)))}};
+      {max(abs(char_speeds.at(0))), max(abs(char_speeds.at(1))),
+       max(abs(char_speeds.at(2))), max(abs(char_speeds.at(3)))}};
   return *std::max_element(max_speeds.begin(), max_speeds.end());
 }
 }  // namespace GeneralizedHarmonic
