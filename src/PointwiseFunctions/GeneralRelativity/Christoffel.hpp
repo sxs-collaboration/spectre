@@ -76,7 +76,8 @@ struct SpatialChristoffelFirstKindCompute
       const tnsr::ijj<DataType, SpatialDim, Frame>&) =
       &christoffel_first_kind<SpatialDim, Frame, IndexType::Spatial, DataType>;
   using argument_tags = tmpl::list<
-      GeneralizedHarmonic::Tags::DerivSpatialMetric<SpatialDim, Frame>>;
+      ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataType>,
+                    tmpl::size_t<SpatialDim>, Frame>>;
 };
 
 /// Compute item for spacetime Christoffel symbols of the second kind
@@ -191,4 +192,4 @@ struct TraceSpatialChristoffelFirstKindCompute
                  InverseSpatialMetric<SpatialDim, Frame, DataType>>;
 };
 }  // namespace Tags
-} // namespace gr
+}  // namespace gr

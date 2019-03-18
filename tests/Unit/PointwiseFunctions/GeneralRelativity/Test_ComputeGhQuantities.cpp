@@ -77,8 +77,7 @@ template <size_t Dim, typename DataType>
 void test_compute_gauge_source(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
       &GeneralizedHarmonic::gauge_source<Dim, Frame::Inertial, DataType>,
-      "ComputeGhQuantities", "gauge_source", {{{-10., 10.}}},
-      used_for_size);
+      "ComputeGhQuantities", "gauge_source", {{{-10., 10.}}}, used_for_size);
 }
 
 template <size_t Dim, typename T>
@@ -593,19 +592,28 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   CHECK(GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<
             3, Frame::Inertial>::name() == "ExtrinsicCurvature");
   CHECK(GeneralizedHarmonic::Tags::DerivSpatialMetricCompute<
-            3, Frame::Inertial>::name() == "DerivSpatialMetric");
+            3, Frame::Inertial>::name() == "deriv(SpatialMetric)");
   CHECK(GeneralizedHarmonic::Tags::DerivLapseCompute<3,
                                                      Frame::Inertial>::name() ==
-        "DerivLapse");
+        "deriv(Lapse)");
   CHECK(GeneralizedHarmonic::Tags::DerivShiftCompute<3,
                                                      Frame::Inertial>::name() ==
-        "DerivShift");
+        "deriv(Shift)");
   CHECK(GeneralizedHarmonic::Tags::TimeDerivSpatialMetricCompute<
-            3, Frame::Inertial>::name() == "TimeDerivSpatialMetric");
+            3, Frame::Inertial>::name() +
+            GeneralizedHarmonic::Tags::TimeDerivSpatialMetricCompute<
+                3, Frame::Inertial>::tag::name() ==
+        "dtSpatialMetric");
   CHECK(GeneralizedHarmonic::Tags::TimeDerivLapseCompute<
-            3, Frame::Inertial>::name() == "TimeDerivLapse");
+            3, Frame::Inertial>::name() +
+            GeneralizedHarmonic::Tags::TimeDerivLapseCompute<
+                3, Frame::Inertial>::tag::name() ==
+        "dtLapse");
   CHECK(GeneralizedHarmonic::Tags::TimeDerivShiftCompute<
-            3, Frame::Inertial>::name() == "TimeDerivShift");
+            3, Frame::Inertial>::name() +
+            GeneralizedHarmonic::Tags::TimeDerivShiftCompute<
+                3, Frame::Inertial>::tag::name() ==
+        "dtShift");
   CHECK(GeneralizedHarmonic::Tags::DerivativesOfSpacetimeMetricCompute<
             3, Frame::Inertial>::name() == "DerivativesOfSpacetimeMetric");
 
@@ -725,15 +733,18 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
           gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
           gr::Tags::Lapse<DataVector>,
           gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-          GeneralizedHarmonic::Tags::DerivSpatialMetric<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::DerivLapse<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::DerivShift<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::TimeDerivSpatialMetric<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::TimeDerivLapse,
-          GeneralizedHarmonic::Tags::TimeDerivShift<3, Frame::Inertial>>,
+          ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                        tmpl::size_t<3>, Frame::Inertial>,
+          ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                        Frame::Inertial>,
+          ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                        tmpl::size_t<3>, Frame::Inertial>,
+          ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>,
+          ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+          ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>,
       db::AddComputeTags<
-          gr::Tags::SpacetimeNormalVectorCompute<3, Frame::Inertial,
-                                                 DataVector>,
+          gr::Tags::SpacetimeNormalVectorCompute<3,
+                                                 Frame::Inertial, DataVector>,
           gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
                                                       DataVector>,
           gr::Tags::InverseSpatialMetricCompute<3, Frame::Inertial, DataVector>,
@@ -788,17 +799,22 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
                                                            Frame::Inertial>>>(
       lapse, shift, spacetime_normal_vector, inverse_spacetime_metric,
       inverse_spatial_metric, phi, pi);
-  CHECK(db::get<
-            GeneralizedHarmonic::Tags::DerivSpatialMetric<3, Frame::Inertial>>(
-            other_box) == deriv_spatial_metric);
-  CHECK(db::get<GeneralizedHarmonic::Tags::DerivLapse<3, Frame::Inertial>>(
-            other_box) == deriv_lapse);
-  CHECK(db::get<GeneralizedHarmonic::Tags::DerivShift<3, Frame::Inertial>>(
-            other_box) == deriv_shift);
-  CHECK(db::get<GeneralizedHarmonic::Tags::TimeDerivSpatialMetric<
-            3, Frame::Inertial>>(other_box) == dt_spatial_metric);
-  CHECK(db::get<GeneralizedHarmonic::Tags::TimeDerivLapse>(other_box) ==
+  CHECK(
+      db::get<
+          ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                        tmpl::size_t<3>, Frame::Inertial>>(other_box) ==
+      deriv_spatial_metric);
+  CHECK(db::get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                              Frame::Inertial>>(other_box) == deriv_lapse);
+  CHECK(db::get<::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                              tmpl::size_t<3>, Frame::Inertial>>(other_box) ==
+        deriv_shift);
+  CHECK(
+      db::get<
+          ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
+          other_box) == dt_spatial_metric);
+  CHECK(db::get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(other_box) ==
         dt_lapse);
-  CHECK(db::get<GeneralizedHarmonic::Tags::TimeDerivShift<3, Frame::Inertial>>(
+  CHECK(db::get<::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(
             other_box) == dt_shift);
 }

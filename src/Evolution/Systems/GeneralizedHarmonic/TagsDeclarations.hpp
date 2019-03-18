@@ -22,33 +22,22 @@ struct GaugeH;
 template <size_t Dim, typename Frame = Frame::Inertial>
 struct SpacetimeDerivGaugeH;
 template <size_t Dim, typename Frame = Frame::Inertial>
-struct DerivSpatialMetric;
-template <size_t Dim, typename Frame = Frame::Inertial>
-struct TimeDerivSpatialMetric;
-template <size_t Dim, typename Frame = Frame::Inertial>
-struct DerivLapse;
-struct TimeDerivLapse;
-template <size_t Dim, typename Frame = Frame::Inertial>
-struct DerivShift;
-template <size_t Dim, typename Frame = Frame::Inertial>
-struct TimeDerivShift;
-template <size_t Dim, typename Frame = Frame::Inertial>
 struct TraceExtrinsicCurvature;
 
-template<size_t Dim, typename Frame>
+template <size_t Dim, typename Frame>
 struct UPsi;
-template<size_t Dim, typename Frame>
+template <size_t Dim, typename Frame>
 struct UZero;
-template<size_t Dim, typename Frame>
+template <size_t Dim, typename Frame>
 struct UPlus;
-template<size_t Dim, typename Frame>
+template <size_t Dim, typename Frame>
 struct UMinus;
 
-template<size_t Dim, typename Frame>
+template <size_t Dim, typename Frame>
 struct CharacteristicSpeeds;
-template<size_t Dim, typename Frame>
+template <size_t Dim, typename Frame>
 struct CharacteristicFields;
-template<size_t Dim, typename Frame>
+template <size_t Dim, typename Frame>
 struct EvolvedFieldsFromCharacteristicFields;
 }  // namespace Tags
 }  // namespace GeneralizedHarmonic
