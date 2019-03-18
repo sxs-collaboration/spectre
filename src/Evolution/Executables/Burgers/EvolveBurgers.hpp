@@ -12,13 +12,14 @@
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"    // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
+#include "Evolution/DiscontinuousGalerkin/Observe.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
-#include "Evolution/Systems/Burgers/Observe.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -75,7 +76,9 @@ struct EvolutionMetavars {
       SlopeLimiters::Minmod<1, system::variables_tag::tags_list>>;
 
   // public for use by the Charm++ registration code
-  using events = tmpl::list<Burgers::Events::Registrars::Observe>;
+  using events = tmpl::list<dg::Events::Registrars::Observe<
+      1, db::get_variables_tags_list<system::variables_tag>,
+      db::get_variables_tags_list<system::variables_tag>>>;
   using triggers = Triggers::time_triggers;
 
   using const_global_cache_tag_list =
@@ -88,8 +91,8 @@ struct EvolutionMetavars {
   struct ObservationType {};
   using element_observation_type = ObservationType;
 
-  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::list<Burgers::Events::Observe<>>>;
+  using observed_reduction_data_tags =
+      observers::collect_reduction_data_tags<Event<events>::creatable_classes>;
 
   using step_choosers =
       tmpl::list<StepChoosers::Registrars::Cfl<1, Frame::Inertial>,

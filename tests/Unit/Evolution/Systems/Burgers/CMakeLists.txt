@@ -6,7 +6,6 @@ set(LIBRARY "Test_Burgers")
 set(LIBRARY_SOURCES
   Test_Equations.cpp
   Test_Fluxes.cpp
-  Test_Observe.cpp
   )
 
 add_test_library(

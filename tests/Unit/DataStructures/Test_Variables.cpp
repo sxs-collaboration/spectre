@@ -765,6 +765,44 @@ void test_variables_assign_subset() noexcept {
 }
 
 template <typename VectorType>
+void test_variables_extract_subset() noexcept {
+  using value_type = typename VectorType::value_type;
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
+                                                                         100.0};
+  UniformCustomDistribution<size_t> sdist{5, 20};
+
+  const size_t number_of_grid_points = sdist(gen);
+
+  const auto vars_subset0 = make_with_random_values<
+      Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>>(
+      make_not_null(&gen), make_not_null(&dist),
+      VectorType{number_of_grid_points});
+  const auto vars_subset1 = make_with_random_values<
+      Variables<tmpl::list<VariablesTestTags_detail::scalar<VectorType>>>>(
+      make_not_null(&gen), make_not_null(&dist),
+      VectorType{number_of_grid_points});
+
+  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
+                       VariablesTestTags_detail::scalar<VectorType>>>
+      vars(number_of_grid_points);
+  get<VariablesTestTags_detail::tensor<VectorType>>(vars) =
+      get<VariablesTestTags_detail::tensor<VectorType>>(vars_subset0);
+  get<VariablesTestTags_detail::scalar<VectorType>>(vars) =
+      get<VariablesTestTags_detail::scalar<VectorType>>(vars_subset1);
+  CHECK(vars.template extract_subset<
+            tmpl::list<VariablesTestTags_detail::tensor<VectorType>>>() ==
+        vars_subset0);
+  CHECK(vars.template extract_subset<
+            tmpl::list<VariablesTestTags_detail::scalar<VectorType>>>() ==
+        vars_subset1);
+  CHECK(vars.template extract_subset<
+            tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
+                       VariablesTestTags_detail::scalar<VectorType>>>() ==
+        vars);
+}
+
+template <typename VectorType>
 void test_variables_slice() noexcept {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{5, 10};
@@ -916,6 +954,37 @@ void test_variables_add_slice_to_data() noexcept {
       expected, get<VariablesTestTags_detail::tensor<VectorType>>(vars));
 }
 
+template <typename VectorType>
+void test_variables_from_tagged_tuple() noexcept {
+  using value_type = typename VectorType::value_type;
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<tt::get_fundamental_type_t<value_type>> dist{-100.0,
+                                                                         100.0};
+  UniformCustomDistribution<size_t> sdist{5, 20};
+
+  const size_t number_of_grid_points = sdist(gen);
+  tuples::TaggedTuple<VariablesTestTags_detail::tensor<VectorType>,
+                      VariablesTestTags_detail::scalar<VectorType>>
+      source;
+  get<VariablesTestTags_detail::tensor<VectorType>>(source) =
+      make_with_random_values<
+          typename VariablesTestTags_detail::tensor<VectorType>::type>(
+          make_not_null(&gen), make_not_null(&dist),
+          VectorType{number_of_grid_points});
+  get<VariablesTestTags_detail::scalar<VectorType>>(source) =
+      make_with_random_values<
+          typename VariablesTestTags_detail::scalar<VectorType>::type>(
+          make_not_null(&gen), make_not_null(&dist),
+          VectorType{number_of_grid_points});
+
+  Variables<tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
+                       VariablesTestTags_detail::scalar<VectorType>>>
+      assigned(number_of_grid_points);
+  assigned.assign_subset(source);
+  const auto created = variables_from_tagged_tuple(source);
+  CHECK(assigned == created);
+}
+
 SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   SECTION("Test Variables construction, access, and assignment") {
     test_variables_construction_and_access<ComplexDataVector>();
@@ -959,6 +1028,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_variables_assign_subset<DataVector>();
     test_variables_assign_subset<ModalVector>();
   }
+  SECTION("Test Variables extract subset") {
+    test_variables_extract_subset<ComplexDataVector>();
+    test_variables_extract_subset<ComplexModalVector>();
+    test_variables_extract_subset<DataVector>();
+    test_variables_extract_subset<ModalVector>();
+  }
   SECTION("Test Variables slice utilities") {
     test_variables_slice<ComplexDataVector>();
     test_variables_slice<ComplexModalVector>();
@@ -970,6 +1045,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
     test_variables_add_slice_to_data<ComplexModalVector>();
     test_variables_add_slice_to_data<DataVector>();
     test_variables_add_slice_to_data<ModalVector>();
+  }
+  SECTION("Test variables_from_tagged_tuple") {
+    // The commented functions require a fix to issue #1420.
+    // test_variables_from_tagged_tuple<ComplexDataVector>();
+    // test_variables_from_tagged_tuple<ComplexModalVector>();
+    test_variables_from_tagged_tuple<DataVector>();
+    // test_variables_from_tagged_tuple<ModalVector>();
   }
 }
 }  // namespace

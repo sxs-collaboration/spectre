@@ -706,6 +706,31 @@ SPECTRE_TEST_CASE("Unit.Options.bad_colon", "[Unit][Options]") {
   Options<tmpl::list<>> opts("");
   opts.parse("\n\n:");
 }
+
+struct ExplicitObject {
+  explicit ExplicitObject() = default;
+};
+
+struct ExplicitObjectTag {
+  using type = ExplicitObject;
+  static constexpr OptionString help = {"halp"};
+};
+}  // namespace
+
+template <>
+struct create_from_yaml<ExplicitObject> {
+  template <typename Metavariables>
+  static ExplicitObject create(const Option& /*options*/) {
+    return ExplicitObject{};
+  }
+};
+
+namespace {
+void test_options_explicit_constructor() {
+  Options<tmpl::list<ExplicitObjectTag>> opts("");
+  opts.parse("ExplicitObjectTag:");
+  opts.get<ExplicitObjectTag>();
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
@@ -726,4 +751,5 @@ SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_apply();
   test_options_option_context_default_stream();
   test_options_format();
+  test_options_explicit_constructor();
 }
