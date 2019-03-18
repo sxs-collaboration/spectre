@@ -14,6 +14,8 @@ template <size_t Dim>
 struct CharacteristicSpeeds;
 template <typename DataType>
 struct MassDensity;
+template <typename DataType>
+struct MassDensityCons;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct MomentumDensity;
 template <typename DataType>

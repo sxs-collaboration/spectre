@@ -9,6 +9,8 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
+// IWYU pragma: no_include <array>
+
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
@@ -16,11 +18,14 @@ namespace NewtonianEuler {
 
 template <size_t Dim>
 void ConservativeFromPrimitive<Dim>::apply(
+    const gsl::not_null<Scalar<DataVector>*> mass_density_cons,
     const gsl::not_null<tnsr::I<DataVector, Dim>*> momentum_density,
     const gsl::not_null<Scalar<DataVector>*> energy_density,
     const Scalar<DataVector>& mass_density,
     const tnsr::I<DataVector, Dim>& velocity,
     const Scalar<DataVector>& specific_internal_energy) noexcept {
+  get(*mass_density_cons) = get(mass_density);
+
   for (size_t i = 0; i < Dim; ++i) {
     momentum_density->get(i) = get(mass_density) * velocity.get(i);
   }

@@ -18,6 +18,10 @@ def characteristic_speeds(velocity, sound_speed, normal):
 
 
 # Functions for testing ConservativeFromPrimitive.cpp
+def mass_density_cons(mass_density, velocity, specific_internal_energy):
+    return mass_density
+
+
 def momentum_density(mass_density, velocity, specific_internal_energy):
     return mass_density * velocity
 
@@ -31,7 +35,8 @@ def energy_density(mass_density, velocity, specific_internal_energy):
 
 
 # Functions for testing Fluxes.cpp
-def mass_density_flux(momentum_density, energy_density, velocity, pressure):
+def mass_density_cons_flux(momentum_density, energy_density,
+                           velocity, pressure):
     return momentum_density
 
 
@@ -49,24 +54,29 @@ def energy_density_flux(momentum_density, energy_density, velocity, pressure):
 
 
 # Functions for testing PrimitiveFromConservative.cpp
-def velocity(mass_density, momentum_density, energy_density):
-    return (momentum_density / mass_density)
+def mass_density(mass_density_cons, momentum_density, energy_density):
+    return mass_density_cons
 
 
-def specific_internal_energy(mass_density, momentum_density, energy_density):
-    veloc = velocity(mass_density, momentum_density, energy_density)
-    return (energy_density / mass_density - 0.5 * np.dot(veloc, veloc))
+def velocity(mass_density_cons, momentum_density, energy_density):
+    return (momentum_density / mass_density_cons)
+
+
+def specific_internal_energy(mass_density_cons, momentum_density,
+                             energy_density):
+    veloc = velocity(mass_density_cons, momentum_density, energy_density)
+    return (energy_density / mass_density_cons - 0.5 * np.dot(veloc, veloc))
 
 
 # Hard-coded for PolytropicFluid (representative ThermoDim = 1 case)
-def pressure_1d(mass_density, momentum_density, energy_density):
-    return 1.4 * np.power(mass_density, 5.0 / 3.0)
+def pressure_1d(mass_density_cons, momentum_density, energy_density):
+    return 1.4 * np.power(mass_density_cons, 5.0 / 3.0)
 
 
 # Hard-coded for IdealFluid (representative ThermoDim = 2 case)
-def pressure_2d(mass_density, momentum_density, energy_density):
-    return ((2.0 / 3.0) * mass_density *
-            specific_internal_energy(mass_density, momentum_density,
+def pressure_2d(mass_density_cons, momentum_density, energy_density):
+    return ((2.0 / 3.0) * mass_density_cons *
+            specific_internal_energy(mass_density_cons, momentum_density,
                                      energy_density))
 
 

@@ -10,6 +10,12 @@
 #include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::EnergyDensity
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MomentumDensity
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::MassDensityCons
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::Pressure
+// IWYU pragma: no_forward_declare NewtonianEuler::Tags::Velocity
+// IWYU pragma: no_forward_declare Tags::Flux
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
@@ -48,8 +54,8 @@ namespace NewtonianEuler {
 template <size_t Dim>
 struct ComputeFluxes {
   using return_tags =
-      tmpl::list<::Tags::Flux<Tags::MassDensity<DataVector>, tmpl::size_t<Dim>,
-                              Frame::Inertial>,
+      tmpl::list<::Tags::Flux<Tags::MassDensityCons<DataVector>,
+                              tmpl::size_t<Dim>, Frame::Inertial>,
                  ::Tags::Flux<Tags::MomentumDensity<DataVector, Dim>,
                               tmpl::size_t<Dim>, Frame::Inertial>,
                  ::Tags::Flux<Tags::EnergyDensity<DataVector>,
@@ -61,7 +67,7 @@ struct ComputeFluxes {
                  Tags::Velocity<DataVector, Dim>, Tags::Pressure<DataVector>>;
 
   static void apply(
-      gsl::not_null<tnsr::I<DataVector, Dim>*> mass_density_flux,
+      gsl::not_null<tnsr::I<DataVector, Dim>*> mass_density_cons_flux,
       gsl::not_null<tnsr::IJ<DataVector, Dim>*> momentum_density_flux,
       gsl::not_null<tnsr::I<DataVector, Dim>*> energy_density_flux,
       const tnsr::I<DataVector, Dim>& momentum_density,

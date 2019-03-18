@@ -28,6 +28,13 @@ struct MassDensity : db::SimpleTag {
   static std::string name() noexcept { return "MassDensity"; }
 };
 
+/// The mass density of the fluid (as a conservative variable).
+template <typename DataType>
+struct MassDensityCons : db::SimpleTag {
+  using type = Scalar<DataType>;
+  static std::string name() noexcept { return "MassDensityCons"; }
+};
+
 /// The momentum density of the fluid.
 template <typename DataType, size_t Dim, typename Fr>
 struct MomentumDensity : db::SimpleTag {

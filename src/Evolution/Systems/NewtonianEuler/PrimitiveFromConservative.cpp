@@ -22,15 +22,17 @@ namespace NewtonianEuler {
 
 template <size_t Dim, size_t ThermodynamicDim>
 void PrimitiveFromConservative<Dim, ThermodynamicDim>::apply(
+    const gsl::not_null<Scalar<DataVector>*> mass_density,
     const gsl::not_null<tnsr::I<DataVector, Dim>*> velocity,
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
     const gsl::not_null<Scalar<DataVector>*> pressure,
-    const Scalar<DataVector>& mass_density,
+    const Scalar<DataVector>& mass_density_cons,
     const tnsr::I<DataVector, Dim>& momentum_density,
     const Scalar<DataVector>& energy_density,
     const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
         equation_of_state) noexcept {
-  const DataVector one_over_mass_density = 1.0 / get(mass_density);
+  get(*mass_density) = get(mass_density_cons);
+  const DataVector one_over_mass_density = 1.0 / get(mass_density_cons);
 
   for (size_t i = 0; i < Dim; ++i) {
     velocity->get(i) = momentum_density.get(i) * one_over_mass_density;
@@ -40,15 +42,15 @@ void PrimitiveFromConservative<Dim, ThermodynamicDim>::apply(
                                    0.5 * get(dot_product(*velocity, *velocity));
 
   *pressure = make_overloader(
-      [&mass_density](const EquationsOfState::EquationOfState<false, 1>&
-                          the_equation_of_state) noexcept {
-        return the_equation_of_state.pressure_from_density(mass_density);
+      [&mass_density_cons](const EquationsOfState::EquationOfState<false, 1>&
+                               the_equation_of_state) noexcept {
+        return the_equation_of_state.pressure_from_density(mass_density_cons);
       },
-      [&mass_density, &specific_internal_energy ](
+      [&mass_density_cons, &specific_internal_energy ](
           const EquationsOfState::EquationOfState<false, 2>&
               the_equation_of_state) noexcept {
         return the_equation_of_state.pressure_from_density_and_energy(
-            mass_density, *specific_internal_energy);
+            mass_density_cons, *specific_internal_energy);
       })(equation_of_state);
 }
 
