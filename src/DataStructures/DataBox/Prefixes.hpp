@@ -26,7 +26,7 @@ namespace Tags {
 /// \brief Prefix indicating a time derivative
 template <typename Tag>
 struct dt : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "dt"; }
+  static std::string name() noexcept { return "dt(" + Tag::name() + ")"; }
   using type = db::item_type<Tag>;
   using tag = Tag;
 };
