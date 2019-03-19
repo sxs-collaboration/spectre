@@ -24,7 +24,7 @@ Collocation<Representation>::Collocation(const size_t l_max) noexcept
   sharp_make_gauss_geom_info(
       l_max_ + 1, 2 * l_max_ + 1, 0.0,
       detail::ComplexDataView<Representation>::stride(),
-      detail::ComplexDataView<Representation>::stride() * (1 * l_max_ + 1),
+      detail::ComplexDataView<Representation>::stride() * (2 * l_max_ + 1),
       &geometry_to_initialize);
   geom_info_.reset(geometry_to_initialize);
 }
@@ -94,7 +94,7 @@ dispatch_to_precomputed_static_collocation_impl(
 }  // namespace
 
 template <ComplexRepresentation Representation>
-const Collocation<Representation>& precomputed_spherical_harmonic_collocation(
+const Collocation<Representation>& precomputed_collocation(
     const size_t l_max) noexcept {
   return dispatch_to_precomputed_static_collocation_impl<Representation>(
       l_max, std::make_index_sequence<collocation_maximum_l_max + 1>{});
@@ -104,9 +104,9 @@ template class Collocation<ComplexRepresentation::Interleaved>;
 template class Collocation<ComplexRepresentation::RealsThenImags>;
 
 template const Collocation<ComplexRepresentation::Interleaved>&
-precomputed_spherical_harmonic_collocation(const size_t l_max) noexcept;
+precomputed_collocation(const size_t l_max) noexcept;
 template const Collocation<ComplexRepresentation::RealsThenImags>&
-precomputed_spherical_harmonic_collocation(const size_t l_max) noexcept;
+precomputed_collocation(const size_t l_max) noexcept;
 
 }  // namespace Swsh
 }  // namespace Spectral

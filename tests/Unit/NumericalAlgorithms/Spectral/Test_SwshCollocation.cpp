@@ -28,19 +28,19 @@ void test_spherical_harmonic_collocation() noexcept {
   const size_t l_max = sdist(gen);
 
   CAPTURE(l_max);
-  const Collocation<Representation>& precomputed_collocation =
-      precomputed_spherical_harmonic_collocation<Representation>(l_max);
+  const Collocation<Representation>& precomputed_collocation_value =
+      precomputed_collocation<Representation>(l_max);
 
   const Collocation<Representation>& another_precomputed_collocation =
-      precomputed_spherical_harmonic_collocation<Representation>(l_max);
+      precomputed_collocation<Representation>(l_max);
 
   // checks that the same pointer is in both
-  CHECK(precomputed_collocation.get_sharp_geom_info() ==
+  CHECK(precomputed_collocation_value.get_sharp_geom_info() ==
         another_precomputed_collocation.get_sharp_geom_info());
 
   const Collocation<Representation> computed_collocation{l_max};
 
-  CHECK(precomputed_collocation.l_max() == l_max);
+  CHECK(precomputed_collocation_value.l_max() == l_max);
   CHECK(computed_collocation.l_max() == l_max);
 
   const int expected_stride = detail::ComplexDataView<Representation>::stride();
@@ -53,11 +53,11 @@ void test_spherical_harmonic_collocation() noexcept {
 
   // clang-tidy doesn't like the pointer manipulation needed to work with the
   // libsharp types.
-  CHECK(precomputed_collocation  // NOLINT
+  CHECK(precomputed_collocation_value  // NOLINT
             .get_sharp_geom_info()
             ->pair[0]
             .r1.stride == expected_stride);  // NOLINT
-  CHECK(precomputed_collocation              // NOLINT
+  CHECK(precomputed_collocation_value        // NOLINT
             .get_sharp_geom_info()
             ->pair[0]
             .r2.stride == expected_stride);  // NOLINT
@@ -76,10 +76,13 @@ void test_spherical_harmonic_collocation() noexcept {
 
   // check iterator equivalence. The for loop below is also a check of the
   // iterator functionality.
-  CHECK(precomputed_collocation.begin() == precomputed_collocation.cbegin());
-  CHECK(precomputed_collocation.end() == precomputed_collocation.cend());
-  CHECK(precomputed_collocation.begin() != precomputed_collocation.end());
-  for (const auto& collocation_point : precomputed_collocation) {
+  CHECK(precomputed_collocation_value.begin() ==
+        precomputed_collocation_value.cbegin());
+  CHECK(precomputed_collocation_value.end() ==
+        precomputed_collocation_value.cend());
+  CHECK(precomputed_collocation_value.begin() !=
+        precomputed_collocation_value.end());
+  for (const auto& collocation_point : precomputed_collocation_value) {
     CHECK(collocation_point.offset == offset_counter);
     CHECK(collocation_point.theta ==
           computed_collocation.theta(offset_counter));
@@ -139,8 +142,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshCollocation",
     "Unit.NumericalAlgorithms.Spectral.SwshCollocation.PrecomputationOverrun",
     "[Unit][NumericalAlgorithms]") {
   ERROR_TEST();
-  precomputed_spherical_harmonic_collocation<
-      ComplexRepresentation::RealsThenImags>(collocation_maximum_l_max + 1);
+  precomputed_collocation<ComplexRepresentation::RealsThenImags>(
+      collocation_maximum_l_max + 1);
   ERROR("Failed to trigger ERROR in an error test");
 }
 }  // namespace
