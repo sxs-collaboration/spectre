@@ -8,13 +8,27 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
+
+// IWYU pragma: no_forward_declare Tags::deriv
 
 /// \cond
 namespace gsl {
 template <class T>
 class not_null;
 }  // namespace gsl
+class DataVector;
+template <typename X, typename Symm, typename IndexList>
+class Tensor;
 /// \endcond
 
 namespace GeneralizedHarmonic {
@@ -456,4 +470,81 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
     const tnsr::iaa<DataType, SpatialDim, Frame>& phi,
     const tnsr::aa<DataType, SpatialDim, Frame>& pi) noexcept;
 // @}
+
+namespace Tags {
+/*!
+ * \brief Compute item to get time derivative of the spatial metric from
+ *        generalized harmonic and geometric variables
+ *
+ * \details See `time_deriv_of_spatial_metric()`. Can be retrieved using
+ * `gr::Tags::SpatialMetric` wrapped in `Tags::dt`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct TimeDerivSpatialMetricCompute
+    : ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+                 Phi<SpatialDim, Frame>, Pi<SpatialDim, Frame>>;
+  static constexpr tnsr::ii<DataVector, SpatialDim, Frame> (*function)(
+      const Scalar<DataVector>&, const tnsr::I<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&,
+      const tnsr::aa<DataVector, SpatialDim, Frame>&) =
+      &time_deriv_of_spatial_metric<SpatialDim, Frame>;
+  using base =
+      ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>;
+};
+
+/*!
+ * \brief Compute item to get time derivative of lapse (N) from the generalized
+ *        harmonic variables, lapse, shift and the spacetime unit normal 1-form.
+ *
+ * \details See `time_deriv_of_lapse()`. Can be retrieved using
+ * `gr::Tags::Lapse` wrapped in `Tags::dt`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct TimeDerivLapseCompute : ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+                               db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+                 gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
+                 Phi<SpatialDim, Frame>, Pi<SpatialDim, Frame>>;
+  static constexpr Scalar<DataVector> (*function)(
+      const Scalar<DataVector>&, const tnsr::I<DataVector, SpatialDim, Frame>&,
+      const tnsr::A<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&,
+      const tnsr::aa<DataVector, SpatialDim, Frame>&) =
+      &time_deriv_of_lapse<SpatialDim, Frame>;
+  using base = ::Tags::dt<gr::Tags::Lapse<DataVector>>;
+};
+
+/*!
+ * \brief Compute item to get time derivative of the shift vector from
+ *        the generalized harmonic and geometric variables
+ *
+ * \details See `time_deriv_of_shift()`. Can be retrieved using
+ * `gr::Tags::Shift` wrapped in `Tags::dt`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct TimeDerivShiftCompute
+    : ::Tags::dt<gr::Tags::Shift<SpatialDim, Frame, DataVector>>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+                 gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>,
+                 gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
+                 Phi<SpatialDim, Frame>, Pi<SpatialDim, Frame>>;
+  static constexpr tnsr::I<DataVector, SpatialDim, Frame> (*function)(
+      const Scalar<DataVector>&, const tnsr::I<DataVector, SpatialDim, Frame>&,
+      const tnsr::II<DataVector, SpatialDim, Frame>&,
+      const tnsr::A<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&,
+      const tnsr::aa<DataVector, SpatialDim, Frame>&) =
+      &time_deriv_of_shift<SpatialDim, Frame, DataVector>;
+  using base = ::Tags::dt<gr::Tags::Shift<SpatialDim, Frame, DataVector>>;
+};
+}  // namespace Tags
 }  // namespace GeneralizedHarmonic
