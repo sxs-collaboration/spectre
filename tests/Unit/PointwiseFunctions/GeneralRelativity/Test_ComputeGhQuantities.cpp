@@ -596,6 +596,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
             3, Frame::Inertial>::name() == "dt(Lapse)");
   CHECK(GeneralizedHarmonic::Tags::TimeDerivShiftCompute<
             3, Frame::Inertial>::name() == "dt(Shift)");
+  CHECK(GeneralizedHarmonic::Tags::DerivSpatialMetricCompute<
+            3, Frame::Inertial>::name() == "deriv(SpatialMetric)");
+  CHECK(GeneralizedHarmonic::Tags::DerivLapseCompute<3,
+                                                     Frame::Inertial>::name() ==
+        "deriv(Lapse)");
+  CHECK(GeneralizedHarmonic::Tags::DerivShiftCompute<3,
+                                                     Frame::Inertial>::name() ==
+        "deriv(Shift)");
   CHECK(GeneralizedHarmonic::Tags::PhiCompute<3, Frame::Inertial>::name() ==
         "Phi");
   CHECK(GeneralizedHarmonic::Tags::PiCompute<3, Frame::Inertial>::name() ==
@@ -628,19 +636,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
       gr::shift(spacetime_metric, det_and_inv_spatial_metric.second);
   const auto lapse = gr::lapse(shift, spacetime_metric);
 
-  const auto deriv_spatial_metric =
-      make_with_random_values<tnsr::ijj<DataVector, 3, Frame::Inertial>>(
-          make_not_null(&generator), make_not_null(&distribution),
-          used_for_size);
-  const auto deriv_shift =
-      make_with_random_values<tnsr::iJ<DataVector, 3, Frame::Inertial>>(
-          make_not_null(&generator), make_not_null(&distribution),
-          used_for_size);
-  const auto deriv_lapse =
-      make_with_random_values<tnsr::i<DataVector, 3, Frame::Inertial>>(
-          make_not_null(&generator), make_not_null(&dist_positive),
-          used_for_size);
-
   const auto expected_dt_spatial_metric =
       make_with_random_values<tnsr::ii<DataVector, 3, Frame::Inertial>>(
           make_not_null(&generator), make_not_null(&distribution),
@@ -652,6 +647,19 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   const auto expected_dt_lapse = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&generator), make_not_null(&distribution), used_for_size);
 
+  const auto expected_deriv_lapse =
+      make_with_random_values<tnsr::i<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&dist_positive),
+          used_for_size);
+  const auto expected_deriv_shift =
+      make_with_random_values<tnsr::iJ<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto expected_deriv_spatial_metric =
+      make_with_random_values<tnsr::ijj<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+
   const auto spacetime_normal_vector =
       gr::spacetime_normal_vector(lapse, shift);
   const auto& inverse_spatial_metric =
@@ -659,15 +667,38 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
 
-  const auto expected_phi =
-      GeneralizedHarmonic::phi(lapse, deriv_lapse, shift, deriv_shift,
-                               spatial_metric, deriv_spatial_metric);
+  const auto expected_phi = GeneralizedHarmonic::phi(
+      lapse, expected_deriv_lapse, shift, expected_deriv_shift, spatial_metric,
+      expected_deriv_spatial_metric);
   const auto expected_pi = GeneralizedHarmonic::pi(
       lapse, expected_dt_lapse, shift, expected_dt_shift, spatial_metric,
       expected_dt_spatial_metric, expected_phi);
   const auto expected_extrinsic_curvature =
       GeneralizedHarmonic::extrinsic_curvature(spacetime_normal_vector,
                                                expected_pi, expected_phi);
+
+  const auto box = db::create<
+      db::AddSimpleTags<
+          gr::Tags::Lapse<DataVector>,
+          gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>,
+          gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>,
+          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>,
+      db::AddComputeTags<
+          GeneralizedHarmonic::Tags::DerivSpatialMetricCompute<3,
+                                                               Frame::Inertial>,
+          GeneralizedHarmonic::Tags::DerivLapseCompute<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::DerivShiftCompute<3, Frame::Inertial>>>(
+      lapse, spacetime_normal_vector, inverse_spacetime_metric, expected_phi);
+  CHECK(
+      db::get<
+          ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                        tmpl::size_t<3>, Frame::Inertial>>(box) ==
+      expected_deriv_spatial_metric);
+  CHECK(db::get<::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                              Frame::Inertial>>(box) == expected_deriv_lapse);
+  CHECK(db::get<::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                              tmpl::size_t<3>, Frame::Inertial>>(box) ==
+        expected_deriv_shift);
 
   const auto other_box = db::create<
       db::AddSimpleTags<
@@ -717,9 +748,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
           GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<
               3, Frame::Inertial>>>(
       spatial_metric, lapse, shift,
-      spacetime_normal_vector, inverse_spatial_metric, deriv_spatial_metric,
-      deriv_lapse, deriv_shift, expected_dt_spatial_metric, expected_dt_lapse,
-      expected_dt_shift);
+      spacetime_normal_vector, inverse_spatial_metric,
+      expected_deriv_spatial_metric, expected_deriv_lapse, expected_deriv_shift,
+      expected_dt_spatial_metric, expected_dt_lapse, expected_dt_shift);
 
   CHECK(db::get<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(
             ghvars_box) == expected_phi);
