@@ -85,6 +85,19 @@ struct TraceSpacetimeChristoffelFirstKind : db::SimpleTag {
     return "TraceSpacetimeChristoffelFirstKind";
   }
 };
+/*!
+ * \brief Trace of the spatial Christoffel symbols of the first kind
+ * \f$\Gamma_{i} = \Gamma_{ijk}g^{jk}\f$, where \f$\Gamma_{ijk}\f$ are
+ * Christoffel symbols of the first kind and \f$g^{jk}\f$ is the
+ * inverse spatial metric.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct TraceSpatialChristoffelFirstKind : db::SimpleTag {
+  using type = tnsr::i<DataType, Dim, Frame>;
+  static std::string name() noexcept {
+    return "TraceSpatialChristoffelFirstKind";
+  }
+};
 template <size_t Dim, typename Frame, typename DataType>
 struct TraceSpatialChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
@@ -92,6 +105,7 @@ struct TraceSpatialChristoffelSecondKind : db::SimpleTag {
     return "TraceSpatialChristoffelSecondKind";
   }
 };
+
 template <size_t Dim, typename Frame, typename DataType>
 struct ExtrinsicCurvature : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
@@ -112,6 +126,5 @@ struct EnergyDensity : db::SimpleTag {
   using type = Scalar<DataType>;
   static std::string name() noexcept { return "EnergyDensity"; }
 };
-
 }  // namespace Tags
 }  // namespace gr
