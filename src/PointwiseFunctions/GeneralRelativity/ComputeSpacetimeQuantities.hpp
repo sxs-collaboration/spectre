@@ -6,9 +6,18 @@
 
 #pragma once
 
+#include <cmath>
 #include <cstddef>
+#include <cstdint>
+#include <utility>
 
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace gsl {
@@ -190,4 +199,63 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
     const tnsr::ijj<DataType, SpatialDim, Frame>&
         deriv_spatial_metric) noexcept;
 
+namespace Tags {
+/*!
+ * \brief Compute item for spacetime metric \f$\psi_{ab}\f$ from the
+ * lapse \f$N\f$, shift \f$N^i\f$, and spatial metric \f$g_{ij}\f$.
+ *
+ * \details Can be retrieved using `gr::Tags::SpacetimeMetric`.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct SpacetimeMetricCompute : SpacetimeMetric<SpatialDim, Frame, DataType>,
+                                db::ComputeTag {
+  using argument_tags =
+      tmpl::list<Lapse<DataType>, Shift<SpatialDim, Frame, DataType>,
+                 SpatialMetric<SpatialDim, Frame, DataType>>;
+  using base = SpacetimeMetric<SpatialDim, Frame, DataType>;
+  static constexpr tnsr::aa<DataType, SpatialDim, Frame> (*function)(
+      const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
+      const tnsr::ii<DataType, SpatialDim, Frame>&) =
+      &spacetime_metric<SpatialDim, Frame, DataType>;
+};
+
+/*!
+ * \brief Compute item for spatial metric \f$g_{ij}\f$ from the
+ * spacetime metric \f$\psi_{ab}\f$.
+ *
+ * \details Can be retrieved using `gr::Tags::SpatialMetric`.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct SpatialMetricCompute : SpatialMetric<SpatialDim, Frame, DataType>,
+                              db::ComputeTag {
+  using argument_tags =
+      tmpl::list<SpacetimeMetric<SpatialDim, Frame, DataType>>;
+  static constexpr auto function = &spatial_metric<SpatialDim, Frame, DataType>;
+  using base = SpatialMetric<SpatialDim, Frame, DataType>;
+};
+
+/*!
+ * \brief Compute item for spatial metric determinant \f$g\f$
+ * and inverse \f$g^{ij}\f$ in terms of the spatial metric \f$g_{ij}\f$.
+ *
+ * \details Can be retrieved using `gr::Tags::DetAndInverseSpatialMetric`.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct DetAndInverseSpatialMetricCompute
+    : ::Tags::Variables<
+          tmpl::list<DetSpatialMetric<DataType>,
+                     InverseSpatialMetric<SpatialDim, Frame, DataType>>>,
+      db::ComputeTag {
+  using argument_tags = tmpl::list<SpatialMetric<SpatialDim, Frame, DataType>>;
+  using base = ::Tags::Variables<
+      tmpl::list<DetSpatialMetric<DataType>,
+                 InverseSpatialMetric<SpatialDim, Frame, DataType>>>;
+  static constexpr auto function = &determinant_and_inverse<
+      DetSpatialMetric<DataType>,
+      InverseSpatialMetric<SpatialDim, Frame, DataType>, DataType,
+      tmpl::integral_list<std::int32_t, 1, 1>,
+      SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
+      SpatialIndex<SpatialDim, UpLo::Lo, Frame>>;
+};
+}  // namespace Tags
 }  // namespace gr

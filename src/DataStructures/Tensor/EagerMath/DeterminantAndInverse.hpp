@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Requires.hpp"
@@ -367,4 +368,50 @@ auto determinant_and_inverse(
   static_assert(not std::is_integral<T>::value, "Can't invert a Tensor<int>.");
   return determinant_and_inverse_detail::DetAndInverseImpl<
       Symm, Index0, Index1>::apply(tensor);
+}
+
+/*!
+ * \ingroup TensorGroup
+ * \brief Computes the determinant and inverse of a rank-2 Tensor.
+ *
+ * Computes the determinant and inverse together, because this leads to fewer
+ * operations compared to computing the determinant independently.
+ *
+ * \param tensor the input rank-2 Tensor.
+ * \tparam DetTag the Tag for the determinant of input Tensor.
+ * \tparam InvTag the Tag for the inverse of input Tensor.
+ * \return a `Variables` that holds the determinant and inverse of the input
+ * tensor, tagged by `DetTag` and `InvTag` respectively.
+ *
+ * \details
+ * See determinant_and_inverse().
+ */
+template <typename DetTag, typename InvTag, typename T, typename Symm,
+          typename Index0, typename Index1>
+auto determinant_and_inverse(
+    const Tensor<T, Symm, tmpl::list<Index0, Index1>>& tensor) noexcept
+    -> Variables<tmpl::list<DetTag, InvTag>> {
+  static_assert(cpp17::is_same_v<typename DetTag::type, Scalar<T>>,
+                "Type of first return tag must correspond to that of input's "
+                "determinant.");
+  static_assert(
+      cpp17::is_same_v<typename InvTag::type,
+                       Tensor<T, Symm,
+                              tmpl::list<change_index_up_lo<Index1>,
+                                         change_index_up_lo<Index0>>>>,
+      "Type of second return tag must correspond to that of input's inverse.");
+  static_assert(Index0::dim == Index1::dim,
+                "Cannot take the inverse of a Tensor whose Indices are not "
+                "of the same dimensionality.");
+  static_assert(Index0::index_type == Index1::index_type,
+                "Taking the inverse of a mixed Spatial and Spacetime index "
+                "Tensor is not allowed since it's not clear what that means.");
+  static_assert(not std::is_integral<T>::value, "Can't invert a Tensor<int>.");
+  const auto& det_and_inv_pair =
+      determinant_and_inverse_detail::DetAndInverseImpl<Symm, Index0,
+                                                        Index1>::apply(tensor);
+  tuples::TaggedTuple<DetTag, InvTag> det_and_inv_tupl;
+  get<DetTag>(det_and_inv_tupl) = det_and_inv_pair.first;
+  get<InvTag>(det_and_inv_tupl) = det_and_inv_pair.second;
+  return variables_from_tagged_tuple(det_and_inv_tupl);
 }
