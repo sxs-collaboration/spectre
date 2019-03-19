@@ -196,9 +196,9 @@ struct BoundaryDirectionsExterior : db::ComputeTag {
 /// If a SimpleTag is desired on the interface, then this tag can be added to
 /// the DataBox directly. If a ComputeTag which acts on Tags on the interface is
 /// desired, then the tag should be added using `InterfaceComputeItem`. If a
-/// ComputeTag which slices a VariablesTag in the volume to an Interface is
-/// desired, then it should be added using `Slice`. In all cases, the tag can
-/// then be retrieved using `Tags::Interface<DirectionsTag, Tag>`.
+/// ComputeTag which slices a TensorTag or a VariablesTag in the volume to an
+/// Interface is desired, then it should be added using `Slice`. In all cases,
+/// the tag can then be retrieved using `Tags::Interface<DirectionsTag, Tag>`.
 ///
 /// If using the base tag mechanism for an interface tag is desired,
 /// then `Tag` can have a `base` type alias pointing to its base
@@ -464,41 +464,41 @@ struct InterfaceComputeItem
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// \brief Derived tag for representing a compute item which slices a Tag
-/// containing a `Variables` from the volume to an interface. Retrievable from
-/// the DataBox using `Tags::Interface<DirectionsTag, VarsTag>`
+/// containing a `Tensor` or a `Variables` from the volume to an interface.
+/// Retrievable from the DataBox using `Tags::Interface<DirectionsTag, Tag>`
 ///
 /// The contained object will be a map from ::Direction to the item
 /// type of `Tag`, with the set of directions being those produced by
 /// `DirectionsTag`.
 ///
-/// \requires `Tag` correspond to a `Variables`
+/// \requires `Tag` correspond to a `Tensor` or a `Variables`
 ///
 /// \tparam DirectionsTag the item of Directions
-/// \tparam VarsTag the tag labeling the item
-template <typename DirectionsTag, typename VarsTag>
-struct Slice : Interface<DirectionsTag, VarsTag>, db::ComputeTag {
+/// \tparam Tag the tag labeling the item
+template <typename DirectionsTag, typename Tag>
+struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
   static constexpr size_t volume_dim =
       db::item_type<DirectionsTag>::value_type::volume_dim;
 
   using return_type =
-      std::unordered_map<::Direction<volume_dim>, db::item_type<VarsTag>>;
+      std::unordered_map<::Direction<volume_dim>, db::item_type<Tag>>;
 
   static constexpr void function(
       const gsl::not_null<
-          std::unordered_map<::Direction<volume_dim>, db::item_type<VarsTag>>*>
+          std::unordered_map<::Direction<volume_dim>, db::item_type<Tag>>*>
           sliced_vars,
       const ::Mesh<volume_dim>& mesh,
       const std::unordered_set<::Direction<volume_dim>>& directions,
-      const db::item_type<VarsTag>& variables) noexcept {
+      const db::item_type<Tag>& variables) noexcept {
     for (const auto& direction : directions) {
       data_on_slice(make_not_null(&((*sliced_vars)[direction])), variables,
                     mesh.extents(), direction.dimension(),
                     index_to_slice_at(mesh.extents(), direction));
     }
   }
-  static std::string name() { return "Interface<" + VarsTag::name() + ">"; };
-  using argument_tags = tmpl::list<Mesh<volume_dim>, DirectionsTag, VarsTag>;
-  using volume_tags = tmpl::list<Mesh<volume_dim>, VarsTag>;
+  static std::string name() { return "Interface<" + Tag::name() + ">"; };
+  using argument_tags = tmpl::list<Mesh<volume_dim>, DirectionsTag, Tag>;
+  using volume_tags = tmpl::list<Mesh<volume_dim>, Tag>;
 };
 
 /// \cond
