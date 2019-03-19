@@ -159,9 +159,16 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   CHECK(gr::Tags::SpacetimeMetricCompute<3, Frame::Inertial,
                                          DataVector>::name() ==
         "SpacetimeMetric");
+  CHECK(gr::Tags::InverseSpacetimeMetricCompute<3, Frame::Inertial,
+                                                DataVector>::name() ==
+        "InverseSpacetimeMetric");
   CHECK(
       gr::Tags::SpatialMetricCompute<3, Frame::Inertial, DataVector>::name() ==
       "SpatialMetric");
+  CHECK(gr::Tags::ShiftCompute<3, Frame::Inertial, DataVector>::name() ==
+        "Shift");
+  CHECK(gr::Tags::LapseCompute<3, Frame::Inertial, DataVector>::name() ==
+        "Lapse");
   CHECK(gr::Tags::SqrtDetSpatialMetricCompute<3, Frame::Inertial,
                                               DataVector>::name() ==
         "SqrtDetSpatialMetric");
@@ -199,9 +206,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
       gr::spatial_metric(expected_spacetime_metric);
   const auto expected_det_and_inverse_spatial_metric =
       determinant_and_inverse(expected_spatial_metric);
-  const auto shift = gr::shift(expected_spacetime_metric,
-                               expected_det_and_inverse_spatial_metric.second);
-  const auto lapse = gr::lapse(shift, expected_spacetime_metric);
+  const auto expected_shift =
+      gr::shift(expected_spacetime_metric,
+                expected_det_and_inverse_spatial_metric.second);
+  const auto expected_lapse =
+      gr::lapse(expected_shift, expected_spacetime_metric);
+  const auto expected_inverse_spacetime_metric = gr::inverse_spacetime_metric(
+      expected_lapse, expected_shift,
+      expected_det_and_inverse_spatial_metric.second);
 
   const auto box = db::create<
       db::AddSimpleTags<
@@ -210,8 +222,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
           gr::Tags::SpatialMetricCompute<3, Frame::Inertial, DataVector>,
           gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
                                                       DataVector>,
-          gr::Tags::SqrtDetSpatialMetricCompute<3, Frame::Inertial,
-                                                DataVector>>>(
+          gr::Tags::SqrtDetSpatialMetricCompute<3, Frame::Inertial, DataVector>,
+          gr::Tags::ShiftCompute<3, Frame::Inertial, DataVector>,
+          gr::Tags::LapseCompute<3, Frame::Inertial, DataVector>,
+          gr::Tags::InverseSpacetimeMetricCompute<3, Frame::Inertial,
+                                                  DataVector>>>(
       expected_spacetime_metric);
   CHECK(db::get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(box) ==
         expected_spatial_metric);
@@ -221,6 +236,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
             box) == expected_det_and_inverse_spatial_metric.second);
   CHECK(get(db::get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(box)) ==
         sqrt(get(expected_det_and_inverse_spatial_metric.first)));
+  CHECK(db::get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(box) ==
+        expected_shift);
+  CHECK(db::get<gr::Tags::Lapse<DataVector>>(box) == expected_lapse);
+  CHECK(
+      db::get<gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>>(
+          box) == expected_inverse_spacetime_metric);
 
   // Now let's put the lapse, shift, and spatial metric into the databox
   // and test that we can compute the correct spacetime metric
@@ -230,7 +251,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
                         gr::Tags::Shift<3, Frame::Inertial, DataVector>>,
       db::AddComputeTags<
           gr::Tags::SpacetimeMetricCompute<3, Frame::Inertial, DataVector>>>(
-      expected_spatial_metric, lapse, shift);
+      expected_spatial_metric, expected_lapse, expected_shift);
   CHECK(db::get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
             second_box) == expected_spacetime_metric);
 
@@ -262,8 +283,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
 
   const auto expected_derivatives_of_spacetime_metric =
       gr::derivatives_of_spacetime_metric(
-          lapse, dt_lapse, deriv_lapse, shift, dt_shift, deriv_shift,
-          expected_spatial_metric, dt_spatial_metric, deriv_spatial_metric);
+          expected_lapse, dt_lapse, deriv_lapse, expected_shift, dt_shift,
+          deriv_shift, expected_spatial_metric, dt_spatial_metric,
+          deriv_spatial_metric);
   const auto expected_deriv_spacetime_metric =
       gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::function(
           expected_derivatives_of_spacetime_metric);
@@ -285,8 +307,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
       db::AddComputeTags<
           gr::Tags::DerivativesOfSpacetimeMetricCompute<3, Frame::Inertial>,
           gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>>>(
-      expected_spatial_metric, lapse, shift, deriv_spatial_metric, deriv_lapse,
-      deriv_shift, dt_spatial_metric, dt_lapse, dt_shift);
+      expected_spatial_metric, expected_lapse, expected_shift,
+      deriv_spatial_metric, deriv_lapse, deriv_shift, dt_spatial_metric,
+      dt_lapse, dt_shift);
   CHECK(db::get<gr::Tags::DerivativesOfSpacetimeMetric<3, Frame::Inertial,
                                                        DataVector>>(
             third_box) == expected_derivatives_of_spacetime_metric);

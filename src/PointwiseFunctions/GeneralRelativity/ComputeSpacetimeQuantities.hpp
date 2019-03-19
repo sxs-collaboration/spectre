@@ -222,6 +222,25 @@ struct SpacetimeMetricCompute : SpacetimeMetric<SpatialDim, Frame, DataType>,
 };
 
 /*!
+ * \brief Compute item for inverse spacetime metric \f$\psi^{ab}\f$
+ * in terms of the lapse \f$N\f$, shift \f$N^i\f$, and inverse
+ * spatial metric \f$g^{ij}\f$.
+ *
+ * \details Can be retrieved using `gr::Tags::InverseSpacetimeMetric`.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct InverseSpacetimeMetricCompute
+    : InverseSpacetimeMetric<SpatialDim, Frame, DataType>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<Lapse<DataType>, Shift<SpatialDim, Frame, DataType>,
+                 InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+  static constexpr auto function =
+      &inverse_spacetime_metric<SpatialDim, Frame, DataType>;
+  using base = InverseSpacetimeMetric<SpatialDim, Frame, DataType>;
+};
+
+/*!
  * \brief Compute item for spatial metric \f$g_{ij}\f$ from the
  * spacetime metric \f$\psi_{ab}\f$.
  *
@@ -240,7 +259,8 @@ struct SpatialMetricCompute : SpatialMetric<SpatialDim, Frame, DataType>,
  * \brief Compute item for spatial metric determinant \f$g\f$
  * and inverse \f$g^{ij}\f$ in terms of the spatial metric \f$g_{ij}\f$.
  *
- * \details Can be retrieved using `gr::Tags::DetAndInverseSpatialMetric`.
+ * \details Can be retrieved using `gr::Tags::DetSpatialMetric` and
+ * `gr::Tags::InverseSpatialMetric`.
  */
 template <size_t SpatialDim, typename Frame, typename DataType>
 struct DetAndInverseSpatialMetricCompute
@@ -336,6 +356,36 @@ struct SqrtDetSpatialMetricCompute : SqrtDetSpatialMetric<DataType>,
     return Scalar<DataType>{sqrt(get(det_spatial_metric))};
   }
   using base = SqrtDetSpatialMetric<DataType>;
+};
+
+/*!
+ * \brief Compute item for shift \f$N^i\f$ from the spacetime metric
+ * \f$\psi_{ab}\f$ and the inverse spatial metric \f$g^{ij}\f$.
+ *
+ * \details Can be retrieved using `gr::Tags::Shift`.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct ShiftCompute : Shift<SpatialDim, Frame, DataType>, db::ComputeTag {
+  using argument_tags =
+      tmpl::list<SpacetimeMetric<SpatialDim, Frame, DataType>,
+                 InverseSpatialMetric<SpatialDim, Frame, DataType>>;
+  static constexpr auto function = &shift<SpatialDim, Frame, DataType>;
+  using base = Shift<SpatialDim, Frame, DataType>;
+};
+
+/*!
+ * \brief Compute item for lapse \f$N\f$ from the spacetime metric
+ * \f$\psi_{ab}\f$ and the shift \f$N^i\f$.
+ *
+ * \details Can be retrieved using `gr::Tags::Lapse`.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct LapseCompute : Lapse<DataType>, db::ComputeTag {
+  using argument_tags =
+      tmpl::list<Shift<SpatialDim, Frame, DataType>,
+                 SpacetimeMetric<SpatialDim, Frame, DataType>>;
+  static constexpr auto function = &lapse<SpatialDim, Frame, DataType>;
+  using base = Lapse<DataType>;
 };
 }  // namespace Tags
 }  // namespace gr

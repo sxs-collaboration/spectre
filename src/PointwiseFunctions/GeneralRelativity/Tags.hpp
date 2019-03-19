@@ -27,6 +27,9 @@ struct SpatialMetric : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
   static std::string name() noexcept { return "SpatialMetric"; }
 };
+/*!
+ * \brief Inverse of the spatial metric.
+ */
 template <size_t Dim, typename Frame, typename DataType>
 struct InverseSpatialMetric : db::SimpleTag {
   using type = tnsr::II<DataType, Dim, Frame>;
