@@ -3,19 +3,28 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
 #include <random>
+#include <string>
+#include <utility>
 
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/StdHelpers.hpp"
+#include "Utilities/TMPL.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
+
+// IWYU pragma: no_forward_declare Tensor
 
 namespace {
 template <size_t Dim, typename DataType>
@@ -54,7 +63,7 @@ void test_compute_spacetime_normal_vector(const DataType& used_for_size) {
 template <size_t Dim, typename DataType>
 void test_compute_spacetime_normal_one_form(const DataType& used_for_size) {
   MAKE_GENERATOR(generator);
-  std::uniform_real_distribution<> distribution(-1.0, 1.0);
+  std::uniform_real_distribution<> distribution(-1., 1.);
   const auto lapse = make_with_random_values<Scalar<DataType>>(
       make_not_null(&generator), make_not_null(&distribution), used_for_size);
 
@@ -94,7 +103,7 @@ void test_compute_spatial_metric_lapse_shift(const T& used_for_size) {
     // Make sure spatial_metric isn't singular by adding
     // large enough positive diagonal values.
     for (size_t i = 0; i < Dim; ++i) {
-      spatial_metric_l.get(i, i) += 4.0;
+      spatial_metric_l.get(i, i) += 4.;
     }
     return spatial_metric_l;
   }();
@@ -136,4 +145,118 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
                                     (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_extrinsic_curvature,
                                     (1, 2, 3));
+
+  // Check that compute items work correctly in the DataBox
+  // First, check that the names are correct
+  CHECK(gr::Tags::SpacetimeMetricCompute<3, Frame::Inertial,
+                                         DataVector>::name() ==
+        "SpacetimeMetric");
+  CHECK(
+      gr::Tags::SpatialMetricCompute<3, Frame::Inertial, DataVector>::name() ==
+      "SpatialMetric");
+  CHECK(gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial,
+                                         DataVector>::name() ==
+        "InverseSpacetimeMetric");
+  CHECK(
+      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>::name() ==
+      "InverseSpatialMetric");
+  CHECK(gr::Tags::ShiftCompute<3, Frame::Inertial, DataVector>::name() ==
+        "Shift");
+  CHECK(gr::Tags::LapseCompute<3, Frame::Inertial, DataVector>::name() ==
+        "Lapse");
+  CHECK(gr::Tags::SpacetimeNormalOneFormCompute<3, Frame::Inertial,
+                                                DataVector>::name() ==
+        "SpacetimeNormalOneForm");
+  CHECK(
+      gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>::name() ==
+      "SpacetimeNormalVector");
+
+  // Second, put the compute items into a data box and check that they
+  // put the correct results
+  // Let's start with a known spacetime metric, and then test the
+  // compute items that depend on the spacetime metric
+  DataVector test_vector{5., 4.};
+  auto spacetime_metric =
+      make_with_value<tnsr::aa<DataVector, 3, Frame::Inertial>>(test_vector,
+                                                                0.);
+  get<0, 0>(spacetime_metric) = -1.5;
+  get<0, 1>(spacetime_metric) = 0.1;
+  get<0, 2>(spacetime_metric) = 0.2;
+  get<0, 3>(spacetime_metric) = 0.3;
+  get<1, 1>(spacetime_metric) = 1.4;
+  get<1, 2>(spacetime_metric) = 0.2;
+  get<1, 3>(spacetime_metric) = 0.1;
+  get<2, 2>(spacetime_metric) = 1.3;
+  get<2, 3>(spacetime_metric) = 0.1;
+  get<3, 3>(spacetime_metric) = 1.2;
+
+  const auto& spatial_metric = gr::spatial_metric(spacetime_metric);
+  const auto& det_and_inverse_spatial_metric =
+      determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inverse_spatial_metric.first;
+  const auto& sqrt_det_spatial_metric =
+      Scalar<DataVector>{sqrt(get(det_spatial_metric))};
+  const auto& inverse_spatial_metric = det_and_inverse_spatial_metric.second;
+  const auto& shift = gr::shift(spacetime_metric, inverse_spatial_metric);
+  const auto& lapse = gr::lapse(shift, spacetime_metric);
+  const auto& inverse_spacetime_metric =
+      gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
+
+  const auto box = db::create<
+      db::AddSimpleTags<
+          gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>,
+      db::AddComputeTags<
+          gr::Tags::SpatialMetricCompute<3, Frame::Inertial, DataVector>,
+          gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
+                                                      DataVector>,
+          gr::Tags::DetSpatialMetricCompute<3, Frame::Inertial, DataVector>,
+          gr::Tags::SqrtDetSpatialMetricCompute<3, Frame::Inertial, DataVector>,
+          gr::Tags::InverseSpatialMetricCompute<3, Frame::Inertial, DataVector>,
+          gr::Tags::ShiftCompute<3, Frame::Inertial, DataVector>,
+          gr::Tags::LapseCompute<3, Frame::Inertial, DataVector>,
+          gr::Tags::InverseSpacetimeMetricCompute<3, Frame::Inertial,
+                                                  DataVector>,
+          gr::Tags::SpacetimeNormalOneFormCompute<3, Frame::Inertial,
+                                                  DataVector>,
+          gr::Tags::SpacetimeNormalVectorCompute<3, Frame::Inertial,
+                                                 DataVector>>>(
+      spacetime_metric);
+  CHECK(db::get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(box) ==
+        spatial_metric);
+  CHECK(
+      db::get<
+          gr::Tags::DetAndInverseSpatialMetric<3, Frame::Inertial, DataVector>>(
+          box) == det_and_inverse_spatial_metric);
+  CHECK(db::get<gr::Tags::DetSpatialMetric<DataVector>>(box) ==
+        det_spatial_metric);
+  CHECK(db::get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(box) ==
+        sqrt_det_spatial_metric);
+  CHECK(db::get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
+            box) == inverse_spatial_metric);
+  CHECK(db::get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(box) == shift);
+  CHECK(db::get<gr::Tags::Lapse<DataVector>>(box) == lapse);
+  CHECK(
+      db::get<gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>>(
+          box) == inverse_spacetime_metric);
+  CHECK(
+      db::get<gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial, DataVector>>(
+          box) ==
+      gr::spacetime_normal_one_form<3, Frame::Inertial, DataVector>(lapse));
+  CHECK(
+      db::get<gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>>(
+          box) ==
+      gr::spacetime_normal_vector<3, Frame::Inertial, DataVector>(lapse,
+                                                                  shift));
+
+  // Now let's put the lapse, shift, and spatial metric into the databox
+  // and test that we can compute the correct spacetime metric
+  const auto second_box = db::create<
+      db::AddSimpleTags<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                        gr::Tags::Lapse<DataVector>,
+                        gr::Tags::Shift<3, Frame::Inertial, DataVector>>,
+      db::AddComputeTags<
+          gr::Tags::SpacetimeMetricCompute<3, Frame::Inertial, DataVector>>>(
+      spatial_metric, lapse, shift);
+  CHECK(db::get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
+            second_box) == spacetime_metric);
 }
