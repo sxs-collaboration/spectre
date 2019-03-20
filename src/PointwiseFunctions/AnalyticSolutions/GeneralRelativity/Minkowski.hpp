@@ -39,10 +39,11 @@ class Minkowski {
   using options = tmpl::list<>;
   static constexpr OptionString help{
       "Minkowski solution to Einstein's Equations"};
+  static constexpr size_t volume_dim = Dim;
 
   Minkowski() = default;
-  Minkowski(const Minkowski& /*rhs*/) = delete;
-  Minkowski& operator=(const Minkowski& /*rhs*/) = delete;
+  Minkowski(const Minkowski& /*rhs*/) noexcept = default;
+  Minkowski& operator=(const Minkowski& /*rhs*/) noexcept = default;
   Minkowski(Minkowski&& /*rhs*/) noexcept = default;
   Minkowski& operator=(Minkowski&& /*rhs*/) noexcept = default;
   ~Minkowski() = default;
@@ -66,8 +67,9 @@ class Minkowski {
       DerivShift<DataType>,
       gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
       ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>,
-      DerivSpatialMetric<DataType>>;
-
+      DerivSpatialMetric<DataType>, gr::Tags::SqrtDetSpatialMetric<DataType>,
+      gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>,
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>;
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, Dim>& x,
                                          double t,
