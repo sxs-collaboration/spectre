@@ -12,7 +12,8 @@
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"    // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
-#include "Evolution/DiscontinuousGalerkin/Observe.hpp"
+#include "Evolution/DiscontinuousGalerkin/ObserveErrorNorms.hpp"
+#include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
@@ -76,9 +77,12 @@ struct EvolutionMetavars {
       SlopeLimiters::Minmod<1, system::variables_tag::tags_list>>;
 
   // public for use by the Charm++ registration code
-  using events = tmpl::list<dg::Events::Registrars::Observe<
-      1, db::get_variables_tags_list<system::variables_tag>,
-      db::get_variables_tags_list<system::variables_tag>>>;
+  using events =
+      tmpl::list<dg::Events::Registrars::ObserveFields<
+                     1, db::get_variables_tags_list<system::variables_tag>,
+                     db::get_variables_tags_list<system::variables_tag>>,
+                 dg::Events::Registrars::ObserveErrorNorms<
+                     1, db::get_variables_tags_list<system::variables_tag>>>;
   using triggers = Triggers::time_triggers;
 
   using const_global_cache_tag_list =

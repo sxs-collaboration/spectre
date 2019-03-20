@@ -14,7 +14,8 @@
 #include "Evolution/Conservative/UpdateConservatives.hpp"
 #include "Evolution/Conservative/UpdatePrimitives.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
-#include "Evolution/DiscontinuousGalerkin/Observe.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/ObserveErrorNorms.hpp"
+#include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
@@ -102,12 +103,14 @@ struct EvolutionMetavars {
                     grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>>>;
 
   // public for use by the Charm++ registration code
-  using events = tmpl::list<dg::Events::Registrars::Observe<
-      3,
-      tmpl::append<
-          db::get_variables_tags_list<system::variables_tag>,
-          db::get_variables_tags_list<system::primitive_variables_tag>>,
-      analytic_variables_tags>>;
+  using events = tmpl::list<
+      dg::Events::Registrars::ObserveErrorNorms<3, analytic_variables_tags>,
+      dg::Events::Registrars::ObserveFields<
+          3,
+          tmpl::append<
+              db::get_variables_tags_list<system::variables_tag>,
+              db::get_variables_tags_list<system::primitive_variables_tag>>,
+          analytic_variables_tags>>;
   using triggers = Triggers::time_triggers;
 
   using step_choosers =
