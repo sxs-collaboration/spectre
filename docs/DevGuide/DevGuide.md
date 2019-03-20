@@ -44,3 +44,7 @@ concepts and patterns.
 Assumes a thorough familiarity and fluency in SpECTRE's usage of TMP.
 - \ref DataBoxGroup "DataBox"
 - \ref ParallelGroup "Parallelization infrastructure" components and usage
+
+### CoordinateMap Guide
+Methods for creating custom coordinate maps are discussed here.
+- \ref redistributing_gridpoints "Methods for redistributing gridpoints"

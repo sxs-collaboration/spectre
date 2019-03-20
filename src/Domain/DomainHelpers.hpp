@@ -138,12 +138,14 @@ auto wedge_coordinate_maps(double inner_radius, double outer_radius,
 /// `length_inner_cube`. The outer cube has a side length of
 /// `length_outer_cube`. `origin_preimage` is a parameter
 /// that moves the center of the two joined inner cubes away from the origin
-/// and to `-origin_preimage`.
+/// and to `-origin_preimage`. `projective_scale_factor` acts to change the
+/// gridpoint distribution in the radial direction. \see Frustum for details.
 template <typename TargetFrame>
 auto frustum_coordinate_maps(
     double length_inner_cube, double length_outer_cube,
     bool use_equiangular_map,
-    const std::array<double, 3>& origin_preimage = {{0.0, 0.0, 0.0}}) noexcept
+    const std::array<double, 3>& origin_preimage = {{0.0, 0.0, 0.0}},
+    double projective_scale_factor = 1.0) noexcept
     -> std::vector<std::unique_ptr<
         domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
 

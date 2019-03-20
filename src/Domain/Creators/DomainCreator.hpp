@@ -50,6 +50,8 @@ template <typename TargetFrame>
 class Shell;
 template <typename TargetFrame>
 class Sphere;
+template <typename TargetFrame>
+class FrustalCloak;
 /// \endcond
 }  // namespace creators
 }  // namespace domain
@@ -80,7 +82,7 @@ struct domain_creators<3> {
       domain::creators::AlignedLattice<3, Frame>,
       domain::creators::Brick<Frame>, domain::creators::Cylinder<Frame>,
       domain::creators::RotatedBricks<Frame>, domain::creators::Shell<Frame>,
-      domain::creators::Sphere<Frame>>;
+      domain::creators::Sphere<Frame>, domain::creators::FrustalCloak<Frame>>;
 };
 }  // namespace DomainCreators_detail
 
@@ -115,6 +117,7 @@ class DomainCreator {
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Cylinder.hpp"
 #include "Domain/Creators/Disk.hpp"
+#include "Domain/Creators/FrustalCloak.hpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/Rectangle.hpp"
 #include "Domain/Creators/RotatedBricks.hpp"
