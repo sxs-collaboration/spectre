@@ -4,20 +4,16 @@
 #pragma once
 
 #include <limits>
-#include <memory>
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
 
 /// \cond
 namespace PUP {
 class er;
 }  // namespace PUP
-/// \endcond
-
-/// \cond
-class DataVector;
 /// \endcond
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
@@ -45,11 +41,10 @@ namespace Solutions {
  */
 class TovSolution {
  public:
-  TovSolution(const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
-                  equation_of_state,
-              double central_mass_density, double final_log_enthalpy,
-              double absolute_tolerance = 1.0e-14,
-              double relative_tolerance = 1.0e-14);
+  TovSolution(
+      const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
+      double central_mass_density, double log_enthalpy_at_outer_radius = 0.0,
+      double absolute_tolerance = 1.0e-14, double relative_tolerance = 1.0e-14);
 
   TovSolution() = default;
   TovSolution(const TovSolution& /*rhs*/) = delete;
@@ -58,22 +53,45 @@ class TovSolution {
   TovSolution& operator=(TovSolution&& /*rhs*/) noexcept = default;
   ~TovSolution() = default;
 
+  /// \brief The outer radius of the solution.
+  ///
+  /// \note This is the radius at which `log_specific_enthalpy` is equal
+  /// to the value of `log_enthalpy_at_outer_radius` that was given when
+  /// constructing this TovSolution
   double outer_radius() const noexcept;
+
+  /// \brief The mass inside the given radius \f$m(r)\f$
+  ///
+  /// \note `r` should be non-negative and not greater than outer_radius
+  /// \f$m(R)\f$.
   double mass(double r) const noexcept;
-  double specific_enthalpy(double r) const noexcept;
+
+  /// \brief The log of the specific enthalpy at the given radius
+  ///
+  /// \note `r` should be non-negative and not greater than outer_radius
   double log_specific_enthalpy(double r) const noexcept;
 
-  Scalar<DataVector> mass(const Scalar<DataVector>& radius) const noexcept;
-  Scalar<DataVector> specific_enthalpy(const Scalar<DataVector>& radius) const
-      noexcept;
-  Scalar<DataVector> log_specific_enthalpy(
-      const Scalar<DataVector>& radius) const noexcept;
+  /// \brief The radial variables from which the hydrodynamic quantities and
+  /// spacetime metric can be computed.
+  ///
+  /// For radii greater than the outer_radius, this returns the appropriate
+  /// vacuum spacetime.
+  ///
+  /// \note This solution of the TOV equations is a function of areal radius.
+  template <typename DataType>
+  RelativisticEuler::Solutions::TovStar<TovSolution>::RadialVariables<DataType>
+  radial_variables(
+      const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
+      const tnsr::I<DataType, 3>& x) const noexcept;
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept;
 
  private:
   double outer_radius_{std::numeric_limits<double>::signaling_NaN()};
+  double total_mass_{std::numeric_limits<double>::signaling_NaN()};
+  double log_lapse_at_outer_radius_{
+      std::numeric_limits<double>::signaling_NaN()};
   intrp::BarycentricRational mass_interpolant_;
   intrp::BarycentricRational log_enthalpy_interpolant_;
 };

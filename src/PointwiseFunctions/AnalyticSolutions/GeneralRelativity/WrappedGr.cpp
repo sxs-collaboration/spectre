@@ -33,7 +33,6 @@ namespace Solutions {
 
 #define MY_LIST                                                              \
   BOOST_PP_TUPLE_TO_LIST(                                                    \
-      11,                                                                    \
       (gr::Tags::Lapse<DataVector>, TimeDerivLapse, DerivLapse, TagShift,    \
        TimeDerivShift, DerivShift, TagSpatialMetric, TimeDerivSpatialMetric, \
        DerivSpatialMetric, TagInverseSpatialMetric, TagExCurvature,          \

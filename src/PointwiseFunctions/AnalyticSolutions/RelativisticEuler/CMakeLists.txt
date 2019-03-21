@@ -5,6 +5,7 @@ set(LIBRARY RelativisticEulerSolutions)
 
 set(LIBRARY_SOURCES
   FishboneMoncriefDisk.cpp
+  TovStar.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
