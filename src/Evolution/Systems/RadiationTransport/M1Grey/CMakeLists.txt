@@ -5,6 +5,7 @@ set(LIBRARY M1Grey)
 
 set(LIBRARY_SOURCES
   M1Closure.cpp
+  Sources.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
