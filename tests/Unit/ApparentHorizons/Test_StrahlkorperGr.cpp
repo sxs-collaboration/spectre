@@ -3,9 +3,11 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <random>
 
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "ApparentHorizons/StrahlkorperGr.hpp"
@@ -27,11 +29,15 @@
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ApparentHorizons/StrahlkorperGrTestHelpers.hpp"
+#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare Tags::deriv
 // IWYU pragma: no_forward_declare Tensor
@@ -317,6 +323,87 @@ void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
 
   const double irreducible_mass = StrahlkorperGr::irreducible_mass(area);
   CHECK(irreducible_mass == approx(expected_irreducible_mass));
+}
+
+// Let I_1 = surface_integral_of_scalar(J^i \tilde{s}_i \sqrt(-g))
+// where J^i is some arbitrary vector (representing a flux through the
+// surface), g is the determinant of the spacetime metric,
+// \tilde{s}_i is the spatial unit one-form to the Strahlkorper,
+// normalized with the flat metric \tilde{s}_i \tilde{s}_j \delta^{ij} = 1,
+// and where euclidean_area_element is passed into surface_integral_of_scalar.
+//
+// Let I_2 = surface_integral_of_scalar(J^i s_i \alpha), where \alpha is the
+// lapse, s_i is the spatial unit one-form to the Strahlkorper,
+// normalized with the spatial metric s_i s_j \gamma^{ij} = 1, and where
+// the area_element computed with $\gamma_{ij}$ is passed into
+// surface_integral_of_scalar.
+//
+// This tests that I_1==I_2 for an arbitrary 3-vector J^i.
+template <typename Solution, typename Frame>
+void test_integral_correspondence(
+    const Solution& solution,
+    const Strahlkorper<Frame>& strahlkorper) noexcept {
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame>>,
+      db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
+      strahlkorper);
+
+  const double t = 0.0;
+  const auto& cart_coords =
+      db::get<StrahlkorperTags::CartesianCoords<Frame>>(box);
+
+  const auto vars = solution.variables(
+      cart_coords, t, typename Solution::template tags<DataVector>{});
+
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame, DataVector>>(vars);
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(vars);
+  const auto det_and_inverse_spatial_metric =
+      determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inverse_spatial_metric.first;
+  const auto& inverse_spatial_metric = det_and_inverse_spatial_metric.second;
+
+  const auto& normal_one_form =
+      db::get<StrahlkorperTags::NormalOneForm<Frame>>(box);
+  const auto& r_hat = db::get<StrahlkorperTags::Rhat<Frame>>(box);
+  const auto& radius = db::get<StrahlkorperTags::Radius<Frame>>(box);
+  const auto& jacobian = db::get<StrahlkorperTags::Jacobian<Frame>>(box);
+  const auto area_element = StrahlkorperGr::area_element(
+      spatial_metric, jacobian, normal_one_form, radius, r_hat);
+  const auto euclidean_area_element = StrahlkorperGr::euclidean_area_element(
+      jacobian, normal_one_form, radius, r_hat);
+
+  const auto normal_one_form_euclidean_magnitude =
+      dot_product(normal_one_form, normal_one_form);
+  const auto normal_one_form_magnitude =
+      dot_product(normal_one_form, normal_one_form, inverse_spatial_metric);
+
+  auto unit_normal_one_form_flat = normal_one_form;
+  auto unit_normal_one_form_curved = normal_one_form;
+  for (size_t i = 0; i < 3; ++i) {
+    unit_normal_one_form_flat.get(i) /=
+        sqrt(get(normal_one_form_euclidean_magnitude));
+    unit_normal_one_form_curved.get(i) /= sqrt(get(normal_one_form_magnitude));
+  }
+
+  // Set up random values for test_vector
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> dist(-1., 1.);
+  const auto test_vector = make_with_random_values<tnsr::I<DataVector, 3>>(
+      make_not_null(&generator), make_not_null(&dist), lapse);
+
+  const auto scalar_1 = Scalar<DataVector>(
+      get(dot_product(test_vector, unit_normal_one_form_flat)) * get(lapse) *
+      sqrt(get(det_spatial_metric)));
+  const auto scalar_2 = Scalar<DataVector>(
+      get(dot_product(test_vector, unit_normal_one_form_curved)) * get(lapse));
+
+  const double integral_1 = StrahlkorperGr::surface_integral_of_scalar(
+      euclidean_area_element, scalar_1, strahlkorper);
+  const double integral_2 = StrahlkorperGr::surface_integral_of_scalar(
+      area_element, scalar_2, strahlkorper);
+
+  CHECK(integral_1 == approx(integral_2));
 }
 
 template <typename Solution, typename Fr>
@@ -685,10 +772,27 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
             expected_area, expected_irreducible_mass);
 
   test_euclidean_area_element(kerr_horizon);
+
+  test_integral_correspondence(gr::Solutions::Minkowski<3>{}, kerr_horizon);
+  test_integral_correspondence(gr::Solutions::KerrSchild{mass, spin, center},
+                               kerr_horizon);
+
+  // Check that the two methods of computing the surface integral are
+  // still equal for a surface inside and outside the horizon
+  // (that is, for spacelike and timelike Strahlkorpers).
+  const auto inside_kerr_horizon = Strahlkorper<Frame::Inertial>(
+      l_max, l_max, 0.9 * get(horizon_radius), center);
+  const auto outside_kerr_horizon = Strahlkorper<Frame::Inertial>(
+      l_max, l_max, 2.0 * get(horizon_radius), center);
+  test_integral_correspondence(gr::Solutions::KerrSchild{mass, spin, center},
+                               inside_kerr_horizon);
+  test_integral_correspondence(gr::Solutions::KerrSchild{mass, spin, center},
+                               outside_kerr_horizon);
 }
 
-SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.SurfaceInteralOfScalar",
-                  "[ApparentHorizons][Unit]") {
+SPECTRE_TEST_CASE(
+    "Unit.ApparentHorizons.StrahlkorperGr.SurfaceIntegralOfScalar",
+    "[ApparentHorizons][Unit]") {
   // Check the surface integral of a Schwarzschild horizon, using the radius
   // as the scalar
   constexpr int l_max = 20;
