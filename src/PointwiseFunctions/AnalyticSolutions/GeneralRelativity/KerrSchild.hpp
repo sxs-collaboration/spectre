@@ -208,6 +208,7 @@ namespace Solutions {
  */
 class KerrSchild {
  public:
+  static constexpr size_t volume_dim = 3;
   struct Mass {
     using type = double;
     static constexpr OptionString help = {"Mass of the black hole"};
@@ -215,13 +216,13 @@ class KerrSchild {
     static type lower_bound() noexcept { return 0.; }
   };
   struct Spin {
-    using type = std::array<double, 3>;
+    using type = std::array<double, volume_dim>;
     static constexpr OptionString help = {
         "The [x,y,z] dimensionless spin of the black hole"};
     static type default_value() noexcept { return {{0., 0., 0.}}; }
   };
   struct Center {
-    using type = std::array<double, 3>;
+    using type = std::array<double, volume_dim>;
     static constexpr OptionString help = {
         "The [x,y,z] center of the black hole"};
     static type default_value() noexcept { return {{0., 0., 0.}}; }
@@ -242,48 +243,51 @@ class KerrSchild {
   ~KerrSchild() = default;
 
   template <typename DataType>
-  using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>,
-                                   Frame::Inertial>;
+  using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>,
+                                   tmpl::size_t<volume_dim>, Frame::Inertial>;
   template <typename DataType>
   using DerivShift =
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataType>,
-                    tmpl::size_t<3>, Frame::Inertial>;
+      ::Tags::deriv<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>,
+                    tmpl::size_t<volume_dim>, Frame::Inertial>;
   template <typename DataType>
-  using DerivSpatialMetric =
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-                    tmpl::size_t<3>, Frame::Inertial>;
+  using DerivSpatialMetric = ::Tags::deriv<
+      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>,
+      tmpl::size_t<volume_dim>, Frame::Inertial>;
   template <typename DataType>
   using tags = tmpl::list<
       gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
-      DerivLapse<DataType>, gr::Tags::Shift<3, Frame::Inertial, DataType>,
-      ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>,
+      DerivLapse<DataType>,
+      gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>,
+      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>,
       DerivShift<DataType>,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-      ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>,
+      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>,
+      ::Tags::dt<
+          gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>>,
       DerivSpatialMetric<DataType>, gr::Tags::SqrtDetSpatialMetric<DataType>,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>>;
+      gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataType>,
+      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataType>>;
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<tags<DataType>> variables(
-      const tnsr::I<DataType, 3>& x, double t, tags<DataType> /*meta*/) const
-      noexcept;
+      const tnsr::I<DataType, volume_dim>& x, double t,
+      tags<DataType> /*meta*/) const noexcept;
 
   // clang-tidy: no runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
   SPECTRE_ALWAYS_INLINE double mass() const noexcept { return mass_; }
-  SPECTRE_ALWAYS_INLINE const std::array<double, 3>& center() const noexcept {
+  SPECTRE_ALWAYS_INLINE const std::array<double, volume_dim>& center() const
+      noexcept {
     return center_;
   }
-  SPECTRE_ALWAYS_INLINE const std::array<double, 3>& dimensionless_spin() const
-      noexcept {
+  SPECTRE_ALWAYS_INLINE const std::array<double, volume_dim>&
+  dimensionless_spin() const noexcept {
     return dimensionless_spin_;
   }
 
  private:
   double mass_{1.0};
-  std::array<double, 3> dimensionless_spin_{{0.0, 0.0, 0.0}},
+  std::array<double, volume_dim> dimensionless_spin_{{0.0, 0.0, 0.0}},
       center_{{0.0, 0.0, 0.0}};
 };
 
