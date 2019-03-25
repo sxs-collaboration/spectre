@@ -565,6 +565,18 @@ double surface_integral_of_scalar(
 }
 
 template <typename Frame>
+double euclidean_surface_integral_of_vector(
+    const Scalar<DataVector>& area_element,
+    const tnsr::I<DataVector, 3, Frame>& vector,
+    const tnsr::i<DataVector, 3, Frame>& normal_one_form,
+    const Strahlkorper<Frame>& strahlkorper) noexcept {
+  const DataVector integrand =
+      get(area_element) * get(dot_product(vector, normal_one_form)) /
+      sqrt(get(dot_product(normal_one_form, normal_one_form)));
+  return strahlkorper.ylm_spherepack().definite_integral(integrand.data());
+}
+
+template <typename Frame>
 Scalar<DataVector> spin_function(
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
     const YlmSpherepack& ylm,
@@ -753,6 +765,13 @@ StrahlkorperGr::euclidean_area_element<Frame::Inertial>(
 
 template double StrahlkorperGr::surface_integral_of_scalar(
     const Scalar<DataVector>& area_element, const Scalar<DataVector>& scalar,
+    const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept;
+
+template
+double StrahlkorperGr::euclidean_surface_integral_of_vector(
+    const Scalar<DataVector>& area_element,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& vector,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& normal_one_form,
     const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept;
 
 template Scalar<DataVector> StrahlkorperGr::spin_function<Frame::Inertial>(
