@@ -235,7 +235,7 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
   // Compute the slice indices once since this is (surprisingly) expensive
   const auto volume_and_slice_buffer_and_indices =
       volume_and_slice_indices(mesh.extents());
-  const auto volume_and_slice_indices =
+  const auto& volume_and_slice_indices =
       volume_and_slice_buffer_and_indices.second;
 
   bool limiter_activated = false;
