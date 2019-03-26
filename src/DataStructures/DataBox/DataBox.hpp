@@ -138,8 +138,8 @@ struct extract_expand_simple_subitems {
 // Given a typelist of items List, returns a new typelist containing
 // the items and all of their subitems.
 template <typename List>
-using expand_simple_subitems = tmpl::flatten<tmpl::transform<
-    List, extract_expand_simple_subitems<tmpl::_1>>>;
+using expand_simple_subitems = tmpl::flatten<
+    tmpl::transform<List, extract_expand_simple_subitems<tmpl::_1>>>;
 
 namespace detail {
 constexpr int select_expand_subitems_impl(const size_t pack_size) noexcept {
@@ -391,7 +391,7 @@ class DataBox<tmpl::list<Tags...>>
       "All structs used to Tag (compute) items in a DataBox must derive off of "
       "db::SimpleTag. Another static_assert will tell you which tag is the "
       "problematic one. Look for check_simple_or_compute_tag.");
-#endif // ifdef SPECTRE_DEBUG
+#endif  // ifdef SPECTRE_DEBUG
 
  public:
   /*!
@@ -516,7 +516,7 @@ class DataBox<tmpl::list<Tags...>>
   DataBox deep_copy() const noexcept;
 
   template <typename TagsList_>
-      // clang-tidy: redundant declaration
+  // clang-tidy: redundant declaration
   friend SPECTRE_ALWAYS_INLINE constexpr DataBox<TagsList_>  // NOLINT
   create_copy(                                               // NOLINT
       const DataBox<TagsList_>& box) noexcept;
@@ -987,7 +987,7 @@ template <typename... NonSubitemsTags, typename... ComputeTags>
 void DataBox<tmpl::list<Tags...>>::pup_impl(
     PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,
     tmpl::list<ComputeTags...> /*meta*/) noexcept {
-  const auto pup_simple_item = [&p, this](auto current_tag) noexcept {
+  const auto pup_simple_item = [&p, this ](auto current_tag) noexcept {
     (void)this;  // Compiler bug warning this capture is not used
     using tag = decltype(current_tag);
     if (p.isUnpacking()) {
@@ -1003,7 +1003,7 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
   (void)pup_simple_item;  // Silence GCC warning about unused variable
   EXPAND_PACK_LEFT_TO_RIGHT(pup_simple_item(NonSubitemsTags{}));
 
-  const auto pup_compute_item = [&p, this](auto current_tag) noexcept {
+  const auto pup_compute_item = [&p, this ](auto current_tag) noexcept {
     (void)this;  // Compiler bug warns this isn't used
     using tag = decltype(current_tag);
     if (p.isUnpacking()) {
