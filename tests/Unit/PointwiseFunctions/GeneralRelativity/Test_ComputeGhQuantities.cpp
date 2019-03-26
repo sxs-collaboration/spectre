@@ -278,7 +278,7 @@ void test_shift_deriv_functions(const DataVector& used_for_size) noexcept {
                                                             DataType>),
       "GeneralRelativity.ComputeGhQuantities", "dt_lower_shift",
       {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size,
-      1.e-9);
+      5.e-9);
   // spacetime_deriv_of_norm_of_shift
   pypp::check_with_random_values<1>(
       static_cast<tnsr::a<DataType, SpatialDim, Frame> (*)(
@@ -293,7 +293,7 @@ void test_shift_deriv_functions(const DataVector& used_for_size) noexcept {
               SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "spacetime_deriv_norm_shift",
       {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size,
-      1.e-11);
+      1.e-10);
 }
 
 // Test computation of derivs of shift by comparing to Kerr-Schild
