@@ -29,22 +29,17 @@ evolution, run the command:
 By default, the example input files do not produce any output. This can be
 changed by modifying the options passed to `EventsAndTriggers`:
 
-```
-EventsAndTriggers:
-  ? EveryNSlabs:
-      N: 3
-      Offset: 5
-  : - Observe:
-        VariablesToObserve: [MassDensity]
-```
+\snippet ObserveExample.yaml observe_event_trigger
 
-This will trigger an observation event for the Variable MassDensity every three
-slabs after the fifth one. A successful observation will result in the creation
-of H5 files whose names can be specified in the YAML file under the options
-`VolumeFileName` and `ReductionFileName`. One volume data file will be produced
-from each Charm++ node that is used to run the executable. Each volume data
-file will have its corresponding node number appended to its file name.
-Visualization of the volume data will be described in the next section.
+This will observe the norms of the errors in the system every three
+slabs starting with slab five and the volume data of Psi at the start
+of slabs 0 and 100.  A successful observation will result in the
+creation of H5 files whose names can be specified in the YAML file
+under the options `VolumeFileName` and `ReductionFileName`. One volume
+data file will be produced from each Charm++ node that is used to run
+the executable. Each volume data file will have its corresponding node
+number appended to its file name.  Visualization of the volume data
+will be described in the next section.
 
 ### 3D %Data Volume %Data In ParaView
 
