@@ -352,7 +352,7 @@ hard-coded type that we can factor out in favor of a template parameter:
 
 \snippet Test_DataBoxDocumentation.cpp my_first_action
 
-Note how the `mutate_tags` and `argument_tags` are used as metavariables and
+Note how the `return_tags` and `argument_tags` are used as metavariables and
 are resolved by the compiler. Our call to `db::mutate_apply` has been fully
 wrapped and now takes the form:
 
