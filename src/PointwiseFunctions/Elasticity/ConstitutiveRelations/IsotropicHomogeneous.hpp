@@ -84,7 +84,9 @@ class IsotropicHomogeneous : public ConstitutiveRelation<Dim> {
 
   static constexpr OptionString help = {
       "A constitutive relation that describes an isotropic, homogeneous "
-      "material."};
+      "material in terms of two elastic moduli. These bulk and shear moduli "
+      "indicate the material's resistance to volume and shape changes, "
+      "respectively. Both are measured in units of stress, typically Pascals."};
 
   IsotropicHomogeneous() = default;
   IsotropicHomogeneous(const IsotropicHomogeneous&) = delete;
