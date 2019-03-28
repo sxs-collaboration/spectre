@@ -817,4 +817,64 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
         dt_lapse);
   CHECK(db::get<::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(
             other_box) == dt_shift);
+
+  // Test the SpacetimeDerivGaugeHCompute compute item. Pass in arbitrary
+  // tensors for the time and space derivatives, and show that it combines
+  // them properly into a spacetime derivative.
+  auto dt_gauge_source_function =
+      make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(test_vector,
+                                                               0.0);
+  get<0>(dt_gauge_source_function) = 1.3;
+  get<1>(dt_gauge_source_function) = -1.4;
+  get<2>(dt_gauge_source_function) = 1.5;
+  get<3>(dt_gauge_source_function) = -1.6;
+
+  auto deriv_gauge_source_function =
+      make_with_value<tnsr::ia<DataVector, 3, Frame::Inertial>>(test_vector,
+                                                                0.0);
+  get<0, 0>(deriv_gauge_source_function) = -0.1;
+  get<0, 1>(deriv_gauge_source_function) = 0.2;
+  get<0, 2>(deriv_gauge_source_function) = -0.3;
+  get<0, 3>(deriv_gauge_source_function) = 0.4;
+  get<1, 0>(deriv_gauge_source_function) = -0.5;
+  get<1, 1>(deriv_gauge_source_function) = 0.6;
+  get<1, 2>(deriv_gauge_source_function) = -0.7;
+  get<1, 3>(deriv_gauge_source_function) = 0.8;
+  get<2, 0>(deriv_gauge_source_function) = -0.9;
+  get<2, 1>(deriv_gauge_source_function) = 1.0;
+  get<2, 2>(deriv_gauge_source_function) = -1.1;
+  get<2, 3>(deriv_gauge_source_function) = 1.2;
+
+  auto spacetime_deriv_gauge_source_function =
+      make_with_value<tnsr::ab<DataVector, 3, Frame::Inertial>>(test_vector,
+                                                                0.0);
+  get<0, 0>(spacetime_deriv_gauge_source_function) = 1.3;
+  get<0, 1>(spacetime_deriv_gauge_source_function) = -1.4;
+  get<0, 2>(spacetime_deriv_gauge_source_function) = 1.5;
+  get<0, 3>(spacetime_deriv_gauge_source_function) = -1.6;
+  get<1, 0>(spacetime_deriv_gauge_source_function) = -0.1;
+  get<1, 1>(spacetime_deriv_gauge_source_function) = 0.2;
+  get<1, 2>(spacetime_deriv_gauge_source_function) = -0.3;
+  get<1, 3>(spacetime_deriv_gauge_source_function) = 0.4;
+  get<2, 0>(spacetime_deriv_gauge_source_function) = -0.5;
+  get<2, 1>(spacetime_deriv_gauge_source_function) = 0.6;
+  get<2, 2>(spacetime_deriv_gauge_source_function) = -0.7;
+  get<2, 3>(spacetime_deriv_gauge_source_function) = 0.8;
+  get<3, 0>(spacetime_deriv_gauge_source_function) = -0.9;
+  get<3, 1>(spacetime_deriv_gauge_source_function) = 1.0;
+  get<3, 2>(spacetime_deriv_gauge_source_function) = -1.1;
+  get<3, 3>(spacetime_deriv_gauge_source_function) = 1.2;
+
+  const auto gauge_deriv_box = db::create<
+      db::AddSimpleTags<
+          GeneralizedHarmonic::Tags::TimeDerivGaugeH<3, Frame::Inertial>,
+          ::Tags::deriv<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>,
+                        tmpl::size_t<3>, Frame::Inertial>>,
+      db::AddComputeTags<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
+          3, Frame::Inertial>>>(dt_gauge_source_function,
+                                deriv_gauge_source_function);
+  CHECK(
+      db::get<
+          GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3, Frame::Inertial>>(
+          gauge_deriv_box) == spacetime_deriv_gauge_source_function);
 }
