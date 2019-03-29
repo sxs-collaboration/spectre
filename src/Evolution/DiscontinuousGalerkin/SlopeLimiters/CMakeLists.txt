@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   MinmodType.cpp
   WenoGridHelpers.cpp
   WenoHelpers.cpp
+  WenoType.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
