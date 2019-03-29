@@ -42,28 +42,12 @@ namespace Weno_detail {
 // indicator because it is formulated in the reference coordinates, which we
 // use for the WENO reconstruction, and because it lends itself to an efficient
 // implementation.
-//
-// Where (this reference to be added to References.bib later, when it is cited
-// from _rendered_ documentation):
-// Dumbser2007:
-//   Dumbser, M and Kaeser, M
-//   Arbitrary high order non-oscillatory finite volume schemes on unstructured
-//   meshes for linear hyperbolic systems
-//   https://doi.org/10.1016/j.jcp.2006.06.043
 template <size_t VolumeDim>
 double oscillation_indicator(const DataVector& data,
                              const Mesh<VolumeDim>& mesh) noexcept;
 
 // Compute the unnormalized nonlinear WENO weights. This is a fairly standard
 // choice of weights; see e.g., Eq. 3.9 of Zhong2013 or Eq. 3.6 of Zhu2016.
-//
-// Where (these references to be added to References.bib later, when they are
-// cited from _rendered_ documentation):
-// Zhong2013
-//   Zhong, X and Shu, C-W
-//   A simple weighted essentially non-oscillatory limiter for Runge-Kutta
-//   discontinuous Galerkin methods
-//   https://doi.org/10.1016/j.jcp.2012.08.028
 inline double unnormalized_nonlinear_weight(
     const double linear_weight, const double oscillation_indicator) noexcept {
   return linear_weight / square(1.e-6 + oscillation_indicator);
