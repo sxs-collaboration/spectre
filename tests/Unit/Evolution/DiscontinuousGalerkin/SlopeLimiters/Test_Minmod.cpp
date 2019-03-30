@@ -7,7 +7,6 @@
 #include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <functional>
-#include <limits>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -27,7 +26,6 @@
 #include "Domain/OrientationMap.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.tpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
-#include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -44,6 +42,7 @@
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
+
 struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() noexcept { return "Scalar"; }
@@ -54,10 +53,8 @@ struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, VolumeDim>;
   static std::string name() noexcept { return "Vector"; }
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.Options",
-                  "[SlopeLimiters][Unit]") {
+void test_minmod_option_parsing() noexcept {
   const auto lambda_pi1_default =
       test_creation<SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "  Type: LambdaPi1");
@@ -87,14 +84,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.Options",
       "  Type: LambdaPiN\n  DisableForDebugging: True");
 }
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod.Serialization",
-                  "[SlopeLimiters][Unit]") {
+void test_minmod_serialization() noexcept {
   const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod(
       SlopeLimiters::MinmodType::LambdaPi1);
   test_serialization(minmod);
 }
 
-namespace {
 template <size_t VolumeDim>
 Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) noexcept {
   return {std::unordered_set<ElementId<VolumeDim>>{ElementId<VolumeDim>(id)},
@@ -138,46 +133,6 @@ Element<3> make_element() noexcept {
           {Direction<3>::upper_zeta(), make_neighbor_with_id<3>(6)}}};
 }
 
-// Values of left_id, right_id based on make_element<1> above.
-auto make_neighbor_packaged_data(
-    const double left, const double right,
-    const std::array<double, 1>& local_size_for_neighbor_size) noexcept {
-  constexpr size_t left_id = 1;
-  constexpr size_t right_id = 2;
-  return std::unordered_map<
-      std::pair<Direction<1>, ElementId<1>>,
-      SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>::PackagedData,
-      boost::hash<std::pair<Direction<1>, ElementId<1>>>>{
-      std::make_pair(
-          std::make_pair(Direction<1>::lower_xi(), ElementId<1>(left_id)),
-          SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>::PackagedData{
-              Scalar<double>(left), local_size_for_neighbor_size}),
-      std::make_pair(
-          std::make_pair(Direction<1>::upper_xi(), ElementId<1>(right_id)),
-          SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>::PackagedData{
-              Scalar<double>(right), local_size_for_neighbor_size})};
-}
-
-// Values of left_id, right_id based on make_element<1> above.
-auto make_neighbor_packaged_data(const double left, const double right,
-                                 const double left_size,
-                                 const double right_size) noexcept {
-  constexpr size_t left_id = 1;
-  constexpr size_t right_id = 2;
-  return std::unordered_map<
-      std::pair<Direction<1>, ElementId<1>>,
-      SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>::PackagedData,
-      boost::hash<std::pair<Direction<1>, ElementId<1>>>>{
-      std::make_pair(
-          std::make_pair(Direction<1>::lower_xi(), ElementId<1>(left_id)),
-          SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>::PackagedData{
-              Scalar<double>(left), make_array<1>(left_size)}),
-      std::make_pair(
-          std::make_pair(Direction<1>::upper_xi(), ElementId<1>(right_id)),
-          SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>::PackagedData{
-              Scalar<double>(right), make_array<1>(right_size)})};
-}
-
 // Test that the limiter activates in the x-direction only. Domain quantities
 // and input Scalar may be of higher dimension VolumeDim.
 template <size_t VolumeDim>
@@ -208,543 +163,10 @@ void test_limiter_activates_work(
   CHECK_ITERABLE_APPROX(input_to_limit, expected_output);
 }
 
-void test_limiter_does_not_activate_work(
-    const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>& minmod,
-    const ScalarTag::type& input, const Element<1>& element,
-    const Mesh<1>& mesh,
-    const tnsr::I<DataVector, 1, Frame::Logical>& logical_coords,
-    const std::array<double, 1>& element_size,
-    const std::unordered_map<
-        std::pair<Direction<1>, ElementId<1>>,
-        SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>::PackagedData,
-        boost::hash<std::pair<Direction<1>, ElementId<1>>>>&
-        neighbor_data) noexcept {
-  auto input_to_limit = input;
-  const bool limiter_activated =
-      minmod(make_not_null(&input_to_limit), element, mesh, logical_coords,
-             element_size, neighbor_data);
-  // The limiter can report an activation even if the solution was not modified.
-  // This occurs when a pure-linear solution is represented on a higher-than-
-  // linear order grid, so that the limiter's linearizing step doesn't actually
-  // change the solution. If the slope does not need to be reduced, then the
-  // limiter has no effect, but the limiter itself doesn't know this, because it
-  // doesn't know the original solution had no higher-order content. Therefore,
-  // the limiter reports an activation even though the solution was not changed.
-  //
-  // This effect also depends on the limiter type: for linear solutions that do
-  // not need to have their sloped reduced, the LambdaPiN limiter's troubled-
-  // cell detection will kick in and skip limiting altogether. This means that
-  // when using LambdaPiN, we should not see the spurious activations described
-  // in the previous paragraph.
-  //
-  // Note that it is somewhat artificial to have a pure-linear solution on a
-  // higher-than-linear order element; this scenario should only occur in code
-  // testing or certain test problems with very clean initial data.
-  if (mesh.extents(0) > 2 and
-      minmod.minmod_type() != SlopeLimiters::MinmodType::LambdaPiN) {
-    CHECK(limiter_activated);
-  } else {
-    CHECK_FALSE(limiter_activated);
-  }
-  CHECK_ITERABLE_APPROX(input_to_limit, input);
-}
-
-void test_limiter_action_on_constant_function(
-    const size_t number_of_grid_points,
-    const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>& minmod) noexcept {
-  INFO("Testing constant function...");
-  CAPTURE(number_of_grid_points);
-  const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const double value = 0.3;
-  const auto input =
-      make_with_value<ScalarTag::type>(get<0>(logical_coords), value);
-  const auto element_size = make_array<1>(1.2);
-  for (const double left : {-0.4, value, 1.2}) {
-    for (const double right : {0.2, value, 0.9}) {
-      test_limiter_does_not_activate_work(
-          minmod, input, element, mesh, logical_coords, element_size,
-          make_neighbor_packaged_data(left, right, element_size));
-    }
-  }
-}
-
-void test_limiter_action_on_linear_function(
-    const size_t number_of_grid_points,
-    const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>& minmod) noexcept {
-  INFO("Testing linear function...");
-  CAPTURE(number_of_grid_points);
-  const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = make_array<1>(2.0);
-
-  const auto test_limiter_activates =
-      [&minmod, &element, &mesh, &logical_coords, &element_size ](
-          const ScalarTag::type& local_input, const double left,
-          const double right, const double expected_slope) noexcept {
-    test_limiter_activates_work(
-        minmod, local_input, element, mesh, logical_coords, element_size,
-        make_neighbor_packaged_data(left, right, element_size), expected_slope);
-  };
-  const auto test_limiter_does_not_activate =
-      [&minmod, &element, &mesh, &logical_coords, &
-       element_size ](const ScalarTag::type& local_input, const double left,
-                      const double right) noexcept {
-    test_limiter_does_not_activate_work(
-        minmod, local_input, element, mesh, logical_coords, element_size,
-        make_neighbor_packaged_data(left, right, element_size));
-  };
-
-  // With a MUSCL limiter, the largest allowed slope is half as big as for a
-  // LambdaPi1 or LambdaPiN limiter. We can re-use the same test cases by
-  // correspondingly scaling the slope:
-  const double muscl_slope_factor =
-      (minmod.minmod_type() == SlopeLimiters::MinmodType::Muscl) ? 0.5 : 1.0;
-  const double eps = 100.0 * std::numeric_limits<double>::epsilon();
-
-  // Test a positive-slope function
-  {
-    const auto func = [&muscl_slope_factor](
-        const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-      return 3.6 + 1.2 * muscl_slope_factor * get<0>(coords);
-    };
-    const auto input = ScalarTag::type(func(logical_coords));
-
-    // Steepness test
-    // Limiter does not reduce slope if (difference of means) > (local slope),
-    // but reduces slope if (difference of means) < (local slope)
-    test_limiter_does_not_activate(input, 2.0, 6.0);
-    test_limiter_does_not_activate(input, 2.4 - eps, 4.8 + eps);
-    test_limiter_activates(input, 2.6, 6.0, 1.0 * muscl_slope_factor);
-    test_limiter_activates(input, 2.0, 4.0, 0.4 * muscl_slope_factor);
-    test_limiter_activates(input, 2.6, 4.0, 0.4 * muscl_slope_factor);
-
-    // Local extremum test
-    // Limiter flattens slope if both neighbors are above (below) the mean
-    test_limiter_activates(input, 1.0, 2.0, 0.0);
-    test_limiter_activates(input, 6.0, 9.0, 0.0);
-
-    // Oscillation test
-    // Limiter flattens slope if sign(difference of means) != sign(local slope)
-    test_limiter_activates(input, 3.9, 2.7, 0.0);
-  }
-
-  // Test a negative-slope function
-  {
-    const auto func = [&muscl_slope_factor](
-        const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-      return -0.4 - 0.8 * muscl_slope_factor * get<0>(coords);
-    };
-    const auto input = ScalarTag::type(func(logical_coords));
-
-    // Steepness test
-    test_limiter_does_not_activate(input, 0.9, -2.3);
-    test_limiter_does_not_activate(input, 0.4 + eps, -1.2 - eps);
-    test_limiter_activates(input, 0.2, -1.2, -0.6 * muscl_slope_factor);
-    test_limiter_activates(input, 0.4, -0.5, -0.1 * muscl_slope_factor);
-    test_limiter_activates(input, 0.2, -0.5, -0.1 * muscl_slope_factor);
-
-    // Local extremum test
-    test_limiter_activates(input, 1.3, -0.1, 0.0);
-    test_limiter_activates(input, -3.2, -0.8, 0.0);
-
-    // Oscillation test
-    test_limiter_activates(input, -2.3, 0.2, 0.0);
-  }
-}
-
-void test_limiter_action_on_quadratic_function(
-    const size_t number_of_grid_points,
-    const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>& minmod) noexcept {
-  INFO("Testing quadratic function...");
-  CAPTURE(number_of_grid_points);
-  const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = make_array<1>(2.0);
-
-  const auto test_limiter_activates =
-      [&minmod, &element, &mesh, &logical_coords, &element_size ](
-          const ScalarTag::type& local_input, const double left,
-          const double right, const double expected_slope) noexcept {
-    test_limiter_activates_work(
-        minmod, local_input, element, mesh, logical_coords, element_size,
-        make_neighbor_packaged_data(left, right, element_size), expected_slope);
-  };
-  const auto test_limiter_does_not_activate =
-      [&minmod, &element, &mesh, &logical_coords, &
-       element_size ](const ScalarTag::type& local_input, const double left,
-                      const double right) noexcept {
-    test_limiter_does_not_activate_work(
-        minmod, local_input, element, mesh, logical_coords, element_size,
-        make_neighbor_packaged_data(left, right, element_size));
-  };
-
-  const double muscl_slope_factor =
-      (minmod.minmod_type() == SlopeLimiters::MinmodType::Muscl) ? 0.5 : 1.0;
-  const auto func = [&muscl_slope_factor](
-      const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    // For easier testing, center the quadratic term on the grid: otherwise this
-    // term will affect the average slope on the element.
-    return 13.0 + 4.0 * muscl_slope_factor * x + 2.5 * square(x);
-  };
-  const auto input = ScalarTag::type(func(logical_coords));
-  const double mean = mean_value(get(input), mesh);
-
-  // Steepness test
-  if (minmod.minmod_type() != SlopeLimiters::MinmodType::LambdaPiN) {
-    // Because the mesh is higher-than-linear order, the limiter will generally
-    // activate to linearize the solution, even in cases where slope is OK.
-    test_limiter_activates(input, mean - 5.0, mean + 5.0,
-                           4.0 * muscl_slope_factor);
-    test_limiter_activates(input, mean - 4.01, mean + 4.01,
-                           4.0 * muscl_slope_factor);
-  } else {
-    // However, the LambdaPiN limiter does not activate purely to linearize the
-    // solution, so in these same cases where the slope is OK, it does nothing.
-    test_limiter_does_not_activate(input, mean - 5.0, mean + 5.0);
-    test_limiter_does_not_activate(input, mean - 4.01, mean + 4.01);
-  }
-  // Cases where slope is too steep and needs to be reduced
-  test_limiter_activates(input, mean - 3.99, mean + 3.99,
-                         3.99 * muscl_slope_factor);
-  test_limiter_activates(input, mean - 1.3, mean + 1.9,
-                         1.3 * muscl_slope_factor);
-
-  // Local extremum test
-  test_limiter_activates(input, 9.4, 2.3, 0.0);
-  test_limiter_activates(input, 14.0, 18.2, 0.0);
-
-  // Oscillation test
-  test_limiter_activates(input, 14.0, 2.3, 0.0);
-}
-
-void test_limiter_action_with_tvbm_correction(
-    const size_t number_of_grid_points,
-    const SlopeLimiters::MinmodType& minmod_type) noexcept {
-  INFO("Testing TVBM correction...");
-  CAPTURE(number_of_grid_points);
-  const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = make_array<1>(2.0);
-
-  const auto test_limiter_activates =
-      [&element, &mesh, &logical_coords, &element_size ](
-          const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>& minmod,
-          const ScalarTag::type& local_input, const double left,
-          const double right, const double expected_slope) noexcept {
-    test_limiter_activates_work(
-        minmod, local_input, element, mesh, logical_coords, element_size,
-        make_neighbor_packaged_data(left, right, element_size), expected_slope);
-  };
-  const auto test_limiter_does_not_activate =
-      [&element, &mesh, &logical_coords, &element_size ](
-          const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>& minmod,
-          const ScalarTag::type& local_input, const double left,
-          const double right) noexcept {
-    test_limiter_does_not_activate_work(
-        minmod, local_input, element, mesh, logical_coords, element_size,
-        make_neighbor_packaged_data(left, right, element_size));
-  };
-
-  // Make other limiters of same type but with different TBVM constants.
-  // Slopes will be compared to m * h^2, where here h = 2
-  const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod_m0(minmod_type);
-  const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod_m1(minmod_type,
-                                                                  1.0);
-  const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod_m2(minmod_type,
-                                                                  2.0);
-
-  const auto func =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-    return 21.6 + 7.2 * get<0>(coords);
-  };
-  const auto input = ScalarTag::type(func(logical_coords));
-
-  // The TVBM constant sets a threshold slope, below which the solution will not
-  // be limited. We test this by increasing the TVBM constant until the limiter
-  // stops activating / stops changing the solution.
-  const double left =
-      (minmod_type == SlopeLimiters::MinmodType::Muscl) ? 8.4 : 15.0;
-  const double right =
-      (minmod_type == SlopeLimiters::MinmodType::Muscl) ? 34.8 : 30.0;
-  test_limiter_activates(minmod_m0, input, left, right, 6.6);
-  test_limiter_activates(minmod_m1, input, left, right, 6.6);
-  test_limiter_does_not_activate(minmod_m2, input, left, right);
-}
-
-// Here we test the coupling of the LambdaPiN troubled cell detector with the
-// TVBM constant value.
-void test_lambda_pin_troubled_cell_tvbm_correction(
-    const size_t number_of_grid_points) noexcept {
-  INFO("Testing LambdaPiN-TVBM correction...");
-  CAPTURE(number_of_grid_points);
-  const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = make_array<1>(2.0);
-
-  const auto test_limiter_activates =
-      [&element, &mesh, &logical_coords, &element_size ](
-          const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>& minmod,
-          const ScalarTag::type& local_input, const double left,
-          const double right, const double expected_slope) noexcept {
-    test_limiter_activates_work(
-        minmod, local_input, element, mesh, logical_coords, element_size,
-        make_neighbor_packaged_data(left, right, element_size), expected_slope);
-  };
-  const auto test_limiter_does_not_activate =
-      [&element, &mesh, &logical_coords, &element_size ](
-          const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>& minmod,
-          const ScalarTag::type& local_input, const double left,
-          const double right) noexcept {
-    test_limiter_does_not_activate_work(
-        minmod, local_input, element, mesh, logical_coords, element_size,
-        make_neighbor_packaged_data(left, right, element_size));
-  };
-
-  const auto pi_n = SlopeLimiters::MinmodType::LambdaPiN;
-  const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod_m0(pi_n);
-  const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod_m1(pi_n, 1.0);
-  const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod_m2(pi_n, 2.0);
-
-  const auto func =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-    return 10.0 * step_function(get<0>(coords));
-  };
-  const auto input = ScalarTag::type(func(logical_coords));
-  const auto input_lin = linearize(get(input), mesh);
-
-  // Establish baseline m = 0 case; LambdaPiN normally avoids limiting when
-  // max(edge - mean) <= min(neighbor - mean)
-  test_limiter_does_not_activate(minmod_m0, input, 0.0, 10.0);
-  test_limiter_does_not_activate(minmod_m0, input, -0.3, 10.2);
-  // but does limit if max(edge - mean) > min(neighbor - mean)
-  test_limiter_activates(minmod_m0, input, 0.02, 10.0, 4.98);
-  test_limiter_activates(minmod_m0, input, 0.0, 9.99, 4.99);
-
-  // However, with a non-zero TVBM constant, LambdaPiN should additionally avoid
-  // limiting when max(edge - mean) < TVBM correction.
-  // We test first a case where the TVBM correction is too small to affect
-  // the limiter action,
-  test_limiter_does_not_activate(minmod_m1, input, 0.0, 10.0);
-  test_limiter_does_not_activate(minmod_m1, input, -0.3, 10.2);
-  test_limiter_activates(minmod_m1, input, 0.02, 10.0, 4.98);
-  test_limiter_activates(minmod_m1, input, 0.0, 9.99, 4.99);
-
-  // And a case where the TVBM correction enables LambdaPiN to avoid limiting
-  // (Note that the slope here is still too large to avoid limiting through
-  // the normal TVBM tolerance.)
-  test_limiter_does_not_activate(minmod_m2, input, 0.0, 10.0);
-  test_limiter_does_not_activate(minmod_m2, input, -0.3, 10.2);
-  test_limiter_does_not_activate(minmod_m2, input, 0.02, 10.0);
-  test_limiter_does_not_activate(minmod_m2, input, 0.0, 9.99);
-}
-
-void test_limiter_action_at_boundary(
-    const size_t number_of_grid_points,
-    const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>& minmod) noexcept {
-  INFO("Testing limiter at boundary...");
-  CAPTURE(number_of_grid_points);
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const auto element_size = make_array<1>(2.0);
-
-  const auto func =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-    return 1.2 * get<0>(coords);
-  };
-  const auto input = ScalarTag::type(func(logical_coords));
-
-  // Test with element that has external lower-xi boundary
-  // Neighbor on upper-xi side has ElementId == 2
-  const auto element_at_lower_xi_boundary = Element<1>{
-      ElementId<1>{0}, Element<1>::Neighbors_t{{Direction<1>::upper_xi(),
-                                                make_neighbor_with_id<1>(2)}}};
-  for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
-    test_limiter_activates_work(
-        minmod, input, element_at_lower_xi_boundary, mesh, logical_coords,
-        element_size,
-        {{std::make_pair(Direction<1>::upper_xi(), ElementId<1>(2)),
-          SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>::PackagedData{
-              Scalar<double>{neighbor}, element_size}}},
-        0.0);
-  }
-
-  // Test with element that has external upper-xi boundary
-  // Neighbor on lower-xi side has ElementId == 1
-  const auto element_at_upper_xi_boundary = Element<1>{
-      ElementId<1>{0}, Element<1>::Neighbors_t{{Direction<1>::lower_xi(),
-                                                make_neighbor_with_id<1>(1)}}};
-  for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
-    test_limiter_activates_work(
-        minmod, input, element_at_upper_xi_boundary, mesh, logical_coords,
-        element_size,
-        {{std::make_pair(Direction<1>::lower_xi(), ElementId<1>(1)),
-          SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>::PackagedData{
-              Scalar<double>{neighbor}, element_size}}},
-        0.0);
-  }
-}
-
-void test_limiter_action_with_different_size_neighbor(
-    const size_t number_of_grid_points,
-    const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>& minmod) noexcept {
-  INFO("Testing limiter with neighboring elements of different size...");
-  CAPTURE(number_of_grid_points);
-  const auto element = make_element<1>();
-  const auto mesh = Mesh<1>(number_of_grid_points, Spectral::Basis::Legendre,
-                            Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const double dx = 1.0;
-  const auto element_size = make_array<1>(dx);
-
-  const auto test_limiter_activates =
-      [&minmod, &element, &mesh, &logical_coords, &element_size ](
-          const ScalarTag::type& local_input, const double left,
-          const double right, const double left_size, const double right_size,
-          const double expected_slope) noexcept {
-    test_limiter_activates_work(
-        minmod, local_input, element, mesh, logical_coords, element_size,
-        make_neighbor_packaged_data(left, right, left_size, right_size),
-        expected_slope);
-  };
-  const auto test_limiter_does_not_activate =
-      [&minmod, &element, &mesh, &logical_coords, &
-       element_size ](const ScalarTag::type& local_input, const double left,
-                      const double right, const double left_size,
-                      const double right_size) noexcept {
-    test_limiter_does_not_activate_work(
-        minmod, local_input, element, mesh, logical_coords, element_size,
-        make_neighbor_packaged_data(left, right, left_size, right_size));
-  };
-
-  const double muscl_slope_factor =
-      (minmod.minmod_type() == SlopeLimiters::MinmodType::Muscl) ? 0.5 : 1.0;
-  const double eps = 100.0 * std::numeric_limits<double>::epsilon();
-
-  const auto func = [&muscl_slope_factor](
-      const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-    return 2.0 + 1.2 * muscl_slope_factor * get<0>(coords);
-  };
-  const auto input = ScalarTag::type(func(logical_coords));
-
-  // Establish baseline using evenly-sized elements
-  test_limiter_does_not_activate(input, 0.8 - eps, 3.2 + eps, dx, dx);
-
-  const double larger = 2.0 * dx;
-  const double smaller = 0.5 * dx;
-
-  // Larger neighbor with same mean => true reduction in slope => trigger
-  test_limiter_activates(input, 0.8 - eps, 3.2, dx, larger,
-                         0.8 * muscl_slope_factor);
-  // Larger neighbor with larger mean => same slope => no trigger
-  test_limiter_does_not_activate(input, 0.8 - eps, 3.8 + eps, dx, larger);
-
-  // Smaller neighbor with same mean => increased slope => no trigger
-  test_limiter_does_not_activate(input, 0.8 - eps, 3.2 + eps, dx, smaller);
-  // Smaller neighbor with lower mean => same slope => no trigger
-  test_limiter_does_not_activate(input, 0.8 - eps, 2.9 + eps, dx, smaller);
-
-  test_limiter_activates(input, 0.8, 3.2 + eps, larger, dx,
-                         0.8 * muscl_slope_factor);
-  test_limiter_does_not_activate(input, 0.2 - eps, 3.2 + eps, larger, dx);
-
-  test_limiter_does_not_activate(input, 0.8 - eps, 3.2 + eps, smaller, dx);
-  test_limiter_does_not_activate(input, 1.1 - eps, 3.2 + eps, smaller, dx);
-}
-}  // namespace
-
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.1d_detailed_action_test",
-    "[SlopeLimiters][Unit]") {
-  // The goal of this test is to check, in detail, the action of the limiter on
-  // a wide spectrum of possible inputs.
-  //
-  // These checks are performed in the various "test_limiter_action_X"
-  // functions, which apply the limiter to many different inputs and check that
-  // the correct output is received. In addition to verifying that the limiter
-  // correctly handles many different smooth or shock-like input states, the
-  // following scenarios are also checked:
-  // - elements with/without an external boundary
-  // - linear and higher-than-linear order meshes
-  // - TVBM corrections to the limiter
-  const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod(
-      SlopeLimiters::MinmodType::LambdaPi1);
-
-  for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
-    test_limiter_action_on_constant_function(num_grid_points, minmod);
-    test_limiter_action_on_linear_function(num_grid_points, minmod);
-    test_limiter_action_with_tvbm_correction(num_grid_points,
-                                             minmod.minmod_type());
-    test_limiter_action_at_boundary(num_grid_points, minmod);
-    test_limiter_action_with_different_size_neighbor(num_grid_points, minmod);
-  }
-
-  // This test only makes sense on higher-than-linear order meshes
-  test_limiter_action_on_quadratic_function(4, minmod);
-}
-
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPiN.1d_detailed_action_test",
-    "[SlopeLimiters][Unit]") {
-  // The goal of this test is to check, in detail, the action of the limiter on
-  // a wide spectrum of possible inputs.
-  // See the "LambdaPi1.1d_detailed_action_test" test case for more details.
-  const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod(
-      SlopeLimiters::MinmodType::LambdaPiN);
-
-  for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
-    test_limiter_action_on_constant_function(num_grid_points, minmod);
-    test_limiter_action_on_linear_function(num_grid_points, minmod);
-    test_limiter_action_with_tvbm_correction(num_grid_points,
-                                             minmod.minmod_type());
-    test_limiter_action_at_boundary(num_grid_points, minmod);
-    test_limiter_action_with_different_size_neighbor(num_grid_points, minmod);
-  }
-
-  // These tests only makes sense on higher-than-linear order meshes
-  test_limiter_action_on_quadratic_function(4, minmod);
-  test_lambda_pin_troubled_cell_tvbm_correction(4);
-}
-
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.Minmod.Muscl.1d_detailed_action_test",
-    "[SlopeLimiters][Unit]") {
-  // The goal of this test is to check, in detail, the action of the limiter on
-  // a wide spectrum of possible inputs.
-  // See the "LambdaPi1.1d_detailed_action_test" test case for more details.
-  const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod(
-      SlopeLimiters::MinmodType::Muscl);
-
-  for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
-    test_limiter_action_on_constant_function(num_grid_points, minmod);
-    test_limiter_action_on_linear_function(num_grid_points, minmod);
-    test_limiter_action_with_tvbm_correction(num_grid_points,
-                                             minmod.minmod_type());
-    test_limiter_action_at_boundary(num_grid_points, minmod);
-    test_limiter_action_with_different_size_neighbor(num_grid_points, minmod);
-  }
-
-  // This test only makes sense on higher-than-linear order meshes
-  test_limiter_action_on_quadratic_function(4, minmod);
-}
-
-namespace {
 // Make a 2D element with two neighbors in lower_xi, one neighbor in upper_xi.
 // Check that lower_xi data from two neighbors is correctly combined in the
 // limiting operation.
-void test_limiter_action_two_lower_xi_neighbors() noexcept {
+void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
   const auto element = Element<2>{
       ElementId<2>{0},
       Element<2>::Neighbors_t{
@@ -809,7 +231,7 @@ void test_limiter_action_two_lower_xi_neighbors() noexcept {
 // want domains that have more than 2 neighbors across a face; however, because
 // the multi-neighbor averaging is dimension-agnostic, this also can represent a
 // 3D test.
-void test_limiter_action_four_upper_xi_neighbors() noexcept {
+void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
   const auto element = Element<2>{
       ElementId<2>{0},
       Element<2>::Neighbors_t{
@@ -881,16 +303,7 @@ void test_limiter_action_four_upper_xi_neighbors() noexcept {
                               element_size, neighbor_data_two_sizes,
                               0.925 / 0.8125);
 }
-}  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.h_refinement_boundary",
-    "[SlopeLimiters][Unit]") {
-  test_limiter_action_two_lower_xi_neighbors();
-  test_limiter_action_four_upper_xi_neighbors();
-}
-
-namespace {
 // Helper function for testing Minmod::package_data()
 template <size_t VolumeDim>
 void test_package_data_work(
@@ -993,11 +406,8 @@ void test_work(
                                 gsl::at(target_vector_slope, d)));
   }
 }
-}  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.1d_pipeline_test",
-    "[SlopeLimiters][Unit]") {
+void test_minmod_limiter_1d() noexcept {
   // The goals of this test are,
   // 1. check Minmod::package_data
   // 2. check that Minmod::op() limits different tensors independently
@@ -1055,9 +465,7 @@ SPECTRE_TEST_CASE(
             element_size, target_scalar_slope, target_vector_slope);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.2d_pipeline_test",
-    "[SlopeLimiters][Unit]") {
+void test_minmod_limiter_2d() noexcept {
   // The goals of this test are,
   // 1. check Minmod::package_data
   // 2. check that Minmod::op() limits different tensors independently
@@ -1151,9 +559,7 @@ SPECTRE_TEST_CASE(
             element_size, target_scalar_slope, target_vector_slope);
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.Minmod.LambdaPi1.3d_pipeline_test",
-    "[SlopeLimiters][Unit]") {
+void test_minmod_limiter_3d() noexcept {
   // The goals of this test are,
   // 1. check Minmod::package_data
   // 2. check that Minmod::op() limits different tensors independently
@@ -1283,4 +689,32 @@ SPECTRE_TEST_CASE(
 
   test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
             element_size, target_scalar_slope, target_vector_slope);
+}
+
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod",
+                  "[SlopeLimiters][Unit]") {
+  {
+    INFO("Test Minmod option-parsing and serialization");
+    test_minmod_option_parsing();
+    test_minmod_serialization();
+  }
+
+  {
+    INFO("Test Minmod limiter in 1d");
+    test_minmod_limiter_1d();
+  }
+
+  {
+    INFO("Test Minmod limiter in 2d");
+    test_minmod_limiter_2d();
+    test_minmod_limiter_two_lower_xi_neighbors();
+    test_minmod_limiter_four_upper_xi_neighbors();
+  }
+
+  {
+    INFO("Test Minmod limiter in 3d");
+    test_minmod_limiter_3d();
+  }
 }

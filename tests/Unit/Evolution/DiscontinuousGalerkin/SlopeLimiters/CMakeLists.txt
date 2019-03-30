@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_LimiterActions.cpp
   Test_LimiterActionsWithMinmod.cpp
   Test_Minmod.cpp
+  Test_MinmodTci.cpp
   Test_MinmodType.cpp
   Test_WenoGridHelpers.cpp
   )
