@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   MinmodTci.cpp
   MinmodType.cpp
   WenoGridHelpers.cpp
+  WenoHelpers.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
