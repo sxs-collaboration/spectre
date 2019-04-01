@@ -40,45 +40,36 @@
 // IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::UZero
 // IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::UMinus
 // IWYU pragma: no_forward_declare GeneralizedHarmonic::Tags::UPlus
-// IWYU pragma: no_forward_declare Tags::CharSpeed
 // IWYU pragma: no_forward_declare Tags::dt
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
 
 namespace {
-template <typename Tag, size_t Dim, typename Frame>
-Scalar<DataVector> compute_speed_with_tag(
+template <size_t Index, size_t Dim, typename Frame>
+Scalar<DataVector> compute_speed_with_index(
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
     const tnsr::i<DataVector, Dim, Frame>& normal) {
-  return get<Tag>(
+  return Scalar<DataVector>{
       GeneralizedHarmonic::CharacteristicSpeedsCompute<Dim, Frame>::function(
-          gamma_1, lapse, shift, normal));
+          gamma_1, lapse, shift, normal)[Index]};
 }
 
 template <size_t Dim, typename Frame>
 void test_characteristic_speeds() noexcept {
   const DataVector used_for_size(5);
-  pypp::check_with_random_values<1>(
-      compute_speed_with_tag<
-          Tags::CharSpeed<GeneralizedHarmonic::Tags::UPsi<Dim, Frame>>, Dim,
-          Frame>,
-      "TestFunctions", "char_speed_upsi", {{{-10.0, 10.0}}}, used_for_size);
-  pypp::check_with_random_values<1>(
-      compute_speed_with_tag<
-          Tags::CharSpeed<GeneralizedHarmonic::Tags::UZero<Dim, Frame>>, Dim,
-          Frame>,
-      "TestFunctions", "char_speed_uzero", {{{-10.0, 10.0}}}, used_for_size);
-  pypp::check_with_random_values<1>(
-      compute_speed_with_tag<
-          Tags::CharSpeed<GeneralizedHarmonic::Tags::UMinus<Dim, Frame>>, Dim,
-          Frame>,
-      "TestFunctions", "char_speed_uminus", {{{-10.0, 10.0}}}, used_for_size);
-  pypp::check_with_random_values<1>(
-      compute_speed_with_tag<
-          Tags::CharSpeed<GeneralizedHarmonic::Tags::UPlus<Dim, Frame>>, Dim,
-          Frame>,
-      "TestFunctions", "char_speed_uplus", {{{-10.0, 10.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(compute_speed_with_index<0, Dim, Frame>,
+                                    "TestFunctions", "char_speed_upsi",
+                                    {{{-10.0, 10.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(compute_speed_with_index<1, Dim, Frame>,
+                                    "TestFunctions", "char_speed_uzero",
+                                    {{{-10.0, 10.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(compute_speed_with_index<3, Dim, Frame>,
+                                    "TestFunctions", "char_speed_uminus",
+                                    {{{-10.0, 10.0}}}, used_for_size);
+  pypp::check_with_random_values<1>(compute_speed_with_index<2, Dim, Frame>,
+                                    "TestFunctions", "char_speed_uplus",
+                                    {{{-10.0, 10.0}}}, used_for_size);
 }
 
 // Test return-by-reference GH char speeds by comparing to Kerr-Schild
@@ -140,22 +131,10 @@ void test_characteristic_speeds_analytic(
       GeneralizedHarmonic::CharacteristicSpeedsCompute<
           spatial_dim, Frame::Inertial>::function(gamma_1, lapse, shift,
                                                   unit_normal_one_form);
-  const auto& upsi_speed_from_func =
-      get(get<Tags::CharSpeed<
-              GeneralizedHarmonic::Tags::UPsi<spatial_dim, Frame::Inertial>>>(
-          char_speeds_from_func));
-  const auto& uzero_speed_from_func =
-      get(get<Tags::CharSpeed<
-              GeneralizedHarmonic::Tags::UZero<spatial_dim, Frame::Inertial>>>(
-          char_speeds_from_func));
-  const auto& uplus_speed_from_func =
-      get(get<Tags::CharSpeed<
-              GeneralizedHarmonic::Tags::UPlus<spatial_dim, Frame::Inertial>>>(
-          char_speeds_from_func));
-  const auto& uminus_speed_from_func =
-      get(get<Tags::CharSpeed<
-              GeneralizedHarmonic::Tags::UMinus<spatial_dim, Frame::Inertial>>>(
-          char_speeds_from_func));
+  const auto& upsi_speed_from_func = char_speeds_from_func[0];
+  const auto& uzero_speed_from_func = char_speeds_from_func[1];
+  const auto& uplus_speed_from_func = char_speeds_from_func[2];
+  const auto& uminus_speed_from_func = char_speeds_from_func[3];
 
   CHECK_ITERABLE_APPROX(upsi_speed, upsi_speed_from_func);
   CHECK_ITERABLE_APPROX(uzero_speed, uzero_speed_from_func);
@@ -168,14 +147,15 @@ namespace {
 template <typename Tag, size_t Dim, typename Frame>
 typename Tag::type compute_field_with_tag(
     const Scalar<DataVector>& gamma_2,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
     const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
-    const tnsr::i<DataVector, Dim, Frame>& normal_one_form,
-    const tnsr::I<DataVector, Dim, Frame>& normal_vector) {
+    const tnsr::i<DataVector, Dim, Frame>& normal_one_form) {
   return get<Tag>(
       GeneralizedHarmonic::CharacteristicFieldsCompute<Dim, Frame>::function(
-          gamma_2, spacetime_metric, pi, phi, normal_one_form, normal_vector));
+          gamma_2, inverse_spatial_metric, spacetime_metric, pi, phi,
+          normal_one_form));
 }
 
 template <size_t Dim, typename Frame>
@@ -202,7 +182,8 @@ void test_characteristic_fields() noexcept {
   pypp::check_with_random_values<1>(
       compute_field_with_tag<GeneralizedHarmonic::Tags::UMinus<Dim, Frame>, Dim,
                              Frame>,
-      "TestFunctions", "char_field_uminus", {{{-100., 100.}}}, used_for_size);
+      "TestFunctions", "char_field_uminus", {{{-100., 100.}}}, used_for_size,
+      1.e-10);
 }
 
 // Test return-by-reference GH char fields by comparing to Kerr-Schild
@@ -315,9 +296,9 @@ void test_characteristic_fields_analytic(
 
   // Check that locally computed fields match returned ones
   const auto uvars = GeneralizedHarmonic::CharacteristicFieldsCompute<
-      spatial_dim, Frame::Inertial>::function(gamma_2, spacetime_metric, pi,
-                                              phi, unit_normal_one_form,
-                                              normal);
+      spatial_dim, Frame::Inertial>::function(gamma_2, inverse_spatial_metric,
+                                              spacetime_metric, pi, phi,
+                                              unit_normal_one_form);
 
   const auto& upsi_from_func =
       get<GeneralizedHarmonic::Tags::UPsi<spatial_dim, Frame::Inertial>>(uvars);
@@ -547,72 +528,74 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.MaxCharSpeed",
                   "[Unit][Evolution]") {
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<1, Frame::Grid>::
-            apply(Scalar<DataVector>{{{{1., 4., 3., 2., 5.}}}},
-                  Scalar<DataVector>{{{{2., 8., 10., 6., 4.}}}},
-                  Scalar<DataVector>{{{{1., 7., 3., 2., 5.}}}},
-                  Scalar<DataVector>{{{{7., 3., 4., 2., 1.}}}}) == 10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<1, Frame::Grid>::
-            apply(Scalar<DataVector>{{{{1., 4., 3., 2., 5.}}}},
-                  Scalar<DataVector>{{{{2., 8., 10., 6., 4.}}}},
-                  Scalar<DataVector>{{{{1., 7., 3., -11., 5.}}}},
-                  Scalar<DataVector>{{{{7., 3., 4., 2., 1.}}}}) == 11.);
-  CHECK(GeneralizedHarmonic::
-            ComputeLargestCharacteristicSpeed<1, Frame::Inertial>::apply(
-                Scalar<DataVector>{{{{1., 4., 3., 2., 5.}}}},
-                Scalar<DataVector>{{{{2., 8., 10., 6., 4.}}}},
-                Scalar<DataVector>{{{{1., 7., 3., 2., 5.}}}},
-                Scalar<DataVector>{{{{7., 3., 4., 2., 1.}}}}) == 10.);
-  CHECK(GeneralizedHarmonic::
-            ComputeLargestCharacteristicSpeed<1, Frame::Inertial>::apply(
-                Scalar<DataVector>{{{{1., 4., 3., 2., 5.}}}},
-                Scalar<DataVector>{{{{2., 8., 10., 6., 4.}}}},
-                Scalar<DataVector>{{{{1., 7., 3., -11., 5.}}}},
-                Scalar<DataVector>{{{{7., 3., 4., 2., 1.}}}}) == 11.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            1, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                     DataVector{2., 8., 10., 6., 4.},
+                                     DataVector{1., 7., 3., 2., 5.},
+                                     DataVector{7., 3., 4., 2., 1.}}}) == 10.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            1, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                     DataVector{2., 8., 10., 6., 4.},
+                                     DataVector{1., 7., 3., -11., 5.},
+                                     DataVector{7., 3., 4., 2., 1.}}}) == 11.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            1, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                         DataVector{2., 8., 10., 6., 4.},
+                                         DataVector{1., 7., 3., 2., 5.},
+                                         DataVector{7., 3., 4., 2., 1.}}}) ==
+        10.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            1, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                         DataVector{2., 8., 10., 6., 4.},
+                                         DataVector{1., 7., 3., -11., 5.},
+                                         DataVector{7., 3., 4., 2., 1.}}}) ==
+        11.);
 
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<2, Frame::Grid>::
-            apply(Scalar<DataVector>{{{{1., 4., 3., 2., 5.}}}},
-                  Scalar<DataVector>{{{{2., 8., 7., 6., 4.}}}},
-                  Scalar<DataVector>{{{{1., 10., 3., 2., 5.}}}},
-                  Scalar<DataVector>{{{{7., 3., 4., 2., 1.}}}}) == 10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<2, Frame::Grid>::
-            apply(Scalar<DataVector>{{{{1., 4., 3., 2., 5.}}}},
-                  Scalar<DataVector>{{{{2., 8., 10., 6., 4.}}}},
-                  Scalar<DataVector>{{{{1., 7., 3., 1., 5.}}}},
-                  Scalar<DataVector>{{{{7., 3., 4., 2., -11.}}}}) == 11.);
-  CHECK(GeneralizedHarmonic::
-            ComputeLargestCharacteristicSpeed<2, Frame::Inertial>::apply(
-                Scalar<DataVector>{{{{1., 4., 3., 2., 5.}}}},
-                Scalar<DataVector>{{{{2., 8., 7., 6., 4.}}}},
-                Scalar<DataVector>{{{{1., 10., 3., 2., 5.}}}},
-                Scalar<DataVector>{{{{7., 3., 4., 2., 1.}}}}) == 10.);
-  CHECK(GeneralizedHarmonic::
-            ComputeLargestCharacteristicSpeed<2, Frame::Inertial>::apply(
-                Scalar<DataVector>{{{{1., 4., 3., 2., 5.}}}},
-                Scalar<DataVector>{{{{2., 8., 10., 6., 4.}}}},
-                Scalar<DataVector>{{{{1., 7., 3., 1., 5.}}}},
-                Scalar<DataVector>{{{{7., 3., 4., 2., -11.}}}}) == 11.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            2, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                     DataVector{2., 8., 7., 6., 4.},
+                                     DataVector{1., 10., 3., 2., 5.},
+                                     DataVector{7., 3., 4., 2., 1.}}}) == 10.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            2, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                     DataVector{2., 8., 10., 6., 4.},
+                                     DataVector{1., 7., 3., 1., 5.},
+                                     DataVector{7., 3., 4., 2., -11.}}}) ==
+        11.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            2, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                         DataVector{2., 8., 7., 6., 4.},
+                                         DataVector{1., 10., 3., 2., 5.},
+                                         DataVector{7., 3., 4., 2., 1.}}}) ==
+        10.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            2, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                         DataVector{2., 8., 10., 6., 4.},
+                                         DataVector{1., 7., 3., 1., 5.},
+                                         DataVector{7., 3., 4., 2., -11.}}}) ==
+        11.);
 
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<3, Frame::Grid>::
-            apply(Scalar<DataVector>{{{{1., 4., 10., 2., 5.}}}},
-                  Scalar<DataVector>{{{{2., 8., 3., 6., 4.}}}},
-                  Scalar<DataVector>{{{{1., 7., 3., 2., 5.}}}},
-                  Scalar<DataVector>{{{{7., 3., 4., 2., 1.}}}}) == 10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<3, Frame::Grid>::
-            apply(Scalar<DataVector>{{{{1., 4., 3., 2., 5.}}}},
-                  Scalar<DataVector>{{{{2., 8., 10., 6., 4.}}}},
-                  Scalar<DataVector>{{{{1., 7., 3., 2., 5.}}}},
-                  Scalar<DataVector>{{{{7., 3., 4., -11., 1.}}}}) == 11.);
-  CHECK(GeneralizedHarmonic::
-            ComputeLargestCharacteristicSpeed<3, Frame::Inertial>::apply(
-                Scalar<DataVector>{{{{1., 4., 10., 2., 5.}}}},
-                Scalar<DataVector>{{{{2., 8., 3., 6., 4.}}}},
-                Scalar<DataVector>{{{{1., 7., 3., 2., 5.}}}},
-                Scalar<DataVector>{{{{7., 3., 4., 2., 1.}}}}) == 10.);
-  CHECK(GeneralizedHarmonic::
-            ComputeLargestCharacteristicSpeed<3, Frame::Inertial>::apply(
-                Scalar<DataVector>{{{{1., 4., 3., 2., 5.}}}},
-                Scalar<DataVector>{{{{2., 8., 10., 6., 4.}}}},
-                Scalar<DataVector>{{{{1., 7., 3., 2., 5.}}}},
-                Scalar<DataVector>{{{{7., 3., 4., -11., 1.}}}}) == 11.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            3, Frame::Grid>::apply({{DataVector{1., 4., 10., 2., 5.},
+                                     DataVector{2., 8., 3., 6., 4.},
+                                     DataVector{1., 7., 3., 2., 5.},
+                                     DataVector{7., 3., 4., 2., 1.}}}) == 10.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            3, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                     DataVector{2., 8., 10., 6., 4.},
+                                     DataVector{1., 7., 3., 2., 5.},
+                                     DataVector{7., 3., 4., -11., 1.}}}) ==
+        11.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            3, Frame::Inertial>::apply({{DataVector{1., 4., 10., 2., 5.},
+                                         DataVector{2., 8., 3., 6., 4.},
+                                         DataVector{1., 7., 3., 2., 5.},
+                                         DataVector{7., 3., 4., 2., 1.}}}) ==
+        10.);
+  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+            3, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                         DataVector{2., 8., 10., 6., 4.},
+                                         DataVector{1., 7., 3., 2., 5.},
+                                         DataVector{7., 3., 4., -11., 1.}}}) ==
+        11.);
 }

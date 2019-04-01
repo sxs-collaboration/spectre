@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -19,8 +20,6 @@ template <class T>
 class not_null;
 }  // namespace gsl
 namespace Tags {
-template <typename Tag>
-struct CharSpeed;
 template <typename Tag>
 struct Normalized;
 }  // namespace Tags
@@ -60,7 +59,10 @@ namespace GeneralizedHarmonic {
  * surface.
  */
 template <size_t Dim, typename Frame>
-struct CharacteristicSpeedsCompute : db::ComputeTag {
+struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
+                                     db::ComputeTag {
+  using base = Tags::CharacteristicSpeeds<Dim, Frame>;
+  using type = typename base::type;
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma1, gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<Dim, Frame, DataVector>,
@@ -69,7 +71,7 @@ struct CharacteristicSpeedsCompute : db::ComputeTag {
   static typename Tags::CharacteristicSpeeds<Dim, Frame>::type function(
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame>& shift,
-      const tnsr::i<DataVector, Dim, Frame>& normal) noexcept;
+      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
 };
 
 template <size_t Dim, typename Frame>
@@ -78,7 +80,7 @@ void compute_characteristic_speeds(
         char_speeds,
     const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, Dim, Frame>& shift,
-    const tnsr::i<DataVector, Dim, Frame>& normal) noexcept;
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
 // @}
 
 // @{
@@ -129,20 +131,24 @@ void compute_characteristic_speeds(
  * \ref CharacteristicSpeedsCompute .
  */
 template <size_t Dim, typename Frame>
-struct CharacteristicFieldsCompute : db::ComputeTag {
+struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
+                                     db::ComputeTag {
+  using base = Tags::CharacteristicFields<Dim, Frame>;
+  using type = typename base::type;
   using argument_tags = tmpl::list<
-      Tags::ConstraintGamma2, gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>,
+      Tags::ConstraintGamma2,
       gr::Tags::InverseSpatialMetric<Dim, Frame, DataVector>,
-      Tags::Pi<Dim, Frame>, Tags::Phi<Dim, Frame>,
+      gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>, Tags::Pi<Dim, Frame>,
+      Tags::Phi<Dim, Frame>,
       ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame>>>;
 
   static typename Tags::CharacteristicFields<Dim, Frame>::type function(
       const Scalar<DataVector>& gamma_2,
+      const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
       const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
       const tnsr::aa<DataVector, Dim, Frame>& pi,
       const tnsr::iaa<DataVector, Dim, Frame>& phi,
-      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form,
-      const tnsr::I<DataVector, Dim, Frame>& unit_normal_vector) noexcept;
+      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
 };
 
 template <size_t Dim, typename Frame>
@@ -150,11 +156,11 @@ void compute_characteristic_fields(
     gsl::not_null<typename Tags::CharacteristicFields<Dim, Frame>::type*>
         char_fields,
     const Scalar<DataVector>& gamma_2,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
     const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form,
-    const tnsr::I<DataVector, Dim, Frame>& unit_normal_vector) noexcept;
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
 // @}
 
 // @{
@@ -164,7 +170,11 @@ void compute_characteristic_fields(
  * characteristic ones, see \ref CharacteristicFieldsCompute.
  */
 template <size_t Dim, typename Frame>
-struct EvolvedFieldsFromCharacteristicFieldsCompute : db::ComputeTag {
+struct EvolvedFieldsFromCharacteristicFieldsCompute
+    : Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>,
+      db::ComputeTag {
+  using base = Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>;
+  using type = typename base::type;
   using argument_tags = tmpl::list<
       Tags::ConstraintGamma2, Tags::UPsi<Dim, Frame>, Tags::UZero<Dim, Frame>,
       Tags::UPlus<Dim, Frame>, Tags::UMinus<Dim, Frame>,
@@ -200,13 +210,7 @@ void compute_evolved_fields_from_characteristic_fields(
  */
 template <size_t Dim, typename Frame>
 struct ComputeLargestCharacteristicSpeed {
-  using argument_tags = tmpl::list<::Tags::CharSpeed<Tags::UPsi<Dim, Frame>>,
-                                   ::Tags::CharSpeed<Tags::UZero<Dim, Frame>>,
-                                   ::Tags::CharSpeed<Tags::UPlus<Dim, Frame>>,
-                                   ::Tags::CharSpeed<Tags::UMinus<Dim, Frame>>>;
-  static double apply(const Scalar<DataVector>& u_psi_speed,
-                      const Scalar<DataVector>& u_zero_speed,
-                      const Scalar<DataVector>& u_plus_speed,
-                      const Scalar<DataVector>& u_minus_speed) noexcept;
+  using argument_tags = tmpl::list<Tags::CharacteristicSpeeds<Dim, Frame>>;
+  static double apply(const std::array<DataVector, 4>& char_speeds) noexcept;
 };
 }  // namespace GeneralizedHarmonic
