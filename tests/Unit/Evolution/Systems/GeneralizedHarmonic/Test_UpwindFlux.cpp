@@ -149,95 +149,55 @@ void test_upwind_flux_analytic(
   const auto unit_normal_vector_int = raise_or_lower_index(
       unit_normal_one_form_int, inverse_spatial_metric_int);
 
-  const DataVector one_over_one_form_magnitude_ext =
-      1.0 / get(magnitude(
-                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-                inverse_spatial_metric_ext));
-  auto unit_normal_one_form_ext = StrahlkorperGr::unit_normal_one_form(
-      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-      one_over_one_form_magnitude_ext);
-  auto unit_normal_vector_ext = raise_or_lower_index(
-      unit_normal_one_form_ext, inverse_spatial_metric_ext);
-  // The exterior normal points in the opposite direction as the
-  // interior normal
-  for (size_t i = 0; i < spatial_dim; ++i) {
-    unit_normal_one_form_ext.get(i) *= -1.0;
-    unit_normal_vector_ext.get(i) *= -1.0;
-  }
+  // Get the characteristic fields and speeds
+  const auto char_fields_int = GeneralizedHarmonic::CharacteristicFieldsCompute<
+      spatial_dim, Frame::Inertial>::function(gamma_2, spacetime_metric_int,
+                                              pi_int, phi_int,
+                                              unit_normal_one_form_int,
+                                              unit_normal_vector_int);
+  const auto char_fields_ext = GeneralizedHarmonic::CharacteristicFieldsCompute<
+      spatial_dim, Frame::Inertial>::function(gamma_2, spacetime_metric_ext,
+                                              pi_ext, phi_ext,
+                                              unit_normal_one_form_int,
+                                              unit_normal_vector_int);
 
-  // If all the characteristic speeds on the interior are negative,
-  // verify that changing the interior char fields does not change the
-  // output of the upwind flux
-  Variables<typename GeneralizedHarmonic::UpwindFlux<spatial_dim>::package_tags>
-      packaged_data_int(n_pts, 0.0);
-  Variables<typename GeneralizedHarmonic::UpwindFlux<spatial_dim>::package_tags>
-      packaged_data_ext(n_pts, 0.0);
+  const auto one = make_with_value<Scalar<DataVector>>(x, 1.0);
+  const auto minus_one = make_with_value<Scalar<DataVector>>(x, -1.0);
+  const auto five = make_with_value<Scalar<DataVector>>(x, 5.0);
+  const auto minus_five = make_with_value<Scalar<DataVector>>(x, -5.0);
+
+  std::array<DataVector, 4> char_speeds_one{
+      {get(one), get(one), get(one), get(one)}};
+  std::array<DataVector, 4> char_speeds_minus_one{
+      {get(minus_one), get(minus_one), get(minus_one), get(minus_one)}};
+  std::array<DataVector, 4> char_speeds_five{
+      {get(five), get(five), get(five), get(five)}};
+  std::array<DataVector, 4> char_speeds_minus_five{
+      {get(minus_five), get(minus_five), get(minus_five), get(minus_five)}};
+
   GeneralizedHarmonic::UpwindFlux<spatial_dim> flux_computer{};
 
-  const auto char_speeds_int = GeneralizedHarmonic::CharacteristicSpeedsCompute<
-      spatial_dim, Frame::Inertial>::function(gamma_1, lapse_int, shift_int,
-                                              unit_normal_one_form_int);
-  auto zero_char_speed =
-      make_with_value<Scalar<DataVector>>(char_speeds_int[0], 0.0);
-  if (step_function(char_speeds_int[0]) == get(zero_char_speed) and
-      step_function(char_speeds_int[1]) == get(zero_char_speed) and
-      step_function(char_speeds_int[2]) == get(zero_char_speed) and
-      step_function(char_speeds_int[3]) == get(zero_char_speed)) {
-    tnsr::aa<DataVector, spatial_dim, Frame::Inertial>
-        normal_dot_numerical_flux_pi(n_pts, 0.0);
-    tnsr::aa<DataVector, spatial_dim, Frame::Inertial>
-        normal_dot_numerical_flux_psi(n_pts, 0.0);
-    tnsr::iaa<DataVector, spatial_dim, Frame::Inertial>
-        normal_dot_numerical_flux_phi(n_pts, 0.0);
-    // Compute the upwind flux using solution_int for the interior and
-    // solution_ext for the interior (1)
-    flux_computer.package_data(
-        make_not_null(&packaged_data_int), spacetime_metric_int, pi_int,
-        phi_int, lapse_int, shift_int, gamma_1, gamma_2,
-        unit_normal_one_form_int, unit_normal_vector_int);
-    flux_computer.package_data(
-        make_not_null(&packaged_data_ext), spacetime_metric_ext, pi_ext,
-        phi_ext, lapse_ext, shift_ext, gamma_1, gamma_2,
-        unit_normal_one_form_ext, unit_normal_vector_ext);
-    apply_numerical_flux(flux_computer, packaged_data_int, packaged_data_ext,
-                         make_not_null(&normal_dot_numerical_flux_psi),
-                         make_not_null(&normal_dot_numerical_flux_pi),
-                         make_not_null(&normal_dot_numerical_flux_phi));
+  // If all the char speeds are +1, the weighted fields should just
+  // be the interior fields
+  const auto weighted_char_fields_one = flux_computer.weight_char_fields(
+      char_fields_int, char_speeds_one, char_fields_ext, char_speeds_one);
+  CHECK(weighted_char_fields_one == char_fields_int);
 
-    // Compute the upwind flux using solution_ext for both the interior and
-    // the exterior, but keep everything else the same (2)
-    tnsr::aa<DataVector, spatial_dim, Frame::Inertial>
-        normal_dot_numerical_flux_pi_different_fields(n_pts, 0.0);
-    tnsr::aa<DataVector, spatial_dim, Frame::Inertial>
-        normal_dot_numerical_flux_psi_different_fields(n_pts, 0.0);
-    tnsr::iaa<DataVector, spatial_dim, Frame::Inertial>
-        normal_dot_numerical_flux_phi_different_fields(n_pts, 0.0);
-    flux_computer.package_data(
-        make_not_null(&packaged_data_int), spacetime_metric_ext, pi_ext,
-        phi_ext, lapse_ext, shift_ext, gamma_1, gamma_2,
-        unit_normal_one_form_int, unit_normal_vector_int);
-    flux_computer.package_data(
-        make_not_null(&packaged_data_ext), spacetime_metric_ext, pi_ext,
-        phi_ext, lapse_ext, shift_ext, gamma_1, gamma_2,
-        unit_normal_one_form_ext, unit_normal_vector_ext);
-    apply_numerical_flux(
-        flux_computer, packaged_data_int, packaged_data_ext,
-        make_not_null(&normal_dot_numerical_flux_psi_different_fields),
-        make_not_null(&normal_dot_numerical_flux_pi_different_fields),
-        make_not_null(&normal_dot_numerical_flux_phi_different_fields));
+  // If all the char speeds are -1, the weighted fields should just be
+  // the exterior fields up to a sign
+  const auto weighted_char_fields_minus_one =
+      flux_computer.weight_char_fields(char_fields_int, char_speeds_minus_one,
+                                       char_fields_ext, char_speeds_minus_one);
+  CHECK(weighted_char_fields_minus_one == -1.0 * char_fields_ext);
 
-    // Check that (1) and (2) are the same
-    // Not sure if this test should pass
-    /*CHECK_ITERABLE_APPROX(normal_dot_numerical_flux_pi,
-                          normal_dot_numerical_flux_pi_different_fields);
-    CHECK_ITERABLE_APPROX(normal_dot_numerical_flux_phi,
-                          normal_dot_numerical_flux_phi_different_fields);
-    CHECK_ITERABLE_APPROX(normal_dot_numerical_flux_psi,
-                          normal_dot_numerical_flux_psi_different_fields);*/
-    // This is a dummy test
-    CHECK_ITERABLE_APPROX(normal_dot_numerical_flux_pi,
-        normal_dot_numerical_flux_pi);
-  }
+  // Check scaling by 5 instead of 1
+  const auto weighted_char_fields_minus_five =
+      flux_computer.weight_char_fields(char_fields_int, char_speeds_minus_five,
+                                       char_fields_ext, char_speeds_minus_five);
+  const auto weighted_char_fields_five = flux_computer.weight_char_fields(
+      char_fields_int, char_speeds_five, char_fields_ext, char_speeds_five);
+  CHECK(weighted_char_fields_minus_five == -5.0 * char_fields_ext);
+  CHECK(weighted_char_fields_five == 5.0 * char_fields_int);
 }
 }  // namespace
 
@@ -264,6 +224,4 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.UpwindFlux",
 
   test_upwind_flux_analytic(solution_1, solution_2,
                             strahlkorper_inside_horizons);
-  /*test_upwind_flux_analytic(solution_2, solution_1,
-                            strahlkorper_inside_horizons);*/
 }

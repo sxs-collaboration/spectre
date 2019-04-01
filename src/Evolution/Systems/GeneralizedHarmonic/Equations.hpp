@@ -277,5 +277,21 @@ struct UpwindFlux {
           interface_unit_normal_ext,
       const tnsr::I<DataVector, Dim, Frame::Inertial>&
           interface_unit_normal_vector_ext) const noexcept;
+
+  // Function that performs the upwind weighting. Inputs are the char fields
+  // and speeds in the interior and exterior. At each point, each returned
+  // field is the product of the interior char field and its char speed
+  // (if the char speed is outgoing) or the product of the exterior char field
+  // and its char speed (if the char speed is incoming).
+  typename Tags::CharacteristicFields<Dim, Frame::Inertial>::type
+  weight_char_fields(
+      const typename Tags::CharacteristicFields<Dim, Frame::Inertial>::type&
+          char_fields_int,
+      const typename Tags::CharacteristicSpeeds<Dim, Frame::Inertial>::type&
+          char_speeds_int,
+      const typename Tags::CharacteristicFields<Dim, Frame::Inertial>::type&
+          char_fields_ext,
+      const typename Tags::CharacteristicSpeeds<Dim, Frame::Inertial>::type&
+          char_speeds_ext) const noexcept;
 };
 }  // namespace GeneralizedHarmonic
