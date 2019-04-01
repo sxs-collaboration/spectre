@@ -169,7 +169,7 @@ struct Observe {
 
       // Remove tensor types, only storing individual components.
       std::vector<TensorComponent> components;
-      components.reserve(13);  // FIXME
+      components.reserve(8);  // FIXME
 
       using PlusSquare = funcl::Plus<funcl::Identity, funcl::Square<>>;
 
@@ -247,15 +247,15 @@ struct Observe {
           *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
                cache)
                .ckLocalBranch();
-      // Parallel::simple_action<observers::Actions::ContributeVolumeData>(
-      //     local_observer,
-      //     observers::ObservationId(
-      //         time, typename Metavariables::element_observation_type{}),
-      //     std::string{"/element_data"},
-      //     observers::ArrayComponentId(
-      //         std::add_pointer_t<ParallelComponent>{nullptr},
-      //         Parallel::ArrayIndex<ElementIndex<Dim>>(array_index)),
-      //     std::move(components), extents);
+      Parallel::simple_action<observers::Actions::ContributeVolumeData>(
+          local_observer,
+          observers::ObservationId(
+              time, typename Metavariables::element_observation_type{}),
+          std::string{"/element_data"},
+          observers::ArrayComponentId(
+              std::add_pointer_t<ParallelComponent>{nullptr},
+              Parallel::ArrayIndex<ElementIndex<Dim>>(array_index)),
+          std::move(components), extents);
 
       // Send data to reduction observer
       Parallel::simple_action<observers::Actions::ContributeReductionData>(
