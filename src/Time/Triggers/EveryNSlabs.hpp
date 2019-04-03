@@ -61,6 +61,9 @@ class EveryNSlabs : public Trigger<TriggerRegistrars> {
   using argument_tags = tmpl::list<Tags::TimeId>;
 
   bool operator()(const TimeId& time_id) const noexcept {
+    if (not time_id.is_at_slab_boundary()) {
+      return false;
+    }
     const auto slab_number = static_cast<uint64_t>(time_id.slab_number());
     return slab_number >= offset_ and (slab_number - offset_) % interval_ == 0;
   }

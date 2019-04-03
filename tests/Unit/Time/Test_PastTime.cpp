@@ -15,6 +15,7 @@
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Time/Triggers/PastTime.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -34,10 +35,17 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.PastTime", "[Unit][Time]") {
   const auto check = [&sent_trigger](const Time& time,
                                      const bool time_runs_forward,
                                      const bool expected) noexcept {
-    const auto box = db::create<db::AddSimpleTags<Tags::TimeId>,
-                                db::AddComputeTags<Tags::Time>>(
+    auto box = db::create<db::AddSimpleTags<Tags::TimeId>,
+                          db::AddComputeTags<Tags::Time>>(
         TimeId(time_runs_forward, 0, time));
     CHECK(sent_trigger->is_triggered(box) == expected);
+    db::mutate<Tags::TimeId>(
+        make_not_null(&box), [](const gsl::not_null<TimeId*> time_id) noexcept {
+          *time_id =
+              TimeId(time_id->time_runs_forward(), time_id->slab_number(),
+                     time_id->time(), 1, time_id->time());
+        });
+    CHECK_FALSE(sent_trigger->is_triggered(box));
   };
   check(slab.start(), true, false);
   check(slab.start(), false, true);
