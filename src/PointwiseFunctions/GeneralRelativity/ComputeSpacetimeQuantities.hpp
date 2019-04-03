@@ -10,10 +10,17 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 
+/// \cond
+namespace gsl {
+template <class T>
+class not_null;
+}  // namespace gsl
+/// \endcond
+
 /// \ingroup GeneralRelativityGroup
 /// Holds functions related to general relativity.
 namespace gr {
-
+// @{
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes the spacetime metric from the spatial metric, lapse, and
@@ -27,11 +34,18 @@ namespace gr {
  * where \f$ N, N^i\f$ and \f$ g_{ij}\f$ are the lapse, shift and spatial metric
  * respectively
  */
+template <size_t Dim, typename Frame, typename DataType>
+void spacetime_metric(
+    gsl::not_null<tnsr::aa<DataType, Dim, Frame>*> spacetime_metric,
+    const Scalar<DataType>& lapse, const tnsr::I<DataType, Dim, Frame>& shift,
+    const tnsr::ii<DataType, Dim, Frame>& spatial_metric) noexcept;
+
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::aa<DataType, SpatialDim, Frame> spacetime_metric(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric) noexcept;
+// @}
 
 /*!
  * \ingroup GeneralRelativityGroup

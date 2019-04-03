@@ -21,7 +21,11 @@ namespace {
 template <size_t Dim, typename DataType>
 void test_compute_spacetime_metric(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
-      &gr::spacetime_metric<Dim, Frame::Inertial, DataType>,
+      static_cast<tnsr::aa<DataType, Dim, Frame::Inertial> (*)(
+          const Scalar<DataType>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&)>(
+          &gr::spacetime_metric<Dim, Frame::Inertial, DataType>),
       "ComputeSpacetimeQuantities", "spacetime_metric", {{{-10., 10.}}},
       used_for_size);
 }
