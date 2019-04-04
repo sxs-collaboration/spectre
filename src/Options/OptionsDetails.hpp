@@ -78,13 +78,15 @@ struct yaml_type<std::array<T, N>> {
 template <typename K, typename V, typename C>
 struct yaml_type<std::map<K, V, C>> {
   static std::string value() noexcept {
-    return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}"; }
+    return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}";
+  }
 };
 
 template <typename K, typename V, typename H, typename E>
 struct yaml_type<std::unordered_map<K, V, H, E>> {
   static std::string value() noexcept {
-    return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}"; }
+    return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}";
+  }
 };
 
 template <typename T, typename U>
@@ -193,12 +195,9 @@ struct print {
     ss << "  " << std::setw(max_label_size_) << std::left << name<T>()
        << yaml_type<typename T::type>::value();
     std::string limits;
-    for (const auto& limit : {
-        print_default<T>(),
-        print_lower_bound<T>(),
-        print_upper_bound<T>(),
-        print_lower_bound_on_size<T>(),
-        print_upper_bound_on_size<T>() }) {
+    for (const auto& limit :
+         {print_default<T>(), print_lower_bound<T>(), print_upper_bound<T>(),
+          print_lower_bound_on_size<T>(), print_upper_bound_on_size<T>()}) {
       if (not limits.empty() and not limit.empty()) {
         limits += ", ";
       }
@@ -353,13 +352,12 @@ struct wrap_create_types_impl<std::array<T, N>> {
   }
 
   template <size_t... Is>
-  static auto unwrap_helper(
-      std::array<T, N> wrapped,
-      std::integer_sequence<size_t, Is...> /*meta*/) {
+  static auto unwrap_helper(std::array<T, N> wrapped,
+                            std::integer_sequence<size_t, Is...> /*meta*/) {
     using UnwrappedT = decltype(unwrap_create_types<T>(std::declval<T>()));
     static_cast<void>(wrapped);  // Work around broken GCC warning
     return std::array<UnwrappedT, N>{
-      {unwrap_create_types<T>(std::move(wrapped[Is]))...}};
+        {unwrap_create_types<T>(std::move(wrapped[Is]))...}};
   }
 };
 
