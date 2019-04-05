@@ -45,7 +45,8 @@ double minerbo_closure_deriv(const double zeta) noexcept {
 namespace RadiationTransport {
 namespace M1Grey {
 
-void M1Closure(
+namespace detail {
+void compute_closure_impl(
     const gsl::not_null<Scalar<DataVector>*> closure_factor,
     const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
         pressure_tensor,
@@ -105,7 +106,7 @@ void M1Closure(
   // Allocate memory for H^i
   tnsr::I<double, 3, Frame::Inertial> H_M(0.);
   // Loop over points
-  for (size_t s = 0; s < v_sqr.size(); ++s) {
+  for (size_t s = 0; s < get(v_sqr).size(); ++s) {
     const double& v_sqr_pt = get(v_sqr)[s];
     const double& w_sqr_pt = get(w_sqr)[s];
     const double& e_pt = get(energy_density)[s];
@@ -287,5 +288,6 @@ void M1Closure(
   }
 }
 
+}  // namespace detail
 }  // namespace M1Grey
 }  // namespace RadiationTransport

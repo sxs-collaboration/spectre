@@ -62,6 +62,47 @@ struct TildeSVector : db::SimpleTag {
   }
 };
 
+/// The M1 closure factor of neutrinos of
+/// a given species \f${\xi}\f$
+template <class Species>
+struct ClosureFactor : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept {
+    return "ClosureFactor_" + neutrinos::get_name(Species{});
+  }
+};
+
+/// The fluid-frame densitized energy density of neutrinos of
+/// a given species \f${\tilde J}\f$
+template <class Species>
+struct TildeJ : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept {
+    return "TildeJ_" + neutrinos::get_name(Species{});
+  }
+};
+
+/// The normal component of the fluid-frame momentum density of neutrinos of
+/// a given species \f${\tilde H}^a t_a\f$
+template <class Species>
+struct TildeHNormal : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept {
+    return "TildeHNormal_" + neutrinos::get_name(Species{});
+  }
+};
+
+/// The spatial components of the fluid-frame momentum density of neutrinos of
+/// a given species \f${\tilde H}^a {\gamma}_{ia}\f$
+template <typename Fr, class Species>
+struct TildeHSpatial : db::SimpleTag {
+  using type = tnsr::i<DataVector, 3, Fr>;
+  static std::string name() noexcept {
+    return Frame::prefix<Fr>() + "TildeHSpatial_" +
+           neutrinos::get_name(Species{});
+  }
+};
+
 }  // namespace Tags
 }  // namespace M1Grey
 }  // namespace RadiationTransport

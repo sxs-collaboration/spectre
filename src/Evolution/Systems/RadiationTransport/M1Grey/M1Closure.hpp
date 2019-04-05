@@ -6,21 +6,44 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"  // for item_type
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/Gsl.hpp"   // for not_...
+#include "Utilities/TMPL.hpp"  // for EXPAND_PACK_LEFT_TO...
 
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
 class DataVector;
-namespace gsl {
-template <class>
-class not_null;
-}  // namespace gsl
 /// \endcond
 
 namespace RadiationTransport {
 namespace M1Grey {
 
+// Implementation of the M1 closure for an
+// individual species
+namespace detail {
+void compute_closure_impl(
+    gsl::not_null<Scalar<DataVector>*> closure_factor,
+    gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*> pressure_tensor,
+    gsl::not_null<Scalar<DataVector>*> comoving_energy_density,
+    gsl::not_null<Scalar<DataVector>*> comoving_momentum_density_normal,
+    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        comoving_momentum_density_spatial,
+    const Scalar<DataVector>& energy_density,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& momentum_density,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& fluid_velocity,
+    const Scalar<DataVector>& fluid_lorentz_factor,
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Inertial>&
+        inv_spatial_metric) noexcept;
+}  // namespace detail
+
+template <typename NeutrinoSpeciesList>
+struct ComputeM1Closure;
 /*!
  * Compute the 2nd moment of the neutrino distribution function
  * in the inertial frame (pressure tensor) from the 0th (energy density)
@@ -90,20 +113,50 @@ namespace M1Grey {
  * is decomposed into its normal component \f$ H^a t_a\f$, and its spatial
  * components \f$ \gamma_{ia} H^a\f$.
  */
-void M1Closure(
-    gsl::not_null<Scalar<DataVector>*> closure_factor,
-    gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*> pressure_tensor,
-    gsl::not_null<Scalar<DataVector>*> comoving_energy_density,
-    gsl::not_null<Scalar<DataVector>*> comoving_momentum_density_normal,
-    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
-        comoving_momentum_density_spatial,
-    const Scalar<DataVector>& energy_density,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& momentum_density,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& fluid_velocity,
-    const Scalar<DataVector>& fluid_lorentz_factor,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>&
-        inv_spatial_metric) noexcept;
+template <typename... NeutrinoSpecies>
+struct ComputeM1Closure<tmpl::list<NeutrinoSpecies...>> {
+  using return_tags =
+      tmpl::list<Tags::ClosureFactor<NeutrinoSpecies>...,
+                 Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
+                 Tags::TildeJ<NeutrinoSpecies>...,
+                 Tags::TildeHNormal<NeutrinoSpecies>...,
+                 Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>...>;
+
+  using argument_tags =
+      tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
+                 Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...,
+                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
+
+  static void apply(
+      const gsl::not_null<db::item_type<
+          Tags::ClosureFactor<NeutrinoSpecies>>*>... closure_factor,
+      const gsl::not_null<db::item_type<
+          Tags::TildeP<Frame::Inertial, NeutrinoSpecies>>*>... tilde_p,
+      const gsl::not_null<
+          db::item_type<Tags::TildeJ<NeutrinoSpecies>>*>... tilde_j,
+      const gsl::not_null<
+          db::item_type<Tags::TildeHNormal<NeutrinoSpecies>>*>... tilde_hn,
+      const gsl::not_null<db::item_type<
+          Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>>*>... tilde_hi,
+      const db::item_type<
+          Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
+      const db::item_type<
+          Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>&... tilde_s,
+      const db::item_type<
+          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>&
+          spatial_velocity,
+      const db::item_type<hydro::Tags::LorentzFactor<DataVector>>&
+          lorentz_factor,
+      const db::item_type<gr::Tags::SpatialMetric<3>>& spatial_metric,
+      const db::item_type<gr::Tags::InverseSpatialMetric<3>>&
+          inv_spatial_metric) noexcept {
+    EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_closure_impl(
+        closure_factor, tilde_p, tilde_j, tilde_hn, tilde_hi, tilde_e, tilde_s,
+        spatial_velocity, lorentz_factor, spatial_metric, inv_spatial_metric));
+  }
+};
 
 }  // namespace M1Grey
 }  // namespace RadiationTransport
