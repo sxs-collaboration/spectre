@@ -149,6 +149,7 @@ namespace Solutions {
  * distinguish this quantity from their own definition \f$l = - u_\phi/u_t\f$.
  */
 class FishboneMoncriefDisk {
+ protected:
   template <typename DataType, bool NeedSpacetime>
   struct IntermediateVariables;
 
@@ -303,7 +304,7 @@ class FishboneMoncriefDisk {
     return equation_of_state_;
   }
 
- private:
+ protected:
   template <typename DataType, bool NeedSpacetime>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/,
