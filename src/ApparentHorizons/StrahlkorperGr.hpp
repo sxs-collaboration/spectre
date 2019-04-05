@@ -335,4 +335,17 @@ std::array<double, 3> spin_vector(double spin_magnitude,
  * \f$M_\mathrm{irr}=\sqrt{\frac{A}{16\pi}}\f$.
  */
 double irreducible_mass(double area) noexcept;
+
+/*!
+ * \ingroup SurfacesGroup
+ * \brief Christodoulou Mass of a 2D `Strahlkorper`.
+ *
+ * \details See e.g. Eq. (1) of \cite Lovelace2016uwp.
+ * This function computes the Christodoulou mass from the dimensionful
+ * spin angular momentum \f$S\f$ and the irreducible mass \f$M_{irr}\f$
+ * of a black hole horizon. Specifically, computes
+ *\f$M=\sqrt{M_{irr}^2+\frac{S^2}{4M_{irr}^2}}\f$
+ */
+double christodoulou_mass(double dimensionful_spin_magnitude,
+                          double irreducible_mass) noexcept;
 }  // namespace StrahlkorperGr

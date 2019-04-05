@@ -283,8 +283,9 @@ void test_euclidean_area_element(
 
 template <typename Solution, typename Fr>
 void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
-               const double expected,
-               const double expected_irreducible_mass) noexcept {
+               const double expected, const double expected_irreducible_mass,
+               const double dimensionful_spin_magnitude,
+               const double expected_christodoulou_mass) noexcept {
   const auto box = db::create<
       db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
       db::AddComputeTags<
@@ -317,6 +318,10 @@ void test_area(const Solution& solution, const Strahlkorper<Fr>& strahlkorper,
 
   const double irreducible_mass = StrahlkorperGr::irreducible_mass(area);
   CHECK(irreducible_mass == approx(expected_irreducible_mass));
+
+  const double christodoulou_mass = StrahlkorperGr::christodoulou_mass(
+      dimensionful_spin_magnitude, irreducible_mass);
+  CHECK(christodoulou_mass == approx(expected_christodoulou_mass));
 }
 
 template <typename Solution, typename Fr>
@@ -682,7 +687,8 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
       Strahlkorper<Frame::Inertial>(l_max, l_max, get(horizon_radius), center);
 
   test_area(gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
-            expected_area, expected_irreducible_mass);
+            expected_area, expected_irreducible_mass,
+            square(mass) * magnitude(spin), mass);
 
   test_euclidean_area_element(kerr_horizon);
 }
