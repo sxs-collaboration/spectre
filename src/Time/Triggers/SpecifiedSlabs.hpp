@@ -59,6 +59,9 @@ class SpecifiedSlabs : public Trigger<TriggerRegistrars> {
   using argument_tags = tmpl::list<Tags::TimeId>;
 
   bool operator()(const TimeId& time_id) const noexcept {
+    if (not time_id.is_at_slab_boundary()) {
+      return false;
+    }
     return slabs_.count(static_cast<uint64_t>(time_id.slab_number())) == 1;
   }
 

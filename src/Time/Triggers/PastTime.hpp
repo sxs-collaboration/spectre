@@ -54,6 +54,9 @@ class PastTime : public Trigger<TriggerRegistrars> {
   using argument_tags = tmpl::list<Tags::Time, Tags::TimeId>;
 
   bool operator()(const Time& time, const TimeId& time_id) const noexcept {
+    if (not time_id.is_at_slab_boundary()) {
+      return false;
+    }
     return evolution_greater<double>{time_id.time_runs_forward()}(
         time.value(), trigger_time_);
   }
