@@ -111,6 +111,16 @@ IsentropicVortex<Dim>::variables(
 }
 
 template <size_t Dim>
+template <typename DataType>
+tuples::TaggedTuple<Tags::Pressure<DataType>> IsentropicVortex<Dim>::variables(
+    tmpl::list<Tags::Pressure<DataType>> /*meta*/,
+    const IntermediateVariables<DataType>& vars) const noexcept {
+  return equation_of_state_.pressure_from_density(
+      get<Tags::MassDensity<DataType>>(
+          variables(tmpl::list<Tags::MassDensity<DataType>>{}, vars)));
+}
+
+template <size_t Dim>
 bool operator==(const IsentropicVortex<Dim>& lhs,
                 const IsentropicVortex<Dim>& rhs) noexcept {
   // No comparison for equation_of_state_. Comparing adiabatic_index_ should
@@ -151,7 +161,8 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (2, 3))
           const IntermediateVariables<DTYPE(data)>&) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (2, 3), (double, DataVector),
-                        (Tags::MassDensity, Tags::SpecificInternalEnergy))
+                        (Tags::MassDensity, Tags::SpecificInternalEnergy,
+                         Tags::Pressure))
 
 #define INSTANTIATE_VELOCITY(_, data)                                       \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),          \

@@ -34,17 +34,23 @@ void test_compute_item_in_databox(
     const EquationOfStateType& equation_of_state) noexcept {
   CHECK(NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataType>::name() ==
         "SoundSpeedSquared");
+  CHECK(NewtonianEuler::Tags::SoundSpeedCompute<DataType>::name() ==
+        "SoundSpeed");
   const auto box = db::create<
       db::AddSimpleTags<NewtonianEuler::Tags::MassDensity<DataType>,
                         NewtonianEuler::Tags::SpecificInternalEnergy<DataType>,
                         hydro::Tags::EquationOfState<EquationOfStateType>>,
       db::AddComputeTags<
-          NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataType>>>(
+          NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataType>,
+          NewtonianEuler::Tags::SoundSpeedCompute<DataType>>>(
       mass_density, specific_internal_energy, equation_of_state);
 
+  const auto expected_sound_speed_squared = NewtonianEuler::sound_speed_squared(
+      mass_density, specific_internal_energy, equation_of_state);
   CHECK(db::get<NewtonianEuler::Tags::SoundSpeedSquared<DataType>>(box) ==
-        NewtonianEuler::sound_speed_squared(
-            mass_density, specific_internal_energy, equation_of_state));
+        expected_sound_speed_squared);
+  CHECK(db::get<NewtonianEuler::Tags::SoundSpeed<DataType>>(box) ==
+        Scalar<DataType>{sqrt(get(expected_sound_speed_squared))});
 }
 
 template <typename DataType>

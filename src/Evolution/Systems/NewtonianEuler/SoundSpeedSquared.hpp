@@ -48,5 +48,17 @@ struct SoundSpeedSquaredCompute : SoundSpeedSquared<DataType>, db::ComputeTag {
       tmpl::list<MassDensity<DataType>, SpecificInternalEnergy<DataType>,
                  hydro::Tags::EquationOfStateBase>;
 };
+
+/// Compute item for the sound speed \f$c_s\f$.
+///
+/// Can be retrieved using `NewtonianEuler::Tags::SoundSpeed`
+template <typename DataType>
+struct SoundSpeedCompute : SoundSpeed<DataType>, db::ComputeTag {
+  static Scalar<DataType> function(
+      const Scalar<DataType>& sound_speed_squared) noexcept {
+    return Scalar<DataType>{sqrt(get(sound_speed_squared))};
+  }
+  using argument_tags = tmpl::list<SoundSpeedSquared<DataType>>;
+};
 }  // namespace Tags
 }  // namespace NewtonianEuler

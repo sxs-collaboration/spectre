@@ -183,6 +183,11 @@ class IsentropicVortex {
   auto variables(tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
                  const IntermediateVariables<DataType>& vars) const noexcept
       -> tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>;
+
+  template <typename DataType>
+  auto variables(tmpl::list<Tags::Pressure<DataType>> /*meta*/,
+                 const IntermediateVariables<DataType>& vars) const noexcept
+      -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
   // @}
 
   // Intermediate variables needed to compute the primitives

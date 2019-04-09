@@ -16,7 +16,7 @@ template <size_t Dim>
 void test_conservative_from_primitive(const DataVector& used_for_size) {
   pypp::check_with_random_values<3>(
       &NewtonianEuler::ConservativeFromPrimitive<Dim>::apply, "TestFunctions",
-      {"momentum_density", "energy_density"},
+      {"mass_density_cons", "momentum_density", "energy_density"},
       {{{-1.0, 1.0}, {-2.0, 2.0}, {-3.0, 3.0}}}, used_for_size);
 }
 
