@@ -4,8 +4,10 @@
 # Executable: EvolveValenciaDivCleanAnalyticData
 # Check: execute
 
-InitialTime: 0.0
-InitialTimeStep: 0.01
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper: RungeKutta3
 
 DomainCreator:
   Brick:
@@ -24,8 +26,6 @@ AnalyticData:
   OuterPressure: 5.0e-4
   MagneticField: [0.1, 0.0, 0.0]
   AdiabaticIndex: 1.3333333333333333333
-
-TimeStepper: RungeKutta3
 
 NumericalFluxParams:
 

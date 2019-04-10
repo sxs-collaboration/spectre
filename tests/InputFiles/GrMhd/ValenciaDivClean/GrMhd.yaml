@@ -4,11 +4,22 @@
 # Executable: EvolveValenciaDivClean
 # Check: execute
 
-InitialTime: 0.0
-InitialTimeStep: 0.01
-
-# InitialSlabSize is only needed for local time stepping
-# InitialSlabSize: 0.01
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+  # StepController and StepChoosers are needed only for local time stepping
+  # StepController: BinaryFraction
+  # StepChoosers:
+  #   - Constant: 0.05
+  #   - Increase:
+  #       Factor: 2
+  #   - Cfl:
+  #       SafetyFactor: 0.2
+  # InitialSlabSize is only needed for local time stepping
+  # InitialSlabSize: 0.01
 
 DomainCreator:
   Brick:
@@ -25,20 +36,6 @@ AnalyticSolution:
   MaxPressureRadius: 12.0
   PolytropicConstant: 0.001
   PolytropicExponent: 1.3333333333333333333333
-
-TimeStepper:
-  AdamsBashforthN:
-    Order: 3
-
-# StepController and StepChoosers are needed only for local time stepping
-# StepController: BinaryFraction
-
-# StepChoosers:
-#   - Constant: 0.05
-#   - Increase:
-#       Factor: 2
-#   - Cfl:
-#       SafetyFactor: 0.2
 
 NumericalFluxParams:
 

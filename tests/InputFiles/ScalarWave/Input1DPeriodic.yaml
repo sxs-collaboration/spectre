@@ -13,9 +13,20 @@ AnalyticSolution:
       Wavenumber: 1.0
       Phase: 0.0
 
-InitialTime: 0.0
-InitialTimeStep: 0.001
-InitialSlabSize: 0.01
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  InitialSlabSize: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+  StepController: BinaryFraction
+  StepChoosers:
+    - Constant: 0.05
+    - Increase:
+        Factor: 2
+    - Cfl:
+        SafetyFactor: 0.2
 
 DomainCreator:
   Interval:
@@ -24,19 +35,6 @@ DomainCreator:
     IsPeriodicIn: [true]
     InitialRefinement: [2]
     InitialGridPoints: [7]
-
-TimeStepper:
-  AdamsBashforthN:
-    Order: 3
-
-StepController: BinaryFraction
-
-StepChoosers:
-  - Constant: 0.05
-  - Increase:
-      Factor: 2
-  - Cfl:
-      SafetyFactor: 0.2
 
 # If filtering is enabled in the executable the filter can be controlled using:
 # ExpFilter0:

@@ -9,8 +9,12 @@ AnalyticSolution:
   RightValue: 1.
   InitialPosition: -0.5
 
-InitialTime: 0.0
-InitialTimeStep: 0.001
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
 
 DomainCreator:
   Interval:
@@ -19,10 +23,6 @@ DomainCreator:
     IsPeriodicIn: [false]
     InitialRefinement: [2]
     InitialGridPoints: [7]
-
-TimeStepper:
-  AdamsBashforthN:
-    Order: 3
 
 NumericalFluxParams:
 
