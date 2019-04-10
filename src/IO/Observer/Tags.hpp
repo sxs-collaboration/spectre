@@ -133,13 +133,23 @@ struct H5FileLock : db::SimpleTag {
 };
 }  // namespace Tags
 
+/// \ingroup ObserversGroup
+/// Option tags related to recording data
 namespace OptionTags {
+/// \ingroup OptionGroupsGroup
+/// Groups option tags related to recording data, e.g. file names.
+struct Group {
+  static std::string name() { return "Observers"; }
+  static constexpr OptionString help = {"Options for recording data"};
+};
+
 /// \ingroup ObserversGroup
 /// The name of the H5 file on disk to which all volume data is written.
 struct VolumeFileName {
   using type = std::string;
   static constexpr OptionString help = {
       "Name of the volume data file without extension"};
+  using group = Group;
 };
 
 /// \ingroup ObserversGroup
@@ -148,6 +158,7 @@ struct ReductionFileName {
   using type = std::string;
   static constexpr OptionString help = {
       "Name of the reduction data file without extension"};
+  using group = Group;
 };
 }  // namespace OptionTags
 }  // namespace observers

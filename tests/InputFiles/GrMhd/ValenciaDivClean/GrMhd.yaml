@@ -66,5 +66,6 @@ EventsAndTriggers:
       Slabs: [10]
   : - Completion
 
-VolumeFileName: "./GrMhdVolume"
-ReductionFileName: "./GrMhdReductions"
+Observers:
+  VolumeFileName: "GrMhdVolume"
+  ReductionFileName: "GrMhdReductions"

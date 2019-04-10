@@ -27,8 +27,9 @@ ExpectedResult:
 
 Verbosity: Verbose
 
-VolumeFileName: "Test_DistributedGmresAlgorithm_Volume"
-ReductionFileName: "Test_DistributedGmresAlgorithm_Reductions"
+Observers:
+  VolumeFileName: "Test_DistributedGmresAlgorithm_Volume"
+  ReductionFileName: "Test_DistributedGmresAlgorithm_Reductions"
 
 ConvergenceCriteria:
   MaxIterations: 6

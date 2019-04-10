@@ -33,5 +33,6 @@ EventsAndTriggers:
   ? PastTime: 0.1
   : - Completion
 
-VolumeFileName: "./BurgersVolume"
-ReductionFileName: "./BurgersReductions"
+Observers:
+  VolumeFileName: "BurgersVolume"
+  ReductionFileName: "BurgersReductions"

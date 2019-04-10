@@ -8,8 +8,9 @@ ExpectedResult: [0.0909090909090909, 0.6363636363636364]
 
 Verbosity: Verbose
 
-VolumeFileName: "Test_ConjugateGradientAlgorithm_Volume"
-ReductionFileName: "Test_ConjugateGradientAlgorithm_Reductions"
+Observers:
+  VolumeFileName: "Test_ConjugateGradientAlgorithm_Volume"
+  ReductionFileName: "Test_ConjugateGradientAlgorithm_Reductions"
 
 ConvergenceCriteria:
   MaxIterations: 2

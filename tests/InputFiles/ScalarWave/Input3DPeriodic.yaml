@@ -50,5 +50,6 @@ EventsAndTriggers:
       Slabs: [5]
   : - Completion
 
-VolumeFileName: "./ScalarWave3DPeriodicVolume"
-ReductionFileName: "./ScalarWave3DPeriodicReductions"
+Observers:
+  VolumeFileName: "ScalarWave3DPeriodicVolume"
+  ReductionFileName: "ScalarWave3DPeriodicReductions"

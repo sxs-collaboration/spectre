@@ -45,8 +45,9 @@ FixToAtmosphere:
   DensityOfAtmosphere: 1.0e-12
   DensityCutoff: 1.0e-12
 
-VolumeFileName: "./GrMhdVolume"
-ReductionFileName: "./GrMhdReductions"
+Observers:
+  VolumeFileName: "GrMhdBlastWaveVolume"
+  ReductionFileName: "GrMhdBlastWaveReductions"
 
 EventsAndTriggers:
   ? SpecifiedSlabs:

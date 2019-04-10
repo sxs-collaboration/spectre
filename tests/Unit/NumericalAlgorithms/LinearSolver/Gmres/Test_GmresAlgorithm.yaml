@@ -8,8 +8,9 @@ ExpectedResult: [-1., 5.]
 
 Verbosity: Verbose
 
-VolumeFileName: "Test_GmresAlgorithm_Volume"
-ReductionFileName: "Test_GmresAlgorithm_Reductions"
+Observers:
+  VolumeFileName: "Test_GmresAlgorithm_Volume"
+  ReductionFileName: "Test_GmresAlgorithm_Reductions"
 
 ConvergenceCriteria:
   MaxIterations: 2

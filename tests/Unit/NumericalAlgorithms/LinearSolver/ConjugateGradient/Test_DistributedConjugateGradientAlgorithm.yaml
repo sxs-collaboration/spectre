@@ -27,8 +27,9 @@ ExpectedResult:
 
 Verbosity: Verbose
 
-VolumeFileName: "./Test_DistributedConjugateGradientAlgorithm_Volume"
-ReductionFileName: "./Test_DistributedConjugateGradientAlgorithm_Reductions"
+Observers:
+  VolumeFileName: "Test_DistributedConjugateGradientAlgorithm_Volume"
+  ReductionFileName: "Test_DistributedConjugateGradientAlgorithm_Reductions"
 
 ConvergenceCriteria:
   MaxIterations: 6

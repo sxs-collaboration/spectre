@@ -23,8 +23,9 @@ NumericalFluxParams:
 
 Verbosity: Verbose
 
-VolumeFileName: "./Poisson1DVolume"
-ReductionFileName: "./Poisson1DReductions"
+Observers:
+  VolumeFileName: "Poisson1DVolume"
+  ReductionFileName: "Poisson1DReductions"
 
 ConvergenceCriteria:
   MaxIterations: 1
