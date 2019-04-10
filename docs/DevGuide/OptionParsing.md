@@ -13,13 +13,13 @@ are declared in `Options/Options.hpp`.
 
 ## General option format
 
-An option is defined by an "option struct".  At minimum, the struct
-must declare the type of the object to be parsed and provide a brief
+An option is defined by an "option tag", represented by a `struct`.  At minimum,
+the struct must declare the type of the object to be parsed and provide a brief
 description of the meaning.  The name of the option in the input file
 defaults to the name of the struct (excluding any template parameters
 and scope information), but can be overridden by providing a static
 `name()` function.  Several other pieces of information, such as
-defaults and limits, may be provided if desired.  This information is
+defaults, limits and grouping, may be provided if desired.  This information is
 all included in the generated help output.
 
 Examples:
@@ -32,6 +32,13 @@ The option type can be any type understood natively by yaml-cpp
 types SpECTRE adds support for.  SpECTRE adds `std::unordered_map`
 (but only with ordered keys), and various classes marked as
 constructible in their declarations.
+
+An option tag can be placed in a group by adding a `group` type alias to the
+struct. The alias should refer to a type that, like option tags, defines a help
+string and may override a static `name()` function.
+
+Example:
+\snippet Test_Options.cpp options_example_group
 
 ## Constructible classes
 

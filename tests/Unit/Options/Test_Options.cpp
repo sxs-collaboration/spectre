@@ -150,6 +150,68 @@ SPECTRE_TEST_CASE("Unit.Options.NamedSimple.invalid", "[Unit][Options]") {
   opts.get<NamedSimple>();
 }
 
+namespace {
+/// [options_example_group]
+struct Group {
+  static constexpr OptionString help = {"Group halp"};
+};
+
+struct GroupedTag {
+  using type = int;
+  static constexpr OptionString help = {"Tag halp"};
+  using group = Group;
+};
+/// [options_example_group]
+
+struct OuterGroup {
+  static constexpr OptionString help = {"Outer group halp"};
+};
+
+struct InnerGroup {
+  static constexpr OptionString help = {"Inner group halp"};
+  using group = OuterGroup;
+};
+
+struct InnerGroupedTag {
+  using type = int;
+  static constexpr OptionString help = {"Inner tag halp"};
+  using group = InnerGroup;
+};
+
+struct OuterGroupedTag {
+  using type = int;
+  static constexpr OptionString help = {"Outer tag halp"};
+  using group = OuterGroup;
+};
+
+void test_options_grouped() {
+  {
+    INFO("Option groups");
+    Options<tmpl::list<GroupedTag, Simple>> opts("Overall help text");
+    opts.parse(
+        "Group:\n"
+        "  GroupedTag: 3\n"
+        "Simple: 2");
+    CHECK(opts.get<GroupedTag>() == 3);
+    CHECK(opts.get<Simple>() == 2);
+  }
+  {
+    INFO("Nested option groups");
+    Options<tmpl::list<InnerGroupedTag, OuterGroupedTag, Simple>> opts(
+        "Overall help text");
+    opts.parse(
+        "OuterGroup:\n"
+        "  InnerGroup:\n"
+        "    InnerGroupedTag: 3\n"
+        "  OuterGroupedTag: 1\n"
+        "Simple: 2\n");
+    CHECK(opts.get<InnerGroupedTag>() == 3);
+    CHECK(opts.get<OuterGroupedTag>() == 1);
+    CHECK(opts.get<Simple>() == 2);
+  }
+}
+}  // namespace
+
 /// [options_example_scalar_struct]
 struct Bounded {
   using type = int;
@@ -590,7 +652,7 @@ struct NamedTooLongHelp {
 #endif
 }
 
-// [[OutputRegex, The help string for TooLongHelp should be less than]]
+// [[OutputRegex, The help string for TooLongHelp should have]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Options.TooLongHelp", "[Unit][Options]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -599,7 +661,7 @@ struct NamedTooLongHelp {
 #endif
 }
 
-// [[OutputRegex, The help string for TooLongHelp should be less than]]
+// [[OutputRegex, The help string for TooLongHelp should have]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Options.NamedTooLongHelp",
                                "[Unit][Options]") {
   ASSERTION_TEST();
@@ -744,6 +806,7 @@ void test_options_explicit_constructor() {
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_empty_success();
   test_options_simple_success();
+  test_options_grouped();
   test_options_default_specified();
   test_options_default_defaulted();
   test_options_bounded_lower_bound();
