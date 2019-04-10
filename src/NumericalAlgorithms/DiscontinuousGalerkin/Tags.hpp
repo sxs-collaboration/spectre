@@ -56,7 +56,7 @@ namespace OptionTags {
  * flux from the input file
  */
 template <typename NumericalFluxType>
-struct NumericalFluxParams {
+struct NumericalFlux {
   static constexpr OptionString help = "The options for the numerical flux";
   using type = NumericalFluxType;
 };

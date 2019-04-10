@@ -24,9 +24,9 @@ DomainCreator:
     InitialRefinement: [2]
     InitialGridPoints: [7]
 
-NumericalFluxParams:
+NumericalFlux:
 
-SlopeLimiterParams:
+SlopeLimiter:
   Type: LambdaPi1
 
 EventsAndTriggers:

@@ -40,7 +40,7 @@ DomainCreator:
 #   Alpha: 12
 #   HalfPower: 32
 
-NumericalFluxParams:
+NumericalFlux:
 
 # [observe_event_trigger]
 EventsAndTriggers:

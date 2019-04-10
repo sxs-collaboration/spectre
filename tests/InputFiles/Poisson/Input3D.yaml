@@ -18,7 +18,7 @@ DomainCreator:
     InitialRefinement: [1, 1, 1]
     InitialGridPoints: [2, 2, 2]
 
-NumericalFluxParams:
+NumericalFlux:
     PenaltyParameter: 2.5464790894703255 # p^2 / h
 
 Observers:

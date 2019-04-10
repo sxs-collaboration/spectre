@@ -27,11 +27,11 @@ AnalyticData:
   MagneticField: [0.1, 0.0, 0.0]
   AdiabaticIndex: 1.3333333333333333333
 
-NumericalFluxParams:
+NumericalFlux:
 
 DampingParameter: 0.0
 
-SlopeLimiterParams:
+SlopeLimiter:
   Type: Muscl
   TvbmConstant: 0
 

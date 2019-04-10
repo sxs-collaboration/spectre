@@ -12,8 +12,8 @@ namespace OptionTags {
  * limiter from the input file
  */
 template <typename SlopeLimiterType>
-struct SlopeLimiterParams {
-  static constexpr OptionString help = "The options for the slope limiter";
+struct SlopeLimiter {
+  static constexpr OptionString help = "Options for the slope limiter";
   using type = SlopeLimiterType;
 };
 }  // namespace OptionTags

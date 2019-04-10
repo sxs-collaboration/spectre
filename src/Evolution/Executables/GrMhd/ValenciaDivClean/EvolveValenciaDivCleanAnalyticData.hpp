@@ -84,11 +84,11 @@ struct EvolutionMetavars {
       typename system::primitive_variables_tag::tags_list;
   using equation_of_state_tag = hydro::Tags::EquationOfState<
       typename analytic_data_tag::type::equation_of_state_type>;
-  using normal_dot_numerical_flux = OptionTags::NumericalFluxParams<
+  using normal_dot_numerical_flux = OptionTags::NumericalFlux<
       dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   // GRMHD is only implemented in 3D.
   // Do not limit the divergence-cleaning field Phi
-  using limiter = OptionTags::SlopeLimiterParams<SlopeLimiters::Minmod<
+  using limiter = OptionTags::SlopeLimiter<SlopeLimiters::Minmod<
       3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                     grmhd::ValenciaDivClean::Tags::TildeTau,
                     grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,

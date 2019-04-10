@@ -42,7 +42,7 @@ DomainCreator:
 #     Alpha: 12
 #     HalfPower: 32
 
-NumericalFluxParams:
+NumericalFlux:
 
 EventsAndTriggers:
   ? SpecifiedSlabs:

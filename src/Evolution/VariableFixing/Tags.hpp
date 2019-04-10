@@ -22,7 +22,7 @@ struct VariableFixingGroup {
  * fixer from the input file.
  */
 template <typename VariableFixerType>
-struct VariableFixerParams {
+struct VariableFixer {
   static constexpr OptionString help = "Options for the variable fixer";
   using type = VariableFixerType;
   static std::string name() noexcept {

@@ -71,8 +71,8 @@ struct EvolutionMetavars {
       OptionTags::AnalyticSolution<Burgers::Solutions::Step>;
   using boundary_condition_tag = analytic_solution_tag;
   using normal_dot_numerical_flux =
-      OptionTags::NumericalFluxParams<Burgers::LocalLaxFriedrichsFlux>;
-  using limiter = OptionTags::SlopeLimiterParams<
+      OptionTags::NumericalFlux<Burgers::LocalLaxFriedrichsFlux>;
+  using limiter = OptionTags::SlopeLimiter<
       SlopeLimiters::Minmod<1, system::variables_tag::tags_list>>;
 
   // public for use by the Charm++ registration code

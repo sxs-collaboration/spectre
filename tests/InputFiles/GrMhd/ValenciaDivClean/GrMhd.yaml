@@ -37,11 +37,11 @@ AnalyticSolution:
   PolytropicConstant: 0.001
   PolytropicExponent: 1.3333333333333333333333
 
-NumericalFluxParams:
+NumericalFlux:
 
 DampingParameter: 0.0
 
-SlopeLimiterParams:
+SlopeLimiter:
   # Uncomment line below to turn off the limiter:
   # DisableForDebugging: True
   Type: LambdaPiN
