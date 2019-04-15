@@ -5,6 +5,7 @@
 
 #include <array>
 #include <charm++.h>
+#include <cstdlib>
 #include <execinfo.h>
 // link.h is not available on all platforms
 #if __has_include(<link.h>)

@@ -48,6 +48,7 @@ spectre_target_headers(
   MakeVector.hpp
   MakeWithValue.hpp
   Math.hpp
+  MemoryHelpers.hpp
   NoSuchType.hpp
   Numeric.hpp
   OptimizerHacks.hpp

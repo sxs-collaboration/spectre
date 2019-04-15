@@ -4,7 +4,6 @@
 #pragma once
 
 #include <array>
-#include <cstdlib>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -53,10 +52,8 @@ class BufferWrapper {
   explicit BufferWrapper(const Mesh<VolumeDim>& mesh) noexcept;
 
  private:
-  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-  std::unique_ptr<double[], decltype(&free)> contiguous_boundary_buffer_;
-  // NOLINTNEXTLINE(modernize-avoid-c-arrays)
-  const std::pair<std::unique_ptr<std::pair<size_t, size_t>[], decltype(&free)>,
+  std::unique_ptr<double[]> contiguous_boundary_buffer_;
+  const std::pair<std::unique_ptr<std::pair<size_t, size_t>[]>,
                   std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                                        gsl::span<std::pair<size_t, size_t>>>,
                              VolumeDim>>

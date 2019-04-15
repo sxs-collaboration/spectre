@@ -4,7 +4,6 @@
 #include <charm++.h>
 #include <cstdarg>
 #include <cstdio>
-#include <cstdlib>
 #include <pup.h>
 #include <stdexcept>
 #include <string>

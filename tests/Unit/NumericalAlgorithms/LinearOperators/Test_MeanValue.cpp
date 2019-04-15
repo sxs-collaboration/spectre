@@ -5,7 +5,6 @@
 
 #include <array>
 #include <cmath>
-#include <cstdlib>
 #include <numeric>
 #include <utility>
 
