@@ -41,6 +41,7 @@
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/System/ParallelInfo.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -395,6 +396,6 @@ struct Metavariables {
 /// [metavars]
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling};
+    &setup_error_handling, &setup_memory_allocation_failure_reporting};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};

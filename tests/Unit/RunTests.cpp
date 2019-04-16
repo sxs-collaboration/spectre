@@ -19,12 +19,14 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Printf.hpp"
 #include "Utilities/ErrorHandling/FloatingPointExceptions.hpp"
+#include "Utilities/MemoryHelpers.hpp"
 #include "Utilities/System/Abort.hpp"
 #include "Utilities/System/Exit.hpp"
 #include "tests/Unit/RunTestsRegister.hpp"
 
 RunTests::RunTests(CkArgMsg* msg) {
   setup_error_handling();
+  setup_memory_allocation_failure_reporting();
   register_run_tests_libs();
   Parallel::printf("%s", info_from_build().c_str());
   enable_floating_point_exceptions();

@@ -38,3 +38,7 @@ template <typename T, typename... Args>
 typename detail::unique_type<T>::invalid_type make_unique_for_overwrite(
     Args&&...) = delete;
 }  // namespace cpp20
+
+/// Install a memory allocation failure handler that calls ERROR()
+/// instead of throwing an exception.
+void setup_memory_allocation_failure_reporting() noexcept;
