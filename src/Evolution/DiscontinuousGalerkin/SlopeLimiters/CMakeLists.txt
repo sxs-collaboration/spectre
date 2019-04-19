@@ -4,6 +4,7 @@
 set(LIBRARY SlopeLimiters)
 
 set(LIBRARY_SOURCES
+  MinmodHelpers.cpp
   MinmodTci.cpp
   MinmodType.cpp
   WenoGridHelpers.cpp

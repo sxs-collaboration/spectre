@@ -9,10 +9,8 @@
 #include <limits>
 #include <utility>
 
-#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"  // IWYU pragma: keep
-#include "Domain/Mesh.hpp"     // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
@@ -21,9 +19,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
-namespace SlopeLimiters {
-namespace Minmod_detail {
-
+namespace {
 // Encodes the return status of the minmod_tvbm function.
 struct MinmodResult {
   const double value;
@@ -51,6 +47,10 @@ MinmodResult minmod_tvbm(const double a, const double b, const double c,
     return {0.0, true};
   }
 }
+}  // namespace
+
+namespace SlopeLimiters {
+namespace Minmod_detail {
 
 template <size_t VolumeDim>
 bool troubled_cell_indicator(

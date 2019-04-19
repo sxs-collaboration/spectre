@@ -4,14 +4,19 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <boost/functional/hash.hpp>
 #include <cstdlib>
 #include <limits>
+#include <string>
 #include <type_traits>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SliceIterator.hpp"
+#include "DataStructures/Tags.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"
@@ -30,6 +35,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace {
 
@@ -725,6 +731,139 @@ void test_minmod_tci_3d() noexcept {
   test_activates(input, {{3.8, 2.1, 2.1, 2.7, 2.2, 2.5}}, {{0.0, 0.0, 0.0}});
 }
 
+struct ScalarTag : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept { return "Scalar"; }
+};
+
+template <size_t VolumeDim>
+struct VectorTag : db::SimpleTag {
+  using type = tnsr::I<DataVector, VolumeDim>;
+  static std::string name() noexcept { return "Vector"; }
+};
+
+void test_minmod_tci_several_tensors() noexcept {
+  INFO("Testing MinmodTci action on several tensors");
+  // Test that TCI returns true if just one component needs limiting, which
+  // we do by limiting a scalar and vector in 3D
+  const auto minmod_type = SlopeLimiters::MinmodType::LambdaPi1;
+  const double tvbm_constant = 0.0;
+  const auto element = make_element<3>();
+  const size_t number_of_grid_points = 2;
+  const Mesh<3> mesh(number_of_grid_points, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto);
+  const auto element_size = make_array<3>(1.0);
+
+  const auto linear_data = [&mesh](const double mean, const double slope_x,
+                                   const double slope_y,
+                                   const double slope_z) noexcept {
+    const auto coords = logical_coordinates(mesh);
+    const auto& x = get<0>(coords);
+    const auto& y = get<1>(coords);
+    const auto& z = get<2>(coords);
+    return DataVector{mean + slope_x * x + slope_y * y + slope_z * z};
+  };
+
+  Scalar<DataVector> local_scalar{linear_data(1.8, 1.4, 0.1, -0.2)};
+  tnsr::I<DataVector, 3> local_vector{
+      {{linear_data(-0.4, -0.3, 0.3, 1.0), linear_data(0.02, 0.01, 0.01, 0.2),
+        linear_data(2.3, 0.5, -0.3, -0.2)}}};
+
+  struct TestPackagedData {
+    tuples::TaggedTuple<::Tags::Mean<ScalarTag>, ::Tags::Mean<VectorTag<3>>>
+        means;
+    std::array<double, 3> element_size =
+        make_array<3>(std::numeric_limits<double>::signaling_NaN());
+  };
+  std::unordered_map<std::pair<Direction<3>, ElementId<3>>, TestPackagedData,
+                     boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+      neighbor_data{};
+  TestPackagedData& lower_xi_neighbor =
+      neighbor_data[std::make_pair(Direction<3>::lower_xi(), ElementId<3>(1))];
+  TestPackagedData& upper_xi_neighbor =
+      neighbor_data[std::make_pair(Direction<3>::upper_xi(), ElementId<3>(2))];
+  TestPackagedData& lower_eta_neighbor =
+      neighbor_data[std::make_pair(Direction<3>::lower_eta(), ElementId<3>(3))];
+  TestPackagedData& upper_eta_neighbor =
+      neighbor_data[std::make_pair(Direction<3>::upper_eta(), ElementId<3>(4))];
+  TestPackagedData& lower_zeta_neighbor = neighbor_data[std::make_pair(
+      Direction<3>::lower_zeta(), ElementId<3>(5))];
+  TestPackagedData& upper_zeta_neighbor = neighbor_data[std::make_pair(
+      Direction<3>::upper_zeta(), ElementId<3>(6))];
+  lower_xi_neighbor.element_size = element_size;
+  upper_xi_neighbor.element_size = element_size;
+  lower_eta_neighbor.element_size = element_size;
+  upper_eta_neighbor.element_size = element_size;
+  lower_zeta_neighbor.element_size = element_size;
+  upper_zeta_neighbor.element_size = element_size;
+
+  // Case where neither tensor triggers limiting
+  get(get<::Tags::Mean<ScalarTag>>(lower_xi_neighbor.means)) = 0.3;
+  get(get<::Tags::Mean<ScalarTag>>(upper_xi_neighbor.means)) = 3.3;
+  get(get<::Tags::Mean<ScalarTag>>(lower_eta_neighbor.means)) = 1.6;
+  get(get<::Tags::Mean<ScalarTag>>(upper_eta_neighbor.means)) = 2.2;
+  get(get<::Tags::Mean<ScalarTag>>(lower_zeta_neighbor.means)) = 2.1;
+  get(get<::Tags::Mean<ScalarTag>>(upper_zeta_neighbor.means)) = 1.4;
+  get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_xi_neighbor.means)) = 0.1;
+  get<0>(get<::Tags::Mean<VectorTag<3>>>(upper_xi_neighbor.means)) = -0.9;
+  get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_eta_neighbor.means)) = -1.1;
+  get<0>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = 0.2;
+  get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -1.8;
+  get<0>(get<::Tags::Mean<VectorTag<3>>>(upper_zeta_neighbor.means)) = 0.7;
+  get<1>(get<::Tags::Mean<VectorTag<3>>>(lower_xi_neighbor.means)) = 0.0;
+  get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_xi_neighbor.means)) = 0.05;
+  get<1>(get<::Tags::Mean<VectorTag<3>>>(lower_eta_neighbor.means)) = -0.1;
+  get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = 0.1;
+  get<1>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -0.7;
+  get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_zeta_neighbor.means)) = 0.3;
+  get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_xi_neighbor.means)) = 1.4;
+  get<2>(get<::Tags::Mean<VectorTag<3>>>(upper_xi_neighbor.means)) = 2.9;
+  get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_eta_neighbor.means)) = 2.7;
+  get<2>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = 1.8;
+  get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = 3.1;
+  get<2>(get<::Tags::Mean<VectorTag<3>>>(upper_zeta_neighbor.means)) = 0.5;
+  bool activation = SlopeLimiters::Minmod_detail::troubled_cell_indicator<
+      3, TestPackagedData, ScalarTag, VectorTag<3>>(
+      local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
+      element, mesh, element_size);
+  CHECK_FALSE(activation);
+
+  // Case where the scalar triggers limiting
+  get(get<::Tags::Mean<ScalarTag>>(upper_xi_neighbor.means)) = 2.0;
+  activation = SlopeLimiters::Minmod_detail::troubled_cell_indicator<
+      3, TestPackagedData, ScalarTag, VectorTag<3>>(
+      local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
+      element, mesh, element_size);
+  CHECK(activation);
+
+  // Case where the vector x-component triggers limiting
+  get(get<::Tags::Mean<ScalarTag>>(upper_xi_neighbor.means)) = 3.3;
+  get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -0.1;
+  activation = SlopeLimiters::Minmod_detail::troubled_cell_indicator<
+      3, TestPackagedData, ScalarTag, VectorTag<3>>(
+      local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
+      element, mesh, element_size);
+  CHECK(activation);
+
+  // Case where the vector y-component triggers limiting
+  get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -1.8;
+  get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = -0.2;
+  activation = SlopeLimiters::Minmod_detail::troubled_cell_indicator<
+      3, TestPackagedData, ScalarTag, VectorTag<3>>(
+      local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
+      element, mesh, element_size);
+  CHECK(activation);
+
+  // Case where the vector z-component triggers limiting
+  get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = 0.1;
+  get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_xi_neighbor.means)) = 1.9;
+  activation = SlopeLimiters::Minmod_detail::troubled_cell_indicator<
+      3, TestPackagedData, ScalarTag, VectorTag<3>>(
+      local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
+      element, mesh, element_size);
+  CHECK(activation);
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.MinmodTci",
@@ -732,4 +871,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.MinmodTci",
   test_minmod_tci_1d();
   test_minmod_tci_2d();
   test_minmod_tci_3d();
+
+  test_minmod_tci_several_tensors();
 }
