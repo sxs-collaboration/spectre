@@ -13,7 +13,8 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/Observe.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/ObserveErrorNorms.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
@@ -77,9 +78,12 @@ struct EvolutionMetavars {
       OptionTags::NumericalFluxParams<ScalarWave::UpwindFlux<Dim>>;
 
   // public for use by the Charm++ registration code
-  using events = tmpl::list<dg::Events::Registrars::Observe<
-      Dim, db::get_variables_tags_list<typename system::variables_tag>,
-      db::get_variables_tags_list<typename system::variables_tag>>>;
+  using events = tmpl::list<
+      dg::Events::Registrars::ObserveFields<
+          Dim, db::get_variables_tags_list<typename system::variables_tag>,
+          db::get_variables_tags_list<typename system::variables_tag>>,
+      dg::Events::Registrars::ObserveErrorNorms<
+          Dim, db::get_variables_tags_list<typename system::variables_tag>>>;
   using triggers = Triggers::time_triggers;
 
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
