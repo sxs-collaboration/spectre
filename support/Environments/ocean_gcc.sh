@@ -21,7 +21,7 @@ spectre_unload_modules() {
     module unload gnu7/7.3.0
     module unload openmpi/1.10.7
     module unload prun/1.2
-    module unlaod cmake-3.13.1-gcc-7.3.0-r7qr3qo
+    module unload cmake-3.13.1-gcc-7.3.0-r7qr3qo
     module unload git-2.19.2-gcc-7.3.0-jfnpgdh
     module unload blaze-3.2-gcc-7.3.0-d4xgiej
     module unload brigand-master-gcc-7.3.0-3m5ibui
