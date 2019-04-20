@@ -249,35 +249,35 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.DiffMatrix",
 
 namespace {
 
-void test_spectral_to_grid_points_matrix(const size_t num_points,
-                                         const Matrix& expected_matrix) {
-  const auto& matrix = Spectral::spectral_to_grid_points_matrix<
-      Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>(
-      num_points);
+void test_modal_to_nodal_matrix(const size_t num_points,
+                                const Matrix& expected_matrix) {
+  const auto& matrix =
+      Spectral::modal_to_nodal_matrix<Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::GaussLobatto>(
+          num_points);
   CHECK_MATRIX_APPROX(expected_matrix, matrix);
 }
 
 }  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.Numerical.Spectral.LegendreGaussLobatto.SpectralToGridPoints",
-    "[NumericalAlgorithms][Spectral][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.ModalToNodal",
+                  "[NumericalAlgorithms][Spectral][Unit]") {
   SECTION("Check 2 points") {
-    test_spectral_to_grid_points_matrix(2, Matrix({{1., -1.}, {1., 1.}}));
+    test_modal_to_nodal_matrix(2, Matrix({{1., -1.}, {1., 1.}}));
   }
   SECTION("Check 3 points") {
-    test_spectral_to_grid_points_matrix(
+    test_modal_to_nodal_matrix(
         3, Matrix({{1., -1., 1.}, {1., 0., -0.5}, {1., 1., 1.}}));
   }
   SECTION("Check 4 points") {
-    test_spectral_to_grid_points_matrix(
+    test_modal_to_nodal_matrix(
         4, Matrix({{1., -1., 1., -1.},
                    {1., -0.4472135954999579, -0.2, 0.4472135954999580},
                    {1., 0.4472135954999579, -0.2, -0.4472135954999580},
                    {1., 1., 1., 1.}}));
   }
   SECTION("Check 5 points") {
-    test_spectral_to_grid_points_matrix(
+    test_modal_to_nodal_matrix(
         5, Matrix({{1., -1., 1., -1., 1.},
                    {1., -0.6546536707079772, 0.1428571428571430,
                     0.2805658588748472, -0.4285714285714287},
@@ -287,7 +287,7 @@ SPECTRE_TEST_CASE(
                    {1., 1., 1., 1., 1.}}));
   }
   SECTION("Check 6 points") {
-    test_spectral_to_grid_points_matrix(
+    test_modal_to_nodal_matrix(
         6,
         Matrix(
             {{1., -1., 1., -1., 1., -1.},
@@ -302,7 +302,7 @@ SPECTRE_TEST_CASE(
              {1., 1., 1., 1., 1., 1.}}));
   }
   SECTION("Check 10 points") {
-    test_spectral_to_grid_points_matrix(
+    test_modal_to_nodal_matrix(
         10,
         Matrix(
             {{1., -1., 1., -1., 1., -1., 1., -1., 1., -1.},
@@ -336,30 +336,29 @@ SPECTRE_TEST_CASE(
 
 namespace {
 
-void test_grid_points_to_spectral_matrix(const size_t num_points,
-                                         const Matrix& expected_matrix) {
-  const auto& matrix = Spectral::grid_points_to_spectral_matrix<
-      Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>(
-      num_points);
+void test_nodal_to_modal_matrix(const size_t num_points,
+                                const Matrix& expected_matrix) {
+  const auto& matrix =
+      Spectral::nodal_to_modal_matrix<Spectral::Basis::Legendre,
+                                      Spectral::Quadrature::GaussLobatto>(
+          num_points);
   CHECK_MATRIX_APPROX(expected_matrix, matrix);
 }
 
 }  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.Numerical.Spectral.LegendreGaussLobatto.GridPointsToSpectral",
-    "[NumericalAlgorithms][Spectral][Unit]") {
+SPECTRE_TEST_CASE("Unit.Numerical.Spectral.LegendreGaussLobatto.NodalToModal",
+                  "[NumericalAlgorithms][Spectral][Unit]") {
   SECTION("Check 2 points") {
-    test_grid_points_to_spectral_matrix(2, Matrix({{0.5, 0.5}, {-0.5, 0.5}}));
+    test_nodal_to_modal_matrix(2, Matrix({{0.5, 0.5}, {-0.5, 0.5}}));
   }
   SECTION("Check 3 points") {
-    test_grid_points_to_spectral_matrix(3,
-                                        Matrix({{1. / 6., 2. / 3., 1. / 6.},
-                                                {-1. / 2., 0., 1. / 2.},
-                                                {1. / 3., -2. / 3., 1. / 3.}}));
+    test_nodal_to_modal_matrix(3, Matrix({{1. / 6., 2. / 3., 1. / 6.},
+                                          {-1. / 2., 0., 1. / 2.},
+                                          {1. / 3., -2. / 3., 1. / 3.}}));
   }
   SECTION("Check 4 points") {
-    test_grid_points_to_spectral_matrix(
+    test_nodal_to_modal_matrix(
         4, Matrix({{0.08333333333333320, 0.4166666666666668, 0.4166666666666666,
                     0.08333333333333337},
                    {-0.25, -0.5590169943749476, 0.5590169943749476, 0.25},
@@ -368,7 +367,7 @@ SPECTRE_TEST_CASE(
                    {-0.25, 0.5590169943749476, -0.5590169943749476, 0.25}}));
   }
   SECTION("Check 5 points") {
-    test_grid_points_to_spectral_matrix(
+    test_nodal_to_modal_matrix(
         5, Matrix({{0.05, 0.2722222222222222, 0.3555555555555557,
                     0.2722222222222221, 0.05},
                    {-0.15, -0.5346338310781814, 0., 0.5346338310781813, 0.15},
@@ -379,7 +378,7 @@ SPECTRE_TEST_CASE(
                     -0.4666666666666665, 0.2}}));
   }
   SECTION("Check 6 points") {
-    test_grid_points_to_spectral_matrix(
+    test_nodal_to_modal_matrix(
         6,
         Matrix(
             {{0.03333333333333338, 0.1892374781489234, 0.2774291885177432,
@@ -396,7 +395,7 @@ SPECTRE_TEST_CASE(
               0.4808232423993798, -0.3971119470091983, 0.1666666666666666}}));
   }
   SECTION("Check 10 points") {
-    test_grid_points_to_spectral_matrix(
+    test_nodal_to_modal_matrix(
         10,
         Matrix(
             {{0.01111111111111113, 0.06665299542553522, 0.1124446710315631,

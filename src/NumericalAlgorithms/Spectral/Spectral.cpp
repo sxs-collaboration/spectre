@@ -155,16 +155,16 @@ struct DifferentiationMatrixGenerator {
 template <Basis BasisType, Quadrature QuadratureType>
 struct IntegrationMatrixGenerator {
   Matrix operator()(const size_t num_points) const noexcept {
-    return Spectral::spectral_to_grid_points_matrix<BasisType, QuadratureType>(
+    return Spectral::modal_to_nodal_matrix<BasisType, QuadratureType>(
                num_points) *
            spectral_indefinite_integral_matrix<BasisType>(num_points) *
-           Spectral::grid_points_to_spectral_matrix<BasisType, QuadratureType>(
+           Spectral::nodal_to_modal_matrix<BasisType, QuadratureType>(
                num_points);
   }
 };
 
 template <Basis BasisType, Quadrature QuadratureType>
-struct SpectralToGridPointsMatrixGenerator {
+struct ModalToNodalMatrixGenerator {
   Matrix operator()(const size_t num_points) const noexcept {
     // To obtain the Vandermonde matrix we need to compute the basis function
     // values at the collocation points. Constructing the matrix proceeds
@@ -184,21 +184,20 @@ struct SpectralToGridPointsMatrixGenerator {
 };
 
 template <Basis BasisType, Quadrature QuadratureType>
-struct GridPointsToSpectralMatrixGenerator {
+struct NodalToModalMatrixGenerator {
   Matrix operator()(const size_t num_points) const noexcept {
     // Numerically invert the matrix for this generic case
-    return inv(
-        spectral_to_grid_points_matrix<BasisType, QuadratureType>(num_points));
+    return inv(modal_to_nodal_matrix<BasisType, QuadratureType>(num_points));
   }
 };
 
 template <Basis BasisType>
-struct GridPointsToSpectralMatrixGenerator<BasisType, Quadrature::Gauss> {
+struct NodalToModalMatrixGenerator<BasisType, Quadrature::Gauss> {
   using data_type = Matrix;
   Matrix operator()(const size_t num_points) const noexcept {
     // For Gauss quadrature we implement the analytic expression
     // \f$\mathcal{V}^{-1}_{ij}=\mathcal{V}_{ji}\frac{w_j}{\gamma_i}\f$
-    // (see description of `grid_points_to_spectral_matrix`).
+    // (see description of `nodal_to_modal_matrix`).
     const DataVector& weights =
         precomputed_spectral_quantity<
             BasisType, Quadrature::Gauss,
@@ -206,8 +205,7 @@ struct GridPointsToSpectralMatrixGenerator<BasisType, Quadrature::Gauss> {
             num_points)
             .second;
     const Matrix& vandermonde_matrix =
-        spectral_to_grid_points_matrix<BasisType, Quadrature::Gauss>(
-            num_points);
+        modal_to_nodal_matrix<BasisType, Quadrature::Gauss>(num_points);
     Matrix vandermonde_inverse(num_points, num_points);
     // This should be vectorized when the functionality is implemented.
     for (size_t i = 0; i < num_points; i++) {
@@ -228,16 +226,14 @@ struct LinearFilterMatrixGenerator {
     // \f$\mathcal{V}^{-1}\cdot\mathrm{diag}(1,1,0,0,...)\cdot\mathcal{V}\f$
     // (see description of `linear_filter_matrix`)
     // which multiplies the first two columns of
-    // `grid_points_to_spectral_matrix` with the first two rows of
-    // `spectral_to_grid_points_matrix`.
+    // `nodal_to_modal_matrix` with the first two rows of
+    // `modal_to_nodal_matrix`.
     Matrix lin_filter(num_points, num_points);
     dgemm_('N', 'N', num_points, num_points, std::min(size_t{2}, num_points),
            1.0,
-           spectral_to_grid_points_matrix<BasisType, QuadratureType>(num_points)
-               .data(),
+           modal_to_nodal_matrix<BasisType, QuadratureType>(num_points).data(),
            num_points,
-           grid_points_to_spectral_matrix<BasisType, QuadratureType>(num_points)
-               .data(),
+           nodal_to_modal_matrix<BasisType, QuadratureType>(num_points).data(),
            num_points, 0.0, lin_filter.data(), num_points);
     return lin_filter;
   }
@@ -280,10 +276,10 @@ PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix, Matrix,
                               DifferentiationMatrixGenerator)
 PRECOMPUTED_SPECTRAL_QUANTITY(integration_matrix, Matrix,
                               IntegrationMatrixGenerator)
-PRECOMPUTED_SPECTRAL_QUANTITY(spectral_to_grid_points_matrix, Matrix,
-                              SpectralToGridPointsMatrixGenerator)
-PRECOMPUTED_SPECTRAL_QUANTITY(grid_points_to_spectral_matrix, Matrix,
-                              GridPointsToSpectralMatrixGenerator)
+PRECOMPUTED_SPECTRAL_QUANTITY(modal_to_nodal_matrix, Matrix,
+                              ModalToNodalMatrixGenerator)
+PRECOMPUTED_SPECTRAL_QUANTITY(nodal_to_modal_matrix, Matrix,
+                              NodalToModalMatrixGenerator)
 PRECOMPUTED_SPECTRAL_QUANTITY(linear_filter_matrix, Matrix,
                               LinearFilterMatrixGenerator)
 
@@ -408,8 +404,8 @@ SPECTRAL_QUANTITY_FOR_MESH(collocation_points, DataVector)
 SPECTRAL_QUANTITY_FOR_MESH(quadrature_weights, DataVector)
 SPECTRAL_QUANTITY_FOR_MESH(differentiation_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(integration_matrix, Matrix)
-SPECTRAL_QUANTITY_FOR_MESH(spectral_to_grid_points_matrix, Matrix)
-SPECTRAL_QUANTITY_FOR_MESH(grid_points_to_spectral_matrix, Matrix)
+SPECTRAL_QUANTITY_FOR_MESH(modal_to_nodal_matrix, Matrix)
+SPECTRAL_QUANTITY_FOR_MESH(nodal_to_modal_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(linear_filter_matrix, Matrix)
 
 #undef SPECTRAL_QUANTITY_FOR_MESH
@@ -444,10 +440,10 @@ Matrix interpolation_matrix(const Mesh<1>& mesh,
   template const Matrix&                                                      \
       Spectral::integration_matrix<BASIS(data), QUAD(data)>(size_t) noexcept; \
   template const Matrix&                                                      \
-      Spectral::grid_points_to_spectral_matrix<BASIS(data), QUAD(data)>(      \
+      Spectral::nodal_to_modal_matrix<BASIS(data), QUAD(data)>(               \
           size_t) noexcept;                                                   \
   template const Matrix&                                                      \
-      Spectral::spectral_to_grid_points_matrix<BASIS(data), QUAD(data)>(      \
+      Spectral::modal_to_nodal_matrix<BASIS(data), QUAD(data)>(               \
           size_t) noexcept;                                                   \
   template const Matrix&                                                      \
       Spectral::linear_filter_matrix<BASIS(data), QUAD(data)>(                \
