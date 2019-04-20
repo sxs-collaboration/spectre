@@ -6,6 +6,7 @@ set(LIBRARY Spectral)
 set(LIBRARY_SOURCES
     Chebyshev.cpp
     ComplexDataView.cpp
+    Filtering.cpp
     Legendre.cpp
     Projection.cpp
     Spectral.cpp
