@@ -355,34 +355,28 @@ decltype(auto) get_spectral_quantity_for_mesh(F&& f,
           return f(std::integral_constant<Basis, Basis::Legendre>{},
                    std::integral_constant<Quadrature, Quadrature::Gauss>{},
                    num_points);
-          break;
         case Quadrature::GaussLobatto:
           return f(
               std::integral_constant<Basis, Basis::Legendre>{},
               std::integral_constant<Quadrature, Quadrature::GaussLobatto>{},
               num_points);
-          break;
         default:
           ERROR("Missing quadrature case for spectral quantity");
       }
-      break;
     case Basis::Chebyshev:
       switch (mesh.quadrature(0)) {
         case Quadrature::Gauss:
           return f(std::integral_constant<Basis, Basis::Chebyshev>{},
                    std::integral_constant<Quadrature, Quadrature::Gauss>{},
                    num_points);
-          break;
         case Quadrature::GaussLobatto:
           return f(
               std::integral_constant<Basis, Basis::Chebyshev>{},
               std::integral_constant<Quadrature, Quadrature::GaussLobatto>{},
               num_points);
-          break;
         default:
           ERROR("Missing quadrature case for spectral quantity");
       }
-      break;
     default:
       ERROR("Missing basis case for spectral quantity");
   }
