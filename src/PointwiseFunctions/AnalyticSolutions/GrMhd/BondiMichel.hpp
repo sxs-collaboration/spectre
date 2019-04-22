@@ -23,42 +23,146 @@ namespace grmhd {
 namespace Solutions {
 
 /*!
- * \brief Bondi-Michel accretion with superposed magnetic field in Schwarzschild
- * spacetime in Kerr-Schild coordinates.
+ * \brief Bondi-Michel accretion \cite Michel1972 with superposed magnetic field
+ * in Schwarzschild spacetime in Cartesian Kerr-Schild coordinates.
  *
- * An analytic solution to the 3-D GrMhd system. The user specifies the sonic
+ * An analytic solution to the 3-D GRMHD system. The user specifies the sonic
  * radius \f$r_c\f$ and sonic rest mass density \f$\rho_c\f$, which are the
  * radius and rest mass density at the sonic point, the radius at which the
  * fluid's Eulerian velocity as seen by a distant observer overtakes the local
- * sound speed \f$c_{s,c}\f$. With a specified polytropic exponent \f$\Gamma\f$,
+ * sound speed \f$c_{s,c}\f$. With a specified polytropic exponent \f$\gamma\f$,
  * these quantities can be related to the sound speed at infinity
- * \f$c_{s,\inf}\f$ using the following relations:
+ * \f$c_{s,\infty}\f$ using the following relations:
  *
  * \f{align*}
- * c_{s,c}^2 &= \frac{1}{2r_c - 3} \\
- * c_{s,\inf}^2 &= \Gamma - 1 + (c_{s,c}^2 - \Gamma + 1)\sqrt{1 + 3c_{s,c}^2}
+ * c_{s,c}^2 &= \frac{M}{2r_c - 3M} \\
+ * c_{s,\infty}^2 &= \gamma - 1 + (c_{s,c}^2 - \gamma + 1)\sqrt{1 + 3c_{s,c}^2}
  * \f}
  *
  * In the case of the interstellar medium, the sound
  * speed is \f$\approx 10^{-4}\f$, which results in a sonic radius of
- * \f$\approx 10^8 M\f$ for \f$\Gamma \neq 5/3\f$ (Rezzola and Zanotti, 2013).
- * However, for numerical-testing purposes, it is more common to use a value of
- * \f$\approx 10 M\f$.
+ * \f$\approx 10^8 M\f$ for \f$\gamma \neq 5/3\f$ \cite RezzollaBook.
  *
  * The density is found via root-finding, through the
  * Bernoulli equation. As one approaches the sonic radius, a second root makes
  * an appearance and one must take care to bracket the correct root. This is
- * done by using the upper bound \f$\frac{\dot{M}}{4\pi}\sqrt{\frac{2}{Mr^3}}\f$
+ * done by using the upper bound
+ * \f$\frac{\dot{M}}{4\pi}\sqrt{\frac{2}{Mr^3}}\f$.
  *
- * Additionally specified by the user are the polytropic exponent \f$\Gamma\f$,
- * and the strength parameter of the magnetic field \f$B\f$.
- * In Kerr-Schild-Cartesian coordinates \f$(x, y, z)\f$, where
+ * Additionally specified by the user are the polytropic exponent \f$\gamma\f$,
+ * and the strength parameter of the magnetic field \f$B_0\f$.
+ * In Cartesian Kerr-Schild coordinates \f$(x, y, z)\f$, where
  * \f$ r = \sqrt{x^2 + y^2 + z^2}\f$, the superposed magnetic field is
+ * \cite Etienne2010ui
+ *
  * \f{align*}
- * B_x(\vec{x},t) &= \frac{B x}{r^3 \sqrt{1 + 2/r}} \\
- * B_y(\vec{x},t) &= \frac{B y}{r^3 \sqrt{1 + 2/r}} \\
- * B_z(\vec{x},t) &= \frac{B z}{r^3 \sqrt{1 + 2/r}}
+ * B^i(\vec{x},t) = \frac{B_0 M^2}{r^3 \sqrt{\gamma}}x^i
+ *  =\frac{B_0 M^2}{r^3 \sqrt{1 + 2M/r}}x^i.
  * \f}
+ *
+ * The accretion rate is
+ *
+ * \f{align*}{
+ * \dot{M}=4\pi r^2\rho u^r,
+ * \f}
+ *
+ * and at the sonic radius
+ *
+ * \f{align*}{
+ * \dot{M}_c=\sqrt{8}\pi \sqrt{M}r_c^{3/2}\rho_c.
+ * \f}
+ *
+ * The polytropic constant is given by
+ *
+ * \f{align*}{
+ * K=\frac{1}{\gamma\rho_c^{\gamma-1}}
+ * \left[\frac{M(\gamma-1)}{(2r_c-3M)(\gamma-1)-M}\right].
+ * \f}
+ *
+ * The density as a function of the sound speed is
+ *
+ * \f{align*}{
+ * \rho^{\gamma-1}=\frac{(\gamma-1)c_s^2}{\gamma K(\gamma-1-c_s^2)}.
+ * \f}
+ *
+ * #### Horizon quantities, \f$\gamma\ne5/3\f$
+ * The density at the horizon is given by:
+ *
+ * \f{align*}{
+ *  \rho_h\simeq\frac{1}{16}
+ *  \left(\frac{5-3\gamma}{2}\right)^{(3\gamma-5)/[2(\gamma-1)]}
+ *  \frac{\rho_\infty}{c_{s,\infty}^3}.
+ * \f}
+ *
+ * Using the Lorentz invariance of \f$b^2\f$ we evaluate:
+ *
+ * \f{align*}{
+ * b^2=\frac{B^2}{W^2}+(B^i v_i)^2=
+ *  B^r B^r(1-\gamma_{rr}v^r v^r)+B^r B^r v^r v^r
+ * =B^r B^r = \frac{B_0^2 M^4}{r^4},
+ * \f}
+ *
+ * where \f$r\f$ is the Cartesian Kerr-Schild radius, which is equal to the
+ * areal radius for a non-spinning black hole. At the horizon we get
+ *
+ * \f{align*}{
+ * b^2_h=\frac{B^2_0}{16}.
+ * \f}
+ *
+ * Finally, we get
+ *
+ * \f{align*}{
+ * B_0 = 4 \sqrt{b^2_h} = 4\sqrt{\rho_h} \sqrt{\frac{b^2_h}{\rho_h}},
+ * \f}
+ *
+ * where the last equality is useful for comparison to papers that give
+ * \f$b^2_h/\rho_h\f$.
+ *
+ * To help with comparing to other codes the following script can be used to
+ * compute \f$b^2_h/\rho_h\f$:
+ *
+ * \code{.py}
+ * #!/bin/env python
+ *
+ * import numpy as np
+ *
+ * # Input parameters
+ * B_0 = 18
+ * r_c = 8
+ * rho_c = 1 / 16
+ * gamma = 4 / 3
+ * mass = 1
+ *
+ * K = 1 / (gamma * rho_c**(gamma - 1)) * ((gamma - 1) * mass) / (
+ *     (2 * r_c - 3 * mass) * (gamma - 1) - mass)
+ * c_s_c = mass / (2 * r_c - 3 * mass)
+ * c_inf = gamma - 1 + (c_s_c - gamma + 1) * np.sqrt(1. + 3. * c_s_c)
+ * rho_inf = ((gamma - 1) * c_inf / (gamma * K *
+ *                                   (gamma - 1 - c_inf)))**(1. / (gamma - 1.))
+ * rho_h = 1. / 16. * (2.5 - 1.5 * gamma)**(
+ *     (3 * gamma - 5) / (2 * (gamma - 1))) * rho_inf / (c_inf**1.5)
+ *
+ * print("B_0", B_0)
+ * print("r_c: ", r_c)
+ * print("rho_c", rho_c)
+ * print("b_h^2/rho_h: ", B_0**2 / (16. * rho_h))
+ * print("gamma: ", gamma)
+ * \endcode
+ *
+ * #### Horizon quantities, \f$\gamma=5/3\f$
+ * The density at the horizon is given by:
+ *
+ * \f{align*}{
+ * \rho_h\simeq \frac{1}{16}\frac{\rho_\infty}{u_h c_{s,\infty}^3},
+ * \f}
+ *
+ * which gives \cite RezzollaBook
+ *
+ * \f{align*}{
+ * \rho_h\simeq 0.08\frac{\rho_\infty}{c_{s,\infty}^3}.
+ * \f}
+ *
+ * The magnetic field \f$b^2\f$ is the same as the \f$\gamma\ne5/3\f$.
  */
 class BondiMichel {
   template <typename DataType>
