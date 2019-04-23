@@ -16,3 +16,4 @@ add_test_library(
 
 add_subdirectory(Burgers)
 add_subdirectory(GrMhd)
+add_subdirectory(NewtonianEuler)

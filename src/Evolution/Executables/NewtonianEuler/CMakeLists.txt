@@ -13,6 +13,7 @@ set(LIBS_TO_LINK
   LinearOperators
   MathFunctions
   NewtonianEuler
+  NewtonianEulerAnalyticData
   NewtonianEulerNumericalFluxes
   NewtonianEulerSolutions
   NewtonianEulerSources
@@ -63,3 +64,14 @@ function(add_lane_emden_executable)
 endfunction(add_lane_emden_executable)
 
 add_lane_emden_executable()
+
+function(add_kh_instability_executable DIM)
+  add_newtonian_euler_executable(
+    KhInstability
+    ${DIM}
+    NewtonianEuler::AnalyticData::KhInstability<${DIM}>
+    )
+endfunction(add_kh_instability_executable)
+
+add_kh_instability_executable(2)
+add_kh_instability_executable(3)
