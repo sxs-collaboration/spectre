@@ -369,18 +369,18 @@ Matrix interpolation_matrix(const Mesh<1>& mesh,
  *
  * \param num_points The number of collocation points
 
- * \see grid_points_to_spectral_matrix(size_t)
+ * \see nodal_to_modal_matrix(size_t)
  */
 template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& spectral_to_grid_points_matrix(size_t num_points) noexcept;
+const Matrix& modal_to_nodal_matrix(size_t num_points) noexcept;
 
 /*!
  * \brief Transformation matrix from modal to nodal coefficients for a
  * one-dimensional mesh.
  *
- * \see spectral_to_grid_points_matrix(size_t)
+ * \see modal_to_nodal_matrix(size_t)
  */
-const Matrix& spectral_to_grid_points_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& modal_to_nodal_matrix(const Mesh<1>& mesh) noexcept;
 
 /*!
  * \brief %Matrix used to transform from the nodal coefficients of a function to
@@ -388,7 +388,7 @@ const Matrix& spectral_to_grid_points_matrix(const Mesh<1>& mesh) noexcept;
  * _Vandermonde matrix_.
  *
  * \details This is the inverse to the Vandermonde matrix \f$\mathcal{V}\f$
- * computed in spectral_to_grid_points_matrix(size_t). It can be computed
+ * computed in modal_to_nodal_matrix(size_t). It can be computed
  * analytically for Gauss quadrature by evaluating
  * \f$\sum_j\mathcal{V}^{-1}_{ij}u_j=\widetilde{u}_i=
  * \frac{(u,\Phi_i)}{\gamma_i}\f$
@@ -399,18 +399,18 @@ const Matrix& spectral_to_grid_points_matrix(const Mesh<1>& mesh) noexcept;
  *
  * \param num_points The number of collocation points
  *
- * \see spectral_to_grid_points_matrix(size_t)
+ * \see modal_to_nodal_matrix(size_t)
  */
 template <Basis BasisType, Quadrature QuadratureType>
-const Matrix& grid_points_to_spectral_matrix(size_t num_points) noexcept;
+const Matrix& nodal_to_modal_matrix(size_t num_points) noexcept;
 
 /*!
  * \brief Transformation matrix from nodal to modal coefficients for a
  * one-dimensional mesh.
  *
- * \see grid_points_to_spectral_matrix(size_t)
+ * \see nodal_to_modal_matrix(size_t)
  */
-const Matrix& grid_points_to_spectral_matrix(const Mesh<1>& mesh) noexcept;
+const Matrix& nodal_to_modal_matrix(const Mesh<1>& mesh) noexcept;
 
 /*!
  * \brief %Matrix used to linearize a function.
@@ -418,12 +418,12 @@ const Matrix& grid_points_to_spectral_matrix(const Mesh<1>& mesh) noexcept;
  * \details Filters out all except the lowest two modes by applying
  * \f$\mathcal{V}^{-1}\cdot\mathrm{diag}(1,1,0,0,...)\cdot\mathcal{V}\f$ to the
  * nodal coefficients, where \f$\mathcal{V}\f$ is the Vandermonde matrix
- * computed in `spectral_to_grid_points_matrix(size_t)`.
+ * computed in `modal_to_nodal_matrix(size_t)`.
  *
  * \param num_points The number of collocation points
  *
- * \see spectral_to_grid_points_matrix(size_t)
- * \see grid_points_to_spectral_matrix(size_t)
+ * \see modal_to_nodal_matrix(size_t)
+ * \see nodal_to_modal_matrix(size_t)
  */
 template <Basis BasisType, Quadrature QuadratureType>
 const Matrix& linear_filter_matrix(size_t num_points) noexcept;

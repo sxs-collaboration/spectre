@@ -22,7 +22,7 @@ class not_null;
  * \ingroup SpectralGroup
  * \brief Compute the modal coefficients from the nodal coefficients
  *
- * \see Spectral::grid_points_to_spectral_matrix
+ * \see Spectral::nodal_to_modal_matrix
  */
 template <size_t Dim>
 void to_modal_coefficients(gsl::not_null<ModalVector*> modal_coefficients,
@@ -39,7 +39,7 @@ ModalVector to_modal_coefficients(const DataVector& nodal_coefficients,
  * \ingroup SpectralGroup
  * \brief Compute the nodal coefficients from the modal coefficients
  *
- * \see Spectral::spectral_to_grid_points_matrix
+ * \see Spectral::modal_to_nodal_matrix
  */
 template <size_t Dim>
 void to_nodal_coefficients(gsl::not_null<DataVector*> nodal_coefficients,

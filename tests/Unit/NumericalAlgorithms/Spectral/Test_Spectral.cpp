@@ -111,8 +111,8 @@ void test_linear_filter() {
        n <= Spectral::maximum_number_of_points<BasisType>; n++) {
     const auto& filter_matrix =
         Spectral::linear_filter_matrix<BasisType, QuadratureType>(n);
-    const auto& grid_points_to_spectral_matrix =
-        Spectral::grid_points_to_spectral_matrix<BasisType, QuadratureType>(n);
+    const auto& nodal_to_modal_matrix =
+        Spectral::nodal_to_modal_matrix<BasisType, QuadratureType>(n);
     const auto& collocation_pts =
         Spectral::collocation_points<BasisType, QuadratureType>(n);
     const DataVector u = exp(collocation_pts);
@@ -120,8 +120,8 @@ void test_linear_filter() {
     dgemv_('N', n, n, 1.0, filter_matrix.data(), n, u.data(), 1, 0.0,
            u_filtered.data(), 1);
     DataVector u_filtered_spectral(n);
-    dgemv_('N', n, n, 1.0, grid_points_to_spectral_matrix.data(), n,
-           u_filtered.data(), 1, 0.0, u_filtered_spectral.data(), 1);
+    dgemv_('N', n, n, 1.0, nodal_to_modal_matrix.data(), n, u_filtered.data(),
+           1, 0.0, u_filtered_spectral.data(), 1);
     for (size_t s = 2; s < n; ++s) {
       CHECK(0.0 == approx(u_filtered_spectral[s]));
     }
@@ -389,15 +389,11 @@ void test_spectral_quantities_for_mesh(const Mesh<1>& slice) {
   CHECK(Spectral::interpolation_matrix(slice, target_points) ==
         expected_interp_matrix_points);
   const auto& expected_vand_matrix =
-      Spectral::spectral_to_grid_points_matrix<BasisType, QuadratureType>(
-          num_points);
-  CHECK(Spectral::spectral_to_grid_points_matrix(slice) ==
-        expected_vand_matrix);
+      Spectral::modal_to_nodal_matrix<BasisType, QuadratureType>(num_points);
+  CHECK(Spectral::modal_to_nodal_matrix(slice) == expected_vand_matrix);
   const auto& expected_inv_vand_matrix =
-      Spectral::grid_points_to_spectral_matrix<BasisType, QuadratureType>(
-          num_points);
-  CHECK(Spectral::grid_points_to_spectral_matrix(slice) ==
-        expected_inv_vand_matrix);
+      Spectral::nodal_to_modal_matrix<BasisType, QuadratureType>(num_points);
+  CHECK(Spectral::nodal_to_modal_matrix(slice) == expected_inv_vand_matrix);
   const auto& expected_lin_matrix =
       Spectral::linear_filter_matrix<BasisType, QuadratureType>(num_points);
   CHECK(Spectral::linear_filter_matrix(slice) == expected_lin_matrix);

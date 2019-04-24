@@ -23,8 +23,8 @@ void transform_impl_helper(double* const output_coeffs,
   for (StripeIterator stripe_it(mesh.extents(), dim); stripe_it; ++stripe_it) {
     const Matrix& transformation_matrix =
         nodal_to_modal
-            ? Spectral::grid_points_to_spectral_matrix(mesh.slice_through(dim))
-            : Spectral::spectral_to_grid_points_matrix(mesh.slice_through(dim));
+            ? Spectral::nodal_to_modal_matrix(mesh.slice_through(dim))
+            : Spectral::modal_to_nodal_matrix(mesh.slice_through(dim));
     dgemv_('N', mesh.extents()[dim], mesh.extents()[dim], 1.0,
            transformation_matrix.data(), mesh.extents()[dim],
            input_coeffs + stripe_it.offset(), stripe_it.stride(),  // NOLINT

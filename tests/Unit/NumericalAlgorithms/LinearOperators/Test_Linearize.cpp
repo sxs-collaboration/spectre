@@ -41,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Linearize",
         for (size_t d = 0; d < 3; ++d) {
           for (StripeIterator s(mesh.extents(), d); s; ++s) {
             const Matrix& inv_v =
-                Spectral::grid_points_to_spectral_matrix(mesh.slice_through(d));
+                Spectral::nodal_to_modal_matrix(mesh.slice_through(d));
             const auto slice_points = mesh.extents(d);
             DataVector u_s(slice_points);
             dgemv_('N', slice_points, slice_points, 1., inv_v.data(),
@@ -108,7 +108,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.LinearizeInOneDim",
           DataVector u_lin = linearize(u, mesh, d);
           for (StripeIterator s(mesh.extents(), d); s; ++s) {
             const Matrix& inv_v =
-                Spectral::grid_points_to_spectral_matrix(mesh.slice_through(d));
+                Spectral::nodal_to_modal_matrix(mesh.slice_through(d));
             const auto slice_points = mesh.extents(d);
             DataVector u_s(slice_points);
             dgemv_('N', slice_points, slice_points, 1., inv_v.data(),

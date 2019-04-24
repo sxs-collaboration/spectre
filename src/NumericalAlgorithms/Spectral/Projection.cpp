@@ -81,9 +81,9 @@ const Matrix& projection_matrix_mortar_to_element(
             // The projection in spectral space is just a truncation
             // of the modes.
             const auto& spectral_to_grid_element =
-                spectral_to_grid_points_matrix(mesh_element);
+                modal_to_nodal_matrix(mesh_element);
             const auto& grid_to_spectral_mortar =
-                grid_points_to_spectral_matrix(mesh_mortar);
+                nodal_to_modal_matrix(mesh_mortar);
             Matrix projection(extents_element, extents_mortar, 0.);
             for (size_t i = 0; i < extents_element; ++i) {
               for (size_t j = 0; j < extents_mortar; ++j) {
@@ -150,9 +150,9 @@ const Matrix& projection_matrix_mortar_to_element(
             };
 
             const auto& spectral_to_grid_element =
-                spectral_to_grid_points_matrix(mesh_element);
+                modal_to_nodal_matrix(mesh_element);
             const auto& grid_to_spectral_mortar =
-                grid_points_to_spectral_matrix(mesh_mortar);
+                nodal_to_modal_matrix(mesh_mortar);
 
             Matrix temp(extents_element, extents_element, 0.);
             for (size_t j = 0; j < extents_element; ++j) {
