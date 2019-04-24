@@ -8,9 +8,12 @@
 
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -65,11 +68,13 @@ void compute_characteristic_fields(
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
     const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form,
-    const tnsr::I<DataVector, Dim, Frame>& unit_normal_vector) noexcept {
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric) noexcept {
   auto phi_dot_normal =
       make_with_value<tnsr::aa<DataVector, Dim, Frame>>(pi, 0.);
 
   // Compute phi_dot_normal_{ab} = n^i \Phi_{iab}
+  const auto& unit_normal_vector =
+      raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric);
   for (size_t a = 0; a < Dim + 1; ++a) {
     for (size_t b = 0; b < a + 1; ++b) {
       for (size_t i = 0; i < Dim; ++i) {
@@ -114,13 +119,13 @@ CharacteristicFieldsCompute<Dim, Frame>::function(
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
     const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form,
-    const tnsr::I<DataVector, Dim, Frame>& unit_normal_vector) noexcept {
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric) noexcept {
   auto char_fields =
       make_with_value<typename Tags::CharacteristicFields<Dim, Frame>::type>(
           get(gamma_2), 0.);
   compute_characteristic_fields(make_not_null(&char_fields), gamma_2,
                                 spacetime_metric, pi, phi, unit_normal_one_form,
-                                unit_normal_vector);
+                                inverse_spatial_metric);
   return char_fields;
 }
 
@@ -210,8 +215,8 @@ double ComputeLargestCharacteristicSpeed<Dim, Frame>::apply(
       const tnsr::aa<DataVector, DIM(data), FRAME(data)>& pi,                  \
       const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& phi,                \
       const tnsr::i<DataVector, DIM(data), FRAME(data)>& unit_normal_one_form, \
-      const tnsr::I<DataVector, DIM(data), FRAME(data)>&                       \
-          unit_normal_vector) noexcept;                                        \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
+          inverse_spatial_metric) noexcept;                                    \
   template struct GeneralizedHarmonic::CharacteristicFieldsCompute<            \
       DIM(data), FRAME(data)>;                                                 \
   template void                                                                \

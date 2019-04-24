@@ -152,10 +152,11 @@ typename Tag::type compute_field_with_tag(
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
     const tnsr::i<DataVector, Dim, Frame>& normal_one_form,
-    const tnsr::I<DataVector, Dim, Frame>& normal_vector) {
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric) {
   return get<Tag>(
       GeneralizedHarmonic::CharacteristicFieldsCompute<Dim, Frame>::function(
-          gamma_2, spacetime_metric, pi, phi, normal_one_form, normal_vector));
+          gamma_2, spacetime_metric, pi, phi, normal_one_form,
+          inverse_spatial_metric));
 }
 
 template <size_t Dim, typename Frame>
@@ -297,7 +298,7 @@ void test_characteristic_fields_analytic(
   const auto uvars = GeneralizedHarmonic::CharacteristicFieldsCompute<
       spatial_dim, Frame::Inertial>::function(gamma_2, spacetime_metric, pi,
                                               phi, unit_normal_one_form,
-                                              normal);
+                                              inverse_spatial_metric);
 
   const auto& upsi_from_func =
       get<GeneralizedHarmonic::Tags::UPsi<spatial_dim, Frame::Inertial>>(uvars);

@@ -82,11 +82,8 @@ struct InterfaceForNonConservativeSystem {
                                  typename System::template magnitude_tag<
                                      Tags::UnnormalizedFaceNormal<dim>>>,
       Tags::InterfaceComputeItem<
-          Directions, Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>,
-      Tags::InterfaceComputeItem<Directions,
-                                 Tags::UnitFaceNormalCompute<dim, Inertial>>,
-      Tags::InterfaceComputeItem<
-          Directions, Tags::UnitFaceNormalVectorCompute<dim, Inertial>>,
+          Directions,
+          ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<dim, Inertial>>>,
       Tags::InterfaceComputeItem<
           Directions,
           GeneralizedHarmonic::CharacteristicFieldsCompute<dim, Inertial>>,
@@ -133,13 +130,8 @@ struct InterfaceForNonConservativeSystem {
           GeneralizedHarmonic::Tags::ConstraintGamma2Compute<dim, Inertial>>,
       Tags::InterfaceComputeItem<
           Tags::BoundaryDirectionsExterior<dim>,
-          Tags::UnitFaceNormalCompute<dim, Frame::Inertial>>,
-      Tags::InterfaceComputeItem<
-          Tags::BoundaryDirectionsExterior<dim>,
-          Tags::UnitFaceNormalVectorCompute<dim, Frame::Inertial>>,
-      Tags::InterfaceComputeItem<
-          Tags::BoundaryDirectionsExterior<dim>,
-          Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>,
+          ::Tags::Normalized<
+              ::Tags::UnnormalizedFaceNormal<dim, Frame::Inertial>>>,
       Tags::InterfaceComputeItem<
           Tags::BoundaryDirectionsExterior<dim>,
           GeneralizedHarmonic::CharacteristicFieldsCompute<dim, Inertial>>,
