@@ -146,20 +146,18 @@ void test_upwind_flux_analytic(
   const auto unit_normal_one_form_int = StrahlkorperGr::unit_normal_one_form(
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
       one_over_one_form_magnitude_int);
-  const auto unit_normal_vector_int = raise_or_lower_index(
-      unit_normal_one_form_int, inverse_spatial_metric_int);
 
   // Get the characteristic fields and speeds
   const auto char_fields_int = GeneralizedHarmonic::CharacteristicFieldsCompute<
       spatial_dim, Frame::Inertial>::function(gamma_2, spacetime_metric_int,
                                               pi_int, phi_int,
                                               unit_normal_one_form_int,
-                                              unit_normal_vector_int);
+                                              inverse_spatial_metric_int);
   const auto char_fields_ext = GeneralizedHarmonic::CharacteristicFieldsCompute<
       spatial_dim, Frame::Inertial>::function(gamma_2, spacetime_metric_ext,
                                               pi_ext, phi_ext,
                                               unit_normal_one_form_int,
-                                              unit_normal_vector_int);
+                                              inverse_spatial_metric_int);
 
   const auto one = make_with_value<Scalar<DataVector>>(x, 1.0);
   const auto minus_one = make_with_value<Scalar<DataVector>>(x, -1.0);

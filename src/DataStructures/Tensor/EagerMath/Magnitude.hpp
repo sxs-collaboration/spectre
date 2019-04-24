@@ -38,8 +38,7 @@ Scalar<DataType> magnitude(
     const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index>,
-                            change_index_up_lo<Index>>>&
-        metric) noexcept {
+                            change_index_up_lo<Index>>>& metric) noexcept {
   return Scalar<DataType>{sqrt(get(dot_product(vector, vector, metric)))};
 }
 
@@ -104,6 +103,7 @@ struct Normalized : db::ComputeTag {
     }
     return vector;
   }
+  using type = typename Tag::type;
   using argument_tags = tmpl::list<Tag, Magnitude<Tag>>;
 };
 }  // namespace Tags
