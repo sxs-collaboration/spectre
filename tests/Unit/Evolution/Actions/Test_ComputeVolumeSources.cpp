@@ -18,6 +18,7 @@
 #include "Domain/ElementIndex.hpp"
 #include "Evolution/Actions/ComputeVolumeSources.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -45,8 +46,11 @@ struct Var3 : db::SimpleTag {
   using type = Scalar<DataVector>;
 };
 
+using source_tag = ::Tags::Source<Var2>;
+
 struct ComputeSources {
   using argument_tags = tmpl::list<Var1, Var3>;
+  using return_tags = tmpl::list<source_tag>;
   static void apply(
       const gsl::not_null<tnsr::I<DataVector, dim, Frame::Inertial>*> source2,
       const Scalar<DataVector>& var1, const Scalar<DataVector>& var3) noexcept {
@@ -63,8 +67,6 @@ struct System {
 
 using ElementIndexType = ElementIndex<dim>;
 
-using source_tag =
-    Tags::Source<Tags::Variables<tmpl::list<Tags::Source<Var2>>>>;
 
 template <typename Metavariables>
 struct component {
@@ -101,8 +103,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
       db::AddSimpleTags<System::variables_tag, Var3, source_tag>;
   MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
   tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(self_id, db::create<simple_tags>(std::move(vars), var3,
-                                                db::item_type<source_tag>(2)));
+      .emplace(self_id,
+               db::create<simple_tags>(std::move(vars), var3,
+                                       db::item_type<source_tag>{2_st}));
   MockRuntimeSystem runner{{}, std::move(dist_objects)};
 
   runner.next_action<component<Metavariables>>(self_id);
@@ -110,6 +113,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
   const auto& box = runner.algorithms<component<Metavariables>>()
                         .at(self_id)
                         .get_databox<db::compute_databox_type<simple_tags>>();
-  CHECK(get<0>(db::get<Tags::Source<Var2>>(box)) == get(var1));
-  CHECK(get<1>(db::get<Tags::Source<Var2>>(box)) == get(var3));
+  CHECK(get<0>(db::get<source_tag>(box)) == get(var1));
+  CHECK(get<1>(db::get<source_tag>(box)) == get(var3));
 }

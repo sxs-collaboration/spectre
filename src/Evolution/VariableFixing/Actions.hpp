@@ -56,9 +56,7 @@ struct FixVariables {
       const ParallelComponent* const /*meta*/) noexcept {
     const auto& variable_fixer =
         get<OptionTags::VariableFixerParams<VariableFixer>>(cache);
-    db::mutate_apply<typename VariableFixer::return_tags,
-                     typename VariableFixer::argument_tags>(
-        variable_fixer, make_not_null(&box));
+    db::mutate_apply(variable_fixer, make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
 };

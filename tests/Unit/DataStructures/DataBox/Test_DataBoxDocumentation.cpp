@@ -394,7 +394,7 @@ struct IntendedMutation {
 
 /// [intended_mutation2]
 struct IntendedMutation2 {
-  using mutate_tags = tmpl::list<Time, FallingSpeed>;
+  using return_tags = tmpl::list<Time, FallingSpeed>;
   using argument_tags = tmpl::list<TimeStep, EarthGravity>;
 
   static void apply(const gsl::not_null<double*> time,
@@ -414,9 +414,7 @@ struct MyFirstAction{
   static void apply(
     const gsl::not_null<db::DataBox<DbTagsList>*> time_dependent_databox)
       noexcept {
-    db::mutate_apply<typename Mutator::mutate_tags,
-                     typename Mutator::argument_tags>(
-    Mutator{}, time_dependent_databox);
+    db::mutate_apply<Mutator>(time_dependent_databox);
   }
 };
 /// [my_first_action]
@@ -513,10 +511,7 @@ CHECK(-10.0 + 0.2 * -9.8 ==
   approx(db::get<FallingSpeed>(time_dependent_databox)));
 
 /// [time_dep_databox3]
-db::mutate_apply<
-  typename IntendedMutation2::mutate_tags,
-  typename IntendedMutation2::argument_tags>(
-    IntendedMutation2{}, make_not_null(&time_dependent_databox));
+db::mutate_apply<IntendedMutation2>(make_not_null(&time_dependent_databox));
 /// [time_dep_databox3]
 CHECK(0.0 + 0.3 == approx(db::get<Time>(time_dependent_databox)));
 CHECK(-10.0 + 0.3 * -9.8 ==

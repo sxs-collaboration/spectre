@@ -43,11 +43,8 @@ struct ComputeVolumeSources {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
-    db::mutate_apply<
-        db::wrap_tags_in<Tags::Source, typename system::sourced_variables>,
-        typename system::volume_sources::argument_tags>(
-        typename system::volume_sources{}, make_not_null(&box));
+    db::mutate_apply<typename Metavariables::system::volume_sources>(
+        make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
 };

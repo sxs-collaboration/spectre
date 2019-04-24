@@ -6,34 +6,43 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
+namespace tuples {
+template <typename...>
+class TaggedTuple;
+}  // namespace tuples
+
 namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
 }  // namespace Parallel
-// IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
+namespace db {
 namespace Actions {
-/// \ingroup ActionsGroup
-/// \brief Compute the conservative variables from the primitive variables
-///
-/// Uses:
-/// - DataBox: Items in system::conservative_from_primitive::argument_tags
-///
-/// DataBox changes:
-/// - Adds: nothing
-/// - Removes: nothing
-/// - Modifies: Metavariables::system::conservative_from_primitive::return_tags
-struct UpdateConservatives {
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
+/*!
+ * \ingroup ActionsGroup
+ * \brief Apply the function `F::apply` to the DataBox
+ *
+ * The function `F::apply` is invoked with the `F::argument_tags`. The result
+ * of this computation is stored in the `F::return_tags`.
+ *
+ * Uses:
+ * - DataBox:
+ *   - All elements in `F::argument_tags`
+ *   - All elements in `F::return_tags`
+ *
+ * DataBox changes:
+ * - Modifies:
+ *   - All elements in `F::return_tags`
+ */
+template <typename F>
+struct MutateApply {
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent,
             Requires<tmpl::size<DbTagsList>::value != 0> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -41,10 +50,9 @@ struct UpdateConservatives {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    db::mutate_apply<
-        typename Metavariables::system::conservative_from_primitive>(
-        make_not_null(&box));
+    db::mutate_apply<F>(make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
 };
 }  // namespace Actions
+}  // namespace db

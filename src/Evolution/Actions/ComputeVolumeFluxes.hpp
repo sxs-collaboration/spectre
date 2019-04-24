@@ -48,13 +48,8 @@ struct ComputeVolumeFluxes {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
-    using variables_tag = typename system::variables_tag;
-    db::mutate_apply<db::split_tag<db::add_tag_prefix<
-                         Tags::Flux, variables_tag,
-                         tmpl::size_t<system::volume_dim>, Frame::Inertial>>,
-                     typename system::volume_fluxes::argument_tags>(
-        typename system::volume_fluxes{}, make_not_null(&box));
+    db::mutate_apply<typename Metavariables::system::volume_fluxes>(
+        make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }
 };
