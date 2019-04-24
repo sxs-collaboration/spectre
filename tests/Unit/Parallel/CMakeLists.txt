@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(Actions)
+
 function(add_algorithm_test EXECUTABLE_NAME)
   add_spectre_executable(
     ${EXECUTABLE_NAME}
