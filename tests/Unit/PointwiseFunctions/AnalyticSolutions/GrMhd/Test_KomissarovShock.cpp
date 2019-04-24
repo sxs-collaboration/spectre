@@ -5,22 +5,31 @@
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <limits>
 #include <tuple>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Creators/Brick.hpp"
+#include "Domain/Domain.hpp"
+#include "Domain/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/KomissarovShock.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
+
+// IWYU pragma: no_include <vector>
 
 namespace {
 
@@ -183,6 +192,23 @@ void test_variables(const DataType& used_for_size) noexcept {
       {{{-1., 1.}}}, member_variables, used_for_size);
 }
 
+void test_solution() noexcept {
+  grmhd::Solutions::KomissarovShock solution(
+      1.33, 1., 3.323, 10., 55.36, std::array<double, 3>{{0.83, 0., 0.}},
+      std::array<double, 3>{{0.62, -0.44, 0.}},
+      std::array<double, 3>{{10., 18.28, 0.}},
+      std::array<double, 3>{{10., 14.49, 0.}}, 0.5);
+  const std::array<double, 3> x{{1.0, 2.3, -0.4}};
+  const std::array<double, 3> dx{{1.e-1, 1.e-1, 1.e-1}};
+
+  domain::creators::Brick<Frame::Inertial> brick(
+      x - dx, x + dx, {{false, false, false}}, {{0, 0, 0}}, {{6, 6, 6}});
+  Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
+               Spectral::Quadrature::GaussLobatto};
+  const auto domain = brick.create_domain();
+  verify_grmhd_solution(solution, domain.blocks()[0], mesh, 1.e-10, 1.234,
+                        1.e-1);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Solutions.GrMhd.KomissarovShock",
@@ -197,4 +223,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Solutions.GrMhd.KomissarovShock",
   test_left_and_right_variables();
   test_variables(std::numeric_limits<double>::signaling_NaN());
   test_variables(DataVector(5));
+
+  test_solution();
 }

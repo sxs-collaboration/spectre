@@ -4,21 +4,31 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <algorithm>
+#include <array>
+#include <cstddef>
 #include <limits>
 #include <tuple>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/Creators/Brick.hpp"
+#include "Domain/Domain.hpp"
+#include "Domain/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/BondiMichel.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tags::dt
+
+// IWYU pragma: no_include <vector>
 
 namespace {
 
@@ -111,6 +121,20 @@ void test_variables(const DataType& used_for_size) {
                       mag_field_strength),
       used_for_size);
 }
+
+void test_solution() noexcept {
+  grmhd::Solutions::BondiMichel solution(1.0, 50.0, 1.3, 1.5, 0.24);
+  const std::array<double, 3> x{{4.0, 4.0, 4.0}};
+  const std::array<double, 3> dx{{1.e-3, 1.e-3, 1.e-3}};
+
+  domain::creators::Brick<Frame::Inertial> brick(
+      x - dx, x + dx, {{false, false, false}}, {{0, 0, 0}}, {{4, 4, 4}});
+  Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
+               Spectral::Quadrature::GaussLobatto};
+  const auto domain = brick.create_domain();
+  verify_grmhd_solution(solution, domain.blocks()[0], mesh, 1.e-10, 1.234,
+                        1.e-4);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.GrMhd.BondiMichel",
@@ -124,4 +148,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.GrMhd.BondiMichel",
 
   test_variables(std::numeric_limits<double>::signaling_NaN());
   test_variables(DataVector(5));
+
+  test_solution();
 }
