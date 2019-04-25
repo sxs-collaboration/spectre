@@ -148,15 +148,15 @@ namespace {
 template <typename Tag, size_t Dim, typename Frame>
 typename Tag::type compute_field_with_tag(
     const Scalar<DataVector>& gamma_2,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
     const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame>& pi,
     const tnsr::iaa<DataVector, Dim, Frame>& phi,
-    const tnsr::i<DataVector, Dim, Frame>& normal_one_form,
-    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric) {
+    const tnsr::i<DataVector, Dim, Frame>& normal_one_form) {
   return get<Tag>(
       GeneralizedHarmonic::CharacteristicFieldsCompute<Dim, Frame>::function(
-          gamma_2, spacetime_metric, pi, phi, normal_one_form,
-          inverse_spatial_metric));
+          gamma_2, inverse_spatial_metric, spacetime_metric, pi, phi,
+          normal_one_form));
 }
 
 template <size_t Dim, typename Frame>
@@ -296,9 +296,9 @@ void test_characteristic_fields_analytic(
 
   // Check that locally computed fields match returned ones
   const auto uvars = GeneralizedHarmonic::CharacteristicFieldsCompute<
-      spatial_dim, Frame::Inertial>::function(gamma_2, spacetime_metric, pi,
-                                              phi, unit_normal_one_form,
-                                              inverse_spatial_metric);
+      spatial_dim, Frame::Inertial>::function(gamma_2, inverse_spatial_metric,
+                                              spacetime_metric, pi, phi,
+                                              unit_normal_one_form);
 
   const auto& upsi_from_func =
       get<GeneralizedHarmonic::Tags::UPsi<spatial_dim, Frame::Inertial>>(uvars);

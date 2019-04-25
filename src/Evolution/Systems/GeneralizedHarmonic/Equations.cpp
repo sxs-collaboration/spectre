@@ -337,6 +337,7 @@ void ComputeNormalDotFluxes<Dim>::apply(
 template <size_t Dim>
 void UpwindFlux<Dim>::package_data(
     gsl::not_null<Variables<package_tags>*> packaged_data,
+    const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,
     const typename gr::Tags::SpacetimeMetric<
         Dim, Frame::Inertial, DataVector>::type& spacetime_metric,
     const typename Tags::Pi<Dim, Frame::Inertial>::type& pi,
@@ -346,8 +347,7 @@ void UpwindFlux<Dim>::package_data(
         shift,
     const typename Tags::ConstraintGamma1::type& gamma1,
     const typename Tags::ConstraintGamma2::type& gamma2,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric)
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
     const noexcept {
   get<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>>(
       *packaged_data) = spacetime_metric;
@@ -375,6 +375,8 @@ void UpwindFlux<Dim>::operator()(
     gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
         GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>>*>
         phi_normal_dot_numerical_flux,
+    const tnsr::II<DataVector, Dim, Frame::Inertial>&
+        inverse_spatial_metric_int,
     const typename gr::Tags::SpacetimeMetric<
         Dim, Frame::Inertial, DataVector>::type& spacetime_metric_int,
     const typename Tags::Pi<Dim, Frame::Inertial>::type& pi_int,
@@ -386,7 +388,7 @@ void UpwindFlux<Dim>::operator()(
     const typename Tags::ConstraintGamma2::type& gamma2_int,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal_int,
     const tnsr::II<DataVector, Dim, Frame::Inertial>&
-        inverse_spatial_metric_int,
+    /*inverse_spatial_metric_ext*/,
     const typename gr::Tags::SpacetimeMetric<
         Dim, Frame::Inertial, DataVector>::type& spacetime_metric_ext,
     const typename Tags::Pi<Dim, Frame::Inertial>::type& pi_ext,
@@ -397,9 +399,8 @@ void UpwindFlux<Dim>::operator()(
     const typename Tags::ConstraintGamma2::type& gamma1_ext,
     const typename Tags::ConstraintGamma2::type& gamma2_ext,
     const tnsr::i<DataVector, Dim,
-                  Frame::Inertial>& /*interface_unit_normal_ext*/,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>&
-    /*inverse_spatial_metric_ext*/) const noexcept {
+                  Frame::Inertial>& /*interface_unit_normal_ext*/) const
+    noexcept {
   Scalar<DataVector> gamma1_avg = gamma1_int;
   get(gamma1_avg) -= 0.5 * (get(gamma1_int) - get(gamma1_ext));
   Scalar<DataVector> gamma2_avg = gamma2_int;
@@ -407,15 +408,15 @@ void UpwindFlux<Dim>::operator()(
 
   const auto char_fields_int =
       CharacteristicFieldsCompute<Dim, Frame::Inertial>::function(
-          gamma2_avg, spacetime_metric_int, pi_int, phi_int,
-          interface_unit_normal_int, inverse_spatial_metric_int);
+          gamma2_avg, inverse_spatial_metric_int, spacetime_metric_int, pi_int,
+          phi_int, interface_unit_normal_int);
   const auto char_speeds_int =
       CharacteristicSpeedsCompute<Dim, Frame::Inertial>::function(
           gamma1_avg, lapse_int, shift_int, interface_unit_normal_int);
   const auto char_fields_ext =
       CharacteristicFieldsCompute<Dim, Frame::Inertial>::function(
-          gamma2_avg, spacetime_metric_ext, pi_ext, phi_ext,
-          interface_unit_normal_int, inverse_spatial_metric_int);
+          gamma2_avg, inverse_spatial_metric_int, spacetime_metric_ext, pi_ext,
+          phi_ext, interface_unit_normal_int);
   const auto char_speeds_ext =
       CharacteristicSpeedsCompute<Dim, Frame::Inertial>::function(
           gamma1_avg, lapse_ext, shift_ext, interface_unit_normal_int);

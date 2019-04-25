@@ -197,24 +197,24 @@ struct UpwindFlux {
   // `()` operator.
 
   using package_tags = tmpl::list<
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
       Tags::Pi<Dim, Frame::Inertial>, Tags::Phi<Dim, Frame::Inertial>,
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<Dim, Frame::Inertial, DataVector>, Tags::ConstraintGamma1,
       Tags::ConstraintGamma2,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
+      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>;
 
   // These tags on the interface of the element are passed to
   // `package_data` to provide the data needed to compute the numerical fluxes.
   using argument_tags = tmpl::list<
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
       Tags::Pi<Dim, Frame::Inertial>, Tags::Phi<Dim, Frame::Inertial>,
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<Dim, Frame::Inertial, DataVector>, Tags::ConstraintGamma1,
       Tags::ConstraintGamma2,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
+      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>;
 
   // pseudo-interface: used internally by Algorithm infrastructure, not
   // user-level code
@@ -222,6 +222,7 @@ struct UpwindFlux {
   // arguments the databox types of the `argument_tags`.
   void package_data(
       gsl::not_null<Variables<package_tags>*> packaged_data,
+      const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,
       const typename gr::Tags::SpacetimeMetric<
           Dim, Frame::Inertial, DataVector>::type& spacetime_metric,
       const typename Tags::Pi<Dim, Frame::Inertial>::type& pi,
@@ -231,8 +232,7 @@ struct UpwindFlux {
           shift,
       const typename Tags::ConstraintGamma1::type& gamma1,
       const typename Tags::ConstraintGamma2::type& gamma2,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal,
-      const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric)
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
       const noexcept;
 
   // pseudo-interface: used internally by Algorithm infrastructure, not
@@ -251,6 +251,8 @@ struct UpwindFlux {
       gsl::not_null<db::item_type<::Tags::NormalDotNumericalFlux<
           GeneralizedHarmonic::Tags::Phi<Dim, Frame::Inertial>>>*>
           phi_normal_dot_numerical_flux,
+      const tnsr::II<DataVector, Dim, Frame::Inertial>&
+          inverse_spatial_metric_int,
       const typename gr::Tags::SpacetimeMetric<
           Dim, Frame::Inertial, DataVector>::type& spacetime_metric_int,
       const typename Tags::Pi<Dim, Frame::Inertial>::type& pi_int,
@@ -263,7 +265,7 @@ struct UpwindFlux {
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
           interface_unit_normal_int,
       const tnsr::II<DataVector, Dim, Frame::Inertial>&
-          inverse_spatial_metric_int,
+          inverse_spatial_metric_ext,
       const typename gr::Tags::SpacetimeMetric<
           Dim, Frame::Inertial, DataVector>::type& spacetime_metric_ext,
       const typename Tags::Pi<Dim, Frame::Inertial>::type& pi_ext,
@@ -274,9 +276,7 @@ struct UpwindFlux {
       const typename Tags::ConstraintGamma2::type& gamma1_ext,
       const typename Tags::ConstraintGamma2::type& gamma2_ext,
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
-          interface_unit_normal_ext,
-      const tnsr::II<DataVector, Dim, Frame::Inertial>&
-          inverse_spatial_metric_ext) const noexcept;
+          interface_unit_normal_ext) const noexcept;
 
   // Function that performs the upwind weighting. Inputs are the char fields
   // and speeds in the interior and exterior. At each point, each returned
