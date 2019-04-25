@@ -4,15 +4,19 @@ See LICENSE.txt for details.
 \endcond
 # Notation Used by SpECTRE {#spectre_notation_general}
 
-# Discontinuous Galerkin Notation {#dg_notation}
+# Current Notation {#spectre_current_notation}
+
+\tableofcontents
+
+## Discontinuous Galerkin Notation {#dg_notation}
 
 - The logical coordinates in the element are
-  \f$\mathbf{\xi}=\{\xi,\eta,\zeta\}\f$.
+  \f$\boldsymbol{\xi}=\{\xi,\eta,\zeta\}\f$.
 - The Jacobian matrix is defined as
   \f{align*}{
-      \mathbf{J}=\frac{\partial \mathbf{x}}{\mathbf{\xi}}
+      \mathbf{J}=\frac{\partial \mathbf{x}}{\partial \boldsymbol{\xi}}
   \f}
-  where \f$\mathbf{x}\f$ are the coordinates mapped to by coordinate map.
+  where \f$\mathbf{x}\f$ are the coordinates mapped to by the coordinate map.
   The determinant of the Jacobian matrix is denoted by \f$J\f$.
 - We use \f$s\f$ and \f$t\f$ to be grid point indices. That is, \f$U_s\f$ is
   \f$U\f$ at the grid point \f$s\f$. For tensor product bases we index the
@@ -27,7 +31,8 @@ See LICENSE.txt for details.
 - A DG scheme with an \f$N^{\mathrm{th}}\f$ order basis is referred to as a
   \f$P_N\f$ scheme and converges at order \f$\mathcal{O}\left(\Delta
   x^{N+1}\right)\f$ where \f$\Delta x\f$ is the 1d size of the element.
-- The unit normal vector to the element is denoted by \f$n_i\f$.
+- The unit normal vector to one of the surfaces of the element is denoted by
+  \f$n_i\f$.
 - The numerical flux boundary correction term which includes the normal vectors
   is denoted by \f$G(F^{i,+},n_i^+,u^+,F^{i,-},n_i^-,u^-)\f$ where the \f$+\f$
   and \f$-\f$ denote the values on the outer and inner side of the mortar,
@@ -38,7 +43,7 @@ See LICENSE.txt for details.
       -\frac{C}{2}\left(u^+-u^-\right)
   \f}
 
-# General Relativity and (Magneto)hydrodynamics{#gr_hydro_notation}
+## General Relativity and (Magneto)hydrodynamics{#gr_hydro_notation}
 
 We use the following conventions and notation:
 - In general we work in units where \f$G=c=1\f$.
@@ -125,3 +130,5 @@ The notation for (magneto)hydrodynamics used is:
   \f}
   We denote the conserved variables multiplied by \f$\sqrt{\gamma}\f$ with a
   tilde on top. For example, \f$\tilde{D}=\sqrt{\gamma}D\f$.
+
+# Notation History {#spectre_notation_history}
