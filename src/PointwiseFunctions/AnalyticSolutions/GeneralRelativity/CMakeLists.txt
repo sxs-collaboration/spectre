@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
     KerrSchild.cpp
     Minkowski.cpp
     Tov.cpp
+    WrappedGr.cpp
     )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
