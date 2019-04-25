@@ -10,6 +10,7 @@
 #include <cstddef>
 
 #include "ErrorHandling/Assert.hpp"  // IWYU pragma: keep
+#include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -53,30 +54,27 @@ using plus_tensor_index = TensorIndex<A::value + B::value>;
  *
  * Available tensor indices to use in a Tensor Expression.
  * \snippet Test_TensorExpressions.cpp use_tensor_index
- *
- * \note Because these are never actually used as objects and only for type
- * manipulation they do not need to be instantiated anywhere.
  */
-extern TensorIndex<0> ti_a;
-extern TensorIndex<0> ti_A;
-extern TensorIndex<1> ti_b;
-extern TensorIndex<1> ti_B;
-extern TensorIndex<2> ti_c;
-extern TensorIndex<2> ti_C;
-extern TensorIndex<3> ti_d;
-extern TensorIndex<3> ti_D;
-extern TensorIndex<4> ti_e;
-extern TensorIndex<4> ti_E;
-extern TensorIndex<5> ti_f;
-extern TensorIndex<5> ti_F;
-extern TensorIndex<6> ti_g;
-extern TensorIndex<6> ti_G;
-extern TensorIndex<7> ti_h;
-extern TensorIndex<7> ti_H;
-extern TensorIndex<8> ti_i;
-extern TensorIndex<8> ti_I;
-extern TensorIndex<9> ti_j;
-extern TensorIndex<9> ti_J;
+static TensorIndex<0> ti_a{};
+static TensorIndex<0> ti_A{};
+static TensorIndex<1> ti_b{};
+static TensorIndex<1> ti_B{};
+static TensorIndex<2> ti_c{};
+static TensorIndex<2> ti_C{};
+static TensorIndex<3> ti_d{};
+static TensorIndex<3> ti_D{};
+static TensorIndex<4> ti_e{};
+static TensorIndex<4> ti_E{};
+static TensorIndex<5> ti_f{};
+static TensorIndex<5> ti_F{};
+static TensorIndex<6> ti_g{};
+static TensorIndex<6> ti_G{};
+static TensorIndex<7> ti_h{};
+static TensorIndex<7> ti_H{};
+static TensorIndex<8> ti_i{};
+static TensorIndex<8> ti_I{};
+static TensorIndex<9> ti_j{};
+static TensorIndex<9> ti_J{};
 
 using ti_a_t = decltype(ti_a);
 using ti_A_t = decltype(ti_A);

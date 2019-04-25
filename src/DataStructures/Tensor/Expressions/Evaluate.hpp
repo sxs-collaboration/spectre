@@ -28,9 +28,10 @@ auto evaluate(const T& te) {
       sizeof...(LhsIndices) == tmpl::size<typename T::args_list>::value,
       "Must have the same number of indices on the LHS and RHS of a tensor "
       "equation.");
-  using rhs = tmpl::remove_duplicates<typename T::args_list>;
+  using rhs = tmpl::transform<tmpl::remove_duplicates<typename T::args_list>,
+                              std::decay<tmpl::_1>>;
   static_assert(
-      tmpl::equal_members<tmpl::list<LhsIndices...>, rhs>::value,
+      tmpl::equal_members<tmpl::list<std::decay_t<LhsIndices>...>, rhs>::value,
       "All indices on the LHS of a Tensor Expression (that is, those specified "
       "in evaluate<Indices::...>) must be present on the RHS of the expression "
       "as well.");
