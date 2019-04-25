@@ -38,6 +38,11 @@ StepChoosers:
   - Cfl:
       SafetyFactor: 0.2
 
+# If filtering is enabled in the executable the filter can be controlled using:
+# ExpFilter0:
+#   Alpha: 12
+#   HalfPower: 32
+
 NumericalFluxParams:
 
 # [observe_event_trigger]
