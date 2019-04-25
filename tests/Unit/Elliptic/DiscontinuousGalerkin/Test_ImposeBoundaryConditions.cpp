@@ -204,7 +204,8 @@ struct ElementArray {
       boundary_compute_tag<Tags::UnnormalizedFaceNormal<Dim>>,
       boundary_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
-      boundary_compute_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>,
+      boundary_compute_tag<
+          Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>,
       Tags::BoundaryDirectionsExterior<Dim>,
       exterior_boundary_compute_tag<Tags::Direction<Dim>>,
       exterior_boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
@@ -213,7 +214,7 @@ struct ElementArray {
       exterior_boundary_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       exterior_boundary_compute_tag<
-          Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+          Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>>;
 
   using initial_databox =
       db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;

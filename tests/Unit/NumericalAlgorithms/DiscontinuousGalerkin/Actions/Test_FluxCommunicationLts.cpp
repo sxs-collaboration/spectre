@@ -174,7 +174,7 @@ struct lts_component {
       interface_compute_tag<
           Dim, Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       interface_compute_tag<
-          Dim, Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+          Dim, Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>>;
 
   using initial_databox =
       db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;

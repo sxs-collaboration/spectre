@@ -120,7 +120,8 @@ struct component {
       interface_compute_tag<Tags::UnnormalizedFaceNormal<2>>,
       interface_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
-      interface_compute_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>;
+      interface_compute_tag<
+          Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<2>>>>;
   using initial_databox =
       db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
 };
@@ -198,8 +199,9 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ComputeNonconservativeBoundaryFluxes",
 
   auto box = run_action(element, vars, other_arg);
 
-  const auto& unit_face_normal = db::get<interface_tag<Tags::Normalized<
-      Tags::UnnormalizedFaceNormal<2>>>>(box);
+  const auto& unit_face_normal =
+      db::get<interface_tag<Tags::Normalized<Tags::UnnormalizedFaceNormal<2>>>>(
+          box);
   const auto& n_dot_f = db::get<n_dot_f_tag>(box);
 
   std::unordered_map<Direction<2>,

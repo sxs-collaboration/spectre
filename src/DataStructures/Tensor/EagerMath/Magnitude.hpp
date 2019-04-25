@@ -38,8 +38,7 @@ Scalar<DataType> magnitude(
     const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector,
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index>,
-                            change_index_up_lo<Index>>>&
-        metric) noexcept {
+                            change_index_up_lo<Index>>>& metric) noexcept {
   return Scalar<DataType>{sqrt(get(dot_product(vector, vector, metric)))};
 }
 
@@ -90,10 +89,22 @@ struct NonEuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
 ///
 /// \snippet Test_Magnitude.cpp normalized_name
 template <typename Tag>
-struct Normalized : db::ComputeTag {
+struct Normalized : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
     return "Normalized(" + Tag::name() + ")";
   }
+  using tag = Tag;
+  using type = db::item_type<Tag>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup DataStructuresGroup
+/// Normalizes the (co)vector represented by Tag
+///
+/// This tag inherits from `Tags::Normalized<Tag>`
+template <typename Tag>
+struct NormalizedCompute : Normalized<Tag>, db::ComputeTag {
+  using base = Normalized<Tag>;
   static constexpr auto function(
       const db::item_type<Tag>&
           vector_in,  // Compute items need to take const references

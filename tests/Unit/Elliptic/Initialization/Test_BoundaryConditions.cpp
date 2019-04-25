@@ -106,7 +106,7 @@ using arguments_compute_tags = db::AddComputeTags<
         Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
     Tags::InterfaceComputeItem<
         Tags::BoundaryDirectionsInterior<Dim>,
-        Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+        Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",

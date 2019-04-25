@@ -155,8 +155,8 @@ void test_magnitude_tags() {
       db::create<db::AddSimpleTags<Vector, Covector<2>>,
                  db::AddComputeTags<Tags::EuclideanMagnitude<Vector>,
                                     Tags::EuclideanMagnitude<Covector<2>>,
-                                    Tags::Normalized<Vector>,
-                                    Tags::Normalized<Covector<2>>>>(
+                                    Tags::NormalizedCompute<Vector>,
+                                    Tags::NormalizedCompute<Covector<2>>>>(
           db::item_type<Vector>({{{1., 2.}, {2., 3.}, {2., 6.}}}),
           db::item_type<Covector<2>>({{{3., 5.}, {4., 12.}}}));
 
@@ -219,8 +219,9 @@ void test_general_magnitude_tags() {
                  db::AddComputeTags<
                      Tags::NonEuclideanMagnitude<Vector, Metric>,
                      Tags::NonEuclideanMagnitude<Covector<3>, InverseMetric>,
-                     Tags::Normalized<Vector>, Tags::Normalized<Covector<3>>>>(
-          vector, covector, metric, inv_metric);
+                     Tags::NormalizedCompute<Vector>,
+                     Tags::NormalizedCompute<Covector<3>>>>(vector, covector,
+                                                            metric, inv_metric);
 
   CHECK_ITERABLE_APPROX(get(db::get<Tags::Magnitude<Vector>>(box)),
                         (DataVector{npts, sqrt(778.0)}));

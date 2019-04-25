@@ -46,7 +46,6 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -180,7 +179,7 @@ struct component {
       interface_compute_tag<
           Dim, Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       interface_compute_tag<
-          Dim, Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+          Dim, Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>>;
 
   using initial_databox =
       db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
