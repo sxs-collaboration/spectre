@@ -163,10 +163,10 @@ struct Initialize {
       Vars vars{num_grid_points};
       typename GeneralizedHarmonic::Tags::GaugeH<Dim, Inertial>::type
           gauge_source{num_grid_points};
-      make_overloader([ initial_time, &inertial_coords, &
-                        gauge_source ](std::true_type /*is_analytic_solution*/,
-                                       const gsl::not_null<Vars*> local_vars,
-                                       const auto& local_cache) noexcept {
+      make_overloader([ initial_time, &inertial_coords, &gauge_source ](
+                          std::true_type /*is_analytic_solution*/,
+                          const gsl::not_null<Vars*> local_vars,
+                          const auto& local_cache) noexcept {
         using analytic_solution_tag = OptionTags::AnalyticSolutionBase;
         /*
          * It is assumed here that the analytic solution makes available the
@@ -280,7 +280,7 @@ struct Initialize {
   using return_tag_list =
       tmpl::append<typename Initialization::Domain<Dim>::simple_tags,
                    typename VariablesTags<Metavariables>::simple_tags,
-                   typename Initialization::InterfaceForNonConservativeSystem<
+                   typename Initialization::GeneralizedHarmonicInterface<
                        typename Metavariables::system>::simple_tags,
                    typename Initialization::Evolution<
                        typename Metavariables::system>::simple_tags,
@@ -290,7 +290,7 @@ struct Initialize {
                    typename Initialization::MinMod<Dim>::simple_tags,
                    typename Initialization::Domain<Dim>::compute_tags,
                    typename VariablesTags<Metavariables>::compute_tags,
-                   typename Initialization::InterfaceForNonConservativeSystem<
+                   typename Initialization::GeneralizedHarmonicInterface<
                        typename Metavariables::system>::compute_tags,
                    typename Initialization::Evolution<
                        typename Metavariables::system>::compute_tags,
@@ -317,13 +317,13 @@ struct Initialize {
     auto variables_box = VariablesTags<Metavariables>::initialize(
         std::move(domain_box), cache, initial_time);
     auto domain_interface_box =
-        Initialization::InterfaceForNonConservativeSystem<system>::initialize(
+        Initialization::GeneralizedHarmonicInterface<system>::initialize(
             std::move(variables_box));
     auto evolution_box = Initialization::Evolution<system>::initialize(
         std::move(domain_interface_box), cache, initial_time, initial_dt,
         initial_slab_size);
-    auto constraints_box = ConstraintsTags<Metavariables>::initialize(
-          std::move(evolution_box));
+    auto constraints_box =
+        ConstraintsTags<Metavariables>::initialize(std::move(evolution_box));
     auto dg_box =
         Initialization::DiscontinuousGalerkin<Metavariables>::initialize(
             std::move(constraints_box), initial_extents);

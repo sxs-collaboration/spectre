@@ -42,7 +42,7 @@ namespace Initialization {
 /// - Removes: nothing
 /// - Modifies: nothing
 template <typename System>
-struct InterfaceForNonConservativeSystem {
+struct GeneralizedHarmonicInterface {
   static constexpr size_t dim = System::volume_dim;
   using Inertial = Frame::Inertial;
   using simple_tags =
