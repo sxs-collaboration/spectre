@@ -219,13 +219,13 @@ class KerrSchild {
     using type = std::array<double, volume_dim>;
     static constexpr OptionString help = {
         "The [x,y,z] dimensionless spin of the black hole"};
-    static type default_value() noexcept { return {{0., 0., 0.}}; }
+    static type default_value() noexcept { return {{0.}}; }
   };
   struct Center {
     using type = std::array<double, volume_dim>;
     static constexpr OptionString help = {
         "The [x,y,z] center of the black hole"};
-    static type default_value() noexcept { return {{0., 0., 0.}}; }
+    static type default_value() noexcept { return {{0.}}; }
   };
   using options = tmpl::list<Mass, Spin, Center>;
   static constexpr OptionString help{"Black hole in Kerr-Schild coordinates"};
@@ -286,9 +286,8 @@ class KerrSchild {
   }
 
  private:
-  double mass_{1.0};
-  std::array<double, volume_dim> dimensionless_spin_{{0.0, 0.0, 0.0}},
-      center_{{0.0, 0.0, 0.0}};
+  double mass_{1.};
+  std::array<double, volume_dim> dimensionless_spin_{{0.}}, center_{{0.}};
 };
 
 SPECTRE_ALWAYS_INLINE bool operator==(const KerrSchild& lhs,
