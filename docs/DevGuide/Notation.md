@@ -73,6 +73,12 @@ The notation for general relativity quantities used is:
   \f{align*}{
       K_{ab}=-\frac{1}{2}\mathcal{L}_n g_{ab}
   \f}
+- The Levi-Civita tensor is defined as
+  \f{align*}{
+      \epsilon^{abcd}=\frac{1}{\sqrt{-g}}\tilde{\epsilon}^{abcd}
+  \f}
+  where \f$\tilde{\epsilon}^{abcd}\f$ is the Levi-Civita symbol and
+  \f$\tilde{\epsilon}^{0123}=+1\f$.
 - For the generalized harmonic evolution system \f$\Pi_{ab}=-n^c\partial_c
   g_{ab}\f$ and \f$\Phi_{iab}=\partial_i g_{ab}\f$.
 
@@ -91,8 +97,7 @@ The notation for (magneto)hydrodynamics used is:
       W=-u^a n_a=\alpha u^0=\frac{1}{\sqrt{1-\gamma_{ij}v^i v^j}}
   \f}
 - The Faraday tensor is denoted by \f$F^{ab}\f$ and its dual is given by
-  \f$^{*}\!F^{ab}=\frac{1}{2}\epsilon^{abcd}F_{cd}\f$ where
-  \f$\epsilon^{abcd}\f$ is the Levi-Civita tensor.
+  \f$^{*}\!F^{ab}=\frac{1}{2}\epsilon^{abcd}F_{cd}\f$.
 - The magnetic field in the frame comoving with the fluid is
   \f{align*}{
       b^a = ^{*}\!F^{ab}u_b
