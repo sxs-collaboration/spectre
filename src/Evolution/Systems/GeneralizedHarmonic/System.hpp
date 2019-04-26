@@ -45,14 +45,12 @@ struct System {
       tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
                  Tags::Pi<Dim, Frame::Inertial>,
                  Tags::Phi<Dim, Frame::Inertial>>;
-  // `constraint_damping_tag` can be used to `Slice` gamma's onto `Interface`s,
-  // but it has been replaced by compute items for damping parameters
-  using constraint_damping_tag = ::Tags::Variables<
-      tmpl::list<GeneralizedHarmonic::Tags::ConstraintGamma0,
-                 GeneralizedHarmonic::Tags::ConstraintGamma1,
-                 GeneralizedHarmonic::Tags::ConstraintGamma2>>;
+  // `extras_tag` can be used with `Tags::DerivCompute` to get spatial
+  // derivatives of quantities that are otherwise not available within
+  // a `Variables<>` container.
   using extras_tag = ::Tags::Variables<
       tmpl::list<GeneralizedHarmonic::Tags::GaugeH<Dim, Frame::Inertial>>>;
+
   using compute_time_derivative = ComputeDuDt<Dim>;
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
   using char_speeds_tag = CharacteristicSpeedsCompute<Dim, Frame::Inertial>;

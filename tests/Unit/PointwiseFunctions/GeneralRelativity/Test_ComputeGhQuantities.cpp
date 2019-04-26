@@ -867,7 +867,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
 
   const auto gauge_deriv_box = db::create<
       db::AddSimpleTags<
-          GeneralizedHarmonic::Tags::TimeDerivGaugeH<3, Frame::Inertial>,
+          ::Tags::dt<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>>,
           ::Tags::deriv<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>,
                         tmpl::size_t<3>, Frame::Inertial>>,
       db::AddComputeTags<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<

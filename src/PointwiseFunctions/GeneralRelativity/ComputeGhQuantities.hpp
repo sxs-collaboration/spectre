@@ -550,20 +550,6 @@ struct GaugeHCompute : GaugeH<SpatialDim, Frame>, db::ComputeTag {
 };
 
 template <size_t SpatialDim, typename Frame>
-struct GaugeHInVariablesCompute : GaugeHInVariables<SpatialDim, Frame>,
-                                  db::ComputeTag {
-  using base = GaugeHInVariables<SpatialDim, Frame>;
-  using type = typename base::type;
-  using argument_tags = tmpl::list<GaugeH<SpatialDim, Frame>>;
-  static constexpr Variables<argument_tags> function(
-      const tnsr::a<DataVector, SpatialDim, Frame>& gauge_source) noexcept {
-    Variables<argument_tags> vars_gauge_source{get_size(get<0>(gauge_source))};
-    get<base>(vars_gauge_source) = gauge_source;
-    return vars_gauge_source;
-  };
-};
-
-template <size_t SpatialDim, typename Frame>
 struct SpacetimeDerivGaugeHCompute : SpacetimeDerivGaugeH<SpatialDim, Frame>,
                                      db::ComputeTag {
   using base = SpacetimeDerivGaugeH<SpatialDim, Frame>;
@@ -584,7 +570,7 @@ struct SpacetimeDerivGaugeHCompute : SpacetimeDerivGaugeH<SpatialDim, Frame>,
     return spacetime_deriv_gauge_source;
   }
   using argument_tags = tmpl::list<
-      TimeDerivGaugeH<SpatialDim, Frame>,
+      ::Tags::dt<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame>>,
       ::Tags::deriv<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame>,
                     tmpl::size_t<SpatialDim>, Frame>>;
 };

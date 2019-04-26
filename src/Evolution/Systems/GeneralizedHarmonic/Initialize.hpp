@@ -77,7 +77,7 @@ struct Initialize {
 
     using simple_tags = db::AddSimpleTags<
         variables_tag, extras_tag,
-        GeneralizedHarmonic::Tags::TimeDerivGaugeH<Dim, Inertial>>;
+        ::Tags::dt<GeneralizedHarmonic::Tags::GaugeH<Dim, Inertial>>>;
     using compute_tags = db::AddComputeTags<
         gr::Tags::SpatialMetricCompute<Dim, Inertial, DataVector>,
         gr::Tags::DetAndInverseSpatialMetricCompute<Dim, Inertial, DataVector>,
@@ -130,7 +130,7 @@ struct Initialize {
     /* NOT YET ADDED BUT NEEDED BY ComputeDuDt
           ::Tags::deriv<Tags::Pi<Dim>, tmpl::size_t<Dim>, Inertial>,
           ::Tags::deriv<Tags::Phi<Dim>, tmpl::size_t<Dim>, Inertial>,
-          Tags::SpacetimeDerivGaugeH<Dim>,
+          ::Tags::dt<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame>>,
 
       NEEDED BY ComputeNormalDotFluxes
           gr::Tags::SpacetimeMetric<Dim>, Tags::Pi<Dim>, Tags::Phi<Dim>,
