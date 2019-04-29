@@ -61,8 +61,8 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
 // @}
 
 namespace Tags {
-/// \ingroup DataBoxTags
-/// \ingroup ComputationalDomain
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// The unnormalized face normal one form
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct UnnormalizedFaceNormal : db::ComputeTag {

@@ -200,7 +200,7 @@ using SpacetimeIndex =
 
 namespace tt {
 // @{
-/// \ingroup TensorGroup TypeTraits
+/// \ingroup TensorGroup TypeTraitsGroup
 /// Inherits from std::true_type if T is a \ref SpacetimeIndex
 /// "TensorIndexType"
 /// \tparam T the type to check

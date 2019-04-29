@@ -218,7 +218,7 @@ bool operator!=(const ProductOf2Maps<Map1, Map2>& lhs,
   return not(lhs == rhs);
 }
 
-/// \ingroup CoordinateMaps
+/// \ingroup CoordinateMapsGroup
 /// \brief Product of three one-dimensional CoordinateMaps.
 template <typename Map1, typename Map2, typename Map3>
 class ProductOf3Maps {

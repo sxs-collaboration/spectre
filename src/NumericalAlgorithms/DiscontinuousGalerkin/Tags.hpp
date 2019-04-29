@@ -18,7 +18,7 @@
 #include "Options/Options.hpp"
 
 namespace Tags {
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \ingroup DiscontinuousGalerkinGroup
 /// \brief Simple boundary communication data
 template <typename TemporalId, typename LocalData, typename RemoteData>
