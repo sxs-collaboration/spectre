@@ -67,6 +67,11 @@ struct ConstraintGamma2 : db::SimpleTag {
 struct GaugeHRollOnStartTime : db::SimpleTag {
   using type = double;
   static std::string name() noexcept { return "GaugeHRollOnStartTime"; }
+  using option_tags = tmpl::list<OptionTags::GaugeRollOnStart>;
+  static double create_from_options(
+      const double gauge_roll_on_start_time) noexcept {
+    return gauge_roll_on_start_time;
+  }
 };
 
 /*!
@@ -80,6 +85,11 @@ struct GaugeHRollOnStartTime : db::SimpleTag {
 struct GaugeHRollOnTimeWindow : db::SimpleTag {
   using type = double;
   static std::string name() noexcept { return "GaugeHRollOnTimeWindow"; }
+  using option_tags = tmpl::list<OptionTags::GaugeRollOnWindow>;
+  static double create_from_options(
+      const double gauge_roll_on_window) noexcept {
+    return gauge_roll_on_window;
+  }
 };
 
 /*!
@@ -98,6 +108,11 @@ template <typename Frame>
 struct GaugeHSpatialWeightDecayWidth : db::SimpleTag {
   using type = double;
   static std::string name() noexcept { return "GaugeHSpatialWeightDecayWidth"; }
+  using option_tags = tmpl::list<OptionTags::GaugeSpatialDecayWidth<Frame>>;
+  static double create_from_options(
+      const double gauge_spatial_decay_width) noexcept {
+    return gauge_spatial_decay_width;
+  }
 };
 
 /*!
@@ -276,7 +291,7 @@ struct GeneralizedHarmonicGroup {
  * *rolled-on* to) at the beginning of an evolution. This parameter sets
  * the coordinate time at which roll-on begins.
  */
-struct GaugeRollOnStart : Tags::GaugeHRollOnStartTime {
+struct GaugeRollOnStart {
   using type = double;
   static std::string name() noexcept { return "GaugeRollOnStart"; }
   static constexpr OptionString help{
@@ -293,7 +308,7 @@ struct GaugeRollOnStart : Tags::GaugeHRollOnStartTime {
  * *rolled-on* to) at the beginning of an evolution. This parameter sets
  * the width of the coordinate time window during which roll-on happens.
  */
-struct GaugeRollOnWindow : Tags::GaugeHRollOnTimeWindow {
+struct GaugeRollOnWindow {
   using type = double;
   static std::string name() noexcept { return "GaugeRollOnWindow"; }
   static constexpr OptionString help{
@@ -315,7 +330,7 @@ struct GaugeRollOnWindow : Tags::GaugeHRollOnTimeWindow {
  * \f$\sigma_r\f$. The parameter this tag tags is \f$ \sigma_r \f$.
  */
 template <typename Frame>
-struct GaugeSpatialDecayWidth : Tags::GaugeHSpatialWeightDecayWidth<Frame> {
+struct GaugeSpatialDecayWidth {
   using type = double;
   static std::string name() noexcept { return "GaugeDecayWidth"; }
   static constexpr OptionString help{

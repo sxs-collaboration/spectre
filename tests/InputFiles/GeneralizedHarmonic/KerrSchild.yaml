@@ -1,0 +1,53 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveGeneralizedHarmonic
+# Check: execute
+# Timeout: 4
+# ExpectedOutput:
+#   ReductionData.h5
+#   VolumeData0.h5
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper: RungeKutta3
+
+DomainCreator:
+    Brick:
+      LowerBound: [4.0, -0.5, -0.5]
+      UpperBound: [5.0, 0.5, 0.5]
+      InitialRefinement: [1, 1, 1]
+      InitialGridPoints: [5, 5, 5]
+      IsPeriodicIn: [false, false, false]
+
+AnalyticSolution:
+  KerrSchild:
+    Mass: 1.0
+    Spin: [0.0, 0.0, 0.4]
+    Center: [0.0, 0.0, 0.0]
+
+EvolutionSystem:
+  GeneralizedHarmonic:
+    GaugeRollOnStart: 100000.0
+    GaugeRollOnWindow: 100.0
+    GaugeDecayWidth: 50.0
+
+NumericalFlux:
+  UpwindFlux:
+
+EventsAndTriggers:
+  ? EveryNSlabs:
+      N: 2
+      Offset: 0
+  : - ObserveErrorNorms
+  ? EveryNSlabs:
+      N: 5
+      Offset: 0
+  : - ObserveFields
+  ? PastTime: 0.03
+  : - Completion
+
+Observers:
+  VolumeFileName: "VolumeData"
+  ReductionFileName: "ReductionData"
