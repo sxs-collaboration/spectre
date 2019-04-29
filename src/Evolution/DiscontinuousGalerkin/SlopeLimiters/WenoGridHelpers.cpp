@@ -20,6 +20,9 @@ template <size_t VolumeDim>
 bool check_element_has_one_similar_neighbor_in_direction(
     const Element<VolumeDim>& element,
     const Direction<VolumeDim>& direction) noexcept {
+  ASSERT(element.neighbors().contains(direction),
+         "Inconsistent call: element "
+             << element << " has no neighbors in direction " << direction);
   const auto& neighbors = element.neighbors().at(direction);
   if (neighbors.size() > 1) {
     // More than one neighbor
