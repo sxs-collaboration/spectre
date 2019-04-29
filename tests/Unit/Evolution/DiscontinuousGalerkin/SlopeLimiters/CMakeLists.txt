@@ -4,6 +4,7 @@
 set(LIBRARY "Test_SlopeLimiters")
 
 set(LIBRARY_SOURCES
+  Test_HwenoModifiedSolution.cpp
   Test_Krivodonova.cpp
   Test_LimiterActions.cpp
   Test_LimiterActionsWithMinmod.cpp
