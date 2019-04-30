@@ -6,6 +6,8 @@
 #include <ostream>
 #include <pup.h>  // IWYU pragma: keep
 
+#include "Domain/MaxNumberOfNeighbors.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
@@ -30,7 +32,12 @@ Element<VolumeDim>::Element(ElementId<VolumeDim> id,
           external_boundaries.erase(neighbor_direction.first);
         }
         return external_boundaries;
-      }()) {}
+      }()) {
+  // Assuming a maximum 2-to-1 refinement between neighboring elements:
+  ASSERT(number_of_neighbors_ <= maximum_number_of_neighbors(VolumeDim),
+         "Can't have " << number_of_neighbors_ << " neighbors in " << VolumeDim
+                       << " dimensions");
+}
 
 template <size_t VolumeDim>
 void Element<VolumeDim>::pup(PUP::er& p) noexcept {
