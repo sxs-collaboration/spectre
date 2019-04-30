@@ -25,41 +25,25 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.1d", "[Domain][Unit]") {
   // Test constructor:
   OrientationMap<1> custom_orientation(
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
-
-  const std::unordered_set<ElementId<1>> custom_ids = []() {
-    std::unordered_set<ElementId<1>> temp;
-    std::array<SegmentId, 1> segment1_ids{{SegmentId(2, 3)}};
-    ElementId<1> element1_id(2, segment1_ids);
-    temp.insert(element1_id);
-    std::array<SegmentId, 1> segment2_ids{{SegmentId(2, 2)}};
-    ElementId<1> element2_id(3, segment2_ids);
-    temp.insert(element2_id);
-    std::array<SegmentId, 1> segment3_ids{{SegmentId(2, 1)}};
-    ElementId<1> element3_id(1, segment3_ids);
-    temp.insert(element3_id);
-    return temp;
-  }();
-
-  Neighbors<1> custom_neighbors(custom_ids, custom_orientation);
+  const std::unordered_set<ElementId<1>> custom_id{
+      ElementId<1>(2, {{SegmentId(2, 3)}})};
+  Neighbors<1> custom_neighbors(custom_id, custom_orientation);
 
   // Test size
-  CHECK(custom_neighbors.size() == 3);
+  CHECK(custom_neighbors.size() == 1);
 
-  const std::unordered_set<ElementId<1>> more_custom_ids = []() {
-    std::unordered_set<ElementId<1>> temp;
-    std::array<SegmentId, 1> segment4_ids{{SegmentId(2, 3)}};
-    ElementId<1> element4_id(0, segment4_ids);
-    temp.insert(element4_id);
-    return temp;
-  }();
-
-  // Test add_ids:
-  custom_neighbors.add_ids(more_custom_ids);
-  CHECK(custom_neighbors.size() == 4);
+  // In 1D, cannot have more than 1 neighbor.
+  // Test add_ids using an empty default-constructed Neighbors object:
+  Neighbors<1> empty_neighbors;
+  CHECK(empty_neighbors.size() == 0);
+  empty_neighbors.add_ids(custom_id);
+  CHECK(empty_neighbors.size() == 1);
 
   // Test set_ids_to:
-  custom_neighbors.set_ids_to(custom_ids);
-  CHECK(custom_neighbors.size() == 3);
+  const std::unordered_set<ElementId<1>> other_custom_id{
+      ElementId<1>(0, {{SegmentId(2, 1)}})};
+  custom_neighbors.set_ids_to(other_custom_id);
+  CHECK(custom_neighbors.size() == 1);
 
   // Test serialization:
   test_serialization(custom_neighbors);
@@ -81,41 +65,22 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.2d", "[Domain][Unit]") {
   // Test constructor:
   OrientationMap<2> custom_orientation(std::array<Direction<2>, 2>{
       {Direction<2>::upper_eta(), Direction<2>::lower_xi()}});
-
-  const std::unordered_set<ElementId<2>> custom_ids = []() {
-    std::unordered_set<ElementId<2>> temp;
-    std::array<SegmentId, 2> segment1_ids{{SegmentId(2, 3), SegmentId(1, 0)}};
-    ElementId<2> element1_id(2, segment1_ids);
-    temp.insert(element1_id);
-    std::array<SegmentId, 2> segment2_ids{{SegmentId(2, 2), SegmentId(1, 1)}};
-    ElementId<2> element2_id(3, segment2_ids);
-    temp.insert(element2_id);
-    std::array<SegmentId, 2> segment3_ids{{SegmentId(2, 1), SegmentId(1, 0)}};
-    ElementId<2> element3_id(1, segment3_ids);
-    temp.insert(element3_id);
-    return temp;
-  }();
-
-  Neighbors<2> custom_neighbors(custom_ids, custom_orientation);
+  const std::unordered_set<ElementId<2>> custom_id{
+      ElementId<2>(2, {{SegmentId(2, 3), SegmentId(1, 0)}})};
+  Neighbors<2> custom_neighbors(custom_id, custom_orientation);
 
   // Test size
-  CHECK(custom_neighbors.size() == 3);
-
-  const std::unordered_set<ElementId<2>> more_custom_ids = []() {
-    std::unordered_set<ElementId<2>> temp;
-    std::array<SegmentId, 2> segment4_ids{{SegmentId(2, 3), SegmentId(1, 0)}};
-    ElementId<2> element4_id(0, segment4_ids);
-    temp.insert(element4_id);
-    return temp;
-  }();
+  CHECK(custom_neighbors.size() == 1);
 
   // Test add_ids:
-  custom_neighbors.add_ids(more_custom_ids);
-  CHECK(custom_neighbors.size() == 4);
+  const std::unordered_set<ElementId<2>> other_custom_id{
+      ElementId<2>(0, {{SegmentId(2, 3), SegmentId(1, 0)}})};
+  custom_neighbors.add_ids(other_custom_id);
+  CHECK(custom_neighbors.size() == 2);
 
   // Test set_ids_to:
-  custom_neighbors.set_ids_to(custom_ids);
-  CHECK(custom_neighbors.size() == 3);
+  custom_neighbors.set_ids_to(custom_id);
+  CHECK(custom_neighbors.size() == 1);
 
   // Test serialization:
   test_serialization(custom_neighbors);
@@ -143,24 +108,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.3d", "[Domain][Unit]") {
   OrientationMap<3> custom_orientation(std::array<Direction<3>, 3>{
       {Direction<3>::upper_eta(), Direction<3>::upper_zeta(),
        Direction<3>::upper_xi()}});
-
-  const std::unordered_set<ElementId<3>> custom_ids = []() {
-    std::unordered_set<ElementId<3>> temp;
-    std::array<SegmentId, 3> segment1_ids{
-        {SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)}};
-    ElementId<3> element1_id(2, segment1_ids);
-    temp.insert(element1_id);
-    std::array<SegmentId, 3> segment2_ids{
-        {SegmentId(2, 2), SegmentId(1, 1), SegmentId(1, 0)}};
-    ElementId<3> element2_id(3, segment2_ids);
-    temp.insert(element2_id);
-    std::array<SegmentId, 3> segment3_ids{
-        {SegmentId(2, 1), SegmentId(1, 0), SegmentId(1, 1)}};
-    ElementId<3> element3_id(1, segment3_ids);
-    temp.insert(element3_id);
-    return temp;
-  }();
-
+  const std::unordered_set<ElementId<3>> custom_ids{
+      ElementId<3>(2, {{SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)}}),
+      ElementId<3>(3, {{SegmentId(2, 2), SegmentId(1, 1), SegmentId(1, 0)}}),
+      ElementId<3>(1, {{SegmentId(2, 1), SegmentId(1, 0), SegmentId(1, 1)}})};
   Neighbors<3> custom_neighbors(custom_ids, custom_orientation);
 
   // Test size
@@ -173,17 +124,9 @@ SPECTRE_TEST_CASE("Unit.Domain.Neighbors.3d", "[Domain][Unit]") {
         "orientation = (+1, +2, +0)");
 
   // Test add_ids
-
-  const std::unordered_set<ElementId<3>> more_custom_ids = []() {
-    std::unordered_set<ElementId<3>> temp;
-    std::array<SegmentId, 3> segment4_ids{
-        {SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)}};
-    ElementId<3> element4_id(0, segment4_ids);
-    temp.insert(element4_id);
-    return temp;
-  }();
-
-  custom_neighbors.add_ids(more_custom_ids);
+  const std::unordered_set<ElementId<3>> other_custom_id{
+      ElementId<3>(0, {{SegmentId(2, 3), SegmentId(1, 0), SegmentId(1, 1)}})};
+  custom_neighbors.add_ids(other_custom_id);
   CHECK(custom_neighbors.size() == 4);
 
   CHECK(get_output(custom_neighbors) ==
