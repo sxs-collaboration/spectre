@@ -9,7 +9,7 @@
 #include "Utilities/TMPL.hpp"
 
 /*!
- * \ingroup UtilitiesGroup TypeTraits
+ * \ingroup UtilitiesGroup TypeTraitsGroup
  * \brief Get compiler error with type of template parameter
  *
  * The compiler error generated when using an object of type

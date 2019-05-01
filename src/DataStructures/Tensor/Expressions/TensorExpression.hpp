@@ -112,7 +112,7 @@ TensorIndex<static_cast<size_t>(I + 1000)> ti_contracted();
 
 namespace tt {
 /*!
- * \ingroup TypeTraitsGroup TensorExpressions
+ * \ingroup TypeTraitsGroup TensorExpressionsGroup
  * \brief Check if a type `T` is a TensorIndex used in TensorExpressions
  */
 template <typename T>

@@ -52,7 +52,7 @@ struct Time : db::ComputeTag {
   using argument_tags = tmpl::list<TimeId>;
 };
 
-/// \ingroup DataBoxTags
+/// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
 /// \brief Prefix for TimeStepper history
 ///
