@@ -6,6 +6,7 @@ set(LIBRARY "Test_GrMhdAnalyticData")
 set(LIBRARY_SOURCES
   Test_BondiHoyleAccretion.cpp
   Test_CylindricalBlastWave.cpp
+  Test_MagneticRotor.cpp
   Test_MagnetizedFmDisk.cpp
   Test_OrszagTangVortex.cpp
   )
