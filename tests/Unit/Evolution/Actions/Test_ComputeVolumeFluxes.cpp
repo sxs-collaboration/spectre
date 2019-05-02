@@ -52,7 +52,6 @@ struct ComputeFluxes {
 };
 
 struct System {
-  static constexpr size_t volume_dim = dim;
   using variables_tag = Var1;
   using volume_fluxes = ComputeFluxes;
 };
