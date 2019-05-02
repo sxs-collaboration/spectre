@@ -227,29 +227,26 @@ void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
                               1.05 / 0.875);
 }
 
-// See above, but with 4 upper_xi neighbors. Note that in 2D we are unlikely to
-// want domains that have more than 2 neighbors across a face; however, because
-// the multi-neighbor averaging is dimension-agnostic, this also can represent a
-// 3D test.
+// See above, but in 3D and with 4 upper_xi neighbors
 void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
-  const auto element = Element<2>{
-      ElementId<2>{0},
-      Element<2>::Neighbors_t{
-          {Direction<2>::lower_xi(), make_neighbor_with_id<2>(1)},
-          {Direction<2>::upper_xi(),
-           {std::unordered_set<ElementId<2>>{ElementId<2>(2), ElementId<2>(7),
-                                             ElementId<2>(8), ElementId<2>(9)},
-            OrientationMap<2>{}}},
+  const auto element = Element<3>{
+      ElementId<3>{0},
+      Element<3>::Neighbors_t{
+          {Direction<3>::lower_xi(), make_neighbor_with_id<3>(1)},
+          {Direction<3>::upper_xi(),
+           {std::unordered_set<ElementId<3>>{ElementId<3>(2), ElementId<3>(7),
+                                             ElementId<3>(8), ElementId<3>(9)},
+            OrientationMap<3>{}}},
       }};
   const auto mesh =
-      Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+      Mesh<3>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
   const double dx = 1.0;
-  const auto element_size = make_array<2>(dx);
+  const auto element_size = make_array<3>(dx);
 
   const auto mean = 2.0;
   const auto func = [&mean](
-      const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
+      const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
     return mean + 1.2 * get<0>(coords);
   };
   const auto input = ScalarTag::type(func(logical_coords));
@@ -259,29 +256,29 @@ void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
       const double right3, const double right4, const double right1_size,
       const double right2_size, const double right3_size,
       const double right4_size) noexcept {
-    using Pack = SlopeLimiters::Minmod<2, tmpl::list<ScalarTag>>::PackagedData;
+    using Pack = SlopeLimiters::Minmod<3, tmpl::list<ScalarTag>>::PackagedData;
     return std::unordered_map<
-        std::pair<Direction<2>, ElementId<2>>, Pack,
-        boost::hash<std::pair<Direction<2>, ElementId<2>>>>{
+        std::pair<Direction<3>, ElementId<3>>, Pack,
+        boost::hash<std::pair<Direction<3>, ElementId<3>>>>{
         std::make_pair(
-            std::make_pair(Direction<2>::lower_xi(), ElementId<2>(1)),
-            Pack{Scalar<double>(left), make_array<2>(dx)}),
+            std::make_pair(Direction<3>::lower_xi(), ElementId<3>(1)),
+            Pack{Scalar<double>(left), make_array<3>(dx)}),
         std::make_pair(
-            std::make_pair(Direction<2>::upper_xi(), ElementId<2>(2)),
-            Pack{Scalar<double>(right1), make_array(right1_size, dx)}),
+            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(2)),
+            Pack{Scalar<double>(right1), make_array(right1_size, dx, dx)}),
         std::make_pair(
-            std::make_pair(Direction<2>::upper_xi(), ElementId<2>(7)),
-            Pack{Scalar<double>(right2), make_array(right2_size, dx)}),
+            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(7)),
+            Pack{Scalar<double>(right2), make_array(right2_size, dx, dx)}),
         std::make_pair(
-            std::make_pair(Direction<2>::upper_xi(), ElementId<2>(8)),
-            Pack{Scalar<double>(right3), make_array(right3_size, dx)}),
+            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(8)),
+            Pack{Scalar<double>(right3), make_array(right3_size, dx, dx)}),
         std::make_pair(
-            std::make_pair(Direction<2>::upper_xi(), ElementId<2>(9)),
-            Pack{Scalar<double>(right4), make_array(right4_size, dx)}),
+            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(9)),
+            Pack{Scalar<double>(right4), make_array(right4_size, dx, dx)}),
     };
   };
 
-  const SlopeLimiters::Minmod<2, tmpl::list<ScalarTag>> minmod(
+  const SlopeLimiters::Minmod<3, tmpl::list<ScalarTag>> minmod(
       SlopeLimiters::MinmodType::LambdaPi1);
 
   // Make four right neighbors with different mean values
@@ -710,11 +707,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod",
     INFO("Test Minmod limiter in 2d");
     test_minmod_limiter_2d();
     test_minmod_limiter_two_lower_xi_neighbors();
-    test_minmod_limiter_four_upper_xi_neighbors();
   }
 
   {
     INFO("Test Minmod limiter in 3d");
     test_minmod_limiter_3d();
+    test_minmod_limiter_four_upper_xi_neighbors();
   }
 }
