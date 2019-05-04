@@ -4,6 +4,8 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <algorithm>
+#include <array>
+#include <cstddef>
 #include <limits>
 #include <string>
 #include <tuple>
@@ -11,6 +13,10 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Creators/Brick.hpp"
+#include "Domain/Domain.hpp"
+#include "Domain/Mesh.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
@@ -18,12 +24,16 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/PointwiseFunctions/AnalyticSolutions/GrMhd/VerifyGrMhdSolution.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+
+// IWYU pragma: no_include <vector>
 
 namespace {
 struct FishboneMoncriefDiskProxy
@@ -171,6 +181,21 @@ void test_sin_theta_squared(const DataType& used_for_size) noexcept {
   disk.variables(coords, 0.0, variables_tags{});
   CHECK(true);
 }
+
+void test_solution() noexcept {
+  RelativisticEuler::Solutions::FishboneMoncriefDisk solution(
+      1.00, 0.9375, 6.0, 12.0, 0.001, 4.0 / 3.0);
+  const std::array<double, 3> x{{5.0, 5.0, 0.0}};
+  const std::array<double, 3> dx{{1.e-1, 1.e-1, 1.e-1}};
+
+  domain::creators::Brick<Frame::Inertial> brick(
+      x - dx, x + dx, {{false, false, false}}, {{0, 0, 0}}, {{8, 8, 8}});
+  Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
+               Spectral::Quadrature::GaussLobatto};
+  const auto domain = brick.create_domain();
+  verify_grmhd_solution(solution, domain.blocks()[0], mesh, 1.e-9, 1.234,
+                        1.e-1);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
@@ -186,6 +211,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.RelEuler.FMDisk",
   test_variables(DataVector(5));
   test_sin_theta_squared(std::numeric_limits<double>::signaling_NaN());
   test_sin_theta_squared(DataVector(5));
+
+  test_solution();
 }
 
 struct Disk {
