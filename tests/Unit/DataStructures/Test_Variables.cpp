@@ -240,18 +240,14 @@ void test_variables_construction_and_access() noexcept {
   CHECK(get_output(filled_variables) == expected_output);
 
   // Check self-assignment
-#ifndef __APPLE__
 #if defined(__clang__) && __clang_major__ > 6
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wself-assign-overloaded"
 #endif  // defined(__clang__) && __clang_major__ > 6
-#endif  // ! __APPLE__
   filled_variables = filled_variables;  // NOLINT
-#ifndef __APPLE__
 #if defined(__clang__) && __clang_major__ > 6
 #pragma GCC diagnostic pop
 #endif  // defined(__clang__) && __clang_major__ > 6
-#endif  // ! __APPLE__
   CHECK(filled_variables == another_filled_variables);
 
   CHECK(
