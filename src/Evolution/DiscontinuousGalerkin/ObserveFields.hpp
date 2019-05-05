@@ -206,14 +206,14 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(
         tmpl::type_<NonSolutionTensors>{}, non_solution_tensors));
 
-    const auto analytic_solution =
-        Parallel::get<OptionTags::AnalyticSolutionBase>(cache).variables(
-            inertial_coordinates, time.value(),
-            tmpl::list<AnalyticSolutionTensors...>{});
-
     const auto record_errors =
-        [this, &components, &element_name, &analytic_solution](
-            const auto tensor_tag_v, const auto& tensor) noexcept {
+        [ this, &inertial_coordinates, &time, &components, &
+          element_name ](const auto tensor_tag_v, const auto& tensor,
+                         const auto& local_cache) noexcept {
+      const auto analytic_solution =
+          Parallel::get<OptionTags::AnalyticSolutionBase>(local_cache)
+              .variables(inertial_coordinates, time.value(),
+                         tmpl::list<AnalyticSolutionTensors...>{});
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       if (variables_to_observe_.count(tensor_tag::name()) == 1) {
         for (size_t i = 0; i < tensor.size(); ++i) {
@@ -224,8 +224,11 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         }
       }
     };
-    EXPAND_PACK_LEFT_TO_RIGHT(record_errors(
-        tmpl::type_<AnalyticSolutionTensors>{}, analytic_solution_tensors));
+    EXPAND_PACK_LEFT_TO_RIGHT(
+        record_errors(tmpl::type_<AnalyticSolutionTensors>{},
+                      analytic_solution_tensors, cache));
+
+    (void)(record_errors);  // Silence GCC warning about unused variable
 
     // Send data to volume observer
     auto& local_observer =

@@ -45,3 +45,8 @@ FixConservatives:
 FixToAtmosphere:
   DensityOfAtmosphere: 1.0e-12
   DensityCutoff: 1.0e-12
+
+VolumeFileName: "./GrMhdVolume"
+ReductionFileName: "./GrMhdReductions"
+
+EventsAndTriggers:
