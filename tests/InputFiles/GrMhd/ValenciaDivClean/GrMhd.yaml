@@ -6,7 +6,6 @@
 
 InitialTime: 0.0
 InitialTimeStep: 0.01
-FinalTime: 0.1
 
 # InitialSlabSize is only needed for local time stepping
 # InitialSlabSize: 0.01
@@ -63,6 +62,9 @@ FixToAtmosphere:
   DensityCutoff: 1.0e-12
 
 EventsAndTriggers:
+  ? SpecifiedSlabs:
+      Slabs: [10]
+  : - Completion
 
 VolumeFileName: "./GrMhdVolume"
 ReductionFileName: "./GrMhdReductions"

@@ -39,7 +39,6 @@
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
 #include "Time/Actions/ChangeStepSize.hpp"         // IWYU pragma: keep
-#include "Time/Actions/FinalTime.hpp"              // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"       // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
@@ -133,7 +132,7 @@ struct EvolutionMetavars {
           tmpl::flatten<tmpl::list<
               SelfStart::self_start_procedure<compute_rhs, update_variables>,
               Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
-              Actions::RunEventsAndTriggers, Actions::FinalTime,
+              Actions::RunEventsAndTriggers,
               tmpl::conditional_t<local_time_stepping,
                                   Actions::ChangeStepSize<step_choosers>,
                                   tmpl::list<>>,

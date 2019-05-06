@@ -14,7 +14,6 @@ AnalyticSolution:
       Phase: 0.0
 
 InitialTime: 0.0
-FinalTime: 0.1
 InitialTimeStep: 0.001
 InitialSlabSize: 0.01
 
@@ -42,6 +41,9 @@ StepChoosers:
 NumericalFluxParams:
 
 EventsAndTriggers:
+  ? SpecifiedSlabs:
+      Slabs: [10]
+  : - Completion
 
 VolumeFileName: "./ScalarWave1DPeriodicVolume"
 ReductionFileName: "./ScalarWave1DPeriodicReductions"

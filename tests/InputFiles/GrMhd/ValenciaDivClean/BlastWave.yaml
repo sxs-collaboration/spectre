@@ -6,7 +6,6 @@
 
 InitialTime: 0.0
 InitialTimeStep: 0.01
-FinalTime: 0.02
 
 DomainCreator:
   Brick:
@@ -50,3 +49,6 @@ VolumeFileName: "./GrMhdVolume"
 ReductionFileName: "./GrMhdReductions"
 
 EventsAndTriggers:
+  ? SpecifiedSlabs:
+      Slabs: [2]
+  : - Completion

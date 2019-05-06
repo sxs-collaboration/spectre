@@ -81,14 +81,6 @@ namespace OptionTags {
 
 /// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
-/// \brief The final time
-struct FinalTime {
-  using type = double;
-  static constexpr OptionString help{"The final time"};
-};
-
-/// \ingroup OptionTagsGroup
-/// \ingroup TimeGroup
 /// \brief The ::TimeStepper
 struct TimeStepper {};
 

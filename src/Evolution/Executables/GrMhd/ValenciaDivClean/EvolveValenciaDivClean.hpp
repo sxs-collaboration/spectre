@@ -50,7 +50,6 @@
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
-#include "Time/Actions/FinalTime.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"
@@ -158,7 +157,7 @@ struct EvolutionMetavars {
               VariableFixing::Actions::FixVariables<
                   VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
               Actions::UpdateConservatives,
-              Actions::RunEventsAndTriggers, Actions::FinalTime,
+              Actions::RunEventsAndTriggers,
               tmpl::conditional_t<local_time_stepping,
                                   Actions::ChangeStepSize<step_choosers>,
                                   tmpl::list<>>,
