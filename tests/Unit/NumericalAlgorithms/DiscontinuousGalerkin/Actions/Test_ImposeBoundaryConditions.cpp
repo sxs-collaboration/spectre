@@ -199,14 +199,14 @@ struct component {
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   using simple_tags = db::AddSimpleTags<
-      TemporalId, Tags::Mesh<Dim>, Tags::Element<Dim>, Tags::ElementMap<Dim>,
-      bdry_normal_dot_fluxes_tag<flux_comm_types>, bdry_other_data_tag,
-      external_bdry_normal_dot_fluxes_tag<flux_comm_types>,
+      TemporalId, Tags::Time, Tags::Mesh<Dim>, Tags::Element<Dim>,
+      Tags::ElementMap<Dim>, bdry_normal_dot_fluxes_tag<flux_comm_types>,
+      bdry_other_data_tag, external_bdry_normal_dot_fluxes_tag<flux_comm_types>,
       external_bdry_other_data_tag, external_bdry_vars_tag,
       mortar_data_tag<flux_comm_types>>;
 
   using compute_tags = db::AddComputeTags<
-      Tags::SubstepTime, Tags::BoundaryDirectionsInterior<Dim>,
+      Tags::BoundaryDirectionsInterior<Dim>,
       boundary_compute_tag<Tags::Direction<Dim>>,
       boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
       boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,
@@ -358,7 +358,7 @@ void run_test() {
 
     ActionTesting::emplace_component_and_initialize<my_component>(
         &runner, self_id,
-        {initial_time, mesh, element, std::move(map),
+        {initial_time, start.value(), mesh, element, std::move(map),
          std::move(bdry_normal_dot_fluxes), std::move(bdry_other_data),
          std::move(external_bdry_normal_dot_fluxes),
          std::move(external_bdry_other_data), std::move(external_bdry_vars),

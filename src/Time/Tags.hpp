@@ -57,6 +57,14 @@ struct SubstepTime : db::ComputeTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
+/// \brief Tag for the current time as a double
+struct Time : db::SimpleTag {
+  static std::string name() noexcept { return "Time"; }
+  using type = double;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup TimeGroup
 /// \brief Prefix for TimeStepper history
 ///
 /// \tparam Tag tag for the variables

@@ -37,8 +37,8 @@ struct Component {
   using const_global_cache_tag_list =
       tmpl::list<Tags::TimeStepper<TimeStepper>>;
 
-  using simple_tags =
-      db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;
+  using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>,
+                                        Tags::TimeStep, Tags::Time>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -67,7 +67,7 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
       &runner, 0,
       {TimeId(time_step.is_positive(), 8, start),
        TimeId(time_step.is_positive(), 8, start, 1, start + substep_offsets[1]),
-       time_step});
+       time_step, start.value()});
   runner.set_phase(Metavariables::Phase::Testing);
 
   for (const auto& step_start : {start, start + time_step}) {
@@ -76,10 +76,13 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
           ActionTesting::get_databox<component,
                                      typename component::simple_tags>(runner,
                                                                       0);
+      const Time substep_time = step_start + gsl::at(substep_offsets, substep);
       CHECK(db::get<Tags::TimeId>(box) ==
             TimeId(time_step.is_positive(), 8, step_start, substep,
-                   step_start + gsl::at(substep_offsets, substep)));
+                   substep_time));
       CHECK(db::get<Tags::TimeStep>(box) == time_step);
+      CHECK(db::get<Tags::Time>(box) ==
+            db::get<Tags::TimeId>(box).substep_time().value());
       runner.next_action<component>(0);
     }
   }
@@ -92,6 +95,7 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
   CHECK(final_time_id.step_time().slab() == expected_slab);
   CHECK(final_time_id ==
         TimeId(time_step.is_positive(), 8, start + 2 * time_step));
+  CHECK(db::get<Tags::Time>(box) == final_time_id.substep_time().value());
   CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab));
 }
 
@@ -103,7 +107,8 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
       {TimeId(time_step.is_positive(), 8, start),
-       TimeId(time_step.is_positive(), 8, start + time_step), time_step});
+       TimeId(time_step.is_positive(), 8, start + time_step), time_step,
+       start.value()});
   runner.set_phase(Metavariables::Phase::Testing);
 
   for (const auto& step_start : {start, start + time_step}) {
@@ -113,6 +118,8 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
     CHECK(db::get<Tags::TimeId>(box) ==
           TimeId(time_step.is_positive(), 8, step_start));
     CHECK(db::get<Tags::TimeStep>(box) == time_step);
+    CHECK(db::get<Tags::Time>(box) ==
+          db::get<Tags::TimeId>(box).substep_time().value());
     runner.next_action<component>(0);
   }
 
@@ -124,6 +131,7 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
   CHECK(final_time_id.step_time().slab() == expected_slab);
   CHECK(final_time_id ==
         TimeId(time_step.is_positive(), 8, start + 2 * time_step));
+  CHECK(db::get<Tags::Time>(box) == final_time_id.substep_time().value());
   CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab));
 }
 }  // namespace

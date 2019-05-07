@@ -20,9 +20,7 @@ struct RegisterObservers {
   register_info(const db::DataBox<DbTagsList>& box,
                 const ArrayIndex& /*array_index*/) noexcept {
     return {observers::TypeOfObservation::ReductionAndVolume,
-            observers::ObservationId{
-                static_cast<double>(db::get<::Tags::SubstepTime>(box).value()),
-                ObsType{}}};
+            observers::ObservationId{db::get<::Tags::Time>(box), ObsType{}}};
   }
 };
 }  // namespace observers

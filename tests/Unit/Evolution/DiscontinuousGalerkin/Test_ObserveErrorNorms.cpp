@@ -26,10 +26,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
-#include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -251,10 +248,9 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   ActionTesting::emplace_component<observer_component>(&runner, 0);
 
   const auto box = db::create<
-      db::AddSimpleTags<Tags::TimeId,
-                        Tags::Variables<typename decltype(vars)::tags_list>>,
-      db::AddComputeTags<Tags::SubstepTime>>(
-      TimeId(true, 0, Slab(0., observation_time).end()), vars);
+      db::AddSimpleTags<Tags::Time,
+                        Tags::Variables<typename decltype(vars)::tags_list>>>(
+      observation_time, vars);
 
   observe->run(box, runner.cache(), array_index,
                std::add_pointer_t<element_component>{});

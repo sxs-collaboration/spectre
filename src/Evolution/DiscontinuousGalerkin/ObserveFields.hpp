@@ -29,7 +29,6 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeString.hpp"
@@ -43,7 +42,7 @@ namespace Frame {
 struct Inertial;
 }  // namespace Frame
 namespace Tags {
-struct SubstepTime;
+struct Time;
 }  // namespace Tags
 /// \endcond
 
@@ -160,12 +159,12 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
   }
 
   using argument_tags =
-      tmpl::list<::Tags::SubstepTime, ::Tags::Mesh<VolumeDim>, coordinates_tag,
+      tmpl::list<::Tags::Time, ::Tags::Mesh<VolumeDim>, coordinates_tag,
                  AnalyticSolutionTensors..., NonSolutionTensors...>;
 
   template <typename Metavariables, typename ParallelComponent>
   void operator()(
-      const Time& time, const Mesh<VolumeDim>& mesh,
+      const double time, const Mesh<VolumeDim>& mesh,
       const db::item_type<coordinates_tag>& inertial_coordinates,
       const db::item_type<
           AnalyticSolutionTensors>&... analytic_solution_tensors,
@@ -212,7 +211,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
                          const auto& local_cache) noexcept {
       const auto analytic_solution =
           Parallel::get<Tags::AnalyticSolutionBase>(local_cache)
-              .variables(inertial_coordinates, time.value(),
+              .variables(inertial_coordinates, time,
                          tmpl::list<AnalyticSolutionTensors...>{});
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       if (variables_to_observe_.count(tensor_tag::name()) == 1) {
@@ -238,7 +237,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer,
         observers::ObservationId(
-            time.value(), typename Metavariables::element_observation_type{}),
+            time, typename Metavariables::element_observation_type{}),
         std::string{"/element_data"},
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},

@@ -17,7 +17,7 @@
 
 /// \cond
 namespace Tags {
-struct SubstepTime;
+struct Time;
 struct TimeId;
 }  // namespace Tags
 /// \endcond
@@ -51,14 +51,14 @@ class PastTime : public Trigger<TriggerRegistrars> {
   explicit PastTime(const double trigger_time) noexcept
       : trigger_time_(trigger_time) {}
 
-  using argument_tags = tmpl::list<Tags::SubstepTime, Tags::TimeId>;
+  using argument_tags = tmpl::list<Tags::Time, Tags::TimeId>;
 
-  bool operator()(const Time& time, const TimeId& time_id) const noexcept {
+  bool operator()(const double time, const TimeId& time_id) const noexcept {
     if (not time_id.is_at_slab_boundary()) {
       return false;
     }
     return evolution_greater<double>{time_id.time_runs_forward()}(
-        time.value(), trigger_time_);
+        time, trigger_time_);
   }
 
   // clang-tidy: google-runtime-references

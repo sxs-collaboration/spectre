@@ -161,15 +161,15 @@ struct Evolution {
         merge_into_databox<
             Evolution,
             db::AddSimpleTags<::Tags::TimeId, ::Tags::Next<::Tags::TimeId>,
-                              ::Tags::TimeStep, dt_variables_tag,
+                              ::Tags::Time, ::Tags::TimeStep, dt_variables_tag,
                               ::Tags::HistoryEvolvedVariables<
                                   variables_tag, dt_variables_tag>>,
             compute_tags>(
             std::move(box),
             // At this point we have not started evolution yet, so the current
             // time is undefined and _next_ is the initial time.
-            TimeId{}, time_id, initial_dt, std::move(dt_vars),
-            std::move(history)));
+            TimeId{}, time_id, std::numeric_limits<double>::signaling_NaN(),
+            initial_dt, std::move(dt_vars), std::move(history)));
   }
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,

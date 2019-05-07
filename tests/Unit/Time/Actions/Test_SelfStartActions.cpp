@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>  // IWYU pragma: keep
+#include <limits>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -126,7 +127,8 @@ struct Component {
       typename metavariables::system::test_primitive_variables_tags,
       db::add_tag_prefix<Tags::dt,
                          typename metavariables::system::variables_tag>,
-      history_tag, Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>>;
+      history_tag, Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep,
+      Tags::Time>>;
   using compute_tags = db::AddComputeTags<Tags::SubstepTime>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
@@ -165,7 +167,7 @@ void emplace_component_and_initialize(
       runner, 0,
       {initial_value, 0., db::item_type<history_tag>{}, TimeId{},
        TimeId(forward_in_time, 1 - static_cast<int64_t>(order), initial_time),
-       initial_time_step});
+       initial_time_step, std::numeric_limits<double>::signaling_NaN()});
 }
 
 template <>
@@ -179,7 +181,7 @@ void emplace_component_and_initialize<true>(
       runner, 0,
       {initial_value, initial_value, 0., db::item_type<history_tag>{}, TimeId{},
        TimeId(forward_in_time, 1 - static_cast<int64_t>(order), initial_time),
-       initial_time_step});
+       initial_time_step, std::numeric_limits<double>::signaling_NaN()});
 }
 
 namespace detail {
