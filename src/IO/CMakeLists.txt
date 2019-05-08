@@ -29,4 +29,6 @@ target_link_libraries(
   INTERFACE Utilities
   )
 
-add_subdirectory(H5/Python)
+if(BUILD_PYTHON_BINDINGS)
+  add_subdirectory(H5/Python)
+endif()
