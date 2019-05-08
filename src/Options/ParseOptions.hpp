@@ -39,15 +39,15 @@
 // include this file.)
 
 inline Option::Option(YAML::Node node, OptionContext context) noexcept
-  // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
-  : node_(std::make_unique<YAML::Node>(std::move(node))),
-    context_(std::move(context)) {  // NOLINT
-    context_.line = node.Mark().line;
-    context_.column = node.Mark().column;
-  }
+    // clang-tidy: YAML::Node not movable (as of yaml-cpp-0.5.3)
+    : node_(std::make_unique<YAML::Node>(std::move(node))),
+      context_(std::move(context)) {  // NOLINT
+  context_.line = node.Mark().line;
+  context_.column = node.Mark().column;
+}
 
 inline Option::Option(OptionContext context) noexcept
-  : node_(std::make_unique<YAML::Node>()), context_(std::move(context)) {}
+    : node_(std::make_unique<YAML::Node>()), context_(std::move(context)) {}
 
 inline const YAML::Node& Option::node() const noexcept { return *node_; }
 inline const OptionContext& Option::context() const noexcept {
@@ -80,10 +80,8 @@ T Option::parse_as() const {
   } catch (const YAML::BadConversion& e) {
     // This happens when trying to parse an empty value as a container
     // with no entries.
-    if ((tt::is_a_v<std::vector, T> or
-         tt::is_std_array_of_size_v<0, T> or
-         tt::is_maplike_v<T>) and
-        node().IsNull()) {
+    if ((tt::is_a_v<std::vector, T> or tt::is_std_array_of_size_v<0, T> or
+         tt::is_maplike_v<T>) and node().IsNull()) {
       return T{};
     }
     OptionContext error_context = context();
@@ -91,8 +89,7 @@ T Option::parse_as() const {
     error_context.column = e.mark.column;
     std::ostringstream ss;
     ss << "Failed to convert value to type "
-       << Options_detail::yaml_type<T>::value()
-       << ":";
+       << Options_detail::yaml_type<T>::value() << ":";
 
     const std::string value_text = YAML::Dump(node());
     if (value_text.find('\n') == std::string::npos) {
@@ -110,10 +107,10 @@ T Option::parse_as() const {
 
     if (tt::is_a_v<std::vector, T> or tt::is_std_array_v<T>) {
       ss << "\n\nNote: For sequences this can happen because the length of the "
-          "sequence specified\nin the input file is not equal to the length "
-          "expected by the code. Sequences in\nfiles can be denoted either as "
-          "a bracket enclosed list ([foo, bar]) or with each\nentry on a "
-          "separate line, indented and preceeded by a dash (  - foo).";
+            "sequence specified\nin the input file is not equal to the length "
+            "expected by the code. Sequences in\nfiles can be denoted either "
+            "as a bracket enclosed list ([foo, bar]) or with each\nentry on a "
+            "separate line, indented and preceeded by a dash (  - foo).";
     }
     PARSE_ERROR(error_context, ss.str());
   } catch (const Options_detail::propagate_context& e) {
@@ -126,6 +123,11 @@ T Option::parse_as() const {
     ERROR("Unexpected exception: " << e.what());
   }
 }
+
+namespace Options_detail {
+template <typename T, typename Metavariables, typename Subgroup>
+struct get_impl;
+}  // namespace Options_detail
 
 /// \ingroup OptionParsingGroup
 /// \brief Class that handles parsing an input file
@@ -143,7 +145,8 @@ T Option::parse_as() const {
 /// \see the \ref dev_guide_option_parsing tutorial
 ///
 /// \tparam OptionList the list of option structs to parse
-template <typename OptionList>
+/// \tparam Group the option group with a group hierarchy
+template <typename OptionList, typename Group = NoSuchType>
 class Options {
  public:
   /// \param help_text an overall description of the options
@@ -161,6 +164,9 @@ class Options {
   ///
   /// \param file_name the path to the file to parse
   void parse_file(const std::string& file_name) noexcept;
+
+  /// Parse a YAML node containing options
+  void parse(const YAML::Node& node);
 
   /// Get the value of the specified option
   ///
@@ -180,31 +186,41 @@ class Options {
   std::string help() const noexcept;
 
  private:
+  template <typename, typename, typename>
+  friend struct Options_detail::get_impl;
+
   static_assert(tt::is_a<tmpl::list, OptionList>::value,
                 "The OptionList template parameter to Options must be a "
                 "tmpl::list<...>.");
-  using opts_t = OptionList;
-  static constexpr int max_label_size_ = 20;
-  static constexpr size_t max_help_size_ = 56;
 
-  void parse(const YAML::Node& node);
+  /// All top-level options and top-level groups of options. Every option in
+  /// `OptionList` is either in this list or in the hierarchy of one of the
+  /// groups in this list.
+  using tags_and_subgroups_list = tmpl::remove_duplicates<tmpl::transform<
+      OptionList, Options_detail::find_subgroup<tmpl::_1, Group>>>;
+
+  // The maximum length of an option label. 21 characters fits
+  // "DiscontinuousGalerkin".
+  static constexpr int max_label_size_ = 21;
+  // The maximum length of option help strings.
+  static constexpr size_t max_help_size_ = 55;
 
   //@{
   /// Check that the size is not smaller than the lower bound
   ///
   /// \tparam T the option struct
   /// \param t the value of the read in option
-  template <typename T,
-            Requires<Options_detail::has_lower_bound_on_size<T>::value> =
-                nullptr>
+  template <
+      typename T,
+      Requires<Options_detail::has_lower_bound_on_size<T>::value> = nullptr>
   void check_lower_bound_on_size(const typename T::type& t,
                                  const OptionContext& context) const;
-  template <typename T,
-            Requires<not Options_detail::has_lower_bound_on_size<T>::value> =
-                nullptr>
+  template <
+      typename T,
+      Requires<not Options_detail::has_lower_bound_on_size<T>::value> = nullptr>
   constexpr void check_lower_bound_on_size(
-      const typename T::type& /*t*/,
-      const OptionContext& /*context*/) const noexcept {}
+      const typename T::type& /*t*/, const OptionContext& /*context*/) const
+      noexcept {}
   //@}
 
   //@{
@@ -212,17 +228,17 @@ class Options {
   ///
   /// \tparam T the option struct
   /// \param t the value of the read in option
-  template <typename T,
-            Requires<Options_detail::has_upper_bound_on_size<T>::value> =
-                nullptr>
+  template <
+      typename T,
+      Requires<Options_detail::has_upper_bound_on_size<T>::value> = nullptr>
   void check_upper_bound_on_size(const typename T::type& t,
                                  const OptionContext& context) const;
-  template <typename T,
-            Requires<not Options_detail::has_upper_bound_on_size<T>::value> =
-                nullptr>
+  template <
+      typename T,
+      Requires<not Options_detail::has_upper_bound_on_size<T>::value> = nullptr>
   constexpr void check_upper_bound_on_size(
-      const typename T::type& /*t*/,
-      const OptionContext& /*context*/) const noexcept {}
+      const typename T::type& /*t*/, const OptionContext& /*context*/) const
+      noexcept {}
   //@}
 
   //@{
@@ -240,9 +256,9 @@ class Options {
   template <typename T,
             Requires<not Options_detail::has_default<T>::value> = nullptr>
   [[noreturn]] typename T::type get_default() const {
-    PARSE_ERROR(context_,
-                "You did not specify the option '" << Options_detail::name<T>()
-                << "'.\n" << help());
+    PARSE_ERROR(context_, "You did not specify the option '"
+                              << Options_detail::name<T>() << "'.\n"
+                              << help());
   }
   //@}
 
@@ -258,9 +274,9 @@ class Options {
                          const OptionContext& context) const;
   template <typename T,
             Requires<not Options_detail::has_lower_bound<T>::value> = nullptr>
-  constexpr void check_lower_bound(
-      const typename T::type& /*t*/,
-      const OptionContext& /*context*/) const noexcept {}
+  constexpr void check_lower_bound(const typename T::type& /*t*/,
+                                   const OptionContext& /*context*/) const
+      noexcept {}
   //@}
 
   //@{
@@ -269,16 +285,15 @@ class Options {
   /// Note: Upper bounds are <=, not just <.
   /// \tparam T the option struct
   /// \param t the value of the read in option
-  template <
-      typename T,
-      Requires<Options_detail::has_upper_bound<T>::value> = nullptr>
+  template <typename T,
+            Requires<Options_detail::has_upper_bound<T>::value> = nullptr>
   void check_upper_bound(const typename T::type& t,
                          const OptionContext& context) const;
   template <typename T,
             Requires<not Options_detail::has_upper_bound<T>::value> = nullptr>
-  constexpr void check_upper_bound(
-      const typename T::type& /*t*/,
-      const OptionContext& /*context*/) const noexcept {}
+  constexpr void check_upper_bound(const typename T::type& /*t*/,
+                                   const OptionContext& /*context*/) const
+      noexcept {}
   //@}
 
   //@{
@@ -313,29 +328,33 @@ class Options {
   std::unordered_map<std::string, YAML::Node> parsed_options_{};
 };
 
-template <typename OptionList>
-Options<OptionList>::Options(std::string help_text) noexcept
+template <typename OptionList, typename Group>
+Options<OptionList, Group>::Options(std::string help_text) noexcept
     : help_text_(std::move(help_text)),
-      valid_names_(
-          tmpl::for_each<opts_t>(Options_detail::create_valid_names{}).value) {
-  tmpl::for_each<opts_t>([](auto t) noexcept {
+      valid_names_(tmpl::for_each<tags_and_subgroups_list>(
+                       Options_detail::create_valid_names{})
+                       .value) {
+  tmpl::for_each<tags_and_subgroups_list>([](auto t) noexcept {
     using T = typename decltype(t)::type;
     const std::string label = Options_detail::name<T>();
-    ASSERT(label.size() < max_label_size_,
-           "The option name " << label << " is too long for nice formatting, "
-           "please shorten the name to be under " << max_label_size_
-           << " characters");
+    ASSERT(label.size() <= max_label_size_,
+           "The option name " << label
+                              << " is too long for nice formatting, "
+                                 "please shorten the name to "
+                              << max_label_size_ << " characters or fewer");
     ASSERT(std::strlen(T::help) > 0,
            "You must supply a help string of non-zero length for " << label);
-    ASSERT(std::strlen(T::help) < max_help_size_,
+    ASSERT(std::strlen(T::help) <= max_help_size_,
            "Option help strings should be short and to the point.  "
-           "The help string for " << label << " should be less than "
-           << max_help_size_ << " characters long.");
+           "The help string for "
+               << label << " should have " << max_help_size_
+               << " characters or fewer.");
   });
 }
 
-template <typename OptionList>
-void Options<OptionList>::parse_file(const std::string& file_name) noexcept {
+template <typename OptionList, typename Group>
+void Options<OptionList, Group>::parse_file(
+    const std::string& file_name) noexcept {
   context_.append("In " + file_name);
   try {
     parse(YAML::LoadFile(file_name));
@@ -346,8 +365,8 @@ void Options<OptionList>::parse_file(const std::string& file_name) noexcept {
   }
 }
 
-template <typename OptionList>
-void Options<OptionList>::parse(const std::string& options) noexcept {
+template <typename OptionList, typename Group>
+void Options<OptionList, Group>::parse(const std::string& options) noexcept {
   context_.append("In string");
   try {
     parse(YAML::Load(options));
@@ -356,18 +375,17 @@ void Options<OptionList>::parse(const std::string& options) noexcept {
   }
 }
 
-template <typename OptionList>
-void Options<OptionList>::parse(const Option& options) {
+template <typename OptionList, typename Group>
+void Options<OptionList, Group>::parse(const Option& options) {
   context_ = options.context();
   parse(options.node());
 }
 
-template <typename OptionList>
-void Options<OptionList>::parse(const YAML::Node& node) {
+template <typename OptionList, typename Group>
+void Options<OptionList, Group>::parse(const YAML::Node& node) {
   if (not(node.IsMap() or node.IsNull())) {
-    PARSE_ERROR(context_,
-                "'" << node << "' does not look like options.\n"
-                << help());
+    PARSE_ERROR(context_, "'" << node << "' does not look like options.\n"
+                              << help());
   }
   for (const auto& name_and_value : node) {
     const auto& name = name_and_value.first.as<std::string>();
@@ -378,45 +396,73 @@ void Options<OptionList>::parse(const YAML::Node& node) {
 
     // Check for invalid key
     if (1 != valid_names_.count(name)) {
-      PARSE_ERROR(context,
-                  "Option '" << name << "' is not a valid option.\n"
-                  << parsing_help(node));
+      PARSE_ERROR(context, "Option '" << name << "' is not a valid option.\n"
+                                      << parsing_help(node));
     }
 
     // Check for duplicate key
     if (0 != parsed_options_.count(name)) {
-      PARSE_ERROR(context,
-                  "Option '" << name << "' specified twice.\n"
-                  << parsing_help(node));
+      PARSE_ERROR(context, "Option '" << name << "' specified twice.\n"
+                                      << parsing_help(node));
     }
     parsed_options_.emplace(name, value);
   }
 }
 
-template <typename OptionList>
-template <typename T, typename Metavariables>
-typename T::type Options<OptionList>::get() const {
-  static_assert(
-      not cpp17::is_same_v<tmpl::index_of<opts_t, T>, tmpl::no_such_type_>,
-      "Could not find requested option in the list of options provided. Did "
-      "you forget to add the option struct to the OptionList?");
-  const std::string label = Options_detail::name<T>();
-
-  validate_default<T>();
-  if (0 == parsed_options_.count(label)) {
-    return get_default<T>();
+namespace Options_detail {
+template <typename Tag, typename Metavariables, typename Subgroup>
+struct get_impl {
+  template <typename OptionList, typename Group>
+  static typename Tag::type apply(const Options<OptionList, Group>& opts) {
+    static_assert(
+        tmpl::list_contains_v<OptionList, Tag>,
+        "Could not find requested option in the list of options provided. Did "
+        "you forget to add the option tag to the OptionList?");
+    const std::string subgroup_label = name<Subgroup>();
+    Options<options_in_group<OptionList, Subgroup>, Subgroup> subgroup_options(
+        Subgroup::help);
+    subgroup_options.context_ = opts.context_;
+    subgroup_options.context_.append("In group " + subgroup_label);
+    subgroup_options.parse(opts.parsed_options_.find(subgroup_label)->second);
+    return subgroup_options.template get<Tag, Metavariables>();
   }
+};
 
-  Option option(parsed_options_.find(label)->second, context_);
-  option.append_context("While parsing option " + label);
+template <typename Tag, typename Metavariables>
+struct get_impl<Tag, Metavariables, Tag> {
+  template <typename OptionList, typename Group>
+  static typename Tag::type apply(const Options<OptionList, Group>& opts) {
+    static_assert(
+        tmpl::list_contains_v<OptionList, Tag>,
+        "Could not find requested option in the list of options provided. Did "
+        "you forget to add the option tag to the OptionList?");
+    const std::string label = name<Tag>();
 
-  auto t = option.parse_as<typename T::type, Metavariables>();
+    opts.template validate_default<Tag>();
+    if (0 == opts.parsed_options_.count(label)) {
+      return opts.template get_default<Tag>();
+    }
 
-  check_lower_bound_on_size<T>(t, option.context());
-  check_upper_bound_on_size<T>(t, option.context());
-  check_lower_bound<T>(t, option.context());
-  check_upper_bound<T>(t, option.context());
-  return t;
+    Option option(opts.parsed_options_.find(label)->second, opts.context_);
+    option.append_context("While parsing option " + label);
+
+    auto t = option.parse_as<typename Tag::type, Metavariables>();
+
+    opts.template check_lower_bound_on_size<Tag>(t, option.context());
+    opts.template check_upper_bound_on_size<Tag>(t, option.context());
+    opts.template check_lower_bound<Tag>(t, option.context());
+    opts.template check_upper_bound<Tag>(t, option.context());
+    return t;
+  }
+};
+}  // namespace Options_detail
+
+template <typename OptionList, typename Group>
+template <typename Tag, typename Metavariables>
+typename Tag::type Options<OptionList, Group>::get() const {
+  return Options_detail::get_impl<
+      Tag, Metavariables,
+      typename Options_detail::find_subgroup<Tag, Group>::type>::apply(*this);
 }
 
 namespace Options_detail {
@@ -434,91 +480,91 @@ struct apply_helper<tmpl::list<Tags...>> {
 
 // \cond
 // Doxygen is confused by decltype(auto)
-template <typename OptionList>
+template <typename OptionList, typename Group>
 template <typename TagList, typename Metavariables, typename F>
-decltype(auto) Options<OptionList>::apply(F&& func) const {
+decltype(auto) Options<OptionList, Group>::apply(F&& func) const {
   return Options_detail::apply_helper<TagList>::template apply<Metavariables>(
       *this, std::forward<F>(func));
 }
 // \endcond
 
-template <typename OptionList>
-std::string Options<OptionList>::help() const noexcept {
+template <typename OptionList, typename Group>
+std::string Options<OptionList, Group>::help() const noexcept {
   std::ostringstream ss;
   ss << "\n==== Description of expected options:\n" << help_text_;
-  if (tmpl::size<opts_t>::value > 0) {
+  if (tmpl::size<tags_and_subgroups_list>::value > 0) {
     ss << "\n\nOptions:\n"
-       << tmpl::for_each<opts_t>(Options_detail::print{max_label_size_}).value;
+       << tmpl::for_each<tags_and_subgroups_list>(
+              Options_detail::print<OptionList>{max_label_size_})
+              .value;
   } else {
     ss << "\n\n<No options>\n";
   }
   return ss.str();
 }
 
-template <typename OptionList>
+template <typename OptionList, typename Group>
 template <typename T,
           Requires<Options_detail::has_lower_bound_on_size<T>::value>>
-void Options<OptionList>::check_lower_bound_on_size(
+void Options<OptionList, Group>::check_lower_bound_on_size(
     const typename T::type& t, const OptionContext& context) const {
   static_assert(cpp17::is_same_v<decltype(T::lower_bound_on_size()), size_t>,
                 "lower_bound_on_size() is not a size_t.");
   if (t.size() < T::lower_bound_on_size()) {
-    PARSE_ERROR(context,
-                "Value must have at least " << T::lower_bound_on_size()
-                << " entries, but " << t.size() << " were given.\n"
-                << help());
+    PARSE_ERROR(context, "Value must have at least "
+                             << T::lower_bound_on_size() << " entries, but "
+                             << t.size() << " were given.\n"
+                             << help());
   }
 }
 
-template <typename OptionList>
+template <typename OptionList, typename Group>
 template <typename T,
           Requires<Options_detail::has_upper_bound_on_size<T>::value>>
-void Options<OptionList>::check_upper_bound_on_size(
+void Options<OptionList, Group>::check_upper_bound_on_size(
     const typename T::type& t, const OptionContext& context) const {
   static_assert(cpp17::is_same_v<decltype(T::upper_bound_on_size()), size_t>,
                 "upper_bound_on_size() is not a size_t.");
   if (t.size() > T::upper_bound_on_size()) {
-    PARSE_ERROR(context,
-                "Value must have at most " << T::upper_bound_on_size()
-                << " entries, but " << t.size() << " were given.\n"
-                << help());
+    PARSE_ERROR(context, "Value must have at most "
+                             << T::upper_bound_on_size() << " entries, but "
+                             << t.size() << " were given.\n"
+                             << help());
   }
 }
 
-template <typename OptionList>
+template <typename OptionList, typename Group>
 template <typename T, Requires<Options_detail::has_lower_bound<T>::value>>
-inline void Options<OptionList>::check_lower_bound(
+inline void Options<OptionList, Group>::check_lower_bound(
     const typename T::type& t, const OptionContext& context) const {
   static_assert(cpp17::is_same_v<decltype(T::lower_bound()), typename T::type>,
                 "Lower bound is not of the same type as the option.");
   static_assert(not cpp17::is_same_v<typename T::type, bool>,
                 "Cannot set a lower bound for a bool.");
   if (t < T::lower_bound()) {
-    PARSE_ERROR(context,
-                "Value " << t << " is below the lower bound of "
-                << T::lower_bound() << ".\n"
-                << help());
+    PARSE_ERROR(context, "Value " << t << " is below the lower bound of "
+                                  << T::lower_bound() << ".\n"
+                                  << help());
   }
 }
 
-template <typename OptionList>
+template <typename OptionList, typename Group>
 template <typename T, Requires<Options_detail::has_upper_bound<T>::value>>
-inline void Options<OptionList>::check_upper_bound(
+inline void Options<OptionList, Group>::check_upper_bound(
     const typename T::type& t, const OptionContext& context) const {
   static_assert(cpp17::is_same_v<decltype(T::upper_bound()), typename T::type>,
                 "Upper bound is not of the same type as the option.");
   static_assert(not cpp17::is_same_v<typename T::type, bool>,
                 "Cannot set an upper bound for a bool.");
   if (t > T::upper_bound()) {
-    PARSE_ERROR(context,
-                "Value " << t << " is above the upper bound of "
-                << T::upper_bound() << ".\n"
-                << help());
+    PARSE_ERROR(context, "Value " << t << " is above the upper bound of "
+                                  << T::upper_bound() << ".\n"
+                                  << help());
   }
 }
 
-template <typename OptionList>
-std::string Options<OptionList>::parsing_help(
+template <typename OptionList, typename Group>
+std::string Options<OptionList, Group>::parsing_help(
     const YAML::Node& options) const noexcept {
   std::ostringstream os;
   // At top level this would dump the entire input file, which is very
@@ -532,8 +578,8 @@ std::string Options<OptionList>::parsing_help(
   return os.str();
 }
 
-template <typename OptionList>
-[[noreturn]] void Options<OptionList>::parser_error(
+template <typename OptionList, typename Group>
+[[noreturn]] void Options<OptionList, Group>::parser_error(
     const YAML::Exception& e) const noexcept {
   auto context = context_;
   context.line = e.mark.line;
@@ -541,12 +587,14 @@ template <typename OptionList>
   // Inline the top_level branch of PARSE_ERROR to avoid warning that
   // the other branch would call terminate.  (Parser errors can only
   // be generated at top level.)
-  ERROR("\n" << context <<
-        "Unable to correctly parse the input file because of a syntax error.\n"
-        "This is often due to placing a suboption on the same line as an "
-        "option, e.g.:\nDomainCreator: CreateInterval:\n  IsPeriodicIn: "
-        "[false]\n\nShould be:\nDomainCreator:\n  CreateInterval:\n    "
-        "IsPeriodicIn: [true]\n\nSee an example input file for help.");
+  ERROR(
+      "\n"
+      << context
+      << "Unable to correctly parse the input file because of a syntax error.\n"
+         "This is often due to placing a suboption on the same line as an "
+         "option, e.g.:\nDomainCreator: CreateInterval:\n  IsPeriodicIn: "
+         "[false]\n\nShould be:\nDomainCreator:\n  CreateInterval:\n    "
+         "IsPeriodicIn: [true]\n\nSee an example input file for help.");
 }
 
 template <typename T>

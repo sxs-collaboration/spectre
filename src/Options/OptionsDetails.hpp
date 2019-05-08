@@ -42,6 +42,45 @@ std::string name() noexcept {
   return name_helper<T>::name();
 }
 
+// Traverses the group hierarchy of `Tag`, returning the topmost group that is
+// a subgroup of `Root`. Directly returns `Tag` if it has no group.
+// This means that the returned type is always the direct child node of `Root`
+// that contains `Tag` in its hierarchy.
+// If `Root` is not in the group hierarchy of `Tag`, this function returns the
+// topmost group of `Tag` (meaning that `Root` is treated as the root of its
+// group hierarchy).
+template <typename Tag, typename Root, typename = cpp17::void_t<>>
+struct find_subgroup {
+  using type = Tag;
+};
+
+template <typename Tag>
+struct find_subgroup<Tag, typename Tag::group,
+                     cpp17::void_t<typename Tag::group>> {
+  using type = Tag;
+};
+
+template <typename Tag, typename Root>
+struct find_subgroup<Tag, Root, cpp17::void_t<typename Tag::group>> {
+  using type = typename find_subgroup<typename Tag::group, Root>::type;
+};
+
+/// Checks if `Tag` is within the group hierarchy of `Group`.
+template <typename Tag, typename Group, typename = cpp17::void_t<>>
+struct is_in_group : std::false_type {};
+
+template <typename Tag>
+struct is_in_group<Tag, typename Tag::group, cpp17::void_t<typename Tag::group>>
+    : std::true_type {};
+
+template <typename Tag, typename Group>
+struct is_in_group<Tag, Group, cpp17::void_t<typename Tag::group>>
+    : is_in_group<typename Tag::group, Group> {};
+
+/// The subset of tags in `OptionList` that are in the hierarchy of `Group`
+template <typename OptionList, typename Group>
+using options_in_group = tmpl::filter<OptionList, is_in_group<tmpl::_1, Group>>;
+
 // Display a type in a pseudo-YAML form, leaving out likely irrelevant
 // information.
 template <typename T>
@@ -78,13 +117,15 @@ struct yaml_type<std::array<T, N>> {
 template <typename K, typename V, typename C>
 struct yaml_type<std::map<K, V, C>> {
   static std::string value() noexcept {
-    return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}"; }
+    return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}";
+  }
 };
 
 template <typename K, typename V, typename H, typename E>
 struct yaml_type<std::unordered_map<K, V, H, E>> {
   static std::string value() noexcept {
-    return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}"; }
+    return "{" + yaml_type<K>::value() + ": " + yaml_type<V>::value() + "}";
+  }
 };
 
 template <typename T, typename U>
@@ -129,76 +170,88 @@ struct has_upper_bound_on_size<
     S, cpp17::void_t<decltype(std::declval<S>().upper_bound_on_size())>>
     : std::true_type {};
 
-struct print {
-  explicit print(const int max_label_size) noexcept
-      : max_label_size_(max_label_size) {}
+template <typename Group, typename OptionList, typename = std::nullptr_t>
+struct print_impl {
+  static std::string apply(const int max_label_size) noexcept {
+    std::ostringstream ss;
+    ss << "  " << std::setw(max_label_size + 2) << std::left << name<Group>()
+       << Group::help << "\n\n";
+    return ss.str();
+  }
+};
 
-  using value_type = std::string;
-  template <typename T, Requires<has_default<T>::value> = nullptr>
+template <typename Tag, typename OptionList>
+struct print_impl<Tag, OptionList,
+                  Requires<tmpl::list_contains_v<OptionList, Tag>>> {
+  template <typename LocalTag, Requires<has_default<LocalTag>::value> = nullptr>
   static std::string print_default() noexcept {
     std::ostringstream ss;
-    ss << "default=" << std::boolalpha << T::default_value();
+    ss << "default=" << std::boolalpha << LocalTag::default_value();
     return ss.str();
   }
-  template <typename T, Requires<not has_default<T>::value> = nullptr>
+  template <typename LocalTag,
+            Requires<not has_default<LocalTag>::value> = nullptr>
   static std::string print_default() noexcept {
     return "";
   }
-  template <typename T, Requires<has_lower_bound<T>::value> = nullptr>
+  template <typename LocalTag,
+            Requires<has_lower_bound<LocalTag>::value> = nullptr>
   static std::string print_lower_bound() noexcept {
     std::ostringstream ss;
-    ss << "min=" << T::lower_bound();
+    ss << "min=" << LocalTag::lower_bound();
     return ss.str();
   }
-  template <typename T, Requires<not has_lower_bound<T>::value> = nullptr>
+  template <typename LocalTag,
+            Requires<not has_lower_bound<LocalTag>::value> = nullptr>
   static std::string print_lower_bound() noexcept {
     return "";
   }
-  template <typename T, Requires<has_upper_bound<T>::value> = nullptr>
+  template <typename LocalTag,
+            Requires<has_upper_bound<LocalTag>::value> = nullptr>
   static std::string print_upper_bound() noexcept {
     std::ostringstream ss;
-    ss << "max=" << T::upper_bound();
+    ss << "max=" << LocalTag::upper_bound();
     return ss.str();
   }
-  template <typename T, Requires<not has_upper_bound<T>::value> = nullptr>
+  template <typename LocalTag,
+            Requires<not has_upper_bound<LocalTag>::value> = nullptr>
   static std::string print_upper_bound() noexcept {
     return "";
   }
-  template <typename T, Requires<has_lower_bound_on_size<T>::value> = nullptr>
+  template <typename LocalTag,
+            Requires<has_lower_bound_on_size<LocalTag>::value> = nullptr>
   static std::string print_lower_bound_on_size() noexcept {
     std::ostringstream ss;
-    ss << "min size=" << T::lower_bound_on_size();
+    ss << "min size=" << LocalTag::lower_bound_on_size();
     return ss.str();
   }
-  template <typename T,
-            Requires<not has_lower_bound_on_size<T>::value> = nullptr>
+  template <typename LocalTag,
+            Requires<not has_lower_bound_on_size<LocalTag>::value> = nullptr>
   static std::string print_lower_bound_on_size() noexcept {
     return "";
   }
-  template <typename T, Requires<has_upper_bound_on_size<T>::value> = nullptr>
+  template <typename LocalTag,
+            Requires<has_upper_bound_on_size<LocalTag>::value> = nullptr>
   static std::string print_upper_bound_on_size() noexcept {
     std::ostringstream ss;
-    ss << "max size=" << T::upper_bound_on_size();
+    ss << "max size=" << LocalTag::upper_bound_on_size();
     return ss.str();
   }
-  template <typename T,
-            Requires<not has_upper_bound_on_size<T>::value> = nullptr>
+  template <typename LocalTag,
+            Requires<not has_upper_bound_on_size<LocalTag>::value> = nullptr>
   static std::string print_upper_bound_on_size() noexcept {
     return "";
   }
 
-  template <typename T>
-  void operator()(tmpl::type_<T> /*meta*/) noexcept {
+  static std::string apply(const int max_label_size) noexcept {
     std::ostringstream ss;
-    ss << "  " << std::setw(max_label_size_) << std::left << name<T>()
-       << yaml_type<typename T::type>::value();
+    ss << "  " << std::setw(max_label_size + 2) << std::left << name<Tag>()
+       << yaml_type<typename Tag::type>::value();
     std::string limits;
-    for (const auto& limit : {
-        print_default<T>(),
-        print_lower_bound<T>(),
-        print_upper_bound<T>(),
-        print_lower_bound_on_size<T>(),
-        print_upper_bound_on_size<T>() }) {
+    for (const auto& limit :
+         {print_default<Tag>(), print_lower_bound<Tag>(),
+          print_upper_bound<Tag>(), print_lower_bound_on_size<Tag>(),
+          print_upper_bound_on_size<Tag>()}) {
       if (not limits.empty() and not limit.empty()) {
         limits += ", ";
       }
@@ -207,10 +260,20 @@ struct print {
     if (not limits.empty()) {
       ss << " [" << limits << "]";
     }
-    ss << "\n" << std::setw(max_label_size_ + 2) << "" << T::help << "\n\n";
-    value += ss.str();
+    ss << "\n" << std::setw(max_label_size + 4) << "" << Tag::help << "\n\n";
+    return ss.str();
   }
+};
 
+template <typename OptionList>
+struct print {
+  explicit print(const int max_label_size) noexcept
+      : max_label_size_(max_label_size) {}
+  using value_type = std::string;
+  template <typename Tag>
+  void operator()(tmpl::type_<Tag> /*meta*/) noexcept {
+    value += print_impl<Tag, OptionList>::apply(max_label_size_);
+  }
   value_type value{};
 
  private:
@@ -353,13 +416,12 @@ struct wrap_create_types_impl<std::array<T, N>> {
   }
 
   template <size_t... Is>
-  static auto unwrap_helper(
-      std::array<T, N> wrapped,
-      std::integer_sequence<size_t, Is...> /*meta*/) {
+  static auto unwrap_helper(std::array<T, N> wrapped,
+                            std::integer_sequence<size_t, Is...> /*meta*/) {
     using UnwrappedT = decltype(unwrap_create_types<T>(std::declval<T>()));
     static_cast<void>(wrapped);  // Work around broken GCC warning
     return std::array<UnwrappedT, N>{
-      {unwrap_create_types<T>(std::move(wrapped[Is]))...}};
+        {unwrap_create_types<T>(std::move(wrapped[Is]))...}};
   }
 };
 

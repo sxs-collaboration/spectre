@@ -48,8 +48,9 @@ SPECTRE_TEST_CASE("Unit.Options.Empty.not_map", "[Unit][Options]") {
 SPECTRE_TEST_CASE("Unit.Options.syntax_error", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<>> opts("");
-  opts.parse("DomainCreator: CreateInterval:\n"
-             "  IsPeriodicIn: [false]");
+  opts.parse(
+      "DomainCreator: CreateInterval:\n"
+      "  IsPeriodicIn: [false]");
 }
 
 struct Simple {
@@ -80,8 +81,9 @@ void test_options_simple_success() {
 SPECTRE_TEST_CASE("Unit.Options.Simple.duplicate", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<Simple>> opts("");
-  opts.parse("Simple: -4\n"
-             "Simple: -3");
+  opts.parse(
+      "Simple: -4\n"
+      "Simple: -3");
   opts.get<Simple>();
 }
 
@@ -90,8 +92,9 @@ SPECTRE_TEST_CASE("Unit.Options.Simple.duplicate", "[Unit][Options]") {
 SPECTRE_TEST_CASE("Unit.Options.NamedSimple.duplicate", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<NamedSimple>> opts("");
-  opts.parse("SomeName: -4\n"
-             "SomeName: -3");
+  opts.parse(
+      "SomeName: -4\n"
+      "SomeName: -3");
   opts.get<NamedSimple>();
 }
 
@@ -147,11 +150,73 @@ SPECTRE_TEST_CASE("Unit.Options.NamedSimple.invalid", "[Unit][Options]") {
   opts.get<NamedSimple>();
 }
 
+namespace {
+/// [options_example_group]
+struct Group {
+  static constexpr OptionString help = {"Group halp"};
+};
+
+struct GroupedTag {
+  using type = int;
+  static constexpr OptionString help = {"Tag halp"};
+  using group = Group;
+};
+/// [options_example_group]
+
+struct OuterGroup {
+  static constexpr OptionString help = {"Outer group halp"};
+};
+
+struct InnerGroup {
+  static constexpr OptionString help = {"Inner group halp"};
+  using group = OuterGroup;
+};
+
+struct InnerGroupedTag {
+  using type = int;
+  static constexpr OptionString help = {"Inner tag halp"};
+  using group = InnerGroup;
+};
+
+struct OuterGroupedTag {
+  using type = int;
+  static constexpr OptionString help = {"Outer tag halp"};
+  using group = OuterGroup;
+};
+
+void test_options_grouped() {
+  {
+    INFO("Option groups");
+    Options<tmpl::list<GroupedTag, Simple>> opts("Overall help text");
+    opts.parse(
+        "Group:\n"
+        "  GroupedTag: 3\n"
+        "Simple: 2");
+    CHECK(opts.get<GroupedTag>() == 3);
+    CHECK(opts.get<Simple>() == 2);
+  }
+  {
+    INFO("Nested option groups");
+    Options<tmpl::list<InnerGroupedTag, OuterGroupedTag, Simple>> opts(
+        "Overall help text");
+    opts.parse(
+        "OuterGroup:\n"
+        "  InnerGroup:\n"
+        "    InnerGroupedTag: 3\n"
+        "  OuterGroupedTag: 1\n"
+        "Simple: 2\n");
+    CHECK(opts.get<InnerGroupedTag>() == 3);
+    CHECK(opts.get<OuterGroupedTag>() == 1);
+    CHECK(opts.get<Simple>() == 2);
+  }
+}
+}  // namespace
+
 /// [options_example_scalar_struct]
 struct Bounded {
   using type = int;
   static constexpr OptionString help = {
-    "Option with bounds and a default value"};
+      "Option with bounds and a default value"};
   // These are optional
   static type default_value() noexcept { return 3; }
   static type lower_bound() noexcept { return 2; }
@@ -164,7 +229,7 @@ void test_options_default_specified() {
   Options<tmpl::list<Bounded>> opts("Overall help text");
   opts.parse("Bounded: 8");
   CHECK(opts.get<Bounded>() == 8);
-/// [options_example_scalar_parse]
+  /// [options_example_scalar_parse]
 }
 
 void test_options_default_defaulted() {
@@ -322,11 +387,12 @@ SPECTRE_TEST_CASE("Unit.Options.Array.too_long", "[Unit][Options]") {
 SPECTRE_TEST_CASE("Unit.Options.Array.too_long.formatting", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<Array>> opts("");
-  opts.parse("Array:\n"
-             "  - 1\n"
-             "  - 2\n"
-             "  - 3\n"
-             "  - 4");
+  opts.parse(
+      "Array:\n"
+      "  - 1\n"
+      "  - 2\n"
+      "  - 3\n"
+      "  - 4");
   opts.get<Array>();
 }
 
@@ -360,9 +426,10 @@ struct Map {
 
 void test_options_map_success() {
   Options<tmpl::list<Map>> opts("");
-  opts.parse("Map:\n"
-             "  A: 3\n"
-             "  Z: 2");
+  opts.parse(
+      "Map:\n"
+      "  A: 3\n"
+      "  Z: 2");
   std::map<std::string, int> expected;
   expected.emplace("A", 3);
   expected.emplace("Z", 2);
@@ -389,8 +456,9 @@ SPECTRE_TEST_CASE("Unit.Options.Map.invalid", "[Unit][Options]") {
 SPECTRE_TEST_CASE("Unit.Options.Map.invalid_entry", "[Unit][Options]") {
   ERROR_TEST();
   Options<tmpl::list<Map>> opts("");
-  opts.parse("Map:\n"
-             "  A: string");
+  opts.parse(
+      "Map:\n"
+      "  A: string");
   opts.get<Map>();
 }
 
@@ -401,9 +469,10 @@ struct UnorderedMap {
 
 void test_options_unordered_map_success() {
   Options<tmpl::list<UnorderedMap>> opts("");
-  opts.parse("UnorderedMap:\n"
-             "  A: 3\n"
-             "  Z: 2");
+  opts.parse(
+      "UnorderedMap:\n"
+      "  A: 3\n"
+      "  Z: 2");
   std::unordered_map<std::string, int> expected;
   expected.emplace("A", 3);
   expected.emplace("Z", 2);
@@ -415,10 +484,10 @@ struct Wrapped {
   T data;
 };
 
-#define FORWARD_OP(op)                                          \
-  template <typename T>                                         \
-  bool operator op(const Wrapped<T>& a, const Wrapped<T>& b) {  \
-    return a.data op b.data;                                    \
+#define FORWARD_OP(op)                                         \
+  template <typename T>                                        \
+  bool operator op(const Wrapped<T>& a, const Wrapped<T>& b) { \
+    return a.data op b.data;                                   \
   }
 FORWARD_OP(==)
 FORWARD_OP(!=)
@@ -471,24 +540,25 @@ struct WrapUnorderedMap {
 
 void test_options_complex_containers() {
   Options<tmpl::list<WrapMap, WrapVector, WrapList, WrapArray, WrapPair,
-                     WrapUnorderedMap>> opts("");
-  opts.parse("WrapMap: {1: A, 2: B}\n"
-             "WrapVector: [1, 2, 3]\n"
-             "WrapList: [1, 2, 3]\n"
-             "WrapArray: [1, 2]\n"
-             "WrapPair: [1, X]\n"
-             "WrapUnorderedMap: {1: A, 2: B}\n");
-  CHECK(opts.get<WrapMap>() ==
-        (std::map<Wrapped<int>, Wrapped<std::string>>{
-          {{1}, {"A"}}, {{2}, {"B"}}}));
+                     WrapUnorderedMap>>
+      opts("");
+  opts.parse(
+      "WrapMap: {1: A, 2: B}\n"
+      "WrapVector: [1, 2, 3]\n"
+      "WrapList: [1, 2, 3]\n"
+      "WrapArray: [1, 2]\n"
+      "WrapPair: [1, X]\n"
+      "WrapUnorderedMap: {1: A, 2: B}\n");
+  CHECK(opts.get<WrapMap>() == (std::map<Wrapped<int>, Wrapped<std::string>>{
+                                   {{1}, {"A"}}, {{2}, {"B"}}}));
   CHECK(opts.get<WrapVector>() == (std::vector<Wrapped<int>>{{1}, {2}, {3}}));
   CHECK(opts.get<WrapList>() == (std::list<Wrapped<int>>{{1}, {2}, {3}}));
   CHECK(opts.get<WrapArray>() == (std::array<Wrapped<int>, 2>{{{1}, {2}}}));
   CHECK(opts.get<WrapPair>() ==
         (std::pair<Wrapped<int>, Wrapped<std::string>>{{1}, {"X"}}));
   CHECK(opts.get<WrapUnorderedMap>() ==
-        (std::unordered_map<Wrapped<int>, Wrapped<std::string>>{
-          {{1}, {"A"}}, {{2}, {"B"}}}));
+        (std::unordered_map<Wrapped<int>, Wrapped<std::string>>{{{1}, {"A"}},
+                                                                {{2}, {"B"}}}));
 }
 
 #ifdef SPECTRE_DEBUG
@@ -497,7 +567,7 @@ struct Duplicate {
   static constexpr OptionString help = {"halp"};
 };
 struct NamedDuplicate {
-    using type = int;
+  using type = int;
   static std::string name() noexcept { return "Duplicate"; }
   static constexpr OptionString help = {"halp"};
 };
@@ -534,13 +604,13 @@ struct NamedNoHelp {
 struct TooLongHelp {
   using type = int;
   static constexpr OptionString help = {
-    "halp halp halp halp halp halp halp halp halp halp halp halp"};
+      "halp halp halp halp halp halp halp halp halp halp halp halp"};
 };
 struct NamedTooLongHelp {
   using type = int;
   static std::string name() noexcept { return "TooLongHelp"; }
   static constexpr OptionString help = {
-    "halp halp halp halp halp halp halp halp halp halp halp halp"};
+      "halp halp halp halp halp halp halp halp halp halp halp halp"};
 };
 #endif  // SPECTRE_DEBUG
 
@@ -582,7 +652,7 @@ struct NamedTooLongHelp {
 #endif
 }
 
-// [[OutputRegex, The help string for TooLongHelp should be less than]]
+// [[OutputRegex, The help string for TooLongHelp should have]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Options.TooLongHelp", "[Unit][Options]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -591,7 +661,7 @@ struct NamedTooLongHelp {
 #endif
 }
 
-// [[OutputRegex, The help string for TooLongHelp should be less than]]
+// [[OutputRegex, The help string for TooLongHelp should have]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Options.NamedTooLongHelp",
                                "[Unit][Options]") {
   ASSERTION_TEST();
@@ -616,17 +686,17 @@ struct Apply3 {
 
 void test_options_apply() {
   Options<tmpl::list<Apply1, Apply2, Apply3>> opts("");
-  opts.parse("Apply1: 2\n"
-             "Apply2: str\n"
-             "Apply3: [1, 2, 3]");
+  opts.parse(
+      "Apply1: 2\n"
+      "Apply2: str\n"
+      "Apply3: [1, 2, 3]");
   // We do the checks outside the lambda to make sure it actually gets called.
   std::vector<int> arg1;
   int arg2;
-  opts.apply<tmpl::list<Apply3, Apply1>>(
-      [&](const auto& a, auto b) {
-        arg1 = a;
-        arg2 = b;
-      });
+  opts.apply<tmpl::list<Apply3, Apply1>>([&](const auto& a, auto b) {
+    arg1 = a;
+    arg2 = b;
+  });
   CHECK(arg1 == (std::vector<int>{1, 2, 3}));
   CHECK(arg2 == 2);
 }
@@ -736,6 +806,7 @@ void test_options_explicit_constructor() {
 SPECTRE_TEST_CASE("Unit.Options", "[Unit][Options]") {
   test_options_empty_success();
   test_options_simple_success();
+  test_options_grouped();
   test_options_default_specified();
   test_options_default_defaulted();
   test_options_bounded_lower_bound();
