@@ -123,7 +123,7 @@ void test_variables(const DataType& used_for_size) {
 }
 
 void test_solution() noexcept {
-  grmhd::Solutions::BondiMichel solution(1.0, 50.0, 1.3, 1.5, 0.24);
+  grmhd::Solutions::BondiMichel solution(1.1, 50.0, 1.3, 1.5, 0.24);
   const std::array<double, 3> x{{4.0, 4.0, 4.0}};
   const std::array<double, 3> dx{{1.e-3, 1.e-3, 1.e-3}};
 

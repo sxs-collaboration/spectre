@@ -287,7 +287,8 @@ BondiMichel::variables(
     const IntermediateVars<DataType>& vars) const noexcept {
   auto result = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
   const DataType mag_field_strength_factor =
-      mag_field_strength_ / (cube(vars.radius) * sqrt(1.0 + 2.0 / vars.radius));
+      mag_field_strength_ * square(mass_) /
+      (cube(vars.radius) * sqrt(1.0 + 2.0 * mass_ / vars.radius));
   result.get(0) = mag_field_strength_factor * x.get(0);
   result.get(1) = mag_field_strength_factor * x.get(1);
   result.get(2) = mag_field_strength_factor * x.get(2);
