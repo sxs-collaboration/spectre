@@ -689,6 +689,12 @@ double irreducible_mass(const double area) noexcept {
          "The area of the horizon must be greater than zero but is " << area);
   return sqrt(area / (16.0 * M_PI));
 }
+
+double christodoulou_mass(const double dimensionful_spin_magnitude,
+                          const double irreducible_mass) noexcept {
+  return sqrt(square(irreducible_mass) + (square(dimensionful_spin_magnitude) /
+                                          (4.0 * square(irreducible_mass))));
+}
 }  // namespace StrahlkorperGr
 
 template tnsr::i<DataVector, 3, Frame::Inertial>
