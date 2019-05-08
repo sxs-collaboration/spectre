@@ -49,8 +49,6 @@ include(SetupCxxFlags)
 include(SetupSanitizers)
 include(SetupListTargets)
 include(AddSpectreExecutable)
-include(SpectreSetupPython)
-
 include(CheckBrokenArray0)
 
 # Need to load python libs before boost.python.
@@ -74,7 +72,7 @@ include(SetupLibsharp)
 include(SetupYamlCpp)
 
 include(SetupLIBCXXCharm)
-
+include(SpectreSetupPython)
 # The precompiled header must be setup after all libraries have been found
 include(SetupPch)
 

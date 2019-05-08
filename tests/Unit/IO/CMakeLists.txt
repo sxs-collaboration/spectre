@@ -23,3 +23,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "IO"
   )
+
+spectre_add_python_test(
+  "Unit.IO.H5.Python"
+  "Test_H5.py"
+  "unit;IO;H5;python")

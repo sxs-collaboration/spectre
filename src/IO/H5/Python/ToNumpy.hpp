@@ -1,21 +1,21 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "DataStructures/Python/ToNumpy.hpp"
+#pragma once
 
+#include <Python.h>
 #include <array>
 #include <cstdlib>
+
+#include "DataStructures/Matrix.hpp"
 // IWYU pragma: no_include <numpy/ndarrayobject.h>
 // IWYU pragma: no_include <numpy/ndarraytypes.h>
 
-#include "DataStructures/Matrix.hpp"
-#include "DataStructures/Python/Numpy.hpp"  // IWYU pragma: keep
-
 namespace py_bindings {
-
+/// Convert Matrix to a Numpy Array. Always creates a copy.
 // We use `malloc` instead of `new` because we tell NumPy it needs to free the
 // memory and NumPy uses `free`, not `delete`.
-PyObject* to_numpy(const Matrix& matrix) {
+inline PyObject* to_numpy(const Matrix& matrix) {
   auto* c_style_data = static_cast<double*>(
       malloc(sizeof(double) * (matrix.rows()) * matrix.columns()));
   for (size_t i = 0; i < matrix.rows(); ++i) {
