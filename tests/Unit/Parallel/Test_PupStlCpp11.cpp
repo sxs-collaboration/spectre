@@ -5,11 +5,11 @@
 
 #include <algorithm>
 #include <array>
+#include <cstddef>
 #include <deque>
 #include <memory>
 #include <pup.h>
 #include <pup_stl.h>
-#include <stddef.h>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -62,76 +62,84 @@ namespace {
 enum class eDummyEnum { test1, test2 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Serialization.unordered_map", "[Serialization][Unit]") {
-  std::unordered_map<std::string, double> um;
-  um["aaa"] = 1.589;
-  um["bbb"] = -10.7392;
-  test_serialization(um);
-}
+SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
+  {
+    INFO("unordered_map");
+    std::unordered_map<std::string, double> um;
+    um["aaa"] = 1.589;
+    um["bbb"] = -10.7392;
+    test_serialization(um);
+  }
 
-SPECTRE_TEST_CASE("Unit.Serialization.enum", "[Serialization][Unit]") {
-  eDummyEnum e = eDummyEnum::test2;
-  test_serialization(e);
-}
+  {
+    INFO("enum");
+    eDummyEnum e = eDummyEnum::test2;
+    test_serialization(e);
+  }
 
-/// [example_serialize_comparable]
-SPECTRE_TEST_CASE("Unit.Serialization.tuple", "[Serialization][Unit]") {
-  std::unordered_map<std::string, double> um;
-  um["aaa"] = 1.589;
-  um["bbb"] = -10.7392;
-  auto test_tuple = std::make_tuple<int, double, std::string,
-                                    std::unordered_map<std::string, double>>(
-      2, 0.57, "blah", std::move(um));
-  test_serialization(test_tuple);
-}
-/// [example_serialize_comparable]
+  /// [example_serialize_comparable]
+  {
+    INFO("tuple");
+    std::unordered_map<std::string, double> um;
+    um["aaa"] = 1.589;
+    um["bbb"] = -10.7392;
+    auto test_tuple = std::make_tuple<int, double, std::string,
+                                      std::unordered_map<std::string, double>>(
+        2, 0.57, "blah", std::move(um));
+    test_serialization(test_tuple);
+  }
+  /// [example_serialize_comparable]
 
-SPECTRE_TEST_CASE("Unit.Serialization.array", "[Serialization][Unit]") {
-  auto t = make_array(1.0, 3.64, 9.23);
-  test_serialization(t);
+  {
+    INFO("array");
+    auto t = make_array(1.0, 3.64, 9.23);
+    test_serialization(t);
 
-  auto t2 =
-      make_array(std::vector<double>{1, 4, 8}, std::vector<double>{7, 9, 4});
-  test_serialization(t2);
-}
+    auto t2 =
+        make_array(std::vector<double>{1, 4, 8}, std::vector<double>{7, 9, 4});
+    test_serialization(t2);
+  }
 
-SPECTRE_TEST_CASE("Unit.Serialization.deque", "[Serialization][Unit]") {
-  std::deque<double> t{1.0, 3.64, 9.23};
-  test_serialization(t);
-}
+  {
+    INFO("deque");
+    std::deque<double> t{1.0, 3.64, 9.23};
+    test_serialization(t);
+  }
 
-SPECTRE_TEST_CASE("Unit.Serialization.unordered_set", "[Serialization][Unit]") {
-  std::unordered_set<size_t> test_set = {1, 2, 5, 100};
-  test_serialization(test_set);
-}
+  {
+    INFO("unordered_set");
+    std::unordered_set<size_t> test_set = {1, 2, 5, 100};
+    test_serialization(test_set);
+  }
 
-SPECTRE_TEST_CASE("Unit.Serialization.unordered_set.empty",
-                  "[Serialization][Unit]") {
-  std::unordered_set<size_t> test_set{};
-  test_serialization(test_set);
-}
+  {
+    INFO("unordered_set.empty");
+    std::unordered_set<size_t> test_set{};
+    test_serialization(test_set);
+  }
 
-SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.double",
-                  "[Serialization][Unit]") {
-  auto test_unique_ptr = std::make_unique<double>(3.8273);
-  // clang-tidy: false positive use after free
-  CHECK(3.8273 == *serialize_and_deserialize(test_unique_ptr));  // NOLINT
-}
+  {
+    INFO("unique_ptr.double");
+    auto test_unique_ptr = std::make_unique<double>(3.8273);
+    // clang-tidy: false positive use after free
+    CHECK(3.8273 == *serialize_and_deserialize(test_unique_ptr));  // NOLINT
+  }
 
-/// [example_serialize_derived]
-SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.abstract_base",
-                  "[Serialization][Unit]") {
-  test_serialization_via_base<Test_Classes::Base,
-                              Test_Classes::DerivedInPupStlCpp11>(
-      std::vector<double>{-1, 12.3, -7, 8});
-}
-/// [example_serialize_derived]
+  /// [example_serialize_derived]
+  {
+    INFO("unique_ptr.abstract_base");
+    test_serialization_via_base<Test_Classes::Base,
+                                Test_Classes::DerivedInPupStlCpp11>(
+        std::vector<double>{-1, 12.3, -7, 8});
+  }
+  /// [example_serialize_derived]
 
-SPECTRE_TEST_CASE("Unit.Serialization.unique_ptr.nullptr",
-                  "[Serialization][Unit]") {
-  std::unique_ptr<double> derived_ptr = nullptr;
-  auto blah = serialize_and_deserialize(derived_ptr);
-  CHECK(nullptr == blah);
+  {
+    INFO("unique_ptr.nullptr");
+    std::unique_ptr<double> derived_ptr = nullptr;
+    auto blah = serialize_and_deserialize(derived_ptr);
+    CHECK(nullptr == blah);
+  }
 }
 
 /// \cond
