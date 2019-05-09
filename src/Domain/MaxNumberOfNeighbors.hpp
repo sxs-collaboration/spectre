@@ -23,3 +23,17 @@ constexpr size_t maximum_number_of_neighbors(const size_t dim) {
       throw "Invalid dim specified";
   };
 }
+
+/// \ingroup ComputationalDomainGroup
+/// Returns the maximum number of neighbors in each direction an element can
+/// have in `dim` dimensions.
+///
+/// \note Assumes a maximum 2-to-1 refinement between two adjacent Elements.
+constexpr size_t maximum_number_of_neighbors_per_direction(const size_t dim) {
+  switch (dim) {
+    case 0:
+      return 0;
+    default:
+      return two_to_the(dim - 1);
+  };
+}
