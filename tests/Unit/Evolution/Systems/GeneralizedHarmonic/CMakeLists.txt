@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(GaugeSourceFunctions)
+
 set(LIBRARY "Test_GeneralizedHarmonic")
 
 set(LIBRARY_SOURCES
