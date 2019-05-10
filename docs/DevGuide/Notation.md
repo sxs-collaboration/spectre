@@ -78,10 +78,10 @@ The notation for general relativity quantities used is:
   \f}
 - The Levi-Civita tensor is defined as
   \f{align*}{
-      \epsilon^{abcd}=\frac{1}{\sqrt{-g}}\tilde{\epsilon}^{abcd}
+      \epsilon^{abcd}=\frac{-1}{\sqrt{-g}}\tilde{\epsilon}^{abcd}
   \f}
   where \f$\tilde{\epsilon}^{abcd}\f$ is the Levi-Civita symbol and
-  \f$\tilde{\epsilon}^{0123}=+1\f$.
+  \f$\tilde{\epsilon}_{0123}=+1\f$.
 - For the generalized harmonic evolution system \f$\Pi_{ab}=-n^c\partial_c
   g_{ab}\f$ and \f$\Phi_{iab}=\partial_i g_{ab}\f$.
 
