@@ -8,6 +8,15 @@ See LICENSE.txt for details.
 
 \tableofcontents
 
+## General Notation {#general_notation}
+
+We use the following conventions and notation:
+- Latin letters at the beginning of the alphabet, \f$a,b,c,\ldots\f$ are
+  spacetime indices ranging from 0 to 3.
+- Latin letters \f$i,j,k,\ldots\f$ are spatial indices ranging from 1 to 3.
+- The Einstein summation convention is used where repeated indices are summed
+  over.
+
 ## Discontinuous Galerkin Notation {#dg_notation}
 
 - The logical coordinates in the element are
@@ -18,10 +27,10 @@ See LICENSE.txt for details.
   \f}
   where \f$\mathbf{x}\f$ are the coordinates mapped to by the coordinate map.
   The determinant of the Jacobian matrix is denoted by \f$J\f$.
-- We use \f$s\f$ and \f$t\f$ to be grid point indices. That is, \f$U_s\f$ is
-  \f$U\f$ at the grid point \f$s\f$. For tensor product bases we index the
-  individual irreducible topologies by subscripting \f$s\f$. For example,
-  \f$s_1\f$ would be the \f$\xi\f$-dimension in the reference element.
+- We use \f$p, q, r, s\f$ and \f$t\f$ to be grid point indices. That is,
+  \f$U_s\f$ is \f$U\f$ at the grid point \f$s\f$. For tensor product bases we
+  index the individual irreducible topologies by subscripting \f$s\f$. For
+  example, \f$s_1\f$ would be the \f$\xi\f$-dimension in the reference element.
 - We use a nodal basis of Lagrange interpolating polynomials
   \f{align*}{
       \ell_{s_i}(\xi)=\prod^{N}_{\substack{t_i=0\\ t_i\ne s_i}}
@@ -29,8 +38,9 @@ See LICENSE.txt for details.
   \f}
   where \f$N\f$ is the order/degree of the basis in each logical direction.
 - A DG scheme with an \f$N^{\mathrm{th}}\f$ order basis is referred to as a
-  \f$P_N\f$ scheme and converges at order \f$\mathcal{O}\left(\Delta
-  x^{N+1}\right)\f$ where \f$\Delta x\f$ is the 1d size of the element.
+  \f$P_N\f$ scheme and the error converges away at order
+  \f$\mathcal{O}\left(\Delta x^{N+1}\right)\f$ where \f$\Delta x\f$ is the 1d
+  size of the element.
 - The unit normal vector to one of the surfaces of the element is denoted by
   \f$n_i\f$.
 - The numerical flux boundary correction term which includes the normal vectors
@@ -45,15 +55,8 @@ See LICENSE.txt for details.
 
 ## General Relativity and (Magneto)hydrodynamics{#gr_hydro_notation}
 
-We use the following conventions and notation:
-- In general we work in units where \f$G=c=1\f$.
-- Latin letters at the beginning of the alphabet, \f$a,b,c,\ldots\f$ are
-  spacetime indices ranging from 0 to 3.
-- Latin letters \f$i,j,k,\ldots\f$ are spatial indices ranging from 1 to 3.
-
+In general we work in units where \f$G=c=1\f$.
 The notation for general relativity quantities used is:
-- The Einstein summation convention is used where repeated indices are summed
-  over.
 - The spacetime metric is denoted by \f$g_{ab}\f$ with signature
   \f$(-,+,+,+)\f$, and its determinant by \f$g\f$.
 - The lapse and shift are denoted by \f$\alpha\f$ and \f$\beta^i\f$,
@@ -100,38 +103,38 @@ The notation for (magneto)hydrodynamics used is:
   \f$^{*}\!F^{ab}=\frac{1}{2}\epsilon^{abcd}F_{cd}\f$.
 - The magnetic field in the frame comoving with the fluid is
   \f{align*}{
-      b^a = ^{*}\!F^{ab}u_b
+      b^a = {}^{*}\!F^{ab}u_b
   \f}
 - The electric and magnetic fields as measured by an Eulerian observer are given
   by
   \f{align*}{
-      E^i=&F^{ia}n_a=\alpha F^{0i} \\
-      B^i=&^{*}\!F^{ia}n_a=\alpha^{*}\!F^{0i}.
+      E^i&=F^{ia}n_a=\alpha F^{0i} \\
+      B^i&= {}^{*}\!F^{ia}n_a=\alpha^{*}\!F^{0i}.
   \f}
 - \f$b^a\f$ can be written in terms of \f$E^i\f$ and \f$B^i\f$ as follows:
   \f{align*}{
-      b^0=&\frac{W}{\alpha}B^i v_i\\
-      b^i=&\frac{B^i+\alpha b^0u^i}{W}
+      b^0&=\frac{W}{\alpha}B^i v_i\\
+      b^i&=\frac{B^i+\alpha b^0u^i}{W}
   \f}
-  while \f$b^2=b^i b_i\f$ is given by
+  while \f$b^2=b^a b_a\f$ is given by
   \f{align*}{
-      b^2=\frac{B^2}{W}+\left(B^i v_i\right)
+      b^2=\frac{B^2}{W^2}+\left(B^i v_i\right)^2
   \f}
 - The magnetic pressure is \f$p_{\mathrm{mag}}=b^2/2\f$
 - The primitive variables are \f$\rho\f$, \f$\epsilon\f$, \f$v_i\f$, \f$B^i\f$,
   and the divergence cleaning field \f$\Phi\f$.
 - The conserved variables are:
   \f{align*}{
-      D=&\rho W\\
-      S_i=&(\rho h)^{*}W^2 v_i - \alpha b^0 b_i \\
-      \tau =& (\rho h)^{*}W^2 - p^* - \left(\alpha b^0\right)^2-\rho W \\
-      B^i =& B^i \\
-      \Phi =& \Phi,
+      D&=\rho W\\
+      S_i&=(\rho h)^{*}W^2 v_i - \alpha b^0 b_i \\
+      \tau &= (\rho h)^{*}W^2 - p^* - \left(\alpha b^0\right)^2-\rho W \\
+      B^i &= B^i \\
+      \Phi &= \Phi,
   \f}
   where
   \f{align*}{
-      (\rho h)^* =& \rho h + b^2=\rho h + 2 p_{\mathrm{mag}} \\
-      p^* = & p + \frac{b^2}{2}=p+p_{\mathrm{mag}}.
+      (\rho h)^* &= \rho h + b^2=\rho h + 2 p_{\mathrm{mag}} \\
+      p^* &= p + \frac{b^2}{2}=p+p_{\mathrm{mag}}.
   \f}
   We denote the conserved variables multiplied by \f$\sqrt{\gamma}\f$ with a
   tilde on top. For example, \f$\tilde{D}=\sqrt{\gamma}D\f$.
