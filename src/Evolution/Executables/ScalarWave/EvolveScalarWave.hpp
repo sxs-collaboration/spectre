@@ -12,6 +12,7 @@
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/Filtering.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/ObserveErrorNorms.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"  // IWYU pragma: keep
@@ -118,6 +119,12 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           dg::Actions::ApplyFluxes>,
       Actions::RecordTimeStepperData>>;
+  // To add filtering to the executable add the action:
+  //
+  // dg::Actions::ExponentialFilter<0,
+  //        tmpl::list<ScalarWave::Pi, ScalarWave::Psi, ScalarWave::Phi<Dim>>>
+  //
+  // to the end of `update_variables` so it is after `Actions::UpdateU`.
   using update_variables = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
