@@ -1480,7 +1480,7 @@ const Type& get_item_from_box(const DataBox<tmpl::list<TagsInBox...>>& box,
   const Type* result = nullptr;
   const auto helper = [&box, &tag_name, &result ](auto current_tag) noexcept {
     using tag = decltype(current_tag);
-    if (get_tag_name<tag>() == tag_name) {
+    if (::db::tag_name<tag>() == tag_name) {
       result = &::db::get<tag>(box);
     }
   };

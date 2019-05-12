@@ -60,7 +60,7 @@ namespace db {
  * \example
  * \snippet Test_DataBox.cpp databox_tag_example
  *
- * \see DataBox PrefixTag get_tag_name
+ * \see DataBox PrefixTag tag_name
  */
 struct SimpleTag {};
 
@@ -107,7 +107,7 @@ struct BaseTag {};
  * \snippet Test_DataBox.cpp databox_name_prefix
  *
  *
- * \see DataBox DataBoxTag get_tag_name ComputeTag
+ * \see DataBox DataBoxTag tag_name ComputeTag
  */
 struct PrefixTag {};
 
@@ -150,7 +150,7 @@ struct PrefixTag {};
  * which offers a lot of simplicity for very simple compute items.
  * \snippet Test_DataBox.cpp compute_item_tag_function
  *
- * \see DataBox SimpleTag get_tag_name PrefixTag
+ * \see DataBox SimpleTag tag_name PrefixTag
  */
 struct ComputeTag {};
 
@@ -208,6 +208,16 @@ template <typename TagList, typename Tag>
 constexpr bool has_no_matching_tag_v = has_no_matching_tag<TagList, Tag>::value;
 }  // namespace DataBox_detail
 
+namespace DataBox_detail {
+template <typename Tag, typename = cpp17::void_t<>>
+struct tag_name_impl {
+  static std::string name() noexcept { return pretty_type::short_name<Tag>(); }
+};
+
+template <typename Tag>
+struct tag_name_impl<Tag, cpp17::void_t<decltype(Tag::name())>> : public Tag {};
+}  // namespace DataBox_detail
+
 /*!
  * \ingroup DataBoxGroup
  * \brief Get the name of a DataBoxTag, including prefixes
@@ -220,8 +230,8 @@ constexpr bool has_no_matching_tag_v = has_no_matching_tag<TagList, Tag>::value;
  * \return string holding the DataBoxTag's name
  */
 template <typename Tag>
-std::string get_tag_name() {
-  return Tag::name();
+std::string tag_name() noexcept {
+  return DataBox_detail::tag_name_impl<Tag>::name();
 }
 
 // @{

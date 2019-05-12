@@ -1,6 +1,10 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
+#include <string>
+
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
@@ -187,3 +191,24 @@ static_assert(
                      tmpl::list<Prefix<Var>, PrefixWithArgs<Var, int, int>>>,
     "failed testing prefix_tag_wraps_specified_tag");
 /// [prefix_tag_wraps_specified_tag]
+
+namespace {
+struct PureBaseTag : db::BaseTag {};
+
+struct SimpleTag : PureBaseTag, db::SimpleTag {
+  using type = double;
+  static std::string name() noexcept { return "SimpleTag"; }
+};
+
+struct ComputeTag : SimpleTag, db::ComputeTag {
+  using argument_list = tmpl::list<>;
+  static std::string name() noexcept { return "ComputeTag"; }
+};
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DataStructures.DataBoxTag",
+                  "[Unit][DataStructures]") {
+  CHECK(db::tag_name<PureBaseTag>() == "PureBaseTag");
+  CHECK(db::tag_name<SimpleTag>() == "SimpleTag");
+  CHECK(db::tag_name<ComputeTag>() == "ComputeTag");
+}
