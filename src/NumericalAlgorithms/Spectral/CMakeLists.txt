@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
     SwshCoefficients.cpp
     SwshCollocation.cpp
     SwshTags.cpp
+    SwshTransform.cpp
     )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
