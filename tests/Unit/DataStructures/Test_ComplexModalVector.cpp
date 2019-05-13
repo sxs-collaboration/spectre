@@ -78,7 +78,7 @@ void test_complex_modal_vector_math() noexcept {
       std::make_tuple(funcl::Plus<>{}, std::make_tuple(generic, generic)));
 
   TestHelpers::VectorImpl::test_functions_with_vector_arguments<
-      TestHelpers::VectorImpl::TestKind::Strict, ComplexModalVector,
+      TestHelpers::VectorImpl::TestKind::Normal, ComplexModalVector,
       ModalVector>(binary_ops);
 
   const auto cascaded_ops = std::make_tuple(

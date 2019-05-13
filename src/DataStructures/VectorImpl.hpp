@@ -426,16 +426,19 @@ std::ostream& operator<<(std::ostream& os,
  *
  * \param BLAZE_MATH_TRAIT The blaze trait for which you want declare the Type
  * field (e.g. `AddTrait`)
+ *
+ * \param RESULT_TYPE The type which should be used as the 'return' type for the
+ * binary operation
  */
-#define BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT( \
-    VECTOR_TYPE, COMPATIBLE, BLAZE_MATH_TRAIT)          \
-  template <>                                           \
-  struct BLAZE_MATH_TRAIT<VECTOR_TYPE, COMPATIBLE> {    \
-    using Type = VECTOR_TYPE;                           \
-  };                                                    \
-  template <>                                           \
-  struct BLAZE_MATH_TRAIT<COMPATIBLE, VECTOR_TYPE> {    \
-    using Type = VECTOR_TYPE;                           \
+#define BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(     \
+    VECTOR_TYPE, COMPATIBLE, BLAZE_MATH_TRAIT, RESULT_TYPE) \
+  template <>                                               \
+  struct BLAZE_MATH_TRAIT<VECTOR_TYPE, COMPATIBLE> {        \
+    using Type = RESULT_TYPE;                               \
+  };                                                        \
+  template <>                                               \
+  struct BLAZE_MATH_TRAIT<COMPATIBLE, VECTOR_TYPE> {        \
+    using Type = RESULT_TYPE;                               \
   }
 
 /*!

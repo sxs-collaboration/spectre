@@ -57,17 +57,21 @@ struct AddTrait<ComplexModalVector, ComplexModalVector> {
   using Type = ComplexModalVector;
 };
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexModalVector, ModalVector,
-                                               AddTrait);
+                                               AddTrait, ComplexModalVector);
 template <>
 struct SubTrait<ComplexModalVector, ComplexModalVector> {
   using Type = ComplexModalVector;
 };
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexModalVector, ModalVector,
-                                               SubTrait);
+                                               SubTrait, ComplexModalVector);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexModalVector,
-                                               std::complex<double>, MultTrait);
+                                               std::complex<double>, MultTrait,
+                                               ComplexModalVector);
+BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ModalVector,
+                                               std::complex<double>, MultTrait,
+                                               ComplexModalVector);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexModalVector, double,
-                                               MultTrait);
+                                               MultTrait, ComplexModalVector);
 template <>
 struct DivTrait<ComplexModalVector, std::complex<double>> {
   using Type = ComplexModalVector;
@@ -88,7 +92,9 @@ struct UnaryMapTrait<ComplexModalVector, Operator> {
                      // (-) w/doubles
                      blaze::AddScalar<ComplexModalVector::ElementType>,
                      blaze::SubScalarRhs<ComplexModalVector::ElementType>,
-                     blaze::SubScalarLhs<ComplexModalVector::ElementType>>,
+                     blaze::SubScalarLhs<ComplexModalVector::ElementType>,
+                     blaze::AddScalar<double>, blaze::SubScalarRhs<double>,
+                     blaze::SubScalarLhs<double>>,
           Operator>,
       "Only unary operations permitted on a ComplexModalVector are:"
       " conj, imag, and real");
@@ -134,7 +140,9 @@ struct MapTrait<ComplexModalVector, Operator> {
                      // (-) w/doubles
                      blaze::AddScalar<ComplexModalVector::ElementType>,
                      blaze::SubScalarRhs<ComplexModalVector::ElementType>,
-                     blaze::SubScalarLhs<ComplexModalVector::ElementType>>,
+                     blaze::SubScalarLhs<ComplexModalVector::ElementType>,
+                     blaze::AddScalar<double>, blaze::SubScalarRhs<double>,
+                     blaze::SubScalarLhs<double>>,
           Operator>,
       "Only unary operations permitted on a ComplexModalVector are:"
       " conj, imag, and real");

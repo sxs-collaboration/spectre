@@ -68,30 +68,50 @@ namespace blaze {
 VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(ComplexDiagonalModalOperator);
 
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDiagonalModalOperator,
-                                               DiagonalModalOperator, AddTrait);
+                                               DiagonalModalOperator, AddTrait,
+                                               ComplexDiagonalModalOperator);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDiagonalModalOperator,
-                                               DiagonalModalOperator, DivTrait);
+                                               DiagonalModalOperator, DivTrait,
+                                               ComplexDiagonalModalOperator);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDiagonalModalOperator,
-                                               DiagonalModalOperator,
-                                               MultTrait);
+                                               DiagonalModalOperator, MultTrait,
+                                               ComplexDiagonalModalOperator);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDiagonalModalOperator,
-                                               DiagonalModalOperator, SubTrait);
+                                               DiagonalModalOperator, SubTrait,
+                                               ComplexDiagonalModalOperator);
 
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDiagonalModalOperator,
-                                               double, AddTrait);
+                                               double, AddTrait,
+                                               ComplexDiagonalModalOperator);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDiagonalModalOperator,
-                                               double, DivTrait);
+                                               double, DivTrait,
+                                               ComplexDiagonalModalOperator);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDiagonalModalOperator,
-                                               double, MultTrait);
+                                               double, MultTrait,
+                                               ComplexDiagonalModalOperator);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDiagonalModalOperator,
-                                               double, SubTrait);
+                                               double, SubTrait,
+                                               ComplexDiagonalModalOperator);
+
+BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(DiagonalModalOperator,
+                                               std::complex<double>, AddTrait,
+                                               ComplexDiagonalModalOperator);
+BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(DiagonalModalOperator,
+                                               std::complex<double>, DivTrait,
+                                               ComplexDiagonalModalOperator);
+BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(DiagonalModalOperator,
+                                               std::complex<double>, MultTrait,
+                                               ComplexDiagonalModalOperator);
+BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(DiagonalModalOperator,
+                                               std::complex<double>, SubTrait,
+                                               ComplexDiagonalModalOperator);
 
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexModalVector,
                                                DiagonalModalOperator,
-                                               MultTrait);
+                                               MultTrait, ComplexModalVector);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexModalVector,
                                                ComplexDiagonalModalOperator,
-                                               MultTrait);
+                                               MultTrait, ComplexModalVector);
 template <>
 struct MultTrait<ModalVector, ComplexDiagonalModalOperator> {
   using Type = ComplexModalVector;
@@ -108,7 +128,7 @@ struct UnaryMapTrait<ComplexDiagonalModalOperator, Operator> {
   static_assert(
       tmpl::list_contains_v<
           tmpl::list<
-              blaze::Conj,
+              blaze::Conj, blaze::Sqrt,
               // these traits are required for operators acting with doubles
               blaze::AddScalar<ComplexDiagonalModalOperator::ElementType>,
               blaze::SubScalarRhs<ComplexDiagonalModalOperator::ElementType>,
@@ -118,8 +138,7 @@ struct UnaryMapTrait<ComplexDiagonalModalOperator, Operator> {
               blaze::AddScalar<DiagonalModalOperator::ElementType>,
               blaze::SubScalarRhs<DiagonalModalOperator::ElementType>,
               blaze::SubScalarLhs<DiagonalModalOperator::ElementType>,
-              blaze::DivideScalarByVector<
-                  ComplexDiagonalModalOperator::ElementType>>,
+              blaze::DivideScalarByVector<DiagonalModalOperator::ElementType>>,
           Operator>,
       "This unary operation is not permitted on a "
       "ComplexDiagonalModalOperator");
@@ -160,7 +179,7 @@ struct MapTrait<ComplexDiagonalModalOperator, Operator> {
   static_assert(
       tmpl::list_contains_v<
           tmpl::list<
-              blaze::Conj,
+              blaze::Conj, blaze::Sqrt,
               // these traits are required for operators acting with doubles
               blaze::AddScalar<ComplexDiagonalModalOperator::ElementType>,
               blaze::SubScalarRhs<ComplexDiagonalModalOperator::ElementType>,
@@ -170,8 +189,7 @@ struct MapTrait<ComplexDiagonalModalOperator, Operator> {
               blaze::AddScalar<DiagonalModalOperator::ElementType>,
               blaze::SubScalarRhs<DiagonalModalOperator::ElementType>,
               blaze::SubScalarLhs<DiagonalModalOperator::ElementType>,
-              blaze::DivideScalarByVector<
-                  ComplexDiagonalModalOperator::ElementType>>,
+              blaze::DivideScalarByVector<DiagonalModalOperator::ElementType>>,
           Operator>,
       "This unary operation is not permitted on a "
       "ComplexDiagonalModalOperator");

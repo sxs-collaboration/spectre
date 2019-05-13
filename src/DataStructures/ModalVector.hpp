@@ -50,7 +50,8 @@ template <>
 struct SubTrait<ModalVector, ModalVector> {
   using Type = ModalVector;
 };
-BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ModalVector, double, MultTrait);
+BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ModalVector, double, MultTrait,
+                                               ModalVector);
 template <>
 struct DivTrait<ModalVector, double> {
   using Type = ModalVector;
@@ -60,16 +61,25 @@ struct DivTrait<ModalVector, double> {
 template <typename Operator>
 struct UnaryMapTrait<ModalVector, Operator> {
   // Selectively allow unary operations for spectral coefficients
-  static_assert(tmpl::list_contains_v<
-                    tmpl::list<blaze::Abs,
-                               // Following 3 reqd. by operator(+,+=), (-,-=),
-                               // (-) w/doubles
-                               blaze::AddScalar<ModalVector::ElementType>,
-                               blaze::SubScalarRhs<ModalVector::ElementType>,
-                               blaze::SubScalarLhs<ModalVector::ElementType>>,
-                    Operator>,
-                "Only unary operation permitted on a ModalVector are:"
-                " abs");
+  static_assert(
+      tmpl::list_contains_v<
+          tmpl::list<blaze::Abs,
+                     // Following 3 reqd. by operator(+,+=), (-,-=),
+                     // (-) w/doubles
+                     blaze::AddScalar<ModalVector::ElementType>,
+                     blaze::SubScalarRhs<ModalVector::ElementType>,
+                     blaze::SubScalarLhs<ModalVector::ElementType>,
+                     // With these and the blaze traits in
+                     // `ComplexModalVector.hpp`, the `ModalVector`
+                     // can be operated with a `std::complex<double>` to produce
+                     // a `ComplexModalVector`, analogous to implicit
+                     // casting in the standard library
+                     blaze::AddScalar<std::complex<double>>,
+                     blaze::SubScalarRhs<std::complex<double>>,
+                     blaze::SubScalarLhs<std::complex<double>>>,
+          Operator>,
+      "The only unary operation permitted on a ModalVector is:"
+      " abs");
   using Type = ModalVector;
 };
 
@@ -92,9 +102,17 @@ struct MapTrait<ModalVector, Operator> {
                                // (-) w/doubles
                                blaze::AddScalar<ModalVector::ElementType>,
                                blaze::SubScalarRhs<ModalVector::ElementType>,
-                               blaze::SubScalarLhs<ModalVector::ElementType>>,
+                               blaze::SubScalarLhs<ModalVector::ElementType>,
+                               // With these and the blaze traits in
+                               // `ComplexModalVector.hpp`, the `ModalVector`
+                               // can be operated with a `std::complex<double>`
+                               // to produce a `ComplexModalVector`, analogous
+                               // to implicit casting in the standard library
+                               blaze::AddScalar<std::complex<double>>,
+                               blaze::SubScalarRhs<std::complex<double>>,
+                               blaze::SubScalarLhs<std::complex<double>>>,
                     Operator>,
-                "Only unary operation permitted on a ModalVector are:"
+                "The only unary operation permitted on a ModalVector is:"
                 " abs.");
   using Type = ModalVector;
 };

@@ -107,7 +107,7 @@ void test_complex_data_vector_math() noexcept {
       ComplexDataVector>(binary_ops);
 
   TestHelpers::VectorImpl::test_functions_with_vector_arguments<
-      TestHelpers::VectorImpl::TestKind::Strict, DataVector, ComplexDataVector>(
+      TestHelpers::VectorImpl::TestKind::Normal, DataVector, ComplexDataVector>(
       binary_ops);
 
   const auto inplace_binary_ops = std::make_tuple(
