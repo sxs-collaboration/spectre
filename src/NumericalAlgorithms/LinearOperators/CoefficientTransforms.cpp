@@ -3,128 +3,171 @@
 
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 
+#include <array>
+#include <utility>
+
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "DataStructures/Matrix.hpp"
+#include "DataStructures/Matrix.hpp"  // IWYU pragma: keep
 #include "DataStructures/ModalVector.hpp"
-#include "DataStructures/StripeIterator.hpp"
-#include "Domain/Mesh.hpp"
+#include "Domain/Mesh.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
+#include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Utilities/Blas.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
+// IWYU pragma: no_forward_declare Matrix
+
 namespace {
-template <size_t Dim>
-void transform_impl_helper(double* const output_coeffs,
-                           const double* const input_coeffs,
-                           const Mesh<Dim>& mesh, const bool nodal_to_modal,
-                           const size_t dim) noexcept {
-  for (StripeIterator stripe_it(mesh.extents(), dim); stripe_it; ++stripe_it) {
-    const Matrix& transformation_matrix =
-        nodal_to_modal
-            ? Spectral::nodal_to_modal_matrix(mesh.slice_through(dim))
-            : Spectral::modal_to_nodal_matrix(mesh.slice_through(dim));
-    dgemv_('N', mesh.extents()[dim], mesh.extents()[dim], 1.0,
-           transformation_matrix.data(), mesh.extents()[dim],
-           input_coeffs + stripe_it.offset(), stripe_it.stride(),  // NOLINT
-           0.0, output_coeffs + stripe_it.offset(),                // NOLINT
-           stripe_it.stride());
-  }
-}
-
-void transform_impl(double* const modal_coefficients,
-                    const double* const nodal_coefficients, const Mesh<1>& mesh,
-                    const bool nodal_to_modal) noexcept {
-  transform_impl_helper(modal_coefficients, nodal_coefficients, mesh,
-                        nodal_to_modal, 0);
-}
-
-void transform_impl(double* const modal_coefficients,
-                    const double* const nodal_coefficients, const Mesh<2>& mesh,
-                    const bool nodal_to_modal) noexcept {
-  DataVector temp(mesh.number_of_grid_points());
-  transform_impl_helper(temp.data(), nodal_coefficients, mesh, nodal_to_modal,
-                        0);
-  transform_impl_helper(modal_coefficients, temp.data(), mesh, nodal_to_modal,
-                        1);
-}
-
-void transform_impl(double* const modal_coefficients,
-                    const double* const nodal_coefficients, const Mesh<3>& mesh,
-                    const bool nodal_to_modal) noexcept {
-  DataVector temp(mesh.number_of_grid_points());
-  transform_impl_helper(modal_coefficients, nodal_coefficients, mesh,
-                        nodal_to_modal, 0);
-  transform_impl_helper(temp.data(), modal_coefficients, mesh, nodal_to_modal,
-                        1);
-  transform_impl_helper(modal_coefficients, temp.data(), mesh, nodal_to_modal,
-                        2);
+template <size_t Dim, size_t... Is>
+std::array<std::reference_wrapper<const Matrix>, Dim> make_transform_matrices(
+    const Mesh<Dim>& mesh, const bool nodal_to_modal,
+    std::index_sequence<Is...> /*meta*/) noexcept {
+  return nodal_to_modal ? std::array<std::reference_wrapper<const Matrix>,
+                                     Dim>{{Spectral::nodal_to_modal_matrix(
+                              mesh.slice_through(Is))...}}
+                        : std::array<std::reference_wrapper<const Matrix>, Dim>{
+                              {Spectral::modal_to_nodal_matrix(
+                                  mesh.slice_through(Is))...}};
 }
 }  // namespace
 
 template <size_t Dim>
-void to_modal_coefficients(const gsl::not_null<ModalVector*> modal_coefficients,
+void to_modal_coefficients(
+    const gsl::not_null<ComplexModalVector*> modal_coefficients,
+    const ComplexDataVector& nodal_coefficients,
+    const Mesh<Dim>& mesh) noexcept {
+  modal_coefficients->destructive_resize(nodal_coefficients.size());
+  apply_matrices<ComplexModalVector>(
+      modal_coefficients,
+      make_transform_matrices<Dim>(mesh, true, std::make_index_sequence<Dim>{}),
+      nodal_coefficients, mesh.extents());
+}
+
+// overload provided so that the most common case of transforming from
+// `DataVector` to `ModalVector` does not require additional `make_not_null`s
+template <size_t Dim>
+void to_modal_coefficients(gsl::not_null<ModalVector*> modal_coefficients,
                            const DataVector& nodal_coefficients,
                            const Mesh<Dim>& mesh) noexcept {
-  if (modal_coefficients->size() != nodal_coefficients.size()) {
-    ASSERT(modal_coefficients->is_owning(),
-           "Cannot resize a non-owning ModalVector");
-    *modal_coefficients = ModalVector(nodal_coefficients.size());
-  }
-  transform_impl(modal_coefficients->data(), nodal_coefficients.data(), mesh,
-                 true);
+  modal_coefficients->destructive_resize(nodal_coefficients.size());
+  apply_matrices<ModalVector>(
+      modal_coefficients,
+      make_transform_matrices<Dim>(mesh, true, std::make_index_sequence<Dim>{}),
+      nodal_coefficients, mesh.extents());
 }
 
 template <size_t Dim>
 ModalVector to_modal_coefficients(const DataVector& nodal_coefficients,
                                   const Mesh<Dim>& mesh) noexcept {
   ModalVector modal_coefficients(nodal_coefficients.size());
-  transform_impl(modal_coefficients.data(), nodal_coefficients.data(), mesh,
-                 true);
+  to_modal_coefficients(make_not_null(&modal_coefficients), nodal_coefficients,
+                        mesh);
   return modal_coefficients;
+}
+
+template <size_t Dim>
+ComplexModalVector to_modal_coefficients(
+    const ComplexDataVector& nodal_coefficients,
+    const Mesh<Dim>& mesh) noexcept {
+  ComplexModalVector modal_coefficients(nodal_coefficients.size());
+  to_modal_coefficients(make_not_null(&modal_coefficients), nodal_coefficients,
+                        mesh);
+  return modal_coefficients;
+}
+
+template <size_t Dim>
+void to_nodal_coefficients(
+    const gsl::not_null<ComplexDataVector*> nodal_coefficients,
+    const ComplexModalVector& modal_coefficients,
+    const Mesh<Dim>& mesh) noexcept {
+  nodal_coefficients->destructive_resize(modal_coefficients.size());
+  apply_matrices<ComplexDataVector>(
+      nodal_coefficients,
+      make_transform_matrices<Dim>(mesh, false,
+                                   std::make_index_sequence<Dim>{}),
+      modal_coefficients, mesh.extents());
 }
 
 template <size_t Dim>
 void to_nodal_coefficients(const gsl::not_null<DataVector*> nodal_coefficients,
                            const ModalVector& modal_coefficients,
                            const Mesh<Dim>& mesh) noexcept {
-  if (nodal_coefficients->size() != modal_coefficients.size()) {
-    ASSERT(nodal_coefficients->is_owning(),
-           "Cannot resize a non-owning DataVector");
-    *nodal_coefficients = DataVector(modal_coefficients.size());
-  }
-  transform_impl(nodal_coefficients->data(), modal_coefficients.data(), mesh,
-                 false);
+  nodal_coefficients->destructive_resize(modal_coefficients.size());
+  apply_matrices<DataVector>(nodal_coefficients,
+                             make_transform_matrices<Dim>(
+                                 mesh, false, std::make_index_sequence<Dim>{}),
+                             modal_coefficients, mesh.extents());
 }
 
 template <size_t Dim>
 DataVector to_nodal_coefficients(const ModalVector& modal_coefficients,
                                  const Mesh<Dim>& mesh) noexcept {
   DataVector nodal_coefficients(modal_coefficients.size());
-  transform_impl(nodal_coefficients.data(), modal_coefficients.data(), mesh,
-                 false);
+  to_nodal_coefficients(make_not_null(&nodal_coefficients), modal_coefficients,
+                        mesh);
   return nodal_coefficients;
 }
 
-#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+template <size_t Dim>
+ComplexDataVector to_nodal_coefficients(
+    const ComplexModalVector& modal_coefficients,
+    const Mesh<Dim>& mesh) noexcept {
+  ComplexDataVector nodal_coefficients(modal_coefficients.size());
+  to_nodal_coefficients(make_not_null(&nodal_coefficients), modal_coefficients,
+                        mesh);
+  return nodal_coefficients;
+}
 
-#define INSTANTIATE(r, data)                                 \
-  template void to_modal_coefficients<GET_DIM(data)>(        \
-      const gsl::not_null<ModalVector*> modal_coefficients,  \
-      const DataVector& nodal_coefficients,                  \
-      const Mesh<GET_DIM(data)>& mesh) noexcept;             \
-  template ModalVector to_modal_coefficients<GET_DIM(data)>( \
-      const DataVector& nodal_coefficients,                  \
-      const Mesh<GET_DIM(data)>& mesh) noexcept;             \
-  template void to_nodal_coefficients<GET_DIM(data)>(        \
-      const gsl::not_null<DataVector*> nodal_coefficients,   \
-      const ModalVector& modal_coefficients,                 \
-      const Mesh<GET_DIM(data)>& mesh) noexcept;             \
-  template DataVector to_nodal_coefficients<GET_DIM(data)>(  \
-      const ModalVector& modal_coefficients,                 \
+namespace {
+template <typename Type>
+struct modal_type_to_nodal_type;
+
+template <>
+struct modal_type_to_nodal_type<ModalVector> {
+  using type = DataVector;
+};
+
+template <>
+struct modal_type_to_nodal_type<ComplexModalVector> {
+  using type = ComplexDataVector;
+};
+}  // namespace
+
+#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define GET_TYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATE_TO_MODAL_COEFFICIENTS(r, data)                   \
+  template void to_modal_coefficients(                               \
+      const gsl::not_null<GET_TYPE(data)*> modal_coefficients,       \
+      const typename modal_type_to_nodal_type<GET_TYPE(data)>::type& \
+          nodal_coefficients,                                        \
+      const Mesh<GET_DIM(data)>& mesh) noexcept;                     \
+  template GET_TYPE(data) to_modal_coefficients(                     \
+      const typename modal_type_to_nodal_type<GET_TYPE(data)>::type& \
+          nodal_coefficients,                                        \
       const Mesh<GET_DIM(data)>& mesh) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+#define INSTANTIATE_TO_NODAL_COEFFICIENTS(r, data)                  \
+  template void to_nodal_coefficients(                              \
+      const gsl::not_null<                                          \
+          typename modal_type_to_nodal_type<GET_TYPE(data)>::type*> \
+          nodal_coefficients,                                       \
+      const GET_TYPE(data) & modal_coefficients,                    \
+      const Mesh<GET_DIM(data)>& mesh) noexcept;                    \
+  template typename modal_type_to_nodal_type<GET_TYPE(data)>::type  \
+  to_nodal_coefficients(const GET_TYPE(data) & modal_coefficients,  \
+                        const Mesh<GET_DIM(data)>& mesh) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_TO_MODAL_COEFFICIENTS, (1, 2, 3),
+                        (ModalVector, ComplexModalVector))
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_TO_NODAL_COEFFICIENTS, (1, 2, 3),
+                        (ModalVector, ComplexModalVector))
+
 #undef GET_DIM
-#undef INSTANTIATE
+#undef GET_TYPE
+#undef INSTANTIATE_TO_NODAL_COEFFICIENTS
+#undef INSTANTIATE_TO_MODAL_COEFFICIENTS

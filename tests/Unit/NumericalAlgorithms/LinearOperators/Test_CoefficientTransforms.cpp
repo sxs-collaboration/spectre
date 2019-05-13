@@ -7,6 +7,8 @@
 #include <cstddef>
 #include <vector>
 
+#include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
 #include "DataStructures/ModalVector.hpp"
@@ -17,6 +19,9 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Math.hpp"
+#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // These tests generate a function `u_nodal_expected` from a linear
 // superposition of the basis functions, which are then transformed to spectral
@@ -25,7 +30,8 @@
 // otherwise. Finally, the modal coefficients are transformed back to the nodal
 // coefficients and compared to `u_nodal_expected`.
 namespace {
-template <Spectral::Basis Basis, Spectral::Quadrature Quadrature, size_t Dim>
+template <typename ModalVectorType, typename NodalVectorType,
+          Spectral::Basis Basis, Spectral::Quadrature Quadrature, size_t Dim>
 void check_transforms(
     const Mesh<Dim>& mesh,
     const std::vector<std::array<size_t, Dim>>& coeffs_to_include) noexcept {
@@ -33,6 +39,14 @@ void check_transforms(
   CAPTURE(Quadrature);
   CAPTURE(mesh);
   CAPTURE(coeffs_to_include);
+
+  MAKE_GENERATOR(generator);
+  UniformCustomDistribution<
+      tt::get_fundamental_type_t<typename ModalVectorType::ElementType>>
+      dist{0.5, 2.0};
+  const auto basis_factor =
+      make_with_random_values<typename ModalVectorType::ElementType>(
+          make_not_null(&generator), make_not_null(&dist));
 
   // Construct a functions:
   //
@@ -44,34 +58,40 @@ void check_transforms(
   // where the coefficients c_{i,j,k} are 1 if listed in `coeffs_to_include` and
   // 0 otherwise.
   const auto logical_coords = logical_coordinates(mesh);
-  DataVector u_nodal_expected(mesh.number_of_grid_points(), 0.0);
+  NodalVectorType u_nodal_expected(mesh.number_of_grid_points(), 0.0);
   for (const auto& coeff : coeffs_to_include) {
-    DataVector basis_function = Spectral::compute_basis_function_value<Basis>(
-        coeff[0], get<0>(logical_coords));
+    // additional * 1.0 in appropriate type necessary for being generic to
+    // complex values
+    NodalVectorType basis_function =
+        basis_factor * Spectral::compute_basis_function_value<Basis>(
+                           coeff[0], get<0>(logical_coords));
     for (size_t dim = 1; dim < Dim; ++dim) {
-      basis_function *= Spectral::compute_basis_function_value<Basis>(
-          gsl::at(coeff, dim), logical_coords.get(dim));
+      basis_function *= typename ModalVectorType::ElementType{1.0} *
+                        Spectral::compute_basis_function_value<Basis>(
+                            gsl::at(coeff, dim), logical_coords.get(dim));
     }
     u_nodal_expected += basis_function;
   }
 
   // Transform to modal coefficients and check their values
-  const ModalVector u_modal = to_modal_coefficients(u_nodal_expected, mesh);
+  const ModalVectorType u_modal = to_modal_coefficients(u_nodal_expected, mesh);
   for (IndexIterator<Dim> index_it(mesh.extents()); index_it; ++index_it) {
     CAPTURE(*index_it);
     if (alg::found(coeffs_to_include, index_it->indices())) {
-      CHECK(u_modal[index_it.collapsed_index()] == approx(1.0));
+      CHECK_COMPLEX_APPROX(u_modal[index_it.collapsed_index()], basis_factor);
     } else {
-      CHECK(u_modal[index_it.collapsed_index()] == approx(0.0));
+      CHECK_COMPLEX_APPROX(u_modal[index_it.collapsed_index()],
+                           typename ModalVectorType::ElementType{0.0});
     }
   }
 
   // Back to nodal coefficients, which should match what we set up initially
-  const DataVector u_nodal = to_nodal_coefficients(u_modal, mesh);
+  const NodalVectorType u_nodal = to_nodal_coefficients(u_modal, mesh);
   CHECK_ITERABLE_APPROX(u_nodal_expected, u_nodal);
 }
 
-template <Spectral::Basis Basis, Spectral::Quadrature Quadrature>
+template <typename ModalVectorType, typename NodalVectorType,
+          Spectral::Basis Basis, Spectral::Quadrature Quadrature>
 void test_1d() noexcept {
   // Start at 1st order so we are independent of the minimum number of
   // coefficients.
@@ -79,36 +99,42 @@ void test_1d() noexcept {
        ++order) {
     CAPTURE(order);
     const Mesh<1> mesh(order + 1, Basis, Quadrature);
-    check_transforms<Basis, Quadrature>(mesh, {{{{order}}}});
-    check_transforms<Basis, Quadrature>(mesh, {{{{order}}, {{order / 2}}}});
+    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+        mesh, {{{{order}}}});
+    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+        mesh, {{{{order}}, {{order / 2}}}});
     if (order > 4) {
-      check_transforms<Basis, Quadrature>(mesh, {{{{order}}, {{order / 3}}}});
+      check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+          mesh, {{{{order}}, {{order / 3}}}});
     }
   }
 }
 
-template <Spectral::Basis Basis, Spectral::Quadrature Quadrature>
+template <typename ModalVectorType, typename NodalVectorType,
+          Spectral::Basis Basis, Spectral::Quadrature Quadrature>
 void test_2d() noexcept {
   // Start at one higher order so we can drop one order in the y-direction.
   for (size_t order = Spectral::minimum_number_of_points<Basis, Quadrature> + 1;
        order < Spectral::maximum_number_of_points<Basis>; ++order) {
     CAPTURE(order);
     const Mesh<2> mesh({{order + 1, order}}, Basis, Quadrature);
-    check_transforms<Basis, Quadrature>(mesh, {{{{order, order - 1}}}});
-    check_transforms<Basis, Quadrature>(
+    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+        mesh, {{{{order, order - 1}}}});
+    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
         mesh, {{{{order, order - 1}}, {{order / 2, order / 2}}}});
-    check_transforms<Basis, Quadrature>(
+    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
         Mesh<2>{{{order + 1, order + 1}}, Basis, Quadrature},
         {{{{order - 1, order}}, {{order / 2, order / 2}}}});
-    check_transforms<Basis, Quadrature>(
+    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
         Mesh<2>{{{order + 1, order + 1}}, Basis, Quadrature},
         {{{{order, order}}, {{order / 2, order / 2}}}});
-    check_transforms<Basis, Quadrature>(
+    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
         mesh, {{{{order, order - 1}}, {{order / 3, order / 3}}}});
   }
 }
 
-template <Spectral::Basis Basis, Spectral::Quadrature Quadrature>
+template <typename ModalVectorType, typename NodalVectorType,
+          Spectral::Basis Basis, Spectral::Quadrature Quadrature>
 void test_3d() noexcept {
   // Start at two orders higher so we can drop one order in the y-direction and
   // two in z-direction.
@@ -116,15 +142,15 @@ void test_3d() noexcept {
        order < Spectral::maximum_number_of_points<Basis>; ++order) {
     CAPTURE(order);
     const Mesh<3> mesh({{order + 1, order, order - 1}}, Basis, Quadrature);
-    check_transforms<Basis, Quadrature>(mesh,
-                                        {{{{order, order - 1, order - 2}}}});
-    check_transforms<Basis, Quadrature>(
+    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+        mesh, {{{{order, order - 1, order - 2}}}});
+    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
         mesh, {{{{order, order - 1, order - 2}},
                 {{order / 2, order / 2, order / 2}}}});
-    check_transforms<Basis, Quadrature>(
+    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
         Mesh<3>{{{order + 1, order + 1, order + 1}}, Basis, Quadrature},
         {{{{order, order, order}}}});
-    check_transforms<Basis, Quadrature>(
+    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
         mesh, {{{{order, order - 1, order - 2}},
                 {{order / 3, order / 3, order / 3}}}});
   }
@@ -133,17 +159,55 @@ void test_3d() noexcept {
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.CoefficientTransforms",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  test_1d<Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>();
-  test_1d<Spectral::Basis::Legendre, Spectral::Quadrature::Gauss>();
-  test_2d<Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>();
-  test_2d<Spectral::Basis::Legendre, Spectral::Quadrature::Gauss>();
-  test_3d<Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto>();
-  test_3d<Spectral::Basis::Legendre, Spectral::Quadrature::Gauss>();
+  test_1d<ModalVector, DataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::GaussLobatto>();
+  test_1d<ModalVector, DataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::Gauss>();
+  test_2d<ModalVector, DataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::GaussLobatto>();
+  test_2d<ModalVector, DataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::Gauss>();
+  test_3d<ModalVector, DataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::GaussLobatto>();
+  test_3d<ModalVector, DataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::Gauss>();
 
-  test_1d<Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>();
-  test_1d<Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss>();
-  test_2d<Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>();
-  test_2d<Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss>();
-  test_3d<Spectral::Basis::Chebyshev, Spectral::Quadrature::GaussLobatto>();
-  test_3d<Spectral::Basis::Chebyshev, Spectral::Quadrature::Gauss>();
+  test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::GaussLobatto>();
+  test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::Gauss>();
+  test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::GaussLobatto>();
+  test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::Gauss>();
+  test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::GaussLobatto>();
+  test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
+          Spectral::Quadrature::Gauss>();
+
+  test_1d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::GaussLobatto>();
+  test_1d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::Gauss>();
+  test_2d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::GaussLobatto>();
+  test_2d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::Gauss>();
+  test_3d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::GaussLobatto>();
+  test_3d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::Gauss>();
+
+  test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::GaussLobatto>();
+  test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::Gauss>();
+  test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::GaussLobatto>();
+  test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::Gauss>();
+  test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::GaussLobatto>();
+  test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
+          Spectral::Quadrature::Gauss>();
 }
