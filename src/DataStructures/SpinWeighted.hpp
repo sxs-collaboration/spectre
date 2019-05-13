@@ -98,6 +98,8 @@ struct SpinWeighted<T, Spin, false> {
   T& data() noexcept { return data_; }
   const T& data() const noexcept { return data_; }
 
+ size_t size() const noexcept { return data_.size(); }
+
  private:
   T data_;
 };
@@ -188,6 +190,8 @@ struct SpinWeighted<T, Spin, true> {
 
   T& data() noexcept { return data_; }
   const T& data() const noexcept { return data_; }
+
+  size_t size() const noexcept { return data_.size(); }
 
  private:
   T data_;
