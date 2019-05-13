@@ -92,7 +92,7 @@ void vector_test_construct_and_assign(
   move_assignment_initialized = std::move(initializer_list_constructed_copy);
   CHECK(move_assignment_initialized.is_owning());
 
-  const VectorType move_constructed{std::move(move_assignment_initialized)};
+  VectorType move_constructed{std::move(move_assignment_initialized)};
   CHECK(move_constructed.is_owning());
   CHECK(move_constructed == pointer_size_constructed);
 
@@ -100,6 +100,14 @@ void vector_test_construct_and_assign(
   const VectorType copy_constructed{move_constructed};  // NOLINT
   CHECK(copy_constructed.is_owning());
   CHECK(copy_constructed == pointer_size_constructed);
+
+  // check the destructive resize utility
+  const VectorType destructive_resize_check_copy = move_constructed;
+  move_constructed.destructive_resize(move_constructed.size());
+  CHECK(move_constructed == destructive_resize_check_copy);
+  move_constructed.destructive_resize(move_constructed.size() + 1);
+  CHECK(move_constructed != destructive_resize_check_copy);
+  CHECK(move_constructed.size() == destructive_resize_check_copy.size() + 1);
 }
 
 /// \ingroup TestingFrameworkGroup

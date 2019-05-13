@@ -20,7 +20,7 @@ template <typename LhsVectorType, typename RhsVectorType,
 void outer_product(const gsl::not_null<ResultVectorType*> result,
                    const LhsVectorType& lhs,
                    const RhsVectorType& rhs) noexcept {
-  check_and_resize(result, lhs.size() * rhs.size());
+  result->destructive_resize(lhs.size() * rhs.size());
   for (size_t i = 0; i < rhs.size(); ++i) {
     ResultVectorType view{result->data() + i * lhs.size(), lhs.size()};
     view = rhs[i] * lhs;
@@ -52,7 +52,7 @@ template <typename VectorType>
 void repeat(const gsl::not_null<VectorType*> result,
             const VectorType& to_repeat,
             const size_t times_to_repeat) noexcept {
-  check_and_resize(result, to_repeat.size() * times_to_repeat);
+  result->destructive_resize(to_repeat.size() * times_to_repeat);
   for (size_t i = 0; i < times_to_repeat; ++i) {
     VectorType view{result->data() + i * to_repeat.size(), to_repeat.size()};
     view = to_repeat;

@@ -229,6 +229,33 @@ class VectorImpl
   }
   // @}
 
+  /*!
+   * \brief A common operation for checking the size and resizing a memory
+   * buffer if needed to ensure that it has the desired size. This operation is
+   * not permitted on a non-owning vector.
+   *
+   * \note This utility should NOT be used when it is anticipated that the
+   *   supplied buffer will typically be the wrong size (in that case, suggest
+   *   either manual checking or restructuring so that resizing is less common).
+   *   This uses `UNLIKELY` to perform the check most quickly when the buffer
+   *   needs no resizing, but will be slower when resizing is common.
+   */
+  void SPECTRE_ALWAYS_INLINE
+  destructive_resize(const size_t new_size) noexcept {
+    if(UNLIKELY(size() != new_size)) {
+      if (owning_) {
+        owned_data_ = std::unique_ptr<value_type[], decltype(&free)>{
+            new_size > 0 ? static_cast<value_type*>(
+                               malloc(new_size * sizeof(value_type)))
+                         : nullptr,
+            &free};
+        reset_pointer_vector(new_size);
+      } else {
+        ERROR("may not destructively resize a non-owning vector");
+      }
+    }
+  }
+
   /// Returns true if the class owns the data
   bool is_owning() const noexcept { return owning_; }
 
