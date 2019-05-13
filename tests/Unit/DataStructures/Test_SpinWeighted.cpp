@@ -166,8 +166,7 @@ void test_spinweights() {
   spin_weight_0 += spin_weight_0;
   CHECK(spin_weight_0 == sum);
 
-  SpinWeighted<SpinWeightedType, 0> difference =
-      spin_weight_0 - no_spin_weight;
+  SpinWeighted<SpinWeightedType, 0> difference = spin_weight_0 - no_spin_weight;
   spin_weight_0 -= no_spin_weight;
   CHECK(spin_weight_0 == difference);
 }
@@ -183,6 +182,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SpinWeighted",
     using type_pair = typename decltype(x)::type;
     test_spinweights<tmpl::front<type_pair>, tmpl::back<type_pair>>();
   });
+
+  SpinWeighted<ComplexDataVector, 1> size_created_spin_weight_1{6};
+  CHECK(size_created_spin_weight_1.data().size() == 6);
+
+  SpinWeighted<ComplexDataVector, -2> size_and_value_created_spin_weight_m2{
+      6, 4.0};
+  CHECK(size_and_value_created_spin_weight_m2.data() ==
+        ComplexDataVector{6, 4.0});
 }
 
 /// \cond HIDDEN_SYMBOLS

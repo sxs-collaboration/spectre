@@ -48,6 +48,9 @@ struct SpinWeighted<T, Spin, false> {
 
   SpinWeighted(const T& rhs) noexcept : data_{rhs} {}        // NOLINT
   SpinWeighted(T&& rhs) noexcept : data_{std::move(rhs)} {}  // NOLINT
+  explicit SpinWeighted(const size_t size) noexcept : data_{size} {}
+  template <typename U>
+  SpinWeighted(const size_t size, const U& val) noexcept : data_{size, val} {}
 
   template <typename Rhs>
   SpinWeighted& operator=(const SpinWeighted<Rhs, Spin>& rhs) noexcept {
@@ -136,6 +139,9 @@ struct SpinWeighted<T, Spin, true> {
 
   SpinWeighted(const T& rhs) noexcept : data_{rhs} {}        // NOLINT
   SpinWeighted(T&& rhs) noexcept : data_{std::move(rhs)} {}  // NOLINT
+  explicit SpinWeighted(const size_t size) noexcept : data_{size} {}
+  template <typename U>
+  SpinWeighted(const size_t size, const U& val) noexcept : data_{size, val} {}
 
   template <typename Rhs>
   SpinWeighted& operator=(const SpinWeighted<Rhs, Spin>& rhs) noexcept {
