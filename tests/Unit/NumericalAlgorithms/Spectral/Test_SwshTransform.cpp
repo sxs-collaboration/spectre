@@ -124,7 +124,7 @@ void test_transform_and_inverse_transform() noexcept {
   Variables<tmpl::list<Tags::SwshTransform<ExpectedTestTag<S>>,
                        Tags::SwshTransform<TestTag<S>>>>
       coefficient_data{
-          number_of_swsh_coefficients(l_max) * 2 * number_of_radial_points,
+          size_of_libsharp_coefficient_vector(l_max) * number_of_radial_points,
           0.0};
 
   // randomly generate the mode coefficients

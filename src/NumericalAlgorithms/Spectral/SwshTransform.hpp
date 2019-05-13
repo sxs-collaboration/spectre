@@ -177,7 +177,8 @@ class TransformJob {
   /// coefficients are stored in the efficient 'triangular' form noted in the
   /// documentation for `TransformJob`.
   constexpr size_t coefficient_output_size() const noexcept {
-    return number_of_swsh_coefficients(l_max_) * number_of_radial_grid_points_;
+    return size_of_libsharp_coefficient_vector(l_max_) *
+           number_of_radial_grid_points_;
   }
 
   /// \brief Execute the forward spin-weighted spherical harmonic transform
@@ -278,7 +279,7 @@ TransformJob<Spin, Representation, TagList>::TransformJob(
     : number_of_radial_grid_points_{number_of_radial_grid_points},
       l_max_{l_max},
       collocation_metadata_{&precomputed_collocation<Representation>(l_max_)} {
-  alm_info_ = detail::precomputed_coefficients(l_max_).get_sharp_alm_info();
+  alm_info_ = cached_coefficients_metadata(l_max_).get_sharp_alm_info();
 }
 
 template <int Spin, ComplexRepresentation Representation, typename TagList>
@@ -312,14 +313,14 @@ void TransformJob<Spin, Representation, TagList>::execute_transform(
   post_transform_coefficient_data.reserve(2 * number_of_radial_grid_points_ *
                                           tmpl::size<TagList>::value);
 
-  tmpl::for_each<CoefficientTagList>([
-    &post_transform_coefficient_data, &output, this
-  ](auto x) noexcept {
-    detail::append_libsharp_coefficient_pointers(
-        make_not_null(&post_transform_coefficient_data),
-        make_not_null(&get(get<typename decltype(x)::type>(*output)).data()),
-        l_max_);
-  });
+  tmpl::for_each<CoefficientTagList>(
+      [&post_transform_coefficient_data, &output, this ](auto x) noexcept {
+        detail::append_libsharp_coefficient_pointers(
+            make_not_null(&post_transform_coefficient_data),
+            make_not_null(
+                &get(get<typename decltype(x)::type>(*output)).data()),
+            l_max_);
+      });
 
   detail::execute_libsharp_transform_set(
       SHARP_MAP2ALM, spin, make_not_null(&post_transform_coefficient_data),

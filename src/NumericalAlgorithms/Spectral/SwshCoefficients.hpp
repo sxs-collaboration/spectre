@@ -7,6 +7,8 @@
 #include <memory>
 #include <sharp_cxx.h>
 
+#include "DataStructures/ComplexModalVector.hpp"
+#include "DataStructures/SpinWeighted.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "Utilities/ForceInline.hpp"
 
@@ -16,9 +18,15 @@ namespace Swsh {
 /// \ingroup SwshGroup
 /// \brief Convenience function for determining the number of spin-weighted
 /// spherical harmonics coefficients that are stored for a given `l_max`
+///
+/// \details This includes the factor of 2 associated with needing
+/// to store both the transform of the real and imaginary parts, so is the
+/// full size of the result of a libsharp swsh transform.
+///
+/// \note Assumes the triangular libsharp representation is used.
 constexpr SPECTRE_ALWAYS_INLINE size_t
-number_of_swsh_coefficients(const size_t l_max) noexcept {
-  return (l_max + 1) * (l_max + 2) / 2;  // "triangular" representation
+size_of_libsharp_coefficient_vector(const size_t l_max) noexcept {
+  return (l_max + 1) * (l_max + 2);  // "triangular" representation
 }
 
 /*!
@@ -125,59 +133,198 @@ struct DestroySharpAlm {
     sharp_destroy_alm_info(to_delete);
   }
 };
-// The Coefficients class acts largely as a memory-safe container for a
-// `sharp_alm_info*`, required for use of libsharp transform utilities.
-// The libsharp utilities are currently constructed to only provide user
-// functions with collocation data for spin-weighted functions and
-// derivatives. If and when the libsharp utilities are expanded to provide
-// spin-weighted coefficients as output, this class should be expanded to
-// provide information about the value and storage ordering of those
-// coefficients to user code. This should be implemented as an iterator, as is
-// done in SwshCollocation.hpp.
-//
-// Note: The libsharp representation of coefficients is altered from the
-// standard mathematical definitions in a nontrivial way. There are a number of
-// important features to the data storage of the coefficients.
-// - they are stored as a set of complex values, but each vector of complex
-//   values is the transform of only the real or imaginary part of the
-//   collocation data
-// - because each vector of complex coefficients is related to the transform of
-//   a set of doubles, only (about) half of the m's are stored (m >= 0), because
-//   the remaining m modes are determinable by conjugation from the positive m
-//   modes, given that they represent the transform of a purely real or purely
-//   imaginary collocation quantity
-// - they are stored in an l-varies-fastest, triangular representation. To be
-//   concrete, for an l_max=2, the order of coefficient storage is (l, m):
-//   [(0, 0), (1, 0), (2, 0), (1, 1), (2, 1), (2, 2)]
-// - due to the restriction of representing only the transform of real
-//   quantities, the m=0 modes always have vanishing imaginary component.
-class Coefficients {
- public:
-  explicit Coefficients(size_t l_max) noexcept;
+}  // namespace detail
 
-  ~Coefficients() = default;
-  Coefficients() = default;
-  Coefficients(const Coefficients&) = delete;
-  Coefficients(Coefficients&&) = default;
-  Coefficients& operator=(const Coefficients&) = delete;
-  Coefficients& operator=(Coefficients&&) = default;
+/// Points to a single pair of modes in a libsharp-compatible
+/// spin-weighted spherical harmonic modal representation.
+struct LibsharpCoefficientInfo {
+  size_t transform_of_real_part_offset;
+  size_t transform_of_imag_part_offset;
+  size_t l_max;
+  size_t l;
+  size_t m;
+};
+
+/*!
+ * \ingroup SwshGroup
+ * \brief A container for libsharp metadata for the spin-weighted spherical
+ * harmonics modal representation.
+ *
+ * \details
+ * The CoefficientsMetadata class acts as a memory-safe container for a
+ * `sharp_alm_info*`, required for use of libsharp transform utilities.
+ * The libsharp utilities are currently constructed to only provide user
+ * functions with collocation data for spin-weighted functions and
+ * derivatives.  This class also provides an iterator for
+ * easily traversing a libsharp-compatible modal representation.
+ *
+ * \note The libsharp representation of coefficients is altered from the
+ * standard mathematical definitions in a nontrivial way. There are a number of
+ * important features to the data storage of the coefficients.
+ * - they are stored as a set of complex values, but each vector of complex
+ *   values is the transform of only the real or imaginary part of the
+ *   collocation data
+ * - because each vector of complex coefficients is related to the transform of
+ *   a set of doubles, only (about) half of the m's are stored (m >= 0), because
+ *   the remaining m modes are determinable by conjugation from the positive m
+ *   modes, given that they represent the transform of a purely real or purely
+ *   imaginary collocation quantity
+ * - they are stored in an l-varies-fastest, triangular representation. To be
+ *   concrete, for an l_max=2, the order of coefficient storage is (l, m):
+ *   [(0, 0), (1, 0), (2, 0), (1, 1), (2, 1), (2, 2)]
+ * - due to the restriction of representing only the transform of real
+ *   quantities, the m=0 modes always have vanishing imaginary component.
+ */
+class CoefficientsMetadata {
+ public:
+  /// An iterator for easily traversing a libsharp-compatible spin-weighted
+  /// spherical harmonic modal representation.
+  /// The `operator*()` returns a `LibsharpCoefficientInfo`, which  contains two
+  /// offsets, `transform_of_real_part_offset` and
+  /// `transform_of_imag_part_offset`, and the `l_max`, `l` and `m` associated
+  /// with the values at those offsets.
+  ///
+  /// \note this currently assumes, as do many of the utilities in this file,
+  /// that the libsharp representation is chosen to be the triangular
+  /// coefficient representation. If alternative representations are desired,
+  /// alterations will be needed.
+  class CoefficientsIndexIterator {
+   public:
+    explicit CoefficientsIndexIterator(const size_t l_max,
+                                       const size_t start_l = 0,
+                                       const size_t start_m = 0) noexcept
+        : m_{start_m}, l_{start_l}, l_max_{l_max} {}
+
+    LibsharpCoefficientInfo operator*() const noexcept {
+      // permit dereferencing the iterator only if the return represents a
+      // viable location in the coefficient vector
+      ASSERT(l_ <= l_max_ && m_ <= l_max_, "coefficients iterator overflow");
+      size_t offset = ((3 + 2 * l_max_ - m_) * m_) / 2 + l_ - m_;
+      return LibsharpCoefficientInfo{
+          offset,
+          offset +
+              Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_) / 2,
+          l_max_, l_, m_};
+    }
+
+    /// advance the iterator by one position (prefix)
+    CoefficientsIndexIterator& operator++() noexcept {
+      // permit altering the iterator only if the new value is between the
+      // anticipated begin and end, inclusive
+      ASSERT(l_ <= l_max_ && m_ <= l_max_, "coefficients iterator overflow");
+      if (l_ == l_max_) {
+        ++m_;
+        l_ = m_;
+      } else {
+        ++l_;
+      }
+      return *this;
+    };
+
+    /// advance the iterator by one position (postfix)
+    const CoefficientsIndexIterator operator++(int) noexcept {
+      auto pre_increment = *this;
+      ++*this;
+      return pre_increment;
+    }
+
+    /// retreat the iterator by one position (prefix)
+    CoefficientsIndexIterator& operator--() noexcept {
+      // permit altering the iterator only if the new value is between the
+      // anticipated begin and end, inclusive
+      ASSERT(l_ <= l_max_ + 1 && m_ <= l_max_ + 1,
+             "coefficients iterator overflow");
+      if (l_ == m_) {
+        --m_;
+        l_ = l_max_;
+      } else {
+        --l_;
+      }
+      return *this;
+    }
+
+    /// retreat the iterator by one position (postfix)
+    const CoefficientsIndexIterator operator--(int) noexcept {
+      auto pre_decrement = *this;
+      --*this;
+      return pre_decrement;
+    }
+
+    // @{
+    /// (In)Equivalence checks the object as well as the l and m current
+    /// position.
+    bool operator==(const CoefficientsIndexIterator& rhs) const noexcept {
+      return m_ == rhs.m_ and l_ == rhs.l_ and l_max_ == rhs.l_max_;
+    }
+    bool operator!=(const CoefficientsIndexIterator& rhs) const noexcept {
+      return not(*this == rhs);
+    }
+    // @}
+
+   private:
+    size_t m_;
+    size_t l_;
+    size_t l_max_;
+  };
+
+  explicit CoefficientsMetadata(size_t l_max) noexcept;
+
+  ~CoefficientsMetadata() = default;
+  CoefficientsMetadata() = default;
+  CoefficientsMetadata(const CoefficientsMetadata&) = delete;
+  CoefficientsMetadata(CoefficientsMetadata&&) = default;
+  CoefficientsMetadata& operator=(const CoefficientsMetadata&) = delete;
+  CoefficientsMetadata& operator=(CoefficientsMetadata&&) = default;
   sharp_alm_info* get_sharp_alm_info() const noexcept {
     return alm_info_.get();
   }
 
   size_t l_max() const noexcept { return l_max_; }
 
+  /// returns the number of (complex) entries in a libsharp-compatible
+  /// coefficients vector. This includes the factor of 2 associated with needing
+  /// to store both the transform of the real and imaginary parts, so is the
+  /// full size of the result of a libsharp swsh transform.
+  size_t size() const noexcept {
+    return size_of_libsharp_coefficient_vector(l_max_);
+  }
+
+  // @{
+  /// \brief Get a bidirectional iterator to the start of the series of modes.
+  CoefficientsMetadata::CoefficientsIndexIterator begin() const noexcept {
+    return CoefficientsIndexIterator(l_max_, 0, 0);
+  }
+  CoefficientsMetadata::CoefficientsIndexIterator cbegin() const noexcept {
+    return begin();
+  }
+  // @}
+
+  // @{
+  /// \brief Get a bidirectional iterator to the end of the series of modes.
+  CoefficientsMetadata::CoefficientsIndexIterator end() const noexcept {
+    return CoefficientsIndexIterator(l_max_, l_max_ + 1, l_max_ + 1);
+  }
+  CoefficientsMetadata::CoefficientsIndexIterator cend() const noexcept {
+    return end();
+  }
+  // @}
+
  private:
-  std::unique_ptr<sharp_alm_info, DestroySharpAlm> alm_info_;
+  std::unique_ptr<sharp_alm_info, detail::DestroySharpAlm> alm_info_;
   size_t l_max_ = 0;
 };
 
-// Function for obtaining a `Coefficients`, which is a thin wrapper around
-// the libsharp `alm_info`, needed to perform transformations and iterate over
-// coefficients. A lazy static cache is used to avoid repeated computation. See
-// the similar implementation in `SwshCollocation.hpp` for details about the
-// caching mechanism.
-const Coefficients& precomputed_coefficients(size_t l_max) noexcept;
-}  // namespace detail
+/*!
+ * \ingroup SwshGroup
+ * \brief Generation function for obtaining a `CoefficientsMetadata` object
+ * which is computed by the libsharp calls only once, then lazily cached as a
+ * singleton via a static member of a function template. This is the preferred
+ * method for obtaining a `CoefficientsMetadata` when the `l_max` is not very
+ * large
+ *
+ * See the comments in the similar implementation found in `SwshCollocation.hpp`
+ * for more details on the lazy cache.
+ */
+const CoefficientsMetadata& cached_coefficients_metadata(size_t l_max) noexcept;
 }  // namespace Swsh
 }  // namespace Spectral

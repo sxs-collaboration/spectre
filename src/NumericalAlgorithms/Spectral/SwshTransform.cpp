@@ -45,7 +45,7 @@ void append_libsharp_coefficient_pointers(
     const gsl::not_null<ComplexModalVector*> vector,
     const size_t l_max) noexcept {
   const size_t number_of_coefficients =
-      Spectral::Swsh::number_of_swsh_coefficients(l_max) * 2;
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
   const size_t number_of_radial_points =
       vector->size() / number_of_coefficients;
 
@@ -122,7 +122,7 @@ void swsh_transform(
   const auto* collocation_metadata =
       &precomputed_collocation<Representation>(l_max);
   const auto* alm_info =
-      detail::precomputed_coefficients(l_max).get_sharp_alm_info();
+      cached_coefficients_metadata(l_max).get_sharp_alm_info();
 
   // libsharp considers two arrays per transform when spin is not zero.
   const size_t num_transforms =
@@ -134,11 +134,11 @@ void swsh_transform(
       l_max, Spin >= 0);
 
   if (libsharp_coefficients->data().size() !=
-      2 * number_of_radial_points *
-          Spectral::Swsh::number_of_swsh_coefficients(l_max)) {
-    libsharp_coefficients->data() =
-        ComplexModalVector{2 * number_of_radial_points *
-                           Spectral::Swsh::number_of_swsh_coefficients(l_max)};
+      number_of_radial_points *
+          Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)) {
+    libsharp_coefficients->data() = ComplexModalVector{
+        number_of_radial_points *
+        Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
   }
 
   std::vector<std::complex<double>*> post_transform_coefficient_data;
@@ -174,12 +174,12 @@ void inverse_swsh_transform(
     const size_t l_max) noexcept {
   const size_t number_of_radial_points =
       libsharp_coefficients->data().size() /
-      (number_of_swsh_coefficients(l_max) * 2);
+      (size_of_libsharp_coefficient_vector(l_max));
 
   const auto* collocation_metadata =
       &precomputed_collocation<Representation>(l_max);
   const auto* alm_info =
-      detail::precomputed_coefficients(l_max).get_sharp_alm_info();
+      cached_coefficients_metadata(l_max).get_sharp_alm_info();
 
   std::vector<std::complex<double>*> pre_transform_coefficient_data;
   pre_transform_coefficient_data.reserve(2 * number_of_radial_points);

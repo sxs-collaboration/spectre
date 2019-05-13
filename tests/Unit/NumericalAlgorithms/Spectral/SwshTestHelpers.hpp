@@ -73,14 +73,17 @@ void generate_swsh_modes(const gsl::not_null<ComplexModalVector*> to_fill,
   fill_with_random_values(to_fill, generator, distribution);
 
   auto spherical_harmonic_lm =
-      detail::precomputed_coefficients(l_max).get_sharp_alm_info();
+      cached_coefficients_metadata(l_max).get_sharp_alm_info();
   for (size_t i = 0; i < number_of_radial_points; i++) {
     // adjust the m = 0 modes for the reality conditions in libsharp
     for (size_t l = 0; l < l_max + 1; l++) {
-      (*to_fill)[l + 2 * i * number_of_swsh_coefficients(l_max)] =
-          real((*to_fill)[l + i * number_of_swsh_coefficients(l_max)]);
-      (*to_fill)[l + (2 * i + 1) * number_of_swsh_coefficients(l_max)] = imag(
-          (*to_fill)[l + (2 * i + 1) * number_of_swsh_coefficients(l_max)]);
+      (*to_fill)[l + i * size_of_libsharp_coefficient_vector(l_max)] = real(
+          (*to_fill)[l + i * size_of_libsharp_coefficient_vector(l_max) / 2]);
+      (*to_fill)[l +
+                 (2 * i + 1) * size_of_libsharp_coefficient_vector(l_max) / 2] =
+          imag((*to_fill)[l + (2 * i + 1) *
+                                  size_of_libsharp_coefficient_vector(l_max) /
+                                  2]);
     }
     for (size_t m = 0; m < static_cast<size_t>(spherical_harmonic_lm->nm);
          ++m) {
@@ -95,9 +98,10 @@ void generate_swsh_modes(const gsl::not_null<ComplexModalVector*> to_fill,
         // modes for l < |s| are zero
         if (static_cast<int>(l) < abs(Spin)) {
           (*to_fill)[m_start + l * l_stride +
-                     2 * i * number_of_swsh_coefficients(l_max)] = 0.0;
+                     i * size_of_libsharp_coefficient_vector(l_max)] = 0.0;
           (*to_fill)[m_start + l * l_stride +
-                     (2 * i + 1) * number_of_swsh_coefficients(l_max)] = 0.0;
+                     (2 * i + 1) * size_of_libsharp_coefficient_vector(l_max) /
+                         2] = 0.0;
         }
       }
     }
@@ -125,7 +129,7 @@ void swsh_collocation_from_coefficients_and_basis_func(
   auto& spherical_harmonic_collocation =
       precomputed_collocation<Representation>(l_max);
   auto spherical_harmonic_lm =
-      detail::precomputed_coefficients(l_max).get_sharp_alm_info();
+      cached_coefficients_metadata(l_max).get_sharp_alm_info();
 
   for (size_t i = 0; i < number_of_radial_points; ++i) {
     for (auto j : spherical_harmonic_collocation) {
@@ -147,16 +151,18 @@ void swsh_collocation_from_coefficients_and_basis_func(
                               i * spherical_harmonic_collocation.size()] +=
               sharp_swsh_sign(Spin, m, true) *
               (*coefficient_data)[m_start + l * l_stride +
-                                  2 * i * number_of_swsh_coefficients(l_max)] *
+                                  i * size_of_libsharp_coefficient_vector(
+                                          l_max)] *
               basis_function(Spin, l, m, j.theta, j.phi);
 
           if (m != 0) {
             (*collocation_data)[j.offset +
                                 i * spherical_harmonic_collocation.size()] +=
                 sharp_swsh_sign(Spin, -m, true) *
-                conj((*coefficient_data)
-                         [m_start + l * l_stride +
-                          2 * i * number_of_swsh_coefficients(l_max)]) *
+                conj(
+                    (*coefficient_data)[m_start + l * l_stride +
+                                        i * size_of_libsharp_coefficient_vector(
+                                                l_max)]) *
                 basis_function(Spin, l, -m, j.theta, j.phi);
           }
           (*collocation_data)[j.offset +
@@ -164,7 +170,9 @@ void swsh_collocation_from_coefficients_and_basis_func(
               sharp_swsh_sign(Spin, m, false) * std::complex<double>(0.0, 1.0) *
               (*coefficient_data)[m_start + l * l_stride +
                                   (2 * i + 1) *
-                                      number_of_swsh_coefficients(l_max)] *
+                                      size_of_libsharp_coefficient_vector(
+                                          l_max) /
+                                      2] *
               basis_function(Spin, l, m, j.theta, j.phi);
           if (m != 0) {
             (*collocation_data)[j.offset +
@@ -173,7 +181,8 @@ void swsh_collocation_from_coefficients_and_basis_func(
                 std::complex<double>(0.0, 1.0) *
                 conj((*coefficient_data)
                          [m_start + l * l_stride +
-                          (2 * i + 1) * number_of_swsh_coefficients(l_max)]) *
+                          (2 * i + 1) *
+                              size_of_libsharp_coefficient_vector(l_max) / 2]) *
                 basis_function(Spin, l, -m, j.theta, j.phi);
           }
         }
