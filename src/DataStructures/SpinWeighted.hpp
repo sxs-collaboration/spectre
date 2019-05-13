@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -69,6 +70,28 @@ struct SpinWeighted<T, Spin, false> {
     return *this;
   }
 
+  template <typename Rhs>
+  auto& operator+=(const SpinWeighted<Rhs, Spin>& rhs) noexcept {
+    data_ += rhs.data();
+    return *this;
+  }
+
+  auto& operator+=(const T& rhs) noexcept {
+    data_ += rhs;
+    return *this;
+  }
+
+  template <typename Rhs>
+  auto& operator-=(const SpinWeighted<Rhs, Spin>& rhs) noexcept {
+    data_ -= rhs.data();
+    return *this;
+  }
+
+  auto& operator-=(const T& rhs) noexcept {
+    data_ -= rhs;
+    return *this;
+  }
+
   T& data() noexcept { return data_; }
   const T& data() const noexcept { return data_; }
 
@@ -81,7 +104,13 @@ struct SpinWeighted<T, Spin, true> {
   using value_type = T;
   constexpr static int spin = Spin;
 
-  void set_data_ref(gsl::not_null<T*> rhs) noexcept { data_.set_data_ref(rhs); }
+  void set_data_ref(const gsl::not_null<T*> rhs) noexcept {
+    data_.set_data_ref(rhs);
+  }
+
+  void set_data_ref(const gsl::not_null<SpinWeighted<T, spin>*> rhs) noexcept {
+    data_.set_data_ref(make_not_null(&(rhs->data_)));
+  }
 
   template <typename ValueType>
   void set_data_ref(ValueType* const start, const size_t set_size) noexcept {
@@ -126,6 +155,28 @@ struct SpinWeighted<T, Spin, true> {
   }
   SpinWeighted& operator=(T&& rhs) noexcept {
     data_ = std::move(rhs);
+    return *this;
+  }
+
+  template <typename Rhs>
+  auto& operator+=(const SpinWeighted<Rhs, Spin>& rhs) noexcept {
+    data_ += rhs.data();
+    return *this;
+  }
+
+  auto& operator+=(const T& rhs) noexcept {
+    data_ += rhs;
+    return *this;
+  }
+
+  template <typename Rhs>
+  auto& operator-=(const SpinWeighted<Rhs, Spin>& rhs) noexcept {
+    data_ -= rhs.data();
+    return *this;
+  }
+
+  auto& operator-=(const T& rhs) noexcept {
+    data_ -= rhs;
     return *this;
   }
 
@@ -273,6 +324,20 @@ operator-(const get_vector_element_type_t<T>& lhs,
   return {lhs - rhs.data()};
 }
 // @}
+
+/// Negation operator preserves spin
+template <typename T, int Spin>
+SPECTRE_ALWAYS_INLINE SpinWeighted<decltype(-std::declval<T>()), Spin>
+operator-(const SpinWeighted<T, Spin>& operand) noexcept {
+  return {-operand.data()};
+}
+
+/// Unary `+` operator preserves spin
+template <typename T, int Spin>
+SPECTRE_ALWAYS_INLINE SpinWeighted<decltype(+std::declval<T>()), Spin>
+operator+(const SpinWeighted<T, Spin>& operand) noexcept {
+  return {+operand.data()};
+}
 
 // @{
 /// \brief Multiply two spin-weighted quantities if the types are compatible and
