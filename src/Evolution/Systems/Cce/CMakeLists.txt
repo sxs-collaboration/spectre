@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   InitializeCce.cpp
   LinearOperators.cpp
   LinearSolve.cpp
+  PrecomputeCceDependencies.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
