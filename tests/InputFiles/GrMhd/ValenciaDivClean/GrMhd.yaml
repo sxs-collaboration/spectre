@@ -41,7 +41,9 @@ AnalyticSolution:
 NumericalFlux:
   LocalLaxFriedrichs:
 
-DampingParameter: 0.0
+EvolutionSystem:
+  ValenciaDivClean:
+    DampingParameter: 0.0
 
 SlopeLimiter:
   Minmod:
