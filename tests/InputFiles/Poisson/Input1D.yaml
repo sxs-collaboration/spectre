@@ -8,6 +8,7 @@
 #   Poisson1DVolume0.h5
 
 AnalyticSolution:
+  ProductOfSinusoids:
     WaveNumbers: [1]
 
 DomainCreator:

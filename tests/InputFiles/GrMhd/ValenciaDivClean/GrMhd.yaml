@@ -30,12 +30,13 @@ DomainCreator:
     InitialGridPoints: [5, 5, 5]
 
 AnalyticSolution:
-  BhMass: 1.0
-  BhDimlessSpin: 0.9375
-  InnerEdgeRadius: 6.0
-  MaxPressureRadius: 12.0
-  PolytropicConstant: 0.001
-  PolytropicExponent: 1.3333333333333333333333
+  FishboneMoncriefDisk:
+    BhMass: 1.0
+    BhDimlessSpin: 0.9375
+    InnerEdgeRadius: 6.0
+    MaxPressureRadius: 12.0
+    PolytropicConstant: 0.001
+    PolytropicExponent: 1.3333333333333333333333
 
 NumericalFlux:
 

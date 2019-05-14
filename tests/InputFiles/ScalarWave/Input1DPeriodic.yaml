@@ -5,13 +5,14 @@
 # Check: execute
 
 AnalyticSolution:
-  WaveVector: [1.0]
-  Center: [0.0]
-  Profile:
-    Sinusoid:
-      Amplitude: 1.0
-      Wavenumber: 1.0
-      Phase: 0.0
+  PlaneWave:
+    WaveVector: [1.0]
+    Center: [0.0]
+    Profile:
+      Sinusoid:
+        Amplitude: 1.0
+        Wavenumber: 1.0
+        Phase: 0.0
 
 Evolution:
   InitialTime: 0.0

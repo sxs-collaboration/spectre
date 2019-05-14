@@ -6,6 +6,14 @@
 #include "Options/Options.hpp"
 
 namespace OptionTags {
+/// \ingroup OptionGroupsGroup
+/// Holds the `OptionTags::AnalyticSolution` option in the input file
+struct AnalyticSolutionGroup {
+  static std::string name() noexcept { return "AnalyticSolution"; }
+  static constexpr OptionString help =
+      "Analytic solution used for the initial data and errors";
+};
+
 /// \ingroup OptionTagsGroup
 /// Can be used to retrieve the analytic solution from the cache without having
 /// to know the template parameters of AnalyticSolution.
@@ -20,9 +28,10 @@ struct BoundaryConditionBase {};
 /// template parameter
 template <typename SolutionType>
 struct AnalyticSolution : AnalyticSolutionBase {
-  static constexpr OptionString help =
-      "Analytic solution used for the initial data and errors";
+  static std::string name() noexcept { return option_name<SolutionType>(); }
+  static constexpr OptionString help = "Options for the analytic solution";
   using type = SolutionType;
+  using group = AnalyticSolutionGroup;
 };
 /// \ingroup OptionTagsGroup
 /// The boundary condition to be applied at all external boundaries.

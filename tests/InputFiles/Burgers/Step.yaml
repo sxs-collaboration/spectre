@@ -5,9 +5,10 @@
 # Check: execute
 
 AnalyticSolution:
-  LeftValue: 2.
-  RightValue: 1.
-  InitialPosition: -0.5
+  Step:
+    LeftValue: 2.
+    RightValue: 1.
+    InitialPosition: -0.5
 
 Evolution:
   InitialTime: 0.0
