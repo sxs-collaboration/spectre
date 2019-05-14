@@ -7,6 +7,7 @@
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "NumericalAlgorithms/Spectral/SwshTags.hpp"
 
 namespace Cce {
 
@@ -88,8 +89,15 @@ struct Dy : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
   static const size_t dimension_to_differentiate = 2;
-  static const size_t dim = 3;
   static std::string name() noexcept { return "Dy(" + Tag::name() + ")"; }
+};
+
+/// The derivative with respect to Bondi \f$r\f$
+template <typename Tag>
+struct Dr : db::PrefixTag, db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
+  using tag = Tag;
+  static std::string name() noexcept { return "Dr(" + Tag::name() + ")"; }
 };
 
 // prefix tags associated with the integrands which are used as input to solvers
@@ -195,6 +203,8 @@ struct DuRDividedByR : db::SimpleTag {
 /// radius of the worldtube.
 struct EthRDividedByR : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 1>>;
+  using derivative_kind = Spectral::Swsh::Tags::Eth;
+  static constexpr int spin = 1;
   static std::string name() noexcept { return "EthRDividedByR"; }
 };
 
@@ -202,6 +212,8 @@ struct EthRDividedByR : db::SimpleTag {
 /// radius of the worldtube.
 struct EthEthRDividedByR : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 2>>;
+  using derivative_kind = Spectral::Swsh::Tags::EthEth;
+  static constexpr int spin = 2;
   static std::string name() noexcept { return "EthEthRDividedByR"; }
 };
 
@@ -209,6 +221,8 @@ struct EthEthRDividedByR : db::SimpleTag {
 /// Bondi radius of the worldtube.
 struct EthEthbarRDividedByR : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+  using derivative_kind = Spectral::Swsh::Tags::EthEthbar;
+  static constexpr int spin = 0;
   static std::string name() noexcept { return "EthEthbarRDividedByR"; }
 };
 
