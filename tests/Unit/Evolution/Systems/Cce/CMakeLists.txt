@@ -5,6 +5,7 @@ set(LIBRARY "Test_Cce")
 
 set(LIBRARY_SOURCES
   CceComputationTestHelpers.cpp
+  Test_PreSwshDerivatives.cpp
   Test_Equations.cpp
   Test_InitializeCce.cpp
   Test_LinearOperators.cpp
