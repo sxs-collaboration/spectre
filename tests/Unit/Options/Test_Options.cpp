@@ -212,6 +212,25 @@ void test_options_grouped() {
 }
 }  // namespace
 
+// [[OutputRegex, In string:.*You did not specify the group 'OuterGroup']]
+SPECTRE_TEST_CASE("Unit.Options.Grouped.missing_outer_group",
+                  "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<InnerGroupedTag>> opts("");
+  opts.parse("");
+  opts.get<InnerGroupedTag>();
+}
+
+// [[OutputRegex, In string:.*In group OuterGroup:.You did not specify the group
+// 'InnerGroup']]
+SPECTRE_TEST_CASE("Unit.Options.Grouped.missing_inner_group",
+                  "[Unit][Options]") {
+  ERROR_TEST();
+  Options<tmpl::list<InnerGroupedTag>> opts("");
+  opts.parse("OuterGroup:");
+  opts.get<InnerGroupedTag>();
+}
+
 /// [options_example_scalar_struct]
 struct Bounded {
   using type = int;
