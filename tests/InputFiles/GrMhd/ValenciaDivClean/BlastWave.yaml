@@ -33,8 +33,9 @@ NumericalFlux:
 DampingParameter: 0.0
 
 SlopeLimiter:
-  Type: Muscl
-  TvbmConstant: 0
+  Minmod:
+    Type: Muscl
+    TvbmConstant: 0
 
 VariableFixing:
   FixConservatives:

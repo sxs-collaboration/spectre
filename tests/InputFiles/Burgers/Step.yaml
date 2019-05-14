@@ -28,7 +28,8 @@ DomainCreator:
 NumericalFlux:
 
 SlopeLimiter:
-  Type: LambdaPi1
+  Minmod:
+    Type: LambdaPi1
 
 EventsAndTriggers:
   ? PastTime: 0.1
