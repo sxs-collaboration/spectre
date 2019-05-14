@@ -128,6 +128,7 @@ struct UpwindFlux {
   static constexpr OptionString help = {
       "Computes the upwind flux for a scalar wave system. It requires no "
       "options."};
+  static std::string name() noexcept { return "Upwind"; }
 
   // clang-tidy: non-const reference
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT

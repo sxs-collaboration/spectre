@@ -128,6 +128,7 @@ struct FirstOrderInternalPenaltyFlux {
   using options = tmpl::list<PenaltyParameter>;
   static constexpr OptionString help = {
       "Computes the internal penalty flux for a Poisson system."};
+  static std::string name() noexcept { return "InternalPenalty"; }
 
   FirstOrderInternalPenaltyFlux() = default;
   explicit FirstOrderInternalPenaltyFlux(double penalty_parameter)

@@ -42,6 +42,7 @@ DomainCreator:
 #   HalfPower: 32
 
 NumericalFlux:
+  Upwind:
 
 # [observe_event_trigger]
 EventsAndTriggers:

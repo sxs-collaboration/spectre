@@ -39,6 +39,7 @@ AnalyticSolution:
     PolytropicExponent: 1.3333333333333333333333
 
 NumericalFlux:
+  LocalLaxFriedrichs:
 
 DampingParameter: 0.0
 

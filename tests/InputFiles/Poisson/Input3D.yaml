@@ -20,6 +20,7 @@ DomainCreator:
     InitialGridPoints: [2, 2, 2]
 
 NumericalFlux:
+  InternalPenalty:
     PenaltyParameter: 2.5464790894703255 # p^2 / h
 
 Observers:

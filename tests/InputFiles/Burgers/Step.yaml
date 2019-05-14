@@ -26,6 +26,7 @@ DomainCreator:
     InitialGridPoints: [7]
 
 NumericalFlux:
+  LocalLaxFriedrichs:
 
 SlopeLimiter:
   Minmod:
