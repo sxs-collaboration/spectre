@@ -16,6 +16,8 @@
 
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/NoSuchType.hpp"
+#include "Utilities/PrettyType.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace YAML {
@@ -145,3 +147,21 @@ struct create_from_yaml {
   template <typename Metavariables>
   static T create(const Option& options);
 };
+
+namespace Options_detail {
+template <typename T, typename = cpp17::void_t<>>
+struct name_helper {
+  static std::string name() noexcept { return pretty_type::short_name<T>(); }
+};
+
+template <typename T>
+struct name_helper<T, cpp17::void_t<decltype(T::name())>> {
+  static std::string name() noexcept { return T::name(); }
+};
+}  // namespace Options_detail
+
+// The name in the YAML file for a struct.
+template <typename T>
+std::string option_name() noexcept {
+  return Options_detail::name_helper<T>::name();
+}
