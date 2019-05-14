@@ -24,6 +24,17 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
+namespace OptionTags {
+/*!
+ * \ingroup OptionGroupsGroup
+ * \brief Groups the filtering configurations in the input file.
+ */
+struct FilteringGroup {
+  static std::string name() noexcept { return "Filtering"; }
+  static constexpr OptionString help = "Options for filtering";
+};
+}  // namespace OptionTags
+
 namespace dg {
 namespace Actions {
 namespace ExponentialFilter_detail {
@@ -147,6 +158,7 @@ class ExponentialFilter<FilterIndex, tmpl::list<TagsToFilter...>> {
   static std::string name() noexcept {
     return "ExpFilter" + std::to_string(FilterIndex);
   }
+  using group = ::OptionTags::FilteringGroup;
 
   using options = tmpl::list<Alpha, HalfPower, DisableForDebugging>;
   static constexpr OptionString help = {"An exponential filter."};
