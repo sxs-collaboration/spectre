@@ -9,7 +9,10 @@
 #include <memory>
 #include <pup.h>
 #include <random>
+#include <string>
+#include <utility>
 
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
@@ -19,6 +22,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
@@ -28,6 +32,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
@@ -98,7 +103,7 @@ void test_compute_extrinsic_curvature_and_deriv_metric(const T& used_for_size) {
     // Make sure spatial_metric isn't singular by adding
     // large enough positive diagonal values.
     for (size_t i = 0; i < Dim; ++i) {
-      spatial_metric_l.get(i, i) += 4.0;
+      spatial_metric_l.get(i, i) += 4.;
     }
     return spatial_metric_l;
   }();
@@ -176,7 +181,7 @@ void test_gij_deriv_functions(const DataVector& used_for_size) noexcept {
           &::GeneralizedHarmonic::time_deriv_of_spatial_metric<
               SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "dt_spatial_metric",
-      {{{std::numeric_limits<double>::denorm_min(), 10.0}}}, used_for_size);
+      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
   // spacetime_deriv_of_det_spatial_metric
   pypp::check_with_random_values<1>(
       static_cast<tnsr::a<DataType, SpatialDim, Frame> (*)(
@@ -186,7 +191,7 @@ void test_gij_deriv_functions(const DataVector& used_for_size) noexcept {
           &::GeneralizedHarmonic::spacetime_deriv_of_det_spatial_metric<
               SpatialDim, Frame, DataType>),
       "GeneralRelativity.ComputeGhQuantities", "spacetime_deriv_detg",
-      {{{std::numeric_limits<double>::denorm_min(), 10.0}}}, used_for_size);
+      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
 }
 
 // Test computation of derivs of lapse by comparing to Kerr-Schild
@@ -574,4 +579,92 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
                                     upper_bound);
   test_shift_deriv_functions_analytic(solution, grid_size, lower_bound,
                                       upper_bound);
+
+  // Check that compute items work correctly in the DataBox
+  // First, check that the names are correct
+  CHECK(GeneralizedHarmonic::Tags::TimeDerivSpatialMetricCompute<
+            3, Frame::Inertial>::name() == "dt(SpatialMetric)");
+  CHECK(GeneralizedHarmonic::Tags::TimeDerivLapseCompute<
+            3, Frame::Inertial>::name() == "dt(Lapse)");
+  CHECK(GeneralizedHarmonic::Tags::TimeDerivShiftCompute<
+            3, Frame::Inertial>::name() == "dt(Shift)");
+
+  // Check that the compute items return the correct values
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> distribution(-0.1, 0.1);
+
+  const auto spatial_metric =
+      make_with_random_values<tnsr::ii<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto shift =
+      make_with_random_values<tnsr::I<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto lapse = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&generator), make_not_null(&distribution), used_for_size);
+
+  const auto deriv_spatial_metric =
+      make_with_random_values<tnsr::ijj<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto deriv_shift =
+      make_with_random_values<tnsr::iJ<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto deriv_lapse =
+      make_with_random_values<tnsr::i<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+
+  const auto expected_dt_spatial_metric =
+      make_with_random_values<tnsr::ii<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto expected_dt_shift =
+      make_with_random_values<tnsr::I<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto expected_dt_lapse = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&generator), make_not_null(&distribution), used_for_size);
+
+  const auto spacetime_normal_vector =
+      gr::spacetime_normal_vector(lapse, shift);
+  const auto& inverse_spatial_metric =
+      determinant_and_inverse(spatial_metric).second;
+  const auto inverse_spacetime_metric =
+      gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
+
+  const auto phi =
+      GeneralizedHarmonic::phi(lapse, deriv_lapse, shift, deriv_shift,
+                               spatial_metric, deriv_spatial_metric);
+  const auto pi = GeneralizedHarmonic::pi(lapse, expected_dt_lapse, shift,
+                                          expected_dt_shift, spatial_metric,
+                                          expected_dt_spatial_metric, phi);
+
+  const auto other_box = db::create<
+      db::AddSimpleTags<
+          gr::Tags::Lapse<DataVector>,
+          gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+          gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>,
+          gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>,
+          gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>,
+      db::AddComputeTags<
+          GeneralizedHarmonic::Tags::TimeDerivSpatialMetricCompute<
+              3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::TimeDerivLapseCompute<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::TimeDerivShiftCompute<3,
+                                                           Frame::Inertial>>>(
+      lapse, shift, spacetime_normal_vector, inverse_spacetime_metric,
+      inverse_spatial_metric, phi, pi);
+  CHECK(
+      db::get<
+          ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
+          other_box) == expected_dt_spatial_metric);
+  CHECK(db::get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(other_box) ==
+        expected_dt_lapse);
+  CHECK(db::get<::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(
+            other_box) == expected_dt_shift);
 }
