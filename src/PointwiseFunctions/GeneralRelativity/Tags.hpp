@@ -32,6 +32,14 @@ struct InverseSpatialMetric : db::SimpleTag {
   using type = tnsr::II<DataType, Dim, Frame>;
   static std::string name() noexcept { return "InverseSpatialMetric"; }
 };
+/*!
+ * \brief Determinant of the spatial metric.
+ */
+template <typename DataType>
+struct DetSpatialMetric : db::SimpleTag {
+  using type = Scalar<DataType>;
+  static std::string name() noexcept { return "DetSpatialMetric"; }
+};
 template <typename DataType>
 struct SqrtDetSpatialMetric : db::SimpleTag {
   using type = Scalar<DataType>;
@@ -47,7 +55,6 @@ struct Lapse : db::SimpleTag {
   using type = Scalar<DataType>;
   static std::string name() noexcept { return "Lapse"; }
 };
-
 template <size_t Dim, typename Frame, typename DataType>
 struct SpacetimeChristoffelFirstKind : db::SimpleTag {
   using type = tnsr::abb<DataType, Dim, Frame>;

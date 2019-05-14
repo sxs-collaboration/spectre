@@ -6,11 +6,14 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
+#include <string>
 #include <utility>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Variables.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -247,5 +250,99 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DeterminantAndInverse",
     CHECK((get<0, 1>(det_inv.second)) == DataVector({1.5, 5.0, -2.0, 0.5}));
     CHECK((get<1, 0>(det_inv.second)) == DataVector({2.0, 2.0, -1.0, -0.5}));
     CHECK((get<1, 1>(det_inv.second)) == DataVector({-1.0, -3.0, 2.5, 0.5}));
+  }
+
+  // Check Variables<determinant, inverse> for a Tensor<DataVector>
+  {
+    {
+      // 2D
+      using my_tnsr_type = tnsr::ij<DataVector, 2, Frame::Grid>;
+      using my_tnsr_inv_type = tnsr::IJ<DataVector, 2, Frame::Grid>;
+      using my_tnsr_det_type = Scalar<DataVector>;
+
+      struct MyDetTag : db::SimpleTag {
+        static std::string name() noexcept { return "DummyDetTag"; }
+        using type = my_tnsr_det_type;
+      };
+      struct MyInvTag : db::SimpleTag {
+        static std::string name() noexcept { return "DummyInvTag"; }
+        using type = my_tnsr_inv_type;
+      };
+
+      my_tnsr_type t{};
+      get<0, 0>(t) = DataVector({2.0, 3.0, 5.0, 1.0});
+      get<0, 1>(t) = DataVector({3.0, 5.0, 4.0, -1.0});
+      get<1, 0>(t) = DataVector({4.0, 2.0, 2.0, 1.0});
+      get<1, 1>(t) = DataVector({5.0, 3.0, 2.0, 1.0});
+      const auto det_inv = determinant_and_inverse<MyDetTag, MyInvTag>(t);
+      CHECK(get(get<MyDetTag>(det_inv)) == DataVector({-2.0, -1.0, 2.0, 2.0}));
+      CHECK((get<0, 0>(get<MyInvTag>(det_inv))) ==
+            DataVector({-2.5, -3.0, 1.0, 0.5}));
+      CHECK((get<0, 1>(get<MyInvTag>(det_inv))) ==
+            DataVector({1.5, 5.0, -2.0, 0.5}));
+      CHECK((get<1, 0>(get<MyInvTag>(det_inv))) ==
+            DataVector({2.0, 2.0, -1.0, -0.5}));
+      CHECK((get<1, 1>(get<MyInvTag>(det_inv))) ==
+            DataVector({-1.0, -3.0, 2.5, 0.5}));
+    }
+    {
+      // 4D
+      using my_tnsr_type = tnsr::ij<DataVector, 4, Frame::Grid>;
+      using my_tnsr_inv_type = tnsr::IJ<DataVector, 4, Frame::Grid>;
+      using my_tnsr_det_type = Scalar<DataVector>;
+
+      struct MyDetTag : db::SimpleTag {
+        static std::string name() noexcept { return "DummyDetTag"; }
+        using type = my_tnsr_det_type;
+      };
+      struct MyInvTag : db::SimpleTag {
+        static std::string name() noexcept { return "DummyInvTag"; }
+        using type = my_tnsr_inv_type;
+      };
+
+      my_tnsr_type t{};
+      get<0, 0>(t) = DataVector({2.0, 3.0});
+      get<0, 1>(t) = DataVector({3.0, 5.0});
+      get<0, 2>(t) = DataVector({4.0, 2.0});
+      get<0, 3>(t) = DataVector({5.0, 3.0});
+      get<1, 0>(t) = DataVector({2.0, -3.0});
+      get<1, 1>(t) = DataVector({-3.0, 5.0});
+      get<1, 2>(t) = DataVector({4.0, 2.0});
+      get<1, 3>(t) = DataVector({-5.0, 3.0});
+      get<2, 0>(t) = DataVector({2.0, 3.0});
+      get<2, 1>(t) = DataVector({-3.0, -5.0});
+      get<2, 2>(t) = DataVector({4.0, 2.0});
+      get<2, 3>(t) = DataVector({5.0, 3.0});
+      get<3, 0>(t) = DataVector({2.0, 3.0});
+      get<3, 1>(t) = DataVector({3.0, 5.0});
+      get<3, 2>(t) = DataVector({-4.0, -2.0});
+      get<3, 3>(t) = DataVector({5.0, 3.0});
+      const auto det_inv = determinant_and_inverse<MyDetTag, MyInvTag>(t);
+      CHECK(get(get<MyDetTag>(det_inv)) == DataVector({-960.0, 720.0}));
+      CHECK((get<0, 0>(get<MyInvTag>(det_inv))) ==
+            DataVector({0.0, 1.0 / 6.0}));
+      CHECK((get<0, 1>(get<MyInvTag>(det_inv))) ==
+            DataVector({0.25, -1.0 / 6.0}));
+      CHECK((get<0, 2>(get<MyInvTag>(det_inv))) == DataVector({0.0, 0.0}));
+      CHECK((get<0, 3>(get<MyInvTag>(det_inv))) == DataVector({0.25, 0.0}));
+      CHECK((get<1, 0>(get<MyInvTag>(det_inv))) ==
+            DataVector({1.0 / 6.0, 0.1}));
+      CHECK((get<1, 1>(get<MyInvTag>(det_inv))) == DataVector({0.0, 0.0}));
+      CHECK((get<1, 2>(get<MyInvTag>(det_inv))) ==
+            DataVector({-1.0 / 6.0, -0.1}));
+      CHECK((get<1, 3>(get<MyInvTag>(det_inv))) == DataVector({0.0, 0.0}));
+      CHECK((get<2, 0>(get<MyInvTag>(det_inv))) == DataVector({0.125, 0.25}));
+      CHECK((get<2, 1>(get<MyInvTag>(det_inv))) == DataVector({0.0, 0.0}));
+      CHECK((get<2, 2>(get<MyInvTag>(det_inv))) == DataVector({0.0, 0.0}));
+      CHECK((get<2, 3>(get<MyInvTag>(det_inv))) == DataVector({-0.125, -0.25}));
+      CHECK((get<3, 0>(get<MyInvTag>(det_inv))) ==
+            DataVector({0.0, -1.0 / 6.0}));
+      CHECK((get<3, 1>(get<MyInvTag>(det_inv))) ==
+            DataVector({-0.1, 1.0 / 6.0}));
+      CHECK((get<3, 2>(get<MyInvTag>(det_inv))) ==
+            DataVector({0.1, 1.0 / 6.0}));
+      CHECK((get<3, 3>(get<MyInvTag>(det_inv))) ==
+            DataVector({0.0, 1.0 / 6.0}));
+    }
   }
 }
