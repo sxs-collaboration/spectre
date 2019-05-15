@@ -546,5 +546,79 @@ struct TimeDerivShiftCompute
       &time_deriv_of_shift<SpatialDim, Frame, DataVector>;
   using base = ::Tags::dt<gr::Tags::Shift<SpatialDim, Frame, DataVector>>;
 };
+
+/*!
+ * \brief Compute item for the auxiliary variable \f$\Phi_{iab}\f$ used by the
+ * generalized harmonic formulation of Einstein's equations.
+ *
+ * \details See `phi()`. Can be retrieved using
+ * `GeneralizedHarmonic::Tags::Phi`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct PhiCompute : Phi<SpatialDim, Frame>, db::ComputeTag {
+  using argument_tags = tmpl::list<
+      gr::Tags::Lapse<DataVector>,
+      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<SpatialDim>,
+                    Frame>,
+      gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+      ::Tags::deriv<gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+                    tmpl::size_t<SpatialDim>, Frame>,
+      gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
+                    tmpl::size_t<SpatialDim>, Frame>>;
+  static constexpr tnsr::iaa<DataVector, SpatialDim, Frame> (*function)(
+      const Scalar<DataVector>&, const tnsr::i<DataVector, SpatialDim, Frame>&,
+      const tnsr::I<DataVector, SpatialDim, Frame>&,
+      const tnsr::iJ<DataVector, SpatialDim, Frame>&,
+      const tnsr::ii<DataVector, SpatialDim, Frame>&,
+      const tnsr::ijj<DataVector, SpatialDim, Frame>&) =
+      &phi<SpatialDim, Frame, DataVector>;
+  using base = Phi<SpatialDim, Frame>;
+};
+
+/*!
+ * \brief Compute item the conjugate momentum \f$\Pi_{ab}\f$ of the spacetime
+ * metric \f$ \psi_{ab} \f$.
+ *
+ * \details See `pi()`. Can be retrieved using `GeneralizedHarmonic::Tags::Pi`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct PiCompute : Pi<SpatialDim, Frame>, db::ComputeTag {
+  using argument_tags = tmpl::list<
+      gr::Tags::Lapse<DataVector>, ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+      gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+      ::Tags::dt<gr::Tags::Shift<SpatialDim, Frame, DataVector>>,
+      gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
+      ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>,
+      Phi<SpatialDim, Frame>>;
+  static constexpr tnsr::aa<DataVector, SpatialDim, Frame> (*function)(
+      const Scalar<DataVector>&, const Scalar<DataVector>&,
+      const tnsr::I<DataVector, SpatialDim, Frame>&,
+      const tnsr::I<DataVector, SpatialDim, Frame>&,
+      const tnsr::ii<DataVector, SpatialDim, Frame>&,
+      const tnsr::ii<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
+      &pi<SpatialDim, Frame, DataVector>;
+  using base = Pi<SpatialDim, Frame>;
+};
+
+/*!
+ * \brief Compute item to get extrinsic curvature from generalized harmonic
+ * variables and the spacetime normal vector.
+ *
+ * \details See `extrinsic_curvature()`. Can be retrieved using
+ * `gr::Tags::ExtrinsicCurvature`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct ExtrinsicCurvatureCompute
+    : gr::Tags::ExtrinsicCurvature<SpatialDim, Frame, DataVector>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
+                 Pi<SpatialDim, Frame>, Phi<SpatialDim, Frame>>;
+  static constexpr auto function =
+      &extrinsic_curvature<SpatialDim, Frame, DataVector>;
+  using base = gr::Tags::ExtrinsicCurvature<SpatialDim, Frame, DataVector>;
+};
 }  // namespace Tags
 }  // namespace GeneralizedHarmonic
