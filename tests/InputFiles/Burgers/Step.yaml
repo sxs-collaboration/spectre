@@ -10,7 +10,6 @@ AnalyticSolution:
   InitialPosition: -0.5
 
 InitialTime: 0.0
-FinalTime: 0.1
 InitialTimeStep: 0.001
 
 DomainCreator:
@@ -31,6 +30,8 @@ SlopeLimiterParams:
   Type: LambdaPi1
 
 EventsAndTriggers:
+  ? PastTime: 0.1
+  : - Completion
 
 VolumeFileName: "./BurgersVolume"
 ReductionFileName: "./BurgersReductions"
