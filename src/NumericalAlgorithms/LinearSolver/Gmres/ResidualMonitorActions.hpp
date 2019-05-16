@@ -77,7 +77,7 @@ struct InitializeResidualMagnitude {
                  static_cast<int>(get<LinearSolver::OptionTags::Verbosity>(
                      cache)) >= static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf(
-          "The linear solver has converged without any iterations: %s",
+          "The linear solver has converged without any iterations: %s\n",
           has_converged);
     }
 
@@ -239,9 +239,9 @@ struct StoreFinalOrthogonalization {
     if (UNLIKELY(has_converged and
                  static_cast<int>(get<LinearSolver::OptionTags::Verbosity>(
                      cache)) >= static_cast<int>(::Verbosity::Quiet))) {
-      Parallel::printf("The linear solver has converged in %zu iterations: %s",
-                       get<LinearSolver::Tags::IterationId>(box),
-                       has_converged);
+      Parallel::printf(
+          "The linear solver has converged in %zu iterations: %s\n",
+          get<LinearSolver::Tags::IterationId>(box), has_converged);
     }
 
     Parallel::simple_action<NormalizeOperandAndUpdateField>(
