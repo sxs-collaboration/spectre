@@ -352,7 +352,7 @@ def bondi_michel_divergence_cleaning_field(x, mass, sonic_radius, sonic_density,
 def bondi_michel_magnetic_field(x, mass, sonic_radius, sonic_density,
                                 adiabatic_exponent, magnetic_field):
     r = np.sqrt(x[0]**2 + x[1]**2 + x[2]**2)
-    m = magnetic_field / (r**3 * np.sqrt(1.0 + 2.0/r))
+    m = magnetic_field * mass**2 / (r**3 * np.sqrt(1.0 + 2.0 * mass / r))
     return np.array([m * x[0], m * x[1], m * x[2]])
 
 
