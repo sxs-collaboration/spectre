@@ -12,9 +12,11 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -256,6 +258,68 @@ struct DetAndInverseSpatialMetricCompute
       tmpl::integral_list<std::int32_t, 1, 1>,
       SpatialIndex<SpatialDim, UpLo::Lo, Frame>,
       SpatialIndex<SpatialDim, UpLo::Lo, Frame>>;
+};
+
+/*!
+ * \brief Compute item to get spacetime derivative of spacetime metric from
+ * spatial metric, lapse, shift, and their space and time derivatives.
+ *
+ * \details See `derivatives_of_spacetime_metric()`. Can be retrieved using
+ * `gr::Tags::DerivativesOfSpacetimeMetric`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct DerivativesOfSpacetimeMetricCompute
+    : gr::Tags::DerivativesOfSpacetimeMetric<SpatialDim, Frame, DataVector>,
+      db::ComputeTag {
+  using argument_tags = tmpl::list<
+      gr::Tags::Lapse<DataVector>, ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<SpatialDim>,
+                    Frame>,
+      gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+      ::Tags::dt<gr::Tags::Shift<SpatialDim, Frame, DataVector>>,
+      ::Tags::deriv<gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+                    tmpl::size_t<SpatialDim>, Frame>,
+      gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
+      ::Tags::dt<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
+                    tmpl::size_t<SpatialDim>, Frame>>;
+  static constexpr auto function =
+      &gr::derivatives_of_spacetime_metric<SpatialDim, Frame, DataVector>;
+  using base =
+      gr::Tags::DerivativesOfSpacetimeMetric<SpatialDim, Frame, DataVector>;
+};
+
+/*!
+ * \brief Compute item to get spatial derivative of spacetime metric from
+ * spatial metric, lapse, shift, and their space and time derivatives.
+ *
+ * \details Extracts spatial derivatives from spacetime derivatives computed
+ * with `derivatives_of_spacetime_metric()`. Can be retrieved using
+ * `gr::Tags::SpacetimeMetric` wrapped in `Tags::deriv`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct DerivSpacetimeMetricCompute
+    : gr::Tags::DerivSpacetimeMetric<SpatialDim, Frame, DataVector>,
+      db::ComputeTag {
+  using argument_tags = tmpl::list<
+      gr::Tags::DerivativesOfSpacetimeMetric<SpatialDim, Frame, DataVector>>;
+  static constexpr auto function(
+      const tnsr::abb<DataVector, SpatialDim, Frame>&
+          spacetime_deriv_of_spacetime_metric) noexcept {
+    auto deriv_spacetime_metric =
+        make_with_value<tnsr::iaa<DataVector, SpatialDim, Frame>>(
+            spacetime_deriv_of_spacetime_metric, 0.);
+    for (size_t i = 0; i < SpatialDim; ++i) {
+      for (size_t a = 0; a < SpatialDim + 1; ++a) {
+        for (size_t b = a; b < SpatialDim + 1; ++b) {
+          deriv_spacetime_metric.get(i, a, b) =
+              spacetime_deriv_of_spacetime_metric.get(i + 1, a, b);
+        }
+      }
+    }
+    return deriv_spacetime_metric;
+  }
+  using base = gr::Tags::DerivSpacetimeMetric<SpatialDim, Frame, DataVector>;
 };
 }  // namespace Tags
 }  // namespace gr

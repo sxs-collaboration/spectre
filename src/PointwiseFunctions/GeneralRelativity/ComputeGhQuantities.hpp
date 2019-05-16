@@ -620,5 +620,30 @@ struct ExtrinsicCurvatureCompute
       &extrinsic_curvature<SpatialDim, Frame, DataVector>;
   using base = gr::Tags::ExtrinsicCurvature<SpatialDim, Frame, DataVector>;
 };
+
+/*!
+ * \brief Compute item to get the trace of extrinsic curvature from generalized
+ * harmonic variables and the spacetime normal vector.
+ *
+ * \details See `extrinsic_curvature()` for how the extrinsic curvature
+ * \f$ K_{ij}\f$ is computed. Its trace is taken as
+ * \f{align}
+ *     tr(K) &= g^{ij} K_{ij}.
+ * \f}
+ *
+ * Can be retrieved using `gr::Tags::TraceExtrinsicCurvature`.
+ */
+template <size_t SpatialDim, typename Frame>
+struct TraceExtrinsicCurvatureCompute
+    : gr::Tags::TraceExtrinsicCurvature<DataVector>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::ExtrinsicCurvature<SpatialDim, Frame, DataVector>,
+                 gr::Tags::InverseSpatialMetric<SpatialDim, Frame, DataVector>>;
+  static constexpr Scalar<DataVector> (*function)(
+      const tnsr::ii<DataVector, SpatialDim, Frame>&,
+      const tnsr::II<DataVector, SpatialDim, Frame>&) = &trace;
+  using base = gr::Tags::TraceExtrinsicCurvature<DataVector>;
+};
 }  // namespace Tags
 }  // namespace GeneralizedHarmonic

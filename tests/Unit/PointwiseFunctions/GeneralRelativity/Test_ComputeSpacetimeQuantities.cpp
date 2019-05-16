@@ -10,9 +10,11 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -24,6 +26,13 @@
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
+
+/// \cond
+namespace Tags {
+template <typename Tag, typename Dim, typename Frame, typename>
+struct deriv;
+}  // namespace Tags
+/// \endcond
 
 namespace {
 template <size_t Dim, typename DataType>
@@ -156,6 +165,10 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   CHECK(gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
                                                     DataVector>::name() ==
         "Variables(DetSpatialMetric,InverseSpatialMetric)");
+  CHECK(gr::Tags::DerivativesOfSpacetimeMetricCompute<
+            3, Frame::Inertial>::name() == "DerivativesOfSpacetimeMetric");
+  CHECK(gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::name() ==
+        "DerivSpacetimeMetric");
 
   // Second, put the compute items into a data box and check that they
   // put the correct results
@@ -165,14 +178,18 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-0.1, 0.1);
 
-  auto expected_spacetime_metric =
-      make_with_random_values<tnsr::aa<DataVector, 3, Frame::Inertial>>(
-          make_not_null(&generator), make_not_null(&distribution),
-          used_for_size);
-  get<0, 0>(expected_spacetime_metric) += -1.;
-  for (size_t i = 1; i <= 3; ++i) {
-    expected_spacetime_metric.get(i, i) += 1.;
-  }
+  const auto expected_spacetime_metric = [&]() {
+    auto spacetime_metric_l =
+        make_with_random_values<tnsr::aa<DataVector, 3, Frame::Inertial>>(
+            make_not_null(&generator), make_not_null(&distribution),
+            used_for_size);
+    // Make sure spacetime_metric isn't singular.
+    get<0, 0>(spacetime_metric_l) += -1.;
+    for (size_t i = 1; i <= 3; ++i) {
+      spacetime_metric_l.get(i, i) += 1.;
+    }
+    return spacetime_metric_l;
+  }();
 
   const auto expected_spatial_metric =
       gr::spatial_metric(expected_spacetime_metric);
@@ -208,4 +225,63 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
       expected_spatial_metric, lapse, shift);
   CHECK(db::get<gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>>(
             second_box) == expected_spacetime_metric);
+
+  // Now let's put the temporal and spatial derivatives of lapse, shift, and
+  // spatial metric into the databox and test that we can assemple the
+  // correct spatial and spacetime derivatives of the spacetime metric
+  const auto deriv_spatial_metric =
+      make_with_random_values<tnsr::ijj<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto deriv_shift =
+      make_with_random_values<tnsr::iJ<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto deriv_lapse =
+      make_with_random_values<tnsr::i<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto dt_spatial_metric =
+      make_with_random_values<tnsr::ii<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto dt_shift =
+      make_with_random_values<tnsr::I<DataVector, 3, Frame::Inertial>>(
+          make_not_null(&generator), make_not_null(&distribution),
+          used_for_size);
+  const auto dt_lapse = make_with_random_values<Scalar<DataVector>>(
+      make_not_null(&generator), make_not_null(&distribution), used_for_size);
+
+  const auto expected_derivatives_of_spacetime_metric =
+      gr::derivatives_of_spacetime_metric(
+          lapse, dt_lapse, deriv_lapse, shift, dt_shift, deriv_shift,
+          expected_spatial_metric, dt_spatial_metric, deriv_spatial_metric);
+  const auto expected_deriv_spacetime_metric =
+      gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::function(
+          expected_derivatives_of_spacetime_metric);
+
+  const auto third_box = db::create<
+      db::AddSimpleTags<
+          gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+          gr::Tags::Lapse<DataVector>,
+          gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+          ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                        tmpl::size_t<3>, Frame::Inertial>,
+          ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
+                        Frame::Inertial>,
+          ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                        tmpl::size_t<3>, Frame::Inertial>,
+          ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>,
+          ::Tags::dt<gr::Tags::Lapse<DataVector>>,
+          ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>,
+      db::AddComputeTags<
+          gr::Tags::DerivativesOfSpacetimeMetricCompute<3, Frame::Inertial>,
+          gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>>>(
+      expected_spatial_metric, lapse, shift, deriv_spatial_metric, deriv_lapse,
+      deriv_shift, dt_spatial_metric, dt_lapse, dt_shift);
+  CHECK(db::get<gr::Tags::DerivativesOfSpacetimeMetric<3, Frame::Inertial,
+                                                       DataVector>>(
+            third_box) == expected_derivatives_of_spacetime_metric);
+  CHECK(db::get<gr::Tags::DerivSpacetimeMetric<3, Frame::Inertial, DataVector>>(
+            third_box) == expected_deriv_spacetime_metric);
 }

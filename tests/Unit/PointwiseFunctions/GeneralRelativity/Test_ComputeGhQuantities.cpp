@@ -602,6 +602,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
         "Pi");
   CHECK(GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<
             3, Frame::Inertial>::name() == "ExtrinsicCurvature");
+  CHECK(GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<
+            3, Frame::Inertial>::name() == "TraceExtrinsicCurvature");
 
   // Check that the compute items return the correct values
   MAKE_GENERATOR(generator);
@@ -668,6 +670,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   const auto expected_extrinsic_curvature =
       GeneralizedHarmonic::extrinsic_curvature(spacetime_normal_vector,
                                                expected_pi, expected_phi);
+  const auto expected_trace_extrinsic_curvature =
+      trace(expected_extrinsic_curvature, inverse_spatial_metric);
 
   const auto other_box = db::create<
       db::AddSimpleTags<
@@ -714,7 +718,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
       db::AddComputeTags<
           GeneralizedHarmonic::Tags::PhiCompute<3, Frame::Inertial>,
           GeneralizedHarmonic::Tags::PiCompute<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<
+          GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<3,
+                                                               Frame::Inertial>,
+          GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<
               3, Frame::Inertial>>>(
       spatial_metric, lapse, shift,
       spacetime_normal_vector, inverse_spatial_metric, deriv_spatial_metric,
@@ -727,4 +733,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
             ghvars_box) == expected_pi);
   CHECK(db::get<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>(
             ghvars_box) == expected_extrinsic_curvature);
+  CHECK(db::get<gr::Tags::TraceExtrinsicCurvature<DataVector>>(ghvars_box) ==
+        expected_trace_extrinsic_curvature);
 }
