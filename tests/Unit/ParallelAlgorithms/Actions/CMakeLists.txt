@@ -5,6 +5,7 @@ set(LIBRARY "Test_ParallelAlgorithmsActions")
 
 set(LIBRARY_SOURCES
   Test_MutateApply.cpp
+  Test_SetData.cpp
   )
 
 add_test_library(
