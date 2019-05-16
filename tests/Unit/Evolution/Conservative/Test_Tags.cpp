@@ -121,14 +121,15 @@ void check() {
       Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim, Frame>>;
   const auto magnitude_normal = magnitude_normal_tag::function(normal);
   using normalized_normal_tag =
-      Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim, Frame>>;
+      Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim, Frame>>;
   const auto normalized_normal =
       normalized_normal_tag::function(normal, magnitude_normal);
   using compute_n_dot_f =
       Tags::ComputeNormalDotFlux<variables_tag<Dim, Frame>, Dim, Frame>;
   static_assert(
       cpp17::is_same_v<typename compute_n_dot_f::argument_tags,
-                       tmpl::list<flux_tag<Dim, Frame>, normalized_normal_tag>>,
+                       tmpl::list<flux_tag<Dim, Frame>,
+                                  typename normalized_normal_tag::base>>,
       "Wrong argument tags");
   const auto result = compute_n_dot_f::function(fluxes, normalized_normal);
 

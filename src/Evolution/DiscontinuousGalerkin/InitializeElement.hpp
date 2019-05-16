@@ -110,9 +110,8 @@ struct InitializeElement {
 
   // Items related to the basic structure of the domain
   struct DomainTags {
-    using simple_tags =
-        db::AddSimpleTags<Tags::Mesh<Dim>, Tags::Element<Dim>,
-                          Tags::ElementMap<Dim>>;
+    using simple_tags = db::AddSimpleTags<Tags::Mesh<Dim>, Tags::Element<Dim>,
+                                          Tags::ElementMap<Dim>>;
 
     using compute_tags = db::AddComputeTags<
         Tags::LogicalCoordinates<Dim>,
@@ -229,7 +228,8 @@ struct InitializeElement {
                                    typename System::template magnitude_tag<
                                        Tags::UnnormalizedFaceNormal<Dim>>>,
         Tags::InterfaceComputeItem<
-            Directions, Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+            Directions,
+            Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>>;
 
     using ext_tags = tmpl::list<
         Tags::BoundaryDirectionsExterior<Dim>,
@@ -246,7 +246,7 @@ struct InitializeElement {
                                        Tags::UnnormalizedFaceNormal<Dim>>>,
         Tags::InterfaceComputeItem<
             Tags::BoundaryDirectionsExterior<Dim>,
-            Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>>;
+            Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>>;
 
     using compute_tags =
         tmpl::append<face_tags<Tags::InternalDirections<Dim>>,
@@ -448,8 +448,8 @@ struct InitializeElement {
       }
 
       for (const auto& direction : element.external_boundaries()) {
-        const auto mortar_id = std::make_pair(
-            direction, ElementId<Dim>::external_boundary_id());
+        const auto mortar_id =
+            std::make_pair(direction, ElementId<Dim>::external_boundary_id());
         mortar_data[mortar_id];
         // Since no communication needs to happen for boundary conditions,
         // the temporal id is not advanced on the boundary, so we set it equal
@@ -477,8 +477,7 @@ struct InitializeElement {
                   LocalSystem::is_in_flux_conservative_form>
     struct Impl {
       using simple_tags = db::AddSimpleTags<
-          mortar_data_tag,
-          Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
+          mortar_data_tag, Tags::Mortars<Tags::Next<temporal_id_tag>, Dim>,
           Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
           Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>,
           interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>,
@@ -573,8 +572,8 @@ struct InitializeElement {
               typename LocalSystem::variables_tag, Dim, Frame::Inertial>>,
           Tags::Slice<Tags::BoundaryDirectionsInterior<Dim>,
                       db::add_tag_prefix<Tags::Flux,
-                                           typename LocalSystem::variables_tag,
-                                           tmpl::size_t<Dim>, Frame::Inertial>>,
+                                         typename LocalSystem::variables_tag,
+                                         tmpl::size_t<Dim>, Frame::Inertial>>,
           boundary_interior_compute_tag<Tags::ComputeNormalDotFlux<
               typename LocalSystem::variables_tag, Dim, Frame::Inertial>>,
           Tags::Slice<Tags::BoundaryDirectionsExterior<Dim>,

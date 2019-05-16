@@ -54,7 +54,8 @@ struct Interface {
                                  typename System::template magnitude_tag<
                                      Tags::UnnormalizedFaceNormal<dim>>>,
       Tags::InterfaceComputeItem<
-          Directions, Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>>;
+          Directions,
+          Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<dim>>>>;
 
   using ext_tags = tmpl::list<
       Tags::BoundaryDirectionsExterior<dim>,
@@ -75,7 +76,7 @@ struct Interface {
                                      Tags::UnnormalizedFaceNormal<dim>>>,
       Tags::InterfaceComputeItem<
           Tags::BoundaryDirectionsExterior<dim>,
-          Tags::Normalized<Tags::UnnormalizedFaceNormal<dim>>>>;
+          Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<dim>>>>;
 
   using compute_tags =
       tmpl::append<face_tags<Tags::InternalDirections<dim>>,

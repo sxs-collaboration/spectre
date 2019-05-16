@@ -83,7 +83,7 @@ struct Interface {
                                      Tags::UnnormalizedFaceNormal<volume_dim>>>,
       Tags::InterfaceComputeItem<
           Directions,
-          Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>>;
+          Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<volume_dim>>>>;
 
   using exterior_face_tags = tmpl::list<
       Tags::BoundaryDirectionsExterior<volume_dim>,
@@ -107,7 +107,7 @@ struct Interface {
                                      Tags::UnnormalizedFaceNormal<volume_dim>>>,
       Tags::InterfaceComputeItem<
           Tags::BoundaryDirectionsExterior<volume_dim>,
-          Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>>;
+          Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<volume_dim>>>>;
 
   using simple_tags = db::AddSimpleTags<
       // We rely on the variable data on exterior faces being updated manually.
