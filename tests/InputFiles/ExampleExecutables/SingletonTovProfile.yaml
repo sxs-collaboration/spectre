@@ -1,0 +1,13 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: SingletonTovProfile
+# Check: execute
+
+Name: polytrope_profile
+CentralMassDensity: 0.00130899
+NumberOfPoints: 20
+EquationOfState:
+  PolytropicFluid:
+    PolytropicConstant: 8.5
+    PolytropicExponent: 1.66

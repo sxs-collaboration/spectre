@@ -32,20 +32,19 @@
 /// \cond
 namespace {
 
-void lindblom_rhs(
-    gsl::not_null<std::array<double, 2>*> dvars,
-    const std::array<double, 2>& vars, const double log_enthalpy,
-    const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
-        equation_of_state) noexcept {
+void lindblom_rhs(gsl::not_null<std::array<double, 2>*> dvars,
+                  const std::array<double, 2>& vars, const double log_enthalpy,
+                  const EquationsOfState::EquationOfState<true, 1>&
+                      equation_of_state) noexcept {
   const double& radius_squared = vars[0];
   const double& mass_over_radius = vars[1];
   double& d_radius_squared = (*dvars)[0];
   double& d_mass_over_radius = (*dvars)[1];
   const double specific_enthalpy = std::exp(log_enthalpy);
   const double rest_mass_density =
-      get(equation_of_state->rest_mass_density_from_enthalpy(
+      get(equation_of_state.rest_mass_density_from_enthalpy(
           Scalar<double>{specific_enthalpy}));
-  const double pressure = get(equation_of_state->pressure_from_density(
+  const double pressure = get(equation_of_state.pressure_from_density(
       Scalar<double>{rest_mass_density}));
   const double energy_density =
       specific_enthalpy * rest_mass_density - pressure;
@@ -85,14 +84,13 @@ namespace gr {
 namespace Solutions {
 
 TovSolution::TovSolution(
-    const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
-        equation_of_state,
+    const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
     const double central_mass_density, const double final_log_enthalpy,
     const double absolute_tolerance, const double relative_tolerance) {
   std::array<double, 2> u_and_v = {{0.0, 0.0}};
   std::array<double, 2> dudh_and_dvdh{};
   const double central_log_enthalpy =
-      std::log(get(equation_of_state->specific_enthalpy_from_density(
+      std::log(get(equation_of_state.specific_enthalpy_from_density(
           Scalar<double>{central_mass_density})));
   lindblom_rhs(&dudh_and_dvdh, u_and_v, central_log_enthalpy,
                equation_of_state);

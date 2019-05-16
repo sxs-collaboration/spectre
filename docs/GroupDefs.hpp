@@ -475,6 +475,10 @@
  * <td> \ref ParallelInfoExecutablePage "ParallelInfo" </td>
  * <td> Executable for checking number of nodes, cores, etc.</td>
  * </tr>
+ * <tr>
+ * <td> \ref SingletonTovProfileExecutablePage "SingletonTovProfile" </td>
+ * <td> Solves the TOV equations for an EOS with a ThermodynamicDim of 1.</td>
+ * </tr>
  * </table>
  */
 
