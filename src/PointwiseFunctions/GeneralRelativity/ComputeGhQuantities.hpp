@@ -548,6 +548,76 @@ struct TimeDerivShiftCompute
 };
 
 /*!
+ * \brief Compute item to get spatial derivatives of the spatial metric from
+ *        the generalized harmonic spatial derivative variable.
+ *
+ * \details See `deriv_spatial_metric()`. Can be retrieved using
+ * `gr::Tags::SpatialMetric` wrapped in \ref deriv "Tags::deriv".
+ */
+template <size_t SpatialDim, typename Frame>
+struct DerivSpatialMetricCompute
+    : ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
+                    tmpl::size_t<SpatialDim>, Frame>,
+      db::ComputeTag {
+  using argument_tags = tmpl::list<Phi<SpatialDim, Frame>>;
+  static constexpr tnsr::ijj<DataVector, SpatialDim, Frame> (*function)(
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
+      &deriv_spatial_metric<SpatialDim, Frame>;
+  using base =
+      ::Tags::deriv<gr::Tags::SpatialMetric<SpatialDim, Frame, DataVector>,
+                    tmpl::size_t<SpatialDim>, Frame>;
+};
+
+/*!
+ * \brief Compute item to get spatial derivatives of lapse from the
+ * generalized harmonic variables and spacetime unit normal one-form.
+ *
+ * \details See `spatial_deriv_of_lapse()`. Can be retrieved using
+ * `gr::Tags::Lapse` wrapped in \ref deriv "Tags::deriv".
+ */
+template <size_t SpatialDim, typename Frame>
+struct DerivLapseCompute : ::Tags::deriv<gr::Tags::Lapse<DataVector>,
+                                         tmpl::size_t<SpatialDim>, Frame>,
+                           db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::Lapse<DataVector>,
+                 gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
+                 Phi<SpatialDim, Frame>>;
+  static constexpr tnsr::i<DataVector, SpatialDim, Frame> (*function)(
+      const Scalar<DataVector>&, const tnsr::A<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
+      &spatial_deriv_of_lapse<SpatialDim, Frame>;
+  using base = ::Tags::deriv<gr::Tags::Lapse<DataVector>,
+                             tmpl::size_t<SpatialDim>, Frame>;
+};
+
+/*!
+ * \brief Compute item to get spatial derivatives of the shift vector from
+ *        generalized harmonic and geometric variables
+ *
+ * \details See `spatial_deriv_of_shift()`. Can be retrieved using
+ * `gr::Tags::Shift` wrapped in \ref deriv "Tags::deriv".
+ */
+template <size_t SpatialDim, typename Frame>
+struct DerivShiftCompute
+    : ::Tags::deriv<gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+                    tmpl::size_t<SpatialDim>, Frame>,
+      db::ComputeTag {
+  using argument_tags = tmpl::list<
+      gr::Tags::Lapse<DataVector>,
+      gr::Tags::InverseSpacetimeMetric<SpatialDim, Frame, DataVector>,
+      gr::Tags::SpacetimeNormalVector<SpatialDim, Frame, DataVector>,
+      Phi<SpatialDim, Frame>>;
+  static constexpr tnsr::iJ<DataVector, SpatialDim, Frame> (*function)(
+      const Scalar<DataVector>&, const tnsr::AA<DataVector, SpatialDim, Frame>&,
+      const tnsr::A<DataVector, SpatialDim, Frame>&,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>&) =
+      &spatial_deriv_of_shift<SpatialDim, Frame, DataVector>;
+  using base = ::Tags::deriv<gr::Tags::Shift<SpatialDim, Frame, DataVector>,
+                             tmpl::size_t<SpatialDim>, Frame>;
+};
+
+/*!
  * \brief Compute item for the auxiliary variable \f$\Phi_{iab}\f$ used by the
  * generalized harmonic formulation of Einstein's equations.
  *
