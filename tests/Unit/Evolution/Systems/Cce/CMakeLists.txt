@@ -4,7 +4,9 @@
 set(LIBRARY "Test_Cce")
 
 set(LIBRARY_SOURCES
+  CceComputationTestHelpers.cpp
   Test_Equations.cpp
+  Test_LinearSolve.cpp
   )
 
 add_test_library(

@@ -5,6 +5,7 @@ set(LIBRARY Cce)
 
 set(LIBRARY_SOURCES
   Equations.cpp
+  LinearSolve.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
