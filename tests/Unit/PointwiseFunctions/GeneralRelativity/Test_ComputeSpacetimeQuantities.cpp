@@ -162,6 +162,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   CHECK(
       gr::Tags::SpatialMetricCompute<3, Frame::Inertial, DataVector>::name() ==
       "SpatialMetric");
+  CHECK(gr::Tags::SqrtDetSpatialMetricCompute<3, Frame::Inertial,
+                                              DataVector>::name() ==
+        "SqrtDetSpatialMetric");
   CHECK(gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
                                                     DataVector>::name() ==
         "Variables(DetSpatialMetric,InverseSpatialMetric)");
@@ -178,7 +181,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> distribution(-0.1, 0.1);
 
-  const auto expected_spacetime_metric = [&]() {
+  const auto expected_spacetime_metric = [&generator, &distribution,
+                                          &used_for_size]() {
     auto spacetime_metric_l =
         make_with_random_values<tnsr::aa<DataVector, 3, Frame::Inertial>>(
             make_not_null(&generator), make_not_null(&distribution),
@@ -205,7 +209,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
       db::AddComputeTags<
           gr::Tags::SpatialMetricCompute<3, Frame::Inertial, DataVector>,
           gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
-                                                      DataVector>>>(
+                                                      DataVector>,
+          gr::Tags::SqrtDetSpatialMetricCompute<3, Frame::Inertial,
+                                                DataVector>>>(
       expected_spacetime_metric);
   CHECK(db::get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(box) ==
         expected_spatial_metric);
@@ -213,6 +219,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
         expected_det_and_inverse_spatial_metric.first);
   CHECK(db::get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>(
             box) == expected_det_and_inverse_spatial_metric.second);
+  CHECK(get(db::get<gr::Tags::SqrtDetSpatialMetric<DataVector>>(box)) ==
+        sqrt(get(expected_det_and_inverse_spatial_metric.first)));
 
   // Now let's put the lapse, shift, and spatial metric into the databox
   // and test that we can compute the correct spacetime metric

@@ -321,5 +321,21 @@ struct DerivSpacetimeMetricCompute
   }
   using base = gr::Tags::DerivSpacetimeMetric<SpatialDim, Frame, DataVector>;
 };
+
+/*!
+ * \brief Compute item to get the square root of the determinant of the spatial
+ * metric \f$\sqrt{g}\f$ via `gr::Tags::DetAndInverseSpatialMetric`.
+ *
+ * \details Can be retrieved using `gr::Tags::SqrtDetSpatialMetric`.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct SqrtDetSpatialMetricCompute : SqrtDetSpatialMetric<DataType>,
+                                     db::ComputeTag {
+  using argument_tags = tmpl::list<DetSpatialMetric<DataType>>;
+  static Scalar<DataType> function(const Scalar<DataType>& det_spatial_metric) {
+    return Scalar<DataType>{sqrt(get(det_spatial_metric))};
+  }
+  using base = SqrtDetSpatialMetric<DataType>;
+};
 }  // namespace Tags
 }  // namespace gr

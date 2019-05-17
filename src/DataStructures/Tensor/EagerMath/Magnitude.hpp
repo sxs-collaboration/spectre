@@ -42,6 +42,17 @@ Scalar<DataType> magnitude(
   return Scalar<DataType>{sqrt(get(dot_product(vector, vector, metric)))};
 }
 
+/// \ingroup TensorGroup
+/// \brief Compute square root of the Euclidean magnitude of a rank-0 tensor
+///
+/// \details
+/// Computes the square root of the absolute value of the scalar.
+template <typename DataType>
+Scalar<DataType> sqrt_magnitude(
+    const Scalar<DataType>& input) noexcept {
+  return Scalar<DataType>{sqrt(abs(get(input)))};
+}
+
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DataStructuresGroup
@@ -116,5 +127,18 @@ struct NormalizedCompute : Normalized<Tag>, db::ComputeTag {
     return vector;
   }
   using argument_tags = tmpl::list<Tag, Magnitude<Tag>>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup DataStructuresGroup
+/// The square root of a scalar
+///
+/// \snippet Test_Magnitude.cpp sqrt_name
+template <typename Tag>
+struct Sqrt : db::ComputeTag {
+  static std::string name() noexcept { return "Sqrt(" + Tag::name() + ")"; }
+  static constexpr Scalar<DataVector> (*function)(const db::item_type<Tag>&) =
+      sqrt_magnitude;
+  using argument_tags = tmpl::list<Tag>;
 };
 }  // namespace Tags

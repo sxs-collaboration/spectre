@@ -241,6 +241,26 @@ void test_general_magnitude_tags() {
   CHECK_ITERABLE_APPROX(get<2>(db::get<Tags::Normalized<Covector<3>>>(box)),
                         get<2>(covector) / sqrt(778.0));
 }
+
+struct MyScalar : db::SimpleTag {
+  static std::string name() noexcept { return "MyScalar"; }
+  using type = Scalar<DataVector>;
+};
+void test_root_tags() {
+  constexpr size_t npts = 5;
+  const Scalar<DataVector> my_scalar{DataVector{npts, -3.0}};
+
+  const auto box =
+      db::create<db::AddSimpleTags<MyScalar>,
+                 db::AddComputeTags<Tags::Sqrt<MyScalar>>>(my_scalar);
+
+  CHECK(get(db::get<Tags::Sqrt<MyScalar>>(box)) == DataVector{npts, sqrt(3.0)});
+
+  using Tag = MyScalar;
+  /// [sqrt_name]
+  CHECK(Tags::Sqrt<Tag>::name() == "Sqrt(" + Tag::name() + ")");
+  /// [sqrt_name]
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
@@ -249,4 +269,5 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
   test_magnitude();
   test_magnitude_tags();
   test_general_magnitude_tags();
+  test_root_tags();
 }
