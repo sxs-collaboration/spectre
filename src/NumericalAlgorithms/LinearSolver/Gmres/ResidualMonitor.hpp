@@ -16,6 +16,7 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace tuples {
@@ -43,36 +44,29 @@ struct ResidualMonitor {
       tmpl::list<LinearSolver::OptionTags::Verbosity,
                  LinearSolver::OptionTags::ConvergenceCriteria>;
   using options = tmpl::list<>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<InitializeResidualMonitor<Metavariables>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::RegisterWithObserver,
-                             tmpl::list<>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Solve, tmpl::list<>>>;
 
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+      Parallel::PhaseActions<
+          typename Metavariables::Phase,
+          Metavariables::Phase::RegisterWithObserver,
+          tmpl::list<observers::Actions::RegisterSingletonWithObserverWriter<
+              LinearSolver::observe_detail::Registration>>>>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
-    auto& local_component = Parallel::get_parallel_component<ResidualMonitor>(
-        *(global_cache.ckLocalBranch()));
-
-    const auto initial_observation_id = observers::ObservationId(
-        db::item_type<LinearSolver::Tags::IterationId>{0},
-        typename LinearSolver::observe_detail::ObservationType{});
-    Parallel::simple_action<
-        observers::Actions::RegisterSingletonWithObserverWriter>(
-        local_component, initial_observation_id);
-  }
+  static void initialize(Parallel::CProxy_ConstGlobalCache<
+                         Metavariables>& /*global_cache*/) noexcept {}
 
   static void execute_next_phase(
-      const typename Metavariables::Phase /*next_phase*/,
-      const Parallel::CProxy_ConstGlobalCache<
-          Metavariables>& /*cache*/) noexcept {}
+      const typename Metavariables::Phase next_phase,
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+    auto& local_cache = *(global_cache.ckLocalBranch());
+    Parallel::get_parallel_component<ResidualMonitor>(local_cache)
+        .start_phase(next_phase);
+  }
 };
 
 template <typename Metavariables>
@@ -92,7 +86,6 @@ struct InitializeResidualMonitor {
                          fields_tag>;
 
  public:
-
   template <
       typename DbTagsList, typename... InboxTags, typename ArrayIndex,
       typename ActionList, typename ParallelComponent,
@@ -117,7 +110,7 @@ struct InitializeResidualMonitor {
         db::item_type<LinearSolver::Tags::IterationId>{0},
         db::item_type<orthogonalization_iteration_id_tag>{0},
         DenseMatrix<double>{2, 1, 0.});
-    return std::make_tuple(std::move(init_box));
+    return std::make_tuple(std::move(init_box), true);
   }
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
@@ -125,12 +118,14 @@ struct InitializeResidualMonitor {
             Requires<tmpl::list_contains_v<DbTagsList,
                                            residual_magnitude_tag>> = nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      db::DataBox<DbTagsList>& box,
+      const db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box), true};
+    ERROR(
+        "Re-initialization not supported. Did you forget to terminate the "
+        "initialization phase?");
   }
 };
 

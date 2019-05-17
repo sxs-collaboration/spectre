@@ -37,11 +37,13 @@ namespace gmres_detail {
 
 struct NormalizeInitialOperand {
   template <
-      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ParallelComponent, typename DataBox, typename Metavariables,
       typename ArrayIndex,
-      Requires<tmpl::list_contains_v<
-          DbTagsList, typename Metavariables::system::fields_tag>> = nullptr>
-  static void apply(db::DataBox<DbTagsList>& box,
+      Requires<db::tag_is_retrievable_v<
+                   typename Metavariables::system::fields_tag, DataBox> and
+               db::tag_is_retrievable_v<LinearSolver::Tags::HasConverged,
+                                        DataBox>> = nullptr>
+  static void apply(DataBox& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const double residual_magnitude,
@@ -70,14 +72,17 @@ struct NormalizeInitialOperand {
 };
 
 struct PerformStep {
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+  template <typename DataBox, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<DataBox&&, bool> apply(
+      DataBox& box, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index,
+      // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+      const ActionList /*meta*/,
+      // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+      const ParallelComponent* const /*meta*/) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using operand_tag =
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
@@ -103,17 +108,19 @@ struct PerformStep {
         Parallel::get_parallel_component<ResidualMonitor<Metavariables>>(
             cache));
 
-    return std::tuple<db::DataBox<DbTagsList>&&, bool>(std::move(box), true);
+    return {std::move(box), true};
   }
 };
 
 struct OrthogonalizeOperand {
   template <
-      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ParallelComponent, typename DataBox, typename Metavariables,
       typename ArrayIndex,
-      Requires<tmpl::list_contains_v<
-          DbTagsList, typename Metavariables::system::fields_tag>> = nullptr>
-  static void apply(db::DataBox<DbTagsList>& box,
+      Requires<db::tag_is_retrievable_v<
+                   typename Metavariables::system::fields_tag, DataBox> and
+               db::tag_is_retrievable_v<LinearSolver::Tags::HasConverged,
+                                        DataBox>> = nullptr>
+  static void apply(DataBox& box,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const double orthogonalization) noexcept {
@@ -172,11 +179,13 @@ struct OrthogonalizeOperand {
 
 struct NormalizeOperandAndUpdateField {
   template <
-      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ParallelComponent, typename DataBox, typename Metavariables,
       typename ArrayIndex,
-      Requires<tmpl::list_contains_v<
-          DbTagsList, typename Metavariables::system::fields_tag>> = nullptr>
-  static void apply(db::DataBox<DbTagsList>& box,
+      Requires<db::tag_is_retrievable_v<
+                   typename Metavariables::system::fields_tag, DataBox> and
+               db::tag_is_retrievable_v<LinearSolver::Tags::HasConverged,
+                                        DataBox>> = nullptr>
+  static void apply(DataBox& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const double normalization,
                     const DenseVector<double>& minres,
@@ -228,14 +237,8 @@ struct NormalizeOperandAndUpdateField {
         get<initial_fields_tag>(box));
 
     // Proceed with algorithm
-    // We use `ckLocal()` here since this is essentially retrieving "self",
-    // which is guaranteed to be on the local processor. This ensures the calls
-    // are evaluated in order.
     Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
-        .ckLocal()
-        ->set_terminate(false);
-    Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
-        .perform_algorithm();
+        .perform_algorithm(true);
   }
 };
 

@@ -25,17 +25,18 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
-#include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace DistributedLinearSolverAlgorithmTestHelpers {
@@ -92,11 +93,16 @@ struct CollectAp;
 struct ComputeOperatorAction {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const int array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+      const int array_index,
+      // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+      const ActionList /*meta*/,
+      // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+      const ParallelComponent* const /*meta*/) noexcept {
     const auto& operator_matrices = get<LinearOperator>(cache);
     const auto number_of_elements = operator_matrices.size();
     const auto& A = gsl::at(operator_matrices, array_index);
@@ -116,19 +122,17 @@ struct ComputeOperatorAction {
 
     // Terminate algorithm for now. The reduction will be broadcast to the
     // next action which is responsible for restarting the algorithm.
-    return std::tuple<db::DataBox<DbTagsList>&&, bool>(std::move(box), true);
+    return {std::move(box), true};
   }
 };
 
 struct CollectAp {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ActionList, typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      Requires<tmpl::list_contains_v<DbTagsList, ScalarFieldTag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const int array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*component*/,
+                    const int array_index,
                     const db::item_type<fields_tag>& Ap_global_data) noexcept {
     // This could be generalized to work on the Variables instead of the
     // Scalar, but it's only for the purpose of this test.
@@ -146,29 +150,25 @@ struct CollectAp {
           *Ap = Scalar<DataVector>(Ap_local);
         });
     // Proceed with algorithm
-    // We use `ckLocal()` here since this is essentially retrieving "self",
-    // which is guaranteed to be on the local processor. This ensures the calls
-    // are evaluated in order.
     Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
-        .ckLocal()
-        ->set_terminate(false);
-    Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
-        .perform_algorithm();
+        .perform_algorithm(true);
   }
 };
 
 // Checks for the correct solution after the algorithm has terminated.
 struct TestResult {
-  template <
-      typename... DbTags, typename... InboxTags, typename Metavariables,
-      typename ActionList, typename ParallelComponent,
-      Requires<tmpl2::flat_any_v<cpp17::is_same_v<fields_tag, DbTags>...>> =
-          nullptr>
-  static void apply(const db::DataBox<tmpl::list<DbTags...>>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const int array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+      const int array_index,
+      // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+      const ActionList /*meta*/,
+      // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+      const ParallelComponent* const /*meta*/) noexcept {
     const auto& has_converged = get<LinearSolver::Tags::HasConverged>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
     SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
@@ -177,23 +177,19 @@ struct TestResult {
         gsl::at(get<ExpectedResult>(cache), array_index);
     const auto& result = get<ScalarFieldTag>(box).get();
     for (size_t i = 0; i < expected_result.size(); i++) {
-      Parallel::printf("result=%f, expected=%f", result[i], expected_result[i]);
       SPECTRE_PARALLEL_REQUIRE(result[i] == approx(expected_result[i]));
     }
+    return {std::move(box), true};
   }
 };
 
 struct InitializeElement {
-  template <typename Metavariables>
-  using return_tag_list =
-      tmpl::append<tmpl::list<fields_tag, operand_tag, operator_tag>,
-                   typename Metavariables::linear_solver::tags::simple_tags,
-                   typename Metavariables::linear_solver::tags::compute_tags>;
-
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent>
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ActionList, typename ParallelComponent,
+      Requires<not tmpl::list_contains_v<DbTagsList, ScalarFieldTag>> = nullptr>
   static auto apply(
-      const db::DataBox<tmpl::list<>>& /*box*/,
+      db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& cache,
       const int array_index, const ActionList /*meta*/,
@@ -201,18 +197,35 @@ struct InitializeElement {
     const auto& source = gsl::at(get<Source>(cache), array_index);
     const size_t num_points = source.size();
 
-    auto box = db::create<
+    auto vars_box = db::create_from<
+        db::RemoveTags<>,
         db::AddSimpleTags<tmpl::list<fields_tag, operand_tag, operator_tag>>>(
-        db::item_type<fields_tag>{num_points, 0.},
+        std::move(box), db::item_type<fields_tag>{num_points, 0.},
         db::item_type<operand_tag>{
             num_points, std::numeric_limits<double>::signaling_NaN()},
         db::item_type<operator_tag>{
             num_points, std::numeric_limits<double>::signaling_NaN()});
     auto linear_solver_box = Metavariables::linear_solver::tags::initialize(
-        std::move(box), cache, array_index, parallel_component_meta, source,
+        std::move(vars_box), cache, array_index, parallel_component_meta,
+        source,
         db::item_type<db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
                                          fields_tag>>{num_points, 0.});
-    return std::make_tuple(std::move(linear_solver_box));
+    return std::make_tuple(std::move(linear_solver_box), true);
+  }
+
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ActionList, typename ParallelComponent,
+      Requires<tmpl::list_contains_v<DbTagsList, ScalarFieldTag>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      const db::DataBox<DbTagsList>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const int /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    ERROR(
+        "Re-initialization not supported. Did you forget to terminate the "
+        "initialization phase?");
   }
 };
 
@@ -220,13 +233,23 @@ template <typename Metavariables>
 struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
-  using action_list =
-      tmpl::list<LinearSolver::Actions::TerminateIfConverged,
-                 ComputeOperatorAction,
-                 typename Metavariables::linear_solver::perform_step>;
-  using initial_databox = db::compute_databox_type<
-      typename InitializeElement::return_tag_list<Metavariables>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<InitializeElement>>,
+
+      Parallel::PhaseActions<
+          typename Metavariables::Phase,
+          Metavariables::Phase::PerformLinearSolve,
+          tmpl::list<LinearSolver::Actions::TerminateIfConverged,
+                     ComputeOperatorAction,
+                     typename Metavariables::linear_solver::perform_step>>,
+
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::TestResult,
+                             tmpl::list<TestResult>>>;
   using options = tmpl::list<OptionTags::NumberOfElements>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using const_global_cache_tag_list =
       tmpl::list<LinearOperator, Source, ExpectedResult>;
   using array_index = int;
@@ -240,33 +263,18 @@ struct ElementArray {
     for (int i = 0, which_proc = 0,
              number_of_procs = Parallel::number_of_procs();
          i < static_cast<int>(number_of_elements); i++) {
-      array_proxy[i].insert(global_cache, which_proc);
+      array_proxy[i].insert(global_cache, tuples::TaggedTuple<>(), which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
     }
     array_proxy.doneInserting();
-
-    Parallel::simple_action<InitializeElement>(array_proxy);
   }
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
-    auto array_proxy = Parallel::get_parallel_component<ElementArray>(
+    auto& local_component = Parallel::get_parallel_component<ElementArray>(
         *(global_cache.ckLocalBranch()));
-    switch (next_phase) {
-      case Metavariables::Phase::PerformLinearSolve:
-        array_proxy.perform_algorithm();
-        break;
-      case Metavariables::Phase::TestResult:
-        Parallel::simple_action<TestResult>(array_proxy);
-        break;
-      case Metavariables::Phase::CleanOutput:
-        break;
-      default:
-        ERROR(
-            "The Metavariables is expected to have the following Phases: "
-            "Initialization, PerformLinearSolve, TestResult, Exit");
-    }
+    local_component.start_phase(next_phase);
   }
 };
 
