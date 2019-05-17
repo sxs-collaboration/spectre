@@ -156,6 +156,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
 
   // Check that compute items work correctly in the DataBox
   // First, check that the names are correct
+  CHECK(gr::Tags::SpacetimeNormalOneFormCompute<3, Frame::Inertial,
+                                                DataVector>::name() ==
+        "SpacetimeNormalOneForm");
+  CHECK(gr::Tags::SpacetimeNormalVectorCompute<3, Frame::Inertial,
+                                               DataVector>::name() ==
+        "SpacetimeNormalVector");
   CHECK(gr::Tags::SpacetimeMetricCompute<3, Frame::Inertial,
                                          DataVector>::name() ==
         "SpacetimeMetric");
@@ -226,7 +232,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
           gr::Tags::ShiftCompute<3, Frame::Inertial, DataVector>,
           gr::Tags::LapseCompute<3, Frame::Inertial, DataVector>,
           gr::Tags::InverseSpacetimeMetricCompute<3, Frame::Inertial,
-                                                  DataVector>>>(
+                                                  DataVector>,
+          gr::Tags::SpacetimeNormalOneFormCompute<3, Frame::Inertial,
+                                                  DataVector>,
+          gr::Tags::SpacetimeNormalVectorCompute<3, Frame::Inertial,
+                                                 DataVector>>>(
       expected_spacetime_metric);
   CHECK(db::get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(box) ==
         expected_spatial_metric);
@@ -242,6 +252,16 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
   CHECK(
       db::get<gr::Tags::InverseSpacetimeMetric<3, Frame::Inertial, DataVector>>(
           box) == expected_inverse_spacetime_metric);
+  CHECK(
+      db::get<gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial, DataVector>>(
+          box) ==
+      gr::spacetime_normal_one_form<3, Frame::Inertial, DataVector>(
+          expected_lapse));
+  CHECK(
+      db::get<gr::Tags::SpacetimeNormalVector<3, Frame::Inertial, DataVector>>(
+          box) ==
+      gr::spacetime_normal_vector<3, Frame::Inertial, DataVector>(
+          expected_lapse, expected_shift));
 
   // Now let's put the lapse, shift, and spatial metric into the databox
   // and test that we can compute the correct spacetime metric
