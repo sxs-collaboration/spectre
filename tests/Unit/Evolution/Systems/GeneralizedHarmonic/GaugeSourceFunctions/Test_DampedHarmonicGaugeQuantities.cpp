@@ -2987,14 +2987,6 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
 
   // Verify that locally computed H_a matches the same obtained through its
   // ComputeTag from databox
-  CHECK(db::get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(box) == shift);
-  CHECK(db::get<::Tags::Time>(box) == current_time);
-  CHECK(db::get<GeneralizedHarmonic::OptionTags::GaugeHRollOnStartTime>(box) ==
-        t_start_S);
-  CHECK(db::get<GeneralizedHarmonic::OptionTags::GaugeHRollOnTimeWindow>(box) ==
-        sigma_t_S);
-  CHECK(db::get<GeneralizedHarmonic::OptionTags::GaugeHSpatialWeightDecayWidth<
-            Frame::Inertial>>(box) == r_max);
   CHECK(db::get<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>>(box) ==
         gauge_h_expected);
   CHECK(
