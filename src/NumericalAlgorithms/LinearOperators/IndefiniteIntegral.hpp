@@ -6,7 +6,6 @@
 #include <cstddef>
 
 /// \cond
-class DataVector;
 template <size_t>
 class Mesh;
 namespace gsl {
@@ -33,13 +32,13 @@ class not_null;
  *
  * \requires number of points in `integrand` and `mesh` are equal.
  */
-template <size_t Dim>
-void indefinite_integral(gsl::not_null<DataVector*> integral,
-                         const DataVector& integrand, const Mesh<Dim>& mesh,
+template <size_t Dim, typename VectorType>
+void indefinite_integral(gsl::not_null<VectorType*> integral,
+                         const VectorType& integrand, const Mesh<Dim>& mesh,
                          size_t dim_to_integrate) noexcept;
 
-template <size_t Dim>
-DataVector indefinite_integral(const DataVector& integrand,
+template <size_t Dim, typename VectorType>
+VectorType indefinite_integral(const VectorType& integrand,
                                const Mesh<Dim>& mesh,
                                size_t dim_to_integrate) noexcept;
 // @}
