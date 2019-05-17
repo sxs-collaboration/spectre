@@ -640,9 +640,6 @@ void test_damped_harmonic_h_function_term_4_of_4(
   // Get ingredients
   const auto& spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
-          lapse);
   const auto& det_spatial_metric =
       determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
@@ -735,9 +732,6 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   // Get ingredients
   const auto& spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
-          lapse);
   const auto& det_spatial_metric =
       determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
@@ -865,9 +859,6 @@ void test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   // Get ingredients
   const auto& spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
-          lapse);
   const auto& det_spatial_metric =
       determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
@@ -979,9 +970,6 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   // Get ingredients
   const auto& spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
-          lapse);
   const auto& det_spatial_metric =
       determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
@@ -1051,9 +1039,6 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   }
   const auto& spacetime_metric_ab_initio = gr::spacetime_metric(
       lapse_ab_initio, shift_ab_initio, spatial_metric_ab_initio);
-  const auto& spacetime_unit_normal_one_form_ab_initio =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
-          lapse_ab_initio);
   const auto& det_spatial_metric_ab_initio =
       determinant_and_inverse(spatial_metric_ab_initio).first;
   Scalar<DataVector> sqrt_det_spatial_metric_ab_initio(
@@ -2128,8 +2113,6 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
     }
   }
 
-  const auto& spacetime_metric_ab_initio = gr::spacetime_metric(
-      lapse_ab_initio, shift_ab_initio, spatial_metric_ab_initio);
   const auto& spacetime_unit_normal_one_form_ab_initio =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio);
@@ -2432,8 +2415,6 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
     }
   }
 
-  const auto& spacetime_metric_ab_initio = gr::spacetime_metric(
-      lapse_ab_initio, shift_ab_initio, spatial_metric_ab_initio);
   const auto& spacetime_unit_normal_one_form_ab_initio =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio);
@@ -2739,9 +2720,6 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
 
   const auto& spacetime_metric_ab_initio = gr::spacetime_metric(
       lapse_ab_initio, shift_ab_initio, spatial_metric_ab_initio);
-  const auto& spacetime_unit_normal_one_form_ab_initio =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
-          lapse_ab_initio);
   const auto spacetime_unit_normal_ab_initio =
       gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio, shift_ab_initio);
