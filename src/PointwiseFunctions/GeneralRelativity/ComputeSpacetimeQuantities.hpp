@@ -203,6 +203,39 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
 
 namespace Tags {
 /*!
+ * \brief Compute item for spacetime normal oneform \f$n_a\f$ from
+ * the lapse \f$N\f$.
+ *
+ * \details Can be retrieved using `gr::Tags::SpacetimeNormalOneForm`.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct SpacetimeNormalOneFormCompute
+    : SpacetimeNormalOneForm<SpatialDim, Frame, DataType>,
+      db::ComputeTag {
+  using argument_tags = tmpl::list<Lapse<DataType>>;
+  static constexpr auto function =
+      &spacetime_normal_one_form<SpatialDim, Frame, DataType>;
+  using base = SpacetimeNormalOneForm<SpatialDim, Frame, DataType>;
+};
+
+/*!
+ * \brief Compute item for spacetime normal vector \f$n^a\f$ from
+ * the lapse \f$N\f$ and the shift \f$N^i\f$.
+ *
+ * \details Can be retrieved using `gr::Tags::SpacetimeNormalVector`.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct SpacetimeNormalVectorCompute
+    : SpacetimeNormalVector<SpatialDim, Frame, DataType>,
+      db::ComputeTag {
+  using argument_tags =
+      tmpl::list<Lapse<DataType>, Shift<SpatialDim, Frame, DataType>>;
+  static constexpr auto function =
+      &spacetime_normal_vector<SpatialDim, Frame, DataType>;
+  using base = SpacetimeNormalVector<SpatialDim, Frame, DataType>;
+};
+
+/*!
  * \brief Compute item for spacetime metric \f$\psi_{ab}\f$ from the
  * lapse \f$N\f$, shift \f$N^i\f$, and spatial metric \f$g_{ij}\f$.
  *
