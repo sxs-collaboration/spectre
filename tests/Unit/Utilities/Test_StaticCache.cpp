@@ -27,9 +27,25 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
         calls.emplace_back(a, b);
         return a + b;
       });
+  // cache is lazy, shouldn't have called at all before retrieving
+  CHECK(calls.size() == 0);
+
+  // explicitly call the cache creation to check its contents
+  cache2(0, 3);
+  cache2(0, 4);
+  cache2(1, 3);
+  CHECK(calls.size() == 3);
+
+  cache2(0, 4);
+  cache2(1, 3);
+  cache2(1, 3);
+  CHECK(calls.size() == 3);
+
+  cache2(1, 4);
+  cache2(2, 3);
+  cache2(2, 4);
   CHECK(calls.size() == 6);
-  // Creation order is not specified.
-  std::sort(calls.begin(), calls.end());
+
   const decltype(calls) expected_calls{{0, 3}, {0, 4}, {1, 3},
                                        {1, 4}, {2, 3}, {2, 4}};
   CHECK(calls == expected_calls);
@@ -43,7 +59,7 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
     ++small_calls;
     return size_t{5};
   });
-  CHECK(small_calls == 1);
+  CHECK(small_calls == 0);
   CHECK(small_cache() == 5);
   CHECK(small_calls == 1);
 }

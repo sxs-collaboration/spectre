@@ -12,65 +12,6 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-namespace StaticCache_detail {
-template <typename T, typename... Ranges>
-class StaticCacheImpl;
-
-template <typename T, typename Range0, typename... Ranges>
-class StaticCacheImpl<T, Range0, Ranges...> {
-  template <typename>
-  struct construction_helper;
-
-  template <size_t... RangeValues>
-  struct construction_helper<std::index_sequence<RangeValues...>> {
-    template <typename Generator, typename... Args>
-    constexpr static std::array<StaticCacheImpl<T, Ranges...>, Range0::size>
-    construct(Generator&& generator, const Args... args) noexcept {
-      return {{StaticCacheImpl<T, Ranges...>(generator, args...,
-                                             RangeValues + Range0::start)...}};
-    }
-  };
-
- public:
-  template <typename Generator, typename... Args,
-            Requires<not cpp17::is_same_v<std::decay_t<Generator>,
-                                          StaticCacheImpl>> = nullptr>
-  explicit constexpr StaticCacheImpl(Generator&& generator,
-                                     const Args... args) noexcept
-      : data_(construction_helper<
-              std::make_index_sequence<Range0::size>>::construct(generator,
-                                                                 args...)) {}
-
-  template <typename... Args>
-  const T& operator()(const size_t first_index, const Args... rest) const
-      noexcept {
-    ASSERT(Range0::start <= first_index and first_index < Range0::end,
-           "Index out of range: " << Range0::start << " <= " << first_index
-           << " < " << Range0::end);
-    return gsl::at(data_, first_index - Range0::start)(rest...);
-  }
-
- private:
-  std::array<StaticCacheImpl<T, Ranges...>, Range0::size> data_;
-};
-
-template <typename T>
-class StaticCacheImpl<T> {
- public:
-  template <typename Generator, typename... Args,
-            Requires<not cpp17::is_same_v<std::decay_t<Generator>,
-                                          StaticCacheImpl>> = nullptr>
-  explicit constexpr StaticCacheImpl(Generator&& generator,
-                                     const Args... args) noexcept
-      : data_(generator(args...)) {}
-
-  const T& operator()() const noexcept { return data_; }
-
- private:
-  T data_;
-};
-}  // namespace StaticCache_detail
-
 /// \ingroup UtilitiesGroup
 /// A cache of objects intended to be stored in a static variable.
 ///
@@ -86,28 +27,52 @@ class StaticCacheImpl<T> {
 ///
 /// \tparam T type held in the cache
 /// \tparam Ranges ranges of valid indices
-template <typename T, typename... Ranges>
+template <typename Generator, typename T, typename... Ranges>
 class StaticCache {
  public:
-  /// Initialize the cache.  All objects will be created by calling
-  /// `generator` before the constructor returns.
-  // clang-tidy: misc-forwarding-reference-overload - fixed with
-  // Requires, but clang-tidy can't recognize that.
-  template <typename Generator,
-            Requires<not cpp17::is_same_v<std::decay_t<Generator>,
-                                          StaticCache>> = nullptr>
-  explicit constexpr StaticCache(Generator&& generator) noexcept  // NOLINT
-      : data_(generator) {}
+  explicit StaticCache(Generator&& generator) : generator_{generator} {}
 
   template <typename... Args>
-  const T& operator()(const Args... indices) const noexcept {
-    static_assert(sizeof...(Args) == sizeof...(Ranges),
+  const T& operator()(const Args... parameters) const noexcept {
+    static_assert(sizeof...(parameters) == sizeof...(Ranges),
                   "Number of arguments must match number of ranges.");
-    return data_(static_cast<size_t>(indices)...);
+    return unwrap_cache(
+        std::make_tuple(static_cast<size_t>(parameters),
+                        std::integral_constant<size_t, Ranges::start>{},
+                        std::make_index_sequence<Ranges::size>{})...);
   }
 
  private:
-  StaticCache_detail::StaticCacheImpl<T, Ranges...> data_;
+  template <size_t... Indices>
+  const T& unwrap_cache() const noexcept {
+    static const T cached_object = generator_(Indices...);
+    return cached_object;
+  }
+
+  template <size_t... Indices, size_t IndexOffset, size_t... Is,
+            typename... Args>
+  const T& unwrap_cache(
+      std::tuple<size_t, std::integral_constant<size_t, IndexOffset>,
+                 std::index_sequence<Is...>>
+          parameter0,
+      Args... parameters) const noexcept {
+    if (UNLIKELY(IndexOffset > std::get<0>(parameter0) or
+                 std::get<0>(parameter0) >= IndexOffset + sizeof...(Is))) {
+      ERROR("Index out of range: " << IndexOffset
+                                   << " <= " << std::get<0>(parameter0) << " < "
+                                   << IndexOffset + sizeof...(Is));
+    }
+    // note that the act of assigning to the specified function pointer type
+    // fixes the template arguments that need to be inferred.
+    static const std::array<
+        const T& (StaticCache<Generator, T, Ranges...>::*)(Args...) const,
+        sizeof...(Is)>
+        cache{{&StaticCache<Generator, T, Ranges...>::unwrap_cache<
+            Indices..., Is + IndexOffset>...}};
+    return (this->*gsl::at(cache, std::get<0>(parameter0) - IndexOffset))(
+        parameters...);
+  }
+  const Generator generator_;
 };
 
 /// \ingroup UtilitiesGroup
@@ -115,7 +80,8 @@ class StaticCache {
 template <typename... Ranges, typename Generator>
 auto make_static_cache(Generator&& generator) noexcept {
   using CachedType = std::decay_t<decltype(generator((Ranges{}, size_t{})...))>;
-  return StaticCache<CachedType, Ranges...>(generator);
+  return StaticCache<Generator, CachedType, Ranges...>(
+      std::forward<Generator>(generator));
 }
 
 /// \ingroup UtilitiesGroup

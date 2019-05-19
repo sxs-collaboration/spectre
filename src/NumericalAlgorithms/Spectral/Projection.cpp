@@ -59,15 +59,15 @@ const Matrix& projection_matrix_mortar_to_element(
 
   switch (size) {
     case MortarSize::Full: {
-      const static StaticCache<
-          Matrix, CacheRange<0, supported_quadratures.size()>,
+      const static auto cache = make_static_cache<
+          CacheRange<0, supported_quadratures.size()>,
           CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheRange<0, supported_quadratures.size()>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>
-          cache([](const size_t encoded_quadrature_element,
-                   const size_t extents_element,
-                   const size_t encoded_quadrature_mortar,
-                   const size_t extents_mortar) noexcept {
+          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>(
+          [](const size_t encoded_quadrature_element,
+             const size_t extents_element,
+             const size_t encoded_quadrature_mortar,
+             const size_t extents_mortar) noexcept {
             if (extents_element > extents_mortar) {
               return Matrix{};
             }
@@ -103,15 +103,15 @@ const Matrix& projection_matrix_mortar_to_element(
     }
 
     case MortarSize::UpperHalf: {
-      const static StaticCache<
-          Matrix, CacheRange<0, supported_quadratures.size()>,
+      const static auto cache = make_static_cache<
+          CacheRange<0, supported_quadratures.size()>,
           CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheRange<0, supported_quadratures.size()>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>
-          cache([](const size_t encoded_quadrature_element,
-                   const size_t extents_element,
-                   const size_t encoded_quadrature_mortar,
-                   const size_t extents_mortar) noexcept {
+          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>(
+          [](const size_t encoded_quadrature_element,
+             const size_t extents_element,
+             const size_t encoded_quadrature_mortar,
+             const size_t extents_mortar) noexcept {
             if (extents_element > extents_mortar) {
               return Matrix{};
             }
@@ -185,15 +185,15 @@ const Matrix& projection_matrix_mortar_to_element(
     }
 
     case MortarSize::LowerHalf: {
-      const static StaticCache<
-          Matrix, CacheRange<0, supported_quadratures.size()>,
+      const static auto cache = make_static_cache<
+          CacheRange<0, supported_quadratures.size()>,
           CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheRange<0, supported_quadratures.size()>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>
-          cache([](const size_t encoded_quadrature_element,
-                   const size_t extents_element,
-                   const size_t encoded_quadrature_mortar,
-                   const size_t extents_mortar) noexcept {
+          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>(
+          [](const size_t encoded_quadrature_element,
+             const size_t extents_element,
+             const size_t encoded_quadrature_mortar,
+             const size_t extents_mortar) noexcept {
             if (extents_element > extents_mortar) {
               return Matrix{};
             }
@@ -269,14 +269,12 @@ const Matrix& projection_matrix_element_to_mortar(
 
   switch (size) {
     case MortarSize::Full: {
-      const static StaticCache<
-          Matrix, CacheRange<0, supported_quadratures.size()>,
+      const static auto cache = make_static_cache<
+          CacheRange<0, supported_quadratures.size()>,
           CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheRange<0, supported_quadratures.size()>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>
-          cache(make_interpolators([](const DataVector& x) noexcept {
-            return x;
-          }));
+          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>(
+          make_interpolators([](const DataVector& x) noexcept { return x; }));
       return cache(encode_quadrature(mortar_mesh.quadrature(0)),
                    mortar_mesh.extents(0),
                    encode_quadrature(element_mesh.quadrature(0)),
@@ -284,12 +282,12 @@ const Matrix& projection_matrix_element_to_mortar(
     }
 
     case MortarSize::UpperHalf: {
-      const static StaticCache<
-          Matrix, CacheRange<0, supported_quadratures.size()>,
+      const static auto cache = make_static_cache<
+          CacheRange<0, supported_quadratures.size()>,
           CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheRange<0, supported_quadratures.size()>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>
-          cache(make_interpolators([](const DataVector& x) noexcept {
+          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>(
+          make_interpolators([](const DataVector& x) noexcept {
             return DataVector(0.5 * (x + 1.));
           }));
       return cache(encode_quadrature(mortar_mesh.quadrature(0)),
@@ -299,12 +297,12 @@ const Matrix& projection_matrix_element_to_mortar(
     }
 
     case MortarSize::LowerHalf: {
-      const static StaticCache<
-          Matrix, CacheRange<0, supported_quadratures.size()>,
+      const static auto cache = make_static_cache<
+          CacheRange<0, supported_quadratures.size()>,
           CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>,
           CacheRange<0, supported_quadratures.size()>,
-          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>
-          cache(make_interpolators([](const DataVector& x) noexcept {
+          CacheRange<2, maximum_number_of_points<Basis::Legendre> + 1>>(
+          make_interpolators([](const DataVector& x) noexcept {
             return DataVector(0.5 * (x - 1.));
           }));
       return cache(encode_quadrature(mortar_mesh.quadrature(0)),
