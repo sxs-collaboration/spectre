@@ -263,7 +263,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshCoefficients",
   }
 }
 
-// [[OutputRegex, is not below the maximum l_max]]
+// [[OutputRegex, Index out of range]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.NumericalAlgorithms.Spectral.SwshCoefficients.PrecomputationOverrun",
     "[Unit][NumericalAlgorithms]") {

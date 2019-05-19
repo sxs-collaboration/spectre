@@ -13,6 +13,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StaticCache.hpp"
 
 namespace Spectral {
 namespace Swsh {
@@ -61,47 +62,15 @@ double CollocationMetadata<Representation>::phi(const size_t offset) const
   return 2.0 * M_PI * ((offset % (2 * l_max_ + 1)) / (2.0 * l_max_ + 1.0));
 }
 
-namespace {
-// We use a `std::index_sequence` to generate functions that cache the
-// collocation info for all the l's up to l_max. Each element in the cache is
-// not computed until it is retrieved in order to reduce the overall memory
-// footprint. However, when doing so we still need to guarantee thread-safety.
-// static variables are guaranteed to be thread-safe only on construction and so
-// we store a std::array of function pointers to functions (cache_impl) that
-// then have a `static CollocationMetadata` that they return and is constructed
-// lazily in a thread-safe manner.
-template <ComplexRepresentation Representation, size_t I>
-const CollocationMetadata<Representation>& cache_impl() noexcept {
-  static const CollocationMetadata<Representation> precomputed_collocation{I};
-  return precomputed_collocation;
-}
-
-template <ComplexRepresentation Representation, size_t... Is>
-SPECTRE_ALWAYS_INLINE const CollocationMetadata<Representation>&
-dispatch_to_precomputed_static_collocation_impl(
-    const size_t index, std::index_sequence<Is...> /*meta*/) noexcept {
-  if (UNLIKELY(index > collocation_maximum_l_max)) {
-    ERROR("The provided l_max "
-          << index
-          << "is not below the maximum l_max to cache, which is currently "
-          << collocation_maximum_l_max
-          << ". Either "
-             "construct the CollocationMetadata manually, or consider (with "
-             "caution) "
-             "increasing `collocation_maximum_l_max`.");
-  }
-  static const std::array<const CollocationMetadata<Representation>& (*)(),
-                          sizeof...(Is)>
-      cache{{&cache_impl<Representation, Is>...}};
-  return gsl::at(cache, index)();
-}
-}  // namespace
-
 template <ComplexRepresentation Representation>
 const CollocationMetadata<Representation>& cached_collocation_metadata(
     const size_t l_max) noexcept {
-  return dispatch_to_precomputed_static_collocation_impl<Representation>(
-      l_max, std::make_index_sequence<collocation_maximum_l_max + 1>{});
+  const static auto lazy_collocation_cache =
+      make_static_cache<CacheRange<0, collocation_maximum_l_max>>(
+          [](const size_t generator_l_max) noexcept {
+            return CollocationMetadata<Representation>{generator_l_max};
+          });
+  return lazy_collocation_cache(l_max);
 }
 
 template class CollocationMetadata<ComplexRepresentation::Interleaved>;
