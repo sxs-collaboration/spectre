@@ -807,21 +807,21 @@ void MockDistributedObject<Component>::next_action_impl(
     // ```
     const auto invoke_this_action = make_overloader(
         [this](auto& my_box, std::integral_constant<size_t, 1> /*meta*/)
-            SPECTRE_JUST_ALWAYS_INLINE noexcept {
+            noexcept {
               std::tie(box_) = this_action::apply(
                   my_box, *inboxes_, *const_global_cache_,
                   cpp17::as_const(array_index_), actions_list{},
                   std::add_pointer_t<Component>{});
             },
         [this](auto& my_box, std::integral_constant<size_t, 2> /*meta*/)
-            SPECTRE_JUST_ALWAYS_INLINE noexcept {
+            noexcept {
               std::tie(box_, terminate_) = this_action::apply(
                   my_box, *inboxes_, *const_global_cache_,
                   cpp17::as_const(array_index_), actions_list{},
                   std::add_pointer_t<Component>{});
             },
         [this](auto& my_box, std::integral_constant<size_t, 3> /*meta*/)
-            SPECTRE_JUST_ALWAYS_INLINE noexcept {
+            noexcept {
               std::tie(box_, terminate_, algorithm_step_) = this_action::apply(
                   my_box, *inboxes_, *const_global_cache_,
                   cpp17::as_const(array_index_), actions_list{},

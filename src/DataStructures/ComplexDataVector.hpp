@@ -47,6 +47,13 @@
 class ComplexDataVector
     : public VectorImpl<std::complex<double>, ComplexDataVector> {
  public:
+  ComplexDataVector() = default;
+  ComplexDataVector(const ComplexDataVector&) = default;
+  ComplexDataVector(ComplexDataVector&&) = default;
+  ComplexDataVector& operator=(const ComplexDataVector&) = default;
+  ComplexDataVector& operator=(ComplexDataVector&&) = default;
+  ~ComplexDataVector() = default;
+
   using VectorImpl<std::complex<double>, ComplexDataVector>::operator=;
   using VectorImpl<std::complex<double>, ComplexDataVector>::VectorImpl;
 

@@ -39,6 +39,13 @@ class ModalVector;
 class ComplexModalVector
     : public VectorImpl<std::complex<double>, ComplexModalVector> {
  public:
+  ComplexModalVector() = default;
+  ComplexModalVector(const ComplexModalVector&) = default;
+  ComplexModalVector(ComplexModalVector&&) = default;
+  ComplexModalVector& operator=(const ComplexModalVector&) = default;
+  ComplexModalVector& operator=(ComplexModalVector&&) = default;
+  ~ComplexModalVector() = default;
+
   using VectorImpl<std::complex<double>, ComplexModalVector>::operator=;
   using VectorImpl<std::complex<double>, ComplexModalVector>::VectorImpl;
 

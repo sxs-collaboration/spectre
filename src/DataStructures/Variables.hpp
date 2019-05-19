@@ -343,9 +343,9 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all_v<
-                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
-                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+            Requires<tmpl2::flat_all<cpp17::is_same_v<
+                db::remove_all_prefixes<WrappedTags>,
+                db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator+(
       const Variables<tmpl::list<WrappedTags...>>& lhs,
       const Variables& rhs) noexcept {

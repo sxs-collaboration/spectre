@@ -38,6 +38,13 @@ class ModalVector;
  */
 class DiagonalModalOperator : public VectorImpl<double, DiagonalModalOperator> {
  public:
+  DiagonalModalOperator() = default;
+  DiagonalModalOperator(const DiagonalModalOperator&) = default;
+  DiagonalModalOperator(DiagonalModalOperator&&) = default;
+  DiagonalModalOperator& operator=(const DiagonalModalOperator&) = default;
+  DiagonalModalOperator& operator=(DiagonalModalOperator&&) = default;
+  ~DiagonalModalOperator() = default;
+
   using VectorImpl<double, DiagonalModalOperator>::operator=;
   using VectorImpl<double, DiagonalModalOperator>::VectorImpl;
 
