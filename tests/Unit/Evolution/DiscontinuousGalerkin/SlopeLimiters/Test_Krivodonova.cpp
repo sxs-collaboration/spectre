@@ -110,7 +110,7 @@ void test_package_data(const size_t order) noexcept {
 
 void test_limiting_two_neighbors() noexcept {
   INFO("Testing applying limiter to coefficients");
-  constexpr size_t dim = 1;
+  static constexpr size_t dim = 1;
   const size_t order = 3;
   const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);
@@ -250,7 +250,7 @@ void test_limiting_two_neighbors() noexcept {
 
 void test_limiting_different_values_different_tensors() noexcept {
   INFO("Testing different values for each tensor component");
-  constexpr size_t dim = 1;
+  static constexpr size_t dim = 1;
   const size_t order = 3;
   const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);
@@ -328,7 +328,7 @@ void run() noexcept {
 namespace test_2d {
 void test_package_data() noexcept {
   INFO("Testing package data");
-  constexpr size_t dim = 2;
+  static constexpr size_t dim = 2;
   const Mesh<dim> mesh({{2, 3}},
                        {{Spectral::Basis::Legendre, Spectral::Basis::Legendre}},
                        {{Spectral::Quadrature::GaussLobatto,
@@ -807,7 +807,7 @@ void test_limiting_0_1_coefficient(const F& helper) noexcept {
 
 void test_limiting_different_values_different_tensors() noexcept {
   INFO("Testing different values for each tensor component");
-  constexpr size_t dim = 2;
+  static constexpr size_t dim = 2;
   const size_t order = 2;  // Use only 3 coefficients because more is tedious...
   const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);
@@ -911,7 +911,7 @@ void run() noexcept {
   test_package_data();
 
   INFO("Testing applying limiter to coefficients");
-  constexpr size_t dim = 2;
+  static constexpr size_t dim = 2;
   const size_t order = 2;  // Use only 3 coefficients because more is tedious...
   const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);
@@ -991,7 +991,7 @@ void run() noexcept {
 namespace test_3d {
 void test_package_data() noexcept {
   INFO("Testing package data");
-  constexpr size_t dim = 3;
+  static constexpr size_t dim = 3;
   const Mesh<dim> mesh(
       {{2, 3, 4}},
       {{Spectral::Basis::Legendre, Spectral::Basis::Legendre,
@@ -2537,7 +2537,7 @@ void test_limiting_0_1_2_coefficient_permutations(const F& helper) noexcept {
 
 void test_limiting_different_values_different_tensors() noexcept {
   INFO("Testing different values for each tensor component");
-  constexpr size_t dim = 3;
+  static constexpr size_t dim = 3;
   const size_t order = 2;  // Use only 3 coefficients because more is tedious...
   const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);
@@ -2769,7 +2769,7 @@ void run() noexcept {
   test_package_data();
 
   INFO("Testing applying limiter to coefficients");
-  constexpr size_t dim = 3;
+  static constexpr size_t dim = 3;
   const size_t order = 2;  // Use only 3 coefficients because more is tedious...
   const Mesh<dim> mesh(order + 1, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);
