@@ -494,14 +494,6 @@
  */
 
 /*!
- * \defgroup OptionTagsGroup Input File Options
- * \brief Tags used for options parsed from the input file.
- *
- * These can be stored in the ConstGlobalCache or passed to the `initialize`
- * function of a parallel component.
- */
-
-/*!
  * \defgroup LinearSolverGroup  Linear Solver
  * \brief Algorithms to solve linear systems of equations
  *
@@ -568,8 +560,32 @@
  */
 
 /*!
+ * \defgroup OptionGroupsGroup Option Groups
+ * \brief Tags used for grouping input file options.
+ *
+ * An \ref OptionTagsGroup "option tag" can be placed in a group with other
+ * option tags to give the input file more structure. To assign a group to an
+ * option tag, set its `group` type alias to a struct that provides a help
+ * string and may override a static `name()` function:
+ *
+ * \snippet Test_Options.cpp options_example_group
+ *
+ * A number of commonly used groups are listed here.
+ *
+ * See also the \ref dev_guide_option_parsing "option parsing guide".
+ */
+
+/*!
  * \defgroup OptionParsingGroup Option Parsing
  * Things related to parsing YAML input files.
+ */
+
+/*!
+ * \defgroup OptionTagsGroup Option Tags
+ * \brief Tags used for options parsed from the input file.
+ *
+ * These can be stored in the ConstGlobalCache or passed to the `initialize`
+ * function of a parallel component.
  */
 
 /*!
