@@ -41,7 +41,6 @@ struct UpdateConservatives {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    using system = typename Metavariables::system;
     db::mutate_apply<
         typename Metavariables::system::conservative_from_primitive>(
         make_not_null(&box));
