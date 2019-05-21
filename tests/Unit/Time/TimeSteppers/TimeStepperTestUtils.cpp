@@ -38,12 +38,12 @@ void take_step(
        substep < stepper.number_of_substeps();
        ++substep) {
     CHECK(time_id.substep() == substep);
-    history->insert(time_id.time(), *y, rhs(*y));
+    history->insert(time_id.substep_time(), *y, rhs(*y));
     stepper.update_u(y, history, step_size);
     time_id = stepper.next_time_id(time_id, step_size);
   }
-  CHECK(time_id.time() - *time == step_size);
-  *time = time_id.time();
+  CHECK(time_id.substep_time() - *time == step_size);
+  *time = time_id.substep_time();
 }
 
 template <typename F1, typename F2>
@@ -205,12 +205,12 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
   const TimeDelta step_size = (forward ? 1 : -1) * slab.duration() / num_steps;
 
   TimeId time_id(forward, 0, forward ? slab.start() : slab.end());
-  double y = analytic(time_id.time().value());
+  double y = analytic(time_id.substep_time().value());
   TimeSteppers::History<double, double> volume_history;
   TimeSteppers::BoundaryHistory<double, double, double> boundary_history;
 
   {
-    Time history_time = time_id.time();
+    Time history_time = time_id.substep_time();
     TimeDelta history_step_size = step_size;
     for (size_t j = 0; j < number_of_past_steps; ++j) {
       ASSERT(history_time.slab() == history_step_size.slab(), "Slab mismatch");
@@ -237,9 +237,10 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
     for (uint64_t substep = 0;
          substep < stepper.number_of_substeps();
          ++substep) {
-      volume_history.insert(time_id.time(), y, 0.);
+      volume_history.insert(time_id.substep_time(), y, 0.);
       boundary_history.local_insert(time_id, unused_local_deriv);
-      boundary_history.remote_insert(time_id, driver(time_id.time().value()));
+      boundary_history.remote_insert(time_id,
+                                     driver(time_id.substep_time().value()));
 
       stepper.update_u(make_not_null(&y), make_not_null(&volume_history),
                        step_size);
@@ -247,7 +248,7 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
           coupling, make_not_null(&boundary_history), step_size);
       time_id = stepper.next_time_id(time_id, step_size);
     }
-    CHECK(y == approx(analytic(time_id.time().value())));
+    CHECK(y == approx(analytic(time_id.substep_time().value())));
   }
   // Make sure history is being cleaned up.  The limit of 20 is
   // arbitrary, but much larger than the order of any integrators we
@@ -290,21 +291,22 @@ void check_dense_output(const TimeStepper& stepper,
     TimeId time_id(true, 0, step_size.slab().start());
     double y = 1.;
     TimeSteppers::History<double, double> history;
-    initialize_history(time_id.time(), &history,
+    initialize_history(time_id.substep_time(), &history,
                        [](double t) { return exp(t); },
                        [](double v) { return v; }, step_size,
                        stepper.number_of_past_steps());
     for (;;) {
       // Dense output is done after the last substep
       const auto next_time_id = stepper.next_time_id(time_id, step_size);
-      history.insert(time_id.time(), y, static_cast<double>(y));
-      if (next_time_id.substep() == 0 and time < next_time_id.time().value()) {
+      history.insert(time_id.substep_time(), y, static_cast<double>(y));
+      if (next_time_id.substep() == 0 and
+          time < next_time_id.step_time().value()) {
         stepper.dense_update_u(make_not_null(&y), history, time);
         return y;
       }
       stepper.update_u(make_not_null(&y), make_not_null(&history), step_size);
       time_id = next_time_id;
-      step_size = step_size.with_slab(time_id.time().slab());
+      step_size = step_size.with_slab(time_id.substep_time().slab());
     }
   };
 

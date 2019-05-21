@@ -89,7 +89,7 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
           runner, 0);
   const auto& final_time_id = db::get<Tags::TimeId>(box);
   const auto expected_slab = start.slab().advance_towards(time_step);
-  CHECK(final_time_id.time().slab() == expected_slab);
+  CHECK(final_time_id.step_time().slab() == expected_slab);
   CHECK(final_time_id ==
         TimeId(time_step.is_positive(), 8, start + 2 * time_step));
   CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab));
@@ -121,7 +121,7 @@ void check_abn(const Time& start, const TimeDelta& time_step) {
           runner, 0);
   const auto& final_time_id = db::get<Tags::TimeId>(box);
   const auto expected_slab = start.slab().advance_towards(time_step);
-  CHECK(final_time_id.time().slab() == expected_slab);
+  CHECK(final_time_id.step_time().slab() == expected_slab);
   CHECK(final_time_id ==
         TimeId(time_step.is_positive(), 8, start + 2 * time_step));
   CHECK(db::get<Tags::TimeStep>(box) == time_step.with_slab(expected_slab));

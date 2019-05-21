@@ -183,7 +183,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   CHECK(runner.is_simple_action_queue_empty<elem_component>(array_index));
 
   const auto& results = MockInterpolatorReceiveVolumeData::results;
-  CHECK(results.temporal_id.time().value() == observation_time);
+  CHECK(results.temporal_id.substep_time().value() == observation_time);
   CHECK(results.element_id == element_id);
   CHECK(results.mesh == mesh);
   CHECK(results.vars == vars);

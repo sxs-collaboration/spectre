@@ -296,7 +296,7 @@ struct CheckForOrderIncrease {
           [](const gsl::not_null<db::item_type<::Tags::Next<::Tags::TimeId>>*>
                  next_time_id,
              const db::item_type<::Tags::TimeId>& current_time_id) noexcept {
-            const Slab slab = current_time_id.time().slab();
+            const Slab slab = current_time_id.step_time().slab();
             *next_time_id =
                 TimeId(current_time_id.time_runs_forward(),
                        current_time_id.slab_number() + 1,

@@ -43,9 +43,9 @@ void check(const bool time_runs_forward) noexcept {
   CHECK(TimeId(time_runs_forward, 4, end).is_at_slab_boundary());
 
   CHECK(TimeId(time_runs_forward, 5, start).slab_number() == 5);
-  CHECK(TimeId(time_runs_forward, 5, start).time().slab() == slab);
+  CHECK(TimeId(time_runs_forward, 5, start).substep_time().slab() == slab);
   CHECK(TimeId(time_runs_forward, 5, end).slab_number() == 6);
-  CHECK(TimeId(time_runs_forward, 5, end).time().slab() ==
+  CHECK(TimeId(time_runs_forward, 5, end).substep_time().slab() ==
         slab.advance_towards(step));
 
   const TimeId id(time_runs_forward, 4, start + step / 3, 2, start + step / 2);
@@ -54,14 +54,16 @@ void check(const bool time_runs_forward) noexcept {
   CHECK_FALSE(id != id);
   CHECK(id == TimeId(id));
 
-  const auto check_comparisons =
-      [&id](const int64_t slab_delta, const TimeDelta& step_time_delta,
-            const int64_t substep_delta, const TimeDelta& time_delta) noexcept {
+  const auto check_comparisons = [&id](
+      const int64_t slab_delta,
+      const TimeDelta& step_time_delta,
+      const int64_t substep_delta,
+      const TimeDelta& substep_time_delta) noexcept {
     const TimeId id2(id.time_runs_forward(),
                      id.slab_number() + slab_delta,
                      id.step_time() + step_time_delta,
                      id.substep() + static_cast<uint64_t>(substep_delta),
-                     id.time() + time_delta);
+                     id.substep_time() + substep_time_delta);
     check_cmp(id, id2);
     CHECK(Hash{}(id) != Hash{}(id2));
   };
@@ -79,8 +81,8 @@ void check(const bool time_runs_forward) noexcept {
 
   test_serialization(id);
 
-  CHECK(get_output(id) ==
-        "4:" + get_output(id.step_time()) + ":2:" + get_output(id.time()));
+  CHECK(get_output(id) == "4:" + get_output(id.step_time()) +
+                              ":2:" + get_output(id.substep_time()));
 }
 }  // namespace
 

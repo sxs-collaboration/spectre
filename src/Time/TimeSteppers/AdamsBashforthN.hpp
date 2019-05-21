@@ -695,7 +695,7 @@ bool AdamsBashforthN::can_change_step_size(
   // "real" values.
   const evolution_less<Time> less{time_id.time_runs_forward()};
   return history.size() == 0 or
-         (less(history.back(), time_id.time()) and
+         (less(history.back(), time_id.step_time()) and
           std::is_sorted(history.begin(), history.end(), less));
 }
 

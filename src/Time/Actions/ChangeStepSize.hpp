@@ -91,7 +91,7 @@ struct ChangeStepSize {
     }
 
     const auto new_step =
-        step_controller.choose_step(time_id.time(), desired_step);
+        step_controller.choose_step(time_id.step_time(), desired_step);
     if (new_step != current_step) {
       const auto new_next_time_id =
           time_stepper.next_time_id(time_id, new_step);

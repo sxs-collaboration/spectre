@@ -49,7 +49,9 @@ struct TimeStep : db::SimpleTag {
 /// \brief Tag for compute item for ::Time of the current substep (from TimeId)
 struct SubstepTime : db::ComputeTag {
   static std::string name() noexcept { return "SubstepTime"; }
-  static auto function(const ::TimeId& id) noexcept { return id.time(); }
+  static auto function(const ::TimeId& id) noexcept {
+    return id.substep_time();
+  }
   using argument_tags = tmpl::list<TimeId>;
 };
 

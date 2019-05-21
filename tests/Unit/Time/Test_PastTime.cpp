@@ -43,7 +43,7 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.PastTime", "[Unit][Time]") {
         make_not_null(&box), [](const gsl::not_null<TimeId*> time_id) noexcept {
           *time_id =
               TimeId(time_id->time_runs_forward(), time_id->slab_number(),
-                     time_id->time(), 1, time_id->time());
+                     time_id->step_time(), 1, time_id->step_time());
         });
     CHECK_FALSE(sent_trigger->is_triggered(box));
   };

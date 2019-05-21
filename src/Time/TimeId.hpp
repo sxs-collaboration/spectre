@@ -34,20 +34,20 @@ class TimeId {
         slab_number_(slab_number),
         step_time_(time),
         substep_(0),
-        time_(time) {
+        substep_time_(time) {
     canonicalize();
   }
-  /// Create a TimeId at a substep at time `time` in a step starting
-  /// at time `step_time`.
+  /// Create a TimeId at a substep at time `substep_time` in a step
+  /// starting at time `step_time`.
   TimeId(const bool time_runs_forward, const int64_t slab_number,
          const Time& step_time, const uint64_t substep,
-         const Time& time) noexcept
+         const Time& substep_time) noexcept
       : time_runs_forward_(time_runs_forward),
         slab_number_(slab_number),
         step_time_(step_time),
         substep_(substep),
-        time_(time) {
-    ASSERT(substep_ != 0 or step_time_ == time_,
+        substep_time_(substep_time) {
+    ASSERT(substep_ != 0 or step_time_ == substep_time_,
            "Initial substep must align with the step.");
     canonicalize();
   }
@@ -58,10 +58,10 @@ class TimeId {
   const Time& step_time() const noexcept { return step_time_; }
   uint64_t substep() const noexcept { return substep_; }
   /// Time of the current substep
-  const Time& time() const noexcept { return time_; }
+  const Time& substep_time() const noexcept { return substep_time_; }
 
   bool is_at_slab_boundary() const noexcept {
-    return substep_ == 0 and time_.is_at_slab_boundary();
+    return substep_ == 0 and substep_time_.is_at_slab_boundary();
   }
 
   // clang-tidy: google-runtime-references
@@ -74,7 +74,7 @@ class TimeId {
   int64_t slab_number_{0};
   Time step_time_{};
   uint64_t substep_{0};
-  Time time_{};
+  Time substep_time_{};
 };
 
 bool operator==(const TimeId& a, const TimeId& b) noexcept;

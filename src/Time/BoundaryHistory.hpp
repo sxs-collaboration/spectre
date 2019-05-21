@@ -50,10 +50,10 @@ class BoundaryHistory {
   /// Add a new value to the end of the history of the indicated side.
   //@{
   void local_insert(const TimeId& time_id, LocalVars vars) noexcept {
-    local_data_.emplace_back(time_id.time(), std::move(vars));
+    local_data_.emplace_back(time_id.substep_time(), std::move(vars));
   }
   void remote_insert(const TimeId& time_id, RemoteVars vars) noexcept {
-    remote_data_.emplace_back(time_id.time(), std::move(vars));
+    remote_data_.emplace_back(time_id.substep_time(), std::move(vars));
   }
   //@}
 
@@ -61,10 +61,10 @@ class BoundaryHistory {
   /// side.  This is often convenient for setting initial data.
   //@{
   void local_insert_initial(const TimeId& time_id, LocalVars vars) noexcept {
-    local_data_.emplace_front(time_id.time(), std::move(vars));
+    local_data_.emplace_front(time_id.substep_time(), std::move(vars));
   }
   void remote_insert_initial(const TimeId& time_id, RemoteVars vars) noexcept {
-    remote_data_.emplace_front(time_id.time(), std::move(vars));
+    remote_data_.emplace_front(time_id.substep_time(), std::move(vars));
   }
   //@}
 

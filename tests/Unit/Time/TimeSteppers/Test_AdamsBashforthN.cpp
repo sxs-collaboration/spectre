@@ -405,7 +405,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Reversal",
   const Slab slab(0., 1.);
   TimeSteppers::BoundaryHistory<double, double, double> history{};
   const auto add_history = [&df, &history](const TimeId& time_id) noexcept {
-    history.local_insert(time_id, df(time_id.time().value()));
+    history.local_insert(time_id, df(time_id.step_time().value()));
     history.remote_insert(time_id, 0.);
   };
   add_history(TimeId(true, 0, slab.start()));

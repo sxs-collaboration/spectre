@@ -303,7 +303,7 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
         const auto next_time =
             ActionTesting::get_databox_tag<Component<Metavariables<>>,
                                            Tags::Next<Tags::TimeId>>(runner, 0)
-                .time();
+                .step_time();
         CHECK((next_time == initial_time) == last_point);
       }
       {

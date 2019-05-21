@@ -15,11 +15,11 @@ void TimeId::canonicalize() noexcept {
                          : step_time_.is_at_slab_start()) {
     ASSERT(substep_ == 0,
            "Time needs to be advanced, but step already started");
-    const Slab new_slab =
-        time_runs_forward_ ? time_.slab().advance() : time_.slab().retreat();
+    const Slab new_slab = time_runs_forward_ ? substep_time_.slab().advance()
+                                             : substep_time_.slab().retreat();
     ++slab_number_;
-    time_ = time_.with_slab(new_slab);
-    step_time_ = time_;
+    substep_time_ = substep_time_.with_slab(new_slab);
+    step_time_ = substep_time_;
   }
 }
 
@@ -28,7 +28,7 @@ void TimeId::pup(PUP::er& p) noexcept {
   p | slab_number_;
   p | step_time_;
   p | substep_;
-  p | time_;
+  p | substep_time_;
 }
 
 bool operator==(const TimeId& a, const TimeId& b) noexcept {
@@ -40,7 +40,7 @@ bool operator==(const TimeId& a, const TimeId& b) noexcept {
   // This could happen if we have a local-time-stepping substep
   // method.  If we implement any of those the comparison operators
   // for TimeId will have to be revisited.
-  ASSERT(not equal or a.time() == b.time(),
+  ASSERT(not equal or a.substep_time() == b.substep_time(),
          "IDs at same step and substep but different times");
   return equal;
 }
@@ -70,7 +70,7 @@ bool operator>=(const TimeId& a, const TimeId& b) noexcept {
 
 std::ostream& operator<<(std::ostream& s, const TimeId& id) noexcept {
   return s << id.slab_number() << ':' << id.step_time() << ':' << id.substep()
-           << ':' << id.time();
+           << ':' << id.substep_time();
 }
 
 size_t hash_value(const TimeId& id) noexcept {
@@ -78,7 +78,7 @@ size_t hash_value(const TimeId& id) noexcept {
   boost::hash_combine(h, id.slab_number());
   boost::hash_combine(h, id.step_time());
   boost::hash_combine(h, id.substep());
-  boost::hash_combine(h, id.time());
+  boost::hash_combine(h, id.substep_time());
   return h;
 }
 

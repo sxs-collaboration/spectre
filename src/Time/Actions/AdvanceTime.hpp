@@ -57,7 +57,7 @@ struct AdvanceTime {
           const auto& time_stepper =
               Parallel::get<Tags::TimeStepperBase>(cache);
           *time_id = *next_time_id;
-          *time_step = time_step->with_slab(time_id->time().slab());
+          *time_step = time_step->with_slab(time_id->step_time().slab());
           *next_time_id = time_stepper.next_time_id(*next_time_id, *time_step);
         });
 
