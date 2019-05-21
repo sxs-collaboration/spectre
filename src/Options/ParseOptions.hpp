@@ -419,6 +419,11 @@ struct get_impl {
         "Could not find requested option in the list of options provided. Did "
         "you forget to add the option tag to the OptionList?");
     const std::string subgroup_label = name<Subgroup>();
+    if (0 == opts.parsed_options_.count(subgroup_label)) {
+      PARSE_ERROR(opts.context_, "You did not specify the group '"
+                                     << subgroup_label << "'.\n"
+                                     << opts.help());
+    }
     Options<options_in_group<OptionList, Subgroup>, Subgroup> subgroup_options(
         Subgroup::help);
     subgroup_options.context_ = opts.context_;

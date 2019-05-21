@@ -1,0 +1,18 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+LinearOperator: [[4, 1], [1, 3]]
+Source: [1, 2]
+InitialGuess: [2, 1]
+ExpectedResult: [0.0909090909090909, 0.6363636363636364]
+
+Observers:
+  VolumeFileName: "Test_ConjugateGradientAlgorithm_Volume"
+  ReductionFileName: "Test_ConjugateGradientAlgorithm_Reductions"
+
+LinearSolver:
+  ConvergenceCriteria:
+    MaxIterations: 2
+    AbsoluteResidual: 1e-14
+    RelativeResidual: 0
+  Verbosity: Verbose

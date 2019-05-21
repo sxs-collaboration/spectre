@@ -4,8 +4,10 @@
 # Executable: EvolveValenciaDivCleanAnalyticData
 # Check: execute
 
-InitialTime: 0.0
-InitialTimeStep: 0.01
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper: RungeKutta3
 
 DomainCreator:
   Brick:
@@ -25,8 +27,6 @@ AnalyticData:
   MagneticField: [0.1, 0.0, 0.0]
   AdiabaticIndex: 1.3333333333333333333
 
-TimeStepper: RungeKutta3
-
 NumericalFluxParams:
 
 DampingParameter: 0.0
@@ -35,18 +35,19 @@ SlopeLimiterParams:
   Type: Muscl
   TvbmConstant: 0
 
-FixConservatives:
-  CutoffD: 1.0e-12
-  MinimumValueOfD: 1.0e-12
-  SafetyFactorForB: 1.0e-12
-  SafetyFactorForS: 1.0e-12
+VariableFixing:
+  FixConservatives:
+    CutoffD: 1.0e-12
+    MinimumValueOfD: 1.0e-12
+    SafetyFactorForB: 1.0e-12
+    SafetyFactorForS: 1.0e-12
+  FixToAtmosphere:
+    DensityOfAtmosphere: 1.0e-12
+    DensityCutoff: 1.0e-12
 
-FixToAtmosphere:
-  DensityOfAtmosphere: 1.0e-12
-  DensityCutoff: 1.0e-12
-
-VolumeFileName: "./GrMhdVolume"
-ReductionFileName: "./GrMhdReductions"
+Observers:
+  VolumeFileName: "GrMhdBlastWaveVolume"
+  ReductionFileName: "GrMhdBlastWaveReductions"
 
 EventsAndTriggers:
   ? SpecifiedSlabs:

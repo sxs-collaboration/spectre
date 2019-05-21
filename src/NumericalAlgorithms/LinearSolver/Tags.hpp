@@ -13,10 +13,19 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DenseMatrix.hpp"
+#include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+/// \cond
+namespace LinearSolver {
+namespace OptionTags {
+struct ConvergenceCriteria;
+}  // namespace OptionTags
+}  // namespace LinearSolver
+/// \endcond
 
 /*!
  * \ingroup LinearSolverGroup
@@ -187,8 +196,63 @@ struct KrylovSubspaceBasis : db::PrefixTag, db::SimpleTag {
 };
 
 /*!
- * \brief `LinearSolver::ConvergenceCriteria` that determine the linear solve
- * has converged
+ * \brief Holds a `Convergence::HasConverged` flag that signals the linear
+ * solver has converged, along with the reason for convergence.
+ */
+struct HasConverged : db::SimpleTag {
+  static std::string name() noexcept { return "LinearSolverHasConverged"; }
+  using type = Convergence::HasConverged;
+};
+
+/*
+ * \brief Employs the `LinearSolver::OptionTags::ConvergenceCriteria` to
+ * determine the linear solver has converged.
+ */
+template <typename FieldsTag>
+struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
+ private:
+  using residual_magnitude_tag = db::add_tag_prefix<
+      LinearSolver::Tags::Magnitude,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>>;
+  using initial_residual_magnitude_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
+
+ public:
+  using argument_tags =
+      tmpl::list<LinearSolver::OptionTags::ConvergenceCriteria,
+                 LinearSolver::Tags::IterationId, residual_magnitude_tag,
+                 initial_residual_magnitude_tag>;
+  static db::item_type<LinearSolver::Tags::HasConverged> function(
+      const Convergence::Criteria& convergence_criteria,
+      const size_t& iteration_id, const double& residual_magnitude,
+      const double& initial_residual_magnitude) noexcept {
+    return Convergence::HasConverged(convergence_criteria, iteration_id,
+                                     residual_magnitude,
+                                     initial_residual_magnitude);
+  }
+};
+
+}  // namespace Tags
+
+/*!
+ * \ingroup LinearSolverGroup
+ * \brief Option tags related to the iterative linear solver
+ */
+namespace OptionTags {
+
+/*!
+ * \ingroup OptionGroupsGroup
+ * \brief Groups option tags related to the iterative linear solver, e.g.
+ * convergence criteria.
+ */
+struct Group {
+  static std::string name() noexcept { return "LinearSolver"; }
+  static constexpr OptionString help =
+      "Options for the iterative linear solver";
+};
+
+/*!
+ * \brief `Convergence::Criteria` that determine the linear solve has converged
  *
  * \note The smallest possible residual magnitude the linear solver can reach is
  * the product between the machine epsilon and the condition number of the
@@ -208,48 +272,22 @@ struct KrylovSubspaceBasis : db::PrefixTag, db::SimpleTag {
  * based on an estimate of the discretization residual.
  */
 struct ConvergenceCriteria : db::SimpleTag {
-  static std::string name() noexcept { return "ConvergenceCriteria"; }
   static constexpr OptionString help =
-      "Criteria that determine the linear solve has converged";
+      "Determine convergence of the linear solve";
   using type = Convergence::Criteria;
+  using group = Group;
+  // We need a `name()` so that this can be placed in the DataBox. Can be
+  // removed once we can retrieve cache tags through the DataBox.
+  static std::string name() noexcept { return "ConvergenceCriteria"; }
 };
 
-/*!
- * \brief Holds a `Convergence::HasConverged` flag that signals the linear
- * solver has converged, along with the reason for convergence.
- */
-struct HasConverged : db::SimpleTag {
-  static std::string name() noexcept { return "LinearSolverHasConverged"; }
-  using type = Convergence::HasConverged;
+struct Verbosity {
+  using type = ::Verbosity;
+  static constexpr OptionString help = "Logging verbosity";
+  using group = Group;
+  static type default_value() { return ::Verbosity::Quiet; }
 };
 
-/*
- * \brief Employs the `LinearSolver::Tags::ConvergenceCriteria` to determine the
- * linear solver has converged.
- */
-template <typename FieldsTag>
-struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
- private:
-  using residual_magnitude_tag = db::add_tag_prefix<
-      LinearSolver::Tags::Magnitude,
-      db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>>;
-  using initial_residual_magnitude_tag =
-      db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
+}  // namespace OptionTags
 
- public:
-  using argument_tags =
-      tmpl::list<LinearSolver::Tags::ConvergenceCriteria,
-                 LinearSolver::Tags::IterationId, residual_magnitude_tag,
-                 initial_residual_magnitude_tag>;
-  static db::item_type<LinearSolver::Tags::HasConverged> function(
-      const Convergence::Criteria& convergence_criteria,
-      const size_t& iteration_id, const double& residual_magnitude,
-      const double& initial_residual_magnitude) noexcept {
-    return Convergence::HasConverged(convergence_criteria, iteration_id,
-                                     residual_magnitude,
-                                     initial_residual_magnitude);
-  }
-};
-
-}  // namespace Tags
 }  // namespace LinearSolver

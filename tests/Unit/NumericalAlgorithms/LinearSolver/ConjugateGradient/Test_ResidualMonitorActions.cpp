@@ -79,7 +79,9 @@ struct MockResidualMonitor {
   // testing framework
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list =
+      typename LinearSolver::cg_detail::ResidualMonitor<
+          Metavariables>::const_global_cache_tag_list;
   using action_list = tmpl::list<>;
   using initial_databox =
       db::compute_databox_type<residual_monitor_tags<Metavariables>>;
@@ -177,6 +179,7 @@ struct Metavariables {
                                     MockObserverWriter<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
+  enum class Phase {};
 };
 }  // namespace
 
@@ -187,6 +190,7 @@ SPECTRE_TEST_CASE(
   MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
 
   // Setup mock residual monitor
+  const Convergence::Criteria convergence_criteria{2, 0., 0.5};
   using MockSingletonObjectsTag = MockRuntimeSystem::MockDistributedObjectsTag<
       MockResidualMonitor<Metavariables>>;
   const int singleton_id{0};
@@ -197,7 +201,7 @@ SPECTRE_TEST_CASE(
                        Metavariables>::simple_tags,
                    typename LinearSolver::cg_detail::InitializeResidualMonitor<
                        Metavariables>::compute_tags>(
-                   Verbosity::Verbose, Convergence::Criteria{2, 0., 0.5}, 0_st,
+                   convergence_criteria, 0_st,
                    std::numeric_limits<double>::signaling_NaN(),
                    std::numeric_limits<double>::signaling_NaN()));
 
@@ -222,7 +226,8 @@ SPECTRE_TEST_CASE(
                    std::tuple<size_t, double>{
                        0, std::numeric_limits<double>::signaling_NaN()}));
 
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
+  MockRuntimeSystem runner{{::Verbosity::Verbose, convergence_criteria},
+                           std::move(dist_objects)};
 
   // DataBox shortcuts
   const auto get_box = [&runner, &singleton_id]() -> decltype(auto) {
