@@ -6,11 +6,11 @@
 #include <array>
 #include <boost/functional/hash.hpp>
 #include <cstdlib>
+#include <functional>
 #include <limits>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -20,12 +20,10 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"
-#include "Domain/Element.hpp"
+#include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
-#include "Domain/Neighbors.hpp"
-#include "Domain/OrientationMap.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodTci.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
@@ -36,6 +34,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/Evolution/DiscontinuousGalerkin/SlopeLimiters/TestHelpers.hpp"
 
 namespace {
 
@@ -69,49 +68,6 @@ bool wrap_allocations_and_tci(
       make_not_null(&boundary_buffer), minmod_type, tvbm_constant, u, element,
       mesh, element_size, effective_neighbor_means, effective_neighbor_sizes,
       volume_and_slice_indices);
-}
-
-template <size_t VolumeDim>
-Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) noexcept {
-  return {std::unordered_set<ElementId<VolumeDim>>{ElementId<VolumeDim>(id)},
-          OrientationMap<VolumeDim>{}};
-}
-
-// Construct an element with one neighbor in each direction.
-template <size_t VolumeDim>
-Element<VolumeDim> make_element() noexcept;
-
-template <>
-Element<1> make_element() noexcept {
-  return Element<1>{
-      ElementId<1>{0},
-      Element<1>::Neighbors_t{
-          {Direction<1>::lower_xi(), make_neighbor_with_id<1>(1)},
-          {Direction<1>::upper_xi(), make_neighbor_with_id<1>(2)}}};
-}
-
-template <>
-Element<2> make_element() noexcept {
-  return Element<2>{
-      ElementId<2>{0},
-      Element<2>::Neighbors_t{
-          {Direction<2>::lower_xi(), make_neighbor_with_id<2>(1)},
-          {Direction<2>::upper_xi(), make_neighbor_with_id<2>(2)},
-          {Direction<2>::lower_eta(), make_neighbor_with_id<2>(3)},
-          {Direction<2>::upper_eta(), make_neighbor_with_id<2>(4)}}};
-}
-
-template <>
-Element<3> make_element() noexcept {
-  return Element<3>{
-      ElementId<3>{0},
-      Element<3>::Neighbors_t{
-          {Direction<3>::lower_xi(), make_neighbor_with_id<3>(1)},
-          {Direction<3>::upper_xi(), make_neighbor_with_id<3>(2)},
-          {Direction<3>::lower_eta(), make_neighbor_with_id<3>(3)},
-          {Direction<3>::upper_eta(), make_neighbor_with_id<3>(4)},
-          {Direction<3>::lower_zeta(), make_neighbor_with_id<3>(5)},
-          {Direction<3>::upper_zeta(), make_neighbor_with_id<3>(6)}}};
 }
 
 auto make_two_neighbors(const double left, const double right) noexcept {
@@ -193,7 +149,7 @@ void test_tci_on_linear_function(
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
   const double tvbm_constant = 0.0;
-  const auto element = make_element<1>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<1>(2.0);
@@ -286,7 +242,7 @@ void test_tci_on_quadratic_function(
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
   const double tvbm_constant = 0.0;
-  const auto element = make_element<1>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<1>(2.0);
@@ -349,7 +305,7 @@ void test_tci_with_tvbm_correction(
   INFO("Testing TVBM correction...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
-  const auto element = make_element<1>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<1>(2.0);
@@ -405,7 +361,7 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
     const size_t number_of_grid_points) noexcept {
   INFO("Testing LambdaPiN-TVBM correction...");
   CAPTURE(number_of_grid_points);
-  const auto element = make_element<1>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
@@ -490,10 +446,8 @@ void test_tci_at_boundary(
   ();
 
   // Test with element that has external lower-xi boundary
-  // Neighbor on upper-xi side has ElementId == 2
-  const auto element_at_lower_xi_boundary = Element<1>{
-      ElementId<1>{0}, Element<1>::Neighbors_t{{Direction<1>::upper_xi(),
-                                                make_neighbor_with_id<1>(2)}}};
+  const auto element_at_lower_xi_boundary =
+      TestHelpers::SlopeLimiters::make_element<1>({{Direction<1>::lower_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
     test_minmod_tci_activates(
         minmod_type, tvbm_constant, input, element_at_lower_xi_boundary, mesh,
@@ -503,10 +457,8 @@ void test_tci_at_boundary(
   }
 
   // Test with element that has external upper-xi boundary
-  // Neighbor on lower-xi side has ElementId == 1
-  const auto element_at_upper_xi_boundary = Element<1>{
-      ElementId<1>{0}, Element<1>::Neighbors_t{{Direction<1>::lower_xi(),
-                                                make_neighbor_with_id<1>(1)}}};
+  const auto element_at_upper_xi_boundary =
+      TestHelpers::SlopeLimiters::make_element<1>({{Direction<1>::upper_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
     test_minmod_tci_activates(
         minmod_type, tvbm_constant, input, element_at_upper_xi_boundary, mesh,
@@ -523,7 +475,7 @@ void test_tci_with_different_size_neighbor(
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
   const double tvbm_constant = 0.0;
-  const auto element = make_element<1>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const double dx = 1.0;
@@ -618,7 +570,7 @@ void test_minmod_tci_2d() noexcept {
   INFO("Testing MinmodTci in 2D");
   const auto minmod_type = SlopeLimiters::MinmodType::LambdaPi1;
   const double tvbm_constant = 0.0;
-  const auto element = make_element<2>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<2>();
   const Mesh<2> mesh(3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<2>(2.0);
@@ -674,7 +626,7 @@ void test_minmod_tci_3d() noexcept {
   INFO("Testing MinmodTci in 3D");
   const auto minmod_type = SlopeLimiters::MinmodType::LambdaPi1;
   const double tvbm_constant = 0.0;
-  const auto element = make_element<3>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<3>();
   const Mesh<3> mesh(3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<3>(2.0);
@@ -748,7 +700,7 @@ void test_minmod_tci_several_tensors() noexcept {
   // we do by limiting a scalar and vector in 3D
   const auto minmod_type = SlopeLimiters::MinmodType::LambdaPi1;
   const double tvbm_constant = 0.0;
-  const auto element = make_element<3>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<3>();
   const size_t number_of_grid_points = 2;
   const Mesh<3> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);

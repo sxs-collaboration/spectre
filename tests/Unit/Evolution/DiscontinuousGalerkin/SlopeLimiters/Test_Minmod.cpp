@@ -34,6 +34,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/Evolution/DiscontinuousGalerkin/SlopeLimiters/TestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -90,49 +91,6 @@ void test_minmod_serialization() noexcept {
   test_serialization(minmod);
 }
 
-template <size_t VolumeDim>
-Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) noexcept {
-  return {std::unordered_set<ElementId<VolumeDim>>{ElementId<VolumeDim>(id)},
-          OrientationMap<VolumeDim>{}};
-}
-
-// Construct an element with one neighbor in each direction.
-template <size_t VolumeDim>
-Element<VolumeDim> make_element() noexcept;
-
-template <>
-Element<1> make_element() noexcept {
-  return Element<1>{
-      ElementId<1>{0},
-      Element<1>::Neighbors_t{
-          {Direction<1>::lower_xi(), make_neighbor_with_id<1>(1)},
-          {Direction<1>::upper_xi(), make_neighbor_with_id<1>(2)}}};
-}
-
-template <>
-Element<2> make_element() noexcept {
-  return Element<2>{
-      ElementId<2>{0},
-      Element<2>::Neighbors_t{
-          {Direction<2>::lower_xi(), make_neighbor_with_id<2>(1)},
-          {Direction<2>::upper_xi(), make_neighbor_with_id<2>(2)},
-          {Direction<2>::lower_eta(), make_neighbor_with_id<2>(3)},
-          {Direction<2>::upper_eta(), make_neighbor_with_id<2>(4)}}};
-}
-
-template <>
-Element<3> make_element() noexcept {
-  return Element<3>{
-      ElementId<3>{0},
-      Element<3>::Neighbors_t{
-          {Direction<3>::lower_xi(), make_neighbor_with_id<3>(1)},
-          {Direction<3>::upper_xi(), make_neighbor_with_id<3>(2)},
-          {Direction<3>::lower_eta(), make_neighbor_with_id<3>(3)},
-          {Direction<3>::upper_eta(), make_neighbor_with_id<3>(4)},
-          {Direction<3>::lower_zeta(), make_neighbor_with_id<3>(5)},
-          {Direction<3>::upper_zeta(), make_neighbor_with_id<3>(6)}}};
-}
-
 // Test that the limiter activates in the x-direction only. Domain quantities
 // and input Scalar may be of higher dimension VolumeDim.
 template <size_t VolumeDim>
@@ -173,7 +131,8 @@ void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
           {Direction<2>::lower_xi(),
            {std::unordered_set<ElementId<2>>{ElementId<2>(1), ElementId<2>(7)},
             OrientationMap<2>{}}},
-          {Direction<2>::upper_xi(), make_neighbor_with_id<2>(2)}}};
+          {Direction<2>::upper_xi(),
+           TestHelpers::SlopeLimiters::make_neighbor_with_id<2>(2)}}};
   const auto mesh =
       Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
@@ -232,7 +191,8 @@ void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
   const auto element = Element<3>{
       ElementId<3>{0},
       Element<3>::Neighbors_t{
-          {Direction<3>::lower_xi(), make_neighbor_with_id<3>(1)},
+          {Direction<3>::lower_xi(),
+           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(1)},
           {Direction<3>::upper_xi(),
            {std::unordered_set<ElementId<3>>{ElementId<3>(2), ElementId<3>(7),
                                              ElementId<3>(8), ElementId<3>(9)},
@@ -373,7 +333,7 @@ void test_work(
   auto scalar_to_limit = input_scalar;
   auto vector_to_limit = input_vector;
 
-  const auto element = make_element<VolumeDim>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<VolumeDim>();
   const SlopeLimiters::Minmod<VolumeDim,
                               tmpl::list<ScalarTag, VectorTag<VolumeDim>>>
       minmod(SlopeLimiters::MinmodType::LambdaPi1);
