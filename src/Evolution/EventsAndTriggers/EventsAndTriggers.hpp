@@ -71,9 +71,3 @@ struct create_from_yaml<EventsAndTriggers<EventRegistrars, TriggerRegistrars>> {
     return type(options.parse_as<typename type::Storage>());
   }
 };
-
-namespace OptionTags {
-/// \cond
-struct EventsAndTriggersTagBase {};
-/// \endcond
-}  // namespace OptionTags

@@ -6,7 +6,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "Evolution/EventsAndTriggers/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

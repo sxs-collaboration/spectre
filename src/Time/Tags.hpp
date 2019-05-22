@@ -13,7 +13,6 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "Evolution/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Time/BoundaryHistory.hpp"
@@ -145,16 +144,5 @@ struct InitialSlabSize {
   static constexpr OptionString help = "The initial slab size";
   static type lower_bound() noexcept { return 0.; }
   using group = EvolutionGroup;
-};
-
-/// \ingroup OptionTagsGroup
-/// \ingroup EventsAndTriggersGroup
-/// \ingroup TimeGroup
-/// Contains the events and triggers
-template <typename EventRegistrars, typename TriggerRegistrars>
-struct EventsAndTriggers : EventsAndTriggersTagBase {
-  using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
-  static constexpr OptionString help =
-      "Events and triggers to run at slab boundaries";
 };
 }  // namespace OptionTags

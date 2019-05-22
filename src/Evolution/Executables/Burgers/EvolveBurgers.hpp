@@ -20,6 +20,7 @@
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "Evolution/EventsAndTriggers/Tags.hpp"
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "IO/Observer/Actions.hpp"
