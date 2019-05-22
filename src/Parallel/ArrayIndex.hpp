@@ -44,12 +44,22 @@ struct ArrayIndex : public CkArrayIndex {
     nInts = sizeof(array_index) / sizeof(int);  // NOLINT
   }
 
+  ArrayIndex(const CkArrayIndex& array_index)
+      : CkArrayIndex(array_index),
+        array_index_(reinterpret_cast<Index*>(CkArrayIndex::data())) {
+    ASSERT(CkArrayIndex::nInts == sizeof(Index) / sizeof(int),
+           "The CkArrayIndex::nInts does not match the size of the custom "
+           "array index class.");
+  }
+
   ArrayIndex(const ArrayIndex& rhs) = delete;
   ArrayIndex& operator=(const ArrayIndex& rhs) = delete;
 
   ArrayIndex(ArrayIndex&& /*rhs*/) noexcept = delete;
   ArrayIndex& operator=(ArrayIndex&& /*rhs*/) noexcept = delete;
   ~ArrayIndex() = default;
+
+  const Index& get_index() const noexcept { return *array_index_; }
 
  private:
   Index* array_index_ = nullptr;
