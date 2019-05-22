@@ -15,13 +15,18 @@ namespace Parallel {
  * The implementation is generic and can handle custom array indices. This
  * replaces the generated, hard-coded Charm++ array indices with a template,
  * allowing a single implementation to be used for different array indices.
+ *
+ * \details Charm++ allocates memory for `CkArrayIndex`. The size can be
+ * configured (in the Charm++ configuration) and defaults to the size of three
+ * integers. We place the `Index` into this buffer using placement `new`. Then,
+ * `CkArrayIndex::data()` can be safely reinterpreted as an `Index*`.
  */
 template <class Index>
 struct ArrayIndex : public CkArrayIndex {
   static_assert(std::is_pod<Index>::value,
                 "The array index type must be a POD, plain-old-data");
   // clang-tidy: suspicious use of sizeof
-  static_assert(sizeof(Index) / sizeof(int) <= 3,  // NOLINT
+  static_assert(sizeof(Index) <= 3 * sizeof(int),  // NOLINT
                 "The default Charm++ CK_ARRAYINDEX_MAXLEN is 3. If you have "
                 "changed this at Charm++ configuration time then please update "
                 "the static_assert, otherwise your Index type is too large.");
@@ -44,12 +49,24 @@ struct ArrayIndex : public CkArrayIndex {
     nInts = sizeof(array_index) / sizeof(int);  // NOLINT
   }
 
+  // clang-tidy: mark explicit: it's a conversion constructor
+  ArrayIndex(const CkArrayIndex& array_index)  // NOLINT
+      : CkArrayIndex(array_index),
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        array_index_(reinterpret_cast<Index*>(CkArrayIndex::data())) {
+    ASSERT(CkArrayIndex::nInts * sizeof(int) == sizeof(Index),
+           "The CkArrayIndex::nInts does not match the size of the custom "
+           "array index class.");
+  }
+
   ArrayIndex(const ArrayIndex& rhs) = delete;
   ArrayIndex& operator=(const ArrayIndex& rhs) = delete;
 
   ArrayIndex(ArrayIndex&& /*rhs*/) noexcept = delete;
   ArrayIndex& operator=(ArrayIndex&& /*rhs*/) noexcept = delete;
   ~ArrayIndex() = default;
+
+  const Index& get_index() const noexcept { return *array_index_; }
 
  private:
   Index* array_index_ = nullptr;
