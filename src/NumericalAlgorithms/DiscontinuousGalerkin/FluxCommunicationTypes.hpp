@@ -15,7 +15,6 @@
 #include "DataStructures/FixedHashMap.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
-#include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/MaxNumberOfNeighbors.hpp"

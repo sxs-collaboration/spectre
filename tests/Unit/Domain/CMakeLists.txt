@@ -28,6 +28,7 @@ set(LIBRARY_SOURCES
   Test_MinimumGridSpacing.cpp
   Test_Neighbors.cpp
   Test_OrientationMap.cpp
+  Test_OrientationMapHelpers.cpp
   Test_SegmentId.cpp
   Test_Side.cpp
   Test_SizeOfElement.cpp

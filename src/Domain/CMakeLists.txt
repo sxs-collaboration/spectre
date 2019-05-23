@@ -27,6 +27,7 @@ set(LIBRARY_SOURCES
   MinimumGridSpacing.cpp
   Neighbors.cpp
   OrientationMap.cpp
+  OrientationMapHelpers.cpp
   SegmentId.cpp
   Side.cpp
   SizeOfElement.cpp

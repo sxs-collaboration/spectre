@@ -14,7 +14,6 @@
 #include "DataStructures/Index.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
-#include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
@@ -23,6 +22,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Domain/OrientationMapHelpers.hpp"
 #include "Domain/Side.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Literals.hpp"
@@ -395,8 +395,7 @@ void test_2d_orient_variables_on_slice() noexcept {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.DataStructures.Variables.OrientVariables",
-                  "[DataStructures][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.OrientationMapHelpers", "[Domain][Unit]") {
   SECTION("Testing orient_variables") {
     test_1d_orient_variables();
     test_2d_orient_variables();

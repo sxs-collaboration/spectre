@@ -9,13 +9,13 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
-#include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+
 // IWYU pragma: no_forward_declare Tags::deriv
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
