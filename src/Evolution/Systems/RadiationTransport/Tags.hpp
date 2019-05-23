@@ -6,8 +6,11 @@
 #include <cstddef>
 #include <string>
 
+#define MAX_NUMBER_OF_NEUTRINO_ENERGY_BINS 12
+
 /// Namespace for neutrino physics
 namespace neutrinos {
+
 template <size_t EnergyBin>
 struct ElectronNeutrinos {
   static constexpr size_t energy_bin = EnergyBin;
