@@ -829,6 +829,16 @@ bool operator!=(const Variables<TagsList>& lhs,
   return not(lhs == rhs);
 }
 
+template <typename... TagsLhs, typename... TagsRhs,
+          Requires<not std::is_same<tmpl::list<TagsLhs...>,
+                                    tmpl::list<TagsRhs...>>::value> = nullptr>
+void swap(Variables<tmpl::list<TagsLhs...>>& lhs,
+          Variables<tmpl::list<TagsRhs...>>& rhs) noexcept {
+  Variables<tmpl::list<TagsLhs...>> temp{std::move(lhs)};
+  lhs = std::move(rhs);
+  rhs = std::move(temp);
+}
+
 /// \ingroup DataStructuresGroup
 /// Construct a variables from the `Tensor`s in a `TaggedTuple`.
 template <typename... Tags>
