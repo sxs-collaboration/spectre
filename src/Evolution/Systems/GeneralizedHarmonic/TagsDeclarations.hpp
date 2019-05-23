@@ -43,6 +43,19 @@ template <size_t Dim, typename Frame>
 struct CharacteristicFields;
 template <size_t Dim, typename Frame>
 struct EvolvedFieldsFromCharacteristicFields;
+
+template <size_t SpatialDim, typename Frame>
+struct GaugeConstraint;
+template <size_t SpatialDim, typename Frame>
+struct FConstraint;
+template <size_t SpatialDim, typename Frame>
+struct TwoIndexConstraint;
+template <size_t SpatialDim, typename Frame>
+struct ThreeIndexConstraint;
+template <size_t SpatialDim, typename Frame>
+struct FourIndexConstraint;
+template <size_t SpatialDim, typename Frame>
+struct ConstraintEnergy;
 }  // namespace Tags
 
 /// \brief Input option tags for the generalized harmonic evolution system

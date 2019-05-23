@@ -166,6 +166,50 @@ struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
     return "EvolvedFieldsFromCharacteristicFields";
   }
 };
+
+/*!
+ * \brief Tags corresponding to various constraints of the generalized
+ * harmonic system, and their diagnostically useful combinations.
+ * \details For details on how these are defined and computed, see
+ * `GaugeConstraintCompute`, `FConstraintCompute`, `TwoIndexConstraintCompute`,
+ * `ThreeIndexConstraintCompute`, `FourIndexConstraintCompute`, and
+ * `ConstraintEnergyCompute` respectively
+ */
+template <size_t SpatialDim, typename Frame>
+struct GaugeConstraint : db::SimpleTag {
+  using type = tnsr::a<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "GaugeConstraint"; }
+};
+/// \copydoc GaugeConstraint
+template <size_t SpatialDim, typename Frame>
+struct FConstraint : db::SimpleTag {
+  using type = tnsr::a<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "FConstraint"; }
+};
+/// \copydoc GaugeConstraint
+template <size_t SpatialDim, typename Frame>
+struct TwoIndexConstraint : db::SimpleTag {
+  using type = tnsr::ia<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "TwoIndexConstraint"; }
+};
+/// \copydoc GaugeConstraint
+template <size_t SpatialDim, typename Frame>
+struct ThreeIndexConstraint : db::SimpleTag {
+  using type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "ThreeIndexConstraint"; }
+};
+/// \copydoc GaugeConstraint
+template <size_t SpatialDim, typename Frame>
+struct FourIndexConstraint : db::SimpleTag {
+  using type = tnsr::iaa<DataVector, SpatialDim, Frame>;
+  static std::string name() noexcept { return "FourIndexConstraint"; }
+};
+/// \copydoc GaugeConstraint
+template <size_t SpatialDim, typename Frame>
+struct ConstraintEnergy : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept { return "ConstraintEnergy"; }
+};
 }  // namespace Tags
 
 namespace OptionTags {
