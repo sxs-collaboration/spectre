@@ -18,7 +18,7 @@ At a high level, describe what this PR does.
 
 ### Code review checklist
 
-- [ ] The PR passes all checks, including unit tests, `clang-tidy` and `IWYU`.
+- [ ] The PR passes all checks, including unit tests and `clang-tidy`.
   For instructions on how to perform the CI checks locally refer to the [Dev
   guide on the Travis CI](https://spectre-code.org/travis_guide.html).
 - [ ] The code is documented and the documentation renders correctly. Run

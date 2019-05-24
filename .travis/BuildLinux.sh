@@ -72,7 +72,7 @@ if [ -z "${RUN_CLANG_TIDY}" ] \
     fi
 
     if [[ ${TRAVIS_BUILD_STAGE_NAME} = \
-          "Build executables, run tests, clangtidy, iwyu, and doxygen" ]]; then
+          "Build executables, run tests, clangtidy, and doxygen" ]]; then
         # Build major executables in serial to avoid hitting memory limits.
         time make test-executables -j1
         time ctest --output-on-failure -j2
