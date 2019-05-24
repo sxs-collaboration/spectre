@@ -16,7 +16,6 @@
 namespace domain {
 namespace creators {
 
-/// \ingroup DomainCreatorsGroup
 /// Create a 2D Domain consisting of four rotated Blocks.
 /// - The lower left block has its logical \f$\xi\f$-axis aligned with
 /// the grid x-axis.

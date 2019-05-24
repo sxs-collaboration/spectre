@@ -384,12 +384,6 @@
  */
 
 /*!
- * \defgroup DomainCreatorsGroup Domain Creators
- * A collection of domain creators for specifying the initial computational
- * domain geometry.
- */
-
-/*!
  * \defgroup EllipticSystemsGroup Elliptic Systems
  * \brief All available elliptic systems and information on how to implement
  * elliptic systems

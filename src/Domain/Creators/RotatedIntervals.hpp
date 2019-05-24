@@ -23,7 +23,6 @@ class DomainCreator;  // IWYU pragma: keep
 namespace domain {
 namespace creators {
 
-/// \ingroup DomainCreatorsGroup
 /// Create a 1D Domain consisting of two rotated Blocks.
 /// The left block has its logical \f$\xi\f$-axis aligned with the grid x-axis.
 /// The right block has its logical \f$\xi\f$-axis opposite to the grid x-axis.

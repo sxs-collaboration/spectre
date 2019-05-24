@@ -25,7 +25,6 @@ class DomainCreator;  // IWYU pragma: keep
 namespace domain {
 namespace creators {
 
-/// \ingroup DomainCreatorsGroup
 /// Create a 3D Domain in the shape of a sphere consisting of six wedges
 /// and a central cube. For an image showing how the wedges are aligned in
 /// this Domain, see the documentation for Shell.

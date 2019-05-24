@@ -19,7 +19,6 @@ class DomainCreator;  // IWYU pragma: keep
 namespace domain {
 namespace creators {
 
-/// \ingroup DomainCreatorsGroup
 /// Create a 3D Domain in the shape of a cylinder where the cross-section
 /// is a square surrounded by four two-dimensional wedges (see Wedge2D).
 ///

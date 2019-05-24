@@ -23,7 +23,6 @@ class DomainCreator;  // IWYU pragma: keep
 namespace domain {
 namespace creators {
 
-/// \ingroup DomainCreatorsGroup
 /// Create a 3D Domain consisting of a single Block.
 template <typename TargetFrame>
 class Brick : public DomainCreator<3, TargetFrame> {

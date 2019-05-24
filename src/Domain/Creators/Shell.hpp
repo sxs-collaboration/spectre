@@ -21,8 +21,6 @@ namespace domain {
 namespace creators {
 
 /*!
- * \ingroup DomainCreatorsGroup
- *
  * \brief Creates a 3D Domain in the shape of a hollow spherical shell
  * consisting of six wedges.
  *

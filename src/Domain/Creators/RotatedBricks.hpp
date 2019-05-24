@@ -16,7 +16,6 @@
 namespace domain {
 namespace creators {
 
-/// \ingroup DomainCreatorsGroup
 /// Create a 3D Domain consisting of eight rotated Blocks.
 ///
 /// \image html eightcubes_rotated_exploded.png
