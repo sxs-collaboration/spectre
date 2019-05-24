@@ -847,6 +847,22 @@ constexpr ElementType& at(span<ElementType, Extent> s,
 #if __GNUC__ > 6
 #pragma GCC diagnostic pop
 #endif  // __GNUC__ > 6
+
+template <class ElementType, std::ptrdiff_t Extent>
+std::ostream& operator<<(std::ostream& os,
+                         const span<ElementType, Extent> t) noexcept {
+  os << "(";
+  auto it = t.cbegin();
+  if (it != t.cend()) {
+    os << *it;
+    ++it;
+    for (; it != t.cend(); ++it) {
+      os << ",";
+      os << *it;
+    }
+  }
+  return os << ")";
+}
 }  // namespace gsl
 
 // The remainder of this file is
