@@ -21,6 +21,7 @@
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/CheckH5.hpp"
 #include "IO/H5/Header.hpp"  // IWYU pragma: keep
+#include "IO/H5/Helpers.hpp"
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -88,6 +89,11 @@ class H5File {
 
   /// Get name of the H5 file
   const std::string& name() const noexcept { return file_name_; }
+
+  /// Get a std::vector of the names of all immediate subgroups of the file
+  const std::vector<std::string> groups() const noexcept {
+    return h5::get_group_names(file_id_, "/");
+  }
 
   // @{
   /*!
@@ -223,8 +229,7 @@ const ObjectType& H5File<Access_t>::get(const std::string& path,
 
 template <AccessType Access_t>
 template <typename ObjectType, typename... Args>
-ObjectType& H5File<Access_t>::insert(const std::string& path,
-                                     Args&&... args) {
+ObjectType& H5File<Access_t>::insert(const std::string& path, Args&&... args) {
   static_assert(AccessType::ReadWrite == Access_t,
                 "Can only insert into ReadWrite access H5 files.");
   current_object_ = nullptr;
