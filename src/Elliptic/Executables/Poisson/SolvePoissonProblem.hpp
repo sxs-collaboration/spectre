@@ -55,7 +55,7 @@ struct Metavariables {
   using temporal_id = LinearSolver::Tags::IterationId;
 
   // Parse numerical flux parameters from the input file to store in the cache.
-  using normal_dot_numerical_flux = OptionTags::NumericalFluxParams<
+  using normal_dot_numerical_flux = OptionTags::NumericalFlux<
       Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
 
   // Set up the domain creator from the input file.

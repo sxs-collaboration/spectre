@@ -6,6 +6,14 @@
 #include "Options/Options.hpp"
 
 namespace OptionTags {
+/// \ingroup OptionGroupsGroup
+/// Holds the `OptionTags::AnalyticData` option in the input file
+struct AnalyticDataGroup {
+  static std::string name() noexcept { return "AnalyticData"; }
+  static constexpr OptionString help =
+      "Analytic data used for the initial data";
+};
+
 /// \ingroup OptionTagsGroup
 /// Can be used to retrieve the analytic data from the cache without having
 /// to know the template parameters of AnalyticData.
@@ -16,8 +24,9 @@ struct AnalyticDataBase {};
 /// parameter
 template <typename SolutionType>
 struct AnalyticData : AnalyticDataBase {
-  static constexpr OptionString help =
-      "Analytic data used for the initial data";
+  static std::string name() noexcept { return option_name<SolutionType>(); }
+  static constexpr OptionString help = "Options for the analytic data";
   using type = SolutionType;
+  using group = AnalyticDataGroup;
 };
 }  // namespace OptionTags

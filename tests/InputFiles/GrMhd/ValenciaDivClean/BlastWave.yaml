@@ -18,22 +18,27 @@ DomainCreator:
     InitialGridPoints: [2, 2, 2]
 
 AnalyticData:
-  InnerRadius: 0.8
-  OuterRadius: 1.0
-  InnerDensity: 1.0e-2
-  OuterDensity: 1.0e-4
-  InnerPressure: 1.0
-  OuterPressure: 5.0e-4
-  MagneticField: [0.1, 0.0, 0.0]
-  AdiabaticIndex: 1.3333333333333333333
+  CylindricalBlastWave:
+    InnerRadius: 0.8
+    OuterRadius: 1.0
+    InnerDensity: 1.0e-2
+    OuterDensity: 1.0e-4
+    InnerPressure: 1.0
+    OuterPressure: 5.0e-4
+    MagneticField: [0.1, 0.0, 0.0]
+    AdiabaticIndex: 1.3333333333333333333
 
-NumericalFluxParams:
+NumericalFlux:
+  LocalLaxFriedrichs:
 
-DampingParameter: 0.0
+EvolutionSystem:
+  ValenciaDivClean:
+    DampingParameter: 0.0
 
-SlopeLimiterParams:
-  Type: Muscl
-  TvbmConstant: 0
+SlopeLimiter:
+  Minmod:
+    Type: Muscl
+    TvbmConstant: 0
 
 VariableFixing:
   FixConservatives:

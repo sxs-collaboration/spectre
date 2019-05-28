@@ -84,7 +84,7 @@ struct Metavariables {
   using analytic_solution_tag =
       OptionTags::AnalyticSolution<AnalyticSolution<Dim>>;
   using normal_dot_numerical_flux =
-      OptionTags::NumericalFluxParams<NumericalFlux<Dim>>;
+      OptionTags::NumericalFlux<NumericalFlux<Dim>>;
   using component_list = tmpl::list<>;
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag, normal_dot_numerical_flux>;

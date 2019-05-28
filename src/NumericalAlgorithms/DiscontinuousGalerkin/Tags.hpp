@@ -51,13 +51,26 @@ struct MortarSize : db::SimpleTag {
 
 namespace OptionTags {
 /*!
+ * \ingroup OptionGroupsGroup
+ * \brief Holds the `OptionTags::NumericalFlux` option in the input file
+ */
+struct NumericalFluxGroup {
+  static std::string name() noexcept { return "NumericalFlux"; }
+  static constexpr OptionString help = "The numerical flux scheme";
+};
+
+/*!
  * \ingroup OptionTagsGroup
  * \brief The global cache tag that retrieves the parameters for the numerical
  * flux from the input file
  */
 template <typename NumericalFluxType>
-struct NumericalFluxParams {
-  static constexpr OptionString help = "The options for the numerical flux";
+struct NumericalFlux {
+  static std::string name() noexcept {
+    return option_name<NumericalFluxType>();
+  }
+  static constexpr OptionString help = "Options for the numerical flux";
   using type = NumericalFluxType;
+  using group = NumericalFluxGroup;
 };
 }  // namespace OptionTags

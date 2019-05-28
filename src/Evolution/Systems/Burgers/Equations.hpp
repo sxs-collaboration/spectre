@@ -33,6 +33,7 @@ struct LocalLaxFriedrichsFlux {
   using options = tmpl::list<>;
   static constexpr OptionString help{
       "Computes the Local LF flux for the Burgers system."};
+  static std::string name() noexcept { return "LocalLaxFriedrichs"; }
 
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& /*p*/) noexcept {}

@@ -5,9 +5,10 @@
 # Check: execute
 
 AnalyticSolution:
-  LeftValue: 2.
-  RightValue: 1.
-  InitialPosition: -0.5
+  Step:
+    LeftValue: 2.
+    RightValue: 1.
+    InitialPosition: -0.5
 
 Evolution:
   InitialTime: 0.0
@@ -24,10 +25,12 @@ DomainCreator:
     InitialRefinement: [2]
     InitialGridPoints: [7]
 
-NumericalFluxParams:
+NumericalFlux:
+  LocalLaxFriedrichs:
 
-SlopeLimiterParams:
-  Type: LambdaPi1
+SlopeLimiter:
+  Minmod:
+    Type: LambdaPi1
 
 EventsAndTriggers:
   ? PastTime: 0.1

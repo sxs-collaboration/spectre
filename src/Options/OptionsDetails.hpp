@@ -19,6 +19,7 @@
 #include <vector>
 
 #include "ErrorHandling/Assert.hpp"
+#include "Options/Options.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -26,21 +27,6 @@
 
 /// Holds details of the implementation of Options
 namespace Options_detail {
-template <typename T, typename = cpp17::void_t<>>
-struct name_helper {
-  static std::string name() noexcept { return pretty_type::short_name<T>(); }
-};
-
-template <typename T>
-struct name_helper<T, cpp17::void_t<decltype(T::name())>> {
-  static std::string name() noexcept { return T::name(); }
-};
-
-// The name in the YAML file for a struct.
-template <typename T>
-std::string name() noexcept {
-  return name_helper<T>::name();
-}
 
 // Traverses the group hierarchy of `Tag`, returning the topmost group that is
 // a subgroup of `Root`. Directly returns `Tag` if it has no group.
@@ -174,8 +160,8 @@ template <typename Group, typename OptionList, typename = std::nullptr_t>
 struct print_impl {
   static std::string apply(const int max_label_size) noexcept {
     std::ostringstream ss;
-    ss << "  " << std::setw(max_label_size + 2) << std::left << name<Group>()
-       << Group::help << "\n\n";
+    ss << "  " << std::setw(max_label_size + 2) << std::left
+       << option_name<Group>() << Group::help << "\n\n";
     return ss.str();
   }
 };
@@ -245,8 +231,8 @@ struct print_impl<Tag, OptionList,
 
   static std::string apply(const int max_label_size) noexcept {
     std::ostringstream ss;
-    ss << "  " << std::setw(max_label_size + 2) << std::left << name<Tag>()
-       << yaml_type<typename Tag::type>::value();
+    ss << "  " << std::setw(max_label_size + 2) << std::left
+       << option_name<Tag>() << yaml_type<typename Tag::type>::value();
     std::string limits;
     for (const auto& limit :
          {print_default<Tag>(), print_lower_bound<Tag>(),
@@ -286,7 +272,7 @@ struct create_valid_names {
   value_type value{};
   template <typename T>
   void operator()(tmpl::type_<T> /*meta*/) noexcept {
-    const std::string label = name<T>();
+    const std::string label = option_name<T>();
     ASSERT(0 == value.count(label), "Duplicate option name: " << label);
     value.insert(label);
   }

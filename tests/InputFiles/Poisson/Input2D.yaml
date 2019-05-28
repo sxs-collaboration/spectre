@@ -8,6 +8,7 @@
 #   Poisson2DVolume0.h5
 
 AnalyticSolution:
+  ProductOfSinusoids:
     WaveNumbers: [1, 1]
 
 DomainCreator:
@@ -18,7 +19,8 @@ DomainCreator:
     InitialRefinement: [1, 1]
     InitialGridPoints: [3, 3]
 
-NumericalFluxParams:
+NumericalFlux:
+  InternalPenalty:
     PenaltyParameter: 5.729577951308232 # p^2 / h
 
 Observers:

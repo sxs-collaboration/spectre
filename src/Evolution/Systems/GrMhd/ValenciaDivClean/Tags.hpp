@@ -9,16 +9,26 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"
+#include "Evolution/Tags.hpp"
 #include "Options/Options.hpp"
 
 class DataVector;
 
 namespace OptionTags {
+/// \ingroup OptionGroupsGroup
+/// Groups option tags related to the ValenciaDivClean evolution system.
+struct ValenciaDivCleanGroup {
+  static std::string name() noexcept { return "ValenciaDivClean"; }
+  static constexpr OptionString help{"Options for the evolution system"};
+  using group = EvolutionSystemGroup;
+};
+
 /// \brief The constraint damping parameter
 struct DampingParameter {
   using type = double;
   static constexpr OptionString help{
-      "constraint damping parameter for divergence cleaning"};
+      "Constraint damping parameter for divergence cleaning"};
+  using group = ValenciaDivCleanGroup;
 };
 }  // namespace OptionTags
 

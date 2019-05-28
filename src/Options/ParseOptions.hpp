@@ -256,9 +256,9 @@ class Options {
   template <typename T,
             Requires<not Options_detail::has_default<T>::value> = nullptr>
   [[noreturn]] typename T::type get_default() const {
-    PARSE_ERROR(context_, "You did not specify the option '"
-                              << Options_detail::name<T>() << "'.\n"
-                              << help());
+    PARSE_ERROR(context_, "You did not specify the option '" << option_name<T>()
+                                                             << "'.\n"
+                                                             << help());
   }
   //@}
 
@@ -304,7 +304,7 @@ class Options {
             Requires<Options_detail::has_default<T>::value> = nullptr>
   void validate_default() const {
     OptionContext context;
-    context.append("Checking DEFAULT value for " + Options_detail::name<T>());
+    context.append("Checking DEFAULT value for " + option_name<T>());
     const auto default_value = T::default_value();
     check_lower_bound_on_size<T>(default_value, context);
     check_upper_bound_on_size<T>(default_value, context);
@@ -336,7 +336,7 @@ Options<OptionList, Group>::Options(std::string help_text) noexcept
                        .value) {
   tmpl::for_each<tags_and_subgroups_list>([](auto t) noexcept {
     using T = typename decltype(t)::type;
-    const std::string label = Options_detail::name<T>();
+    const std::string label = option_name<T>();
     ASSERT(label.size() <= max_label_size_,
            "The option name " << label
                               << " is too long for nice formatting, "
@@ -418,7 +418,7 @@ struct get_impl {
         tmpl::list_contains_v<OptionList, Tag>,
         "Could not find requested option in the list of options provided. Did "
         "you forget to add the option tag to the OptionList?");
-    const std::string subgroup_label = name<Subgroup>();
+    const std::string subgroup_label = option_name<Subgroup>();
     if (0 == opts.parsed_options_.count(subgroup_label)) {
       PARSE_ERROR(opts.context_, "You did not specify the group '"
                                      << subgroup_label << "'.\n"
@@ -441,7 +441,7 @@ struct get_impl<Tag, Metavariables, Tag> {
         tmpl::list_contains_v<OptionList, Tag>,
         "Could not find requested option in the list of options provided. Did "
         "you forget to add the option tag to the OptionList?");
-    const std::string label = name<Tag>();
+    const std::string label = option_name<Tag>();
 
     opts.template validate_default<Tag>();
     if (0 == opts.parsed_options_.count(label)) {
