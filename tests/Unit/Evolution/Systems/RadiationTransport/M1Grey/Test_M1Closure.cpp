@@ -14,13 +14,18 @@
 #include "DataStructures/Tensor/IndexType.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/M1Closure.hpp"
+#include "Evolution/Systems/RadiationTransport/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// Test M1 closure function
 SPECTRE_TEST_CASE("Evolution.Systems.RadiationTransport.M1Grey.M1Closure",
                   "[Unit][M1Grey]") {
   const DataVector used_for_size(5);
+  RadiationTransport::M1Grey::ComputeM1Closure<
+      tmpl::list<neutrinos::ElectronNeutrinos<0>>>
+      closure;
   // Create variables
   // Input
   Scalar<DataVector> energy_density(used_for_size);
@@ -35,6 +40,9 @@ SPECTRE_TEST_CASE("Evolution.Systems.RadiationTransport.M1Grey.M1Closure",
   Scalar<DataVector> comoving_momentum_density_normal(used_for_size);
   tnsr::i<DataVector, 3, Frame::Inertial> comoving_momentum_density_spatial(
       used_for_size);
+
+  // Accuracy required for closure factor
+  static Approx custom_approx = Approx::custom().epsilon(1.e-5).scale(1.0);
 
   // Set fluid/metric variables
   for (size_t m = 0; m < 3; m++) {
@@ -65,26 +73,28 @@ SPECTRE_TEST_CASE("Evolution.Systems.RadiationTransport.M1Grey.M1Closure",
                                  spatial_metric.get(m, n);
     }
   }
-  RadiationTransport::M1Grey::M1Closure(
-      make_not_null(&closure_factor), make_not_null(&pressure_tensor),
-      make_not_null(&comoving_energy_density),
-      make_not_null(&comoving_momentum_density_normal),
-      make_not_null(&comoving_momentum_density_spatial), energy_density,
-      momentum_density, fluid_velocity, fluid_lorentz_factor, spatial_metric,
-      inv_spatial_metric);
-  CHECK((get(closure_factor)[0] == approx(0.).epsilon(1.e-5)));
+  closure.apply(make_not_null(&closure_factor), make_not_null(&pressure_tensor),
+                make_not_null(&comoving_energy_density),
+                make_not_null(&comoving_momentum_density_normal),
+                make_not_null(&comoving_momentum_density_spatial),
+                energy_density, momentum_density, fluid_velocity,
+                fluid_lorentz_factor, spatial_metric, inv_spatial_metric);
+  const DataVector expected_xi0{0.0, 0.0, 0.0, 0.0, 0.0};
+  CHECK_ITERABLE_CUSTOM_APPROX(get(closure_factor), expected_xi0,
+                               custom_approx);
 
   // (2) Optically thin limit
   momentum_density.get(0) = -1.;
   momentum_density.get(1) = 5.;
   momentum_density.get(2) = 3.;
   energy_density = magnitude(momentum_density, inv_spatial_metric);
-  RadiationTransport::M1Grey::M1Closure(
-      make_not_null(&closure_factor), make_not_null(&pressure_tensor),
-      make_not_null(&comoving_energy_density),
-      make_not_null(&comoving_momentum_density_normal),
-      make_not_null(&comoving_momentum_density_spatial), energy_density,
-      momentum_density, fluid_velocity, fluid_lorentz_factor, spatial_metric,
-      inv_spatial_metric);
-  CHECK((get(closure_factor)[0] == approx(1.).epsilon(1.e-5)));
+  closure.apply(make_not_null(&closure_factor), make_not_null(&pressure_tensor),
+                make_not_null(&comoving_energy_density),
+                make_not_null(&comoving_momentum_density_normal),
+                make_not_null(&comoving_momentum_density_spatial),
+                energy_density, momentum_density, fluid_velocity,
+                fluid_lorentz_factor, spatial_metric, inv_spatial_metric);
+  const DataVector expected_xi1{1.0, 1.0, 1.0, 1.0, 1.0};
+  CHECK_ITERABLE_CUSTOM_APPROX(get(closure_factor), expected_xi1,
+                               custom_approx);
 }

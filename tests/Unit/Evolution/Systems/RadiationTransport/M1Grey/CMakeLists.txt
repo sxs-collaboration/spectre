@@ -4,6 +4,7 @@
 set(LIBRARY "Test_M1Grey")
 
 set(LIBRARY_SOURCES
+  Test_Actions.cpp
   Test_Fluxes.cpp
   Test_M1Closure.cpp
   Test_Sources.cpp
