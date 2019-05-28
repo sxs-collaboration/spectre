@@ -3,4 +3,5 @@
 
 add_subdirectory(Burgers)
 add_subdirectory(GrMhd)
+add_subdirectory(RadiationTransport)
 add_subdirectory(ScalarWave)
