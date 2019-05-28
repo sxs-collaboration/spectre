@@ -4,6 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"  // for item_type
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  //  IWYU pragma: keep
@@ -72,9 +73,9 @@ void compute_sources_impl(
  */
 template <typename... NeutrinoSpecies>
 struct ComputeSources {
-  using return_tags =
-      tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
-                 Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...>;
+  using return_tags = tmpl::list<
+      ::Tags::Source<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>...,
+      ::Tags::Source<Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>...>;
 
   using argument_tags = tmpl::list<
       Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
@@ -86,7 +87,7 @@ struct ComputeSources {
                     tmpl::size_t<3>, Frame::Inertial>,
       ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                     tmpl::size_t<3>, Frame::Inertial>,
-      gr::Tags::InverseSpatialMetric<3>, gr::Tags::SqrtDetSpatialMetric<>,
+      gr::Tags::InverseSpatialMetric<3>,
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
 
   static void apply(

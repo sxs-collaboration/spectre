@@ -1,0 +1,51 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveStandaloneM1
+# Check: execute
+# ExpectedOutput:
+#   M1Reductions.h5
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.01
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 3
+
+DomainCreator:
+  Brick:
+    LowerBound: [10.5, 0.0, 0.0]
+    UpperBound: [11.5, 1.0, 1.0]
+    IsPeriodicIn: [false, false, false]
+    InitialRefinement: [0, 0, 0]
+    InitialGridPoints: [5, 5, 5]
+
+AnalyticSolution:
+  ConstantM1:
+    MeanVelocity: [0.1, 0.2, 0.15]
+    ComovingEnergyDensity: 1.0
+
+NumericalFlux:
+  LocalLaxFriedrichs:
+
+Limiter:
+  Minmod:
+    # Uncomment line below to turn off the limiter:
+    # DisableForDebugging: True
+    Type: LambdaPiN
+    # Recommended value from minmod papers:
+    TvbmConstant: 50.0
+
+EventsAndTriggers:
+  ? EveryNSlabs:
+      N: 3
+      Offset: 5
+  : - ObserveErrorNorms
+  ? SpecifiedSlabs:
+      Slabs: [10]
+  : - Completion
+
+Observers:
+  VolumeFileName: "M1Volume"
+  ReductionFileName: "M1Reductions"

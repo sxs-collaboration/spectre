@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Conservative/ConservativeDuDt.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/Characteristics.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Fluxes.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Sources.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
@@ -65,7 +66,7 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
       tmpl::list<hydro::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>>;
 
-  using m1_variables_tag = ::Tags::Variables<tmpl::list<
+  using primitive_variables_tag = ::Tags::Variables<tmpl::list<
       Tags::ClosureFactor<NeutrinoSpecies>...,
       Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
       Tags::TildeJ<NeutrinoSpecies>..., Tags::TildeHNormal<NeutrinoSpecies>...,
@@ -74,6 +75,8 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
   template <typename Tag>
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
       Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
+
+  using char_speeds_tag = Tags::CharacteristicSpeedsCompute;
 
   using volume_fluxes = ComputeFluxes<NeutrinoSpecies...>;
 
