@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
+#include "Domain/Tags.hpp"
 
 /// \cond
 namespace Frame {
