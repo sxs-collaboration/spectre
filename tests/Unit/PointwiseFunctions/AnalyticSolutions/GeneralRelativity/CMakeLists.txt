@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_KerrSchild.cpp
   Test_Minkowski.cpp
   Test_Tov.cpp
+  Test_WrappedGr.cpp
   )
 
 add_test_library(
