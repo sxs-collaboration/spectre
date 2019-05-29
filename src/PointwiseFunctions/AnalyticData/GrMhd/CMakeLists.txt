@@ -6,6 +6,7 @@ set(LIBRARY GrMhdAnalyticData)
 set(LIBRARY_SOURCES
   BondiHoyleAccretion.cpp
   CylindricalBlastWave.cpp
+  MagneticRotor.cpp
   MagnetizedFmDisk.cpp
   OrszagTangVortex.cpp
   )
