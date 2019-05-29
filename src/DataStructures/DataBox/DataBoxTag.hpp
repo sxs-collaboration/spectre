@@ -160,8 +160,24 @@ using list_of_matching_tags = tmpl::conditional_t<
     cpp17::is_same_v<Tag, ::Tags::DataBox>, tmpl::list<::Tags::DataBox>,
     tmpl::filter<TagList, std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>;
 
+template <typename Tag, typename TagList,
+          typename MatchingTagsList = list_of_matching_tags<TagList, Tag>>
+struct first_matching_tag_impl {
+  using type = tmpl::front<MatchingTagsList>;
+};
+
+template <typename Tag, typename TagList>
+struct first_matching_tag_impl<Tag, TagList, tmpl::list<>> {
+  static_assert(std::is_same<Tag, NoSuchType>::value,
+                "Could not find the DataBox tag in the list of DataBox tags. "
+                "The first template parameter of 'first_matching_tag_impl' is "
+                "the tag that cannot be found and the second is the list of "
+                "tags being searched.");
+  using type = NoSuchType;
+};
+
 template <typename TagList, typename Tag>
-using first_matching_tag = tmpl::front<list_of_matching_tags<TagList, Tag>>;
+using first_matching_tag = typename first_matching_tag_impl<Tag, TagList>::type;
 
 template <typename TagList, typename Tag>
 constexpr auto number_of_matching_tags =
