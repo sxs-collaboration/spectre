@@ -537,6 +537,23 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
       tmpl::list<test_databox_tags::Tag2Base, test_databox_tags::ComputeTag1>>(
       ApplyCallable{}, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
+  /// [apply_stateless_struct_example]
+  struct StatelessApplyCallable {
+    using argument_tags =
+        tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>;
+    static void apply(const std::string& sample_string,
+                      const std::string& computed_string,
+                      const std::vector<double>& vector) noexcept {
+      CHECK(sample_string == "My Sample String"s);
+      CHECK(computed_string == "My Sample String6.28"s);
+      CHECK(vector == (std::vector<double>{8.7, 93.2, 84.7}));
+    }
+  };
+  db::apply<StatelessApplyCallable>(
+      original_box, db::get<test_databox_tags::Tag1>(original_box));
+  /// [apply_stateless_struct_example]
+  db::apply(StatelessApplyCallable{}, original_box,
+            db::get<test_databox_tags::Tag1>(original_box));
 }
 
 // [[OutputRegex, Could not find the tag named "TagTensor__" in the DataBox]]

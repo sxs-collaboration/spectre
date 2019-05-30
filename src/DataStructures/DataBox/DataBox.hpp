@@ -1559,7 +1559,7 @@ struct Apply<tmpl::list<Tags...>> {
           F, const std::add_lvalue_reference_t<db::item_type<Tags, BoxTags>>...,
           Args...>> = nullptr>
   static constexpr auto apply(F&& /*f*/, const DataBox<BoxTags>& box,
-                              Args&&... args) {
+                              Args&&... args) noexcept {
     return F::apply(::db::get<Tags>(box)..., std::forward<Args>(args)...);
   }
 
@@ -1569,7 +1569,7 @@ struct Apply<tmpl::list<Tags...>> {
           F, const std::add_lvalue_reference_t<db::item_type<Tags, BoxTags>>...,
           Args...>> = nullptr>
   static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
-                              Args&&... args) {
+                              Args&&... args) noexcept {
     static_assert(
         tt::is_callable_v<
             std::remove_pointer_t<F>,
@@ -1584,11 +1584,22 @@ struct Apply<tmpl::list<Tags...>> {
                               std::forward<Args>(args)...);
   }
 };
+
+template <typename F, typename = cpp17::void_t<>>
+struct has_argument_tags : std::false_type {};
+
+template <typename F>
+struct has_argument_tags<F, cpp17::void_t<typename F::argument_tags>>
+    : std::true_type {};
+
+template <typename F>
+constexpr bool has_argument_tags_v = has_argument_tags<F>::value;
 }  // namespace DataBox_detail
 
+// @{
 /*!
  * \ingroup DataBoxGroup
- * \brief Apply the function `f` with argument Tags `TagsList` from
+ * \brief Apply the invokable `f` with argument Tags `TagsList` from
  * DataBox `box`
  *
  * \details
@@ -1596,6 +1607,9 @@ struct Apply<tmpl::list<Tags...>> {
  * `db::item_type<TagsList>..., Args...` where the first pack expansion
  * is over the elements in the type list `TagsList`, or have a static
  * `apply` function that is callable with the same types.
+ * If the class that implements the static `apply` functions also provides an
+ * `argument_tags` typelist, then it is used and no explicit `TagsList` template
+ * parameter should be specified.
  *
  * \usage
  * Given a function `func` that takes arguments of types
@@ -1628,11 +1642,52 @@ struct Apply<tmpl::list<Tags...>> {
  * \param args the arguments to pass to the function that are not in the
  * DataBox, `box`
  */
-template <typename TagsList, typename F, typename BoxTags, typename... Args>
+template <typename TagsList, typename F, typename BoxTags, typename... Args,
+          Requires<not DataBox_detail::has_argument_tags_v<std::decay_t<F>>> =
+              nullptr>
 inline constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
-                            Args&&... args) {
+                            Args&&... args) noexcept {
   return DataBox_detail::Apply<TagsList>::apply(std::forward<F>(f), box,
                                                 std::forward<Args>(args)...);
+}
+
+template <typename F, typename BoxTags, typename... Args,
+          typename ArgumentTags = typename std::decay_t<F>::argument_tags>
+inline constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
+                            Args&&... args) noexcept {
+  return DataBox_detail::Apply<ArgumentTags>::apply(
+      std::forward<F>(f), box, std::forward<Args>(args)...);
+}
+// @}
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Apply the function `F::apply` that takes as arguments the
+ * `F::argument_tags` and `args`.
+ *
+ * \details
+ * `F` must have a `tmpl::list` type alias `argument_tags`, as well as a static
+ * `apply` function. The `apply` function must take the types of the
+ * `argument_tags` as constant references. It can also take the `Args` as
+ * additional arguments.
+ *
+ * \example
+ * \snippet Test_DataBox.cpp apply_stateless_struct_example
+ *
+ * \tparam F The invokable to apply
+ * \param box The DataBox out of which to retrieve the Tags to pass to `F`
+ * \param args The arguments to pass to the function that are not in the
+ * DataBox, `box`
+ */
+template <typename F, typename BoxTags, typename... Args>
+inline constexpr auto apply(const DataBox<BoxTags>& box,
+                            Args&&... args) noexcept {
+  static_assert(
+      DataBox_detail::has_argument_tags_v<F>,
+      "The stateless invokable does not specify an 'argument_tags' type "
+      "list. Did you forget to add it to the class? The class is listed as the "
+      "first template parameter below.");
+  return apply(F{}, box, std::forward<Args>(args)...);
 }
 
 namespace DataBox_detail {
