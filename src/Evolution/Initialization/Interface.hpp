@@ -8,6 +8,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "Domain/FaceNormal.hpp"
+#include "Domain/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 

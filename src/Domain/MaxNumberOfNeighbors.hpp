@@ -5,6 +5,8 @@
 
 #include <cstddef>
 
+#include "Utilities/ConstantExpressions.hpp"
+
 /// \ingroup ComputationalDomainGroup
 /// Returns the maximum number of neighbors an element can have in `dim`
 /// dimensions.
