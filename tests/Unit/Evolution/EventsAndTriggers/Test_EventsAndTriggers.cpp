@@ -17,9 +17,9 @@
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "Evolution/EventsAndTriggers/LogicalTriggers.hpp"  // IWYU pragma: keep
+#include "Evolution/EventsAndTriggers/Tags.hpp"
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
-#include "Time/Tags.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

@@ -19,6 +19,7 @@
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "Evolution/EventsAndTriggers/Tags.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "IO/Observer/Actions.hpp"            // IWYU pragma: keep
