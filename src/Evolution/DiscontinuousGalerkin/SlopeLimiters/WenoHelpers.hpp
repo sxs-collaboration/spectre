@@ -64,12 +64,6 @@ double oscillation_indicator(const DataVector& data,
 //   A simple weighted essentially non-oscillatory limiter for Runge-Kutta
 //   discontinuous Galerkin methods
 //   https://doi.org/10.1016/j.jcp.2012.08.028
-//
-// Zhu20016
-//   Zhu, J and Zhong, X and Shu, C and Qiu, J
-//   Runge-Kutta Discontinuous Galerkin Method with a Simple and Compact Hermite
-//   WENO Limiter
-//   https://doi.org/10.4208/cicp.070215.200715a
 inline double unnormalized_nonlinear_weight(
     const double linear_weight, const double oscillation_indicator) noexcept {
   return linear_weight / square(1.e-6 + oscillation_indicator);

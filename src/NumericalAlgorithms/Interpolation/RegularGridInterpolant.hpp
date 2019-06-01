@@ -74,6 +74,14 @@ class RegularGrid {
       noexcept;
   //@}
 
+  /// \brief Return the internally-stored matrices that interpolate from the
+  /// source grid to the target grid.
+  ///
+  /// Each matrix interpolates in one logical direction, and can be empty if the
+  /// interpolation in that direction is the identity (i.e., if the source
+  /// and target grids have the same logical coordinates in this direction).
+  const std::array<Matrix, Dim>& interpolation_matrices() const noexcept;
+
  private:
   template <size_t LocalDim>
   // NOLINTNEXTLINE(readability-redundant-declaration)

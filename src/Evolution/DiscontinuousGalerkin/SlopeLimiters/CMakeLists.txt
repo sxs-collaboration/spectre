@@ -4,6 +4,7 @@
 set(LIBRARY SlopeLimiters)
 
 set(LIBRARY_SOURCES
+  HwenoModifiedSolution.cpp
   MinmodHelpers.cpp
   MinmodTci.cpp
   MinmodType.cpp

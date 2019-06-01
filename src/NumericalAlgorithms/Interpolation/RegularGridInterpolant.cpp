@@ -49,6 +49,12 @@ void RegularGrid<Dim>::pup(PUP::er& p) noexcept {
   p | interpolation_matrices_;
 }
 
+template <size_t Dim>
+const std::array<Matrix, Dim>& RegularGrid<Dim>::interpolation_matrices() const
+    noexcept {
+  return interpolation_matrices_;
+}
+
 template <size_t LocalDim>
 bool operator==(const RegularGrid<LocalDim>& lhs,
                 const RegularGrid<LocalDim>& rhs) noexcept {
