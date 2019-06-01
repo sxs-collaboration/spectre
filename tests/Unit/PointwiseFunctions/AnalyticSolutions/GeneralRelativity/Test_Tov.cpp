@@ -8,12 +8,10 @@
 #include <memory>
 #include <pup.h>
 
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Tov.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
-#include "Utilities/Literals.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
@@ -35,14 +33,13 @@ double expected_newtonian_mass(const double central_mass_density) noexcept {
          (cube(sqrt(2.0 * M_PI / polytropic_constant)));
 }
 
-void test_tov(const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
-                  equation_of_state,
-              const double central_mass_density, const size_t num_pts,
-              const size_t current_iteration,
-              const bool newtonian_limit) noexcept {
+void test_tov(
+    const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
+    const double central_mass_density, const size_t num_pts,
+    const size_t current_iteration, const bool newtonian_limit) noexcept {
   Approx custom_approx = Approx::custom().epsilon(1.0e-08).scale(1.0);
   const double initial_log_enthalpy =
-      std::log(get(equation_of_state->specific_enthalpy_from_density(
+      std::log(get(equation_of_state.specific_enthalpy_from_density(
           Scalar<double>{central_mass_density})));
   const double surface_log_enthalpy = 0.0;
   const double step = (surface_log_enthalpy - initial_log_enthalpy) / num_pts;
@@ -77,36 +74,11 @@ void test_tov(const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
       tov_out_intermediate.mass(intermediate_radius)};
   const double intermediate_log_enthalpy{
       tov_out_intermediate.log_specific_enthalpy(intermediate_radius)};
-  const double intermediate_enthalpy{
-      tov_out_intermediate.specific_enthalpy(intermediate_radius)};
   const double interpolated_mass{tov_out_full.mass(intermediate_radius)};
   const double interpolated_log_enthalpy{
       tov_out_full.log_specific_enthalpy(intermediate_radius)};
-  const double interpolated_enthalpy{
-      tov_out_full.specific_enthalpy(intermediate_radius)};
   CHECK(intermediate_mass == custom_approx(interpolated_mass));
   CHECK(intermediate_log_enthalpy == custom_approx(interpolated_log_enthalpy));
-  CHECK(intermediate_enthalpy == custom_approx(interpolated_enthalpy));
-
-  const Scalar<DataVector> intermediate_radius_dv{5_st, intermediate_radius};
-  const Scalar<DataVector> intermediate_mass_dv =
-      tov_out_intermediate.mass(intermediate_radius_dv);
-  const Scalar<DataVector> intermediate_log_enthalpy_dv =
-      tov_out_intermediate.log_specific_enthalpy(intermediate_radius_dv);
-  const Scalar<DataVector> intermediate_enthalpy_dv =
-      tov_out_intermediate.specific_enthalpy(intermediate_radius_dv);
-  const Scalar<DataVector> interpolated_mass_dv =
-      tov_out_full.mass(intermediate_radius_dv);
-  const Scalar<DataVector> interpolated_log_enthalpy_dv =
-      tov_out_full.log_specific_enthalpy(intermediate_radius_dv);
-  const Scalar<DataVector> interpolated_enthalpy_dv =
-      tov_out_full.specific_enthalpy(intermediate_radius_dv);
-  CHECK_ITERABLE_CUSTOM_APPROX(intermediate_mass_dv, interpolated_mass_dv,
-                               custom_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(intermediate_log_enthalpy_dv,
-                               interpolated_log_enthalpy_dv, custom_approx);
-  CHECK_ITERABLE_CUSTOM_APPROX(intermediate_enthalpy_dv,
-                               interpolated_enthalpy_dv, custom_approx);
 
   const auto deserialized_tov_out_full =
       serialize_and_deserialize(tov_out_full);
@@ -119,19 +91,13 @@ void test_tov(const std::unique_ptr<EquationsOfState::EquationOfState<true, 1>>&
   const double intermediate_log_enthalpy_ds{
       deserialized_tov_out_intermediate.log_specific_enthalpy(
           intermediate_radius_ds)};
-  const double intermediate_enthalpy_ds{
-      deserialized_tov_out_intermediate.specific_enthalpy(
-          intermediate_radius_ds)};
   const double interpolated_mass_ds{
       deserialized_tov_out_full.mass(intermediate_radius_ds)};
   const double interpolated_log_enthalpy_ds{
       deserialized_tov_out_full.log_specific_enthalpy(intermediate_radius_ds)};
-  const double interpolated_enthalpy_ds{
-      deserialized_tov_out_full.specific_enthalpy(intermediate_radius_ds)};
   CHECK(intermediate_mass_ds == custom_approx(interpolated_mass_ds));
   CHECK(intermediate_log_enthalpy_ds ==
         custom_approx(interpolated_log_enthalpy_ds));
-  CHECK(intermediate_enthalpy_ds == custom_approx(interpolated_enthalpy_ds));
 }
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.Tov",
@@ -148,8 +114,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.Tov",
   */
   const size_t num_pts = 25;
   for (size_t i = 0; i < num_pts; i++) {
-    test_tov(equation_of_state, 1.0e-10, num_pts, i, true);
-    test_tov(equation_of_state, 1.0e-03, num_pts, i, false);
+    test_tov(*equation_of_state, 1.0e-10, num_pts, i, true);
+    test_tov(*equation_of_state, 1.0e-03, num_pts, i, false);
   }
 }
 
