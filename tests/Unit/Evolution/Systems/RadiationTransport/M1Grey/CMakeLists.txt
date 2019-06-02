@@ -18,3 +18,8 @@ add_test_library(
   "M1Grey"
   "Test_Pypp"
   )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )

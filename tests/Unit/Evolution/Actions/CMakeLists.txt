@@ -15,3 +15,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "DataStructures;Domain;ErrorHandling"
   )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )

@@ -21,3 +21,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "SlopeLimiters"
   )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )

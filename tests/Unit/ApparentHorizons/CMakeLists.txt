@@ -22,3 +22,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "ApparentHorizons;GeneralRelativitySolutions;RootFinding;Utilities"
   )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )

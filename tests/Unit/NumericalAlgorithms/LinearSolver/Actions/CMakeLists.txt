@@ -13,3 +13,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "Convergence;DataStructures"
   )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )

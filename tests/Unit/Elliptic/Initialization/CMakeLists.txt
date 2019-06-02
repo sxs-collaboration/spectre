@@ -20,3 +20,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "DataStructures;Domain;ErrorHandling;LinearOperators;Spectral"
   )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )
