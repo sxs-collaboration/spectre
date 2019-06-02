@@ -753,8 +753,6 @@ void test_constraint_compute_items(
   const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
-  const auto& spacetime_metric =
-      gr::spacetime_metric(lapse, shift, spatial_metric);
 
   const auto christoffel_first_kind =
       gr::christoffel_first_kind(deriv_spatial_metric);
