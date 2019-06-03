@@ -7,6 +7,7 @@
 #include <boost/functional/hash.hpp>  // IWYU pragma: keep
 #include <cstddef>
 #include <functional>
+#include <limits>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -164,28 +165,31 @@ secondary_neighbors_to_exclude_from_fit(
         get<::Tags::Mean<Tag>>(neighbor_and_data.second.means)[tensor_index] -
         local_mean);
   };
-  const auto max_difference_neighbor_and_data = *alg::max_element(
-      neighbor_data,
-      [&mean_difference](
-          const std::pair<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-                          Package>& lhs,
-          const std::pair<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-                          Package>& rhs) noexcept {
-        return mean_difference(lhs) < mean_difference(rhs);
-      });
+
+  double max_difference = std::numeric_limits<double>::lowest();
+  std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>
+      neighbor_max_difference{};
+  for (const auto& neighbor_and_data : neighbor_data) {
+    const auto& neighbor = neighbor_and_data.first;
+    if (neighbor == primary_neighbor) {
+      continue;
+    }
+    const double difference = mean_difference(neighbor_and_data);
+    if (difference > max_difference) {
+      max_difference = difference;
+      neighbor_max_difference = neighbor;
+    }
+  }
 
   std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>
-      neighbors_to_exclude{{max_difference_neighbor_and_data.first}};
+      neighbors_to_exclude{{neighbor_max_difference}};
 
   // See if other elements share this maximum mean difference. This loop should
   // only rarely find other neighbors with the same maximal mean difference to
   // add to the vector, so it will usually not change the vector.
-  const double max_difference =
-      mean_difference(max_difference_neighbor_and_data);
   for (const auto& neighbor_and_data : neighbor_data) {
     const auto& neighbor = neighbor_and_data.first;
-    if (neighbor == primary_neighbor or
-        neighbor == max_difference_neighbor_and_data.first) {
+    if (neighbor == primary_neighbor or neighbor == neighbor_max_difference) {
       continue;
     }
     const double difference = mean_difference(neighbor_and_data);
@@ -193,6 +197,9 @@ secondary_neighbors_to_exclude_from_fit(
       neighbors_to_exclude.push_back(neighbor);
     }
   }
+
+  ASSERT(not alg::found(neighbors_to_exclude, primary_neighbor),
+         "Logical inconsistency: trying to exclude the primary neighbor.");
 
   return neighbors_to_exclude;
 }
