@@ -166,13 +166,21 @@ void test_find_related() noexcept {
 
 void test_for_each() noexcept {
   int count = 0;
-  alg::for_each(std::vector<size_t>{1, 7, 234, 987, 32},
-                [&count](const size_t value) {
-                  if (value > 100) {
-                    count++;
-                  }
-                });
+  const std::vector<size_t> a{1, 7, 234, 987, 32};
+  alg::for_each(a, [&count](const size_t value) {
+    if (value > 100) {
+      count++;
+    }
+  });
   CHECK(count == 2);
+
+  std::vector<size_t> b{1, 7, 234, 987, 32};
+  alg::for_each(b, [](size_t& value) {
+    if (value > 100) {
+      value *= 2;
+    }
+  });
+  CHECK(b == std::vector<size_t>{1, 7, 2 * 234, 2 * 987, 32});
 }
 
 void test_remove() noexcept {
