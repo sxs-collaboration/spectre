@@ -51,13 +51,13 @@ namespace ScalarWave {
  *
  * The evolution equations for the first-order scalar wave system are given by:
  * \f{align}
- * \partial_t\psi = & -\pi \\
- * \partial_t\Phi_i = & -\partial_i \pi \\
- * \partial_t\pi = & - \delta^{ij}\partial_i\Phi_j
+ * \partial_t\Psi = & -\Pi \\
+ * \partial_t\Phi_i = & -\partial_i \Pi \\
+ * \partial_t\Pi = & - \delta^{ij}\partial_i\Phi_j
  * \f}
  *
- * where \f$\psi\f$ is the scalar field, \f$\pi=-\partial_t\psi\f$ is the
- * conjugate momentum to \f$\psi\f$, and \f$\Phi_i=\partial_i\psi\f$ is an
+ * where \f$\Psi\f$ is the scalar field, \f$\Pi=-\partial_t\Psi\f$ is the
+ * conjugate momentum to \f$\Psi\f$, and \f$\Phi_i=\partial_i\Psi\f$ is an
  * auxiliary variable.
  */
 template <size_t Dim>
