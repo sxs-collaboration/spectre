@@ -57,15 +57,15 @@ if [ -z "${RUN_CLANG_TIDY}" ] \
     && [ -z "${RUN_IWYU}" ] \
     && [ -z "${BUILD_DOC}" ]; then
     if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build libraries" ]]; then
-        make libs test-libs-stage1 -j2
+        time make libs test-libs-stage1 -j2
     fi
 
     if [[ ${TRAVIS_BUILD_STAGE_NAME} = \
           "Build and run tests, clangtidy, iwyu, and doxygen" ]]; then
-        make -j2
+        time make -j2
         # Build major executables in serial to avoid hitting memory limits.
-        make test-executables -j1
-        ctest --output-on-failure -j2
+        time make test-executables -j1
+        time ctest --output-on-failure -j2
 
         # Build test coverage
         if [[ ${COVERAGE} = ON ]]; then
@@ -79,7 +79,7 @@ if [ -z "${RUN_CLANG_TIDY}" ] \
             fi
         fi
     fi
-    ccache -s
+    time ccache -s
 fi
 
 # Build documentation and doc coverage and deploy to GitHub pages.
