@@ -407,7 +407,7 @@ auto determinant_and_inverse(
                 "Taking the inverse of a mixed Spatial and Spacetime index "
                 "Tensor is not allowed since it's not clear what that means.");
   static_assert(not std::is_integral<T>::value, "Can't invert a Tensor<int>.");
-  const auto& det_and_inv_pair =
+  const auto det_and_inv_pair =
       determinant_and_inverse_detail::DetAndInverseImpl<Symm, Index0,
                                                         Index1>::apply(tensor);
   tuples::TaggedTuple<DetTag, InvTag> det_and_inv_tupl;

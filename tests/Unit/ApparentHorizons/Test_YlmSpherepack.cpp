@@ -160,7 +160,7 @@ void test_theta_phi_points(
   DataVector u(ylm_spherepack.physical_size());
   func.func(&u, 1, 0, theta, phi);
 
-  const auto& theta_phi = ylm_spherepack.theta_phi_points();
+  const auto theta_phi = ylm_spherepack.theta_phi_points();
   DataVector u_test(ylm_spherepack.physical_size());
   // fill pointwise using offset
   for (size_t s = 0; s < ylm_spherepack.physical_size(); ++s) {

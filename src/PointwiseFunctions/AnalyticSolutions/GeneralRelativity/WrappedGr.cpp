@@ -134,7 +134,7 @@ WrappedGr<SolutionType>::variables(
       get<typename WrappedGr<SolutionType>::DerivSpatialMetric>(
           intermediate_vars);
 
-  const auto& phi =
+  const auto phi =
       GeneralizedHarmonic::phi(lapse, deriv_lapse, shift, deriv_shift,
                                spatial_metric, deriv_spatial_metric);
 

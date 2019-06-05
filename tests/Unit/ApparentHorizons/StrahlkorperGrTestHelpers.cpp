@@ -137,7 +137,7 @@ Scalar<DataType> horizon_ricci_scalar(
 
   // Get the theta and phi points on the original Strahlkorper, where the
   // spin is not on the z axis
-  const auto& theta_phi_points = ylm.theta_phi_points();
+  const auto theta_phi_points = ylm.theta_phi_points();
 
   // Loop over collocation points, rotating each point
   std::vector<std::array<double, 2>> points;

@@ -111,7 +111,7 @@ void test_upwind_flux_random() noexcept {
       tnsr::aa<DataVector, spatial_dim, Frame::Inertial>>(
       nn_generator, nn_dist_pert, used_for_size);
 
-  const auto& spatial_metric_int = gr::spatial_metric(spacetime_metric_int);
+  const auto spatial_metric_int = gr::spatial_metric(spacetime_metric_int);
   const auto inverse_spatial_metric_int =
       determinant_and_inverse(spatial_metric_int).second;
   const tnsr::i<DataVector, spatial_dim, Frame::Inertial>
@@ -128,7 +128,7 @@ void test_upwind_flux_random() noexcept {
       gr::shift(spacetime_metric_int, inverse_spatial_metric_int);
   const auto lapse_int = gr::lapse(shift_int, spacetime_metric_int);
 
-  const auto& spatial_metric_ext = gr::spatial_metric(spacetime_metric_ext);
+  const auto spatial_metric_ext = gr::spatial_metric(spacetime_metric_ext);
   const auto inverse_spatial_metric_ext =
       determinant_and_inverse(spatial_metric_ext).second;
   const DataVector one_form_magnitude_ext =
@@ -254,5 +254,5 @@ void test_upwind_flux_random() noexcept {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.UpwindFlux",
                   "[Unit][Evolution]") {
-    test_upwind_flux_random();
+  test_upwind_flux_random();
 }

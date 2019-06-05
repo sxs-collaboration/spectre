@@ -461,22 +461,22 @@ void UpwindFlux<Dim>::operator()(
   const Scalar<DataVector> gamma2_avg{0.5 *
                                       (get(gamma2_int) + get(gamma2_ext))};
 
-  const auto& char_fields_int = characteristic_fields(
+  const auto char_fields_int = characteristic_fields(
       gamma2_avg, inverse_spatial_metric_int, spacetime_metric_int, pi_int,
       phi_int, interface_unit_normal_int);
-  const auto& char_speeds_int = characteristic_speeds(
+  const auto char_speeds_int = characteristic_speeds(
       gamma1_avg, lapse_int, shift_int, interface_unit_normal_int);
-  const auto& char_fields_ext = characteristic_fields(
+  const auto char_fields_ext = characteristic_fields(
       gamma2_avg, inverse_spatial_metric_ext, spacetime_metric_ext, pi_ext,
       phi_ext, interface_unit_normal_int);
-  const auto& char_speeds_ext = characteristic_speeds(
+  const auto char_speeds_ext = characteristic_speeds(
       gamma1_avg, lapse_ext, shift_ext, interface_unit_normal_int);
 
-  const auto& weighted_char_fields =
+  const auto weighted_char_fields =
       GeneralizedHarmonic_detail::weight_char_fields<Dim>(
           char_fields_int, char_speeds_int, char_fields_ext, char_speeds_ext);
 
-  const auto& weighted_evolved_fields =
+  const auto weighted_evolved_fields =
       evolved_fields_from_characteristic_fields(
           gamma2_avg,
           get<Tags::UPsi<Dim, Frame::Inertial>>(weighted_char_fields),

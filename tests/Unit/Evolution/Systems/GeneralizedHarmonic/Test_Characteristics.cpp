@@ -121,10 +121,10 @@ void test_characteristic_speeds_analytic(
 
   // Get generalized harmonic characteristic speeds locally
   const auto shift_dot_normal = dot_product(shift, unit_normal_one_form);
-  const auto& upsi_speed = -(1. + get(gamma_1)) * get(shift_dot_normal);
-  const auto& uzero_speed = -get(shift_dot_normal);
-  const auto& uplus_speed = -get(shift_dot_normal) + get(lapse);
-  const auto& uminus_speed = -get(shift_dot_normal) - get(lapse);
+  const auto upsi_speed = -(1. + get(gamma_1)) * get(shift_dot_normal);
+  const auto uzero_speed = -get(shift_dot_normal);
+  const auto uplus_speed = -get(shift_dot_normal) + get(lapse);
+  const auto uminus_speed = -get(shift_dot_normal) - get(lapse);
 
   // Check that locally computed fields match returned ones
   const auto char_speeds_from_func =
