@@ -18,7 +18,6 @@
 namespace domain {
 namespace creators {
 
-/// \ingroup DomainCreatorsGroup
 /// \brief Create a Domain consisting of multiple aligned Blocks arrayed in a
 /// lattice.
 ///

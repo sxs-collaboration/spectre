@@ -19,7 +19,7 @@ class er;
 }  // namespace PUP
 
 /*!
- * \ingroup DomainCreatorsGroup
+ * \ingroup ComputationalDomainGroup
  * \brief A mapping of the logical coordinate axes of a host to the logical
  * coordinate axes of a neighbor of the host.
  * \usage Given a `size_t dimension`, a `Direction`, or a `SegmentId` of the
@@ -120,7 +120,7 @@ std::array<T, VolumeDim> OrientationMap<VolumeDim>::permute_from_neighbor(
   return result;
 }
 
-/// \ingroup DomainCreatorsGroup
+/// \ingroup ComputationalDomainGroup
 /// `OrientationMap`s define an active rotation of the logical axes that bring
 /// the axes of a host block into alignment with the logical axes of the
 /// neighbor block. `discrete_rotation` applies this active rotation on the

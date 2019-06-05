@@ -23,7 +23,6 @@ class DomainCreator;  // IWYU pragma: keep
 namespace domain {
 namespace creators {
 
-/// \ingroup DomainCreatorsGroup
 /// Create a 1D Domain consisting of a single Block.
 template <typename TargetFrame>
 class Interval : public DomainCreator<1, TargetFrame> {

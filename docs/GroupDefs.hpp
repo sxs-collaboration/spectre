@@ -33,8 +33,8 @@
  *
  * ### Description
  * The VolumeDim-dimensional computational Domain is constructed from a set of
- * non-overlapping Block%s. Each Block is a distorted VolumeDim-dimensional
- * hyperrcube  Each codimension-1 boundary of a Block is either part of the
+ * non-overlapping Block%s.  Each Block is a distorted VolumeDim-dimensional
+ * hypercube.  Each codimension-1 boundary of a Block is either part of the
  * external boundary of the computational domain, or is identical to a boundary
  * of one other Block.  Each Block is subdivided into one or more Element%s
  * that may be changed dynamically if AMR is enabled.
@@ -381,12 +381,6 @@
  * \defgroup DiscontinuousGalerkinGroup Discontinuous Galerkin
  * \brief Functions and classes specific to the Discontinuous Galerkin
  * algorithm.
- */
-
-/*!
- * \defgroup DomainCreatorsGroup Domain Creators
- * A collection of domain creators for specifying the initial computational
- * domain geometry.
  */
 
 /*!

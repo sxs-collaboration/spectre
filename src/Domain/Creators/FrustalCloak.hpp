@@ -22,7 +22,6 @@ class DomainCreator;  // IWYU pragma: keep
 namespace domain {
 namespace creators {
 
-/// \ingroup DomainCreatorsGroup
 /// Create a 3D cubical domain with two equal-sized abutting excised cubes in
 /// the center. This is done by combining ten frusta.
 template <typename TargetFrame>

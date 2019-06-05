@@ -25,7 +25,8 @@ class Domain;
 /// \endcond
 
 namespace domain {
-/// Defines classes that create Domains.
+/// \ingroup ComputationalDomainGroup
+/// \brief Defines classes that create Domains.
 namespace creators {
 /// \cond
 template <size_t VolumeDim, typename TargetFrame>
@@ -86,7 +87,8 @@ struct domain_creators<3> {
 };
 }  // namespace DomainCreators_detail
 
-/// Base class for creating Domains from an option string.
+/// \ingroup ComputationalDomainGroup
+/// \brief Base class for creating Domains from an option string.
 template <size_t VolumeDim, typename TargetFrame>
 class DomainCreator {
  public:
