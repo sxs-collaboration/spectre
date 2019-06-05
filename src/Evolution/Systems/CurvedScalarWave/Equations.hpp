@@ -35,20 +35,20 @@ namespace CurvedScalarWave {
  * \cite Holst2004wt :
  *
  * \f{align}
- * \partial_t\psi = & (1 + \gamma_1) N^k \partial_k \psi - N \Pi - \gamma_1 N^k
+ * \partial_t\Psi = & (1 + \gamma_1) N^k \partial_k \Psi - N \Pi - \gamma_1 N^k
  * \Phi_k \\
  *
  * \partial_t\Pi = & - N g^{ij}\partial_i\Phi_j + N^k \partial_k \Pi + \gamma_1
- * \gamma_2 N^k \partial_k \psi  + N \Gamma^i - g^{ij} \Phi_i \partial_j N
+ * \gamma_2 N^k \partial_k \Psi  + N \Gamma^i - g^{ij} \Phi_i \partial_j N
  *  + N K \Pi - \gamma_1  \gamma_2 N^k \Phi_k\\
  *
  * \partial_t\Phi_i = & - N \partial_i \Pi  + N^k \partial_k \Phi + \gamma_2
- * N \partial_i \psi - \Pi
+ * N \partial_i \Psi - \Pi
  * \partial_i N + \Phi_k \partial_i N^j - \gamma_2 N \Phi_i\\
  * \f}
  *
- * where \f$\psi\f$ is the scalar field, \f$\Pi\f$ is the
- * conjugate momentum to \f$\psi\f$, \f$\Phi_i=\partial_i\psi\f$ is an
+ * where \f$\Psi\f$ is the scalar field, \f$\Pi\f$ is the
+ * conjugate momentum to \f$\Psi\f$, \f$\Phi_i=\partial_i\Psi\f$ is an
  * auxiliary variable, \f$N\f$ is the lapse, \f$N^k\f$ is the shift, \f$ g_{ij}
  * \f$ is the spatial metric, \f$ K \f$ is the trace of the extrinsic curvature,
  * and \f$ \Gamma^i \f$ is the trace of the Christoffel symbol of the second
