@@ -13,6 +13,7 @@
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
 #include "IO/H5/Header.hpp"
+#include "IO/H5/Helpers.hpp"
 #include "IO/H5/OpenGroup.hpp"
 #include "IO/H5/Type.hpp"
 #include "IO/H5/Version.hpp"
@@ -44,8 +45,12 @@ void bind_h5file() {
                                py_list_to_std_vector<std::string>(legend),
                                version);
            })
-      .def("close", +[](const h5::H5File<h5::AccessType::ReadWrite>& f) {
-        f.close_current_object();
+      .def("close",
+           +[](const h5::H5File<h5::AccessType::ReadWrite>& f) {
+             f.close_current_object();
+           })
+      .def("groups", +[](h5::H5File<h5::AccessType::ReadWrite>& f) {
+        return std_vector_to_py_list<std::string>(f.groups());
       });
 }
 }  // namespace py_bindings

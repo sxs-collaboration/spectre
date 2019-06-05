@@ -2,11 +2,12 @@
 # See LICENSE.txt for details.
 
 from spectre import DataStructures
-import  spectre.IO.H5 as spectre_h5
+import spectre.IO.H5 as spectre_h5
 import unittest
 import numpy as np
 import os
 import numpy.testing as npt
+
 
 class TestIOH5File(unittest.TestCase):
     # Test Fixtures
@@ -19,11 +20,9 @@ class TestIOH5File(unittest.TestCase):
         if os.path.isfile(self.file_name):
             os.remove(self.file_name)
 
-
     def tearDown(self):
         if os.path.isfile(self.file_name):
             os.remove(self.file_name)
-
 
     # Test whether an H5 file is created correctly,
     def test_name(self):
@@ -78,6 +77,18 @@ class TestIOH5File(unittest.TestCase):
         datfile = file_spec.get_dat("/element_data")
         self.assertEqual(datfile.get_header()[0:16], "#\n# File created")
         file_spec.close()
+
+    def test_groups(self):
+        file_spec = spectre_h5.H5File(self.file_name, 1)
+        file_spec.insert_dat("/element_data", ["Time", "Value"], 0)
+        file_spec.insert_dat("/element_position", ["x", "y", "z"], 0)
+        file_spec.insert_dat("/element_size", ["Time", "Size"], 0)
+        groups_spec = ["element_data.dat", "element_position.dat",
+                       "element_size.dat", "src.tar.gz"]
+        for group_name in groups_spec:
+            self.assertTrue(group_name in file_spec.groups())
+        file_spec.close()
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -30,12 +30,12 @@
 #include "IO/H5/Version.hpp"
 #include "IO/H5/Wrappers.hpp"
 #include "Informer/InfoFromBuild.hpp"
+#include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Formaline.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/TMPL.hpp"
-
 // IWYU pragma: no_include <boost/iterator/iterator_facade.hpp>
 // IWYU pragma: no_include <boost/multi_array.hpp>
 // IWYU pragma: no_include <boost/multi_array/base.hpp>
@@ -67,6 +67,10 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
         my_file.template get<h5::Header>("/header").get_header();
 
     CHECK(my_file.name() == h5_file_name);
+
+    // Check that the subgroups were found correctly
+    std::vector<std::string> h5_file_groups{"src.tar.gz"};
+    CHECK(my_file.groups() == h5_file_groups);
 
     CHECK("#\n# File created on "s ==
           my_header.substr(0, my_header.find("File created on ") + 16));
@@ -227,9 +231,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorObjectAlreadyExists", "[Unit][IO][H5]") {
         my_file.insert<h5::Dat>("/L2_errors///", legend, version_number);
     error_file.append(std::vector<double>{0, 0.1, 0.2, 0.3});
   }
-  {
-    my_file.insert<h5::Dat>("/L2_errors//", legend, version_number);
-  }
+  { my_file.insert<h5::Dat>("/L2_errors//", legend, version_number); }
 }
 
 SPECTRE_TEST_CASE("Unit.IO.H5.Version", "[Unit][IO][H5]") {
@@ -267,6 +269,12 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Dat", "[Unit][IO][H5]") {
 
   h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
   my_file.insert<h5::Dat>("/L2_errors", legend, version_number);
+
+  // Check that the Dat file is found to be a subgroup of the file
+  const auto groups_in_file = my_file.groups();
+  CHECK(alg::find(groups_in_file, std::string{"L2_errors.dat"}) !=
+        groups_in_file.end());
+
   // pass bad values to make sure the original ones aren't overridden.
   auto evil_legend = legend;
   evil_legend.emplace_back("Uh oh");
@@ -525,7 +533,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.ReadData", "[Unit][IO][H5]") {
 
   h5::write_data(group_id, std::vector<double>{1.0}, {}, "scalar_dataset");
   double scalar_data_from_file =
-    h5::read_data<0, double>(group_id, "scalar_dataset");
+      h5::read_data<0, double>(group_id, "scalar_dataset");
   CHECK(scalar_data_from_file == 1.0);
 
   tmpl::for_each<all_type_list>([&group_id](auto x) noexcept {
