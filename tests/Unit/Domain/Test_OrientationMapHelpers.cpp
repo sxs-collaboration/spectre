@@ -73,7 +73,7 @@ void test_1d_orient_variables() noexcept {
 // identical to) one of the cases hit by `test_2d_orient_variables`. However, by
 // writing it out by hand, we provide a sanity check and a clearer example of
 // how to use `orient_variables`.
-void test_2d_simple_case_by_hand() noexcept {
+void test_2d_orient_variables_simple_case_by_hand() noexcept {
   const OrientationMap<2> orientation_map(std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}});
   const auto extents = Index<2>{2, 3};
@@ -146,7 +146,7 @@ void test_2d_orient_variables() noexcept {
 // identical to) one of the cases hit by `test_3d_orient_variables`. However, by
 // writing it out by hand, we provide a sanity check and a clearer example of
 // how to use `orient_variables`.
-void test_3d_simple_case_by_hand() noexcept {
+void test_3d_orient_variables_simple_case_by_hand() noexcept {
   const OrientationMap<3> orientation_map(std::array<Direction<3>, 3>{
       {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
        Direction<3>::upper_xi()}});
@@ -400,8 +400,8 @@ SPECTRE_TEST_CASE("Unit.Domain.OrientationMapHelpers", "[Domain][Unit]") {
     test_1d_orient_variables();
     test_2d_orient_variables();
     test_3d_orient_variables();
-    test_2d_simple_case_by_hand();
-    test_3d_simple_case_by_hand();
+    test_2d_orient_variables_simple_case_by_hand();
+    test_3d_orient_variables_simple_case_by_hand();
   }
 
   SECTION("Testing orient_variables_on_slice") {
