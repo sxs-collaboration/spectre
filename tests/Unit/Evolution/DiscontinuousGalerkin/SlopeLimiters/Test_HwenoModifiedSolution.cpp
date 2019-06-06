@@ -8,7 +8,6 @@
 #include <cstddef>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -22,7 +21,6 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"
-#include "Domain/OrientationMap.hpp"
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/HwenoModifiedSolution.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -30,6 +28,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/Evolution/DiscontinuousGalerkin/SlopeLimiters/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Variables
 
@@ -46,53 +45,10 @@ struct VectorTag : db::SimpleTag {
   static std::string name() noexcept { return "Vector"; }
 };
 
-template <size_t VolumeDim>
-Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) noexcept {
-  return {std::unordered_set<ElementId<VolumeDim>>{ElementId<VolumeDim>(id)},
-          OrientationMap<VolumeDim>{}};
-}
-
-// Construct an element with one neighbor in each direction.
-template <size_t VolumeDim>
-Element<VolumeDim> make_element() noexcept;
-
-template <>
-Element<1> make_element() noexcept {
-  return Element<1>{
-      ElementId<1>{0},
-      Element<1>::Neighbors_t{
-          {Direction<1>::lower_xi(), make_neighbor_with_id<1>(1)},
-          {Direction<1>::upper_xi(), make_neighbor_with_id<1>(2)}}};
-}
-
-template <>
-Element<2> make_element() noexcept {
-  return Element<2>{
-      ElementId<2>{0},
-      Element<2>::Neighbors_t{
-          {Direction<2>::lower_xi(), make_neighbor_with_id<2>(1)},
-          {Direction<2>::upper_xi(), make_neighbor_with_id<2>(2)},
-          {Direction<2>::lower_eta(), make_neighbor_with_id<2>(3)},
-          {Direction<2>::upper_eta(), make_neighbor_with_id<2>(4)}}};
-}
-
-template <>
-Element<3> make_element() noexcept {
-  return Element<3>{
-      ElementId<3>{0},
-      Element<3>::Neighbors_t{
-          {Direction<3>::lower_xi(), make_neighbor_with_id<3>(1)},
-          {Direction<3>::upper_xi(), make_neighbor_with_id<3>(2)},
-          {Direction<3>::lower_eta(), make_neighbor_with_id<3>(3)},
-          {Direction<3>::upper_eta(), make_neighbor_with_id<3>(4)},
-          {Direction<3>::lower_zeta(), make_neighbor_with_id<3>(5)},
-          {Direction<3>::upper_zeta(), make_neighbor_with_id<3>(6)}}};
-}
-
 void test_hweno_modified_solution_1d() {
   INFO("Testing hweno_modified_neighbor_solution in 1D");
   using TagsList = tmpl::list<ScalarTag>;
-  const auto element = make_element<1>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
   const auto mesh = Mesh<1>{
       {{3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
@@ -186,7 +142,7 @@ void test_hweno_modified_solution_1d() {
 void test_hweno_modified_solution_2d_vector() {
   INFO("Testing hweno_modified_neighbor_solution in 2D");
   using TagsList = tmpl::list<VectorTag<2>>;
-  const auto element = make_element<2>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<2>();
   const auto mesh = Mesh<2>{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
@@ -364,7 +320,7 @@ void test_hweno_modified_solution_2d_vector() {
 void test_hweno_modified_solution_2d_exclude_two_neighbors() {
   INFO("Testing hweno_modified_neighbor_solution in 2D");
   using TagsList = tmpl::list<ScalarTag>;
-  const auto element = make_element<2>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<2>();
   const auto mesh = Mesh<2>{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
@@ -530,7 +486,7 @@ void test_hweno_modified_solution_3d() {
   const auto primary_neighbor =
       std::make_pair(Direction<3>::upper_zeta(), ElementId<3>{6});
 
-  const auto element = make_element<3>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<3>();
   const auto mesh = Mesh<3>{{{3, 3, 4}},
                             Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};
@@ -766,10 +722,13 @@ void test_hweno_modified_solution_2d_boundary() {
   const Element<2> element{
       ElementId<2>{0},
       Element<2>::Neighbors_t{
-          {Direction<2>::lower_xi(), make_neighbor_with_id<2>(1)},
+          {Direction<2>::lower_xi(),
+           TestHelpers::SlopeLimiters::make_neighbor_with_id<2>(1)},
           // upper_xi is external boundary
-          {Direction<2>::lower_eta(), make_neighbor_with_id<2>(3)},
-          {Direction<2>::upper_eta(), make_neighbor_with_id<2>(4)}}};
+          {Direction<2>::lower_eta(),
+           TestHelpers::SlopeLimiters::make_neighbor_with_id<2>(3)},
+          {Direction<2>::upper_eta(),
+           TestHelpers::SlopeLimiters::make_neighbor_with_id<2>(4)}}};
   const auto mesh = Mesh<2>{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
@@ -902,8 +861,10 @@ void test_hweno_modified_solution_2d_boundary_single_neighbor() {
   INFO("Testing hweno_modified_neighbor_solution in 2D at boundary");
   using TagsList = tmpl::list<ScalarTag>;
   const Element<2> element{
-      ElementId<2>{0}, Element<2>::Neighbors_t{{Direction<2>::lower_eta(),
-                                                make_neighbor_with_id<2>(3)}}};
+      ElementId<2>{0},
+      Element<2>::Neighbors_t{
+          {Direction<2>::lower_eta(),
+           TestHelpers::SlopeLimiters::make_neighbor_with_id<2>(3)}}};
   const auto mesh = Mesh<2>{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
@@ -1025,12 +986,17 @@ void test_hweno_modified_solution_3d_boundary() {
   const Element<3> element{
       ElementId<3>{0},
       Element<3>::Neighbors_t{
-          {Direction<3>::lower_xi(), make_neighbor_with_id<3>(1)},
-          {Direction<3>::upper_xi(), make_neighbor_with_id<3>(2)},
-          {Direction<3>::lower_eta(), make_neighbor_with_id<3>(3)},
-          {Direction<3>::upper_eta(), make_neighbor_with_id<3>(4)},
+          {Direction<3>::lower_xi(),
+           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(1)},
+          {Direction<3>::upper_xi(),
+           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(2)},
+          {Direction<3>::lower_eta(),
+           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(3)},
+          {Direction<3>::upper_eta(),
+           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(4)},
           // lower_zeta is external boundary
-          {Direction<3>::upper_zeta(), make_neighbor_with_id<3>(6)}}};
+          {Direction<3>::upper_zeta(),
+           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(6)}}};
   const auto mesh = Mesh<3>{{{3, 3, 4}},
                             Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};

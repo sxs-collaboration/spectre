@@ -6,7 +6,6 @@
 #include <array>
 #include <cstddef>
 #include <functional>
-#include <unordered_set>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -21,6 +20,7 @@
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/WenoGridHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
+#include "tests/Unit/Evolution/DiscontinuousGalerkin/SlopeLimiters/TestHelpers.hpp"
 
 namespace {
 
@@ -65,49 +65,6 @@ void test_check_element_no_href() {
   CHECK_FALSE(SlopeLimiters::Weno_detail::
                   check_element_has_one_similar_neighbor_in_direction(
                       element, Direction<2>::upper_eta()));
-}
-
-template <size_t VolumeDim>
-Neighbors<VolumeDim> make_neighbor_with_id(const size_t id) noexcept {
-  return {std::unordered_set<ElementId<VolumeDim>>{ElementId<VolumeDim>(id)},
-          OrientationMap<VolumeDim>{}};
-}
-
-// Construct an element with one neighbor in each direction.
-template <size_t VolumeDim>
-Element<VolumeDim> make_element() noexcept;
-
-template <>
-Element<1> make_element() noexcept {
-  return Element<1>{
-      ElementId<1>{0},
-      Element<1>::Neighbors_t{
-          {Direction<1>::lower_xi(), make_neighbor_with_id<1>(1)},
-          {Direction<1>::upper_xi(), make_neighbor_with_id<1>(2)}}};
-}
-
-template <>
-Element<2> make_element() noexcept {
-  return Element<2>{
-      ElementId<2>{0},
-      Element<2>::Neighbors_t{
-          {Direction<2>::lower_xi(), make_neighbor_with_id<2>(1)},
-          {Direction<2>::upper_xi(), make_neighbor_with_id<2>(2)},
-          {Direction<2>::lower_eta(), make_neighbor_with_id<2>(3)},
-          {Direction<2>::upper_eta(), make_neighbor_with_id<2>(4)}}};
-}
-
-template <>
-Element<3> make_element() noexcept {
-  return Element<3>{
-      ElementId<3>{0},
-      Element<3>::Neighbors_t{
-          {Direction<3>::lower_xi(), make_neighbor_with_id<3>(1)},
-          {Direction<3>::upper_xi(), make_neighbor_with_id<3>(2)},
-          {Direction<3>::lower_eta(), make_neighbor_with_id<3>(3)},
-          {Direction<3>::upper_eta(), make_neighbor_with_id<3>(4)},
-          {Direction<3>::lower_zeta(), make_neighbor_with_id<3>(5)},
-          {Direction<3>::upper_zeta(), make_neighbor_with_id<3>(6)}}};
 }
 
 template <size_t VolumeDim>
@@ -168,7 +125,7 @@ void check_grid_point_transform_no_href(
 
 void test_grid_helpers_1d() {
   INFO("Testing WENO grid helpers in 1D");
-  const auto element = make_element<1>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
   const Mesh<1> mesh({{6}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   check_grid_point_transform_no_href(mesh, mesh, element);
@@ -180,7 +137,7 @@ void test_grid_helpers_1d() {
 
 void test_grid_helpers_2d() {
   INFO("Testing WENO grid helpers in 2D");
-  const auto element = make_element<2>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<2>();
   const Mesh<2> mesh({{5, 6}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   check_grid_point_transform_no_href(mesh, mesh, element);
@@ -192,7 +149,7 @@ void test_grid_helpers_2d() {
 
 void test_grid_helpers_3d() {
   INFO("Testing WENO grid helpers in 3D");
-  const auto element = make_element<3>();
+  const auto element = TestHelpers::SlopeLimiters::make_element<3>();
   const Mesh<3> mesh({{4, 5, 6}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   check_grid_point_transform_no_href(mesh, mesh, element);
