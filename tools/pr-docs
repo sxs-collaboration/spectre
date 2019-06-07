@@ -25,7 +25,7 @@ pr=$1
 outdir=$2
 
 # Linux || OSX
-tmpdir=$(mktemp -d --tmpdir 2>/dev/null || mkdir -d -t spectre-doc)
+tmpdir=$(mktemp -d --tmpdir 2>/dev/null || mktemp -d -t spectre-doc)
 trap 'rm -rf "${tmpdir}"' EXIT
 
 spectre=$(git rev-parse --show-toplevel 2>/dev/null) || {
