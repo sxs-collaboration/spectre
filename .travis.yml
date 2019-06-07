@@ -48,19 +48,17 @@ services:
 # Specify the order of stages.
 stages:
   - Build Libraries
-  - Build and Run Tests, ClangTidy, IWYU, and Doxygen
+  - Build Test Libraries
+  - Build Executables, Run Tests, ClangTidy, IWYU, and Doxygen
 
 # Set up travis configurations of Linux and macOS.
 #
 # We also have separate targets for running shell scripts that enforce what
 # would normally be done as pre-push hooks, CHECK_COMMITS and CHECK_FILES
-#
-# NOTE: The static analysis targets are run first since these are typically
-#       fast to run and provide the most useful feedback.
 jobs:
   fast_finish: true
   include:
-  - stage: Build and Run Tests, ClangTidy, IWYU, and Doxygen
+  - stage: Build Executables, Run Tests, ClangTidy, IWYU, and Doxygen
     os: linux
     dist: trusty
     env: CHECK_COMMITS=true
@@ -97,32 +95,32 @@ jobs:
     compiler: clang
     name: test check files
 
-  # Run full builds after static analysis
-  - &Gcc7Debug
-    os: linux
-    compiler: gcc
-    dist: trusty
-    env: BUILD_TYPE=Debug COVERAGE=OFF COMPILER=gcc-7
-    name: gcc-7 debug
-    stage: Build Libraries
-  - &Gcc7Release
-    os: linux
-    compiler: gcc
-    dist: trusty
-    env: BUILD_TYPE=Release COMPILER=gcc-7
-    name: gcc-7 release
+  # First stage: build libraries
   - &Gcc6Debug
     os: linux
     compiler: gcc-6
     dist: trusty
     env: BUILD_TYPE=Debug COMPILER=gcc-6
     name: gcc-6 debug
+    stage: Build Libraries
   - &Gcc6Release
     os: linux
     compiler: gcc-6
     dist: trusty
     env: BUILD_TYPE=Release COMPILER=gcc-6
     name: gcc-6 release
+  - &Gcc7Debug
+    os: linux
+    compiler: gcc
+    dist: trusty
+    env: BUILD_TYPE=Debug COVERAGE=OFF COMPILER=gcc-7
+    name: gcc-7 debug
+  - &Gcc7Release
+    os: linux
+    compiler: gcc
+    dist: trusty
+    env: BUILD_TYPE=Release COMPILER=gcc-7
+    name: gcc-7 release
   - &Gcc8Debug
     os: linux
     compiler: gcc-8
@@ -160,18 +158,27 @@ jobs:
   #   compiler: clang
   #   name: osx xcode 9.2 release
 
-  # Build and run tests, clang tidy, IWYU, and docs.
-  - <<: *Gcc7Debug
-    stage: Build and Run Tests, ClangTidy, IWYU, and Doxygen
-  - <<: *Gcc7Release
-  - <<: *ClangDebug
-  - <<: *ClangRelease
+  # Build test libraries
   - <<: *Gcc6Debug
+    stage: Build Test Libraries
   - <<: *Gcc6Release
+  - <<: *Gcc7Debug
+  - <<: *Gcc7Release
   - <<: *Gcc8Debug
   - <<: *Gcc8Release
-  # - <<: *MacOsDebug9_2
-  # - <<: *MacOsRelease9_2
+  - <<: *ClangDebug
+  - <<: *ClangRelease
+
+  # Last stage: Build test executables, run tests, clang tidy, IWYU, and docs.
+  - <<: *Gcc6Debug
+    stage: Build Executables, Run Tests, ClangTidy, IWYU, and Doxygen
+  - <<: *Gcc6Release
+  - <<: *Gcc7Debug
+  - <<: *Gcc7Release
+  - <<: *Gcc8Debug
+  - <<: *Gcc8Release
+  - <<: *ClangDebug
+  - <<: *ClangRelease
 
 
 # Travis allows caching of data between builds to reduce build times or perform
