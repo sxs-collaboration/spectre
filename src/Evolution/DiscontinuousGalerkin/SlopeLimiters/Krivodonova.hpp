@@ -22,12 +22,12 @@
 #include "DataStructures/Tensor/Metafunctions.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"         // IWYU pragma: keep
 #include "DataStructures/Variables.hpp"             // IWYU pragma: keep
-#include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"    // IWYU pragma: keep
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
 #include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"  // IWYU pragma: keep
+#include "Domain/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"            // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"

@@ -10,14 +10,12 @@ set(LIBRARY_SOURCES
     SliceIterator.cpp
     StripeIterator.cpp
     Tensor/TensorData.cpp
-    VariablesHelpers.cpp
     )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
 target_link_libraries(
   ${LIBRARY}
-  INTERFACE Domain
   INTERFACE ErrorHandling
   )
 

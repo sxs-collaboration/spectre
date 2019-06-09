@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "DataStructures/VariablesHelpers.hpp"
+#include "Domain/OrientationMapHelpers.hpp"
 
 #include <algorithm>
 #include <array>
@@ -14,6 +14,7 @@
 #include "Domain/Side.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 namespace {
 
@@ -199,7 +200,7 @@ std::vector<size_t> compute_offset_permutation(
 
 }  // namespace
 
-namespace OrientVariables_detail {
+namespace OrientationMapHelpers_detail {
 
 template <>
 std::vector<size_t> oriented_offset(
@@ -293,4 +294,4 @@ std::vector<size_t> oriented_offset_on_slice(
       neighbor_second_axis_is_aligned, neighbor_axes_are_transposed);
 }
 
-}  // namespace OrientVariables_detail
+}  // namespace OrientationMapHelpers_detail

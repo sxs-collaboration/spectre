@@ -10,7 +10,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"

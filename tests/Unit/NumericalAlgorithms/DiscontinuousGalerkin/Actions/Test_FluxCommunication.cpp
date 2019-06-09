@@ -38,6 +38,7 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
+#include "Domain/OrientationMapHelpers.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
