@@ -1207,19 +1207,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintEnergy",
       std::numeric_limits<double>::signaling_NaN());
 }
 
-// [[TimeOut, 9]]
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintComputeTags",
     "[Unit][Evolution]") {
-  pypp::SetupLocalPythonEnvironment local_python_env{
-      "Evolution/Systems/GeneralizedHarmonic/"};
   // Test the F constraint against Kerr Schild
   const double mass = 1.4;
   const std::array<double, 3> dimensionless_spin{{0.4, 0.3, 0.2}};
   const std::array<double, 3> center{{0.2, 0.3, 0.4}};
   const gr::Solutions::KerrSchild solution(mass, dimensionless_spin, center);
 
-  const size_t grid_size = 8;
+  const size_t grid_size = 3;
   const std::array<double, 3> upper_bound{{0.82, 1.24, 1.32}};
   const std::array<double, 3> lower_bound{{0.8, 1.22, 1.30}};
 
