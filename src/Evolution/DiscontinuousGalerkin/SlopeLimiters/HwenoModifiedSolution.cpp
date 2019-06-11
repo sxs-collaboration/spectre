@@ -239,7 +239,7 @@ const Matrix& ConstrainedFitCache<VolumeDim>::retrieve_inverse_a_matrix(
     return inverse_a_matrices.at(primary_direction).at(primary_direction);
   } else {
     ERROR(
-        "Logic error: asked to retrieve a cached A^{-1} matrix for a\n"
+        "Cache misuse error: asked to retrieve a cached A^{-1} matrix for a\n"
         "configuration where multiple neighboring elements are excluded from\n"
         "the HWENO fit. Because this case is so rare, it is not handled by\n"
         "the cache. The caller should check for multiple neighbors being\n"

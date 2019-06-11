@@ -8,7 +8,9 @@
 #include <cstddef>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -26,6 +28,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/Evolution/DiscontinuousGalerkin/SlopeLimiters/TestHelpers.hpp"
@@ -44,6 +47,67 @@ struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, VolumeDim>;
   static std::string name() noexcept { return "Vector"; }
 };
+
+void test_secondary_neighbors_to_exclude_from_fit() {
+  INFO("Testing Hweno_detail::secondary_neighbors_to_exclude_from_fit");
+  struct DummyPackage {
+    tuples::TaggedTuple<::Tags::Mean<ScalarTag>> means;
+  };
+  std::unordered_map<std::pair<Direction<2>, ElementId<2>>, DummyPackage,
+                     boost::hash<std::pair<Direction<2>, ElementId<2>>>>
+      dummy_neighbor_data;
+
+  const auto lower_xi =
+      std::make_pair(Direction<2>::lower_xi(), ElementId<2>{1});
+  const auto upper_xi =
+      std::make_pair(Direction<2>::upper_xi(), ElementId<2>{2});
+  const auto lower_eta =
+      std::make_pair(Direction<2>::lower_eta(), ElementId<2>{3});
+  const auto upper_eta =
+      std::make_pair(Direction<2>::upper_eta(), ElementId<2>{4});
+
+  get(get<::Tags::Mean<ScalarTag>>(dummy_neighbor_data[lower_xi].means)) = 1.;
+  get(get<::Tags::Mean<ScalarTag>>(dummy_neighbor_data[upper_xi].means)) = 2.;
+  get(get<::Tags::Mean<ScalarTag>>(dummy_neighbor_data[lower_eta].means)) = 3.;
+  get(get<::Tags::Mean<ScalarTag>>(dummy_neighbor_data[upper_eta].means)) = 3.;
+
+  const auto check_excluded_neighbors = [&dummy_neighbor_data](
+      const double mean,
+      const std::pair<Direction<2>, ElementId<2>>& primary_neighbor,
+      const std::unordered_set<
+          std::pair<Direction<2>, ElementId<2>>,
+          boost::hash<std::pair<Direction<2>, ElementId<2>>>>&
+          expected_excluded_neighbors) noexcept {
+    const size_t tensor_index = 0;
+    const auto excluded_neighbors_vector =
+        SlopeLimiters::Hweno_detail::secondary_neighbors_to_exclude_from_fit<
+            ScalarTag>(mean, tensor_index, dummy_neighbor_data,
+                       primary_neighbor);
+    // The elements of `excluded_neighbors_vector` are ordered in an undefined
+    // way, because they are filled by looping over the unordered_map of
+    // neighbor data. To provide meaningful test comparisons, we move the data
+    // into an unordered_set. (A sort would also work here, if the Direction and
+    // ElementId classes were sortable, which they aren't.)
+    const std::unordered_set<std::pair<Direction<2>, ElementId<2>>,
+                             boost::hash<std::pair<Direction<2>, ElementId<2>>>>
+        excluded_neighbors(excluded_neighbors_vector.begin(),
+                           excluded_neighbors_vector.end());
+    CHECK(excluded_neighbors == expected_excluded_neighbors);
+  };
+
+  check_excluded_neighbors(0., lower_xi, {{lower_eta, upper_eta}});
+  check_excluded_neighbors(0., upper_xi, {{lower_eta, upper_eta}});
+  check_excluded_neighbors(0., lower_eta, {{upper_eta}});
+  check_excluded_neighbors(0., upper_eta, {{lower_eta}});
+  check_excluded_neighbors(3., lower_xi, {{upper_xi}});
+  check_excluded_neighbors(3., upper_xi, {{lower_xi}});
+  check_excluded_neighbors(3., lower_eta, {{lower_xi}});
+  check_excluded_neighbors(3., upper_eta, {{lower_xi}});
+  check_excluded_neighbors(4., lower_xi, {{upper_xi}});
+  check_excluded_neighbors(4., upper_xi, {{lower_xi}});
+  check_excluded_neighbors(4., lower_eta, {{lower_xi}});
+  check_excluded_neighbors(4., upper_eta, {{lower_xi}});
+}
 
 void test_hweno_modified_solution_1d() {
   INFO("Testing hweno_modified_neighbor_solution in 1D");
@@ -1213,6 +1277,8 @@ void test_hweno_modified_solution_3d_boundary() {
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.HwenoModifiedSolution",
                   "[SlopeLimiters][Unit]") {
+  test_secondary_neighbors_to_exclude_from_fit();
+
   test_hweno_modified_solution_1d();
   test_hweno_modified_solution_2d_vector();
   test_hweno_modified_solution_2d_exclude_two_neighbors();
