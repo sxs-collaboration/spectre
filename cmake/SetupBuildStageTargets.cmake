@@ -6,14 +6,30 @@
 # Generate a list of all the Test_ libraries
 get_target_property(LIBS_TO_LINK RunTests LINK_LIBRARIES)
 
-add_custom_target(test-libs-stage1)
-add_dependencies(test-libs-stage1
-  Test_ApparentHorizons
-  Test_ControlSystem
+add_custom_target(test-libs-data-structures)
+add_custom_target(test-libs-domain)
+add_custom_target(test-libs-elliptic)
+add_custom_target(test-libs-evolution)
+add_custom_target(test-libs-numerical-algorithms)
+add_custom_target(test-libs-pointwise-functions)
+add_custom_target(test-libs-other)
+
+add_dependencies(test-libs-data-structures
+  Test_DataStructures
+  Test_DataBox
+  Test_Tensor
+  Test_EagerMath
+  Test_Expressions
+  )
+
+add_dependencies(test-libs-domain
   Test_Domain
   Test_Amr
   Test_CoordinateMaps
   Test_DomainCreators
+  )
+
+add_dependencies(test-libs-elliptic
   Test_EllipticActions
   Test_EllipticDG
   Test_EllipticInitialization
@@ -21,7 +37,9 @@ add_dependencies(test-libs-stage1
   Test_Poisson
   Test_PoissonActions
   Test_Xcts
-  Test_ErrorHandling
+  )
+
+add_dependencies(test-libs-evolution
   Test_EvolutionActions
   Test_EvolutionConservative
   Test_EvolutionDiscontinuousGalerkin
@@ -38,8 +56,9 @@ add_dependencies(test-libs-stage1
   Test_Valencia
   Test_VariableFixing
   Test_ScalarWave
-  Test_IO
-  Test_Informer
+  )
+
+add_dependencies(test-libs-numerical-algorithms
   Test_Convergence
   Test_NumericalDiscontinuousGalerkin
   Test_NumericalFluxes
@@ -48,21 +67,37 @@ add_dependencies(test-libs-stage1
   Test_LinearOperators
   Test_LinearSolver
   Test_LinearSolverActions
-  Test_ConjugateGradientAlgorithm
-  Test_DistributedConjugateGradientAlgorithm
   Test_ConjugateGradient
-  Test_DistributedGmresAlgorithm
-  Test_GmresAlgorithm
   Test_Gmres
   Test_RootFinding
   Test_Spectral
-  Test_Options
+  )
+
+add_dependencies(test-libs-pointwise-functions
+  Test_GrMhdAnalyticData
   Test_BurgersSolutions
+  Test_ElasticitySolutions
+  Test_GeneralRelativitySolutions
+  Test_GrMhdSolutions
   Test_NewtonianEulerSolutions
   Test_PoissonSolutions
+  Test_M1GreySolutions
+  Test_RelativisticEulerSolutions
   Test_WaveEquation
+  Test_XctsSolutions
+  Test_ConstitutiveRelations
   Test_GeneralRelativity
+  Test_Hydro
   Test_MathFunctions
+  )
+
+add_dependencies(test-libs-other
+  Test_ApparentHorizons
+  Test_ControlSystem
+  Test_ErrorHandling
+  Test_IO
+  Test_Informer
+  Test_Options
   Test_Pypp
   Test_TestUtilities
   Test_Time
