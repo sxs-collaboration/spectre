@@ -15,6 +15,11 @@ add_test_library(
   "Convergence;DataStructures;IO"
   )
 
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )
+
 # This code is adapted from Parallel/CMakeLists.txt
 
 function(add_algorithm_test TEST_NAME)

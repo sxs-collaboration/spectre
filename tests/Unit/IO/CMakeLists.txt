@@ -24,6 +24,11 @@ add_test_library(
   "IO"
   )
 
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )
+
 spectre_add_python_test(
   "Unit.IO.H5.Python"
   "Test_H5.py"

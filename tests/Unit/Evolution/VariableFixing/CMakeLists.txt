@@ -16,3 +16,8 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "DataStructures;VariableFixing"
   )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )
