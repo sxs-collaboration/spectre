@@ -88,7 +88,7 @@ if(COVERAGE)
       TESTRUNNER_ARGS
       "--output-on-failure"
       IGNORE_COV
-      '${CMAKE_BINARY_DIR}/Informer/InfoFromBuild.cpp'
+      '${CMAKE_BINARY_DIR}/Informer/InfoAtLink.cpp'
       '${CMAKE_SOURCE_DIR}/tests/*'
   )
 endif()

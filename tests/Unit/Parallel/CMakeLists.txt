@@ -53,6 +53,7 @@ add_dependencies(
 target_link_libraries(
   Test_ConstGlobalCache
   ErrorHandling
+  Informer
   ${SPECTRE_LIBRARIES}
   )
 
