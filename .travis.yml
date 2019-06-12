@@ -49,7 +49,7 @@ services:
 stages:
   - Build Libraries
   - Build Test Libraries
-  - Build Executables, Run Tests, ClangTidy, IWYU, and Doxygen
+  - Build Executables, Run Tests, ClangTidy, and Doxygen
 
 # Set up travis configurations of Linux and macOS.
 #
@@ -58,7 +58,7 @@ stages:
 jobs:
   fast_finish: true
   include:
-  - stage: Build Executables, Run Tests, ClangTidy, IWYU, and Doxygen
+  - stage: Build Executables, Run Tests, ClangTidy, and Doxygen
     os: linux
     dist: trusty
     env: CHECK_COMMITS=true
@@ -79,11 +79,6 @@ jobs:
     env: RUN_CLANG_TIDY=true BUILD_TYPE=Debug
     compiler: clang
     name: clang-tidy debug
-  - os: linux
-    dist: trusty
-    env: RUN_IWYU=true BUILD_TYPE=Debug
-    compiler: clang
-    name: include what you use
   - os: linux
     dist: trusty
     env: BUILD_DOC=true BUILD_TYPE=Debug
@@ -169,9 +164,9 @@ jobs:
   - <<: *ClangDebug
   - <<: *ClangRelease
 
-  # Last stage: Build test executables, run tests, clang tidy, IWYU, and docs.
+  # Last stage: Build test executables, run tests, clang tidy, and docs.
   - <<: *Gcc6Debug
-    stage: Build Executables, Run Tests, ClangTidy, IWYU, and Doxygen
+    stage: Build Executables, Run Tests, ClangTidy, and Doxygen
   - <<: *Gcc6Release
   - <<: *Gcc7Debug
   - <<: *Gcc7Release
@@ -220,6 +215,7 @@ before_install:
   - export CHARM_PATCH=v6.8.patch
   - export CHARM_CC=${CC}
   - export FC=gfortran-8
+  - export USE_PCH=ON;
   - if [[ ${COMPILER} =~ (gcc|clang)-([0-9\.]+) ]]; then
       CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
       if [[ ${BASH_REMATCH[1]} = gcc ]]; then
@@ -228,11 +224,6 @@ before_install:
       else
           CXX=clang++-${BASH_REMATCH[2]};
       fi
-    fi
-  - if [ ${RUN_IWYU} ]; then
-        export USE_PCH=OFF;
-    else
-        export USE_PCH=ON;
     fi
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
       ./.travis/MacOsBuildDependencies.sh;
@@ -316,7 +307,6 @@ script:
         --build-arg GH_PAGES_SOURCE_BRANCH=${GH_PAGES_SOURCE_BRANCH}
         --build-arg COVERALLS_TOKEN=${COVERALLS_TOKEN}
         --build-arg RUN_CLANG_TIDY=${RUN_CLANG_TIDY}
-        --build-arg RUN_IWYU=${RUN_IWYU}
         --build-arg BUILD_DOC=${BUILD_DOC}
         --build-arg USE_PCH=${USE_PCH}
         --build-arg UPSTREAM_REPO=${UPSTREAM_REPO}
