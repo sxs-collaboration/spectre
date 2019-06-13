@@ -106,19 +106,19 @@ class Variables<tmpl::list<Tags...>> {
                 "You must provide at least one tag to the Variables "
                 "for type inference");
 
-  static_assert(
-      (tmpl2::flat_all_v<
-           cpp17::is_same_v<typename Tags::type::type,
-                            typename tmpl::front<tags_list>::type::type>...> or
-       tmpl2::flat_all_v<is_spin_weighted_of_same_type_v<
-           typename tmpl::front<tags_list>::type::type,
-           typename Tags::type::type>...>),
-      "All tensors stored in a single Variables must "
-      "have the same internal storage type.");
+  static_assert((tmpl2::flat_all<cpp17::is_same_v<
+                     typename Tags::type::type,
+                     typename tmpl::front<tags_list>::type::type>...>::value or
+                 tmpl2::flat_all<is_spin_weighted_of_same_type_v<
+                     typename tmpl::front<tags_list>::type::type,
+                     typename Tags::type::type>...>::value),
+                "All tensors stored in a single Variables must "
+                "have the same internal storage type.");
 
   static_assert(
-      tmpl2::flat_all_v<cpp17::is_same_v<
-          cpp17::void_t<typename Tags::type::type::value_type>, void>...>,
+      tmpl2::flat_all<
+          cpp17::is_same_v<cpp17::void_t<typename Tags::type::type::value_type>,
+                           void>...>::value,
       "The tensor stored in a Variables must have as member `type` "
       "a vector with a member `value_type` (e.g. Tensors of doubles are "
       "disallowed, use instead a Tensor of DataVectors).");
@@ -200,9 +200,9 @@ class Variables<tmpl::list<Tags...>> {
                 db::remove_all_prefixes<Tags>>::value...>::value> = nullptr>
   explicit Variables(const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept;
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all_v<std::is_same<
+            Requires<tmpl2::flat_all<std::is_same<
                 db::remove_all_prefixes<WrappedTags>,
-                db::remove_all_prefixes<Tags>>::value...>> = nullptr>
+                db::remove_all_prefixes<Tags>>::value...>::value> = nullptr>
   Variables& operator=(
       const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept;
   // @}
@@ -262,8 +262,8 @@ class Variables<tmpl::list<Tags...>> {
   /// \note There is no need for an rvalue overload because we need to copy into
   /// the contiguous array anyway
   template <typename... SubsetOfTags,
-            Requires<tmpl2::flat_all_v<tmpl::list_contains_v<
-                tmpl::list<Tags...>, SubsetOfTags>...>> = nullptr>
+            Requires<tmpl2::flat_all<tmpl::list_contains_v<
+                tmpl::list<Tags...>, SubsetOfTags>...>::value> = nullptr>
   void assign_subset(
       const Variables<tmpl::list<SubsetOfTags...>>& vars) noexcept {
     EXPAND_PACK_LEFT_TO_RIGHT(
@@ -271,8 +271,8 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   template <typename... SubsetOfTags,
-            Requires<tmpl2::flat_all_v<tmpl::list_contains_v<
-                tmpl::list<Tags...>, SubsetOfTags>...>> = nullptr>
+            Requires<tmpl2::flat_all<tmpl::list_contains_v<
+                tmpl::list<Tags...>, SubsetOfTags>...>::value> = nullptr>
   void assign_subset(
       const tuples::TaggedTuple<SubsetOfTags...>& vars) noexcept {
     EXPAND_PACK_LEFT_TO_RIGHT(
@@ -301,9 +301,9 @@ class Variables<tmpl::list<Tags...>> {
   Variables& operator=(const blaze::Vector<VT, VF>& expression) noexcept;
 
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all_v<
-                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
-                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+            Requires<tmpl2::flat_all<cpp17::is_same_v<
+                db::remove_all_prefixes<WrappedTags>,
+                db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE Variables& operator+=(
       const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
     variable_data_ += rhs.variable_data_;
@@ -317,9 +317,9 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all_v<
-                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
-                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+            Requires<tmpl2::flat_all<cpp17::is_same_v<
+                db::remove_all_prefixes<WrappedTags>,
+                db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   SPECTRE_ALWAYS_INLINE Variables& operator-=(
       const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
     variable_data_ -= rhs.variable_data_;
@@ -363,9 +363,9 @@ class Variables<tmpl::list<Tags...>> {
   }
 
   template <typename... WrappedTags,
-            Requires<tmpl2::flat_all_v<
-                cpp17::is_same_v<db::remove_all_prefixes<WrappedTags>,
-                                 db::remove_all_prefixes<Tags>>...>> = nullptr>
+            Requires<tmpl2::flat_all<cpp17::is_same_v<
+                db::remove_all_prefixes<WrappedTags>,
+                db::remove_all_prefixes<Tags>>...>::value> = nullptr>
   friend SPECTRE_ALWAYS_INLINE decltype(auto) operator-(
       const Variables<tmpl::list<WrappedTags...>>& lhs,
       const Variables& rhs) noexcept {
@@ -584,9 +584,9 @@ Variables<tmpl::list<Tags...>>::Variables(
 
 template <typename... Tags>
 template <typename... WrappedTags,
-          Requires<tmpl2::flat_all_v<
+          Requires<tmpl2::flat_all<
               std::is_same<db::remove_all_prefixes<WrappedTags>,
-                           db::remove_all_prefixes<Tags>>::value...>>>
+                           db::remove_all_prefixes<Tags>>::value...>::value>>
 Variables<tmpl::list<Tags...>>& Variables<tmpl::list<Tags...>>::operator=(
     const Variables<tmpl::list<WrappedTags...>>& rhs) noexcept {
   size_ = rhs.size_;
