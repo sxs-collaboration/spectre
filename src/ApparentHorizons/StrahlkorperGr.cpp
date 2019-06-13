@@ -360,17 +360,6 @@ double get_spin_magnitude(const std::array<DataVector, 3>& potentials,
 namespace StrahlkorperGr {
 
 template <typename Frame>
-tnsr::i<DataVector, 3, Frame> unit_normal_one_form(
-    const tnsr::i<DataVector, 3, Frame>& normal_one_form,
-    const DataVector& one_over_one_form_magnitude) noexcept {
-  auto unit_normal_one_form = normal_one_form;
-  for (size_t i = 0; i < 3; ++i) {
-    unit_normal_one_form.get(i) *= one_over_one_form_magnitude;
-  }
-  return unit_normal_one_form;
-}
-
-template <typename Frame>
 tnsr::ii<DataVector, 3, Frame> grad_unit_normal_one_form(
     const tnsr::i<DataVector, 3, Frame>& r_hat, const DataVector& radius,
     const tnsr::i<DataVector, 3, Frame>& unit_normal_one_form,
@@ -696,11 +685,6 @@ double christodoulou_mass(const double dimensionful_spin_magnitude,
                                           (4.0 * square(irreducible_mass))));
 }
 }  // namespace StrahlkorperGr
-
-template tnsr::i<DataVector, 3, Frame::Inertial>
-StrahlkorperGr::unit_normal_one_form<Frame::Inertial>(
-    const tnsr::i<DataVector, 3, Frame::Inertial>& normal_one_form,
-    const DataVector& one_over_one_form_magnitude) noexcept;
 
 template tnsr::ii<DataVector, 3, Frame::Inertial>
 StrahlkorperGr::grad_unit_normal_one_form<Frame::Inertial>(

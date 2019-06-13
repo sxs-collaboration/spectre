@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
+#include "DataStructures/Tensor/EagerMath/DivideBy.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"   // IWYU prgma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -68,13 +69,13 @@ void test_expansion(const Solution& solution,
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
 
-  const DataVector one_over_one_form_magnitude =
-      1.0 / get(magnitude(
-                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+  const DataVector one_form_magnitude = get(
+      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
                 inverse_spatial_metric));
-  const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
-      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-      one_over_one_form_magnitude);
+  const DataVector one_over_one_form_magnitude = 1.0 / one_form_magnitude;
+  const auto unit_normal_one_form =
+      divide_by(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                one_form_magnitude);
   const auto grad_unit_normal_one_form =
       StrahlkorperGr::grad_unit_normal_one_form(
           db::get<StrahlkorperTags::Rhat<Frame::Inertial>>(box),
@@ -136,13 +137,13 @@ void test_minkowski() {
               tmpl::list<gr::Tags::InverseSpatialMetric<3, Frame::Inertial,
                                                         DataVector>>{}));
 
-  const DataVector one_over_one_form_magnitude =
-      1.0 / get(magnitude(
-                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+  const DataVector one_form_magnitude = get(
+      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
                 inverse_spatial_metric));
-  const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
-      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-      one_over_one_form_magnitude);
+  const DataVector one_over_one_form_magnitude = 1.0 / one_form_magnitude;
+  const auto unit_normal_one_form =
+      divide_by(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                one_form_magnitude);
   const auto grad_unit_normal_one_form =
       StrahlkorperGr::grad_unit_normal_one_form(
           db::get<StrahlkorperTags::Rhat<Frame::Inertial>>(box),
@@ -192,13 +193,13 @@ void test_ricci_scalar(const Solution& solution,
   const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
 
-  const DataVector one_over_one_form_magnitude =
-      1.0 / get(magnitude(
-                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+  const DataVector one_form_magnitude = get(
+      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
                 inverse_spatial_metric));
-  const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
-      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-      one_over_one_form_magnitude);
+  const DataVector one_over_one_form_magnitude = 1.0 / one_form_magnitude;
+  const auto unit_normal_one_form =
+      divide_by(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                one_form_magnitude);
   const auto grad_unit_normal_one_form =
       StrahlkorperGr::grad_unit_normal_one_form(
           db::get<StrahlkorperTags::Rhat<Frame::Inertial>>(box),
@@ -470,13 +471,14 @@ void test_spin_function(const Solution& solution,
 
   const auto& normal_one_form =
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
-  const DataVector one_over_one_form_magnitude =
-      1.0 / get(magnitude(
-                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+
+  const DataVector one_form_magnitude = get(
+      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
                 inverse_spatial_metric));
-  const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
-      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-      one_over_one_form_magnitude);
+  const DataVector one_over_one_form_magnitude = 1.0 / one_form_magnitude;
+  const auto unit_normal_one_form =
+      divide_by(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                one_form_magnitude);
   const auto unit_normal_vector =
       raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric);
 
@@ -543,13 +545,13 @@ void test_dimensionful_spin_magnitude(
 
   const auto& normal_one_form =
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
-  const DataVector one_over_one_form_magnitude =
-      1.0 / get(magnitude(
-                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+  const DataVector one_form_magnitude = get(
+      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
                 inverse_spatial_metric));
-  const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
-      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-      one_over_one_form_magnitude);
+  const DataVector one_over_one_form_magnitude = 1.0 / one_form_magnitude;
+  const auto unit_normal_one_form =
+      divide_by(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                one_form_magnitude);
   const auto unit_normal_vector =
       raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric);
 
@@ -628,13 +630,13 @@ void test_spin_vector(
 
   const auto& normal_one_form =
       db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
-  const DataVector one_over_one_form_magnitude =
-      1.0 / get(magnitude(
-                db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+  const DataVector one_form_magnitude = get(
+      magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
                 inverse_spatial_metric));
-  const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
-      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
-      one_over_one_form_magnitude);
+  const DataVector one_over_one_form_magnitude = 1.0 / one_form_magnitude;
+  const auto unit_normal_one_form =
+      divide_by(db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box),
+                one_form_magnitude);
   const auto unit_normal_vector =
       raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric);
 

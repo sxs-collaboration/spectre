@@ -17,6 +17,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DivideBy.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -124,9 +125,9 @@ FastFlow::iterate_horizon_finder(
       magnitude(db::get<StrahlkorperTags::NormalOneForm<Frame>>(box),
                 upper_spatial_metric);
   const DataVector one_over_one_form_magnitude = 1.0 / get(one_form_magnitude);
-  const auto unit_normal_one_form = StrahlkorperGr::unit_normal_one_form(
-      db::get<StrahlkorperTags::NormalOneForm<Frame>>(box),
-      one_over_one_form_magnitude);
+  const auto unit_normal_one_form =
+      divide_by(db::get<StrahlkorperTags::NormalOneForm<Frame>>(box),
+                get(one_form_magnitude));
   const auto inverse_surface_metric = StrahlkorperGr::inverse_surface_metric(
       raise_or_lower_index(unit_normal_one_form, upper_spatial_metric),
       upper_spatial_metric);
