@@ -29,6 +29,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Prefixes",
   /// [dt_name]
   CHECK(db::tag_name<Tags::dt<Tag>>() == "dt(" + db::tag_name<Tag>() + ")");
   /// [dt_name]
+  /// [analytic_name]
+  CHECK(db::tag_name<Tags::Analytic<Tag>>() ==
+        "Analytic(" + db::tag_name<Tag>() + ")");
+  /// [analytic_name]
   using Dim = tmpl::size_t<2>;
   using Frame = Frame::Inertial;
   using VariablesTag = Tags::Variables<tmpl::list<TensorTag>>;
