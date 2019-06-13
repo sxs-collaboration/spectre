@@ -21,6 +21,7 @@
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/M1Grey/Initialize.hpp"
+#include "Evolution/Systems/RadiationTransport/M1Grey/M1HydroCoupling.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/System.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/UpdateM1Closure.hpp"
@@ -127,7 +128,7 @@ struct EvolutionMetavars {
                           tmpl::list<>>,
       Actions::UpdateU, SlopeLimiters::Actions::SendData<EvolutionMetavars>,
       SlopeLimiters::Actions::Limit<EvolutionMetavars>,
-      Actions::UpdateM1Closure>>;
+      Actions::UpdateM1Closure, Actions::M1HydroCoupling>>;
 
   enum class Phase { Initialization, RegisterWithObserver, Evolve, Exit };
 

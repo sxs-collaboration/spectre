@@ -71,7 +71,7 @@ class ConstantM1 {
   explicit ConstantM1(CkMigrateMessage* /*unused*/) noexcept {}
 
   // @{
-  /// Retrieve M1 variables at `(x, t)`
+  /// Retrieve variables templated on neutrino species at `(x, t)`
   template <typename NeutrinoSpecies>
   auto variables(const tnsr::I<DataVector, 3>& x, double t,
                  tmpl::list<RadiationTransport::M1Grey::Tags::TildeE<
@@ -85,10 +85,34 @@ class ConstantM1 {
                      Frame::Inertial, NeutrinoSpecies>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::TildeS<
           Frame::Inertial, NeutrinoSpecies>>;
+
+  template <typename NeutrinoSpecies>
+  auto variables(const tnsr::I<DataVector, 3>& x, double t,
+                 tmpl::list<RadiationTransport::M1Grey::Tags::GreyEmissivity<
+                     NeutrinoSpecies>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<
+          RadiationTransport::M1Grey::Tags::GreyEmissivity<NeutrinoSpecies>>;
+
+  template <typename NeutrinoSpecies>
+  auto variables(
+      const tnsr::I<DataVector, 3>& x, double t,
+      tmpl::list<RadiationTransport::M1Grey::Tags::GreyAbsorptionOpacity<
+          NeutrinoSpecies>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::
+                                 GreyAbsorptionOpacity<NeutrinoSpecies>>;
+
+  template <typename NeutrinoSpecies>
+  auto variables(
+      const tnsr::I<DataVector, 3>& x, double t,
+      tmpl::list<RadiationTransport::M1Grey::Tags::GreyScatteringOpacity<
+          NeutrinoSpecies>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::
+                                 GreyScatteringOpacity<NeutrinoSpecies>>;
+
   // @}
 
   // @{
-  /// Retrieve hydro variable at `(x, t)`
+  /// Retrieve non-templated variable at `(x, t)`
   auto variables(
       const tnsr::I<DataVector, 3>& x, double t,
       tmpl::list<hydro::Tags::LorentzFactor<DataVector>> /*meta*/) const
