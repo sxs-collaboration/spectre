@@ -122,7 +122,7 @@ void Minmod<VolumeDim, tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
 
 template <size_t VolumeDim, typename... Tags>
 void Minmod<VolumeDim, tmpl::list<Tags...>>::package_data(
-    const gsl::not_null<PackagedData*>& packaged_data,
+    const gsl::not_null<PackagedData*> packaged_data,
     const db::item_type<Tags>&... tensors, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const OrientationMap<VolumeDim>& orientation_map) const noexcept {
