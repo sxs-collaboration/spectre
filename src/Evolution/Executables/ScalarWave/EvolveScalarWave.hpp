@@ -45,6 +45,7 @@
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"       // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
+#include "Time/StepChoosers/ByBlock.hpp"           // IWYU pragma: keep
 #include "Time/StepChoosers/Cfl.hpp"               // IWYU pragma: keep
 #include "Time/StepChoosers/Constant.hpp"          // IWYU pragma: keep
 #include "Time/StepChoosers/Increase.hpp"          // IWYU pragma: keep
@@ -104,7 +105,8 @@ struct EvolutionMetavars {
       typename Event<events>::creatable_classes>;
 
   using step_choosers =
-      tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
+      tmpl::list<StepChoosers::Registrars::ByBlock<Dim>,
+                 StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
                  StepChoosers::Registrars::Constant,
                  StepChoosers::Registrars::Increase>;
 

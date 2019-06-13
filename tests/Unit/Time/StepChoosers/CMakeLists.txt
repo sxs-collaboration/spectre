@@ -3,6 +3,7 @@
 
 set(LIBRARY_SOURCES
   ${LIBRARY_SOURCES}
+  StepChoosers/Test_ByBlock.cpp
   StepChoosers/Test_Cfl.cpp
   StepChoosers/Test_Constant.cpp
   StepChoosers/Test_Increase.cpp
