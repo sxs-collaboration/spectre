@@ -6,10 +6,9 @@
 #include <array>
 #include <cstddef>
 #include <string>
-#include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Matrix.hpp"
@@ -27,14 +26,15 @@
 #include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Helpers.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Initialize.hpp"
-#include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
-#include "IO/Observer/TypeOfObservation.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -42,6 +42,7 @@
 namespace PUP {
 class er;
 }  // namespace PUP
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
@@ -52,13 +53,24 @@ struct MockElementArray {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<Poisson::Actions::Observe>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<LinearSolver::Tags::IterationId, Tags::Mesh<2>,
                         Poisson::Field, Tags::Coordinates<2, Frame::Inertial>>;
   using compute_tags = db::AddComputeTags<>;
-  using initial_databox =
-      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase,
+          Metavariables::Phase::RegisterWithObserver,
+          tmpl::list<observers::Actions::RegisterWithObservers<
+              Poisson::Actions::Observe>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing,
+                             tmpl::list<Poisson::Actions::Observe>>>;
 };
 
 template <typename Metavariables>
@@ -67,14 +79,15 @@ struct MockObserverComponent {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
   using component_being_mocked = observers::Observer<Metavariables>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       typename observers::Actions::Initialize<Metavariables>::simple_tags;
   using compute_tags =
       typename observers::Actions::Initialize<Metavariables>::compute_tags;
-  using initial_databox =
-      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<observers::Actions::Initialize<Metavariables>>>>;
 };
 
 template <typename Metavariables>
@@ -85,14 +98,15 @@ struct MockObserverWriterComponent {
   using const_global_cache_tag_list =
       tmpl::list<observers::OptionTags::ReductionFileName,
                  observers::OptionTags::VolumeFileName>;
-  using action_list = tmpl::list<>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
   using simple_tags =
       typename observers::Actions::InitializeWriter<Metavariables>::simple_tags;
   using compute_tags = typename observers::Actions::InitializeWriter<
       Metavariables>::compute_tags;
-  using initial_databox =
-      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<observers::Actions::InitializeWriter<Metavariables>>>>;
 };
 
 struct AnalyticSolution {
@@ -124,54 +138,15 @@ struct Metavariables {
       tmpl::list<Poisson::Actions::Observe>>;
   /// [collect_reduction_data_tags]
 
-  enum class Phase { Initialize, Exit };
+  enum class Phase { Initialization, RegisterWithObserver, Testing, Exit };
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions.Observe",
                   "[Unit][Elliptic][Actions]") {
-  using TupleOfMockDistributedObjects =
-      typename ActionTesting::MockRuntimeSystem<
-          Metavariables>::TupleOfMockDistributedObjects;
   using obs_component = MockObserverComponent<Metavariables>;
   using obs_writer = MockObserverWriterComponent<Metavariables>;
   using element_comp = MockElementArray<Metavariables>;
-
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using ObserverMockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          obs_component>;
-  using WriterMockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          obs_writer>;
-  using ElementMockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          element_comp>;
-  TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<ObserverMockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
-  tuples::get<WriterMockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<obs_writer>{});
-
-  // Specific IDs have no significance, just need different IDs.
-  const std::vector<ElementId<2>> element_ids{{1, {{{1, 0}, {1, 0}}}},
-                                              {1, {{{1, 0}, {2, 2}}}},
-                                              {0, {{{1, 0}, {1, 0}}}}};
-  for (const auto& id : element_ids) {
-    tuples::get<ElementMockDistributedObjectsTag>(dist_objects)
-        .emplace(ElementIndex<2>{id},
-                 ActionTesting::MockDistributedObject<element_comp>{
-                     db::create<element_comp::simple_tags,
-                                element_comp::compute_tags>(
-                         db::item_type<LinearSolver::Tags::IterationId>{1},
-                         Mesh<2>{{{3, 2}},
-                                 Spectral::Basis::Legendre,
-                                 Spectral::Quadrature::GaussLobatto},
-                         Scalar<DataVector>{{{{1., 2., 3., 4., 5., 6.}}}},
-                         tnsr::I<DataVector, 2, Frame::Inertial>{
-                             {{{0., 1., 2., 3., 4., 5.},
-                               {-1., -2., -3., -4., -5., -6.}}}})});
-  }
 
   tuples::TaggedTuple<AnalyticSolutionTag,
                       observers::OptionTags::ReductionFileName,
@@ -184,20 +159,34 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions.Observe",
       tuples::get<observers::OptionTags::VolumeFileName>(cache_data) =
           "./Unit.Elliptic.Systems.Poisson.Actions_VolumeData";
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      cache_data, std::move(dist_objects)};
+      cache_data};
 
-  runner.simple_action<obs_component,
-                       observers::Actions::Initialize<Metavariables>>(0);
-  runner.simple_action<obs_writer,
-                       observers::Actions::InitializeWriter<Metavariables>>(0);
+  runner.set_phase(Metavariables::Phase::Initialization);
+  ActionTesting::emplace_component<obs_component>(&runner, 0);
+  ActionTesting::emplace_component<obs_writer>(&runner, 0);
+  ActionTesting::next_action<obs_component>(make_not_null(&runner), 0);
+  ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
+
+  // Specific IDs have no significance, just need different IDs.
+  const std::vector<ElementId<2>> element_ids{{1, {{{1, 0}, {1, 0}}}},
+                                              {1, {{{1, 0}, {2, 2}}}},
+                                              {0, {{{1, 0}, {1, 0}}}}};
+  for (const auto& id : element_ids) {
+    ActionTesting::emplace_component_and_initialize<element_comp>(
+        &runner, ElementIndex<2>{id},
+        {db::item_type<LinearSolver::Tags::IterationId>{1},
+         Mesh<2>{{{3, 2}},
+                 Spectral::Basis::Legendre,
+                 Spectral::Quadrature::GaussLobatto},
+         Scalar<DataVector>{{{{1., 2., 3., 4., 5., 6.}}}},
+         tnsr::I<DataVector, 2, Frame::Inertial>{
+             {{{0., 1., 2., 3., 4., 5.}, {-1., -2., -3., -4., -5., -6.}}}}});
+  }
+  runner.set_phase(Metavariables::Phase::RegisterWithObserver);
 
   // Register elements
   for (const auto& id : element_ids) {
-    runner.simple_action<element_comp,
-                         observers::Actions::RegisterWithObservers<
-                             observers::TypeOfObservation::ReductionAndVolume>>(
-        id, observers::ObservationId(
-                0., typename Metavariables::element_observation_type{}));
+    ActionTesting::next_action<element_comp>(make_not_null(&runner), id);
     // Invoke the simple_action RegisterSenderWithSelf that was called on the
     // observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);
@@ -207,6 +196,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions.Observe",
     runner.invoke_queued_simple_action<obs_writer>(0);
   }
 
+  runner.set_phase(Metavariables::Phase::Testing);
   const std::string reduction_h5_file_name = reduction_file_name + ".h5";
   if (file_system::check_if_file_exists(reduction_h5_file_name)) {
     file_system::rm(reduction_h5_file_name, true);

@@ -56,6 +56,7 @@ struct Metavariables {
       OptionTags::AnalyticSolution<AnalyticSolution<Dim>>;
   using component_list = tmpl::list<>;
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 }  // namespace
@@ -73,7 +74,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Source",
             mesh, std::move(inertial_coords));
 
     ActionTesting::MockRuntimeSystem<Metavariables<1>> runner{
-        {AnalyticSolution<1>{}}, {}};
+        {AnalyticSolution<1>{}}};
 
     const auto box =
         Elliptic::Initialization::Source<Metavariables<1>>::initialize(
@@ -96,7 +97,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Source",
             mesh, std::move(inertial_coords));
 
     ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
-        {AnalyticSolution<2>{}}, {}};
+        {AnalyticSolution<2>{}}};
 
     const auto box =
         Elliptic::Initialization::Source<Metavariables<2>>::initialize(
@@ -121,7 +122,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Source",
             mesh, std::move(inertial_coords));
 
     ActionTesting::MockRuntimeSystem<Metavariables<3>> runner{
-        {AnalyticSolution<3>{}}, {}};
+        {AnalyticSolution<3>{}}};
 
     const auto box =
         Elliptic::Initialization::Source<Metavariables<3>>::initialize(

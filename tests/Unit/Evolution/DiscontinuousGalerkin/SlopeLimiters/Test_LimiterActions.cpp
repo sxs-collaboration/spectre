@@ -35,11 +35,14 @@
 #include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
@@ -103,13 +106,18 @@ struct component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tag_list = tmpl::list<LimiterTag>;
-  using action_list =
-      tmpl::list<SlopeLimiters::Actions::SendData<Metavariables>,
-                 SlopeLimiters::Actions::Limit<Metavariables>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<TemporalId, Tags::Mesh<Dim>, Tags::Element<Dim>,
                         Tags::ElementMap<Dim>, Var>;
-  using initial_databox = db::compute_databox_type<simple_tags>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<SlopeLimiters::Actions::SendData<Metavariables>,
+                     SlopeLimiters::Actions::Limit<Metavariables>>>>;
 };
 
 template <size_t Dim>
@@ -120,6 +128,7 @@ struct Metavariables {
   using system = System<Dim>;
   using temporal_id = TemporalId;
   static constexpr bool local_time_stepping = false;
+  enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace
 
@@ -156,13 +165,15 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
   // we need to make the xi and eta maps line up along the block
   // interface.
   using Affine = domain::CoordinateMaps::Affine;
+  using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
   const Affine xi_map{-1., 1., 3., 7.};
   const Affine eta_map{-1., 1., 7., 3.};
 
   const auto coordmap =
       domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
-                                                                 eta_map));
+          Affine2D(xi_map, eta_map));
 
   const struct {
     std::unordered_map<Direction<2>, Scalar<DataVector>> var;
@@ -175,53 +186,39 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
         Scalar<DataVector>(mesh.number_of_grid_points(), 7.)}},
   };
 
-  auto start_box = [
-    &self_id, &west_id, &east_id, &south_id, &block_orientation, &coordmap,
-    &mesh
-  ]() noexcept {
-    const Element<2> element(
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      {DummyLimiterForTest{}}};
+
+  {
+    Element<2> element(
         self_id, {{Direction<2>::lower_xi(), {{west_id}, block_orientation}},
                   {Direction<2>::upper_xi(), {{east_id}, {}}},
                   {Direction<2>::upper_eta(), {{south_id}, {}}}});
-    auto map = ElementMap<2, Frame::Inertial>(self_id, coordmap->get_clone());
-    auto var = Scalar<DataVector>(mesh.number_of_grid_points(), 1234.);
-    return db::create<my_component::simple_tags>(
-        0, mesh, element, std::move(map), std::move(var));
+    ActionTesting::emplace_component_and_initialize<my_component>(
+        &runner, self_id,
+        {0, mesh, element,
+         ElementMap<2, Frame::Inertial>(self_id, coordmap->get_clone()),
+         Scalar<DataVector>(mesh.number_of_grid_points(), 1234.)});
   }
-  ();
 
-  const auto create_neighbor_databox = [&mesh, &self_id, &coordmap ](
+  const auto emplace_neighbor = [&mesh, &self_id, &coordmap, &runner ](
       const ElementId<2>& id, const Direction<2>& direction,
       const OrientationMap<2>& orientation,
       const Scalar<DataVector>& var) noexcept {
     const Element<2> element(id, {{direction, {{self_id}, orientation}}});
     auto map = ElementMap<2, Frame::Inertial>(id, coordmap->get_clone());
-    return db::create<my_component::simple_tags>(0, mesh, element,
-                                                 std::move(map), var);
+    ActionTesting::emplace_component_and_initialize<my_component>(
+        &runner, id, {0, mesh, element, std::move(map), var});
   };
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(self_id, std::move(start_box));
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(south_id, create_neighbor_databox(
-                             south_id, Direction<2>::lower_eta(), {},
-                             test_data.var.at(Direction<2>::upper_eta())));
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(east_id, create_neighbor_databox(
-                            east_id, Direction<2>::lower_xi(), {},
-                            test_data.var.at(Direction<2>::upper_xi())));
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(west_id, create_neighbor_databox(
-                            west_id, Direction<2>::lower_eta(),
-                            block_orientation.inverse_map(),
-                            test_data.var.at(Direction<2>::lower_xi())));
-
-  ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {DummyLimiterForTest{}}, std::move(dist_objects)};
+  emplace_neighbor(south_id, Direction<2>::lower_eta(), {},
+                   test_data.var.at(Direction<2>::upper_eta()));
+  emplace_neighbor(east_id, Direction<2>::lower_xi(), {},
+                   test_data.var.at(Direction<2>::upper_xi()));
+  emplace_neighbor(west_id, Direction<2>::lower_eta(),
+                   block_orientation.inverse_map(),
+                   test_data.var.at(Direction<2>::lower_xi()));
+  runner.set_phase(metavariables::Phase::Testing);
 
   // Call SendDataForLimiter on self, sending data to neighbors
   runner.next_action<my_component>(self_id);
@@ -282,9 +279,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
   // Now we run the ApplyLimiter action. We verify the pre- and post-limiting
   // state of the variable being limited.
   const auto& var_to_limit =
-      db::get<Var>(runner.algorithms<my_component>()
-                       .at(self_id)
-                       .get_databox<my_component::initial_databox>());
+      ActionTesting::get_databox_tag<my_component, Var>(runner, self_id);
   CHECK_ITERABLE_APPROX(
       var_to_limit, Scalar<DataVector>(mesh.number_of_grid_points(), 1234.));
 
@@ -316,25 +311,23 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.NoNeighbors",
   auto input_var = Scalar<DataVector>(mesh.number_of_grid_points(), 1234.);
 
   using Affine = domain::CoordinateMaps::Affine;
+  using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
   const Affine xi_map{-1., 1., 3., 7.};
   const Affine eta_map{-1., 1., 7., 3.};
   auto map = ElementMap<2, Frame::Inertial>(
       self_id,
       domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
-                                                                 eta_map)));
-
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(self_id,
-               db::create<my_component::simple_tags>(
-                   0, mesh, element, std::move(map), std::move(input_var)));
+          Affine2D(xi_map, eta_map)));
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {DummyLimiterForTest{}}, std::move(dist_objects)};
+      {DummyLimiterForTest{}}};
+
+  ActionTesting::emplace_component_and_initialize<my_component>(
+      &runner, self_id,
+      {0, mesh, element, std::move(map), std::move(input_var)});
+  runner.set_phase(metavariables::Phase::Testing);
 
   // Call SendDataForLimiter on self. Expect empty inboxes all around.
   runner.next_action<my_component>(self_id);
@@ -346,9 +339,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.NoNeighbors",
 
   // Now we run the ApplyLimiter action, checking pre and post values.
   const auto& var_to_limit =
-      db::get<Var>(runner.algorithms<my_component>()
-                       .at(self_id)
-                       .get_databox<my_component::initial_databox>());
+      ActionTesting::get_databox_tag<my_component, Var>(runner, self_id);
   CHECK_ITERABLE_APPROX(
       var_to_limit, Scalar<DataVector>(mesh.number_of_grid_points(), 1234.));
 

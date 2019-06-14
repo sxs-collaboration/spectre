@@ -3,25 +3,24 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <cstddef>
 #include <deque>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/IndexType.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 /// \cond
@@ -40,13 +39,16 @@ struct mock_interpolation_target {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<
-      typename ::intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+          InterpolationTargetTag>>>>;
+  using add_options_to_databox =
+      typename intrp::Actions::InitializeInterpolationTarget<
+          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
 };
 
-struct MockMetavariables {
+struct Metavariables {
   struct InterpolationTargetA {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
@@ -56,54 +58,46 @@ struct MockMetavariables {
   static constexpr size_t domain_dim = 3;
 
   using component_list = tmpl::list<
-      mock_interpolation_target<MockMetavariables, InterpolationTargetA>>;
+      mock_interpolation_target<Metavariables, InterpolationTargetA>>;
   using const_global_cache_tag_list = tmpl::list<>;
-  enum class Phase { Initialize, Exit };
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
                   "[Unit]") {
-  using metavars = MockMetavariables;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  using TupleOfMockDistributedObjects =
-      MockRuntimeSystem::TupleOfMockDistributedObjects;
-  TupleOfMockDistributedObjects dist_objects{};
-  using MockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          mock_interpolation_target<metavars, metavars::InterpolationTargetA>>;
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(0,
-               ActionTesting::MockDistributedObject<mock_interpolation_target<
-                   metavars, metavars::InterpolationTargetA>>{});
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
-
+  using metavars = Metavariables;
+  using component =
+      mock_interpolation_target<metavars,
+                                typename metavars::InterpolationTargetA>;
   const auto domain_creator =
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
 
-  runner.simple_action<
-      mock_interpolation_target<metavars, metavars::InterpolationTargetA>,
-      ::intrp::Actions::InitializeInterpolationTarget<
-          metavars::InterpolationTargetA>>(0, domain_creator.create_domain());
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  runner.set_phase(Metavariables::Phase::Initialization);
+  ActionTesting::emplace_component<component>(&runner, 0,
+                                              domain_creator.create_domain());
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  runner.set_phase(Metavariables::Phase::Testing);
 
-  const auto& box =
-      runner
-          .template algorithms<mock_interpolation_target<
-              metavars, metavars::InterpolationTargetA>>()
-          .at(0)
-          .template get_databox<typename mock_interpolation_target<
-              metavars, metavars::InterpolationTargetA>::initial_databox>();
+  CHECK(ActionTesting::get_databox_tag<
+            component, ::intrp::Tags::IndicesOfFilledInterpPoints>(runner, 0)
+            .empty());
+  CHECK(ActionTesting::get_databox_tag<component,
+                                       ::intrp::Tags::TemporalIds<metavars>>(
+            runner, 0)
+            .empty());
 
-  CHECK(db::get<::intrp::Tags::IndicesOfFilledInterpPoints>(box).empty());
-  CHECK(db::get<::intrp::Tags::TemporalIds<metavars>>(box).empty());
-
-  CHECK(db::get<::Tags::Domain<3, Frame::Inertial>>(box) ==
-        domain_creator.create_domain());
+  CHECK(ActionTesting::get_databox_tag<component,
+                                       ::Tags::Domain<3, Frame::Inertial>>(
+            runner, 0) == domain_creator.create_domain());
 
   const auto test_vars = db::item_type<
       ::Tags::Variables<tmpl::list<gr::Tags::Lapse<DataVector>>>>{};
-  CHECK(db::get<::Tags::Variables<typename metavars::InterpolationTargetA::
-                                      vars_to_interpolate_to_target>>(box) ==
-        test_vars);
+  CHECK(
+      ActionTesting::get_databox_tag<
+          component, ::Tags::Variables<typename metavars::InterpolationTargetA::
+                                           vars_to_interpolate_to_target>>(
+          runner, 0) == test_vars);
 
   CHECK(::intrp::Tags::IndicesOfFilledInterpPoints::name() ==
         "IndicesOfFilledInterpPoints");

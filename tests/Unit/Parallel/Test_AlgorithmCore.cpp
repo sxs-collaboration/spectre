@@ -21,10 +21,12 @@
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -141,10 +143,13 @@ struct no_op {
 };
 
 struct initialize {
-  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<not tmpl::list_contains_v<DbTagsList, CountActionsCalled>> =
+          nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
@@ -153,22 +158,34 @@ struct initialize {
         cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
     return std::make_tuple(
-        db::create<tmpl::list<CountActionsCalled, Int0, Int1>>(0, 1, 100));
+        db::create_from<db::RemoveTags<>,
+                        db::AddSimpleTags<CountActionsCalled, Int0, Int1>>(
+            std::move(box), 0, 1, 100),
+        true);
+  }
+
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<tmpl::list_contains_v<DbTagsList, CountActionsCalled>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {std::move(box), true};
   }
 };
 
 struct finalize {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
+  template <typename ParallelComponent, typename... DbTags,
+            typename Metavariables, typename ArrayIndex,
             Requires<tmpl2::flat_any_v<
                 cpp17::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+                    const ArrayIndex& /*array_index*/) {
     static_assert(
         cpp17::is_same_v<ParallelComponent, NoOpsComponent<TestMetavariables>>,
         "The ParallelComponent is not deduced to be the right type");
@@ -183,30 +200,30 @@ template <class Metavariables>
 struct NoOpsComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using action_list =
-      tmpl::list<no_op_test::increment_count_actions_called, no_op_test::no_op>;
-  using initial_databox =
-      db::compute_databox_type<tmpl::list<CountActionsCalled, Int0, Int1>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<no_op_test::initialize>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::NoOpsStart,
+          tmpl::list<no_op_test::increment_count_actions_called,
+                     no_op_test::no_op>>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 
   static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::simple_action<no_op_test::initialize>(
-        Parallel::get_parallel_component<NoOpsComponent>(local_cache));
-  }
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    if (next_phase == Metavariables::Phase::NoOpsStart) {
-      /// [perform_algorithm]
-      Parallel::get_parallel_component<NoOpsComponent>(local_cache)
-          .perform_algorithm();
-      /// [perform_algorithm]
-    } else if (next_phase == Metavariables::Phase::NoOpsFinish) {
+    /// [start_phase]
+    Parallel::get_parallel_component<NoOpsComponent>(local_cache)
+        .start_phase(next_phase);
+    /// [start_phase]
+    if (next_phase == Metavariables::Phase::NoOpsFinish) {
       Parallel::simple_action<no_op_test::finalize>(
           Parallel::get_parallel_component<NoOpsComponent>(local_cache));
     }
@@ -262,10 +279,10 @@ struct increment_int0 {
 };
 
 struct remove_int0 {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
+  static auto apply(db::DataBox<DbTagsList>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
@@ -284,15 +301,11 @@ struct remove_int0 {
 };
 
 struct test_args {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/, const double& v0,
+                    const ArrayIndex& /*array_index*/, const double& v0,
                     std::vector<double>&& v1) noexcept {
     SPECTRE_PARALLEL_REQUIRE(v0 == 4.82937);
     SPECTRE_PARALLEL_REQUIRE(v1 == (std::vector<double>{3.2, -8.4, 7.5}));
@@ -300,32 +313,46 @@ struct test_args {
 };
 
 struct initialize {
-  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<not tmpl::list_contains_v<DbTagsList, CountActionsCalled>> =
+          nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(
-        db::create<tmpl::list<CountActionsCalled, TemporalId>>(
-            0, TestAlgorithmArrayInstance{0}));
+        db::create_from<db::RemoveTags<>,
+                        db::AddSimpleTags<CountActionsCalled, TemporalId>>(
+            std::move(box), 0, TestAlgorithmArrayInstance{0}),
+        true);
+  }
+
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<tmpl::list_contains_v<DbTagsList, CountActionsCalled>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {std::move(box), true};
   }
 };
 
 struct finalize {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
+  template <typename ParallelComponent, typename... DbTags,
+            typename Metavariables, typename ArrayIndex,
             Requires<tmpl2::flat_any_v<
                 cpp17::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+                    const ArrayIndex& /*array_index*/) {
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);
   }
 };
@@ -336,36 +363,36 @@ struct MutateComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using array_index = ElementId;  // Just to test nothing breaks
-  using action_list =
-      tmpl::list<add_remove_test::add_int_value_10,
-                 add_remove_test::increment_int0, add_remove_test::remove_int0>;
-  using initial_databox =
-      db::compute_databox_type<tmpl::list<CountActionsCalled, TemporalId>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<add_remove_test::initialize>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::MutateStart,
+                             tmpl::list<add_remove_test::add_int_value_10,
+                                        add_remove_test::increment_int0,
+                                        add_remove_test::remove_int0>>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 
   static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
-    auto& cache = *(global_cache.ckLocalBranch());
-    /// [simple_action_call]
-    Parallel::simple_action<add_remove_test::initialize>(
-        Parallel::get_parallel_component<MutateComponent>(cache));
-    /// [simple_action_call]
-  }
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    if (next_phase == Metavariables::Phase::MutateStart) {
-      Parallel::get_parallel_component<MutateComponent>(local_cache)
-          .perform_algorithm();
-    } else if (next_phase == Metavariables::Phase::MutateFinish) {
+    Parallel::get_parallel_component<MutateComponent>(local_cache)
+        .start_phase(next_phase);
+    if (next_phase == Metavariables::Phase::MutateFinish) {
       Parallel::simple_action<add_remove_test::test_args>(
           Parallel::get_parallel_component<MutateComponent>(local_cache),
           4.82937, std::vector<double>{3.2, -8.4, 7.5});
+      /// [simple_action_call]
       Parallel::simple_action<add_remove_test::finalize>(
           Parallel::get_parallel_component<MutateComponent>(local_cache));
+      /// [simple_action_call]
     }
   }
 };
@@ -448,40 +475,53 @@ struct update_instance {
 };
 
 struct initialize {
-  template <typename... InboxTags, typename Metavariables, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<not tmpl::list_contains_v<DbTagsList, CountActionsCalled>> =
+          nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(
-        db::create<tmpl::list<CountActionsCalled, Int1, TemporalId>>(
-            0, 0, TestAlgorithmArrayInstance{0}));
+        db::create_from<db::RemoveTags<>,
+                        tmpl::list<CountActionsCalled, Int1, TemporalId>>(
+            std::move(box), 0, 0, TestAlgorithmArrayInstance{0}),
+        true);
+  }
+
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<tmpl::list_contains_v<DbTagsList, CountActionsCalled>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {std::move(box), true};
   }
 };
 
 struct finalize {
   using inbox_tags = tmpl::list<IntReceiveTag>;
   /// [requires_action]
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
+  template <typename ParallelComponent, typename... DbTags,
+            typename Metavariables, typename ArrayIndex,
             Requires<tmpl2::flat_any_v<
                 cpp17::is_same_v<CountActionsCalled, DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    const tuples::TaggedTuple<InboxTags...>& inboxes,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
+                    const ArrayIndex& /*array_index*/) noexcept {
     /// [requires_action]
-    SPECTRE_PARALLEL_REQUIRE(tuples::get<IntReceiveTag>(inboxes).empty());
     SPECTRE_PARALLEL_REQUIRE(db::get<TemporalId>(box) ==
                              TestAlgorithmArrayInstance{4});
     SPECTRE_PARALLEL_REQUIRE(db::get<CountActionsCalled>(box) == 13);
-    SPECTRE_PARALLEL_REQUIRE(db::get<Int1>(box) == 10);
+    SPECTRE_PARALLEL_REQUIRE(db::get<Int1>(box) == 5);
   }
 };
 }  // namespace receive_data_test
@@ -491,30 +531,30 @@ struct ReceiveComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using array_index = ElementId;  // Just to test nothing breaks
-  using action_list =
-      tmpl::list<receive_data_test::add_int0_from_receive,
-                 add_remove_test::increment_int0, add_remove_test::remove_int0,
-                 receive_data_test::update_instance>;
-  using initial_databox = db::compute_databox_type<
-      tmpl::list<CountActionsCalled, Int1, TemporalId>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<receive_data_test::initialize>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::ReceiveStart,
+          tmpl::list<receive_data_test::add_int0_from_receive,
+                     add_remove_test::increment_int0,
+                     add_remove_test::remove_int0,
+                     receive_data_test::update_instance>>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 
   static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::simple_action<receive_data_test::initialize>(
-        Parallel::get_parallel_component<ReceiveComponent>(local_cache));
-  }
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
+    Parallel::get_parallel_component<ReceiveComponent>(local_cache)
+        .start_phase(next_phase);
     if (next_phase == Metavariables::Phase::ReceiveStart) {
-      Parallel::get_parallel_component<ReceiveComponent>(local_cache)
-          .perform_algorithm();
-    } else if (next_phase == Metavariables::Phase::ReceiveSendData) {
       for (TestAlgorithmArrayInstance instance{0};
            not(instance == TestAlgorithmArrayInstance{5}); ++instance) {
         int dummy_int = 10;
@@ -545,8 +585,8 @@ struct iterate_increment_int0 {
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>&
                     /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/, const ParallelComponent* const
+                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+                    const ParallelComponent* const  // NOLINT const
                     /*meta*/) noexcept
       -> std::tuple<db::DataBox<tmpl::list<DbTags...>>&&, bool, size_t> {
     static_assert(cpp17::is_same_v<ParallelComponent,
@@ -578,18 +618,15 @@ struct iterate_increment_int0 {
 
 struct finalize {
   template <
-      typename... DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      typename ParallelComponent, typename... DbTags, typename Metavariables,
+      typename ArrayIndex,
       Requires<
           tmpl2::flat_any_v<cpp17::is_same_v<CountActionsCalled, DbTags>...> and
           tmpl2::flat_any_v<cpp17::is_same_v<Int0, DbTags>...>> = nullptr>
   static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>&
                     /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/, const ParallelComponent* const
-                    /*meta*/) {
+                    const ArrayIndex& /*array_index*/) {
     static_assert(cpp17::is_same_v<ParallelComponent,
                                    AnyOrderComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -606,30 +643,32 @@ struct AnyOrderComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using array_index = ElementId;  // Just to test nothing breaks
-  using action_list = tmpl::list<
-      add_remove_test::add_int_value_10, add_remove_test::increment_int0,
-      any_order::iterate_increment_int0, add_remove_test::remove_int0,
-      receive_data_test::update_instance>;
-  using initial_databox =
-      db::compute_databox_type<tmpl::list<CountActionsCalled, TemporalId>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<add_remove_test::initialize>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::AnyOrderStart,
+                             tmpl::list<add_remove_test::add_int_value_10,
+                                        add_remove_test::increment_int0,
+                                        any_order::iterate_increment_int0,
+                                        add_remove_test::remove_int0,
+                                        receive_data_test::update_instance>>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 
   static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::simple_action<add_remove_test::initialize>(
-        Parallel::get_parallel_component<AnyOrderComponent>(local_cache));
-  }
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    if (next_phase == Metavariables::Phase::AnyOrderStart) {
-      Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
-          .perform_algorithm();
-    } else if (next_phase == Metavariables::Phase::AnyOrderFinish) {
+    Parallel::get_parallel_component<AnyOrderComponent>(local_cache)
+        .start_phase(next_phase);
+    if (next_phase == Metavariables::Phase::AnyOrderFinish) {
       Parallel::simple_action<any_order::finalize>(
           Parallel::get_parallel_component<AnyOrderComponent>(local_cache));
     }
@@ -664,7 +703,6 @@ struct TestMetavariables {
     MutateStart,
     MutateFinish,
     ReceiveStart,
-    ReceiveSendData,
     ReceiveFinish,
     AnyOrderStart,
     AnyOrderFinish,
@@ -687,8 +725,6 @@ struct TestMetavariables {
       case Phase::MutateFinish:
         return Phase::ReceiveStart;
       case Phase::ReceiveStart:
-        return Phase::ReceiveSendData;
-      case Phase::ReceiveSendData:
         return Phase::ReceiveFinish;
       case Phase::ReceiveFinish:
         return Phase::AnyOrderStart;

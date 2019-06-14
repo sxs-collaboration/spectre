@@ -33,17 +33,13 @@ namespace Actions {
 ///   - `Tags::TemporalIds<Metavariables>`
 template <typename InterpolationTargetTag>
 struct AddTemporalIdsToInterpolationTarget {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex,
             Requires<tmpl::list_contains_v<
                 DbTags, typename Tags::TemporalIds<Metavariables>>> = nullptr>
   static void apply(db::DataBox<DbTags>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     std::vector<typename Metavariables::temporal_id::type>&&
                         temporal_ids) noexcept {
     const bool begin_interpolation =

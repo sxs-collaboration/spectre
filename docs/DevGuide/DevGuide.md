@@ -43,7 +43,8 @@ concepts and patterns.
 ### Technical Documentation for Fluent Developers
 Assumes a thorough familiarity and fluency in SpECTRE's usage of TMP.
 - \ref DataBoxGroup "DataBox"
-- \ref ParallelGroup "Parallelization infrastructure" components and usage
+- \ref dev_guide_parallelization_foundations "Parallelization infrastructure"
+  components and usage
 
 ### CoordinateMap Guide
 Methods for creating custom coordinate maps are discussed here.

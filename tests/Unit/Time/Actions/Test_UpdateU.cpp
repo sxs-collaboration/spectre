@@ -7,24 +7,26 @@
 #include <cstddef>
 #include <memory>
 #include <string>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Time/Actions/UpdateU.hpp"               // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <unordered_map>
 
 // IWYU pragma: no_include "Time/History.hpp"
+
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 class TimeStepper;
 
@@ -43,23 +45,32 @@ using dt_variables_tag = Tags::dt<Var>;
 using history_tag =
     Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
 
-struct Metavariables;
-struct component {
+template <typename Metavariables>
+struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list =
       tmpl::list<OptionTags::TypedTimeStepper<TimeStepper>>;
-  using action_list = tmpl::list<Actions::UpdateU>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<Tags::TimeStep, variables_tag, history_tag>;
-  using initial_databox = db::compute_databox_type<simple_tags>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing,
+                             tmpl::list<Actions::UpdateU>>>;
 };
 
 struct Metavariables {
   using system = System;
-  using component_list = tmpl::list<component>;
+  using component_list = tmpl::list<Component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
+
+  enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace
 
@@ -70,16 +81,13 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   const auto rhs =
       [](const double t, const double y) { return 2. * t - 2. * (y - t * t); };
 
+  using component = Component<Metavariables>;
+  using simple_tags = typename component::simple_tags;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<component>{
-                      db::create<typename component::simple_tags>(
-                          time_step, 1., history_tag::type{})});
-  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
-                           std::move(dist_objects)};
+  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
+  ActionTesting::emplace_component_and_initialize<component>(
+      &runner, 0, {time_step, 1., history_tag::type{}});
+  runner.set_phase(Metavariables::Phase::Testing);
 
   const std::array<Time, 3> substep_times{
     {slab.start(), slab.start() + time_step, slab.start() + time_step / 2}};
@@ -88,9 +96,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
   const std::array<double, 3> expected_values{{3., 3., 10./3.}};
 
   for (size_t substep = 0; substep < 3; ++substep) {
-    auto& before_box = runner.algorithms<component>()
-                           .at(0)
-                           .get_databox<typename component::initial_databox>();
+    auto& before_box = ActionTesting::get_databox<component, simple_tags>(
+        make_not_null(&runner), 0);
     db::mutate<history_tag>(
         make_not_null(&before_box),
         [&rhs, &substep, &substep_times ](
@@ -102,9 +109,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
         db::get<variables_tag>(before_box));
 
     runner.next_action<component>(0);
-    auto& box = runner.algorithms<component>()
-                    .at(0)
-                    .get_databox<typename component::initial_databox>();
+    auto& box = ActionTesting::get_databox<component, simple_tags>(runner, 0);
 
     CHECK(db::get<variables_tag>(box) ==
           approx(gsl::at(expected_values, substep)));

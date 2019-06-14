@@ -29,7 +29,9 @@ def create_interface_file(args):
     ci_str += " Algorithm%s {\n" \
               "    entry Algorithm%s(" \
               "Parallel::CProxy_ConstGlobalCache<\n" \
-              "                      METAVARIABLES_FROM_COMPONENT>);\n" \
+              "                      METAVARIABLES_FROM_COMPONENT>,\n" \
+              "tuples::tagged_tuple_from_typelist<" \
+              "PARALLEL_COMPONENT_OPTIONS_SIMPLE_TAGS> options);\n" \
               "\n" \
               "    template <typename Action, typenameLDOTLDOTLDOT Args>\n" \
               "    entry void simple_action(\n" \
@@ -42,6 +44,10 @@ def create_interface_file(args):
               "    entry [reductiontarget] void reduction_action(Arg arg);\n" \
               "\n" \
               "    entry void perform_algorithm();\n" \
+              "\n" \
+              "    entry void perform_algorithm(bool);\n" \
+                            "\n" \
+              "    entry void start_phase(TYPENAME_PHASE_TYPE);\n" \
               "\n" % (args['algorithm_name'], args['algorithm_name'])
 
     if (args['algorithm_type'] == "nodegroup"):
@@ -142,11 +148,11 @@ def create_header_file(args):
         "    : public CBase_Algorithm%s<ParallelComponent, \n" \
         "                      SpectreArrayIndex>,\n" \
         "      public Parallel::AlgorithmImpl<ParallelComponent,\n" \
-        "                       typename ParallelComponent::action_list> {\n" \
+        "        typename ParallelComponent::phase_dependent_action_list> {\n" \
         "  using algorithm = Parallel::Algorithms::%s;\n" \
         " public:\n" \
         "  using Parallel::AlgorithmImpl<ParallelComponent,\n" \
-        "                  typename ParallelComponent::action_list\n" \
+        "    typename ParallelComponent::phase_dependent_action_list\n" \
         "                  >::AlgorithmImpl;\n" \
         "};\n\n" % (args['algorithm_name'],
                     args['algorithm_name'], args['algorithm_name'])
@@ -171,17 +177,16 @@ def parse_args():
     parser = ap.ArgumentParser(
         description='Generate Charm++ ci file and header file for an Algorithm',
         formatter_class=ap.ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
-        '--algorithm_name', required=True, help="The name of the algorithm")
-    parser.add_argument(
-        '--algorithm_type',
-        required=True,
-        choices=['chare', 'array', 'group', 'nodegroup'],
-        help="The type of algorithm to generate")
-    parser.add_argument(
-        '--build_dir',
-        required=True,
-        help="Absolute path to the build directory")
+    parser.add_argument('--algorithm_name',
+                        required=True,
+                        help="The name of the algorithm")
+    parser.add_argument('--algorithm_type',
+                        required=True,
+                        choices=['chare', 'array', 'group', 'nodegroup'],
+                        help="The type of algorithm to generate")
+    parser.add_argument('--build_dir',
+                        required=True,
+                        help="Absolute path to the build directory")
     return vars(parser.parse_args())
 
 

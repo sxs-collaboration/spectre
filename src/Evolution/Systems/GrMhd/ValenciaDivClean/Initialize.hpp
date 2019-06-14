@@ -24,6 +24,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/VariableFixing/FixToAtmosphere.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -53,6 +54,30 @@ struct has_analytic_solution_alias<T,
 // applicable to more than one system
 template <size_t Dim>
 struct Initialize {
+  struct InitialExtents : db::SimpleTag {
+    static std::string name() noexcept { return "InitialExtents"; }
+    using type = std::vector<std::array<size_t, Dim>>;
+  };
+  struct Domain : db::SimpleTag {
+    static std::string name() noexcept { return "Domain"; }
+    using type = ::Domain<Dim, Frame::Inertial>;
+  };
+  struct InitialTime : db::SimpleTag {
+    static std::string name() noexcept { return "InitialTime"; }
+    using type = double;
+  };
+  struct InitialTimeDelta : db::SimpleTag {
+    static std::string name() noexcept { return "InitialTimeDelta"; }
+    using type = double;
+  };
+  struct InitialSlabSize : db::SimpleTag {
+    static std::string name() noexcept { return "InitialSlabSize"; }
+    using type = double;
+  };
+
+  using AddOptionsToDataBox = Parallel::ForwardAllOptionsToDataBox<tmpl::list<
+      InitialExtents, Domain, InitialTime, InitialTimeDelta, InitialSlabSize>>;
+
   template <typename Metavariables>
   struct PrimitiveTags {
     using system = typename Metavariables::system;
@@ -78,10 +103,10 @@ struct Initialize {
       // Set initial data from analytic solution
       PrimitiveVars primitive_vars{num_grid_points};
       auto equation_of_state = make_overloader(
-          [ initial_time, &inertial_coords ](
-              std::true_type /*is_analytic_solution*/,
-              const gsl::not_null<PrimitiveVars*> prim_vars,
-              const auto& local_cache) noexcept {
+          [ initial_time, &
+            inertial_coords ](std::true_type /*is_analytic_solution*/,
+                              const gsl::not_null<PrimitiveVars*> prim_vars,
+                              const auto& local_cache) noexcept {
             using solution_tag = OptionTags::AnalyticSolutionBase;
             prim_vars->assign_subset(
                 Parallel::get<solution_tag>(local_cache)
@@ -144,10 +169,10 @@ struct Initialize {
       // Set initial data from analytic solution
       GrVars gr_vars{num_grid_points};
       make_overloader(
-          [ initial_time, &inertial_coords ](
-              std::true_type /*is_analytic_solution*/,
-              const gsl::not_null<GrVars*> local_gr_vars,
-              const auto& local_cache) noexcept {
+          [ initial_time, &
+            inertial_coords ](std::true_type /*is_analytic_solution*/,
+                              const gsl::not_null<GrVars*> local_gr_vars,
+                              const auto& local_cache) noexcept {
             using solution_tag = OptionTags::AnalyticSolutionBase;
             local_gr_vars->assign_subset(
                 Parallel::get<solution_tag>(local_cache)
@@ -169,50 +194,33 @@ struct Initialize {
     }
   };
 
-  template <class Metavariables>
-  using return_tag_list = tmpl::append<
-      typename Initialization::Domain<Dim>::simple_tags,
-      typename GrTags<typename Metavariables::system>::simple_tags,
-      typename PrimitiveTags<Metavariables>::simple_tags,
-      typename Initialization::ConservativeSystem<
-          typename Metavariables::system>::simple_tags,
-      typename Initialization::Interface<
-          typename Metavariables::system>::simple_tags,
-      typename Initialization::Evolution<
-          typename Metavariables::system>::simple_tags,
-      typename Initialization::DiscontinuousGalerkin<
-          Metavariables>::simple_tags,
-      typename Initialization::MinMod<Dim>::simple_tags,
-      typename Initialization::Domain<Dim>::compute_tags,
-      typename GrTags<typename Metavariables::system>::compute_tags,
-      typename PrimitiveTags<Metavariables>::compute_tags,
-      typename Initialization::ConservativeSystem<
-          typename Metavariables::system>::compute_tags,
-      typename Initialization::Interface<
-          typename Metavariables::system>::compute_tags,
-      typename Initialization::Evolution<
-          typename Metavariables::system>::compute_tags,
-      typename Initialization::DiscontinuousGalerkin<
-          Metavariables>::compute_tags,
-      typename Initialization::MinMod<Dim>::compute_tags>;
-
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent,
+            Requires<tmpl::list_contains_v<DbTagsList, Domain>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ElementIndex<Dim>& array_index,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    std::vector<std::array<size_t, Dim>> initial_extents,
-                    Domain<Dim, Frame::Inertial> domain,
-                    const double initial_time, const double initial_dt,
-                    const double initial_slab_size) noexcept {
+                    const ParallelComponent* const /*meta*/) noexcept {
+    const auto initial_extents = db::get<InitialExtents>(box);
+    const auto initial_time = db::get<InitialTime>(box);
+    const auto initial_dt = db::get<InitialTimeDelta>(box);
+    const auto initial_slab_size = db::get<InitialSlabSize>(box);
+    ::Domain<Dim, Frame::Inertial> domain{};
+    db::mutate<Domain>(
+        make_not_null(&box), [&domain](const auto domain_ptr) noexcept {
+          domain = std::move(*domain_ptr);
+        });
+    auto initial_box =
+        db::create_from<typename AddOptionsToDataBox::simple_tags>(
+            std::move(box));
+
     using system = typename Metavariables::system;
     auto domain_box = Initialization::Domain<Dim>::initialize(
-        db::DataBox<tmpl::list<>>{}, array_index, initial_extents, domain);
-    auto gr_box = GrTags<system>::initialize(std::move(domain_box), cache,
-                                             initial_time);
+        std::move(initial_box), array_index, initial_extents, domain);
+    auto gr_box =
+        GrTags<system>::initialize(std::move(domain_box), cache, initial_time);
     auto primitive_box = PrimitiveTags<Metavariables>::initialize(
         std::move(gr_box), cache, initial_time);
     auto system_box = Initialization::ConservativeSystem<system>::initialize(
@@ -230,7 +238,19 @@ struct Initialize {
             std::move(evolution_box), initial_extents);
     auto limiter_box =
         Initialization::MinMod<Dim>::initialize(std::move(dg_box));
-    return std::make_tuple(std::move(limiter_box));
+    return std::make_tuple(std::move(limiter_box), true);
+  }
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent,
+            Requires<not tmpl::list_contains_v<DbTagsList, Domain>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ElementIndex<Dim>& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    return {std::move(box), true};
   }
 };
 }  // namespace Actions

@@ -19,6 +19,8 @@
 SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
                   "[Unit][NumericalAlgorithms]") {
   const Convergence::Criteria criteria{2, 0., 0.5};
+  CHECK_FALSE(static_cast<bool>(
+      serialize_and_deserialize(Convergence::HasConverged{})));
 
   {
     INFO("Convergence logic");
@@ -39,7 +41,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
     test_copy_semantics(has_not_converged_by_default);
     const Convergence::HasConverged has_not_converged{criteria, 1, 1., 1.};
     CHECK_FALSE(has_not_converged);
-    CHECK(get_output(has_not_converged) == "Not yet converged.\n");
+    CHECK(get_output(has_not_converged) == "Not yet converged.");
     test_serialization(has_not_converged);
     test_copy_semantics(has_not_converged);
   }
@@ -50,7 +52,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
     CHECK(has_converged);
     CHECK(has_converged.reason() == Convergence::Reason::MaxIterations);
     CHECK(get_output(has_converged) ==
-          "Reached the maximum number of iterations (2).\n");
+          "Reached the maximum number of iterations (2).");
     test_serialization(has_converged);
     test_copy_semantics(has_converged);
   }
@@ -62,7 +64,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
     CHECK(has_converged.reason() == Convergence::Reason::AbsoluteResidual);
     CHECK(get_output(has_converged) ==
           "AbsoluteResidual - The residual magnitude has decreased to 0 or "
-          "below (0).\n");
+          "below (0).");
     test_serialization(has_converged);
     test_copy_semantics(has_converged);
   }
@@ -74,7 +76,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.HasConverged",
     CHECK(has_converged.reason() == Convergence::Reason::RelativeResidual);
     CHECK(get_output(has_converged) ==
           "RelativeResidual - The residual magnitude has decreased to a "
-          "fraction of 0.5 of its initial value or below (0.5).\n");
+          "fraction of 0.5 of its initial value or below (0.5).");
     test_serialization(has_converged);
     test_copy_semantics(has_converged);
   }

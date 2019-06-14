@@ -22,6 +22,7 @@
 #include "Utilities/BoostHelpers.hpp"  // for pup variant
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/NoSuchType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -1480,7 +1481,7 @@ const Type& get_item_from_box(const DataBox<tmpl::list<TagsInBox...>>& box,
   const Type* result = nullptr;
   const auto helper = [&box, &tag_name, &result ](auto current_tag) noexcept {
     using tag = decltype(current_tag);
-    if (get_tag_name<tag>() == tag_name) {
+    if (::db::tag_name<tag>() == tag_name) {
       result = &::db::get<tag>(box);
     }
   };
@@ -1909,4 +1910,40 @@ struct compute_dbox_type<tmpl::list<ItemsPack...>, ComputeItemsList> {
 template <class TagList>
 using compute_databox_type = typename DataBox_detail::compute_dbox_type<
     get_items<TagList>, get_compute_items<TagList>>::type;
+
+// @{
+/// \ingroup DataBoxGroup
+/// Returns the type of `Tag` (including const and reference-ness as would be
+/// returned by `db::get<Tag>`) if the tag is in the `DataBox` of type
+/// `DataBoxType`, otherwise returns `NoSuchType`.
+template <typename Tag, typename DataBoxType,
+          bool = tmpl::size<tmpl::filter<
+                     typename DataBoxType::tags_list,
+                     std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>::value != 0>
+struct item_type_if_contained;
+
+/// \cond
+template <typename Tag, typename DataBoxType>
+struct item_type_if_contained<Tag, DataBoxType, true> {
+  using type = decltype(db::get<Tag>(DataBoxType{}));
+};
+
+template <typename Tag, typename DataBoxType>
+struct item_type_if_contained<Tag, DataBoxType, false> {
+  using type = NoSuchType;
+};
+/// \endcond
+
+template <typename Tag, typename DataBoxType>
+using item_type_if_contained_t =
+    typename item_type_if_contained<Tag, DataBoxType>::type;
+// @}
+
+/// \ingroup DataBoxGroup
+/// Equal to `true` if `Tag` can be retrieved from a `DataBox` of type
+/// `DataBoxType`.
+template <typename Tag, typename DataBoxType>
+constexpr bool tag_is_retrievable_v =
+    not std::is_same<NoSuchType,
+                     item_type_if_contained_t<Tag, DataBoxType>>::value;
 }  // namespace db

@@ -52,52 +52,48 @@ namespace Actions {
  */
 template <size_t Dim>
 struct InitializeElement {
-  template <class Metavariables>
-  using return_tag_list = tmpl::append<
-      // Simple tags
-      typename Elliptic::Initialization::Domain<Dim>::simple_tags,
-      typename Elliptic::Initialization::System<
-          typename Metavariables::system>::simple_tags,
-      typename Elliptic::Initialization::Source<Metavariables>::simple_tags,
-      typename Elliptic::Initialization::Derivatives<
-          typename Metavariables::system>::simple_tags,
-      typename Elliptic::Initialization::Interface<
-          typename Metavariables::system>::simple_tags,
-      typename Elliptic::Initialization::BoundaryConditions<
-          Metavariables>::simple_tags,
-      typename Elliptic::Initialization::LinearSolver<
-          Metavariables>::simple_tags,
-      typename Elliptic::Initialization::DiscontinuousGalerkin<
-          Metavariables>::simple_tags,
-      // Compute tags
-      typename Elliptic::Initialization::Domain<Dim>::compute_tags,
-      typename Elliptic::Initialization::System<
-          typename Metavariables::system>::compute_tags,
-      typename Elliptic::Initialization::Source<Metavariables>::compute_tags,
-      typename Elliptic::Initialization::Derivatives<
-          typename Metavariables::system>::compute_tags,
-      typename Elliptic::Initialization::Interface<
-          typename Metavariables::system>::compute_tags,
-      typename Elliptic::Initialization::BoundaryConditions<
-          Metavariables>::compute_tags,
-      typename Elliptic::Initialization::LinearSolver<
-          Metavariables>::compute_tags,
-      typename Elliptic::Initialization::DiscontinuousGalerkin<
-          Metavariables>::compute_tags>;
+  struct InitialExtents : db::SimpleTag {
+    static std::string name() noexcept { return "InitialExtents"; }
+    using type = std::vector<std::array<size_t, Dim>>;
+  };
+  struct TempDomain : db::SimpleTag {
+    static std::string name() noexcept { return "TempDomain"; }
+    using type = ::Domain<Dim, Frame::Inertial>;
+  };
+  struct AddOptionsToDataBox {
+    using simple_tags = tmpl::list<InitialExtents, TempDomain>;
+    template <typename DbTagsList>
+    static auto apply(db::DataBox<DbTagsList>&& box,
+                      std::vector<std::array<size_t, Dim>> initial_extents,
+                      ::Domain<Dim, Frame::Inertial> domain) noexcept {
+      return db::create_from<db::RemoveTags<>,
+                             db::AddSimpleTags<InitialExtents, TempDomain>>(
+          std::move(box), std::move(initial_extents), std::move(domain));
+    }
+  };
 
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ElementIndex<Dim>& array_index,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const parallel_component_meta,
-                    std::vector<std::array<size_t, Dim>> initial_extents,
-                    Domain<Dim, Frame::Inertial> domain) noexcept {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent,
+            Requires<tmpl::list_contains_v<DbTagsList, TempDomain>> = nullptr>
+  static auto apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ElementIndex<Dim>& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const parallel_component_meta) noexcept {
+    const auto initial_extents = db::get<InitialExtents>(box);
+    ::Domain<Dim, Frame::Inertial> domain{};
+    db::mutate<TempDomain>(
+        make_not_null(&box), [&domain](const auto domain_ptr) noexcept {
+          domain = std::move(*domain_ptr);
+        });
+    auto initial_box =
+        db::create_from<typename AddOptionsToDataBox::simple_tags>(
+            std::move(box));
+
     using system = typename Metavariables::system;
     auto domain_box = Elliptic::Initialization::Domain<Dim>::initialize(
-        db::DataBox<tmpl::list<>>{}, array_index, initial_extents, domain);
+        std::move(initial_box), array_index, initial_extents, domain);
     auto system_box = Elliptic::Initialization::System<system>::initialize(
         std::move(domain_box));
     auto source_box =
@@ -118,6 +114,19 @@ struct InitializeElement {
         Metavariables>::initialize(std::move(linear_solver_box),
                                    initial_extents);
     return std::make_tuple(std::move(dg_box));
+  }
+
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ActionList, typename ParallelComponent,
+      Requires<not tmpl::list_contains_v<DbTagsList, TempDomain>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ElementIndex<Dim>& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {std::move(box), true};
   }
 };
 }  // namespace Actions

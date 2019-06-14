@@ -52,12 +52,12 @@ std::ostream& operator<<(std::ostream& os,
     switch (has_converged.reason()) {
       case Reason::MaxIterations:
         return os << "Reached the maximum number of iterations ("
-                  << has_converged.criteria_.max_iterations << ").\n";
+                  << has_converged.criteria_.max_iterations << ").";
       case Reason::AbsoluteResidual:
         return os
                << "AbsoluteResidual - The residual magnitude has decreased to "
                << has_converged.criteria_.absolute_residual << " or below ("
-               << has_converged.residual_magnitude_ << ").\n";
+               << has_converged.residual_magnitude_ << ").";
       case Reason::RelativeResidual:
         return os << "RelativeResidual - The residual magnitude has decreased "
                      "to a fraction of "
@@ -65,21 +65,24 @@ std::ostream& operator<<(std::ostream& os,
                   << " of its initial value or below ("
                   << has_converged.residual_magnitude_ /
                          has_converged.initial_residual_magnitude_
-                  << ").\n";
+                  << ").";
       default:
         ERROR("Unknown convergence reason");
     };
   } else {
-    return os << "Not yet converged.\n";
+    return os << "Not yet converged.";
   }
 }
 
 void HasConverged::pup(PUP::er& p) noexcept {
+  // Older versions of boost.optional do not have a has_value() method.
+  auto converged = static_cast<bool>(reason_);
+  p | converged;
   p | criteria_;
   p | iteration_id_;
   p | residual_magnitude_;
   p | initial_residual_magnitude_;
-  if (p.isUnpacking()) {
+  if (converged and p.isUnpacking()) {
     reason_ = criteria_match(criteria_, iteration_id_, residual_magnitude_,
                              initial_residual_magnitude_);
   }

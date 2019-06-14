@@ -55,6 +55,11 @@ struct VolumeVarsInfo : db::SimpleTag {
   struct Info {
     Mesh<Metavariables::domain_dim> mesh;
     Variables<typename Metavariables::interpolator_source_vars> vars;
+
+    void pup(PUP::er& p) noexcept {  // NOLINT
+      p | mesh;
+      p | vars;
+    }
   };
   using type = std::unordered_map<
       typename Metavariables::temporal_id::type,

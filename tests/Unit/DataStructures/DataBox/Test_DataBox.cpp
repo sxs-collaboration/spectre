@@ -31,6 +31,7 @@ namespace db {
 template <typename TagsList>
 class DataBox;
 }  // namespace db
+struct NoSuchType;
 template <typename TagsList>
 class Variables;
 template <typename X, typename Symm, typename IndexList>
@@ -2557,3 +2558,52 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Serialization",
   serialization_subitems_simple_items();
   serialization_subitem_compute_items();
 }
+
+// Test `item_type_if_contained_t` and `tag_is_retrievable_v`
+namespace {
+namespace tags_types {
+struct PureBaseTag : db::BaseTag {};
+
+struct SimpleTag : PureBaseTag, db::SimpleTag {
+  using type = double;
+  static std::string name() noexcept { return "SimpleTag"; }
+};
+
+struct DummyTag : db::SimpleTag {
+  using type = int;
+  static std::string name() noexcept { return "DummyTag"; }
+};
+}  // namespace tags_types
+
+static_assert(
+    cpp17::is_same_v<db::item_type_if_contained_t<
+                         tags_types::PureBaseTag,
+                         db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
+                     const double&>,
+    "Failed testing item_type_if_contained_t");
+static_assert(
+    cpp17::is_same_v<db::item_type_if_contained_t<
+                         tags_types::SimpleTag,
+                         db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
+                     const double&>,
+    "Failed testing item_type_if_contained_t");
+static_assert(
+    cpp17::is_same_v<db::item_type_if_contained_t<
+                         tags_types::DummyTag,
+                         db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
+                     NoSuchType>,
+    "Failed testing item_type_if_contained_t");
+
+static_assert(
+    db::tag_is_retrievable_v<tags_types::PureBaseTag,
+                             db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
+    "Failed testing tag_is_retrievable_v");
+static_assert(
+    db::tag_is_retrievable_v<tags_types::SimpleTag,
+                             db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
+    "Failed testing tag_is_retrievable_v");
+static_assert(
+    not db::tag_is_retrievable_v<
+        tags_types::DummyTag, db::DataBox<tmpl::list<tags_types::SimpleTag>>>,
+    "Failed testing tag_is_retrievable_v");
+}  // namespace

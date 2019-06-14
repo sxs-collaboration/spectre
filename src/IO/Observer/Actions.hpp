@@ -32,16 +32,14 @@ namespace Actions {
 /// Should be invoked on ObserverWriter.
 struct RegisterVolumeContributorWithObserverWriter {
  public:
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent, typename... ReductionDatums,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            typename... ReductionDatums,
+            Requires<tmpl::list_contains_v<
+                DbTagsList, Tags::VolumeObserversRegistered>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const observers::ObservationId& observation_id,
                     const size_t processing_element) noexcept {
     db::mutate<Tags::VolumeObserversRegistered>(
@@ -73,16 +71,17 @@ struct RegisterVolumeContributorWithObserverWriter {
 /// Should be invoked on ObserverWriter.
 struct RegisterReductionContributorWithObserverWriter {
  public:
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent, typename... ReductionDatums,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex, typename... ReductionDatums,
+      Requires<tmpl::list_contains_v<DbTagsList,
+                                     Tags::ReductionObserversRegistered> and
+               tmpl::list_contains_v<DbTagsList,
+                                     Tags::ReductionObserversRegisteredNodes>> =
+          nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const observers::ObservationId& observation_id,
                     const size_t processing_element_or_node,
                     const bool called_from_other_node = false) noexcept {
@@ -151,19 +150,16 @@ struct RegisterReductionContributorWithObserverWriter {
  */
 struct RegisterSenderWithSelf {
   template <
-      typename DbTagList, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      typename ParallelComponent, typename DbTagList, typename Metavariables,
+      typename ArrayIndex,
       Requires<tmpl::list_contains_v<
                    DbTagList, observers::Tags::ReductionArrayComponentIds> and
                tmpl::list_contains_v<
                    DbTagList, observers::Tags::VolumeArrayComponentIds>> =
           nullptr>
   static void apply(db::DataBox<DbTagList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const observers::ObservationId& observation_id,
                     const observers::ArrayComponentId& component_id,
                     const TypeOfObservation& type_of_observation) noexcept {
@@ -232,21 +228,26 @@ struct RegisterSenderWithSelf {
  * observer knows to expect data from this component, and also whether to expect
  * Reduction, Volume, or both Reduction and Volume data observation calls.
  */
-template <observers::TypeOfObservation TypeOfObservation>
+template <typename RegisterHelper>
 struct RegisterWithObservers {
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static void apply(const db::DataBox<DbTagList>& /*box*/,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    const observers::ObservationId& observation_id) noexcept {
+  static std::tuple<db::DataBox<DbTagList>&&, bool> apply(
+      db::DataBox<DbTagList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     auto& observer =
         *Parallel::get_parallel_component<observers::Observer<Metavariables>>(
              cache)
              .ckLocalBranch();
+    std::pair<observers::TypeOfObservation, observers::ObservationId>
+        type_of_observation_and_observation_id_pair =
+            RegisterHelper::template register_info<ParallelComponent>(
+                box, array_index);
+
     // TODO(): We should really loop through all the events, check if there are
     // any reduction observers, and any volume observers, if so, then we
     // register us as having one of:
@@ -257,11 +258,15 @@ struct RegisterWithObservers {
     // At that point we won't need the template parameter on the class anymore
     // and everything can be read from an input file.
     Parallel::simple_action<RegisterSenderWithSelf>(
-        observer, observation_id,
+        observer,
+        std::move(                                                // NOLINT
+            type_of_observation_and_observation_id_pair.second),  // NOLINT
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
-        TypeOfObservation);
+        std::move(                                                // NOLINT
+            type_of_observation_and_observation_id_pair.first));  // NOLINT
+    return {std::move(box), true};
   }
 };
 
@@ -294,15 +299,11 @@ struct RegisterWithObservers {
  *
  */
 struct RegisterSingletonWithObserverWriter {
-  template <typename DbTagList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+  template <typename ParallelComponent, typename DbTagList,
+            typename Metavariables, typename ArrayIndex>
   static void apply(const db::DataBox<DbTagList>& /*box*/,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const observers::ObservationId& observation_id) noexcept {
     // The actual value of the processing element doesn't matter
     // here; it is used only to give an ObserverWriter a count of how many

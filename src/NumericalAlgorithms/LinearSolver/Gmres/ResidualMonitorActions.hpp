@@ -38,16 +38,18 @@ namespace gmres_detail {
 
 template <typename BroadcastTarget>
 struct InitializeResidualMagnitude {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<
+          DbTagsList,
+          db::add_tag_prefix<LinearSolver::Tags::Magnitude,
+                             db::add_tag_prefix<LinearSolver::Tags::Residual,
+                                                typename Metavariables::system::
+                                                    fields_tag>>>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const double residual_magnitude) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using residual_magnitude_tag = db::add_tag_prefix<
@@ -77,7 +79,7 @@ struct InitializeResidualMagnitude {
                  static_cast<int>(get<LinearSolver::OptionTags::Verbosity>(
                      cache)) >= static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf(
-          "The linear solver has converged without any iterations: %s",
+          "The linear solver has converged without any iterations: %s\n",
           has_converged);
     }
 
@@ -89,16 +91,18 @@ struct InitializeResidualMagnitude {
 
 template <typename BroadcastTarget>
 struct StoreOrthogonalization {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<
+          DbTagsList,
+          db::add_tag_prefix<LinearSolver::Tags::Magnitude,
+                             db::add_tag_prefix<LinearSolver::Tags::Residual,
+                                                typename Metavariables::system::
+                                                    fields_tag>>>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const double orthogonalization) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using orthogonalization_iteration_id_tag =
@@ -133,16 +137,18 @@ struct StoreOrthogonalization {
 
 template <typename BroadcastTarget>
 struct StoreFinalOrthogonalization {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<
+          DbTagsList,
+          db::add_tag_prefix<LinearSolver::Tags::Magnitude,
+                             db::add_tag_prefix<LinearSolver::Tags::Residual,
+                                                typename Metavariables::system::
+                                                    fields_tag>>>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const double orthogonalization) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using residual_magnitude_tag = db::add_tag_prefix<
@@ -239,9 +245,9 @@ struct StoreFinalOrthogonalization {
     if (UNLIKELY(has_converged and
                  static_cast<int>(get<LinearSolver::OptionTags::Verbosity>(
                      cache)) >= static_cast<int>(::Verbosity::Quiet))) {
-      Parallel::printf("The linear solver has converged in %zu iterations: %s",
-                       get<LinearSolver::Tags::IterationId>(box),
-                       has_converged);
+      Parallel::printf(
+          "The linear solver has converged in %zu iterations: %s\n",
+          get<LinearSolver::Tags::IterationId>(box), has_converged);
     }
 
     Parallel::simple_action<NormalizeOperandAndUpdateField>(

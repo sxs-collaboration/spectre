@@ -50,7 +50,7 @@ template <typename Tags, typename TagList,
 auto get_tensor_from_box(const db::DataBox<TagList>& box,
                          const std::string& tag_name) {
   using tag = tmpl::front<Tags>;
-  if (db::get_tag_name<tag>() != tag_name) {
+  if (db::tag_name<tag>() != tag_name) {
     ERROR("Could not find the tag named \"" << tag_name << "\" in the DataBox");
   }
   return ::db::get<tag>(box).get_vector_of_data();
@@ -61,7 +61,7 @@ template <typename Tags, typename TagList,
 auto get_tensor_from_box(const db::DataBox<TagList>& box,
                          const std::string& tag_name) {
   using tag = tmpl::front<Tags>;
-  return db::get_tag_name<tag>() == tag_name
+  return db::tag_name<tag>() == tag_name
              ? ::db::get<tag>(box).serialize()
              : get_tensor_from_box<tmpl::pop_front<Tags>>(box, tag_name);
 }
@@ -86,7 +86,7 @@ auto get_tensor_from_box(const db::DataBox<TagsList>& box,
 //    const db::DataBox<TagsList>& box,
 //    const std::pair<std::string, TypeOfNorm>& tag_name) {
 //  using tag = tmpl::front<Tags>;
-//  if (db::get_tag_name<tag>() != tag_name.first) {
+//  if (db::tag_name<tag>() != tag_name.first) {
 //    ERROR("Could not find the tag named \"" << tag_name.first
 //                                            << "\" in the DataBox");
 //  }
@@ -99,7 +99,7 @@ auto get_tensor_from_box(const db::DataBox<TagsList>& box,
 //    const db::DataBox<TagsList>& box,
 //    const std::pair<std::string, TypeOfNorm>& tag_name) {
 //  using tag = tmpl::front<Tags>;
-//  if (db::get_tag_name<tag>() != tag_name.first) {
+//  if (db::tag_name<tag>() != tag_name.first) {
 //    return get_tensor_norm_from_box<tmpl::pop_front<Tags>>(box, tag_name);
 //  }
 //  return compute_norm_core(box.template get<tag>(), tag_name.second);

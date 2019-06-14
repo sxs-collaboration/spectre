@@ -112,17 +112,14 @@ template <typename InterpolationTargetTag, size_t VolumeDim>
 struct LineSegment {
   using options_type = OptionHolders::LineSegment<VolumeDim>;
   using const_global_cache_tags = tmpl::list<InterpolationTargetTag>;
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex,
             Requires<tmpl::list_contains_v<
-                DbTags, typename Tags::TemporalIds<Metavariables>>> = nullptr>
+                DbTags, Tags::TemporalIds<Metavariables>>> = nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::ConstGlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/,
+      const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     const auto& options = Parallel::get<InterpolationTargetTag>(cache);
 

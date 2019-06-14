@@ -15,6 +15,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "Informer/Informer.hpp"
 #include "Options/ParseOptions.hpp"
+#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Parallel/CharmRegistration.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Exit.hpp"
@@ -39,7 +40,7 @@ class Main : public CBase_Main<Metavariables> {
  public:
   using component_list = typename Metavariables::component_list;
   using const_global_cache_tags =
-      typename ConstGlobalCache<Metavariables>::tag_list;
+      ConstGlobalCache_detail::make_tag_list<Metavariables>;
 
   /// \cond HIDDEN_SYMBOLS
   /// The constructor used to register the class
@@ -259,12 +260,23 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
 
   tmpl::for_each<group_component_list>([
     this, &the_parallel_components, &const_global_cache_dependency
-  ](auto parallel_component) noexcept {
-    using ParallelComponentProxy = Parallel::proxy_from_parallel_component<
-        tmpl::type_from<decltype(parallel_component)>>;
+  ](auto parallel_component_v) noexcept {
+    using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
+    using ParallelComponentProxy =
+        Parallel::proxy_from_parallel_component<parallel_component>;
+    using add_options_to_databox =
+        typename parallel_component::add_options_to_databox;
     tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
-        ParallelComponentProxy::ckNew(const_global_cache_proxy_,
-                                      &const_global_cache_dependency);
+        ParallelComponentProxy::ckNew(
+            const_global_cache_proxy_,
+            options_.template apply<
+                typename add_options_to_databox::simple_tags, Metavariables>(
+                [](auto... args) noexcept {
+                  return tuples::tagged_tuple_from_typelist<
+                      typename add_options_to_databox::simple_tags>(
+                      std::move(args)...);
+                }),
+            &const_global_cache_dependency);
   });
 
   // Construct the proxies for the single chares
@@ -273,11 +285,22 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
                    Parallel::is_chare_proxy<tmpl::bind<
                        Parallel::proxy_from_parallel_component, tmpl::_1>>>;
   tmpl::for_each<singleton_component_list>([ this, &the_parallel_components ](
-      auto parallel_component) noexcept {
-    using ParallelComponentProxy = Parallel::proxy_from_parallel_component<
-        tmpl::type_from<decltype(parallel_component)>>;
+      auto parallel_component_v) noexcept {
+    using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
+    using ParallelComponentProxy =
+        Parallel::proxy_from_parallel_component<parallel_component>;
+    using add_options_to_databox =
+        typename parallel_component::add_options_to_databox;
     tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
-        ParallelComponentProxy::ckNew(const_global_cache_proxy_);
+        ParallelComponentProxy::ckNew(
+            const_global_cache_proxy_,
+            options_
+                .template apply<typename add_options_to_databox::simple_tags,
+                                Metavariables>([](auto... args) noexcept {
+                  return tuples::tagged_tuple_from_typelist<
+                      typename add_options_to_databox::simple_tags>(
+                      std::move(args)...);
+                }));
   });
 
   // Create proxies for empty array chares (which are created by the
@@ -331,6 +354,11 @@ void Main<Metavariables>::initialize() noexcept {
         [this](auto... opts) {
           ParallelComponent::initialize(const_global_cache_proxy_,
                                         std::move(opts)...);
+          ASSERT(current_phase_ == Metavariables::Phase::Initialization,
+                 "Must be in the Initialization phase during initialization.");
+          Parallel::get_parallel_component<ParallelComponent>(
+              *(const_global_cache_proxy_.ckLocalBranch()))
+              .start_phase(current_phase_);
         });
   });
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),

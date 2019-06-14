@@ -144,9 +144,9 @@ struct BoundaryConditions {
             // contributions to the source
             db::item_type<sources_tag> lifted_boundary_data{
                 -1. *
-                dg::lift_flux(std::move(boundary_normal_dot_numerical_fluxes),
-                              mesh.extents(dimension),
-                              magnitude_of_face_normals.at(direction))};
+                ::dg::lift_flux(std::move(boundary_normal_dot_numerical_fluxes),
+                                mesh.extents(dimension),
+                                magnitude_of_face_normals.at(direction))};
             add_slice_to_data(sources, std::move(lifted_boundary_data),
                               mesh.extents(), dimension,
                               index_to_slice_at(mesh.extents(), direction));

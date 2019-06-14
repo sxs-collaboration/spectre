@@ -60,8 +60,8 @@ struct ComputeTimeDerivative {
       db::DataBox<DbTagsList>& box,
       tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     using system = typename Metavariables::system;
     using computer = typename system::compute_time_derivative;
     // Notes:

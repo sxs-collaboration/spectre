@@ -17,14 +17,16 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Evolution/Actions/ComputeVolumeSources.hpp"  // IWYU pragma: keep
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <unordered_map>
 
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tensor
 
@@ -74,23 +76,28 @@ struct component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndexType;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<Actions::ComputeVolumeSources>;
-  using initial_databox = db::compute_databox_type<
-      tmpl::list<System::variables_tag, Var3, source_tag>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using simple_tags = tmpl::list<System::variables_tag, Var3, source_tag>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing,
+                             tmpl::list<Actions::ComputeVolumeSources>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<component<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
+  enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
                   "[Unit][Evolution][Actions]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<component<Metavariables>>;
 
   const ElementId<dim> self_id(1);
   const Scalar<DataVector> var1{{{{3., 4.}}}};
@@ -99,20 +106,17 @@ SPECTRE_TEST_CASE("Unit.Evolution.ComputeVolumeSources",
   db::item_type<System::variables_tag> vars(2);
   get<Var1>(vars) = var1;
 
-  using simple_tags =
-      db::AddSimpleTags<System::variables_tag, Var3, source_tag>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(self_id,
-               db::create<simple_tags>(std::move(vars), var3,
-                                       db::item_type<source_tag>{2_st}));
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
-
+  using simple_tags = typename component<Metavariables>::simple_tags;
+  MockRuntimeSystem runner{{}};
+  ActionTesting::emplace_component_and_initialize<component<Metavariables>>(
+      &runner, self_id,
+      {std::move(vars), var3, db::item_type<source_tag>(2_st)});
+  runner.set_phase(Metavariables::Phase::Testing);
   runner.next_action<component<Metavariables>>(self_id);
 
-  const auto& box = runner.algorithms<component<Metavariables>>()
-                        .at(self_id)
-                        .get_databox<db::compute_databox_type<simple_tags>>();
-  CHECK(get<0>(db::get<source_tag>(box)) == get(var1));
-  CHECK(get<1>(db::get<source_tag>(box)) == get(var3));
+  const auto& box =
+      ActionTesting::get_databox<component<Metavariables>, simple_tags>(
+          runner, self_id);
+  CHECK(get<0>(db::get<Tags::Source<Var2>>(box)) == get(var1));
+  CHECK(get<1>(db::get<Tags::Source<Var2>>(box)) == get(var3));
 }

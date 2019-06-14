@@ -63,6 +63,19 @@ struct Info {
       interpolation_is_done_for_these_elements{};
 };
 
+template <size_t VolumeDim, typename TagList>
+void pup(PUP::er& p, Info<VolumeDim, TagList>& t) noexcept {  // NOLINT
+  p | t.block_coord_holders;
+  p | t.vars;
+  p | t.global_offsets;
+  p | t.interpolation_is_done_for_these_elements;
+}
+
+template <size_t VolumeDim, typename TagList>
+void operator|(PUP::er& p, Info<VolumeDim, TagList>& t) noexcept {  // NOLINT
+  pup(p, t);
+}
+
 /// Holds `Info`s at all `temporal_id`s for a given
 /// `InterpolationTargetTag`.  Also holds `temporal_id`s when data has
 /// been interpolated; this is used for cleanup purposes.  All
@@ -79,6 +92,23 @@ struct Holder {
   std::unordered_set<typename Metavariables::temporal_id::type>
       temporal_ids_when_data_has_been_interpolated;
 };
+
+template <typename Metavariables, typename InterpolationTargetTag,
+          typename TagList>
+void pup(PUP::er& p,                                              // NOLINT
+         Holder<Metavariables, InterpolationTargetTag, TagList>&  // NOLINT
+             t) noexcept {                                        // NOLINT
+  p | t.infos;
+  p | t.temporal_ids_when_data_has_been_interpolated;
+}
+
+template <typename Metavariables, typename InterpolationTargetTag,
+          typename TagList>
+void operator|(PUP::er& p,  // NOLINT
+               Holder<Metavariables, InterpolationTargetTag, TagList>&
+                   t) noexcept {  // NOLINT
+  pup(p, t);
+}
 
 /// Indexes a particular `Holder` in the `TaggedTuple` that is
 /// accessed from the `Interpolator`'s `DataBox` with tag

@@ -36,7 +36,7 @@ struct type_for_get_helper<std::unique_ptr<T, D>> {
 // Note: Returned list does not need to be size 1
 template <class ConstGlobalCacheTag, class Metavariables>
 using get_list_of_matching_tags =
-    tmpl::filter<typename ConstGlobalCache<Metavariables>::tag_list,
+    tmpl::filter<ConstGlobalCache_detail::make_tag_list<Metavariables>,
                  std::is_base_of<tmpl::pin<ConstGlobalCacheTag>, tmpl::_1>>;
 
 template <class ConstGlobalCacheTag, class Metavariables>
@@ -83,13 +83,13 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
  public:
   /// Access to the Metavariables template parameter
   using metavariables = Metavariables;
-  /// Typelist of the tags of constant data stored in the ConstGlobalCache
-  using tag_list = ConstGlobalCache_detail::make_tag_list<Metavariables>;
   /// Typelist of the ParallelComponents stored in the ConstGlobalCache
   using component_list = typename Metavariables::component_list;
 
   explicit ConstGlobalCache(
-      tuples::tagged_tuple_from_typelist<tag_list> const_global_cache) noexcept
+      tuples::tagged_tuple_from_typelist<
+          ConstGlobalCache_detail::make_tag_list<Metavariables>>
+          const_global_cache) noexcept
       : const_global_cache_(std::move(const_global_cache)) {}
   explicit ConstGlobalCache(CkMigrateMessage* /*msg*/) {}
   ~ConstGlobalCache() noexcept override {
@@ -133,7 +133,9 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
               typename MV::component_list,
               ParallelComponentTag>>&;  // NOLINT
 
-  tuples::tagged_tuple_from_typelist<tag_list> const_global_cache_;
+  tuples::tagged_tuple_from_typelist<
+      ConstGlobalCache_detail::make_tag_list<Metavariables>>
+      const_global_cache_;
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       parallel_components_;
   bool parallel_components_have_been_set_{false};
@@ -237,8 +239,8 @@ struct FromConstGlobalCache : CacheTag, db::ComputeTag {
     return "FromConstGlobalCache(" + pretty_type::short_name<CacheTag>() + ")";
   }
   template <class Metavariables>
-  static const auto& function(
-      const Parallel::ConstGlobalCache<Metavariables>* const& cache) noexcept {
+  static const ConstGlobalCache_detail::type_for_get<CacheTag, Metavariables>&
+  function(const Parallel::ConstGlobalCache<Metavariables>* const& cache) {
     return Parallel::get<CacheTag>(*cache);
   }
   using argument_tags = tmpl::list<ConstGlobalCache>;

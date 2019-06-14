@@ -60,17 +60,15 @@ namespace Actions {
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag>
 struct ReceivePoints {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent, size_t VolumeDim,
-            Requires<tmpl::list_contains_v<
-                DbTags, typename ::intrp::Tags::NumberOfElements>> = nullptr>
+  template <
+      typename ParallelComponent, typename DbTags, typename Metavariables,
+      typename ArrayIndex, size_t VolumeDim,
+      Requires<tmpl::list_contains_v<DbTags, ::intrp::Tags::NumberOfElements>> =
+          nullptr>
   static void apply(
       db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::ConstGlobalCache<Metavariables>& cache,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/,
+      const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id,
       std::vector<IdPair<domain::BlockId, tnsr::I<double, VolumeDim,
                                                   typename ::Frame::Logical>>>&&

@@ -3,18 +3,17 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
-#include <algorithm>
 #include <cstddef>
-#include <unordered_map>
 
-#include "DataStructures/DataBox/DataBox.hpp"
-#include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
-#include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp" // IWYU pragma: keep
-#include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp" // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <boost/variant/get.hpp>
@@ -24,8 +23,8 @@ class DataVector;
 namespace intrp {
 namespace Tags {
 struct NumberOfElements;
-} // namespace Tags
-} // namespace intrp
+}  // namespace Tags
+}  // namespace intrp
 /// \endcond
 
 namespace {
@@ -36,10 +35,13 @@ struct mock_interpolator {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<
-      typename ::intrp::Actions::InitializeInterpolator::
-          template return_tag_list<Metavariables>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<intrp::Actions::InitializeInterpolator>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Registration, tmpl::list<>>>;
 };
 
 struct MockMetavariables {
@@ -54,44 +56,34 @@ struct MockMetavariables {
 
   using component_list = tmpl::list<mock_interpolator<MockMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
-  enum class Phase { Initialize, Exit };
+  enum class Phase { Initialization, Registration, Testing, Exit };
 };
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
                   "[Unit]") {
   using metavars = MockMetavariables;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  using TupleOfMockDistributedObjects =
-      MockRuntimeSystem::TupleOfMockDistributedObjects;
-  TupleOfMockDistributedObjects dist_objects{};
-  using MockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          mock_interpolator<metavars>>;
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<
-                      mock_interpolator<metavars>>{});
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
+  using component = mock_interpolator<metavars>;
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  runner.set_phase(metavars::Phase::Initialization);
+  ActionTesting::emplace_component<component>(&runner, 0);
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  runner.set_phase(metavars::Phase::Registration);
 
-  runner.simple_action<mock_interpolator<metavars>,
-                       ::intrp::Actions::InitializeInterpolator>(0);
+  CHECK(ActionTesting::get_databox_tag<component,
+                                       ::intrp::Tags::NumberOfElements>(
+            runner, 0) == 0);
 
-  const auto& box =
-      runner.template algorithms<mock_interpolator<metavars>>()
-          .at(0)
-          .template get_databox<
-              typename mock_interpolator<metavars>::initial_databox>();
+  runner.simple_action<component, ::intrp::Actions::RegisterElement>(0);
 
-  CHECK(db::get<::intrp::Tags::NumberOfElements>(box) == 0);
+  CHECK(ActionTesting::get_databox_tag<component,
+                                       ::intrp::Tags::NumberOfElements>(
+            runner, 0) == 1);
 
-  runner.simple_action<mock_interpolator<metavars>,
-                       ::intrp::Actions::RegisterElement>(0);
+  runner.simple_action<component, ::intrp::Actions::RegisterElement>(0);
 
-  CHECK(db::get<::intrp::Tags::NumberOfElements>(box) == 1);
-
-  runner.simple_action<mock_interpolator<metavars>,
-                       ::intrp::Actions::RegisterElement>(0);
-
-  CHECK(db::get<::intrp::Tags::NumberOfElements>(box) == 2);
+  CHECK(ActionTesting::get_databox_tag<component,
+                                       ::intrp::Tags::NumberOfElements>(
+            runner, 0) == 2);
 }
 
 }  // namespace

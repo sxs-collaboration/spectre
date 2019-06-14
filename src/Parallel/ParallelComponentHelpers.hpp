@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -69,6 +70,14 @@ template <class ActionsList>
 using get_const_global_cache_tags =
     tmpl::remove_duplicates<tmpl::join<tmpl::transform<
         ActionsList,
+        Parallel_detail::get_const_global_cache_tags_from_action<tmpl::_1>>>>;
+
+template <class PhaseDepActionList>
+using get_const_global_cache_tags_from_pdal =
+    tmpl::remove_duplicates<tmpl::join<tmpl::transform<
+        tmpl::flatten<tmpl::transform<
+            PhaseDepActionList,
+            get_action_list_from_phase_dep_action_list<tmpl::_1>>>,
         Parallel_detail::get_const_global_cache_tags_from_action<tmpl::_1>>>>;
 
 /// \cond

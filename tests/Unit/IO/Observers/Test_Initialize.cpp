@@ -6,14 +6,14 @@
 #include <cstddef>
 #include <unordered_map>
 #include <unordered_set>
-#include <utility>
 
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/Tags.hpp"  // IWYU pragma: keep
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <exception>
@@ -25,9 +25,16 @@ struct observer_component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<
-      typename observers::Actions::Initialize<Metavariables>::return_tag_list>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+
+  using simple_tags =
+      typename observers::Actions::Initialize<Metavariables>::simple_tags;
+  using compute_tags =
+      typename observers::Actions::Initialize<Metavariables>::compute_tags;
+
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<observers::Actions::Initialize<Metavariables>>>>;
 };
 
 struct Metavariables {
@@ -35,36 +42,29 @@ struct Metavariables {
   using const_global_cache_tag_list = tmpl::list<>;
   using observed_reduction_data_tags = tmpl::list<>;
 
-  enum class Phase { Initialize, Exit };
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 SPECTRE_TEST_CASE("Unit.IO.Observers.Initialize", "[Unit][Observers]") {
-  using TupleOfMockDistributedObjects =
-      typename ActionTesting::MockRuntimeSystem<
-          Metavariables>::TupleOfMockDistributedObjects;
   using obs_component = observer_component<Metavariables>;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using ObserverMockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          obs_component>;
-  TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<ObserverMockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {}, std::move(dist_objects)};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
+  ActionTesting::emplace_component<obs_component>(&runner, 0);
+  runner.next_action<obs_component>(0);
 
-  runner.simple_action<obs_component,
-                       observers::Actions::Initialize<Metavariables>>(0);
-  const auto& observer_box =
-      runner.template algorithms<obs_component>()
-          .at(0)
-          .template get_databox<typename obs_component::initial_databox>();
-  CHECK(db::get<observers::Tags::NumberOfEvents>(observer_box).empty());
-  CHECK(db::get<observers::Tags::ReductionArrayComponentIds>(observer_box)
-            .empty());
   CHECK(
-      db::get<observers::Tags::VolumeArrayComponentIds>(observer_box).empty());
-  CHECK(db::get<observers::Tags::TensorData>(observer_box).empty());
+      ActionTesting::get_databox_tag<obs_component,
+                                     observers::Tags::NumberOfEvents>(runner, 0)
+          .empty());
+  CHECK(
+      ActionTesting::get_databox_tag<
+          obs_component, observers::Tags::ReductionArrayComponentIds>(runner, 0)
+          .empty());
+  CHECK(ActionTesting::get_databox_tag<
+            obs_component, observers::Tags::VolumeArrayComponentIds>(runner, 0)
+            .empty());
+  CHECK(ActionTesting::get_databox_tag<obs_component,
+                                       observers::Tags::TensorData>(runner, 0)
+            .empty());
 }
 }  // namespace

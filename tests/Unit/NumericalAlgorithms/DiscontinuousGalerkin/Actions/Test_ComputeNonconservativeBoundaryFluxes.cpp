@@ -33,12 +33,14 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
@@ -100,16 +102,13 @@ using n_dot_f_tag = interface_tag<Tags::NormalDotFlux<Tags::Variables<
 
 using VarsType = Variables<tmpl::list<Var, Var2>>;
 
-struct Metavariables;
-
+template <typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list =
-      tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes<
-          Tags::InternalDirections<2>>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
@@ -122,14 +121,23 @@ struct component {
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
       interface_compute_tag<
           Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<2>>>>;
-  using initial_databox =
-      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes<
+              Tags::InternalDirections<2>>>>>;
 };
 
 struct Metavariables {
   using system = System;
-  using component_list = tmpl::list<component>;
+  using component_list = tmpl::list<component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 auto run_action(
@@ -142,38 +150,38 @@ auto run_action(
   using Affine = domain::CoordinateMaps::Affine;
   const Affine xi_map{-1., 1., 3., 7.};
   const Affine eta_map{-1., 1., -2., 4.};
+  using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
 
   auto element_map = ElementMap<2, Frame::Inertial>(
       element.id(),
       domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
-                                                                 eta_map)));
+          Affine2D(xi_map, eta_map)));
 
   n_dot_f_tag::type n_dot_f_storage{};
   for (const auto& direction_neighbors : element.neighbors()) {
     n_dot_f_storage[direction_neighbors.first].initialize(3);
   }
 
-  using simple_tags = typename component::simple_tags;
-  using compute_tags = typename component::compute_tags;
+  using my_component = component<Metavariables>;
+  using simple_tags = typename my_component::simple_tags;
+  using compute_tags = typename my_component::compute_tags;
 
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(ElementIndex<2>{element.id()},
-               ActionTesting::MockDistributedObject<component>{
-                   db::create<simple_tags, compute_tags>(
-                       element, mesh, std::move(element_map), vars, other_arg,
-                       std::move(n_dot_f_storage))});
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
-  runner.next_action<component>(element.id());
+  MockRuntimeSystem runner{{}};
+  ActionTesting::emplace_component_and_initialize<my_component>(
+      &runner, element.id(),
+      {element, mesh, std::move(element_map), vars, other_arg,
+       std::move(n_dot_f_storage)});
+  runner.set_phase(Metavariables::Phase::Testing);
+
+  runner.next_action<my_component>(element.id());
   // std::move call on returned value is intentional.
-  return std::move(runner.algorithms<component>()
-                       .at(element.id())
-                       .get_databox<db::compute_databox_type<
-                           tmpl::append<simple_tags, compute_tags>>>());
+  return std::move(
+      ActionTesting::get_databox<my_component,
+                                 tmpl::append<simple_tags, compute_tags>>(
+          make_not_null(&runner), element.id()));
 }
 }  // namespace
 

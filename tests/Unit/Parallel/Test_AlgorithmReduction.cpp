@@ -10,27 +10,27 @@
 #include <cstddef>
 #include <ostream>
 #include <string>
-#include <tuple>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
 #include "AlgorithmArray.hpp"
 #include "AlgorithmSingleton.hpp"
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Reduction.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 namespace db {
 template <typename TagsList>
@@ -46,15 +46,11 @@ static constexpr int number_of_1d_array_elements = 46;
 
 /// [reduce_sum_int_action]
 struct ProcessReducedSumOfInts {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const int& value) noexcept {
     SPECTRE_PARALLEL_REQUIRE(number_of_1d_array_elements *
                                  (number_of_1d_array_elements - 1) / 2 ==
@@ -65,18 +61,12 @@ struct ProcessReducedSumOfInts {
 
 /// [reduce_rms_action]
 struct ProcessErrorNorms {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    const int points,
-                    const double error_u,
-                    const double error_v) noexcept {
+                    const ArrayIndex& /*array_index*/, const int points,
+                    const double error_u, const double error_v) noexcept {
     SPECTRE_PARALLEL_REQUIRE(number_of_1d_array_elements * 3 == points);
     SPECTRE_PARALLEL_REQUIRE(equal_within_roundoff(
         error_u, sqrt(number_of_1d_array_elements * square(1.0e-3) / points)));
@@ -88,15 +78,11 @@ struct ProcessErrorNorms {
 
 /// [custom_reduction_action]
 struct ProcessCustomReductionAction {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex>
   static void apply(db::DataBox<DbTags>& /*box*/,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/, int reduced_int,
+                    const ArrayIndex& /*array_index*/, int reduced_int,
                     std::unordered_map<std::string, int> reduced_map,
                     std::vector<int>&& reduced_vector) noexcept {
     SPECTRE_PARALLEL_REQUIRE(reduced_int == 10);
@@ -121,8 +107,11 @@ struct SingletonParallelComponent {
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<tmpl::list<>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Initialization,
+                                        tmpl::list<>>>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
@@ -137,14 +126,11 @@ template <class Metavariables>
 struct ArrayParallelComponent;
 
 struct ArrayReduce {
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(db::DataBox<DbTags>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <typename ParallelComponent, typename DbTags, typename Metavariables,
+            typename ArrayIndex>
+  static void apply(const db::DataBox<DbTags>& /*box*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* /*meta*/) noexcept {
+                    const ArrayIndex& array_index) noexcept {
     static_assert(cpp17::is_same_v<ParallelComponent,
                                    ArrayParallelComponent<TestMetavariables>>,
                   "The ParallelComponent is not deduced to be the right type");
@@ -240,8 +226,6 @@ struct ArrayReduce {
         ReductionType{10, my_send_map, std::vector<int>{array_index, 10, -8}},
         my_proxy, array_proxy);
     /// [custom_contribute_to_broadcast_reduction]
-
-    return std::forward_as_tuple(std::move(box));
   }
 };
 
@@ -251,9 +235,12 @@ struct ArrayParallelComponent {
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using action_list = tmpl::list<>;
   using array_index = int;
-  using initial_databox = db::compute_databox_type<tmpl::list<>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Initialization,
+                                        tmpl::list<>>>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
@@ -264,7 +251,7 @@ struct ArrayParallelComponent {
     for (int i = 0, which_proc = 0,
              number_of_procs = Parallel::number_of_procs();
          i < number_of_1d_array_elements; ++i) {
-      array_proxy[i].insert(global_cache, which_proc);
+      array_proxy[i].insert(global_cache, {}, which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
     }
     array_proxy.doneInserting();

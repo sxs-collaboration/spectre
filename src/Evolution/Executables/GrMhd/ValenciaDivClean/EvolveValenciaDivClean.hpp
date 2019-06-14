@@ -35,6 +35,7 @@
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/RegisterObservers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
@@ -42,8 +43,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/GotoAction.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/SmoothFlow.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
@@ -82,6 +83,7 @@ struct EvolutionMetavars {
   //  using analytic_solution = grmhd::Solutions::SmoothFlow;
   using analytic_solution = RelativisticEuler::Solutions::FishboneMoncriefDisk;
 
+  using domain_creator_tag = OptionTags::DomainCreator<3, Frame::Inertial>;
   using system = grmhd::ValenciaDivClean::System<
       typename analytic_solution::equation_of_state_type>;
   static constexpr size_t thermodynamic_dim = system::thermodynamic_dim;
@@ -121,6 +123,9 @@ struct EvolutionMetavars {
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::NewmanHamlin,
       grmhd::ValenciaDivClean::PrimitiveRecoverySchemes::PalenzuelaEtAl>;
 
+  struct ObservationType {};
+  using element_observation_type = ObservationType;
+
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<Event<events>::creatable_classes>;
 
@@ -143,27 +148,53 @@ struct EvolutionMetavars {
       VariableFixing::Actions::FixVariables<VariableFixing::FixConservatives>,
       Actions::UpdatePrimitives>>;
 
-  struct EvolvePhaseStart;
+  enum class Phase {
+    Initialization,
+    InitializeTimeStepperHistory,
+    RegisterWithObserver,
+    Evolve,
+    Exit
+  };
+
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
-          EvolutionMetavars, grmhd::ValenciaDivClean::Actions::Initialize<3>,
-          tmpl::flatten<tmpl::list<
-              VariableFixing::Actions::FixVariables<
-                  VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
-              Actions::UpdateConservatives,
-              SelfStart::self_start_procedure<compute_rhs, update_variables>,
-              Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
-              VariableFixing::Actions::FixVariables<
-                  VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
-              Actions::UpdateConservatives,
-              Actions::RunEventsAndTriggers,
-              tmpl::conditional_t<local_time_stepping,
-                                  Actions::ChangeStepSize<step_choosers>,
-                                  tmpl::list<>>,
-              compute_rhs, update_variables,
-              Actions::Goto<EvolvePhaseStart>>>>>;
+          EvolutionMetavars,
+          tmpl::list<
+              Parallel::PhaseActions<
+                  Phase, Phase::Initialization,
+                  tmpl::list<
+                      grmhd::ValenciaDivClean::Actions::Initialize<3>,
+                      VariableFixing::Actions::FixVariables<
+                          VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
+                      Actions::UpdateConservatives>>,
+
+              Parallel::PhaseActions<
+                  Phase, Phase::InitializeTimeStepperHistory,
+                  tmpl::flatten<tmpl::list<SelfStart::self_start_procedure<
+                      compute_rhs, update_variables>>>>,
+
+              Parallel::PhaseActions<
+                  Phase, Phase::RegisterWithObserver,
+                  tmpl::list<Actions::AdvanceTime,
+                             observers::Actions::RegisterWithObservers<
+                                 observers::RegisterObservers<
+                                     element_observation_type>>>>,
+
+              Parallel::PhaseActions<
+                  Phase, Phase::Evolve,
+                  tmpl::flatten<tmpl::list<
+                      VariableFixing::Actions::FixVariables<
+                          VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
+                      Actions::UpdateConservatives,
+                      Actions::RunEventsAndTriggers,
+                      tmpl::conditional_t<
+                          local_time_stepping,
+                          Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>,
+          grmhd::ValenciaDivClean::Actions::Initialize<
+              3>::AddOptionsToDataBox>>;
 
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,
@@ -172,16 +203,9 @@ struct EvolutionMetavars {
                  OptionTags::DampingParameter,
                  OptionTags::EventsAndTriggers<events, triggers>>;
 
-  using domain_creator_tag = OptionTags::DomainCreator<3, Frame::Inertial>;
-
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
-
   static constexpr OptionString help{
       "Evolve the Valencia formulation of the GRMHD system with divergence "
       "cleaning.\n\n"};
-
-  enum class Phase { Initialization, RegisterWithObserver, Evolve, Exit };
 
   static Phase determine_next_phase(
       const Phase& current_phase,
@@ -189,6 +213,8 @@ struct EvolutionMetavars {
           EvolutionMetavars>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:
+        return Phase::InitializeTimeStepperHistory;
+      case Phase::InitializeTimeStepperHistory:
         return Phase::RegisterWithObserver;
       case Phase::RegisterWithObserver:
         return Phase::Evolve;
@@ -200,7 +226,7 @@ struct EvolutionMetavars {
             "being 'Exit'");
       default:
         ERROR(
-            "Unknown type of phase. Did you static_cast<Phase> an integral "
+            "Unknown type of phase. Did you static_cast<Phase> to an integral "
             "value?");
     }
   }

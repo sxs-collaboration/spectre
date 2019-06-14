@@ -6,14 +6,14 @@ See LICENSE.txt for details.
 
 \tableofcontents
 
-# Introduction {#introduction}
+# Introduction {#databox_introduction}
 This page walks the user through the iterative process that led to SpECTRE's
 DataBox. At each stage, it discusses the advances and challenges that result
 from each improvement.
 
-# Towards SpECTRE's DataBox {#towards_spectres_databox}
+# Towards SpECTRE's DataBox {#databox_towards_spectres_databox}
 
-## Working without DataBoxes {#working_without_databoxes}
+## Working without DataBoxes {#databox_working_without_databoxes}
 In a small C++ program, it is common to use the built-in fundamental types
 (bool, int, double, etc.) in computations, and to give variable names to
 objects of these types. For example, a section of a small program may look like
@@ -57,7 +57,7 @@ is called many times, it becomes inevitable that the arguments will be
 accidentally transposed. We can address the two problems described above with a
 `std::map`, the first container we'll consider in this series.
 
-##A std::map DataBox {#a_std_map_databox}
+##A std::map DataBox {#databox_a_std_map_databox}
 We can encapsulate the variables we use in a `std::map`, and the first half of
 our small program example now looks like this:
 
@@ -104,7 +104,7 @@ compiler, names encoded as types *can* be. This is possible with C++'s static
 typing, and to take advantage of this we need a container that is
 *heterogeneous*, that is, capable of holding objects of different types.
 
-## A std::tuple DataBox {#a_std_tuple_databox}
+## A std::tuple DataBox {#databox_a_std_tuple_databox}
 
 A well-documented example of a fixed-size heterogeneous container of types is
 [std::tuple](https://en.cppreference.com/w/cpp/utility/tuple):
@@ -164,7 +164,7 @@ To do this we need to make modifications to both our tags as well as our
 `tuples::TaggedTuple`, which is an improved implementation of `std::tuple` in
 terms of both performance and interface.
 
-##A TaggedTuple DataBox {#a_taggedtuple_databox}
+##A TaggedTuple DataBox {#databox_a_taggedtuple_databox}
 
 TaggedTuple is an implementation of a compile time container where the keys
 are tags.
@@ -200,13 +200,13 @@ through the use of tags, we could get around this problem. We are now ready to
 consider SpECTRE's DataBox, which provides the solution to this problem in the
 form of `ComputeTags`.
 
-# SpECTRE's DataBox {#a_proper_databox}
+# SpECTRE's DataBox {#databox_a_proper_databox}
 
 A brief description of SpECTRE's DataBox: a TaggedTuple with compute-on-demand.
 For a detailed description of SpECTRE's DataBox, see the
 \ref DataBoxGroup "DataBox documentation".
 
-## SimpleTags {#documentation_for_simple_tags}
+## SimpleTags {#databox_documentation_for_simple_tags}
 Just as we needed to modify our tags to make them compatible with
 `TaggedTuple`, we need to again modify them for use with DataBox. Our ordinary
 tags become SpECTRE's SimpleTags:
@@ -228,7 +228,7 @@ So far, the usage of DataBox has been similar to the usage of TaggedTuple. To
 address the desire to combine the functionality of tags with the modularity of
 functions, DataBox provides ComputeTags.
 
-## ComputeTags {#documentation_for_compute_tags}
+## ComputeTags {#databox_documentation_for_compute_tags}
 ComputeTags are used to tag functions that are used in conjunction with a
 DataBox to produce a new quantity. ComputeTags look like:
 
@@ -265,7 +265,7 @@ must have an `argument_tags` as well as a `function` specified; this is the
 contract with DataBox they must satisfy in order to enjoy the full benefits of
 DataBox's generality.
 
-## Mutating DataBox items {#documentation_for_mutate_tags}
+## Mutating DataBox items {#databox_documentation_for_mutate_tags}
 It is reasonable to expect that in a complicated calculation, we will encounter
 time-dependent or iteration-dependent variables. As a result, in addition to
 adding and retrieving items from our DataBox, we also need a way to *mutate*
@@ -318,9 +318,9 @@ up being independent of any tags or template parameters! This means we can
 factor it out and place it in its own module, where it can be tested
 independently of the DataBox.
 
-# Toward SpECTRE's Actions {#towards_actions}
+# Toward SpECTRE's Actions {#databox_towards_actions}
 
-## Mutators {#documentation_for_mutators}
+## Mutators {#databox_documentation_for_mutators}
 These constructs that exist independently of the DataBox are the precursors to
 SpECTRE's *Actions*. As they are designed to be used with `db::mutate` and
 `db::mutate_apply`, we give them the name *Mutators*. Here is the above lambda

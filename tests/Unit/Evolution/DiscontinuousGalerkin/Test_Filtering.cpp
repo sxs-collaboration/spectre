@@ -21,14 +21,16 @@
 #include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/TestCreation.hpp"
 
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare dg::Actions::ExponentialFilter
 
 namespace {
@@ -59,21 +61,29 @@ struct Component {
 
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  /// [action_list_example]
-  using action_list = tmpl::conditional_t<
-      metavariables::filter_individually,
-      tmpl::list<
-          dg::Actions::ExponentialFilter<0, tmpl::list<Tags::ScalarVar>>,
-          dg::Actions::ExponentialFilter<1, tmpl::list<Tags::VectorVar<dim>>>>,
-      tmpl::list<dg::Actions::ExponentialFilter<
-          0, tmpl::list<Tags::VectorVar<dim>, Tags::ScalarVar>>>>;
-  /// [action_list_example]
-  using const_global_cache_tag_list =
-      Parallel::get_const_global_cache_tags<action_list>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<::Tags::Mesh<dim>,
                         typename metavariables::system::variables_tag>;
-  using initial_databox = db::compute_databox_type<simple_tags>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      /// [action_list_example]
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::conditional_t<
+              metavariables::filter_individually,
+              tmpl::list<dg::Actions::ExponentialFilter<
+                             0, tmpl::list<Tags::ScalarVar>>,
+                         dg::Actions::ExponentialFilter<
+                             1, tmpl::list<Tags::VectorVar<dim>>>>,
+              tmpl::list<dg::Actions::ExponentialFilter<
+                  0, tmpl::list<Tags::VectorVar<dim>, Tags::ScalarVar>>>>>>;
+  /// [action_list_example]
+  using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
+      typename tmpl::at_c<phase_dependent_action_list, 1>::action_list>;
 };
 
 template <size_t Dim, bool FilterIndividually>
@@ -84,6 +94,7 @@ struct Metavariables {
   static constexpr bool local_time_stepping = true;
   using component_list = tmpl::list<Component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 template <typename Metavariables,
@@ -120,17 +131,12 @@ void test_exponential_filter_action(const double alpha,
 
   using metavariables = Metavariables<Dim, FilterIndividually>;
   using component = Component<metavariables>;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using MockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<component>;
 
   for (size_t num_pts =
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
        num_pts < Spectral::maximum_number_of_points<BasisType>; ++num_pts) {
     CAPTURE(num_pts);
     const Mesh<Dim> mesh(num_pts, BasisType, QuadratureType);
-
-    typename MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
 
     Variables<tmpl::list<Tags::ScalarVar, Tags::VectorVar<Dim>>> initial_vars(
         mesh.number_of_grid_points());
@@ -142,23 +148,16 @@ void test_exponential_filter_action(const double alpha,
       }
     }
 
-    tuples::get<MockDistributedObjectsTag>(dist_objects)
-        .emplace(0, ActionTesting::MockDistributedObject<component>{
-                        db::create<typename component::simple_tags>(
-                            mesh, initial_vars)});
+    ActionTesting::MockRuntimeSystem<metavariables> runner(
+        create_cache_tuple<metavariables>(alpha, half_power,
+                                          disable_for_debugging));
+    ActionTesting::emplace_component_and_initialize<component>(
+        &runner, 0, {mesh, initial_vars});
+    runner.set_phase(metavariables::Phase::Testing);
 
-    MockRuntimeSystem runner(create_cache_tuple<metavariables>(
-                                 alpha, half_power, disable_for_debugging),
-                             std::move(dist_objects));
-
-    auto& box =
-        runner.template algorithms<component>()
-            .at(0)
-            .template get_databox<typename component::initial_databox>();
-
-    runner.template next_action<component>(0);
+    ActionTesting::next_action<component>(make_not_null(&runner), 0);
     if (FilterIndividually) {
-      runner.template next_action<component>(0);
+      ActionTesting::next_action<component>(make_not_null(&runner), 0);
     }
 
     std::array<Matrix, Dim> filter_scalar{};
@@ -188,8 +187,14 @@ void test_exponential_filter_action(const double alpha,
                      get<Tags::VectorVar<Dim>>(initial_vars).get(d),
                      mesh.extents());
     }
-    CHECK_ITERABLE_APPROX(expected_scalar, db::get<Tags::ScalarVar>(box));
-    CHECK_ITERABLE_APPROX(expected_vector, db::get<Tags::VectorVar<Dim>>(box));
+    CHECK_ITERABLE_APPROX(
+        expected_scalar,
+        (ActionTesting::get_databox_tag<component, Tags::ScalarVar>(runner,
+                                                                    0)));
+    CHECK_ITERABLE_APPROX(
+        expected_vector,
+        (ActionTesting::get_databox_tag<component, Tags::VectorVar<Dim>>(runner,
+                                                                         0)));
   }
 }
 

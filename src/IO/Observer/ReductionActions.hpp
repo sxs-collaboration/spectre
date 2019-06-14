@@ -20,6 +20,7 @@
 #include "IO/Observer/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
+#include "Parallel/Invoke.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/Printf.hpp"
 #include "Parallel/Reduction.hpp"
@@ -77,16 +78,17 @@ struct ContributeReductionDataToWriter;
  * \snippet tests/Unit/Elliptic/Systems/Poisson/Actions/Test_Observe.cpp collect_reduction_data_tags
  */
 struct ContributeReductionData {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent, typename... Ts,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex, typename... Ts,
+      Requires<
+          tmpl::list_contains_v<DbTagsList, Tags::ReductionData<Ts...>> and
+          tmpl::list_contains_v<DbTagsList, Tags::ReductionDataNames<Ts...>> and
+          tmpl::list_contains_v<DbTagsList,
+                                Tags::ReductionObserversContributed>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,
                     const std::vector<std::string>& reduction_names,
@@ -182,16 +184,19 @@ struct WriteReductionData {
   }
 
  public:
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent, typename... ReductionDatums,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex, typename... ReductionDatums,
+      Requires<tmpl::list_contains_v<
+                   DbTagsList, Tags::ReductionData<ReductionDatums...>> and
+               tmpl::list_contains_v<
+                   DbTagsList, Tags::ReductionDataNames<ReductionDatums...>> and
+               tmpl::list_contains_v<DbTagsList,
+                                     Tags::ReductionObserversContributed> and
+               tmpl::list_contains_v<DbTagsList, Tags::H5FileLock>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const gsl::not_null<CmiNodeLock*> node_lock,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,

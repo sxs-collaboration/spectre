@@ -45,6 +45,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -59,6 +61,7 @@
 // IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
 // IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
 
@@ -159,9 +162,7 @@ struct component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tag_list = tmpl::list<NumericalFluxTag<Dim>>;
-  using action_list =
-      tmpl::list<dg::Actions::SendDataForFluxes<Metavariables>,
-                 dg::Actions::ReceiveDataForFluxes<Metavariables>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   using simple_tags =
@@ -182,8 +183,15 @@ struct component {
       interface_compute_tag<
           Dim, Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>>;
 
-  using initial_databox =
-      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<dg::Actions::SendDataForFluxes<Metavariables>,
+                     dg::Actions::ReceiveDataForFluxes<Metavariables>>>>;
 };
 
 template <size_t Dim>
@@ -194,6 +202,7 @@ struct Metavariables {
   using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag<Dim>;
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 template <typename Component>
@@ -213,6 +222,8 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                   "[Unit][NumericalAlgorithms][Actions]") {
   using metavariables = Metavariables<2>;
   using my_component = component<2, metavariables>;
+  using simple_tags = typename my_component::simple_tags;
+  using compute_tags = typename my_component::compute_tags;
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
 
@@ -241,11 +252,13 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   using Affine = domain::CoordinateMaps::Affine;
   const Affine xi_map{-1., 1., 3., 7.};
   const Affine eta_map{-1., 1., 7., 3.};
+  using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
 
   const auto coordmap =
       domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map,
-                                                                 eta_map));
+          Affine2D(xi_map, eta_map));
 
   const auto neighbor_directions = {Direction<2>::lower_xi(),
                                     Direction<2>::upper_xi(),
@@ -273,10 +286,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
        {Direction<2>::upper_xi(), Scalar<DataVector>{{{{31., 32., 33.}}}}},
        {Direction<2>::upper_eta(), Scalar<DataVector>{{{{34., 35., 36.}}}}}}};
 
-  auto start_box = [
-    &mesh, &self_id, &west_id, &east_id, &south_id, &block_orientation,
-    &coordmap, &neighbor_directions, &neighbor_mortar_ids, &data
-  ]() noexcept {
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<2>{}}};
+
+  // Emplace self element
+  {
     const Element<2> element(
         self_id, {{Direction<2>::lower_xi(), {{west_id}, block_orientation}},
                   {Direction<2>::upper_xi(), {{east_id}, {}}},
@@ -310,22 +323,15 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
       mortar_sizes.insert({mortar_id, {{Spectral::MortarSize::Full}}});
     }
 
-    return db::create<
-        db::AddSimpleTags<
-            TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>, Tags::Element<2>,
-            Tags::ElementMap<2>, normal_dot_fluxes_tag<2, flux_comm_types<2>>,
-            other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
-            mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
-            mortar_sizes_tag<2>>,
-        compute_items<my_component>>(
-        0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
-        std::move(other_data), std::move(mortar_history),
-        std::move(mortar_next_temporal_ids), std::move(mortar_meshes),
-        std::move(mortar_sizes));
+    ActionTesting::emplace_component_and_initialize<my_component>(
+        &runner, self_id,
+        {0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
+         std::move(other_data), std::move(mortar_history),
+         std::move(mortar_next_temporal_ids), std::move(mortar_meshes),
+         std::move(mortar_sizes)});
   }
-  ();
 
-  const auto create_neighbor_databox = [&mesh, &self_id, &coordmap ](
+  const auto emplace_neighbor = [&mesh, &self_id, &coordmap, &runner ](
       const ElementId<2>& id, const Direction<2>& direction,
       const OrientationMap<2>& orientation,
       const Scalar<DataVector>& normal_dot_fluxes,
@@ -352,57 +358,25 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
     db::item_type<mortar_sizes_tag<2>> mortar_sizes{};
     mortar_sizes.insert({{direction, self_id}, {{Spectral::MortarSize::Full}}});
 
-    return db::create<
-        db::AddSimpleTags<
-            TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>, Tags::Element<2>,
-            Tags::ElementMap<2>, normal_dot_fluxes_tag<2, flux_comm_types<2>>,
-            other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
-            mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
-            mortar_sizes_tag<2>>,
-        compute_items<my_component>>(
-        0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes_map),
-        std::move(other_data_map), std::move(mortar_history),
-        db::item_type<mortar_next_temporal_ids_tag<2>>{},
-        std::move(mortar_meshes), std::move(mortar_sizes));
+    ActionTesting::emplace_component_and_initialize<my_component>(
+        &runner, id,
+        {0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes_map),
+         std::move(other_data_map), std::move(mortar_history),
+         db::item_type<mortar_next_temporal_ids_tag<2>>{},
+         std::move(mortar_meshes), std::move(mortar_sizes)});
   };
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(self_id, std::move(start_box));
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(south_id,
-               create_neighbor_databox(
-                   south_id, Direction<2>::lower_eta(), {},
+  emplace_neighbor(south_id, Direction<2>::lower_eta(), {},
                    data.remote_fluxes.at(Direction<2>::upper_eta()),
-                   data.remote_other_data.at(Direction<2>::upper_eta())));
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(east_id,
-               create_neighbor_databox(
-                   east_id, Direction<2>::lower_xi(), {},
+                   data.remote_other_data.at(Direction<2>::upper_eta()));
+  emplace_neighbor(east_id, Direction<2>::lower_xi(), {},
                    data.remote_fluxes.at(Direction<2>::upper_xi()),
-                   data.remote_other_data.at(Direction<2>::upper_xi())));
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(west_id,
-               create_neighbor_databox(
-                   west_id, Direction<2>::lower_eta(),
+                   data.remote_other_data.at(Direction<2>::upper_xi()));
+  emplace_neighbor(west_id, Direction<2>::lower_eta(),
                    block_orientation.inverse_map(),
                    data.remote_fluxes.at(Direction<2>::lower_xi()),
-                   data.remote_other_data.at(Direction<2>::lower_xi())));
-
-  ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {NumericalFlux<2>{}}, std::move(dist_objects)};
-
-  using initial_databox_type = db::compute_databox_type<tmpl::append<
-      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
-                        Tags::Element<2>, Tags::ElementMap<2>,
-                        normal_dot_fluxes_tag<2, flux_comm_types<2>>,
-                        other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
-                        mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
-                        mortar_sizes_tag<2>>,
-      compute_items<my_component>>>;
+                   data.remote_other_data.at(Direction<2>::lower_xi()));
+  runner.set_phase(metavariables::Phase::Testing);
 
   runner.next_action<my_component>(self_id);
 
@@ -440,9 +414,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
 
   // ReceiveDataForFluxes
   runner.next_action<my_component>(self_id);
-  const auto& self_box = runner.algorithms<my_component>()
-                             .at(self_id)
-                             .get_databox<initial_databox_type>();
+  const auto& self_box =
+      ActionTesting::get_databox<my_component,
+                                 tmpl::append<simple_tags, compute_tags>>(
+          make_not_null(&runner), self_id);
 
   CHECK(tuples::get<fluxes_tag<flux_comm_types<2>>>(
             runner.inboxes<my_component>()[self_id])
@@ -523,54 +498,38 @@ SPECTRE_TEST_CASE(
     "[Unit][NumericalAlgorithms][Actions]") {
   using metavariables = Metavariables<2>;
   using my_component = component<2, metavariables>;
-  using simple_tags =
-      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
-                        Tags::Element<2>, Tags::ElementMap<2>,
-                        normal_dot_fluxes_tag<2, flux_comm_types<2>>,
-                        other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
-                        mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
-                        mortar_sizes_tag<2>>;
-  using initial_databox_type = db::compute_databox_type<
-      tmpl::append<simple_tags, compute_items<my_component>>>;
 
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
-
   const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
-
   const Element<2> element(self_id, {});
 
   using Affine = domain::CoordinateMaps::Affine;
+  using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+  PUPable_reg(SINGLE_ARG(
+      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
   auto map = ElementMap<2, Frame::Inertial>(
       self_id,
       domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(
-              {-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
+          Affine2D({-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(
-          self_id,
-          db::create<simple_tags, compute_items<my_component>>(
-              0, 1, mesh, element, std::move(map),
-              db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
-              db::item_type<other_data_tag<2>>{},
-              db::item_type<mortar_data_tag<flux_comm_types<2>>>{},
-              db::item_type<mortar_next_temporal_ids_tag<2>>{},
-              db::item_type<mortar_meshes_tag<2>>{},
-              db::item_type<mortar_sizes_tag<2>>{}));
-  ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {NumericalFlux<2>{}}, std::move(dist_objects)};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<2>{}}};
+  ActionTesting::emplace_component_and_initialize<my_component>(
+      &runner, self_id,
+      {0, 1, mesh, element, std::move(map),
+       db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
+       db::item_type<other_data_tag<2>>{},
+       db::item_type<mortar_data_tag<flux_comm_types<2>>>{},
+       db::item_type<mortar_next_temporal_ids_tag<2>>{},
+       db::item_type<mortar_meshes_tag<2>>{},
+       db::item_type<mortar_sizes_tag<2>>{}});
+  runner.set_phase(metavariables::Phase::Testing);
 
   runner.next_action<my_component>(self_id);
 
-  CHECK(db::get<mortar_data_tag<flux_comm_types<2>>>(
-            runner.algorithms<my_component>()
-                .at(self_id)
-                .get_databox<initial_databox_type>())
+  CHECK(ActionTesting::get_databox_tag<my_component,
+                                       mortar_data_tag<flux_comm_types<2>>>(
+            runner, self_id)
             .empty());
   CHECK(runner.nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>()
             .empty());
@@ -579,10 +538,9 @@ SPECTRE_TEST_CASE(
 
   runner.next_action<my_component>(self_id);
 
-  CHECK(db::get<mortar_data_tag<flux_comm_types<2>>>(
-            runner.algorithms<my_component>()
-                .at(self_id)
-                .get_databox<initial_databox_type>())
+  CHECK(ActionTesting::get_databox_tag<my_component,
+                                       mortar_data_tag<flux_comm_types<2>>>(
+            runner, self_id)
             .empty());
   CHECK(runner.nonempty_inboxes<my_component, fluxes_tag<flux_comm_types<2>>>()
             .empty());
@@ -605,6 +563,9 @@ SPECTRE_TEST_CASE(
                       {{Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
                         Direction<3>::lower_eta()}}}}}});
 
+  PUPable_reg(
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       domain::CoordinateMaps::Identity<3>>));
   ElementMap<3, Frame::Inertial> map(
       self_id,
       domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
@@ -643,57 +604,39 @@ SPECTRE_TEST_CASE(
   db::item_type<other_data_tag<3>> other_data;
   other_data[mortar_id.first].initialize(face_mesh.number_of_grid_points(), 0.);
 
-  using simple_tags =
-      db::AddSimpleTags<TemporalId, Tags::Next<TemporalId>, Tags::Mesh<3>,
-                        Tags::Element<3>, Tags::ElementMap<3>,
-                        normal_dot_fluxes_tag<3, flux_comm_types<3>>,
-                        other_data_tag<3>, mortar_data_tag<flux_comm_types<3>>,
-                        mortar_next_temporal_ids_tag<3>, mortar_meshes_tag<3>,
-                        mortar_sizes_tag<3>>;
-  using initial_databox_type = db::compute_databox_type<
-      tmpl::append<simple_tags, compute_items<my_component>>>;
+  using simple_tags = typename my_component::simple_tags;
+  using compute_tags = typename my_component::compute_tags;
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(
-          self_id,
-          db::create<simple_tags, compute_items<my_component>>(
-              0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
-              std::move(other_data),
-              db::item_type<mortar_data_tag<flux_comm_types<3>>>{
-                  {mortar_id, {}}},
-              db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
-              db::item_type<mortar_meshes_tag<3>>{{mortar_id, mortar_mesh}},
-              db::item_type<mortar_sizes_tag<3>>{
-                  {mortar_id,
-                   {{Spectral::MortarSize::Full,
-                     Spectral::MortarSize::Full}}}}));
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(
-          neighbor_id,
-          db::create<simple_tags, compute_items<my_component>>(
-              0, 1, mesh, element, ElementMap<3, Frame::Inertial>{},
-              db::item_type<normal_dot_fluxes_tag<3, flux_comm_types<3>>>{},
-              db::item_type<other_data_tag<3>>{},
-              db::item_type<mortar_data_tag<flux_comm_types<3>>>{
-                  {mortar_id, {}}},
-              db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
-              db::item_type<mortar_meshes_tag<3>>{{mortar_id, face_mesh}},
-              db::item_type<mortar_sizes_tag<3>>{{mortar_id, {{}}}}));
-
-  ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {NumericalFlux<3>{}}, std::move(dist_objects)};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<3>{}}};
+  ActionTesting::emplace_component_and_initialize<my_component>(
+      &runner, self_id,
+      {0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
+       std::move(other_data),
+       db::item_type<mortar_data_tag<flux_comm_types<3>>>{{mortar_id, {}}},
+       db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
+       db::item_type<mortar_meshes_tag<3>>{{mortar_id, mortar_mesh}},
+       db::item_type<mortar_sizes_tag<3>>{
+           {mortar_id,
+            {{Spectral::MortarSize::Full, Spectral::MortarSize::Full}}}}});
+  ActionTesting::emplace_component_and_initialize<my_component>(
+      &runner, neighbor_id,
+      {0, 1, mesh, element, ElementMap<3, Frame::Inertial>{},
+       db::item_type<normal_dot_fluxes_tag<3, flux_comm_types<3>>>{},
+       db::item_type<other_data_tag<3>>{},
+       db::item_type<mortar_data_tag<flux_comm_types<3>>>{{mortar_id, {}}},
+       db::item_type<mortar_next_temporal_ids_tag<3>>{{mortar_id, 1}},
+       db::item_type<mortar_meshes_tag<3>>{{mortar_id, face_mesh}},
+       db::item_type<mortar_sizes_tag<3>>{{mortar_id, {{}}}}});
+  runner.set_phase(metavariables::Phase::Testing);
 
   runner.next_action<my_component>(self_id);
 
   // Check local data
   {
-    const auto& sent_box = runner.algorithms<my_component>()
-                               .at(self_id)
-                               .get_databox<initial_databox_type>();
+    const auto& sent_box =
+        ActionTesting::get_databox<my_component,
+                                   tmpl::append<simple_tags, compute_tags>>(
+            runner, self_id);
     CHECK(db::get<mortar_data_tag<flux_comm_types<3>>>(sent_box).size() == 1);
     auto mortar_data =
         db::get<mortar_data_tag<flux_comm_types<3>>>(sent_box).at(mortar_id);
@@ -754,12 +697,14 @@ SPECTRE_TEST_CASE(
                     OrientationMap<2>{{{Direction<2>::upper_xi(),
                                         Direction<2>::lower_eta()}}}}}});
 
+    using Affine = domain::CoordinateMaps::Affine;
+    using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
+    PUPable_reg(SINGLE_ARG(
+        domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
     ElementMap<2, Frame::Inertial> map(
         self_id,
         domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            domain::CoordinateMaps::ProductOf2Maps<
-                domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine>(
-                {-1., 1., -1., 1.}, {-1., 1., -1., 1.})));
+            Affine2D({-1., 1., -1., 1.}, {-1., 1., -1., 1.})));
 
     const Mesh<2> mesh(2, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);
@@ -785,66 +730,41 @@ SPECTRE_TEST_CASE(
     other_data[mortar_id.first].initialize(face_mesh.number_of_grid_points(),
                                            0.);
 
-    using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavariables>;
-    using MockDistributedObjectsTag =
-        MockRuntimeSystem::MockDistributedObjectsTag<my_component>;
-    MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-    tuples::get<MockDistributedObjectsTag>(dist_objects)
-        .emplace(
-            self_id,
-            db::create<
-                db::AddSimpleTags<
-                    TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
-                    Tags::Element<2>, Tags::ElementMap<2>,
-                    normal_dot_fluxes_tag<2, flux_comm_types<2>>,
-                    other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
-                    mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
-                    mortar_sizes_tag<2>>,
-                compute_items<my_component>>(
-                0, 1, mesh, element, std::move(map),
-                std::move(normal_dot_fluxes), std::move(other_data),
-                db::item_type<mortar_data_tag<flux_comm_types<2>>>{
-                    {mortar_id, {}}},
-                db::item_type<mortar_next_temporal_ids_tag<2>>{{mortar_id, 1}},
-                db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
-                db::item_type<mortar_sizes_tag<2>>{
-                    {mortar_id, {{test.first}}}}));
-    tuples::get<MockDistributedObjectsTag>(dist_objects)
-        .emplace(
-            neighbor_id,
-            db::create<
-                db::AddSimpleTags<
-                    TemporalId, Tags::Next<TemporalId>, Tags::Mesh<2>,
-                    Tags::Element<2>, Tags::ElementMap<2>,
-                    normal_dot_fluxes_tag<2, flux_comm_types<2>>,
-                    other_data_tag<2>, mortar_data_tag<flux_comm_types<2>>,
-                    mortar_next_temporal_ids_tag<2>, mortar_meshes_tag<2>,
-                    mortar_sizes_tag<2>>,
-                compute_items<my_component>>(
-                0, 1, mesh, element, ElementMap<2, Frame::Inertial>{},
-                db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
-                db::item_type<other_data_tag<2>>{},
-                db::item_type<mortar_data_tag<flux_comm_types<2>>>{
-                    {mortar_id, {}}},
-                db::item_type<mortar_next_temporal_ids_tag<2>>{{mortar_id, 1}},
-                db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
-                db::item_type<mortar_sizes_tag<2>>{
-                    {mortar_id, {{test.first}}}}));
-
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {NumericalFlux<2>{}}, std::move(dist_objects)};
+        {NumericalFlux<2>{}}};
+
+    ActionTesting::emplace_component_and_initialize<my_component>(
+        &runner, self_id,
+        {0, 1, mesh, element, std::move(map), std::move(normal_dot_fluxes),
+         std::move(other_data),
+         db::item_type<mortar_data_tag<flux_comm_types<2>>>{{mortar_id, {}}},
+         db::item_type<mortar_next_temporal_ids_tag<2>>{{mortar_id, 1}},
+         db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
+         db::item_type<mortar_sizes_tag<2>>{{mortar_id, {{test.first}}}}});
+    ActionTesting::emplace_component_and_initialize<my_component>(
+        &runner, neighbor_id,
+        {0, 1, mesh, element, ElementMap<2, Frame::Inertial>{},
+         db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
+         db::item_type<other_data_tag<2>>{},
+         db::item_type<mortar_data_tag<flux_comm_types<2>>>{{mortar_id, {}}},
+         db::item_type<mortar_next_temporal_ids_tag<2>>{{mortar_id, 1}},
+         db::item_type<mortar_meshes_tag<2>>{{mortar_id, face_mesh}},
+         db::item_type<mortar_sizes_tag<2>>{{mortar_id, {{test.first}}}}});
+    runner.set_phase(metavariables::Phase::Testing);
 
     runner.next_action<my_component>(self_id);
 
     // Check local data
     {
-      const auto& sent_box =
-          runner.algorithms<my_component>()
-              .at(self_id)
-              .get_databox<typename my_component::initial_databox>();
-      CHECK(db::get<mortar_data_tag<flux_comm_types<2>>>(sent_box).size() == 1);
+      CHECK(ActionTesting::get_databox_tag<my_component,
+                                           mortar_data_tag<flux_comm_types<2>>>(
+                runner, self_id)
+                .size() == 1);
       auto mortar_data =
-          db::get<mortar_data_tag<flux_comm_types<2>>>(sent_box).at(mortar_id);
+          ActionTesting::get_databox_tag<my_component,
+                                         mortar_data_tag<flux_comm_types<2>>>(
+              runner, self_id)
+              .at(mortar_id);
       mortar_data.remote_insert(0, PackagedData<flux_comm_types<2>>{});
       const auto local_data = mortar_data.extract().first;
       CHECK(local_data.mortar_data.number_of_grid_points() ==

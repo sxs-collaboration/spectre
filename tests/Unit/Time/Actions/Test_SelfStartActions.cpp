@@ -10,14 +10,15 @@
 #include <memory>
 #include <string>
 #include <tuple>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
-#include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"   // IWYU pragma: keep
+#include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
@@ -29,7 +30,6 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
@@ -39,10 +39,7 @@
 // IWYU pragma: no_include "Time/History.hpp"
 
 class TimeStepper;
-namespace Parallel {
-template <typename Metavariables>
-class ConstGlobalCache;
-}  // namespace Parallel
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
@@ -104,27 +101,41 @@ struct System<true> : SystemBase<true> {
 
 using history_tag = Tags::HistoryEvolvedVariables<Var, Tags::dt<Var>>;
 
-template <bool HasPrimitives = false>
-struct component;  // IWYU pragma: keep
+template <typename Metavariables>
+struct Component;  // IWYU pragma: keep
 
 template <bool HasPrimitives = false>
 struct Metavariables {
+  static constexpr bool has_primitives = HasPrimitives;
   using system = System<HasPrimitives>;
-  using component_list = tmpl::list<component<HasPrimitives>>;
+  using component_list = tmpl::list<Component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<>;
   using temporal_id = TemporalId;
+
+  enum class Phase { Initialization, Testing, Exit };
 };
 
-template <bool HasPrimitives>
-struct component {
-  using metavariables = Metavariables<HasPrimitives>;
+template <typename Metavariables>
+struct Component {
+  using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list =
       tmpl::list<OptionTags::TypedTimeStepper<TimeStepper>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using simple_tags = tmpl::flatten<db::AddSimpleTags<
+      typename metavariables::system::variables_tag,
+      typename metavariables::system::test_primitive_variables_tags,
+      db::add_tag_prefix<Tags::dt,
+                         typename metavariables::system::variables_tag>,
+      history_tag, Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>>;
+  using compute_tags = db::AddComputeTags<Tags::Time>;
+
+  static constexpr bool has_primitives = Metavariables::has_primitives;
+
   using update_actions = tmpl::conditional_t<
-      HasPrimitives, tmpl::list<Actions::UpdateU, Actions::UpdatePrimitives>,
+      has_primitives, tmpl::list<Actions::UpdateU, Actions::UpdatePrimitives>,
       Actions::UpdateU>;
   using action_list = tmpl::flatten<
       tmpl::list<SelfStart::self_start_procedure<
@@ -133,52 +144,45 @@ struct component {
                      update_actions>,
                  Actions::AdvanceTime, Actions::ComputeTimeDerivative,
                  Actions::RecordTimeStepperData, update_actions>>;
-  using simple_tags = tmpl::flatten<db::AddSimpleTags<
-      typename metavariables::system::variables_tag,
-      typename metavariables::system::test_primitive_variables_tags,
-      db::add_tag_prefix<Tags::dt,
-                         typename metavariables::system::variables_tag>,
-      history_tag, Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>>;
-  using compute_tags = db::AddComputeTags<Tags::Time>;
-  using initial_databox =
-      db::compute_databox_type<tmpl::append<simple_tags, compute_tags>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, action_list>>;
 };
-
-template <bool HasPrimitives = false>
-using self_start_box = std::tuple_element_t<
-    0, decltype(SelfStart::Actions::Initialize::apply(
-           std::declval<typename component<HasPrimitives>::initial_databox&>(),
-           tuples::TaggedTuple<>{}, std::declval<Parallel::ConstGlobalCache<
-                                        Metavariables<HasPrimitives>>>(),
-           int{}, tmpl::list<>{},
-           std::declval<const component<HasPrimitives>*>()))>;
 
 template <bool HasPrimitives = false>
 using MockRuntimeSystem =
     ActionTesting::MockRuntimeSystem<Metavariables<HasPrimitives>>;
 
 template <bool HasPrimitives = false>
-auto make_initial_box(const bool forward_in_time, const Time& initial_time,
-                      const TimeDelta& initial_time_step, const size_t order,
-                      const double initial_value) noexcept {
-  return db::create<component<false>::simple_tags,
-                    component<false>::compute_tags>(
-      initial_value, 0., db::item_type<history_tag>{}, TimeId{},
-      TimeId(forward_in_time, 1 - static_cast<int64_t>(order), initial_time),
-      initial_time_step);
+void emplace_component(
+    const gsl::not_null<MockRuntimeSystem<HasPrimitives>*> runner,
+    const bool forward_in_time, const Time& initial_time,
+    const TimeDelta& initial_time_step, const size_t order,
+    const double initial_value) noexcept {
+  ActionTesting::emplace_component_and_initialize<
+      Component<Metavariables<HasPrimitives>>>(
+      runner, 0,
+      {initial_value, 0., db::item_type<history_tag>{}, TimeId{},
+       TimeId(forward_in_time, 1 - static_cast<int64_t>(order), initial_time),
+       initial_time_step});
 }
 
 template <>
-auto make_initial_box<true>(const bool forward_in_time,
-                            const Time& initial_time,
-                            const TimeDelta& initial_time_step,
-                            const size_t order,
-                            const double initial_value) noexcept {
-  return db::create<component<true>::simple_tags,
-                    component<true>::compute_tags>(
-      initial_value, initial_value, 0., db::item_type<history_tag>{}, TimeId{},
-      TimeId(forward_in_time, 1 - static_cast<int64_t>(order), initial_time),
-      initial_time_step);
+void emplace_component<true>(
+    const gsl::not_null<MockRuntimeSystem<true>*> runner,
+    const bool forward_in_time, const Time& initial_time,
+    const TimeDelta& initial_time_step, const size_t order,
+    const double initial_value) noexcept {
+  ActionTesting::emplace_component_and_initialize<
+      Component<Metavariables<true>>>(
+      runner, 0,
+      {initial_value, initial_value, 0., db::item_type<history_tag>{}, TimeId{},
+       TimeId(forward_in_time, 1 - static_cast<int64_t>(order), initial_time),
+       initial_time_step});
 }
 
 namespace detail {
@@ -211,11 +215,12 @@ bool run_past(
     const gsl::not_null<MockRuntimeSystem<HasPrimitives>*> runner) noexcept {
   for (;;) {
     bool done;
-    const size_t current_action =
-        runner->template get_next_action_index<component<HasPrimitives>>(0);
+    const size_t current_action = ActionTesting::get_next_action_index<
+        Component<Metavariables<HasPrimitives>>>(*runner, 0);
     size_t action_to_check = current_action;
-    tmpl::for_each<typename component<HasPrimitives>::action_list>(
-        [&action_to_check, &done](const auto action) noexcept {
+    tmpl::for_each<
+        typename Component<Metavariables<HasPrimitives>>::action_list>(
+        [&action_to_check, &done ](const auto action) noexcept {
           using Action = tmpl::type_from<decltype(action)>;
           if (action_to_check-- == 0) {
             INFO(pretty_type::get_name<Action>());
@@ -223,14 +228,15 @@ bool run_past(
             REQUIRE((done or tmpl::apply<Whitelist, Action>::value));
           }
         });
-    runner->template next_action<component<HasPrimitives>>(0);
+    ActionTesting::next_action<Component<Metavariables<HasPrimitives>>>(runner,
+                                                                        0);
     // NOLINTNEXTLINE(clang-analyzer-core.uninitialized.Branch) false positive
     if (done) {
       // Self-start does not use the automatic algorithm looping, so
       // we don't have to check for the end.
       return current_action + 1 !=
-             runner->template get_next_action_index<component<HasPrimitives>>(
-                 0);
+             ActionTesting::get_next_action_index<
+                 Component<Metavariables<HasPrimitives>>>(*runner, 0);
     }
   }
 }
@@ -242,17 +248,17 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
   const Time initial_time = forward_in_time ? slab.start() : slab.end();
   const double initial_value = -1.;
 
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem<>::MockDistributedObjectsTag<component<>>;
-  MockRuntimeSystem<>::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(0,
-               ActionTesting::MockDistributedObject<component<>>{
-                   make_initial_box(forward_in_time, initial_time,
-                                    initial_time_step, order, initial_value)});
+  using simple_tags = typename Component<Metavariables<>>::simple_tags;
+  using compute_tags = typename Component<Metavariables<>>::compute_tags;
+
   MockRuntimeSystem<> runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(order)},
-      std::move(dist_objects)};
+      {std::make_unique<TimeSteppers::AdamsBashforthN>(order)}};
+  emplace_component(make_not_null(&runner), forward_in_time, initial_time,
+                    initial_time_step, order, initial_value);
+
+  runner.set_phase(Metavariables<>::Phase::Initialization);
+  runner.next_action<Component<Metavariables<>>>(0);
+  runner.set_phase(Metavariables<>::Phase::Testing);
 
   {
     INFO("Initialize");
@@ -260,14 +266,21 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
         run_past<std::is_same<SelfStart::Actions::Initialize, tmpl::_1>,
                  not_self_start_action>(make_not_null(&runner));
     CHECK(not jumped);
-    const auto& box =
-        runner.algorithms<component<>>().at(0).get_databox<self_start_box<>>();
-    CHECK(get<0>(db::get<SelfStart::Tags::InitialValue<Var>>(box)) ==
-          initial_value);
-    CHECK(get<0>(db::get<SelfStart::Tags::InitialValue<Tags::TimeStep>>(box)) ==
+    CHECK(
+        get<0>(
+            ActionTesting::get_databox_tag<Component<Metavariables<>>,
+                                           SelfStart::Tags::InitialValue<Var>>(
+                runner, 0)) == initial_value);
+    CHECK(get<0>(ActionTesting::get_databox_tag<
+                 Component<Metavariables<>>,
+                 SelfStart::Tags::InitialValue<Tags::TimeStep>>(runner, 0)) ==
           initial_time_step);
-    CHECK(db::get<Var>(box) == initial_value);
-    CHECK(db::get<history_tag>(box).size() == 0);
+    CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>, Var>(
+              runner, 0) == initial_value);
+    CHECK(
+        ActionTesting::get_databox_tag<Component<Metavariables<>>, history_tag>(
+            runner, 0)
+            .size() == 0);
   }
 
   for (size_t current_order = 1; current_order < order; ++current_order) {
@@ -288,12 +301,13 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
             std::is_same<SelfStart::Actions::CheckForOrderIncrease, tmpl::_1>,
             not_self_start_action>(make_not_null(&runner));
         CHECK(not jumped);
-        const auto& box = runner.algorithms<component<>>()
-                              .at(0)
-                              .get_databox<self_start_box<>>();
-        CHECK(abs(db::get<Tags::Time>(box) - initial_time) <
-              abs(initial_time_step));
-        const auto next_time = db::get<Tags::Next<Tags::TimeId>>(box).time();
+        CHECK(abs(ActionTesting::get_databox_tag<Component<Metavariables<>>,
+                                                 Tags::Time>(runner, 0) -
+                  initial_time) < abs(initial_time_step));
+        const auto next_time =
+            ActionTesting::get_databox_tag<Component<Metavariables<>>,
+                                           Tags::Next<Tags::TimeId>>(runner, 0)
+                .time();
         CHECK((next_time == initial_time) == last_point);
       }
       {
@@ -302,13 +316,14 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
             is_a_lambda<SelfStart::Actions::StartNextOrderIfReady, tmpl::_1>,
             not_self_start_action>(make_not_null(&runner));
         CHECK(jumped == last_point);
-        const auto& box = runner.algorithms<component<>>()
-                              .at(0)
-                              .get_databox<self_start_box<>>();
         if (points != 0) {
-          CHECK((db::get<Var>(box) == initial_value) == last_point);
+          CHECK(
+              (ActionTesting::get_databox_tag<Component<Metavariables<>>, Var>(
+                   runner, 0) == initial_value) == last_point);
         }
-        CHECK(db::get<history_tag>(box).size() == current_order);
+        CHECK(ActionTesting::get_databox_tag<Component<Metavariables<>>,
+                                             history_tag>(runner, 0)
+                  .size() == current_order);
       }
     }
   }
@@ -324,9 +339,10 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
     INFO("Cleanup");
     run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
              not_self_start_action>(make_not_null(&runner));
-    const auto& box = runner.algorithms<component<>>()
-                          .at(0)
-                          .get_databox<typename component<>::initial_databox>();
+    const auto& box =
+        ActionTesting::get_databox<Component<Metavariables<>>,
+                                   tmpl::append<simple_tags, compute_tags>>(
+            runner, 0);
     CHECK(db::get<Var>(box) == initial_value);
     CHECK(db::get<Tags::TimeStep>(box) == initial_time_step);
     CHECK(db::get<history_tag>(box).size() == order - 1);
@@ -343,19 +359,13 @@ double error_in_step(const size_t order, const double step) noexcept {
   const Time initial_time = forward_in_time ? slab.start() : slab.end();
   const double initial_value = -1.;
 
-  using MockDistributedObjectsTag = typename MockRuntimeSystem<TestPrimitives>::
-      template MockDistributedObjectsTag<component<TestPrimitives>>;
-  typename MockRuntimeSystem<TestPrimitives>::TupleOfMockDistributedObjects
-      dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(
-          0, ActionTesting::MockDistributedObject<component<TestPrimitives>>{
-                 make_initial_box<TestPrimitives>(forward_in_time, initial_time,
-                                                  initial_time_step, order,
-                                                  initial_value)});
+  using component = Component<Metavariables<TestPrimitives>>;
   MockRuntimeSystem<TestPrimitives> runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(order)},
-      std::move(dist_objects)};
+      {std::make_unique<TimeSteppers::AdamsBashforthN>(order)}};
+  emplace_component<TestPrimitives>(make_not_null(&runner), forward_in_time,
+                                    initial_time, initial_time_step, order,
+                                    initial_value);
+  runner.set_phase(Metavariables<TestPrimitives>::Phase::Testing);
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
            tmpl::bool_<true>>(make_not_null(&runner));
@@ -363,12 +373,7 @@ double error_in_step(const size_t order, const double step) noexcept {
       make_not_null(&runner));
 
   const double exact = -log(exp(-initial_value) - step);
-  const auto& box =
-      runner.template algorithms<component<TestPrimitives>>()
-          .at(0)
-          .template get_databox<
-              typename component<TestPrimitives>::initial_databox>();
-  return get<Var>(box) - exact;
+  return ActionTesting::get_databox_tag<component, Var>(runner, 0) - exact;
 }
 
 template <bool TestPrimitives>

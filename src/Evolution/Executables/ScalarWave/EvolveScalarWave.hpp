@@ -25,6 +25,7 @@
 #include "IO/Observer/Actions.hpp"            // IWYU pragma: keep
 #include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
+#include "IO/Observer/RegisterObservers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
@@ -32,8 +33,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/GotoAction.hpp"  // IWYU pragma: keep
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -131,33 +132,50 @@ struct EvolutionMetavars {
                           tmpl::list<>>,
       Actions::UpdateU>>;
 
-  struct EvolvePhaseStart;
+  enum class Phase {
+    Initialization,
+    RegisterWithObserver,
+    InitializeTimeStepperHistory,
+    Evolve,
+    Exit
+  };
+
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
-          EvolutionMetavars, dg::Actions::InitializeElement<Dim>,
-          tmpl::flatten<tmpl::list<
-              SelfStart::self_start_procedure<compute_rhs, update_variables>,
-              Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
-              Actions::RunEventsAndTriggers,
-              tmpl::conditional_t<local_time_stepping,
-                                  Actions::ChangeStepSize<step_choosers>,
-                                  tmpl::list<>>,
-              compute_rhs, update_variables,
-              Actions::Goto<EvolvePhaseStart>>>>>;
+          EvolutionMetavars,
+          tmpl::list<
+              Parallel::PhaseActions<
+                  Phase, Phase::Initialization,
+                  tmpl::list<dg::Actions::InitializeElement<Dim>>>,
+
+              Parallel::PhaseActions<
+                  Phase, Phase::InitializeTimeStepperHistory,
+                  tmpl::flatten<tmpl::list<SelfStart::self_start_procedure<
+                      compute_rhs, update_variables>>>>,
+
+              Parallel::PhaseActions<
+                  Phase, Phase::RegisterWithObserver,
+                  tmpl::list<Actions::AdvanceTime,
+                             observers::Actions::RegisterWithObservers<
+                                 observers::RegisterObservers<
+                                     element_observation_type>>>>,
+
+              Parallel::PhaseActions<
+                  Phase, Phase::Evolve,
+                  tmpl::flatten<tmpl::list<
+                      Actions::RunEventsAndTriggers,
+                      tmpl::conditional_t<
+                          local_time_stepping,
+                          Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>,
+          typename dg::Actions::InitializeElement<Dim>::AddOptionsToDataBox>>;
 
   static constexpr OptionString help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
       "The analytic solution is: PlaneWave\n"
       "The numerical flux is:    UpwindFlux\n"};
-
-  enum class Phase {
-    Initialization,
-    RegisterWithObserver,
-    Evolve,
-    Exit
-  };
 
   static Phase determine_next_phase(
       const Phase& current_phase,

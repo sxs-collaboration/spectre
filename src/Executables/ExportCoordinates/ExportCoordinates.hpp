@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <string>
+
 #include "AlgorithmArray.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
@@ -18,6 +20,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -28,45 +31,81 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace {
-struct ObservationType {};
-}  // namespace
-
+/// \cond
 namespace Actions {
-
 template <size_t Dim>
 struct InitializeElement {
-  using return_tag_list = tmpl::append<
-      typename Elliptic::Initialization::Domain<Dim>::simple_tags,
-      typename Elliptic::Initialization::Domain<Dim>::compute_tags>;
+  struct InitialExtents : db::SimpleTag {
+    static std::string name() noexcept { return "InitialExtents"; }
+    using type = std::vector<std::array<size_t, Dim>>;
+  };
+  struct Domain : db::SimpleTag {
+    static std::string name() noexcept { return "Domain"; }
+    using type = ::Domain<Dim, Frame::Inertial>;
+  };
 
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
+  using AddOptionsToDataBox =
+      Parallel::ForwardAllOptionsToDataBox<tmpl::list<InitialExtents, Domain>>;
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent,
+            Requires<tmpl::list_contains_v<DbTagsList, Domain>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ElementIndex<Dim>& array_index,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    std::vector<std::array<size_t, Dim>> initial_extents,
-                    Domain<Dim, Frame::Inertial> domain) noexcept {
-    auto domain_box = Elliptic::Initialization::Domain<Dim>::initialize(
-        db::DataBox<tmpl::list<>>{}, array_index, initial_extents, domain);
-    return std::make_tuple(std::move(domain_box));
+                    const ParallelComponent* const /*meta*/) noexcept {
+    const auto initial_extents = db::get<InitialExtents>(box);
+    ::Domain<Dim, Frame::Inertial> domain{};
+    db::mutate<Domain>(
+        make_not_null(&box), [&domain](const auto domain_ptr) noexcept {
+          domain = std::move(*domain_ptr);
+        });
+    return std::make_tuple(
+        Elliptic::Initialization::Domain<Dim>::initialize(
+            db::create_from<typename AddOptionsToDataBox::simple_tags>(
+                std::move(box)),
+            array_index, initial_extents, domain),
+        true);
+  }
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent,
+            Requires<not tmpl::list_contains_v<DbTagsList, Domain>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ElementIndex<Dim>& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {std::move(box), true};
   }
 };
 
 template <size_t Dim>
 struct ExportCoordinates {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) {
+  // Compile-time interface for observers
+  struct ObservationType {};
+  template <typename ParallelComponent, typename DbTagsList,
+            typename ArrayIndex>
+  static std::pair<observers::TypeOfObservation, observers::ObservationId>
+  register_info(const db::DataBox<DbTagsList>& /*box*/,
+                const ArrayIndex& /*array_index*/) noexcept {
+    return {observers::TypeOfObservation::ReductionAndVolume,
+            observers::ObservationId(0., ObservationType{})};
+  }
+
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<tmpl::list_contains_v<DbTagsList, Tags::Mesh<Dim>>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
     const auto& mesh = get<Tags::Mesh<Dim>>(box);
     const auto& inertial_coordinates =
         db::get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
@@ -94,6 +133,7 @@ struct ExportCoordinates {
             std::add_pointer_t<ParallelComponent>{nullptr},
             Parallel::ArrayIndex<ElementIndex<Dim>>(array_index)),
         std::move(components), mesh.extents());
+    return {std::move(box), true};
   }
 };
 }  // namespace Actions
@@ -102,12 +142,26 @@ template <size_t Dim, typename Metavariables>
 struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
-  using action_list = tmpl::list<>;
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<OptionTags::DomainCreator<Dim, Frame::Inertial>>;
-  using initial_databox = db::compute_databox_type<
-      typename Actions::InitializeElement<Dim>::return_tag_list>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<Actions::InitializeElement<Dim>>>,
+
+      Parallel::PhaseActions<
+          typename Metavariables::Phase,
+          Metavariables::Phase::RegisterWithObserver,
+          tmpl::list<observers::Actions::RegisterWithObservers<
+              Actions::ExportCoordinates<Dim>>>>,
+
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Export,
+                             tmpl::list<Actions::ExportCoordinates<Dim>>>>;
+
+  using add_options_to_databox =
+      typename Actions::InitializeElement<Dim>::AddOptionsToDataBox;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
@@ -127,14 +181,14 @@ struct ElementArray {
       const int number_of_procs = Parallel::number_of_procs();
       for (size_t i = 0; i < element_ids.size(); ++i) {
         element_array(ElementIndex<Dim>(element_ids[i]))
-            .insert(global_cache, which_proc);
+            .insert(global_cache,
+                    {domain_creator->initial_extents(),
+                     domain_creator->create_domain()},
+                    which_proc);
         which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
       }
     }
     element_array.doneInserting();
-
-    element_array.template simple_action<Actions::InitializeElement<Dim>>(
-        std::make_tuple(domain_creator->initial_extents(), std::move(domain)));
   }
 
   static void execute_next_phase(
@@ -143,18 +197,7 @@ struct ElementArray {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& element_array =
         Parallel::get_parallel_component<ElementArray>(local_cache);
-    switch (next_phase) {
-      case Metavariables::Phase::RegisterWithObserver:
-        Parallel::simple_action<observers::Actions::RegisterWithObservers<
-            observers::TypeOfObservation::Volume>>(
-            element_array, observers::ObservationId(0., ObservationType{}));
-        break;
-      case Metavariables::Phase::Export:
-        element_array.template simple_action<Actions::ExportCoordinates<Dim>>();
-        break;
-      default:
-        break;
-    }
+    element_array.start_phase(next_phase);
   }
 };
 
@@ -198,3 +241,4 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling, &domain::creators::register_derived_with_charm};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
+/// \endcond

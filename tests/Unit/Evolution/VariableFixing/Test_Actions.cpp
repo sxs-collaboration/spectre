@@ -5,22 +5,24 @@
 
 #include <cmath>
 #include <cstddef>
-#include <unordered_map>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Domain/Tags.hpp"
+#include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/RadiallyFallingFloor.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/Hydro/Tags.hpp"      // IWYU pragma: keep
+#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <exception>
 
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare VariableFixing::Actions::FixVariables
 
 namespace {
@@ -30,53 +32,49 @@ struct mock_component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using action_list = tmpl::list<VariableFixing::Actions::FixVariables<
-      VariableFixing::RadiallyFallingFloor<3>>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using simple_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                                 hydro::Tags::Pressure<DataVector>,
+                                 ::Tags::Coordinates<3, Frame::Inertial>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing,
+                             tmpl::list<VariableFixing::Actions::FixVariables<
+                                 VariableFixing::RadiallyFallingFloor<3>>>>>;
   using const_global_cache_tag_list =
-      Parallel::get_const_global_cache_tags<action_list>;
-  using initial_databox = db::compute_databox_type<
-      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
-                 hydro::Tags::Pressure<DataVector>,
-                 ::Tags::Coordinates<3, Frame::Inertial>>>;
+      Parallel::get_const_global_cache_tags_from_pdal<
+          phase_dependent_action_list>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<mock_component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
-  enum class Phase { Initialize, Exit };
+  enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
                   "[Unit][Evolution][VariableFixing]") {
-  using TupleOfMockDistributedObjects =
-      typename ActionTesting::MockRuntimeSystem<
-          Metavariables>::TupleOfMockDistributedObjects;
   using component = mock_component<Metavariables>;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<component>;
-  TupleOfMockDistributedObjects dist_objects{};
   const DataVector x{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector y{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector z{-2.0, -1.0, 0.0, 1.0, 2.0};
 
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(0,
-               ActionTesting::MockDistributedObject<component>{db::create<
-                   db::AddSimpleTags<hydro::Tags::RestMassDensity<DataVector>,
-                                     hydro::Tags::Pressure<DataVector>,
-                                     ::Tags::Coordinates<3, Frame::Inertial>>>(
-                   Scalar<DataVector>{DataVector{2.3, -4.2, 1.e-10, 0.0, -0.1}},
-                   Scalar<DataVector>{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}},
-                   tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}})});
+  using simple_tags = typename component::simple_tags;
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       VariableFixing::RadiallyFallingFloor<3>(1.e-4, 1.e-5, -1.5, 1.e-7 / 3.0,
-                                              -2.5),
-      std::move(dist_objects)};
-  auto& box = runner.template algorithms<component>()
-                  .at(0)
-                  .template get_databox<typename component::initial_databox>();
+                                              -2.5)};
+  ActionTesting::emplace_component_and_initialize<component>(
+      &runner, 0,
+      {Scalar<DataVector>{DataVector{2.3, -4.2, 1.e-10, 0.0, -0.1}},
+       Scalar<DataVector>{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}},
+       tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}}});
+  runner.set_phase(Metavariables::Phase::Testing);
+
+  auto& box = ActionTesting::get_databox<component, simple_tags>(runner, 0);
   runner.next_action<component>(0);
   const double root_three = sqrt(3.0);
   constexpr double one_third = 1.0 / 3.0;

@@ -36,6 +36,7 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Slab.hpp"
@@ -95,6 +96,30 @@ namespace Actions {
 /// - Modifies: nothing
 template <size_t Dim>
 struct InitializeElement {
+  struct InitialExtents : db::SimpleTag {
+    static std::string name() noexcept { return "InitialExtents"; }
+    using type = std::vector<std::array<size_t, Dim>>;
+  };
+  struct Domain : db::SimpleTag {
+    static std::string name() noexcept { return "Domain"; }
+    using type = ::Domain<Dim, Frame::Inertial>;
+  };
+  struct InitialTime : db::SimpleTag {
+    static std::string name() noexcept { return "InitialTime"; }
+    using type = double;
+  };
+  struct InitialTimeDelta : db::SimpleTag {
+    static std::string name() noexcept { return "InitialTimeDelta"; }
+    using type = double;
+  };
+  struct InitialSlabSize : db::SimpleTag {
+    static std::string name() noexcept { return "InitialSlabSize"; }
+    using type = double;
+  };
+
+  using AddOptionsToDataBox = Parallel::ForwardAllOptionsToDataBox<tmpl::list<
+      InitialExtents, Domain, InitialTime, InitialTimeDelta, InitialSlabSize>>;
+
   static Mesh<Dim> element_mesh(
       const std::vector<std::array<size_t, Dim>>& initial_extents,
       const ElementId<Dim>& element_id,
@@ -125,7 +150,7 @@ struct InitializeElement {
     static auto initialize(
         db::DataBox<TagsList>&& box, const ElementIndex<Dim>& array_index,
         const std::vector<std::array<size_t, Dim>>& initial_extents,
-        const Domain<Dim, Frame::Inertial>& domain) noexcept {
+        const ::Domain<Dim, Frame::Inertial>& domain) noexcept {
       const ElementId<Dim> element_id{array_index};
       const auto& my_block = domain.blocks()[element_id.block_id()];
       Mesh<Dim> mesh = element_mesh(initial_extents, element_id);
@@ -605,37 +630,36 @@ struct InitializeElement {
     }
   };
 
-  template <class Metavariables>
-  using return_tag_list = tmpl::append<
-      typename DomainTags::simple_tags,
-      typename SystemTags<typename Metavariables::system>::simple_tags,
-      typename DomainInterfaceTags<typename Metavariables::system>::simple_tags,
-      typename EvolutionTags<typename Metavariables::system>::simple_tags,
-      typename DgTags<Metavariables>::simple_tags,
-      typename LimiterTags<Metavariables>::simple_tags,
-      typename DomainTags::compute_tags,
-      typename SystemTags<typename Metavariables::system>::compute_tags,
-      typename DomainInterfaceTags<
-          typename Metavariables::system>::compute_tags,
-      typename EvolutionTags<typename Metavariables::system>::compute_tags,
-      typename DgTags<Metavariables>::compute_tags,
-      typename LimiterTags<Metavariables>::compute_tags>;
-
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent>
-  static auto apply(const db::DataBox<tmpl::list<>>& /*box*/,
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent,
+            Requires<tmpl::list_contains_v<DbTagsList, Domain>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ElementIndex<Dim>& array_index,
                     const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    std::vector<std::array<size_t, Dim>> initial_extents,
-                    Domain<Dim, Frame::Inertial> domain,
-                    const double initial_time, const double initial_dt,
-                    const double initial_slab_size) noexcept {
+                    const ParallelComponent* const /*meta*/) noexcept {
+    // Yes we want to copy construct because otherwise we get a dangling
+    // reference when we use `create_from` to remove these DataBox items.
+    // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+    const auto initial_extents = db::get<InitialExtents>(box);
+    const auto initial_time = db::get<InitialTime>(box);
+    const auto initial_dt = db::get<InitialTimeDelta>(box);
+    const auto initial_slab_size = db::get<InitialSlabSize>(box);
+    ::Domain<Dim, Frame::Inertial> domain{};
+    db::mutate<Domain>(
+        make_not_null(&box), [&domain](const auto domain_ptr) noexcept {
+          domain = std::move(*domain_ptr);
+        });
+    // Remove the tags added by AddOptionsToDataBox, which are
+    // AddOptionsToDataBox::simple_tags
+    auto initial_box =
+        db::create_from<typename AddOptionsToDataBox::simple_tags>(
+            std::move(box));
+
     using system = typename Metavariables::system;
     auto domain_box = DomainTags::initialize(
-        db::DataBox<tmpl::list<>>{}, array_index, initial_extents, domain);
+        std::move(initial_box), array_index, initial_extents, domain);
     auto system_box = SystemTags<system>::initialize(std::move(domain_box),
                                                      cache, initial_time);
     auto domain_interface_box =
@@ -649,6 +673,18 @@ struct InitializeElement {
         LimiterTags<Metavariables>::initialize(std::move(dg_box));
 
     return std::make_tuple(std::move(limiter_box));
+  }
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent,
+            Requires<not tmpl::list_contains_v<DbTagsList, Domain>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ElementIndex<Dim>& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) {
+    return {std::move(box), true};
   }
 };
 }  // namespace Actions

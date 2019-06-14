@@ -28,6 +28,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
@@ -36,12 +38,12 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <unordered_map>
 
 class LtsTimeStepper;
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare db::DataBox
 // IWYU pragma: no_forward_declare Tensor
 namespace PUP {
@@ -79,32 +81,38 @@ struct System {
 };
 
 template <typename Metavariables>
-struct component {
+struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
   using const_global_cache_tag_list =
       tmpl::list<OptionTags::TypedTimeStepper<LtsTimeStepper>,
                  NumericalFluxTag>;
-  using action_list =
-      tmpl::list<dg::Actions::ApplyBoundaryFluxesLocalTimeStepping>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<Tags::Mesh<2>, Tags::Mortars<Tags::Mesh<1>, 2>,
                         Tags::Mortars<Tags::MortarSize<1>, 2>, Tags::TimeStep,
                         System::variables_tag,
                         typename dg::FluxCommunicationTypes<Metavariables>::
                             local_time_stepping_mortar_data_tag>;
-  using initial_databox = db::compute_databox_type<simple_tags>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<dg::Actions::ApplyBoundaryFluxesLocalTimeStepping>>>;
 };
 
 struct Metavariables {
   using system = System;
-  using component_list = tmpl::list<component<Metavariables>>;
+  using component_list = tmpl::list<Component<Metavariables>>;
   using temporal_id = TimeId;
   static constexpr bool local_time_stepping = true;
   using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag;
+  enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace
 
@@ -172,19 +180,15 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
   mortar_data[fast_mortar].remote_insert(TimeId(true, 0, now + time_step / 3),
                                          gsl::at(remote_data, 2));
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<component<Metavariables>>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(id, db::create<typename component<Metavariables>::simple_tags>(
-                       mesh, mortar_meshes, mortar_sizes, time_step, variables,
-                       std::move(mortar_data)));
-  MockRuntimeSystem runner{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(1), NumericalFlux{}},
-      std::move(dist_objects)};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      {std::make_unique<TimeSteppers::AdamsBashforthN>(1), NumericalFlux{}}};
+  ActionTesting::emplace_component_and_initialize<Component<Metavariables>>(
+      &runner, id,
+      {mesh, mortar_meshes, mortar_sizes, time_step, variables,
+       std::move(mortar_data)});
+  runner.set_phase(Metavariables::Phase::Testing);
 
-  runner.next_action<component<Metavariables>>(id);
+  runner.next_action<Component<Metavariables>>(id);
 
   add_slice_to_data(
       make_not_null(&variables),
@@ -218,8 +222,6 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
 
   CHECK_ITERABLE_APPROX(
       get<Var>(variables),
-      get<Var>(runner.algorithms<component<Metavariables>>()
-                   .at(id)
-                   .get_databox<
-                       typename component<Metavariables>::initial_databox>()));
+      (ActionTesting::get_databox_tag<Component<Metavariables>, Var>(runner,
+                                                                     id)));
 }

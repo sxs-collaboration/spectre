@@ -4,25 +4,20 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cstddef>
-#include <exception>
 #include <type_traits>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
 #include <vector>
 
-#include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"         // IWYU pragma: keep
-#include "IO/Observer/ObservationId.hpp"  // IWYU pragma: keep
+#include "IO/Observer/ObservationId.hpp"      // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/ArrayIndex.hpp"
-#include "Utilities/TaggedTuple.hpp"
+#include "Utilities/Gsl.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/IO/Observers/ObserverHelpers.hpp"
 
@@ -32,28 +27,16 @@ using namespace TestObservers_detail;
 
 template <observers::TypeOfObservation TypeOfObservation>
 void check_observer_registration() {
-  using TupleOfMockDistributedObjects =
-      typename ActionTesting::MockRuntimeSystem<
-          Metavariables>::TupleOfMockDistributedObjects;
-  using obs_component = observer_component<Metavariables>;
-  using obs_writer = observer_writer_component<Metavariables>;
-  using element_comp = element_component<Metavariables>;
+  using metavariables = Metavariables<TypeOfObservation>;
+  using obs_component = observer_component<metavariables>;
+  using obs_writer = observer_writer_component<metavariables>;
+  using element_comp = element_component<metavariables, TypeOfObservation>;
 
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using ObserverMockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          obs_component>;
-  using WriterMockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          obs_writer>;
-  using ElementMockDistributedObjectsTag =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          element_comp>;
-  TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<ObserverMockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<obs_component>{});
-  tuples::get<WriterMockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<obs_writer>{});
+  ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
+  ActionTesting::emplace_component<obs_component>(&runner, 0);
+  ActionTesting::next_action<obs_component>(make_not_null(&runner), 0);
+  ActionTesting::emplace_component<obs_writer>(&runner, 0);
+  ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
 
   // Specific IDs have no significance, just need different IDs.
   const std::vector<ElementId<2>> element_ids{{1, {{{1, 0}, {1, 0}}}},
@@ -62,115 +45,133 @@ void check_observer_registration() {
                                               {1, {{{1, 0}, {5, 4}}}},
                                               {0, {{{1, 0}, {1, 0}}}}};
   for (const auto& id : element_ids) {
-    tuples::get<ElementMockDistributedObjectsTag>(dist_objects)
-        .emplace(ElementIndex<2>{id},
-                 ActionTesting::MockDistributedObject<element_comp>{});
+    ActionTesting::emplace_component<element_comp>(&runner, id);
   }
+  runner.set_phase(metavariables::Phase::RegisterWithObservers);
 
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      {}, std::move(dist_objects)};
+  CHECK(
+      ActionTesting::get_databox_tag<obs_component,
+                                     observers::Tags::NumberOfEvents>(runner, 0)
+          .empty());
+  CHECK(
+      ActionTesting::get_databox_tag<
+          obs_component, observers::Tags::ReductionArrayComponentIds>(runner, 0)
+          .empty());
+  CHECK(ActionTesting::get_databox_tag<
+            obs_component, observers::Tags::VolumeArrayComponentIds>(runner, 0)
+            .empty());
+  CHECK(ActionTesting::get_databox_tag<obs_component,
+                                       observers::Tags::TensorData>(runner, 0)
+            .empty());
+  CHECK(ActionTesting::get_databox_tag<
+            obs_component, observers::Tags::ReductionObserversContributed>(
+            runner, 0)
+            .empty());
 
-  runner.simple_action<obs_component,
-                       observers::Actions::Initialize<Metavariables>>(0);
-  runner.simple_action<obs_writer,
-                       observers::Actions::InitializeWriter<Metavariables>>(0);
-  // Test initial state
-  const auto& observer_box =
-      runner.template algorithms<obs_component>()
-          .at(0)
-          .template get_databox<typename obs_component::initial_databox>();
-  CHECK(db::get<observers::Tags::NumberOfEvents>(observer_box).empty());
-  CHECK(db::get<observers::Tags::ReductionArrayComponentIds>(observer_box)
+  CHECK(ActionTesting::get_databox_tag<obs_writer, observers::Tags::TensorData>(
+            runner, 0)
+            .empty());
+  CHECK(ActionTesting::get_databox_tag<
+            obs_writer, observers::Tags::VolumeObserversRegistered>(runner, 0)
+            .empty());
+  CHECK(ActionTesting::get_databox_tag<
+            obs_writer, observers::Tags::VolumeObserversContributed>(runner, 0)
             .empty());
   CHECK(
-      db::get<observers::Tags::VolumeArrayComponentIds>(observer_box).empty());
-  CHECK(db::get<observers::Tags::TensorData>(observer_box).empty());
-  CHECK(db::get<observers::Tags::ReductionObserversContributed>(observer_box)
+      ActionTesting::get_databox_tag<
+          obs_writer, observers::Tags::ReductionObserversRegistered>(runner, 0)
+          .empty());
+  CHECK(ActionTesting::get_databox_tag<
+            obs_writer, observers::Tags::ReductionObserversRegisteredNodes>(
+            runner, 0)
             .empty());
-
-  // We should test writer_box too.
-  const auto& writer_box =
-      runner.template algorithms<obs_writer>()
-          .at(0)
-          .template get_databox<typename obs_writer::initial_databox>();
-  CHECK(db::get<observers::Tags::TensorData>(writer_box).empty());
   CHECK(
-      db::get<observers::Tags::VolumeObserversRegistered>(writer_box).empty());
-  CHECK(
-      db::get<observers::Tags::VolumeObserversContributed>(writer_box).empty());
-  CHECK(db::get<observers::Tags::ReductionObserversRegistered>(writer_box)
-            .empty());
-  CHECK(db::get<observers::Tags::ReductionObserversRegisteredNodes>(writer_box)
-            .empty());
-  CHECK(db::get<observers::Tags::ReductionObserversContributed>(writer_box)
-            .empty());
+      ActionTesting::get_databox_tag<
+          obs_writer, observers::Tags::ReductionObserversContributed>(runner, 0)
+          .empty());
 
   // Register elements
   for (const auto& id : element_ids) {
-    runner.simple_action<
-        element_comp,
-        observers::Actions::RegisterWithObservers<TypeOfObservation>>(
-        id, observers::ObservationId(
-                3., typename Metavariables::element_observation_type{}));
+    ActionTesting::next_action<element_comp>(make_not_null(&runner), id);
     // Invoke the simple_action RegisterSenderWithSelf that was called on the
     // observer component by the RegisterWithObservers action.
-    runner.invoke_queued_simple_action<obs_component>(0);
+    ActionTesting::invoke_queued_simple_action<obs_component>(
+        make_not_null(&runner), 0);
     if (TypeOfObservation != observers::TypeOfObservation::Volume) {
       // Invoke the simple_action
       // RegisterReductionContributorWithObserverWriter.
-      runner.invoke_queued_simple_action<obs_writer>(0);
+      ActionTesting::invoke_queued_simple_action<obs_writer>(
+          make_not_null(&runner), 0);
     }
     if (TypeOfObservation != observers::TypeOfObservation::Reduction) {
       // Invoke the simple_action RegisterVolumeContributorWithObserverWriter.
-      runner.invoke_queued_simple_action<obs_writer>(0);
+      ActionTesting::invoke_queued_simple_action<obs_writer>(
+          make_not_null(&runner), 0);
     }
   }
+  runner.set_phase(metavariables::Phase::Testing);
 
   // Test registration occurred as expected
-  CHECK(db::get<observers::Tags::NumberOfEvents>(observer_box).empty());
-  CHECK(db::get<observers::Tags::ReductionArrayComponentIds>(observer_box)
+  CHECK(
+      ActionTesting::get_databox_tag<obs_component,
+                                     observers::Tags::NumberOfEvents>(runner, 0)
+          .empty());
+  CHECK(
+      ActionTesting::get_databox_tag<
+          obs_component, observers::Tags::ReductionArrayComponentIds>(runner, 0)
+          .size() == (TypeOfObservation == observers::TypeOfObservation::Volume
+                          ? size_t{0}
+                          : element_ids.size()));
+  CHECK(ActionTesting::get_databox_tag<
+            obs_component, observers::Tags::VolumeArrayComponentIds>(runner, 0)
             .size() ==
-        (TypeOfObservation == observers::TypeOfObservation::Volume
+        (TypeOfObservation == observers::TypeOfObservation::Reduction
              ? size_t{0}
              : element_ids.size()));
-  CHECK(
-      db::get<observers::Tags::VolumeArrayComponentIds>(observer_box).size() ==
-      (TypeOfObservation == observers::TypeOfObservation::Reduction
-           ? size_t{0}
-           : element_ids.size()));
-  CHECK(db::get<observers::Tags::TensorData>(observer_box).empty());
+  CHECK(ActionTesting::get_databox_tag<obs_component,
+                                       observers::Tags::TensorData>(runner, 0)
+            .empty());
   for (const auto& id : element_ids) {
     CHECK(
-        db::get<observers::Tags::ReductionArrayComponentIds>(observer_box)
+        ActionTesting::get_databox_tag<
+            obs_component, observers::Tags::ReductionArrayComponentIds>(runner,
+                                                                        0)
             .count(observers::ArrayComponentId(
                 std::add_pointer_t<element_comp>{nullptr},
                 Parallel::ArrayIndex<ElementIndex<2>>(ElementIndex<2>(id)))) ==
         (TypeOfObservation == observers::TypeOfObservation::Volume ? 0 : 1));
     CHECK(
-        db::get<observers::Tags::VolumeArrayComponentIds>(observer_box)
+        ActionTesting::get_databox_tag<
+            obs_component, observers::Tags::VolumeArrayComponentIds>(runner, 0)
             .count(observers::ArrayComponentId(
                 std::add_pointer_t<element_comp>{nullptr},
                 Parallel::ArrayIndex<ElementIndex<2>>(ElementIndex<2>(id)))) ==
         (TypeOfObservation == observers::TypeOfObservation::Reduction ? 0 : 1));
   }
   if (TypeOfObservation != observers::TypeOfObservation::Volume) {
-    CHECK(
-        db::get<observers::Tags::ReductionObserversRegisteredNodes>(writer_box)
-            .empty());
+    CHECK(ActionTesting::get_databox_tag<
+              obs_writer, observers::Tags::ReductionObserversRegisteredNodes>(
+              runner, 0)
+              .empty());
     const auto hash =
         observers::ObservationId(
-            3., typename Metavariables::element_observation_type{})
+            3., typename TestObservers_detail::RegisterThisObsType<
+                    TypeOfObservation>::ElementObservationType{})
             .observation_type_hash();
-    CHECK(db::get<observers::Tags::ReductionObserversRegistered>(writer_box)
+    CHECK(ActionTesting::get_databox_tag<
+              obs_writer, observers::Tags::ReductionObserversRegistered>(runner,
+                                                                         0)
               .at(hash)
               .size() == 1);
   }
   if (TypeOfObservation != observers::TypeOfObservation::Reduction) {
     const auto hash =
         observers::ObservationId(
-            3., typename Metavariables::element_observation_type{})
+            3., typename TestObservers_detail::RegisterThisObsType<
+                    TypeOfObservation>::ElementObservationType{})
             .observation_type_hash();
-    CHECK(db::get<observers::Tags::VolumeObserversRegistered>(writer_box)
+    CHECK(ActionTesting::get_databox_tag<
+              obs_writer, observers::Tags::VolumeObserversRegistered>(runner, 0)
               .at(hash)
               .size() == 1);
   }

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <tuple>
 #include <utility>  // for declval
 
 #include "Utilities/TMPL.hpp"
@@ -42,21 +43,75 @@ struct build_action_return_types_impl<true, tmpl::list<AdditionalArgs...>> {
  * \metareturns
  * typelist
  *
- * \tparam ActionsPack parameter pack of Actions taken
- * \tparam FirstInputParameterType the type of the first argument of the first
+ * - `FirstInputParameterType` the type of the first argument of the first
  * Action in the ActionsPack
- * \tparam AdditionalArgsList the types of the arguments after the first
+ * - `AdditionalArgsList` the types of the arguments after the first
  * argument, which must all be the same for all Actions in the ActionsPack
  */
-template <typename FirstInputParameterType, typename AdditionalArgsList,
-          typename... ActionsPack>
-using build_action_return_typelist =
-    typename Algorithm_detail::build_action_return_types_impl<
-        sizeof...(ActionsPack) != 0, AdditionalArgsList>::
-        template f<FirstInputParameterType, tmpl::list<>, ActionsPack...>;
+template <typename T>
+struct build_action_return_types;
+
+template <typename... AllActions>
+struct build_action_return_types<tmpl::list<AllActions...>> {
+  template <typename FirstInputParameterType, typename AdditionalArgsList>
+  using f = typename Algorithm_detail::build_action_return_types_impl<
+      sizeof...(AllActions) != 0, AdditionalArgsList>::
+      template f<FirstInputParameterType, tmpl::list<>, AllActions...>;
+};
+
+template <typename PhaseType, PhaseType Phase, typename DataBoxTypes>
+struct PhaseDependentDataBoxTypes {
+  using databox_types = DataBoxTypes;
+  using phase_type = PhaseType;
+  static constexpr phase_type phase = Phase;
+};
+
+template <typename CumulativeDataboxTypes, typename InputDataBox,
+          typename AdditionalArgsList, typename PhaseDepActionLists>
+struct build_databox_types;
+
+template <typename CumulativeDataboxTypes, typename InputDataBox,
+          typename AdditionalArgsList>
+struct build_databox_types<CumulativeDataboxTypes, tmpl::list<>, InputDataBox,
+                           AdditionalArgsList> {
+  using type = CumulativeDataboxTypes;
+};
+
+// Loop over all the phase dependent action list structs and for each one
+// compute the list of DataBox types. The loop is initiated by taking the last
+// DataBox of the previous phase. The results for each phase are stored in the
+// `PhaseDependentDataBoxTypes` struct.
+//
+// The DataBox type that leaves one phase is what enters the next phase in the
+// order that the PDAL's (phase dependent action lists) are specified in the
+// parallel component. Switching from one phase to any other is also supported
+// as long as the DataBox types match up correctly. While the code could be
+// generalized to generically support switching from any phase to any other
+// phase with different DataBox types, this would be a large tensor product at
+// compile time leading to significantly more complex code and also longer
+// compile times.
+template <typename CumulativeDataboxTypes, typename InputDataBox,
+          typename AdditionalArgsList, typename CurrentPhaseDepActionList,
+          typename... Rest>
+struct build_databox_types<CumulativeDataboxTypes,
+                           tmpl::list<CurrentPhaseDepActionList, Rest...>,
+                           InputDataBox, AdditionalArgsList> {
+  using action_list_of_this_phase =
+      typename CurrentPhaseDepActionList::action_list;
+  using databox_types_for_this_phase = typename build_action_return_types<
+      action_list_of_this_phase>::template f<InputDataBox, AdditionalArgsList>;
+  using current_phase_dep_databox_types =
+      PhaseDependentDataBoxTypes<typename CurrentPhaseDepActionList::phase_type,
+                                 CurrentPhaseDepActionList::phase,
+                                 databox_types_for_this_phase>;
+  using cumulative_databox_types =
+      tmpl::push_back<CumulativeDataboxTypes, current_phase_dep_databox_types>;
+
+  using type = typename build_databox_types<
+      cumulative_databox_types, tmpl::list<Rest...>,
+      tmpl::back<databox_types_for_this_phase>, AdditionalArgsList>::type;
+};
 
 CREATE_IS_CALLABLE(is_ready)
-
-CREATE_IS_CALLABLE(apply)
 }  // namespace Algorithm_detail
 }  // namespace Parallel

@@ -10,8 +10,6 @@ set(LIBRARY_SOURCES
   Test_ObserveFields.cpp
   )
 
-add_subdirectory(SlopeLimiters)
-
 add_test_library(
   ${LIBRARY}
   "Evolution/DiscontinuousGalerkin/"
@@ -23,3 +21,5 @@ add_dependencies(
   ${LIBRARY}
   module_ConstGlobalCache
   )
+
+add_subdirectory(SlopeLimiters)

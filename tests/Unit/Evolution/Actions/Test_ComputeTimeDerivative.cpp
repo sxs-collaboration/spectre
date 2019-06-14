@@ -4,7 +4,6 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <string>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -12,13 +11,15 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <unordered_map>
 
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
@@ -52,9 +53,16 @@ struct component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndexType;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<Actions::ComputeTimeDerivative>;
-  using initial_databox =
-      db::compute_databox_type<tmpl::list<var_tag, Tags::dt<var_tag>>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using simple_tags = tmpl::list<var_tag, Tags::dt<var_tag>>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing,
+                             tmpl::list<Actions::ComputeTimeDerivative>>>;
 };
 
 struct Metavariables {
@@ -62,35 +70,35 @@ struct Metavariables {
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
   using temporal_id = TemporalId;
+
+  enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.ComputeTimeDerivative",
                   "[Unit][Evolution][Actions]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<component<Metavariables>>;
 
   const ElementId<2> self_id(1, {{{1, 0}, {1, 0}}});
 
   using simple_tags = db::AddSimpleTags<var_tag, Tags::dt<var_tag>>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(self_id, db::create<simple_tags>(3, -100));
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
-  const auto get_box = [&runner, &self_id]() -> decltype(auto) {
-    return runner.algorithms<component<Metavariables>>()
-        .at(self_id)
-        .get_databox<db::compute_databox_type<simple_tags>>();
-  };
+  MockRuntimeSystem runner{{}};
+  ActionTesting::emplace_component_and_initialize<component<Metavariables>>(
+      &runner, self_id, {3, -100});
+  runner.set_phase(Metavariables::Phase::Testing);
+
   {
-    const auto& box = get_box();
+    const auto& box =
+        ActionTesting::get_databox<component<Metavariables>, simple_tags>(
+            runner, self_id);
     CHECK(db::get<var_tag>(box) == 3);
     CHECK(db::get<Tags::dt<var_tag>>(box) == -100);
   }
   runner.next_action<component<Metavariables>>(self_id);
   {
-    const auto& box = get_box();
+    const auto& box =
+        ActionTesting::get_databox<component<Metavariables>, simple_tags>(
+            runner, self_id);
     CHECK(db::get<var_tag>(box) == 3);
     CHECK(db::get<Tags::dt<var_tag>>(box) == 6);
   }

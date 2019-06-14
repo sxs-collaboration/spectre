@@ -7,7 +7,6 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/Tags.hpp"
-#include "Elliptic/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
@@ -16,17 +15,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-namespace observers {
-namespace Actions {
-template <observers::TypeOfObservation TypeOfObservation>
-struct RegisterWithObservers;
-}  // namespace Actions
-}  // namespace observers
-/// \endcond
-
 namespace Elliptic {
-
 /*!
  * \brief The parallel component responsible for managing the DG elements that
  * compose the computational domain
@@ -51,21 +40,20 @@ namespace Elliptic {
  * - ConstGlobalCache:
  *   - All items required by the actions in `ActionList`
  */
-template <class Metavariables, class ActionList>
+template <class Metavariables, class PhaseDepActionList,
+          class AddOptionsToDataBox>
 struct DgElementArray {
   static constexpr size_t volume_dim = Metavariables::system::volume_dim;
 
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
-  using action_list = ActionList;
+  using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementIndex<volume_dim>;
 
   using const_global_cache_tag_list =
-      Parallel::get_const_global_cache_tags<action_list>;
+      Parallel::get_const_global_cache_tags_from_pdal<PhaseDepActionList>;
 
-  using initial_databox = db::compute_databox_type<
-      typename Elliptic::dg::Actions::InitializeElement<
-          volume_dim>::template return_tag_list<Metavariables>>;
+  using add_options_to_databox = AddOptionsToDataBox;
 
   using options = tmpl::list<typename Metavariables::domain_creator_tag>;
 
@@ -78,54 +66,17 @@ struct DgElementArray {
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
     auto& local_cache = *(global_cache.ckLocalBranch());
-    auto& dg_element_array =
-        Parallel::get_parallel_component<DgElementArray>(local_cache);
-    switch (next_phase) {
-      case Metavariables::Phase::Solve:
-        dg_element_array.perform_algorithm();
-        break;
-      default:
-        try_register_with_observers(next_phase, global_cache);
-        break;
-    }
-  }
-
- private:
-  template <typename PhaseType,
-            Requires<not observers::has_register_with_observer_v<PhaseType>> =
-                nullptr>
-  static void try_register_with_observers(
-      const PhaseType /*next_phase*/,
-      Parallel::CProxy_ConstGlobalCache<
-          Metavariables>& /*global_cache*/) noexcept {}
-
-  template <
-      typename PhaseType,
-      Requires<observers::has_register_with_observer_v<PhaseType>> = nullptr>
-  static void try_register_with_observers(
-      const PhaseType next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
-    if (next_phase == Metavariables::Phase::RegisterWithObserver) {
-      auto& local_cache = *(global_cache.ckLocalBranch());
-      // We currently use an observation_id with a fake time when registering
-      // observers but in the future when we start doing load balancing and
-      // elements migrate around the system they will need to register and
-      // unregister themselves at specific times.
-      const observers::ObservationId observation_id_with_fake_time(
-          0., typename Metavariables::element_observation_type{});
-      Parallel::simple_action<observers::Actions::RegisterWithObservers<
-          observers::TypeOfObservation::ReductionAndVolume>>(
-          Parallel::get_parallel_component<DgElementArray>(local_cache),
-          observation_id_with_fake_time);
-    }
+    Parallel::get_parallel_component<DgElementArray>(local_cache)
+        .start_phase(next_phase);
   }
 };
 
-template <class Metavariables, class ActionList>
-void DgElementArray<Metavariables, ActionList>::initialize(
-    Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
-    const std::unique_ptr<DomainCreator<volume_dim, Frame::Inertial>>
-        domain_creator) noexcept {
+template <class Metavariables, class PhaseDepActionList,
+          class AddOptionsToDataBox>
+void DgElementArray<Metavariables, PhaseDepActionList, AddOptionsToDataBox>::
+    initialize(Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
+               const std::unique_ptr<DomainCreator<volume_dim, Frame::Inertial>>
+                   domain_creator) noexcept {
   auto& dg_element_array = Parallel::get_parallel_component<DgElementArray>(
       *(global_cache.ckLocalBranch()));
 
@@ -139,14 +90,15 @@ void DgElementArray<Metavariables, ActionList>::initialize(
     const int number_of_procs = Parallel::number_of_procs();
     for (size_t i = 0; i < element_ids.size(); ++i) {
       dg_element_array(ElementIndex<volume_dim>(element_ids[i]))
-          .insert(global_cache, which_proc);
+          .insert(global_cache,
+                  tuples::tagged_tuple_from_typelist<
+                      typename add_options_to_databox::simple_tags>(
+                      domain_creator->initial_extents(),
+                      domain_creator->create_domain()),
+                  which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
     }
   }
   dg_element_array.doneInserting();
-
-  dg_element_array.template simple_action<
-      Elliptic::dg::Actions::InitializeElement<volume_dim>>(
-      std::make_tuple(domain_creator->initial_extents(), std::move(domain)));
 }
 }  // namespace Elliptic

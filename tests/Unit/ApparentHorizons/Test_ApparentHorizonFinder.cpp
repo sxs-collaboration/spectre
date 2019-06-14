@@ -13,7 +13,7 @@
 #include "ApparentHorizons/ComputeItems.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/FastFlow.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
-#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -34,7 +34,7 @@
 #include "NumericalAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
-#include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetApparentHorizon.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatorReceivePoints.hpp"  // IWYU pragma: keep
@@ -43,7 +43,9 @@
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
@@ -139,16 +141,19 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using action_list = tmpl::list<>;
-  using component_being_mocked =
-      intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
-  using initial_databox = db::compute_databox_type<
-      typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables>>;
-
   using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
       tmpl::list<typename InterpolationTargetTag::compute_target_points,
                  typename InterpolationTargetTag::post_interpolation_callback>>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<intrp::Actions::InitializeInterpolationTarget<
+          InterpolationTargetTag>>>>;
+  using add_options_to_databox =
+      typename intrp::Actions::InitializeInterpolationTarget<
+          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
+
+  using component_being_mocked =
+      intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
 };
 
 template <typename Metavariables>
@@ -157,11 +162,12 @@ struct mock_interpolator {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<intrp::Actions::InitializeInterpolator>>>;
+
   using component_being_mocked = intrp::Interpolator<Metavariables>;
-  using initial_databox =
-      db::compute_databox_type<typename intrp::Actions::InitializeInterpolator::
-                                   template return_tag_list<Metavariables>>;
 };
 
 template <typename PostHorizonFindCallback>
@@ -196,6 +202,8 @@ struct MockMetavariables {
       tmpl::list<mock_interpolation_target<MockMetavariables, AhA>,
                  mock_interpolator<MockMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
+
+  enum class Phase { Initialization, Registration, Testing, Exit };
 };
 
 template <typename PostHorizonFindCallback>
@@ -205,30 +213,13 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                            const double mass,
                            const std::array<double, 3>& dimensionless_spin) {
   using metavars = MockMetavariables<PostHorizonFindCallback>;
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<metavars>;
-  using mock_target_a =
+  using interp_component = mock_interpolator<metavars>;
+  using target_component =
       mock_interpolation_target<metavars, typename metavars::AhA>;
-  using TupleOfMockDistributedObjects =
-      typename MockRuntimeSystem::TupleOfMockDistributedObjects;
-  TupleOfMockDistributedObjects dist_objects{};
-  using MockDistributedObjectsTagTargetA =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          mock_target_a>;
-  using MockDistributedObjectsTagInterpolator =
-      typename MockRuntimeSystem::template MockDistributedObjectsTag<
-          mock_interpolator<metavars>>;
 
   // The mocking framework requires an array index to be passed to
   // many functions, even if the components are singletons.
   constexpr size_t fake_array_index = 0_st;
-
-  tuples::get<MockDistributedObjectsTagTargetA>(dist_objects)
-      .emplace(fake_array_index,
-               ActionTesting::MockDistributedObject<mock_target_a>{});
-  tuples::get<MockDistributedObjectsTagInterpolator>(dist_objects)
-      .emplace(
-          fake_array_index,
-          ActionTesting::MockDistributedObject<mock_interpolator<metavars>>{});
 
   // Options for all InterpolationTargets.
   // The initial guess for the horizon search is a sphere of radius 2.8M.
@@ -239,7 +230,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   tuples::TaggedTuple<typename metavars::AhA> tuple_of_opts(
       std::move(apparent_horizon_opts));
 
-  MockRuntimeSystem runner{std::move(tuple_of_opts), std::move(dist_objects)};
+  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
 
   // The test finds an apparent horizon for a Schwarzschild or Kerr
   // metric with M=1.  We choose a spherical shell domain extending
@@ -251,13 +242,13 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       1.9, 2.9, 1, {{grid_points_each_dimension, grid_points_each_dimension}},
       false);
 
-  runner.template simple_action<
-      mock_target_a,
-      ::intrp::Actions::InitializeInterpolationTarget<typename metavars::AhA>>(
-      fake_array_index, domain_creator.create_domain());
-  runner.template simple_action<mock_interpolator<metavars>,
-                                ::intrp::Actions::InitializeInterpolator>(
-      fake_array_index);
+  runner.set_phase(metavars::Phase::Initialization);
+  ActionTesting::emplace_component<interp_component>(&runner, 0);
+  ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+  ActionTesting::emplace_component<target_component>(
+      &runner, 0, domain_creator.create_domain());
+  ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
+  runner.set_phase(metavars::Phase::Registration);
 
   Slab slab(0.0, 1.0);
   TimeId temporal_id(true, 0, Time(slab, 0));
@@ -275,17 +266,18 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   // Tell the interpolator how many elements there are by registering
   // each one.
   for (size_t i = 0; i < element_ids.size(); ++i) {
-    runner.template simple_action<mock_interpolator<metavars>,
-                                  intrp::Actions::RegisterElement>(
-        fake_array_index);
+    ActionTesting::simple_action<interp_component,
+                                 intrp::Actions::RegisterElement>(
+        make_not_null(&runner), fake_array_index);
   }
+  runner.set_phase(metavars::Phase::Testing);
 
   // Tell the InterpolationTargets that we want to interpolate at
   // temporal_id.
-  runner.template simple_action<
-      mock_target_a, intrp::Actions::AddTemporalIdsToInterpolationTarget<
-                         typename metavars::AhA>>(
-      fake_array_index, std::vector<TimeId>{temporal_id});
+  ActionTesting::simple_action<
+      target_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
+                            typename metavars::AhA>>(
+      make_not_null(&runner), 0, std::vector<TimeId>{temporal_id});
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {
@@ -339,11 +331,10 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                 output_vars));
 
     // Call the InterpolatorReceiveVolumeData action on each element_id.
-    runner
-        .template simple_action<mock_interpolator<metavars>,
-                                intrp::Actions::InterpolatorReceiveVolumeData>(
-            fake_array_index, temporal_id, element_id, mesh,
-            std::move(output_vars));
+    ActionTesting::simple_action<interp_component,
+                                 intrp::Actions::InterpolatorReceiveVolumeData>(
+        make_not_null(&runner), 0, temporal_id, element_id, mesh,
+        std::move(output_vars));
   }
 
   // Invoke remaining actions in random order.

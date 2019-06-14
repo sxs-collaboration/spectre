@@ -10,6 +10,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
@@ -21,13 +23,15 @@
 #include "Time/TimeId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <pup.h>
 // IWYU pragma: no_include <unordered_map>
+
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 
 namespace {
 using step_choosers = tmpl::list<StepChoosers::Registrars::Constant>;
@@ -44,24 +48,31 @@ struct System {
   using variables_tag = Var;
 };
 
-struct Metavariables;
-struct component {
+template <typename Metavariables>
+struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list =
       tmpl::list<OptionTags::TypedTimeStepper<LtsTimeStepper>>;
-  using action_list = tmpl::list<change_step_size>;
-  using simple_tags = db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>,
-                                        Tags::TimeStep, history_tag>;
-  using initial_databox = db::compute_databox_type<simple_tags>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using simple_tags = tmpl::list<Tags::TimeId, Tags::Next<Tags::TimeId>,
+                                 Tags::TimeStep, history_tag>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing,
+                             tmpl::list<change_step_size>>>;
 };
 
 struct Metavariables {
   using system = System;
   static constexpr bool local_time_stepping = true;
-  using component_list = tmpl::list<component>;
   using const_global_cache_tag_list = change_step_size::const_global_cache_tags;
+  using component_list = tmpl::list<Component<Metavariables>>;
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 void check(const bool time_runs_forward,
@@ -73,19 +84,8 @@ void check(const bool time_runs_forward,
   const TimeDelta initial_step_size =
       (time_runs_forward ? 1 : -1) * time.slab().duration();
 
+  using component = Component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<component>{
-                      db::create<typename component::simple_tags>(
-                          TimeId(time_runs_forward, 0, time),
-                          TimeId(time_runs_forward, 0,
-                                 (time_runs_forward ? time.slab().start()
-                                                    : time.slab().end()) +
-                                     initial_step_size),
-                          initial_step_size, db::item_type<history_tag>{})});
   MockRuntimeSystem runner{
       {make_vector<std::unique_ptr<StepChooser<step_choosers>>>(
            std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
@@ -94,13 +94,22 @@ void check(const bool time_runs_forward,
            std::make_unique<StepChoosers::Constant<step_choosers>>(2. *
                                                                    request)),
        std::make_unique<StepControllers::BinaryFraction>(),
-       std::move(time_stepper)},
-      std::move(dist_objects)};
+       std::move(time_stepper)}};
 
+  // Initialize the component
+  ActionTesting::emplace_component_and_initialize<component>(
+      &runner, 0,
+      {TimeId(time_runs_forward, 0, time),
+       TimeId(time_runs_forward, 0,
+              (time_runs_forward ? time.slab().start() : time.slab().end()) +
+                  initial_step_size),
+       initial_step_size, db::item_type<history_tag>{}});
+
+  runner.set_phase(Metavariables::Phase::Testing);
   runner.next_action<component>(0);
-  auto& box = runner.algorithms<component>()
-                  .at(0)
-                  .get_databox<typename component::initial_databox>();
+  auto& box =
+      ActionTesting::get_databox<component, typename component::simple_tags>(
+          runner, 0);
 
   CHECK(db::get<Tags::TimeStep>(box) == expected_step);
   CHECK(db::get<Tags::Next<Tags::TimeId>>(box) ==

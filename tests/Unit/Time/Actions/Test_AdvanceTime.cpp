@@ -6,11 +6,12 @@
 #include <array>
 #include <cstddef>
 #include <memory>
-#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
-#include "Time/Actions/AdvanceTime.hpp"         // IWYU pragma: keep
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Time/Actions/AdvanceTime.hpp"           // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
@@ -19,59 +20,64 @@
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
 // IWYU pragma: no_include <initializer_list>
 // IWYU pragma: no_include <unordered_map>
 
 class TimeStepper;
+// IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace {
-struct Metavariables;
-struct component {
+template <typename Metavariables>
+struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list =
       tmpl::list<OptionTags::TypedTimeStepper<TimeStepper>>;
-  using action_list = tmpl::list<Actions::AdvanceTime>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+
   using simple_tags =
       db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;
-  using initial_databox = db::compute_databox_type<simple_tags>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing,
+                             tmpl::list<Actions::AdvanceTime>>>;
 };
 
 struct Metavariables {
-  using component_list = tmpl::list<component>;
+  using component_list = tmpl::list<Component<Metavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
+
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 void check_rk3(const Time& start, const TimeDelta& time_step) {
   const std::array<TimeDelta, 3> substep_offsets{
       {time_step * 0, time_step, time_step / 2}};
 
-  using simple_tags =
-      db::AddSimpleTags<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>;
+  using component = Component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<component>{
-                      db::create<simple_tags>(
-                          TimeId(time_step.is_positive(), 8, start),
-                          TimeId(time_step.is_positive(), 8, start, 1,
-                                 start + substep_offsets[1]),
-                          time_step)});
-  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()},
-                           std::move(dist_objects)};
+  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::RungeKutta3>()}};
+  ActionTesting::emplace_component_and_initialize<component>(
+      &runner, 0,
+      {TimeId(time_step.is_positive(), 8, start),
+       TimeId(time_step.is_positive(), 8, start, 1, start + substep_offsets[1]),
+       time_step});
+  runner.set_phase(Metavariables::Phase::Testing);
 
   for (const auto& step_start : {start, start + time_step}) {
     for (size_t substep = 0; substep < 3; ++substep) {
-      auto& box = runner.algorithms<component>()
-                      .at(0)
-                      .get_databox<db::compute_databox_type<simple_tags>>();
+      const auto& box =
+          ActionTesting::get_databox<component,
+                                     typename component::simple_tags>(runner,
+                                                                      0);
       CHECK(db::get<Tags::TimeId>(box) ==
             TimeId(time_step.is_positive(), 8, step_start, substep,
                    step_start + gsl::at(substep_offsets, substep)));
@@ -80,9 +86,9 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
     }
   }
 
-  auto& box = runner.algorithms<component>()
-                  .at(0)
-                  .get_databox<db::compute_databox_type<simple_tags>>();
+  const auto& box =
+      ActionTesting::get_databox<component, typename component::simple_tags>(
+          runner, 0);
   const auto& final_time_id = db::get<Tags::TimeId>(box);
   const auto& expected_slab = start.slab().advance_towards(time_step);
   CHECK(final_time_id.time().slab() == expected_slab);
@@ -92,32 +98,29 @@ void check_rk3(const Time& start, const TimeDelta& time_step) {
 }
 
 void check_abn(const Time& start, const TimeDelta& time_step) {
+  using component = Component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<component>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(0, ActionTesting::MockDistributedObject<component>{
-                      db::create<typename component::simple_tags>(
-                          TimeId(time_step.is_positive(), 8, start),
-                          TimeId(time_step.is_positive(), 8, start + time_step),
-                          time_step)});
-  MockRuntimeSystem runner{{std::make_unique<TimeSteppers::AdamsBashforthN>(1)},
-                           std::move(dist_objects)};
+  MockRuntimeSystem runner{
+      {std::make_unique<TimeSteppers::AdamsBashforthN>(1)}};
+  ActionTesting::emplace_component_and_initialize<component>(
+      &runner, 0,
+      {TimeId(time_step.is_positive(), 8, start),
+       TimeId(time_step.is_positive(), 8, start + time_step), time_step});
+  runner.set_phase(Metavariables::Phase::Testing);
 
   for (const auto& step_start : {start, start + time_step}) {
-    auto& box = runner.algorithms<component>()
-                    .at(0)
-                    .get_databox<typename component::initial_databox>();
+    const auto& box =
+        ActionTesting::get_databox<component, typename component::simple_tags>(
+            runner, 0);
     CHECK(db::get<Tags::TimeId>(box) ==
           TimeId(time_step.is_positive(), 8, step_start));
     CHECK(db::get<Tags::TimeStep>(box) == time_step);
     runner.next_action<component>(0);
   }
 
-  auto& box = runner.algorithms<component>()
-                  .at(0)
-                  .get_databox<typename component::initial_databox>();
+  const auto& box =
+      ActionTesting::get_databox<component, typename component::simple_tags>(
+          runner, 0);
   const auto& final_time_id = db::get<Tags::TimeId>(box);
   const auto& expected_slab = start.slab().advance_towards(time_step);
   CHECK(final_time_id.time().slab() == expected_slab);
