@@ -28,6 +28,7 @@
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/RegisterObservers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
@@ -35,8 +36,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/GotoAction.hpp"
 #include "Parallel/InitializationFunctions.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey/ConstantM1.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -75,6 +76,8 @@ struct EvolutionMetavars {
 
   // Set list of neutrino species to be used by M1 code
   using neutrino_species = tmpl::list<neutrinos::ElectronNeutrinos<1>>;
+
+  using domain_creator_tag = OptionTags::DomainCreator<3, Frame::Inertial>;
   using system = RadiationTransport::M1Grey::System<neutrino_species>;
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = false;
@@ -102,6 +105,9 @@ struct EvolutionMetavars {
                  StepChoosers::Registrars::Constant,
                  StepChoosers::Registrars::Increase>;
 
+  struct ObservationType {};
+  using element_observation_type = ObservationType;
+
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<Event<events>::creatable_classes>;
 
@@ -123,22 +129,37 @@ struct EvolutionMetavars {
       SlopeLimiters::Actions::Limit<EvolutionMetavars>,
       Actions::UpdateM1Closure>>;
 
-  struct EvolvePhaseStart;
+  enum class Phase { Initialization, RegisterWithObserver, Evolve, Exit };
+
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
-          EvolutionMetavars, RadiationTransport::M1Grey::Actions::Initialize<3>,
-          tmpl::flatten<tmpl::list<
-              Actions::UpdateM1Closure,
-              SelfStart::self_start_procedure<compute_rhs, update_variables>,
-              Actions::Label<EvolvePhaseStart>, Actions::AdvanceTime,
-              Actions::RunEventsAndTriggers,
-              tmpl::conditional_t<local_time_stepping,
-                                  Actions::ChangeStepSize<step_choosers>,
-                                  tmpl::list<>>,
-              compute_rhs, update_variables,
-              Actions::Goto<EvolvePhaseStart>>>>>;
+          EvolutionMetavars,
+          tmpl::list<
+              Parallel::PhaseActions<
+                  Phase, Phase::Initialization,
+                  tmpl::flatten<tmpl::list<
+                      RadiationTransport::M1Grey::Actions::Initialize<3>,
+                      Actions::UpdateM1Closure,
+                      SelfStart::self_start_procedure<compute_rhs,
+                                                      update_variables>>>>,
+              Parallel::PhaseActions<
+                  Phase, Phase::RegisterWithObserver,
+                  tmpl::list<Actions::AdvanceTime,
+                             observers::Actions::RegisterWithObservers<
+                                 observers::RegisterObservers<
+                                     element_observation_type>>>>,
+              Parallel::PhaseActions<
+                  Phase, Phase::Evolve,
+                  tmpl::flatten<tmpl::list<
+                      Actions::RunEventsAndTriggers,
+                      tmpl::conditional_t<
+                          local_time_stepping,
+                          Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>,
+          RadiationTransport::M1Grey::Actions::Initialize<
+              3>::AddOptionsToDataBox>>;
 
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,
@@ -146,15 +167,8 @@ struct EvolutionMetavars {
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
                  OptionTags::EventsAndTriggers<events, triggers>>;
 
-  using domain_creator_tag = OptionTags::DomainCreator<3, Frame::Inertial>;
-
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
-
   static constexpr OptionString help{
       "Evolve the M1 system (without coupling to hydro).\n\n"};
-
-  enum class Phase { Initialization, RegisterWithObserver, Evolve, Exit };
 
   static Phase determine_next_phase(
       const Phase& current_phase,
