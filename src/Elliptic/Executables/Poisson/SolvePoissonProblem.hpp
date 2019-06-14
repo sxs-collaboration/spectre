@@ -25,6 +25,7 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -86,7 +87,8 @@ struct Metavariables {
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
-                      Poisson::Actions::Observe>>>,
+                                 Poisson::Actions::Observe>,
+                             Parallel::Actions::TerminatePhase>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::Solve,

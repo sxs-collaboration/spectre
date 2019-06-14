@@ -233,7 +233,7 @@ struct RegisterWithObservers {
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagList>&&, bool> apply(
+  static std::tuple<db::DataBox<DbTagList>&&> apply(
       db::DataBox<DbTagList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -266,7 +266,7 @@ struct RegisterWithObservers {
             Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
         std::move(                                                // NOLINT
             type_of_observation_and_observation_id_pair.first));  // NOLINT
-    return {std::move(box), true};
+    return {std::move(box)};
   }
 };
 
