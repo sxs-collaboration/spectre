@@ -28,7 +28,7 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"  // IWYU pragma: keep
 #include "Domain/OrientationMapHelpers.hpp"
-#include "Domain/Tags.hpp"            // IWYU pragma: keep
+#include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
