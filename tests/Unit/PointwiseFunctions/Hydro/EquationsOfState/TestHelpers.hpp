@@ -51,6 +51,7 @@ void check_impl(
   using Function = typename CreateMemberFunctionPointer<1>::template f<T, EoS>;
   INFO("Testing "s + (IsRelativistic ? "relativistic"s : "Newtonian"s) +
        " equation of state"s)
+  const auto member_args_tuple = std::make_tuple(member_args...);
   const auto helper = [&](const std::unique_ptr<EoS>& eos) noexcept {
     // need func variable to work around GCC bug
     Function func{&EoS::pressure_from_density};
@@ -58,7 +59,7 @@ void check_impl(
     pypp::check_with_random_values<1>(
         func, *eos, "TestFunctions",
         python_function_prefix + "_pressure_from_density", random_value_bounds,
-        std::make_tuple(member_args...), used_for_size);
+        member_args_tuple, used_for_size);
     INFO("Done\nTesting rest_mass_density_from_enthalpy...")
     pypp::check_with_random_values<1>(
         func = &EoS::rest_mass_density_from_enthalpy, *eos, "TestFunctions",
@@ -66,7 +67,7 @@ void check_impl(
                                      "_rel_rest_mass_density_from_enthalpy")
                        : std::string(python_function_prefix +
                                      "_newt_rest_mass_density_from_enthalpy"),
-        {{{1, 1.0e4}}}, std::make_tuple(member_args...), used_for_size);
+        {{{1, 1.0e4}}}, member_args_tuple, used_for_size);
     INFO("Done\nTesting specific_enthalpy_from_density...")
     pypp::check_with_random_values<1>(
         func = &EoS::specific_enthalpy_from_density, *eos, "TestFunctions",
@@ -74,24 +75,24 @@ void check_impl(
                                      "_rel_specific_enthalpy_from_density")
                        : std::string(python_function_prefix +
                                      "_newt_specific_enthalpy_from_density"),
-        random_value_bounds, std::make_tuple(member_args...), used_for_size);
+        random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done\nTesting specific_internal_energy_from_density...")
     pypp::check_with_random_values<1>(
         func = &EoS::specific_internal_energy_from_density, *eos,
         "TestFunctions",
         python_function_prefix + "_specific_internal_energy_from_density",
-        random_value_bounds, std::make_tuple(member_args...), used_for_size);
+        random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done\nTesting chi_from_density...")
     pypp::check_with_random_values<1>(
         func = &EoS::chi_from_density, *eos, "TestFunctions",
         python_function_prefix + "_chi_from_density", random_value_bounds,
-        std::make_tuple(member_args...), used_for_size);
+        member_args_tuple, used_for_size);
     INFO("Done\nTesting kappa_times_p_over_rho_squared_from_density...")
     pypp::check_with_random_values<1>(
         func = &EoS::kappa_times_p_over_rho_squared_from_density, *eos,
         "TestFunctions",
         python_function_prefix + "_kappa_times_p_over_rho_squared_from_density",
-        random_value_bounds, std::make_tuple(member_args...), used_for_size);
+        random_value_bounds, member_args_tuple, used_for_size);
     INFO(
         "Done\nTesting that rest_mass_density_from_enthalpy and "
         "specific_enthalpy_from_density are inverses of each other...")
@@ -122,6 +123,7 @@ void check_impl(
   using Function = typename CreateMemberFunctionPointer<2>::template f<T, EoS>;
   INFO("Testing "s + (IsRelativistic ? "relativistic"s : "Newtonian"s) +
        " equation of state"s)
+  const auto member_args_tuple = std::make_tuple(member_args...);
   const auto helper = [&](const std::unique_ptr<EoS>& eos) noexcept {
     // need func variable to work around GCC bug
     Function func{&EoS::pressure_from_density_and_energy};
@@ -129,7 +131,7 @@ void check_impl(
     pypp::check_with_random_values<2>(
         func, *eos, "TestFunctions",
         python_function_prefix + "_pressure_from_density_and_energy",
-        random_value_bounds, std::make_tuple(member_args...), used_for_size);
+        random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done\nTesting pressure_from_density_and_enthalpy...")
     pypp::check_with_random_values<2>(
         func = &EoS::pressure_from_density_and_enthalpy, *eos, "TestFunctions",
@@ -138,8 +140,7 @@ void check_impl(
                           "_rel_pressure_from_density_and_enthalpy")
             : std::string(python_function_prefix +
                           "_newt_pressure_from_density_and_enthalpy"),
-        {{{1.0e-4, 4.0}, {1.0, 1.0e4}}}, std::make_tuple(member_args...),
-        used_for_size);
+        {{{1.0e-4, 4.0}, {1.0, 1.0e4}}}, member_args_tuple, used_for_size);
     INFO("Done\nTesting specific_enthalpy_from_density_and_energy...")
     pypp::check_with_random_values<2>(
         func = &EoS::specific_enthalpy_from_density_and_energy, *eos,
@@ -149,19 +150,19 @@ void check_impl(
                           "_rel_specific_enthalpy_from_density_and_energy")
             : std::string(python_function_prefix +
                           "_newt_specific_enthalpy_from_density_and_energy"),
-        random_value_bounds, std::make_tuple(member_args...), used_for_size);
+        random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done\nTesting specific_internal_energy_from_density_and_pressure...")
     pypp::check_with_random_values<2>(
         func = &EoS::specific_internal_energy_from_density_and_pressure, *eos,
         "TestFunctions",
         python_function_prefix +
             "_specific_internal_energy_from_density_and_pressure",
-        random_value_bounds, std::make_tuple(member_args...), used_for_size);
+        random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done\nTesting chi_from_density_and_energy...")
     pypp::check_with_random_values<2>(
         func = &EoS::chi_from_density_and_energy, *eos, "TestFunctions",
         python_function_prefix + "_chi_from_density_and_energy",
-        random_value_bounds, std::make_tuple(member_args...), used_for_size);
+        random_value_bounds, member_args_tuple, used_for_size);
     INFO(
         "Done\nTesting "
         "kappa_times_p_over_rho_squared_from_density_and_energy...")
@@ -170,7 +171,7 @@ void check_impl(
         *eos, "TestFunctions",
         python_function_prefix +
             "_kappa_times_p_over_rho_squared_from_density_and_energy",
-        random_value_bounds, std::make_tuple(member_args...), used_for_size);
+        random_value_bounds, member_args_tuple, used_for_size);
     INFO("Done\n\n")
   };
   helper(in_eos);

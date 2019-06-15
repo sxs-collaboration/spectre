@@ -58,6 +58,15 @@ class ModalVector;
 class ComplexDiagonalModalOperator
     : public VectorImpl<std::complex<double>, ComplexDiagonalModalOperator> {
  public:
+  ComplexDiagonalModalOperator() = default;
+  ComplexDiagonalModalOperator(const ComplexDiagonalModalOperator&) = default;
+  ComplexDiagonalModalOperator(ComplexDiagonalModalOperator&&) = default;
+  ComplexDiagonalModalOperator& operator=(const ComplexDiagonalModalOperator&) =
+      default;
+  ComplexDiagonalModalOperator& operator=(ComplexDiagonalModalOperator&&) =
+      default;
+  ~ComplexDiagonalModalOperator() = default;
+
   using VectorImpl<std::complex<double>, ComplexDiagonalModalOperator>::
   operator=;
   using VectorImpl<std::complex<double>,

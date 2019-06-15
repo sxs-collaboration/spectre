@@ -29,6 +29,13 @@
  */
 class ModalVector : public VectorImpl<double, ModalVector> {
  public:
+  ModalVector() = default;
+  ModalVector(const ModalVector&) = default;
+  ModalVector(ModalVector&&) = default;
+  ModalVector& operator=(const ModalVector&) = default;
+  ModalVector& operator=(ModalVector&&) = default;
+  ~ModalVector() = default;
+
   using VectorImpl<double, ModalVector>::operator=;
   using VectorImpl<double, ModalVector>::VectorImpl;
 
