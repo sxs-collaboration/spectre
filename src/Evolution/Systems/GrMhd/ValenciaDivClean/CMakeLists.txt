@@ -23,7 +23,7 @@ target_link_libraries(
   INTERFACE ErrorHandling
   INTERFACE GeneralRelativity
   INTERFACE Hydro
-  INTERFACE SlopeLimiters
+  INTERFACE Limiters
   INTERFACE Valencia
   INTERFACE VariableFixing
   )

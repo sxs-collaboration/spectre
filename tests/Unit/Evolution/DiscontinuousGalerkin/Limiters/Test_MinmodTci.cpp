@@ -24,8 +24,8 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodTci.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -34,7 +34,7 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "tests/Unit/Evolution/DiscontinuousGalerkin/SlopeLimiters/TestHelpers.hpp"
+#include "tests/Unit/Evolution/DiscontinuousGalerkin/Limiters/TestHelpers.hpp"
 
 namespace {
 

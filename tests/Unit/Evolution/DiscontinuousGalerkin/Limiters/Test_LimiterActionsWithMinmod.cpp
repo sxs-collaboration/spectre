@@ -26,9 +26,9 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/SizeOfElement.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.tpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.tpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -36,7 +36,7 @@
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
-// IWYU pragma: no_include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
+// IWYU pragma: no_include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 

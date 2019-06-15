@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/WenoType.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoType.hpp"
 
 #include <ostream>
 #include <string>

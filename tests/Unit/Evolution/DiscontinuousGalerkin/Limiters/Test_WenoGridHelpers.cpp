@@ -17,10 +17,10 @@
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/WenoGridHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
-#include "tests/Unit/Evolution/DiscontinuousGalerkin/SlopeLimiters/TestHelpers.hpp"
+#include "tests/Unit/Evolution/DiscontinuousGalerkin/Limiters/TestHelpers.hpp"
 
 namespace {
 

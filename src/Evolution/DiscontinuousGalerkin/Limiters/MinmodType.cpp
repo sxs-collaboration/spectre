@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 
 #include <ostream>
 #include <string>

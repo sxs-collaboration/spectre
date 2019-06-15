@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestCreation.hpp"
 

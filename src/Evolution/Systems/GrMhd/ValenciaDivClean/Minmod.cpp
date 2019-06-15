@@ -1,11 +1,11 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.tpp"  // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.tpp"  // IWYU pragma: keep
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
-// IWYU pragma: no_include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
+// IWYU pragma: no_include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 
 namespace Frame {
 struct Inertial;

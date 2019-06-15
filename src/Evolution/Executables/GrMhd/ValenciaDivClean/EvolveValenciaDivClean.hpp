@@ -14,11 +14,11 @@
 #include "Evolution/Conservative/UpdateConservatives.hpp"
 #include "Evolution/Conservative/UpdatePrimitives.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/ObserveErrorNorms.hpp"
 #include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep

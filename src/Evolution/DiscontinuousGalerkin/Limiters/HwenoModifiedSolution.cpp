@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/HwenoModifiedSolution.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/HwenoModifiedSolution.hpp"
 
 #include <array>
 #include <bitset>
@@ -15,7 +15,7 @@
 #include "Domain/Mesh.hpp"     // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/WenoGridHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp"
 #include "NumericalAlgorithms/Interpolation/RegularGridInterpolant.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"

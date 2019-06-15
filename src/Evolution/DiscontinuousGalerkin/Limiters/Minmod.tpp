@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 
 #include <array>
 #include <boost/functional/hash.hpp>
@@ -27,9 +27,9 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodHelpers.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodTci.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"

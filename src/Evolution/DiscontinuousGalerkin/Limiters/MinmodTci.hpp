@@ -11,8 +11,8 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodHelpers.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodType.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

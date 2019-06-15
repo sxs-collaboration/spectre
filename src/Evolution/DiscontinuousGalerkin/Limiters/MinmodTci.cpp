@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/MinmodTci.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"
 
 #include <algorithm>
 #include <array>

@@ -5,7 +5,7 @@
 
 #include <string>
 
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/WenoType.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoType.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestCreation.hpp"
 

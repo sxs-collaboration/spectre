@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/WenoGridHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp"
 
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/Direction.hpp"  // IWYU pragma: keep

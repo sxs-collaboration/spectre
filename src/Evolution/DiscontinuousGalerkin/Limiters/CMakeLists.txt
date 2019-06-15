@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY SlopeLimiters)
+set(LIBRARY Limiters)
 
 set(LIBRARY_SOURCES
   HwenoModifiedSolution.cpp

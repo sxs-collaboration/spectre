@@ -18,7 +18,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/WenoHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"

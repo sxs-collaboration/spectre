@@ -21,7 +21,7 @@
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/WenoGridHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoGridHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/Algorithm.hpp"

@@ -22,7 +22,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Krivodonova.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/Krivodonova.hpp"
 #include "NumericalAlgorithms/LinearOperators/CoefficientTransforms.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"

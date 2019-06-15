@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_SlopeLimiters")
+set(LIBRARY "Test_Limiters")
 
 set(LIBRARY_SOURCES
   Test_HwenoModifiedSolution.cpp
@@ -19,9 +19,9 @@ set(LIBRARY_SOURCES
 
 add_test_library(
   ${LIBRARY}
-  "Evolution/DiscontinuousGalerkin/SlopeLimiters/"
+  "Evolution/DiscontinuousGalerkin/Limiters/"
   "${LIBRARY_SOURCES}"
-  "SlopeLimiters"
+  "Limiters"
   )
 
 add_dependencies(
