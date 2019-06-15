@@ -31,7 +31,7 @@
 
 // IWYU pragma: no_forward_declare Tensor
 
-namespace SlopeLimiters {
+namespace Limiters {
 
 // The overall way of testing the Krivodonova limiter is to set the modal
 // coefficients directly, then compare to the expected result from the algorithm
@@ -2902,4 +2902,4 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Krivodonova",
   test_2d::run();
   test_3d::run();
 }
-}  // namespace SlopeLimiters
+}  // namespace Limiters

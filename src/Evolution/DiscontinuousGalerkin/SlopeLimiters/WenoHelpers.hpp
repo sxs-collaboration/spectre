@@ -28,7 +28,7 @@ struct hash;
 }  // namespace boost
 /// \endcond
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Weno_detail {
 
 // Compute the WENO oscillation indicator (also called the smoothness indicator)
@@ -122,4 +122,4 @@ void reconstruct_from_weighted_sum(
 }
 
 }  // namespace Weno_detail
-}  // namespace SlopeLimiters
+}  // namespace Limiters

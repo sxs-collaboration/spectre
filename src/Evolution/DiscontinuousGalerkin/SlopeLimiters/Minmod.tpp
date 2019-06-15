@@ -36,7 +36,7 @@
 #include "Utilities/Numeric.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Minmod_detail {
 
 // Implements the minmod limiter for one Tensor<DataVector> at a time.
@@ -45,7 +45,7 @@ bool limit_one_tensor(
     const gsl::not_null<db::item_type<Tag>*> tensor,
     const gsl::not_null<DataVector*> u_lin_buffer,
     const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const SlopeLimiters::MinmodType& minmod_type, const double tvbm_constant,
+    const Limiters::MinmodType& minmod_type, const double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
@@ -59,7 +59,7 @@ bool limit_one_tensor(
   // True if the mesh is linear-order in every direction
   const bool mesh_is_linear = (mesh.extents() == Index<VolumeDim>(2));
   const bool minmod_type_is_linear =
-      (minmod_type != SlopeLimiters::MinmodType::LambdaPiN);
+      (minmod_type != Limiters::MinmodType::LambdaPiN);
   const bool using_linear_limiter_on_non_linear_mesh =
       minmod_type_is_linear and not mesh_is_linear;
 
@@ -208,4 +208,4 @@ bool operator!=(const Minmod<VolumeDim, TagList>& lhs,
   return not(lhs == rhs);
 }
 
-}  // namespace SlopeLimiters
+}  // namespace Limiters

@@ -75,7 +75,7 @@ struct EvolutionMetavars {
   using normal_dot_numerical_flux =
       OptionTags::NumericalFlux<Burgers::LocalLaxFriedrichsFlux>;
   using limiter = OptionTags::SlopeLimiter<
-      SlopeLimiters::Minmod<1, system::variables_tag::tags_list>>;
+      Limiters::Minmod<1, system::variables_tag::tags_list>>;
 
   // public for use by the Charm++ registration code
   using events =
@@ -117,8 +117,8 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      Actions::UpdateU, SlopeLimiters::Actions::SendData<EvolutionMetavars>,
-      SlopeLimiters::Actions::Limit<EvolutionMetavars>>>;
+      Actions::UpdateU, Limiters::Actions::SendData<EvolutionMetavars>,
+      Limiters::Actions::Limit<EvolutionMetavars>>>;
 
   enum class Phase {
     Initialization,

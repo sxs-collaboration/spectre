@@ -49,7 +49,7 @@ MinmodResult minmod_tvbm(const double a, const double b, const double c,
 }
 }  // namespace
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Minmod_detail {
 
 template <size_t VolumeDim>
@@ -58,7 +58,7 @@ bool troubled_cell_indicator(
     const gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     const gsl::not_null<DataVector*> u_lin_buffer,
     const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const SlopeLimiters::MinmodType& minmod_type, const double tvbm_constant,
+    const Limiters::MinmodType& minmod_type, const double tvbm_constant,
     const DataVector& u, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
@@ -78,7 +78,7 @@ bool troubled_cell_indicator(
   // max_slope_factor a factor of 2.0 too small, so that LambdaPi1 behaved
   // like MUSCL, and MUSCL was even more dissipative.
   const double max_slope_factor =
-      (minmod_type == SlopeLimiters::MinmodType::Muscl) ? 1.0 : 2.0;
+      (minmod_type == Limiters::MinmodType::Muscl) ? 1.0 : 2.0;
 
   *u_mean = mean_value(u, mesh);
 
@@ -115,7 +115,7 @@ bool troubled_cell_indicator(
 
   // The LambdaPiN limiter allows high-order solutions to escape limiting if
   // the boundary values are not too different from the mean value:
-  if (minmod_type == SlopeLimiters::MinmodType::LambdaPiN) {
+  if (minmod_type == Limiters::MinmodType::LambdaPiN) {
     bool u_needs_limiting = false;
     for (size_t d = 0; d < VolumeDim; ++d) {
       const double u_lower = mean_value_on_boundary(
@@ -195,7 +195,7 @@ bool troubled_cell_indicator(
 #ifdef SPECTRE_DEBUG
   // Guard against incorrect use of returned (by reference) slopes in a
   // LambdaPiN limiter, by setting these to NaN when they should not be used.
-  if (minmod_type == SlopeLimiters::MinmodType::LambdaPiN and
+  if (minmod_type == Limiters::MinmodType::LambdaPiN and
       not slopes_need_reducing) {
     *u_mean = std::numeric_limits<double>::signaling_NaN();
     *u_limited_slopes =
@@ -209,19 +209,19 @@ bool troubled_cell_indicator(
 // Explicit instantiations
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                             \
-  template bool troubled_cell_indicator<DIM(data)>(                      \
-      const gsl::not_null<double*>,                                      \
-      const gsl::not_null<std::array<double, DIM(data)>*>,               \
-      const gsl::not_null<DataVector*>,                                  \
-      const gsl::not_null<std::array<DataVector, DIM(data)>*>,           \
-      const SlopeLimiters::MinmodType&, const double, const DataVector&, \
-      const Element<DIM(data)>&, const Mesh<DIM(data)>&,                 \
-      const std::array<double, DIM(data)>&,                              \
-      const DirectionMap<DIM(data), double>&,                            \
-      const DirectionMap<DIM(data), double>&,                            \
-      const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,   \
-                                 gsl::span<std::pair<size_t, size_t>>>,  \
+#define INSTANTIATE(_, data)                                            \
+  template bool troubled_cell_indicator<DIM(data)>(                     \
+      const gsl::not_null<double*>,                                     \
+      const gsl::not_null<std::array<double, DIM(data)>*>,              \
+      const gsl::not_null<DataVector*>,                                 \
+      const gsl::not_null<std::array<DataVector, DIM(data)>*>,          \
+      const Limiters::MinmodType&, const double, const DataVector&,     \
+      const Element<DIM(data)>&, const Mesh<DIM(data)>&,                \
+      const std::array<double, DIM(data)>&,                             \
+      const DirectionMap<DIM(data), double>&,                           \
+      const DirectionMap<DIM(data), double>&,                           \
+      const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,  \
+                                 gsl::span<std::pair<size_t, size_t>>>, \
                        DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
@@ -230,4 +230,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 
 }  // namespace Minmod_detail
-}  // namespace SlopeLimiters
+}  // namespace Limiters

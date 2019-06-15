@@ -80,7 +80,7 @@ void test_secondary_neighbors_to_exclude_from_fit() {
           expected_excluded_neighbors) noexcept {
     const size_t tensor_index = 0;
     const auto excluded_neighbors_vector =
-        SlopeLimiters::Hweno_detail::secondary_neighbors_to_exclude_from_fit<
+        Limiters::Hweno_detail::secondary_neighbors_to_exclude_from_fit<
             ScalarTag>(mean, tensor_index, dummy_neighbor_data,
                        primary_neighbor);
     // The elements of `excluded_neighbors_vector` are ordered in an undefined
@@ -112,7 +112,7 @@ void test_secondary_neighbors_to_exclude_from_fit() {
 void test_hweno_modified_solution_1d() {
   INFO("Testing hweno_modified_neighbor_solution in 1D");
   using TagsList = tmpl::list<ScalarTag>;
-  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
+  const auto element = TestHelpers::Limiters::make_element<1>();
   const auto mesh = Mesh<1>{
       {{3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
@@ -165,7 +165,7 @@ void test_hweno_modified_solution_1d() {
   neighbor_data[upper_xi_neighbor].mesh = mesh;
 
   Scalar<DataVector> modified_tensor;
-  SlopeLimiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -206,7 +206,7 @@ void test_hweno_modified_solution_1d() {
 void test_hweno_modified_solution_2d_vector() {
   INFO("Testing hweno_modified_neighbor_solution in 2D");
   using TagsList = tmpl::list<VectorTag<2>>;
-  const auto element = TestHelpers::SlopeLimiters::make_element<2>();
+  const auto element = TestHelpers::Limiters::make_element<2>();
   const auto mesh = Mesh<2>{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
@@ -301,7 +301,7 @@ void test_hweno_modified_solution_2d_vector() {
   neighbor_data[upper_eta_neighbor].mesh = mesh;
 
   VectorTag<2>::type modified_tensor;
-  SlopeLimiters::hweno_modified_neighbor_solution<VectorTag<2>>(
+  Limiters::hweno_modified_neighbor_solution<VectorTag<2>>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -384,7 +384,7 @@ void test_hweno_modified_solution_2d_vector() {
 void test_hweno_modified_solution_2d_exclude_two_neighbors() {
   INFO("Testing hweno_modified_neighbor_solution in 2D");
   using TagsList = tmpl::list<ScalarTag>;
-  const auto element = TestHelpers::SlopeLimiters::make_element<2>();
+  const auto element = TestHelpers::Limiters::make_element<2>();
   const auto mesh = Mesh<2>{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
@@ -470,7 +470,7 @@ void test_hweno_modified_solution_2d_exclude_two_neighbors() {
   neighbor_data[upper_eta_neighbor].mesh = mesh;
 
   ScalarTag::type modified_tensor;
-  SlopeLimiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -550,7 +550,7 @@ void test_hweno_modified_solution_3d() {
   const auto primary_neighbor =
       std::make_pair(Direction<3>::upper_zeta(), ElementId<3>{6});
 
-  const auto element = TestHelpers::SlopeLimiters::make_element<3>();
+  const auto element = TestHelpers::Limiters::make_element<3>();
   const auto mesh = Mesh<3>{{{3, 3, 4}},
                             Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};
@@ -640,7 +640,7 @@ void test_hweno_modified_solution_3d() {
   neighbor_data[primary_neighbor].mesh = mesh;
 
   Scalar<DataVector> modified_tensor;
-  SlopeLimiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -787,12 +787,12 @@ void test_hweno_modified_solution_2d_boundary() {
       ElementId<2>{0},
       Element<2>::Neighbors_t{
           {Direction<2>::lower_xi(),
-           TestHelpers::SlopeLimiters::make_neighbor_with_id<2>(1)},
+           TestHelpers::Limiters::make_neighbor_with_id<2>(1)},
           // upper_xi is external boundary
           {Direction<2>::lower_eta(),
-           TestHelpers::SlopeLimiters::make_neighbor_with_id<2>(3)},
+           TestHelpers::Limiters::make_neighbor_with_id<2>(3)},
           {Direction<2>::upper_eta(),
-           TestHelpers::SlopeLimiters::make_neighbor_with_id<2>(4)}}};
+           TestHelpers::Limiters::make_neighbor_with_id<2>(4)}}};
   const auto mesh = Mesh<2>{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
@@ -864,7 +864,7 @@ void test_hweno_modified_solution_2d_boundary() {
   neighbor_data[upper_eta_neighbor].mesh = mesh;
 
   Scalar<DataVector> modified_tensor;
-  SlopeLimiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -928,7 +928,7 @@ void test_hweno_modified_solution_2d_boundary_single_neighbor() {
       ElementId<2>{0},
       Element<2>::Neighbors_t{
           {Direction<2>::lower_eta(),
-           TestHelpers::SlopeLimiters::make_neighbor_with_id<2>(3)}}};
+           TestHelpers::Limiters::make_neighbor_with_id<2>(3)}}};
   const auto mesh = Mesh<2>{
       {{4, 3}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
   const auto logical_coords = logical_coordinates(mesh);
@@ -973,7 +973,7 @@ void test_hweno_modified_solution_2d_boundary_single_neighbor() {
   neighbor_data[primary_neighbor].mesh = mesh;
 
   Scalar<DataVector> modified_tensor;
-  SlopeLimiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 
@@ -1051,16 +1051,16 @@ void test_hweno_modified_solution_3d_boundary() {
       ElementId<3>{0},
       Element<3>::Neighbors_t{
           {Direction<3>::lower_xi(),
-           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(1)},
+           TestHelpers::Limiters::make_neighbor_with_id<3>(1)},
           {Direction<3>::upper_xi(),
-           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(2)},
+           TestHelpers::Limiters::make_neighbor_with_id<3>(2)},
           {Direction<3>::lower_eta(),
-           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(3)},
+           TestHelpers::Limiters::make_neighbor_with_id<3>(3)},
           {Direction<3>::upper_eta(),
-           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(4)},
+           TestHelpers::Limiters::make_neighbor_with_id<3>(4)},
           // lower_zeta is external boundary
           {Direction<3>::upper_zeta(),
-           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(6)}}};
+           TestHelpers::Limiters::make_neighbor_with_id<3>(6)}}};
   const auto mesh = Mesh<3>{{{3, 3, 4}},
                             Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto};
@@ -1139,7 +1139,7 @@ void test_hweno_modified_solution_3d_boundary() {
   neighbor_data[primary_neighbor].mesh = mesh;
 
   Scalar<DataVector> modified_tensor;
-  SlopeLimiters::hweno_modified_neighbor_solution<ScalarTag>(
+  Limiters::hweno_modified_neighbor_solution<ScalarTag>(
       make_not_null(&modified_tensor), local_tensor, element, mesh,
       neighbor_data, primary_neighbor);
 

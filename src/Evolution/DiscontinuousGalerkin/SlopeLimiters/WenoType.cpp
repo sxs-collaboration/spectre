@@ -10,12 +10,12 @@
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 
-std::ostream& SlopeLimiters::operator<<(
-    std::ostream& os, const SlopeLimiters::WenoType weno_type) noexcept {
+std::ostream& Limiters::operator<<(
+    std::ostream& os, const Limiters::WenoType weno_type) noexcept {
   switch (weno_type) {
-    case SlopeLimiters::WenoType::Hweno:
+    case Limiters::WenoType::Hweno:
       return os << "Hweno";
-    case SlopeLimiters::WenoType::SimpleWeno:
+    case Limiters::WenoType::SimpleWeno:
       return os << "SimpleWeno";
     default:  // LCOV_EXCL_LINE
       // LCOV_EXCL_START
@@ -25,13 +25,13 @@ std::ostream& SlopeLimiters::operator<<(
 }
 
 template <>
-SlopeLimiters::WenoType create_from_yaml<SlopeLimiters::WenoType>::create<void>(
+Limiters::WenoType create_from_yaml<Limiters::WenoType>::create<void>(
     const Option& options) {
   const std::string weno_type_read = options.parse_as<std::string>();
   if (weno_type_read == "Hweno") {
-    return SlopeLimiters::WenoType::Hweno;
+    return Limiters::WenoType::Hweno;
   } else if (weno_type_read == "SimpleWeno") {
-    return SlopeLimiters::WenoType::SimpleWeno;
+    return Limiters::WenoType::SimpleWeno;
   }
   PARSE_ERROR(options.context(), "Failed to convert \""
                                      << weno_type_read

@@ -19,7 +19,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Tags {
 /// \ingroup DiscontinuousGalerkinGroup
 /// \ingroup LimitersGroup
@@ -74,7 +74,7 @@ struct Limit {
 
  public:
   using limiter_comm_tag =
-      SlopeLimiters::Tags::LimiterCommunicationTag<Metavariables>;
+      Limiters::Tags::LimiterCommunicationTag<Metavariables>;
   using inbox_tags = tmpl::list<limiter_comm_tag>;
 
   template <typename DbTags, typename... InboxTags, typename ArrayIndex,
@@ -155,7 +155,7 @@ template <typename Metavariables>
 struct SendData {
   using const_global_cache_tags = tmpl::list<typename Metavariables::limiter>;
   using limiter_comm_tag =
-      SlopeLimiters::Tags::LimiterCommunicationTag<Metavariables>;
+      Limiters::Tags::LimiterCommunicationTag<Metavariables>;
 
   static_assert(
       not Metavariables::local_time_stepping,
@@ -213,4 +213,4 @@ struct SendData {
   }
 };
 }  // namespace Actions
-}  // namespace SlopeLimiters
+}  // namespace Limiters

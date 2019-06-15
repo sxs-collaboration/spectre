@@ -53,16 +53,16 @@ void test_check_element_no_href() {
                    {Direction<2>::lower_eta(), lower_eta_neighbors},
                    {Direction<2>::upper_eta(), upper_eta_neighbors}});
 
-  CHECK(SlopeLimiters::Weno_detail::
+  CHECK(Limiters::Weno_detail::
             check_element_has_one_similar_neighbor_in_direction(
                 element, Direction<2>::lower_xi()));
-  CHECK(SlopeLimiters::Weno_detail::
+  CHECK(Limiters::Weno_detail::
             check_element_has_one_similar_neighbor_in_direction(
                 element, Direction<2>::upper_xi()));
-  CHECK_FALSE(SlopeLimiters::Weno_detail::
+  CHECK_FALSE(Limiters::Weno_detail::
                   check_element_has_one_similar_neighbor_in_direction(
                       element, Direction<2>::lower_eta()));
-  CHECK_FALSE(SlopeLimiters::Weno_detail::
+  CHECK_FALSE(Limiters::Weno_detail::
                   check_element_has_one_similar_neighbor_in_direction(
                       element, Direction<2>::upper_eta()));
 }
@@ -97,26 +97,26 @@ void check_grid_point_transform_no_href(
   };
 
   for (size_t dim = 0; dim < VolumeDim; ++dim) {
-    const auto from_lower = SlopeLimiters::Weno_detail::
-        neighbor_grid_points_in_local_logical_coords(
+    const auto from_lower =
+        Limiters::Weno_detail::neighbor_grid_points_in_local_logical_coords(
             local_mesh, neighbor_mesh, element,
             Direction<VolumeDim>(dim, Side::Lower));
     check(from_lower, false, dim, -2.);
 
-    const auto from_upper = SlopeLimiters::Weno_detail::
-        neighbor_grid_points_in_local_logical_coords(
+    const auto from_upper =
+        Limiters::Weno_detail::neighbor_grid_points_in_local_logical_coords(
             local_mesh, neighbor_mesh, element,
             Direction<VolumeDim>(dim, Side::Upper));
     check(from_upper, false, dim, 2.);
 
-    const auto to_lower = SlopeLimiters::Weno_detail::
-        local_grid_points_in_neighbor_logical_coords(
+    const auto to_lower =
+        Limiters::Weno_detail::local_grid_points_in_neighbor_logical_coords(
             local_mesh, neighbor_mesh, element,
             Direction<VolumeDim>(dim, Side::Lower));
     check(to_lower, true, dim, 2.);
 
-    const auto to_upper = SlopeLimiters::Weno_detail::
-        local_grid_points_in_neighbor_logical_coords(
+    const auto to_upper =
+        Limiters::Weno_detail::local_grid_points_in_neighbor_logical_coords(
             local_mesh, neighbor_mesh, element,
             Direction<VolumeDim>(dim, Side::Upper));
     check(to_upper, true, dim, -2.);
@@ -125,7 +125,7 @@ void check_grid_point_transform_no_href(
 
 void test_grid_helpers_1d() {
   INFO("Testing WENO grid helpers in 1D");
-  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
+  const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh({{6}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   check_grid_point_transform_no_href(mesh, mesh, element);
@@ -137,7 +137,7 @@ void test_grid_helpers_1d() {
 
 void test_grid_helpers_2d() {
   INFO("Testing WENO grid helpers in 2D");
-  const auto element = TestHelpers::SlopeLimiters::make_element<2>();
+  const auto element = TestHelpers::Limiters::make_element<2>();
   const Mesh<2> mesh({{5, 6}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   check_grid_point_transform_no_href(mesh, mesh, element);
@@ -149,7 +149,7 @@ void test_grid_helpers_2d() {
 
 void test_grid_helpers_3d() {
   INFO("Testing WENO grid helpers in 3D");
-  const auto element = TestHelpers::SlopeLimiters::make_element<3>();
+  const auto element = TestHelpers::Limiters::make_element<3>();
   const Mesh<3> mesh({{4, 5, 6}}, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   check_grid_point_transform_no_href(mesh, mesh, element);

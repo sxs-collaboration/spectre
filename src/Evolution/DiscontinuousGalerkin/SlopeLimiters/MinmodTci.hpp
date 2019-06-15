@@ -34,13 +34,13 @@ struct hash;
 }  // namespace boost
 /// \endcond
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Minmod_detail {
 
 // Implements the troubled-cell indicator corresponding to the Minmod limiter.
 //
 // The troubled-cell indicator (TCI) determines whether or not limiting is
-// needed. See SlopeLimiters::Minmod for a full description of the Minmod
+// needed. See Limiters::Minmod for a full description of the Minmod
 // limiter. Note that as an optimization, this TCI returns (by reference) some
 // additional data that are used by the Minmod limiter in the case where the
 // TCI returns true (i.e., the case where limiting is needed).
@@ -50,7 +50,7 @@ bool troubled_cell_indicator(
     gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     gsl::not_null<DataVector*> u_lin_buffer,
     gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const SlopeLimiters::MinmodType& minmod_type, double tvbm_constant,
+    const Limiters::MinmodType& minmod_type, double tvbm_constant,
     const DataVector& u, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
@@ -67,7 +67,7 @@ bool troubled_cell_indicator(
 // Optimization: stops as soon as one component needs limiting, because no
 // intermediate results are passed "up" out of this function.
 //
-// Expects type `PackagedData` to contain, as in SlopeLimiters::Minmod:
+// Expects type `PackagedData` to contain, as in Limiters::Minmod:
 // - a variable `means` that is a `TaggedTuple<Tags::Mean<Tags>...>`
 // - a variable `element_size` that is a `std::array<double, VolumeDim>`
 template <size_t VolumeDim, typename PackagedData, typename... Tags>
@@ -77,7 +77,7 @@ bool troubled_cell_indicator(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data,
-    const SlopeLimiters::MinmodType& minmod_type, double tvbm_constant,
+    const Limiters::MinmodType& minmod_type, double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size) noexcept {
   // Optimization: allocate temporary buffer to be used in TCI
@@ -139,4 +139,4 @@ bool troubled_cell_indicator(
 }
 
 }  // namespace Minmod_detail
-}  // namespace SlopeLimiters
+}  // namespace Limiters

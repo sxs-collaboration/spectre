@@ -68,7 +68,7 @@ Matrix volume_interpolation_matrix(
   // coordinates to construct the interpolation matrix. Here we get the points
   // of target_mesh in the local logical coordinates.
   const auto target_1d_coords =
-      SlopeLimiters::Weno_detail::neighbor_grid_points_in_local_logical_coords(
+      Limiters::Weno_detail::neighbor_grid_points_in_local_logical_coords(
           source_mesh, target_mesh, element, direction);
 
   const auto interpolation_matrices_1d =
@@ -106,7 +106,7 @@ Matrix volume_interpolation_matrix(
 
 }  // namespace
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Hweno_detail {
 
 template <size_t VolumeDim>
@@ -337,4 +337,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 
 }  // namespace Hweno_detail
-}  // namespace SlopeLimiters
+}  // namespace Limiters

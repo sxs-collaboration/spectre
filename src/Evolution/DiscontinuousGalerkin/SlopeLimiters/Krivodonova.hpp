@@ -43,13 +43,13 @@
 // IWYU pragma: no_forward_declare Variables
 
 /// \cond
-namespace SlopeLimiters {
+namespace Limiters {
 template <size_t VolumeDim, typename TagsToLimit>
 class Krivodonova;
-}  // namespace SlopeLimiters
+}  // namespace Limiters
 /// \endcond
 
-namespace SlopeLimiters {
+namespace Limiters {
 /*!
  * \ingroup LimitersGroup
  * \brief An implementation of the Krivodonova limiter.
@@ -994,4 +994,4 @@ bool operator!=(
     const Krivodonova<VolumeDim, tmpl::list<Tags...>>& rhs) noexcept {
   return not(lhs == rhs);
 }
-}  // namespace SlopeLimiters
+}  // namespace Limiters

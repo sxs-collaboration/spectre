@@ -48,13 +48,13 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
-namespace SlopeLimiters {
+namespace Limiters {
 template <size_t VolumeDim, typename TagsToLimit>
 class Weno;
-}  // namespace SlopeLimiters
+}  // namespace Limiters
 /// \endcond
 
-namespace SlopeLimiters {
+namespace Limiters {
 /// \ingroup LimitersGroup
 /// \brief A compact-stencil WENO limiter for DG
 ///
@@ -94,7 +94,7 @@ class Weno<VolumeDim, tmpl::list<Tags...>> {
  public:
   /// \brief The WenoType
   ///
-  /// One of `SlopeLimiters::WenoType`. See the `SlopeLimiters::Weno`
+  /// One of `Limiters::WenoType`. See the `Limiters::Weno`
   /// documentation for details.
   struct Type {
     using type = WenoType;
@@ -370,4 +370,4 @@ bool operator!=(const Weno<VolumeDim, TagList>& lhs,
   return not(lhs == rhs);
 }
 
-}  // namespace SlopeLimiters
+}  // namespace Limiters

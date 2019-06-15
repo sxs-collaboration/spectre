@@ -4,5 +4,5 @@
 #pragma once
 
 /// \ingroup LimitersGroup
-/// \brief Things relating to slope limiting.
-namespace SlopeLimiters {}
+/// \brief Things relating to limiting.
+namespace Limiters {}

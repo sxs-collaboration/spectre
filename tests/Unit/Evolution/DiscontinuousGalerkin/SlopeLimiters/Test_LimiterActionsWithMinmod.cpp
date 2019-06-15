@@ -58,7 +58,7 @@ struct System {
 };
 
 struct LimiterTag {
-  using type = SlopeLimiters::Minmod<2, tmpl::list<Var>>;
+  using type = Limiters::Minmod<2, tmpl::list<Var>>;
 };
 
 template <size_t Dim, typename Metavariables>
@@ -81,8 +81,8 @@ struct component {
               ActionTesting::InitializeDataBox<simple_tags, compute_tags>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<SlopeLimiters::Actions::SendData<Metavariables>,
-                     SlopeLimiters::Actions::Limit<Metavariables>>>>;
+          tmpl::list<Limiters::Actions::SendData<Metavariables>,
+                     Limiters::Actions::Limit<Metavariables>>>>;
 };
 
 template <size_t Dim>
@@ -128,8 +128,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Minmod",
   auto var = Scalar<DataVector>(mesh.number_of_grid_points(), 1234.);
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      SlopeLimiters::Minmod<2, tmpl::list<Var>>(
-          SlopeLimiters::MinmodType::LambdaPi1)};
+      Limiters::Minmod<2, tmpl::list<Var>>(Limiters::MinmodType::LambdaPi1)};
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
       {0, mesh, element, std::move(map), std::move(logical_coords),

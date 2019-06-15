@@ -39,7 +39,7 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
-// IWYU pragma: no_forward_declare SlopeLimiters::Minmod
+// IWYU pragma: no_forward_declare Limiters::Minmod
 // IWYU pragma: no_forward_declare Tensor
 
 namespace {
@@ -57,16 +57,16 @@ struct VectorTag : db::SimpleTag {
 
 void test_minmod_option_parsing() noexcept {
   const auto lambda_pi1_default =
-      test_creation<SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>>(
+      test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "  Type: LambdaPi1");
   const auto lambda_pi1_m0 =
-      test_creation<SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>>(
+      test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "  Type: LambdaPi1\n  TvbmConstant: 0.0");
   const auto lambda_pi1_m1 =
-      test_creation<SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>>(
+      test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "  Type: LambdaPi1\n  TvbmConstant: 1.0");
   const auto muscl_default =
-      test_creation<SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>>(
+      test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "  Type: Muscl");
 
   // Test default TVBM value, operator==, and operator!=
@@ -74,20 +74,20 @@ void test_minmod_option_parsing() noexcept {
   CHECK(lambda_pi1_default != lambda_pi1_m1);
   CHECK(lambda_pi1_default != muscl_default);
 
-  test_creation<SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>>>(
+  test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
       "  Type: LambdaPiN");
-  test_creation<SlopeLimiters::Minmod<2, tmpl::list<ScalarTag>>>(
+  test_creation<Limiters::Minmod<2, tmpl::list<ScalarTag>>>(
       "  Type: LambdaPiN");
-  test_creation<SlopeLimiters::Minmod<3, tmpl::list<ScalarTag, VectorTag<3>>>>(
+  test_creation<Limiters::Minmod<3, tmpl::list<ScalarTag, VectorTag<3>>>>(
       "  Type: LambdaPiN");
 
-  test_creation<SlopeLimiters::Minmod<3, tmpl::list<ScalarTag>>>(
+  test_creation<Limiters::Minmod<3, tmpl::list<ScalarTag>>>(
       "  Type: LambdaPiN\n  DisableForDebugging: True");
 }
 
 void test_minmod_serialization() noexcept {
-  const SlopeLimiters::Minmod<1, tmpl::list<ScalarTag>> minmod(
-      SlopeLimiters::MinmodType::LambdaPi1);
+  const Limiters::Minmod<1, tmpl::list<ScalarTag>> minmod(
+      Limiters::MinmodType::LambdaPi1);
   test_serialization(minmod);
 }
 
@@ -95,15 +95,15 @@ void test_minmod_serialization() noexcept {
 // and input Scalar may be of higher dimension VolumeDim.
 template <size_t VolumeDim>
 void test_limiter_activates_work(
-    const SlopeLimiters::Minmod<VolumeDim, tmpl::list<ScalarTag>>& minmod,
+    const Limiters::Minmod<VolumeDim, tmpl::list<ScalarTag>>& minmod,
     const ScalarTag::type& input, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        typename SlopeLimiters::Minmod<VolumeDim,
-                                       tmpl::list<ScalarTag>>::PackagedData,
+        typename Limiters::Minmod<VolumeDim,
+                                  tmpl::list<ScalarTag>>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data,
     const double expected_slope) noexcept {
@@ -132,7 +132,7 @@ void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
            {std::unordered_set<ElementId<2>>{ElementId<2>(1), ElementId<2>(7)},
             OrientationMap<2>{}}},
           {Direction<2>::upper_xi(),
-           TestHelpers::SlopeLimiters::make_neighbor_with_id<2>(2)}}};
+           TestHelpers::Limiters::make_neighbor_with_id<2>(2)}}};
   const auto mesh =
       Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
@@ -149,7 +149,7 @@ void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
   const auto make_neighbors = [&dx](const double left1, const double left2,
                                     const double right, const double left1_size,
                                     const double left2_size) noexcept {
-    using Pack = SlopeLimiters::Minmod<2, tmpl::list<ScalarTag>>::PackagedData;
+    using Pack = Limiters::Minmod<2, tmpl::list<ScalarTag>>::PackagedData;
     return std::unordered_map<
         std::pair<Direction<2>, ElementId<2>>, Pack,
         boost::hash<std::pair<Direction<2>, ElementId<2>>>>{
@@ -165,8 +165,8 @@ void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
     };
   };
 
-  const SlopeLimiters::Minmod<2, tmpl::list<ScalarTag>> minmod(
-      SlopeLimiters::MinmodType::LambdaPi1);
+  const Limiters::Minmod<2, tmpl::list<ScalarTag>> minmod(
+      Limiters::MinmodType::LambdaPi1);
 
   // Make two left neighbors with different mean values
   const auto neighbor_data_two_means =
@@ -192,7 +192,7 @@ void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
       ElementId<3>{0},
       Element<3>::Neighbors_t{
           {Direction<3>::lower_xi(),
-           TestHelpers::SlopeLimiters::make_neighbor_with_id<3>(1)},
+           TestHelpers::Limiters::make_neighbor_with_id<3>(1)},
           {Direction<3>::upper_xi(),
            {std::unordered_set<ElementId<3>>{ElementId<3>(2), ElementId<3>(7),
                                              ElementId<3>(8), ElementId<3>(9)},
@@ -216,7 +216,7 @@ void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
       const double right3, const double right4, const double right1_size,
       const double right2_size, const double right3_size,
       const double right4_size) noexcept {
-    using Pack = SlopeLimiters::Minmod<3, tmpl::list<ScalarTag>>::PackagedData;
+    using Pack = Limiters::Minmod<3, tmpl::list<ScalarTag>>::PackagedData;
     return std::unordered_map<
         std::pair<Direction<3>, ElementId<3>>, Pack,
         boost::hash<std::pair<Direction<3>, ElementId<3>>>>{
@@ -238,8 +238,8 @@ void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
     };
   };
 
-  const SlopeLimiters::Minmod<3, tmpl::list<ScalarTag>> minmod(
-      SlopeLimiters::MinmodType::LambdaPi1);
+  const Limiters::Minmod<3, tmpl::list<ScalarTag>> minmod(
+      Limiters::MinmodType::LambdaPi1);
 
   // Make four right neighbors with different mean values
   const auto neighbor_data_two_means =
@@ -279,10 +279,9 @@ void test_package_data_work(
     modified_vector.get(d) += (d + 1.0) - 2.7 * square(logical_coords.get(d));
   }
 
-  const SlopeLimiters::Minmod<VolumeDim,
-                              tmpl::list<ScalarTag, VectorTag<VolumeDim>>>
-      minmod(SlopeLimiters::MinmodType::LambdaPi1);
-  typename SlopeLimiters::Minmod<
+  const Limiters::Minmod<VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>
+      minmod(Limiters::MinmodType::LambdaPi1);
+  typename Limiters::Minmod<
       VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData
       packaged_data{};
 
@@ -319,7 +318,7 @@ void test_work(
     const tnsr::I<DataVector, VolumeDim>& input_vector,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        typename SlopeLimiters::Minmod<
+        typename Limiters::Minmod<
             VolumeDim,
             tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
@@ -333,10 +332,9 @@ void test_work(
   auto scalar_to_limit = input_scalar;
   auto vector_to_limit = input_vector;
 
-  const auto element = TestHelpers::SlopeLimiters::make_element<VolumeDim>();
-  const SlopeLimiters::Minmod<VolumeDim,
-                              tmpl::list<ScalarTag, VectorTag<VolumeDim>>>
-      minmod(SlopeLimiters::MinmodType::LambdaPi1);
+  const auto element = TestHelpers::Limiters::make_element<VolumeDim>();
+  const Limiters::Minmod<VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>
+      minmod(Limiters::MinmodType::LambdaPi1);
   const bool limiter_activated =
       minmod(make_not_null(&scalar_to_limit), make_not_null(&vector_to_limit),
              element, mesh, logical_coords, element_size, neighbor_data);
@@ -392,10 +390,10 @@ void test_minmod_limiter_1d() noexcept {
                          element_size, test_reorientation);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
-  std::unordered_map<std::pair<Direction<1>, ElementId<1>>,
-                     SlopeLimiters::Minmod<
-                         1, tmpl::list<ScalarTag, VectorTag<1>>>::PackagedData,
-                     boost::hash<std::pair<Direction<1>, ElementId<1>>>>
+  std::unordered_map<
+      std::pair<Direction<1>, ElementId<1>>,
+      Limiters::Minmod<1, tmpl::list<ScalarTag, VectorTag<1>>>::PackagedData,
+      boost::hash<std::pair<Direction<1>, ElementId<1>>>>
       neighbor_data{};
   const std::array<std::pair<Direction<1>, ElementId<1>>, 2> dir_keys = {
       {{Direction<1>::lower_xi(), ElementId<1>(1)},
@@ -454,10 +452,10 @@ void test_minmod_limiter_2d() noexcept {
                          element_size, test_reorientation);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
-  std::unordered_map<std::pair<Direction<2>, ElementId<2>>,
-                     SlopeLimiters::Minmod<
-                         2, tmpl::list<ScalarTag, VectorTag<2>>>::PackagedData,
-                     boost::hash<std::pair<Direction<2>, ElementId<2>>>>
+  std::unordered_map<
+      std::pair<Direction<2>, ElementId<2>>,
+      Limiters::Minmod<2, tmpl::list<ScalarTag, VectorTag<2>>>::PackagedData,
+      boost::hash<std::pair<Direction<2>, ElementId<2>>>>
       neighbor_data{};
   const std::array<std::pair<Direction<2>, ElementId<2>>, 4> dir_keys = {
       {{Direction<2>::lower_xi(), ElementId<2>(1)},
@@ -561,10 +559,10 @@ void test_minmod_limiter_3d() noexcept {
                          element_size, test_reorientation);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
-  std::unordered_map<std::pair<Direction<3>, ElementId<3>>,
-                     SlopeLimiters::Minmod<
-                         3, tmpl::list<ScalarTag, VectorTag<3>>>::PackagedData,
-                     boost::hash<std::pair<Direction<3>, ElementId<3>>>>
+  std::unordered_map<
+      std::pair<Direction<3>, ElementId<3>>,
+      Limiters::Minmod<3, tmpl::list<ScalarTag, VectorTag<3>>>::PackagedData,
+      boost::hash<std::pair<Direction<3>, ElementId<3>>>>
       neighbor_data{};
   const std::array<std::pair<Direction<3>, ElementId<3>>, 6> dir_keys = {
       {{Direction<3>::lower_xi(), ElementId<3>(1)},

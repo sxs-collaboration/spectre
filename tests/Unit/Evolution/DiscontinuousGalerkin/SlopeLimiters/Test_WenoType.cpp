@@ -11,18 +11,18 @@
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.WenoType",
                   "[SlopeLimiters][Unit]") {
-  CHECK(SlopeLimiters::WenoType::Hweno ==
-        test_enum_creation<SlopeLimiters::WenoType>("Hweno"));
-  CHECK(SlopeLimiters::WenoType::SimpleWeno ==
-        test_enum_creation<SlopeLimiters::WenoType>("SimpleWeno"));
+  CHECK(Limiters::WenoType::Hweno ==
+        test_enum_creation<Limiters::WenoType>("Hweno"));
+  CHECK(Limiters::WenoType::SimpleWeno ==
+        test_enum_creation<Limiters::WenoType>("SimpleWeno"));
 
-  CHECK(get_output(SlopeLimiters::WenoType::Hweno) == "Hweno");
-  CHECK(get_output(SlopeLimiters::WenoType::SimpleWeno) == "SimpleWeno");
+  CHECK(get_output(Limiters::WenoType::Hweno) == "Hweno");
+  CHECK(get_output(Limiters::WenoType::SimpleWeno) == "SimpleWeno");
 }
 
 // [[OutputRegex, Failed to convert "BadType" to WenoType]]
 SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.WenoType.OptionParseError",
                   "[SlopeLimiters][Unit]") {
   ERROR_TEST();
-  test_enum_creation<SlopeLimiters::WenoType>("BadType");
+  test_enum_creation<Limiters::WenoType>("BadType");
 }

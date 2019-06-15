@@ -12,7 +12,7 @@ struct Inertial;
 }  // namespace Frame
 
 // Do not limit the divergence-cleaning field Phi
-template class SlopeLimiters::Minmod<
+template class Limiters::Minmod<
     3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                   grmhd::ValenciaDivClean::Tags::TildeTau,
                   grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,

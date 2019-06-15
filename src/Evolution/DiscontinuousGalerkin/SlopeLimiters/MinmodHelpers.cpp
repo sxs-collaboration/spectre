@@ -12,7 +12,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Minmod_detail {
 
 template <size_t VolumeDim>
@@ -58,4 +58,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 
 }  // namespace Minmod_detail
-}  // namespace SlopeLimiters
+}  // namespace Limiters

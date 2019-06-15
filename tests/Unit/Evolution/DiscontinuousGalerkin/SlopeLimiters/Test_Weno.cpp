@@ -45,7 +45,7 @@
 
 // IWYU pragma: no_include "DataStructures/DataBox/Prefixes.hpp"
 // IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"
-// IWYU pragma: no_forward_declare SlopeLimiters::Weno
+// IWYU pragma: no_forward_declare Limiters::Weno
 // IWYU pragma: no_forward_declare Tags::Mean
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
@@ -67,19 +67,18 @@ void test_weno_option_parsing() noexcept {
   INFO("Test WENO option parsing");
 
   const auto hweno_1d =
-      test_creation<SlopeLimiters::Weno<1, tmpl::list<ScalarTag>>>(
-          "  Type: Hweno");
+      test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>("  Type: Hweno");
   const auto hweno_1d_default_weight =
-      test_creation<SlopeLimiters::Weno<1, tmpl::list<ScalarTag>>>(
+      test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
           "  Type: Hweno\n  NeighborWeight: 0.001");
   const auto hweno_1d_larger_weight =
-      test_creation<SlopeLimiters::Weno<1, tmpl::list<ScalarTag>>>(
+      test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
           "  Type: Hweno\n  NeighborWeight: 0.01");
   const auto hweno_1d_disabled =
-      test_creation<SlopeLimiters::Weno<1, tmpl::list<ScalarTag>>>(
+      test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
           "  Type: Hweno\n  DisableForDebugging: True");
   const auto simple_weno_1d =
-      test_creation<SlopeLimiters::Weno<1, tmpl::list<ScalarTag>>>(
+      test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
           "  Type: SimpleWeno");
 
   // Check neighbor_weight default from options, op==, op!=
@@ -89,26 +88,24 @@ void test_weno_option_parsing() noexcept {
   CHECK(hweno_1d != simple_weno_1d);
 
   const auto hweno_2d =
-      test_creation<SlopeLimiters::Weno<2, tmpl::list<ScalarTag>>>(
-          "  Type: Hweno");
-  const auto hweno_3d_larger_weight = test_creation<
-      SlopeLimiters::Weno<3, tmpl::list<ScalarTag, VectorTag<3>>>>(
-      "  Type: Hweno\n  NeighborWeight: 0.01\n  DisableForDebugging: True");
+      test_creation<Limiters::Weno<2, tmpl::list<ScalarTag>>>("  Type: Hweno");
+  const auto hweno_3d_larger_weight =
+      test_creation<Limiters::Weno<3, tmpl::list<ScalarTag, VectorTag<3>>>>(
+          "  Type: Hweno\n  NeighborWeight: 0.01\n  DisableForDebugging: True");
 
   // Check that creation from options gives correct object
-  const SlopeLimiters::Weno<1, tmpl::list<ScalarTag>> expected_hweno_1d(
-      SlopeLimiters::WenoType::Hweno, 0.001);
-  const SlopeLimiters::Weno<1, tmpl::list<ScalarTag>>
-      expected_hweno_1d_larger_weight(SlopeLimiters::WenoType::Hweno, 0.01);
-  const SlopeLimiters::Weno<1, tmpl::list<ScalarTag>>
-      expected_hweno_1d_disabled(SlopeLimiters::WenoType::Hweno, 0.001, true);
-  const SlopeLimiters::Weno<1, tmpl::list<ScalarTag>> expected_simple_weno_1d(
-      SlopeLimiters::WenoType::SimpleWeno, 0.001);
-  const SlopeLimiters::Weno<2, tmpl::list<ScalarTag>> expected_hweno_2d(
-      SlopeLimiters::WenoType::Hweno, 0.001);
-  const SlopeLimiters::Weno<3, tmpl::list<ScalarTag, VectorTag<3>>>
-      expected_hweno_3d_larger_weight(SlopeLimiters::WenoType::Hweno, 0.01,
-                                      true);
+  const Limiters::Weno<1, tmpl::list<ScalarTag>> expected_hweno_1d(
+      Limiters::WenoType::Hweno, 0.001);
+  const Limiters::Weno<1, tmpl::list<ScalarTag>>
+      expected_hweno_1d_larger_weight(Limiters::WenoType::Hweno, 0.01);
+  const Limiters::Weno<1, tmpl::list<ScalarTag>> expected_hweno_1d_disabled(
+      Limiters::WenoType::Hweno, 0.001, true);
+  const Limiters::Weno<1, tmpl::list<ScalarTag>> expected_simple_weno_1d(
+      Limiters::WenoType::SimpleWeno, 0.001);
+  const Limiters::Weno<2, tmpl::list<ScalarTag>> expected_hweno_2d(
+      Limiters::WenoType::Hweno, 0.001);
+  const Limiters::Weno<3, tmpl::list<ScalarTag, VectorTag<3>>>
+      expected_hweno_3d_larger_weight(Limiters::WenoType::Hweno, 0.01, true);
   CHECK(hweno_1d == expected_hweno_1d);
   CHECK(hweno_1d_larger_weight == expected_hweno_1d_larger_weight);
   CHECK(hweno_1d_disabled == expected_hweno_1d_disabled);
@@ -119,8 +116,8 @@ void test_weno_option_parsing() noexcept {
 
 void test_weno_serialization() noexcept {
   INFO("Test WENO serialization");
-  const SlopeLimiters::Weno<1, tmpl::list<ScalarTag>> weno(
-      SlopeLimiters::WenoType::Hweno, 0.01, true);
+  const Limiters::Weno<1, tmpl::list<ScalarTag>> weno(Limiters::WenoType::Hweno,
+                                                      0.01, true);
   test_serialization(weno);
 }
 
@@ -142,10 +139,9 @@ void test_package_data_work(
           make_not_null(&generator), make_not_null(&dist), 0.0);
 
   using TagList = tmpl::list<ScalarTag, VectorTag<VolumeDim>>;
-  const SlopeLimiters::Weno<VolumeDim, TagList> weno(
-      SlopeLimiters::WenoType::Hweno, 0.001);
-  typename SlopeLimiters::Weno<VolumeDim, TagList>::PackagedData
-      packaged_data{};
+  const Limiters::Weno<VolumeDim, TagList> weno(Limiters::WenoType::Hweno,
+                                                0.001);
+  typename Limiters::Weno<VolumeDim, TagList>::PackagedData packaged_data{};
 
   weno.package_data(make_not_null(&packaged_data), input_scalar, input_vector,
                     mesh, element_size, orientation_map);
@@ -217,8 +213,8 @@ void test_weno_tci_work(
     const Mesh<VolumeDim>& mesh, const Scalar<DataVector>& scalar,
     const std::array<double, 2 * VolumeDim>& means_no_activation,
     const std::array<double, 2 * VolumeDim>& means_activation) noexcept {
-  using Weno = SlopeLimiters::Weno<VolumeDim, tmpl::list<ScalarTag>>;
-  const auto element = TestHelpers::SlopeLimiters::make_element<VolumeDim>();
+  using Weno = Limiters::Weno<VolumeDim, tmpl::list<ScalarTag>>;
+  const auto element = TestHelpers::Limiters::make_element<VolumeDim>();
   const auto logical_coords = logical_coordinates(mesh);
   const auto element_size = make_array<VolumeDim>(1.2);
 
@@ -243,7 +239,7 @@ void test_weno_tci_work(
   }
 
   const double neighbor_linear_weight = 0.001;
-  const Weno sweno(SlopeLimiters::WenoType::SimpleWeno, neighbor_linear_weight);
+  const Weno sweno(Limiters::WenoType::SimpleWeno, neighbor_linear_weight);
   auto scalar_to_limit = scalar;
   bool activated = sweno(make_not_null(&scalar_to_limit), element, mesh,
                          element_size, neighbor_data);
@@ -334,7 +330,7 @@ using VariablesMap = std::unordered_map<
 template <size_t VolumeDim>
 std::unordered_map<
     std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-    typename SlopeLimiters::Weno<
+    typename Limiters::Weno<
         VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData,
     boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
 make_neighbor_data_from_neighbor_vars(
@@ -357,7 +353,7 @@ make_neighbor_data_from_neighbor_vars(
 
   std::unordered_map<
       std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-      typename SlopeLimiters::Weno<
+      typename Limiters::Weno<
           VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData,
       boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
       neighbor_data{};
@@ -378,13 +374,13 @@ make_neighbor_data_from_neighbor_vars(
 
 template <size_t VolumeDim>
 void test_weno_work(
-    const SlopeLimiters::WenoType& weno_type, const Element<VolumeDim>& element,
+    const Limiters::WenoType& weno_type, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const Variables<tmpl::list<ScalarTag, VectorTag<VolumeDim>>>& local_vars,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        typename SlopeLimiters::Weno<
+        typename Limiters::Weno<
             VolumeDim,
             tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
@@ -416,8 +412,8 @@ void test_weno_work(
   }
 
   const double neighbor_linear_weight = 0.001;
-  using Weno = SlopeLimiters::Weno<VolumeDim,
-                                   tmpl::list<ScalarTag, VectorTag<VolumeDim>>>;
+  using Weno =
+      Limiters::Weno<VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>;
 
   auto scalar = get<ScalarTag>(local_vars);
   auto vector = get<VectorTag<VolumeDim>>(local_vars);
@@ -429,16 +425,15 @@ void test_weno_work(
   CHECK(activated);
 
   auto expected_scalar = get<ScalarTag>(local_vars);
-  SlopeLimiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
+  Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
       make_not_null(&expected_scalar), mesh, neighbor_linear_weight,
       expected_neighbor_modified_vars);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_scalar, scalar, local_approx);
 
   auto expected_vector = get<VectorTag<VolumeDim>>(local_vars);
-  SlopeLimiters::Weno_detail::reconstruct_from_weighted_sum<
-      VectorTag<VolumeDim>>(make_not_null(&expected_vector), mesh,
-                            neighbor_linear_weight,
-                            expected_neighbor_modified_vars);
+  Limiters::Weno_detail::reconstruct_from_weighted_sum<VectorTag<VolumeDim>>(
+      make_not_null(&expected_vector), mesh, neighbor_linear_weight,
+      expected_neighbor_modified_vars);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector, local_approx);
 }
 
@@ -446,8 +441,8 @@ void test_simple_weno_1d(const std::unordered_set<Direction<1>>&
                              directions_of_external_boundaries = {}) noexcept {
   INFO("Test simple WENO limiter in 1D");
   CAPTURE(directions_of_external_boundaries);
-  const auto element = TestHelpers::SlopeLimiters::make_element<1>(
-      directions_of_external_boundaries);
+  const auto element =
+      TestHelpers::Limiters::make_element<1>(directions_of_external_boundaries);
   const auto mesh =
       Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
@@ -502,17 +497,16 @@ void test_simple_weno_1d(const std::unordered_set<Direction<1>>&
   const auto neighbor_data = make_neighbor_data_from_neighbor_vars(
       element, mesh, element_size, neighbor_vars);
 
-  test_weno_work<1>(SlopeLimiters::WenoType::SimpleWeno, element, mesh,
-                    element_size, local_vars, neighbor_data,
-                    neighbor_modified_vars);
+  test_weno_work<1>(Limiters::WenoType::SimpleWeno, element, mesh, element_size,
+                    local_vars, neighbor_data, neighbor_modified_vars);
 }
 
 void test_simple_weno_2d(const std::unordered_set<Direction<2>>&
                              directions_of_external_boundaries = {}) noexcept {
   INFO("Test simple WENO limiter in 2D");
   CAPTURE(directions_of_external_boundaries);
-  const auto element = TestHelpers::SlopeLimiters::make_element<2>(
-      directions_of_external_boundaries);
+  const auto element =
+      TestHelpers::Limiters::make_element<2>(directions_of_external_boundaries);
   const auto mesh =
       Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
@@ -610,17 +604,16 @@ void test_simple_weno_2d(const std::unordered_set<Direction<2>>&
   const auto neighbor_data = make_neighbor_data_from_neighbor_vars(
       element, mesh, element_size, neighbor_vars);
 
-  test_weno_work<2>(SlopeLimiters::WenoType::SimpleWeno, element, mesh,
-                    element_size, local_vars, neighbor_data,
-                    neighbor_modified_vars);
+  test_weno_work<2>(Limiters::WenoType::SimpleWeno, element, mesh, element_size,
+                    local_vars, neighbor_data, neighbor_modified_vars);
 }
 
 void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
                              directions_of_external_boundaries = {}) noexcept {
   INFO("Test simple WENO limiter in 3D");
   CAPTURE(directions_of_external_boundaries);
-  const auto element = TestHelpers::SlopeLimiters::make_element<3>(
-      directions_of_external_boundaries);
+  const auto element =
+      TestHelpers::Limiters::make_element<3>(directions_of_external_boundaries);
   const auto mesh = Mesh<3>({{3, 4, 5}}, Spectral::Basis::Legendre,
                             Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
@@ -768,17 +761,17 @@ void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
 
   // The 3D Simple WENO solution has slightly larger numerical error
   Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
-  test_weno_work<3>(SlopeLimiters::WenoType::SimpleWeno, element, mesh,
-                    element_size, local_vars, neighbor_data,
-                    neighbor_modified_vars, custom_approx);
+  test_weno_work<3>(Limiters::WenoType::SimpleWeno, element, mesh, element_size,
+                    local_vars, neighbor_data, neighbor_modified_vars,
+                    custom_approx);
 }
 
 void test_hweno_1d(const std::unordered_set<Direction<1>>&
                        directions_of_external_boundaries = {}) noexcept {
   INFO("Test Hermite WENO limiter in 1D");
   CAPTURE(directions_of_external_boundaries);
-  const auto element = TestHelpers::SlopeLimiters::make_element<1>(
-      directions_of_external_boundaries);
+  const auto element =
+      TestHelpers::Limiters::make_element<1>(directions_of_external_boundaries);
   const auto mesh =
       Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
@@ -836,11 +829,11 @@ void test_hweno_1d(const std::unordered_set<Direction<1>>&
         Variables<tmpl::list<ScalarTag, VectorTag<1>>>(
             mesh.number_of_grid_points());
     auto& mod_scalar = get<ScalarTag>(neighbor_modified_vars.at(lower_xi));
-    SlopeLimiters::hweno_modified_neighbor_solution<ScalarTag>(
+    Limiters::hweno_modified_neighbor_solution<ScalarTag>(
         make_not_null(&mod_scalar), get<ScalarTag>(local_vars), element, mesh,
         neighbor_data, lower_xi);
     auto& mod_vector = get<VectorTag<1>>(neighbor_modified_vars.at(lower_xi));
-    SlopeLimiters::hweno_modified_neighbor_solution<VectorTag<1>>(
+    Limiters::hweno_modified_neighbor_solution<VectorTag<1>>(
         make_not_null(&mod_vector), get<VectorTag<1>>(local_vars), element,
         mesh, neighbor_data, lower_xi);
   }
@@ -850,16 +843,16 @@ void test_hweno_1d(const std::unordered_set<Direction<1>>&
         Variables<tmpl::list<ScalarTag, VectorTag<1>>>(
             mesh.number_of_grid_points());
     auto& mod_scalar = get<ScalarTag>(neighbor_modified_vars.at(upper_xi));
-    SlopeLimiters::hweno_modified_neighbor_solution<ScalarTag>(
+    Limiters::hweno_modified_neighbor_solution<ScalarTag>(
         make_not_null(&mod_scalar), get<ScalarTag>(local_vars), element, mesh,
         neighbor_data, upper_xi);
     auto& mod_vector = get<VectorTag<1>>(neighbor_modified_vars.at(upper_xi));
-    SlopeLimiters::hweno_modified_neighbor_solution<VectorTag<1>>(
+    Limiters::hweno_modified_neighbor_solution<VectorTag<1>>(
         make_not_null(&mod_vector), get<VectorTag<1>>(local_vars), element,
         mesh, neighbor_data, upper_xi);
   }
 
-  test_weno_work<1>(SlopeLimiters::WenoType::Hweno, element, mesh, element_size,
+  test_weno_work<1>(Limiters::WenoType::Hweno, element, mesh, element_size,
                     local_vars, neighbor_data, neighbor_modified_vars);
 }
 

@@ -7,4 +7,4 @@
 
 // IWYU pragma: no_include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
 
-template class SlopeLimiters::Minmod<1, tmpl::list<Burgers::Tags::U>>;
+template class Limiters::Minmod<1, tmpl::list<Burgers::Tags::U>>;

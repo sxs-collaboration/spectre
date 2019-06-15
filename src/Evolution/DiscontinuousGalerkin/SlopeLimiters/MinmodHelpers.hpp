@@ -30,7 +30,7 @@ struct hash;
 }  // namespace boost
 /// \endcond
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Minmod_detail {
 
 // Allocate the buffers `u_lin_buffer` and `boundary_buffer` to the correct
@@ -117,4 +117,4 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_means(
 }
 
 }  // namespace Minmod_detail
-}  // namespace SlopeLimiters
+}  // namespace Limiters

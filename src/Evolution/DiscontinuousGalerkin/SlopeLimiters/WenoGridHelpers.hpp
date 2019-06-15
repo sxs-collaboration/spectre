@@ -16,7 +16,7 @@ template <size_t>
 class Mesh;
 /// \endcond
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Weno_detail {
 
 // Check that an element has just one neighbor in a particular direction, and
@@ -62,4 +62,4 @@ std::array<DataVector, VolumeDim> local_grid_points_in_neighbor_logical_coords(
     const Direction<VolumeDim>& direction_to_neighbor) noexcept;
 
 }  // namespace Weno_detail
-}  // namespace SlopeLimiters
+}  // namespace Limiters

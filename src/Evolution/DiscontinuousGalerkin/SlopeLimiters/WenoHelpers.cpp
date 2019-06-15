@@ -129,7 +129,7 @@ Matrix compute_indicator_matrix(const Mesh<VolumeDim>& mesh) noexcept {
 
 }  // namespace
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Weno_detail {
 
 template <size_t VolumeDim>
@@ -183,4 +183,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 
 }  // namespace Weno_detail
-}  // namespace SlopeLimiters
+}  // namespace Limiters

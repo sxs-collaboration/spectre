@@ -36,7 +36,7 @@ void test_oscillation_indicator_1d() noexcept {
 
   const auto data = DataVector{1. + x - pow<4>(x)};
   const auto indicator =
-      SlopeLimiters::Weno_detail::oscillation_indicator(data, mesh);
+      Limiters::Weno_detail::oscillation_indicator(data, mesh);
 
   // Expected result computed in Mathematica:
   // f[x_] := 1 + x - x^4
@@ -55,7 +55,7 @@ void test_oscillation_indicator_2d() noexcept {
   const auto data =
       DataVector{square(x) + cube(y) - 2.5 * x * y + square(x) * y};
   const auto indicator =
-      SlopeLimiters::Weno_detail::oscillation_indicator(data, mesh);
+      Limiters::Weno_detail::oscillation_indicator(data, mesh);
 
   // Expected result computed in Mathematica:
   // g[x_, y_] := x^2 + y^3 - (5/2) x y + x^2 y
@@ -79,7 +79,7 @@ void test_oscillation_indicator_3d() noexcept {
   const auto data = DataVector{square(x) + 2. * y + z - 6. * cube(z) -
                                3. * x * square(y) * cube(z) - x * y + y * z};
   const auto indicator =
-      SlopeLimiters::Weno_detail::oscillation_indicator(data, mesh);
+      Limiters::Weno_detail::oscillation_indicator(data, mesh);
 
   // Expected result computed in Mathematica:
   // h[x_, y_, z_] := x^2 + 2 y + z - 6 z^3 - 3 x y^2 z^3 - x y + y z
@@ -139,7 +139,7 @@ void test_reconstruction_1d() noexcept {
   get<ScalarTag>(vars_upper_xi) =
       ScalarTag::type{{{evaluate_polynomial({{0., 0., 1., 1., 2.}})}}};
 
-  SlopeLimiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
+  Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
       make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars);
 
   // Expected result computed in Mathematica by computing oscillation indicator
@@ -199,7 +199,7 @@ void test_reconstruction_2d() noexcept {
       {{evaluate_polynomial({{1., 0., 0., 0.5, 1., 0., 0., 0., 0.}}),
         evaluate_polynomial({{0., 0., 0., 1., 0., 0., 1., 1., 1.}})}}};
 
-  SlopeLimiters::Weno_detail::reconstruct_from_weighted_sum<VectorTag<2>>(
+  Limiters::Weno_detail::reconstruct_from_weighted_sum<VectorTag<2>>(
       make_not_null(&vector), mesh, neighbor_linear_weight, neighbor_vars);
 
   // Expected result computed in Mathematica by computing oscillation indicator
@@ -270,7 +270,7 @@ void test_reconstruction_3d() noexcept {
   get<ScalarTag>(vars_upper_zeta) =
       ScalarTag::type{{{evaluate_polynomial({{0.1, 0., 0.5, 0.2, 0.2, 0.2}})}}};
 
-  SlopeLimiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
+  Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
       make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars);
 
   // Expected result computed in Mathematica by computing oscillation indicator

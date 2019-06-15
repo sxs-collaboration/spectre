@@ -12,7 +12,7 @@
 #include "Domain/OrientationMap.hpp"
 
 namespace TestHelpers {
-namespace SlopeLimiters {
+namespace Limiters {
 
 // Construct a Neighbors object with one neighboring element.
 template <size_t VolumeDim>
@@ -41,5 +41,5 @@ Element<VolumeDim> make_element(
   return Element<VolumeDim>{ElementId<VolumeDim>{0}, neighbors};
 }
 
-}  // namespace SlopeLimiters
+}  // namespace Limiters
 }  // namespace TestHelpers

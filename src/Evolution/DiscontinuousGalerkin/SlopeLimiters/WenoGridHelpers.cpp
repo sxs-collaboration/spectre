@@ -13,7 +13,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Weno_detail {
 
 template <size_t VolumeDim>
@@ -120,4 +120,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #undef INSTANTIATE
 
 }  // namespace Weno_detail
-}  // namespace SlopeLimiters
+}  // namespace Limiters

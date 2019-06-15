@@ -47,10 +47,10 @@ namespace PUP {
 class er;
 }  // namespace PUP
 
-namespace SlopeLimiters {
+namespace Limiters {
 template <size_t VolumeDim, typename TagsToLimit>
 class Minmod;
-}  // namespace SlopeLimiters
+}  // namespace Limiters
 
 namespace Tags {
 template <size_t Dim, typename Frame>
@@ -64,7 +64,7 @@ struct SizeOfElement;
 }  // namespace Tags
 /// \endcond
 
-namespace SlopeLimiters {
+namespace Limiters {
 
 /// \ingroup LimitersGroup
 /// \brief A general minmod slope limiter
@@ -133,7 +133,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
  public:
   /// \brief The MinmodType
   ///
-  /// One of `SlopeLimiters::MinmodType`. See `SlopeLimiters::Minmod`
+  /// One of `Limiters::MinmodType`. See `Limiters::Minmod`
   /// documentation for details. Note in particular that on grids with more than
   /// two points per dimension, the recommended type is `LambdaPiN`.
   struct Type {
@@ -142,7 +142,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   };
   /// \brief The TVBM constant
   ///
-  /// See `SlopeLimiters::Minmod` documentation for details.
+  /// See `Limiters::Minmod` documentation for details.
   struct TvbmConstant {
     using type = double;
     static type default_value() noexcept { return 0.0; }
@@ -283,4 +283,4 @@ template <size_t VolumeDim, typename TagList>
 bool operator!=(const Minmod<VolumeDim, TagList>& lhs,
                 const Minmod<VolumeDim, TagList>& rhs) noexcept;
 
-}  // namespace SlopeLimiters
+}  // namespace Limiters

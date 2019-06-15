@@ -116,8 +116,8 @@ struct component {
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<SlopeLimiters::Actions::SendData<Metavariables>,
-                     SlopeLimiters::Actions::Limit<Metavariables>>>>;
+          tmpl::list<Limiters::Actions::SendData<Metavariables>,
+                     Limiters::Actions::Limit<Metavariables>>>>;
 };
 
 template <size_t Dim>
@@ -137,7 +137,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
   using metavariables = Metavariables<2>;
   using my_component = component<2, metavariables>;
   using limiter_comm_tag =
-      SlopeLimiters::Tags::LimiterCommunicationTag<metavariables>;
+      Limiters::Tags::LimiterCommunicationTag<metavariables>;
 
   const Mesh<2> mesh{
       {{3, 4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};
@@ -301,7 +301,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.NoNeighbors",
   using metavariables = Metavariables<2>;
   using my_component = component<2, metavariables>;
   using limiter_comm_tag =
-      SlopeLimiters::Tags::LimiterCommunicationTag<metavariables>;
+      Limiters::Tags::LimiterCommunicationTag<metavariables>;
 
   const Mesh<2> mesh{
       {{3, 4}}, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto};

@@ -37,7 +37,7 @@ template <size_t>
 class Mesh;
 /// \endcond
 
-namespace SlopeLimiters {
+namespace Limiters {
 namespace Hweno_detail {
 
 // Caching class that holds various precomputed terms used in the constrained-
@@ -551,4 +551,4 @@ void hweno_modified_neighbor_solution(
   }
 }
 
-}  // namespace SlopeLimiters
+}  // namespace Limiters

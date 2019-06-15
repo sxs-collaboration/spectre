@@ -44,7 +44,7 @@ template <size_t VolumeDim>
 bool wrap_allocations_and_tci(
     const gsl::not_null<double*> u_mean,
     const gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
-    const SlopeLimiters::MinmodType& minmod_type, const double tvbm_constant,
+    const Limiters::MinmodType& minmod_type, const double tvbm_constant,
     const DataVector& u, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
@@ -63,7 +63,7 @@ bool wrap_allocations_and_tci(
   const auto& volume_and_slice_indices =
       volume_and_slice_buffer_and_indices.second;
 
-  return SlopeLimiters::Minmod_detail::troubled_cell_indicator(
+  return Limiters::Minmod_detail::troubled_cell_indicator(
       u_mean, u_limited_slopes, make_not_null(&u_lin_buffer),
       make_not_null(&boundary_buffer), minmod_type, tvbm_constant, u, element,
       mesh, element_size, effective_neighbor_means, effective_neighbor_sizes,
@@ -101,7 +101,7 @@ auto make_six_neighbors(const std::array<double, 6>& values) noexcept {
 // mean and reduced slopes.
 template <size_t VolumeDim>
 void test_minmod_tci_activates(
-    const SlopeLimiters::MinmodType& minmod_type, const double tvbm_constant,
+    const Limiters::MinmodType& minmod_type, const double tvbm_constant,
     const DataVector& input, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
@@ -122,7 +122,7 @@ void test_minmod_tci_activates(
 // Test that TCI does not detect a troubled cell.
 template <size_t VolumeDim>
 void test_minmod_tci_does_not_activate(
-    const SlopeLimiters::MinmodType& minmod_type, const double tvbm_constant,
+    const Limiters::MinmodType& minmod_type, const double tvbm_constant,
     const DataVector& input, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
@@ -136,7 +136,7 @@ void test_minmod_tci_does_not_activate(
       tvbm_constant, input, element, mesh, element_size,
       effective_neighbor_means, effective_neighbor_sizes);
   CHECK_FALSE(tci_activated);
-  if (minmod_type != SlopeLimiters::MinmodType::LambdaPiN) {
+  if (minmod_type != Limiters::MinmodType::LambdaPiN) {
     CHECK(u_mean == approx(mean_value(input, mesh)));
     CHECK_ITERABLE_APPROX(u_limited_slopes, original_slopes);
   }
@@ -144,12 +144,12 @@ void test_minmod_tci_does_not_activate(
 
 void test_tci_on_linear_function(
     const size_t number_of_grid_points,
-    const SlopeLimiters::MinmodType& minmod_type) noexcept {
+    const Limiters::MinmodType& minmod_type) noexcept {
   INFO("Testing linear function...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
   const double tvbm_constant = 0.0;
-  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
+  const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<1>(2.0);
@@ -179,7 +179,7 @@ void test_tci_on_linear_function(
   // LambdaPi1 or LambdaPiN limiter. We can re-use the same test cases by
   // correspondingly scaling the slope:
   const double muscl_slope_factor =
-      (minmod_type == SlopeLimiters::MinmodType::Muscl) ? 0.5 : 1.0;
+      (minmod_type == Limiters::MinmodType::Muscl) ? 0.5 : 1.0;
   const double eps = 100.0 * std::numeric_limits<double>::epsilon();
 
   // Test a positive-slope function
@@ -237,12 +237,12 @@ void test_tci_on_linear_function(
 
 void test_tci_on_quadratic_function(
     const size_t number_of_grid_points,
-    const SlopeLimiters::MinmodType& minmod_type) noexcept {
+    const Limiters::MinmodType& minmod_type) noexcept {
   INFO("Testing quadratic function...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
   const double tvbm_constant = 0.0;
-  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
+  const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<1>(2.0);
@@ -269,7 +269,7 @@ void test_tci_on_quadratic_function(
   };
 
   const double muscl_slope_factor =
-      (minmod_type == SlopeLimiters::MinmodType::Muscl) ? 0.5 : 1.0;
+      (minmod_type == Limiters::MinmodType::Muscl) ? 0.5 : 1.0;
 
   const auto input = [&muscl_slope_factor, &mesh ]() noexcept {
     const auto coords = logical_coordinates(mesh);
@@ -301,11 +301,11 @@ void test_tci_on_quadratic_function(
 
 void test_tci_with_tvbm_correction(
     const size_t number_of_grid_points,
-    const SlopeLimiters::MinmodType& minmod_type) noexcept {
+    const Limiters::MinmodType& minmod_type) noexcept {
   INFO("Testing TVBM correction...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
-  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
+  const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<1>(2.0);
@@ -346,10 +346,9 @@ void test_tci_with_tvbm_correction(
   // The TVBM constant sets a threshold slope, below which the solution will not
   // be limited. We test this by increasing the TVBM constant until the limiter
   // stops activating / stops changing the solution.
-  const double left =
-      (minmod_type == SlopeLimiters::MinmodType::Muscl) ? 8.4 : 15.0;
+  const double left = (minmod_type == Limiters::MinmodType::Muscl) ? 8.4 : 15.0;
   const double right =
-      (minmod_type == SlopeLimiters::MinmodType::Muscl) ? 34.8 : 30.0;
+      (minmod_type == Limiters::MinmodType::Muscl) ? 34.8 : 30.0;
   test_activates(tvbm_m0, input, left, right, 6.6);
   test_activates(tvbm_m1, input, left, right, 6.6);
   test_does_not_activate(tvbm_m2, input, left, right, 7.2);
@@ -361,7 +360,7 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
     const size_t number_of_grid_points) noexcept {
   INFO("Testing LambdaPiN-TVBM correction...");
   CAPTURE(number_of_grid_points);
-  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
+  const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
@@ -372,9 +371,9 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
       const double left, const double right,
       const double expected_slope) noexcept {
     const auto expected_slopes = make_array<1>(expected_slope);
-    test_minmod_tci_activates(SlopeLimiters::MinmodType::LambdaPiN,
-                              tvbm_constant, local_input, element, mesh,
-                              element_size, make_two_neighbors(left, right),
+    test_minmod_tci_activates(Limiters::MinmodType::LambdaPiN, tvbm_constant,
+                              local_input, element, mesh, element_size,
+                              make_two_neighbors(left, right),
                               make_two_neighbors(2.0, 2.0), expected_slopes);
   };
   const auto test_does_not_activate = [&element, &mesh, &element_size ](
@@ -385,8 +384,8 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
     const auto original_slopes =
         make_array<1>(std::numeric_limits<double>::signaling_NaN());
     test_minmod_tci_does_not_activate(
-        SlopeLimiters::MinmodType::LambdaPiN, tvbm_constant, local_input,
-        element, mesh, element_size, make_two_neighbors(left, right),
+        Limiters::MinmodType::LambdaPiN, tvbm_constant, local_input, element,
+        mesh, element_size, make_two_neighbors(left, right),
         make_two_neighbors(2.0, 2.0), original_slopes);
   };
 
@@ -426,9 +425,8 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
   test_does_not_activate(m2, input, 0.0, 9.99);
 }
 
-void test_tci_at_boundary(
-    const size_t number_of_grid_points,
-    const SlopeLimiters::MinmodType& minmod_type) noexcept {
+void test_tci_at_boundary(const size_t number_of_grid_points,
+                          const Limiters::MinmodType& minmod_type) noexcept {
   INFO("Testing limiter at boundary...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
@@ -438,7 +436,7 @@ void test_tci_at_boundary(
   const auto element_size = make_array<1>(2.0);
 
   const double muscl_slope_factor =
-      (minmod_type == SlopeLimiters::MinmodType::Muscl) ? 0.5 : 1.0;
+      (minmod_type == Limiters::MinmodType::Muscl) ? 0.5 : 1.0;
   const auto input = [&muscl_slope_factor, &mesh ]() noexcept {
     const auto coords = logical_coordinates(mesh);
     return DataVector{1.2 * muscl_slope_factor * get<0>(coords)};
@@ -447,7 +445,7 @@ void test_tci_at_boundary(
 
   // Test with element that has external lower-xi boundary
   const auto element_at_lower_xi_boundary =
-      TestHelpers::SlopeLimiters::make_element<1>({{Direction<1>::lower_xi()}});
+      TestHelpers::Limiters::make_element<1>({{Direction<1>::lower_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
     test_minmod_tci_activates(
         minmod_type, tvbm_constant, input, element_at_lower_xi_boundary, mesh,
@@ -458,7 +456,7 @@ void test_tci_at_boundary(
 
   // Test with element that has external upper-xi boundary
   const auto element_at_upper_xi_boundary =
-      TestHelpers::SlopeLimiters::make_element<1>({{Direction<1>::upper_xi()}});
+      TestHelpers::Limiters::make_element<1>({{Direction<1>::upper_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
     test_minmod_tci_activates(
         minmod_type, tvbm_constant, input, element_at_upper_xi_boundary, mesh,
@@ -470,12 +468,12 @@ void test_tci_at_boundary(
 
 void test_tci_with_different_size_neighbor(
     const size_t number_of_grid_points,
-    const SlopeLimiters::MinmodType& minmod_type) noexcept {
+    const Limiters::MinmodType& minmod_type) noexcept {
   INFO("Testing limiter with neighboring elements of different size...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
   const double tvbm_constant = 0.0;
-  const auto element = TestHelpers::SlopeLimiters::make_element<1>();
+  const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const double dx = 1.0;
@@ -505,7 +503,7 @@ void test_tci_with_different_size_neighbor(
   };
 
   const double muscl_slope_factor =
-      (minmod_type == SlopeLimiters::MinmodType::Muscl) ? 0.5 : 1.0;
+      (minmod_type == Limiters::MinmodType::Muscl) ? 0.5 : 1.0;
   const double eps = 100.0 * std::numeric_limits<double>::epsilon();
 
   const auto input = [&muscl_slope_factor, &mesh ]() noexcept {
@@ -548,9 +546,9 @@ void test_tci_with_different_size_neighbor(
 // Check that each combination has the expected TCI behavior.
 void test_minmod_tci_1d() noexcept {
   INFO("Testing MinmodTci in 1D");
-  for (const auto& minmod_type : {SlopeLimiters::MinmodType::LambdaPi1,
-                                  SlopeLimiters::MinmodType::LambdaPiN,
-                                  SlopeLimiters::MinmodType::Muscl}) {
+  for (const auto& minmod_type :
+       {Limiters::MinmodType::LambdaPi1, Limiters::MinmodType::LambdaPiN,
+        Limiters::MinmodType::Muscl}) {
     for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
       test_tci_on_linear_function(num_grid_points, minmod_type);
       test_tci_with_tvbm_correction(num_grid_points, minmod_type);
@@ -568,9 +566,9 @@ void test_minmod_tci_1d() noexcept {
 // expected.
 void test_minmod_tci_2d() noexcept {
   INFO("Testing MinmodTci in 2D");
-  const auto minmod_type = SlopeLimiters::MinmodType::LambdaPi1;
+  const auto minmod_type = Limiters::MinmodType::LambdaPi1;
   const double tvbm_constant = 0.0;
-  const auto element = TestHelpers::SlopeLimiters::make_element<2>();
+  const auto element = TestHelpers::Limiters::make_element<2>();
   const Mesh<2> mesh(3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<2>(2.0);
@@ -624,9 +622,9 @@ void test_minmod_tci_2d() noexcept {
 // expected.
 void test_minmod_tci_3d() noexcept {
   INFO("Testing MinmodTci in 3D");
-  const auto minmod_type = SlopeLimiters::MinmodType::LambdaPi1;
+  const auto minmod_type = Limiters::MinmodType::LambdaPi1;
   const double tvbm_constant = 0.0;
-  const auto element = TestHelpers::SlopeLimiters::make_element<3>();
+  const auto element = TestHelpers::Limiters::make_element<3>();
   const Mesh<3> mesh(3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<3>(2.0);
@@ -698,9 +696,9 @@ void test_minmod_tci_several_tensors() noexcept {
   INFO("Testing MinmodTci action on several tensors");
   // Test that TCI returns true if just one component needs limiting, which
   // we do by limiting a scalar and vector in 3D
-  const auto minmod_type = SlopeLimiters::MinmodType::LambdaPi1;
+  const auto minmod_type = Limiters::MinmodType::LambdaPi1;
   const double tvbm_constant = 0.0;
-  const auto element = TestHelpers::SlopeLimiters::make_element<3>();
+  const auto element = TestHelpers::Limiters::make_element<3>();
   const size_t number_of_grid_points = 2;
   const Mesh<3> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -774,45 +772,50 @@ void test_minmod_tci_several_tensors() noexcept {
   get<2>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = 1.8;
   get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = 3.1;
   get<2>(get<::Tags::Mean<VectorTag<3>>>(upper_zeta_neighbor.means)) = 0.5;
-  bool activation = SlopeLimiters::Minmod_detail::troubled_cell_indicator<
-      3, TestPackagedData, ScalarTag, VectorTag<3>>(
-      local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
-      element, mesh, element_size);
+  bool activation =
+      Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
+                                                       ScalarTag, VectorTag<3>>(
+          local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
+          element, mesh, element_size);
   CHECK_FALSE(activation);
 
   // Case where the scalar triggers limiting
   get(get<::Tags::Mean<ScalarTag>>(upper_xi_neighbor.means)) = 2.0;
-  activation = SlopeLimiters::Minmod_detail::troubled_cell_indicator<
-      3, TestPackagedData, ScalarTag, VectorTag<3>>(
-      local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
-      element, mesh, element_size);
+  activation =
+      Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
+                                                       ScalarTag, VectorTag<3>>(
+          local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
+          element, mesh, element_size);
   CHECK(activation);
 
   // Case where the vector x-component triggers limiting
   get(get<::Tags::Mean<ScalarTag>>(upper_xi_neighbor.means)) = 3.3;
   get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -0.1;
-  activation = SlopeLimiters::Minmod_detail::troubled_cell_indicator<
-      3, TestPackagedData, ScalarTag, VectorTag<3>>(
-      local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
-      element, mesh, element_size);
+  activation =
+      Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
+                                                       ScalarTag, VectorTag<3>>(
+          local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
+          element, mesh, element_size);
   CHECK(activation);
 
   // Case where the vector y-component triggers limiting
   get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -1.8;
   get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = -0.2;
-  activation = SlopeLimiters::Minmod_detail::troubled_cell_indicator<
-      3, TestPackagedData, ScalarTag, VectorTag<3>>(
-      local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
-      element, mesh, element_size);
+  activation =
+      Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
+                                                       ScalarTag, VectorTag<3>>(
+          local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
+          element, mesh, element_size);
   CHECK(activation);
 
   // Case where the vector z-component triggers limiting
   get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = 0.1;
   get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_xi_neighbor.means)) = 1.9;
-  activation = SlopeLimiters::Minmod_detail::troubled_cell_indicator<
-      3, TestPackagedData, ScalarTag, VectorTag<3>>(
-      local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
-      element, mesh, element_size);
+  activation =
+      Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
+                                                       ScalarTag, VectorTag<3>>(
+          local_scalar, local_vector, neighbor_data, minmod_type, tvbm_constant,
+          element, mesh, element_size);
   CHECK(activation);
 }
 

@@ -9,26 +9,25 @@ class Option;
 template <typename T>
 struct create_from_yaml;
 
-namespace SlopeLimiters {
+namespace Limiters {
 /// \ingroup LimitersGroup
 /// \brief Possible types of the minmod slope limiter and/or troubled-cell
 /// indicator.
 ///
-/// \see SlopeLimiters::Minmod for a description and reference.
+/// \see Limiters::Minmod for a description and reference.
 enum class MinmodType { LambdaPi1, LambdaPiN, Muscl };
 
 std::ostream& operator<<(std::ostream& os,
-                         const SlopeLimiters::MinmodType& minmod_type);
-}  // namespace SlopeLimiters
+                         const Limiters::MinmodType& minmod_type);
+}  // namespace Limiters
 
 template <>
-struct create_from_yaml<SlopeLimiters::MinmodType> {
+struct create_from_yaml<Limiters::MinmodType> {
   template <typename Metavariables>
-  static SlopeLimiters::MinmodType create(const Option& options) {
+  static Limiters::MinmodType create(const Option& options) {
     return create<void>(options);
   }
 };
 template <>
-SlopeLimiters::MinmodType
-create_from_yaml<SlopeLimiters::MinmodType>::create<void>(
+Limiters::MinmodType create_from_yaml<Limiters::MinmodType>::create<void>(
     const Option& options);
