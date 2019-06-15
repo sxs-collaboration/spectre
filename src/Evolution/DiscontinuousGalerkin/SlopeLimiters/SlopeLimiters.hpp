@@ -3,6 +3,6 @@
 
 #pragma once
 
-/// \ingroup SlopeLimitersGroup
+/// \ingroup LimitersGroup
 /// \brief Things relating to slope limiting.
 namespace SlopeLimiters {}

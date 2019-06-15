@@ -22,7 +22,7 @@
 namespace SlopeLimiters {
 namespace Tags {
 /// \ingroup DiscontinuousGalerkinGroup
-/// \ingroup SlopeLimitersGroup
+/// \ingroup LimitersGroup
 /// \brief The inbox tag for limiter communication.
 template <typename Metavariables>
 struct LimiterCommunicationTag {
@@ -42,7 +42,7 @@ struct LimiterCommunicationTag {
 namespace Actions {
 /// \ingroup ActionsGroup
 /// \ingroup DiscontinuousGalerkinGroup
-/// \ingroup SlopeLimitersGroup
+/// \ingroup LimitersGroup
 /// \brief Receive limiter data from neighbors, then apply limiter.
 ///
 /// Currently, is not tested for support of:
@@ -129,7 +129,7 @@ struct Limit {
 
 /// \ingroup ActionsGroup
 /// \ingroup DiscontinuousGalerkinGroup
-/// \ingroup SlopeLimitersGroup
+/// \ingroup LimitersGroup
 /// \brief Send local data needed for limiting.
 ///
 /// Currently, is not tested for support of:

@@ -55,7 +55,7 @@ class Weno;
 /// \endcond
 
 namespace SlopeLimiters {
-/// \ingroup SlopeLimitersGroup
+/// \ingroup LimitersGroup
 /// \brief A compact-stencil WENO limiter for DG
 ///
 /// Implements the simple WENO limiter of \cite Zhong2013 and the Hermite WENO

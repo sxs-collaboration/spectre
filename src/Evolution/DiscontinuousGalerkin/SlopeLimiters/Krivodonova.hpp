@@ -51,7 +51,7 @@ class Krivodonova;
 
 namespace SlopeLimiters {
 /*!
- * \ingroup SlopeLimitersGroup
+ * \ingroup LimitersGroup
  * \brief An implementation of the Krivodonova limiter.
  *
  * The limiter is described in \cite Krivodonova2007. The Krivodonova limiter

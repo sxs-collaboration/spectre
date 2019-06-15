@@ -10,7 +10,7 @@ template <typename T>
 struct create_from_yaml;
 
 namespace SlopeLimiters {
-/// \ingroup SlopeLimitersGroup
+/// \ingroup LimitersGroup
 /// \brief Possible types of the minmod slope limiter and/or troubled-cell
 /// indicator.
 ///

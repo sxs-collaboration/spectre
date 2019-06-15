@@ -66,7 +66,7 @@ struct SizeOfElement;
 
 namespace SlopeLimiters {
 
-/// \ingroup SlopeLimitersGroup
+/// \ingroup LimitersGroup
 /// \brief A general minmod slope limiter
 ///
 /// Provides an implementation for the three minmod-based generalized slope

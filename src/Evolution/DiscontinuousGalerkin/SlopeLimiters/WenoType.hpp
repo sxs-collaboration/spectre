@@ -12,7 +12,7 @@ struct create_from_yaml;
 /// \endcond
 
 namespace SlopeLimiters {
-/// \ingroup SlopeLimitersGroup
+/// \ingroup LimitersGroup
 /// \brief Possible types of the WENO limiter
 ///
 /// \see SlopeLimiters::Weno for a description and references.

@@ -611,8 +611,8 @@
  */
 
 /*!
- * \defgroup SlopeLimitersGroup Slope Limiters
- * \brief Slope limiters to control shocks and surfaces in the solution.
+ * \defgroup LimitersGroup Limiters
+ * \brief Limiters to control shocks and surfaces in the solution.
  */
 
 /*!

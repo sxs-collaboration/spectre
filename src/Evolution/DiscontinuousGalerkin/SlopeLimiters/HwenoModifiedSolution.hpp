@@ -365,7 +365,7 @@ using LimiterNeighborData = std::unordered_map<
     boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>;
 
 /*!
- * \ingroup SlopeLimitersGroup
+ * \ingroup LimitersGroup
  * \brief Compute the HWENO modified solution for a particular tensor
  * from a particular neighbor element
  *
