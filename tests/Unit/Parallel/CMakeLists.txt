@@ -122,7 +122,6 @@ add_algorithm_test("AlgorithmNodelock" "")
 # unit tests
 set(PARALLEL_TESTS
   Parallel/Test_ConstGlobalCacheDataBox.cpp
-  Parallel/Test_GotoAction.cpp
   Parallel/Test_Parallel.cpp
   Parallel/Test_ParallelComponentHelpers.cpp
   Parallel/Test_PupStlCpp11.cpp

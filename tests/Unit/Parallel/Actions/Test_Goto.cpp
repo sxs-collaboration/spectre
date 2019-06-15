@@ -3,8 +3,8 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include "Parallel/Actions/Goto.hpp"  // IWYU pragma: keep
 #include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/GotoAction.hpp"  // IWYU pragma: keep
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

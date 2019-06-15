@@ -4,6 +4,7 @@
 set(LIBRARY "Test_ParallelActions")
 
 set(LIBRARY_SOURCES
+  Test_Goto.cpp
   Test_TerminatePhase.cpp
   )
 
