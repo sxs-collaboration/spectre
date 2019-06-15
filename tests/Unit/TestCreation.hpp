@@ -37,3 +37,16 @@ std::unique_ptr<BaseClass> test_factory_creation(
   return test_creation<std::unique_ptr<BaseClass>, Metavariables>(
       construction_string);
 }
+
+/// \ingroup TestingFrameworkGroup
+/// Construct an enum from a given string.
+///
+/// Whereas `test_creation` creates a class with options, this creates an enum.
+/// The enum is created from a simple string with no newlines or indents.
+template <typename T, typename Metavariables = NoSuchType,
+          Requires<std::is_enum<T>::value> = nullptr>
+T test_enum_creation(const std::string& enum_string) noexcept {
+  Options<tmpl::list<TestCreation_detail::Opt<T>>> options("");
+  options.parse("Opt: " + enum_string);
+  return options.template get<TestCreation_detail::Opt<T>, Metavariables>();
+}
