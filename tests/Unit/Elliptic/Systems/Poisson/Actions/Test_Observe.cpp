@@ -30,6 +30,7 @@
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
@@ -67,7 +68,8 @@ struct MockElementArray {
           typename Metavariables::Phase,
           Metavariables::Phase::RegisterWithObserver,
           tmpl::list<observers::Actions::RegisterWithObservers<
-              Poisson::Actions::Observe>>>,
+                         Poisson::Actions::Observe>,
+                     Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing,
                              tmpl::list<Poisson::Actions::Observe>>>;
@@ -186,7 +188,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions.Observe",
 
   // Register elements
   for (const auto& id : element_ids) {
+    // Observe action
     ActionTesting::next_action<element_comp>(make_not_null(&runner), id);
+    // TerminatePhase action
+    ActionTesting::next_action<element_comp>(make_not_null(&runner), id);
+    CHECK(ActionTesting::get_terminate<element_comp>(runner, id));
     // Invoke the simple_action RegisterSenderWithSelf that was called on the
     // observer component by the RegisterWithObservers action.
     runner.invoke_queued_simple_action<obs_component>(0);

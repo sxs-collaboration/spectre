@@ -12,6 +12,7 @@
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
+#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/AddOptionsToDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -53,7 +54,8 @@ struct element_component {
       typename Metavariables::Phase,
       Metavariables::Phase::RegisterWithObservers,
       tmpl::list<observers::Actions::RegisterWithObservers<
-          RegisterThisObsType<TypeOfObservation>>>>>;
+                     RegisterThisObsType<TypeOfObservation>>,
+                 Parallel::Actions::TerminatePhase>>>;
 };
 
 template <typename Metavariables>

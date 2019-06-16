@@ -20,6 +20,7 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/VolumeActions.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -154,7 +155,8 @@ struct ElementArray {
           typename Metavariables::Phase,
           Metavariables::Phase::RegisterWithObserver,
           tmpl::list<observers::Actions::RegisterWithObservers<
-              Actions::ExportCoordinates<Dim>>>>,
+                         Actions::ExportCoordinates<Dim>>,
+                     Parallel::Actions::TerminatePhase>>,
 
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Export,
