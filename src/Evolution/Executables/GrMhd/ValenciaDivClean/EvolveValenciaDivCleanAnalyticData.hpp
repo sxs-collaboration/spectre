@@ -90,7 +90,7 @@ struct EvolutionMetavars {
       dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   // GRMHD is only implemented in 3D.
   // Do not limit the divergence-cleaning field Phi
-  using limiter = OptionTags::SlopeLimiter<Limiters::Minmod<
+  using limiter = OptionTags::Limiter<Limiters::Minmod<
       3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                     grmhd::ValenciaDivClean::Tags::TildeTau,
                     grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,

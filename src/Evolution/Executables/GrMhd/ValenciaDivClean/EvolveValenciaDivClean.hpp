@@ -98,7 +98,7 @@ struct EvolutionMetavars {
   using normal_dot_numerical_flux = OptionTags::NumericalFlux<
       dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   // Do not limit the divergence-cleaning field Phi
-  using limiter = OptionTags::SlopeLimiter<Limiters::Minmod<
+  using limiter = OptionTags::Limiter<Limiters::Minmod<
       3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                     grmhd::ValenciaDivClean::Tags::TildeTau,
                     grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,
