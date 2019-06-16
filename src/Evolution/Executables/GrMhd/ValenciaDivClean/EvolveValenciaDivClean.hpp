@@ -14,11 +14,11 @@
 #include "Evolution/Conservative/UpdateConservatives.hpp"
 #include "Evolution/Conservative/UpdatePrimitives.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/ObserveErrorNorms.hpp"
 #include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
@@ -99,7 +99,7 @@ struct EvolutionMetavars {
   using normal_dot_numerical_flux = OptionTags::NumericalFlux<
       dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   // Do not limit the divergence-cleaning field Phi
-  using limiter = OptionTags::SlopeLimiter<SlopeLimiters::Minmod<
+  using limiter = OptionTags::Limiter<Limiters::Minmod<
       3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                     grmhd::ValenciaDivClean::Tags::TildeTau,
                     grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,
@@ -144,8 +144,8 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      Actions::UpdateU, SlopeLimiters::Actions::SendData<EvolutionMetavars>,
-      SlopeLimiters::Actions::Limit<EvolutionMetavars>,
+      Actions::UpdateU, Limiters::Actions::SendData<EvolutionMetavars>,
+      Limiters::Actions::Limit<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<VariableFixing::FixConservatives>,
       Actions::UpdatePrimitives>>;
 

@@ -35,7 +35,7 @@ EvolutionSystem:
   ValenciaDivClean:
     DampingParameter: 0.0
 
-SlopeLimiter:
+Limiter:
   Minmod:
     Type: Muscl
     TvbmConstant: 0

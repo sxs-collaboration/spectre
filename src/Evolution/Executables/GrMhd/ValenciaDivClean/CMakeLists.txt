@@ -10,10 +10,10 @@ set(LIBS_TO_LINK
   Hydro
   IO
   Informer
+  Limiters
   LinearOperators
   MathFunctions
   RelativisticEulerSolutions
-  SlopeLimiters
   Time
   Utilities
   ValenciaDivClean
@@ -36,9 +36,9 @@ set(LIBS_TO_LINK
   Hydro
   IO
   Informer
+  Limiters
   LinearOperators
   MathFunctions
-  SlopeLimiters
   Time
   Utilities
   ValenciaDivClean

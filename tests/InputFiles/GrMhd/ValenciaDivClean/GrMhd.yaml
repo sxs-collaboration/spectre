@@ -45,7 +45,7 @@ EvolutionSystem:
   ValenciaDivClean:
     DampingParameter: 0.0
 
-SlopeLimiter:
+Limiter:
   Minmod:
     # Uncomment line below to turn off the limiter:
     # DisableForDebugging: True

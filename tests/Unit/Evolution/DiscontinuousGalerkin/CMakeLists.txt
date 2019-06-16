@@ -22,4 +22,4 @@ add_dependencies(
   module_ConstGlobalCache
   )
 
-add_subdirectory(SlopeLimiters)
+add_subdirectory(Limiters)

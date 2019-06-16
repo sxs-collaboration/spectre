@@ -43,7 +43,7 @@ add_dependencies(test-libs-evolution
   Test_EvolutionActions
   Test_EvolutionConservative
   Test_EvolutionDiscontinuousGalerkin
-  Test_SlopeLimiters
+  Test_Limiters
   Test_EvolutionEventsAndTriggers
   Test_Burgers
   Test_CurvedScalarWave

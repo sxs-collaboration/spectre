@@ -12,11 +12,11 @@
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"    // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
 #include "Evolution/DiscontinuousGalerkin/ObserveErrorNorms.hpp"
 #include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
@@ -75,8 +75,8 @@ struct EvolutionMetavars {
   using boundary_condition_tag = analytic_solution_tag;
   using normal_dot_numerical_flux =
       OptionTags::NumericalFlux<Burgers::LocalLaxFriedrichsFlux>;
-  using limiter = OptionTags::SlopeLimiter<
-      SlopeLimiters::Minmod<1, system::variables_tag::tags_list>>;
+  using limiter = OptionTags::Limiter<
+      Limiters::Minmod<1, system::variables_tag::tags_list>>;
 
   // public for use by the Charm++ registration code
   using events =
@@ -118,8 +118,8 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      Actions::UpdateU, SlopeLimiters::Actions::SendData<EvolutionMetavars>,
-      SlopeLimiters::Actions::Limit<EvolutionMetavars>>>;
+      Actions::UpdateU, Limiters::Actions::SendData<EvolutionMetavars>,
+      Limiters::Actions::Limit<EvolutionMetavars>>>;
 
   enum class Phase {
     Initialization,

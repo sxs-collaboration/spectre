@@ -28,7 +28,7 @@ DomainCreator:
 NumericalFlux:
   LocalLaxFriedrichs:
 
-SlopeLimiter:
+Limiter:
   Minmod:
     Type: LambdaPi1
 
