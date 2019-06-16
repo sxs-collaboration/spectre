@@ -52,10 +52,10 @@ class Krivodonova;
 namespace SlopeLimiters {
 /*!
  * \ingroup SlopeLimitersGroup
- * \brief An implementation of the Krivodonova slope limiter.
+ * \brief An implementation of the Krivodonova limiter.
  *
- * The slope limiter is described in \cite Krivodonova2007. The Krivodonova
- * limiter works by limiting the highest derivatives/modal coefficients using an
+ * The limiter is described in \cite Krivodonova2007. The Krivodonova limiter
+ * works by limiting the highest derivatives/modal coefficients using an
  * aggressive minmod approach, decreasing in derivative/modal coefficient order
  * until no more limiting is necessary. In 3d, the function being limited is
  * expanded as:
@@ -464,8 +464,8 @@ class Krivodonova<VolumeDim, tmpl::list<Tags...>> {
 
   using options = tmpl::list<Alphas, DisableForDebugging>;
   static constexpr OptionString help = {
-      "The hierarchical slope limiter of Krivodonova.\n\n"
-      "This slope limiter works by limiting the highest modal "
+      "The hierarchical limiter of Krivodonova.\n\n"
+      "This limiter works by limiting the highest modal "
       "coefficients/derivatives using an aggressive minmod approach, "
       "decreasing in modal coefficient order until no more limiting is "
       "necessary."};
