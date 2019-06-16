@@ -858,8 +858,7 @@ void test_hweno_1d(const std::unordered_set<Direction<1>>&
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Weno",
-                  "[SlopeLimiters][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Weno", "[Limiters][Unit]") {
   test_weno_option_parsing();
   test_weno_serialization();
 

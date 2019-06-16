@@ -2896,8 +2896,8 @@ void run() noexcept {
 }  // namespace test_3d
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Krivodonova",
-                  "[SlopeLimiters][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Krivodonova",
+                  "[Limiters][Unit]") {
   test_1d::run();
   test_2d::run();
   test_3d::run();

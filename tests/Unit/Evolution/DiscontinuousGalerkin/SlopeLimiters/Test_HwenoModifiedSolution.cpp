@@ -1275,8 +1275,8 @@ void test_hweno_modified_solution_3d_boundary() {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.HwenoModifiedSolution",
-                  "[SlopeLimiters][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.HwenoModifiedSolution",
+                  "[Limiters][Unit]") {
   test_secondary_neighbors_to_exclude_from_fit();
 
   test_hweno_modified_solution_1d();

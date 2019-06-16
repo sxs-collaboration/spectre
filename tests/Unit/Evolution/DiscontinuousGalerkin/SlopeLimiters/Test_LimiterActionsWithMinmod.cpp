@@ -102,7 +102,7 @@ struct Metavariables {
 // together the Minmod limiter and the actions, then making calls to the
 // SendData and the Limit actions. No checks are performed here that the limiter
 // and/or actions produce correct output: that is done in other tests.
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Minmod",
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
                   "[Unit][NumericalAlgorithms][Actions]") {
   using metavariables = Metavariables<2>;
   using my_component = component<2, metavariables>;

@@ -821,8 +821,7 @@ void test_minmod_tci_several_tensors() noexcept {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.MinmodTci",
-                  "[SlopeLimiters][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.MinmodTci", "[Limiters][Unit]") {
   test_minmod_tci_1d();
   test_minmod_tci_2d();
   test_minmod_tci_3d();

@@ -9,8 +9,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestCreation.hpp"
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.WenoType",
-                  "[SlopeLimiters][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoType", "[Limiters][Unit]") {
   CHECK(Limiters::WenoType::Hweno ==
         test_enum_creation<Limiters::WenoType>("Hweno"));
   CHECK(Limiters::WenoType::SimpleWeno ==
@@ -21,8 +20,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.WenoType",
 }
 
 // [[OutputRegex, Failed to convert "BadType" to WenoType]]
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.WenoType.OptionParseError",
-                  "[SlopeLimiters][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoType.OptionParseError",
+                  "[Limiters][Unit]") {
   ERROR_TEST();
   test_enum_creation<Limiters::WenoType>("BadType");
 }

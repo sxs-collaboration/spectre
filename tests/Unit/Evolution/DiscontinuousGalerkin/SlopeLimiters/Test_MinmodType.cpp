@@ -9,8 +9,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "tests/Unit/TestCreation.hpp"
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.MinmodType",
-                  "[SlopeLimiters][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.MinmodType", "[Limiters][Unit]") {
   CHECK(Limiters::MinmodType::LambdaPi1 ==
         test_enum_creation<Limiters::MinmodType>("LambdaPi1"));
   CHECK(Limiters::MinmodType::LambdaPiN ==
@@ -24,8 +23,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.MinmodType",
 }
 
 // [[OutputRegex, Failed to convert "BadType" to MinmodType]]
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.MinmodType.OptionParseError",
-                  "[SlopeLimiters][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.MinmodType.OptionParseError",
+                  "[Limiters][Unit]") {
   ERROR_TEST();
   test_enum_creation<Limiters::MinmodType>("BadType");
 }

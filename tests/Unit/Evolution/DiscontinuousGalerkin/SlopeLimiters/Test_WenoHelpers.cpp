@@ -283,9 +283,8 @@ void test_reconstruction_3d() noexcept {
 
 }  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.DG.SlopeLimiters.WenoHelpers.OscillationIndicator",
-    "[SlopeLimiters][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoHelpers.OscillationIndicator",
+                  "[Limiters][Unit]") {
   test_oscillation_indicator_1d();
   test_oscillation_indicator_2d();
   test_oscillation_indicator_3d();
@@ -305,8 +304,8 @@ SPECTRE_TEST_CASE(
 // - all tests (with a particular VolumeDim) use the same mesh, OR
 // - tests use different meshes but are in different TEST_CASEs.
 // We opt for the latter, as this provides a more rigorous test of the code.
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.WenoHelpers.Reconstruction",
-                  "[SlopeLimiters][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoHelpers.Reconstruction",
+                  "[Limiters][Unit]") {
   test_reconstruction_1d();
   test_reconstruction_2d();
   test_reconstruction_3d();

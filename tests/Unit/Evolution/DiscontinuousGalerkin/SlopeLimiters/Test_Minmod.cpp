@@ -648,8 +648,7 @@ void test_minmod_limiter_3d() noexcept {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.Minmod",
-                  "[SlopeLimiters][Unit]") {
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Minmod", "[Limiters][Unit]") {
   {
     INFO("Test Minmod option-parsing and serialization");
     test_minmod_option_parsing();

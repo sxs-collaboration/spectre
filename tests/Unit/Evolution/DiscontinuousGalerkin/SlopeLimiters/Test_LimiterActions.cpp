@@ -132,7 +132,7 @@ struct Metavariables {
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
                   "[Unit][NumericalAlgorithms][Actions]") {
   using metavariables = Metavariables<2>;
   using my_component = component<2, metavariables>;
@@ -296,7 +296,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.Generic",
             .empty());
 }
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.SlopeLimiters.LimiterActions.NoNeighbors",
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.NoNeighbors",
                   "[Unit][NumericalAlgorithms][Actions]") {
   using metavariables = Metavariables<2>;
   using my_component = component<2, metavariables>;
