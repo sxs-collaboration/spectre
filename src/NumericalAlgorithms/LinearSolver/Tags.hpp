@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
@@ -290,3 +291,16 @@ struct Verbosity {
 
 }  // namespace OptionTags
 }  // namespace LinearSolver
+
+namespace Tags {
+
+template <>
+struct NextCompute<LinearSolver::Tags::IterationId>
+    : Next<LinearSolver::Tags::IterationId>, db::ComputeTag {
+  using argument_tags = tmpl::list<LinearSolver::Tags::IterationId>;
+  static size_t function(const size_t& iteration_id) noexcept {
+    return iteration_id + 1;
+  }
+};
+
+}  // namespace Tags

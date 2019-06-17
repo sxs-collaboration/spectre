@@ -135,4 +135,12 @@ struct Next : db::PrefixTag, db::SimpleTag {
     return "Next(" + db::tag_name<Tag>() + ")";
   }
 };
+
+/// \ingroup DataBoxTagsGroup
+/// \brief Compute item for `Tags::Next<Tag>`
+///
+/// Requires that a template specialization for the requested `Tag` is defined.
+template <typename Tag>
+struct NextCompute;
+
 }  // namespace Tags
