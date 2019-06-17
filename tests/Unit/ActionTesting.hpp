@@ -163,7 +163,7 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent,
             typename ArrayIndex,
-            Requires<not tmpl2::flat_all_v<
+            Requires<not tmpl2::flat_any_v<
                 tmpl::list_contains_v<DbTagsList, SimpleTags>...>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -187,7 +187,7 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent,
             typename ArrayIndex,
-            Requires<tmpl2::flat_all_v<
+            Requires<tmpl2::flat_any_v<
                 tmpl::list_contains_v<DbTagsList, SimpleTags>...>> = nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& box,
