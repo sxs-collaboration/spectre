@@ -163,7 +163,7 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent,
             typename ArrayIndex,
-            Requires<not tmpl2::flat_all_v<
+            Requires<not tmpl2::flat_any_v<
                 tmpl::list_contains_v<DbTagsList, SimpleTags>...>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -187,15 +187,18 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent,
             typename ArrayIndex,
-            Requires<tmpl2::flat_all_v<
+            Requires<tmpl2::flat_any_v<
                 tmpl::list_contains_v<DbTagsList, SimpleTags>...>> = nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box,
+      db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box)};
+    ERROR(
+        "Tried to apply ActionTesting::InitializeDataBox even though one or "
+        "more of its tags are already in the DataBox. Did you call next_action "
+        "too many times in the initialization phase?");
   }
 
   /// Sets the initial values of simple tags in the DataBox.

@@ -157,7 +157,7 @@ using MockRuntimeSystem =
     ActionTesting::MockRuntimeSystem<Metavariables<HasPrimitives>>;
 
 template <bool HasPrimitives = false>
-void emplace_component(
+void emplace_component_and_initialize(
     const gsl::not_null<MockRuntimeSystem<HasPrimitives>*> runner,
     const bool forward_in_time, const Time& initial_time,
     const TimeDelta& initial_time_step, const size_t order,
@@ -171,7 +171,7 @@ void emplace_component(
 }
 
 template <>
-void emplace_component<true>(
+void emplace_component_and_initialize<true>(
     const gsl::not_null<MockRuntimeSystem<true>*> runner,
     const bool forward_in_time, const Time& initial_time,
     const TimeDelta& initial_time_step, const size_t order,
@@ -252,11 +252,10 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
 
   MockRuntimeSystem<> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(order)}};
-  emplace_component(make_not_null(&runner), forward_in_time, initial_time,
-                    initial_time_step, order, initial_value);
+  emplace_component_and_initialize(make_not_null(&runner), forward_in_time,
+                                   initial_time, initial_time_step, order,
+                                   initial_value);
 
-  runner.set_phase(Metavariables<>::Phase::Initialization);
-  runner.next_action<Component<Metavariables<>>>(0);
   runner.set_phase(Metavariables<>::Phase::Testing);
 
   {
@@ -373,9 +372,9 @@ double error_in_step(const size_t order, const double step) noexcept {
   using component = Component<Metavariables<TestPrimitives>>;
   MockRuntimeSystem<TestPrimitives> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(order)}};
-  emplace_component<TestPrimitives>(make_not_null(&runner), forward_in_time,
-                                    initial_time, initial_time_step, order,
-                                    initial_value);
+  emplace_component_and_initialize<TestPrimitives>(
+      make_not_null(&runner), forward_in_time, initial_time, initial_time_step,
+      order, initial_value);
   runner.set_phase(Metavariables<TestPrimitives>::Phase::Testing);
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
