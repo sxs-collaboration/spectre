@@ -7,3 +7,16 @@ add_subdirectory(DiscontinuousGalerkin)
 add_subdirectory(EventsAndTriggers)
 add_subdirectory(Systems)
 add_subdirectory(VariableFixing)
+
+set(LIBRARY "Test_Evolution")
+
+set(LIBRARY_SOURCES
+  Test_TypeTraits.cpp
+  )
+
+add_test_library(
+  ${LIBRARY}
+  "Evolution"
+  "${LIBRARY_SOURCES}"
+  "Utilities"
+  )
