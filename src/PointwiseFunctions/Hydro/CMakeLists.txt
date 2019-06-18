@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   EquationsOfState/IdealFluid.cpp
   EquationsOfState/PolytropicFluid.cpp
   LorentzFactor.cpp
+  MassFlux.cpp
   SpecificEnthalpy.cpp
   )
 

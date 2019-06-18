@@ -70,4 +70,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
         "SpecificInternalEnergy");
   CHECK(hydro::Tags::SpecificInternalEnergy<DataVector>::name() ==
         "SpecificInternalEnergy");
+  CHECK(hydro::Tags::MassFlux<DataVector, 3, Frame::Inertial>::name() ==
+        "MassFlux");
 }

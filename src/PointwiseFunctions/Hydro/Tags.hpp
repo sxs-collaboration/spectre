@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
 
@@ -191,6 +192,30 @@ struct SpecificInternalEnergy : db::SimpleTag {
   static std::string name() noexcept { return "SpecificInternalEnergy"; }
 };
 
+/// The vector \f$J^i\f$ in \f$\dot{M} = -\int J^i s_i d^2S\f$,
+/// representing the mass flux through a surface with normal \f$s_i\f$.
+///
+/// Note that the integral is understood
+/// as a flat-space integral: all metric factors are included in \f$J^i\f$.
+/// In particular, if the integral is done over a Strahlkorper, the
+/// `StrahlkorperGr::euclidean_area_element` of the Strahlkorper should be used,
+/// and \f$s_i\f$ is
+/// the normal one-form to the Strahlkorper normalized with the flat metric,
+/// \f$s_is_j\delta^{ij}=1\f$.
+///
+/// The formula is
+/// \f$ J^i = \rho W \sqrt{\gamma}(\alpha v^i-\beta^i)\f$,
+/// where \f$\rho\f$ is the mass density, \f$W\f$ is the Lorentz factor,
+/// \f$v^i\f$ is the spatial velocity of the fluid,
+/// \f$\gamma\f$ is the determinant of the 3-metric \f$\gamma_{ij}\f$,
+/// \f$\alpha\f$ is the lapse, and \f$\beta^i\f$ is the shift.
+template <typename DataType, size_t Dim, typename Fr>
+struct MassFlux : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Fr>;
+  static std::string name() noexcept {
+    return Frame::prefix<Fr>() + "MassFlux";
+  }
+};
 }  // namespace Tags
 
 /// The tags for the primitive variables for GRMHD.
