@@ -11,7 +11,6 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"    // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
@@ -21,6 +20,13 @@
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Tags.hpp"
+#include "Evolution/Initialization/ConservativeSystem.hpp"
+#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
+#include "Evolution/Initialization/Domain.hpp"
+#include "Evolution/Initialization/Evolution.hpp"
+#include "Evolution/Initialization/Initialize.hpp"
+#include "Evolution/Initialization/Interface.hpp"
+#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "IO/Observer/Actions.hpp"
@@ -129,15 +135,26 @@ struct EvolutionMetavars {
     Exit
   };
 
+  using initialization_actions = tmpl::list<
+      Initialization::Actions::Domain<1>,
+      Initialization::Actions::ConservativeSystem,
+      Initialization::Actions::Interface<
+          system,
+          Initialization::slice_tags_to_face<typename system::variables_tag>,
+          Initialization::slice_tags_to_exterior<>>,
+      Initialization::Actions::Evolution<system>,
+      Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
+      Initialization::Actions::MinMod<1>,
+      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
           EvolutionMetavars,
           tmpl::list<
-              Parallel::PhaseActions<
-                  Phase, Phase::Initialization,
-                  tmpl::list<dg::Actions::InitializeElement<1>>>,
+              Parallel::PhaseActions<Phase, Phase::Initialization,
+                                     initialization_actions>,
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
@@ -159,7 +176,8 @@ struct EvolutionMetavars {
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
                       compute_rhs, update_variables>>>>,
-          typename dg::Actions::InitializeElement<1>::AddOptionsToDataBox>>;
+          Parallel::ForwardAllOptionsToDataBox<
+              Initialization::option_tags<initialization_actions>>>>;
 
   static constexpr OptionString help{
       "Evolve the Burgers equation.\n\n"
