@@ -170,7 +170,16 @@ struct EvolutionMetavars {
       Initialization::Actions::ConservativeSystem,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
-      Actions::UpdateConservatives, Initialization::Actions::Interface<system>,
+      Actions::UpdateConservatives,
+      Initialization::Actions::Interface<
+          system,
+          Initialization::slice_tags_to_face<
+              typename system::variables_tag,
+              typename system::spacetime_variables_tag,
+              typename system::primitive_variables_tag>,
+          Initialization::slice_tags_to_exterior<
+              typename system::spacetime_variables_tag,
+              typename system::primitive_variables_tag>>,
       Initialization::Actions::Evolution<system>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::MinMod<3>,

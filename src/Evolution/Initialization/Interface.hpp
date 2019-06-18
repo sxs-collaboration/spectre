@@ -25,9 +25,34 @@ class ConstGlobalCache;
 /// \endcond
 
 namespace Initialization {
+/// %Tags that are to be sliced to the faces of the element
+template <typename... Tags>
+using slice_tags_to_face = tmpl::list<Tags...>;
+
+/// %Tags that are to be sliced to the exterior side of the faces of the element
+template <typename... Tags>
+using slice_tags_to_exterior = tmpl::list<Tags...>;
+
+/// Compute tags on the faces of the element
+template <typename... Tags>
+using face_compute_tags = tmpl::list<Tags...>;
+
+/// Compute tags on the exterior side of the faces of the element
+template <typename... Tags>
+using exterior_compute_tags = tmpl::list<Tags...>;
+
 namespace Actions {
 /// \brief Initialize items related to the interfaces between Elements and on
 /// external boundaries
+///
+/// The `Initialization::slice_tags_to_face` and
+/// `Initialization::slice_tags_to_exterior` types should be used for the
+/// `SliceTagsToFace` and `SliceTagsToExterior` template parameters,
+/// respectively. These are used to set additional volume quantities that are to
+/// be sliced to the interfaces. Compute tags on the interfaces are controlled
+/// using the `FaceComputeTags` and `ExteriorComputeTags` template parameters,
+/// which should be passed the `Initialization::face_compute_tags` and
+/// `Initialization::exterior_compute_tags` types, respectively.
 ///
 /// DataBox changes:
 /// - Adds:
@@ -38,7 +63,6 @@ namespace Actions {
 /// - For face_tags:
 ///   * `Tags::InterfaceComputeItem<Directions, Tags::Direction<Dim>>`
 ///   * `Tags::InterfaceComputeItem<Directions, Tags::InterfaceMesh<Dim>>`
-///   * `Tags::Slice<Directions, typename System::variables_tag>`
 ///   * `Tags::InterfaceComputeItem<Directions,
 ///                                Tags::UnnormalizedFaceNormal<Dim>>`
 ///   * Tags::InterfaceComputeItem<Directions,
@@ -48,20 +72,33 @@ namespace Actions {
 ///         Directions, Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>`
 /// - Removes: nothing
 /// - Modifies: nothing
-template <typename System>
+template <typename System, typename SliceTagsToFace,
+          typename SliceTagsToExterior,
+          typename FaceComputeTags = face_compute_tags<>,
+          typename ExteriorComputeTags = exterior_compute_tags<>>
 struct Interface {
   static constexpr size_t dim = System::volume_dim;
-  using simple_tags = db::AddSimpleTags<::Tags::Interface<
-      ::Tags::BoundaryDirectionsExterior<dim>, typename System::variables_tag>>;
+  using simple_tags = db::AddSimpleTags<
+        ::Tags::Interface<::Tags::BoundaryDirectionsExterior<dim>,
+                          typename System::variables_tag>>;
+
+  template <typename TagToSlice, typename Directions>
+  struct make_slice_tag {
+    using type = ::Tags::Slice<Directions, TagToSlice>;
+  };
+
+  template <typename ComputeTag, typename Directions>
+  struct make_compute_tag {
+    using type = ::Tags::InterfaceComputeItem<Directions, ComputeTag>;
+  };
 
   template <typename Directions>
-  using face_tags = tmpl::list<
+  using face_tags = tmpl::flatten<tmpl::list<
       Directions,
       ::Tags::InterfaceComputeItem<Directions, ::Tags::Direction<dim>>,
       ::Tags::InterfaceComputeItem<Directions, ::Tags::InterfaceMesh<dim>>,
-      ::Tags::Slice<Directions, typename System::variables_tag>,
-      ::Tags::Slice<Directions, typename System::spacetime_variables_tag>,
-      ::Tags::Slice<Directions, typename System::primitive_variables_tag>,
+      tmpl::transform<SliceTagsToFace,
+                      make_slice_tag<tmpl::_1, tmpl::pin<Directions>>>,
       ::Tags::InterfaceComputeItem<Directions,
                                    ::Tags::UnnormalizedFaceNormal<dim>>,
       ::Tags::InterfaceComputeItem<Directions,
@@ -69,18 +106,20 @@ struct Interface {
                                        ::Tags::UnnormalizedFaceNormal<dim>>>,
       ::Tags::InterfaceComputeItem<
           Directions,
-          ::Tags::NormalizedCompute<::Tags::UnnormalizedFaceNormal<dim>>>>;
+          ::Tags::NormalizedCompute<::Tags::UnnormalizedFaceNormal<dim>>>,
+      tmpl::transform<FaceComputeTags,
+                      make_compute_tag<tmpl::_1, tmpl::pin<Directions>>>>>;
 
-  using ext_tags = tmpl::list<
+  using ext_tags = tmpl::flatten<tmpl::list<
       ::Tags::BoundaryDirectionsExterior<dim>,
       ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
                                    ::Tags::Direction<dim>>,
       ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
                                    ::Tags::InterfaceMesh<dim>>,
-      ::Tags::Slice<::Tags::BoundaryDirectionsExterior<dim>,
-                    typename System::spacetime_variables_tag>,
-      ::Tags::Slice<::Tags::BoundaryDirectionsExterior<dim>,
-                    typename System::primitive_variables_tag>,
+      tmpl::transform<
+          SliceTagsToExterior,
+          make_slice_tag<tmpl::_1,
+                         tmpl::pin<::Tags::BoundaryDirectionsExterior<dim>>>>,
       ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
                                    ::Tags::BoundaryCoordinates<dim>>,
       ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
@@ -90,7 +129,11 @@ struct Interface {
                                        ::Tags::UnnormalizedFaceNormal<dim>>>,
       ::Tags::InterfaceComputeItem<
           ::Tags::BoundaryDirectionsExterior<dim>,
-          ::Tags::NormalizedCompute<::Tags::UnnormalizedFaceNormal<dim>>>>;
+          ::Tags::NormalizedCompute<::Tags::UnnormalizedFaceNormal<dim>>>,
+      tmpl::transform<
+          ExteriorComputeTags,
+          make_compute_tag<
+              tmpl::_1, tmpl::pin<::Tags::BoundaryDirectionsExterior<dim>>>>>>;
 
   using compute_tags =
       tmpl::append<face_tags<::Tags::InternalDirections<dim>>,
