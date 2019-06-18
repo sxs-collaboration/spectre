@@ -13,13 +13,18 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/Filtering.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/ObserveErrorNorms.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Tags.hpp"
+#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
+#include "Evolution/Initialization/Domain.hpp"
+#include "Evolution/Initialization/Evolution.hpp"
+#include "Evolution/Initialization/Initialize.hpp"
+#include "Evolution/Initialization/Interface.hpp"
+#include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "IO/Observer/Actions.hpp"            // IWYU pragma: keep
@@ -143,15 +148,25 @@ struct EvolutionMetavars {
     Exit
   };
 
+  using initialization_actions = tmpl::list<
+      Initialization::Actions::Domain<system::volume_dim>,
+      Initialization::Actions::NonconservativeSystem,
+      Initialization::Actions::Interface<
+          system,
+          Initialization::slice_tags_to_face<typename system::variables_tag>,
+          Initialization::slice_tags_to_exterior<>>,
+      Initialization::Actions::Evolution<system>,
+      Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
+      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
           EvolutionMetavars,
           tmpl::list<
-              Parallel::PhaseActions<
-                  Phase, Phase::Initialization,
-                  tmpl::list<dg::Actions::InitializeElement<Dim>>>,
+              Parallel::PhaseActions<Phase, Phase::Initialization,
+                                     initialization_actions>,
 
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
@@ -174,7 +189,8 @@ struct EvolutionMetavars {
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
                       compute_rhs, update_variables, Actions::AdvanceTime>>>>,
-          typename dg::Actions::InitializeElement<Dim>::AddOptionsToDataBox>>;
+          Parallel::ForwardAllOptionsToDataBox<
+              Initialization::option_tags<initialization_actions>>>>;
 
   static constexpr OptionString help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
