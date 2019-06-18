@@ -347,9 +347,9 @@ void test_tabulated(const std::string& file_path,
 }
 
 SPECTRE_TEST_CASE("Unit.IO.H5.StellarCollapseEos", "[Unit][IO][H5]") {
-  test_tabulated(unit_test_src_path() + "/IO/StellarCollapse2017Sample.h5",
+  test_tabulated(unit_test_src_path() + "/IO/H5/StellarCollapse2017Sample.h5",
                  "/");
-  test_tabulated(unit_test_src_path() + "/IO/StellarCollapse2017Sample.h5",
+  test_tabulated(unit_test_src_path() + "/IO/H5/StellarCollapse2017Sample.h5",
                  "/sample_data");
 }
 }  // namespace
