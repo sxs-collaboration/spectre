@@ -719,11 +719,15 @@ class MockDistributedObject {
 
   template <typename Tag, typename... Variants>
   bool tag_is_retrievable_visitation(
-      const boost::variant<Variants...>& /*box*/) const noexcept {
+      const boost::variant<Variants...>& box) const noexcept {
     bool is_retrievable = false;
-    const auto helper = [&is_retrievable](auto box_type) noexcept {
+    const auto helper = [&box, &is_retrievable ](auto box_type) noexcept {
       using DataBoxType = typename decltype(box_type)::type;
-      is_retrievable |= db::tag_is_retrievable_v<Tag, DataBoxType>;
+      if (static_cast<int>(
+              tmpl::index_of<tmpl::list<Variants...>, DataBoxType>::value) ==
+          box.which()) {
+        is_retrievable = db::tag_is_retrievable_v<Tag, DataBoxType>;
+      }
     };
     EXPAND_PACK_LEFT_TO_RIGHT(helper(tmpl::type_<Variants>{}));
     return is_retrievable;
