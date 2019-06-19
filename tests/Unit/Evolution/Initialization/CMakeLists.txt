@@ -4,6 +4,7 @@
 set(LIBRARY "Test_Initialization")
 
 set(LIBRARY_SOURCES
+  Test_Initialize.cpp
   Test_MergeIntoDataBox.cpp
   )
 
