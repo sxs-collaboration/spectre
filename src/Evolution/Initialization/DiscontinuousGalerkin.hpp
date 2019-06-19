@@ -41,7 +41,12 @@ class ConstGlobalCache;
 
 namespace Initialization {
 namespace Actions {
-/// \brief Initialize items related to the discontinuous Galerkin method
+/// \brief Initialize items related to the discontinuous Galerkin method.
+///
+/// Specifically, mortar data and other information necessary for flux
+/// communication. If the template parameter `AddFluxBoundaryConditionMortars`
+/// is set to `false` then the mortar data for flux boundary conditions are not
+/// initialized and other boundary conditions can be applied.
 ///
 /// Uses:
 /// - DataBox:
@@ -60,7 +65,7 @@ namespace Actions {
 ///   * Tags::Mortars<Tags::MortarSize<dim - 1>, dim>
 /// - Removes: nothing
 /// - Modifies: nothing
-template <typename Metavariables>
+template <typename Metavariables, bool AddFluxBoundaryConditionMortars = true>
 struct DiscontinuousGalerkin {
   static constexpr size_t dim = Metavariables::system::volume_dim;
   using temporal_id_tag = typename Metavariables::temporal_id;
@@ -114,17 +119,20 @@ struct DiscontinuousGalerkin {
       }
     }
 
-    for (const auto& direction : element.external_boundaries()) {
-      const auto mortar_id =
-          std::make_pair(direction, ElementId<dim>::external_boundary_id());
-      mortar_data[mortar_id];
-      // Since no communication needs to happen for boundary conditions,
-      // the temporal id is not advanced on the boundary, so we set it equal
-      // to the current temporal id in the element
-      mortar_next_temporal_ids.insert({mortar_id, temporal_id});
-      mortar_meshes.emplace(mortar_id, mesh.slice_away(direction.dimension()));
-      mortar_sizes.emplace(mortar_id,
-                           make_array<dim - 1>(Spectral::MortarSize::Full));
+    if (AddFluxBoundaryConditionMortars) {
+      for (const auto& direction : element.external_boundaries()) {
+        const auto mortar_id =
+            std::make_pair(direction, ElementId<dim>::external_boundary_id());
+        mortar_data[mortar_id];
+        // Since no communication needs to happen for boundary conditions,
+        // the temporal id is not advanced on the boundary, so we set it equal
+        // to the current temporal id in the element
+        mortar_next_temporal_ids.insert({mortar_id, temporal_id});
+        mortar_meshes.emplace(mortar_id,
+                              mesh.slice_away(direction.dimension()));
+        mortar_sizes.emplace(mortar_id,
+                             make_array<dim - 1>(Spectral::MortarSize::Full));
+      }
     }
 
     return merge_into_databox<
