@@ -9,8 +9,8 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "Evolution/Initialization/AddToDataBox.hpp"
 #include "Evolution/Initialization/Initialize.hpp"
+#include "Evolution/Initialization/MergeIntoDataBox.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/AddOptionsToDataBox.hpp"
@@ -53,9 +53,9 @@ struct Action0 {
     const double initial_time_value =
         db::get<Initialization::Tags::InitialTime>(box);
     return std::make_tuple(
-        Initialization::merge_into_databox<Action0, tmpl::list<>>(
-            std::move(box),
-            tuples::TaggedTuple<DummyTimeTag>{3.0 * initial_time_value}));
+        Initialization::merge_into_databox<Action0,
+                                           db::AddSimpleTags<DummyTimeTag>>(
+            std::move(box), 3.0 * initial_time_value));
   }
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -83,8 +83,9 @@ struct Action1 {
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(Initialization::merge_into_databox<
-                           Action1, tmpl::list<TagMultiplyByTwo<DummyTimeTag>>>(
-        std::move(box), tuples::TaggedTuple<>{}));
+                           Action1, db::AddSimpleTags<>,
+                           db::AddComputeTags<TagMultiplyByTwo<DummyTimeTag>>>(
+        std::move(box)));
   }
 };
 
