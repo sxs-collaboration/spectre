@@ -171,6 +171,12 @@ class KomissarovShock {
 
   template <typename DataType>
   auto variables(
+      const tnsr::I<DataType, 3>& x, double /*t*/,
+      tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
+
+  template <typename DataType>
+  auto variables(
       const tnsr::I<DataType, 3>& x, double t,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
       noexcept

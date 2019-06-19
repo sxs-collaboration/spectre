@@ -52,7 +52,7 @@ class NewmanHamlin {
   template <size_t ThermodynamicDim>
   static boost::optional<PrimitiveRecoveryData> apply(
       double initial_guess_for_pressure, double total_energy_density,
-      double momentum_density_squared,
+      double momentum_density_squared, double /*electron_fraction*/,
       double momentum_density_dot_magnetic_field, double magnetic_field_squared,
       double rest_mass_density_times_lorentz_factor,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&

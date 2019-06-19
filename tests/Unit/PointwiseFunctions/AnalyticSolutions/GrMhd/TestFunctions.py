@@ -55,6 +55,12 @@ def smooth_flow_divergence_cleaning_field(x, t, mean_velocity, wave_vector,
     return 0.0
 
 
+def smooth_flow_electron_fraction(x, t, mean_velocity, wave_vector,
+                                  pressure, adiabatic_index,
+                                  density_amplitude):
+    return 0.1
+
+
 # End functions for testing SmoothFlow.cpp
 
 
@@ -143,6 +149,12 @@ def alfven_divergence_cleaning_field(x, t, wavenumber, pressure,
                                      rest_mass_density, adiabatic_index,
                                      bkgd_magnetic_field, wave_magnetic_field):
     return 0.0
+
+
+def alfven_electron_fraction(x, t, wavenumber, pressure,
+                             rest_mass_density, adiabatic_index,
+                             bkgd_magnetic_field, wave_magnetic_field):
+    return 0.1
 
 
 # End functions for testing AlfvenWave.cpp
@@ -347,6 +359,11 @@ def bondi_michel_pressure(x, mass, sonic_radius, sonic_density,
 def bondi_michel_divergence_cleaning_field(x, mass, sonic_radius, sonic_density,
                                            adiabatic_exponent, magnetic_field):
     return 0.0
+
+
+def bondi_michel_electron_fraction(x, mass, sonic_radius, sonic_density,
+                                   adiabatic_exponent, magnetic_field):
+    return 0.1
 
 
 def bondi_michel_magnetic_field(x, mass, sonic_radius, sonic_density,

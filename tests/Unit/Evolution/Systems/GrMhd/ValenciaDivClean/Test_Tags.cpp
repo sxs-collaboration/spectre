@@ -16,6 +16,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.ValenciaDivClean.Tags",
         "TildeS");
   CHECK(grmhd::ValenciaDivClean::Tags::TildeS<Frame::Grid>::name() ==
         "Grid_TildeS");
+  CHECK(grmhd::ValenciaDivClean::Tags::TildeElectronD::name() ==
+        "TildeElectronD");
   CHECK(grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>::name() ==
         "TildeB");
   CHECK(grmhd::ValenciaDivClean::Tags::TildeB<Frame::Grid>::name() ==

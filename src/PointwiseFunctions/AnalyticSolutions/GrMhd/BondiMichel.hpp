@@ -319,6 +319,12 @@ class BondiMichel {
           hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
 
   template <typename DataType>
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/,
+                 const IntermediateVars<DataType>& vars) const noexcept
+      -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
+
+  template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/,

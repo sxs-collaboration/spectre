@@ -47,7 +47,8 @@ struct AlfvenWaveProxy : grmhd::Solutions::AlfvenWave {
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
-                 hydro::Tags::SpecificEnthalpy<DataType>>;
+                 hydro::Tags::SpecificEnthalpy<DataType>,
+                 hydro::Tags::ElectronFraction<DataType>>;
 
   template <typename DataType>
   using grmhd_variables_tags =
@@ -117,7 +118,8 @@ void test_variables(const DataType& used_for_size) {
       "TestFunctions",
       {"alfven_rest_mass_density", "alfven_spatial_velocity",
        "alfven_specific_internal_energy", "alfven_pressure",
-       "alfven_lorentz_factor", "alfven_specific_enthalpy"},
+       "alfven_lorentz_factor", "alfven_specific_enthalpy",
+       "alfven_electron_fraction"},
       {{{-15., 15.}}},
       std::make_tuple(wavenumber, pressure, rest_mass_density, adiabatic_index,
                       bkgd_magnetic_field, wave_magnetic_field),
@@ -132,7 +134,8 @@ void test_variables(const DataType& used_for_size) {
       {"alfven_rest_mass_density", "alfven_spatial_velocity",
        "alfven_specific_internal_energy", "alfven_pressure",
        "alfven_lorentz_factor", "alfven_specific_enthalpy",
-       "alfven_magnetic_field", "alfven_divergence_cleaning_field"},
+       "alfven_electron_fraction", "alfven_magnetic_field",
+       "alfven_divergence_cleaning_field"},
       {{{-15., 15.}}},
       std::make_tuple(wavenumber, pressure, rest_mass_density, adiabatic_index,
                       bkgd_magnetic_field, wave_magnetic_field),

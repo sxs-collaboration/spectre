@@ -28,11 +28,14 @@ void ComputeFluxes::apply(
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         tilde_tau_flux,
     const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        tilde_electron_d_flux,
     const gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_b_flux,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
         tilde_phi_flux,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+    const Scalar<DataVector>& tilde_electron_d,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
     const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
@@ -104,6 +107,8 @@ void ComputeFluxes::apply(
         get(tilde_tau) * transport_velocity_I +
         p_star_alpha_sqrt_det_g * spatial_velocity.get(i) -
         get(lapse) * get(magnetic_field_dot_spatial_velocity) * tilde_b.get(i);
+    tilde_electron_d_flux->get(i) =
+        get(tilde_electron_d) * transport_velocity_I;
     tilde_phi_flux->get(i) =
         get(lapse) * tilde_b.get(i) - get(tilde_phi) * shift.get(i);
     for (size_t j = 0; j < 3; ++j) {

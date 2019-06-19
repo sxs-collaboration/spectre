@@ -48,8 +48,8 @@ namespace ValenciaDivClean {
  *
  * \f{align*}
  * \lambda_2 &= \alpha \Lambda^- - \beta_n,\\
- * \lambda_{3, 4, 5, 6, 7} &= \alpha v_n - \beta_n,\\
- * \lambda_{8} &= \alpha \Lambda^+ - \beta_n,
+ * \lambda_{3, 4, 5, 6, 7, 8} &= \alpha v_n - \beta_n,\\
+ * \lambda_{9} &= \alpha \Lambda^+ - \beta_n,
  * \f}
  *
  * with the substitution
@@ -64,7 +64,7 @@ namespace ValenciaDivClean {
  *
  * \f{align*}
  * \lambda_1 = -\alpha - \beta_n,\\
- * \lambda_9 = \alpha - \beta_n.
+ * \lambda_10 = \alpha - \beta_n.
  * \f}
  *
  * \note The ordering assumed here is such that, in the Newtonian limit,
@@ -93,7 +93,7 @@ namespace ValenciaDivClean {
  * Eulerian observer.
  */
 template <size_t ThermodynamicDim>
-std::array<DataVector, 9> characteristic_speeds(
+std::array<DataVector, 10> characteristic_speeds(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
@@ -108,7 +108,7 @@ std::array<DataVector, 9> characteristic_speeds(
 
 template <size_t ThermodynamicDim>
 void characteristic_speeds(
-    gsl::not_null<std::array<DataVector, 9>*> char_speeds,
+    gsl::not_null<std::array<DataVector, 10>*> char_speeds,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
@@ -144,7 +144,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
   using volume_tags =
       tmpl::list<hydro::Tags::EquationOfState<EquationOfStateType>>;
 
-  using return_type = std::array<DataVector, 9>;
+  using return_type = std::array<DataVector, 10>;
 
   static constexpr void function(
       const gsl::not_null<return_type*> result,

@@ -288,6 +288,18 @@ FishboneMoncriefDisk::variables(
 }
 
 template <typename DataType, bool NeedSpacetime>
+tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
+FishboneMoncriefDisk::variables(
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/,
+    const IntermediateVariables<DataType, NeedSpacetime>& /*vars*/,
+    const size_t /*index*/) const noexcept {
+  return {
+      make_with_value<db::item_type<hydro::Tags::ElectronFraction<DataType>>>(
+          x, 0.1)};
+}
+
+template <typename DataType, bool NeedSpacetime>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
@@ -379,6 +391,13 @@ bool operator!=(const FishboneMoncriefDisk& lhs,
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3,                   \
                                             Frame::Inertial>> /*meta*/,       \
+      const FishboneMoncriefDisk::IntermediateVariables<                      \
+          DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
+      const size_t) const noexcept;                                           \
+  template tuples::TaggedTuple<hydro::Tags::ElectronFraction<DTYPE(data)>>    \
+  FishboneMoncriefDisk::variables(                                            \
+      const tnsr::I<DTYPE(data), 3>& x,                                       \
+      tmpl::list<hydro::Tags::ElectronFraction<DTYPE(data)>> /*meta*/,        \
       const FishboneMoncriefDisk::IntermediateVariables<                      \
           DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
       const size_t) const noexcept;                                           \

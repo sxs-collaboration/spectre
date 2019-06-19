@@ -42,7 +42,8 @@ struct BondiMichelProxy : grmhd::Solutions::BondiMichel {
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
-                 hydro::Tags::SpecificEnthalpy<DataType>>;
+                 hydro::Tags::SpecificEnthalpy<DataType>,
+                 hydro::Tags::ElectronFraction<DataType>>;
 
   template <typename DataType>
   using grmhd_variables_tags =
@@ -100,7 +101,8 @@ void test_variables(const DataType& used_for_size) {
       "TestFunctions",
       {"bondi_michel_rest_mass_density", "bondi_michel_spatial_velocity",
        "bondi_michel_specific_internal_energy", "bondi_michel_pressure",
-       "bondi_michel_lorentz_factor", "bondi_michel_specific_enthalpy"},
+       "bondi_michel_lorentz_factor", "bondi_michel_specific_enthalpy",
+       "bondi_michel_electron_fraction"},
       {{{1.0, 20.0}}},
       std::make_tuple(mass, sonic_radius, sonic_density, polytropic_exponent,
                       mag_field_strength),
@@ -115,7 +117,8 @@ void test_variables(const DataType& used_for_size) {
       {"bondi_michel_rest_mass_density", "bondi_michel_spatial_velocity",
        "bondi_michel_specific_internal_energy", "bondi_michel_pressure",
        "bondi_michel_lorentz_factor", "bondi_michel_specific_enthalpy",
-       "bondi_michel_magnetic_field", "bondi_michel_divergence_cleaning_field"},
+       "bondi_michel_electron_fraction", "bondi_michel_magnetic_field",
+       "bondi_michel_divergence_cleaning_field"},
       {{{1.0, 20.0}}},
       std::make_tuple(mass, sonic_radius, sonic_density, polytropic_exponent,
                       mag_field_strength),

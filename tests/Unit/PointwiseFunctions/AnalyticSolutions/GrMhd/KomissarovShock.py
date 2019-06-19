@@ -55,3 +55,6 @@ def magnetic_field(x, t, *args, **kwargs):
 
 def divergence_cleaning_field(x, t, *args, **kwargs):
     return 0.0
+
+def electron_fraction(x, t, *args, **kwargs):
+    return 0.1

@@ -102,7 +102,7 @@ void test_with_normal_along_coordinate_axes(
         spatial_velocity, lorentz_factor, magnetic_field, lapse, shift,
         spatial_metric, normal, eos_base);
 
-    const auto expected = pypp::call<std::array<DataVector, 9>>(
+    const auto expected = pypp::call<std::array<DataVector, 10>>(
         "TestFunctions", "characteristic_speeds", lapse, shift,
         spatial_velocity, spatial_velocity_squared, sound_speed_squared,
         alfven_speed_squared, normal);

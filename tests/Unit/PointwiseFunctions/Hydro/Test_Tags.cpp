@@ -25,6 +25,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
         "ComovingMagneticFieldSquared");
   CHECK(hydro::Tags::DivergenceCleaningField<DataVector>::name() ==
         "DivergenceCleaningField");
+  CHECK(hydro::Tags::ElectronFraction<DataVector>::name() ==
+        "ElectronFraction");
   CHECK(hydro::Tags::EquationOfState<IdealFluid<true>>::name() ==
         "EquationOfState");
   CHECK(hydro::Tags::LorentzFactor<DataVector>::name() == "LorentzFactor");

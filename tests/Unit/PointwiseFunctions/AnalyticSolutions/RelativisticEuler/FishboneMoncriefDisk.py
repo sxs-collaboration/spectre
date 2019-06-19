@@ -180,3 +180,7 @@ def magnetic_field(*args):
 
 def divergence_cleaning_field(*args):
     return 0.0
+
+
+def electron_fraction(*args):
+    return 0.1

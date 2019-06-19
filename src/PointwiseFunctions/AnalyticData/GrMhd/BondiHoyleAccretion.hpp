@@ -194,6 +194,12 @@ class BondiHoyleAccretion {
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
+      tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>;
+
+  template <typename DataType>
+  auto variables(
+      const tnsr::I<DataType, 3>& x,
       tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
       noexcept
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;

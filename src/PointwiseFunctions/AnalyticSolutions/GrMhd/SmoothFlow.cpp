@@ -117,6 +117,17 @@ SmoothFlow::variables(const tnsr::I<DataType, 3>& x, double /*t*/,
 }
 
 template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
+SmoothFlow::variables(
+    const tnsr::I<DataType, 3>& x, double /*t*/,
+    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/) const
+    noexcept {
+  return {
+      make_with_value<db::item_type<hydro::Tags::ElectronFraction<DataType>>>(
+          x, 0.1)};
+}
+
+template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 SmoothFlow::variables(
     const tnsr::I<DataType, 3>& x, double /*t*/,
@@ -176,11 +187,13 @@ bool operator!=(const SmoothFlow& lhs, const SmoothFlow& rhs) noexcept {
                             tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) \
           const noexcept;
 
-GENERATE_INSTANTIATIONS(
-    INSTANTIATE_SCALARS, (double, DataVector),
-    (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
-     hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
-     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
+GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (double, DataVector),
+                        (hydro::Tags::RestMassDensity,
+                         hydro::Tags::SpecificInternalEnergy,
+                         hydro::Tags::Pressure, hydro::Tags::ElectronFraction,
+                         hydro::Tags::DivergenceCleaningField,
+                         hydro::Tags::LorentzFactor,
+                         hydro::Tags::SpecificEnthalpy))
 
 #define INSTANTIATE_VECTORS(_, data)                                         \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3, Frame::Inertial>> \

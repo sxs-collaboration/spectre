@@ -21,6 +21,8 @@ template <typename DataType>
 struct ComovingMagneticFieldSquared;
 template <typename DataType>
 struct DivergenceCleaningField;
+template <typename DataType>
+struct ElectronFraction;
 struct EquationOfStateBase;
 template <typename EquationOfStateType>
 struct EquationOfState;

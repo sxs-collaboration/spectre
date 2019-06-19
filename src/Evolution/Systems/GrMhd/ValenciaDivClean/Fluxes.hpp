@@ -40,21 +40,23 @@ namespace ValenciaDivClean {
  * B^m v_m\\
  * F^i({\tilde \tau}) = &~  {\tilde \tau} v^i_{tr} + \sqrt{\gamma} \alpha \left(
  * p + p_m \right) v^i - \alpha {\tilde B}^i B^m v_m \\
+ * F^i({\tilde D_e}) = &~ {\tilde D_e} v^i_{tr} \\
  * F^i({\tilde B}^j) = &~  {\tilde B}^j v^i_{tr} - \alpha v^j {\tilde B}^i +
  * \alpha \gamma^{ij} {\tilde \Phi} \\
  * F^i({\tilde \Phi}) = &~ \alpha {\tilde B^i} - \beta^i {\tilde \Phi}
  * \f}
  *
  * where the conserved variables \f${\tilde D}\f$, \f${\tilde S}_i\f$,
- * \f${\tilde \tau}\f$, \f${\tilde B}^i\f$, and \f${\tilde \Phi}\f$ are a
- * generalized mass-energy density, momentum density, specific internal energy
- * density, magnetic field, and divergence cleaning field.  Furthermore,
- * \f$v^i_{tr} = \alpha v^i - \beta^i\f$ is the transport velocity, \f$\alpha\f$
- * is the lapse, \f$\beta^i\f$ is the shift, \f$\gamma\f$ is the determinant of
- * the spatial metric \f$\gamma_{ij}\f$,  \f$v^i\f$ is the spatial velocity,
- * \f$B^i\f$ is the spatial magnetic field measured by an Eulerian observer,
- * \f$p\f$ is the fluid pressure, and \f$p_m = \frac{1}{2} \left[ \left( B^n v_n
- * \right)^2 + B^n B_n / W^2 \right]\f$ is the magnetic pressure.
+ * \f${\tilde \tau}\f$, \f${\tilde D_e}\f$, \f${\tilde B}^i\f$, and \f${\tilde
+ * \Phi}\f$ are a generalized mass-energy density, momentum density, specific
+ * internal energy density, electron_fraction, magnetic field, and divergence
+ * cleaning field.  Furthermore, \f$v^i_{tr} = \alpha v^i - \beta^i\f$ is the
+ * transport velocity, \f$\alpha\f$ is the lapse, \f$\beta^i\f$ is the shift,
+ * \f$\gamma\f$ is the determinant of the spatial metric \f$\gamma_{ij}\f$,
+ * \f$v^i\f$ is the spatial velocity, \f$B^i\f$ is the spatial magnetic field
+ * measured by an Eulerian observer, \f$p\f$ is the fluid pressure, and \f$p_m =
+ * \frac{1}{2} \left[ \left( B^n v_n \right)^2 + B^n B_n / W^2 \right]\f$ is the
+ * magnetic pressure.
  */
 struct ComputeFluxes {
   using return_tags =
@@ -63,6 +65,8 @@ struct ComputeFluxes {
                  ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeTau,
                               tmpl::size_t<3>, Frame::Inertial>,
                  ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeS<>,
+                              tmpl::size_t<3>, Frame::Inertial>,
+                 ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeElectronD,
                               tmpl::size_t<3>, Frame::Inertial>,
                  ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeB<>,
                               tmpl::size_t<3>, Frame::Inertial>,
@@ -73,6 +77,7 @@ struct ComputeFluxes {
       tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                  grmhd::ValenciaDivClean::Tags::TildeTau,
                  grmhd::ValenciaDivClean::Tags::TildeS<>,
+                 grmhd::ValenciaDivClean::Tags::TildeElectronD,
                  grmhd::ValenciaDivClean::Tags::TildeB<>,
                  grmhd::ValenciaDivClean::Tags::TildePhi, gr::Tags::Lapse<>,
                  gr::Tags::Shift<3>, gr::Tags::SqrtDetSpatialMetric<>,
@@ -86,10 +91,13 @@ struct ComputeFluxes {
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_tau_flux,
       gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          tilde_electron_d_flux,
       gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_b_flux,
       gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_phi_flux,
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
       const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+      const Scalar<DataVector>& tilde_electron_d,
       const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
       const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, 3, Frame::Inertial>& shift,

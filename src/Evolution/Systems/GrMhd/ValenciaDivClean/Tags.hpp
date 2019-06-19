@@ -69,6 +69,12 @@ struct TildeS : db::SimpleTag {
   static std::string name() noexcept { return Frame::prefix<Fr>() + "TildeS"; }
 };
 
+/// The densitized electron fraction \f${\tilde D_e}\f$
+struct TildeElectronD : db::SimpleTag {
+  using type = Scalar<DataVector>;
+  static std::string name() noexcept { return "TildeElectronD"; }
+};
+
 /// The densitized magnetic field \f${\tilde B^i}\f$
 template <typename Fr>
 struct TildeB : db::SimpleTag {

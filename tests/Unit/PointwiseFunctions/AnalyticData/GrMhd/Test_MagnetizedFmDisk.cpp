@@ -37,7 +37,8 @@ struct MagnetizedFmDiskProxy : grmhd::AnalyticData::MagnetizedFmDisk {
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
-                 hydro::Tags::SpecificEnthalpy<DataType>>;
+                 hydro::Tags::SpecificEnthalpy<DataType>,
+                 hydro::Tags::ElectronFraction<DataType>>;
 
   template <typename DataType>
   using grmhd_variables_tags =
@@ -112,8 +113,8 @@ void test_variables(const DataType& used_for_size) {
       &MagnetizedFmDiskProxy::grmhd_variables<DataType>, disk,
       "PointwiseFunctions.AnalyticData.GrMhd.MagnetizedFmDisk",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
-       "pressure", "lorentz_factor", "specific_enthalpy", "magnetic_field",
-       "divergence_cleaning_field"},
+       "pressure", "lorentz_factor", "specific_enthalpy", "electron_fraction",
+       "magnetic_field", "divergence_cleaning_field"},
       {{{-20., 20.}}}, member_variables, used_for_size, 1.0e-8);
 
   // Test a few of the GR components to make sure that the implementation
@@ -152,7 +153,7 @@ void test_variables(const DataType& used_for_size) {
       &MagnetizedFmDiskProxy::hydro_variables<DataType>, another_disk,
       "PointwiseFunctions.AnalyticData.GrMhd.MagnetizedFmDisk",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
-       "pressure", "lorentz_factor", "specific_enthalpy"},
+       "pressure", "lorentz_factor", "specific_enthalpy", "electron_fraction"},
       {{{-20., 20.}}}, member_variables, used_for_size, 1.0e-8);
   const auto magnetic_field =
       get<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>(

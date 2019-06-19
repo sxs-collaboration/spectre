@@ -53,6 +53,13 @@ struct DivergenceCleaningField : db::SimpleTag {
   static std::string name() noexcept { return "DivergenceCleaningField"; }
 };
 
+/// The electron fraction \f$Y_e\f$.
+template <typename DataType>
+struct ElectronFraction : db::SimpleTag {
+  using type = Scalar<DataType>;
+  static std::string name() noexcept { return "ElectronFraction"; }
+};
+
 /// Base tag for the equation of state
 struct EquationOfStateBase : db::BaseTag {};
 
@@ -228,5 +235,6 @@ using grmhd_tags =
                hydro::Tags::DivergenceCleaningField<DataType>,
                hydro::Tags::LorentzFactor<DataType>,
                hydro::Tags::Pressure<DataType>,
+               hydro::Tags::ElectronFraction<DataType>,
                hydro::Tags::SpecificEnthalpy<DataType>>;
 }  // namespace hydro

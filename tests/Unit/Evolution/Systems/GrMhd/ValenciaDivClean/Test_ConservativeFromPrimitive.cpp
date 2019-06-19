@@ -20,6 +20,7 @@ SPECTRE_TEST_CASE("Unit.GrMhd.ValenciaDivClean.ConservativeFromPrimitive",
   pypp::check_with_random_values<1>(
       &grmhd::ValenciaDivClean::ConservativeFromPrimitive::apply,
       "TestFunctions",
-      {"tilde_d", "tilde_tau", "tilde_s", "tilde_b", "tilde_phi"},
+      {"tilde_d", "tilde_tau", "tilde_s", "tilde_electron_d", "tilde_b",
+       "tilde_phi"},
       {{{0.0, 1.0}}}, DataVector{5});
 }

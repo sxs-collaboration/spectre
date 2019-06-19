@@ -115,6 +115,13 @@ def magnetic_field(x, bh_mass, bh_dimless_spin, dimless_r_in, dimless_r_max,
                                                   bh_dimless_spin))
 
 
+def electron_fraction(x, bh_mass, bh_dimless_spin, dimless_r_in,
+                      dimless_r_max, polytropic_constant,
+                      polytropic_exponent, threshold_density,
+                      plasma_beta):
+    return 0.1
+
+
 def divergence_cleaning_field(x, bh_mass, bh_dimless_spin, dimless_r_in,
                               dimless_r_max, polytropic_constant,
                               polytropic_exponent, threshold_density,

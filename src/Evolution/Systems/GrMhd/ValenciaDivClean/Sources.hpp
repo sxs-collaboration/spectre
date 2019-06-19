@@ -51,6 +51,7 @@ namespace ValenciaDivClean {
  * \alpha \\
  * S({\tilde \tau}) = & \alpha {\tilde S}^{mn} K_{mn} - {\tilde S}^m \partial_m
  * \alpha \\
+ * S({\tilde D_e}) = & 0\\
  * S({\tilde B}^i) = & -{\tilde B}^m \partial_m \beta^i + {\tilde \Phi}
  * \gamma^{im} \partial_m \alpha + \alpha {\tilde \Phi} \left( \frac{1}{2}
  * \gamma^{il} \gamma^{jk} - \gamma^{ij} \gamma^{lk} \right) \partial_l
@@ -67,19 +68,20 @@ namespace ValenciaDivClean {
  * v^i \right) - \frac{B^i B^j}{W^2} \right]
  * \f}
  *
- * where \f${\tilde D}\f$, \f${\tilde S}_i\f$, \f${\tilde \tau}\f$, \f${\tilde
- * B}^i\f$, and \f${\tilde \Phi}\f$ are a generalized mass-energy density,
- * momentum density, specific internal energy density, magnetic field, and
- * divergence cleaning field.  Furthermore, \f$\gamma\f$ is the determinant of
- * the spatial metric \f$\gamma_{ij}\f$, \f$\rho\f$ is the rest mass density,
- * \f$W\f$ is the Lorentz factor, \f$h\f$ is the specific enthalpy, \f$v^i\f$ is
- * the spatial velocity, \f$B^k\f$ is the magnetic field, \f$p\f$ is the
- * pressure, \f$p_m = \frac{1}{2} \left[ \left( B^n v_n \right)^2 + B^n B_n /
- * W^2 \right]\f$ is the magnetic pressure, \f$\alpha\f$ is the lapse,
- * \f$\beta^i\f$ is the shift, \f$K\f$ is the trace of the extrinsic curvature
- * \f$K_{ij}\f$, and \f$\kappa\f$ is a damping parameter that damps violations
- * of the divergence-free (no-monopole) condition \f$\Phi = \partial_i {\tilde
- * B}^i = 0\f$ .
+ * where \f${\tilde D}\f$, \f${\tilde S}_i\f$, \f${\tilde \tau}\f$,\f${\tilde
+ * D_e}\f$, \f${\tilde B}^i\f$, and \f${\tilde \Phi}\f$ are a generalized
+ * mass-energy density, momentum density, specific internal energy density,
+ * electron fraction, magnetic field, and divergence cleaning field.
+ * Furthermore, \f$\gamma\f$ is the determinant of the spatial metric
+ * \f$\gamma_{ij}\f$, \f$\rho\f$ is the rest mass density, \f$W\f$ is the
+ * Lorentz factor, \f$h\f$ is the specific enthalpy, \f$v^i\f$ is the spatial
+ * velocity, \f$B^k\f$ is the magnetic field, \f$p\f$ is the pressure, \f$p_m =
+ * \frac{1}{2} \left[ \left( B^n v_n \right)^2
+ * + B^n B_n / W^2 \right]\f$ is the magnetic pressure, \f$\alpha\f$ is the
+ * lapse, \f$\beta^i\f$ is the shift, \f$K\f$ is the trace of the extrinsic
+ * curvature \f$K_{ij}\f$, and \f$\kappa\f$ is a damping parameter that damps
+ * violations of the divergence-free (no-monopole) condition \f$\Phi =
+ * \partial_i {\tilde B}^i = 0\f$ .
  */
 struct ComputeSources {
   using return_tags =

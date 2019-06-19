@@ -69,6 +69,12 @@ def magnetic_field(x, rotor_radius, inner_density, outer_density,
     return np.array(magnetic_field)
 
 
+def electron_fraction(x, rotor_radius, inner_density,
+                      outer_density, pressure, angular_velocity,
+                      magnetic_field, adiabatic_index):
+    return 0.1
+
+
 def divergence_cleaning_field(x, rotor_radius, inner_density,
                               outer_density, pressure, angular_velocity,
                               magnetic_field, adiabatic_index):

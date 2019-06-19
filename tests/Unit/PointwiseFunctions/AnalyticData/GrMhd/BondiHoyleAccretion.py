@@ -78,6 +78,12 @@ def divergence_cleaning_field(x, bh_mass, bh_dimless_spin, rest_mass_density,
     return 0.0
 
 
+def electron_fraction(x, bh_mass, bh_dimless_spin, rest_mass_density,
+                      flow_speed, mag_field_strength,
+                      polytropic_constant, polytropic_exponent):
+    return 0.1
+
+
 def lorentz_factor(x, bh_mass, bh_dimless_spin, rest_mass_density, flow_speed,
                    mag_field_strength, polytropic_constant,
                    polytropic_exponent):

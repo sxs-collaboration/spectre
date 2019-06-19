@@ -28,12 +28,14 @@ void ConservativeFromPrimitive::apply(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,
     const gsl::not_null<Scalar<DataVector>*> tilde_tau,
     const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
+    const gsl::not_null<Scalar<DataVector>*> tilde_electron_d,
     const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
     const gsl::not_null<Scalar<DataVector>*> tilde_phi,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& pressure,
+    const Scalar<DataVector>& electron_fraction,
     const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
@@ -98,6 +100,7 @@ void ConservativeFromPrimitive::apply(
                           get(sqrt_det_spatial_metric) *
                           magnetic_field_one_form.get(i);
   }
+  get(*tilde_electron_d) = get(*tilde_d) * get(electron_fraction);
   for (size_t i = 0; i < 3; ++i) {
     tilde_b->get(i) = get(sqrt_det_spatial_metric) * magnetic_field.get(i);
   }

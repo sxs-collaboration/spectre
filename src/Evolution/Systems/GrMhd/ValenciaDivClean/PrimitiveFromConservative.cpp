@@ -45,6 +45,7 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
           const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
           const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
               spatial_velocity,
+          const gsl::not_null<Scalar<DataVector>*> electron_fraction,
           const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
               magnetic_field,
           const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
@@ -54,6 +55,7 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
           const Scalar<DataVector>& tilde_d,
           const Scalar<DataVector>& tilde_tau,
           const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
+          const Scalar<DataVector>& tilde_electron_d,
           const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
           const Scalar<DataVector>& tilde_phi,
           const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
@@ -61,6 +63,7 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
           const Scalar<DataVector>& sqrt_det_spatial_metric,
           const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
               equation_of_state) noexcept {
+  get(*electron_fraction) = get(tilde_electron_d) / get(tilde_d);
   get(*divergence_cleaning_field) =
       get(tilde_phi) / get(sqrt_det_spatial_metric);
   for (size_t i = 0; i < 3; ++i) {
@@ -109,16 +112,16 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
         primitive_data = boost::none;
     tmpl::for_each<OrderedListOfPrimitiveRecoverySchemes>([
       &pressure, &primitive_data, &total_energy_density,
-      &momentum_density_squared, &momentum_density_dot_magnetic_field,
-      &magnetic_field_squared, &rest_mass_density_times_lorentz_factor,
-      &equation_of_state, &s
+      &momentum_density_squared, &electron_fraction,
+      &momentum_density_dot_magnetic_field, &magnetic_field_squared,
+      &rest_mass_density_times_lorentz_factor, &equation_of_state, &s
     ](auto scheme) noexcept {
       using primitive_recovery_scheme = tmpl::type_from<decltype(scheme)>;
       if (not primitive_data) {
         primitive_data =
             primitive_recovery_scheme::template apply<ThermodynamicDim>(
                 get(*pressure)[s], total_energy_density[s],
-                get(momentum_density_squared)[s],
+                get(momentum_density_squared)[s], get(*electron_fraction)[s],
                 get(momentum_density_dot_magnetic_field)[s],
                 get(magnetic_field_squared)[s],
                 rest_mass_density_times_lorentz_factor[s], equation_of_state);

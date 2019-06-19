@@ -116,6 +116,16 @@ TovStar<RadialSolution>::variables(
 
 template <typename RadialSolution>
 template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
+TovStar<RadialSolution>::variables(
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/,
+    const RadialVariables<DataType>& /*radial_vars*/) const noexcept {
+  return make_with_value<Scalar<DataType>>(x, 0.1);
+}
+
+template <typename RadialSolution>
+template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 TovStar<RadialSolution>::variables(
     const tnsr::I<DataType, 3>& x,
@@ -342,6 +352,11 @@ bool operator!=(const TovStar<RadialSolution>& lhs,
       const tnsr::I<DTYPE(data), 3>& x,                                        \
       tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3,                    \
                                             Frame::Inertial>> /*meta*/,        \
+      const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
+  template tuples::TaggedTuple<hydro::Tags::ElectronFraction<DTYPE(data)>>     \
+  TovStar<STYPE(data)>::variables(                                             \
+      const tnsr::I<DTYPE(data), 3>& x,                                        \
+      tmpl::list<hydro::Tags::ElectronFraction<DTYPE(data)>> /*meta*/,         \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
   template tuples::TaggedTuple<                                                \
       hydro::Tags::DivergenceCleaningField<DTYPE(data)>>                       \

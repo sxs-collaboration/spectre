@@ -43,7 +43,8 @@ struct KomissarovShockProxy : grmhd::Solutions::KomissarovShock {
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
-                 hydro::Tags::SpecificEnthalpy<DataType>>;
+                 hydro::Tags::SpecificEnthalpy<DataType>,
+                 hydro::Tags::ElectronFraction<DataType>>;
 
   template <typename DataType>
   using grmhd_variables_tags =
@@ -179,7 +180,7 @@ void test_variables(const DataType& used_for_size) noexcept {
       &KomissarovShockProxy::hydro_variables<DataType>, komissarov_shock,
       "KomissarovShock",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
-       "pressure", "lorentz_factor", "specific_enthalpy"},
+       "pressure", "lorentz_factor", "specific_enthalpy", "electron_fraction"},
       {{{-1., 1.}}}, member_variables, used_for_size);
 
   pypp::check_with_random_values<
@@ -187,8 +188,8 @@ void test_variables(const DataType& used_for_size) noexcept {
       &KomissarovShockProxy::grmhd_variables<DataType>, komissarov_shock,
       "KomissarovShock",
       {"rest_mass_density", "spatial_velocity", "specific_internal_energy",
-       "pressure", "lorentz_factor", "specific_enthalpy", "magnetic_field",
-       "divergence_cleaning_field"},
+       "pressure", "lorentz_factor", "specific_enthalpy", "electron_fraction",
+       "magnetic_field", "divergence_cleaning_field"},
       {{{-1., 1.}}}, member_variables, used_for_size);
 }
 

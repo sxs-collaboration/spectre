@@ -16,4 +16,5 @@ template class Limiters::Minmod<
     3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                   grmhd::ValenciaDivClean::Tags::TildeTau,
                   grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,
+                  grmhd::ValenciaDivClean::Tags::TildeElectronD,
                   grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>>;

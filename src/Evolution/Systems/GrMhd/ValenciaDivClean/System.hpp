@@ -27,7 +27,8 @@ class Variables;
 /// \ingroup EvolutionSystemsGroup
 /// \brief Items related to general relativistic magnetohydrodynamics (GRMHD)
 namespace grmhd {
-/// The Valencia formulation of ideal GRMHD with divergence cleaning.
+/// The Valencia formulation of ideal GRMHD with divergence cleaning plus an
+/// evolution equation for the electron fraction
 ///
 /// References:
 /// - [Numerical 3+1 General Relativistic Magnetohydrodynamics: A Local
@@ -48,9 +49,9 @@ struct System {
   using primitive_variables_tag =
       ::Tags::Variables<hydro::grmhd_tags<DataVector>>;
 
-  using variables_tag =
-      ::Tags::Variables<tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<>,
-                                   Tags::TildeB<>, Tags::TildePhi>>;
+  using variables_tag = ::Tags::Variables<
+      tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<>,
+                 Tags::TildeElectronD, Tags::TildeB<>, Tags::TildePhi>>;
 
   using spacetime_variables_tag = ::Tags::Variables<tmpl::list<
       gr::Tags::Lapse<DataVector>,

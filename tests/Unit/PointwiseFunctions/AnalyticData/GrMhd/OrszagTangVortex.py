@@ -40,5 +40,9 @@ def magnetic_field(x):
     ])
 
 
+def electron_fraction(x):
+    return 0.1
+
+
 def divergence_cleaning_field(x):
     return 0.

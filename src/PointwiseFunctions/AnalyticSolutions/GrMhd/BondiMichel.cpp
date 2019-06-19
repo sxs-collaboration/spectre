@@ -208,6 +208,15 @@ BondiMichel::variables(
 }
 
 template <typename DataType>
+tuples::TaggedTuple<hydro::Tags::ElectronFraction<DataType>>
+BondiMichel::variables(
+    const tnsr::I<DataType, 3>& x,
+    tmpl::list<hydro::Tags::ElectronFraction<DataType>> /*meta*/,
+    const IntermediateVars<DataType>& /*vars*/) const noexcept {
+  return {make_with_value<Scalar<DataType>>(x, 0.1)};
+}
+
+template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& x,
@@ -360,6 +369,11 @@ bool operator!=(const BondiMichel& lhs, const BondiMichel& rhs) noexcept {
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3,                   \
                                             Frame::Inertial>> /*meta*/,       \
+      const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
+  template tuples::TaggedTuple<hydro::Tags::ElectronFraction<DTYPE(data)>>    \
+  BondiMichel::variables(                                                     \
+      const tnsr::I<DTYPE(data), 3>& x,                                       \
+      tmpl::list<hydro::Tags::ElectronFraction<DTYPE(data)>> /*meta*/,        \
       const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
   template tuples::TaggedTuple<                                               \
       hydro::Tags::DivergenceCleaningField<DTYPE(data)>>                      \

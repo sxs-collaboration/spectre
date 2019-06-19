@@ -229,7 +229,7 @@ class TovStar {
       17, (hydro::Tags::RestMassDensity<DataType>,                             \
            hydro::Tags::SpecificInternalEnergy<DataType>,                      \
            hydro::Tags::Pressure<DataType>, SpatialVelocity<DataType>,         \
-           MagneticField<DataType>,                                            \
+           MagneticField<DataType>, hydro::Tags::ElectronFraction<DataType>,   \
            hydro::Tags::DivergenceCleaningField<DataType>,                     \
            hydro::Tags::LorentzFactor<DataType>,                               \
            hydro::Tags::SpecificEnthalpy<DataType>, gr::Tags::Lapse<DataType>, \

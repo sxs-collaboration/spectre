@@ -25,7 +25,7 @@
 
 namespace {
 void compute_characteristic_speeds(
-    const gsl::not_null<std::array<DataVector, 9>*> pchar_speeds,
+    const gsl::not_null<std::array<DataVector, 10>*> pchar_speeds,
     const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,
     const tnsr::I<DataVector, 3>& spatial_velocity,
     const Scalar<DataVector>& spatial_velocity_squared,
@@ -40,7 +40,7 @@ void compute_characteristic_speeds(
   Scalar<DataVector> temp0(char_speeds[0].data(), num_grid_points);
   dot_product(make_not_null(&temp0), normal, shift);
   char_speeds[0] *= -1.0;
-  char_speeds[8] = char_speeds[0] + get(lapse);
+  char_speeds[9] = char_speeds[0] + get(lapse);
 
   char_speeds[0] -= get(lapse);
   // Mapping of indices between GRMHD char speeds and relativistic Euler char
@@ -53,7 +53,8 @@ void compute_characteristic_speeds(
   //   4           3
   //   5           1
   //   6           1
-  //   7           4
+  //   7           1
+  //   8           4
   //
   // Create an array of non-owning DataVectors to be passed to the Relativistic
   // Euler char speed computation as a not_null<array<DataVectors>>.
@@ -65,10 +66,10 @@ void compute_characteristic_speeds(
     gsl::at(rel_euler_char_speeds, i)
         .set_data_ref(&gsl::at(char_speeds, i + 1));
   }
-  if (gsl::at(char_speeds, 7).size() != num_grid_points) {
-    gsl::at(char_speeds, 7) = DataVector(num_grid_points);
+  if (gsl::at(char_speeds, 8).size() != num_grid_points) {
+    gsl::at(char_speeds, 8) = DataVector(num_grid_points);
   }
-  rel_euler_char_speeds[4].set_data_ref(&(char_speeds[7]));
+  rel_euler_char_speeds[4].set_data_ref(&(char_speeds[8]));
 
   RelativisticEuler::Valencia::characteristic_speeds(
       make_not_null(&rel_euler_char_speeds), lapse, shift, spatial_velocity,
@@ -78,7 +79,7 @@ void compute_characteristic_speeds(
                              (1.0 - get(sound_speed_squared))},
       normal);
 
-  for (size_t i = 5; i < 7; ++i) {
+  for (size_t i = 5; i < 8; ++i) {
     gsl::at(char_speeds, i) = rel_euler_char_speeds[1];
   }
 }
@@ -88,7 +89,7 @@ namespace grmhd {
 namespace ValenciaDivClean {
 template <size_t ThermodynamicDim>
 void characteristic_speeds(
-    const gsl::not_null<std::array<DataVector, 9>*> char_speeds,
+    const gsl::not_null<std::array<DataVector, 10>*> char_speeds,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
@@ -105,7 +106,7 @@ void characteristic_speeds(
   // Remaining places to reduce allocations:
   // - EoS calls: 2 allocations
   // - Pass temp pointer to Rel Euler: 1 allocation
-  // - Return a DataVectorArray (not yet implemented): 9 allocations
+  // - Return a DataVectorArray (not yet implemented): 10 allocations
   Variables<tmpl::list<
       hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
       hydro::Tags::SpatialVelocitySquared<DataVector>,
@@ -195,7 +196,7 @@ void characteristic_speeds(
 }
 
 template <size_t ThermodynamicDim>
-std::array<DataVector, 9> characteristic_speeds(
+std::array<DataVector, 10> characteristic_speeds(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
@@ -207,7 +208,7 @@ std::array<DataVector, 9> characteristic_speeds(
     const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) noexcept {
-  std::array<DataVector, 9> char_speeds{};
+  std::array<DataVector, 10> char_speeds{};
   characteristic_speeds(make_not_null(&char_speeds), rest_mass_density,
                         specific_internal_energy, specific_enthalpy,
                         spatial_velocity, lorentz_factor, magnetic_field, lapse,
@@ -218,7 +219,7 @@ std::array<DataVector, 9> characteristic_speeds(
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATION(r, data)                                              \
-  template std::array<DataVector, 9> characteristic_speeds<GET_DIM(data)>(  \
+  template std::array<DataVector, 10> characteristic_speeds<GET_DIM(data)>( \
       const Scalar<DataVector>& rest_mass_density,                          \
       const Scalar<DataVector>& specific_internal_energy,                   \
       const Scalar<DataVector>& specific_enthalpy,                          \
@@ -231,7 +232,7 @@ std::array<DataVector, 9> characteristic_speeds(
       const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
           equation_of_state) noexcept;                                      \
   template void characteristic_speeds<GET_DIM(data)>(                       \
-      const gsl::not_null<std::array<DataVector, 9>*> char_speeds,          \
+      const gsl::not_null<std::array<DataVector, 10>*> char_speeds,         \
       const Scalar<DataVector>& rest_mass_density,                          \
       const Scalar<DataVector>& specific_internal_energy,                   \
       const Scalar<DataVector>& specific_enthalpy,                          \

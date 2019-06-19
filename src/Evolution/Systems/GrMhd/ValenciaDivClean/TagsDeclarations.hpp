@@ -19,6 +19,7 @@ struct TildeD;
 struct TildeTau;
 template <typename Fr = Frame::Inertial>
 struct TildeS;
+struct TildeElectronD;
 template <typename Fr = Frame::Inertial>
 struct TildeB;
 struct TildePhi;
