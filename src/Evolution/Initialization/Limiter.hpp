@@ -22,6 +22,7 @@ class ConstGlobalCache;
 
 namespace Initialization {
 namespace Actions {
+/// \ingroup InitializationGroup
 /// \brief Allocate items for minmod limiter
 ///
 /// DataBox changes:

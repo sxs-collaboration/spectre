@@ -33,6 +33,7 @@ struct Inertial;
 
 namespace Initialization {
 namespace Actions {
+/// \ingroup InitializationGroup
 /// \brief Allocate and set variables needed for evolution of conservative
 /// systems
 ///

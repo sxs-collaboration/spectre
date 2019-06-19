@@ -109,6 +109,7 @@ auto merge_into_databox_impl(
 }  // namespace detail
 
 /*!
+ * \ingroup InitializationGroup
  * \brief Add tags that are not yet in the DataBox.
  *
  * How duplicate tags are handled depends on the `MergePolicy` passed. The

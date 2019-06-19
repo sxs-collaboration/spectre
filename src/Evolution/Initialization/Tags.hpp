@@ -16,6 +16,8 @@ class Domain;
 /// \endcond
 
 namespace Initialization {
+/// \ingroup InitializationGroup
+/// \brief %Tags used during initialization of parallel components.
 namespace Tags {
 
 template <size_t Dim>

@@ -34,6 +34,7 @@ struct Inertial;
 
 namespace Initialization {
 namespace Actions {
+/// \ingroup InitializationGroup
 /// \brief Initialize items related to time-evolution of the system
 ///
 /// DataBox changes:

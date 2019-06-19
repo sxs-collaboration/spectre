@@ -25,23 +25,28 @@ class ConstGlobalCache;
 /// \endcond
 
 namespace Initialization {
+/// \ingroup InitializationGroup
 /// %Tags that are to be sliced to the faces of the element
 template <typename... Tags>
 using slice_tags_to_face = tmpl::list<Tags...>;
 
+/// \ingroup InitializationGroup
 /// %Tags that are to be sliced to the exterior side of the faces of the element
 template <typename... Tags>
 using slice_tags_to_exterior = tmpl::list<Tags...>;
 
+/// \ingroup InitializationGroup
 /// Compute tags on the faces of the element
 template <typename... Tags>
 using face_compute_tags = tmpl::list<Tags...>;
 
+/// \ingroup InitializationGroup
 /// Compute tags on the exterior side of the faces of the element
 template <typename... Tags>
 using exterior_compute_tags = tmpl::list<Tags...>;
 
 namespace Actions {
+/// \ingroup InitializationGroup
 /// \brief Initialize items related to the interfaces between Elements and on
 /// external boundaries
 ///

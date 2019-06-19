@@ -16,6 +16,7 @@
 
 /// Items for initializing the DataBox%es of parallel components
 namespace Initialization {
+/// \ingroup InitializationGroup
 /// \brief Construct the initial Mesh of an Element.
 ///
 /// \details When constructing the Mesh of an Element, pass its id, and use the

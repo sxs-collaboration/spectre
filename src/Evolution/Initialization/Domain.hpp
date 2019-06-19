@@ -41,6 +41,7 @@ class ConstGlobalCache;
 
 namespace Initialization {
 namespace Actions {
+/// \ingroup InitializationGroup
 /// \brief Initialize items related to the basic structure of the Domain
 ///
 /// DataBox changes:

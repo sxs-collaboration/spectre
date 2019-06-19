@@ -41,6 +41,7 @@ class ConstGlobalCache;
 
 namespace Initialization {
 namespace Actions {
+/// \ingroup InitializationGroup
 /// \brief Initialize items related to the discontinuous Galerkin method.
 ///
 /// Specifically, mortar data and other information necessary for flux

@@ -28,11 +28,13 @@ struct get_options_tags<
 };
 }  // namespace detail
 
+/// \ingroup InitializationGroup
 /// Get the list of input file options from the list of initialization actions.
 template <typename InitializationActionList>
 using option_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
     InitializationActionList, detail::get_options_tags<tmpl::_1>>>>;
 
+/// \ingroup InitializationGroup
 /// Available actions to be used in the initialization.
 ///
 /// The action list for initialization must end with the
@@ -46,6 +48,7 @@ using option_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
 /// \snippet Evolution/Initialization/Test_Initialize.cpp options_to_databox
 ///
 namespace Actions {
+/// \ingroup InitializationGroup
 struct RemoveOptionsAndTerminatePhase {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ArrayIndex,
