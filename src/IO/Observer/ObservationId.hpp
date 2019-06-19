@@ -83,7 +83,8 @@ class ObservationId {
 };
 
 template <typename ObservationType>
-ObservationId::ObservationId(const double t, const ObservationType& /*meta*/,
+ObservationId::ObservationId(const double t,  // NOLINT
+                             const ObservationType& /*meta*/,
                              const std::string& observation_subtype) noexcept
     : observation_type_hash_(std::hash<std::string>{}(
           pretty_type::get_name<ObservationType>() + observation_subtype)),

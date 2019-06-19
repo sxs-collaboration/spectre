@@ -36,16 +36,18 @@ namespace cg_detail {
 
 template <typename BroadcastTarget>
 struct InitializeResidual {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<
+          DbTagsList,
+          db::add_tag_prefix<LinearSolver::Tags::MagnitudeSquare,
+                             db::add_tag_prefix<LinearSolver::Tags::Residual,
+                                                typename Metavariables::system::
+                                                    fields_tag>>>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const double residual_square) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using residual_square_tag = db::add_tag_prefix<
@@ -95,16 +97,18 @@ struct InitializeResidual {
 
 template <typename BroadcastTarget>
 struct ComputeAlpha {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<
+          DbTagsList,
+          db::add_tag_prefix<LinearSolver::Tags::MagnitudeSquare,
+                             db::add_tag_prefix<LinearSolver::Tags::Residual,
+                                                typename Metavariables::system::
+                                                    fields_tag>>>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const double conj_grad_inner_product) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using residual_square_tag = db::add_tag_prefix<
@@ -119,16 +123,18 @@ struct ComputeAlpha {
 
 template <typename BroadcastTarget>
 struct UpdateResidual {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<
+          DbTagsList,
+          db::add_tag_prefix<LinearSolver::Tags::MagnitudeSquare,
+                             db::add_tag_prefix<LinearSolver::Tags::Residual,
+                                                typename Metavariables::system::
+                                                    fields_tag>>>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const double residual_square) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;
     using residual_square_tag = db::add_tag_prefix<

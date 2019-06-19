@@ -142,6 +142,23 @@ struct MockObserverWriter {
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct MockInterpolationTarget {
+ private:
+  struct RegistrationHelper {
+    template <typename ParallelComponent, typename DbTagsList,
+              typename ArrayIndex>
+    static std::pair<observers::TypeOfObservation, observers::ObservationId>
+    register_info(const db::DataBox<DbTagsList>& /*box*/,
+                  const ArrayIndex& /*array_index*/) noexcept {
+      observers::ObservationId fake_initial_observation_id{
+          0., InterpolationTargetTag{}};
+      return {
+          observers::TypeOfObservation::Reduction,
+          std::move(fake_initial_observation_id)  // NOLINT
+      };
+    }
+  };
+
+ public:
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
@@ -153,8 +170,10 @@ struct MockInterpolationTarget {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<intrp::Actions::InitializeInterpolationTarget<
               InterpolationTargetTag>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Registration, tmpl::list<>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Registration,
+          tmpl::list<::observers::Actions::RegisterSingletonWithObserverWriter<
+              RegistrationHelper>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
   using add_options_to_databox =
@@ -339,24 +358,9 @@ SPECTRE_TEST_CASE(
   }
 
   // Register the InterpolationTargets with the ObserverWriter.
-  ActionTesting::simple_action<
-      target_a_component,
-      ::observers::Actions::RegisterSingletonWithObserverWriter>(
-      make_not_null(&runner), 0,
-      observers::ObservationId(temporal_id.time().value(),
-                               typename metavars::SurfaceA{}));
-  ActionTesting::simple_action<
-      target_b_component,
-      ::observers::Actions::RegisterSingletonWithObserverWriter>(
-      make_not_null(&runner), 0,
-      observers::ObservationId(temporal_id.time().value(),
-                               typename metavars::SurfaceB{}));
-  ActionTesting::simple_action<
-      target_c_component,
-      ::observers::Actions::RegisterSingletonWithObserverWriter>(
-      make_not_null(&runner), 0,
-      observers::ObservationId(temporal_id.time().value(),
-                               typename metavars::SurfaceC{}));
+  ActionTesting::next_action<target_a_component>(make_not_null(&runner), 0);
+  ActionTesting::next_action<target_b_component>(make_not_null(&runner), 0);
+  ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
 
   // Tell the InterpolationTargets that we want to interpolate at
   // temporal_id.

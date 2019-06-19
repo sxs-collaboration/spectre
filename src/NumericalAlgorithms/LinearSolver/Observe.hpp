@@ -7,6 +7,7 @@
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
+#include "IO/Observer/TypeOfObservation.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -23,6 +24,20 @@ using reduction_data = Parallel::ReductionData<
     Parallel::ReductionDatum<double, funcl::AssertEqual<>>>;
 
 struct ObservationType {};
+
+struct Registration {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename ArrayIndex>
+  static std::pair<observers::TypeOfObservation, observers::ObservationId>
+  register_info(const db::DataBox<DbTagsList>& /*box*/,
+                const ArrayIndex& /*array_index*/) noexcept {
+    observers::ObservationId fake_initial_observation_id{0., ObservationType{}};
+    return {
+        observers::TypeOfObservation::Reduction,
+        std::move(fake_initial_observation_id)  // NOLINT
+    };
+  }
+};
 
 /*!
  * \brief Contributes data from the residual monitor to the reduction observer

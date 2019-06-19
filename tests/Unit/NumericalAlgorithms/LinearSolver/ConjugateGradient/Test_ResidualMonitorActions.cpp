@@ -24,12 +24,14 @@
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitorActions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/Observe.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/NumericalAlgorithms/LinearSolver/ResidualMonitorActionsTestHelpers.hpp"
+
 // IWYU pragma: no_forward_declare db::DataBox
 
 namespace Parallel {
@@ -44,8 +46,7 @@ struct UpdateOperand;
 }  // namespace cg_detail
 }  // namespace LinearSolver
 
-// NOLINTNEXTLINE(google-build-using-namespace)
-using namespace ResidualMonitorActionsTestHelpers;
+namespace helpers = ResidualMonitorActionsTestHelpers;
 
 namespace {
 
@@ -53,6 +54,15 @@ struct VectorTag : db::SimpleTag {
   using type = DenseVector<double>;
   static std::string name() noexcept { return "VectorTag"; }
 };
+
+using residual_square_tag = db::add_tag_prefix<
+    LinearSolver::Tags::MagnitudeSquare,
+    db::add_tag_prefix<LinearSolver::Tags::Residual, VectorTag>>;
+using initial_residual_magnitude_tag = db::add_tag_prefix<
+    LinearSolver::Tags::Initial,
+    db::add_tag_prefix<
+        LinearSolver::Tags::Magnitude,
+        db::add_tag_prefix<LinearSolver::Tags::Residual, VectorTag>>>;
 
 struct CheckValueTag : db::SimpleTag {
   using type = double;
@@ -62,13 +72,6 @@ struct CheckValueTag : db::SimpleTag {
 using CheckConvergedTag = LinearSolver::Tags::HasConverged;
 
 using check_tags = tmpl::list<CheckValueTag, CheckConvergedTag>;
-
-template <typename Metavariables>
-using residual_monitor_tags =
-    tmpl::append<typename LinearSolver::cg_detail::InitializeResidualMonitor<
-                     Metavariables>::simple_tags,
-                 typename LinearSolver::cg_detail::InitializeResidualMonitor<
-                     Metavariables>::compute_tags>;
 
 template <typename Metavariables>
 struct MockResidualMonitor {
@@ -82,20 +85,21 @@ struct MockResidualMonitor {
   using const_global_cache_tag_list =
       typename LinearSolver::cg_detail::ResidualMonitor<
           Metavariables>::const_global_cache_tag_list;
-  using action_list = tmpl::list<>;
-  using initial_databox =
-      db::compute_databox_type<residual_monitor_tags<Metavariables>>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<
+          LinearSolver::cg_detail::InitializeResidualMonitor<Metavariables>>>>;
 };
 
 struct MockInitializeHasConverged {
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent, typename ArrayIndex>
-  static void apply(db::DataBox<check_tags>& box,  // NOLINT
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<DbTagsList, CheckConvergedTag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const db::item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
     db::mutate<CheckConvergedTag>(
@@ -108,14 +112,13 @@ struct MockInitializeHasConverged {
 };
 
 struct MockUpdateFieldValues {
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent, typename ArrayIndex>
-  static void apply(db::DataBox<check_tags>& box,  // NOLINT
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<DbTagsList, CheckValueTag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const double alpha) noexcept {
     db::mutate<CheckValueTag>(
         make_not_null(&box), [alpha](const gsl::not_null<double*>
@@ -126,15 +129,13 @@ struct MockUpdateFieldValues {
 };
 
 struct MockUpdateOperand {
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent, typename ArrayIndex>
-  static void apply(db::DataBox<check_tags>& box,  // NOLINT
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <
+      typename ParallelComponent, typename DbTagsList, typename Metavariables,
+      typename ArrayIndex,
+      Requires<tmpl::list_contains_v<DbTagsList, CheckValueTag>> = nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    const double res_ratio,
+                    const ArrayIndex& /*array_index*/, const double res_ratio,
                     const db::item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
     db::mutate<CheckValueTag, CheckConvergedTag>(
@@ -157,8 +158,10 @@ struct MockElementArray {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<check_tags>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<ActionTesting::InitializeDataBox<check_tags>>>>;
 
   using replace_these_simple_actions =
       tmpl::list<LinearSolver::cg_detail::InitializeHasConverged,
@@ -176,275 +179,248 @@ struct System {
 struct Metavariables {
   using component_list = tmpl::list<MockResidualMonitor<Metavariables>,
                                     MockElementArray<Metavariables>,
-                                    MockObserverWriter<Metavariables>>;
+                                    helpers::MockObserverWriter<Metavariables>>;
   using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
-  enum class Phase {};
+  enum class Phase { Initialization, RegisterWithObserver, Testing, Exit };
 };
 }  // namespace
 
 SPECTRE_TEST_CASE(
     "Unit.Numerical.LinearSolver.ConjugateGradient.ResidualMonitorActions",
     "[Unit][NumericalAlgorithms][LinearSolver][Actions]") {
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
+  using residual_monitor = MockResidualMonitor<Metavariables>;
+  using element_array = MockElementArray<Metavariables>;
+  using observer_writer = helpers::MockObserverWriter<Metavariables>;
+
+  const Convergence::Criteria convergence_criteria{2, 0., 0.5};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{
+      {::Verbosity::Verbose, convergence_criteria}};
 
   // Setup mock residual monitor
-  const Convergence::Criteria convergence_criteria{2, 0., 0.5};
-  using MockSingletonObjectsTag = MockRuntimeSystem::MockDistributedObjectsTag<
-      MockResidualMonitor<Metavariables>>;
-  const int singleton_id{0};
-  tuples::get<MockSingletonObjectsTag>(dist_objects)
-      .emplace(singleton_id,
-               db::create<
-                   typename LinearSolver::cg_detail::InitializeResidualMonitor<
-                       Metavariables>::simple_tags,
-                   typename LinearSolver::cg_detail::InitializeResidualMonitor<
-                       Metavariables>::compute_tags>(
-                   convergence_criteria, 0_st,
-                   std::numeric_limits<double>::signaling_NaN(),
-                   std::numeric_limits<double>::signaling_NaN()));
+  ActionTesting::emplace_component<residual_monitor>(&runner, 0);
+  ActionTesting::next_action<residual_monitor>(make_not_null(&runner), 0);
 
   // Setup mock element array
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<
-          MockElementArray<Metavariables>>;
-  const int element_id{0};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(element_id, db::create<check_tags>(
-                               std::numeric_limits<double>::signaling_NaN(),
-                               db::item_type<CheckConvergedTag>{}));
+  ActionTesting::emplace_component_and_initialize<element_array>(
+      &runner, 0,
+      {std::numeric_limits<double>::signaling_NaN(),
+       db::item_type<CheckConvergedTag>{}});
 
   // Setup mock observer writer
-  using MockObserverObjectsTag = MockRuntimeSystem::MockDistributedObjectsTag<
-      MockObserverWriter<Metavariables>>;
-  tuples::get<MockObserverObjectsTag>(dist_objects)
-      .emplace(singleton_id,
-               db::create<observer_writer_tags>(
-                   observers::ObservationId{}, std::string{},
-                   std::vector<std::string>{},
-                   std::tuple<size_t, double>{
-                       0, std::numeric_limits<double>::signaling_NaN()}));
-
-  MockRuntimeSystem runner{{::Verbosity::Verbose, convergence_criteria},
-                           std::move(dist_objects)};
+  ActionTesting::emplace_component_and_initialize<observer_writer>(
+      &runner, 0,
+      {observers::ObservationId{}, std::string{}, std::vector<std::string>{},
+       std::tuple<size_t, double>{
+           0, std::numeric_limits<double>::signaling_NaN()}});
 
   // DataBox shortcuts
-  const auto get_box = [&runner, &singleton_id]() -> decltype(auto) {
-    return runner.algorithms<MockResidualMonitor<Metavariables>>()
-        .at(singleton_id)
-        .get_databox<
-            db::compute_databox_type<residual_monitor_tags<Metavariables>>>();
+  const auto get_residual_monitor_tag =
+      [&runner](auto tag_v) -> decltype(auto) {
+    using tag = std::decay_t<decltype(tag_v)>;
+    return ActionTesting::get_databox_tag<residual_monitor, tag>(runner, 0);
   };
-  const auto get_mock_element_box = [&runner, &element_id]() -> decltype(auto) {
-    return runner.algorithms<MockElementArray<Metavariables>>()
-        .at(element_id)
-        .get_databox<db::compute_databox_type<check_tags>>();
+  const auto get_element_tag = [&runner](auto tag_v) -> decltype(auto) {
+    using tag = std::decay_t<decltype(tag_v)>;
+    return ActionTesting::get_databox_tag<element_array, tag>(runner, 0);
   };
-  const auto get_mock_observer_writer_box =
-      [&runner, &singleton_id]() -> decltype(auto) {
-    return runner.algorithms<MockObserverWriter<Metavariables>>()
-        .at(singleton_id)
-        .get_databox<db::compute_databox_type<observer_writer_tags>>();
+  const auto get_observer_writer_tag = [&runner](auto tag_v) -> decltype(auto) {
+    using tag = std::decay_t<decltype(tag_v)>;
+    return ActionTesting::get_databox_tag<observer_writer, tag>(runner, 0);
   };
 
-  using residual_square_tag = db::add_tag_prefix<
-      LinearSolver::Tags::MagnitudeSquare,
-      db::add_tag_prefix<LinearSolver::Tags::Residual, VectorTag>>;
-  using initial_residual_magnitude_tag = db::add_tag_prefix<
-      LinearSolver::Tags::Initial,
-      db::add_tag_prefix<
-          LinearSolver::Tags::Magnitude,
-          db::add_tag_prefix<LinearSolver::Tags::Residual, VectorTag>>>;
+  runner.set_phase(Metavariables::Phase::Testing);
 
   SECTION("InitializeResidual") {
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::InitializeResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               4.);
-    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
-        singleton_id);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    const auto& box = get_box();
-    CHECK(db::get<residual_square_tag>(box) == 4.);
-    CHECK(db::get<initial_residual_magnitude_tag>(box) == 2.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
-    CHECK_FALSE(get<LinearSolver::Tags::HasConverged>(box));
-    const auto& mock_element_box = get_mock_element_box();
-    CHECK_FALSE(db::get<CheckConvergedTag>(mock_element_box));
-    const auto& mock_observer_writer_box = get_mock_observer_writer_box();
-    CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::InitializeResidual<element_array>>(
+        make_not_null(&runner), 0, 4.);
+    ActionTesting::invoke_queued_threaded_action<observer_writer>(
+        make_not_null(&runner), 0);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    // Test residual monitor state
+    CHECK(get_residual_monitor_tag(residual_square_tag{}) == 4.);
+    CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 2.);
+    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 0);
+    CHECK_FALSE(get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+    // Test element state
+    CHECK_FALSE(get_element_tag(CheckConvergedTag{}));
+    // Test observer writer state
+    CHECK(get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
           observers::ObservationId{
               0, LinearSolver::observe_detail::ObservationType{}});
-    CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
+    CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
           "/linear_residuals");
-    CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
+    CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==
           std::vector<std::string>{"Iteration", "Residual"});
-    CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+    CHECK(get<0>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
           0);
-    CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+    CHECK(get<1>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
           approx(2.));
   }
 
   SECTION("InitializeResidualAndConverge") {
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::InitializeResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               0.);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    const auto& box = get_box();
-    CHECK(db::get<residual_square_tag>(box) == 0.);
-    CHECK(db::get<initial_residual_magnitude_tag>(box) == 0.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
-    CHECK(get<LinearSolver::Tags::HasConverged>(box));
-    const auto& mock_element_box = get_mock_element_box();
-    CHECK(db::get<CheckConvergedTag>(mock_element_box));
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::InitializeResidual<element_array>>(
+        make_not_null(&runner), 0, 0.);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    // Test residual monitor state
+    CHECK(get_residual_monitor_tag(residual_square_tag{}) == 0.);
+    CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 0.);
+    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 0);
+    CHECK(get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+    // Test element state
+    CHECK(get_element_tag(CheckConvergedTag{}));
   }
 
   SECTION("ComputeAlpha") {
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::InitializeResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               1.);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    runner.simple_action<
-        MockResidualMonitor<Metavariables>,
-        LinearSolver::cg_detail::ComputeAlpha<MockElementArray<Metavariables>>>(
-        singleton_id, 2.);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    const auto& box = get_box();
-    CHECK(db::get<residual_square_tag>(box) == 1.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
-    const auto& mock_element_box = get_mock_element_box();
-    CHECK(db::get<CheckValueTag>(mock_element_box) == 0.5);
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::InitializeResidual<element_array>>(
+        make_not_null(&runner), 0, 1.);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    ActionTesting::simple_action<
+        residual_monitor, LinearSolver::cg_detail::ComputeAlpha<element_array>>(
+        make_not_null(&runner), 0, 2.);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    // Test residual monitor state
+    CHECK(get_residual_monitor_tag(residual_square_tag{}) == 1.);
+    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 0);
+    // Test element state
+    CHECK(get_element_tag(CheckValueTag{}) == 0.5);
   }
 
   SECTION("UpdateResidual") {
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::InitializeResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               9.);
-    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
-        singleton_id);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::UpdateResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               4.);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    runner.invoke_queued_threaded_action<MockObserverWriter<Metavariables>>(
-        singleton_id);
-    const auto& box = get_box();
-    CHECK(db::get<residual_square_tag>(box) == 4.);
-    CHECK(db::get<initial_residual_magnitude_tag>(box) == 3.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
-    CHECK_FALSE(get<LinearSolver::Tags::HasConverged>(box));
-    const auto& mock_element_box = get_mock_element_box();
-    CHECK(db::get<CheckValueTag>(mock_element_box) == approx(4. / 9.));
-    CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
-          get<LinearSolver::Tags::HasConverged>(box));
-    const auto& mock_observer_writer_box = get_mock_observer_writer_box();
-    CHECK(db::get<CheckObservationIdTag>(mock_observer_writer_box) ==
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::InitializeResidual<element_array>>(
+        make_not_null(&runner), 0, 9.);
+    ActionTesting::invoke_queued_threaded_action<observer_writer>(
+        make_not_null(&runner), 0);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::UpdateResidual<element_array>>(
+        make_not_null(&runner), 0, 4.);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    ActionTesting::invoke_queued_threaded_action<observer_writer>(
+        make_not_null(&runner), 0);
+    // Test residual monitor state
+    CHECK(get_residual_monitor_tag(residual_square_tag{}) == 4.);
+    CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 3.);
+    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 1);
+    CHECK_FALSE(get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+    // Test element state
+    CHECK(get_element_tag(CheckValueTag{}) == approx(4. / 9.));
+    CHECK(get_element_tag(CheckConvergedTag{}) ==
+          get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+    // Test observer writer state
+    CHECK(get_observer_writer_tag(helpers::CheckObservationIdTag{}) ==
           observers::ObservationId{
               1, LinearSolver::observe_detail::ObservationType{}});
-    CHECK(db::get<CheckSubfileNameTag>(mock_observer_writer_box) ==
+    CHECK(get_observer_writer_tag(helpers::CheckSubfileNameTag{}) ==
           "/linear_residuals");
-    CHECK(db::get<CheckReductionNamesTag>(mock_observer_writer_box) ==
+    CHECK(get_observer_writer_tag(helpers::CheckReductionNamesTag{}) ==
           std::vector<std::string>{"Iteration", "Residual"});
-    CHECK(get<0>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+    CHECK(get<0>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
           1);
-    CHECK(get<1>(db::get<CheckReductionDataTag>(mock_observer_writer_box)) ==
+    CHECK(get<1>(get_observer_writer_tag(helpers::CheckReductionDataTag{})) ==
           approx(2.));
   }
 
   SECTION("ConvergeByAbsoluteResidual") {
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::InitializeResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               1.);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::UpdateResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               0.);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    const auto& box = get_box();
-    CHECK(db::get<residual_square_tag>(box) == 0.);
-    CHECK(db::get<initial_residual_magnitude_tag>(box) == 1.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
-          Convergence::Reason::AbsoluteResidual);
-    const auto& mock_element_box = get_mock_element_box();
-    CHECK(db::get<CheckValueTag>(mock_element_box) == 0.);
-    CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
-          get<LinearSolver::Tags::HasConverged>(box));
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::InitializeResidual<element_array>>(
+        make_not_null(&runner), 0, 1.);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::UpdateResidual<element_array>>(
+        make_not_null(&runner), 0, 0.);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    // Test residual monitor state
+    CHECK(get_residual_monitor_tag(residual_square_tag{}) == 0.);
+    CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 1.);
+    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 1);
+    CHECK(get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+    CHECK(
+        get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}).reason() ==
+        Convergence::Reason::AbsoluteResidual);
+    // Test element state
+    CHECK(get_element_tag(CheckValueTag{}) == 0.);
+    CHECK(get_element_tag(CheckConvergedTag{}) ==
+          get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
   }
 
   SECTION("ConvergeByMaxIterations") {
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::InitializeResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               1.);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::InitializeResidual<element_array>>(
+        make_not_null(&runner), 0, 1.);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
     // Perform 2 mock iterations
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::UpdateResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               1.);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::UpdateResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               1.);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    const auto& box = get_box();
-    CHECK(db::get<residual_square_tag>(box) == 1.);
-    CHECK(db::get<initial_residual_magnitude_tag>(box) == 1.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 2);
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
-          Convergence::Reason::MaxIterations);
-    const auto& mock_element_box = get_mock_element_box();
-    CHECK(db::get<CheckValueTag>(mock_element_box) == 1.);
-    CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
-          get<LinearSolver::Tags::HasConverged>(box));
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::UpdateResidual<element_array>>(
+        make_not_null(&runner), 0, 1.);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::UpdateResidual<element_array>>(
+        make_not_null(&runner), 0, 1.);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    // Test residual monitor state
+    CHECK(get_residual_monitor_tag(residual_square_tag{}) == 1.);
+    CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 1.);
+    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 2);
+    CHECK(get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+    CHECK(
+        get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}).reason() ==
+        Convergence::Reason::MaxIterations);
+    // Test element state
+    CHECK(get_element_tag(CheckValueTag{}) == 1.);
+    CHECK(get_element_tag(CheckConvergedTag{}) ==
+          get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
   }
 
   SECTION("ConvergeByRelativeResidual") {
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::InitializeResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               1.);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    runner.simple_action<MockResidualMonitor<Metavariables>,
-                         LinearSolver::cg_detail::UpdateResidual<
-                             MockElementArray<Metavariables>>>(singleton_id,
-                                                               0.25);
-    runner.invoke_queued_simple_action<MockElementArray<Metavariables>>(
-        element_id);
-    const auto& box = get_box();
-    CHECK(db::get<residual_square_tag>(box) == 0.25);
-    CHECK(db::get<initial_residual_magnitude_tag>(box) == 1.);
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box).reason() ==
-          Convergence::Reason::RelativeResidual);
-    const auto& mock_element_box = get_mock_element_box();
-    CHECK(db::get<CheckValueTag>(mock_element_box) == 0.25);
-    CHECK(db::get<CheckConvergedTag>(mock_element_box) ==
-          get<LinearSolver::Tags::HasConverged>(box));
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::InitializeResidual<element_array>>(
+        make_not_null(&runner), 0, 1.);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    ActionTesting::simple_action<
+        residual_monitor,
+        LinearSolver::cg_detail::UpdateResidual<element_array>>(
+        make_not_null(&runner), 0, 0.25);
+    ActionTesting::invoke_queued_simple_action<element_array>(
+        make_not_null(&runner), 0);
+    // Test residual monitor state
+    CHECK(get_residual_monitor_tag(residual_square_tag{}) == 0.25);
+    CHECK(get_residual_monitor_tag(initial_residual_magnitude_tag{}) == 1.);
+    CHECK(get_residual_monitor_tag(LinearSolver::Tags::IterationId{}) == 1);
+    CHECK(get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
+    CHECK(
+        get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}).reason() ==
+        Convergence::Reason::RelativeResidual);
+    // Test element state
+    CHECK(get_element_tag(CheckValueTag{}) == 0.25);
+    CHECK(get_element_tag(CheckConvergedTag{}) ==
+          get_residual_monitor_tag(LinearSolver::Tags::HasConverged{}));
   }
 }

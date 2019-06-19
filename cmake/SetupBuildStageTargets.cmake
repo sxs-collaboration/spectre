@@ -67,8 +67,8 @@ add_dependencies(test-libs-numerical-algorithms
   Test_LinearOperators
   Test_LinearSolver
   Test_LinearSolverActions
-  # Test_ConjugateGradient
-  # Test_Gmres
+  Test_ConjugateGradient
+  Test_Gmres
   Test_RootFinding
   Test_Spectral
   )

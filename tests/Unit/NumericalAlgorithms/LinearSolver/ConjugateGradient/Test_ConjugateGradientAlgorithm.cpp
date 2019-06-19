@@ -40,6 +40,7 @@ struct Metavariables {
 
   enum class Phase {
     Initialization,
+    RegisterWithObserver,
     PerformLinearSolve,
     TestResult,
     CleanOutput,
@@ -52,6 +53,8 @@ struct Metavariables {
           Metavariables>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:
+        return Phase::RegisterWithObserver;
+      case Phase::RegisterWithObserver:
         return Phase::PerformLinearSolve;
       case Phase::PerformLinearSolve:
         return Phase::TestResult;

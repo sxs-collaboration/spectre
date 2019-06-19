@@ -939,7 +939,18 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
   merge_old_box(std::forward<Box>(old_box), tmpl::list<KeepTags...>{});
 
   // Add in new simple and compute tags
+
+// Silence "maybe-uninitialized" warning for GCC-6. The warning only occurs in
+// Release mode.
+// Note that clang also defines `__GNUC__`, so we need to exclude it.
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7
   std::tuple<Args...> args_tuple(std::forward<Args>(args)...);
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7
   add_items_to_box<tmpl::list<Tags...>>(
       args_tuple, tmpl::list<AddTags...>{},
       std::make_index_sequence<sizeof...(AddTags)>{},

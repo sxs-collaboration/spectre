@@ -1127,6 +1127,7 @@ class MockArrayElementProxy {
   // Actions may call this, but since tests step through actions manually it has
   // no effect.
   void perform_algorithm() noexcept {}
+  void perform_algorithm(const bool /*restart_if_terminated*/) noexcept {}
 
   MockDistributedObject<Component>* ckLocal() { return &local_algorithm_; }
 
