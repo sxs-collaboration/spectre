@@ -22,6 +22,7 @@ void register_pupables();
 #include "AlgorithmSingleton.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Informer/InfoFromBuild.hpp"
+#include "Options/Options.hpp"
 #include "Parallel/Abort.hpp"
 #include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -34,6 +35,9 @@ void register_pupables();
 #include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {
+template <typename Tag>
+struct GlobalCacheTag;
+
 namespace charmxx {
 struct RegistrationHelper;
 }  // namespace charmxx
@@ -51,6 +55,18 @@ struct age {
 
 struct height {
   using type = double;
+};
+
+struct weight {
+  using type = int;
+  static constexpr OptionString help = {"The weight of the person in pounds"};
+
+  using const_global_cache_type = double;
+  template <typename Metavariables>
+  static const_global_cache_type convert_for_global_cache(
+      type weight_in_pounds) noexcept {
+    return weight_in_pounds / 2.21;
+  }
 };
 
 #pragma GCC diagnostic push
@@ -95,7 +111,7 @@ struct shape_of_nametag : shape_of_nametag_base {
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = tmpl::list<name, age, height>;
+  using const_global_cache_tag_list = tmpl::list<name, age, height, weight>;
   using options = tmpl::list<>;
   using metavariables = Metavariables;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
@@ -157,18 +173,23 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
   {
     using tag_list = typename Parallel::ConstGlobalCache_detail::make_tag_list<
         TestMetavariables>;
+    using option_tag_list =
+        Parallel::ConstGlobalCache_detail::make_option_tag_list<
+            TestMetavariables>;
     static_assert(
-        cpp17::is_same_v<tag_list,
-                         tmpl::list<name, age, height, shape_of_nametag>>,
+        cpp17::is_same_v<tag_list, tmpl::list<name, age, height,
+                                              Parallel::GlobalCacheTag<weight>,
+                                              shape_of_nametag>>,
         "Wrong tag_list in ConstGlobalCache test");
 
-    tuples::tagged_tuple_from_typelist<tag_list> const_data_to_be_cached(
-        "Nobody", 178, 2.2, std::make_unique<Square>());
+    tuples::tagged_tuple_from_typelist<option_tag_list> const_data_to_be_cached(
+        "Nobody", 178, 2.2, 160, std::make_unique<Square>());
     Parallel::ConstGlobalCache<TestMetavariables> cache(
         std::move(const_data_to_be_cached));
     CHECK("Nobody" == Parallel::get<name>(cache));
     CHECK(178 == Parallel::get<age>(cache));
     CHECK(2.2 == Parallel::get<height>(cache));
+    CHECK(160 / 2.21 == Parallel::get<weight>(cache));
     CHECK(4 == Parallel::get<shape_of_nametag>(cache).number_of_sides());
     CHECK(4 == Parallel::get<shape_of_nametag_base>(cache).number_of_sides());
   }
@@ -176,22 +197,25 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
   {
     using tag_list = typename Parallel::ConstGlobalCache_detail::make_tag_list<
         TestMetavariables>;
+    using option_tag_list =
+        Parallel::ConstGlobalCache_detail::make_option_tag_list<
+            TestMetavariables>;
     static_assert(
-        cpp17::is_same_v<tag_list,
-                         tmpl::list<name, age, height, shape_of_nametag>>,
+        cpp17::is_same_v<tag_list, tmpl::list<name, age, height,
+                                              Parallel::GlobalCacheTag<weight>,
+                                              shape_of_nametag>>,
         "Wrong tag_list in ConstGlobalCache test");
-
-    tuples::tagged_tuple_from_typelist<tag_list> const_data_to_be_cached(
-        "Nobody", 178, 2.2, std::make_unique<Square>());
 
     Parallel::CProxy_ConstGlobalCache<TestMetavariables>
         const_global_cache_proxy =
-            Parallel::CProxy_ConstGlobalCache<TestMetavariables>::ckNew(
-                const_data_to_be_cached);
+            Parallel::ConstructGlobalCacheFromOptions<TestMetavariables,
+                                                      option_tag_list>{}(
+                "Nobody", 178, 2.2, 160, std::make_unique<Square>());
     const auto& local_cache = *const_global_cache_proxy.ckLocalBranch();
     CHECK("Nobody" == Parallel::get<name>(local_cache));
     CHECK(178 == Parallel::get<age>(local_cache));
     CHECK(2.2 == Parallel::get<height>(local_cache));
+    CHECK(160 / 2.21 == Parallel::get<weight>(local_cache));
     CHECK(4 == Parallel::get<shape_of_nametag>(local_cache).number_of_sides());
     CHECK(4 ==
           Parallel::get<shape_of_nametag_base>(local_cache).number_of_sides());

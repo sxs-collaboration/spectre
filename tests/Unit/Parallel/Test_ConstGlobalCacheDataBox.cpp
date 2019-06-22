@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/ConstGlobalCacheHelper.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -28,45 +29,74 @@ struct UniquePtrIntegerList : db::BaseTag {
   using type = std::unique_ptr<std::array<int, 3>>;
   static constexpr OptionString help = {"Help"};
 };
+
+struct UniquePtrIntegerListWithCacheType : db::BaseTag {
+  using type = std::unique_ptr<std::array<int, 3>>;
+  static constexpr OptionString help = {"Help"};
+
+  using const_global_cache_type = std::array<int, 3>;
+  template <typename Metavariables>
+  static const_global_cache_type convert_for_global_cache(
+      type option_data) noexcept {
+    auto t = *option_data;
+    for (auto& p : t) {
+      p *= Metavariables::value_to_multiply_by;
+    }
+    return t;
+  }
+};
 }  // namespace OptionTags
 
 namespace {
 struct Metavars {
   using const_global_cache_tag_list =
-      tmpl::list<OptionTags::IntegerList, OptionTags::UniquePtrIntegerList>;
+      tmpl::list<OptionTags::IntegerList, OptionTags::UniquePtrIntegerList,
+                 OptionTags::UniquePtrIntegerListWithCacheType>;
   using component_list = tmpl::list<>;
+  static constexpr int value_to_multiply_by = 3;
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCacheDataBox", "[Unit][Parallel]") {
-  tuples::TaggedTuple<OptionTags::IntegerList, OptionTags::UniquePtrIntegerList>
-      tuple{};
-  tuples::get<OptionTags::IntegerList>(tuple) = std::array<int, 3>{{-1, 3, 7}};
-  tuples::get<OptionTags::UniquePtrIntegerList>(tuple) =
-      std::make_unique<std::array<int, 3>>(std::array<int, 3>{{1, 5, -8}});
-  ConstGlobalCache<Metavars> cache{std::move(tuple)};
+  ConstGlobalCache<Metavars> cache{
+      {std::array<int, 3>{{-1, 3, 7}},
+       std::make_unique<std::array<int, 3>>(std::array<int, 3>{{1, 5, -8}}),
+       std::make_unique<std::array<int, 3>>(std::array<int, 3>{{1, 5, -8}})}};
+
   auto box = db::create<
       db::AddSimpleTags<Tags::ConstGlobalCacheImpl<Metavars>>,
       db::AddComputeTags<
           Tags::FromConstGlobalCache<OptionTags::IntegerList>,
-          Tags::FromConstGlobalCache<OptionTags::UniquePtrIntegerList>>>(
+          Tags::FromConstGlobalCache<OptionTags::UniquePtrIntegerList>,
+          Tags::FromConstGlobalCache<
+              OptionTags::UniquePtrIntegerListWithCacheType>>>(
+
       &cpp17::as_const(cache));
   CHECK(db::get<Tags::ConstGlobalCache>(box) == &cache);
   CHECK(std::array<int, 3>{{-1, 3, 7}} ==
         db::get<OptionTags::IntegerList>(box));
   CHECK(std::array<int, 3>{{1, 5, -8}} ==
         db::get<OptionTags::UniquePtrIntegerList>(box));
+  CHECK(std::array<int, 3>{{3, 15, -24}} ==
+        db::get<OptionTags::UniquePtrIntegerListWithCacheType>(box));
   CHECK(&Parallel::get<OptionTags::IntegerList>(cache) ==
         &db::get<OptionTags::IntegerList>(box));
   CHECK(&Parallel::get<OptionTags::UniquePtrIntegerList>(cache) ==
         &db::get<OptionTags::UniquePtrIntegerList>(box));
+  CHECK(&Parallel::get<OptionTags::UniquePtrIntegerListWithCacheType>(cache) ==
+        &db::get<OptionTags::UniquePtrIntegerListWithCacheType>(box));
 
-  tuples::TaggedTuple<OptionTags::IntegerList, OptionTags::UniquePtrIntegerList>
+  tuples::TaggedTuple<
+      OptionTags::IntegerList, OptionTags::UniquePtrIntegerList,
+      Parallel::GlobalCacheTag<OptionTags::UniquePtrIntegerListWithCacheType>>
       tuple2{};
   tuples::get<OptionTags::IntegerList>(tuple2) =
       std::array<int, 3>{{10, -3, 700}};
   tuples::get<OptionTags::UniquePtrIntegerList>(tuple2) =
       std::make_unique<std::array<int, 3>>(std::array<int, 3>{{100, -7, -300}});
+  tuples::get<
+      Parallel::GlobalCacheTag<OptionTags::UniquePtrIntegerListWithCacheType>>(
+      tuple2) = std::array<int, 3>{{3, 15, -24}};
   ConstGlobalCache<Metavars> cache2{std::move(tuple2)};
   db::mutate<Tags::ConstGlobalCache>(
       make_not_null(&box),
@@ -80,14 +110,21 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCacheDataBox", "[Unit][Parallel]") {
         db::get<OptionTags::IntegerList>(box));
   CHECK(std::array<int, 3>{{100, -7, -300}} ==
         db::get<OptionTags::UniquePtrIntegerList>(box));
+  CHECK(std::array<int, 3>{{3, 15, -24}} ==
+        db::get<OptionTags::UniquePtrIntegerListWithCacheType>(box));
   CHECK(&Parallel::get<OptionTags::IntegerList>(cache2) ==
         &db::get<OptionTags::IntegerList>(box));
   CHECK(&Parallel::get<OptionTags::UniquePtrIntegerList>(cache2) ==
         &db::get<OptionTags::UniquePtrIntegerList>(box));
+  CHECK(&Parallel::get<OptionTags::UniquePtrIntegerListWithCacheType>(cache2) ==
+        &db::get<OptionTags::UniquePtrIntegerListWithCacheType>(box));
 
   CHECK(Tags::FromConstGlobalCache<OptionTags::IntegerList>::name() ==
         "FromConstGlobalCache(IntegerList)");
   CHECK(Tags::FromConstGlobalCache<OptionTags::UniquePtrIntegerList>::name() ==
         "FromConstGlobalCache(UniquePtrIntegerList)");
+  CHECK(Tags::FromConstGlobalCache<
+            OptionTags::UniquePtrIntegerListWithCacheType>::name() ==
+        "FromConstGlobalCache(UniquePtrIntegerListWithCacheType)");
 }
 }  // namespace Parallel
