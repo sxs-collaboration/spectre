@@ -44,7 +44,21 @@ template <size_t Dim, typename TargetFrame>
 struct DomainCreator {
   using type = std::unique_ptr<::DomainCreator<Dim, TargetFrame>>;
   static constexpr OptionString help = {"The domain to create initially"};
+
+  using const_global_cache_type = ::Domain<Dim, TargetFrame>;
+  template <typename Metavariables>
+  static const_global_cache_type convert_for_global_cache(
+      const type& option_data) noexcept {
+    return option_data->create_domain();
+  }
 };
+
+/// \ingroup OptionTagsGroup
+/// Tag to be used when storing the `Domain` in the `ConstGlobalCache`.
+///
+/// Added to the cache by the  evolution `DgElementArray` be default.
+template <size_t Dim, typename TargetFrame>
+using Domain = DomainCreator<Dim, TargetFrame>;
 }  // namespace OptionTags
 
 namespace Tags {

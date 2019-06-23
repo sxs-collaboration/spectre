@@ -14,6 +14,7 @@
 #include "Domain/ElementId.hpp"                     // IWYU pragma: keep
 #include "Domain/ElementIndex.hpp"
 #include "Domain/InitialElementIds.hpp"
+#include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
@@ -46,8 +47,9 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementIndex<volume_dim>;
 
-  using const_global_cache_tag_list =
-      Parallel::get_const_global_cache_tags_from_pdal<PhaseDepActionList>;
+  using const_global_cache_tag_list = tmpl::push_back<
+      Parallel::get_const_global_cache_tags_from_pdal<PhaseDepActionList>,
+      OptionTags::Domain<volume_dim, Frame::Inertial>>;
 
   using options = tmpl::flatten<tmpl::list<
       typename Metavariables::domain_creator_tag, OptionTags::InitialTime,
