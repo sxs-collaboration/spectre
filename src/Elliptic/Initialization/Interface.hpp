@@ -14,7 +14,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Elliptic {
+namespace elliptic {
 namespace Initialization {
 
 /*!
@@ -139,4 +139,4 @@ struct Interface {
 };
 
 }  // namespace Initialization
-}  // namespace Elliptic
+}  // namespace elliptic

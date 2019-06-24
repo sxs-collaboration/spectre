@@ -50,7 +50,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Derivatives",
     const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
     const domain::creators::Interval<Frame::Inertial> domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
-    auto domain_box = Elliptic::Initialization::Domain<1>::initialize(
+    auto domain_box = elliptic::Initialization::Domain<1>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<1>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 
@@ -66,7 +66,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Derivatives",
             std::move(domain_box), std::move(vars));
 
     const auto box =
-        Elliptic::Initialization::Derivatives<System<1>>::initialize(
+        elliptic::Initialization::Derivatives<System<1>>::initialize(
             std::move(argument_box));
 
     const tnsr::i<DataVector, 1, Frame::Inertial> expected_derivs{{{{4, 1.}}}};
@@ -81,7 +81,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Derivatives",
     const ElementId<2> element_id{0, {{SegmentId{2, 1}, SegmentId{0, 0}}}};
     const domain::creators::Rectangle<Frame::Inertial> domain_creator{
         {{-0.5, 0.}}, {{1.5, 1.}}, {{false, false}}, {{2, 0}}, {{4, 2}}};
-    auto domain_box = Elliptic::Initialization::Domain<2>::initialize(
+    auto domain_box = elliptic::Initialization::Domain<2>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<2>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 
@@ -98,7 +98,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Derivatives",
             std::move(domain_box), std::move(vars));
 
     const auto box =
-        Elliptic::Initialization::Derivatives<System<2>>::initialize(
+        elliptic::Initialization::Derivatives<System<2>>::initialize(
             std::move(argument_box));
 
     const tnsr::i<DataVector, 2, Frame::Inertial> expected_derivs{
@@ -124,7 +124,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Derivatives",
         {{false, false, true}},
         {{2, 0, 1}},
         {{4, 2, 3}}};
-    auto domain_box = Elliptic::Initialization::Domain<3>::initialize(
+    auto domain_box = elliptic::Initialization::Domain<3>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<3>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 
@@ -142,7 +142,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Derivatives",
             std::move(domain_box), std::move(vars));
 
     const auto box =
-        Elliptic::Initialization::Derivatives<System<3>>::initialize(
+        elliptic::Initialization::Derivatives<System<3>>::initialize(
             std::move(argument_box));
 
     const tnsr::i<DataVector, 3, Frame::Inertial> expected_derivs{

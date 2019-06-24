@@ -15,7 +15,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 
-namespace Elliptic {
+namespace elliptic {
 namespace Initialization {
 
 /*!
@@ -74,4 +74,4 @@ struct System {
 };
 
 }  // namespace Initialization
-}  // namespace Elliptic
+}  // namespace elliptic

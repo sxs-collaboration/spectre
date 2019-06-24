@@ -29,7 +29,7 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace Elliptic {
+namespace elliptic {
 namespace Initialization {
 
 /*!
@@ -75,4 +75,4 @@ struct Domain {
 };
 
 }  // namespace Initialization
-}  // namespace Elliptic
+}  // namespace elliptic

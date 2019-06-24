@@ -15,7 +15,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
-namespace Elliptic {
+namespace elliptic {
 /*!
  * \brief The parallel component responsible for managing the DG elements that
  * compose the computational domain
@@ -23,7 +23,7 @@ namespace Elliptic {
  * This parallel component will perform the following phases:
  *
  * - `Phase::Initialize`: Create the domain and execute
- * `Elliptic::dg::Actions::InitializeElement` on all elements.
+ * `elliptic::dg::Actions::InitializeElement` on all elements.
  * - `Phase::RegisterWithObservers` (optional)
  * - `Phase::Solve`: Execute the actions in `ActionList` on all elements. Repeat
  * until an action terminates the algorithm.
@@ -101,4 +101,4 @@ void DgElementArray<Metavariables, PhaseDepActionList, AddOptionsToDataBox>::
   }
   dg_element_array.doneInserting();
 }
-}  // namespace Elliptic
+}  // namespace elliptic

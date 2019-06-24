@@ -58,7 +58,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Interface",
     const ElementId<1> element_id{0, {{SegmentId{2, 0}}}};
     const domain::creators::Interval<Frame::Inertial> domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
-    auto domain_box = Elliptic::Initialization::Domain<1>::initialize(
+    auto domain_box = elliptic::Initialization::Domain<1>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<1>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 
@@ -75,7 +75,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Interface",
                         db::AddSimpleTags<variables_tag, derivs_tag>>(
             std::move(domain_box), std::move(vars), std::move(derivs));
 
-    const auto box = Elliptic::Initialization::Interface<System<1>>::initialize(
+    const auto box = elliptic::Initialization::Interface<System<1>>::initialize(
         std::move(arguments_box));
 
     const auto& internal_directions = get<Tags::InternalDirections<1>>(box);
@@ -150,7 +150,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Interface",
     const ElementId<2> element_id{0, {{SegmentId{1, 0}, SegmentId{1, 1}}}};
     const domain::creators::Rectangle<Frame::Inertial> domain_creator{
         {{-0.5, 0.}}, {{1.5, 2.}}, {{false, false}}, {{1, 1}}, {{3, 2}}};
-    auto domain_box = Elliptic::Initialization::Domain<2>::initialize(
+    auto domain_box = elliptic::Initialization::Domain<2>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<2>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 
@@ -167,7 +167,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Interface",
                         db::AddSimpleTags<variables_tag, derivs_tag>>(
             std::move(domain_box), std::move(vars), std::move(derivs));
 
-    const auto box = Elliptic::Initialization::Interface<System<2>>::initialize(
+    const auto box = elliptic::Initialization::Interface<System<2>>::initialize(
         std::move(arguments_box));
 
     const auto& internal_directions = get<Tags::InternalDirections<2>>(box);
@@ -221,7 +221,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Interface",
         {{false, false, false}},
         {{1, 1, 2}},
         {{3, 2, 2}}};
-    auto domain_box = Elliptic::Initialization::Domain<3>::initialize(
+    auto domain_box = elliptic::Initialization::Domain<3>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<3>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 
@@ -240,7 +240,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Interface",
                         db::AddSimpleTags<variables_tag, derivs_tag>>(
             std::move(domain_box), std::move(vars), std::move(derivs));
 
-    const auto box = Elliptic::Initialization::Interface<System<3>>::initialize(
+    const auto box = elliptic::Initialization::Interface<System<3>>::initialize(
         std::move(arguments_box));
 
     const auto& internal_directions = get<Tags::InternalDirections<3>>(box);

@@ -36,7 +36,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Domain",
     const domain::creators::Interval<Frame::Inertial> domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
 
-    const auto box = Elliptic::Initialization::Domain<1>::initialize(
+    const auto box = elliptic::Initialization::Domain<1>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<1>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 
@@ -80,7 +80,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Domain",
     const domain::creators::Rectangle<Frame::Inertial> domain_creator{
         {{-0.5, 0.}}, {{1.5, 2.}}, {{false, false}}, {{2, 0}}, {{4, 3}}};
 
-    const auto box = Elliptic::Initialization::Domain<2>::initialize(
+    const auto box = elliptic::Initialization::Domain<2>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<2>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 
@@ -127,7 +127,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Domain",
         {{2, 0, 1}},
         {{4, 3, 2}}};
 
-    const auto box = Elliptic::Initialization::Domain<3>::initialize(
+    const auto box = elliptic::Initialization::Domain<3>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<3>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 

@@ -32,7 +32,7 @@ class TaggedTuple;  // IWYU pragma: keep
 }  // namespace tuples
 /// \endcond
 
-namespace Elliptic {
+namespace elliptic {
 namespace dg {
 namespace Actions {
 
@@ -41,14 +41,14 @@ namespace Actions {
  *
  * The following initializers are chained together (in this order):
  *
- * - `Elliptic::Initialization::Domain`
- * - `Elliptic::Initialization::System`
- * - `Elliptic::Initialization::Source`
- * - `Elliptic::Initialization::Derivatives`
- * - `Elliptic::Initialization::Interface`
- * - `Elliptic::Initialization::BoundaryConditions`
- * - `Elliptic::Initialization::LinearSolver`
- * - `Elliptic::Initialization::DiscontinuousGalerkin`
+ * - `elliptic::Initialization::Domain`
+ * - `elliptic::Initialization::System`
+ * - `elliptic::Initialization::Source`
+ * - `elliptic::Initialization::Derivatives`
+ * - `elliptic::Initialization::Interface`
+ * - `elliptic::Initialization::BoundaryConditions`
+ * - `elliptic::Initialization::LinearSolver`
+ * - `elliptic::Initialization::DiscontinuousGalerkin`
  */
 template <size_t Dim>
 struct InitializeElement {
@@ -92,25 +92,25 @@ struct InitializeElement {
             std::move(box));
 
     using system = typename Metavariables::system;
-    auto domain_box = Elliptic::Initialization::Domain<Dim>::initialize(
+    auto domain_box = elliptic::Initialization::Domain<Dim>::initialize(
         std::move(initial_box), array_index, initial_extents, domain);
-    auto system_box = Elliptic::Initialization::System<system>::initialize(
+    auto system_box = elliptic::Initialization::System<system>::initialize(
         std::move(domain_box));
     auto source_box =
-        Elliptic::Initialization::Source<Metavariables>::initialize(
+        elliptic::Initialization::Source<Metavariables>::initialize(
             std::move(system_box), cache);
-    auto deriv_box = Elliptic::Initialization::Derivatives<
+    auto deriv_box = elliptic::Initialization::Derivatives<
         typename Metavariables::system>::initialize(std::move(source_box));
-    auto face_box = Elliptic::Initialization::Interface<system>::initialize(
+    auto face_box = elliptic::Initialization::Interface<system>::initialize(
         std::move(deriv_box));
     auto boundary_conditions_box =
-        Elliptic::Initialization::BoundaryConditions<Metavariables>::initialize(
+        elliptic::Initialization::BoundaryConditions<Metavariables>::initialize(
             std::move(face_box), cache);
     auto linear_solver_box =
-        Elliptic::Initialization::LinearSolver<Metavariables>::initialize(
+        elliptic::Initialization::LinearSolver<Metavariables>::initialize(
             std::move(boundary_conditions_box), cache, array_index,
             parallel_component_meta);
-    auto dg_box = Elliptic::Initialization::DiscontinuousGalerkin<
+    auto dg_box = elliptic::Initialization::DiscontinuousGalerkin<
         Metavariables>::initialize(std::move(linear_solver_box),
                                    initial_extents);
     return std::make_tuple(std::move(dg_box));
@@ -131,4 +131,4 @@ struct InitializeElement {
 };
 }  // namespace Actions
 }  // namespace dg
-}  // namespace Elliptic
+}  // namespace elliptic

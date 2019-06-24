@@ -16,14 +16,14 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace Elliptic {
+namespace elliptic {
 namespace Initialization {
 /*!
  * \brief Initializes the DataBox tags related to derivatives of the system
  * variables
  *
  * We have to initialize these separately from
- * `Elliptic::Initialization::System` since the `variables_tag` is the linear
+ * `elliptic::Initialization::System` since the `variables_tag` is the linear
  * solver operand, which is added by the linear solver initialization.
  *
  * With:
@@ -59,4 +59,4 @@ struct Derivatives {
   }
 };
 }  // namespace Initialization
-}  // namespace Elliptic
+}  // namespace elliptic

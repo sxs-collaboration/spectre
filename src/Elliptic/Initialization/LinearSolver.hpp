@@ -20,7 +20,7 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace Elliptic {
+namespace elliptic {
 namespace Initialization {
 
 /*!
@@ -28,7 +28,7 @@ namespace Initialization {
  *
  * Uses the analytic solution to compute the linear solver source.
  * Assumes the system fields are initialized to zero (see
- * `Elliptic::Initialization::System`) so we don't have to apply the operator to
+ * `elliptic::Initialization::System`) so we don't have to apply the operator to
  * the initial guess.
  *
  * With:
@@ -78,4 +78,4 @@ struct LinearSolver {
   }
 };
 }  // namespace Initialization
-}  // namespace Elliptic
+}  // namespace elliptic

@@ -62,7 +62,7 @@ struct Component {
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<Elliptic::Actions::ComputeOperatorAction>>>;
+          tmpl::list<elliptic::Actions::ComputeOperatorAction>>>;
 };
 
 struct Metavariables {

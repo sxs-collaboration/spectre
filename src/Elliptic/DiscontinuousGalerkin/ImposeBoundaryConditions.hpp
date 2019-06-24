@@ -28,7 +28,7 @@ struct Magnitude;
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
-namespace Elliptic {
+namespace elliptic {
 namespace dg {
 namespace Actions {
 
@@ -177,4 +177,4 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
 
 }  // namespace Actions
 }  // namespace dg
-}  // namespace Elliptic
+}  // namespace elliptic
