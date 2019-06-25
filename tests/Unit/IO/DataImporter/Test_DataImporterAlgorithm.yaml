@@ -1,0 +1,8 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+DataImporters:
+  NumericTestData:
+    DataFileName: "Test_DataImporterAlgorithm.h5"
+    VolumeDataSubgroup: "test_data"
+    ObservationValue: 3.

@@ -17,6 +17,8 @@ set(LIBRARY_SOURCES
   Test_VolumeData.cpp
   )
 
+add_subdirectory(DataImporter)
+
 add_test_library(
   ${LIBRARY}
   "IO"
