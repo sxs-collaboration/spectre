@@ -26,6 +26,7 @@ set(LIBRARY_SOURCES
   Test_LogicalCoordinates.cpp
   Test_Mesh.cpp
   Test_MinimumGridSpacing.cpp
+  Test_MirrorVariables.cpp
   Test_Neighbors.cpp
   Test_OrientationMap.cpp
   Test_OrientationMapHelpers.cpp
