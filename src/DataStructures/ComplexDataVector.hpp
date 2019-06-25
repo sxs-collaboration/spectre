@@ -108,22 +108,32 @@ struct MapTrait<ComplexDataVector, blaze::Abs> {
 #endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, DataVector,
-                                               AddTrait);
+                                               AddTrait, ComplexDataVector);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, DataVector,
-                                               DivTrait);
+                                               DivTrait, ComplexDataVector);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, DataVector,
-                                               MultTrait);
+                                               MultTrait, ComplexDataVector);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, DataVector,
-                                               SubTrait);
+                                               SubTrait, ComplexDataVector);
 
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, double,
-                                               AddTrait);
+                                               AddTrait, ComplexDataVector);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, double,
-                                               DivTrait);
+                                               DivTrait, ComplexDataVector);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, double,
-                                               MultTrait);
+                                               MultTrait, ComplexDataVector);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexDataVector, double,
-                                               SubTrait);
+                                               SubTrait, ComplexDataVector);
+
+BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(DataVector, std::complex<double>,
+                                               AddTrait, ComplexDataVector);
+BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(DataVector, std::complex<double>,
+                                               DivTrait, ComplexDataVector);
+BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(DataVector, std::complex<double>,
+                                               MultTrait, ComplexDataVector);
+BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(DataVector, std::complex<double>,
+                                               SubTrait, ComplexDataVector);
+
 
 #if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 template <typename Operator>

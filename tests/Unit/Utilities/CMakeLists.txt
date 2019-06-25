@@ -39,6 +39,7 @@ set(LIBRARY_SOURCES
   Test_TMPL.cpp
   Test_Tuple.cpp
   Test_TypeTraits.cpp
+  Test_VectorAlgebra.cpp
   )
 
 add_test_library(
