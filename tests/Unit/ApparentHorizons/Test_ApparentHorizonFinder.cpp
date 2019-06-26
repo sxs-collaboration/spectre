@@ -193,7 +193,7 @@ struct mock_interpolator {
 
 template <typename PostHorizonFindCallback>
 struct MockMetavariables {
-  struct AhA {
+  struct AhA : db::SimpleTag {
     using compute_items_on_source = tmpl::list<
         ah::Tags::InverseSpatialMetricCompute<3, Frame::Inertial>,
         ah::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>,
@@ -210,6 +210,8 @@ struct MockMetavariables {
     using post_horizon_find_callback = PostHorizonFindCallback;
     // This `type` is so this tag can be used to read options.
     using type = typename compute_target_points::options_type;
+    using container_tag = AhA;
+    static std::string name() noexcept { return "AhA"; }
   };
   using interpolator_source_vars =
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,

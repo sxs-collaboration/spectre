@@ -82,12 +82,13 @@ struct ValenciaDivCleanGroup {
 };
 
 /// \brief The constraint damping parameter
-struct DampingParameter : Tags::ConstraintDampingParameter {
+struct DampingParameter {
   static std::string name() noexcept { return "DampingParameter"; }
   using type = double;
   static constexpr OptionString help{
       "Constraint damping parameter for divergence cleaning"};
   using group = ValenciaDivCleanGroup;
+  using container_tag = Tags::ConstraintDampingParameter;
 };
 }  // namespace OptionTags
 }  // namespace ValenciaDivClean

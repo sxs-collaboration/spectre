@@ -34,21 +34,29 @@
 
 namespace LinearSolverAlgorithmTestHelpers {
 
-struct LinearOperator {
+struct LinearOperator : db::SimpleTag {
   static constexpr OptionString help = "The linear operator A to invert.";
   using type = DenseMatrix<double>;
+  using container_tag = LinearOperator;
+  static std::string name() noexcept { return "LinearOperator"; }
 };
-struct Source {
+struct Source : db::SimpleTag {
   static constexpr OptionString help = "The source b in the equation Ax=b.";
   using type = DenseVector<double>;
+  using container_tag = Source;
+  static std::string name() noexcept { return "Source"; }
 };
-struct InitialGuess {
+struct InitialGuess : db::SimpleTag {
   static constexpr OptionString help = "The initial guess for the vector x.";
   using type = DenseVector<double>;
+  using container_tag = InitialGuess;
+  static std::string name() noexcept { return "InitialGuess"; }
 };
-struct ExpectedResult {
+struct ExpectedResult : db::SimpleTag {
   static constexpr OptionString help = "The solution x in the equation Ax=b";
   using type = DenseVector<double>;
+  using container_tag = ExpectedResult;
+  static std::string name() noexcept { return "ExpectedResult"; }
 };
 
 // The vector `x` we want to solve for

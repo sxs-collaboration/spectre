@@ -19,14 +19,6 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-/// \cond
-namespace LinearSolver {
-namespace OptionTags {
-struct ConvergenceCriteria;
-}  // namespace OptionTags
-}  // namespace LinearSolver
-/// \endcond
-
 /*!
  * \ingroup LinearSolverGroup
  * \brief Functionality for solving linear systems of equations
@@ -204,6 +196,18 @@ struct HasConverged : db::SimpleTag {
   using type = Convergence::HasConverged;
 };
 
+/*!
+ * \brief `Convergence::Criteria` that determine the linear solve has converged
+ *
+ * \see LinearSolver::OptionTags::ConvergenceCriteria
+ */
+struct ConvergenceCriteria : db::SimpleTag {
+  static std::string name() noexcept {
+    return "LinearSolverConvergenceCriteria";
+  }
+  using type = Convergence::Criteria;
+};
+
 /*
  * \brief Employs the `LinearSolver::OptionTags::ConvergenceCriteria` to
  * determine the linear solver has converged.
@@ -219,7 +223,7 @@ struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
 
  public:
   using argument_tags =
-      tmpl::list<LinearSolver::OptionTags::ConvergenceCriteria,
+      tmpl::list<LinearSolver::Tags::ConvergenceCriteria,
                  LinearSolver::Tags::IterationId, residual_magnitude_tag,
                  initial_residual_magnitude_tag>;
   static db::item_type<LinearSolver::Tags::HasConverged> function(
@@ -230,6 +234,16 @@ struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
                                      residual_magnitude,
                                      initial_residual_magnitude);
   }
+};
+
+/*!
+ * \brief Logging verbosity of the linear solver
+ *
+ * \see LinearSolver::OptionTags::Verbosity
+ */
+struct Verbosity : db::SimpleTag {
+  using type = ::Verbosity;
+  static std::string name() noexcept { return "LinearSolverVerbosity"; }
 };
 
 }  // namespace Tags
@@ -271,20 +285,20 @@ struct Group {
  * remain. Therefore, ideally choose the absolute or relative residual criteria
  * based on an estimate of the discretization residual.
  */
-struct ConvergenceCriteria : db::SimpleTag {
+struct ConvergenceCriteria {
   static constexpr OptionString help =
       "Determine convergence of the linear solve";
   using type = Convergence::Criteria;
   using group = Group;
-  // We need a `name()` so that this can be placed in the DataBox. Can be
-  // removed once we can retrieve cache tags through the DataBox.
-  static std::string name() noexcept { return "ConvergenceCriteria"; }
+  using container_tag = LinearSolver::Tags::ConvergenceCriteria;
 };
 
+/// Logging verbosity of the linear solver
 struct Verbosity {
   using type = ::Verbosity;
   static constexpr OptionString help = "Logging verbosity";
   using group = Group;
+  using container_tag = LinearSolver::Tags::Verbosity;
   static type default_value() { return ::Verbosity::Quiet; }
 };
 

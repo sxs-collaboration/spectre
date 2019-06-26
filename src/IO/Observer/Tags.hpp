@@ -131,6 +131,23 @@ struct H5FileLock : db::SimpleTag {
   static std::string name() noexcept { return "H5FileLock"; }
   using type = CmiNodeLock;
 };
+
+/// The name of the H5 file on disk to which all volume data is written.
+///
+/// \see observers::OptionTags::VolumeFileName
+struct VolumeFileName : db::SimpleTag {
+  static std::string name() { return "ObserversVolumeFileName"; }
+  using type = std::string;
+};
+
+/// The name of the H5 file on disk to which all reduction data is written.
+///
+/// \see observers::OptionTags::ReductionFileName
+struct ReductionFileName : db::SimpleTag {
+  static std::string name() { return "ObserversReductionFileName"; }
+  using type = std::string;
+};
+
 }  // namespace Tags
 
 /// \ingroup ObserversGroup
@@ -150,6 +167,7 @@ struct VolumeFileName {
   static constexpr OptionString help = {
       "Name of the volume data file without extension"};
   using group = Group;
+  using container_tag = Tags::VolumeFileName;
 };
 
 /// \ingroup ObserversGroup
@@ -159,6 +177,7 @@ struct ReductionFileName {
   static constexpr OptionString help = {
       "Name of the reduction data file without extension"};
   using group = Group;
+  using container_tag = Tags::ReductionFileName;
 };
 }  // namespace OptionTags
 }  // namespace observers

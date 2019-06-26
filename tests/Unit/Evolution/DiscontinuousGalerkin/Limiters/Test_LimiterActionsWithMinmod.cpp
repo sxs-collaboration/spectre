@@ -57,8 +57,10 @@ struct System {
   using variables_tag = Tags::Variables<tmpl::list<Var>>;
 };
 
-struct LimiterTag {
+struct LimiterTag : db::SimpleTag {
   using type = Limiters::Minmod<2, tmpl::list<Var>>;
+  using container_tag = LimiterTag;
+  static std::string name() noexcept { return "LimiterTag"; }
 };
 
 template <size_t Dim, typename Metavariables>

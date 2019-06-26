@@ -5,6 +5,23 @@
 
 #include "Options/Options.hpp"
 
+namespace Tags {
+/// Can be used to retrieve the analytic solution computer from the DataBox
+/// without having to know the template parameters of AnalyticSolutionComputer.
+struct AnalyticSolutionComputerBase : db::BaseTag {};
+
+/// The analytic solution, with the type of the analytic solution set as the
+/// template parameter
+template <typename SolutionType>
+struct AnalyticSolutionComputer : AnalyticSolutionComputerBase, db::SimpleTag {
+  static std::string name() noexcept {
+    return "AnalyticSolutionComputer(" +
+           pretty_type::short_name<SolutionType>() + ")";
+  }
+  using type = SolutionType;
+};
+}  // namespace Tags
+
 namespace OptionTags {
 /// \ingroup OptionGroupsGroup
 /// Holds the `OptionTags::AnalyticSolution` option in the input file
@@ -32,6 +49,7 @@ struct AnalyticSolution : AnalyticSolutionBase {
   static constexpr OptionString help = "Options for the analytic solution";
   using type = SolutionType;
   using group = AnalyticSolutionGroup;
+  using container_tag = Tags::AnalyticSolutionComputer<SolutionType>;
 };
 /// \ingroup OptionTagsGroup
 /// The boundary condition to be applied at all external boundaries.

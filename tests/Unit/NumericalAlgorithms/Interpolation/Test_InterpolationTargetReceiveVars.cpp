@@ -216,12 +216,14 @@ struct mock_interpolator {
 
 template <typename MockCallBackType>
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA : db::SimpleTag {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_target_points = MockComputeTargetPoints;
     using post_interpolation_callback = MockCallBackType;
     using compute_items_on_target = tmpl::list<Tags::SquareComputeItem>;
+    using container_tag = InterpolationTargetA;
+    static std::string name() noexcept { return "InterpolationTargetA"; }
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;

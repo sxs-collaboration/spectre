@@ -89,8 +89,10 @@ class NumericalFlux {
 };
 
 template <typename Flux>
-struct NumericalFluxTag {
+struct NumericalFluxTag : db::SimpleTag {
   using type = Flux;
+  using container_tag = NumericalFluxTag;
+  static std::string name() noexcept { return "NumericalFluxTag"; }
 };
 
 template <size_t Dim>
