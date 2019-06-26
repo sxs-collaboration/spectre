@@ -6,6 +6,22 @@
 #include "Options/Options.hpp"
 #include "Utilities/PrettyType.hpp"
 
+namespace Tags {
+/*!
+ * \brief The variable fixer in the DataBox
+ *
+ * \see OptionTags::VariableFixer
+ */
+template <typename VariableFixerType>
+struct VariableFixer : db::SimpleTag {
+  using type = VariableFixerType;
+  static std::string name() noexcept {
+    return "VariableFixer(" + pretty_type::short_name<VariableFixerType>() +
+           ")";
+  }
+};
+}  // namespace Tags
+
 namespace OptionTags {
 /*!
  * \ingroup OptionGroupsGroup
@@ -29,5 +45,6 @@ struct VariableFixer {
     return pretty_type::short_name<VariableFixerType>();
   }
   using group = VariableFixingGroup;
+  using container_tag = Tags::VariableFixer<VariableFixerType>;
 };
 }  // namespace OptionTags

@@ -47,6 +47,19 @@ struct MortarSize : db::SimpleTag {
   static std::string name() noexcept { return "MortarSize"; }
   using type = std::array<Spectral::MortarSize, Dim>;
 };
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup DiscontinuousGalerkinGroup
+/// The object that computes numerical fluxes for a DG scheme
+template <typename NumericalFluxType>
+struct NormalDotNumericalFluxComputer : db::SimpleTag {
+  static std::string name() noexcept {
+    return "NormalDotNumericalFluxComputer(" +
+           pretty_type::short_name<NumericalFluxType>() + ")";
+  }
+  using type = NumericalFluxType;
+};
+
 }  // namespace Tags
 
 namespace OptionTags {
@@ -72,5 +85,6 @@ struct NumericalFlux {
   static constexpr OptionString help = "Options for the numerical flux";
   using type = NumericalFluxType;
   using group = NumericalFluxGroup;
+  using container_tag = Tags::NormalDotNumericalFluxComputer<NumericalFluxType>;
 };
 }  // namespace OptionTags

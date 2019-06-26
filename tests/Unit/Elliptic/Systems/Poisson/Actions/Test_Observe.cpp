@@ -121,8 +121,10 @@ struct AnalyticSolution {
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
-struct AnalyticSolutionTag {
+struct AnalyticSolutionTag : db::SimpleTag {
   using type = AnalyticSolution;
+  using container_tag = AnalyticSolutionTag;
+  static std::string name() noexcept { return "AnalyticSolutionTag"; }
 };
 
 struct Metavariables {

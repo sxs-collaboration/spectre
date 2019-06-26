@@ -44,15 +44,16 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Tags",
         "LinearOrthogonalizationHistory(Tag)");
   CHECK(LinearSolver::Tags::KrylovSubspaceBasis<Tag>::name() ==
         "KrylovSubspaceBasis(Tag)");
-  CHECK(LinearSolver::OptionTags::ConvergenceCriteria::name() ==
-        "ConvergenceCriteria");
+  CHECK(LinearSolver::Tags::ConvergenceCriteria::name() ==
+        "LinearSolverConvergenceCriteria");
+  CHECK(LinearSolver::Tags::Verbosity::name() == "LinearSolverVerbosity");
 
   {
     INFO("HasConvergedCompute");
     CHECK(LinearSolver::Tags::HasConvergedCompute<Tag>::name() ==
           "LinearSolverHasConverged");
     const auto box = db::create<
-        db::AddSimpleTags<LinearSolver::OptionTags::ConvergenceCriteria,
+        db::AddSimpleTags<LinearSolver::Tags::ConvergenceCriteria,
                           LinearSolver::Tags::IterationId,
                           residual_magnitude_tag,
                           initial_residual_magnitude_tag>,
@@ -68,7 +69,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Tags",
     // A vanishing initial residual should work because the absolute residual
     // condition takes precedence so that no FPE occurs
     const auto box = db::create<
-        db::AddSimpleTags<LinearSolver::OptionTags::ConvergenceCriteria,
+        db::AddSimpleTags<LinearSolver::Tags::ConvergenceCriteria,
                           LinearSolver::Tags::IterationId,
                           residual_magnitude_tag,
                           initial_residual_magnitude_tag>,

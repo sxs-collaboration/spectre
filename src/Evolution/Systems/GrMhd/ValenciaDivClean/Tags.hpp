@@ -14,24 +14,6 @@
 
 class DataVector;
 
-namespace OptionTags {
-/// \ingroup OptionGroupsGroup
-/// Groups option tags related to the ValenciaDivClean evolution system.
-struct ValenciaDivCleanGroup {
-  static std::string name() noexcept { return "ValenciaDivClean"; }
-  static constexpr OptionString help{"Options for the evolution system"};
-  using group = EvolutionSystemGroup;
-};
-
-/// \brief The constraint damping parameter
-struct DampingParameter {
-  using type = double;
-  static constexpr OptionString help{
-      "Constraint damping parameter for divergence cleaning"};
-  using group = ValenciaDivCleanGroup;
-};
-}  // namespace OptionTags
-
 namespace grmhd {
 namespace ValenciaDivClean {
 /// %Tags for the Valencia formulation of the ideal GRMHD equations
@@ -82,6 +64,30 @@ struct TildePhi : db::SimpleTag {
   static std::string name() noexcept { return "TildePhi"; }
 };
 
+/// \brief The constraint damping parameter
+struct DampingParameter : db::SimpleTag {
+  static std::string name() noexcept { return "DampingParameter"; }
+  using type = double;
+};
 }  // namespace Tags
+
+namespace OptionTags {
+/// \ingroup OptionGroupsGroup
+/// Groups option tags related to the ValenciaDivClean evolution system.
+struct ValenciaDivCleanGroup {
+  static std::string name() noexcept { return "ValenciaDivClean"; }
+  static constexpr OptionString help{"Options for the evolution system"};
+  using group = ::OptionTags::EvolutionSystemGroup;
+};
+
+/// \brief The constraint damping parameter
+struct DampingParameter {
+  using type = double;
+  static constexpr OptionString help{
+      "Constraint damping parameter for divergence cleaning"};
+  using group = ValenciaDivCleanGroup;
+  using container_tag = Tags::DampingParameter;
+};
+}  // namespace OptionTags
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

@@ -75,6 +75,32 @@ struct BoundaryHistory : db::SimpleTag {
       TimeSteppers::BoundaryHistory<LocalVars, RemoteVars, CouplingResult>;
 };
 
+/// The ::TimeStepper
+struct TimeStepper : db::BaseTag {};
+
+/// The ::TimeStepper, specifying a (base) type.
+template <typename StepperType>
+struct TypedTimeStepper : TimeStepper, db::SimpleTag {
+  static std::string name() noexcept {
+    return "TimeStepper(" + pretty_type::short_name<StepperType>() + ")";
+  }
+  using type = StepperType;
+};
+
+/// \ingroup TimeGroup
+/// Limits on LTS step size
+template <typename Registrars>
+struct StepChoosers : db::SimpleTag {
+  static std::string name() noexcept { return "StepChoosers"; }
+  using type = std::vector<std::unique_ptr<::StepChooser<Registrars>>>;
+};
+
+/// \ingroup TimeGroup
+/// The LTS step controller
+struct StepController : db::SimpleTag {
+  static std::string name() noexcept { return "StepChoosers"; }
+  using type = ::StepController;
+};
 }  // namespace Tags
 
 namespace OptionTags {
@@ -94,6 +120,7 @@ struct TypedTimeStepper : TimeStepper {
   static constexpr OptionString help{"The time stepper"};
   using type = std::unique_ptr<StepperType>;
   using group = EvolutionGroup;
+  using container_tag = Tags::TypedTimeStepper<StepperType>;
 };
 
 /// \ingroup OptionTagsGroup
@@ -104,6 +131,7 @@ struct StepChoosers {
   using type = std::vector<std::unique_ptr<::StepChooser<Registrars>>>;
   static size_t lower_bound_on_size() noexcept { return 1; }
   using group = EvolutionGroup;
+  using container_tag = Tags::StepChoosers<Registrars>;
 };
 
 /// \ingroup OptionTagsGroup
@@ -112,6 +140,7 @@ struct StepController {
   static constexpr OptionString help{"The LTS step controller"};
   using type = std::unique_ptr<::StepController>;
   using group = EvolutionGroup;
+  using container_tag = Tags::StepController;
 };
 
 /// \ingroup OptionTagsGroup

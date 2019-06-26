@@ -110,8 +110,10 @@ class NumericalFlux {
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
-struct NumericalFluxTag {
+struct NumericalFluxTag : db::SimpleTag {
   using type = NumericalFlux;
+  using container_tag = NumericalFluxTag;
+  static std::string name() noexcept { return "NumericalFluxTag"; }
 };
 
 struct BoundaryCondition {
@@ -131,8 +133,10 @@ struct BoundaryCondition {
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
-struct BoundaryConditionTag {
+struct BoundaryConditionTag : db::SimpleTag {
   using type = BoundaryCondition;
+  using container_tag = BoundaryConditionTag;
+  static std::string name() noexcept { return "BoundaryConditionTag"; }
 };
 
 template <bool HasPrimitiveAndConservativeVars>

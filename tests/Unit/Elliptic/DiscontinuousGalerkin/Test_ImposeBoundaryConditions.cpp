@@ -114,8 +114,10 @@ class NumericalFlux {
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
-struct NumericalFluxTag {
+struct NumericalFluxTag : db::SimpleTag {
   using type = NumericalFlux;
+  using container_tag = NumericalFluxTag;
+  static std::string name() noexcept { return "NumericalFluxTag"; }
 };
 
 struct System {

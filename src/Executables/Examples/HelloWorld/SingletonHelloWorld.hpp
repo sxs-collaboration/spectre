@@ -18,10 +18,17 @@
 /// [executable_example_includes]
 
 /// [executable_example_options]
+namespace Tags {
+struct Name : db::SimpleTag {
+  static std::string name() noexcept { return "Name"; }
+  using type = std::string;
+};
+}  // namespace Tags
 namespace OptionTags {
 struct Name {
   using type = std::string;
   static constexpr OptionString help{"A name"};
+  using container_tag = Tags::Name;
 };
 }  // namespace OptionTags
 /// [executable_example_options]

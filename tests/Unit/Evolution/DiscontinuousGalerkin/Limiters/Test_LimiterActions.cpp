@@ -96,8 +96,10 @@ class DummyLimiterForTest {
   void pup(const PUP::er& /*p*/) const noexcept {}
 };
 
-struct LimiterTag {
+struct LimiterTag : db::SimpleTag {
   using type = DummyLimiterForTest;
+  using container_tag = LimiterTag;
+  static std::string name() noexcept { return "LimiterTag"; }
 };
 
 template <size_t Dim, typename Metavariables>

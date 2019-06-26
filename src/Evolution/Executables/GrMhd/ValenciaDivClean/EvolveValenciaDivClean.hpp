@@ -202,7 +202,7 @@ struct EvolutionMetavars {
       tmpl::list<analytic_solution_tag,
                  OptionTags::TypedTimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
-                 OptionTags::DampingParameter,
+                 grmhd::ValenciaDivClean::OptionTags::DampingParameter,
                  OptionTags::EventsAndTriggers<events, triggers>>;
 
   static constexpr OptionString help{

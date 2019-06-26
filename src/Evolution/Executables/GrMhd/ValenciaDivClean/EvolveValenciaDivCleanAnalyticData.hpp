@@ -191,7 +191,7 @@ struct EvolutionMetavars {
       tmpl::list<analytic_data_tag,
                  OptionTags::TypedTimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
-                 OptionTags::DampingParameter,
+                 grmhd::ValenciaDivClean::OptionTags::DampingParameter,
                  OptionTags::EventsAndTriggers<events, triggers>>;
 
   using domain_creator_tag = OptionTags::DomainCreator<3, Frame::Inertial>;

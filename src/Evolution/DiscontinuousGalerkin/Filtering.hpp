@@ -118,7 +118,8 @@ struct ExponentialFilter;
  * able to cache the matrices.
  */
 template <size_t FilterIndex, typename... TagsToFilter>
-class ExponentialFilter<FilterIndex, tmpl::list<TagsToFilter...>> {
+class ExponentialFilter<FilterIndex, tmpl::list<TagsToFilter...>>
+    : db::SimpleTag {
  public:
   using const_global_cache_tags = tmpl::list<ExponentialFilter>;
 
@@ -159,6 +160,7 @@ class ExponentialFilter<FilterIndex, tmpl::list<TagsToFilter...>> {
     return "ExpFilter" + std::to_string(FilterIndex);
   }
   using group = ::OptionTags::FilteringGroup;
+  using container_tag = ExponentialFilter;
 
   using options = tmpl::list<Alpha, HalfPower, DisableForDebugging>;
   static constexpr OptionString help = {"An exponential filter."};

@@ -29,13 +29,15 @@
 
 namespace {
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA : db::SimpleTag {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_target_points =
         ::intrp::Actions::ApparentHorizon<InterpolationTargetA,
                                           ::Frame::Inertial>;
     using type = compute_target_points::options_type;
+    using container_tag = InterpolationTargetA;
+    static std::string name() noexcept { return "InterpolationTargetA"; }
   };
   using temporal_id = ::Tags::TimeId;
   using domain_frame = Frame::Inertial;

@@ -41,16 +41,22 @@ struct RegistrationHelper;
 
 namespace {
 
-struct name {
+struct Name : db::SimpleTag {
   using type = std::string;
+  using container_tag = Name;
+  static std::string name() noexcept { return "Name"; }
 };
 
-struct age {
+struct Age : db::SimpleTag {
   using type = int;
+  using container_tag = Age;
+  static std::string name() noexcept { return "Age"; }
 };
 
-struct height {
+struct Height : db::SimpleTag {
   using type = double;
+  using container_tag = Height;
+  static std::string name() noexcept { return "Height"; }
 };
 
 #pragma GCC diagnostic push
@@ -88,14 +94,16 @@ class Square : public Shape {
 
 struct shape_of_nametag_base {};
 
-struct shape_of_nametag : shape_of_nametag_base {
+struct shape_of_nametag : shape_of_nametag_base, db::SimpleTag {
   using type = std::unique_ptr<Shape>;
+  using container_tag = shape_of_nametag;
+  static std::string name() noexcept { return "shape_of_nametag"; }
 };
 
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = tmpl::list<name, age, height>;
+  using const_global_cache_tag_list = tmpl::list<Name, Age, Height>;
   using options = tmpl::list<>;
   using metavariables = Metavariables;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
@@ -107,7 +115,7 @@ struct SingletonParallelComponent {
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = tmpl::list<height, shape_of_nametag>;
+  using const_global_cache_tag_list = tmpl::list<Height, shape_of_nametag>;
   using array_index = int;
   using options = tmpl::list<>;
   using metavariables = Metavariables;
@@ -120,7 +128,7 @@ struct ArrayParallelComponent {
 template <class Metavariables>
 struct GroupParallelComponent {
   using chare_type = Parallel::Algorithms::Group;
-  using const_global_cache_tag_list = tmpl::list<name>;
+  using const_global_cache_tag_list = tmpl::list<Name>;
   using options = tmpl::list<>;
   using metavariables = Metavariables;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
@@ -132,7 +140,7 @@ struct GroupParallelComponent {
 template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list = tmpl::list<height>;
+  using const_global_cache_tag_list = tmpl::list<Height>;
   using options = tmpl::list<>;
   using metavariables = Metavariables;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
@@ -159,16 +167,16 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
         TestMetavariables>;
     static_assert(
         cpp17::is_same_v<tag_list,
-                         tmpl::list<name, age, height, shape_of_nametag>>,
+                         tmpl::list<Name, Age, Height, shape_of_nametag>>,
         "Wrong tag_list in ConstGlobalCache test");
 
     tuples::tagged_tuple_from_typelist<tag_list> const_data_to_be_cached(
         "Nobody", 178, 2.2, std::make_unique<Square>());
     Parallel::ConstGlobalCache<TestMetavariables> cache(
         std::move(const_data_to_be_cached));
-    CHECK("Nobody" == Parallel::get<name>(cache));
-    CHECK(178 == Parallel::get<age>(cache));
-    CHECK(2.2 == Parallel::get<height>(cache));
+    CHECK("Nobody" == Parallel::get<Name>(cache));
+    CHECK(178 == Parallel::get<Age>(cache));
+    CHECK(2.2 == Parallel::get<Height>(cache));
     CHECK(4 == Parallel::get<shape_of_nametag>(cache).number_of_sides());
     CHECK(4 == Parallel::get<shape_of_nametag_base>(cache).number_of_sides());
   }
@@ -178,7 +186,7 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
         TestMetavariables>;
     static_assert(
         cpp17::is_same_v<tag_list,
-                         tmpl::list<name, age, height, shape_of_nametag>>,
+                         tmpl::list<Name, Age, Height, shape_of_nametag>>,
         "Wrong tag_list in ConstGlobalCache test");
 
     tuples::tagged_tuple_from_typelist<tag_list> const_data_to_be_cached(
@@ -189,9 +197,9 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
             Parallel::CProxy_ConstGlobalCache<TestMetavariables>::ckNew(
                 const_data_to_be_cached);
     const auto& local_cache = *const_global_cache_proxy.ckLocalBranch();
-    CHECK("Nobody" == Parallel::get<name>(local_cache));
-    CHECK(178 == Parallel::get<age>(local_cache));
-    CHECK(2.2 == Parallel::get<height>(local_cache));
+    CHECK("Nobody" == Parallel::get<Name>(local_cache));
+    CHECK(178 == Parallel::get<Age>(local_cache));
+    CHECK(2.2 == Parallel::get<Height>(local_cache));
     CHECK(4 == Parallel::get<shape_of_nametag>(local_cache).number_of_sides());
     CHECK(4 ==
           Parallel::get<shape_of_nametag_base>(local_cache).number_of_sides());

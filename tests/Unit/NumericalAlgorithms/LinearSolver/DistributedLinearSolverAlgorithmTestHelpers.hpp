@@ -54,19 +54,25 @@ struct NumberOfElements {
 // Therefore, this option specifies a (N*M,N*M) matrix that has its columns
 // split over all elements. In a context where the linear operator represents a
 // DG discretization, M is the number of collocation points per element.
-struct LinearOperator {
+struct LinearOperator : db::SimpleTag {
   static constexpr OptionString help = "The linear operator A to invert.";
   using type = std::vector<DenseMatrix<double, blaze::columnMajor>>;
+  using container_tag = LinearOperator;
+  static std::string name() noexcept { return "LinearOperator"; }
 };
 // Both of the following options expect a list of N vectors that have a size of
 // M each, so that they constitute a vector of total size N*M (see above).
-struct Source {
+struct Source : db::SimpleTag {
   static constexpr OptionString help = "The source b in the equation Ax=b.";
   using type = std::vector<DenseVector<double>>;
+  using container_tag = Source;
+  static std::string name() noexcept { return "Source"; }
 };
-struct ExpectedResult {
+struct ExpectedResult : db::SimpleTag {
   static constexpr OptionString help = "The solution x in the equation Ax=b";
   using type = std::vector<DenseVector<double>>;
+  using container_tag = ExpectedResult;
+  static std::string name() noexcept { return "ExpectedResult"; }
 };
 
 // The vector `x` we want to solve for

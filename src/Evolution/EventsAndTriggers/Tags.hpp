@@ -9,6 +9,19 @@
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "Options/Options.hpp"
 
+namespace Tags {
+/// \cond
+struct EventsAndTriggersTagBase : db::BaseTag {};
+/// \endcond
+
+/// The `OptionTags::EventsAndTriggers` in the DataBox
+template <typename EventRegistrars, typename TriggerRegistrars>
+struct EventsAndTriggers : EventsAndTriggersTagBase, db::SimpleTag {
+  static std::string name() noexcept { return "EventsAndTriggers"; }
+  using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
+};
+}  // namespace Tags
+
 namespace OptionTags {
 /// \cond
 struct EventsAndTriggersTagBase {};
@@ -38,5 +51,7 @@ template <typename EventRegistrars, typename TriggerRegistrars>
 struct EventsAndTriggers : EventsAndTriggersTagBase {
   using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
   static constexpr OptionString help = "Events to run at triggers";
+  using container_tag =
+      Tags::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
 };
 }  // namespace OptionTags

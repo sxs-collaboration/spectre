@@ -231,16 +231,25 @@ struct ConstGlobalCacheImpl : ConstGlobalCache, db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ParallelGroup
-/// Tag used to retrieve data from the `Parallel::ConstGlobalCache`. This is the
-/// recommended way for compute tags to retrieve data out of the global cache.
-template <class CacheTag>
-struct FromConstGlobalCache : CacheTag, db::ComputeTag {
-  static std::string name() noexcept {
-    return "FromConstGlobalCache(" + pretty_type::short_name<CacheTag>() + ")";
-  }
-  template <class Metavariables>
-  static const ConstGlobalCache_detail::type_for_get<CacheTag, Metavariables>&
-  function(const Parallel::ConstGlobalCache<Metavariables>* const& cache) {
+/// \brief Compute item used to retrieve data from the
+/// `Parallel::ConstGlobalCache`.
+///
+/// The `CacheTag` must have a `container_tag` alias that refers to a
+/// `db::SimpleTag`. This container tag can be used to retrieve the data from
+/// the DataBox.
+template <class CacheTag, class ContainerTag = typename CacheTag::container_tag>
+struct FromConstGlobalCache : ContainerTag, db::ComputeTag {
+  static_assert(std::is_base_of<db::SimpleTag, ContainerTag>::value,
+                "The CacheTag::container_tag must be a simple DataBox tag.");
+  template <class Metavariables,
+            class CacheTagType =
+                ConstGlobalCache_detail::type_for_get<CacheTag, Metavariables>,
+            class ContainerTagType = db::item_type<ContainerTag>>
+  static const CacheTagType& function(
+      const Parallel::ConstGlobalCache<Metavariables>* const& cache) {
+    static_assert(cpp17::is_same_v<ContainerTagType, CacheTagType>,
+                  "The type of the container tag of the cache tag must match "
+                  "the tag in the global cache.");
     return Parallel::get<CacheTag>(*cache);
   }
   using argument_tags = tmpl::list<ConstGlobalCache>;

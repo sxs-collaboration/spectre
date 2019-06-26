@@ -216,7 +216,7 @@ struct mock_interpolator {
 };
 
 struct MockMetavariables {
-  struct InterpolationTargetA {
+  struct InterpolationTargetA : db::SimpleTag {
     using compute_items_on_source = tmpl::list<Tags::SquareComputeItem>;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<>;
@@ -225,8 +225,10 @@ struct MockMetavariables {
     using post_interpolation_callback =
         TestFunction<InterpolationTargetA, Tags::Square>;
     using type = typename compute_target_points::options_type;
+    using container_tag = InterpolationTargetA;
+    static std::string name() noexcept { return "InterpolationTargetA"; }
   };
-  struct InterpolationTargetB {
+  struct InterpolationTargetB : db::SimpleTag {
     using compute_items_on_source = tmpl::list<Tags::SquareComputeItem>;
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_target = tmpl::list<Tags::NegateComputeItem>;
@@ -235,8 +237,10 @@ struct MockMetavariables {
     using post_interpolation_callback =
         TestFunction<InterpolationTargetB, Tags::Negate>;
     using type = typename compute_target_points::options_type;
+    using container_tag = InterpolationTargetB;
+    static std::string name() noexcept { return "InterpolationTargetB"; }
   };
-  struct InterpolationTargetC {
+  struct InterpolationTargetC : db::SimpleTag {
     using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareComputeItem>;
@@ -245,6 +249,8 @@ struct MockMetavariables {
     using post_interpolation_callback = TestKerrHorizonIntegral;
     // This `type` is so this tag can be used to read options.
     using type = typename compute_target_points::options_type;
+    using container_tag = InterpolationTargetC;
+    static std::string name() noexcept { return "InterpolationTargetC"; }
   };
 
   using interpolator_source_vars = tmpl::list<Tags::TestSolution>;

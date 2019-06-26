@@ -18,15 +18,28 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Parallel {
-namespace OptionTags {
-struct IntegerList : db::BaseTag {
+namespace Tags {
+struct IntegerList : db::SimpleTag {
   using type = std::array<int, 3>;
-  static constexpr OptionString help = {"Help"};
+  static std::string name() noexcept { return "IntegerList"; }
 };
 
-struct UniquePtrIntegerList : db::BaseTag {
+struct UniquePtrIntegerList : db::SimpleTag {
+  using type = std::array<int, 3>;
+  static std::string name() noexcept { return "UniquePtrIntegerList"; }
+};
+}  // namespace Tags
+namespace OptionTags {
+struct IntegerList {
+  using type = std::array<int, 3>;
+  static constexpr OptionString help = {"Help"};
+  using container_tag = Tags::IntegerList;
+};
+
+struct UniquePtrIntegerList {
   using type = std::unique_ptr<std::array<int, 3>>;
   static constexpr OptionString help = {"Help"};
+  using container_tag = Tags::UniquePtrIntegerList;
 };
 }  // namespace OptionTags
 
@@ -52,14 +65,13 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCacheDataBox", "[Unit][Parallel]") {
           Tags::FromConstGlobalCache<OptionTags::UniquePtrIntegerList>>>(
       &cpp17::as_const(cache));
   CHECK(db::get<Tags::ConstGlobalCache>(box) == &cache);
-  CHECK(std::array<int, 3>{{-1, 3, 7}} ==
-        db::get<OptionTags::IntegerList>(box));
+  CHECK(std::array<int, 3>{{-1, 3, 7}} == db::get<Tags::IntegerList>(box));
   CHECK(std::array<int, 3>{{1, 5, -8}} ==
-        db::get<OptionTags::UniquePtrIntegerList>(box));
+        db::get<Tags::UniquePtrIntegerList>(box));
   CHECK(&Parallel::get<OptionTags::IntegerList>(cache) ==
-        &db::get<OptionTags::IntegerList>(box));
+        &db::get<Tags::IntegerList>(box));
   CHECK(&Parallel::get<OptionTags::UniquePtrIntegerList>(cache) ==
-        &db::get<OptionTags::UniquePtrIntegerList>(box));
+        &db::get<Tags::UniquePtrIntegerList>(box));
 
   tuples::TaggedTuple<OptionTags::IntegerList, OptionTags::UniquePtrIntegerList>
       tuple2{};
@@ -76,18 +88,12 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCacheDataBox", "[Unit][Parallel]") {
       });
 
   CHECK(db::get<Tags::ConstGlobalCache>(box) == &cache2);
-  CHECK(std::array<int, 3>{{10, -3, 700}} ==
-        db::get<OptionTags::IntegerList>(box));
+  CHECK(std::array<int, 3>{{10, -3, 700}} == db::get<Tags::IntegerList>(box));
   CHECK(std::array<int, 3>{{100, -7, -300}} ==
-        db::get<OptionTags::UniquePtrIntegerList>(box));
+        db::get<Tags::UniquePtrIntegerList>(box));
   CHECK(&Parallel::get<OptionTags::IntegerList>(cache2) ==
-        &db::get<OptionTags::IntegerList>(box));
+        &db::get<Tags::IntegerList>(box));
   CHECK(&Parallel::get<OptionTags::UniquePtrIntegerList>(cache2) ==
-        &db::get<OptionTags::UniquePtrIntegerList>(box));
-
-  CHECK(Tags::FromConstGlobalCache<OptionTags::IntegerList>::name() ==
-        "FromConstGlobalCache(IntegerList)");
-  CHECK(Tags::FromConstGlobalCache<OptionTags::UniquePtrIntegerList>::name() ==
-        "FromConstGlobalCache(UniquePtrIntegerList)");
+        &db::get<Tags::UniquePtrIntegerList>(box));
 }
 }  // namespace Parallel

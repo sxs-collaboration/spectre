@@ -107,7 +107,7 @@ struct Initialize {
             inertial_coords ](std::true_type /*is_analytic_solution*/,
                               const gsl::not_null<PrimitiveVars*> prim_vars,
                               const auto& local_cache) noexcept {
-            using solution_tag = OptionTags::AnalyticSolutionBase;
+            using solution_tag = ::OptionTags::AnalyticSolutionBase;
             prim_vars->assign_subset(
                 Parallel::get<solution_tag>(local_cache)
                     .variables(
@@ -118,7 +118,7 @@ struct Initialize {
           [&inertial_coords](std::false_type /*is_analytic_solution*/,
                              const gsl::not_null<PrimitiveVars*> prim_vars,
                              const auto& local_cache) noexcept {
-            using analytic_data_tag = OptionTags::AnalyticDataBase;
+            using analytic_data_tag = ::OptionTags::AnalyticDataBase;
             prim_vars->assign_subset(
                 Parallel::get<analytic_data_tag>(local_cache)
                     .variables(
@@ -173,7 +173,7 @@ struct Initialize {
             inertial_coords ](std::true_type /*is_analytic_solution*/,
                               const gsl::not_null<GrVars*> local_gr_vars,
                               const auto& local_cache) noexcept {
-            using solution_tag = OptionTags::AnalyticSolutionBase;
+            using solution_tag = ::OptionTags::AnalyticSolutionBase;
             local_gr_vars->assign_subset(
                 Parallel::get<solution_tag>(local_cache)
                     .variables(inertial_coords, initial_time,
@@ -182,7 +182,7 @@ struct Initialize {
           [&inertial_coords](std::false_type /*is_analytic_solution*/,
                              const gsl::not_null<GrVars*> local_gr_vars,
                              const auto& local_cache) noexcept {
-            using analytic_data_tag = OptionTags::AnalyticDataBase;
+            using analytic_data_tag = ::OptionTags::AnalyticDataBase;
             local_gr_vars->assign_subset(
                 Parallel::get<analytic_data_tag>(local_cache)
                     .variables(inertial_coords, typename GrVars::tags_list{}));

@@ -202,7 +202,7 @@ struct MockInterpolator {
 };
 
 struct MockMetavariables {
-  struct SurfaceA {
+  struct SurfaceA : db::SimpleTag {
     using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
@@ -220,8 +220,10 @@ struct MockMetavariables {
             SurfaceA, SurfaceA>;
     // This `type` is so this tag can be used to read options.
     using type = typename compute_target_points::options_type;
+    using container_tag = SurfaceA;
+    static std::string name() noexcept { return "SurfaceA"; }
   };
-  struct SurfaceB {
+  struct SurfaceB : db::SimpleTag {
     using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
@@ -242,8 +244,10 @@ struct MockMetavariables {
             SurfaceB, SurfaceB>;
     // This `type` is so this tag can be used to read options.
     using type = typename compute_target_points::options_type;
+    using container_tag = SurfaceB;
+    static std::string name() noexcept { return "SurfaceB"; }
   };
-  struct SurfaceC {
+  struct SurfaceC : db::SimpleTag {
     using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
@@ -261,6 +265,8 @@ struct MockMetavariables {
             SurfaceC, SurfaceC>;
     // This `type` is so this tag can be used to read options.
     using type = typename compute_target_points::options_type;
+    using container_tag = SurfaceC;
+    static std::string name() noexcept { return "SurfaceC"; }
   };
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
