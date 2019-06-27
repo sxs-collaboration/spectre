@@ -49,7 +49,7 @@ template <size_t Dim>
 struct System {
   static constexpr size_t volume_dim = Dim;
   using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
-  using impose_boundary_conditions_on_fields = tmpl::list<ScalarFieldTag>;
+  using primal_variables = tmpl::list<ScalarFieldTag>;
 };
 
 template <size_t Dim>

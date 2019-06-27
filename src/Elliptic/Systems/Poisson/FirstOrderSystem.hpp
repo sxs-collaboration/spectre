@@ -57,11 +57,11 @@ struct FirstOrderSystem {
 
   // The physical fields to solve for
   using fields_tag = Tags::Variables<tmpl::list<Field, AuxiliaryField<Dim>>>;
-  using impose_boundary_conditions_on_fields = tmpl::list<Field>;
 
   // The variables to compute bulk contributions and fluxes for.
   using variables_tag =
       db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+  using primal_variables = tmpl::list<LinearSolver::Tags::Operand<Field>>;
 
   // The bulk contribution to the linear operator action
   using compute_operator_action = ComputeFirstOrderOperatorAction<Dim>;

@@ -48,7 +48,7 @@ namespace Initialization {
  * - System:
  *   - `volume_dim`
  *   - `fields_tag`
- *   - `impose_boundary_conditions_on_fields`
+ *   - `primal_variables`
  * - DataBox:
  *   - `Tags::Mesh<volume_dim>`
  *   - `Tags::Coordinates<volume_dim, Frame::Inertial>`
@@ -124,12 +124,13 @@ struct BoundaryConditions {
             const size_t dimension = direction.dimension();
             const auto mortar_mesh = mesh.slice_away(dimension);
             // Compute Dirichlet data on mortar
-            Variables<typename system::impose_boundary_conditions_on_fields>
-                dirichlet_boundary_data{mortar_mesh.number_of_grid_points(),
-                                        0.};
+            using boundary_data_tags =
+                tmpl::transform<typename system::primal_variables,
+                                tmpl::bind<db::remove_all_prefixes, tmpl::_1>>;
+            Variables<boundary_data_tags> dirichlet_boundary_data{
+                mortar_mesh.number_of_grid_points(), 0.};
             dirichlet_boundary_data.assign_subset(analytic_solution.variables(
-                boundary_coordinates.at(direction),
-                typename system::impose_boundary_conditions_on_fields{}));
+                boundary_coordinates.at(direction), boundary_data_tags{}));
             // Compute the numerical flux contribution from the Dirichlet data
             db::item_type<
                 db::add_tag_prefix<Tags::NormalDotNumericalFlux, sources_tag>>
