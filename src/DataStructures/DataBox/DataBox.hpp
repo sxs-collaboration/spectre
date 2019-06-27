@@ -1645,16 +1645,16 @@ constexpr bool has_argument_tags_v = has_argument_tags<F>::value;
 template <typename TagsList, typename F, typename BoxTags, typename... Args,
           Requires<not DataBox_detail::has_argument_tags_v<std::decay_t<F>>> =
               nullptr>
-inline constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
-                            Args&&... args) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
+                                           Args&&... args) noexcept {
   return DataBox_detail::Apply<TagsList>::apply(std::forward<F>(f), box,
                                                 std::forward<Args>(args)...);
 }
 
 template <typename F, typename BoxTags, typename... Args,
           typename ArgumentTags = typename std::decay_t<F>::argument_tags>
-inline constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
-                            Args&&... args) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
+                                           Args&&... args) noexcept {
   return DataBox_detail::Apply<ArgumentTags>::apply(
       std::forward<F>(f), box, std::forward<Args>(args)...);
 }
@@ -1680,8 +1680,8 @@ inline constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
  * DataBox, `box`
  */
 template <typename F, typename BoxTags, typename... Args>
-inline constexpr auto apply(const DataBox<BoxTags>& box,
-                            Args&&... args) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr auto apply(const DataBox<BoxTags>& box,
+                                           Args&&... args) noexcept {
   static_assert(
       DataBox_detail::has_argument_tags_v<F>,
       "The stateless invokable does not specify an 'argument_tags' type "
@@ -1698,7 +1698,7 @@ template <typename... ReturnTags, typename... ArgumentTags, typename F,
               const std::add_lvalue_reference_t<
                   db::item_type<ArgumentTags, BoxTags>>...,
               Args...>> = nullptr>
-inline constexpr auto mutate_apply(
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F&& /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> box,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... args) noexcept {
@@ -1727,7 +1727,7 @@ template <typename... ReturnTags, typename... ArgumentTags, typename F,
               const std::add_lvalue_reference_t<
                   db::item_type<ArgumentTags, BoxTags>>...,
               Args...>> = nullptr>
-inline constexpr auto mutate_apply(
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F&& f, const gsl::not_null<db::DataBox<BoxTags>*> box,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... args) noexcept {
@@ -1772,7 +1772,7 @@ template <
                 const std::add_lvalue_reference_t<
                     db::item_type<ArgumentTags, BoxTags>>...,
                 Args...>)> = nullptr>
-inline constexpr auto mutate_apply(
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> /*box*/,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... /*args*/) noexcept {
@@ -1868,7 +1868,7 @@ template <typename MutateTags, typename ArgumentTags, typename F,
           typename BoxTags, typename... Args,
           Requires<not DataBox_detail::has_return_tags_and_argument_tags_v<
               std::decay_t<F>>> = nullptr>
-inline constexpr auto mutate_apply(
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F&& f, const gsl::not_null<DataBox<BoxTags>*> box,
     Args&&... args) noexcept(DataBox_detail::
                                  check_mutate_apply_mutate_tags(
@@ -1894,7 +1894,7 @@ template <typename F, typename BoxTags, typename... Args,
               std::decay_t<F>>> = nullptr,
           typename MutateTags = typename std::decay_t<F>::return_tags,
           typename ArgumentTags = typename std::decay_t<F>::argument_tags>
-inline constexpr auto mutate_apply(
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F&& f, const gsl::not_null<DataBox<BoxTags>*> box,
     Args&&... args) noexcept(DataBox_detail::
                                  check_mutate_apply_mutate_tags(
@@ -1939,8 +1939,8 @@ inline constexpr auto mutate_apply(
  * DataBox, `box`
  */
 template <typename F, typename BoxTags, typename... Args>
-inline constexpr auto mutate_apply(const gsl::not_null<DataBox<BoxTags>*> box,
-                                   Args&&... args) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
+    const gsl::not_null<DataBox<BoxTags>*> box, Args&&... args) noexcept {
   static_assert(
       DataBox_detail::has_return_tags_and_argument_tags_v<F>,
       "The stateless mutator does not specify both 'argument_tags' and "
