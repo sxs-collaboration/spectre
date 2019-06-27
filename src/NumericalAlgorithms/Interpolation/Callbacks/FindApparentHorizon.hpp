@@ -78,6 +78,8 @@ namespace callbacks {
 /// see InterpolationTarget for a description of InterpolationTargetTag.
 template <typename InterpolationTargetTag>
 struct FindApparentHorizon {
+  using observation_types = typename InterpolationTargetTag::
+      post_horizon_find_callback::observation_types;
   template <typename DbTags, typename Metavariables>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
