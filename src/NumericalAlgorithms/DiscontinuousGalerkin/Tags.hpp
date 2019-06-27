@@ -20,6 +20,15 @@
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup DiscontinuousGalerkinGroup
+/// \brief Data that is communicated to and from the remote element
+template <typename DataType>
+struct PackagedData : db::SimpleTag {
+  static std::string name() noexcept { return "PackagedData"; }
+  using type = DataType;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup DiscontinuousGalerkinGroup
 /// \brief Simple boundary communication data
 template <typename TemporalId, typename LocalData, typename RemoteData>
 struct SimpleBoundaryData : db::SimpleTag {
