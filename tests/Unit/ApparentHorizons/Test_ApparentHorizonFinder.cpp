@@ -13,6 +13,7 @@
 #include "ApparentHorizons/ComputeItems.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/FastFlow.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
+#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -106,6 +107,17 @@ struct TestSchwarzschildHorizon {
     Approx custom_approx = Approx::custom().epsilon(1.e-2).scale(1.0);
     CHECK_ITERABLE_CUSTOM_APPROX(horizon_radius, expected_radius,
                                  custom_approx);
+
+    // Test that InverseSpatialMetric can be retrieved from the
+    // DataBox and that its number of grid points is the same
+    // as that of the strahlkorper.
+    const auto& strahlkorper =
+        get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
+    const auto& inv_metric =
+        get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(box);
+    CHECK(strahlkorper.ylm_spherepack().physical_size() ==
+          get<0,0>(inv_metric).size());
+
     ++test_schwarzschild_horizon_called;
   }
 };
@@ -132,6 +144,15 @@ struct TestKerrHorizon {
     Approx custom_approx = Approx::custom().epsilon(1.e-3).scale(1.0);
     CHECK_ITERABLE_CUSTOM_APPROX(horizon_radius, get(expected_radius),
                                  custom_approx);
+
+    // Test that InverseSpatialMetric can be retrieved from the
+    // DataBox and that its number of grid points is the same
+    // as that of the strahlkorper.
+    const auto& inv_metric =
+        get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(box);
+    CHECK(strahlkorper.ylm_spherepack().physical_size() ==
+          get<0,0>(inv_metric).size());
+
     ++test_kerr_horizon_called;
   }
 };
