@@ -7,10 +7,12 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <random>
 #include <string>
 #include <utility>
 
 #include "ApparentHorizons/FastFlow.hpp"
+#include "ApparentHorizons/SpherepackIterator.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
 #include "ApparentHorizons/Tags.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -200,18 +202,45 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
 
   const gr::Solutions::KerrSchild solution(1.0, {{0., 0., 0.}}, {{0., 0., 0.}});
 
-  const auto status = do_iteration(&strahlkorper, &flow, solution);
-  CHECK(converged(status));
+  const auto iterate_and_check = [&strahlkorper, &flow, &solution ]() noexcept {
+    const auto status = do_iteration(&strahlkorper, &flow, solution);
+    CHECK(converged(status));
 
-  const auto box = db::create<
-      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-      db::AddComputeTags<
-          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
-  const auto& rad = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
-  const auto r_minmax = std::minmax_element(rad.begin(), rad.end());
-  Approx custom_approx = Approx::custom().epsilon(1.e-11);
-  CHECK(*r_minmax.first == custom_approx(2.0));
-  CHECK(*r_minmax.second == custom_approx(2.0));
+    const auto box = db::create<
+        db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+        db::AddComputeTags<
+            StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
+        strahlkorper);
+    const auto& rad = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+    const auto r_minmax = std::minmax_element(rad.begin(), rad.end());
+    Approx custom_approx = Approx::custom().epsilon(1.e-11);
+    CHECK(*r_minmax.first == custom_approx(2.0));
+    CHECK(*r_minmax.second == custom_approx(2.0));
+  };
+
+  iterate_and_check();
+
+  // We have found the horizon once.  Now perturb the strahlkorper
+  // and find the horizon again. This checks that fastflow is reset
+  // correctly.
+  strahlkorper = [](
+      const Strahlkorper<Frame::Inertial>& strahlkorper_l) noexcept {
+    MAKE_GENERATOR(generator);
+    std::uniform_real_distribution<> dist(0.0, 0.1);
+    auto coefs = strahlkorper_l.coefficients();
+    for (auto coef_iter =
+             SpherepackIterator(strahlkorper_l.l_max(), strahlkorper_l.l_max());
+         coef_iter; ++coef_iter) {
+      // Change all components randomly, but make smaller changes
+      // to higher-order coefficients.
+      coefs[coef_iter()] *= 1.0 + dist(generator) / square(coef_iter.l() + 1.0);
+    }
+    return Strahlkorper<Frame::Inertial>(coefs, strahlkorper_l);
+  }
+  (strahlkorper);
+
+  flow.reset_for_next_find();
+  iterate_and_check();
 }
 
 void test_kerr(FastFlow::Flow::type type_of_flow, const double mass,
