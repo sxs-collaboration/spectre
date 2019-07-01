@@ -845,7 +845,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
       2.0, [](const size_t size) noexcept { return DataVector(size, 4.0); });
 
   // Check the area of a Kerr horizon
-  constexpr int l_max = 20;
+  constexpr int l_max = 22;
   const double mass = 4.444;
   const std::array<double, 3> spin{{0.4, 0.33, 0.22}};
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
