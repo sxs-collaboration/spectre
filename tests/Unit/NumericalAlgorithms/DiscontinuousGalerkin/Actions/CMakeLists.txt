@@ -9,6 +9,8 @@ set(LIBRARY_SOURCES
   Actions/Test_FluxCommunication.cpp
   Actions/Test_FluxCommunicationLts.cpp
   Actions/Test_ImposeBoundaryConditions.cpp
+  Actions/Test_InitializeFluxes.cpp
   Actions/Test_InitializeInterfaces.cpp
+  Actions/Test_InitializeMortars.cpp
   PARENT_SCOPE
   )
