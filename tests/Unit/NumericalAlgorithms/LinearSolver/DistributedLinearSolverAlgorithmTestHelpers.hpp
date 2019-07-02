@@ -15,6 +15,7 @@
 #include "AlgorithmArray.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/DenseVector.hpp"
@@ -25,6 +26,7 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
+#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -32,6 +34,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/Reduction.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -76,8 +79,11 @@ struct ScalarFieldTag : db::SimpleTag {
 };
 
 using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
+using sources_tag = db::add_tag_prefix<::Tags::Source, fields_tag>;
+using operator_applied_to_fields_tag =
+    db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
 using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-using operator_tag =
+using operator_applied_to_operand_tag =
     db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
 
 // In the following `ComputeOperatorAction` and `CollectAp` actions we
@@ -184,48 +190,36 @@ struct TestResult {
 };
 
 struct InitializeElement {
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTagsList, ScalarFieldTag>> = nullptr>
-  static auto apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
-      const int array_index, const ActionList /*meta*/,
-      const ParallelComponent* const parallel_component_meta) noexcept {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(db::DataBox<DbTagsList>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const int array_index, const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    using simple_tags =
+        db::AddSimpleTags<LinearSolver::Tags::IterationId, fields_tag,
+                          sources_tag, operator_applied_to_fields_tag,
+                          operand_tag, operator_applied_to_operand_tag>;
+    using compute_tags = db::AddComputeTags<>;
+
     const auto& source = gsl::at(get<Source>(cache), array_index);
     const size_t num_points = source.size();
+    db::item_type<sources_tag> sources{num_points, 0.};
+    for (size_t i = 0; i < num_points; i++) {
+      get(get<::Tags::Source<ScalarFieldTag>>(sources))[i] = source[i];
+    }
 
-    auto vars_box = db::create_from<
-        db::RemoveTags<>,
-        db::AddSimpleTags<tmpl::list<fields_tag, operand_tag, operator_tag>>>(
-        std::move(box), db::item_type<fields_tag>{num_points, 0.},
-        db::item_type<operand_tag>{
-            num_points, std::numeric_limits<double>::signaling_NaN()},
-        db::item_type<operator_tag>{
-            num_points, std::numeric_limits<double>::signaling_NaN()});
-    auto linear_solver_box = Metavariables::linear_solver::tags::initialize(
-        std::move(vars_box), cache, array_index, parallel_component_meta,
-        source,
-        db::item_type<db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
-                                         fields_tag>>{num_points, 0.});
-    return std::make_tuple(std::move(linear_solver_box), true);
-  }
-
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTagsList, ScalarFieldTag>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      const db::DataBox<DbTagsList>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const int /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    ERROR(
-        "Re-initialization not supported. Did you forget to terminate the "
-        "initialization phase?");
+    return std::make_tuple(
+        ::Initialization::merge_into_databox<InitializeElement, simple_tags,
+                                             compute_tags>(
+            std::move(box), 0_st, db::item_type<fields_tag>{num_points, 0.},
+            std::move(sources),
+            db::item_type<operator_applied_to_fields_tag>{num_points, 0.},
+            db::item_type<operand_tag>{
+                num_points, std::numeric_limits<double>::signaling_NaN()},
+            db::item_type<operator_applied_to_operand_tag>{
+                num_points, std::numeric_limits<double>::signaling_NaN()}));
   }
 };
 
@@ -234,9 +228,11 @@ struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             tmpl::list<InitializeElement>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<InitializeElement,
+                     typename Metavariables::linear_solver::initialize_element,
+                     Parallel::Actions::TerminatePhase>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase,

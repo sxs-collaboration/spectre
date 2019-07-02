@@ -162,8 +162,7 @@ struct UpdateOperand {
 
     // Prepare conjugate gradient for next iteration
     db::mutate<operand_tag, LinearSolver::Tags::HasConverged,
-               LinearSolver::Tags::IterationId,
-               ::Tags::Next<LinearSolver::Tags::IterationId>>(
+               LinearSolver::Tags::IterationId>(
         make_not_null(&box),
         [
           res_ratio, &has_converged
@@ -172,14 +171,10 @@ struct UpdateOperand {
               local_has_converged,
           const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
               iteration_id,
-          const gsl::not_null<
-              db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>*>
-              next_iteration_id,
           const db::item_type<residual_tag>& r) noexcept {
           *p = r + res_ratio * *p;
           *local_has_converged = has_converged;
           (*iteration_id)++;
-          *next_iteration_id = *iteration_id + 1;
         },
         get<residual_tag>(box));
 

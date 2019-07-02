@@ -14,6 +14,7 @@
 #include "AlgorithmArray.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DenseMatrix.hpp"
 #include "DataStructures/DenseVector.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -22,11 +23,13 @@
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -109,46 +112,32 @@ struct TestResult {
 };
 
 struct InitializeElement {
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTagsList, VectorTag>> = nullptr>
-  static auto apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
-      const int array_index, const ActionList /*meta*/,
-      const ParallelComponent* const parallel_component_meta) noexcept {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent>
+  static auto apply(db::DataBox<DbTagsList>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const int /*array_index*/, const ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    using simple_tags =
+        db::AddSimpleTags<LinearSolver::Tags::IterationId, VectorTag,
+                          ::Tags::Source<VectorTag>,
+                          LinearSolver::Tags::OperatorAppliedTo<VectorTag>,
+                          operand_tag, operator_tag>;
+    using compute_tags = db::AddComputeTags<>;
+
     const auto& A = get<LinearOperator>(cache);
     const auto& b = get<Source>(cache);
     const auto& x0 = get<InitialGuess>(cache);
 
-    auto vars_box = db::create_from<
-        db::RemoveTags<>,
-        db::AddSimpleTags<tmpl::list<VectorTag, operand_tag, operator_tag>>>(
-        std::move(box), x0,
-        make_with_value<db::item_type<operand_tag>>(
-            x0, std::numeric_limits<double>::signaling_NaN()),
-        make_with_value<db::item_type<operator_tag>>(
-            x0, std::numeric_limits<double>::signaling_NaN()));
-    auto linear_solver_box = Metavariables::linear_solver::tags::initialize(
-        std::move(vars_box), cache, array_index, parallel_component_meta, b,
-        A * x0);
-    return std::make_tuple(std::move(linear_solver_box), true);
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ActionList, typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTagsList, VectorTag>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      const db::DataBox<DbTagsList>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const int /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    ERROR(
-        "Re-initialization not supported. Did you forget to terminate the "
-        "initialization phase?");
+    return std::make_tuple(
+        ::Initialization::merge_into_databox<InitializeElement, simple_tags,
+                                             compute_tags>(
+            std::move(box), 0_st, x0, b, DenseVector<double>{A * x0},
+            make_with_value<db::item_type<operand_tag>>(
+                x0, std::numeric_limits<double>::signaling_NaN()),
+            make_with_value<db::item_type<operator_tag>>(
+                x0, std::numeric_limits<double>::signaling_NaN())));
   }
 };  // namespace
 
@@ -164,9 +153,11 @@ struct ElementArray {
   // magnitude and the iteration step number.
   /// [action_list]
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             tmpl::list<InitializeElement>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<InitializeElement,
+                     typename Metavariables::linear_solver::initialize_element,
+                     Parallel::Actions::TerminatePhase>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase,

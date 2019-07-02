@@ -50,11 +50,9 @@ struct ElementArray {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<
-          tmpl::append<tmpl::list<VectorTag, operand_tag>,
-                       typename LinearSolver::gmres_detail::InitializeElement<
-                           Metavariables>::simple_tags>,
-          typename LinearSolver::gmres_detail::InitializeElement<
-              Metavariables>::compute_tags>>>>;
+          tmpl::list<VectorTag, operand_tag, LinearSolver::Tags::IterationId,
+                     initial_fields_tag, orthogonalization_iteration_id_tag,
+                     basis_history_tag, LinearSolver::Tags::HasConverged>>>>>;
 };
 
 struct System {
@@ -79,7 +77,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
   // Setup mock element array
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), 0,
-      {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.), 0_st, 0_st,
+      {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.), 0_st,
        DenseVector<double>(3, -1.), 0_st,
        std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
                                         DenseVector<double>(3, 1.5)},

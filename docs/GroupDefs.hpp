@@ -526,10 +526,8 @@
  * - `component_list`: A `tmpl::list` that collects the additional parallel
  * components this linear solver uses. The executables will append these to
  * their own `component_list`.
- * - `tags`: A type that follows the same structure as those that initialize
- * other parts of the DataBox in `InitializeElement.hpp` files. This means it
- * exposes `simple_tags`, `compute_tags` and a static `initialize` function so
- * that it can be chained into the DataBox initialization.
+ * - `initialize_element`: An action that initializes the DataBox items
+ * required by the linear solver.
  * - `perform_step`: The action to be executed after the linear operator has
  * been applied to the operand and written to the DataBox (see above). It will
  * converge the fields towards their solution and update the operand before

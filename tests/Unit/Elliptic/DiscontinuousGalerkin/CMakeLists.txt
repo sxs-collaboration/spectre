@@ -4,7 +4,7 @@
 set(LIBRARY "Test_EllipticDG")
 
 set(LIBRARY_SOURCES
-  Test_ImposeBoundaryConditions.cpp
+  Test_ImposeInhomogeneousBoundaryConditions.cpp
   )
 
 add_test_library(

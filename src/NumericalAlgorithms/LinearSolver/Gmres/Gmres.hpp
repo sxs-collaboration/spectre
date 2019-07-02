@@ -114,7 +114,7 @@ struct Gmres {
    * not need to be initialized until it is computed for the first time in the
    * first step of the algorithm.
    */
-  using tags = gmres_detail::InitializeElement<Metavariables>;
+  using initialize_element = gmres_detail::InitializeElement<Metavariables>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<

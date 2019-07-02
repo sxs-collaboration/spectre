@@ -203,7 +203,6 @@ struct NormalizeOperandAndUpdateField {
         LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
 
     db::mutate<LinearSolver::Tags::IterationId,
-               ::Tags::Next<LinearSolver::Tags::IterationId>,
                orthogonalization_iteration_id_tag, operand_tag,
                basis_history_tag, fields_tag, LinearSolver::Tags::HasConverged>(
         make_not_null(&box),
@@ -211,9 +210,6 @@ struct NormalizeOperandAndUpdateField {
           normalization, &minres, &has_converged
         ](const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
               iteration_id,
-          const gsl::not_null<
-              db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>*>
-              next_iteration_id,
           const gsl::not_null<
               db::item_type<orthogonalization_iteration_id_tag>*>
               orthogonalization_iteration_id,
@@ -224,7 +220,6 @@ struct NormalizeOperandAndUpdateField {
               local_has_converged,
           const db::item_type<initial_fields_tag>& initial_field) noexcept {
           (*iteration_id)++;
-          *next_iteration_id = *iteration_id + 1;
           *orthogonalization_iteration_id = 0;
           *operand /= normalization;
           basis_history->push_back(*operand);

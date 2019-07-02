@@ -54,6 +54,7 @@ namespace Poisson {
 template <size_t Dim>
 struct FirstOrderSystem {
   static constexpr size_t volume_dim = Dim;
+  static constexpr bool is_in_flux_conservative_form = false;
 
   // The physical fields to solve for
   using fields_tag = Tags::Variables<tmpl::list<Field, AuxiliaryField<Dim>>>;
