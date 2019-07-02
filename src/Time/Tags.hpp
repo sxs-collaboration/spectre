@@ -93,7 +93,7 @@ struct TypedTimeStepper : TimeStepper {
   static std::string name() noexcept { return "TimeStepper"; }
   static constexpr OptionString help{"The time stepper"};
   using type = std::unique_ptr<StepperType>;
-  using group = EvolutionGroup;
+  using group = evolution::OptionTags::EvolutionGroup;
 };
 
 /// \ingroup OptionTagsGroup
@@ -103,7 +103,7 @@ struct StepChoosers {
   static constexpr OptionString help{"Limits on LTS step size"};
   using type = std::vector<std::unique_ptr<::StepChooser<Registrars>>>;
   static size_t lower_bound_on_size() noexcept { return 1; }
-  using group = EvolutionGroup;
+  using group = evolution::OptionTags::EvolutionGroup;
 };
 
 /// \ingroup OptionTagsGroup
@@ -111,7 +111,7 @@ struct StepChoosers {
 struct StepController {
   static constexpr OptionString help{"The LTS step controller"};
   using type = std::unique_ptr<::StepController>;
-  using group = EvolutionGroup;
+  using group = evolution::OptionTags::EvolutionGroup;
 };
 
 /// \ingroup OptionTagsGroup
@@ -122,7 +122,7 @@ struct InitialTime {
   static constexpr OptionString help = {
       "The time at which the evolution is started."};
   static type default_value() noexcept { return 0.0; }
-  using group = EvolutionGroup;
+  using group = evolution::OptionTags::EvolutionGroup;
 };
 
 /// \ingroup OptionTagsGroup
@@ -133,7 +133,7 @@ struct InitialTimeStep {
   using type = double;
   static constexpr OptionString help =
       "The initial time step, before local stepping adjustment";
-  using group = EvolutionGroup;
+  using group = evolution::OptionTags::EvolutionGroup;
 };
 
 /// \ingroup OptionTagsGroup
@@ -143,6 +143,6 @@ struct InitialSlabSize {
   using type = double;
   static constexpr OptionString help = "The initial slab size";
   static type lower_bound() noexcept { return 0.; }
-  using group = EvolutionGroup;
+  using group = evolution::OptionTags::EvolutionGroup;
 };
 }  // namespace OptionTags

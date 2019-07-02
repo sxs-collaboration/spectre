@@ -13,11 +13,11 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Initialization/MergeIntoDataBox.hpp"
-#include "Evolution/Initialization/Tags.hpp"
+#include "Evolution/Tags.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Requires.hpp"
@@ -31,7 +31,7 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace Initialization {
+namespace evolution {
 namespace Actions {
 /// \ingroup InitializationGroup
 /// \brief Allocate and set variables needed for evolution of conservative
@@ -49,16 +49,15 @@ namespace Actions {
 ///
 /// - Removes: nothing
 /// - Modifies: nothing
-struct ConservativeSystem {
-  using initialization_option_tags =
-      tmpl::list<Initialization::Tags::InitialTime>;
+struct InitializeConservativeSystem {
+  using initialization_option_tags = tmpl::list<Tags::InitialTime>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<tmpl::list_contains_v<
                 typename db::DataBox<DbTagsList>::simple_item_tags,
-                Initialization::Tags::InitialTime>> = nullptr>
+                Tags::InitialTime>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -83,7 +82,8 @@ struct ConservativeSystem {
     typename sources_tag::type sources(num_grid_points);
 
     return std::make_tuple(initialize_vars(
-        merge_into_databox<ConservativeSystem, simple_tags, compute_tags>(
+        Initialization::merge_into_databox<InitializeConservativeSystem,
+                                           simple_tags, compute_tags>(
             std::move(box), std::move(vars), std::move(fluxes),
             std::move(sources)),
         cache));
@@ -94,7 +94,7 @@ struct ConservativeSystem {
             typename ParallelComponent,
             Requires<not tmpl::list_contains_v<
                 typename db::DataBox<DbTagsList>::simple_item_tags,
-                Initialization::Tags::InitialTime>> = nullptr>
+                Tags::InitialTime>> = nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -102,8 +102,8 @@ struct ConservativeSystem {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     ERROR(
-        "Could not find dependency 'Initialization::Tags::InitialTime' in "
-        "DataBox.");
+        "Dependencies not fulfilled. Did you forget to terminate the phase "
+        "after removing options?");
   }
 
  private:
@@ -122,7 +122,7 @@ struct ConservativeSystem {
                           typename Metavariables::equation_of_state_tag>;
     using compute_tags = db::AddComputeTags<>;
 
-    const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
+    const double initial_time = db::get<Tags::InitialTime>(box);
     using PrimitiveVars = typename primitives_tag::type;
 
     const size_t num_grid_points =
@@ -134,10 +134,10 @@ struct ConservativeSystem {
     // Set initial data from analytic solution
     PrimitiveVars primitive_vars{num_grid_points};
     auto equation_of_state = make_overloader(
-        [ initial_time, &
-          inertial_coords ](std::true_type /*is_analytic_solution*/,
-                            const gsl::not_null<PrimitiveVars*> prim_vars,
-                            const auto& local_cache) noexcept {
+        [ initial_time, &inertial_coords ](
+            std::true_type /*is_analytic_solution*/,
+            const gsl::not_null<PrimitiveVars*> prim_vars,
+            const auto& local_cache) noexcept {
           using solution_tag = ::OptionTags::AnalyticSolutionBase;
           prim_vars->assign_subset(
               Parallel::get<solution_tag>(local_cache)
@@ -149,7 +149,7 @@ struct ConservativeSystem {
         [&inertial_coords](std::false_type /*is_analytic_solution*/,
                            const gsl::not_null<PrimitiveVars*> prim_vars,
                            const auto& local_cache) noexcept {
-          using analytic_data_tag = OptionTags::AnalyticDataBase;
+          using analytic_data_tag = ::OptionTags::AnalyticDataBase;
           prim_vars->assign_subset(
               Parallel::get<analytic_data_tag>(local_cache)
                   .variables(
@@ -160,39 +160,39 @@ struct ConservativeSystem {
         })(evolution::has_analytic_solution_alias<Metavariables>{},
            make_not_null(&primitive_vars), cache);
 
-    return Initialization::merge_into_databox<ConservativeSystem, simple_tags,
-                                              compute_tags>(
+    return Initialization::merge_into_databox<InitializeConservativeSystem,
+                                              simple_tags, compute_tags>(
         std::move(box), std::move(primitive_vars),
         std::move(equation_of_state));
   }
 
-   template <typename DbTagsList, typename Metavariables,
-             Requires<not Metavariables::system::
-                          has_primitive_and_conservative_vars> = nullptr>
-   static auto initialize_vars(
-       db::DataBox<DbTagsList>&& box,
-       const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-     using system = typename Metavariables::system;
-     static constexpr size_t dim = system::volume_dim;
-     using variables_tag = typename system::variables_tag;
+  template <
+      typename DbTagsList, typename Metavariables,
+      Requires<not Metavariables::system::has_primitive_and_conservative_vars> =
+          nullptr>
+  static auto initialize_vars(
+      db::DataBox<DbTagsList>&& box,
+      const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+    using system = typename Metavariables::system;
+    static constexpr size_t dim = system::volume_dim;
+    using variables_tag = typename system::variables_tag;
 
-     const double initial_time =
-         db::get<Initialization::Tags::InitialTime>(box);
-     const auto& inertial_coords =
-         db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+    const double initial_time = db::get<Tags::InitialTime>(box);
+    const auto& inertial_coords =
+        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
 
-     // Set initial data from analytic solution
-     using Vars = typename variables_tag::type;
-     using solution_tag = OptionTags::AnalyticSolutionBase;
-     db::mutate<variables_tag>(
-         make_not_null(&box), [&cache, &inertial_coords, initial_time ](
-                                  const gsl::not_null<Vars*> vars) noexcept {
-           vars->assign_subset(Parallel::get<solution_tag>(cache).variables(
-               inertial_coords, initial_time, typename Vars::tags_list{}));
-         });
+    // Set initial data from analytic solution
+    using Vars = typename variables_tag::type;
+    using solution_tag = ::OptionTags::AnalyticSolutionBase;
+    db::mutate<variables_tag>(make_not_null(&box), [
+      &cache, &inertial_coords, initial_time
+    ](const gsl::not_null<Vars*> vars) noexcept {
+      vars->assign_subset(Parallel::get<solution_tag>(cache).variables(
+          inertial_coords, initial_time, typename Vars::tags_list{}));
+    });
 
-     return std::move(box);
-   }
+    return std::move(box);
+  }
 };
 }  // namespace Actions
-}  // namespace Initialization
+}  // namespace evolution

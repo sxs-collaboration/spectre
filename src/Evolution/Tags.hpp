@@ -3,9 +3,32 @@
 
 #pragma once
 
+#include <array>
+#include <cstddef>
 #include <string>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
+
+namespace evolution {
+namespace Tags {
+
+struct InitialTime : db::SimpleTag {
+  static std::string name() noexcept { return "InitialTime"; }
+  using type = double;
+};
+
+struct InitialTimeDelta : db::SimpleTag {
+  static std::string name() noexcept { return "InitialTimeDelta"; }
+  using type = double;
+};
+
+struct InitialSlabSize : db::SimpleTag {
+  static std::string name() noexcept { return "InitialSlabSize"; }
+  using type = double;
+};
+
+}  // namespace Tags
 
 namespace OptionTags {
 
@@ -32,3 +55,4 @@ struct EvolutionSystemGroup {
 };
 
 }  // namespace OptionTags
+}  // namespace evolution

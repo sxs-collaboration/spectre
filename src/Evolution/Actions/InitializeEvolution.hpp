@@ -13,11 +13,11 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Initialization/MergeIntoDataBox.hpp"
-#include "Evolution/Initialization/Tags.hpp"
+#include "Evolution/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
@@ -32,7 +32,7 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace Initialization {
+namespace evolution {
 namespace Actions {
 /// \ingroup InitializationGroup
 /// \brief Initialize items related to time-evolution of the system
@@ -52,7 +52,7 @@ namespace Actions {
 ///
 /// \note HistoryEvolvedVariables is allocated, but needs to be initialized
 template <typename System>
-struct Evolution {
+struct InitializeEvolution {
   using initialization_option_tags =
       tmpl::list<Tags::InitialTime, Tags::InitialTimeDelta,
                  Tags::InitialSlabSize>;
@@ -70,11 +70,12 @@ struct Evolution {
                                       LocalSystem::is_in_flux_conservative_form>
   struct ComputeTags {
     using type = db::AddComputeTags<
-        ::Tags::Time, ::Tags::DerivCompute<variables_tag,
-                                           ::Tags::InverseJacobian<
-                                               ::Tags::ElementMap<dim>,
-                                               ::Tags::LogicalCoordinates<dim>>,
-                                           typename System::gradients_tags>>;
+        ::Tags::Time,
+        ::Tags::DerivCompute<
+            variables_tag,
+            ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
+                                    ::Tags::Coordinates<dim, Frame::Logical>>,
+            typename System::gradients_tags>>;
   };
 
   template <typename LocalSystem>
@@ -85,7 +86,7 @@ struct Evolution {
             db::add_tag_prefix<::Tags::Flux, variables_tag, tmpl::size_t<dim>,
                                Frame::Inertial>,
             ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
-                                    ::Tags::LogicalCoordinates<dim>>>>;
+                                    ::Tags::Coordinates<dim, Frame::Logical>>>>;
   };
 
   using compute_tags = typename ComputeTags<System>::type;
@@ -106,7 +107,7 @@ struct Evolution {
       const Time& initial_time, const double initial_dt_value,
       const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
     const auto& step_controller =
-        Parallel::get<OptionTags::StepController>(cache);
+        Parallel::get<::OptionTags::StepController>(cache);
     return step_controller.choose_step(initial_time, initial_dt_value);
   }
 
@@ -115,7 +116,7 @@ struct Evolution {
             typename ParallelComponent,
             Requires<tmpl::list_contains_v<
                 typename db::DataBox<DbTagsList>::simple_item_tags,
-                Initialization::Tags::InitialTime>> = nullptr>
+                Tags::InitialTime>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -149,7 +150,7 @@ struct Evolution {
     // The slab number is increased in the self-start phase each
     // time one order of accuracy is obtained, and the evolution
     // proper starts with slab 0.
-    const auto& time_stepper = Parallel::get<OptionTags::TimeStepper>(cache);
+    const auto& time_stepper = Parallel::get<::OptionTags::TimeStepper>(cache);
 
     const TimeId time_id(
         time_runs_forward,
@@ -157,8 +158,13 @@ struct Evolution {
         initial_time);
 
     return std::make_tuple(
-        merge_into_databox<Evolution, simple_tags, compute_tags>(
-            std::move(box), TimeId{}, time_id, initial_dt, std::move(dt_vars),
+        Initialization::merge_into_databox<InitializeEvolution, simple_tags,
+                                           compute_tags>(
+            std::move(box),
+            // Use the initial time id also as the next, since the evolution
+            // action lists start with an `AdvanceTime`.
+            // Other initializers may rely on the current time_id being correct.
+            time_id, time_id, initial_dt, std::move(dt_vars),
             std::move(history)));
   }
 
@@ -167,7 +173,7 @@ struct Evolution {
             typename ParallelComponent,
             Requires<not tmpl::list_contains_v<
                 typename db::DataBox<DbTagsList>::simple_item_tags,
-                Initialization::Tags::InitialTime>> = nullptr>
+                Tags::InitialTime>> = nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -175,9 +181,9 @@ struct Evolution {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     ERROR(
-        "Could not find dependency 'Initialization::Tags::InitialTime' in "
-        "DataBox.");
+        "Dependencies not fulfilled. Did you forget to terminate the phase "
+        "after removing options?");
   }
 };
 }  // namespace Actions
-}  // namespace Initialization
+}  // namespace evolution

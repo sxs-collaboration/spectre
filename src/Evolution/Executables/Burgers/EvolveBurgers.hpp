@@ -5,11 +5,15 @@
 
 #include <vector>
 
+#include "Domain/Actions/InitializeDomain.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"    // IWYU pragma: keep
+#include "Evolution/Actions/InitializeConservativeSystem.hpp"
+#include "Evolution/Actions/InitializeEvolution.hpp"
+#include "Evolution/Actions/InitializeLimiter.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
@@ -20,13 +24,6 @@
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Tags.hpp"
-#include "Evolution/Initialization/ConservativeSystem.hpp"
-#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
-#include "Evolution/Initialization/Domain.hpp"
-#include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Initialize.hpp"
-#include "Evolution/Initialization/Interface.hpp"
-#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "IO/Observer/Actions.hpp"
@@ -37,12 +34,16 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/InitializeFluxes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/InitializeInterfaces.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/InitializeMortars.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
@@ -135,17 +136,19 @@ struct EvolutionMetavars {
     Exit
   };
 
-  using initialization_actions = tmpl::list<
-      Initialization::Actions::Domain<1>,
-      Initialization::Actions::ConservativeSystem,
-      Initialization::Actions::Interface<
-          system,
-          Initialization::slice_tags_to_face<typename system::variables_tag>,
-          Initialization::slice_tags_to_exterior<>>,
-      Initialization::Actions::Evolution<system>,
-      Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
-      Initialization::Actions::MinMod<1>,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+  using initialization_actions =
+      tmpl::list<domain::Actions::InitializeDomain<1>,
+                 evolution::Actions::InitializeConservativeSystem,
+                 dg::Actions::InitializeInterfaces<
+                     system,
+                     dg::Initialization::slice_tags_to_face<
+                         typename system::variables_tag>,
+                     dg::Initialization::slice_tags_to_exterior<>>,
+                 evolution::Actions::InitializeEvolution<system>,
+                 dg::Actions::InitializeMortars<EvolutionMetavars>,
+                 dg::Actions::InitializeFluxes<EvolutionMetavars>,
+                 evolution::Actions::InitializeMinMod<1>,
+                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,

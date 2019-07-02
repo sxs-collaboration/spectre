@@ -5,12 +5,16 @@
 
 #include <vector>
 
+#include "Domain/Actions/InitializeDomain.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"
 #include "Evolution/Actions/ComputeVolumeSources.hpp"
+#include "Evolution/Actions/InitializeConservativeSystem.hpp"
+#include "Evolution/Actions/InitializeEvolution.hpp"
+#include "Evolution/Actions/InitializeLimiter.hpp"
 #include "Evolution/Conservative/UpdateConservatives.hpp"
 #include "Evolution/Conservative/UpdatePrimitives.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
@@ -22,13 +26,6 @@
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Tags.hpp"
-#include "Evolution/Initialization/ConservativeSystem.hpp"
-#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
-#include "Evolution/Initialization/Domain.hpp"
-#include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Initialize.hpp"
-#include "Evolution/Initialization/Interface.hpp"
-#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Initialize.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
@@ -45,6 +42,9 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/InitializeFluxes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/InitializeInterfaces.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/InitializeMortars.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
@@ -52,6 +52,7 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticData/GrMhd/CylindricalBlastWave.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -105,12 +106,10 @@ struct EvolutionMetavars {
                     grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>>>;
 
   // public for use by the Charm++ registration code
-  using events = tmpl::list<
-      dg::Events::Registrars::ObserveFields<
-          3,
-          tmpl::append<
-              db::get_variables_tags_list<system::variables_tag>,
-              db::get_variables_tags_list<system::primitive_variables_tag>>>>;
+  using events = tmpl::list<dg::Events::Registrars::ObserveFields<
+      3, tmpl::append<
+             db::get_variables_tags_list<system::variables_tag>,
+             db::get_variables_tags_list<system::primitive_variables_tag>>>>;
   using triggers = Triggers::time_triggers;
 
   using step_choosers =
@@ -153,26 +152,27 @@ struct EvolutionMetavars {
     Exit
   };
 
-  using initialization_actions = tmpl::list<
-      Initialization::Actions::Domain<3>,
-      grmhd::ValenciaDivClean::Actions::InitializeGrTags,
-      Initialization::Actions::ConservativeSystem,
-      VariableFixing::Actions::FixVariables<
-          VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
-      Actions::UpdateConservatives,
-      Initialization::Actions::Interface<
-          system,
-          Initialization::slice_tags_to_face<
-              typename system::variables_tag,
-              typename system::spacetime_variables_tag,
-              typename system::primitive_variables_tag>,
-          Initialization::slice_tags_to_exterior<
-              typename system::spacetime_variables_tag,
-              typename system::primitive_variables_tag>>,
-      Initialization::Actions::Evolution<system>,
-      Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
-      Initialization::Actions::MinMod<3>,
-      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+  using initialization_actions =
+      tmpl::list<domain::Actions::InitializeDomain<3>,
+                 grmhd::ValenciaDivClean::Actions::InitializeGrTags,
+                 evolution::Actions::InitializeConservativeSystem,
+                 VariableFixing::Actions::FixVariables<
+                     VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
+                 Actions::UpdateConservatives,
+                 dg::Actions::InitializeInterfaces<
+                     system,
+                     dg::Initialization::slice_tags_to_face<
+                         typename system::variables_tag,
+                         typename system::spacetime_variables_tag,
+                         typename system::primitive_variables_tag>,
+                     dg::Initialization::slice_tags_to_exterior<
+                         typename system::spacetime_variables_tag,
+                         typename system::primitive_variables_tag>>,
+                 evolution::Actions::InitializeEvolution<system>,
+                 dg::Actions::InitializeMortars<EvolutionMetavars>,
+                 dg::Actions::InitializeFluxes<EvolutionMetavars>,
+                 evolution::Actions::InitializeMinMod<3>,
+                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,

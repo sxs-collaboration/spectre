@@ -13,9 +13,9 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Initialization/MergeIntoDataBox.hpp"
-#include "Evolution/Initialization/Tags.hpp"
+#include "Evolution/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 
@@ -25,7 +25,7 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace Initialization {
+namespace evolution {
 namespace Actions {
 /// \ingroup InitializationGroup
 /// \brief Allocate and set variables needed for evolution of nonconservative
@@ -41,13 +41,15 @@ namespace Actions {
 ///
 /// - Removes: nothing
 /// - Modifies: nothing
-struct NonconservativeSystem {
-  using initialization_option_tags =
-      tmpl::list<Initialization::Tags::InitialTime>;
+struct InitializeNonconservativeSystem {
+  using initialization_option_tags = tmpl::list<Tags::InitialTime>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent>
+            typename ParallelComponent,
+            Requires<tmpl::list_contains_v<
+                typename db::DataBox<DbTagsList>::simple_item_tags,
+                Tags::InitialTime>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -64,10 +66,9 @@ struct NonconservativeSystem {
 
     const size_t num_grid_points =
         db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
-    const double initial_time =
-         db::get<Initialization::Tags::InitialTime>(box);
-     const auto& inertial_coords =
-         db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+    const double initial_time = db::get<Tags::InitialTime>(box);
+    const auto& inertial_coords =
+        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
 
     // Set initial data from analytic solution
     using solution_tag = ::OptionTags::AnalyticSolutionBase;
@@ -76,9 +77,27 @@ struct NonconservativeSystem {
         inertial_coords, initial_time, typename Vars::tags_list{}));
 
     return std::make_tuple(
-        merge_into_databox<NonconservativeSystem, simple_tags, compute_tags>(
+        Initialization::merge_into_databox<InitializeNonconservativeSystem,
+                                           simple_tags, compute_tags>(
             std::move(box), std::move(vars)));
+  }
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
+            Requires<not tmpl::list_contains_v<
+                typename db::DataBox<DbTagsList>::simple_item_tags,
+                Tags::InitialTime>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    ERROR(
+        "Dependencies not fulfilled. Did you forget to terminate the phase "
+        "after removing options?");
   }
 };
 }  // namespace Actions
-}  // namespace Initialization
+}  // namespace evolution

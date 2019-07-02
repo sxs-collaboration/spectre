@@ -15,11 +15,11 @@
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Initialization/MergeIntoDataBox.hpp"
-#include "Evolution/Initialization/Tags.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
+#include "Evolution/Tags.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
@@ -36,7 +36,7 @@ namespace Actions {
 
 struct InitializeGrTags {
   using initialization_option_tags =
-      tmpl::list<Initialization::Tags::InitialTime>;
+      tmpl::list<evolution::Tags::InitialTime>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -52,7 +52,7 @@ struct InitializeGrTags {
     using simple_tags = db::AddSimpleTags<gr_tag>;
     using compute_tags = db::AddComputeTags<>;
 
-    const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
+    const double initial_time = db::get<evolution::Tags::InitialTime>(box);
     using GrVars = typename gr_tag::type;
 
     const size_t num_grid_points =
@@ -63,10 +63,10 @@ struct InitializeGrTags {
     // Set initial data from analytic solution
     GrVars gr_vars{num_grid_points};
     make_overloader(
-        [ initial_time, &
-          inertial_coords ](std::true_type /*is_analytic_solution*/,
-                            const gsl::not_null<GrVars*> local_gr_vars,
-                            const auto& local_cache) noexcept {
+        [ initial_time, &inertial_coords ](
+            std::true_type /*is_analytic_solution*/,
+            const gsl::not_null<GrVars*> local_gr_vars,
+            const auto& local_cache) noexcept {
           using solution_tag = ::OptionTags::AnalyticSolutionBase;
           local_gr_vars->assign_subset(
               Parallel::get<solution_tag>(local_cache)
