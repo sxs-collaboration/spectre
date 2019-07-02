@@ -35,6 +35,7 @@ set(LIBRARY_SOURCES
   Test_SizeOfElement.cpp
   )
 
+add_subdirectory(Actions)
 add_subdirectory(Amr)
 add_subdirectory(CoordinateMaps)
 add_subdirectory(Creators)
