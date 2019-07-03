@@ -6,6 +6,9 @@
 #include <utility>
 
 #include "ApparentHorizons/FastFlow.hpp"
+#include "ApparentHorizons/Strahlkorper.hpp"
+#include "ApparentHorizons/Tags.hpp"
+#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Informer/Verbosity.hpp"
@@ -33,11 +36,6 @@ template <typename Metavariables>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
-namespace ah {
-namespace Tags {
-struct FastFlow;
-}  // namespace Tags
-}  // namespace ah
 namespace Tags {
 struct Verbosity;
 }  // namespace Tags
@@ -177,6 +175,53 @@ struct FindApparentHorizon {
             << " failed, reason = " << status);
     }
     // If we get here, the horizon finder has converged.
+
+    // The interpolated variables
+    // ::Tags::Variables<InterpolationTargetTag::vars_to_interpolate_to_target>
+    // have been interpolated from the volume to the points on the
+    // prolonged_strahlkorper, not to the points on the actual
+    // strahlkorper.  So here we do a restriction of these quantities onto
+    // the actual strahlkorper.
+
+    // Type alias to make code more understandable.
+    using vars_tags =
+        typename InterpolationTargetTag::vars_to_interpolate_to_target;
+    db::mutate_apply<tmpl::list<::Tags::Variables<vars_tags>>,
+                     tmpl::list<StrahlkorperTags::Strahlkorper<
+                                    typename Metavariables::domain_frame>,
+                                ::ah::Tags::FastFlow>>(
+        [](const gsl::not_null<db::item_type<::Tags::Variables<vars_tags>>*>
+               vars,
+           const db::item_type<StrahlkorperTags::Strahlkorper<
+               typename Metavariables::domain_frame>>& strahlkorper,
+           const db::item_type<::ah::Tags::FastFlow>& fast_flow) noexcept {
+          const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
+          const auto prolonged_strahlkorper =
+              Strahlkorper<typename Metavariables::domain_frame>(L_mesh, L_mesh,
+                                                                 strahlkorper);
+          auto new_vars = db::item_type<::Tags::Variables<vars_tags>>(
+              strahlkorper.ylm_spherepack().physical_size());
+
+          tmpl::for_each<vars_tags>([
+            &strahlkorper, &prolonged_strahlkorper, &vars, &new_vars
+          ](auto tag_v) noexcept {
+            using tag = typename decltype(tag_v)::type;
+            const auto& old_var = get<tag>(*vars);
+            auto& new_var = get<tag>(new_vars);
+            auto old_iter = old_var.begin();
+            auto new_iter = new_var.begin();
+            for (; old_iter != old_var.end() and new_iter != new_var.end();
+                 ++old_iter, ++new_iter) {
+              *new_iter = strahlkorper.ylm_spherepack().spec_to_phys(
+                  prolonged_strahlkorper.ylm_spherepack().prolong_or_restrict(
+                      prolonged_strahlkorper.ylm_spherepack().phys_to_spec(
+                          *old_iter),
+                      strahlkorper.ylm_spherepack()));
+            }
+          });
+          *vars = std::move(new_vars);
+        },
+        box);
 
     InterpolationTargetTag::post_horizon_find_callback::apply(*box, *cache,
                                                               temporal_id);
