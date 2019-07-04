@@ -23,6 +23,13 @@
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Tags.hpp"
+#include "Evolution/Initialization/ConservativeSystem.hpp"
+#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
+#include "Evolution/Initialization/Domain.hpp"
+#include "Evolution/Initialization/Evolution.hpp"
+#include "Evolution/Initialization/Initialize.hpp"
+#include "Evolution/Initialization/Interface.hpp"
+#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Initialize.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
@@ -157,19 +164,35 @@ struct EvolutionMetavars {
     Exit
   };
 
+  using initialization_actions = tmpl::list<
+      Initialization::Actions::Domain<3>,
+      grmhd::ValenciaDivClean::Actions::InitializeGrTags,
+      Initialization::Actions::ConservativeSystem,
+      VariableFixing::Actions::FixVariables<
+          VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
+      Actions::UpdateConservatives,
+      Initialization::Actions::Interface<
+          system,
+          Initialization::slice_tags_to_face<
+              typename system::variables_tag,
+              typename system::spacetime_variables_tag,
+              typename system::primitive_variables_tag>,
+          Initialization::slice_tags_to_exterior<
+              typename system::spacetime_variables_tag,
+              typename system::primitive_variables_tag>>,
+      Initialization::Actions::Evolution<system>,
+      Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
+      Initialization::Actions::MinMod<3>,
+      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
           EvolutionMetavars,
           tmpl::list<
-              Parallel::PhaseActions<
-                  Phase, Phase::Initialization,
-                  tmpl::list<
-                      grmhd::ValenciaDivClean::Actions::Initialize<3>,
-                      VariableFixing::Actions::FixVariables<
-                          VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
-                      Actions::UpdateConservatives>>,
+              Parallel::PhaseActions<Phase, Phase::Initialization,
+                                     initialization_actions>,
 
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
@@ -195,14 +218,14 @@ struct EvolutionMetavars {
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
                       compute_rhs, update_variables, Actions::AdvanceTime>>>>,
-          grmhd::ValenciaDivClean::Actions::Initialize<
-              3>::AddOptionsToDataBox>>;
+          Parallel::ForwardAllOptionsToDataBox<
+              Initialization::option_tags<initialization_actions>>>>;
 
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,
                  OptionTags::TypedTimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
-                 OptionTags::DampingParameter,
+                 grmhd::ValenciaDivClean::OptionTags::DampingParameter,
                  OptionTags::EventsAndTriggers<events, triggers>>;
 
   static constexpr OptionString help{

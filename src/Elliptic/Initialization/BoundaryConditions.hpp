@@ -25,7 +25,7 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-namespace Elliptic {
+namespace elliptic {
 namespace Initialization {
 
 /*!
@@ -168,4 +168,4 @@ struct BoundaryConditions {
   }
 };
 }  // namespace Initialization
-}  // namespace Elliptic
+}  // namespace elliptic

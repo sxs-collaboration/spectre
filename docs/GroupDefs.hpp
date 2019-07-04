@@ -488,6 +488,12 @@
  */
 
 /*!
+ * \defgroup InitializationGroup Initialization
+ * \brief Actions and metafunctions used for initialization of parallel
+ * components.
+ */
+
+/*!
  * \defgroup LinearSolverGroup  Linear Solver
  * \brief Algorithms to solve linear systems of equations
  *

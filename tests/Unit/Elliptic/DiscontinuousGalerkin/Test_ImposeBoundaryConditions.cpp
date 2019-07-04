@@ -223,7 +223,7 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
-              Elliptic::dg::Actions::
+              elliptic::dg::Actions::
                   ImposeHomogeneousDirichletBoundaryConditions<Metavariables>,
               dg::Actions::ReceiveDataForFluxes<Metavariables>>>>;
 };

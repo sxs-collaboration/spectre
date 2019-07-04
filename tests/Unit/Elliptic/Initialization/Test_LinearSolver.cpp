@@ -91,7 +91,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.LinearSolver",
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   MockParallelComponent component{};
   const auto box =
-      Elliptic::Initialization::LinearSolver<Metavariables>::initialize(
+      elliptic::Initialization::LinearSolver<Metavariables>::initialize(
           std::move(arguments_box), runner.cache(), 0, &component);
 
   const DataVector b_expected{1., 2., 3.};

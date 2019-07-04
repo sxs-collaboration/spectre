@@ -77,12 +77,12 @@ struct Metavariables {
 
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::append<
-      tmpl::list<Elliptic::DgElementArray<
+      tmpl::list<elliptic::DgElementArray<
           Metavariables,
           tmpl::list<
               Parallel::PhaseActions<
                   Phase, Phase::Initialization,
-                  tmpl::list<Elliptic::dg::Actions::InitializeElement<Dim>>>,
+                  tmpl::list<elliptic::dg::Actions::InitializeElement<Dim>>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
@@ -97,17 +97,17 @@ struct Metavariables {
                              dg::Actions::ComputeNonconservativeBoundaryFluxes<
                                  Tags::InternalDirections<Dim>>,
                              dg::Actions::SendDataForFluxes<Metavariables>,
-                             Elliptic::Actions::ComputeOperatorAction,
+                             elliptic::Actions::ComputeOperatorAction,
                              dg::Actions::ComputeNonconservativeBoundaryFluxes<
                                  Tags::BoundaryDirectionsInterior<Dim>>,
-                             Elliptic::dg::Actions::
+                             elliptic::dg::Actions::
                                  ImposeHomogeneousDirichletBoundaryConditions<
                                      Metavariables>,
                              dg::Actions::ReceiveDataForFluxes<Metavariables>,
                              dg::Actions::ApplyFluxes,
                              typename linear_solver::perform_step>>>,
 
-          typename Elliptic::dg::Actions::InitializeElement<
+          typename elliptic::dg::Actions::InitializeElement<
               Dim>::AddOptionsToDataBox>>,
       typename linear_solver::component_list,
       tmpl::list<observers::Observer<Metavariables>,

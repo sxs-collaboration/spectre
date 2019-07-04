@@ -121,7 +121,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
     const ElementId<1> element_id{0, {{SegmentId{2, 0}}}};
     const domain::creators::Interval<Frame::Inertial> domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
-    auto domain_box = Elliptic::Initialization::Domain<1>::initialize(
+    auto domain_box = elliptic::Initialization::Domain<1>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<1>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 
@@ -138,7 +138,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
     ActionTesting::MockRuntimeSystem<Metavariables<1>> runner{
         {AnalyticSolution<1>{}, NumericalFlux<1>{}}};
 
-    const auto box = Elliptic::Initialization::BoundaryConditions<
+    const auto box = elliptic::Initialization::BoundaryConditions<
         Metavariables<1>>::initialize(std::move(arguments_box), runner.cache());
 
     // Expected boundary contribution to source in element X:
@@ -164,7 +164,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
     const ElementId<2> element_id{0, {{SegmentId{1, 0}, SegmentId{1, 1}}}};
     const domain::creators::Rectangle<Frame::Inertial> domain_creator{
         {{-0.5, 0.}}, {{1.5, 1.}}, {{false, false}}, {{1, 1}}, {{3, 3}}};
-    auto domain_box = Elliptic::Initialization::Domain<2>::initialize(
+    auto domain_box = elliptic::Initialization::Domain<2>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<2>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 
@@ -181,7 +181,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
     ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
         {AnalyticSolution<2>{}, NumericalFlux<2>{}}};
 
-    const auto box = Elliptic::Initialization::BoundaryConditions<
+    const auto box = elliptic::Initialization::BoundaryConditions<
         Metavariables<2>>::initialize(std::move(arguments_box), runner.cache());
 
     // Expected boundary contribution to source in element X:
@@ -207,7 +207,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
         {{false, false, false}},
         {{1, 1, 1}},
         {{2, 2, 2}}};
-    auto domain_box = Elliptic::Initialization::Domain<3>::initialize(
+    auto domain_box = elliptic::Initialization::Domain<3>::initialize(
         db::DataBox<tmpl::list<>>{}, ElementIndex<3>{element_id},
         domain_creator.initial_extents(), domain_creator.create_domain());
 
@@ -224,7 +224,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
     ActionTesting::MockRuntimeSystem<Metavariables<3>> runner{
         {AnalyticSolution<3>{}, NumericalFlux<3>{}}};
 
-    const auto box = Elliptic::Initialization::BoundaryConditions<
+    const auto box = elliptic::Initialization::BoundaryConditions<
         Metavariables<3>>::initialize(std::move(arguments_box), runner.cache());
 
     // Expected boundary contribution to source in reference element (0, 1, 0):

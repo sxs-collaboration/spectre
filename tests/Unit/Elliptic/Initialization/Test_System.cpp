@@ -45,7 +45,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.System",
     INFO("1D");
     Mesh<1> mesh{4, Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};
-    const auto box = Elliptic::Initialization::System<System<1>>::initialize(
+    const auto box = elliptic::Initialization::System<System<1>>::initialize(
         db::create<db::AddSimpleTags<Tags::Mesh<1>>>(mesh));
 
     const Scalar<DataVector> expected_initial_field{{{{4, 0.}}}};
@@ -59,7 +59,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.System",
     Mesh<2> mesh{{{3, 4}},
                  Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};
-    const auto box = Elliptic::Initialization::System<System<2>>::initialize(
+    const auto box = elliptic::Initialization::System<System<2>>::initialize(
         db::create<db::AddSimpleTags<Tags::Mesh<2>>>(mesh));
 
     const Scalar<DataVector> expected_initial_field{{{{12, 0.}}}};
@@ -73,7 +73,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.System",
     Mesh<3> mesh{{{3, 4, 2}},
                  Spectral::Basis::Legendre,
                  Spectral::Quadrature::GaussLobatto};
-    const auto box = Elliptic::Initialization::System<System<3>>::initialize(
+    const auto box = elliptic::Initialization::System<System<3>>::initialize(
         db::create<db::AddSimpleTags<Tags::Mesh<3>>>(mesh));
 
     const Scalar<DataVector> expected_initial_field{{{{24, 0.}}}};

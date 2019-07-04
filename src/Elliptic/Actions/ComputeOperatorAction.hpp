@@ -25,7 +25,7 @@ class ConstGlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-namespace Elliptic {
+namespace elliptic {
 namespace Actions {
 /*!
  * \ingroup ActionsGroup
@@ -81,4 +81,4 @@ struct ComputeOperatorAction {
   }
 };
 }  // namespace Actions
-}  // namespace Elliptic
+}  // namespace elliptic

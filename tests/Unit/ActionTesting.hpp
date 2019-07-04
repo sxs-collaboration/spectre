@@ -364,10 +364,8 @@ class MockDistributedObject {
   using databox_phase_types =
       typename Parallel::Algorithm_detail::build_databox_types<
           tmpl::list<>, phase_dependent_action_lists, initial_databox,
-          tmpl::list<tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                     Parallel::ConstGlobalCache<metavariables>,
-                     typename Component::array_index, all_actions_list,
-                     std::add_pointer_t<Component>>>::type;
+          inbox_tags_list, metavariables, typename Component::array_index,
+          Component>::type;
   template <typename T>
   struct get_databox_types {
     using type = typename T::databox_types;
@@ -721,11 +719,15 @@ class MockDistributedObject {
 
   template <typename Tag, typename... Variants>
   bool tag_is_retrievable_visitation(
-      const boost::variant<Variants...>& /*box*/) const noexcept {
+      const boost::variant<Variants...>& box) const noexcept {
     bool is_retrievable = false;
-    const auto helper = [&is_retrievable](auto box_type) noexcept {
+    const auto helper = [&box, &is_retrievable ](auto box_type) noexcept {
       using DataBoxType = typename decltype(box_type)::type;
-      is_retrievable |= db::tag_is_retrievable_v<Tag, DataBoxType>;
+      if (static_cast<int>(
+              tmpl::index_of<tmpl::list<Variants...>, DataBoxType>::value) ==
+          box.which()) {
+        is_retrievable = db::tag_is_retrievable_v<Tag, DataBoxType>;
+      }
     };
     EXPAND_PACK_LEFT_TO_RIGHT(helper(tmpl::type_<Variants>{}));
     return is_retrievable;

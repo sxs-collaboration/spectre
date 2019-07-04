@@ -77,7 +77,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Source",
         {AnalyticSolution<1>{}}};
 
     const auto box =
-        Elliptic::Initialization::Source<Metavariables<1>>::initialize(
+        elliptic::Initialization::Source<Metavariables<1>>::initialize(
             std::move(arguments_box), runner.cache());
 
     const DataVector source_expected{1., 2., 3.};
@@ -100,7 +100,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Source",
         {AnalyticSolution<2>{}}};
 
     const auto box =
-        Elliptic::Initialization::Source<Metavariables<2>>::initialize(
+        elliptic::Initialization::Source<Metavariables<2>>::initialize(
             std::move(arguments_box), runner.cache());
 
     const DataVector source_expected{1., 2., 3., 4., 5., 6.};
@@ -125,7 +125,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.Source",
         {AnalyticSolution<3>{}}};
 
     const auto box =
-        Elliptic::Initialization::Source<Metavariables<3>>::initialize(
+        elliptic::Initialization::Source<Metavariables<3>>::initialize(
             std::move(arguments_box), runner.cache());
 
     const DataVector source_expected{1., 2., 3., 4.,  5.,  6.,

@@ -377,10 +377,8 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
   // The types held by the boost::variant, box_
   using databox_phase_types = typename Algorithm_detail::build_databox_types<
       tmpl::list<>, phase_dependent_action_lists, initial_databox,
-      tmpl::list<tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                 Parallel::ConstGlobalCache<metavariables>, array_index,
-                 all_actions_list,
-                 std::add_pointer_t<ParallelComponent>>>::type;
+      inbox_tags_list, metavariables, array_index, ParallelComponent>::type;
+
   template <typename T>
   struct get_databox_types {
     using type = typename T::databox_types;

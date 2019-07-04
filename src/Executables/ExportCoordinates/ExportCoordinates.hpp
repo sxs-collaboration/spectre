@@ -64,7 +64,7 @@ struct InitializeElement {
           domain = std::move(*domain_ptr);
         });
     return std::make_tuple(
-        Elliptic::Initialization::Domain<Dim>::initialize(
+        elliptic::Initialization::Domain<Dim>::initialize(
             db::create_from<typename AddOptionsToDataBox::simple_tags>(
                 std::move(box)),
             array_index, initial_extents, domain),
