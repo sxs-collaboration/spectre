@@ -43,6 +43,7 @@ template <size_t Dim>
 struct System {
   static constexpr size_t volume_dim = Dim;
   using variables_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
+  using primal_variables = tmpl::list<ScalarFieldTag>;
   using gradient_tags = tmpl::list<ScalarFieldTag>;
   template <typename Tag>
   using magnitude_tag = Tags::EuclideanMagnitude<Tag>;

@@ -31,7 +31,6 @@ add_dependencies(test-libs-domain
 
 add_dependencies(test-libs-elliptic
   Test_EllipticActions
-  Test_EllipticDG
   Test_EllipticInitialization
   Test_Elasticity
   Test_Poisson

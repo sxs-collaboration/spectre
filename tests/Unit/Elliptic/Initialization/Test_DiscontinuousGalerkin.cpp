@@ -43,26 +43,45 @@ struct TemporalId : db::SimpleTag {
   using type = int;
 };
 
+struct MortarDataTag : db::SimpleTag {
+  static std::string name() noexcept { return "MortarDataTag"; };
+  using type = int;
+};
+
 struct ScalarFieldTag : db::SimpleTag {
   static std::string name() noexcept { return "ScalarFieldTag"; };
   using type = Scalar<DataVector>;
 };
 
-template <size_t Dim>
-struct System {
-  static constexpr size_t volume_dim = Dim;
-  using variables_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
+struct NormalDotFluxesTag : db::SimpleTag {
+  static std::string name() noexcept { return "NormalDotFluxesTag"; };
+  using type = Variables<tmpl::list<ScalarFieldTag>>;
+};
+
+struct ComputePackagedRemoteData : db::ComputeTag {
+  using argument_tags = tmpl::list<TemporalId>;
+  using volume_tags = tmpl::list<TemporalId>;
+  static int function(const int& temporal_id) noexcept {
+    return temporal_id * 2;
+  }
+};
+
+struct ComputePackagedLocalData : db::ComputeTag {
+  using argument_tags = tmpl::list<TemporalId>;
+  using volume_tags = tmpl::list<TemporalId>;
+  static int function(const int& temporal_id) noexcept {
+    return temporal_id * 3;
+  }
 };
 
 template <size_t Dim>
-struct Metavariables {
-  using system = System<Dim>;
-  using temporal_id = TemporalId;
-  struct normal_dot_numerical_flux {
-    struct type {
-      using package_tags = tmpl::list<ScalarFieldTag>;
-    };
-  };
+struct BoundaryScheme {
+  static constexpr size_t volume_dim = Dim;
+  using temporal_id_tag = TemporalId;
+  using mortar_data_tag = MortarDataTag;
+  using normal_dot_fluxes_tag = NormalDotFluxesTag;
+  using compute_packaged_remote_data = ComputePackagedRemoteData;
+  using compute_packaged_local_data = ComputePackagedLocalData;
 };
 }  // namespace
 
@@ -83,9 +102,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
         db::RemoveTags<>, db::AddSimpleTags<TemporalId>,
         db::AddComputeTags<
             Tags::InternalDirections<1>, Tags::BoundaryDirectionsInterior<1>,
+            Tags::BoundaryDirectionsExterior<1>,
             Tags::InterfaceComputeItem<Tags::InternalDirections<1>,
                                        Tags::Direction<1>>,
             Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<1>,
+                                       Tags::Direction<1>>,
+            Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<1>,
                                        Tags::Direction<1>>,
             Tags::InterfaceComputeItem<Tags::InternalDirections<1>,
                                        Tags::InterfaceMesh<1>>,
@@ -94,8 +116,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
         std::move(domain_box), 0);
 
     const auto box = Elliptic::Initialization::DiscontinuousGalerkin<
-        Metavariables<1>>::initialize(std::move(arguments_box),
-                                      domain_creator.initial_extents());
+        BoundaryScheme<1>>::initialize(std::move(arguments_box),
+                                       domain_creator.initial_extents());
 
     // We are working with 2 mortars here: a domain boundary at lower xi and an
     // interface at upper xi.
@@ -113,24 +135,20 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
     const auto& mortar_sizes = get<Tags::Mortars<Tags::MortarSize<0>, 1>>(box);
     CHECK(mortar_sizes.at(boundary_mortar_id).empty());
     CHECK(mortar_sizes.at(interface_mortar_id).empty());
-    const auto& mortar_data = get<Tags::VariablesBoundaryData>(box);
+    const auto& mortar_data = get<::Tags::Mortars<MortarDataTag, 1>>(box);
     // Just make sure this exists, it is not expected to hold any data
     mortar_data.at(boundary_mortar_id);
     mortar_data.at(interface_mortar_id);
 
     // Test that the normal fluxes on the faces have been initialized
-    const auto& boundary_normal_dot_fluxes = get<
-        Tags::Interface<Tags::BoundaryDirectionsInterior<1>,
-                        db::add_tag_prefix<Tags::NormalDotFlux,
-                                           typename System<1>::variables_tag>>>(
-        box);
+    const auto& boundary_normal_dot_fluxes =
+        get<Tags::Interface<Tags::BoundaryDirectionsInterior<1>,
+                            NormalDotFluxesTag>>(box);
     CHECK(boundary_normal_dot_fluxes.at(Direction<1>::lower_xi())
               .number_of_grid_points() == 1);
-    const auto& interface_normal_dot_fluxes = get<
-        Tags::Interface<Tags::InternalDirections<1>,
-                        db::add_tag_prefix<Tags::NormalDotFlux,
-                                           typename System<1>::variables_tag>>>(
-        box);
+    const auto& interface_normal_dot_fluxes =
+        get<Tags::Interface<Tags::InternalDirections<1>, NormalDotFluxesTag>>(
+            box);
     CHECK(interface_normal_dot_fluxes.at(Direction<1>::upper_xi())
               .number_of_grid_points() == 1);
   }
@@ -154,9 +172,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
         db::RemoveTags<>, db::AddSimpleTags<TemporalId>,
         db::AddComputeTags<
             Tags::InternalDirections<2>, Tags::BoundaryDirectionsInterior<2>,
+            Tags::BoundaryDirectionsExterior<2>,
             Tags::InterfaceComputeItem<Tags::InternalDirections<2>,
                                        Tags::Direction<2>>,
             Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<2>,
+                                       Tags::Direction<2>>,
+            Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
                                        Tags::Direction<2>>,
             Tags::InterfaceComputeItem<Tags::InternalDirections<2>,
                                        Tags::InterfaceMesh<2>>,
@@ -165,8 +186,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
         std::move(domain_box), 0);
 
     const auto box = Elliptic::Initialization::DiscontinuousGalerkin<
-        Metavariables<2>>::initialize(std::move(arguments_box),
-                                      domain_creator.initial_extents());
+        BoundaryScheme<2>>::initialize(std::move(arguments_box),
+                                       domain_creator.initial_extents());
 
     // We are working with 4 mortars here: the domain boundary west and north,
     // and interfaces south and east.
@@ -206,7 +227,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
     CHECK(mortar_sizes.at(boundary_mortar_id_north) == expected_mortar_sizes);
     CHECK(mortar_sizes.at(interface_mortar_id_east) == expected_mortar_sizes);
     CHECK(mortar_sizes.at(interface_mortar_id_south) == expected_mortar_sizes);
-    const auto& mortar_data = get<Tags::VariablesBoundaryData>(box);
+    const auto& mortar_data = get<::Tags::Mortars<MortarDataTag, 2>>(box);
     // Just make sure this exists, it is not expected to hold any data
     mortar_data.at(boundary_mortar_id_west);
     mortar_data.at(boundary_mortar_id_north);
@@ -214,20 +235,16 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
     mortar_data.at(interface_mortar_id_south);
 
     // Test that the normal fluxes on the faces have been initialized
-    const auto& boundary_normal_dot_fluxes = get<
-        Tags::Interface<Tags::BoundaryDirectionsInterior<2>,
-                        db::add_tag_prefix<Tags::NormalDotFlux,
-                                           typename System<2>::variables_tag>>>(
-        box);
+    const auto& boundary_normal_dot_fluxes =
+        get<Tags::Interface<Tags::BoundaryDirectionsInterior<2>,
+                            NormalDotFluxesTag>>(box);
     CHECK(boundary_normal_dot_fluxes.at(Direction<2>::lower_xi())
               .number_of_grid_points() == 2);
     CHECK(boundary_normal_dot_fluxes.at(Direction<2>::upper_eta())
               .number_of_grid_points() == 3);
-    const auto& interface_normal_dot_fluxes = get<
-        Tags::Interface<Tags::InternalDirections<2>,
-                        db::add_tag_prefix<Tags::NormalDotFlux,
-                                           typename System<2>::variables_tag>>>(
-        box);
+    const auto& interface_normal_dot_fluxes =
+        get<Tags::Interface<Tags::InternalDirections<2>, NormalDotFluxesTag>>(
+            box);
     CHECK(interface_normal_dot_fluxes.at(Direction<2>::upper_xi())
               .number_of_grid_points() == 2);
     CHECK(interface_normal_dot_fluxes.at(Direction<2>::lower_eta())
@@ -251,9 +268,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
         db::RemoveTags<>, db::AddSimpleTags<TemporalId>,
         db::AddComputeTags<
             Tags::InternalDirections<3>, Tags::BoundaryDirectionsInterior<3>,
+            Tags::BoundaryDirectionsExterior<3>,
             Tags::InterfaceComputeItem<Tags::InternalDirections<3>,
                                        Tags::Direction<3>>,
             Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<3>,
+                                       Tags::Direction<3>>,
+            Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<3>,
                                        Tags::Direction<3>>,
             Tags::InterfaceComputeItem<Tags::InternalDirections<3>,
                                        Tags::InterfaceMesh<3>>,
@@ -262,8 +282,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
         std::move(domain_box), 0);
 
     const auto box = Elliptic::Initialization::DiscontinuousGalerkin<
-        Metavariables<3>>::initialize(std::move(arguments_box),
-                                      domain_creator.initial_extents());
+        BoundaryScheme<3>>::initialize(std::move(arguments_box),
+                                       domain_creator.initial_extents());
 
     const auto boundary_mortar_id_left = std::make_pair(
         Direction<3>::lower_xi(), ElementId<3>::external_boundary_id());
@@ -316,7 +336,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
     CHECK(mortar_sizes.at(interface_mortar_id_right) == expected_mortar_sizes);
     CHECK(mortar_sizes.at(interface_mortar_id_front) == expected_mortar_sizes);
     CHECK(mortar_sizes.at(interface_mortar_id_top) == expected_mortar_sizes);
-    const auto& mortar_data = get<Tags::VariablesBoundaryData>(box);
+    const auto& mortar_data = get<::Tags::Mortars<MortarDataTag, 3>>(box);
     // Just make sure this exists, it is not expected to hold any data
     mortar_data.at(boundary_mortar_id_left);
     mortar_data.at(boundary_mortar_id_back);
@@ -326,22 +346,18 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.DG",
     mortar_data.at(interface_mortar_id_top);
 
     // Test that the normal fluxes on the faces have been initialized
-    const auto& boundary_normal_dot_fluxes = get<
-        Tags::Interface<Tags::BoundaryDirectionsInterior<3>,
-                        db::add_tag_prefix<Tags::NormalDotFlux,
-                                           typename System<3>::variables_tag>>>(
-        box);
+    const auto& boundary_normal_dot_fluxes =
+        get<Tags::Interface<Tags::BoundaryDirectionsInterior<3>,
+                            NormalDotFluxesTag>>(box);
     CHECK(boundary_normal_dot_fluxes.at(Direction<3>::lower_xi())
               .number_of_grid_points() == 12);
     CHECK(boundary_normal_dot_fluxes.at(Direction<3>::upper_eta())
               .number_of_grid_points() == 8);
     CHECK(boundary_normal_dot_fluxes.at(Direction<3>::lower_zeta())
               .number_of_grid_points() == 6);
-    const auto& interface_normal_dot_fluxes = get<
-        Tags::Interface<Tags::InternalDirections<3>,
-                        db::add_tag_prefix<Tags::NormalDotFlux,
-                                           typename System<3>::variables_tag>>>(
-        box);
+    const auto& interface_normal_dot_fluxes =
+        get<Tags::Interface<Tags::InternalDirections<3>, NormalDotFluxesTag>>(
+            box);
     CHECK(interface_normal_dot_fluxes.at(Direction<3>::upper_xi())
               .number_of_grid_points() == 12);
     CHECK(interface_normal_dot_fluxes.at(Direction<3>::lower_eta())

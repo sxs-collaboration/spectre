@@ -19,7 +19,6 @@
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/Helpers.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Utilities/Gsl.hpp"
@@ -38,20 +37,17 @@ namespace Initialization {
  * \brief Initializes DataBox tags related to discontinuous Galerkin fluxes
  *
  * With:
- * - `flux_comm_types` = `dg::FluxCommunicationTypes<Metavariables>`
- * - `mortar_data_tag` = `flux_comm_types::simple_mortar_data_tag`
+ * - `volume_dim` = `BoundaryScheme::volume_dim`
+ * - `mortar<Tag>` = `Tags::Mortars<Tag, volume_dim>`
+ * - `mortar_data_tag` = `mortar<BoundaryScheme::mortar_data_tag>`
  * - `interface<Tag>` =
  * `Tags::Interface<Tags::InternalDirections<volume_dim>, Tag>`
  * - `boundary<Tag>` =
  * `Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>, Tag>`
- * - `mortar<Tag>` = `Tags::Mortars<Tag, volume_dim>`
+ * - `exterior<Tag>` =
+ * `Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>, Tag>`
  *
  * Uses:
- * - Metavariables:
- *   - `temporal_id`
- *   - Items required by `flux_comm_types`
- * - System:
- *   - `volume_dim`
  * - DataBox:
  *   - `Tags::Element<volume_dim>`
  *   - `Tags::Mesh<volume_dim>`
@@ -67,15 +63,20 @@ namespace Initialization {
  *   - `mortar<Tags::Next<temporal_id>>`
  *   - `mortar<Tags::Mesh<volume_dim - 1>>`
  *   - `mortar<Tags::MortarSize<volume_dim - 1>>`
- *   - `interface<flux_comm_types::normal_dot_fluxes_tag>`
- *   - `boundary<flux_comm_types::normal_dot_fluxes_tag>`
+ *   - `interface<BoundaryScheme::normal_dot_fluxes_tag>`
+ *   - `boundary<BoundaryScheme::normal_dot_fluxes_tag>`
+ *   - `interface<BoundaryScheme::compute_packaged_remote_data>`
+ *   - `interface<BoundaryScheme::compute_packaged_local_data>`
+ *   - `boundary<BoundaryScheme::compute_packaged_remote_data>`
+ *   - `boundary<BoundaryScheme::compute_packaged_local_data>`
+ *   - `exterior<BoundaryScheme::compute_packaged_remote_data>`
  */
-template <typename Metavariables>
+template <typename BoundaryScheme>
 struct DiscontinuousGalerkin {
-  static constexpr size_t volume_dim = Metavariables::system::volume_dim;
-  using temporal_id_tag = typename Metavariables::temporal_id;
-  using flux_comm_types = ::dg::FluxCommunicationTypes<Metavariables>;
-  using mortar_data_tag = typename flux_comm_types::simple_mortar_data_tag;
+  static constexpr size_t volume_dim = BoundaryScheme::volume_dim;
+  using temporal_id_tag = typename BoundaryScheme::temporal_id_tag;
+  using mortar_data_tag =
+      ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag, volume_dim>;
 
   template <typename Tag>
   using interface_tag =
@@ -90,8 +91,8 @@ struct DiscontinuousGalerkin {
       mortar_data_tag, mortar_tag<Tags::Next<temporal_id_tag>>,
       mortar_tag<Tags::Mesh<volume_dim - 1>>,
       mortar_tag<Tags::MortarSize<volume_dim - 1>>,
-      interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>,
-      boundary_tag<typename flux_comm_types::normal_dot_fluxes_tag>>;
+      interface_tag<typename BoundaryScheme::normal_dot_fluxes_tag>,
+      boundary_tag<typename BoundaryScheme::normal_dot_fluxes_tag>>;
 
   using compute_tags = db::AddComputeTags<>;
 
@@ -164,8 +165,9 @@ struct DiscontinuousGalerkin {
     const auto& boundary_directions =
         db::get<Tags::BoundaryDirectionsInterior<volume_dim>>(mortar_box);
 
-    db::item_type<
-        interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>>
+    // These initializations can be removed once the normal-dot-fluxes are
+    // migrated to compute items
+    db::item_type<interface_tag<typename BoundaryScheme::normal_dot_fluxes_tag>>
         normal_dot_fluxes{};
     for (const auto& direction : internal_directions) {
       const auto& interface_num_points =
@@ -174,7 +176,7 @@ struct DiscontinuousGalerkin {
               .number_of_grid_points();
       normal_dot_fluxes[direction].initialize(interface_num_points, 0.);
     }
-    db::item_type<boundary_tag<typename flux_comm_types::normal_dot_fluxes_tag>>
+    db::item_type<boundary_tag<typename BoundaryScheme::normal_dot_fluxes_tag>>
         boundary_normal_dot_fluxes{};
     for (const auto& direction : boundary_directions) {
       const auto& interface_num_points =
@@ -188,8 +190,25 @@ struct DiscontinuousGalerkin {
     return db::create_from<
         db::RemoveTags<>,
         db::AddSimpleTags<
-            interface_tag<typename flux_comm_types::normal_dot_fluxes_tag>,
-            boundary_tag<typename flux_comm_types::normal_dot_fluxes_tag>>>(
+            interface_tag<typename BoundaryScheme::normal_dot_fluxes_tag>,
+            boundary_tag<typename BoundaryScheme::normal_dot_fluxes_tag>>,
+        db::AddComputeTags<
+            ::Tags::InterfaceComputeItem<
+                ::Tags::InternalDirections<volume_dim>,
+                typename BoundaryScheme::compute_packaged_remote_data>,
+            ::Tags::InterfaceComputeItem<
+                ::Tags::InternalDirections<volume_dim>,
+                typename BoundaryScheme::compute_packaged_local_data>,
+            // For imposing boundary conditions
+            ::Tags::InterfaceComputeItem<
+                ::Tags::BoundaryDirectionsInterior<volume_dim>,
+                typename BoundaryScheme::compute_packaged_remote_data>,
+            ::Tags::InterfaceComputeItem<
+                ::Tags::BoundaryDirectionsInterior<volume_dim>,
+                typename BoundaryScheme::compute_packaged_local_data>,
+            ::Tags::InterfaceComputeItem<
+                ::Tags::BoundaryDirectionsExterior<volume_dim>,
+                typename BoundaryScheme::compute_packaged_remote_data>>>(
         std::move(mortar_box), std::move(normal_dot_fluxes),
         std::move(boundary_normal_dot_fluxes));
   }

@@ -9,7 +9,6 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/ComputeOperatorAction.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
-#include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "Elliptic/Systems/Poisson/Actions/Observe.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
@@ -17,9 +16,10 @@
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNormalDotFluxes.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication2.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/BoundarySchemes/StrongFirstOrder.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/PopulateBoundaryMortars.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/Gmres.hpp"
@@ -31,6 +31,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Functional.hpp"
@@ -59,14 +60,20 @@ struct Metavariables {
   using temporal_id = LinearSolver::Tags::IterationId;
 
   // Parse numerical flux parameters from the input file to store in the cache.
-  using normal_dot_numerical_flux = OptionTags::NumericalFlux<
-      Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
+  using normal_dot_numerical_flux =
+      OptionTags::NumericalFlux<Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
+  using boundary_scheme = dg::BoundarySchemes::StrongFirstOrder<
+      Dim, typename system::variables_tag, typename system::normal_dot_fluxes,
+      ::Tags::NormalDotNumericalFluxComputer<
+          typename normal_dot_numerical_flux::type>,
+      LinearSolver::Tags::IterationId>;
 
   // Set up the domain creator from the input file.
   using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
 
   // Collect all items to store in the cache.
-  using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
+  using const_global_cache_tag_list =
+      tmpl::list<normal_dot_numerical_flux, analytic_solution_tag>;
 
   // Collect all reduction tags for observers
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
@@ -92,21 +99,24 @@ struct Metavariables {
 
               Parallel::PhaseActions<
                   Phase, Phase::Solve,
-                  tmpl::list<Poisson::Actions::Observe,
-                             LinearSolver::Actions::TerminateIfConverged,
-                             dg::Actions::ComputeNonconservativeBoundaryFluxes<
-                                 Tags::InternalDirections<Dim>>,
-                             dg::Actions::SendDataForFluxes<Metavariables>,
-                             Elliptic::Actions::ComputeOperatorAction,
-                             dg::Actions::ComputeNonconservativeBoundaryFluxes<
-                                 Tags::BoundaryDirectionsInterior<Dim>>,
-                             Elliptic::dg::Actions::
-                                 ImposeHomogeneousDirichletBoundaryConditions<
-                                     Metavariables>,
-                             dg::Actions::ReceiveDataForFluxes<Metavariables>,
-                             dg::Actions::ApplyFluxes,
-                             typename linear_solver::perform_step>>>,
-
+                  tmpl::list<
+                      Poisson::Actions::Observe,
+                      LinearSolver::Actions::TerminateIfConverged,
+                      dg::Actions::ComputeNormalDotFluxes<
+                          Tags::InternalDirections<Dim>,
+                          typename system::variables_tag,
+                          typename system::normal_dot_fluxes>,
+                      dg::Actions::SendDataForFluxes<boundary_scheme>,
+                      Elliptic::Actions::ComputeOperatorAction,
+                      dg::Actions::ComputeNormalDotFluxes<
+                          Tags::BoundaryDirectionsInterior<Dim>,
+                          typename system::variables_tag,
+                          typename system::normal_dot_fluxes>,
+                      ::Actions::MutateApply<
+                          ::dg::PopulateBoundaryMortars<boundary_scheme>>,
+                      dg::Actions::ReceiveDataForFluxes<boundary_scheme>,
+                      ::Actions::MutateApply<boundary_scheme>,
+                      typename linear_solver::perform_step>>>,
           typename Elliptic::dg::Actions::InitializeElement<
               Dim>::AddOptionsToDataBox>>,
       typename linear_solver::component_list,

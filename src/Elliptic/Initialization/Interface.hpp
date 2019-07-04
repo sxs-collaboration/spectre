@@ -10,8 +10,10 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/MirrorVariables.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Elliptic {
@@ -91,6 +93,15 @@ struct Interface {
                                  Tags::Direction<volume_dim>>,
       Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<volume_dim>,
                                  Tags::InterfaceMesh<volume_dim>>,
+      // We mirror the system variables to the exterior (ghost) faces to impose
+      // homogeneous (zero) boundary conditions. Non-zero boundary conditions
+      // are handled as contributions to the source term.
+      Tags::InterfaceComputeItem<
+          Tags::BoundaryDirectionsExterior<volume_dim>,
+          Tags::MirrorVariables<volume_dim,
+                                Tags::BoundaryDirectionsInterior<volume_dim>,
+                                typename System::variables_tag,
+                                typename System::primal_variables>>,
       // We slice the gradients to the exterior faces, too. This may need to be
       // reconsidered when boundary conditions are reworked.
       Tags::Slice<
@@ -109,11 +120,7 @@ struct Interface {
           Tags::BoundaryDirectionsExterior<volume_dim>,
           Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<volume_dim>>>>;
 
-  using simple_tags = db::AddSimpleTags<
-      // We rely on the variable data on exterior faces being updated manually.
-      // This may need to be reconsidered when boundary conditions are reworked.
-      Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
-                      typename System::variables_tag>>;
+  using simple_tags = db::AddSimpleTags<>;
   using compute_tags =
       tmpl::append<face_tags<Tags::InternalDirections<volume_dim>>,
                    face_tags<Tags::BoundaryDirectionsInterior<volume_dim>>,
@@ -121,20 +128,8 @@ struct Interface {
 
   template <typename TagsList>
   static auto initialize(db::DataBox<TagsList>&& box) noexcept {
-    const auto& mesh = db::get<Tags::Mesh<volume_dim>>(box);
-    std::unordered_map<Direction<volume_dim>,
-                       db::item_type<typename System::variables_tag>>
-        external_boundary_vars{};
-
-    for (const auto& direction :
-         db::get<Tags::Element<volume_dim>>(box).external_boundaries()) {
-      external_boundary_vars[direction] =
-          db::item_type<typename System::variables_tag>{
-              mesh.slice_away(direction.dimension()).number_of_grid_points()};
-    }
-
     return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
-        std::move(box), std::move(external_boundary_vars));
+        std::move(box));
   }
 };
 

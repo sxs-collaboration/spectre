@@ -111,8 +111,8 @@ struct InitializeElement {
             std::move(boundary_conditions_box), cache, array_index,
             parallel_component_meta);
     auto dg_box = Elliptic::Initialization::DiscontinuousGalerkin<
-        Metavariables>::initialize(std::move(linear_solver_box),
-                                   initial_extents);
+        typename Metavariables::boundary_scheme>::
+        initialize(std::move(linear_solver_box), initial_extents);
     return std::make_tuple(std::move(dg_box));
   }
 

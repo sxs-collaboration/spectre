@@ -66,8 +66,8 @@ struct FirstOrderSystem {
   // The bulk contribution to the linear operator action
   using compute_operator_action = ComputeFirstOrderOperatorAction<Dim>;
 
-  // The interface normal dotted into the fluxes that is required by the strong
-  // flux lifting operation
+  // The interface normal dotted into the fluxes that is required by the
+  // boundary scheme
   using normal_dot_fluxes = ComputeFirstOrderNormalDotFluxes<Dim>;
 
   // The tag of the operator to compute magnitudes on the manifold, e.g. to
