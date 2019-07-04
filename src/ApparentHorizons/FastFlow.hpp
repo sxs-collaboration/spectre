@@ -179,6 +179,9 @@ class FastFlow {
   /// Resets the finder.
   SPECTRE_ALWAYS_INLINE void reset_for_next_find() noexcept {
     current_iter_ = 0;
+    previous_residual_mesh_norm_ = 0.0;
+    min_residual_mesh_norm_ = std::numeric_limits<double>::max();
+    iter_at_min_residual_mesh_norm_ = 0;
   }
 
  private:
