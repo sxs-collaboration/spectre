@@ -16,19 +16,19 @@ namespace dg {
  * \brief Populates the mortar data on external boundaries with the packaged
  * data from the interior and the exterior (ghost) faces.
  */
-template <typename FluxLiftingScheme>
+template <typename BoundaryScheme>
 struct PopulateBoundaryMortars {
-  static constexpr size_t volume_dim = FluxLiftingScheme::volume_dim;
+  static constexpr size_t volume_dim = BoundaryScheme::volume_dim;
   using directions_tag = ::Tags::BoundaryDirectionsInterior<volume_dim>;
   using packaged_local_data_tag =
       ::Tags::Interface<::Tags::BoundaryDirectionsInterior<volume_dim>,
-                        typename FluxLiftingScheme::packaged_local_data_tag>;
+                        typename BoundaryScheme::packaged_local_data_tag>;
   using packaged_remote_data_tag =
       ::Tags::Interface<::Tags::BoundaryDirectionsExterior<volume_dim>,
-                        typename FluxLiftingScheme::packaged_remote_data_tag>;
-  using temporal_id_tag = typename FluxLiftingScheme::temporal_id_tag;
+                        typename BoundaryScheme::packaged_remote_data_tag>;
+  using temporal_id_tag = typename BoundaryScheme::temporal_id_tag;
   using all_mortar_data_tag =
-      ::Tags::Mortars<typename FluxLiftingScheme::mortar_data_tag, volume_dim>;
+      ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag, volume_dim>;
 
   using argument_tags = tmpl::list<directions_tag, packaged_local_data_tag,
                                    packaged_remote_data_tag, temporal_id_tag>;
