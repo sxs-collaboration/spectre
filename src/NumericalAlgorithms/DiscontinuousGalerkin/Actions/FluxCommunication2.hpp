@@ -36,19 +36,17 @@ struct Next;
 namespace dg {
 
 /// The inbox tag for flux communication.
-template <typename FluxLiftingScheme>
+template <typename BoundaryScheme>
 struct FluxesInboxTag {
-  static constexpr size_t volume_dim = FluxLiftingScheme::volume_dim;
-  using temporal_id =
-      db::item_type<typename FluxLiftingScheme::temporal_id_tag>;
+  static constexpr size_t volume_dim = BoundaryScheme::volume_dim;
+  using temporal_id = db::item_type<typename BoundaryScheme::temporal_id_tag>;
   using type = std::map<
       temporal_id,
-      FixedHashMap<
-          maximum_number_of_neighbors(volume_dim),
-          std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
-          std::pair<temporal_id, typename FluxLiftingScheme::RemoteData>,
-          boost::hash<
-              std::pair<Direction<volume_dim>, ElementId<volume_dim>>>>>;
+      FixedHashMap<maximum_number_of_neighbors(volume_dim),
+                   std::pair<Direction<volume_dim>, ElementId<volume_dim>>,
+                   std::pair<temporal_id, typename BoundaryScheme::RemoteData>,
+                   boost::hash<std::pair<Direction<volume_dim>,
+                                         ElementId<volume_dim>>>>>;
 };
 
 namespace Actions {
@@ -58,24 +56,24 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - FluxLiftingScheme::temporal_id
-///   - Tags::Next<FluxLiftingScheme::temporal_id>
+///   - BoundaryScheme::temporal_id
+///   - Tags::Next<BoundaryScheme::temporal_id>
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   - Tags::Mortars<Tags::Next<FluxLiftingScheme::temporal_id>, volume_dim>
-///   - Tags::Mortars<FluxLiftingScheme::mortar_data_tag, volume_dim>
+///   - Tags::Mortars<Tags::Next<BoundaryScheme::temporal_id>, volume_dim>
+///   - Tags::Mortars<BoundaryScheme::mortar_data_tag, volume_dim>
 ///
 /// \see SendDataForFluxes
-template <typename FluxLiftingScheme>
+template <typename BoundaryScheme>
 struct ReceiveDataForFluxes {
  private:
-  static constexpr size_t volume_dim = FluxLiftingScheme::volume_dim;
-  using temporal_id_tag = typename FluxLiftingScheme::temporal_id_tag;
-  using fluxes_inbox_tag = dg::FluxesInboxTag<FluxLiftingScheme>;
+  static constexpr size_t volume_dim = BoundaryScheme::volume_dim;
+  using temporal_id_tag = typename BoundaryScheme::temporal_id_tag;
+  using fluxes_inbox_tag = dg::FluxesInboxTag<BoundaryScheme>;
   using all_mortar_data_tag =
-      ::Tags::Mortars<typename FluxLiftingScheme::mortar_data_tag, volume_dim>;
+      ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag, volume_dim>;
 
  public:
   using inbox_tags = tmpl::list<fluxes_inbox_tag>;
@@ -194,26 +192,26 @@ struct ReceiveDataForFluxes {
 /// Uses:
 /// - DataBox:
 ///   - Tags::Element<volume_dim>
-///   - FluxLiftingScheme::temporal_id_tag
-///   - Tags::Next<FluxLiftingScheme::temporal_id_tag>
+///   - BoundaryScheme::temporal_id_tag
+///   - Tags::Next<BoundaryScheme::temporal_id_tag>
 ///   - Interface<Tags::Mesh<volume_dim - 1>>
 ///   - Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>
 ///   - Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>
-///   - Interface<FluxLiftingScheme::packaged_remote_data_tag>
-///   - Interface<FluxLiftingScheme::packaged_local_data_tag>
+///   - Interface<BoundaryScheme::packaged_remote_data_tag>
+///   - Interface<BoundaryScheme::packaged_local_data_tag>
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
-/// - Modifies: Tags::Mortars<FluxLiftingScheme::mortar_data_tag, volume_dim>
+/// - Modifies: Tags::Mortars<BoundaryScheme::mortar_data_tag, volume_dim>
 ///
 /// \see ReceiveDataForFluxes
-template <typename FluxLiftingScheme>
+template <typename BoundaryScheme>
 struct SendDataForFluxes {
  private:
-  static constexpr size_t volume_dim = FluxLiftingScheme::volume_dim;
-  using temporal_id_tag = typename FluxLiftingScheme::temporal_id_tag;
-  using fluxes_inbox_tag = dg::FluxesInboxTag<FluxLiftingScheme>;
+  static constexpr size_t volume_dim = BoundaryScheme::volume_dim;
+  using temporal_id_tag = typename BoundaryScheme::temporal_id_tag;
+  using fluxes_inbox_tag = dg::FluxesInboxTag<BoundaryScheme>;
 
  public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -240,12 +238,11 @@ struct SendDataForFluxes {
                                 Tags::Mesh<volume_dim - 1>>>(box);
     const auto& packaged_remote_data = db::get<
         Tags::Interface<Tags::InternalDirections<volume_dim>,
-                        typename FluxLiftingScheme::packaged_remote_data_tag>>(
+                        typename BoundaryScheme::packaged_remote_data_tag>>(
         box);
     const auto& packaged_local_data = db::get<
         Tags::Interface<Tags::InternalDirections<volume_dim>,
-                        typename FluxLiftingScheme::packaged_local_data_tag>>(
-        box);
+                        typename BoundaryScheme::packaged_local_data_tag>>(box);
 
     // Iterate over neighbors
     for (const auto& direction_and_neighbors : element.neighbors()) {
@@ -284,7 +281,7 @@ struct SendDataForFluxes {
 
         // Store local mortar data in DataBox
         using all_mortar_data_tag =
-            ::Tags::Mortars<typename FluxLiftingScheme::mortar_data_tag,
+            ::Tags::Mortars<typename BoundaryScheme::mortar_data_tag,
                             volume_dim>;
         db::mutate<all_mortar_data_tag>(
             make_not_null(&box),

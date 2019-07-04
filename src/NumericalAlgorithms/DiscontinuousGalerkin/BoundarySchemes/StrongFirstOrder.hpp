@@ -32,7 +32,7 @@
 // }  // namespace
 
 namespace dg {
-namespace FluxLifting {
+namespace BoundarySchemes {
 
 namespace StrongFirstOrder_detail {
 
@@ -238,5 +238,5 @@ struct StrongFirstOrder {
   }
 };
 
-}  // namespace FluxLifting
+}  // namespace BoundarySchemes
 }  // namespace dg
