@@ -128,6 +128,18 @@ jobs:
     dist: trusty
     env: BUILD_TYPE=Release COMPILER=gcc-8
     name: gcc-8 release
+  - &Gcc9Debug
+    os: linux
+    compiler: gcc-9
+    dist: trusty
+    env: BUILD_TYPE=Debug COMPILER=gcc-9
+    name: gcc-9 debug
+  - &Gcc9Release
+    os: linux
+    compiler: gcc-9
+    dist: trusty
+    env: BUILD_TYPE=Release COMPILER=gcc-9
+    name: gcc-9 release
   - &ClangDebug
     os: linux
     compiler: clang
@@ -161,6 +173,8 @@ jobs:
   - <<: *Gcc7Release
   - <<: *Gcc8Debug
   - <<: *Gcc8Release
+  - <<: *Gcc9Debug
+  - <<: *Gcc9Release
   - <<: *ClangDebug
   - <<: *ClangRelease
 
@@ -172,6 +186,8 @@ jobs:
   - <<: *Gcc7Release
   - <<: *Gcc8Debug
   - <<: *Gcc8Release
+  - <<: *Gcc9Debug
+  - <<: *Gcc9Release
   - <<: *ClangDebug
   - <<: *ClangRelease
 
