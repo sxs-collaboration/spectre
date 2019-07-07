@@ -792,35 +792,21 @@ Variables<tmpl::list<Tags...>> operator/(
   return result;
 }
 
-namespace Variables_detail {
-template <typename TagsList>
-std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& /*d*/,
-                           tmpl::list<> /*meta*/) noexcept {
-  return os << "Variables is empty!";
-}
-
-template <typename Tag, typename TagsList>
-std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& d,
-                           tmpl::list<Tag> /*meta*/) noexcept {
-  return os << db::tag_name<Tag>() << ":\n" << get<Tag>(d);
-}
-
-template <typename Tag, typename SecondTag, typename... RemainingTags,
-          typename TagsList>
-std::ostream& print_helper(
-    std::ostream& os, const Variables<TagsList>& d,
-    tmpl::list<Tag, SecondTag, RemainingTags...> /*meta*/) noexcept {
-  os << db::tag_name<Tag>() << ":\n";
-  os << get<Tag>(d) << "\n\n";
-  print_helper(os, d, tmpl::list<SecondTag, RemainingTags...>{});
-  return os;
-}
-}  // namespace Variables_detail
-
-template <typename TagsList>
+template <typename... Tags, Requires<sizeof...(Tags) != 0> = nullptr>
 std::ostream& operator<<(std::ostream& os,
-                         const Variables<TagsList>& d) noexcept {
-  return Variables_detail::print_helper(os, d, TagsList{});
+                         const Variables<tmpl::list<Tags...>>& d) noexcept {
+  size_t count = 0;
+  const auto helper = [&os, &d, &count ](auto tag_v) noexcept {
+    count++;
+    using Tag = typename decltype(tag_v)::type;
+    os << db::tag_name<Tag>() << ":\n";
+    os << get<Tag>(d);
+    if (count < sizeof...(Tags)) {
+      os << "\n\n";
+    }
+  };
+  EXPAND_PACK_LEFT_TO_RIGHT(helper(tmpl::type_<Tags>{}));
+  return os;
 }
 
 template <typename TagsList>
