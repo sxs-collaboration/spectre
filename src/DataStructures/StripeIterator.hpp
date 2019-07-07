@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <limits>
 
+#include "Utilities/Gsl.hpp"
+
 template <size_t>
 class Index;
 
@@ -19,13 +21,21 @@ class StripeIterator {
   /// Construct from the grid points in each direction and which dimension the
   /// stripes are in.
   template <size_t Dim>
-  StripeIterator(const Index<Dim>& extents, size_t stripe_dim);
+  StripeIterator(const Index<Dim>& extents, size_t stripe_dim) noexcept;
 
   /// Returns `true` if the iterator is valid
   explicit operator bool() const noexcept { return offset_ < size_; }
 
   /// Increment to the next stripe.
-  StripeIterator& operator++();
+  StripeIterator& operator++() noexcept {
+    ++offset_;
+    ++stride_count_;
+    if (UNLIKELY(stride_count_ == stride_)) {
+      offset_ += jump_;
+      stride_count_ = 0;
+    }
+    return *this;
+  }
 
   /// Offset into DataVector for first element of stripe.
   size_t offset() const noexcept { return offset_; }
