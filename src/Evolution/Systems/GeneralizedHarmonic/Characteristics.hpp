@@ -59,6 +59,20 @@ namespace GeneralizedHarmonic {
  * surface.
  */
 template <size_t Dim, typename Frame>
+typename Tags::CharacteristicSpeeds<Dim, Frame>::type characteristic_speeds(
+    const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+
+template <size_t Dim, typename Frame>
+void characteristic_speeds(
+    gsl::not_null<typename Tags::CharacteristicSpeeds<Dim, Frame>::type*>
+        char_speeds,
+    const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame>& shift,
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+
+template <size_t Dim, typename Frame>
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
                                      db::ComputeTag {
   using base = Tags::CharacteristicSpeeds<Dim, Frame>;
@@ -71,16 +85,10 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim, Frame>,
   static typename Tags::CharacteristicSpeeds<Dim, Frame>::type function(
       const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, Dim, Frame>& shift,
-      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
+    return characteristic_speeds(gamma_1, lapse, shift, unit_normal_one_form);
+  };
 };
-
-template <size_t Dim, typename Frame>
-void compute_characteristic_speeds(
-    gsl::not_null<typename Tags::CharacteristicSpeeds<Dim, Frame>::type*>
-        char_speeds,
-    const Scalar<DataVector>& gamma_1, const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, Dim, Frame>& shift,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
 // @}
 
 // @{
@@ -131,6 +139,26 @@ void compute_characteristic_speeds(
  * \ref CharacteristicSpeedsCompute .
  */
 template <size_t Dim, typename Frame>
+typename Tags::CharacteristicFields<Dim, Frame>::type characteristic_fields(
+    const Scalar<DataVector>& gamma_2,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
+    const tnsr::aa<DataVector, Dim, Frame>& pi,
+    const tnsr::iaa<DataVector, Dim, Frame>& phi,
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+
+template <size_t Dim, typename Frame>
+void characteristic_fields(
+    gsl::not_null<typename Tags::CharacteristicFields<Dim, Frame>::type*>
+        char_fields,
+    const Scalar<DataVector>& gamma_2,
+    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
+    const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
+    const tnsr::aa<DataVector, Dim, Frame>& pi,
+    const tnsr::iaa<DataVector, Dim, Frame>& phi,
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+
+template <size_t Dim, typename Frame>
 struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
                                      db::ComputeTag {
   using base = Tags::CharacteristicFields<Dim, Frame>;
@@ -148,19 +176,12 @@ struct CharacteristicFieldsCompute : Tags::CharacteristicFields<Dim, Frame>,
       const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
       const tnsr::aa<DataVector, Dim, Frame>& pi,
       const tnsr::iaa<DataVector, Dim, Frame>& phi,
-      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
+    return characteristic_fields(gamma_2, inverse_spatial_metric,
+                                 spacetime_metric, pi, phi,
+                                 unit_normal_one_form);
+  };
 };
-
-template <size_t Dim, typename Frame>
-void compute_characteristic_fields(
-    gsl::not_null<typename Tags::CharacteristicFields<Dim, Frame>::type*>
-        char_fields,
-    const Scalar<DataVector>& gamma_2,
-    const tnsr::II<DataVector, Dim, Frame>& inverse_spatial_metric,
-    const tnsr::aa<DataVector, Dim, Frame>& spacetime_metric,
-    const tnsr::aa<DataVector, Dim, Frame>& pi,
-    const tnsr::iaa<DataVector, Dim, Frame>& phi,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
 // @}
 
 // @{
@@ -169,6 +190,28 @@ void compute_characteristic_fields(
  * \brief For expressions used here to compute evolved fields from
  * characteristic ones, see \ref CharacteristicFieldsCompute.
  */
+template <size_t Dim, typename Frame>
+typename Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>::type
+evolved_fields_from_characteristic_fields(
+    const Scalar<DataVector>& gamma_2,
+    const tnsr::aa<DataVector, Dim, Frame>& u_psi,
+    const tnsr::iaa<DataVector, Dim, Frame>& u_zero,
+    const tnsr::aa<DataVector, Dim, Frame>& u_plus,
+    const tnsr::aa<DataVector, Dim, Frame>& u_minus,
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+
+template <size_t Dim, typename Frame>
+void evolved_fields_from_characteristic_fields(
+    gsl::not_null<
+        typename Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>::type*>
+        evolved_fields,
+    const Scalar<DataVector>& gamma_2,
+    const tnsr::aa<DataVector, Dim, Frame>& u_psi,
+    const tnsr::iaa<DataVector, Dim, Frame>& u_zero,
+    const tnsr::aa<DataVector, Dim, Frame>& u_plus,
+    const tnsr::aa<DataVector, Dim, Frame>& u_minus,
+    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+
 template <size_t Dim, typename Frame>
 struct EvolvedFieldsFromCharacteristicFieldsCompute
     : Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>,
@@ -187,21 +230,11 @@ struct EvolvedFieldsFromCharacteristicFieldsCompute
       const tnsr::iaa<DataVector, Dim, Frame>& u_zero,
       const tnsr::aa<DataVector, Dim, Frame>& u_plus,
       const tnsr::aa<DataVector, Dim, Frame>& u_minus,
-      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
+      const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept {
+    return evolved_fields_from_characteristic_fields(
+        gamma_2, u_psi, u_zero, u_plus, u_minus, unit_normal_one_form);
+  };
 };
-
-template <size_t Dim, typename Frame>
-void compute_evolved_fields_from_characteristic_fields(
-    gsl::not_null<
-        typename Tags::EvolvedFieldsFromCharacteristicFields<Dim, Frame>::type*>
-        evolved_fields,
-    const Scalar<DataVector>& gamma_2,
-    const tnsr::aa<DataVector, Dim, Frame>& u_psi,
-    const tnsr::iaa<DataVector, Dim, Frame>& u_zero,
-    const tnsr::aa<DataVector, Dim, Frame>& u_plus,
-    const tnsr::aa<DataVector, Dim, Frame>& u_minus,
-    const tnsr::i<DataVector, Dim, Frame>& unit_normal_one_form) noexcept;
-
 // @}
 
 /*!
