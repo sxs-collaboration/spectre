@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_ChebyshevGaussLobatto.cpp
   Test_ComplexDataView.cpp
   Test_Filtering.cpp
+  Test_FiniteDifference.cpp
   Test_IndefiniteIntegral.cpp
   Test_LegendreGauss.cpp
   Test_LegendreGaussLobatto.cpp

@@ -29,6 +29,8 @@ std::ostream& operator<<(std::ostream& os,
       return os << "Legendre";
     case Basis::Chebyshev:
       return os << "Chebyshev";
+    case Basis::FiniteDifference:
+      return os << "FiniteDifference";
     default: ERROR("Invalid basis");
   }
 }
@@ -40,6 +42,8 @@ std::ostream& operator<<(std::ostream& os,
       return os << "Gauss";
     case Quadrature::GaussLobatto:
       return os << "GaussLobatto";
+    case Quadrature::CellCentered:
+      return os << "CellCentered";
     default: ERROR("Invalid quadrature");
   }
 }
@@ -492,4 +496,11 @@ GENERATE_INSTANTIATIONS(INSTANTIATE,
 #undef BASIS
 #undef QUAD
 #undef INSTANTIATE
+
+template const DataVector& Spectral::collocation_points<
+    Spectral::Basis::FiniteDifference, Spectral::Quadrature::CellCentered>(
+    size_t) noexcept;
+template const DataVector& Spectral::quadrature_weights<
+    Spectral::Basis::FiniteDifference, Spectral::Quadrature::CellCentered>(
+    size_t) noexcept;
 /// \endcond

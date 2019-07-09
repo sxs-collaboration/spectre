@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
     Chebyshev.cpp
     ComplexDataView.cpp
     Filtering.cpp
+    FiniteDifference.cpp
     Legendre.cpp
     Projection.cpp
     Spectral.cpp

@@ -49,8 +49,20 @@ namespace Spectral {
  *
  * \details Choose `Legendre` for a general-purpose DG mesh, unless you have a
  * particular reason for choosing another basis.
+ *
+ * \warning The `FiniteDifference` "basis" is used to denote that only the
+ * collocation points are defined, but that differentiation, integration, and
+ * interpolation schemes are to be chosen locally wherever a `FiniteDifference`
+ * mesh is being used. The reason is that there isn't a requirement that the
+ * basis and collocation point locations are at all related to the
+ * differentiation, integration, or interpolation methods - it is merely a
+ * convenient choice in a lot of cases. For `FiniteDifference` we need to choose
+ * the order of the scheme (and hence the weights, differentiation matrix,
+ * integration weights, and interpolant) locally in space and time to handle
+ * discontinuous solutions, hence none of those are defined for the
+ * `FiniteDifference` basis.
  */
-enum class Basis { Chebyshev, Legendre };
+enum class Basis { Chebyshev, Legendre, FiniteDifference };
 
 /// \cond HIDDEN_SYMBOLS
 std::ostream& operator<<(std::ostream& os, const Basis& basis) noexcept;
@@ -64,8 +76,13 @@ std::ostream& operator<<(std::ostream& os, const Basis& basis) noexcept;
  * exact to polynomial order \f$p=2N-1\f$. Gauss-Lobatto quadrature is exact
  * only to polynomial order \f$p=2N-3\f$, but includes collocation points at the
  * domain boundary.
+ *
+ * \warning `CellCentered` are intended to be used with the `FiniteDifference`
+ * basis (though in principle they could be used with any basis), and thus do
+ * not implement differentiation matrices, integration weights, and
+ * interpolation matrices.
  */
-enum class Quadrature { Gauss, GaussLobatto };
+enum class Quadrature { Gauss, GaussLobatto, CellCentered };
 
 /// \cond HIDDEN_SYMBOLS
 std::ostream& operator<<(std::ostream& os,
@@ -79,6 +96,8 @@ constexpr size_t minimum_number_of_points(
     return 1;
   } else if (quadrature == Quadrature::GaussLobatto) {
     return 2;
+  } else if (quadrature == Quadrature::CellCentered) {
+    return 1;
   }
   return std::numeric_limits<size_t>::max();
 }
@@ -90,15 +109,26 @@ constexpr size_t minimum_number_of_points(
  * \details Since Gauss-Lobatto quadrature has points on the domain boundaries
  * it must have at least two collocation points. Gauss quadrature can have only
  * one collocation point.
+ *
+ * \details For `CellCentered` the minimum number of points is 1.
  */
 template <Basis basis, Quadrature quadrature>
 constexpr size_t minimum_number_of_points =
     detail::minimum_number_of_points(basis, quadrature);
 /*!
  * \brief Maximum number of allowed collocation points.
+ *
+ * \details We choose a limit of 23 FD grid points because for DG-subcell the
+ * number of points in an element is `2 * (number_dg_points - 1)`. Because there
+ * is no way of generically retrieving the maximum number of grid points for
+ * a non-FD basis, we need to hard-code both values here. If the number of grid
+ * points is increased for the non-FD bases, it should also be increased for the
+ * FD basis. Note that for good task-based parallelization 23 grid points is
+ * already a fairly large number.
  */
-template <Basis>
-constexpr size_t maximum_number_of_points = 12;
+template <Basis basis>
+constexpr size_t maximum_number_of_points =
+    basis == Basis::FiniteDifference ? 23 : 12;
 
 /*!
  * \brief Compute the function values of the basis function \f$\Phi_k(x)\f$
@@ -130,6 +160,9 @@ double compute_basis_function_normalization_square(size_t k) noexcept;
  * \f$(\xi_k,w_k)\f$ where the \f$\xi_k\f$ are the collocation
  * points and the \f$w_k\f$ are defined in the description of
  * `quadrature_weights(size_t)`.
+ *
+ * \warning for a `FiniteDifference` basis or `CellCentered` quadratures only
+ * the collocation points are set, the weights are `NaN`.
  */
 template <Basis BasisType, Quadrature QuadratureType>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
@@ -167,6 +200,9 @@ const DataVector& collocation_points(const Mesh<1>& mesh) noexcept;
  * Only for a unit weight function \f$w(x)=1\f$, i.e. a Legendre basis, is
  * \f$I[f]=Q[f]\f$ so this function returns the \f$w_k\f$ identically.
  *
+ * \warning for a `FiniteDifference` basis or `CellCentered` quadrature the
+ * weights are `NaN`.
+ *
  * \param num_points The number of collocation points
  */
 template <Basis BasisType, Quadrature QuadratureType>
@@ -174,6 +210,9 @@ const DataVector& quadrature_weights(size_t num_points) noexcept;
 
 /*!
  * \brief Quadrature weights for a one-dimensional mesh.
+ *
+ * \warning for a `FiniteDifference` basis or `CellCentered` quadrature the
+ * weights are `NaN`.
  *
  * \see quadrature_weights(size_t)
  */
