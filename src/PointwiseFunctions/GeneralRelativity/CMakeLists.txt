@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
     IndexManipulation.cpp
     KerrSchildCoords.cpp
     Ricci.cpp
+    WeylElectric.cpp
     )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})

@@ -156,6 +156,17 @@ struct TraceExtrinsicCurvature : db::SimpleTag {
 };
 
 /*!
+ * \brief Computes Ricci tensor from the (spatial or spacetime)
+ * Christoffel symbol of the second kind and its derivative.
+ */
+
+template <size_t Dim, typename Frame, typename DataType>
+struct RicciTensor : db::SimpleTag {
+  using type = tnsr::ii<DataType, Dim, Frame>;
+  static std::string name() noexcept { return "RicciTensor"; }
+};
+
+/*!
  * \brief The energy density \f$E=t_a t_b T^{ab}\f$, where \f$t_a\f$ denotes the
  * normal to the spatial hypersurface
  */
@@ -163,6 +174,18 @@ template <typename DataType>
 struct EnergyDensity : db::SimpleTag {
   using type = Scalar<DataType>;
   static std::string name() noexcept { return "EnergyDensity"; }
+};
+
+/*!
+ * \brief Computes the electric part of the Weyl tensor in vacuum
+ * as: \f$ E_{ij} = R_{ij} + KK_{ij} - K^m_{i}K_{mj}\f$ where \f$R_{ij}\f$ is
+ * the spatial Ricci tensor, \f$K_{ij}\f$ is the extrinsic curvature, and
+ * \f$K\f$ is the trace of \f$K_{ij}\f$.
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct WeylElectric : db::SimpleTag {
+  using type = tnsr::ii<DataType, Dim, Frame>;
+  static std::string name() noexcept { return "WeylElectric"; }
 };
 }  // namespace Tags
 
