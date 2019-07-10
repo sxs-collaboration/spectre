@@ -171,7 +171,7 @@ struct EvolutionMetavars {
               typename system::primitive_variables_tag>>,
       Initialization::Actions::Evolution<system>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
-      Initialization::Actions::MinMod<3>,
+      Initialization::Actions::Minmod<3>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using component_list = tmpl::list<

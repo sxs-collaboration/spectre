@@ -144,7 +144,7 @@ struct EvolutionMetavars {
           Initialization::slice_tags_to_exterior<>>,
       Initialization::Actions::Evolution<system>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
-      Initialization::Actions::MinMod<1>,
+      Initialization::Actions::Minmod<1>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using component_list = tmpl::list<
