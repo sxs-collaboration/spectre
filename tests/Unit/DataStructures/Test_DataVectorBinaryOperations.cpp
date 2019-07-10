@@ -21,8 +21,6 @@
 
 void test_data_vector_multiple_operand_math() noexcept {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
-  const TestHelpers::VectorImpl::Bound mone_one{{-1.0, 1.0}};
-  const TestHelpers::VectorImpl::Bound gt_one{{1.0, 100.0}};
   const TestHelpers::VectorImpl::Bound positive{{0.01, 100.0}};
 
   const auto binary_ops = std::make_tuple(
