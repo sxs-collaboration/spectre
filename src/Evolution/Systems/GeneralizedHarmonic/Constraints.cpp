@@ -1139,7 +1139,7 @@ tnsr::a<DataType, SpatialDim, Frame> f_constraint(
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void f_constraint(
-    gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
+    const gsl::not_null<tnsr::a<DataType, SpatialDim, Frame>*> constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_function,
     const tnsr::ia<DataType, SpatialDim, Frame>& d_gauge_function,
     const tnsr::a<DataType, SpatialDim, Frame>& spacetime_normal_one_form,
@@ -1248,7 +1248,7 @@ Scalar<DataType> constraint_energy(
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 void constraint_energy(
-    gsl::not_null<Scalar<DataType>*> energy,
+    const gsl::not_null<Scalar<DataType>*> energy,
     const tnsr::a<DataType, SpatialDim, Frame>& gauge_constraint,
     const tnsr::a<DataType, SpatialDim, Frame>& f_constraint,
     const tnsr::ia<DataType, SpatialDim, Frame>& two_index_constraint,
@@ -1308,7 +1308,7 @@ void constraint_energy(
           d_spacetime_metric,                                                \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi) noexcept;   \
   template void GeneralizedHarmonic::three_index_constraint(                 \
-      gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*>         \
+      const gsl::not_null<tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>*>   \
           constraint,                                                        \
       const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>&                  \
           d_spacetime_metric,                                                \
@@ -1433,7 +1433,7 @@ void constraint_energy(
       double three_index_constraint_multiplier,                              \
       double four_index_constraint_multiplier) noexcept;                     \
   template void GeneralizedHarmonic::constraint_energy(                      \
-      gsl::not_null<Scalar<DTYPE(data)>*> energy,                            \
+      const gsl::not_null<Scalar<DTYPE(data)>*> energy,                      \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& gauge_constraint,  \
       const tnsr::a<DTYPE(data), DIM(data), FRAME(data)>& f_constraint,      \
       const tnsr::ia<DTYPE(data), DIM(data), FRAME(data)>&                   \

@@ -421,7 +421,7 @@ const std::vector<double>& YlmSpherepack::phi_points() const noexcept {
 }
 
 void YlmSpherepack::second_derivative(
-    const std::array<double*, 2>& df, gsl::not_null<SecondDeriv*> ddf,
+    const std::array<double*, 2>& df, const gsl::not_null<SecondDeriv*> ddf,
     const gsl::not_null<const double*> collocation_values,
     const size_t physical_stride, const size_t physical_offset) const noexcept {
   // Initialize trig functions at collocation points

@@ -48,7 +48,7 @@ void densitized_stress(
   dot_product(make_not_null(&magnetic_field_dot_spatial_velocity),
               magnetic_field_oneform, spatial_velocity);
   // not const to save an allocation below
-  Scalar<DataVector>  magnetic_field_squared{};
+  Scalar<DataVector> magnetic_field_squared{};
   get(magnetic_field_squared)
       .set_data_ref(temp_buffer_for_magnetic_field_squared);
   dot_product(make_not_null(&magnetic_field_squared), magnetic_field,
@@ -99,10 +99,12 @@ namespace grmhd {
 namespace ValenciaDivClean {
 
 void ComputeSources::apply(
-    gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
-    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> source_tilde_s,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> source_tilde_b,
-    gsl::not_null<Scalar<DataVector>*> source_tilde_phi,
+    const gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+        source_tilde_s,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        source_tilde_b,
+    const gsl::not_null<Scalar<DataVector>*> source_tilde_phi,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
     const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
     const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,

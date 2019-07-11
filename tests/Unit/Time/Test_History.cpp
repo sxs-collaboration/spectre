@@ -170,7 +170,8 @@ using BoundaryHistoryType =
     TimeSteppers::BoundaryHistory<std::string, std::vector<int>, double>;
 
 // Must take a non-const arg for coupling caching
-size_t check_boundary_state(gsl::not_null<BoundaryHistoryType*> hist) noexcept {
+size_t check_boundary_state(
+    const gsl::not_null<BoundaryHistoryType*> hist) noexcept {
   CHECK(hist->local_size() == 4);
   {
     auto it = hist->local_begin();
@@ -196,7 +197,7 @@ size_t check_boundary_state(gsl::not_null<BoundaryHistoryType*> hist) noexcept {
   std::string local_arg;
   std::vector<int> remote_arg;
   double coupling_return;
-  const auto coupling = [&local_arg, &remote_arg, &coupling_return](
+  const auto coupling = [&local_arg, &remote_arg, &coupling_return ](
       const std::string& local, const std::vector<int>& remote) noexcept {
     local_arg = local;
     remote_arg = remote;
@@ -205,8 +206,8 @@ size_t check_boundary_state(gsl::not_null<BoundaryHistoryType*> hist) noexcept {
 
   size_t coupling_calls = 0;
   coupling_return = 3.5;
-  CHECK(3.5 == hist->coupling(coupling, hist->local_begin(),
-                             hist->remote_begin()));
+  CHECK(3.5 ==
+        hist->coupling(coupling, hist->local_begin(), hist->remote_begin()));
   if (local_arg.empty()) {
     CHECK(remote_arg.empty());
   } else {
@@ -219,7 +220,7 @@ size_t check_boundary_state(gsl::not_null<BoundaryHistoryType*> hist) noexcept {
 
   coupling_return = 6.5;
   CHECK(6.5 == hist->coupling(coupling, hist->local_begin() + 3,
-                             hist->remote_begin() + 2));
+                              hist->remote_begin() + 2));
   if (local_arg.empty()) {
     CHECK(remote_arg.empty());
   } else {

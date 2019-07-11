@@ -403,7 +403,7 @@ void ComputeNormalDotFluxes<Dim>::apply(
 
 template <size_t Dim>
 void UpwindFlux<Dim>::package_data(
-    gsl::not_null<Variables<package_tags>*> packaged_data,
+    const gsl::not_null<Variables<package_tags>*> packaged_data,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
     const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
@@ -430,11 +430,11 @@ void UpwindFlux<Dim>::package_data(
 
 template <size_t Dim>
 void UpwindFlux<Dim>::operator()(
-    gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
         psi_normal_dot_numerical_flux,
-    gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
         pi_normal_dot_numerical_flux,
-    gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*>
         phi_normal_dot_numerical_flux,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric_int,
     const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi_int,
