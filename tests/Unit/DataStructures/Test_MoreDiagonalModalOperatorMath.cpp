@@ -21,7 +21,6 @@
 
 void test_additional_diagonal_modal_operator_math() noexcept {
   const TestHelpers::VectorImpl::Bound generic{{-100.0, 100.0}};
-  const TestHelpers::VectorImpl::Bound positive{{0.01, 100.0}};
 
   const auto acting_on_modal_vector = std::make_tuple(std::make_tuple(
       funcl::Multiplies<>{}, std::make_tuple(generic, generic)));
