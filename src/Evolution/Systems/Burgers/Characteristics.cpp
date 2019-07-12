@@ -8,14 +8,19 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "ErrorHandling/Assert.hpp"
 
+// IWYU pragma: no_forward_declare Tensor
+
 /// \cond
 namespace Burgers {
 namespace Tags {
 void CharacteristicSpeedsCompute::function(
     const gsl::not_null<return_type*> result,
     const Scalar<DataVector>& u) noexcept {
-  ASSERT(u.size() == 1, "Char speeds only written for 1d boundaries");
-  gsl::at(*result, 0) = get(u)[0];
+  ASSERT(get(u).size() == 1,
+         "Char speeds only written for 1d boundaries.  "
+         "Got wrong number of points: "
+         << get(u).size());
+  gsl::at(*result, 0) = get(u);
 }
 }  // namespace Tags
 }  // namespace Burgers

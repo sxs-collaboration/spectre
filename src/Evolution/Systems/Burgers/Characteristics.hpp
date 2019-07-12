@@ -8,12 +8,17 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Evolution/Systems/Burgers/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
+// IWYU pragma: no_forward_declare Tensor
+namespace Burgers {
+namespace Tags {
+struct U;
+}  // namespace Tags
+}  // namespace Burgers
 /// \endcond
 
 namespace Burgers {
