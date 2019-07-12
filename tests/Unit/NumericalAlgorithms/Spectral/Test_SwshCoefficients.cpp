@@ -120,11 +120,145 @@ void test_swsh_coefficients_class_interface() noexcept {
   }
 }
 
+template <int Spin, ComplexRepresentation Representation =
+                        ComplexRepresentation::Interleaved>
+void check_goldberg_mode_conversion() {
+  MAKE_GENERATOR(gen);
+  // limited l_max distribution because Goldberg test depends on an analytic
+  // basis function with factorials.
+  UniformCustomDistribution<size_t> sdist{4, 8};
+  const size_t l_max = sdist(gen);
+  UniformCustomDistribution<double> coefficient_distribution{-10.0, 10.0};
+
+  CAPTURE(l_max);
+  const CoefficientsMetadata& precomputed_libsharp_lm =
+      cached_coefficients_metadata(l_max);
+
+  // low value to limit test time
+  size_t number_of_radial_points = 2;
+
+  ComplexModalVector expected_goldberg_modes =
+      make_with_random_values<ComplexModalVector>(
+          make_not_null(&gen), make_not_null(&coefficient_distribution),
+          square(l_max + 1) * number_of_radial_points);
+
+  // set to zero all modes for l < Spin (the basis functions are zero for those
+  // modes)
+  for (size_t i = 0; i < number_of_radial_points; ++i) {
+    for (size_t j = 0; j < static_cast<size_t>(square(Spin)); ++j) {
+      expected_goldberg_modes[j + square(l_max + 1) * i] = 0.0;
+    }
+  }
+
+  SpinWeighted<ComplexDataVector, Spin> goldberg_collocation_points;
+  goldberg_collocation_points.data() = ComplexDataVector{
+      number_of_radial_points * number_of_swsh_collocation_points(l_max), 0.0};
+
+  for (size_t i = 0; i < number_of_radial_points; ++i) {
+    for (int l = 0; l <= static_cast<int>(l_max); ++l) {
+      for (int m = -l; m <= l; ++m) {
+        for (const auto& collocation_point :
+             cached_collocation_metadata<Representation>(l_max)) {
+          goldberg_collocation_points
+              .data()[collocation_point.offset +
+                      i * number_of_swsh_collocation_points(l_max)] +=
+              expected_goldberg_modes[static_cast<size_t>(square(l) + m + l) +
+                                      i * square(l_max + 1)] *
+              TestHelpers::spin_weighted_spherical_harmonic(
+                  Spin, l, m, collocation_point.theta, collocation_point.phi);
+        }
+      }
+    }
+  }
+
+  SpinWeighted<ComplexModalVector, Spin> test_modes =
+      swsh_transform<Representation>(
+          make_not_null(&goldberg_collocation_points), l_max);
+
+  Approx swsh_approx =
+      Approx::custom()
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e6)
+          .scale(1.0);
+
+  const auto goldberg_modes = libsharp_to_goldberg_modes(test_modes, l_max);
+  CHECK_ITERABLE_CUSTOM_APPROX(goldberg_modes.data(), expected_goldberg_modes,
+                               swsh_approx);
+
+  for (size_t i = 0; i < number_of_radial_points; ++i) {
+    for (const auto& coefficient_info : precomputed_libsharp_lm) {
+      auto goldberg_mode_plus_m =
+          libsharp_mode_to_goldberg_plus_m(coefficient_info, test_modes, i);
+      // should be the same value computed using the other interface
+      auto alternative_mode_plus_m = libsharp_mode_to_goldberg(
+          coefficient_info.l, static_cast<int>(coefficient_info.m), l_max,
+          test_modes, i);
+      auto goldberg_mode_plus_m_from_full_set =
+          goldberg_modes.data()[goldberg_mode_index(
+              l_max, coefficient_info.l, static_cast<int>(coefficient_info.m),
+              i)];
+
+      auto goldberg_mode_minus_m =
+          libsharp_mode_to_goldberg_minus_m(coefficient_info, test_modes, i);
+      // should be the same value computed using the other interface
+      auto alternative_mode_minus_m = libsharp_mode_to_goldberg(
+          coefficient_info.l, -static_cast<int>(coefficient_info.m), l_max,
+          test_modes, i);
+      auto goldberg_mode_minus_m_from_full_set =
+          goldberg_modes.data()[goldberg_mode_index(
+              l_max, coefficient_info.l, -static_cast<int>(coefficient_info.m),
+              i)];
+
+      CHECK_COMPLEX_CUSTOM_APPROX(goldberg_mode_plus_m, alternative_mode_plus_m,
+                                  swsh_approx);
+      CHECK_COMPLEX_CUSTOM_APPROX(goldberg_mode_plus_m,
+                                  goldberg_mode_plus_m_from_full_set,
+                                  swsh_approx);
+      CHECK_COMPLEX_CUSTOM_APPROX(goldberg_mode_plus_m,
+                                  expected_goldberg_modes[goldberg_mode_index(
+                                      l_max, coefficient_info.l,
+                                      static_cast<int>(coefficient_info.m), i)],
+                                  swsh_approx);
+
+      CHECK_COMPLEX_CUSTOM_APPROX(goldberg_mode_minus_m,
+                                  alternative_mode_minus_m, swsh_approx);
+      CHECK_COMPLEX_CUSTOM_APPROX(goldberg_mode_minus_m,
+                                  goldberg_mode_minus_m_from_full_set,
+                                  swsh_approx);
+      CHECK_COMPLEX_CUSTOM_APPROX(
+          goldberg_mode_minus_m,
+          expected_goldberg_modes[goldberg_mode_index(
+              l_max, coefficient_info.l, -static_cast<int>(coefficient_info.m),
+              i)],
+          swsh_approx);
+
+      goldberg_modes_to_libsharp_modes_single_pair(
+          coefficient_info, make_not_null(&test_modes), i,
+          expected_goldberg_modes[goldberg_mode_index(
+              l_max, coefficient_info.l, static_cast<int>(coefficient_info.m),
+              i)],
+          expected_goldberg_modes[goldberg_mode_index(
+              l_max, coefficient_info.l, -static_cast<int>(coefficient_info.m),
+              i)]);
+    }
+  }
+
+  const auto inverse_transform_set_from_goldberg =
+      inverse_swsh_transform<Representation>(make_not_null(&test_modes), l_max);
+  CHECK_ITERABLE_CUSTOM_APPROX(inverse_transform_set_from_goldberg.data(),
+                               goldberg_collocation_points.data(), swsh_approx);
+}
+
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshCoefficients",
                   "[Unit][NumericalAlgorithms]") {
   {
     INFO("Checking Coefficients for libsharp interoperability");
     test_swsh_coefficients_class_interface();
+  }
+  {
+    INFO("Checking Goldberg mode conversions");
+    check_goldberg_mode_conversion<-1>();
+    check_goldberg_mode_conversion<0>();
+    check_goldberg_mode_conversion<2>();
   }
 }
 

@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <complex>
 #include <cstdlib>
 #include <memory>
 #include <sharp_cxx.h>
@@ -10,7 +11,11 @@
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
+#include "Utilities/Gsl.hpp"
+
+// IWYU pragma: no_forward_declare SpinWeighted
 
 namespace Spectral {
 namespace Swsh {
@@ -326,5 +331,157 @@ class CoefficientsMetadata {
  * for more details on the lazy cache.
  */
 const CoefficientsMetadata& cached_coefficients_metadata(size_t l_max) noexcept;
+
+// @{
+/*!
+ * \ingroup SwshGroup
+ * \brief Compute the mode coefficient for the convention of
+ * \cite Goldberg1966uu.
+ *
+ * \details  See the documentation for `TransformJob` for complete
+ * details on the libsharp and Goldberg coefficient representations.
+ * This interface takes a `LibsharpCoefficientInfo`, so that iterating over the
+ * libsharp data structure and performing computations based on the
+ * corresponding Goldberg modes is convenient. Two functions are provided, one
+ * for the positive m modes in the Goldberg representation, and one for the
+ * negative m modes, as the distinction is not made by the coefficient iterator.
+ *
+ * \param coefficient_info An iterator which stores an \f$l\f$ and \f$|m|\f$
+ * for the mode to be converted to the Goldberg form.
+ * \param libsharp_modes The libsharp-compatible modal storage to be accessed
+ * \param radial_offset The index of which angular slice is desired. Modes for
+ * concentric spherical shells are stored as consecutive blocks of angular
+ * modes.
+ */
+template <int Spin>
+std::complex<double> libsharp_mode_to_goldberg_plus_m(
+    const LibsharpCoefficientInfo& coefficient_info,
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
+    size_t radial_offset) noexcept;
+
+template <int Spin>
+std::complex<double> libsharp_mode_to_goldberg_minus_m(
+    const LibsharpCoefficientInfo& coefficient_info,
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
+    size_t radial_offset) noexcept;
+// @}
+
+/*!
+ * \ingroup SwshGroup
+ * \brief Compute the mode coefficient for the convention of
+ * \cite Goldberg1966uu. See the documentation for `TransformJob` for complete
+ * details on the libsharp and Goldberg coefficient representations.
+ *
+ * \details This interface extracts the (`l`, `m`) Goldberg mode from the
+ * provided libsharp-compatible `libsharp_modes`, at angular slice
+ * `radial_offset` (Modes for concentric spherical shells are stored as
+ * consecutive blocks of angular modes). `l_max` must also be specified to
+ * determine the representation details.
+ */
+template <int Spin>
+std::complex<double> libsharp_mode_to_goldberg(
+    size_t l, int m, size_t l_max,
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
+    size_t radial_offset) noexcept;
+
+/*!
+ * \ingroup SwshGroup
+ * \brief Set modes of a libsharp-compatible data structure by specifying the
+ * modes in the \cite Goldberg1966uu representation.
+ *
+ * \details This interface takes a `LibsharpCoefficientInfo`, so that iterating
+ * over the libsharp data structure and performing edits based on the
+ * corresponding Goldberg modes is convenient.
+ *
+ * \param coefficient_info An iterator which stores an \f$l\f$ and \f$|m|\f$
+ * for the mode to be written by the input Goldberg modes. Note that both the
+ * \f$+m\f$ and \f$-m\f$ modes must be simultaneously changed, due to the
+ * representation details. See discussion in `TransformJob` for details.
+ * \param libsharp_modes The libsharp-compatible modal storage to be altered.
+ * \param radial_offset The index of which angular slice is desired. Modes for
+ * concentric spherical shells are stored as consecutive blocks of angular
+ * modes.
+ * \param goldberg_plus_m_mode_value The coefficient in the Goldberg
+ * representation (\f$l\f$, \f$m\f$)
+ * \param goldberg_minus_m_mode_value The coefficient in the Goldberg
+ * representation (\f$l\f$, \f$-m\f$)
+ */
+template <int Spin>
+void goldberg_modes_to_libsharp_modes_single_pair(
+    const LibsharpCoefficientInfo& coefficient_info,
+    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> libsharp_modes,
+    size_t radial_offset, std::complex<double> goldberg_plus_m_mode_value,
+    std::complex<double> goldberg_minus_m_mode_value) noexcept;
+
+/*!
+ * \ingroup SwshGroup
+ * \brief Set modes of a libsharp-compatible data structure by specifying the
+ * modes in the \cite Goldberg1966uu representation.
+ *
+ * \details This interface sets the (\f$l\f$, \f$\pm m\f$), modes in a
+ * libsharp-compatible representation from modes specified in the Goldberg
+ * representation. Note that both the \f$+m\f$ and \f$-m\f$ modes must be
+ * simultaneously changed, due to the representation details. See discussion in
+ * `TransformJob` for details.
+ * \param libsharp_modes The libsharp-compatible modal storage to be altered.
+ * \param radial_offset The index of which angular slice is desired. Modes for
+ * concentric spherical shells are stored as consecutive blocks of angular
+ * modes.
+ * \param goldberg_plus_m_mode_value The coefficient in the Goldberg
+ * representation (\f$l\f$, \f$m\f$)
+ * \param goldberg_minus_m_mode_value The coefficient in the Goldberg
+ * representation (\f$l\f$, \f$-m\f$)
+ * \param l the spherical harmonic \f$l\f$ mode requested
+ * \param m the spherical harmonic \f$m\f$ mode requested
+ * \param l_max the `l_max` for the provided coefficient set
+ */
+template <int Spin>
+void goldberg_modes_to_libsharp_modes_single_pair(
+    size_t l, int m, size_t l_max,
+    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> libsharp_modes,
+    size_t radial_offset, std::complex<double> goldberg_plus_m_mode_value,
+    std::complex<double> goldberg_minus_m_mode_value) noexcept;
+
+// @{
+/*!
+ * \ingroup SwshGroup
+ * \brief Compute the set of Goldberg Spin-weighted spherical harmonic modes (in
+ * the convention of  \cite Goldberg1966uu) from a libsharp-compatible series of
+ * modes.
+ *
+ * \details Modes for concentric spherical shells are stored as consecutive
+ * blocks of angular modes in both representations.
+ */
+template <int Spin>
+void libsharp_to_goldberg_modes(
+    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> goldberg_modes,
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
+    size_t l_max) noexcept;
+
+template <int Spin>
+SpinWeighted<ComplexModalVector, Spin> libsharp_to_goldberg_modes(
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_modes,
+    size_t l_max) noexcept;
+// @}
+
+/*!
+ * \ingroup SwshGroup
+ * \brief Returns the index into a vector of modes consistent with
+ * \cite Goldberg1966uu.
+ *
+ * \details `radial_offset` is used to index into three-dimensional data in
+ * which concentric spherical shells are stored as consecutive blocks of angular
+ * modes. Goldberg modes are stored in an m varies fastest, and ascending
+ * \f$m\f$ and \f$l\f$ values. So, the first several modes are (l, m):
+ *
+ * [(0, 0), (1, -1), (1, 0), (1, 1), (2, -2), ...]
+ */
+constexpr SPECTRE_ALWAYS_INLINE size_t
+goldberg_mode_index(const size_t l_max, const size_t l, const int m,
+                    const size_t radial_offset = 0) noexcept {
+  return static_cast<size_t>(
+      static_cast<int>(square(l_max + 1) * radial_offset + square(l) + l) + m);
+}
+
 }  // namespace Swsh
 }  // namespace Spectral

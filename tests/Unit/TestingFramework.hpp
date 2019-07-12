@@ -103,6 +103,31 @@ static Approx approx =                                          // NOLINT
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief A wrapper around Catch's CHECK macro that checks approximate
+ * equality of the two entries in a std::complex. For efficiency, no function
+ * forwarding is performed, just a pair of `CHECK`s inline
+ */
+#define CHECK_COMPLEX_APPROX(a, b)                                     \
+  do {                                                                 \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b); \
+    CHECK(approx(real(a)) == real(b));                                 \
+    CHECK(approx(imag(a)) == imag(b));                                 \
+  } while (false)
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Same as `CHECK_COMPLEX_APPROX` with user-defined Approx.
+ *  The third argument should be of type `Approx`.
+ */
+#define CHECK_COMPLEX_CUSTOM_APPROX(a, b, appx)                        \
+  do {                                                                 \
+    INFO(__FILE__ ":" + std::to_string(__LINE__) + ": " #a " == " #b); \
+    CHECK(appx(real(a)) == real(b));                                   \
+    CHECK(appx(imag(a)) == imag(b));                                   \
+  } while (false)
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief A wrapper around Catch's CHECK macro that checks approximate
  * equality of entries in iterable containers.  For maplike
  * containers, keys are checked for strict equality and values are
  * checked for approximate equality.
