@@ -77,12 +77,12 @@ std::ostream& operator<<(std::ostream& os, const Basis& basis) noexcept;
  * only to polynomial order \f$p=2N-3\f$, but includes collocation points at the
  * domain boundary.
  *
- * \warning `CellCentered` are intended to be used with the `FiniteDifference`
- * basis (though in principle they could be used with any basis), and thus do
- * not implement differentiation matrices, integration weights, and
- * interpolation matrices.
+ * \warning `CellCentered` and `FaceCentered` are intended to be used with the
+ * `FiniteDifference` basis (though in principle they could be used with any
+ * basis), and thus do not implement differentiation matrices, integration
+ * weights, and interpolation matrices.
  */
-enum class Quadrature { Gauss, GaussLobatto, CellCentered };
+enum class Quadrature { Gauss, GaussLobatto, CellCentered, FaceCentered };
 
 /// \cond HIDDEN_SYMBOLS
 std::ostream& operator<<(std::ostream& os,
@@ -98,6 +98,8 @@ constexpr size_t minimum_number_of_points(
     return 2;
   } else if (quadrature == Quadrature::CellCentered) {
     return 1;
+  } else if (quadrature == Quadrature::FaceCentered) {
+    return 2;
   }
   return std::numeric_limits<size_t>::max();
 }
@@ -110,11 +112,13 @@ constexpr size_t minimum_number_of_points(
  * it must have at least two collocation points. Gauss quadrature can have only
  * one collocation point.
  *
- * \details For `CellCentered` the minimum number of points is 1.
+ * \details For `CellCentered` the minimum number of points is 1, while for
+ * `FaceCentered` it is 2.
  */
 template <Basis basis, Quadrature quadrature>
 constexpr size_t minimum_number_of_points =
     detail::minimum_number_of_points(basis, quadrature);
+
 /*!
  * \brief Maximum number of allowed collocation points.
  *
@@ -161,8 +165,8 @@ double compute_basis_function_normalization_square(size_t k) noexcept;
  * points and the \f$w_k\f$ are defined in the description of
  * `quadrature_weights(size_t)`.
  *
- * \warning for a `FiniteDifference` basis or `CellCentered` quadratures only
- * the collocation points are set, the weights are `NaN`.
+ * \warning for a `FiniteDifference` basis or `CellCentered` and `FaceCentered`
+ * quadratures only the collocation points are set, the weights are `NaN`.
  */
 template <Basis BasisType, Quadrature QuadratureType>
 std::pair<DataVector, DataVector> compute_collocation_points_and_weights(
@@ -200,8 +204,8 @@ const DataVector& collocation_points(const Mesh<1>& mesh) noexcept;
  * Only for a unit weight function \f$w(x)=1\f$, i.e. a Legendre basis, is
  * \f$I[f]=Q[f]\f$ so this function returns the \f$w_k\f$ identically.
  *
- * \warning for a `FiniteDifference` basis or `CellCentered` quadrature the
- * weights are `NaN`.
+ * \warning for a `FiniteDifference` basis or `CellCentered` and `FaceCentered`
+ * quadratures the weights are `NaN`.
  *
  * \param num_points The number of collocation points
  */
@@ -211,8 +215,8 @@ const DataVector& quadrature_weights(size_t num_points) noexcept;
 /*!
  * \brief Quadrature weights for a one-dimensional mesh.
  *
- * \warning for a `FiniteDifference` basis or `CellCentered` quadrature the
- * weights are `NaN`.
+ * \warning for a `FiniteDifference` basis or `CellCentered` and `FaceCentered`
+ * quadratures the weights are `NaN`.
  *
  * \see quadrature_weights(size_t)
  */

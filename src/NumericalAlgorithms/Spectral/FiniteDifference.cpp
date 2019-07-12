@@ -26,6 +26,21 @@ std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
   return std::make_pair(std::move(x), std::move(w));
 }
 
+template <>
+std::pair<DataVector, DataVector> compute_collocation_points_and_weights<
+    Basis::FiniteDifference, Quadrature::FaceCentered>(
+    const size_t num_points) noexcept {
+  DataVector x{num_points};
+  DataVector w{num_points, std::numeric_limits<double>::signaling_NaN()};
+  // The finite difference grid cells cover the interval [-1, 1]
+  constexpr double lower_bound = -1.0, upper_bound = 1.0;
+  const double delta_x = (upper_bound - lower_bound) / (num_points - 1);
+  for (size_t i = 0; i < num_points; ++i) {
+    x[i] = lower_bound + i * delta_x;
+  }
+  return std::make_pair(std::move(x), std::move(w));
+}
+
 // The below definitions are necessary to successfully link with some compilers.
 template <Basis BasisType>
 Matrix spectral_indefinite_integral_matrix(size_t num_points) noexcept;

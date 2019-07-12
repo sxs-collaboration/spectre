@@ -21,5 +21,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.Spectral.Fd.Points",
       collocation_points<Basis::FiniteDifference, Quadrature::CellCentered>(4));
   CHECK(get_output(Basis::FiniteDifference) == "FiniteDifference");
   CHECK(get_output(Quadrature::CellCentered) == "CellCentered");
+
+  CHECK(
+      DataVector{-1.0, 0.0, 1.0} ==
+      collocation_points<Basis::FiniteDifference, Quadrature::FaceCentered>(3));
+  CHECK(
+      DataVector{-1.0, -1.0 / 3.0, 1.0 / 3.0, 1.0} ==
+      collocation_points<Basis::FiniteDifference, Quadrature::FaceCentered>(4));
+  CHECK(get_output(Quadrature::FaceCentered) == "FaceCentered");
 }
 }  // namespace Spectral
