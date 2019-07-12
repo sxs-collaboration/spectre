@@ -46,13 +46,16 @@ void send_points_to_interpolator(
   auto coords = block_logical_coordinates(domain, target_points);
 
   db::mutate<
-      Tags::IndicesOfFilledInterpPoints,
+      Tags::IndicesOfFilledInterpPoints, Tags::IndicesOfInvalidInterpPoints,
       ::Tags::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>(
       make_not_null(&box),
       [&coords](
           const gsl::not_null<db::item_type<Tags::IndicesOfFilledInterpPoints>*>
               indices_of_filled,
+          const gsl::not_null<
+              db::item_type<Tags::IndicesOfInvalidInterpPoints>*>
+              indices_of_invalid_points,
           const gsl::not_null<db::item_type<::Tags::Variables<
               typename InterpolationTargetTag::vars_to_interpolate_to_target>>*>
               vars_dest) noexcept {
@@ -60,6 +63,14 @@ void send_points_to_interpolator(
         // we know that none of these points have been interpolated to,
         // so clear the list.
         indices_of_filled->clear();
+
+        // Set the indices of invalid points.
+        indices_of_invalid_points->clear();
+        for (size_t i = 0; i < coords.size(); ++i) {
+          if (not coords[i]) {
+            indices_of_invalid_points->insert(i);
+          }
+        }
 
         // We will be filling vars_dest with interpolated data.
         // Here we make sure it is allocated to the correct size.
@@ -72,8 +83,7 @@ void send_points_to_interpolator(
 
   auto& receiver_proxy =
       Parallel::get_parallel_component<Interpolator<Metavariables>>(cache);
-  Parallel::simple_action<
-      Actions::ReceivePoints<InterpolationTargetTag>>(
+  Parallel::simple_action<Actions::ReceivePoints<InterpolationTargetTag>>(
       receiver_proxy, temporal_id, std::move(coords));
 }
 

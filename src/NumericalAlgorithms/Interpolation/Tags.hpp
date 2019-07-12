@@ -33,6 +33,17 @@ struct IndicesOfFilledInterpPoints : db::SimpleTag {
   using type = std::unordered_set<size_t>;
 };
 
+/// Keeps track of points that cannot be filled with interpolated data.
+///
+/// The InterpolationTarget can decide what to do with these points.
+/// In most cases the correct action is to throw an error, but in other
+/// cases one might wish to fill these points with a default value or
+/// take some other action.
+struct IndicesOfInvalidInterpPoints : db::SimpleTag {
+  static std::string name() noexcept { return "IndicesOfInvalidInterpPoints"; }
+  using type = std::unordered_set<size_t>;
+};
+
 /// `temporal_id`s on which to interpolate.
 template <typename Metavariables>
 struct TemporalIds : db::SimpleTag {

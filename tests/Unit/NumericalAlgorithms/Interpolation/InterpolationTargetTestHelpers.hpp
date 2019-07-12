@@ -5,6 +5,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <utility>
 #include <vector>
@@ -90,8 +91,9 @@ struct MockReceivePoints {
       Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id,
-      std::vector<IdPair<domain::BlockId,
-                         tnsr::I<double, VolumeDim, typename Frame::Logical>>>&&
+      std::vector<boost::optional<
+          IdPair<domain::BlockId,
+                 tnsr::I<double, VolumeDim, typename Frame::Logical>>>>&&
           block_coord_holders) noexcept {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         make_not_null(&box),
@@ -204,9 +206,10 @@ void test_interpolation_target(
   CHECK(block_coord_holders.size() == number_of_points);
 
   for (size_t i = 0; i < number_of_points; ++i) {
-    CHECK(block_coord_holders[i].id == expected_block_coord_holders[i].id);
-    CHECK_ITERABLE_APPROX(block_coord_holders[i].data,
-                          expected_block_coord_holders[i].data);
+    CHECK(block_coord_holders[i].get().id ==
+          expected_block_coord_holders[i].get().id);
+    CHECK_ITERABLE_APPROX(block_coord_holders[i].get().data,
+                          expected_block_coord_holders[i].get().data);
   }
 
   // Call again at a different temporal_id
@@ -223,9 +226,10 @@ void test_interpolation_target(
   const auto& new_block_coord_holders =
       vars_infos.at(new_temporal_id).block_coord_holders;
   for (size_t i = 0; i < number_of_points; ++i) {
-    CHECK(new_block_coord_holders[i].id == expected_block_coord_holders[i].id);
-    CHECK_ITERABLE_APPROX(new_block_coord_holders[i].data,
-                          expected_block_coord_holders[i].data);
+    CHECK(new_block_coord_holders[i].get().id ==
+          expected_block_coord_holders[i].get().id);
+    CHECK_ITERABLE_APPROX(new_block_coord_holders[i].get().data,
+                          expected_block_coord_holders[i].get().data);
   }
 }
 

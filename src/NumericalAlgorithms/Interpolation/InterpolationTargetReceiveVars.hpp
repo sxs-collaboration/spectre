@@ -230,12 +230,13 @@ struct InterpolationTargetReceiveVars {
           }
         });
 
-    if (db::get<Tags::IndicesOfFilledInterpPoints>(box).size() ==
+    if (db::get<Tags::IndicesOfFilledInterpPoints>(box).size() +
+            db::get<Tags::IndicesOfInvalidInterpPoints>(box).size() ==
         db::get<::Tags::Variables<
             typename InterpolationTargetTag::vars_to_interpolate_to_target>>(
             box)
             .number_of_grid_points()) {
-      // All the points have been interpolated.
+      // All the valid points have been interpolated.
       InterpolationTarget_detail::callback_and_cleanup<InterpolationTargetTag>(
           make_not_null(&box), make_not_null(&cache));
     }
