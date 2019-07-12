@@ -346,7 +346,8 @@ make_neighbor_data_from_neighbor_vars(
     get(get<::Tags::Mean<ScalarTag>>(result)) =
         mean_value(get(get<ScalarTag>(vars_to_average)), mesh);
     for (size_t d = 0; d < VolumeDim; ++d) {
-      mean_value(get<VectorTag<VolumeDim>>(vars_to_average).get(d), mesh);
+      get<::Tags::Mean<VectorTag<VolumeDim>>>(result).get(d) =
+          mean_value(get<VectorTag<VolumeDim>>(vars_to_average).get(d), mesh);
     }
     return result;
   };

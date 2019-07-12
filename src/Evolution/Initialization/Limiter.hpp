@@ -32,7 +32,7 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: nothing
 template <size_t Dim>
-struct MinMod {
+struct Minmod {
   using simple_tags = db::AddSimpleTags<>;
   using compute_tags = tmpl::list<::Tags::SizeOfElement<Dim>>;
 
@@ -45,7 +45,7 @@ struct MinMod {
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     return std::make_tuple(
-        merge_into_databox<MinMod, db::AddSimpleTags<>, compute_tags>(
+        merge_into_databox<Minmod, db::AddSimpleTags<>, compute_tags>(
             std::move(box)));
   }
 };
