@@ -28,3 +28,11 @@ SPECTRE_TEST_CASE("Unit.Burgers.Characteristics", "[Unit][Burgers]") {
     CHECK(db::get<Burgers::Tags::CharacteristicSpeedsCompute>(box)[0] == -4.0);
   }
 }
+
+SPECTRE_TEST_CASE("Unit.Burgers.ComputeLargestCharacteristicSpeed",
+                  "[Unit][Burgers]") {
+  CHECK(Burgers::ComputeLargestCharacteristicSpeed::apply(
+            Scalar<DataVector>{{{{1., 2., 4., 3.}}}}) == 4.);
+  CHECK(Burgers::ComputeLargestCharacteristicSpeed::apply(
+            Scalar<DataVector>{{{{1., 2., 4., -5.}}}}) == 5.);
+}

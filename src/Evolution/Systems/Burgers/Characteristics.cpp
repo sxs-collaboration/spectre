@@ -3,11 +3,11 @@
 
 #include "Evolution/Systems/Burgers/Characteristics.hpp"
 
+#include <array>
 #include <ostream>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "ErrorHandling/Assert.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -26,5 +26,10 @@ void CharacteristicSpeedsCompute::function(
   gsl::at(*result, 0) = get<0>(normal)[0] > 0.0 ? get(u) : -get(u);
 }
 }  // namespace Tags
+
+double ComputeLargestCharacteristicSpeed::apply(
+    const Scalar<DataVector>& u) noexcept {
+  return max(abs(get(u)));
+}
 }  // namespace Burgers
 /// \endcond

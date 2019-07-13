@@ -5,7 +5,6 @@ set(LIBRARY "Test_Burgers")
 
 set(LIBRARY_SOURCES
   Test_Characteristics.cpp
-  Test_Equations.cpp
   Test_Fluxes.cpp
   )
 

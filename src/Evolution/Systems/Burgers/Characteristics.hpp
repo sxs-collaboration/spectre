@@ -7,7 +7,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -36,4 +36,9 @@ struct CharacteristicSpeedsCompute : db::ComputeTag {
                        const tnsr::i<DataVector, 1>& normal) noexcept;
 };
 }  // namespace Tags
+
+struct ComputeLargestCharacteristicSpeed {
+  using argument_tags = tmpl::list<Tags::U>;
+  static double apply(const Scalar<DataVector>& u) noexcept;
+};
 }  // namespace Burgers
