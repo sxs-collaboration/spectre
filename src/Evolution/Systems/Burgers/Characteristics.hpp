@@ -8,6 +8,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/FaceNormal.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -27,11 +28,12 @@ namespace Tags {
 struct CharacteristicSpeedsCompute : db::ComputeTag {
   static std::string name() noexcept { return "CharacteristicSpeeds"; }
 
-  using argument_tags = tmpl::list<Tags::U>;
+  using argument_tags = tmpl::list<Tags::U, ::Tags::UnnormalizedFaceNormal<1>>;
 
   using return_type = std::array<DataVector, 1>;
   static void function(gsl::not_null<return_type*> result,
-                       const Scalar<DataVector>& u) noexcept;
+                       const Scalar<DataVector>& u,
+                       const tnsr::i<DataVector, 1>& normal) noexcept;
 };
 }  // namespace Tags
 }  // namespace Burgers
