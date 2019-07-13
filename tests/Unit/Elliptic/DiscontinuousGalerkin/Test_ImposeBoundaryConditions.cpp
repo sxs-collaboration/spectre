@@ -200,7 +200,7 @@ struct ElementArray {
       Tags::BoundaryDirectionsInterior<Dim>,
       boundary_compute_tag<Tags::Direction<Dim>>,
       boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
-      boundary_compute_tag<Tags::UnnormalizedFaceNormal<Dim>>,
+      boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,
       boundary_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       boundary_compute_tag<
@@ -209,7 +209,7 @@ struct ElementArray {
       exterior_boundary_compute_tag<Tags::Direction<Dim>>,
       exterior_boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
       exterior_boundary_compute_tag<Tags::BoundaryCoordinates<Dim>>,
-      exterior_boundary_compute_tag<Tags::UnnormalizedFaceNormal<Dim>>,
+      exterior_boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,
       exterior_boundary_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       exterior_boundary_compute_tag<

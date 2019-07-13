@@ -101,7 +101,7 @@ using arguments_compute_tags = db::AddComputeTags<
     Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<Dim>,
                                Tags::BoundaryCoordinates<Dim, Frame::Inertial>>,
     Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<Dim>,
-                               Tags::UnnormalizedFaceNormal<Dim>>,
+                               Tags::UnnormalizedFaceNormalCompute<Dim>>,
     Tags::InterfaceComputeItem<
         Tags::BoundaryDirectionsInterior<Dim>,
         Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,

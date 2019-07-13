@@ -116,7 +116,7 @@ struct component {
   using compute_tags = db::AddComputeTags<
       Tags::InternalDirections<2>, interface_compute_tag<Tags::Direction<2>>,
       interface_compute_tag<Tags::InterfaceMesh<2>>,
-      interface_compute_tag<Tags::UnnormalizedFaceNormal<2>>,
+      interface_compute_tag<Tags::UnnormalizedFaceNormalCompute<2>>,
       interface_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
       interface_compute_tag<

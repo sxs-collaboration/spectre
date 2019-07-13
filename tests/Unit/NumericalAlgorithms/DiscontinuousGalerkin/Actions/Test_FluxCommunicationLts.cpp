@@ -173,7 +173,7 @@ struct lts_component {
       Tags::InternalDirections<Dim>,
       interface_compute_tag<Dim, Tags::Direction<Dim>>,
       interface_compute_tag<Dim, Tags::InterfaceMesh<Dim>>,
-      interface_compute_tag<Dim, Tags::UnnormalizedFaceNormal<Dim>>,
+      interface_compute_tag<Dim, Tags::UnnormalizedFaceNormalCompute<Dim>>,
       interface_compute_tag<
           Dim, Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       interface_compute_tag<
