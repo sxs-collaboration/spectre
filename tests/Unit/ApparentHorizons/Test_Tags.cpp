@@ -56,7 +56,7 @@ void test_radius_and_derivs() {
       create_strahlkorper_y11(y11_amplitude, radius, center);
 
   // Now construct a Y00 + Im(Y11) surface by hand.
-  const auto& theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
+  const auto theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
   const auto& theta_points = strahlkorper.ylm_spherepack().theta_points();
   const auto& phi_points = strahlkorper.ylm_spherepack().phi_points();
   const auto n_pts = theta_phi[0].size();
@@ -168,7 +168,7 @@ void test_normals() {
   const auto strahlkorper =
       create_strahlkorper_y11(y11_amplitude, radius, center);
 
-  const auto& theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
+  const auto theta_phi = strahlkorper.ylm_spherepack().theta_phi_points();
   const auto n_pts = theta_phi[0].size();
 
   // Test surface_tangents
@@ -278,7 +278,7 @@ void test_normals() {
         square(r);
     return sqrt(normsquared);
   }();
-  const auto& normal_mag = magnitude(normal_one_form, invg);
+  const auto normal_mag = magnitude(normal_one_form, invg);
   CHECK_ITERABLE_APPROX(expected_normal_mag, get(normal_mag));
 }
 }  // namespace

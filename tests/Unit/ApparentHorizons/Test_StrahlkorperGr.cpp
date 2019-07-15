@@ -585,7 +585,7 @@ void test_spin_function(const Solution& solution,
   const auto& deriv_spatial_metric =
       get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars);
-  const auto& extrinsic_curvature = gr::extrinsic_curvature(
+  const auto extrinsic_curvature = gr::extrinsic_curvature(
       get<gr::Tags::Lapse<DataVector>>(vars),
       get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
       get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
@@ -598,7 +598,7 @@ void test_spin_function(const Solution& solution,
   const auto& tangents =
       db::get<StrahlkorperTags::Tangents<Frame::Inertial>>(box);
 
-  const auto& spin_function = StrahlkorperGr::spin_function(
+  const auto spin_function = StrahlkorperGr::spin_function(
       tangents, ylm, unit_normal_vector, area_element, extrinsic_curvature);
 
   auto integrand = spin_function;
@@ -658,7 +658,7 @@ void test_dimensionful_spin_magnitude(
   const auto& deriv_spatial_metric =
       get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars);
-  const auto& extrinsic_curvature = gr::extrinsic_curvature(
+  const auto extrinsic_curvature = gr::extrinsic_curvature(
       get<gr::Tags::Lapse<DataVector>>(vars),
       get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
       get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
@@ -743,7 +743,7 @@ void test_spin_vector(
   const auto& deriv_spatial_metric =
       get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars);
-  const auto& extrinsic_curvature = gr::extrinsic_curvature(
+  const auto extrinsic_curvature = gr::extrinsic_curvature(
       get<gr::Tags::Lapse<DataVector>>(vars),
       get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
       get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
@@ -756,7 +756,7 @@ void test_spin_vector(
   const auto& tangents =
       db::get<StrahlkorperTags::Tangents<Frame::Inertial>>(box);
 
-  const auto& spin_function = StrahlkorperGr::spin_function(
+  const auto spin_function = StrahlkorperGr::spin_function(
       tangents, ylm, unit_normal_vector, area_element, extrinsic_curvature);
 
   const auto ricci_scalar = TestHelpers::Kerr::horizon_ricci_scalar(

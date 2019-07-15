@@ -189,7 +189,7 @@ struct negate {
 struct negate_if_sum_less {
   template <typename T, typename Index, typename S>
   void operator()(const T& element, Index /*index*/, S& second_tuple_element,
-                  gsl::not_null<double*> state,
+                  const gsl::not_null<double*> state,
                   const std::string& test_sentence,
                   const std::string& test_sentence2) const noexcept(false) {
     CHECK(test_sentence == "test sentence");

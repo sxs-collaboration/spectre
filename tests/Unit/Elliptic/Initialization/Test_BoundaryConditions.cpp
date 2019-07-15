@@ -66,7 +66,7 @@ struct AnalyticSolution {
 template <size_t Dim>
 struct NumericalFlux {
   void compute_dirichlet_boundary(
-      gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
+      const gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
       const Scalar<DataVector>& field,
       const tnsr::i<DataVector, Dim,
                     Frame::Inertial>& /*interface_unit_normal*/) const

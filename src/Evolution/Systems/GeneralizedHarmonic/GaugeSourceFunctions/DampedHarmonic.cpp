@@ -38,7 +38,7 @@ void weight_function(const gsl::not_null<Scalar<DataType>*> weight,
   if (UNLIKELY(get_size(get(*weight)) != get_size(get<0>(coords)))) {
     *weight = Scalar<DataType>(get_size(get<0>(coords)));
   }
-  const auto& r_squared = dot_product(coords, coords);
+  const auto r_squared = dot_product(coords, coords);
   get(*weight) = exp(-get(r_squared) / pow<2>(sigma_r));
 }
 

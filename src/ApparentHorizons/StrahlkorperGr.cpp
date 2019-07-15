@@ -636,11 +636,11 @@ double dimensionful_spin_magnitude(
     const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept {
   const Scalar<DataVector> sin_theta{sin(ylm.theta_phi_points()[0])};
 
-  const auto& surface_metric =
+  const auto surface_metric =
       get_surface_metric(spatial_metric, tangents, sin_theta);
-  const auto& inverse_surface_metric =
+  const auto inverse_surface_metric =
       determinant_and_inverse(surface_metric).second;
-  const auto& trace_christoffel_second_kind = get_trace_christoffel_second_kind(
+  const auto trace_christoffel_second_kind = get_trace_christoffel_second_kind(
       surface_metric, inverse_surface_metric, sin_theta, ylm);
 
   const size_t matrix_dimension = get_matrix_dimension(ylm);
@@ -662,7 +662,7 @@ double dimensionful_spin_magnitude(
 
   // Get normalized potentials (Kerr normalization) corresponding to the
   // eigenvectors with three smallest-magnitude eigenvalues.
-  const auto& potentials =
+  const auto potentials =
       get_normalized_spin_potentials(smallest_eigenvectors, ylm, area_element);
 
   return get_spin_magnitude(potentials, spin_function, area_element, ylm);

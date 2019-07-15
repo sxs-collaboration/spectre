@@ -22,10 +22,10 @@ namespace {
 template <size_t Dim>
 struct PrimitiveFromConservativeProxyThermoDim1 {
   static void apply_helper(
-      gsl::not_null<Scalar<DataVector>*> mass_density,
-      gsl::not_null<tnsr::I<DataVector, Dim>*> velocity,
-      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-      gsl::not_null<Scalar<DataVector>*> pressure,
+      const gsl::not_null<Scalar<DataVector>*> mass_density,
+      const gsl::not_null<tnsr::I<DataVector, Dim>*> velocity,
+      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+      const gsl::not_null<Scalar<DataVector>*> pressure,
       const Scalar<DataVector>& mass_density_cons,
       const tnsr::I<DataVector, Dim>& momentum_density,
       const Scalar<DataVector>& energy_density) noexcept {
@@ -39,10 +39,10 @@ struct PrimitiveFromConservativeProxyThermoDim1 {
 template <size_t Dim>
 struct PrimitiveFromConservativeProxyThermoDim2 {
   static void apply_helper(
-      gsl::not_null<Scalar<DataVector>*> mass_density,
-      gsl::not_null<tnsr::I<DataVector, Dim>*> velocity,
-      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-      gsl::not_null<Scalar<DataVector>*> pressure,
+      const gsl::not_null<Scalar<DataVector>*> mass_density,
+      const gsl::not_null<tnsr::I<DataVector, Dim>*> velocity,
+      const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+      const gsl::not_null<Scalar<DataVector>*> pressure,
       const Scalar<DataVector>& mass_density_cons,
       const tnsr::I<DataVector, Dim>& momentum_density,
       const Scalar<DataVector>& energy_density) noexcept {

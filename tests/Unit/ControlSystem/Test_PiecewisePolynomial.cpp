@@ -26,7 +26,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial",
   FunctionOfTime& f_of_t = f_of_t_derived;
 
   while (t < final_time) {
-    const auto& lambdas0 = f_of_t.func_and_2_derivs(t);
+    const auto lambdas0 = f_of_t.func_and_2_derivs(t);
     CHECK(approx(lambdas0[0][0]) == cube(t));
     CHECK(approx(lambdas0[0][1]) == square(t));
     CHECK(approx(lambdas0[1][0]) == 3.0 * square(t));
@@ -34,13 +34,13 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial",
     CHECK(approx(lambdas0[2][0]) == 6.0 * t);
     CHECK(approx(lambdas0[2][1]) == 2.0);
 
-    const auto& lambdas1 = f_of_t.func_and_deriv(t);
+    const auto lambdas1 = f_of_t.func_and_deriv(t);
     CHECK(approx(lambdas1[0][0]) == cube(t));
     CHECK(approx(lambdas1[0][1]) == square(t));
     CHECK(approx(lambdas1[1][0]) == 3.0 * square(t));
     CHECK(approx(lambdas1[1][1]) == 2.0 * t);
 
-    const auto& lambdas2 = f_of_t.func(t);
+    const auto lambdas2 = f_of_t.func(t);
     CHECK(approx(lambdas2[0][0]) == cube(t));
     CHECK(approx(lambdas2[0][1]) == square(t));
 
@@ -48,7 +48,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial",
     f_of_t_derived.update(t, {6.0, 0.0});
   }
   // test time_bounds function
-  const auto& t_bounds = f_of_t.time_bounds();
+  const auto t_bounds = f_of_t.time_bounds();
   CHECK(t_bounds[0] == 0.0);
   CHECK(t_bounds[1] == 4.2);
 }
@@ -72,14 +72,14 @@ SPECTRE_TEST_CASE(
     t += dt;
     f_of_t_derived.update(t, {3.0 + t});
   }
-  const auto& lambdas0 = f_of_t.func_and_2_derivs(t);
+  const auto lambdas0 = f_of_t.func_and_2_derivs(t);
   CHECK(approx(lambdas0[0][0]) == 33.948);
   CHECK(approx(lambdas0[1][0]) == 19.56);
   CHECK(approx(lambdas0[2][0]) == 7.2);
-  const auto& lambdas1 = f_of_t.func_and_deriv(t);
+  const auto lambdas1 = f_of_t.func_and_deriv(t);
   CHECK(approx(lambdas1[0][0]) == 33.948);
   CHECK(approx(lambdas1[1][0]) == 19.56);
-  const auto& lambdas2 = f_of_t.func(t);
+  const auto lambdas2 = f_of_t.func(t);
   CHECK(approx(lambdas2[0][0]) == 33.948);
 
   CHECK(lambdas0.size() == 3);
@@ -96,19 +96,19 @@ SPECTRE_TEST_CASE(
   FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(1.0, init_func);
   f_of_t.update(2.0, {6.0, 0.0});
 
-  const auto& lambdas0 = f_of_t.func_and_2_derivs(1.0 - 5.0e-16);
+  const auto lambdas0 = f_of_t.func_and_2_derivs(1.0 - 5.0e-16);
   CHECK(approx(lambdas0[0][0]) == 1.0);
   CHECK(approx(lambdas0[1][0]) == 3.0);
   CHECK(approx(lambdas0[2][0]) == 6.0);
   CHECK(approx(lambdas0[0][1]) == 1.0);
   CHECK(approx(lambdas0[1][1]) == 2.0);
   CHECK(approx(lambdas0[2][1]) == 2.0);
-  const auto& lambdas1 = f_of_t.func_and_deriv(1.0 - 5.0e-16);
+  const auto lambdas1 = f_of_t.func_and_deriv(1.0 - 5.0e-16);
   CHECK(approx(lambdas1[0][0]) == 1.0);
   CHECK(approx(lambdas1[1][0]) == 3.0);
   CHECK(approx(lambdas1[0][1]) == 1.0);
   CHECK(approx(lambdas1[1][1]) == 2.0);
-  const auto& lambdas2 = f_of_t.func(1.0 - 5.0e-16);
+  const auto lambdas2 = f_of_t.func(1.0 - 5.0e-16);
   CHECK(approx(lambdas2[0][0]) == 1.0);
   CHECK(approx(lambdas2[0][1]) == 1.0);
 }

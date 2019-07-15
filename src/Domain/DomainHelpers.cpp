@@ -273,7 +273,7 @@ void set_cartesian_periodic_boundaries(
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
-    gsl::not_null<
+    const gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks) noexcept {
   ASSERT(orientations_of_all_blocks.size() == corners_of_all_blocks.size(),
@@ -369,7 +369,7 @@ template <size_t VolumeDim>
 void set_internal_boundaries(
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    gsl::not_null<
+    const gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks) noexcept {
   for (size_t block1_index = 0; block1_index < corners_of_all_blocks.size();
@@ -401,7 +401,7 @@ void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
-    gsl::not_null<
+    const gsl::not_null<
         std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>*>
         neighbors_of_all_blocks) noexcept {
   for (const auto& pair : identifications) {
@@ -1008,7 +1008,7 @@ Domain<VolumeDim, TargetFrame> rectilinear_domain(
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks,
     const std::array<bool, VolumeDim>& dimension_is_periodic,
     const std::vector<PairOfFaces>& identifications,
-    bool use_equiangular_map) noexcept {
+    const bool use_equiangular_map) noexcept {
   std::vector<Block<VolumeDim, TargetFrame>> blocks{};
   auto corners_of_all_blocks =
       corners_for_rectilinear_domains(domain_extents, block_indices_to_exclude);
@@ -1073,31 +1073,31 @@ ShellWedges create_from_yaml<ShellWedges>::create<void>(const Option& options) {
 
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
-    gsl::not_null<std::vector<DirectionMap<1, BlockNeighbor<1>>>*>
+    const gsl::not_null<std::vector<DirectionMap<1, BlockNeighbor<1>>>*>
         neighbors_of_all_blocks) noexcept;
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
-    gsl::not_null<std::vector<DirectionMap<2, BlockNeighbor<2>>>*>
+    const gsl::not_null<std::vector<DirectionMap<2, BlockNeighbor<2>>>*>
         neighbors_of_all_blocks) noexcept;
 template void set_internal_boundaries(
     const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
-    gsl::not_null<std::vector<DirectionMap<3, BlockNeighbor<3>>>*>
+    const gsl::not_null<std::vector<DirectionMap<3, BlockNeighbor<3>>>*>
         neighbors_of_all_blocks) noexcept;
 
 template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
-    gsl::not_null<std::vector<DirectionMap<1, BlockNeighbor<1>>>*>
+    const gsl::not_null<std::vector<DirectionMap<1, BlockNeighbor<1>>>*>
         neighbors_of_all_blocks) noexcept;
 template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
-    gsl::not_null<std::vector<DirectionMap<2, BlockNeighbor<2>>>*>
+    const gsl::not_null<std::vector<DirectionMap<2, BlockNeighbor<2>>>*>
         neighbors_of_all_blocks) noexcept;
 template void set_identified_boundaries(
     const std::vector<PairOfFaces>& identifications,
     const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
-    gsl::not_null<std::vector<DirectionMap<3, BlockNeighbor<3>>>*>
+    const gsl::not_null<std::vector<DirectionMap<3, BlockNeighbor<3>>>*>
         neighbors_of_all_blocks) noexcept;
 template std::vector<std::array<size_t, 2>> corners_for_rectilinear_domains(
     const Index<1>& domain_extents,
@@ -1176,7 +1176,7 @@ frustum_coordinate_maps(const double length_inner_cube,
           orientations_of_all_blocks,                                       \
       const std::array<bool, DIM(data)>& dimension_is_periodic,             \
       const std::vector<PairOfFaces>& identifications,                      \
-      bool use_equiangular_map) noexcept;
+      const bool use_equiangular_map) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
 

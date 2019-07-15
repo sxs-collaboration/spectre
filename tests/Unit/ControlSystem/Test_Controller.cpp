@@ -49,7 +49,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
         {{std::sin(freq * t)},
          {freq * std::cos(freq * t)},
          {-square(freq) * std::sin(freq * t)}}};
-    const auto& lambda = f_of_t.func_and_2_derivs(t);
+    const auto lambda = f_of_t.func_and_2_derivs(t);
     // check that the error is within the specified tolerance, which is
     // maintained by the TimescaleTuner adjusting the damping time
     CHECK(fabs(target_func[0][0] - lambda[0][0]) <
@@ -112,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets",
         {{std::sin(freq * t)},
          {freq * std::cos(freq * t)},
          {-square(freq) * std::sin(freq * t)}}};
-    const auto& lambda = f_of_t.func_and_2_derivs(t);
+    const auto lambda = f_of_t.func_and_2_derivs(t);
     // check that the error is within the specified tolerance, which is
     // maintained by the TimescaleTuner adjusting the damping time
     CHECK(fabs(target_func[0][0] - lambda[0][0]) <
@@ -189,7 +189,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets_DontAverageQ",
         {{std::sin(freq * t)},
          {freq * std::cos(freq * t)},
          {-square(freq) * std::sin(freq * t)}}};
-    const auto& lambda = f_of_t.func_and_2_derivs(t);
+    const auto lambda = f_of_t.func_and_2_derivs(t);
     // check that the error is within the specified tolerance, which is
     // maintained by the TimescaleTuner adjusting the damping time
     CHECK(fabs(target_func[0][0] - lambda[0][0]) <

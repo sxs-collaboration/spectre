@@ -18,7 +18,7 @@
 
 template <size_t MaxDeriv>
 FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
-    double t, value_type initial_func_and_derivs) noexcept
+    const double t, value_type initial_func_and_derivs) noexcept
     : deriv_info_at_update_times_{{t, std::move(initial_func_and_derivs)}} {}
 
 template <size_t MaxDeriv>
@@ -79,8 +79,8 @@ void FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::update(
 
 template <size_t MaxDeriv>
 FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::DerivInfo::DerivInfo(
-    double t, value_type deriv) noexcept : time(t),
-                                           derivs_coefs(std::move(deriv)) {
+    const double t, value_type deriv) noexcept
+    : time(t), derivs_coefs(std::move(deriv)) {
   // convert derivs to coefficients for polynomial evaluation.
   // the coefficient of x^N is the Nth deriv rescaled by 1/factorial(N)
   double fact = 1.0;

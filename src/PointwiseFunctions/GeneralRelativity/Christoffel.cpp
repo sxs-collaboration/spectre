@@ -53,7 +53,7 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
       const tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>& \
           d_metric) noexcept;                                                \
   template void gr::christoffel_first_kind(                                  \
-      gsl::not_null<                                                         \
+      const gsl::not_null<                                                   \
           tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>*>  \
           christoffel,                                                       \
       const tnsr::abb<DTYPE(data), DIM(data), FRAME(data), INDEXTYPE(data)>& \

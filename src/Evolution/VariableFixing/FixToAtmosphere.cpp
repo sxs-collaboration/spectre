@@ -40,12 +40,13 @@ void FixToAtmosphere<ThermodynamicDim>::pup(PUP::er& p) noexcept {  // NOLINT
 
 template <>
 void FixToAtmosphere<1>::operator()(
-    gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-    gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
-    gsl::not_null<Scalar<DataVector>*> lorentz_factor,
-    gsl::not_null<Scalar<DataVector>*> pressure,
-    gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+    const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+    const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        spatial_velocity,
+    const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+    const gsl::not_null<Scalar<DataVector>*> pressure,
+    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state) const
     noexcept {
   for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
@@ -69,12 +70,13 @@ void FixToAtmosphere<1>::operator()(
 
 template <>
 void FixToAtmosphere<2>::operator()(
-    gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-    gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> spatial_velocity,
-    gsl::not_null<Scalar<DataVector>*> lorentz_factor,
-    gsl::not_null<Scalar<DataVector>*> pressure,
-    gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+    const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+    const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+        spatial_velocity,
+    const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+    const gsl::not_null<Scalar<DataVector>*> pressure,
+    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
     const EquationsOfState::EquationOfState<true, 2>& equation_of_state) const
     noexcept {
   for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
