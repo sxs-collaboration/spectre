@@ -158,7 +158,8 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
-                  tmpl::list<observers::Actions::RegisterWithObservers<
+                  tmpl::list<Actions::AdvanceTime,
+                             observers::Actions::RegisterWithObservers<
                                  observers::RegisterObservers<
                                      element_observation_type>>,
                              Parallel::Actions::TerminatePhase>>,
@@ -171,11 +172,11 @@ struct EvolutionMetavars {
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
                   tmpl::flatten<tmpl::list<
-                      Actions::AdvanceTime, Actions::RunEventsAndTriggers,
+                      Actions::RunEventsAndTriggers,
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables>>>>,
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>,
           Parallel::ForwardAllOptionsToDataBox<
               Initialization::option_tags<initialization_actions>>>>;
 
