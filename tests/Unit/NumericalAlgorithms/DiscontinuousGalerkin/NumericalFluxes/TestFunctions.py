@@ -23,7 +23,8 @@ def apply_var_1_hll_flux(ndotf_1_int, ndotf_2_int, ndotf_3_int, ndotf_4_int,
                          minus_ndotf_3_ext, minus_ndotf_4_ext,
                          var_1_ext, var_2_ext, var_3_ext, var_4_ext):
     char_speeds = (characteristic_speeds(var_1_int, var_2_int, var_3_int) +
-                   characteristic_speeds(var_1_ext, var_2_ext, var_3_ext) +
+                   [-c for c in
+                    characteristic_speeds(var_1_ext, var_2_ext, var_3_ext)] +
                    [0.0])
     return hll_flux(ndotf_1_int, minus_ndotf_1_ext, var_1_int, var_1_ext,
                     min(char_speeds), max(char_speeds))
@@ -35,7 +36,8 @@ def apply_var_2_hll_flux(ndotf_1_int, ndotf_2_int, ndotf_3_int, ndotf_4_int,
                          minus_ndotf_3_ext, minus_ndotf_4_ext,
                          var_1_ext, var_2_ext, var_3_ext, var_4_ext):
     char_speeds = (characteristic_speeds(var_1_int, var_2_int, var_3_int) +
-                   characteristic_speeds(var_1_ext, var_2_ext, var_3_ext) +
+                   [-c for c in
+                    characteristic_speeds(var_1_ext, var_2_ext, var_3_ext)] +
                    [0.0])
     return hll_flux(ndotf_2_int, minus_ndotf_2_ext, var_2_int, var_2_ext,
                     min(char_speeds), max(char_speeds))
@@ -47,7 +49,8 @@ def apply_var_3_hll_flux(ndotf_1_int, ndotf_2_int, ndotf_3_int, ndotf_4_int,
                          minus_ndotf_3_ext, minus_ndotf_4_ext,
                          var_1_ext, var_2_ext, var_3_ext, var_4_ext):
     char_speeds = (characteristic_speeds(var_1_int, var_2_int, var_3_int) +
-                   characteristic_speeds(var_1_ext, var_2_ext, var_3_ext) +
+                   [-c for c in
+                    characteristic_speeds(var_1_ext, var_2_ext, var_3_ext)] +
                    [0.0])
     return hll_flux(ndotf_3_int, minus_ndotf_3_ext, var_3_int, var_3_ext,
                     min(char_speeds), max(char_speeds))
@@ -59,7 +62,8 @@ def apply_var_4_hll_flux(ndotf_1_int, ndotf_2_int, ndotf_3_int, ndotf_4_int,
                          minus_ndotf_3_ext, minus_ndotf_4_ext,
                          var_1_ext, var_2_ext, var_3_ext, var_4_ext):
     char_speeds = (characteristic_speeds(var_1_int, var_2_int, var_3_int) +
-                   characteristic_speeds(var_1_ext, var_2_ext, var_3_ext) +
+                   [-c for c in
+                    characteristic_speeds(var_1_ext, var_2_ext, var_3_ext)] +
                    [0.0])
     return hll_flux(ndotf_4_int, minus_ndotf_4_ext, var_4_int, var_4_ext,
                     min(char_speeds), max(char_speeds))
