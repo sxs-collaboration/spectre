@@ -14,7 +14,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/Gsl.hpp"
 
-/// Items for initializing the DataBox%es of parallel components
+namespace domain {
 namespace Initialization {
 /// \ingroup InitializationGroup
 /// \brief Construct the initial Mesh of an Element.
@@ -28,7 +28,7 @@ namespace Initialization {
 /// \param element_id id of an Element or its neighbor
 /// \param orientation OrientationMap of (neighboring) `element_id`
 template <size_t Dim>
-Mesh<Dim> element_mesh(
+Mesh<Dim> create_initial_mesh(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const ElementId<Dim>& element_id,
     const OrientationMap<Dim>& orientation = {}) noexcept {
@@ -41,3 +41,4 @@ Mesh<Dim> element_mesh(
           Spectral::Quadrature::GaussLobatto};
 }
 }  // namespace Initialization
+}  // namespace domain

@@ -13,6 +13,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "Domain/CreateInitialMesh.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/Mesh.hpp"
@@ -20,7 +21,6 @@
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Conservative/Tags.hpp"
-#include "Evolution/Initialization/Helpers.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
@@ -109,10 +109,12 @@ struct DiscontinuousGalerkin {
         mortar_data[mortar_id];  // Default initialize data
         mortar_next_temporal_ids.insert({mortar_id, temporal_id});
         mortar_meshes.emplace(
-            mortar_id, dg::mortar_mesh(mesh.slice_away(direction.dimension()),
-                                       element_mesh(initial_extents, neighbor,
-                                                    neighbors.orientation())
-                                           .slice_away(direction.dimension())));
+            mortar_id,
+            dg::mortar_mesh(
+                mesh.slice_away(direction.dimension()),
+                domain::Initialization::create_initial_mesh(
+                    initial_extents, neighbor, neighbors.orientation())
+                    .slice_away(direction.dimension())));
         mortar_sizes.emplace(
             mortar_id,
             dg::mortar_size(element.id(), neighbor, direction.dimension(),

@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Domain/CreateInitialElement.hpp"
+#include "Domain/CreateInitialMesh.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
@@ -20,7 +21,6 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Initialization/Helpers.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/Requires.hpp"
@@ -87,7 +87,8 @@ struct Domain {
         db::get<Tags::Domain<Dim>>(box);
     const ElementId<Dim> element_id{array_index};
     const auto& my_block = domain.blocks()[element_id.block_id()];
-    Mesh<Dim> mesh = element_mesh(initial_extents, element_id);
+    Mesh<Dim> mesh = domain::Initialization::create_initial_mesh(
+        initial_extents, element_id);
     Element<Dim> element =
         domain::Initialization::create_initial_element(element_id, my_block);
     ElementMap<Dim, Frame::Inertial> map{element_id,
