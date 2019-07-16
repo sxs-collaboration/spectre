@@ -21,11 +21,11 @@
 #include "Domain/Tags.hpp"
 #include "Evolution/Conservative/Tags.hpp"
 #include "Evolution/Initialization/Helpers.hpp"
-#include "Evolution/Initialization/MergeIntoDataBox.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -4,15 +4,15 @@
 set(LIBRARY "Test_Initialization")
 
 set(LIBRARY_SOURCES
-  Test_Initialize.cpp
+  Actions/Test_RemoveOptionsAndTerminatePhase.cpp
   Test_MergeIntoDataBox.cpp
   )
 
 add_test_library(
   ${LIBRARY}
-  "Evolution/Initialization/"
+  "ParallelAlgorithms/Initialization/"
   "${LIBRARY_SOURCES}"
-  "DataStructures;Domain;ErrorHandling;Utilities"
+  "DataStructures;ErrorHandling;Utilities"
   )
 
 add_dependencies(

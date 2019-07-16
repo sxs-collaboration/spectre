@@ -41,11 +41,11 @@ using option_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
 /// `Initialization::Actions::RemoveOptionsAndTerminatePhase` action. For
 /// example,
 ///
-/// \snippet Evolution/Initialization/Test_Initialize.cpp actions
+/// \snippet Test_RemoveOptionsAndTerminatePhase.cpp actions
 ///
 /// The parallel component's `add_options_to_databox` will typically just be:
 ///
-/// \snippet Evolution/Initialization/Test_Initialize.cpp options_to_databox
+/// \snippet Test_RemoveOptionsAndTerminatePhase.cpp options_to_databox
 ///
 namespace Actions {
 /// \ingroup InitializationGroup
