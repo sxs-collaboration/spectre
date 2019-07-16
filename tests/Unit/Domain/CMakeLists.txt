@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_BlockNeighbor.cpp
   Test_CoordinatesTag.cpp
   Test_CreateInitialElement.cpp
+  Test_CreateInitialMesh.cpp
   Test_Direction.cpp
   Test_Domain.cpp
   Test_DomainHelpers.cpp

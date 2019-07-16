@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   BlockLogicalCoordinates.cpp
   BlockNeighbor.cpp
   CreateInitialElement.cpp
+  CreateInitialMesh.cpp
   Direction.cpp
   Domain.cpp
   DomainHelpers.cpp
