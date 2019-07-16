@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_LiftFlux.cpp
   Test_MortarHelpers.cpp
   Test_SimpleBoundaryData.cpp
+  Test_Tags.cpp
   )
 
 add_subdirectory(Actions)
