@@ -1,0 +1,13 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: PrintMinimumGridSpacing1D
+# Check: execute
+
+DomainCreator:
+  Interval:
+    LowerBound: [0]
+    UpperBound: [1]
+    IsPeriodicIn: [false]
+    InitialRefinement: [1]
+    InitialGridPoints: [3]

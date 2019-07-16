@@ -1,0 +1,12 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: PrintMinimumGridSpacing3D
+# Check: execute
+
+DomainCreator:
+  Shell:
+    InnerRadius: 1.
+    OuterRadius: 3.
+    InitialRefinement: 1
+    InitialGridPoints: [3, 3]
