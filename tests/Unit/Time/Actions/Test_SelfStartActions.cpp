@@ -337,14 +337,23 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
   }
   {
     INFO("Cleanup");
+    // Make sure we reach Cleanup to check the flow is sane...
     run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
              not_self_start_action>(make_not_null(&runner));
+    // ...and then finish the procedure.
+    while (not ActionTesting::get_terminate<Component<Metavariables<>>>(runner,
+                                                                        0)) {
+      ActionTesting::next_action<Component<Metavariables<>>>(
+          make_not_null(&runner), 0);
+    }
     const auto& box =
         ActionTesting::get_databox<Component<Metavariables<>>,
                                    tmpl::append<simple_tags, compute_tags>>(
             runner, 0);
     CHECK(db::get<Var>(box) == initial_value);
     CHECK(db::get<Tags::TimeStep>(box) == initial_time_step);
+    CHECK(db::get<Tags::Next<Tags::TimeId>>(box) ==
+          TimeId(forward_in_time, 0, initial_time));
     CHECK(db::get<history_tag>(box).size() == order - 1);
   }
 }
