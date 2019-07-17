@@ -16,14 +16,6 @@ std::string git_commit_hash() {
 std::string git_branch() { return std::string(BOOST_PP_STRINGIZE(GIT_BRANCH)); }
 }  // namespace
 
-std::string spectre_version() { return std::string("@SpECTRE_VERSION@"); }
-
-int spectre_major_version() { return @SpECTRE_VERSION_MAJOR@; }
-
-int spectre_minor_version() { return @SpECTRE_VERSION_MINOR@; }
-
-int spectre_patch_version() { return @SpECTRE_VERSION_PATCH@; }
-
 std::string info_from_build() {
   static const std::string info = [] {
     std::ostringstream os;
@@ -38,8 +30,4 @@ std::string info_from_build() {
     return os.str();
   }();
   return info;
-}
-
-std::string unit_test_path() noexcept {
-  return "@CMAKE_SOURCE_DIR@/tests/Unit/";
 }
