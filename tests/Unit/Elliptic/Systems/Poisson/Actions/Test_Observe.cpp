@@ -3,6 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
 #include <string>
@@ -160,8 +161,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions.Observe",
   const auto& volume_file_name =
       tuples::get<observers::OptionTags::VolumeFileName>(cache_data) =
           "./Unit.Elliptic.Systems.Poisson.Actions_VolumeData";
-  ActionTesting::MockRuntimeSystem<Metavariables> runner{
-      cache_data};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{cache_data};
 
   runner.set_phase(Metavariables::Phase::Initialization);
   ActionTesting::emplace_component<obs_component>(&runner, 0);
@@ -262,37 +262,47 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions.Observe",
     const auto observation_id = volume_observation_ids[0];
     CHECK(volume_data_group.get_observation_value(observation_id) == 1.);
 
-    const auto volume_grids = volume_data_group.list_grids(observation_id);
+    const auto grid_names = volume_data_group.get_grid_names(observation_id);
     // The grids are probably the element ids, but we also don't care about
     // that. But there should be one grid per element.
-    CHECK(volume_grids.size() == 3);
-    for (const auto& grid : volume_grids) {
-      CHECK(volume_data_group.get_extents(observation_id, grid) ==
-            std::vector<size_t>{3, 2});
-      const std::vector<std::string> expected_components{
-          "Field", "FieldAnalytic", "FieldError", "InertialCoordinates_x",
-          "InertialCoordinates_y"};
-      const auto components =
-          volume_data_group.list_tensor_components(observation_id, grid);
-      CHECK(alg::all_of(components,
-                        [&expected_components](const std::string& comp) {
-                          return alg::found(expected_components, comp);
-                        }));
-      CHECK(volume_data_group.get_tensor_component(observation_id, grid,
-                                                   "Field") ==
-            DataVector{1., 2., 3., 4., 5., 6.});
-      CHECK(volume_data_group.get_tensor_component(observation_id, grid,
-                                                   "FieldAnalytic") ==
-            DataVector{-1., 0., 1., 2., 3., 4.});
-      CHECK(volume_data_group.get_tensor_component(
-                observation_id, grid, "FieldError") == DataVector(6, 2.));
-      CHECK(volume_data_group.get_tensor_component(observation_id, grid,
-                                                   "InertialCoordinates_x") ==
-            DataVector{0., 1., 2., 3., 4., 5.});
-      CHECK(volume_data_group.get_tensor_component(observation_id, grid,
-                                                   "InertialCoordinates_y") ==
-            DataVector{-1., -2., -3., -4., -5., -6.});
-    }
+    CHECK(grid_names.size() == 3);
+
+    CHECK(volume_data_group.get_extents(observation_id) ==
+          std::vector<std::vector<size_t>>{{3, 2}, {3, 2}, {3, 2}});
+    const std::vector<std::string> expected_components{
+        "Field", "FieldAnalytic", "FieldError", "InertialCoordinates_x",
+        "InertialCoordinates_y"};
+    const auto components =
+        volume_data_group.list_tensor_components(observation_id);
+    CHECK(alg::all_of(components,
+                      [&expected_components](const std::string& comp) {
+                        return alg::found(expected_components, comp);
+                      }));
+    // Because there were three grids with the same data, we
+    // just copy the data 3 times when comparing to the written
+    // contiguous data
+    auto triple_data = [](const DataVector& data) {
+      DataVector triple_dv = DataVector(data.size() * 3);
+      for (size_t i = 0; i < 3; i++) {
+        for (size_t j = 0; j < data.size(); j++) {
+          triple_dv[i * data.size() + j] = data[j];
+        }
+      }
+      return triple_dv;
+    };
+    CHECK(volume_data_group.get_tensor_component(observation_id, "Field") ==
+          triple_data(DataVector{1., 2., 3., 4., 5., 6.}));
+    CHECK(volume_data_group.get_tensor_component(observation_id,
+                                                 "FieldAnalytic") ==
+          triple_data(DataVector{-1., 0., 1., 2., 3., 4.}));
+    CHECK(volume_data_group.get_tensor_component(
+              observation_id, "FieldError") == triple_data(DataVector(6, 2.)));
+    CHECK(volume_data_group.get_tensor_component(observation_id,
+                                                 "InertialCoordinates_x") ==
+          triple_data(DataVector{0., 1., 2., 3., 4., 5.}));
+    CHECK(volume_data_group.get_tensor_component(observation_id,
+                                                 "InertialCoordinates_y") ==
+          triple_data(DataVector{-1., -2., -3., -4., -5., -6.}));
   }
 
   if (file_system::check_if_file_exists(reduction_h5_file_name)) {
