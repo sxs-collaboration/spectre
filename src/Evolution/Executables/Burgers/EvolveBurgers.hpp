@@ -24,7 +24,6 @@
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Domain.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Initialize.hpp"
 #include "Evolution/Initialization/Interface.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
@@ -43,6 +42,7 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep

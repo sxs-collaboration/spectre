@@ -13,9 +13,9 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Initialization/MergeIntoDataBox.hpp"
 #include "Evolution/Initialization/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 
