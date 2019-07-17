@@ -66,16 +66,24 @@ struct Time : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Prefix for TimeStepper history
+/// Tag for the TimeStepper history
+///
+/// Leaving both template parameters unspecified gives a base tag.
 ///
 /// \tparam Tag tag for the variables
 /// \tparam DtTag tag for the time derivative of the variables
+template <typename Tag = void, typename DtTag = void>
+struct HistoryEvolvedVariables;
+
+/// \cond
+template <>
+struct HistoryEvolvedVariables<> : db::BaseTag {};
+
 template <typename Tag, typename DtTag>
-struct HistoryEvolvedVariables : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "HistoryEvolvedVariables"; }
-  using tag = Tag;
+struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
   using type = TimeSteppers::History<db::item_type<Tag>, db::item_type<DtTag>>;
 };
+/// \endcond
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup

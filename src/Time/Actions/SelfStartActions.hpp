@@ -259,7 +259,7 @@ struct CheckForCompletion {
 /// Uses:
 /// - ConstGlobalCache: nothing
 /// - DataBox:
-///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
+///   - Tags::HistoryEvolvedVariables
 ///   - Tags::SubstepTime
 ///   - Tags::TimeStepId
 ///   - Tags::TimeStep
@@ -278,12 +278,9 @@ struct CheckForOrderIncrease {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
-    using variables_tag = typename Metavariables::system::variables_tag;
-
     const auto& time = db::get<::Tags::SubstepTime>(box);
     const auto& time_step = db::get<::Tags::TimeStep>(box);
-    const auto& history = db::get<::Tags::HistoryEvolvedVariables<
-        variables_tag, db::add_tag_prefix<::Tags::dt, variables_tag>>>(box);
+    const auto& history = db::get<::Tags::HistoryEvolvedVariables<>>(box);
 
     const Time required_time =
         (time_step.is_positive() ? time.slab().start() : time.slab().end()) +
