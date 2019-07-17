@@ -35,6 +35,7 @@ allowed_tags = [
                 "Observers",
                 "Options",
                 "Parallel",
+                "ParallelAlgorithms",
                 "PointwiseFunctions",
                 "Pypp",
                 "RelativisticEuler",
