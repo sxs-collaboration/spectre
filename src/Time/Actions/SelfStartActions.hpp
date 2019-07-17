@@ -182,10 +182,7 @@ struct Initialize {
  public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                DbTags, Tags::InitialValue<tmpl::front<detail::vars_to_save<
-                            typename Metavariables::system>>>>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -213,21 +210,6 @@ struct Initialize {
         });
 
     return std::make_tuple(std::move(new_box));
-  }
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<
-                DbTags, Tags::InitialValue<tmpl::front<detail::vars_to_save<
-                            typename Metavariables::system>>>>> = nullptr>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
-      db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box)};
   }
 };
 
@@ -420,8 +402,7 @@ struct Cleanup {
  public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTags, initial_step_tag>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -440,19 +421,6 @@ struct Cleanup {
 
     using remove_tags = tmpl::filter<DbTags, is_a_initial_value<tmpl::_1>>;
     return std::make_tuple(db::create_from<remove_tags>(std::move(box)), true);
-  }
-
-  template <
-      typename DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTags, initial_step_tag>> = nullptr>
-  static std::tuple<db::DataBox<DbTags>&&, bool> apply(
-      db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box), true};
   }
 };
 }  // namespace Actions
