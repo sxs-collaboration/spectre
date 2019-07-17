@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/Actions/Goto.hpp"     // IWYU pragma: keep
+#include "Parallel/Actions/TerminatePhase.hpp"     // IWYU pragma: keep
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep // for item_type<Tags::TimeStep>
@@ -182,10 +183,7 @@ struct Initialize {
  public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                DbTags, Tags::InitialValue<tmpl::front<detail::vars_to_save<
-                            typename Metavariables::system>>>>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -214,27 +212,11 @@ struct Initialize {
 
     return std::make_tuple(std::move(new_box));
   }
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<
-                DbTags, Tags::InitialValue<tmpl::front<detail::vars_to_save<
-                            typename Metavariables::system>>>>> = nullptr>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
-      db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box)};
-  }
 };
 
 /// \ingroup ActionsGroup
 /// \ingroup TimeGroup
-/// Terminates the self-start phase if the required order has been
-/// reached.
+/// Exits the self-start loop if the required order has been reached.
 ///
 /// Uses:
 /// - ConstGlobalCache: nothing
@@ -266,11 +248,6 @@ struct CheckForCompletion {
     }
     return {std::move(box), false,
             tmpl::index_of<ActionList, CheckForCompletion>::value + 1};
-    // Once we have full support for phases this action should
-    // terminate the phase:
-    // return std::tuple<db::DataBox<DbTags>&&, bool>(
-    //     std::move(box),
-    //     db::get<::Tags::Next<::Tags::TimeId>>(box).slab_number() == 0);
   }
 };
 
@@ -420,8 +397,7 @@ struct Cleanup {
  public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTags, initial_step_tag>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -439,20 +415,7 @@ struct Cleanup {
         db::get<initial_step_tag>(box));
 
     using remove_tags = tmpl::filter<DbTags, is_a_initial_value<tmpl::_1>>;
-    return std::make_tuple(db::create_from<remove_tags>(std::move(box)), true);
-  }
-
-  template <
-      typename DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTags, initial_step_tag>> = nullptr>
-  static std::tuple<db::DataBox<DbTags>&&, bool> apply(
-      db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box), true};
+    return std::make_tuple(db::create_from<remove_tags>(std::move(box)));
   }
 };
 }  // namespace Actions
@@ -484,6 +447,8 @@ using self_start_procedure = tmpl::flatten<tmpl::list<
     UpdateVariables,
     ::Actions::Goto<detail::PhaseStart>,
     ::Actions::Label<detail::PhaseEnd>,
-    SelfStart::Actions::Cleanup>>;
+    SelfStart::Actions::Cleanup,
+    ::Actions::AdvanceTime,
+    Parallel::Actions::TerminatePhase>>;
 // clang-format on
 }  // namespace SelfStart

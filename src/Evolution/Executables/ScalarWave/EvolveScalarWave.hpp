@@ -175,8 +175,7 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
-                  tmpl::list<Actions::AdvanceTime,
-                             observers::Actions::RegisterWithObservers<
+                  tmpl::list<observers::Actions::RegisterWithObservers<
                                  observers::RegisterObservers<
                                      element_observation_type>>,
                              Parallel::Actions::TerminatePhase>>,
@@ -203,6 +202,8 @@ struct EvolutionMetavars {
           EvolutionMetavars>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:
+        return Phase::InitializeTimeStepperHistory;
+      case Phase::InitializeTimeStepperHistory:
         return Phase::RegisterWithObserver;
       case Phase::RegisterWithObserver:
         return Phase::Evolve;
