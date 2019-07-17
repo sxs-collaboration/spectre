@@ -203,6 +203,8 @@ struct EvolutionMetavars {
           EvolutionMetavars>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:
+        return Phase::InitializeTimeStepperHistory;
+      case Phase::InitializeTimeStepperHistory:
         return Phase::RegisterWithObserver;
       case Phase::RegisterWithObserver:
         return Phase::Evolve;
