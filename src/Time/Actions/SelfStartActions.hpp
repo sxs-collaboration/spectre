@@ -11,6 +11,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Parallel/Actions/Goto.hpp"     // IWYU pragma: keep
+#include "Parallel/Actions/TerminatePhase.hpp"     // IWYU pragma: keep
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep // for item_type<Tags::TimeStep>
@@ -414,7 +415,7 @@ struct Cleanup {
         db::get<initial_step_tag>(box));
 
     using remove_tags = tmpl::filter<DbTags, is_a_initial_value<tmpl::_1>>;
-    return std::make_tuple(db::create_from<remove_tags>(std::move(box)), true);
+    return std::make_tuple(db::create_from<remove_tags>(std::move(box)));
   }
 };
 }  // namespace Actions
@@ -446,6 +447,8 @@ using self_start_procedure = tmpl::flatten<tmpl::list<
     UpdateVariables,
     ::Actions::Goto<detail::PhaseStart>,
     ::Actions::Label<detail::PhaseEnd>,
-    SelfStart::Actions::Cleanup>>;
+    SelfStart::Actions::Cleanup,
+    ::Actions::AdvanceTime,
+    Parallel::Actions::TerminatePhase>>;
 // clang-format on
 }  // namespace SelfStart

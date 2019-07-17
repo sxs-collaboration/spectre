@@ -18,7 +18,6 @@
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
 #include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"   // IWYU pragma: keep
-#include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
@@ -142,7 +141,7 @@ struct Component {
                      tmpl::list<Actions::ComputeTimeDerivative,
                                 Actions::RecordTimeStepperData>,
                      update_actions>,
-                 Actions::AdvanceTime, Actions::ComputeTimeDerivative,
+                 Actions::ComputeTimeDerivative,
                  Actions::RecordTimeStepperData, update_actions>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -352,8 +351,11 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
             runner, 0);
     CHECK(db::get<Var>(box) == initial_value);
     CHECK(db::get<Tags::TimeStep>(box) == initial_time_step);
-    CHECK(db::get<Tags::Next<Tags::TimeId>>(box) ==
+    CHECK(db::get<Tags::TimeId>(box) ==
           TimeId(forward_in_time, 0, initial_time));
+    // This test only uses Adams-Bashforth.
+    CHECK(db::get<Tags::Next<Tags::TimeId>>(box) ==
+          TimeId(forward_in_time, 0, initial_time + initial_time_step));
     CHECK(db::get<history_tag>(box).size() == order - 1);
   }
 }

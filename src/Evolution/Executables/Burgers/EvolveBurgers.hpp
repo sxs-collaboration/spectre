@@ -158,8 +158,7 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
-                  tmpl::list<Actions::AdvanceTime,
-                             observers::Actions::RegisterWithObservers<
+                  tmpl::list<observers::Actions::RegisterWithObservers<
                                  observers::RegisterObservers<
                                      element_observation_type>>,
                              Parallel::Actions::TerminatePhase>>,
