@@ -7,4 +7,5 @@ set(LIBRARY_SOURCES
   StepChoosers/Test_Cfl.cpp
   StepChoosers/Test_Constant.cpp
   StepChoosers/Test_Increase.cpp
+  StepChoosers/Test_PreventRapidIncrease.cpp
   PARENT_SCOPE)
