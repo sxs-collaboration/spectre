@@ -44,7 +44,6 @@ namespace Initialization {
  *   - `Tags::Coordinates<Dim, Frame::Inertial>`
  *   - `Tags::InverseJacobian<
  *   Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>`
- *   - `Tags::MinimumGridSpacing<Dim, Frame::Inertial>>`
  */
 template <size_t Dim>
 struct Domain {
@@ -55,8 +54,7 @@ struct Domain {
       Tags::MappedCoordinates<Tags::ElementMap<Dim>,
                               Tags::Coordinates<Dim, Frame::Logical>>,
       Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                            Tags::Coordinates<Dim, Frame::Logical>>,
-      Tags::MinimumGridSpacing<Dim, Frame::Inertial>>;
+                            Tags::Coordinates<Dim, Frame::Logical>>>;
 
   template <typename TagsList>
   static auto initialize(

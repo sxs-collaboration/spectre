@@ -56,6 +56,8 @@ struct InitializeElement {
 
   using AddOptionsToDataBox =
       Parallel::ForwardAllOptionsToDataBox<tmpl::list<InitialExtents, Domain>>;
+  using compute_tags =
+      db::AddComputeTags<Tags::MinimumGridSpacing<Dim, Frame::Inertial>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent,
@@ -72,11 +74,15 @@ struct InitializeElement {
         make_not_null(&box), [&domain](const auto domain_ptr) noexcept {
           domain = std::move(*domain_ptr);
         });
+
     return std::make_tuple(
-        elliptic::Initialization::Domain<Dim>::initialize(
-            db::create_from<typename AddOptionsToDataBox::simple_tags>(
-                std::move(box)),
-            array_index, initial_extents, domain),
+        db::create_from<db::RemoveTags<>,
+                        db::AddSimpleTags<>,
+                        compute_tags>(
+            elliptic::Initialization::Domain<Dim>::initialize(
+                db::create_from<typename AddOptionsToDataBox::simple_tags>(
+                    std::move(box)),
+                array_index, initial_extents, domain)),
         true);
   }
 
@@ -100,7 +106,7 @@ struct PrintMinimumGridSpacing {
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const double& overall_min_grid_spacing) noexcept {
-    printf("Overall inertial minimum grid spacing: %f\n\n",
+    Parallel::printf("Overall inertial minimum grid spacing: %f\n\n",
               overall_min_grid_spacing);
   }
 };
