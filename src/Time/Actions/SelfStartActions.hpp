@@ -215,8 +215,7 @@ struct Initialize {
 
 /// \ingroup ActionsGroup
 /// \ingroup TimeGroup
-/// Terminates the self-start phase if the required order has been
-/// reached.
+/// Exits the self-start loop if the required order has been reached.
 ///
 /// Uses:
 /// - ConstGlobalCache: nothing
@@ -248,11 +247,6 @@ struct CheckForCompletion {
     }
     return {std::move(box), false,
             tmpl::index_of<ActionList, CheckForCompletion>::value + 1};
-    // Once we have full support for phases this action should
-    // terminate the phase:
-    // return std::tuple<db::DataBox<DbTags>&&, bool>(
-    //     std::move(box),
-    //     db::get<::Tags::Next<::Tags::TimeId>>(box).slab_number() == 0);
   }
 };
 
