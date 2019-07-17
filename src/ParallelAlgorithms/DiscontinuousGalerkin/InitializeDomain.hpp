@@ -39,7 +39,7 @@ class ConstGlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-namespace Initialization {
+namespace dg {
 namespace Actions {
 /// \ingroup InitializationGroup
 /// \brief Initialize items related to the basic structure of the Domain
@@ -56,7 +56,7 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: nothing
 template <size_t Dim>
-struct Domain {
+struct InitializeDomain {
   using simple_tags = db::AddSimpleTags<::Tags::Mesh<Dim>, ::Tags::Element<Dim>,
                                         ::Tags::ElementMap<Dim>>;
 
@@ -69,22 +69,24 @@ struct Domain {
       ::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>;
 
   using initialization_option_tags =
-      tmpl::list<Tags::InitialExtents<Dim>, Tags::Domain<Dim>>;
+      tmpl::list<::Initialization::Tags::InitialExtents<Dim>,
+                 ::Initialization::Tags::Domain<Dim>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<tmpl::list_contains_v<
                 typename db::DataBox<DbTagsList>::simple_item_tags,
-                Tags::InitialExtents<Dim>>> = nullptr>
+                ::Initialization::Tags::InitialExtents<Dim>>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& array_index, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const auto& initial_extents = db::get<Tags::InitialExtents<Dim>>(box);
+    const auto& initial_extents =
+        db::get<::Initialization::Tags::InitialExtents<Dim>>(box);
     const ::Domain<Dim, Frame::Inertial>& domain =
-        db::get<Tags::Domain<Dim>>(box);
+        db::get<::Initialization::Tags::Domain<Dim>>(box);
     const ElementId<Dim> element_id{array_index};
     const auto& my_block = domain.blocks()[element_id.block_id()];
     Mesh<Dim> mesh = domain::Initialization::create_initial_mesh(
@@ -94,10 +96,9 @@ struct Domain {
     ElementMap<Dim, Frame::Inertial> map{element_id,
                                          my_block.coordinate_map().get_clone()};
 
-    return std::make_tuple(
-        merge_into_databox<Domain, simple_tags, compute_tags>(
-            std::move(box), std::move(mesh), std::move(element),
-            std::move(map)));
+    return std::make_tuple(::Initialization::merge_into_databox<
+                           InitializeDomain, simple_tags, compute_tags>(
+        std::move(box), std::move(mesh), std::move(element), std::move(map)));
   }
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -105,7 +106,7 @@ struct Domain {
             typename ParallelComponent,
             Requires<not tmpl::list_contains_v<
                 typename db::DataBox<DbTagsList>::simple_item_tags,
-                Tags::InitialExtents<Dim>>> = nullptr>
+                ::Initialization::Tags::InitialExtents<Dim>>> = nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -113,9 +114,9 @@ struct Domain {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     ERROR(
-        "Could not find dependency 'Initialization::Tags::InitialExtents' in "
+        "Could not find dependency '::Initialization::Tags::InitialExtents' in "
         "DataBox.");
   }
 };
 }  // namespace Actions
-}  // namespace Initialization
+}  // namespace dg
