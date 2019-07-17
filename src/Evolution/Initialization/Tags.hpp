@@ -19,19 +19,6 @@ namespace Initialization {
 /// \ingroup InitializationGroup
 /// \brief %Tags used during initialization of parallel components.
 namespace Tags {
-
-template <size_t Dim>
-struct InitialExtents : db::SimpleTag {
-  static std::string name() noexcept { return "InitialExtents"; }
-  using type = std::vector<std::array<size_t, Dim>>;
-};
-
-template <size_t Dim>
-struct Domain : db::SimpleTag {
-  static std::string name() noexcept { return "Domain"; }
-  using type = ::Domain<Dim, Frame::Inertial>;
-};
-
 struct InitialTime : db::SimpleTag {
   static std::string name() noexcept { return "InitialTime"; }
   using type = double;

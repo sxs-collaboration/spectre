@@ -21,7 +21,6 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/Initialization/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -69,24 +68,22 @@ struct InitializeDomain {
       ::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>;
 
   using initialization_option_tags =
-      tmpl::list<::Initialization::Tags::InitialExtents<Dim>,
-                 ::Initialization::Tags::Domain<Dim>>;
+      tmpl::list<::Tags::InitialExtents<Dim>, ::Tags::Domain<Dim>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<tmpl::list_contains_v<
                 typename db::DataBox<DbTagsList>::simple_item_tags,
-                ::Initialization::Tags::InitialExtents<Dim>>> = nullptr>
+                ::Tags::InitialExtents<Dim>>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& array_index, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const auto& initial_extents =
-        db::get<::Initialization::Tags::InitialExtents<Dim>>(box);
+    const auto& initial_extents = db::get<::Tags::InitialExtents<Dim>>(box);
     const ::Domain<Dim, Frame::Inertial>& domain =
-        db::get<::Initialization::Tags::Domain<Dim>>(box);
+        db::get<::Tags::Domain<Dim>>(box);
     const ElementId<Dim> element_id{array_index};
     const auto& my_block = domain.blocks()[element_id.block_id()];
     Mesh<Dim> mesh = domain::Initialization::create_initial_mesh(
@@ -106,16 +103,14 @@ struct InitializeDomain {
             typename ParallelComponent,
             Requires<not tmpl::list_contains_v<
                 typename db::DataBox<DbTagsList>::simple_item_tags,
-                ::Initialization::Tags::InitialExtents<Dim>>> = nullptr>
+                ::Tags::InitialExtents<Dim>>> = nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    ERROR(
-        "Could not find dependency '::Initialization::Tags::InitialExtents' in "
-        "DataBox.");
+    ERROR("Could not find dependency '::Tags::InitialExtents' in DataBox.");
   }
 };
 }  // namespace Actions
