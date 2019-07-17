@@ -26,7 +26,6 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Interface.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
-#include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -36,6 +35,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
@@ -79,8 +79,8 @@ struct EvolutionMetavars {
   using analytic_solution_tag =
       OptionTags::AnalyticSolution<Burgers::Solutions::Step>;
   using boundary_condition_tag = analytic_solution_tag;
-  using normal_dot_numerical_flux =
-      OptionTags::NumericalFlux<Burgers::LocalLaxFriedrichsFlux>;
+  using normal_dot_numerical_flux = OptionTags::NumericalFlux<
+      dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   using limiter = OptionTags::Limiter<
       Limiters::Minmod<1, system::variables_tag::tags_list>>;
 

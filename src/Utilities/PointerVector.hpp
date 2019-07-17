@@ -1401,6 +1401,43 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::divAssign(
 }
 /// \endcond
 
+#define CHECK_FOR_SIZE_ZERO(SCALAR_TYPE)                                       \
+  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
+  inline bool operator==(                                                      \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& a,                \
+      const SCALAR_TYPE& b) noexcept {                                         \
+    ASSERT(a.size() != 0,                                                      \
+           "Comparing an empty vector to a value usually indicates a bug, "    \
+           "and so is disallowed.");                                           \
+    return static_cast<const typename PointerVector<                           \
+               Type, AF, PF, TF, ExprResultType>::BaseType&>(a) == b;          \
+  }                                                                            \
+                                                                               \
+  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
+  inline bool operator==(                                                      \
+      const SCALAR_TYPE& a,                                                    \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& b) noexcept {     \
+    return b == a;                                                             \
+  }                                                                            \
+                                                                               \
+  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
+  inline bool operator!=(                                                      \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& a,                \
+      const SCALAR_TYPE& b) noexcept {                                         \
+    return not(a == b);                                                        \
+  }                                                                            \
+                                                                               \
+  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
+  inline bool operator!=(                                                      \
+      const SCALAR_TYPE& a,                                                    \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& b) noexcept {     \
+    return not(a == b);                                                        \
+  }
+
+CHECK_FOR_SIZE_ZERO(double)
+CHECK_FOR_SIZE_ZERO(std::complex<double>)
+#undef CHECK_FOR_SIZE_ZERO
+
 // There is a bug either in Blaze or in vector intrinsics implementation in GCC
 // that results in _mm_set1_epi64 not being callable with an `unsigned long`.
 // The way to work around this is to use a forwarding reference (which is super

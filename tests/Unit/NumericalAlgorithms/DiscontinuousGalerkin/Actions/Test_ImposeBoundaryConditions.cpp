@@ -232,7 +232,7 @@ struct component {
       Tags::Time, Tags::BoundaryDirectionsInterior<Dim>,
       boundary_compute_tag<Tags::Direction<Dim>>,
       boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
-      boundary_compute_tag<Tags::UnnormalizedFaceNormal<Dim>>,
+      boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,
       boundary_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       boundary_compute_tag<
@@ -241,7 +241,7 @@ struct component {
       external_boundary_compute_tag<Tags::Direction<Dim>>,
       external_boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
       external_boundary_compute_tag<Tags::BoundaryCoordinates<Dim>>,
-      external_boundary_compute_tag<Tags::UnnormalizedFaceNormal<Dim>>,
+      external_boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,
       external_boundary_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       external_boundary_compute_tag<

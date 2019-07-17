@@ -76,8 +76,8 @@ struct Interface {
                                   tmpl::size_t<volume_dim>, Frame::Inertial>>,
       Tags::InterfaceComputeItem<
           Directions, Tags::BoundaryCoordinates<volume_dim, Frame::Inertial>>,
-      Tags::InterfaceComputeItem<Directions,
-                                 Tags::UnnormalizedFaceNormal<volume_dim>>,
+      Tags::InterfaceComputeItem<
+          Directions, Tags::UnnormalizedFaceNormalCompute<volume_dim>>,
       Tags::InterfaceComputeItem<Directions,
                                  typename System::template magnitude_tag<
                                      Tags::UnnormalizedFaceNormal<volume_dim>>>,
@@ -100,8 +100,9 @@ struct Interface {
               db::variables_tag_with_tags_list<typename System::variables_tag,
                                                typename System::gradient_tags>,
               tmpl::size_t<volume_dim>, Frame::Inertial>>,
-      Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<volume_dim>,
-                                 Tags::UnnormalizedFaceNormal<volume_dim>>,
+      Tags::InterfaceComputeItem<
+          Tags::BoundaryDirectionsExterior<volume_dim>,
+          Tags::UnnormalizedFaceNormalCompute<volume_dim>>,
       Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<volume_dim>,
                                  typename System::template magnitude_tag<
                                      Tags::UnnormalizedFaceNormal<volume_dim>>>,

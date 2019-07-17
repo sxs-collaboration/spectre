@@ -105,7 +105,7 @@ struct Interface {
       tmpl::transform<SliceTagsToFace,
                       make_slice_tag<tmpl::_1, tmpl::pin<Directions>>>,
       ::Tags::InterfaceComputeItem<Directions,
-                                   ::Tags::UnnormalizedFaceNormal<dim>>,
+                                   ::Tags::UnnormalizedFaceNormalCompute<dim>>,
       ::Tags::InterfaceComputeItem<Directions,
                                    typename System::template magnitude_tag<
                                        ::Tags::UnnormalizedFaceNormal<dim>>>,
@@ -128,7 +128,7 @@ struct Interface {
       ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
                                    ::Tags::BoundaryCoordinates<dim>>,
       ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
-                                   ::Tags::UnnormalizedFaceNormal<dim>>,
+                                   ::Tags::UnnormalizedFaceNormalCompute<dim>>,
       ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
                                    typename System::template magnitude_tag<
                                        ::Tags::UnnormalizedFaceNormal<dim>>>,

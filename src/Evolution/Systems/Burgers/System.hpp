@@ -9,7 +9,6 @@
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Conservative/ConservativeDuDt.hpp"
 #include "Evolution/Systems/Burgers/Characteristics.hpp"
-#include "Evolution/Systems/Burgers/Equations.hpp"
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"

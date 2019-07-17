@@ -5,7 +5,7 @@ set(LIBRARY Burgers)
 
 set(LIBRARY_SOURCES
   Characteristics.cpp
-  Equations.cpp
+  Divergence.cpp
   Fluxes.cpp
   Minmod.cpp
   )
