@@ -85,6 +85,15 @@ struct FindApparentHorizon {
       const gsl::not_null<db::DataBox<DbTags>*> box,
       const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+
+    // Before doing anything else, deal with the possibility that some
+    // of the points might be outside of the Domain.
+    const auto num_invalid_pts =
+        db::get<Tags::IndicesOfInvalidInterpPoints>(*box).size();
+    if(num_invalid_pts > 0) {
+      ERROR("FindApparentHorizon: Found points that are not in any block");
+    }
+
     const auto& verbosity = db::get<::Tags::Verbosity>(*box);
     const auto& inv_g =
         db::get<::gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(*box);

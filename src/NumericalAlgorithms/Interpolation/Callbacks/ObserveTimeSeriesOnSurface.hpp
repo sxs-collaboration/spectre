@@ -92,6 +92,9 @@ struct ObserveTimeSeriesOnSurface {
       tmpl::list<typename detail::reduction_data_type<TagsToObserve>::type>>;
   using observation_types = tmpl::list<ObservationType>;
 
+  static constexpr double fill_invalid_points_with =
+      std::numeric_limits<double>::quiet_NaN();
+
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,
