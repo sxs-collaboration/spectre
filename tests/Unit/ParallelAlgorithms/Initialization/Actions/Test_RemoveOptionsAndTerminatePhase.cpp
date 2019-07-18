@@ -122,8 +122,9 @@ struct Metavariables {
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Initialization.RemoveOptionsFromDataBox",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE(
+    "Unit.ParallelAlgorithms.Initialization.RemoveOptionsFromDataBox",
+    "[Unit][ParallelAlgorithms]") {
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
   using component = Component<Metavariables>;
 

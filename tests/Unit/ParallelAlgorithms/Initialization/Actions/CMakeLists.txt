@@ -1,17 +1,16 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_Initialization")
+set(LIBRARY "Test_InitializationActions")
 
 set(LIBRARY_SOURCES
-  Test_MergeIntoDataBox.cpp
+  Test_AddComputeTags.cpp
+  Test_RemoveOptionsAndTerminatePhase.cpp
   )
-
-add_subdirectory(Actions)
 
 add_test_library(
   ${LIBRARY}
-  "ParallelAlgorithms/Initialization/"
+  "ParallelAlgorithms/Initialization/Actions"
   "${LIBRARY_SOURCES}"
   "DataStructures;ErrorHandling;Utilities"
   )
