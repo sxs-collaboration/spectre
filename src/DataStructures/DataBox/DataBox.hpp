@@ -57,6 +57,14 @@ struct is_databox<DataBox<tmpl::list<Tags...>>> : std::true_type {};
 /// \endcond
 // @}
 
+/// \ingroup DataBoxGroup
+/// Equal to `true` if `Tag` can be retrieved from a `DataBox` of type
+/// `DataBoxType`.
+template <typename Tag, typename DataBoxType>
+constexpr bool tag_is_retrievable_v =
+    tmpl::any<typename DataBoxType::tags_list,
+              std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>::value;
+
 namespace DataBox_detail {
 template <class Tag, class Type>
 class DataBoxLeaf;
@@ -1545,26 +1553,29 @@ struct Apply;
 
 template <typename... Tags>
 struct Apply<tmpl::list<Tags...>> {
-  template <typename F, typename BoxTags, typename... Args,
-            Requires<is_apply_callable_v<
-                F, const std::add_lvalue_reference_t<db::item_type<Tags>>...,
-                Args...>> = nullptr>
+  template <
+      typename F, typename BoxTags, typename... Args,
+      Requires<is_apply_callable_v<
+          F, const std::add_lvalue_reference_t<db::item_type<Tags, BoxTags>>...,
+          Args...>> = nullptr>
   static constexpr auto apply(F&& /*f*/, const DataBox<BoxTags>& box,
                               Args&&... args) {
     return F::apply(::db::get<Tags>(box)..., std::forward<Args>(args)...);
   }
 
-  template <typename F, typename BoxTags, typename... Args,
-            Requires<not is_apply_callable_v<
-                F, const std::add_lvalue_reference_t<db::item_type<Tags>>...,
-                Args...>> = nullptr>
+  template <
+      typename F, typename BoxTags, typename... Args,
+      Requires<not is_apply_callable_v<
+          F, const std::add_lvalue_reference_t<db::item_type<Tags, BoxTags>>...,
+          Args...>> = nullptr>
   static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
                               Args&&... args) {
     static_assert(
         tt::is_callable_v<
             std::remove_pointer_t<F>,
             tmpl::conditional_t<cpp17::is_same_v<Tags, ::Tags::DataBox>,
-                                const DataBox<BoxTags>&, item_type<Tags>>...,
+                                const DataBox<BoxTags>&,
+                                item_type<Tags, BoxTags>>...,
             Args...>,
         "Cannot call the function f with the list of tags and "
         "arguments specified. Check that the Tags::type and the "
@@ -1628,7 +1639,7 @@ namespace DataBox_detail {
 template <typename... ReturnTags, typename... ArgumentTags, typename F,
           typename BoxTags, typename... Args,
           Requires<is_apply_callable_v<
-              F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+              F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
               const std::add_lvalue_reference_t<
                   db::item_type<ArgumentTags, BoxTags>>...,
               Args...>> = nullptr>
@@ -1644,7 +1655,8 @@ inline constexpr auto mutate_apply(
       "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
       box,
-      [](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
+      [](const gsl::not_null<
+             db::item_type<ReturnTags, BoxTags>*>... mutated_items,
          const db::item_type<ArgumentTags, BoxTags>&... args_items,
          decltype(std::forward<Args>(args))... l_args) noexcept {
         return std::decay_t<F>::apply(mutated_items..., args_items...,
@@ -1656,7 +1668,7 @@ inline constexpr auto mutate_apply(
 template <typename... ReturnTags, typename... ArgumentTags, typename F,
           typename BoxTags, typename... Args,
           Requires<::tt::is_callable_v<
-              F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+              F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
               const std::add_lvalue_reference_t<
                   db::item_type<ArgumentTags, BoxTags>>...,
               Args...>> = nullptr>
@@ -1672,7 +1684,8 @@ inline constexpr auto mutate_apply(
       "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
       box,
-      [&f](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
+      [&f](const gsl::not_null<
+               db::item_type<ReturnTags, BoxTags>*>... mutated_items,
            const db::item_type<ArgumentTags, BoxTags>&... args_items,
            decltype(std::forward<Args>(args))... l_args) noexcept {
         return f(mutated_items..., args_items...,
@@ -1693,28 +1706,29 @@ constexpr void error_mutate_apply_not_callable() noexcept {
 template <
     typename... ReturnTags, typename... ArgumentTags, typename F,
     typename BoxTags, typename... Args,
-    Requires<not(is_apply_callable_v<
-                     F, const gsl::not_null<db::item_type<ReturnTags>*>...,
-                     const std::add_lvalue_reference_t<
-                         db::item_type<ArgumentTags, BoxTags>>...,
-                     Args...> or
-                 ::tt::is_callable_v<
-                     F, const gsl::not_null<db::item_type<ReturnTags>*>...,
-                     const std::add_lvalue_reference_t<
-                         db::item_type<ArgumentTags, BoxTags>>...,
-                     Args...>)> = nullptr>
+    Requires<
+        not(is_apply_callable_v<
+                F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
+                const std::add_lvalue_reference_t<
+                    db::item_type<ArgumentTags, BoxTags>>...,
+                Args...> or
+            ::tt::is_callable_v<
+                F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
+                const std::add_lvalue_reference_t<
+                    db::item_type<ArgumentTags, BoxTags>>...,
+                Args...>)> = nullptr>
 inline constexpr auto mutate_apply(
     F /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> /*box*/,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... /*args*/) noexcept {
   error_mutate_apply_not_callable<
-      F, gsl::not_null<db::item_type<ReturnTags>*>...,
+      F, gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
       const db::item_type<ArgumentTags, BoxTags>&..., Args&&...>();
 }
 
 template <typename Tag, typename BoxTags>
 constexpr int check_mutate_apply_mutate_tag() noexcept {
-  static_assert(tmpl::list_contains_v<BoxTags, Tag>,
+  static_assert(tag_is_retrievable_v<Tag, DataBox<BoxTags>>,
                 "A tag to mutate is not in the DataBox.  See the first "
                 "template argument for the missing tag, and the second for the "
                 "available tags.");
@@ -1730,16 +1744,10 @@ constexpr bool check_mutate_apply_mutate_tags(
 
 template <typename Tag, typename BoxTags>
 constexpr int check_mutate_apply_apply_tag() noexcept {
-  // This static assert is triggered for the mutate_apply on line
-  // 86 of ComputeNonConservativeBoundaryFluxes, with the tag Interface<Dirs,
-  // Normalized...>, which is the base tag of InterfaceComputeItem<Dirs,
-  // Normalized...> and so can be retrieved from the DataBox, but still triggers
-  // this assert.
-
-  //  static_assert(tmpl::list_contains_v<BoxTags, Tag>,
-  //                "A tag to apply with is not in the DataBox.  See the first "
-  //                "template argument for the missing tag, and the second for
-  //                the " "available tags.");
+  static_assert(tag_is_retrievable_v<Tag, DataBox<BoxTags>>,
+                "A tag to apply with is not in the DataBox.  See the first "
+                "template argument for the missing tag, and the second for the "
+                "available tags.");
   return 0;
 }
 
@@ -1928,9 +1936,7 @@ using compute_databox_type = typename DataBox_detail::compute_dbox_type<
 /// returned by `db::get<Tag>`) if the tag is in the `DataBox` of type
 /// `DataBoxType`, otherwise returns `NoSuchType`.
 template <typename Tag, typename DataBoxType,
-          bool = tmpl::size<tmpl::filter<
-                     typename DataBoxType::tags_list,
-                     std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>::value != 0>
+          bool = tag_is_retrievable_v<Tag, DataBoxType>>
 struct item_type_if_contained;
 
 /// \cond
@@ -1949,12 +1955,4 @@ template <typename Tag, typename DataBoxType>
 using item_type_if_contained_t =
     typename item_type_if_contained<Tag, DataBoxType>::type;
 // @}
-
-/// \ingroup DataBoxGroup
-/// Equal to `true` if `Tag` can be retrieved from a `DataBox` of type
-/// `DataBoxType`.
-template <typename Tag, typename DataBoxType>
-constexpr bool tag_is_retrievable_v =
-    not std::is_same<NoSuchType,
-                     item_type_if_contained_t<Tag, DataBoxType>>::value;
 }  // namespace db
