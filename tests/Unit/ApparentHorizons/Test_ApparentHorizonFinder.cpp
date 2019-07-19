@@ -31,22 +31,22 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "Informer/Tags.hpp"  // IWYU pragma: keep
 #include "Informer/Verbosity.hpp"
-#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
-#include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
-#include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/Interpolation/InterpolationTargetApparentHorizon.hpp"
-#include "NumericalAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp"
-#include "NumericalAlgorithms/Interpolation/InterpolatorReceivePoints.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/Interpolation/InterpolatorReceiveVolumeData.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
+#include "ParallelAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
+#include "ParallelAlgorithms/Interpolation/InitializeInterpolator.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetApparentHorizon.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp"
+#include "ParallelAlgorithms/Interpolation/InterpolatorReceivePoints.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Interpolation/InterpolatorReceiveVolumeData.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"

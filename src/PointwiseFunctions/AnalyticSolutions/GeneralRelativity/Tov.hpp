@@ -6,7 +6,7 @@
 #include <limits>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "NumericalAlgorithms/Interpolation/BarycentricRational.hpp"
+#include "ParallelAlgorithms/Interpolation/BarycentricRational.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/TovStar.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
 
