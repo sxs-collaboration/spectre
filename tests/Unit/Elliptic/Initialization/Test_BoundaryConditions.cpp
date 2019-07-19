@@ -27,7 +27,7 @@
 #include "Domain/Tags.hpp"
 #include "Elliptic/Initialization/BoundaryConditions.hpp"
 #include "Elliptic/Initialization/Domain.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

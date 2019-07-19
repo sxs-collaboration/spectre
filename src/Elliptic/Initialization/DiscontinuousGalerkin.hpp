@@ -19,9 +19,9 @@
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/Helpers.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 

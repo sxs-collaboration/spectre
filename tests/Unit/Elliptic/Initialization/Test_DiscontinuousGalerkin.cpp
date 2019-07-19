@@ -29,10 +29,10 @@
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Elliptic/Initialization/DiscontinuousGalerkin.hpp"
 #include "Elliptic/Initialization/Domain.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Projection.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 // IWYU pragma: no_forward_declare Tags::MortarSize
 // IWYU pragma: no_forward_declare Tags::Mortars

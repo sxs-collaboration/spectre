@@ -24,7 +24,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "tests/Unit/NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
+#include "tests/Unit/ParallelAlgorithms/DiscontinuousGalerkin/NumericalFluxes/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 #include "tests/Utilities/RandomUnitNormal.hpp"
