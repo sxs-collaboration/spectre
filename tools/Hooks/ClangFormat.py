@@ -62,8 +62,8 @@ if (int(clang_format_version.group(1)) < 4 and
               (clang_format_version.group(1), clang_format_version.group(2)))
     sys.exit(0)
 
-output = subprocess.check_output([git_executable, clang_format, "--diff"
-                                  ]).decode('ascii')
+output = subprocess.check_output([git_executable, clang_format, "--style=file",
+                                  "--diff"]).decode('ascii')
 
 if output not in ['\n', '', 'no modified files to format\n',
                   'clang-format did not modify any files\n']:
