@@ -65,7 +65,8 @@ struct Domain {
     const auto& my_block = domain.blocks()[element_id.block_id()];
     Mesh<Dim> mesh =
         ::Initialization::element_mesh(initial_extents, element_id);
-    Element<Dim> element = create_initial_element(element_id, my_block);
+    Element<Dim> element =
+        domain::Initialization::create_initial_element(element_id, my_block);
     ElementMap<Dim, Frame::Inertial> map{element_id,
                                          my_block.coordinate_map().get_clone()};
 

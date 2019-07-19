@@ -494,7 +494,8 @@ void test_radial_block_layers(const double inner_radius,
     const std::vector<ElementId<3>> element_ids =
         initial_element_ids(block.id(), initial_ref_levs);
     for (const auto& element_id : element_ids) {
-      const auto element = create_initial_element(element_id, block);
+      const auto element =
+          domain::Initialization::create_initial_element(element_id, block);
       // Creating elements through InitialRefinement creates Elements in all
       // three logical dimensions. It is sufficient to only check the elements
       // in the radial direction lying along a ray at a fixed angle.
