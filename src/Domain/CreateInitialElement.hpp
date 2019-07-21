@@ -17,6 +17,13 @@ class ElementId;
 /*!
  * \ingroup ComputationalDomainGroup
  * \brief Creates an initial element of a Block.
+ *
+ * \details This function creates an element at the refinement level and
+ * position specified by the `element_id` within the `block`. It assumes
+ * that all of its neighboring elements are at the same refinement level. Thus,
+ * the created element's `neighbors` has one neighbor per direction (or zero on
+ * an external boundary), with each neighbor at the same refinement level as the
+ * element.
  */
 template <size_t VolumeDim, typename TargetFrame>
 Element<VolumeDim> create_initial_element(
