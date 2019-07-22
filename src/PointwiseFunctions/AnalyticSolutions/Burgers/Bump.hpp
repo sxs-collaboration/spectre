@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -34,7 +35,7 @@ namespace Solutions {
  * from infinity and reaches one of the zeros at \f$t = \frac{w}{2
  * h}\f$.
  */
-class Bump {
+class Bump : public MarkAsAnalyticSolution {
  public:
   struct HalfWidth {
     using type = double;

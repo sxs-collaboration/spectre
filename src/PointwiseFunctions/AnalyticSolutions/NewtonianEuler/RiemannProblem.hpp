@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -124,7 +125,7 @@ namespace Solutions {
  * speed of the contact discontinuity (\f$u_*\f$).
  */
 template <size_t Dim>
-class RiemannProblem {
+class RiemannProblem : public MarkAsAnalyticSolution {
   enum class Side { Left, Right };
   enum PropagationAxis { X = 0, Y = 1, Z = 2 };
 

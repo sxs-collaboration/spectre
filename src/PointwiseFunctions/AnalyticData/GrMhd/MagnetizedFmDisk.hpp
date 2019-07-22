@@ -70,7 +70,8 @@ namespace AnalyticData {
  * the spatial velocity, and \f$W\f$ the Lorentz factor.
  */
 class MagnetizedFmDisk
-    : private RelativisticEuler::Solutions::FishboneMoncriefDisk {
+    : public MarkAsAnalyticData,
+      private RelativisticEuler::Solutions::FishboneMoncriefDisk {
  private:
   using fm_disk = RelativisticEuler::Solutions::FishboneMoncriefDisk;
 

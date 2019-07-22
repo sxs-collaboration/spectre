@@ -10,6 +10,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -164,7 +165,7 @@ namespace Solutions {
  *
  * The magnetic field \f$b^2\f$ is the same as the \f$\gamma\ne5/3\f$.
  */
-class BondiMichel {
+class BondiMichel : public MarkAsAnalyticSolution {
   template <typename DataType>
   struct IntermediateVars;
 
