@@ -85,9 +85,9 @@ namespace AnalyticData {
  * [414 (2011) 1467](http://cdsads.u-strasbg.fr/abs/2011MNRAS.414.1467P)
  */
 class BondiHoyleAccretion {
+ public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
 
- public:
   /// The mass of the black hole, \f$M\f$.
   struct BhMass {
     using type = double;
