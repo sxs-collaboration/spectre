@@ -38,7 +38,6 @@ namespace Solutions {
  */
 class ConstantM1 {
  public:
-  using background_spacetime_type = gr::Solutions::Minkowski<3>;
 
   /// The mean flow velocity.
   struct MeanVelocity {

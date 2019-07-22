@@ -170,7 +170,6 @@ class BondiMichel {
 
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
-  using background_spacetime_type = gr::Solutions::KerrSchild;
 
   /// The mass of the black hole.
   struct Mass {

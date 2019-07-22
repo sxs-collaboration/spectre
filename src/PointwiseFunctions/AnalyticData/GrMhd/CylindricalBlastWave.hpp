@@ -57,7 +57,6 @@ namespace AnalyticData {
 class CylindricalBlastWave {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
-  using background_spacetime_type = gr::Solutions::Minkowski<3>;
 
   /// Inside InnerRadius, density is InnerDensity.
   struct InnerRadius {

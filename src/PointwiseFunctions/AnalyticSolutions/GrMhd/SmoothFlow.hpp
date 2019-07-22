@@ -40,7 +40,6 @@ namespace Solutions {
 class SmoothFlow {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
-  using background_spacetime_type = gr::Solutions::Minkowski<3>;
 
   /// The mean flow velocity.
   struct MeanVelocity {

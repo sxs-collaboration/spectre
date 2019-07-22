@@ -86,7 +86,6 @@ namespace AnalyticData {
  */
 class BondiHoyleAccretion {
   using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
-  using background_spacetime_type = gr::Solutions::KerrSchild;
 
  public:
   /// The mass of the black hole, \f$M\f$.

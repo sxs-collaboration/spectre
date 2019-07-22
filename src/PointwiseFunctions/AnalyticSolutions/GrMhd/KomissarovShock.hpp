@@ -44,7 +44,6 @@ namespace Solutions {
 class KomissarovShock {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
-  using background_spacetime_type = gr::Solutions::Minkowski<3>;
 
   struct AdiabaticIndex {
     using type = double;

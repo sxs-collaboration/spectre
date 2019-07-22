@@ -89,7 +89,6 @@ namespace Solutions {
 class AlfvenWave {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
-  using background_spacetime_type = gr::Solutions::Minkowski<3>;
 
   /// The wave number of the profile.
   struct WaveNumber {
