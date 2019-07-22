@@ -8,6 +8,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrSchildCoords.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
@@ -69,7 +70,7 @@ namespace AnalyticData {
  * the spatial velocity, and \f$W\f$ the Lorentz factor.
  */
 class MagnetizedFmDisk
-    : public RelativisticEuler::Solutions::FishboneMoncriefDisk {
+    : private RelativisticEuler::Solutions::FishboneMoncriefDisk {
  private:
   using fm_disk = RelativisticEuler::Solutions::FishboneMoncriefDisk;
 
@@ -119,6 +120,8 @@ class MagnetizedFmDisk
                        BFieldNormGridRes::default_value()) noexcept;
 
   // Overload the variables function from the base class.
+  using fm_disk::equation_of_state;
+  using fm_disk::equation_of_state_type;
   using fm_disk::variables;
 
   // @{
