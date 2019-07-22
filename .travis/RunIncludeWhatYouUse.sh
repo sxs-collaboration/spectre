@@ -24,19 +24,6 @@ check_whitelist() {
 # if on travis
 if [ $# == 0 ]; then
 
-    # Setup lmod and spack to load dependencies
-    . /etc/profile.d/lmod.sh
-    export PATH=$PATH:/work/spack/bin
-    . /work/spack/share/spack/setup-env.sh
-    spack load benchmark
-    spack load blaze
-    spack load brigand
-    spack load catch
-    spack load gsl
-    spack load libsharp
-    spack load libxsmm
-    spack load yaml-cpp
-
     SOURCE_DIR="/work/spectre/"
     BUILD_DIR=`pwd`
     IWYU_TOOL=iwyu_tool.py
