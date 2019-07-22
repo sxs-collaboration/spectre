@@ -79,8 +79,9 @@ struct InitializeGrTags {
           local_gr_vars->assign_subset(
               Parallel::get<analytic_data_tag>(local_cache)
                   .variables(inertial_coords, typename GrVars::tags_list{}));
-        })(evolution::has_analytic_solution_alias<Metavariables>{},
-           make_not_null(&gr_vars), cache);
+        })(
+        evolution::is_analytic_solution<typename Metavariables::initial_data>{},
+        make_not_null(&gr_vars), cache);
 
     return std::make_tuple(
         Initialization::merge_into_databox<InitializeGrTags, simple_tags,

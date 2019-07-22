@@ -266,7 +266,7 @@ struct Metavariables {
 
   using normal_dot_numerical_flux = NumericalFluxTag;
   using boundary_condition_tag = BoundaryConditionTag;
-  using analytic_solution_tag = boundary_condition_tag;
+  using initial_data_tag = boundary_condition_tag;
   enum class Phase { Initialization, Testing, Exit };
 };
 

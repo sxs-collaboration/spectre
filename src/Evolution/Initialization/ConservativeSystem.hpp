@@ -156,8 +156,9 @@ struct ConservativeSystem {
                       typename Metavariables::analytic_variables_tags{}));
           return Parallel::get<analytic_data_tag>(local_cache)
               .equation_of_state();
-        })(evolution::has_analytic_solution_alias<Metavariables>{},
-           make_not_null(&primitive_vars), cache);
+        })(
+        evolution::is_analytic_solution<typename Metavariables::initial_data>{},
+        make_not_null(&primitive_vars), cache);
 
     return Initialization::merge_into_databox<ConservativeSystem, simple_tags,
                                               compute_tags>(
