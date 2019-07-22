@@ -28,6 +28,11 @@ if(NOT EXISTS "${SPECTRE_PYTHON_PREFIX}/__init__.py")
     "__all__ = []")
 endif()
 
+# Write a file for installing the Python modules
+configure_file(
+  "${CMAKE_SOURCE_DIR}/src/PythonBindings/setup.py"
+  "${SPECTRE_PYTHON_PREFIX_PARENT}/setup.py")
+
 # Write a file to be able to set up the new python path.
 file(WRITE
   "${CMAKE_BINARY_DIR}/tmp/LoadPython.sh"
