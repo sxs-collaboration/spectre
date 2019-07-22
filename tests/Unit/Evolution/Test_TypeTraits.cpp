@@ -6,23 +6,10 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 
 namespace {
-template <bool HasTypeAlias>
-struct AnalyticSolution {
-  using analytic_solution = void;
-};
-template <>
-struct AnalyticSolution<false> {};
-
 struct AnalyticData : public MarkAsAnalyticData {};
 struct Solution : public MarkAsAnalyticSolution {};
 struct SolutionDependentAnalyticData : public MarkAsAnalyticData,
                                        private Solution {};
-
-static_assert(evolution::has_analytic_solution_alias_v<AnalyticSolution<true>>,
-              "Failed testing evolution::has_analytic_solution");
-static_assert(
-    not evolution::has_analytic_solution_alias_v<AnalyticSolution<false>>,
-    "Failed testing evolution::has_analytic_solution");
 
 static_assert(evolution::is_analytic_solution_v<Solution>,
               "Failed testing evolution::is_analytic_solution_v");
