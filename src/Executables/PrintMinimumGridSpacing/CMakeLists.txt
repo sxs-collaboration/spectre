@@ -1,34 +1,25 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBS_TO_LINK
-  CoordinateMaps
+set(EXECUTABLE PrintMinimumGridSpacing)
+
+add_spectre_executable(
+  ${EXECUTABLE}
+  EXCLUDE_FROM_ALL
+  ${EXECUTABLE}.cpp
+  )
+
+target_link_libraries(
+  ${EXECUTABLE}
+  ${BLAS_LIBRARIES}
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}
   DomainCreators
   Informer
-  IO
   Utilities
+  ${YAMLCPP_LIBRARIES}
   )
 
-add_spectre_parallel_executable(
-  PrintMinimumGridSpacing1D
-  PrintMinimumGridSpacing
-  Executables/PrintMinimumGridSpacing
-  Metavariables<1>
-  "${LIBS_TO_LINK}"
-  )
-
-add_spectre_parallel_executable(
-  PrintMinimumGridSpacing2D
-  PrintMinimumGridSpacing
-  Executables/PrintMinimumGridSpacing
-  Metavariables<2>
-  "${LIBS_TO_LINK}"
-  )
-
-add_spectre_parallel_executable(
-  PrintMinimumGridSpacing3D
-  PrintMinimumGridSpacing
-  Executables/PrintMinimumGridSpacing
-  Metavariables<3>
-  "${LIBS_TO_LINK}"
+set_target_properties(
+  ${EXECUTABLE}
+  PROPERTIES LINK_FLAGS "-nomain-module -nomain"
   )
