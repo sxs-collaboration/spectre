@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_Constraints.cpp
   Test_DuDt.cpp
   Test_Fluxes.cpp
+  Test_Tags.cpp
   Test_UpwindFlux.cpp
   )
 
