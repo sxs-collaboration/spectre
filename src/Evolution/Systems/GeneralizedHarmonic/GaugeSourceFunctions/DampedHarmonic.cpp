@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <limits>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/TempBuffer.hpp"
@@ -386,8 +387,15 @@ void damped_harmonic_h(
   get(h_prefac1) = get(mu_L1) * get(log_fac_1) + get(mu_L2) * get(log_fac_2);
   get(h_prefac2) = -get(mu_S) / get(lapse);
 
-  const double roll_on_h_init = DampedHarmonicGauge_detail::roll_on_function(
-      time, t_start_h_init, sigma_t_h_init);
+  const auto roll_on_h_init = [&time, &t_start_h_init, &sigma_t_h_init]() {
+    auto x = DampedHarmonicGauge_detail::roll_on_function(time, t_start_h_init,
+                                                          sigma_t_h_init);
+    if (abs(x) < std::numeric_limits<double>::epsilon()) {
+      return 0.;
+    } else {
+      return x;
+    }
+  }();
 
   // Calculate H_a
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
@@ -540,8 +548,15 @@ void spacetime_deriv_damped_harmonic_h(
       make_not_null(&log_fac_2), lapse, sqrt_det_spatial_metric, exp_fac_2);
 
   // Tempering functions
-  const auto roll_on_h_init = DampedHarmonicGauge_detail::roll_on_function(
-      time, t_start_h_init, sigma_t_h_init);
+  const auto roll_on_h_init = [&time, &t_start_h_init, &sigma_t_h_init]() {
+    auto x = DampedHarmonicGauge_detail::roll_on_function(time, t_start_h_init,
+                                                          sigma_t_h_init);
+    if (abs(x) < std::numeric_limits<double>::epsilon()) {
+      return 0.;
+    } else {
+      return x;
+    }
+  }();
   const auto roll_on_L1 = DampedHarmonicGauge_detail::roll_on_function(
       time, t_start_L1, sigma_t_L1);
   const auto roll_on_L2 = DampedHarmonicGauge_detail::roll_on_function(
@@ -565,9 +580,15 @@ void spacetime_deriv_damped_harmonic_h(
   // Calc \f$ \mu_2 = \mu_{L2} log(1/N) = R W log(1/N)^5\f$
   get(mu2) = get(mu_L2) * get(log_fac_2);
 
-  const auto d0_roll_on_h_init =
-      DampedHarmonicGauge_detail::time_deriv_of_roll_on_function(
-          time, t_start_h_init, sigma_t_h_init);
+  const auto d0_roll_on_h_init = [&time, &t_start_h_init, &sigma_t_h_init]() {
+    auto x = DampedHarmonicGauge_detail::time_deriv_of_roll_on_function(
+        time, t_start_h_init, sigma_t_h_init);
+    if (abs(x) < std::numeric_limits<double>::epsilon()) {
+      return 0.;
+    } else {
+      return x;
+    }
+  }();
   const auto d0_roll_on_L1 =
       DampedHarmonicGauge_detail::time_deriv_of_roll_on_function(
           time, t_start_L1, sigma_t_L1);
