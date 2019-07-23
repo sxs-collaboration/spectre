@@ -38,7 +38,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/Hll.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
@@ -51,7 +51,7 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/IsentropicVortex.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/RiemannProblem.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
@@ -84,7 +84,7 @@ template <size_t Dim>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
 
-  using analytic_solution = NewtonianEuler::Solutions::IsentropicVortex<Dim>;
+  using analytic_solution = NewtonianEuler::Solutions::RiemannProblem<Dim>;
 
   using system = NewtonianEuler::System<
       Dim, typename analytic_solution::equation_of_state_type>;
@@ -100,8 +100,8 @@ struct EvolutionMetavars {
   using equation_of_state_tag = hydro::Tags::EquationOfState<
       typename analytic_solution_tag::type::equation_of_state_type>;
 
-  using normal_dot_numerical_flux = OptionTags::NumericalFlux<
-      dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
+  using normal_dot_numerical_flux =
+      OptionTags::NumericalFlux<dg::NumericalFluxes::Hll<system>>;
 
   using limiter = OptionTags::Limiter<Limiters::Minmod<
       Dim, tmpl::list<NewtonianEuler::Tags::MassDensityCons<DataVector>,

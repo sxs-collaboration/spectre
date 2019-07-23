@@ -8,27 +8,29 @@ Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.0001
   TimeStepper:
-    AdamsBashforthN:
-      Order: 3
+    RungeKutta3
 
 DomainCreator:
   Rectangle:
-    LowerBound: [-1.0, -1.0]
-    UpperBound: [1.0, 1.0]
+    LowerBound: [-0.25, 0.0]
+    UpperBound: [0.75, 0.1]
     IsPeriodicIn: [false, false]
-    InitialRefinement: [1, 1]
-    InitialGridPoints: [5, 5]
+    InitialRefinement: [4, 0]
+    InitialGridPoints: [2, 2]
 
 AnalyticSolution:
-  IsentropicVortex:
+  RiemannProblem:
     AdiabaticIndex: 1.4
-    Center: [0.0, 0.0]
-    MeanVelocity: [1.0, 1.0]
-    PerturbAmplitude: 0.0
-    Strength: 5.0
+    InitialPosition: 0.25
+    LeftMassDensity: 1.0
+    LeftVelocity: [0.0, 0.5]
+    LeftPressure: 1.0
+    RightMassDensity: 0.125
+    RightVelocity: [0.0, 0.2]
+    RightPressure: 0.1
 
 NumericalFlux:
-  LocalLaxFriedrichs:
+  Hll:
 
 Limiter:
   Minmod:
@@ -42,10 +44,9 @@ EventsAndTriggers:
   # ? EveryNSlabs:
   #     N: 100
   #     Offset: 0
-  # : - ObserveErrorNorms
-  #   - ObserveFields:
+  # : - ObserveFields:
   #       VariablesToObserve: [MassDensity]
-  # ? PastTime: 1.0001
+  # ? PastTime: 0.7501
   ? SpecifiedSlabs:
       Slabs: [10]
   : - Completion

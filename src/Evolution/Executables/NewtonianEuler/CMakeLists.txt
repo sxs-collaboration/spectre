@@ -18,6 +18,14 @@ set(LIBS_TO_LINK
   )
 
 add_spectre_parallel_executable(
+  EvolveNewtonianEuler1D
+  EvolveNewtonianEuler
+  Evolution/Executables/NewtonianEuler
+  EvolutionMetavars<1>
+  "${LIBS_TO_LINK}"
+  )
+
+add_spectre_parallel_executable(
   EvolveNewtonianEuler2D
   EvolveNewtonianEuler
   Evolution/Executables/NewtonianEuler
