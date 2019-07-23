@@ -95,6 +95,14 @@ namespace GeneralizedHarmonic {
  *   - Exponents \f$ e_X\f$ are input as exp\_X.
  *   - The spatial weight function is specified completely by \f$\{\f$sigma\_r
  * \f$\}\f$.
+ *
+ * Note on comparison with SpEC:
+ *   - To reproduce the gauge roll-on of SpEC, use
+ *          `use_spec_style_rollon = true`
+ *          (here, and when calling spacetime_deriv_damped_harmonic_h())
+ *   - This will replace: \f$\mu_X \rightarrow
+ *                           R_{H_\mathrm{init}}(t) \times\mu_X\f$
+ *          for \f$ X=\{L1, L2, S\}\f$ in \f$ H_a\f$.
  */
 template <size_t SpatialDim, typename Frame>
 void damped_harmonic_h(
@@ -115,7 +123,11 @@ void damped_harmonic_h(
     double sigma_t_L1, double t_start_L2, double sigma_t_L2, double t_start_S,
     double sigma_t_S,
     // weight function
-    double sigma_r) noexcept;
+    double sigma_r,
+    // toggle the switch below to change
+    // H = (1 - R0) H0 + mu1 T1 + mu2 T2 + muS TS, to
+    // H = (1 - R0) H0 + R0 (mu1 T1 + mu2 T2 + muS TS)
+    bool use_spec_style_rollon = false) noexcept;
 
 /*!
  * \brief Damped harmonic gauge source function.
@@ -136,16 +148,15 @@ struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
       Tags::GaugeHSpatialWeightDecayWidth<Frame>>;
 
   static constexpr db::const_item_type<Tags::GaugeH<SpatialDim, Frame>>
-  function(
-      const db::const_item_type<Tags::InitialGaugeH<SpatialDim, Frame>>&
-          gauge_h_init,
-      const Scalar<DataVector>& lapse,
-      const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-      const Scalar<DataVector>& sqrt_det_spatial_metric,
-      const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
-      const double& time, const double& t_start, const double& sigma_t,
-      const tnsr::I<DataVector, SpatialDim, Frame>& coords,
-      const double& sigma_r) noexcept {
+  function(const db::const_item_type<Tags::InitialGaugeH<SpatialDim, Frame>>&
+               gauge_h_init,
+           const Scalar<DataVector>& lapse,
+           const tnsr::I<DataVector, SpatialDim, Frame>& shift,
+           const Scalar<DataVector>& sqrt_det_spatial_metric,
+           const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
+           const double& time, const double& t_start, const double& sigma_t,
+           const tnsr::I<DataVector, SpatialDim, Frame>& coords,
+           const double& sigma_r) noexcept {
     db::item_type<Tags::GaugeH<SpatialDim, Frame>> gauge_h{
         get_size(get(lapse))};
     GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame>(
@@ -229,6 +240,15 @@ struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
  * [\mathrm{log}(\sqrt{g}/N)^{e_S}] \\
  *                  +& A_S \mathrm{log}(\sqrt{g} / N)^{e_S} \partial_a [R_S(t)
  * W(x^i)]. \f}
+ *
+ * Note on comparison with SpEC:
+ *   - To reproduce the gauge roll-on of SpEC, use
+ *          `use_spec_style_rollon = true`
+ *          (here, and when calling damped_harmonic_h())
+ *   - This will replace: \f$\mu_X \rightarrow
+ *                           R_{H_\mathrm{init}}(t) \times\mu_X\f$
+ *          for \f$ X=\{L1, L2, S\}\f$ in \f$ H_a\f$
+ *          (before taking its partial derivative).
  */
 template <size_t SpatialDim, typename Frame>
 void spacetime_deriv_damped_harmonic_h(
@@ -257,7 +277,11 @@ void spacetime_deriv_damped_harmonic_h(
     double sigma_t_L1, double t_start_L2, double sigma_t_L2, double t_start_S,
     double sigma_t_S,
     // weight function
-    double sigma_r) noexcept;
+    double sigma_r,
+    // toggle the switch below to change
+    // H = (1 - R0) H0 + mu1 T1 + mu2 T2 + muS TS, to
+    // H = (1 - R0) H0 + R0 (mu1 T1 + mu2 T2 + muS TS)
+    bool use_spec_style_rollon = false) noexcept;
 
 /*!
  * \brief Spacetime derivatives of the damped harmonic gauge source function.
