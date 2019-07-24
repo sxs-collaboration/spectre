@@ -4,8 +4,10 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <algorithm>
+#include <boost/iterator/transform_iterator.hpp>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -115,72 +117,92 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
           volume_file.get_extents(observation_id));
     CHECK(volume_file.get_observation_value(observation_id) ==
           observation_value);
-    CHECK(volume_file.get_grid_names(observation_id) == grid_names);
+
+    // Check that all of the grid names were written correctly by checking their
+    // equality of elements
+    const std::vector<std::string> read_grid_names =
+        volume_file.get_grid_names(observation_id);
+    [&read_grid_names, &grid_names]() {
+      auto sortable_grid_names = grid_names;
+      auto sortable_read_grid_names = read_grid_names;
+      std::sort(sortable_grid_names.begin(), sortable_grid_names.end(),
+                std::less<>{});
+      std::sort(sortable_read_grid_names.begin(),
+                sortable_read_grid_names.end(), std::less<>{});
+      REQUIRE(sortable_read_grid_names == sortable_grid_names);
+    }();
+    // Find the order the grids were written in
+    std::vector<size_t> grid_positions(read_grid_names.size());
+    for (size_t i = 0; i < grid_positions.size(); i++) {
+      auto grid_name = grid_names[i];
+      auto position =
+          std::find(read_grid_names.begin(), read_grid_names.end(), grid_name);
+      // We know the grid name is in the read_grid_names because of the previous
+      // so we know `position` is an actual pointer to an element
+      grid_positions[i] =
+          static_cast<size_t>(std::distance(read_grid_names.begin(), position));
+    }
+
     const std::vector<std::string> expected_components{
-        "S", "T_x", "T_y", "T_z", "x-coord", "y-coord", "z-coord"};
+        "S", "x-coord", "y-coord", "z-coord", "T_x", "T_y", "T_z",
+    };
     const auto read_components =
         volume_file.list_tensor_components(observation_id);
     CHECK(alg::all_of(read_components,
                       [&expected_components](const std::string& id) {
                         return alg::found(expected_components, id);
                       }));
-    // These lambdas are needed to get the data coming from the first and
-    // second element, they will hopefully soon be replaced by a general
-    // function to check volume data
-    const auto get_first = [&volume_file,
-                            &observation_id](DataVector all_data) {
-      return DataVector(&all_data[0],
-                        static_cast<size_t>(alg::accumulate(
-                            volume_file.get_extents(observation_id)[0], 1,
-                            std::multiplies<>{})));
+    // Helper Function to get number of points on a particular grid
+    const auto accumulate_extents =
+        [](const std::vector<size_t>& grid_extents) {
+          return alg::accumulate(grid_extents, 1, std::multiplies<>{});
+        };
+
+    const auto read_extents = volume_file.get_extents(observation_id);
+    std::vector<size_t> element_num_points(
+        boost::make_transform_iterator(read_extents.begin(),
+                                       accumulate_extents),
+        boost::make_transform_iterator(read_extents.end(), accumulate_extents));
+    const auto read_points_by_element = [&element_num_points]() {
+      std::vector<size_t> read_points(element_num_points.size());
+      read_points[0] = 0;
+      for (size_t index = 1; index < element_num_points.size(); index++) {
+        read_points[index] =
+            read_points[index - 1] + element_num_points[index - 1];
+      }
+      return read_points;
+    }();
+    // Given a DataVector, corresponding to contiguous data read out of a
+    // file, find the data which was written by the grid whose extents are
+    // found at position `grid_index` in the vector of extents.
+    const auto get_grid_data = [&element_num_points, &read_points_by_element](
+                                   DataVector all_data,
+                                   const size_t grid_index) {
+      DataVector result(element_num_points[grid_index]);
+      // clang-tidy: do not use pointer arithmetic
+      std::copy(&all_data[read_points_by_element[grid_index]],
+                &all_data[read_points_by_element[grid_index]] +  // NOLINT
+                    element_num_points[grid_index],
+                result.begin());
+      return result;
     };
-    const auto get_second = [&volume_file, &observation_id,
-                             &get_first](DataVector all_data) {
-      return DataVector(&all_data[get_first(all_data).size()],
-                        static_cast<size_t>(alg::accumulate(
-                            volume_file.get_extents(observation_id)[1], 1,
-                            std::multiplies<>{})));
-    };
-    CHECK(get_first(volume_file.get_tensor_component(observation_id, "S")) ==
-          observation_value * tensor_components_and_coords[0]);
-    CHECK(get_second(volume_file.get_tensor_component(observation_id, "S")) ==
-          observation_value * tensor_components_and_coords[1]);
-
-    CHECK(get_first(
-              volume_file.get_tensor_component(observation_id, "x-coord")) ==
-          observation_value * tensor_components_and_coords[1]);
-    CHECK(get_second(
-              volume_file.get_tensor_component(observation_id, "x-coord")) ==
-          observation_value * tensor_components_and_coords[0]);
-
-    CHECK(get_first(
-              volume_file.get_tensor_component(observation_id, "y-coord")) ==
-          observation_value * tensor_components_and_coords[2]);
-    CHECK(get_second(
-              volume_file.get_tensor_component(observation_id, "y-coord")) ==
-          observation_value * tensor_components_and_coords[5]);
-
-    CHECK(get_first(
-              volume_file.get_tensor_component(observation_id, "z-coord")) ==
-          observation_value * tensor_components_and_coords[3]);
-    CHECK(get_second(
-              volume_file.get_tensor_component(observation_id, "z-coord")) ==
-          observation_value * tensor_components_and_coords[3]);
-
-    CHECK(get_first(volume_file.get_tensor_component(observation_id, "T_x")) ==
-          observation_value * tensor_components_and_coords[4]);
-    CHECK(get_second(volume_file.get_tensor_component(observation_id, "T_x")) ==
-          observation_value * tensor_components_and_coords[6]);
-
-    CHECK(get_first(volume_file.get_tensor_component(observation_id, "T_y")) ==
-          observation_value * tensor_components_and_coords[5]);
-    CHECK(get_second(volume_file.get_tensor_component(observation_id, "T_y")) ==
-          observation_value * tensor_components_and_coords[4]);
-
-    CHECK(get_first(volume_file.get_tensor_component(observation_id, "T_z")) ==
-          observation_value * tensor_components_and_coords[6]);
-    CHECK(get_second(volume_file.get_tensor_component(observation_id, "T_z")) ==
-          observation_value * tensor_components_and_coords[2]);
+    // The order the fake tensor data was assigned to the tensor components
+    std::vector<std::vector<size_t>> grid_data_orders{{0, 1, 2, 3, 4, 5, 6},
+                                                      {1, 0, 5, 3, 6, 4, 2}};
+    // The tensor components can be written in any order to the file, we loop
+    // over the expected components rather than the read components because they
+    // are in a particular order.
+    for (size_t i = 0; i < expected_components.size(); i++) {
+      const auto& component = expected_components[i];
+      // for each grid
+      for (size_t j = 0; j < grid_names.size(); j++) {
+        CHECK(get_grid_data(
+                  volume_file.get_tensor_component(observation_id, component),
+                  grid_positions[j]) ==
+              observation_value *
+                  tensor_components_and_coords[grid_data_orders[j][i]]);
+      }
+    }
   };
   for (size_t i = 0; i < observation_ids.size(); ++i) {
     check_time(observation_ids[i], observation_values[i]);

@@ -36,6 +36,7 @@
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeString.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/IO/Observers/ObserverHelpers.hpp"
@@ -211,7 +212,9 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
   const std::vector<std::vector<size_t>> read_extents =
       volume_file.get_extents(temporal_id);
   // The data is stored contiguously, and each element has a subset of the
-  // data
+  // data.  We need to keep track of how many points have already been checked
+  // so that we know where to look in the tensor component data for the current
+  // grid's data.
   size_t points_processed = 0;
   for (size_t i = 0; i < sorted_element_ids.size(); i++) {
     const auto& element_id = sorted_element_ids[i];
@@ -222,13 +225,10 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
     const auto volume_data_fakes = make_fake_volume_data(array_id, "");
     // Each element contains as many data points as the product of its
     // extents, compute this number
-    const size_t stride = [&volume_data_fakes]() {
-      size_t local_points = 1;
-      for (const auto& extent : std::get<0>(volume_data_fakes)) {
-        local_points *= extent;
-      }
-      return local_points;
-    }();
+    const size_t stride =
+      alg::accumulate(std::get<0>(volume_data_fakes),
+                       static_cast<size_t>(1), std::multiplies<>{});
+
     // Check that the extents and tensor data were correctly written
     CHECK(std::vector<size_t>{std::get<0>(volume_data_fakes)[0],
                               std::get<0>(volume_data_fakes)[1]} ==
