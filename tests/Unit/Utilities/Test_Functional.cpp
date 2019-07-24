@@ -174,12 +174,6 @@ using DoubleSet = tmpl::list<double, std::complex<double>>;
 
 using Bound = std::array<double, 2>;
 
-template <typename ValType, typename Gen, typename Dist>
-ValType expandable_random_val(Gen& gen, Dist& dist, size_t /*meta*/) noexcept {
-  return make_with_random_values<ValType>(make_not_null(&gen),
-                                          make_not_null(&dist));
-}
-
 template <typename C, typename ValType, typename Func, typename Gen,
           size_t... Is>
 void test_functional_against_function(
@@ -189,14 +183,13 @@ void test_functional_against_function(
                 "test was passed incorrect number of arguments");
   UniformCustomDistribution<typename tt::get_fundamental_type_t<ValType>> dist{
       bounds};
-  [&func](auto... arg) noexcept {
-    if (cpp17::is_same_v<ValType,
-                         typename tt::get_fundamental_type_t<ValType>>) {
-      CHECK_ITERABLE_APPROX(C{}(arg...), func(arg...));
-    } else {
-      CHECK(C{}(arg...) == func(arg...));
-    }
-  }(expandable_random_val<ValType>(gen, dist, Is)...);
+  const auto args = make_with_random_values<std::array<ValType, sizeof...(Is)>>(
+      make_not_null(&gen), make_not_null(&dist));
+  if (cpp17::is_same_v<ValType, typename tt::get_fundamental_type_t<ValType>>) {
+    CHECK_ITERABLE_APPROX(C{}(args[Is]...), func(args[Is]...));
+  } else {
+    CHECK(C{}(args[Is]...) == func(args[Is]...));
+  }
 }
 
 /// [using_sinusoid]
