@@ -4,6 +4,9 @@
 # Executable: PrintMinimumGridSpacing
 # Check: execute
 
+Dimension:
+  Value: 2
+
 DomainCreator:
   Disk:
     InnerRadius: 1.

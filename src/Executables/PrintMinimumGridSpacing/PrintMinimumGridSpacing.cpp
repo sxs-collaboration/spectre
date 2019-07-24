@@ -12,10 +12,39 @@
 
 using frame = Frame::Inertial;
 
+class DimensionOption;
+struct Dimension {
+  using type = DimensionOption;
+  static constexpr OptionString help = {"help"};
+};
+
+class DimensionOption {
+ public:
+  struct Value {
+    using type = size_t;
+    static constexpr OptionString help = {
+        "Defines a number of dimensions (1, 2, or 3)"};
+  };
+  using options = tmpl::list<Value>;
+  static constexpr OptionString help = {
+      "Defines a number of dimensions (1, 2, or 3)"};
+  DimensionOption() = default;
+  DimensionOption(size_t value, const OptionContext& context)
+      : value_(std::move(value)) {
+    if (value_ != 1 and value_ != 2 and value_ != 3) {
+      PARSE_ERROR(context, "Dimemsion Value must be 1, 2, or 3 but is "
+                               << value_);
+    }
+  }
+  size_t value_{};
+};
+
 template <size_t Dim>
 void compute_and_print_minimum_grid_spacing(std::string input_file) {
-  Options<tmpl::list<OptionTags::DomainCreator<Dim, frame>>> options("");
+  Options<tmpl::list<Dimension, OptionTags::DomainCreator<Dim, frame>>> options(
+      "");
   options.parse_file(input_file);
+
   const auto domain_creator =
       options.template get<OptionTags::DomainCreator<Dim, frame>>();
   auto domain = domain_creator->create_domain();
@@ -49,12 +78,16 @@ std::string custom_help_msg() {
   std::ostringstream ss;
   ss << "\n==== Description of expected options:\n" << help_text
      << "\n\nOptions:\n"
+     << "  " << std::setw(max_label_size + 2) << std::left << "Dimension"
+     << "Value\n"
+     << "  " << std::setw(max_label_size + 2) << std::left << ""
+     << "The dimensions of the desired domain (1, 2, or 3).\n\n"
      << "  " << std::setw(max_label_size + 2) << std::left << "DomainCreator"
      << "DomainCreator<Dim, Frame::Inertial>\n"
      << "  " << std::setw(max_label_size + 2) << std::left << ""
      << "The domain to create initially.\n"
      << "  " << std::setw(max_label_size + 2) << std::left << ""
-     << "Dim must correspond to --dimensions arg.\n\n";
+     << "Dim must be equal to Dimension's Value.\n\n";
 
   return ss.str();
 }
@@ -69,8 +102,7 @@ int main(int argc, char* argv[]) {
   bpo::options_description command_line_options;
   command_line_options.add_options()
       ("help,h", "Describe program options")
-      ("input-file", bpo::value<std::string>(), "Input file name")
-      ("dimensions", bpo::value<size_t>(), "Number of dimensions");
+      ("input-file", bpo::value<std::string>(), "Input file name");
 
   bpo::command_line_parser command_line_parser(argc, argv);
   command_line_parser.options(command_line_options);
@@ -91,11 +123,24 @@ int main(int argc, char* argv[]) {
   const std::string input_file =
       parsed_command_line_options["input-file"].as<std::string>();
 
-  if (parsed_command_line_options.count("dimensions") == 0) {
-    ERROR("No default number of dimensions.  Pass --dimensions.");
+  // Parse and check only the Dimension option first
+  YAML::Node config;
+
+  try {
+    config = YAML::LoadFile(input_file);
   }
-  const size_t dimensions =
-      parsed_command_line_options["dimensions"].as<size_t>();
+  catch (YAML::BadFile& /*e*/) {
+    ERROR("Could not open the input file " << input_file);
+  }
+  catch (const YAML::Exception& e) {
+    ERROR("Unable to parse input file " << input_file << "\n\n" << e.msg);
+  }
+
+  if (not(config["Dimension"]["Value"])) {
+    ERROR("Need to specify Dimension and its Value:\n\n" << custom_help_msg());
+  }
+
+  const size_t dimensions = config["Dimension"]["Value"].as<size_t>();
 
   if (dimensions == 1) {
     compute_and_print_minimum_grid_spacing<1>(input_file);
@@ -104,6 +149,6 @@ int main(int argc, char* argv[]) {
   } else if (dimensions == 3) {
     compute_and_print_minimum_grid_spacing<3>(input_file);
   } else {
-    ERROR("dimemsions must be 1, 2, or 3 but is " << dimensions);
+    ERROR("Dimension Value must be 1, 2, or 3 but is " << dimensions);
   }
 }

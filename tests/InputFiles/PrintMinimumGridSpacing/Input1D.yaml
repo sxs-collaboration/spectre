@@ -4,6 +4,9 @@
 # Executable: PrintMinimumGridSpacing
 # Check: execute
 
+Dimension:
+  Value: 1
+
 DomainCreator:
   Interval:
     LowerBound: [0]
