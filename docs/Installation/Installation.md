@@ -163,9 +163,7 @@ To use Singularity you must:
 3. Run `singularity build spectre.img
    docker://sxscollaboration/spectrebuildenv:latest`.
 4. To start the container run `singularity shell spectre.img` and you
-   will be dropped into a bash shell. The first thing you will always need to do
-   when entering the container is:
-   `. SPECTRE_HOME/containers/SingularityLoad.sh`
+   will be dropped into a bash shell.
 5. Run `cd SPECTRE_HOME && mkdir build && cd build` to set up a build
    directory.
 6. To build SpECTRE run
