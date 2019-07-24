@@ -62,7 +62,7 @@ endfunction()
 # '# Executable: EvolveScalarWave1D'
 # with the name of the executable that should be able to parse and run
 # using the input file, and a line of the form:
-# '# Check: execute'
+# '# Check: parse;execute'
 # OR
 # '# Check:'
 # If 'execute' is present then the input file will not just be parsed,
@@ -87,16 +87,32 @@ function(add_input_file_tests INPUT_FILE_DIR)
       INPUT_FILE_EXECUTABLE "${INPUT_FILE_EXECUTABLE}")
     string(STRIP "${INPUT_FILE_EXECUTABLE}" INPUT_FILE_EXECUTABLE)
 
-    # Read what tests to do. Currently only "execute" is available
-    # "parse" is ignored because it's always run, empty is accepted.
+    # Read what tests to do. Currently "execute" and "parse" are available.
     string(REGEX MATCH "#[ ]*Check:[^\n]+"
       INPUT_FILE_CHECKS "${INPUT_FILE_CONTENTS}")
     # Extract list of checks to perform
     string(REGEX REPLACE "#[ ]*Check:[ ]*" ""
       INPUT_FILE_CHECKS "${INPUT_FILE_CHECKS}")
     string(STRIP "${INPUT_FILE_CHECKS}" INPUT_FILE_CHECKS)
-    set(INPUT_FILE_CHECKS "parse;${INPUT_FILE_CHECKS}")
+    set(INPUT_FILE_CHECKS "${INPUT_FILE_CHECKS}")
     list(REMOVE_DUPLICATES "INPUT_FILE_CHECKS")
+    # Convert all the checks to lower case to make life easier.
+    string(TOLOWER "${INPUT_FILE_CHECKS}" INPUT_FILE_CHECKS)
+
+    # Make sure that the 'parse' check is listed. If not, print an
+    # error message that explains that it's needed and why.
+    list(FIND "INPUT_FILE_CHECKS" "parse" FOUND_PARSE)
+    if (${FOUND_PARSE} EQUAL -1)
+      message(FATAL_ERROR
+        "The input file: "
+        "'${INPUT_FILE}' "
+        "does not specify the 'parse' check. All input file tests must"
+        " specify the 'parse' check which runs the executable passing"
+        " the '--check-options' flag. With this flag the executable"
+        " should check that the input file parses correctly and that"
+        " the values specified in the input file do not violate any"
+        " bounds or sanity checks.")
+    endif (${FOUND_PARSE} EQUAL -1)
 
     # Read the timeout duration specified in input file, empty is accepted.
     # The default duration is 2 seconds.

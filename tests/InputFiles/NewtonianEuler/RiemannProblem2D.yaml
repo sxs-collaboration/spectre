@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 # Executable: EvolveRiemannProblem2D
-# Check: execute
+# Check: parse;execute
 
 Evolution:
   InitialTime: 0.0

@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 # Executable: EvolveScalarWave2D
-# Check: execute
+# Check: parse;execute
 
 AnalyticSolution:
   PlaneWave:

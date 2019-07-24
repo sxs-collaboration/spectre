@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 # Executable: ExportCoordinates2D
-# Check: execute
+# Check: parse;execute
 # ExpectedOutput:
 #   ExportCoordinates2DVolume0.h5
 
