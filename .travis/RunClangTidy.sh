@@ -3,19 +3,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Setup lmod and spack to load dependencies
-. /etc/profile.d/lmod.sh
-export PATH=$PATH:/work/spack/bin
-. /work/spack/share/spack/setup-env.sh
-spack load benchmark
-spack load blaze
-spack load brigand
-spack load catch
-spack load gsl
-spack load libsharp
-spack load libxsmm
-spack load yaml-cpp
-
 BUILD_DIR=`pwd`
 git clone ${UPSTREAM_REPO} /work/spectre_upstream
 cd /work/spectre_upstream

@@ -72,6 +72,18 @@ std::ostream& operator<<(std::ostream& os,
                          const Quadrature& quadrature) noexcept;
 /// \endcond
 
+namespace detail {
+constexpr size_t minimum_number_of_points(
+    const Basis /*basis*/, const Quadrature quadrature) noexcept {
+  if (quadrature == Quadrature::Gauss) {
+    return 1;
+  } else if (quadrature == Quadrature::GaussLobatto) {
+    return 2;
+  }
+  return std::numeric_limits<size_t>::max();
+}
+}  // namespace detail
+
 /*!
  * \brief Minimum number of possible collocation points for a quadrature type.
  *
@@ -79,16 +91,9 @@ std::ostream& operator<<(std::ostream& os,
  * it must have at least two collocation points. Gauss quadrature can have only
  * one collocation point.
  */
-template <Basis, Quadrature>
-constexpr size_t minimum_number_of_points{std::numeric_limits<size_t>::max()};
-/// \cond
-template <Basis BasisType>
-constexpr size_t minimum_number_of_points<BasisType, Quadrature::Gauss> = 1;
-template <Basis BasisType>
-constexpr size_t minimum_number_of_points<BasisType, Quadrature::GaussLobatto> =
-    2;
-/// \endcond
-
+template <Basis basis, Quadrature quadrature>
+constexpr size_t minimum_number_of_points =
+    detail::minimum_number_of_points(basis, quadrature);
 /*!
  * \brief Maximum number of allowed collocation points.
  */
