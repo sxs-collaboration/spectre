@@ -1,22 +1,21 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY DgSubcell)
+set(LIBRARY DgSubcellHelpers)
 
 add_spectre_library(${LIBRARY})
 
 spectre_target_headers(
   ${LIBRARY}
-  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/src
+  INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/tests/Unit/
   HEADERS
-  DgSubcell.hpp
-  Matrices.hpp
+  ProjectionTestHelpers.hpp
   )
 
 spectre_target_sources(
   ${LIBRARY}
   PRIVATE
-  Matrices.cpp
+  ProjectionTestHelpers.cpp
   )
 
 target_link_libraries(
@@ -26,7 +25,5 @@ target_link_libraries(
   Spectral
 
   PRIVATE
-  Blas
-  ErrorHandling
   Utilities
   )
