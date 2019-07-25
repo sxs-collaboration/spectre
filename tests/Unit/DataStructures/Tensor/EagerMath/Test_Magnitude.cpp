@@ -13,8 +13,14 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Utilities/Functional.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/Numeric.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
@@ -261,6 +267,82 @@ void test_root_tags() {
   CHECK(Tags::Sqrt<Tag>::name() == "Sqrt(" + Tag::name() + ")");
   /// [sqrt_name]
 }
+
+void test_l2_norm_tag() {
+  constexpr size_t npts = 5;
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> dist{-1., 1.};
+  const auto nn_generator = make_not_null(&generator);
+  const auto nn_dist = make_not_null(&dist);
+
+  const Scalar<DataVector> my_scalar{DataVector{npts, -3.0}};
+  const auto vec = make_with_random_values<tnsr::I<DataVector, 3, Frame::Grid>>(
+      nn_generator, nn_dist, my_scalar);
+  const auto covec =
+      make_with_random_values<tnsr::i<DataVector, 3, Frame::Grid>>(
+          nn_generator, nn_dist, my_scalar);
+  const auto psi =
+      make_with_random_values<tnsr::ii<DataVector, 3, Frame::Grid>>(
+          nn_generator, nn_dist, my_scalar);
+  const auto invpsi =
+      make_with_random_values<tnsr::II<DataVector, 3, Frame::Grid>>(
+          nn_generator, nn_dist, my_scalar);
+
+  const auto box = db::create<
+      db::AddSimpleTags<MyScalar, Vector, Covector<3>, Metric, InverseMetric>,
+      db::AddComputeTags<
+          Tags::L2Norm<MyScalar>, Tags::L2Norm<Vector>,
+          Tags::L2Norm<Covector<3>>, Tags::L2Norm<Metric>,
+          Tags::L2Norm<InverseMetric>, Tags::L2Norm<MyScalar, true>,
+          Tags::L2Norm<Vector, true>, Tags::L2Norm<Covector<3>, true>,
+          Tags::L2Norm<Metric, true>, Tags::L2Norm<InverseMetric, true>>>(
+      my_scalar, vec, covec, psi, invpsi);
+
+  const auto local_norm_vec =
+      sqrt(square(get<0>(vec)) + square(get<1>(vec)) + square(get<2>(vec)));
+  const auto local_norm_covec = sqrt(
+      square(get<0>(covec)) + square(get<1>(covec)) + square(get<2>(covec)));
+  const auto local_norm_psi = sqrt(
+      square(get<0, 0>(psi)) + square(get<0, 1>(psi)) + square(get<0, 2>(psi)) +
+      square(get<1, 0>(psi)) + square(get<1, 1>(psi)) + square(get<1, 2>(psi)) +
+      square(get<2, 0>(psi)) + square(get<2, 1>(psi)) + square(get<2, 2>(psi)));
+  const auto local_norm_invpsi =
+      sqrt(square(get<0, 0>(invpsi)) + square(get<0, 1>(invpsi)) +
+           square(get<0, 2>(invpsi)) + square(get<1, 0>(invpsi)) +
+           square(get<1, 1>(invpsi)) + square(get<1, 2>(invpsi)) +
+           square(get<2, 0>(invpsi)) + square(get<2, 1>(invpsi)) +
+           square(get<2, 2>(invpsi)));
+
+  CHECK(get(db::get<Tags::L2Norm<MyScalar>>(box)) == DataVector{npts, 3.0});
+  CHECK(get(db::get<Tags::L2Norm<Vector>>(box)) == local_norm_vec);
+  CHECK(get(db::get<Tags::L2Norm<Covector<3>>>(box)) == local_norm_covec);
+  CHECK(get(db::get<Tags::L2Norm<Metric>>(box)) == local_norm_psi);
+  CHECK(get(db::get<Tags::L2Norm<InverseMetric>>(box)) == local_norm_invpsi);
+
+  using PlusSquare = funcl::Plus<funcl::Identity, funcl::Square<>>;
+  const double local_acc_norm_scalar =
+      alg::accumulate(DataVector{npts, 3.0}, 0., PlusSquare{});
+  const double local_acc_norm_vec =
+      alg::accumulate(local_norm_vec, 0., PlusSquare{});
+  const double local_acc_norm_covec =
+      alg::accumulate(local_norm_covec, 0., PlusSquare{});
+  const double local_acc_norm_psi =
+      alg::accumulate(local_norm_psi, 0., PlusSquare{});
+  const double local_acc_norm_invpsi =
+      alg::accumulate(local_norm_invpsi, 0., PlusSquare{});
+
+  CHECK(db::get<Tags::L2Norm<MyScalar, true>>(box) == local_acc_norm_scalar);
+  CHECK(db::get<Tags::L2Norm<Vector, true>>(box) == local_acc_norm_vec);
+  CHECK(db::get<Tags::L2Norm<Covector<3>, true>>(box) == local_acc_norm_covec);
+  CHECK(db::get<Tags::L2Norm<Metric, true>>(box) == local_acc_norm_psi);
+  CHECK(db::get<Tags::L2Norm<InverseMetric, true>>(box) ==
+        local_acc_norm_invpsi);
+
+  using Tag = MyScalar;
+  /// [l2norm_name]
+  CHECK(Tags::L2Norm<Tag>::name() == "L2Norm(" + Tag::name() + ")");
+  /// [l2norm_name]
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
@@ -270,4 +352,5 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Magnitude",
   test_magnitude_tags();
   test_general_magnitude_tags();
   test_root_tags();
+  test_l2_norm_tag();
 }
