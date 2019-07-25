@@ -17,10 +17,9 @@
 namespace TestHelpers::evolution::dg::subcell {
 // computes a simple polynomial over the grid that we then project and
 // reconstruct in the tests.
-template <size_t Dim>
-DataVector cell_values(
-    const size_t max_polynomial_degree_plus_one,
-    const tnsr::I<DataVector, Dim, Frame::Logical>& coords) noexcept {
+template <size_t Dim, typename Fr>
+DataVector cell_values(const size_t max_polynomial_degree_plus_one,
+                       const tnsr::I<DataVector, Dim, Fr>& coords) noexcept {
   DataVector result(get<0>(coords).size(), 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     for (size_t i = 0; i < max_polynomial_degree_plus_one; ++i) {
@@ -141,13 +140,17 @@ DataVector cell_averages_times_volume(
 
 #define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(r, data)                                  \
-  template DataVector cell_values(                              \
-      size_t max_polynomial_degree_plus_one,                    \
-      const tnsr::I<DataVector, GET_DIM(data), Frame::Logical>& \
-          coords) noexcept;                                     \
-  template DataVector cell_averages_times_volume(               \
-      size_t max_polynomial_degree_plus_one,                    \
+#define INSTANTIATION(r, data)                                   \
+  template DataVector cell_values(                               \
+      size_t max_polynomial_degree_plus_one,                     \
+      const tnsr::I<DataVector, GET_DIM(data), Frame::Logical>&  \
+          coords) noexcept;                                      \
+  template DataVector cell_values(                               \
+      size_t max_polynomial_degree_plus_one,                     \
+      const tnsr::I<DataVector, GET_DIM(data), Frame::Inertial>& \
+          coords) noexcept;                                      \
+  template DataVector cell_averages_times_volume(                \
+      size_t max_polynomial_degree_plus_one,                     \
       const Index<GET_DIM(data)>& subcell_extents) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

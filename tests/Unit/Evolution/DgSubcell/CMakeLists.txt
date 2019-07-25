@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_Matrices.cpp
   Test_Mesh.cpp
   Test_Projection.cpp
+  Test_Reconstruction.cpp
   Test_Tags.cpp
   )
 
