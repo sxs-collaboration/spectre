@@ -36,6 +36,15 @@
 #
 # Cron Jobs:
 # - Branch: develop, Interval: daily, Options: Always run
+#
+# Updating or adding new stages:
+# - Make sure all stages are specified in the `stages:` section below that
+#   defines the order of the stages.
+# - Make sure the stage names in the `jobs` section (using the `stage:` label)
+#   match exactly the names of the stages in the stage order section.
+# - Make sure that all stages are accounted for in the `.travis/BuildLinux.sh`
+#   file. Note that the `${TRAVIS_BUILD_STAGE_NAME}` capitalizes only the first
+#   letter regardless of how you capitalize your stage names.
 
 language: cpp
 
@@ -49,7 +58,8 @@ services:
 stages:
   - Build stage 1
   - Build stage 2
-  - Build stage 3, ClangTidy, and Doxygen
+  - Build stage 3
+  - Build stage 4, ClangTidy, and Doxygen
 
 # Set up travis configurations of Linux and macOS.
 #
@@ -58,7 +68,7 @@ stages:
 jobs:
   fast_finish: true
   include:
-  - stage: Build stage 3, ClangTidy, and Doxygen
+  - stage: Build stage 4, ClangTidy, and Doxygen
     os: linux
     dist: trusty
     env: CHECK_COMMITS=true
@@ -206,9 +216,26 @@ jobs:
   - <<: *Clang8Debug
   - <<: *Clang8Release
 
-  # Last stage: Build stage 3, clang tidy, and docs.
+  # Build stage 3
   - <<: *Gcc6Debug
-    stage: Build stage 3, ClangTidy, and Doxygen
+    stage: Build stage 3
+  - <<: *Gcc6Release
+  - <<: *Gcc7Debug
+  - <<: *Gcc7Release
+  - <<: *Gcc8Debug
+  - <<: *Gcc8Release
+  - <<: *Gcc9Debug
+  - <<: *Gcc9Release
+  - <<: *Clang4Debug
+  - <<: *Clang4Release
+  - <<: *Clang5Debug
+  - <<: *Clang5Release
+  - <<: *Clang8Debug
+  - <<: *Clang8Release
+
+  # Last stage: Build stage 4, clang tidy, and docs.
+  - <<: *Gcc6Debug
+    stage: Build stage 4, ClangTidy, and Doxygen
   - <<: *Gcc6Release
   - <<: *Gcc7Debug
   - <<: *Gcc7Release
