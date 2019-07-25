@@ -9,7 +9,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
-#include "Parallel/PupStlCpp11.hpp"
+#include "ParallelBackend/PupStlCpp11.hpp"
 #include "Utilities/ConstantExpressions.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

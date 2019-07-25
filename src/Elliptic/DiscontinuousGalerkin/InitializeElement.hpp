@@ -16,7 +16,7 @@
 #include "Elliptic/Initialization/LinearSolver.hpp"
 #include "Elliptic/Initialization/Source.hpp"
 #include "Elliptic/Initialization/System.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

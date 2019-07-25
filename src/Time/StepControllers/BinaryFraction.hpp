@@ -13,7 +13,7 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"

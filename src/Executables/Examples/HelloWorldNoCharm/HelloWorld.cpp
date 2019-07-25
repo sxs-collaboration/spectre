@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 #include "DataStructures/DataVector.hpp"
-#include "Parallel/Printf.hpp"
+#include "ParallelBackend/Printf.hpp"
 
 // Charm looks for this function but since we build without a main function or
 // main module we just have it be empty

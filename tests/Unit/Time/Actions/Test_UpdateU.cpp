@@ -11,8 +11,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"               // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"

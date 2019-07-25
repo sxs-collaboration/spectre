@@ -9,10 +9,10 @@
 #include "Domain/Tags.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Info.hpp"
-#include "Parallel/Invoke.hpp"
-#include "Parallel/ParallelComponentHelpers.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Info.hpp"
+#include "ParallelBackend/Invoke.hpp"
+#include "ParallelBackend/ParallelComponentHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elliptic {

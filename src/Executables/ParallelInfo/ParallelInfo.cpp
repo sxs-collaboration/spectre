@@ -10,9 +10,9 @@
 
 #include "ErrorHandling/Error.hpp"
 #include "Informer/InfoFromBuild.hpp"
-#include "Parallel/Exit.hpp"
-#include "Parallel/Info.hpp"
-#include "Parallel/Printf.hpp"
+#include "ParallelBackend/Exit.hpp"
+#include "ParallelBackend/Info.hpp"
+#include "ParallelBackend/Printf.hpp"
 #include "Utilities/Math.hpp"
 
 /// \cond HIDDEN_SYMBOLS

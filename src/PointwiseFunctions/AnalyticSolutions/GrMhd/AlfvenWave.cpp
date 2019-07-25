@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"                // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
-#include "Parallel/PupStlCpp11.hpp"
+#include "ParallelBackend/PupStlCpp11.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/GenerateInstantiations.hpp"

@@ -38,11 +38,11 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/InitializationFunctions.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelBackend/Actions/TerminatePhase.hpp"
+#include "ParallelBackend/InitializationFunctions.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"
+#include "ParallelBackend/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep

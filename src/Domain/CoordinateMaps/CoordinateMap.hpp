@@ -22,8 +22,8 @@
 
 #include "DataStructures/Tensor/Identity.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Parallel/CharmPupable.hpp"
-#include "Parallel/PupStlCpp11.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
+#include "ParallelBackend/PupStlCpp11.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"

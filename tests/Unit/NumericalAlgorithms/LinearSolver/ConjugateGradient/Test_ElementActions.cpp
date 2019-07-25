@@ -15,7 +15,7 @@
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/InitializeElement.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
-#include "Parallel/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

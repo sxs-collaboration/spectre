@@ -13,9 +13,9 @@
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Info.hpp"
-#include "Parallel/Invoke.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Info.hpp"
+#include "ParallelBackend/Invoke.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace observers {

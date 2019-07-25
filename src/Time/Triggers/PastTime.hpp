@@ -8,7 +8,7 @@
 
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"

@@ -16,8 +16,8 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"   // IWYU pragma: keep
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep

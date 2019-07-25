@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"

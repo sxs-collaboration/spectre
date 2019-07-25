@@ -7,8 +7,8 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"

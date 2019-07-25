@@ -9,12 +9,12 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Info.hpp"
-#include "Parallel/InitializationFunctions.hpp"
-#include "Parallel/Invoke.hpp"
-#include "Parallel/Printf.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Info.hpp"
+#include "ParallelBackend/InitializationFunctions.hpp"
+#include "ParallelBackend/Invoke.hpp"
+#include "ParallelBackend/Printf.hpp"
 /// [executable_example_includes]
 
 /// [executable_example_options]

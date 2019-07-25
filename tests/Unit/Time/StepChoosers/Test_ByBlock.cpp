@@ -10,8 +10,8 @@
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/ByBlock.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Utilities/TMPL.hpp"
@@ -20,7 +20,7 @@
 
 // IWYU pragma: no_include <pup.h>
 
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
+// IWYU pragma: no_include "ParallelBackend/PupStlCpp11.hpp"
 
 namespace {
 struct Metavariables {

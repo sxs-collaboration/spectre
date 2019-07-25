@@ -8,7 +8,7 @@
 #include <pup.h>
 #include <type_traits>
 
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"

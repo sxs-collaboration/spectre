@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelBackend/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "tests/Unit/PointwiseFunctions/Hydro/EquationsOfState/TestHelpers.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"

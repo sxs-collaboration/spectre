@@ -16,7 +16,7 @@
 #include "Domain/Domain.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"

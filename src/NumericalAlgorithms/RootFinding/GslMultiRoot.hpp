@@ -15,7 +15,7 @@
 
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/Exceptions.hpp"
-#include "Parallel/Printf.hpp"
+#include "ParallelBackend/Printf.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"

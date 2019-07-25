@@ -31,9 +31,9 @@
 #include "IO/Observer/Tags.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/Actions/TerminatePhase.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"

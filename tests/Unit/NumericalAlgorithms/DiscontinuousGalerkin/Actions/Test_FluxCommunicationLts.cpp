@@ -40,8 +40,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -52,7 +52,7 @@
 
 // IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"  // for Variables
 // IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
+// IWYU pragma: no_include "ParallelBackend/PupStlCpp11.hpp"
 
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox
 // IWYU pragma: no_forward_declare Tensor

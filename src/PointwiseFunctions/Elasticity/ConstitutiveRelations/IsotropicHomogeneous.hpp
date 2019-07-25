@@ -9,7 +9,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/ConstitutiveRelation.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 

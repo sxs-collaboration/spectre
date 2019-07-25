@@ -24,7 +24,7 @@
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitorActions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/Observe.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"

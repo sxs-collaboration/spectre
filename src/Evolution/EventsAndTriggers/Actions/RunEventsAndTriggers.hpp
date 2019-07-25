@@ -7,7 +7,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Evolution/EventsAndTriggers/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Actions {

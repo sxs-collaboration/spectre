@@ -17,8 +17,8 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Evolution/Actions/ComputeVolumeSources.hpp"  // IWYU pragma: keep
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"

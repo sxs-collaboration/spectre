@@ -20,7 +20,7 @@ add_dependencies(
   module_ConstGlobalCache
   )
 
-# This code is adapted from Parallel/CMakeLists.txt
+# This code is adapted from ParallelBackend/CMakeLists.txt
 
 function(add_algorithm_test TEST_NAME)
   set(EXECUTABLE_NAME Test_${TEST_NAME})

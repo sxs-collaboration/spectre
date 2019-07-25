@@ -7,9 +7,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelBackend/Actions/TerminatePhase.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

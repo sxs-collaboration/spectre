@@ -15,8 +15,8 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Invoke.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Invoke.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Limiters {

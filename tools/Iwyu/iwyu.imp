@@ -18,7 +18,7 @@
   { include: ["<ckmessage.h>", private,
               "<charm++.h>", public]},
   { include: ["<ckreduction.h>", private,
-              "\"Parallel/Reduction.hpp\"", public]},
+              "\"ParallelBackend/Reduction.hpp\"", public]},
   { include: ["<pup.h>", public,
               "<charm.h>", public]},
   { symbol: ["PUP::er", private, "<pup.h>", public]},
@@ -93,7 +93,7 @@
 
 
   { include: ["<ConstGlobalCache.decl.h>", private,
-              "\"Parallel/ConstGlobalCache.hpp\"", public]},
+              "\"ParallelBackend/ConstGlobalCache.hpp\"", public]},
   { include: ["\"AlgorithmArray.decl.h\"", private,
               "\"AlgorithmArray.hpp\"", public]},
   { include: ["\"AlgorithmGroup.decl.h\"", private,

@@ -16,7 +16,7 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres/ElementActions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
-#include "Parallel/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

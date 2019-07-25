@@ -95,7 +95,7 @@ include(CodeCoverageDetection)
 include(SpectreAddLibraries)
 
 # Generate Charm++ files
-generate_algorithms(${CMAKE_BINARY_DIR}/src/Parallel/Algorithms)
+generate_algorithms(${CMAKE_BINARY_DIR}/src/ParallelBackend/Algorithms)
 
 enable_testing(true)
 include(SpectreAddTestLibs)

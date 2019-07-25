@@ -25,8 +25,8 @@
 #include "IO/Observer/ReductionActions.hpp"   // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "Parallel/ArrayIndex.hpp"
-#include "Parallel/Reduction.hpp"
+#include "ParallelBackend/ArrayIndex.hpp"
+#include "ParallelBackend/Reduction.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Numeric.hpp"

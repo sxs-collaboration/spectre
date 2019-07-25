@@ -10,7 +10,7 @@
 
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"

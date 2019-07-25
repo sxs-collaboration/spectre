@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelBackend/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/Slab.hpp"
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/StepControllers/StepController.hpp"
@@ -15,7 +15,7 @@
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
+// IWYU pragma: no_include "ParallelBackend/PupStlCpp11.hpp"
 
 SPECTRE_TEST_CASE("Unit.Time.StepControllers.BinaryFraction", "[Unit][Time]") {
   Parallel::register_derived_classes_with_charm<StepController>();

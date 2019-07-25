@@ -9,7 +9,7 @@
 #include <pup.h>
 
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 

@@ -20,8 +20,8 @@
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"

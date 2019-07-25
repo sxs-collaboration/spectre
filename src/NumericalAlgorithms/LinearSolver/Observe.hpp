@@ -9,10 +9,10 @@
 #include "IO/Observer/ReductionActions.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Info.hpp"
-#include "Parallel/Invoke.hpp"
-#include "Parallel/Reduction.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Info.hpp"
+#include "ParallelBackend/Invoke.hpp"
+#include "ParallelBackend/Reduction.hpp"
 
 namespace LinearSolver {
 namespace observe_detail {

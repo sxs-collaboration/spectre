@@ -5,9 +5,9 @@
 
 #include <sstream>
 
-#include "Parallel/Abort.hpp"
-#include "Parallel/Info.hpp"
-#include "Parallel/Printf.hpp"
+#include "ParallelBackend/Abort.hpp"
+#include "ParallelBackend/Info.hpp"
+#include "ParallelBackend/Printf.hpp"
 
 void abort_with_error_message(const char* expression, const char* file,
                               const int line, const char* pretty_function,

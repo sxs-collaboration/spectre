@@ -11,7 +11,7 @@
 
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 

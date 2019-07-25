@@ -11,7 +11,7 @@
 #include "Domain/OrientationMap.hpp"
 #include "Domain/SegmentId.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
-#include "Parallel/PupStlCpp11.hpp"
+#include "ParallelBackend/PupStlCpp11.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"

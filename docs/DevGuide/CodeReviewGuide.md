@@ -72,7 +72,7 @@ Code Quality Items:
 * All commits for performance changes provide quantitative evidence and the
   tests used to obtain said evidence.
 * Never include `<iostream>`, use `Parallel::printf` inside
-  `Parallel/Printf.hpp` instead, which is safe to use in parallel.
+  `ParallelBackend/Printf.hpp` instead, which is safe to use in parallel.
 * When using charm++ nodelocks include `<converse.h>` instead of `<lrtslock.h>`.
 * Do not add anything to [the `std` namespace]
   (http://en.cppreference.com/w/cpp/language/extending_std).

@@ -5,7 +5,7 @@
 
 #include <cmath>
 
-#include "Parallel/Abort.hpp"
+#include "ParallelBackend/Abort.hpp"
 
 SPECTRE_TEST_CASE("Unit.TestingFramework.Approx", "[Unit]") {
   /// [approx_test]

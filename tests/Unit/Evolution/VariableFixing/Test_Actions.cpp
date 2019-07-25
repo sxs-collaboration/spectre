@@ -12,9 +12,9 @@
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/RadiallyFallingFloor.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/ParallelComponentHelpers.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/ParallelComponentHelpers.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"      // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"

@@ -6,7 +6,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

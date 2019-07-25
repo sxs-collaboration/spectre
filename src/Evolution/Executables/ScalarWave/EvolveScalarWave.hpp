@@ -37,12 +37,12 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/InitializationFunctions.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"
-#include "Parallel/Reduction.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "ParallelBackend/Actions/TerminatePhase.hpp"
+#include "ParallelBackend/InitializationFunctions.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"
+#include "ParallelBackend/Reduction.hpp"
+#include "ParallelBackend/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"

@@ -9,12 +9,12 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelBackend/Actions/TerminatePhase.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"

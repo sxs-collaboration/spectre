@@ -14,8 +14,8 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 

@@ -10,8 +10,8 @@
 #include "IO/Observer/ArrayComponentId.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/Tags.hpp"  // IWYU pragma: keep
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"

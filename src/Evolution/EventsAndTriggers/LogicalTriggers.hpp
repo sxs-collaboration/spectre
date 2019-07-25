@@ -7,7 +7,7 @@
 
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Triggers {

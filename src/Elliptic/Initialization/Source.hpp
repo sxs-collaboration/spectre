@@ -12,7 +12,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 
 /// \cond
 namespace Frame {

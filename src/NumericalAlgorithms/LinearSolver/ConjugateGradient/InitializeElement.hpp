@@ -7,10 +7,10 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Info.hpp"
-#include "Parallel/Invoke.hpp"
-#include "Parallel/Reduction.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Info.hpp"
+#include "ParallelBackend/Invoke.hpp"
+#include "ParallelBackend/Reduction.hpp"
 #include "Utilities/MakeWithValue.hpp"
 
 /// \cond

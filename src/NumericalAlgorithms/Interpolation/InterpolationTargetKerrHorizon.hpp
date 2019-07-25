@@ -12,7 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"

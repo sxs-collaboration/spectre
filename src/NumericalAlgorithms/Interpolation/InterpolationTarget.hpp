@@ -10,8 +10,8 @@
 #include "Domain/Domain.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Invoke.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Invoke.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
 

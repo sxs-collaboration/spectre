@@ -8,10 +8,10 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/Tags.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Invoke.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Invoke.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"
 
 namespace observers {
 /*!

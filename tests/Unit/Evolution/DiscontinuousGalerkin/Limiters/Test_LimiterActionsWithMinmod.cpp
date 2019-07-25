@@ -30,8 +30,8 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.tpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"

@@ -11,9 +11,9 @@
 
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Invoke.hpp"
-#include "Parallel/Reduction.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Invoke.hpp"
+#include "ParallelBackend/Reduction.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"

@@ -4,8 +4,8 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"

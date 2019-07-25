@@ -10,7 +10,7 @@
 #include <string>
 
 #include "ErrorHandling/AbortWithErrorMessage.hpp"
-#include "Parallel/Abort.hpp"
+#include "ParallelBackend/Abort.hpp"
 #include "Utilities/Literals.hpp"
 
 /*!

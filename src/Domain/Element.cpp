@@ -8,7 +8,7 @@
 
 #include "Domain/MaxNumberOfNeighbors.hpp"
 #include "ErrorHandling/Assert.hpp"
-#include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/StdHelpers.hpp"  // IWYU pragma: keep
 

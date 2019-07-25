@@ -5,7 +5,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/Printf.hpp"
+#include "ParallelBackend/Printf.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"

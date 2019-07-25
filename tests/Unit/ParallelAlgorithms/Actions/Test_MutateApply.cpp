@@ -6,9 +6,9 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"

@@ -4,7 +4,7 @@
 #pragma once
 
 #include "IO/Observer/Tags.hpp"
-#include "Parallel/Reduction.hpp"
+#include "ParallelBackend/Reduction.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 

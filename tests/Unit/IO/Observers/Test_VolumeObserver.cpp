@@ -30,7 +30,7 @@
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "IO/Observer/VolumeActions.hpp"  // IWYU pragma: keep
-#include "Parallel/ArrayIndex.hpp"
+#include "ParallelBackend/ArrayIndex.hpp"
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/GetOutput.hpp"

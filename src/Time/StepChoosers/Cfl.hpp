@@ -8,8 +8,8 @@
 
 #include "Domain/MinimumGridSpacing.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
 #include "Utilities/Registration.hpp"

@@ -16,7 +16,7 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/Reduction.hpp"
+#include "ParallelBackend/Reduction.hpp"
 
 namespace observers {
 /// \ingroup ObserversGroup

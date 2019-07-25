@@ -9,7 +9,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeId.hpp"
 #include "Utilities/Gsl.hpp"

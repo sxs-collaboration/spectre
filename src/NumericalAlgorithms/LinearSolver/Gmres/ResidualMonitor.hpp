@@ -12,10 +12,10 @@
 #include "NumericalAlgorithms/LinearSolver/Observe.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Info.hpp"
-#include "Parallel/Invoke.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Info.hpp"
+#include "ParallelBackend/Invoke.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

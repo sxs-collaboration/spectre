@@ -8,7 +8,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
-#include "Parallel/PupStlCpp11.hpp"
+#include "ParallelBackend/PupStlCpp11.hpp"
 #include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"

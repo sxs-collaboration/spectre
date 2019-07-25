@@ -8,7 +8,7 @@
 
 #include "ErrorHandling/Assert.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"

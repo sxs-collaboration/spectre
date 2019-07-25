@@ -3,7 +3,7 @@
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 
-#include "Parallel/Abort.hpp"
+#include "ParallelBackend/Abort.hpp"
 
 #include <csignal>
 

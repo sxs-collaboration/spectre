@@ -7,7 +7,7 @@
 #include <pup.h>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond

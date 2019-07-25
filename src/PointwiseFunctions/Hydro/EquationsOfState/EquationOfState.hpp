@@ -11,7 +11,7 @@
 #include <boost/preprocessor/tuple/to_list.hpp>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 

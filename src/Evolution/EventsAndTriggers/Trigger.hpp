@@ -4,7 +4,7 @@
 #pragma once
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"

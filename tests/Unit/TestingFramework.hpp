@@ -16,8 +16,8 @@
 #include <string>
 
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/Abort.hpp"
-#include "Parallel/Exit.hpp"
+#include "ParallelBackend/Abort.hpp"
+#include "ParallelBackend/Exit.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
 
@@ -327,7 +327,7 @@ struct check_matrix_approx {
     ERROR_TEST();        \
   } while (false)
 #else
-#include "Parallel/Abort.hpp"
+#include "ParallelBackend/Abort.hpp"
 #define ASSERTION_TEST()                                        \
   do {                                                          \
     ERROR_TEST();                                               \

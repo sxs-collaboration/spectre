@@ -13,7 +13,7 @@
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"
-#include "Parallel/PupStlCpp11.hpp"
+#include "ParallelBackend/PupStlCpp11.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 

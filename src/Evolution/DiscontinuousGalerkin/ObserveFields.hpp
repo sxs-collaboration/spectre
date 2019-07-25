@@ -24,10 +24,10 @@
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/VolumeActions.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
-#include "Parallel/ArrayIndex.hpp"
-#include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Invoke.hpp"
+#include "ParallelBackend/ArrayIndex.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Invoke.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/Algorithm.hpp"

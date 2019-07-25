@@ -7,8 +7,8 @@
 #include <charm.h>
 
 #include "Informer/InfoFromBuild.hpp"
-#include "Parallel/Info.hpp"
-#include "Parallel/Printf.hpp"
+#include "ParallelBackend/Info.hpp"
+#include "ParallelBackend/Printf.hpp"
 #include "Utilities/StdHelpers.hpp"
 
 void Informer::print_startup_info(CkArgMsg* msg) {

@@ -8,8 +8,8 @@
 #include "DataStructures/DataVector.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/NodeLock.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/NodeLock.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 

@@ -10,7 +10,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
-#include "Parallel/ArrayIndex.hpp"
+#include "ParallelBackend/ArrayIndex.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {

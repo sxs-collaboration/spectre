@@ -5,8 +5,8 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Invoke.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Invoke.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace intrp {

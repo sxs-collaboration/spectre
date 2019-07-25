@@ -15,9 +15,9 @@
 
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Informer/InfoFromBuild.hpp"
-#include "Parallel/Abort.hpp"
-#include "Parallel/Exit.hpp"
-#include "Parallel/Printf.hpp"
+#include "ParallelBackend/Abort.hpp"
+#include "ParallelBackend/Exit.hpp"
+#include "ParallelBackend/Printf.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/RunTestsRegister.hpp"
 
@@ -42,9 +42,9 @@ RunTests::RunTests(CkArgMsg* msg) {
 #include "tests/Unit/RunTests.def.h"  /// IWYU pragma: keep
 
 // Needed for tests that use the ConstGlobalCache since it registers itself with
-// Charm++. However, since Parallel/CharmMain.tpp isn't included in the RunTests
-// executable, no actual registration is done, the ConstGlobalCache is only
-// queued for registration.
+// Charm++. However, since ParallelBackend/CharmMain.tpp isn't included in the
+// RunTests executable, no actual registration is done, the ConstGlobalCache is
+// only queued for registration.
 namespace Parallel {
 namespace charmxx {
 class RegistrationHelper;

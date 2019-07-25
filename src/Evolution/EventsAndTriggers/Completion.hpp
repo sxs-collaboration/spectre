@@ -5,8 +5,8 @@
 
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 

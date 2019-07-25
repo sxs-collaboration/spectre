@@ -18,9 +18,9 @@
 #include "Evolution/EventsAndTriggers/LogicalTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Tags.hpp"
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
@@ -30,7 +30,7 @@
 
 // IWYU pragma: no_include <pup.h>
 
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
+// IWYU pragma: no_include "ParallelBackend/PupStlCpp11.hpp"
 
 namespace {
 using events_and_triggers_tag =

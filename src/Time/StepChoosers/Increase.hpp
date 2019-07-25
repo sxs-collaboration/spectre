@@ -8,7 +8,7 @@
 #include <pup.h>
 
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
 #include "Utilities/Registration.hpp"

@@ -7,7 +7,7 @@
 #pragma once
 
 #include "Executables/ParallelInfo/ParallelInfo.decl.h"
-#include "Parallel/Reduction.hpp"
+#include "ParallelBackend/Reduction.hpp"
 
 /// \cond
 class CkArgMsg;

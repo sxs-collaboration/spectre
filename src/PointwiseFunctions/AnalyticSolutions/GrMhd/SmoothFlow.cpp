@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
-#include "Parallel/PupStlCpp11.hpp"
+#include "ParallelBackend/PupStlCpp11.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"

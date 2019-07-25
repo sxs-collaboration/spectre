@@ -14,7 +14,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/CharmPupable.hpp"
+#include "ParallelBackend/CharmPupable.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"

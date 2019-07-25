@@ -10,8 +10,8 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Invoke.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/Invoke.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace intrp {

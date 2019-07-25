@@ -15,7 +15,7 @@ def create_interface_file(args):
              "// See LICENSE.txt for details.\n\n" \
              "module Algorithm%s {\n" \
              "  include \"Utilities/TaggedTuple.hpp\";\n" \
-             "  include \"Parallel/ConstGlobalCache.decl.h\";\n" \
+             "  include \"ParallelBackend/ConstGlobalCache.decl.h\";\n" \
              "\n" \
              "  template <typename ParallelComponent,\n" \
              "            typename SpectreArrayIndex>\n" \
@@ -106,8 +106,8 @@ def create_header_file(args):
                  "#endif\n" \
                  "\n#pragma once\n" \
                  "\n" \
-                 "#include \"Parallel/Algorithm.hpp\"\n" \
-                 "#include \"Parallel/ArrayIndex.hpp\"\n\n" \
+                 "#include \"ParallelBackend/Algorithm.hpp\"\n" \
+                 "#include \"ParallelBackend/ArrayIndex.hpp\"\n\n" \
                  "#include \"Algorithms/Algorithm%s.decl.h\"\n\n" % \
                  args['algorithm_name']
     # Write "ChareType" struct

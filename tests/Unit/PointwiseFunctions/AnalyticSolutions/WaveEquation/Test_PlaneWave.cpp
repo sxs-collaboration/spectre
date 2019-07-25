@@ -13,7 +13,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"           // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelBackend/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
 #include "PointwiseFunctions/MathFunctions/PowX.hpp"

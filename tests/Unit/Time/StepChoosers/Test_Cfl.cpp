@@ -15,8 +15,8 @@
 #include "Domain/MinimumGridSpacing.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/RegisterDerivedClassesWithCharm.hpp"
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
@@ -27,7 +27,7 @@
 
 // IWYU pragma: no_include <pup.h>
 
-// IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
+// IWYU pragma: no_include "ParallelBackend/PupStlCpp11.hpp"
 
 class TimeStepper;
 

@@ -9,9 +9,9 @@
 #include "IO/Observer/Helpers.hpp"            // IWYU pragma: keep
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ConjugateGradient.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/InitializationFunctions.hpp"
-#include "Parallel/Main.hpp"
+#include "ParallelBackend/ConstGlobalCache.hpp"
+#include "ParallelBackend/InitializationFunctions.hpp"
+#include "ParallelBackend/Main.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/NumericalAlgorithms/LinearSolver/DistributedLinearSolverAlgorithmTestHelpers.hpp"
 #include "tests/Unit/NumericalAlgorithms/LinearSolver/LinearSolverAlgorithmTestHelpers.hpp"  // IWYU pragma: keep
@@ -78,4 +78,4 @@ static const std::vector<void (*)()> charm_init_proc_funcs{
 
 using charmxx_main_component = Parallel::Main<Metavariables>;
 
-#include "Parallel/CharmMain.tpp"  // IWYU pragma: keep
+#include "ParallelBackend/CharmMain.tpp"  // IWYU pragma: keep

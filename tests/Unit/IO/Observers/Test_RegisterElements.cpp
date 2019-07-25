@@ -16,7 +16,7 @@
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/Tags.hpp"               // IWYU pragma: keep
 #include "IO/Observer/TypeOfObservation.hpp"
-#include "Parallel/ArrayIndex.hpp"
+#include "ParallelBackend/ArrayIndex.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 #include "tests/Unit/IO/Observers/ObserverHelpers.hpp"

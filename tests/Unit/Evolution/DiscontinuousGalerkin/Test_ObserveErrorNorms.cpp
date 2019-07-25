@@ -22,10 +22,10 @@
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
-#include "Parallel/Reduction.hpp"
-#include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelBackend/AddOptionsToDataBox.hpp"
+#include "ParallelBackend/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "ParallelBackend/Reduction.hpp"
+#include "ParallelBackend/RegisterDerivedClassesWithCharm.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep

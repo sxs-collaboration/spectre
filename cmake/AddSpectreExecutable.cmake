@@ -41,11 +41,11 @@ function(
     "#include \"${SUBDIR_NAME}/${HPP_NAME}Fwd.hpp\"\n"
     "using metavariables = ${METAVARS};\n"
     "#include \"${SUBDIR_NAME}/${HPP_NAME}.hpp\"\n"
-    "#include \"Parallel/Main.hpp\"\n"
+    "#include \"ParallelBackend/Main.hpp\"\n"
     "\n"
     "using charmxx_main_component = Parallel::Main<${METAVARS}>;\n"
     "\n"
-    "#include \"Parallel/CharmMain.tpp\"\n"
+    "#include \"ParallelBackend/CharmMain.tpp\"\n"
     )
   configure_file(
     "${BUILD_TARGET_FILENAME}.out"
