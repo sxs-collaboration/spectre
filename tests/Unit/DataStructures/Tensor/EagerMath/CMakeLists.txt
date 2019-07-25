@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_DivideBy.cpp
   Test_DotProduct.cpp
   Test_Magnitude.cpp
+  Test_Norms.cpp
   )
 
 add_test_library(
