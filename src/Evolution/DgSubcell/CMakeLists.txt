@@ -12,6 +12,7 @@ spectre_target_headers(
   ActiveGrid.hpp
   DgSubcell.hpp
   Matrices.hpp
+  Projection.hpp
   )
 
 spectre_target_sources(
@@ -19,6 +20,7 @@ spectre_target_sources(
   PRIVATE
   ActiveGrid.cpp
   Matrices.cpp
+  Projection.cpp
   )
 
 target_link_libraries(
