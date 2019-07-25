@@ -44,14 +44,14 @@ touch ${SPECTRE_BUILD_DIR}/tmp/coverage.info
 if [ -z "${RUN_CLANG_TIDY}" ] \
     && [ -z "${RUN_IWYU}" ] \
     && [ -z "${BUILD_DOC}" ]; then
-    if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build libraries" ]]; then
+    if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build stage 1" ]]; then
         time make libs -j2
         time make test-libs-domain -j2
         time make test-libs-elliptic -j2
         time make test-libs-evolution -j2
     fi
 
-    if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build test libraries" ]]; then
+    if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build stage 2" ]]; then
         time make test-libs-numerical-algorithms -j2
         # Build DataStructures in serial because the DataVector tests
         # are very memory intensive to compile
@@ -59,10 +59,13 @@ if [ -z "${RUN_CLANG_TIDY}" ] \
         time make test-libs-pointwise-functions -j2
     fi
 
-    if [[ ${TRAVIS_BUILD_STAGE_NAME} = \
-          "Build executables, run tests, clangtidy, and doxygen" ]]; then
+    if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build stage 3" ]]; then
         time make test-libs-other -j2
         time make -j2
+    fi
+
+    if [[ ${TRAVIS_BUILD_STAGE_NAME} = \
+          "Build stage 4, clangtidy, and doxygen" ]]; then
         # Build major executables in serial to avoid hitting memory limits.
         time make test-executables -j1
         time ctest --output-on-failure -j2
