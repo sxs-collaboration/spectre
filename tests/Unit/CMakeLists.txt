@@ -32,6 +32,7 @@ add_subdirectory(Pypp)
 add_subdirectory(TestUtilities)
 add_subdirectory(Time)
 add_subdirectory(Utilities)
+add_subdirectory(Visualization)
 
 add_charm_module(${executable})
 
