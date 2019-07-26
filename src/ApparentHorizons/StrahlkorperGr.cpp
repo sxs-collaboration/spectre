@@ -499,6 +499,13 @@ Scalar<DataVector> ricci_scalar(
 }
 
 template <typename Frame>
+Scalar<DataVector> spatial_ricci_scalar(
+    const tnsr::ii<DataVector, 3, Frame>& spatial_ricci_tensor,
+    const tnsr::II<DataVector, 3, Frame>& inverse_spatial_metric) noexcept {
+  return trace(spatial_ricci_tensor, inverse_spatial_metric);
+}
+
+template <typename Frame>
 Scalar<DataVector> area_element(
     const tnsr::ii<DataVector, 3, Frame>& spatial_metric,
     const StrahlkorperTags::aliases::Jacobian<Frame>& jacobian,
@@ -669,7 +676,7 @@ double dimensionful_spin_magnitude(
 }
 
 template <typename Frame>
-std::array<double, 3> spin_vector(const double spin_magnitude,
+std::array<double, 3> spin_vector(const double& spin_magnitude,
                                   const Scalar<DataVector>& area_element,
                                   const Scalar<DataVector>& radius,
                                   const tnsr::i<DataVector, 3, Frame>& r_hat,
@@ -696,14 +703,14 @@ std::array<double, 3> spin_vector(const double spin_magnitude,
   return spin_vector * (spin_magnitude / magnitude(spin_vector));
 }
 
-double irreducible_mass(const double area) noexcept {
+double irreducible_mass(const double& area) noexcept {
   ASSERT(area > 0.0,
          "The area of the horizon must be greater than zero but is " << area);
   return sqrt(area / (16.0 * M_PI));
 }
 
-double christodoulou_mass(const double dimensionful_spin_magnitude,
-                          const double irreducible_mass) noexcept {
+double christodoulou_mass(const double& dimensionful_spin_magnitude,
+                          const double& irreducible_mass) noexcept {
   return sqrt(square(irreducible_mass) + (square(dimensionful_spin_magnitude) /
                                           (4.0 * square(irreducible_mass))));
 }
@@ -749,6 +756,12 @@ template Scalar<DataVector> StrahlkorperGr::ricci_scalar<Frame::Inertial>(
     const tnsr::II<DataVector, 3, Frame::Inertial>&
         upper_spatial_metric) noexcept;
 
+template Scalar<DataVector>
+StrahlkorperGr::spatial_ricci_scalar<Frame::Inertial>(
+    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_ricci_tensor,
+    const tnsr::II<DataVector, 3, Frame::Inertial>&
+        inverse_spatial_metric) noexcept;
+
 template Scalar<DataVector> StrahlkorperGr::area_element<Frame::Inertial>(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const StrahlkorperTags::aliases::Jacobian<Frame::Inertial>& jacobian,
@@ -790,7 +803,7 @@ template double StrahlkorperGr::dimensionful_spin_magnitude<Frame::Inertial>(
     const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept;
 
 template std::array<double, 3> StrahlkorperGr::spin_vector<Frame::Inertial>(
-    const double spin_magnitude, const Scalar<DataVector>& area_element,
+    const double& spin_magnitude, const Scalar<DataVector>& area_element,
     const Scalar<DataVector>& radius,
     const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat,
     const Scalar<DataVector>& ricci_scalar,

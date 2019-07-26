@@ -9,6 +9,7 @@
 #include "AlgorithmSingleton.hpp"
 #include "ApparentHorizons/ComputeItems.hpp"
 #include "ApparentHorizons/Tags.hpp"
+#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -53,6 +54,7 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -135,7 +137,7 @@ struct EvolutionMetavars {
       GeneralizedHarmonic::Tags::FourIndexConstraint<volume_dim, frame>,
       GeneralizedHarmonic::Tags::ConstraintEnergy<volume_dim, frame>>;
 
-  // HACK until proper compute tags are cherry-picked
+  // HACK until proper compute tags are cherry-picked and tested
   struct Unity : db::ComputeTag {
     static std::string name() noexcept { return "Unity"; }
     static Scalar<DataVector> function(
@@ -148,7 +150,17 @@ struct EvolutionMetavars {
 
   struct Horizon {
     using tags_to_observe =
-        tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<Unity, frame>>;
+        tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<Unity, frame>,
+                   StrahlkorperGr::Tags::Area,
+                   StrahlkorperGr::Tags::IrreducibleMass,
+                   StrahlkorperGr::Tags::MaxHorizonRicciScalar,
+                   StrahlkorperGr::Tags::MinHorizonRicciScalar,
+                   StrahlkorperGr::Tags::DimensionfulSpinMagnitude,
+                   StrahlkorperGr::Tags::DimensionfulSpinVectorComp1,
+                   StrahlkorperGr::Tags::DimensionfulSpinVectorComp2,
+                   StrahlkorperGr::Tags::DimensionfulSpinVectorComp3,
+                   StrahlkorperGr::Tags::ChristodoulouMass>;
+
     using compute_items_on_source = tmpl::list<
         gr::Tags::SpatialMetricCompute<volume_dim, frame, DataVector>,
         ah::Tags::InverseSpatialMetricCompute<volume_dim, frame>,
@@ -160,9 +172,28 @@ struct EvolutionMetavars {
                    gr::Tags::ExtrinsicCurvature<volume_dim, frame>,
                    gr::Tags::SpatialChristoffelSecondKind<volume_dim, frame>,
                    gr::Tags::RicciTensor<volume_dim, frame, DataVector>>;
-    using compute_items_on_target = tmpl::append<
-        tmpl::list<StrahlkorperGr::Tags::AreaElement<frame>, Unity>,
-        tags_to_observe>;
+
+    using compute_items_on_target = tmpl::list<
+        StrahlkorperGr::Tags::OneOverOneFormMagnitudeCompute<frame>,
+        StrahlkorperGr::Tags::UnitNormalOneFormCompute<frame>,
+        StrahlkorperGr::Tags::UnitNormalVectorCompute<frame>,
+        StrahlkorperGr::Tags::GradUnitNormalOneFormCompute<frame>,
+        StrahlkorperGr::Tags::ExtrinsicCurvatureCompute<frame>,
+        StrahlkorperGr::Tags::HorizonRicciScalarCompute<frame>,
+        StrahlkorperGr::Tags::MaxHorizonRicciScalarCompute,
+        StrahlkorperGr::Tags::MinHorizonRicciScalarCompute,
+        StrahlkorperGr::Tags::AreaElement<frame>, Unity,
+        StrahlkorperGr::Tags::SurfaceIntegral<Unity, frame>,
+        StrahlkorperGr::Tags::AreaCompute<frame>,
+        StrahlkorperGr::Tags::IrreducibleMassCompute<frame>,
+        StrahlkorperTags::YlmSpherepackCompute<frame>,
+        StrahlkorperGr::Tags::SpinFunctionCompute<frame>,
+        StrahlkorperGr::Tags::DimensionfulSpinMagnitudeCompute<frame>,
+        StrahlkorperGr::Tags::DimensionfulSpinVectorCompute<frame>,
+        StrahlkorperGr::Tags::DimensionfulSpinVectorComp1Compute,
+        StrahlkorperGr::Tags::DimensionfulSpinVectorComp2Compute,
+        StrahlkorperGr::Tags::DimensionfulSpinVectorComp3Compute,
+        StrahlkorperGr::Tags::ChristodoulouMassCompute>;
 
     using compute_target_points =
         intrp::Actions::ApparentHorizon<Horizon, ::Frame::Inertial>;

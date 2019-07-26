@@ -134,6 +134,11 @@ Scalar<DataVector> ricci_scalar(
     const tnsr::ii<DataVector, 3, Frame>& extrinsic_curvature,
     const tnsr::II<DataVector, 3, Frame>& upper_spatial_metric) noexcept;
 
+template <typename Frame>
+Scalar<DataVector> spatial_ricci_scalar(
+    const tnsr::ii<DataVector, 3, Frame>& spatial_ricci_tensor,
+    const tnsr::II<DataVector, 3, Frame>& inverse_spatial_metric) noexcept;
+
 /*!
  * \ingroup SurfacesGroup
  * \brief Area element of a 2D `Strahlkorper`.
@@ -339,7 +344,7 @@ double dimensionful_spin_magnitude(
  * is the product of `StrahlkorperTags::Rhat` and `StrahlkorperTags::Radius`.
  */
 template <typename Frame>
-std::array<double, 3> spin_vector(double spin_magnitude,
+std::array<double, 3> spin_vector(const double& spin_magnitude,
                                   const Scalar<DataVector>& area_element,
                                   const Scalar<DataVector>& radius,
                                   const tnsr::i<DataVector, 3, Frame>& r_hat,
@@ -355,7 +360,7 @@ std::array<double, 3> spin_vector(double spin_magnitude,
  * irreducible mass from the area of a horizon. Specifically, computes
  * \f$M_\mathrm{irr}=\sqrt{\frac{A}{16\pi}}\f$.
  */
-double irreducible_mass(double area) noexcept;
+double irreducible_mass(const double& area) noexcept;
 
 /*!
  * \ingroup SurfacesGroup
@@ -367,6 +372,6 @@ double irreducible_mass(double area) noexcept;
  * of a black hole horizon. Specifically, computes
  *\f$M=\sqrt{M_{irr}^2+\frac{S^2}{4M_{irr}^2}}\f$
  */
-double christodoulou_mass(double dimensionful_spin_magnitude,
-                          double irreducible_mass) noexcept;
+double christodoulou_mass(const double& dimensionful_spin_magnitude,
+                          const double& irreducible_mass) noexcept;
 }  // namespace StrahlkorperGr
