@@ -26,11 +26,14 @@
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Functional.hpp"
@@ -75,14 +78,18 @@ struct Metavariables {
   // Specify all global synchronization points.
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
 
+  using initialization_actions =
+      tmpl::list<dg::Actions::InitializeDomain<Dim>,
+                 elliptic::dg::Actions::InitializeElement<Dim>,
+                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::append<
       tmpl::list<elliptic::DgElementArray<
           Metavariables,
           tmpl::list<
-              Parallel::PhaseActions<
-                  Phase, Phase::Initialization,
-                  tmpl::list<elliptic::dg::Actions::InitializeElement<Dim>>>,
+              Parallel::PhaseActions<Phase, Phase::Initialization,
+                                     initialization_actions>,
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
@@ -107,8 +114,8 @@ struct Metavariables {
                              dg::Actions::ApplyFluxes,
                              typename linear_solver::perform_step>>>,
 
-          typename elliptic::dg::Actions::InitializeElement<
-              Dim>::AddOptionsToDataBox>>,
+          Parallel::ForwardAllOptionsToDataBox<
+              Initialization::option_tags<initialization_actions>>>>,
       typename linear_solver::component_list,
       tmpl::list<observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>>;
