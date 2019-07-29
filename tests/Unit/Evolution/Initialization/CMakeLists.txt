@@ -4,6 +4,7 @@
 set(LIBRARY "Test_EvolutionInitialization")
 
 set(LIBRARY_SOURCES
+  Test_ConservativeSystem.cpp
   Test_DgDomain.cpp
   Test_Tags.cpp
   Test_SetVariables.cpp

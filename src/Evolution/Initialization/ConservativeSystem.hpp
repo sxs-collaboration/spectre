@@ -20,6 +20,7 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"  // Needs to be included somewhere and here seems most natural.
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -29,9 +30,6 @@ namespace Frame {
 struct Inertial;
 }  // namespace Frame
 
-namespace Tags {
-struct AnalyticSolutionOrData;
-}  // namespace Tags
 namespace domain {
 namespace Tags {
 template <size_t VolumeDim, typename Frame>
