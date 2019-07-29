@@ -23,6 +23,8 @@ struct Grid;      // IWYU pragma: keep
 struct Inertial;  // IWYU pragma: keep
 }  // namespace Frame
 
+namespace domain {
+namespace Initialization {
 template <size_t VolumeDim, typename TargetFrame>
 Element<VolumeDim> create_initial_element(
     const ElementId<VolumeDim>& element_id,
@@ -90,14 +92,17 @@ Element<VolumeDim> create_initial_element(
   return Element<VolumeDim>(ElementId<VolumeDim>(element_id),
                             std::move(neighbors_of_element));
 }
+}  // namespace Initialization
+}  // namespace domain
 
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template Element<DIM(data)> create_initial_element<DIM(data), FRAME(data)>( \
-      const ElementId<DIM(data)>&,                                            \
+#define INSTANTIATE(_, data)                                              \
+  template Element<DIM(data)>                                             \
+  domain::Initialization::create_initial_element<DIM(data), FRAME(data)>( \
+      const ElementId<DIM(data)>&,                                        \
       const Block<DIM(data), FRAME(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))

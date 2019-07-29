@@ -14,11 +14,15 @@ template <size_t Dim>
 class ElementId;
 /// \endcond
 
+namespace domain {
+namespace Initialization {
 /*!
- * \ingroup ComputationalDomainGroup
+ * \ingroup InitializationGroup
  * \brief Creates an initial element of a Block.
  */
 template <size_t VolumeDim, typename TargetFrame>
 Element<VolumeDim> create_initial_element(
     const ElementId<VolumeDim>& element_id,
     const Block<VolumeDim, TargetFrame>& block) noexcept;
+}  // namespace Initialization
+}  // namespace domain
