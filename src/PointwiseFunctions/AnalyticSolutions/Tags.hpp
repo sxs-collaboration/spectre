@@ -7,6 +7,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/Serialize.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace OptionTags {
 /// \ingroup OptionGroupsGroup

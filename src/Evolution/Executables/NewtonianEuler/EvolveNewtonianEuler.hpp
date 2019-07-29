@@ -28,6 +28,7 @@
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
+#include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
@@ -234,6 +235,8 @@ struct EvolutionMetavars {
       Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       evolution::dg::Initialization::Domain<Dim>,
       Initialization::Actions::ConservativeSystem,
+      evolution::Initialization::Actions::SetVariables<
+          domain::Tags::Coordinates<Dim, Frame::Logical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<NewtonianEuler::Tags::SoundSpeedSquaredCompute<DataVector>,

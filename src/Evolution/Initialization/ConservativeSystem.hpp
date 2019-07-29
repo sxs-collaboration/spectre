@@ -5,7 +5,8 @@
 
 #include <cstddef>
 #include <tuple>
-#include <utility>  // IWYU pragma: keep  // for move
+#include <type_traits>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -16,22 +17,17 @@
 #include "Domain/TagsTimeDependent.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Evolution/Initialization/InitialData.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.tpp"  // Needs to be included somewhere and here seems most natural.
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TaggedTuple.hpp"
 
 /// \cond
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
-namespace Initialization {
-namespace Tags {
-struct InitialTime;
-}  // namespace Tags
-}  // namespace Initialization
 
 namespace Tags {
 struct AnalyticSolutionOrData;
@@ -45,13 +41,17 @@ struct Mesh;
 }  // namespace Tags
 }  // namespace domain
 // IWYU pragma: no_forward_declare db::DataBox
+
+namespace tuples {
+template <class... Tags>
+class TaggedTuple;
+}  // namespace tuples
 /// \endcond
 
 namespace Initialization {
 namespace Actions {
 /// \ingroup InitializationGroup
-/// \brief Allocate and set variables needed for evolution of conservative
-/// systems
+/// \brief Allocate variables needed for evolution of conservative systems
 ///
 /// Uses:
 /// - DataBox:
@@ -66,17 +66,12 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: nothing
 struct ConservativeSystem {
-  using initialization_tags = tmpl::list<Initialization::Tags::InitialTime>;
-
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<
-                typename db::DataBox<DbTagsList>::simple_item_tags,
-                Initialization::Tags::InitialTime>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
@@ -97,107 +92,46 @@ struct ConservativeSystem {
     typename fluxes_tag::type fluxes(num_grid_points);
     typename sources_tag::type sources(num_grid_points);
 
-    return std::make_tuple(initialize_vars(
-        merge_into_databox<ConservativeSystem, simple_tags, compute_tags>(
+    return std::make_tuple(
+        impl<Metavariables, simple_tags, compute_tags, system>(
+            std::integral_constant<
+                bool, system::has_primitive_and_conservative_vars>{},
             std::move(box), std::move(vars), std::move(fluxes),
-            std::move(sources)),
-        cache));
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                typename db::DataBox<DbTagsList>::simple_item_tags,
-                Initialization::Tags::InitialTime>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    ERROR(
-        "Could not find dependency 'Initialization::Tags::InitialTime' in "
-        "DataBox.");
+            std::move(sources)));
   }
 
  private:
-  template <
-      typename DbTagsList, typename Metavariables,
-      Requires<Metavariables::system::has_primitive_and_conservative_vars> =
-          nullptr>
-  static auto initialize_vars(
-      db::DataBox<DbTagsList>&& box,
-      const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-    using system = typename Metavariables::system;
-    static constexpr size_t dim = system::volume_dim;
-    using primitives_tag = typename system::primitive_variables_tag;
-    using simple_tags =
-        db::AddSimpleTags<primitives_tag,
-                          typename Metavariables::equation_of_state_tag>;
-    using compute_tags = db::AddComputeTags<>;
+  template <typename Metavariables, typename AddSimpleTagsList,
+            typename AddComputeTagsList, typename System, typename DbTagsList,
+            typename... Ts>
+  static auto impl(std::true_type /*has_primitive_tags*/,
+                   db::DataBox<DbTagsList>&& box, Ts&&... ts) noexcept {
+    static constexpr size_t dim = System::volume_dim;
+    using PrimitiveVars = typename System::primitive_variables_tag::type;
 
-    const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
-    using PrimitiveVars = typename primitives_tag::type;
+    PrimitiveVars primitive_vars{
+        db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points()};
+    auto equation_of_state =
+        db::get<::Tags::AnalyticSolutionOrData>(box).equation_of_state();
 
-    const size_t num_grid_points =
-        db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
-
-    const auto inertial_coords =
-        db::get<domain::CoordinateMaps::Tags::CoordinateMap<dim, Frame::Grid,
-                                                            Frame::Inertial>>(
-            box)(
-            db::get<domain::Tags::ElementMap<dim, Frame::Grid>>(box)(
-                db::get<domain::Tags::Coordinates<dim, Frame::Logical>>(box)),
-            initial_time, db::get<domain::Tags::FunctionsOfTime>(box));
-
-    // Set initial data from analytic solution
-    const auto& solution_or_data =
-        Parallel::get<::Tags::AnalyticSolutionOrData>(cache);
-    PrimitiveVars primitive_vars{num_grid_points};
-    primitive_vars.assign_subset(evolution::initial_data(
-        solution_or_data, inertial_coords, initial_time,
-        typename Metavariables::analytic_variables_tags{}));
-    auto equation_of_state = solution_or_data.equation_of_state();
-
-    return Initialization::merge_into_databox<ConservativeSystem, simple_tags,
-                                              compute_tags>(
-        std::move(box), std::move(primitive_vars),
-        std::move(equation_of_state));
+    return merge_into_databox<
+        ConservativeSystem,
+        tmpl::push_back<AddSimpleTagsList,
+                        typename System::primitive_variables_tag,
+                        typename Metavariables::equation_of_state_tag>,
+        AddComputeTagsList>(std::move(box), std::forward<Ts>(ts)...,
+                            std::move(primitive_vars),
+                            std::move(equation_of_state));
   }
 
-  template <
-      typename DbTagsList, typename Metavariables,
-      Requires<not Metavariables::system::has_primitive_and_conservative_vars> =
-          nullptr>
-  static auto initialize_vars(
-      db::DataBox<DbTagsList>&& box,
-      const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-    using system = typename Metavariables::system;
-    static constexpr size_t dim = system::volume_dim;
-    using variables_tag = typename system::variables_tag;
-
-    const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
-
-    const auto inertial_coords =
-        db::get<domain::CoordinateMaps::Tags::CoordinateMap<dim, Frame::Grid,
-                                                            Frame::Inertial>>(
-            box)(
-            db::get<domain::Tags::ElementMap<dim, Frame::Grid>>(box)(
-                db::get<domain::Tags::Coordinates<dim, Frame::Logical>>(box)),
-            initial_time, db::get<domain::Tags::FunctionsOfTime>(box));
-
-    // Set initial data from analytic solution
-    using Vars = typename variables_tag::type;
-    db::mutate<variables_tag>(
-        make_not_null(&box), [&cache, &inertial_coords, initial_time ](
-                                 const gsl::not_null<Vars*> vars) noexcept {
-          vars->assign_subset(evolution::initial_data(
-              Parallel::get<::Tags::AnalyticSolutionOrData>(cache),
-              inertial_coords, initial_time, typename Vars::tags_list{}));
-        });
-
-    return std::move(box);
+  template <typename Metavariables, typename AddSimpleTagsList,
+            typename AddComputeTagsList, typename System, typename DbTagsList,
+            typename... Ts>
+  static auto impl(std::false_type /*has_primitive_tags*/,
+                   db::DataBox<DbTagsList>&& box, Ts&&... ts) noexcept {
+    return merge_into_databox<ConservativeSystem, AddSimpleTagsList,
+                              AddComputeTagsList>(std::move(box),
+                                                  std::forward<Ts>(ts)...);
   }
 };
 }  // namespace Actions

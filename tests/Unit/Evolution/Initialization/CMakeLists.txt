@@ -6,6 +6,7 @@ set(LIBRARY "Test_EvolutionInitialization")
 set(LIBRARY_SOURCES
   Test_DgDomain.cpp
   Test_Tags.cpp
+  Test_SetVariables.cpp
   )
 
 add_test_library(
@@ -13,4 +14,9 @@ add_test_library(
   "Evolution/Initialization/"
   "${LIBRARY_SOURCES}"
   "DataStructures;Domain;Evolution;Utilities"
+  )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
   )

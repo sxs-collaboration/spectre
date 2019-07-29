@@ -27,6 +27,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/GrTagsForHydro.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
+#include "Evolution/Initialization/SetVariables.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Initialize.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/M1Closure.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/M1HydroCoupling.hpp"
@@ -221,6 +222,8 @@ struct EvolutionMetavars {
       evolution::dg::Initialization::Domain<volume_dim>,
       Initialization::Actions::GrTagsForHydro,
       Initialization::Actions::ConservativeSystem,
+      evolution::Initialization::Actions::SetVariables<
+          domain::Tags::Coordinates<volume_dim, Frame::Logical>>,
       Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       RadiationTransport::M1Grey::Actions::InitializeM1Tags,
       Actions::MutateApply<typename RadiationTransport::M1Grey::
