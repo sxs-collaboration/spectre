@@ -7,14 +7,16 @@
 #include <cstddef>
 #include <vector>
 
-#include "DataStructures/Index.hpp"
-#include "Domain/ElementId.hpp"
 #include "Domain/Mesh.hpp"
-#include "Domain/OrientationMap.hpp"
-#include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Utilities/Gsl.hpp"
 
-/// Items for initializing the DataBox%es of parallel components
+/// \cond
+template <size_t Dim>
+struct ElementId;
+template <size_t Dim>
+struct OrientationMap;
+/// \endcond
+
+namespace domain {
 namespace Initialization {
 /// \ingroup InitializationGroup
 /// \brief Construct the initial Mesh of an Element.
@@ -28,16 +30,9 @@ namespace Initialization {
 /// \param element_id id of an Element or its neighbor
 /// \param orientation OrientationMap of (neighboring) `element_id`
 template <size_t Dim>
-Mesh<Dim> element_mesh(
+Mesh<Dim> create_initial_mesh(
     const std::vector<std::array<size_t, Dim>>& initial_extents,
     const ElementId<Dim>& element_id,
-    const OrientationMap<Dim>& orientation = {}) noexcept {
-  const auto& unoriented_extents = initial_extents[element_id.block_id()];
-  Index<Dim> extents;
-  for (size_t i = 0; i < Dim; ++i) {
-    extents[i] = gsl::at(unoriented_extents, orientation(i));
-  }
-  return {extents.indices(), Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto};
-}
+    const OrientationMap<Dim>& orientation = {}) noexcept;
 }  // namespace Initialization
+}  // namespace domain
