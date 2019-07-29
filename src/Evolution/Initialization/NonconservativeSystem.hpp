@@ -15,21 +15,8 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-namespace Frame {
-struct Inertial;
-}  // namespace Frame
-namespace Initialization {
-namespace Tags {
-struct InitialTime;
-}  // namespace Tags
-}  // namespace Initialization
-namespace Tags {
-struct AnalyticSolutionOrData;
-}  // namespace Tags
 namespace domain {
 namespace Tags {
-template <size_t VolumeDim, typename Frame>
-struct Coordinates;
 template <size_t VolumeDim>
 struct Mesh;
 }  // namespace Tags
@@ -40,8 +27,7 @@ struct Mesh;
 namespace Initialization {
 namespace Actions {
 /// \ingroup InitializationGroup
-/// \brief Allocate and set variables needed for evolution of nonconservative
-/// systems
+/// \brief Allocate variables needed for evolution of nonconservative systems
 ///
 /// Uses:
 /// - DataBox:
@@ -54,14 +40,12 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: nothing
 struct NonconservativeSystem {
-  using initialization_tags = tmpl::list<Initialization::Tags::InitialTime>;
-
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
@@ -73,21 +57,10 @@ struct NonconservativeSystem {
     using compute_tags = db::AddComputeTags<>;
     using Vars = typename variables_tag::type;
 
-    const size_t num_grid_points =
-        db::get<domain::Tags::Mesh<dim>>(box).number_of_grid_points();
-    const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
-    const auto& inertial_coords =
-        db::get<domain::Tags::Coordinates<dim, Frame::Inertial>>(box);
-
-    // Set initial data from analytic solution
-    Vars vars{num_grid_points};
-    vars.assign_subset(evolution::initial_data(
-        Parallel::get<::Tags::AnalyticSolutionOrData>(cache), inertial_coords,
-        initial_time, typename Vars::tags_list{}));
-
     return std::make_tuple(
         merge_into_databox<NonconservativeSystem, simple_tags, compute_tags>(
-            std::move(box), std::move(vars)));
+            std::move(box), Vars{db::get<domain::Tags::Mesh<dim>>(box)
+                                     .number_of_grid_points()}));
   }
 };
 }  // namespace Actions
