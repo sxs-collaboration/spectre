@@ -9,6 +9,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
 namespace gr {
 
@@ -29,4 +30,23 @@ tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
     const tnsr::aBcc<DataType, SpatialDim, Frame, Index>&
         d_christoffel_2nd_kind) noexcept;
 
+namespace Tags {
+/// Compute item for spatial Ricci tensor \f$\R_{ij}\f$
+/// computed from SpatialChristoffelSecondKind and its spatial derivatives.
+///
+/// Can be retrieved using `gr::Tags::RicciTensor`
+template <size_t SpatialDim, typename Frame, typename DataType>
+struct RicciTensorCompute : RicciTensor<SpatialDim, Frame, DataType>,
+                            db::ComputeTag {
+  using argument_tags = tmpl::list<
+      gr::Tags::SpatialChristoffelSecondKind<SpatialDim, Frame, DataType>,
+      ::Tags::deriv<
+          gr::Tags::SpatialChristoffelSecondKind<SpatialDim, Frame, DataType>,
+          tmpl::size_t<SpatialDim>, Frame>>;
+  static constexpr tnsr::ii<DataType, SpatialDim, Frame> (*function)(
+      const tnsr::Ijj<DataType, SpatialDim, Frame>&,
+      const tnsr::iJkk<DataType, SpatialDim, Frame>&) =
+      &ricci_tensor<SpatialDim, Frame, IndexType::Spatial, DataType>;
+};
+}  // namespace Tags
 } // namespace gr
