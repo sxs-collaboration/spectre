@@ -7,7 +7,6 @@ set(LIBRARY_SOURCES
   Test_BoundaryConditions.cpp
   Test_Derivatives.cpp
   Test_DiscontinuousGalerkin.cpp
-  Test_Domain.cpp
   Test_Interface.cpp
   Test_LinearSolver.cpp
   Test_Source.cpp
