@@ -8,12 +8,9 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Elliptic/Initialization/BoundaryConditions.hpp"
-#include "Elliptic/Initialization/Derivatives.hpp"
 #include "Elliptic/Initialization/DiscontinuousGalerkin.hpp"
 #include "Elliptic/Initialization/Interface.hpp"
 #include "Elliptic/Initialization/LinearSolver.hpp"
-#include "Elliptic/Initialization/Source.hpp"
-#include "Elliptic/Initialization/System.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -39,9 +36,6 @@ namespace Actions {
  *
  * The following initializers are chained together (in this order):
  *
- * - `elliptic::Initialization::System`
- * - `elliptic::Initialization::Source`
- * - `elliptic::Initialization::Derivatives`
  * - `elliptic::Initialization::Interface`
  * - `elliptic::Initialization::BoundaryConditions`
  * - `elliptic::Initialization::LinearSolver`
@@ -63,15 +57,8 @@ struct InitializeElement {
     const auto& initial_extents = db::get<::Tags::InitialExtents<Dim>>(box);
 
     using system = typename Metavariables::system;
-    auto system_box = elliptic::Initialization::System<system>::initialize(
-        std::move(box));
-    auto source_box =
-        elliptic::Initialization::Source<Metavariables>::initialize(
-            std::move(system_box), cache);
-    auto deriv_box = elliptic::Initialization::Derivatives<
-        typename Metavariables::system>::initialize(std::move(source_box));
-    auto face_box = elliptic::Initialization::Interface<system>::initialize(
-        std::move(deriv_box));
+    auto face_box =
+        elliptic::Initialization::Interface<system>::initialize(std::move(box));
     auto boundary_conditions_box =
         elliptic::Initialization::BoundaryConditions<Metavariables>::initialize(
             std::move(face_box), cache);
