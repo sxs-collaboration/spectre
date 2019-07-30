@@ -5,6 +5,7 @@ set(LIBRARY "Test_NewtonianEulerSources")
 
 set(LIBRARY_SOURCES
   Test_IsentropicVortexSource.cpp
+  Test_UniformAcceleration.cpp
   )
 
 add_test_library(
