@@ -15,7 +15,7 @@
 
 namespace PUP {
 class er;
-}
+}  // namespace PUP
 
 namespace {
 struct name {
@@ -27,6 +27,9 @@ struct age {
 };
 struct email {
   using type = std::string;
+};
+struct parents {
+  using type = std::vector<std::string>;
 };
 
 struct not_streamable {
@@ -48,17 +51,17 @@ struct not_streamable_tag {
 
 SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
   /// [construction_example]
-  tuples::TaggedTuple<name, age, email, not_streamable_tag> test(
-      "bla", 17, "bla@bla.bla", 0);
+  tuples::TaggedTuple<name, age, email, parents, not_streamable_tag> test(
+      "bla", 17, "bla@bla.bla", std::vector<std::string>{"Mom", "Dad"}, 0);
   /// [construction_example]
   static_assert(tuples::TaggedTuple<name, age, email>::size() == 3,
                 "Failed to test size of TaggedTuple");
   {
     std::stringstream ss;
     ss << test;
-    CHECK(ss.str() == "(bla, 17, bla@bla.bla, NOT STREAMABLE)");
+    CHECK(ss.str() == "(bla, 17, bla@bla.bla, (Mom,Dad), NOT STREAMABLE)");
   }
-  CHECK(test.size() == 4);
+  CHECK(test.size() == 5);
   /// [get_example]
   CHECK("bla" == tuples::get<name>(test));
   CHECK(17 == tuples::get<age>(test));
