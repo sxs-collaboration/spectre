@@ -59,6 +59,16 @@ struct Domain : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
+/// The number of grid points per dimension for all elements in the initial
+/// computational domain
+template <size_t Dim>
+struct InitialExtents : db::SimpleTag {
+  static std::string name() noexcept { return "InitialExtents"; }
+  using type = std::vector<std::array<size_t, Dim>>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// The ::Element associated with the DataBox
 template <size_t VolumeDim>
 struct Element : db::SimpleTag {

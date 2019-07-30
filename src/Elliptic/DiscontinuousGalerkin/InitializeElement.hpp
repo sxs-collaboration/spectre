@@ -7,11 +7,9 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Domain/Domain.hpp"
 #include "Elliptic/Initialization/BoundaryConditions.hpp"
 #include "Elliptic/Initialization/Derivatives.hpp"
 #include "Elliptic/Initialization/DiscontinuousGalerkin.hpp"
-#include "Elliptic/Initialization/Domain.hpp"
 #include "Elliptic/Initialization/Interface.hpp"
 #include "Elliptic/Initialization/LinearSolver.hpp"
 #include "Elliptic/Initialization/Source.hpp"
@@ -41,7 +39,6 @@ namespace Actions {
  *
  * The following initializers are chained together (in this order):
  *
- * - `elliptic::Initialization::Domain`
  * - `elliptic::Initialization::System`
  * - `elliptic::Initialization::Source`
  * - `elliptic::Initialization::Derivatives`
@@ -52,50 +49,22 @@ namespace Actions {
  */
 template <size_t Dim>
 struct InitializeElement {
-  struct InitialExtents : db::SimpleTag {
-    static std::string name() noexcept { return "InitialExtents"; }
-    using type = std::vector<std::array<size_t, Dim>>;
-  };
-  struct TempDomain : db::SimpleTag {
-    static std::string name() noexcept { return "TempDomain"; }
-    using type = ::Domain<Dim, Frame::Inertial>;
-  };
-  struct AddOptionsToDataBox {
-    using simple_tags = tmpl::list<InitialExtents, TempDomain>;
-    template <typename DbTagsList>
-    static auto apply(db::DataBox<DbTagsList>&& box,
-                      std::vector<std::array<size_t, Dim>> initial_extents,
-                      ::Domain<Dim, Frame::Inertial> domain) noexcept {
-      return db::create_from<db::RemoveTags<>,
-                             db::AddSimpleTags<InitialExtents, TempDomain>>(
-          std::move(box), std::move(initial_extents), std::move(domain));
-    }
-  };
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ActionList, typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTagsList, TempDomain>> = nullptr>
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ActionList, typename ParallelComponent,
+      Requires<tmpl::list_contains_v<DbTagsList, ::Tags::InitialExtents<Dim>>> =
+          nullptr>
   static auto apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& cache,
       const ElementIndex<Dim>& array_index, const ActionList /*meta*/,
       const ParallelComponent* const parallel_component_meta) noexcept {
-    const auto initial_extents = db::get<InitialExtents>(box);
-    ::Domain<Dim, Frame::Inertial> domain{};
-    db::mutate<TempDomain>(
-        make_not_null(&box), [&domain](const auto domain_ptr) noexcept {
-          domain = std::move(*domain_ptr);
-        });
-    auto initial_box =
-        db::create_from<typename AddOptionsToDataBox::simple_tags>(
-            std::move(box));
+    const auto& initial_extents = db::get<::Tags::InitialExtents<Dim>>(box);
 
     using system = typename Metavariables::system;
-    auto domain_box = elliptic::Initialization::Domain<Dim>::initialize(
-        std::move(initial_box), array_index, initial_extents, domain);
     auto system_box = elliptic::Initialization::System<system>::initialize(
-        std::move(domain_box));
+        std::move(box));
     auto source_box =
         elliptic::Initialization::Source<Metavariables>::initialize(
             std::move(system_box), cache);
@@ -116,10 +85,10 @@ struct InitializeElement {
     return std::make_tuple(std::move(dg_box));
   }
 
-  template <
-      typename DbTagsList, typename... InboxTags, typename Metavariables,
-      typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTagsList, TempDomain>> = nullptr>
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent,
+            Requires<not tmpl::list_contains_v<
+                DbTagsList, ::Tags::InitialExtents<Dim>>> = nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
       db::DataBox<DbTagsList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,

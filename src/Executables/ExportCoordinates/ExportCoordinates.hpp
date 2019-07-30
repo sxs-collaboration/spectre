@@ -11,7 +11,6 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/Tags.hpp"
-#include "Elliptic/Initialization/Domain.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
@@ -27,6 +26,8 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Printf.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Requires.hpp"
@@ -34,56 +35,6 @@
 
 /// \cond
 namespace Actions {
-template <size_t Dim>
-struct InitializeElement {
-  struct InitialExtents : db::SimpleTag {
-    static std::string name() noexcept { return "InitialExtents"; }
-    using type = std::vector<std::array<size_t, Dim>>;
-  };
-  struct Domain : db::SimpleTag {
-    static std::string name() noexcept { return "Domain"; }
-    using type = ::Domain<Dim, Frame::Inertial>;
-  };
-
-  using AddOptionsToDataBox =
-      Parallel::ForwardAllOptionsToDataBox<tmpl::list<InitialExtents, Domain>>;
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ActionList, typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTagsList, Domain>> = nullptr>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ElementIndex<Dim>& array_index,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
-    const auto initial_extents = db::get<InitialExtents>(box);
-    ::Domain<Dim, Frame::Inertial> domain{};
-    db::mutate<Domain>(
-        make_not_null(&box), [&domain](const auto domain_ptr) noexcept {
-          domain = std::move(*domain_ptr);
-        });
-    return std::make_tuple(
-        elliptic::Initialization::Domain<Dim>::initialize(
-            db::create_from<typename AddOptionsToDataBox::simple_tags>(
-                std::move(box)),
-            array_index, initial_extents, domain),
-        true);
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ActionList, typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<DbTagsList, Domain>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      db::DataBox<DbTagsList>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ElementIndex<Dim>& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box), true};
-  }
-};
-
 template <size_t Dim>
 struct ExportCoordinates {
   // Compile-time interface for observers
@@ -147,9 +98,11 @@ struct ElementArray {
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<OptionTags::DomainCreator<Dim, Frame::Inertial>>;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             tmpl::list<Actions::InitializeElement<Dim>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<
+              dg::Actions::InitializeDomain<Dim>,
+              ::Initialization::Actions::RemoveOptionsAndTerminatePhase>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase,
@@ -163,7 +116,8 @@ struct ElementArray {
                              tmpl::list<Actions::ExportCoordinates<Dim>>>>;
 
   using add_options_to_databox =
-      typename Actions::InitializeElement<Dim>::AddOptionsToDataBox;
+      Parallel::ForwardAllOptionsToDataBox<::Initialization::option_tags<
+          tmpl::list<dg::Actions::InitializeDomain<Dim>>>>;
 
   static void initialize(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,

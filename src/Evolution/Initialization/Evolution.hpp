@@ -70,11 +70,12 @@ struct Evolution {
                                       LocalSystem::is_in_flux_conservative_form>
   struct ComputeTags {
     using type = db::AddComputeTags<
-        ::Tags::Time, ::Tags::DerivCompute<variables_tag,
-                                           ::Tags::InverseJacobian<
-                                               ::Tags::ElementMap<dim>,
-                                               ::Tags::LogicalCoordinates<dim>>,
-                                           typename System::gradients_tags>>;
+        ::Tags::Time,
+        ::Tags::DerivCompute<
+            variables_tag,
+            ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
+                                    ::Tags::Coordinates<dim, Frame::Logical>>,
+            typename System::gradients_tags>>;
   };
 
   template <typename LocalSystem>
@@ -85,7 +86,7 @@ struct Evolution {
             db::add_tag_prefix<::Tags::Flux, variables_tag, tmpl::size_t<dim>,
                                Frame::Inertial>,
             ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
-                                    ::Tags::LogicalCoordinates<dim>>>>;
+                                    ::Tags::Coordinates<dim, Frame::Logical>>>>;
   };
 
   using compute_tags = typename ComputeTags<System>::type;
