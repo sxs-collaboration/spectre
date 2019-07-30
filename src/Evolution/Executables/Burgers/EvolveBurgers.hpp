@@ -23,7 +23,6 @@
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Interface.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "IO/Observer/Actions.hpp"
@@ -42,6 +41,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -138,10 +138,11 @@ struct EvolutionMetavars {
   using initialization_actions = tmpl::list<
       dg::Actions::InitializeDomain<1>,
       Initialization::Actions::ConservativeSystem,
-      Initialization::Actions::Interface<
+      dg::Actions::InitializeInterfaces<
           system,
-          Initialization::slice_tags_to_face<typename system::variables_tag>,
-          Initialization::slice_tags_to_exterior<>>,
+          dg::Initialization::slice_tags_to_face<
+              typename system::variables_tag>,
+          dg::Initialization::slice_tags_to_exterior<>>,
       Initialization::Actions::Evolution<system>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<1>,

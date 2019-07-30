@@ -24,6 +24,7 @@ class ConstGlobalCache;
 }  // namespace Parallel
 /// \endcond
 
+namespace dg {
 namespace Initialization {
 /// \ingroup InitializationGroup
 /// %Tags that are to be sliced to the faces of the element
@@ -44,20 +45,21 @@ using face_compute_tags = tmpl::list<Tags...>;
 /// Compute tags on the exterior side of the faces of the element
 template <typename... Tags>
 using exterior_compute_tags = tmpl::list<Tags...>;
+}  // namespace Initialization
 
 namespace Actions {
 /// \ingroup InitializationGroup
 /// \brief Initialize items related to the interfaces between Elements and on
 /// external boundaries
 ///
-/// The `Initialization::slice_tags_to_face` and
-/// `Initialization::slice_tags_to_exterior` types should be used for the
+/// The `dg::Initialization::slice_tags_to_face` and
+/// `dg::Initialization::slice_tags_to_exterior` types should be used for the
 /// `SliceTagsToFace` and `SliceTagsToExterior` template parameters,
 /// respectively. These are used to set additional volume quantities that are to
 /// be sliced to the interfaces. Compute tags on the interfaces are controlled
 /// using the `FaceComputeTags` and `ExteriorComputeTags` template parameters,
-/// which should be passed the `Initialization::face_compute_tags` and
-/// `Initialization::exterior_compute_tags` types, respectively.
+/// which should be passed the `dg::Initialization::face_compute_tags` and
+/// `dg::Initialization::exterior_compute_tags` types, respectively.
 ///
 /// DataBox changes:
 /// - Adds:
@@ -77,15 +79,14 @@ namespace Actions {
 ///         Directions, Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>`
 /// - Removes: nothing
 /// - Modifies: nothing
-template <typename System, typename SliceTagsToFace,
-          typename SliceTagsToExterior,
-          typename FaceComputeTags = face_compute_tags<>,
-          typename ExteriorComputeTags = exterior_compute_tags<>>
-struct Interface {
+template <
+    typename System, typename SliceTagsToFace, typename SliceTagsToExterior,
+    typename FaceComputeTags = Initialization::face_compute_tags<>,
+    typename ExteriorComputeTags = Initialization::exterior_compute_tags<>>
+struct InitializeInterfaces {
   static constexpr size_t dim = System::volume_dim;
-  using simple_tags = db::AddSimpleTags<
-        ::Tags::Interface<::Tags::BoundaryDirectionsExterior<dim>,
-                          typename System::variables_tag>>;
+  using simple_tags = db::AddSimpleTags<::Tags::Interface<
+      ::Tags::BoundaryDirectionsExterior<dim>, typename System::variables_tag>>;
 
   template <typename TagToSlice, typename Directions>
   struct make_slice_tag {
@@ -166,9 +167,10 @@ struct Interface {
     }
 
     return std::make_tuple(
-        merge_into_databox<Interface, simple_tags, compute_tags>(
+        ::Initialization::merge_into_databox<InitializeInterfaces, simple_tags,
+                                             compute_tags>(
             std::move(box), std::move(external_boundary_vars)));
   }
 };
 }  // namespace Actions
-}  // namespace Initialization
+}  // namespace dg
