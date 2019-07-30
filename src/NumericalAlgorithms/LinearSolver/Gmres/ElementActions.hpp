@@ -71,6 +71,41 @@ struct NormalizeInitialOperand {
   }
 };
 
+struct PrepareStep {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    using orthogonalization_iteration_id_tag =
+        db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
+                           LinearSolver::Tags::IterationId>;
+
+    db::mutate<LinearSolver::Tags::IterationId,
+               ::Tags::Next<LinearSolver::Tags::IterationId>,
+               orthogonalization_iteration_id_tag>(
+        make_not_null(&box),
+        [](const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
+               iteration_id,
+           const gsl::not_null<
+               db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>*>
+               next_iteration_id,
+           const gsl::not_null<
+               db::item_type<orthogonalization_iteration_id_tag>*>
+               orthogonalization_iteration_id) noexcept {
+          *iteration_id = *next_iteration_id;
+          (*next_iteration_id)++;
+          *orthogonalization_iteration_id = 0;
+        });
+
+    return {std::move(box)};
+  }
+};
+
 struct PerformStep {
   template <typename DataBox, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -90,6 +125,11 @@ struct PerformStep {
         db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
     using basis_history_tag =
         LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
+
+    ASSERT(get<LinearSolver::Tags::IterationId>(box) !=
+               std::numeric_limits<size_t>::max(),
+           "Linear solve iteration ID is at initial state. Did you forget to "
+           "invoke 'PrepareStep'?");
 
     db::mutate<operand_tag>(
         make_not_null(&box),
@@ -196,36 +236,20 @@ struct NormalizeOperandAndUpdateField {
         db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
     using operand_tag =
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-    using orthogonalization_iteration_id_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                           LinearSolver::Tags::IterationId>;
     using basis_history_tag =
         LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
 
-    db::mutate<LinearSolver::Tags::IterationId,
-               ::Tags::Next<LinearSolver::Tags::IterationId>,
-               orthogonalization_iteration_id_tag, operand_tag,
-               basis_history_tag, fields_tag, LinearSolver::Tags::HasConverged>(
+    db::mutate<operand_tag, basis_history_tag, fields_tag,
+               LinearSolver::Tags::HasConverged>(
         make_not_null(&box),
         [
           normalization, &minres, &has_converged
-        ](const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
-              iteration_id,
-          const gsl::not_null<
-              db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>*>
-              next_iteration_id,
-          const gsl::not_null<
-              db::item_type<orthogonalization_iteration_id_tag>*>
-              orthogonalization_iteration_id,
-          const gsl::not_null<db::item_type<operand_tag>*> operand,
+        ](const gsl::not_null<db::item_type<operand_tag>*> operand,
           const gsl::not_null<db::item_type<basis_history_tag>*> basis_history,
           const gsl::not_null<db::item_type<fields_tag>*> field,
           const gsl::not_null<db::item_type<LinearSolver::Tags::HasConverged>*>
               local_has_converged,
           const db::item_type<initial_fields_tag>& initial_field) noexcept {
-          (*iteration_id)++;
-          *next_iteration_id = *iteration_id + 1;
-          *orthogonalization_iteration_id = 0;
           *operand /= normalization;
           basis_history->push_back(*operand);
           *field = initial_field;

@@ -47,14 +47,19 @@ struct ElementArray {
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<>;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<ActionTesting::InitializeDataBox<
-          tmpl::append<tmpl::list<VectorTag, operand_tag>,
-                       typename LinearSolver::gmres_detail::InitializeElement<
-                           Metavariables>::simple_tags>,
-          typename LinearSolver::gmres_detail::InitializeElement<
-              Metavariables>::compute_tags>>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<
+              tmpl::append<tmpl::list<VectorTag, operand_tag>,
+                           typename LinearSolver::gmres_detail::
+                               InitializeElement<Metavariables>::simple_tags>,
+              typename LinearSolver::gmres_detail::InitializeElement<
+                  Metavariables>::compute_tags>>>,
+
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<LinearSolver::gmres_detail::PrepareStep>>>;
 };
 
 struct System {
@@ -79,7 +84,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
   // Setup mock element array
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), 0,
-      {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.), 0_st, 0_st,
+      {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
+       std::numeric_limits<size_t>::max(), size_t{0},
        DenseVector<double>(3, -1.), 0_st,
        std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
                                         DenseVector<double>(3, 1.5)},
@@ -92,13 +98,6 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
   };
 
   runner.set_phase(Metavariables::Phase::Testing);
-
-  {
-    CHECK(get_tag(LinearSolver::Tags::IterationId{}) == 0);
-    CHECK(get_tag(initial_fields_tag{}) == DenseVector<double>(3, -1.));
-    CHECK(get_tag(operand_tag{}) == DenseVector<double>(3, 2.));
-    CHECK(get_tag(basis_history_tag{}).size() == 2);
-  }
 
   // Can't test the other element actions because reductions are not yet
   // supported. The full algorithm is tested in
@@ -116,15 +115,20 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
     CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
     CHECK(get_tag(LinearSolver::Tags::HasConverged{}));
   }
+  SECTION("PrepareStep") {
+    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
+    CHECK(get_tag(LinearSolver::Tags::IterationId{}) == 0);
+    CHECK(get_tag(Tags::Next<LinearSolver::Tags::IterationId>{}) == 1);
+    CHECK(get_tag(orthogonalization_iteration_id_tag{}) == 0);
+  }
   SECTION("NormalizeOperandAndUpdateField") {
+    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
     ActionTesting::simple_action<
         element_array,
         LinearSolver::gmres_detail::NormalizeOperandAndUpdateField>(
         make_not_null(&runner), 0, 4., DenseVector<double>{2., 4.},
         db::item_type<LinearSolver::Tags::HasConverged>{
             {1, 0., 0.}, 1, 0., 0.});
-    CHECK(get_tag(LinearSolver::Tags::IterationId{}) == 1);
-    CHECK(get_tag(orthogonalization_iteration_id_tag{}) == 0);
     CHECK_ITERABLE_APPROX(get_tag(operand_tag{}), DenseVector<double>(3, 0.5));
     CHECK(get_tag(basis_history_tag{}).size() == 3);
     CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));

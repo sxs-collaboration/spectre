@@ -6,6 +6,7 @@ set(LIBRARY "Test_ParallelDiscontinuousGalerkin")
 set(LIBRARY_SOURCES
   Test_InitializeDomain.cpp
   Test_InitializeInterfaces.cpp
+  Test_InitializeMortars.cpp
   )
 
 add_test_library(

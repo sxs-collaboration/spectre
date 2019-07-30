@@ -242,6 +242,7 @@ struct ElementArray {
           typename Metavariables::Phase,
           Metavariables::Phase::PerformLinearSolve,
           tmpl::list<LinearSolver::Actions::TerminateIfConverged,
+                     typename Metavariables::linear_solver::prepare_step,
                      ComputeOperatorAction,
                      typename Metavariables::linear_solver::perform_step>>,
 

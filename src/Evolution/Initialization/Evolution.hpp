@@ -37,6 +37,10 @@ namespace Actions {
 /// \ingroup InitializationGroup
 /// \brief Initialize items related to time-evolution of the system
 ///
+/// Since we have not started the evolution yet, we initialize the state
+/// _before_ the initial time. So `Tags::TimeId` is undefined at this point,
+/// and `Tags::Next<Tags::TimeId>` is the initial time.
+///
 /// DataBox changes:
 /// - Adds:
 ///   * Tags::TimeId
@@ -61,11 +65,6 @@ struct Evolution {
   using variables_tag = typename System::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
-  using simple_tags = db::AddSimpleTags<
-      ::Tags::TimeId, ::Tags::Next<::Tags::TimeId>, ::Tags::TimeStep,
-      dt_variables_tag,
-      ::Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>>;
-
   template <typename LocalSystem, bool IsInFluxConservativeForm =
                                       LocalSystem::is_in_flux_conservative_form>
   struct ComputeTags {
@@ -88,8 +87,6 @@ struct Evolution {
             ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
                                     ::Tags::Coordinates<dim, Frame::Logical>>>>;
   };
-
-  using compute_tags = typename ComputeTags<System>::type;
 
   // Global time stepping
   template <typename Metavariables,
@@ -157,9 +154,19 @@ struct Evolution {
         -static_cast<int64_t>(time_stepper.number_of_past_steps()),
         initial_time);
 
+    using compute_tags = typename ComputeTags<System>::type;
     return std::make_tuple(
-        merge_into_databox<Evolution, simple_tags, compute_tags>(
-            std::move(box), TimeId{}, time_id, initial_dt, std::move(dt_vars),
+        merge_into_databox<
+            Evolution,
+            db::AddSimpleTags<::Tags::TimeId, ::Tags::Next<::Tags::TimeId>,
+                              ::Tags::TimeStep, dt_variables_tag,
+                              ::Tags::HistoryEvolvedVariables<
+                                  variables_tag, dt_variables_tag>>,
+            compute_tags>(
+            std::move(box),
+            // At this point we have not started evolution yet, so the current
+            // time is undefined and _next_ is the initial time.
+            TimeId{}, time_id, initial_dt, std::move(dt_vars),
             std::move(history)));
   }
 

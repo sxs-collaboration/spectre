@@ -48,6 +48,7 @@
 #include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/IsentropicVortex.hpp"
@@ -175,6 +176,7 @@ struct EvolutionMetavars {
               typename system::primitive_variables_tag,
               NewtonianEuler::Tags::SoundSpeed<DataVector>>>,
       Initialization::Actions::Evolution<system>,
+      dg::Actions::InitializeMortars<EvolutionMetavars>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<Dim>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;

@@ -57,6 +57,31 @@ struct InitializeHasConverged {
   }
 };
 
+struct PrepareStep {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    db::mutate<LinearSolver::Tags::IterationId,
+               ::Tags::Next<LinearSolver::Tags::IterationId>>(
+        make_not_null(&box),
+        [](const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
+               iteration_id,
+           const gsl::not_null<
+               db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>*>
+               next_iteration_id) noexcept {
+          *iteration_id = *next_iteration_id;
+          (*next_iteration_id)++;
+        });
+    return {std::move(box)};
+  }
+};
+
 struct PerformStep {
   template <typename DataBox, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -74,6 +99,11 @@ struct PerformStep {
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
     using operator_tag =
         db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
+
+    ASSERT(get<LinearSolver::Tags::IterationId>(box) !=
+               std::numeric_limits<size_t>::max(),
+           "Linear solve iteration ID is at initial state. Did you forget to "
+           "invoke 'PrepareStep'?");
 
     // At this point Ap must have been computed in a previous action
     // We compute the inner product <p,p> w.r.t A. This requires a global
@@ -160,26 +190,16 @@ struct UpdateOperand {
     using residual_tag =
         db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
 
-    // Prepare conjugate gradient for next iteration
-    db::mutate<operand_tag, LinearSolver::Tags::HasConverged,
-               LinearSolver::Tags::IterationId,
-               ::Tags::Next<LinearSolver::Tags::IterationId>>(
+    db::mutate<operand_tag, LinearSolver::Tags::HasConverged>(
         make_not_null(&box),
         [
           res_ratio, &has_converged
         ](const gsl::not_null<db::item_type<operand_tag>*> p,
           const gsl::not_null<db::item_type<LinearSolver::Tags::HasConverged>*>
               local_has_converged,
-          const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
-              iteration_id,
-          const gsl::not_null<
-              db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>*>
-              next_iteration_id,
           const db::item_type<residual_tag>& r) noexcept {
           *p = r + res_ratio * *p;
           *local_has_converged = has_converged;
-          (*iteration_id)++;
-          *next_iteration_id = *iteration_id + 1;
         },
         get<residual_tag>(box));
 
