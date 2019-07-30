@@ -478,7 +478,7 @@ template <typename... Tags>
 struct apply_helper<tmpl::list<Tags...>> {
   template <typename Metavariables, typename Options, typename F>
   static decltype(auto) apply(const Options& opts, F&& func) {
-    return func(opts.template get<Tags>()...);
+    return func(opts.template get<Tags, Metavariables>()...);
   }
 };
 }  // namespace Options_detail
