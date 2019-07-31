@@ -909,7 +909,7 @@ struct Subitems<TagList, Tag,
 
 namespace Tags {
 template <size_t N, typename T>
-struct TempTensor {
+struct TempTensor : db::SimpleTag {
   using type = T;
   static std::string name() noexcept {
     return std::string("TempTensor") + std::to_string(N);
