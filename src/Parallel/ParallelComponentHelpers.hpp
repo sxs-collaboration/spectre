@@ -80,6 +80,27 @@ using get_const_global_cache_tags_from_pdal =
             get_action_list_from_phase_dep_action_list<tmpl::_1>>>,
         Parallel_detail::get_const_global_cache_tags_from_action<tmpl::_1>>>>;
 
+namespace detail {
+template <typename PhaseAction>
+struct get_initialization_actions_list {
+  using type = tmpl::list<>;
+};
+
+template <typename PhaseType, typename InitializationActionsList>
+struct get_initialization_actions_list<Parallel::PhaseActions<
+    PhaseType, PhaseType::Initialization, InitializationActionsList>> {
+  using type = InitializationActionsList;
+};
+}  // namespace detail
+
+/// \ingroup ParallelGroup
+/// \brief Given the phase dependent action list, return the list of
+/// actions in the Initialization phase (or an empty list if the Initialization
+/// phase is absent from the phase dependent action list)
+template <typename PhaseDepActionList>
+using get_initialization_actions_list = tmpl::flatten<tmpl::transform<
+    PhaseDepActionList, detail::get_initialization_actions_list<tmpl::_1>>>;
+
 /// \cond
 namespace Algorithms {
 struct Singleton;
