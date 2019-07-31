@@ -1,8 +1,12 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <vector>
+
+#include "Options/ParseOptions.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace {
@@ -153,5 +157,53 @@ static_assert(
     cpp17::is_same_v<ComponentInitAndExecuteWithAllocate::initialization_tags,
                      tmpl::list<InitTag3, InitTag4, InitTag0, InitTag1>>,
     "Failed testing get_initialization_tags");
+
+namespace OptionTags {
+struct Yards {};
+struct Dim {};
+struct Greeting {};
+struct Name {};
+}  // namespace OptionTags
+
+namespace Initialization {
+namespace Tags {
+struct Yards {
+  using option_tags = tmpl::list<OptionTags::Yards>;
+};
+struct Feet {
+  using option_tags = tmpl::list<OptionTags::Yards>;
+};
+struct Sides {
+  using option_tags = tmpl::list<OptionTags::Yards, OptionTags::Dim>;
+};
+struct FullGreeting {
+  using option_tags = tmpl::list<OptionTags::Greeting, OptionTags::Name>;
+};
+}  // namespace Tags
+}  // namespace Initialization
+
+using initialization_tags_0 = tmpl::list<>;
+
+using initialization_tags_1 =
+    tmpl::list<Initialization::Tags::Yards, Initialization::Tags::Feet,
+               Initialization::Tags::Sides>;
+
+using initialization_tags_2 =
+    tmpl::list<Initialization::Tags::Yards, Initialization::Tags::Feet,
+               Initialization::Tags::FullGreeting>;
+
+static_assert(cpp17::is_same_v<Parallel::get_option_tags<initialization_tags_0>,
+                               tmpl::list<>>,
+              "Failed testing get_option_tags");
+
+static_assert(cpp17::is_same_v<Parallel::get_option_tags<initialization_tags_1>,
+                               tmpl::list<OptionTags::Yards, OptionTags::Dim>>,
+              "Failed testing get_option_tags");
+
+static_assert(
+    cpp17::is_same_v<
+        Parallel::get_option_tags<initialization_tags_2>,
+        tmpl::list<OptionTags::Yards, OptionTags::Greeting, OptionTags::Name>>,
+    "Failed testing get_option_tags");
 
 }  // namespace

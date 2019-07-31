@@ -126,6 +126,21 @@ using get_initialization_tags = tmpl::remove_duplicates<tmpl::flatten<
                    InitializationActionsList,
                    detail::get_initialization_tags_from_action<tmpl::_1>>>>>;
 
+namespace detail {
+template <typename InitializationTag>
+struct get_option_tags_from_initialization_tag {
+  using type = typename InitializationTag::option_tags;
+};
+}  // namespace detail
+
+/// \ingroup ParallelGroup
+/// \brief Given a list of initialization tags, returns a list of the
+/// unique option tags required to construct them.
+template <typename InitializationTagsList>
+using get_option_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+    InitializationTagsList,
+    detail::get_option_tags_from_initialization_tag<tmpl::_1>>>>;
+
 /// \cond
 namespace Algorithms {
 struct Singleton;
