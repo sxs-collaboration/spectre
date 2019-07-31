@@ -19,6 +19,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
+#include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -123,6 +124,8 @@ void test_reconstruction_1d() noexcept {
 
   auto scalar =
       ScalarTag::type{{{evaluate_polynomial({{1., 2., 0., 0.5, 0.1}})}}};
+  // WENO reconstruction should preserve the mean, so expected = initial
+  const double expected_scalar_mean = mean_value(get(scalar), mesh);
 
   std::unordered_map<std::pair<Direction<1>, ElementId<1>>,
                      Variables<tmpl::list<ScalarTag>>,
@@ -141,6 +144,8 @@ void test_reconstruction_1d() noexcept {
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
       make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars);
+
+  CHECK(mean_value(get(scalar), mesh) == approx(expected_scalar_mean));
 
   // Expected result computed in Mathematica by computing oscillation indicator
   // as in oscillation_indicator tests, then WENO weights, then superposition.
@@ -169,6 +174,9 @@ void test_reconstruction_2d() noexcept {
   auto vector = VectorTag<2>::type{
       {{evaluate_polynomial({{2., 1., 0., 1.5, 1., 0., 1., 0., 0.}}),
         evaluate_polynomial({{0.5, 1., 0.5, 1.5, 2., 1., 1., 2., 3.}})}}};
+  // WENO reconstruction should preserve the mean, so expected = initial
+  const std::array<double, 2> expected_vector_means = {
+      {mean_value(get<0>(vector), mesh), mean_value(get<1>(vector), mesh)}};
 
   std::unordered_map<std::pair<Direction<2>, ElementId<2>>,
                      Variables<tmpl::list<VectorTag<2>>>,
@@ -201,6 +209,9 @@ void test_reconstruction_2d() noexcept {
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<VectorTag<2>>(
       make_not_null(&vector), mesh, neighbor_linear_weight, neighbor_vars);
+
+  CHECK(mean_value(get<0>(vector), mesh) == approx(expected_vector_means[0]));
+  CHECK(mean_value(get<1>(vector), mesh) == approx(expected_vector_means[1]));
 
   // Expected result computed in Mathematica by computing oscillation indicator
   // as in oscillation_indicator tests, then WENO weights, then superposition.
@@ -238,6 +249,8 @@ void test_reconstruction_3d() noexcept {
 
   auto scalar =
       ScalarTag::type{{{evaluate_polynomial({{1., 0.5, 0.5, 0.2, 0.2, 0.1}})}}};
+  // WENO reconstruction should preserve the mean, so expected = initial
+  const double expected_scalar_mean = mean_value(get(scalar), mesh);
 
   // We skip one neighbor, lower_eta, to simulate an external boundary
   std::unordered_map<std::pair<Direction<3>, ElementId<3>>,
@@ -272,6 +285,8 @@ void test_reconstruction_3d() noexcept {
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
       make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars);
+
+  CHECK(mean_value(get(scalar), mesh) == approx(expected_scalar_mean));
 
   // Expected result computed in Mathematica by computing oscillation indicator
   // as in oscillation_indicator tests, then WENO weights, then superposition.
