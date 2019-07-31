@@ -51,9 +51,9 @@ number_of_swsh_phi_collocation_points(const size_t l_max) noexcept {
 
 // In the static caching mechanism, we permit an l_max up to this macro
 // value. Higher l_max values may still be created manually using the
-// `Collocation` constructor. If l_max's are used several times at higher value,
-// consider increasing this value, but only after memory costs have been
-// evaluated.
+// `CollocationMetadata` constructor. If l_max's are used several times at
+// higher value, consider increasing this value, but only after memory costs
+// have been evaluated.
 constexpr size_t collocation_maximum_l_max = 200;
 
 namespace detail {
@@ -76,7 +76,7 @@ struct LibsharpCollocationPoint {
 /// \brief A wrapper class for the spherical harmonic library collocation data
 ///
 /// \details The currently chosen library for spin-weighted spherical harmonic
-/// transforms is libsharp. The `Collocation` class stores the
+/// transforms is libsharp. The `CollocationMetadata` class stores the
 /// libsharp `sharp_geom_info` object, which contains data about
 /// 1. The angular collocation points used in spin-weighted spherical harmonic
 /// transforms
@@ -86,16 +86,17 @@ struct LibsharpCollocationPoint {
 /// \tparam Representation the ComplexRepresentation, either
 /// `ComplexRepresentation::Interleaved` or
 /// `ComplexRepresentation::RealsThenImags` compatible with the generated
-/// `Collocation` - this is necessary because the stored libsharp type contains
-/// memory stride information.
+/// `CollocationMetadata` - this is necessary because the stored libsharp type
+/// contains memory stride information.
 template <ComplexRepresentation Representation>
-class Collocation {
+class CollocationMetadata {
  public:
   class CollocationConstIterator {
    public:
     /// create a new iterator. defaults to the start of the supplied object
     explicit CollocationConstIterator(
-        const gsl::not_null<const Collocation<Representation>*> collocation,
+        const gsl::not_null<const CollocationMetadata<Representation>*>
+            collocation,
         const size_t start_index = 0) noexcept
         : index_{start_index}, collocation_{collocation} {}
 
@@ -140,7 +141,7 @@ class Collocation {
 
    private:
     size_t index_;
-    const Collocation<Representation>* const collocation_;
+    const CollocationMetadata<Representation>* const collocation_;
   };
 
   /// The representation of the block of complex values, which sets the stride
@@ -154,15 +155,15 @@ class Collocation {
   /// \note If you will potentially use the same `l_max` collocation set more
   /// than once, it is probably better to use the
   /// `precomputed_spherical_harmonic_collocation` function
-  explicit Collocation(size_t l_max) noexcept;
+  explicit CollocationMetadata(size_t l_max) noexcept;
 
   /// default constructor required for iterator use
-  ~Collocation() = default;
-  Collocation() = default;
-  Collocation(const Collocation&) = default;
-  Collocation(Collocation&&) = default;
-  Collocation& operator=(Collocation&) = default;
-  Collocation& operator=(Collocation&&) = default;
+  ~CollocationMetadata() = default;
+  CollocationMetadata() = default;
+  CollocationMetadata(const CollocationMetadata&) = default;
+  CollocationMetadata(CollocationMetadata&&) = default;
+  CollocationMetadata& operator=(CollocationMetadata&) = default;
+  CollocationMetadata& operator=(CollocationMetadata&&) = default;
 
   /// retrieve the `sharp_geom_info*` stored. This should largely be used only
   /// for passing to other libsharp functions. Otherwise, access elements
@@ -190,10 +191,11 @@ class Collocation {
   /// Get a bidirectional iterator to the start of the grid. `operator*` for
   /// that iterator gives a `LibsharpCollocationPoint` with members `offset`,
   /// `theta`, and `phi`
-  Collocation<Representation>::CollocationConstIterator begin() const noexcept {
+  CollocationMetadata<Representation>::CollocationConstIterator begin() const
+      noexcept {
     return CollocationConstIterator{make_not_null(this), 0};
   }
-  Collocation<Representation>::CollocationConstIterator cbegin() const
+  CollocationMetadata<Representation>::CollocationConstIterator cbegin() const
       noexcept {
     return begin();
   }
@@ -202,10 +204,12 @@ class Collocation {
   /// Get a bidirectional iterator to the end of the grid. `operator*` for
   /// that iterator gives a `LibsharpCollocationPoint` with members `offset`,
   /// `theta`, and `phi`
-  Collocation<Representation>::CollocationConstIterator end() const noexcept {
+  CollocationMetadata<Representation>::CollocationConstIterator end() const
+      noexcept {
     return CollocationConstIterator{make_not_null(this), size()};
   }
-  Collocation<Representation>::CollocationConstIterator cend() const noexcept {
+  CollocationMetadata<Representation>::CollocationConstIterator cend() const
+      noexcept {
     return end();
   }
   // @}
@@ -226,7 +230,7 @@ class Collocation {
 /// generated, it's returned by reference. Otherwise, the new grid is generated
 /// and put in the lookup table before it is returned by reference.
 template <ComplexRepresentation Representation>
-const Collocation<Representation>& precomputed_collocation(
+const CollocationMetadata<Representation>& cached_collocation_metadata(
     size_t l_max) noexcept;
 }  // namespace Swsh
 }  // namespace Spectral

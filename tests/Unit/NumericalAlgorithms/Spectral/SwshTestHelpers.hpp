@@ -127,7 +127,7 @@ void swsh_collocation_from_coefficients_and_basis_func(
     const size_t l_max, const size_t number_of_radial_points,
     const BasisFunction basis_function) noexcept {
   auto& spherical_harmonic_collocation =
-      precomputed_collocation<Representation>(l_max);
+      cached_collocation_metadata<Representation>(l_max);
   auto spherical_harmonic_lm =
       cached_coefficients_metadata(l_max).get_sharp_alm_info();
 

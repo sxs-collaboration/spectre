@@ -63,7 +63,7 @@ void execute_libsharp_transform_set(
     const sharp_jobtype& jobtype, const int spin,
     const gsl::not_null<std::vector<std::complex<double>*>*> coefficient_data,
     const gsl::not_null<std::vector<double*>*> collocation_data,
-    const gsl::not_null<const Collocation<Representation>*>
+    const gsl::not_null<const CollocationMetadata<Representation>*>
         collocation_metadata,
     const sharp_alm_info* alm_info, const size_t num_transforms) noexcept {
   // libsharp considers two arrays per transform when spin is not zero.
@@ -120,7 +120,7 @@ void swsh_transform(
   pre_transform_collocation_data.reserve(2 * number_of_radial_points);
 
   const auto* collocation_metadata =
-      &precomputed_collocation<Representation>(l_max);
+      &cached_collocation_metadata<Representation>(l_max);
   const auto* alm_info =
       cached_coefficients_metadata(l_max).get_sharp_alm_info();
 
@@ -177,7 +177,7 @@ void inverse_swsh_transform(
       (size_of_libsharp_coefficient_vector(l_max));
 
   const auto* collocation_metadata =
-      &precomputed_collocation<Representation>(l_max);
+      &cached_collocation_metadata<Representation>(l_max);
   const auto* alm_info =
       cached_coefficients_metadata(l_max).get_sharp_alm_info();
 
@@ -274,7 +274,8 @@ SpinWeighted<ComplexDataVector, Spin> inverse_swsh_transform(
       const gsl::not_null<std::vector<std::complex<double>*>*>            \
           coefficient_data,                                               \
       const gsl::not_null<std::vector<double*>*> collocation_data,        \
-      const gsl::not_null<const Collocation<GET_REPRESENTATION(data)>*>   \
+      const gsl::not_null<                                                \
+          const CollocationMetadata<GET_REPRESENTATION(data)>*>           \
           collocation_metadata,                                           \
       const sharp_alm_info* alm_info, const size_t num_transforms) noexcept;
 

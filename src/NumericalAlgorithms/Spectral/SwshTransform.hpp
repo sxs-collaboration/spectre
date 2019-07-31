@@ -217,7 +217,7 @@ class TransformJob {
   size_t number_of_radial_grid_points_;
   size_t l_max_;
   sharp_alm_info* alm_info_;
-  const Collocation<Representation>* collocation_metadata_;
+  const CollocationMetadata<Representation>* collocation_metadata_;
 };
 
 namespace detail {
@@ -269,7 +269,8 @@ void execute_libsharp_transform_set(
     const sharp_jobtype& jobtype, int spin,
     gsl::not_null<std::vector<std::complex<double>*>*> coefficient_data,
     gsl::not_null<std::vector<double*>*> collocation_data,
-    gsl::not_null<const Collocation<Representation>*> collocation_metadata,
+    gsl::not_null<const CollocationMetadata<Representation>*>
+        collocation_metadata,
     const sharp_alm_info* alm_info, size_t num_transforms) noexcept;
 }  // namespace detail
 
@@ -278,7 +279,8 @@ TransformJob<Spin, Representation, TagList>::TransformJob(
     const size_t l_max, const size_t number_of_radial_grid_points) noexcept
     : number_of_radial_grid_points_{number_of_radial_grid_points},
       l_max_{l_max},
-      collocation_metadata_{&precomputed_collocation<Representation>(l_max_)} {
+      collocation_metadata_{
+          &cached_collocation_metadata<Representation>(l_max_)} {
   alm_info_ = cached_coefficients_metadata(l_max_).get_sharp_alm_info();
 }
 

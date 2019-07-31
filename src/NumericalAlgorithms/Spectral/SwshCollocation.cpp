@@ -18,7 +18,8 @@ namespace Spectral {
 namespace Swsh {
 
 template <ComplexRepresentation Representation>
-Collocation<Representation>::Collocation(const size_t l_max) noexcept
+CollocationMetadata<Representation>::CollocationMetadata(
+    const size_t l_max) noexcept
     : l_max_{l_max} {
   sharp_geom_info* geometry_to_initialize;
   sharp_make_gauss_geom_info(
@@ -30,7 +31,8 @@ Collocation<Representation>::Collocation(const size_t l_max) noexcept
 }
 
 template <ComplexRepresentation Representation>
-double Collocation<Representation>::theta(const size_t offset) const noexcept {
+double CollocationMetadata<Representation>::theta(const size_t offset) const
+    noexcept {
   ASSERT(offset < (2 * l_max_ + 1) * (l_max_ + 1),
          "invalid offset " << offset
                            << " passed to phi lookup. Must be less than (2 * "
@@ -49,7 +51,8 @@ double Collocation<Representation>::theta(const size_t offset) const noexcept {
 }
 
 template <ComplexRepresentation Representation>
-double Collocation<Representation>::phi(const size_t offset) const noexcept {
+double CollocationMetadata<Representation>::phi(const size_t offset) const
+    noexcept {
   ASSERT(offset < (2 * l_max_ + 1) * (l_max_ + 1),
          "invalid offset " << offset
                            << " passed to phi lookup. Must be less than (2 * "
@@ -65,16 +68,16 @@ namespace {
 // footprint. However, when doing so we still need to guarantee thread-safety.
 // static variables are guaranteed to be thread-safe only on construction and so
 // we store a std::array of function pointers to functions (cache_impl) that
-// then have a `static Collocation` that they return and is constructed lazily
-// in a thread-safe manner.
+// then have a `static CollocationMetadata` that they return and is constructed
+// lazily in a thread-safe manner.
 template <ComplexRepresentation Representation, size_t I>
-const Collocation<Representation>& cache_impl() noexcept {
-  static const Collocation<Representation> precomputed_collocation{I};
+const CollocationMetadata<Representation>& cache_impl() noexcept {
+  static const CollocationMetadata<Representation> precomputed_collocation{I};
   return precomputed_collocation;
 }
 
 template <ComplexRepresentation Representation, size_t... Is>
-SPECTRE_ALWAYS_INLINE const Collocation<Representation>&
+SPECTRE_ALWAYS_INLINE const CollocationMetadata<Representation>&
 dispatch_to_precomputed_static_collocation_impl(
     const size_t index, std::index_sequence<Is...> /*meta*/) noexcept {
   if (UNLIKELY(index > collocation_maximum_l_max)) {
@@ -83,10 +86,11 @@ dispatch_to_precomputed_static_collocation_impl(
           << "is not below the maximum l_max to cache, which is currently "
           << collocation_maximum_l_max
           << ". Either "
-             "construct the Collocation manually, or consider (with caution) "
+             "construct the CollocationMetadata manually, or consider (with "
+             "caution) "
              "increasing `collocation_maximum_l_max`.");
   }
-  static const std::array<const Collocation<Representation>& (*)(),
+  static const std::array<const CollocationMetadata<Representation>& (*)(),
                           sizeof...(Is)>
       cache{{&cache_impl<Representation, Is>...}};
   return gsl::at(cache, index)();
@@ -94,19 +98,19 @@ dispatch_to_precomputed_static_collocation_impl(
 }  // namespace
 
 template <ComplexRepresentation Representation>
-const Collocation<Representation>& precomputed_collocation(
+const CollocationMetadata<Representation>& cached_collocation_metadata(
     const size_t l_max) noexcept {
   return dispatch_to_precomputed_static_collocation_impl<Representation>(
       l_max, std::make_index_sequence<collocation_maximum_l_max + 1>{});
 }
 
-template class Collocation<ComplexRepresentation::Interleaved>;
-template class Collocation<ComplexRepresentation::RealsThenImags>;
+template class CollocationMetadata<ComplexRepresentation::Interleaved>;
+template class CollocationMetadata<ComplexRepresentation::RealsThenImags>;
 
-template const Collocation<ComplexRepresentation::Interleaved>&
-precomputed_collocation(const size_t l_max) noexcept;
-template const Collocation<ComplexRepresentation::RealsThenImags>&
-precomputed_collocation(const size_t l_max) noexcept;
+template const CollocationMetadata<ComplexRepresentation::Interleaved>&
+cached_collocation_metadata(const size_t l_max) noexcept;
+template const CollocationMetadata<ComplexRepresentation::RealsThenImags>&
+cached_collocation_metadata(const size_t l_max) noexcept;
 
 }  // namespace Swsh
 }  // namespace Spectral
