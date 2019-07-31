@@ -31,11 +31,6 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
-template <typename PhaseDepAction>
-struct get_action_list_from_phase_dep_action {
-  using type = typename PhaseDepAction::action_list;
-};
-
 template <class Metavariables, class PhaseDepActionList,
           class AddOptionsToDataBox>
 struct DgElementArray {
