@@ -19,10 +19,25 @@ struct Action2 {
   using inbox_tags = tmpl::list<Tag1, Tag2, Tag3>;
 };
 
-struct InitAction0 {};
+struct InitTag0 {};
+struct InitTag1 {};
+struct InitTag2 {};
+struct InitTag3 {};
+struct InitTag4 {};
+struct InitTag5 {};
+struct InitTag6 {};
+struct InitTag7 {};
+
+struct InitAction0 {
+  using initialization_tags = tmpl::list<InitTag0>;
+};
 struct InitAction1 {};
-struct InitAction2 {};
-struct InitAction3 {};
+struct InitAction2 {
+  using initialization_tags = tmpl::list<InitTag1, InitTag2>;
+};
+struct InitAction3 {
+  using initialization_tags = tmpl::list<InitTag0, InitTag1, InitTag3>;
+};
 
 enum class Phase { Initialization, Execute, Exit };
 
@@ -30,12 +45,16 @@ struct ComponentInit {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Phase, Phase::Initialization,
       tmpl::list<InitAction0, InitAction1, InitAction2>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
 struct ComponentExecute {
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<Phase, Phase::Execute,
                                         tmpl::list<Action0, Action1>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
 struct ComponentInitAndExecute {
@@ -44,6 +63,40 @@ struct ComponentInitAndExecute {
                              tmpl::list<InitAction3>>,
       Parallel::PhaseActions<Phase, Phase::Execute,
                              tmpl::list<InitAction2, Action0, Action2>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+};
+
+struct ComponentInitWithAllocate {
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      Phase, Phase::Initialization,
+      tmpl::list<InitAction0, InitAction1, InitAction2>>>;
+  using allocation_tags = tmpl::list<InitTag4, InitTag5>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>,
+      allocation_tags>;
+};
+
+struct ComponentExecuteWithAllocate {
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<Phase, Phase::Execute,
+                                        tmpl::list<Action0, Action1>>>;
+  using allocation_tags = tmpl::list<InitTag6, InitTag7>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>,
+      allocation_tags>;
+};
+
+struct ComponentInitAndExecuteWithAllocate {
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<Phase, Phase::Initialization,
+                             tmpl::list<InitAction3>>,
+      Parallel::PhaseActions<Phase, Phase::Execute,
+                             tmpl::list<InitAction2, Action0, Action2>>>;
+  using allocation_tags = tmpl::list<InitTag3, InitTag4>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>,
+      allocation_tags>;
 };
 
 static_assert(cpp17::is_same_v<Parallel::get_inbox_tags_from_action<Action2>,
@@ -73,5 +126,32 @@ static_assert(
                          ComponentInitAndExecute::phase_dependent_action_list>,
                      tmpl::list<InitAction3>>,
     "Failed testing get_intialization_actions_list");
+
+static_assert(cpp17::is_same_v<ComponentInit::initialization_tags,
+                               tmpl::list<InitTag0, InitTag1, InitTag2>>,
+              "Failed testing get_initialization_tags");
+
+static_assert(
+    cpp17::is_same_v<ComponentExecute::initialization_tags, tmpl::list<>>,
+    "Failed testing get_initialization_tags");
+
+static_assert(cpp17::is_same_v<ComponentInitAndExecute::initialization_tags,
+                               tmpl::list<InitTag0, InitTag1, InitTag3>>,
+              "Failed testing get_initialization_tags");
+
+static_assert(cpp17::is_same_v<
+                  ComponentInitWithAllocate::initialization_tags,
+                  tmpl::list<InitTag4, InitTag5, InitTag0, InitTag1, InitTag2>>,
+              "Failed testing get_initialization_tags");
+
+static_assert(
+    cpp17::is_same_v<ComponentExecuteWithAllocate::initialization_tags,
+                     tmpl::list<InitTag6, InitTag7>>,
+    "Failed testing get_initialization_tags");
+
+static_assert(
+    cpp17::is_same_v<ComponentInitAndExecuteWithAllocate::initialization_tags,
+                     tmpl::list<InitTag3, InitTag4, InitTag0, InitTag1>>,
+    "Failed testing get_initialization_tags");
 
 }  // namespace

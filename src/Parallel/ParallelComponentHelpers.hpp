@@ -101,6 +101,31 @@ template <typename PhaseDepActionList>
 using get_initialization_actions_list = tmpl::flatten<tmpl::transform<
     PhaseDepActionList, detail::get_initialization_actions_list<tmpl::_1>>>;
 
+namespace detail {
+template <typename Action, typename = cpp17::void_t<>>
+struct get_initialization_tags_from_action {
+  using type = tmpl::list<>;
+};
+
+template <typename Action>
+struct get_initialization_tags_from_action<
+    Action, cpp17::void_t<typename Action::initialization_tags>> {
+  using type = typename Action::initialization_tags;
+};
+}  // namespace detail
+
+/// \ingroup ParallelGroup
+/// \brief Given a list of initialization actions, and possibly a list of tags
+/// needed for allocation of an array component, returns a list of the
+/// unique initialization_tags for all the actions (and the allocate function).
+template <typename InitializationActionsList,
+          typename AllocationTagsList = tmpl::list<>>
+using get_initialization_tags = tmpl::remove_duplicates<tmpl::flatten<
+    tmpl::list<AllocationTagsList,
+               tmpl::transform<
+                   InitializationActionsList,
+                   detail::get_initialization_tags_from_action<tmpl::_1>>>>>;
+
 /// \cond
 namespace Algorithms {
 struct Singleton;
