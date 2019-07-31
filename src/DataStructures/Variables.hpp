@@ -52,7 +52,7 @@ struct Variables : db::SimpleTag {
     std::string tag_name{"Variables("};
     size_t iter = 0;
     tmpl::for_each<TagsList>([&tag_name, &iter ](auto tag) noexcept {
-      tag_name += tmpl::type_from<decltype(tag)>::name();
+      tag_name += db::tag_name<tmpl::type_from<decltype(tag)>>();
       if (iter + 1 != tmpl::size<TagsList>::value) {
         tag_name += ",";
       }
@@ -802,7 +802,7 @@ std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& /*d*/,
 template <typename Tag, typename TagsList>
 std::ostream& print_helper(std::ostream& os, const Variables<TagsList>& d,
                            tmpl::list<Tag> /*meta*/) noexcept {
-  return os << pretty_type::short_name<Tag>() << ":\n" << get<Tag>(d);
+  return os << db::tag_name<Tag>() << ":\n" << get<Tag>(d);
 }
 
 template <typename Tag, typename SecondTag, typename... RemainingTags,
@@ -810,7 +810,7 @@ template <typename Tag, typename SecondTag, typename... RemainingTags,
 std::ostream& print_helper(
     std::ostream& os, const Variables<TagsList>& d,
     tmpl::list<Tag, SecondTag, RemainingTags...> /*meta*/) noexcept {
-  os << pretty_type::short_name<Tag>() << ":\n";
+  os << db::tag_name<Tag>() << ":\n";
   os << get<Tag>(d) << "\n\n";
   print_helper(os, d, tmpl::list<SecondTag, RemainingTags...>{});
   return os;
