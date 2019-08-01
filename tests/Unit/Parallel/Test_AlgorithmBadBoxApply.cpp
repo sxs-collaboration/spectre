@@ -48,29 +48,33 @@ struct Component {
   using options = tmpl::list<>;
 
   static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
-    Parallel::simple_action<error_size_zero>(
-        Parallel::get_parallel_component<Component>(local_cache));
-  }
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
-      const typename Metavariables::Phase /*next_phase*/,
-      const Parallel::CProxy_ConstGlobalCache<
-          Metavariables>& /*global_cache*/) {}
+      const typename Metavariables::Phase next_phase,
+      const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+    if (next_phase == Metavariables::Phase::Execute) {
+      auto& local_cache = *(global_cache.ckLocalBranch());
+      Parallel::simple_action<error_size_zero>(
+          Parallel::get_parallel_component<Component>(local_cache));
+    }
+  }
 };
 
 struct TestMetavariables {
   using component_list = tmpl::list<Component<TestMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
 
-  enum class Phase { Initialization, Exit };
+  enum class Phase { Initialization, Execute, Exit };
 
   static constexpr OptionString help = "Executable for testing";
 
-  static Phase determine_next_phase(const Phase& /*current_phase*/,
+  static Phase determine_next_phase(const Phase& current_phase,
                                     const Parallel::CProxy_ConstGlobalCache<
                                         TestMetavariables>& /*cache_proxy*/) {
+    if (current_phase == Phase::Initialization) {
+      return Phase::Execute;
+    }
     return Phase::Exit;
   }
 };
