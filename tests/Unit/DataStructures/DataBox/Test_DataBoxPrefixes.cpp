@@ -42,6 +42,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Prefixes",
   CHECK(db::tag_name<Tags::Source<Tag>>() ==
         "Source(" + db::tag_name<Tag>() + ")");
   /// [source_name]
+  CHECK(db::tag_name<Tags::FixedSource<Tag>>() ==
+        "FixedSource(" + db::tag_name<Tag>() + ")");
   /// [initial_name]
   CHECK(db::tag_name<Tags::Initial<Tag>>() ==
         "Initial(" + db::tag_name<Tag>() + ")");

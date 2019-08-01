@@ -82,6 +82,15 @@ struct Source : db::PrefixTag, db::SimpleTag {
 };
 
 /// \ingroup DataBoxTagsGroup
+/// \brief Prefix indicating a source term that is independent of dynamic
+/// variables
+template <typename Tag>
+struct FixedSource : db::PrefixTag, db::SimpleTag {
+  using type = db::item_type<Tag>;
+  using tag = Tag;
+};
+
+/// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating the initial value of a quantity
 ///
 /// \snippet Test_DataBoxPrefixes.cpp initial_name
