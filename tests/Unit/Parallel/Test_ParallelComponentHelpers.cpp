@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include <vector>
 
 #include "Options/ParseOptions.hpp"
@@ -159,25 +161,56 @@ static_assert(
     "Failed testing get_initialization_tags");
 
 namespace OptionTags {
-struct Yards {};
-struct Dim {};
-struct Greeting {};
-struct Name {};
+struct Yards {
+  using type = double;
+  static constexpr OptionString help = {"halp_yards"};
+};
+struct Dim {
+  using type = size_t;
+  static constexpr OptionString help = {"halp_size"};
+};
+struct Greeting {
+  using type = std::string;
+  static constexpr OptionString help = {"halp_greeting"};
+};
+struct Name {
+  using type = std::string;
+  static constexpr OptionString help = {"halp_name"};
+};
 }  // namespace OptionTags
 
 namespace Initialization {
 namespace Tags {
 struct Yards {
   using option_tags = tmpl::list<OptionTags::Yards>;
+  using type = double;
+  static double create_from_options(const double yards) noexcept {
+    return yards;
+  }
 };
 struct Feet {
   using option_tags = tmpl::list<OptionTags::Yards>;
+  using type = double;
+  static double create_from_options(const double yards) noexcept {
+    return 3.0 * yards;
+  }
 };
 struct Sides {
   using option_tags = tmpl::list<OptionTags::Yards, OptionTags::Dim>;
+  using type = std::vector<double>;
+  static std::vector<double> create_from_options(const double yards,
+                                                 const size_t dim) noexcept {
+    return std::vector<double>(dim, yards);
+  }
 };
 struct FullGreeting {
   using option_tags = tmpl::list<OptionTags::Greeting, OptionTags::Name>;
+  using type = std::string;
+  template <typename... Tags>
+  static std::string create_from_options(const std::string& greeting,
+                                         const std::string& name) noexcept {
+    return greeting + ' ' + name;
+  }
 };
 }  // namespace Tags
 }  // namespace Initialization
@@ -206,4 +239,39 @@ static_assert(
         tmpl::list<OptionTags::Yards, OptionTags::Greeting, OptionTags::Name>>,
     "Failed testing get_option_tags");
 
+using all_option_tags = tmpl::list<OptionTags::Yards, OptionTags::Dim,
+                                   OptionTags::Greeting, OptionTags::Name>;
+
+template <typename... InitializationTags>
+void check_initialization_items(const Options<all_option_tags>& all_options,
+    const tuples::TaggedTuple<InitializationTags...>& expected_items) {
+  using initialization_tags = tmpl::list<InitializationTags...>;
+  using option_tags = Parallel::get_option_tags<initialization_tags>;
+  const auto options = all_options.apply<option_tags>([](
+      auto... args) noexcept {
+    return tuples::tagged_tuple_from_typelist<option_tags>(std::move(args)...);
+  });
+  CHECK(Parallel::create_from_options(options, initialization_tags{}) ==
+        expected_items);
+}
 }  // namespace
+
+
+SPECTRE_TEST_CASE("Unit.Parallel.ComponentHelpers", "[Unit][Parallel]") {
+  Options<all_option_tags> all_options("");
+  all_options.parse(
+      "Yards: 2.0\n"
+      "Dim: 3\n"
+      "Greeting: Hello\n"
+      "Name: World\n");
+  check_initialization_items(all_options,
+                             tuples::TaggedTuple<Initialization::Tags::Yards,
+                                                 Initialization::Tags::Feet,
+                                                 Initialization::Tags::Sides>{
+                                 2.0, 6.0, std::vector<double>{2.0, 2.0, 2.0}});
+  check_initialization_items(
+      all_options, tuples::TaggedTuple<Initialization::Tags::Yards,
+                                       Initialization::Tags::Feet,
+                                       Initialization::Tags::FullGreeting>{
+                       2.0, 6.0, "Hello World"});
+}
