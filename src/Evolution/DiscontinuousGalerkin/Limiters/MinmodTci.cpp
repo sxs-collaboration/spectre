@@ -58,7 +58,7 @@ bool troubled_cell_indicator(
     const gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     const gsl::not_null<DataVector*> u_lin_buffer,
     const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const Limiters::MinmodType& minmod_type, const double tvbm_constant,
+    const Limiters::MinmodType minmod_type, const double tvbm_constant,
     const DataVector& u, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
@@ -215,7 +215,7 @@ bool troubled_cell_indicator(
       const gsl::not_null<std::array<double, DIM(data)>*>,              \
       const gsl::not_null<DataVector*>,                                 \
       const gsl::not_null<std::array<DataVector, DIM(data)>*>,          \
-      const Limiters::MinmodType&, const double, const DataVector&,     \
+      const Limiters::MinmodType, const double, const DataVector&,      \
       const Element<DIM(data)>&, const Mesh<DIM(data)>&,                \
       const std::array<double, DIM(data)>&,                             \
       const DirectionMap<DIM(data), double>&,                           \

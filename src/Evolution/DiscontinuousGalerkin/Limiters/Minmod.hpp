@@ -188,7 +188,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
 
   // To facilitate testing
   /// \cond
-  const MinmodType& minmod_type() const noexcept { return minmod_type_; }
+  MinmodType minmod_type() const noexcept { return minmod_type_; }
   /// \endcond
 
   /// \brief Data to send to neighbor elements.
