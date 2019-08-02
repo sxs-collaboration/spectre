@@ -129,18 +129,13 @@ bool troubled_cell_indicator(
 
       // Results from SpECTRE paper (https://arxiv.org/abs/1609.00098) used
       // minmod_tvbm(..., 0.0), rather than minmod_tvbm(..., tvbm_scale)
-      const double v_lower =
-          *u_mean -
+      const bool activated_lower =
           minmod_tvbm(*u_mean - u_lower, diff_lower, diff_upper, tvbm_scale)
-              .value;
-      const double v_upper =
-          *u_mean +
+              .activated;
+      const bool activated_upper =
           minmod_tvbm(u_upper - *u_mean, diff_lower, diff_upper, tvbm_scale)
-              .value;
-      // Value of epsilon from Hesthaven & Warburton, Chapter 5, in the
-      // SlopeLimitN.m code sample.
-      const double eps = 1.e-8;
-      if (fabs(v_lower - u_lower) > eps or fabs(v_upper - u_upper) > eps) {
+              .activated;
+      if (activated_lower or activated_upper) {
         u_needs_limiting = true;
         break;
       }
