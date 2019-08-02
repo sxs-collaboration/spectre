@@ -113,9 +113,6 @@ struct SingletonParallelComponent {
                                         Metavariables::Phase::Initialization,
                                         tmpl::list<>>>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
-
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
       const Parallel::CProxy_ConstGlobalCache<

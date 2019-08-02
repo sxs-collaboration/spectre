@@ -148,11 +148,6 @@ struct InterpolationTarget {
           tmpl::list<::observers::Actions::RegisterSingletonWithObserverWriter<
                          RegistrationHelper>,
                      Parallel::Actions::TerminatePhase>>>;
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<metavariables>& /*global_cache*/,
-      std::unique_ptr<DomainCreator<Metavariables::domain_dim,
-                                    typename Metavariables::domain_frame>>
-      /*domain_creator*/) noexcept {};
   static void execute_next_phase(
       typename metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache) noexcept {

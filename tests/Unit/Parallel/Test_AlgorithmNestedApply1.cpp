@@ -47,9 +47,6 @@ struct Component {
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
-
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<

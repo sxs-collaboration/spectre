@@ -57,9 +57,6 @@ struct ResidualMonitor {
           tmpl::list<observers::Actions::RegisterSingletonWithObserverWriter<
               LinearSolver::observe_detail::Registration>>>>;
 
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
-                         Metavariables>& /*global_cache*/) noexcept {}
-
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {

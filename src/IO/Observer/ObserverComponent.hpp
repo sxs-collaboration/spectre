@@ -35,9 +35,6 @@ struct Observer {
 
   using options = tmpl::list<>;
 
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
-                         Metavariables>& /*global_cache*/) noexcept {}
-
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
       Parallel::CProxy_ConstGlobalCache<
@@ -61,9 +58,6 @@ struct ObserverWriter {
       tmpl::list<Actions::InitializeWriter<Metavariables>>>>;
 
   using options = tmpl::list<>;
-
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
-                         Metavariables>& /*global_cache*/) noexcept {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,

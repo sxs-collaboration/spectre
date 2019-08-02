@@ -440,9 +440,6 @@ struct SingletonParallelComponent {
                              tmpl::list<SingletonActions::CountReceives>>>;
   using options = tmpl::list<>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
-
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
@@ -515,9 +512,6 @@ struct GroupParallelComponent {
       tmpl::list<GroupActions::Initialize, GroupActions::CheckComponentType>>>;
   using options = tmpl::list<>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
-
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
@@ -534,9 +528,6 @@ struct NodegroupParallelComponent {
       tmpl::list<NodegroupActions::Initialize,
                  GroupActions::CheckComponentType>>>;
   using options = tmpl::list<>;
-
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,

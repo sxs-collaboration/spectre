@@ -323,9 +323,6 @@ struct NodegroupParallelComponent {
                      typename Metavariables::Phase,
                      Metavariables::Phase::CheckThreadedResult, tmpl::list<>>>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
-
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {

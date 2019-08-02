@@ -29,8 +29,6 @@ struct Interpolator {
       tmpl::list<Actions::InitializeInterpolator,
                  Parallel::Actions::TerminatePhase>>>;
   using options = tmpl::list<>;
-  static void initialize(Parallel::CProxy_ConstGlobalCache<Metavariables>&
-                         /*global_cache*/) noexcept {};
   static void execute_next_phase(
       typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>&

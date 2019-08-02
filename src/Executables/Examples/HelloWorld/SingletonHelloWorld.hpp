@@ -53,8 +53,6 @@ struct HelloWorld {
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Execute, tmpl::list<>>>;
   using options = tmpl::list<>;
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
-                         Metavariables>& /* global_cache */) noexcept {}
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept;

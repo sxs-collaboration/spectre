@@ -212,8 +212,6 @@ struct NoOpsComponent {
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
@@ -376,8 +374,6 @@ struct MutateComponent {
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
@@ -545,9 +541,6 @@ struct ReceiveComponent {
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
-
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
@@ -658,9 +651,6 @@ struct AnyOrderComponent {
                                         receive_data_test::update_instance>>>;
   using const_global_cache_tag_list = tmpl::list<>;
   using options = tmpl::list<>;
-
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
