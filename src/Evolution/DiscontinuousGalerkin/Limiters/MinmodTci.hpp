@@ -77,7 +77,7 @@ bool troubled_cell_indicator(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data,
-    const Limiters::MinmodType& minmod_type, double tvbm_constant,
+    const Limiters::MinmodType& minmod_type, const double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size) noexcept {
   // Optimization: allocate temporary buffer to be used in TCI
