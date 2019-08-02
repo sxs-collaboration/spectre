@@ -348,18 +348,25 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
 
 template <typename Metavariables>
 void Main<Metavariables>::initialize() noexcept {
-  tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
-    using ParallelComponent = tmpl::type_from<decltype(parallel_component)>;
+  ASSERT(current_phase_ == Metavariables::Phase::Initialization,
+         "Must be in the Initialization phase during initialization.");
+  using array_component_list =
+      tmpl::filter<component_list,
+                   Parallel::is_array_proxy<tmpl::bind<
+                       Parallel::proxy_from_parallel_component, tmpl::_1>>>;
+  tmpl::for_each<array_component_list>([this](auto array_component) noexcept {
+    using ParallelComponent = tmpl::type_from<decltype(array_component)>;
     options_.template apply<typename ParallelComponent::options, Metavariables>(
         [this](auto... opts) {
           ParallelComponent::initialize(const_global_cache_proxy_,
                                         std::move(opts)...);
-          ASSERT(current_phase_ == Metavariables::Phase::Initialization,
-                 "Must be in the Initialization phase during initialization.");
-          Parallel::get_parallel_component<ParallelComponent>(
-              *(const_global_cache_proxy_.ckLocalBranch()))
-              .start_phase(current_phase_);
         });
+  });
+  tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
+    using ParallelComponent = tmpl::type_from<decltype(parallel_component)>;
+    Parallel::get_parallel_component<ParallelComponent>(
+        *(const_global_cache_proxy_.ckLocalBranch()))
+        .start_phase(current_phase_);
   });
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
                        this->thisProxy));
