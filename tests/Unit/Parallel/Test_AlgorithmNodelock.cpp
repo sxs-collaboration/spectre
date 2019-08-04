@@ -16,7 +16,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/Algorithm.hpp"  // IWYU pragma: keep
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -24,6 +23,7 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
 #include "Parallel/NodeLock.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Printf.hpp"
 #include "Utilities/Gsl.hpp"
@@ -252,10 +252,8 @@ template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
   using const_global_cache_tag_list = tmpl::list<>;
-  using options = tmpl::list<>;
   using metavariables = Metavariables;
   using array_index = int;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
@@ -266,9 +264,13 @@ struct ArrayParallelComponent {
                  Parallel::PhaseActions<
                      typename Metavariables::Phase,
                      Metavariables::Phase::TestThreadedMethod, tmpl::list<>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+  static void allocate_array(
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
+      const tuples::tagged_tuple_from_typelist<initialization_tags>&
+      /*initialization_items*/) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
@@ -286,7 +288,7 @@ struct ArrayParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
@@ -303,9 +305,7 @@ template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
   using const_global_cache_tag_list = tmpl::list<>;
-  using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
@@ -322,10 +322,12 @@ struct NodegroupParallelComponent {
                  Parallel::PhaseActions<
                      typename Metavariables::Phase,
                      Metavariables::Phase::CheckThreadedResult, tmpl::list<>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& nodegroup_proxy =
         Parallel::get_parallel_component<NodegroupParallelComponent>(

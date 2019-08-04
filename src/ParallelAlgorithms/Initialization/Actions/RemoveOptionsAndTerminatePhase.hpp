@@ -6,33 +6,12 @@
 #include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "ErrorHandling/Error.hpp"
-#include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Initialization {
-
-namespace detail {
-template <typename Action, typename = cpp17::void_t<>>
-struct get_options_tags {
-  using type = tmpl::list<>;
-};
-
-template <typename Action>
-struct get_options_tags<
-    Action, cpp17::void_t<typename Action::initialization_option_tags>> {
-  using type = typename Action::initialization_option_tags;
-};
-}  // namespace detail
-
-/// \ingroup InitializationGroup
-/// Get the list of input file options from the list of initialization actions.
-template <typename InitializationActionList>
-using option_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
-    InitializationActionList, detail::get_options_tags<tmpl::_1>>>>;
 
 /// \ingroup InitializationGroup
 /// Available actions to be used in the initialization.
@@ -42,10 +21,6 @@ using option_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
 /// example,
 ///
 /// \snippet Test_RemoveOptionsAndTerminatePhase.cpp actions
-///
-/// The parallel component's `add_options_to_databox` will typically just be:
-///
-/// \snippet Test_RemoveOptionsAndTerminatePhase.cpp options_to_databox
 ///
 namespace Actions {
 /// \ingroup InitializationGroup
@@ -58,11 +33,11 @@ struct RemoveOptionsAndTerminatePhase {
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using options_tags_to_remove = option_tags<ActionList>;
-    // Retrieve the `initialization_option_tags` that are still in the DataBox
+    using tags_to_remove = Parallel::get_initialization_tags<ActionList>;
+    // Retrieve the `initialization_tags` that are still in the DataBox
     // and remove them.
-    using options_tags_to_remove_this_time = tmpl::filter<
-        options_tags_to_remove,
+    using tags_to_remove_this_time = tmpl::filter<
+        tags_to_remove,
         tmpl::bind<
             tmpl::list_contains,
             tmpl::pin<typename db::DataBox<DbTagsList>::simple_item_tags>,
@@ -72,8 +47,7 @@ struct RemoveOptionsAndTerminatePhase {
                   "The last action in the initialization phase must be "
                   "Initialization::Actions::RemoveOptionsAndTerminatePhase.");
     return std::make_tuple(
-        db::create_from<options_tags_to_remove_this_time>(std::move(box)),
-        true);
+        db::create_from<tags_to_remove_this_time>(std::move(box)), true);
   }
 };
 }  // namespace Actions

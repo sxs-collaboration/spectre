@@ -62,9 +62,8 @@ namespace Actions {
  */
 template <size_t Dim>
 struct InitializeDomain {
-  using initialization_option_tags =
-      tmpl::list<::Tags::InitialExtents<Dim>,
-                 ::Tags::Domain<Dim, Frame::Inertial>>;
+  using initialization_tags = tmpl::list<::Tags::InitialExtents<Dim>,
+                                         ::Tags::Domain<Dim, Frame::Inertial>>;
 
   template <
       typename DataBox, typename... InboxTags, typename Metavariables,

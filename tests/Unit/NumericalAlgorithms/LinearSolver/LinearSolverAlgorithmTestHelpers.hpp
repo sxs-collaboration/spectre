@@ -22,15 +22,17 @@
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 
 namespace LinearSolverAlgorithmTestHelpers {
 
@@ -157,8 +159,6 @@ struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
   using array_index = int;
   using metavariables = Metavariables;
-  using options = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   // In each step of the algorithm we must provide A(p). The linear solver then
   // takes care of updating x and p, as well as the internal variables r, its
   // magnitude and the iteration step number.
@@ -180,14 +180,18 @@ struct ElementArray {
                              Metavariables::Phase::TestResult,
                              tmpl::list<TestResult>>>;
   /// [action_list]
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   using const_global_cache_tag_list =
       tmpl::list<LinearOperator, Source, InitialGuess, ExpectedResult>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
+  static void allocate_array(
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
+      const tuples::tagged_tuple_from_typelist<initialization_tags>&
+          initialization_items) noexcept {
     auto& local_component = Parallel::get_parallel_component<ElementArray>(
         *(global_cache.ckLocalBranch()));
-    local_component[0].insert(global_cache, tuples::TaggedTuple<>(), 0);
+    local_component[0].insert(global_cache, initialization_items, 0);
     local_component.doneInserting();
   }
 
@@ -237,8 +241,8 @@ struct OutputCleaner {
                  Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::CleanOutput,
                                         tmpl::list<CleanOutput<true>>>>;
-  using options = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   using const_global_cache_tag_list = tmpl::list<>;
 
   static void execute_next_phase(

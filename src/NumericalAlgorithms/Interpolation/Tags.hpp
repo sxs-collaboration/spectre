@@ -53,7 +53,7 @@ struct CompletedTemporalIds : db::SimpleTag {
 template <typename Metavariables>
 struct VolumeVarsInfo : db::SimpleTag {
   struct Info {
-    Mesh<Metavariables::domain_dim> mesh;
+    Mesh<Metavariables::volume_dim> mesh;
     Variables<typename Metavariables::interpolator_source_vars> vars;
 
     void pup(PUP::er& p) noexcept {  // NOLINT
@@ -63,7 +63,7 @@ struct VolumeVarsInfo : db::SimpleTag {
   };
   using type = std::unordered_map<
       typename Metavariables::temporal_id::type,
-      std::unordered_map<ElementId<Metavariables::domain_dim>, Info>>;
+      std::unordered_map<ElementId<Metavariables::volume_dim>, Info>>;
   static std::string name() noexcept { return "VolumeVarsInfo"; }
 };
 

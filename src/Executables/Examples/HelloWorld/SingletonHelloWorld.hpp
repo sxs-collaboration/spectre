@@ -9,12 +9,14 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/TMPL.hpp"
 /// [executable_example_includes]
 
 /// [executable_example_options]
@@ -48,11 +50,11 @@ struct HelloWorld {
   using const_global_cache_tag_list = tmpl::list<OptionTags::Name>;
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Execute, tmpl::list<>>>;
-  using options = tmpl::list<>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept;

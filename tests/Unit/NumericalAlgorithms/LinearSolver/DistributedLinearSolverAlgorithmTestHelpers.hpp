@@ -25,12 +25,13 @@
 #include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Utilities/Blas.hpp"
 #include "Utilities/Gsl.hpp"
@@ -48,6 +49,22 @@ struct NumberOfElements {
   using type = size_t;
 };
 }  // namespace OptionTags
+
+/// [array_allocation_tag]
+namespace Initialization {
+namespace Tags {
+struct NumberOfElements : db::SimpleTag {
+  static std::string name() noexcept { return "NumberOfElements"; }
+  using type = int;
+  using option_tags = tmpl::list<OptionTags::NumberOfElements>;
+
+  static int create_from_options(const size_t number_of_elements) noexcept {
+    return number_of_elements;
+  }
+};
+}  // namespace Tags
+}  // namespace Initialization
+/// [array_allocation_tag]
 
 // This option expects a list of N matrices that each have N*M rows and M
 // columns, where N is the `NumberOfElements` and M is a nonzero integer.
@@ -249,22 +266,26 @@ struct ElementArray {
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::TestResult,
                              tmpl::list<TestResult>>>;
-  using options = tmpl::list<OptionTags::NumberOfElements>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using array_allocation_tags =
+      tmpl::list<Initialization::Tags::NumberOfElements>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>,
+      array_allocation_tags>;
   using const_global_cache_tag_list =
       tmpl::list<LinearOperator, Source, ExpectedResult>;
   using array_index = int;
 
-  static void initialize(
+  static void allocate_array(
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
-      const size_t number_of_elements) noexcept {
+      const tuples::tagged_tuple_from_typelist<initialization_tags>&
+          initialization_items) noexcept {
     auto& array_proxy = Parallel::get_parallel_component<ElementArray>(
         *(global_cache.ckLocalBranch()));
-
     for (int i = 0, which_proc = 0,
              number_of_procs = Parallel::number_of_procs();
-         i < static_cast<int>(number_of_elements); i++) {
-      array_proxy[i].insert(global_cache, tuples::TaggedTuple<>(), which_proc);
+         i < get<Initialization::Tags::NumberOfElements>(initialization_items);
+         i++) {
+      array_proxy[i].insert(global_cache, initialization_items, which_proc);
       which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
     }
     array_proxy.doneInserting();

@@ -12,6 +12,7 @@
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
@@ -41,7 +42,7 @@ struct TagMultiplyByTwo : db::ComputeTag {
 };
 
 struct Action0 {
-  using initialization_option_tags = tmpl::list<InitialTime>;
+  using initialization_tags = tmpl::list<InitialTime>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -102,15 +103,14 @@ struct Component {
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   /// [actions]
 
-  /// [options_to_databox]
-  using add_options_to_databox = Parallel::ForwardAllOptionsToDataBox<
-      Initialization::option_tags<initialization_actions>>;
-  /// [options_to_databox]
-
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
                                         initialization_actions>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+  using add_options_to_databox =
+      Parallel::ForwardAllOptionsToDataBox<initialization_tags>;
 };
 
 struct Metavariables {

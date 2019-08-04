@@ -77,20 +77,20 @@ struct ComponentInitWithAllocate {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       Phase, Phase::Initialization,
       tmpl::list<InitAction0, InitAction1, InitAction2>>>;
-  using allocation_tags = tmpl::list<InitTag4, InitTag5>;
+  using array_allocation_tags = tmpl::list<InitTag4, InitTag5>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>,
-      allocation_tags>;
+      array_allocation_tags>;
 };
 
 struct ComponentExecuteWithAllocate {
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<Phase, Phase::Execute,
                                         tmpl::list<Action0, Action1>>>;
-  using allocation_tags = tmpl::list<InitTag6, InitTag7>;
+  using array_allocation_tags = tmpl::list<InitTag6, InitTag7>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>,
-      allocation_tags>;
+      array_allocation_tags>;
 };
 
 struct ComponentInitAndExecuteWithAllocate {
@@ -99,10 +99,10 @@ struct ComponentInitAndExecuteWithAllocate {
                              tmpl::list<InitAction3>>,
       Parallel::PhaseActions<Phase, Phase::Execute,
                              tmpl::list<InitAction2, Action0, Action2>>>;
-  using allocation_tags = tmpl::list<InitTag3, InitTag4>;
+  using array_allocation_tags = tmpl::list<InitTag3, InitTag4>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>,
-      allocation_tags>;
+      array_allocation_tags>;
 };
 
 static_assert(cpp17::is_same_v<Parallel::get_inbox_tags_from_action<Action2>,

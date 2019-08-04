@@ -117,7 +117,7 @@ template <typename Metavariables>
 struct mock_element {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
-  using array_index = ElementIndex<Metavariables::domain_dim>;
+  using array_index = ElementIndex<Metavariables::volume_dim>;
   using const_global_cache_tag_list = tmpl::list<>;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list =
@@ -132,7 +132,7 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Lapse>;
   };
   using temporal_id = ::Tags::TimeId;
-  static constexpr size_t domain_dim = 3;
+  static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<Tags::Lapse>;
   using interpolation_target_tags = tmpl::list<InterpolatorTargetA>;
 
@@ -145,8 +145,8 @@ struct MockMetavariables {
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
                   "[Unit]") {
   using metavars = MockMetavariables;
-  const ElementId<metavars::domain_dim> element_id(2);
-  const ElementIndex<metavars::domain_dim> array_index(element_id);
+  const ElementId<metavars::volume_dim> element_id(2);
+  const ElementIndex<metavars::volume_dim> array_index(element_id);
 
   using interp_component = mock_interpolator<metavars>;
   using elem_component = mock_element<metavars>;
@@ -159,7 +159,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
                                              array_index);
   runner.set_phase(metavars::Phase::Testing);
 
-  const Mesh<metavars::domain_dim> mesh(5, Spectral::Basis::Legendre,
+  const Mesh<metavars::volume_dim> mesh(5, Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto);
   const double observation_time = 2.0;
   Variables<metavars::interpolator_source_vars> vars(
@@ -168,11 +168,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   std::iota(vars.data(), vars.data() + vars.size(), 1.0);
 
   const auto box = db::create<db::AddSimpleTags<
-      metavars::temporal_id, ::Tags::Mesh<metavars::domain_dim>,
+      metavars::temporal_id, ::Tags::Mesh<metavars::volume_dim>,
       ::Tags::Variables<typename decltype(vars)::tags_list>>>(
       TimeId(true, 0, Slab(0., observation_time).end()), mesh, vars);
 
-  intrp::Events::Interpolate<metavars::domain_dim,
+  intrp::Events::Interpolate<metavars::volume_dim,
                              metavars::interpolator_source_vars> event{};
 
   event.run(box, runner.cache(), array_index,

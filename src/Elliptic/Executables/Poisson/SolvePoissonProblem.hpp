@@ -28,7 +28,6 @@
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
@@ -45,6 +44,8 @@
 /// \cond
 template <size_t Dim>
 struct Metavariables {
+  static constexpr size_t volume_dim = Dim;
+
   static constexpr OptionString help{
       "Find the solution to a Poisson problem in Dim spatial dimensions.\n"
       "Analytic solution: ProductOfSinusoids\n"
@@ -70,9 +71,6 @@ struct Metavariables {
   // Parse numerical flux parameters from the input file to store in the cache.
   using normal_dot_numerical_flux = OptionTags::NumericalFlux<
       Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
-
-  // Set up the domain creator from the input file.
-  using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
@@ -125,10 +123,7 @@ struct Metavariables {
                              dg::Actions::ReceiveDataForFluxes<Metavariables>,
                              dg::Actions::ApplyFluxes,
                              typename linear_solver::perform_step,
-                             typename linear_solver::prepare_step>>>,
-
-          Parallel::ForwardAllOptionsToDataBox<
-              Initialization::option_tags<initialization_actions>>>>,
+                             typename linear_solver::prepare_step>>>>>,
       typename linear_solver::component_list,
       tmpl::list<observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>>;

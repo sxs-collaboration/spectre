@@ -173,7 +173,7 @@ struct ApparentHorizon {
 
     // In the future, when we add support for multiple Frames,
     // the code that transforms coordinates from the Strahlkorper Frame
-    // to `Metavariables::domain_frame` will go here.  That transformation
+    // to Frame::Inertial will go here.  That transformation
     // may depend on `temporal_id`.
 
     send_points_to_interpolator<InterpolationTargetTag>(

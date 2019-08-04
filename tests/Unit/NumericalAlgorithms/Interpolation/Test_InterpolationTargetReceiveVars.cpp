@@ -79,7 +79,7 @@ struct mock_interpolation_target {
   using const_global_cache_tag_list = tmpl::list<>;
   using simple_tags =
       db::get_items<typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables>>;
+          Metavariables, InterpolationTargetTag>::return_tag_list>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -88,7 +88,7 @@ struct mock_interpolation_target {
                              Metavariables::Phase::Testing, tmpl::list<>>>;
   using add_options_to_databox =
       typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
+          Metavariables, InterpolationTargetTag>::AddOptionsToDataBox;
 };
 
 template <typename InterpolationTargetTag>
@@ -226,8 +226,7 @@ struct MockMetavariables {
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
   using temporal_id = ::Tags::TimeId;
-  using domain_frame = Frame::Inertial;
-  static constexpr size_t domain_dim = 3;
+  static constexpr size_t volume_dim = 3;
 
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,

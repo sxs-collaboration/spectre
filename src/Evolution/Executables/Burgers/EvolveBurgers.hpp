@@ -74,6 +74,7 @@ class CProxy_ConstGlobalCache;
 /// \endcond
 
 struct EvolutionMetavars {
+  static constexpr size_t volume_dim = 1;
   using system = Burgers::System;
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = false;
@@ -99,7 +100,6 @@ struct EvolutionMetavars {
                  OptionTags::TypedTimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
                  OptionTags::EventsAndTriggers<events, triggers>>;
-  using domain_creator_tag = OptionTags::DomainCreator<1, Frame::Inertial>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
@@ -144,7 +144,7 @@ struct EvolutionMetavars {
           dg::Initialization::slice_tags_to_face<
               typename system::variables_tag>,
           dg::Initialization::slice_tags_to_exterior<>>,
-      Initialization::Actions::Evolution<system>,
+      Initialization::Actions::Evolution<EvolutionMetavars>,
       dg::Actions::InitializeMortars<EvolutionMetavars>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<1>,
@@ -178,9 +178,7 @@ struct EvolutionMetavars {
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables, Actions::AdvanceTime>>>>,
-          Parallel::ForwardAllOptionsToDataBox<
-              Initialization::option_tags<initialization_actions>>>>;
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
 
   static constexpr OptionString help{
       "Evolve the Burgers equation.\n\n"

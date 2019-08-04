@@ -133,16 +133,16 @@ function(generate_algorithms_impl ALGORITHM_NAME ALGORITHM_TYPE ALGORITHM_DIR)
              Algorithm${ALGORITHM_NAME}.decl.h \
      \
      \
-     && perl -pi -e 's/PARALLEL_COMPONENT_OPTIONS_SIMPLE_TAGS/typename ParallelComponent::add_options_to_databox::simple_tags/g' Algorithm${ALGORITHM_NAME}.decl.h \
-     && perl -pi -e 's/PARALLEL_COMPONENT_OPTIONS_SIMPLE_TAGS/typename ParallelComponent::add_options_to_databox::simple_tags/g' Algorithm${ALGORITHM_NAME}.def.h \
+     && perl -pi -e 's/PARALLEL_COMPONENT_INITIALIZATION_TAGS/typename ParallelComponent::initialization_tags/g' Algorithm${ALGORITHM_NAME}.decl.h \
+     && perl -pi -e 's/PARALLEL_COMPONENT_INITIALIZATION_TAGS/typename ParallelComponent::initialization_tags/g' Algorithm${ALGORITHM_NAME}.def.h \
      \
      \
      && perl -pi -e 's/TYPENAME_PHASE_TYPE/typename ParallelComponent::metavariables::Phase/g' Algorithm${ALGORITHM_NAME}.decl.h \
      && perl -pi -e 's/TYPENAME_PHASE_TYPE/typename ParallelComponent::metavariables::Phase/g' Algorithm${ALGORITHM_NAME}.def.h \
      \
      \
-     && perl -pi -e 's/impl_noname_0, options/impl_noname_0, std::move(options)/g' Algorithm${ALGORITHM_NAME}.decl.h \
-     && perl -pi -e 's/impl_noname_0, options/impl_noname_0, std::move(options)/g' Algorithm${ALGORITHM_NAME}.def.h \
+     && perl -pi -e 's/impl_noname_0, initialization_items/impl_noname_0, std::move(initialization_items)/g' Algorithm${ALGORITHM_NAME}.decl.h \
+     && perl -pi -e 's/impl_noname_0, initialization_items/impl_noname_0, std::move(initialization_items)/g' Algorithm${ALGORITHM_NAME}.def.h \
      \
      \
      && perl -pi -e 's/\(\\s*impl_obj->template\\s+simple_action<\\s*Action\)\\s*>\\\(args/\\1>\(std::move\(args\)/g' Algorithm${ALGORITHM_NAME}.def.h \

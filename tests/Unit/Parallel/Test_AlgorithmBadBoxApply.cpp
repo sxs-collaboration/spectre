@@ -7,12 +7,12 @@
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
-#include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
+#include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -39,17 +39,18 @@ template <class Metavariables>
 struct Component {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
                                         tmpl::list<>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using options = tmpl::list<>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+      const Parallel::CProxy_ConstGlobalCache<Metavariables>&
+          global_cache) noexcept {
     if (next_phase == Metavariables::Phase::Execute) {
       auto& local_cache = *(global_cache.ckLocalBranch());
       Parallel::simple_action<error_size_zero>(

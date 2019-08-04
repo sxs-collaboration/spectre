@@ -7,22 +7,18 @@
 
 #include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Domain/Creators/DomainCreator.hpp"
-#include "Domain/Domain.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Invoke.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace intrp {
 namespace Actions {
-template <typename InterpolationTargetTag>
+template <typename Metavariables, typename InterpolationTargetTag>
 struct InitializeInterpolationTarget;
 template <typename InterpolationTargetTag>
 struct RegisterTargetWithObserver;
@@ -101,11 +97,9 @@ namespace intrp {
 ///      A `tmpl::list` of all `InterpolationTargetTag`s.
 /// - temporal_id:
 ///      The type held by ::intrp::Tags::TemporalIds.
-/// - domain_frame:
-///      The `::Frame` of the Domain.
 ///
 /// `Metavariables` must contain the following static constexpr members:
-/// - size_t domain_dim:
+/// - size_t volume_dim:
 ///      The dimension of the Domain.
 template <class Metavariables, typename InterpolationTargetTag>
 struct InterpolationTarget {
@@ -132,22 +126,21 @@ struct InterpolationTarget {
       tmpl::list<typename InterpolationTargetTag::compute_target_points,
                  typename InterpolationTargetTag::post_interpolation_callback>>;
   using metavariables = Metavariables;
-  using add_options_to_databox =
-      typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
-  using options = tmpl::list<::OptionTags::DomainCreator<
-      Metavariables::domain_dim, typename Metavariables::domain_frame>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-                         InterpolationTargetTag>,
+                         Metavariables, InterpolationTargetTag>,
                      Parallel::Actions::TerminatePhase>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Register,
           tmpl::list<::observers::Actions::RegisterSingletonWithObserverWriter<
                          RegistrationHelper>,
                      Parallel::Actions::TerminatePhase>>>;
+
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+
   static void execute_next_phase(
       typename metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache) noexcept {

@@ -25,7 +25,7 @@ Here is an overview of what is described in detail in the sections below:
   simulated.
 - \ref dev_guide_parallelization_phases_of_execution "Phases": Defines distinct
   simulation phases separated by a global synchronization point,
-  e.g. `%Initialization`, `Evolve` and `Exit`.
+  e.g. `Initialization`, `Evolve` and `Exit`.
 - \ref dev_guide_parallelization_core_algorithm "Algorithm": In each phase,
   repeatedly iterates over a list of actions until the current phase ends.
 - \ref dev_guide_parallelization_parallel_components "Parallel component":
@@ -57,7 +57,7 @@ specify the following:
   \snippet Test_AlgorithmCore.cpp component_list_example
 - `using const_global_cache_tag_list`: a (possibly empty) `tmpl::list` of
   OptionTags that are needed by the metavariables.
-- `Phase`: an `enum class` that must contain at least `%Initialization` and
+- `Phase`: an `enum class` that must contain at least `Initialization` and
   `Exit`. Phases are described in the next section.
 - `determine_next_phase`: a static function with the signature
   \code
@@ -90,7 +90,7 @@ phases, where after each phase a global synchronization occurs. By global
 synchronization we mean that no parallel components are executing or have more
 tasks to execute: everything is waiting to be told what tasks to perform next.
 
-Every executable must have at least two phases, `%Initialization` and
+Every executable must have at least two phases, `Initialization` and
 `Exit`. The next phase is decided by the static member function
 `determine_next_phase` in the metavariables. Currently this function has access
 to the phase that is
@@ -100,13 +100,19 @@ making. Here is an example of a `determine_next_phase` function and the `Phase`
 enum class:
 \snippet Test_AlgorithmCore.cpp determine_next_phase_example
 
-In contrast, an evolution executable might have phases `%Initialization`,
-`SetInitialData`, `Evolve`, and `Exit`, but have a similar `switch` or `if-else`
-logic in the `determine_next_phase` function. The first phase that is entered is
-always `%Initialization`. During the `%Initialization` phase the `initialize`
-function is called on all parallel components. Once all parallel components'
-`initialize` function is complete, the next phase is determined and the
-`execute_next_phase` function is called after on all the parallel components.
+In contrast, an evolution executable might have phases
+`Initialization`, `SetInitialData`, `Evolve`, and `Exit`, but have a
+similar `switch` or `if-else` logic in the `determine_next_phase`
+function. The first phase that is entered is always
+`Initialization`. During the `Initialization` phase the
+`ConstGlobalCache` is created, all non-array components are created,
+and empty array components are created.  Next, the function
+`allocate_array_components_and_execute_initialization_phase` is called
+which allocates the elements of each array component, and then starts
+the `Initialization` phase on all parallel components. Once all
+parallel components' `Initialization` phase is complete, the next
+phase is determined and the `execute_next_phase` function is called on
+all the parallel components.
 
 At the end of an execution the `Exit` phase has the executable wait to make sure
 no parallel components are performing or need to perform any more tasks, and
@@ -175,24 +181,20 @@ Each %Parallel Component struct must have the following type aliases:
    there are no iterable actions in a phase then a `PhaseAction` need not be
    specified for that phase. However, at least one `PhaseAction`, even it if is
    empty, must be specified.
-4. `using options` is set to a (possibly empty) `tmpl::list` of the option
-   structs. The options are read in from the input file specified in the main
-   `Metavariables` struct. After being read in they are passed to the
-   `initialize` function of the parallel component, which is described below.
-   These options are typically only used during initialization.
-5. `using add_options_to_databox` is set to a struct that contains a static
-   `apply` function taking arguments `(db::DataBox<DbTagsList>&&, options...)`
-   where the `options...` are the arguments read from the input file using the
-   `options` type alias. Typically the `add_options_to_databox` will insert the
-   options into the `DataBox` for use during initialization. The
-   `add_options_to_databox` struct must also contain a type list named
-   `simple_tags` which contains a list of all the tags that the `apply` function
-   will add to the DataBox. No compute tags may be added at this stage. A
-   reasonable location for this struct is inside the action that will do the
-   initialization. Two reasonable defaults are provided,
-   `Parallel::AddNoOptionsToDataBox` and
-   `Parallel::ForwardAllOptionsToDataBox`.
-6. `using const_global_cache_tag_list` is set to a `tmpl::list` of OptionTags
+4. `using initialization_tags` which is a `tmpl::list` of all the tags
+   that will be inserted into the initial `DataBox` of each component.
+   These tags are db::SimpleTag%s that have have a `using option_tags`
+   type alias and a static function `create_from_options` (see the
+   example below).  This list can usually be constructed from the
+   initialization actions of the component (i.e. the list of actions
+   in the `PhaseAction` list for the `Initialization` phase) using the
+   helper function `Parallel::get_initialization_tags` (see the
+   examples of components below).  Each initialization action may
+   specify a type alias `using initialization_tags` which are a
+   `tmpl::list` of tags that will be fetched from the DataBox by the
+   action.  All `initialization_tags` are removed from the DataBox of
+   the component at the end of the `Initialization` phase.
+5. `using const_global_cache_tag_list` is set to a `tmpl::list` of OptionTags
    that are required by the parallel component. This is usually obtained from
    the `phase_dependent_action_list` using the
    `Parallel::get_const_global_cache_tags` metafunction. These options lead to
@@ -211,26 +213,27 @@ to provide is a plain-old-data
 ([POD](http://en.cppreference.com/w/cpp/concept/PODType)) struct of the size of
 at most 3 integers.
 
-%Parallel Components have a static `initialize` function that is used
-effectively as the constructor of the components. The signature of the
-initialize functions must be:
+%Parallel array components have a static `allocate_array` function
+that is used to construct the elements of the array. The
+signature of the `allocate_array` functions must be:
 \code
-static void initialize(
-   Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache, opts...);
+static void allocate_array(
+    Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache,
+    const tuples::tagged_tuple_from_typelist<initialization_tags>&
+    initialization_items) noexcept;
 \endcode
-The `initialize` function is called by the Main parallel component when
-the execution starts and will typically insert elements into array parallel
-components. The `%Initialization` phase and actions can be thought of as a
-constructor call that sets the initial state of the parallel component. The
-`initialize` function also receives arguments that are read from the input file
-which were specified in the `options` typelist described above. The options are
-usually used to initialize the parallel component, for example by determining
-how many elements are necessary in an array.  The `initialize` function must
-also pass a `TaggedTuple` when creating the component that holds the options
-needed to initialize the parallel component. These options are specified in the
-`add_options_to_databox` type alias of the parallel component. The `initialize`
-functions of different parallel components are called in random order and so it
-is not safe to have them depend on each other.
+The `allocate_array` function is called by the Main parallel component
+when the execution starts and will typically insert elements into
+array parallel components. If the `allocate_array` function depends
+upon input options, the array component must specify a `using
+array_allocation_tags` type alias that is a `tmpl::list` of tags which
+are db::SimpleTag%s that have have a `using option_tags` type alias
+and a static function `create_from_options`. An example is:
+\snippet DistributedLinearSolverAlgorithmTestHelpers.hpp array_allocation_tag
+
+The `allocate_array` functions of different
+array components are called in random order and so it is not safe to
+have them depend on each other.
 
 Each parallel component must also decide what to do in the different phases of
 the execution. This is controlled by an `execute_next_phase` function with

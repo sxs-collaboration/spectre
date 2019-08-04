@@ -114,12 +114,12 @@ struct mock_interpolation_target {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-              InterpolationTargetTag>>>,
+              Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
   using add_options_to_databox =
       typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
+          Metavariables, InterpolationTargetTag>::AddOptionsToDataBox;
 
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::InterpolationTargetReceiveVars<
@@ -155,8 +155,7 @@ struct Metavariables {
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
   using temporal_id = ::Tags::TimeId;
-  using domain_frame = Frame::Inertial;
-  static constexpr size_t domain_dim = 3;
+  static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<mock_interpolation_target<Metavariables, InterpolationTargetA>,
                  mock_interpolator<Metavariables>>;
