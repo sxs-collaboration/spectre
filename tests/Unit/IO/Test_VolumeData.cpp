@@ -207,6 +207,24 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   for (size_t i = 0; i < observation_ids.size(); ++i) {
     check_time(observation_ids[i], observation_values[i]);
   }
+
+  {
+    INFO("offset_and_length_for_grid");
+    const size_t observation_id = observation_ids.front();
+    /// [find_offset]
+    const auto all_grid_names = volume_file.get_grid_names(observation_id);
+    const auto all_extents = volume_file.get_extents(observation_id);
+    const auto first_grid_offset_and_length = h5::offset_and_length_for_grid(
+        grid_names.front(), all_grid_names, all_extents);
+    /// [find_offset]
+    CHECK(first_grid_offset_and_length.first = 0);
+    CHECK(first_grid_offset_and_length.second = 8);
+    const auto last_grid_offset_and_length = h5::offset_and_length_for_grid(
+        grid_names.back(), all_grid_names, all_extents);
+    CHECK(first_grid_offset_and_length.first = 8);
+    CHECK(first_grid_offset_and_length.second = 8);
+  }
+
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
