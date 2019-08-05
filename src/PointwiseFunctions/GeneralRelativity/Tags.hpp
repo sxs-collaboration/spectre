@@ -134,6 +134,15 @@ struct EnergyDensity : db::SimpleTag {
 };
 
 /*!
+ * \brief The trace of the spatial stress-energy tensor
+ * \f$S=\gamma^{ij}\gamma_{ia}\gamma_{jb}T^{ab}\f$
+ */
+template <typename DataType>
+struct StressTrace : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
+
+/*!
  * \brief Computes the electric part of the Weyl tensor in vacuum
  * as: \f$ E_{ij} = R_{ij} + KK_{ij} - K^m_{i}K_{mj}\f$ where \f$R_{ij}\f$ is
  * the spatial Ricci tensor, \f$K_{ij}\f$ is the extrinsic curvature, and

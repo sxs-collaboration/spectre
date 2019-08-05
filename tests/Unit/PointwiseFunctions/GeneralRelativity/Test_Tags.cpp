@@ -68,6 +68,7 @@ void test_simple_tags() {
       "SpatialRicci");
   TestHelpers::db::test_simple_tag<gr::Tags::EnergyDensity<Type>>(
       "EnergyDensity");
+  TestHelpers::db::test_simple_tag<gr::Tags::StressTrace<Type>>("StressTrace");
   TestHelpers::db::test_simple_tag<gr::Tags::WeylElectric<Dim, Frame, Type>>(
       "WeylElectric");
 }
