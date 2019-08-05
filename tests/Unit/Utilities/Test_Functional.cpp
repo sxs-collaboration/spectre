@@ -32,45 +32,48 @@ using std::min;
 
 // clang-tidy : suppress warning from no-paren on macro parameter, macro doesn't
 // work when it's in parens. Same for all subsequent macros.
-#define MAKE_UNARY_TEST(STRUCTNAME, FUNC)                                  \
-  struct TestFuncEval##STRUCTNAME {                                        \
-    template <typename T, typename DistT, typename UniformGen>             \
-    void operator()(UniformGen gen, UniformCustomDistribution<DistT> dist, \
-                    T /*meta*/) noexcept {                                 \
-      auto val = make_with_random_values<typename T::type>(                \
-          make_not_null(&gen), make_not_null(&dist));                      \
-      CHECK(STRUCTNAME<>{}(val) == FUNC(val)); /*NOLINT*/                  \
-    }                                                                      \
+#define MAKE_UNARY_TEST(STRUCTNAME, FUNC)                      \
+  struct TestFuncEval##STRUCTNAME {                            \
+    template <typename T, typename DistT, typename UniformGen> \
+    void operator()(const gsl::not_null<UniformGen*> gen,      \
+                    UniformCustomDistribution<DistT> dist,     \
+                    T /*meta*/) noexcept {                     \
+      auto val = make_with_random_values<typename T::type>(    \
+          gen, make_not_null(&dist));                          \
+      CHECK(STRUCTNAME<>{}(val) == FUNC(val)); /*NOLINT*/      \
+    }                                                          \
   }
 
-#define MAKE_BINARY_TEST(STRUCTNAME, FUNC)                                   \
-  struct TestFuncEval##STRUCTNAME {                                          \
-    template <typename T1, typename T2, typename DistT1, typename DistT2,    \
-              typename UniformGen>                                           \
-    void operator()(UniformGen gen, UniformCustomDistribution<DistT1> dist1, \
-                    UniformCustomDistribution<DistT2> dist2, T1 /*meta*/,    \
-                    T2 /*meta*/) noexcept {                                  \
-      auto val1 = make_with_random_values<typename T1::type>(                \
-          make_not_null(&gen), make_not_null(&dist1));                       \
-      auto val2 = make_with_random_values<typename T2::type>(                \
-          make_not_null(&gen), make_not_null(&dist2));                       \
-      CHECK(STRUCTNAME<>{}(val1, val2) == FUNC(val1, val2)); /*NOLINT*/      \
-    }                                                                        \
+#define MAKE_BINARY_TEST(STRUCTNAME, FUNC)                                \
+  struct TestFuncEval##STRUCTNAME {                                       \
+    template <typename T1, typename T2, typename DistT1, typename DistT2, \
+              typename UniformGen>                                        \
+    void operator()(const gsl::not_null<UniformGen*> gen,                 \
+                    UniformCustomDistribution<DistT1> dist1,              \
+                    UniformCustomDistribution<DistT2> dist2, T1 /*meta*/, \
+                    T2 /*meta*/) noexcept {                               \
+      auto val1 = make_with_random_values<typename T1::type>(             \
+          gen, make_not_null(&dist1));                                    \
+      auto val2 = make_with_random_values<typename T2::type>(             \
+          gen, make_not_null(&dist2));                                    \
+      CHECK(STRUCTNAME<>{}(val1, val2) == FUNC(val1, val2)); /*NOLINT*/   \
+    }                                                                     \
   }
 
-#define MAKE_BINARY_OP_TEST(STRUCTNAME, OP)                                  \
-  struct TestFuncEval##STRUCTNAME {                                          \
-    template <typename T1, typename T2, typename DistT1, typename DistT2,    \
-              typename UniformGen>                                           \
-    void operator()(UniformGen gen, UniformCustomDistribution<DistT1> dist1, \
-                    UniformCustomDistribution<DistT2> dist2, T1 /*meta*/,    \
-                    T2 /*meta*/) noexcept {                                  \
-      auto val1 = make_with_random_values<typename T1::type>(                \
-          make_not_null(&gen), make_not_null(&dist1));                       \
-      auto val2 = make_with_random_values<typename T2::type>(                \
-          make_not_null(&gen), make_not_null(&dist2));                       \
-      CHECK(STRUCTNAME<>{}(val1, val2) == val1 OP val2); /*NOLINT*/          \
-    }                                                                        \
+#define MAKE_BINARY_OP_TEST(STRUCTNAME, OP)                               \
+  struct TestFuncEval##STRUCTNAME {                                       \
+    template <typename T1, typename T2, typename DistT1, typename DistT2, \
+              typename UniformGen>                                        \
+    void operator()(const gsl::not_null<UniformGen*> gen,                 \
+                    UniformCustomDistribution<DistT1> dist1,              \
+                    UniformCustomDistribution<DistT2> dist2, T1 /*meta*/, \
+                    T2 /*meta*/) noexcept {                               \
+      auto val1 = make_with_random_values<typename T1::type>(             \
+          gen, make_not_null(&dist1));                                    \
+      auto val2 = make_with_random_values<typename T2::type>(             \
+          gen, make_not_null(&dist2));                                    \
+      CHECK(STRUCTNAME<>{}(val1, val2) == val1 OP val2); /*NOLINT*/       \
+    }                                                                     \
   }
 
 #define MAKE_BINARY_INPLACE_TEST(STRUCTNAME, OP, TESTOP)                       \
@@ -81,13 +84,14 @@ using std::min;
                   typename T1::type,                                           \
                   decltype(std::declval<typename T1::type>() TESTOP            \
                                std::declval<typename T2::type>())>> = nullptr> \
-    void operator()(UniformGen gen, UniformCustomDistribution<DistT1> dist1,   \
+    void operator()(const gsl::not_null<UniformGen*> gen,                      \
+                    UniformCustomDistribution<DistT1> dist1,                   \
                     UniformCustomDistribution<DistT2> dist2, T1 /*meta*/,      \
                     T2 /*meta*/) noexcept {                                    \
       auto val1 = make_with_random_values<typename T1::type>(                  \
-          make_not_null(&gen), make_not_null(&dist1));                         \
+          gen, make_not_null(&dist1));                                         \
       auto val2 = make_with_random_values<typename T2::type>(                  \
-          make_not_null(&gen), make_not_null(&dist2));                         \
+          gen, make_not_null(&dist2));                                         \
       auto val1_copy = val1;                                                   \
       auto result = val1_copy TESTOP val2;                                     \
       STRUCTNAME<>{}(val1, val2); /*NOLINT*/                                   \
@@ -102,7 +106,7 @@ using std::min;
                   typename T1::type,                                           \
                   decltype(std::declval<typename T1::type>() TESTOP            \
                                std::declval<typename T2::type>())>> = nullptr> \
-    void operator()(UniformGen /*gen*/,                                        \
+    void operator()(const gsl::not_null<UniformGen*> /*gen*/,                  \
                     UniformCustomDistribution<DistT1> /*dist1*/,               \
                     UniformCustomDistribution<DistT2> /*dist2*/, T1 /*meta*/,  \
                     T2 /*meta*/) noexcept {}                                   \
@@ -144,10 +148,10 @@ MAKE_UNARY_TEST(Tanh, tanh);
 template <int N>
 struct TestFuncEvalUnaryPow {
   template <typename T, typename DistT, typename UniformGen>
-  void operator()(UniformGen gen, UniformCustomDistribution<DistT> dist,
-                  T /*meta*/) noexcept {
-    auto val = make_with_random_values<typename T::type>(make_not_null(&gen),
-                                                         make_not_null(&dist));
+  void operator()(const gsl::not_null<UniformGen*> gen,
+                  UniformCustomDistribution<DistT> dist, T /*meta*/) noexcept {
+    auto val =
+        make_with_random_values<typename T::type>(gen, make_not_null(&dist));
     CHECK(UnaryPow<N>{}(val) == pow<N>(val)); /*NOLINT*/
   }
 };
@@ -174,29 +178,22 @@ using DoubleSet = tmpl::list<double, std::complex<double>>;
 
 using Bound = std::array<double, 2>;
 
-template <typename ValType, typename Gen, typename Dist>
-ValType expandable_random_val(Gen& gen, Dist& dist, size_t /*meta*/) noexcept {
-  return make_with_random_values<ValType>(make_not_null(&gen),
-                                          make_not_null(&dist));
-}
-
 template <typename C, typename ValType, typename Func, typename Gen,
           size_t... Is>
 void test_functional_against_function(
-    const Func func, Gen& gen, const Bound& bounds,
+    const Func func, const gsl::not_null<Gen*> gen, const Bound& bounds,
     const std::index_sequence<Is...> /*meta*/) noexcept {
   static_assert(sizeof...(Is) == C::arity,
                 "test was passed incorrect number of arguments");
   UniformCustomDistribution<typename tt::get_fundamental_type_t<ValType>> dist{
       bounds};
-  [&func](auto... arg) noexcept {
-    if (cpp17::is_same_v<ValType,
-                         typename tt::get_fundamental_type_t<ValType>>) {
-      CHECK_ITERABLE_APPROX(C{}(arg...), func(arg...));
-    } else {
-      CHECK(C{}(arg...) == func(arg...));
-    }
-  }(expandable_random_val<ValType>(gen, dist, Is)...);
+  const auto args = make_with_random_values<std::array<ValType, sizeof...(Is)>>(
+      gen, make_not_null(&dist));
+  if (cpp17::is_same_v<ValType, typename tt::get_fundamental_type_t<ValType>>) {
+    CHECK_ITERABLE_APPROX(C{}(args[Is]...), func(args[Is]...));
+  } else {
+    CHECK(C{}(args[Is]...) == func(args[Is]...));
+  }
 }
 
 /// [using_sinusoid]
@@ -224,7 +221,7 @@ void test_get_argument() noexcept {
 void test_assert_equal() noexcept { CHECK(AssertEqual<>{}(7, 7) == 7); }
 
 template <typename Gen>
-void test_functional_combinations(Gen& gen) noexcept {
+void test_functional_combinations(const gsl::not_null<Gen*> gen) noexcept {
   const Bound generic{{-50.0, 50.0}};
   const Bound small{{-5.0, 5.0}};
 
@@ -267,7 +264,7 @@ void test_functional_combinations(Gen& gen) noexcept {
 }
 
 template <typename Gen>
-void test_generic_unaries(Gen& gen) noexcept {
+void test_generic_unaries(const gsl::not_null<Gen*> gen) noexcept {
   const Bound generic{{-50.0, 50.0}};
   const Bound gt_one{{1.0, 100.0}};
   const Bound mone_one{{-1.0, 1.0}};
@@ -315,7 +312,7 @@ void test_generic_unaries(Gen& gen) noexcept {
 }
 
 template <typename Gen>
-void test_floating_point_functions(Gen& gen) noexcept {
+void test_floating_point_functions(const gsl::not_null<Gen*> gen) noexcept {
   const Bound generic{{-50.0, 50.0}};
   const Bound gt_one{{1.0, 100.0}};
   const Bound positive{{.001, 100.0}};
@@ -372,7 +369,7 @@ void test_floating_point_functions(Gen& gen) noexcept {
 }
 
 template <typename Gen>
-void test_real_functions(Gen& gen) noexcept {
+void test_real_functions(const gsl::not_null<Gen*> gen) noexcept {
   const Bound generic{{-50.0, 50.0}};
   const Bound gt_one{{1.0, 100.0}};
   const Bound positive{{.001, 100.0}};
@@ -454,10 +451,10 @@ void test_real_functions(Gen& gen) noexcept {
 
 SPECTRE_TEST_CASE("Unit.Utilities.Functional", "[Utilities][Unit]") {
   MAKE_GENERATOR(generator);
-  test_generic_unaries(generator);
-  test_floating_point_functions(generator);
-  test_real_functions(generator);
-  test_functional_combinations(generator);
+  test_generic_unaries(make_not_null(&generator));
+  test_floating_point_functions(make_not_null(&generator));
+  test_real_functions(make_not_null(&generator));
+  test_functional_combinations(make_not_null(&generator));
   test_assert_equal();
   test_get_argument();
 }
