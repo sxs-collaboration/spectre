@@ -82,7 +82,8 @@ To build with the docker image:
    ```
 3. Start the docker container (you may need `sudo`)
    ```
-   docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
+   docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME \
+              -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
    ```
    (The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a name
    of your choice. If you don't name your container, docker will generate an
@@ -116,8 +117,10 @@ Notes:
     the container that you have made.
     To restart the container, try the following commands
     (you may need `sudo`):
-    1. `docker ps -a` # lists all containers and their CONTAINER_IDs and CONTAINER_NAMEs:
-    2. `docker start -i CONTAINER_NAME` or `docker start -i CONTAINER_ID` # Restarts your container
+    1. `docker ps -a`,
+      to list all containers with their CONTAINER_IDs and CONTAINER_NAMEs,
+    2. `docker start -i CONTAINER_NAME` or `docker start -i CONTAINER_ID`,
+      to restart your container.
   * You can run more than one shell in the same container, for instance
     one shell for compiling with gcc and another for compiling
     with clang.
@@ -160,9 +163,7 @@ To use Singularity you must:
 3. Run `singularity build spectre.img
    docker://sxscollaboration/spectrebuildenv:latest`.
 4. To start the container run `singularity shell spectre.img` and you
-   will be dropped into a bash shell. The first thing you will always need to do
-   when entering the container is:
-   `. SPECTRE_HOME/containers/SingularityLoad.sh`
+   will be dropped into a bash shell.
 5. Run `cd SPECTRE_HOME && mkdir build && cd build` to set up a build
    directory.
 6. To build SpECTRE run
