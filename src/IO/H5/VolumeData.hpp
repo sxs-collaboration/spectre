@@ -52,7 +52,9 @@ namespace h5 {
  * and their extents in the order which they and the data were written.
  * For example, if the first grid has name `GRID_NAME` with extents
  * `{2, 2, 2}`, it was responsible for contributing the first 2*2*2 = 8 grid
- * points worth of data in each tensor dataset.
+ * points worth of data in each tensor dataset. Use the
+ * `h5::offset_and_length_for_grid` function to compute the offset into the
+ * contiguous dataset that corresponds to a particular grid.
  *
  * \warning Currently the topology of the grids is assumed to be tensor products
  * of lines, i.e. lines, quadrilaterals, and hexahedrons. However, this can be
@@ -133,4 +135,28 @@ class VolumeData : public h5::Object {
   detail::OpenGroup volume_data_group_{};
   std::string header_{};
 };
+
+/*!
+ * \brief Find the offset into the contiguous dataset stored in `h5::VolumeData`
+ * for a particular `grid_name`.
+ *
+ * `h5::VolumeData` stores data for all grids that compose the volume
+ * contiguously. This function helps with reconstructing which part of that
+ * contiguous dataset belongs to a particular grid. See the `h5::VolumeData`
+ * documentation for more information on how it stores data.
+ *
+ * To use this function, call `h5::VolumeData::get_grid_names` and
+ * `h5::VolumeData::get_extents` and pass the results for the `all_grid_names`
+ * and `all_extents` arguments, respectively. Here is an example for using this
+ * function:
+ *
+ * \snippet Test_VolumeData.cpp find_offset
+ *
+ * \see `h5::VolumeData`
+ */
+std::pair<size_t, size_t> offset_and_length_for_grid(
+    const std::string& grid_name,
+    const std::vector<std::string>& all_grid_names,
+    const std::vector<std::vector<size_t>>& all_extents) noexcept;
+
 }  // namespace h5
