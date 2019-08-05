@@ -20,7 +20,10 @@
 #include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
 #include "IO/H5/Version.hpp"
+#include "Utilities/Algorithm.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
+
 /// \cond HIDDEN_SYMBOLS
 namespace h5 {
 namespace {
@@ -304,6 +307,27 @@ std::vector<std::vector<size_t>> VolumeData::get_extents(
     individual_extents.emplace_back(iter, iter + extents_per_element);
   }
   return individual_extents;
+}
+
+std::pair<size_t, size_t> offset_and_length_for_grid(
+    const std::string& grid_name,
+    const std::vector<std::string>& all_grid_names,
+    const std::vector<std::vector<size_t>>& all_extents) noexcept {
+  auto found_grid_name = alg::find(all_grid_names, grid_name);
+  if (found_grid_name == all_grid_names.end()) {
+    ERROR("Found no grid named '" + grid_name + "'.");
+  } else {
+    const auto element_index =
+        std::distance(all_grid_names.begin(), found_grid_name);
+    const size_t element_data_offset = std::accumulate(
+        all_extents.begin(), all_extents.begin() + element_index,
+        0_st, [](size_t offset, std::vector<size_t> extents) noexcept {
+          return offset + alg::accumulate(extents, 1_st, std::multiplies<>{});
+        });
+    const size_t element_data_length = alg::accumulate(
+        gsl::at(all_extents, element_index), 1_st, std::multiplies<>{});
+    return {element_data_offset, element_data_length};
+  }
 }
 
 size_t VolumeData::get_dimension() const noexcept {
