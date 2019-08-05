@@ -26,7 +26,6 @@
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
-#include "Evolution/Initialization/Interface.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Initialize.hpp"
@@ -53,6 +52,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/SmoothFlow.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
@@ -171,13 +171,13 @@ struct EvolutionMetavars {
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
       Actions::UpdateConservatives,
-      Initialization::Actions::Interface<
+      dg::Actions::InitializeInterfaces<
           system,
-          Initialization::slice_tags_to_face<
+          dg::Initialization::slice_tags_to_face<
               typename system::variables_tag,
               typename system::spacetime_variables_tag,
               typename system::primitive_variables_tag>,
-          Initialization::slice_tags_to_exterior<
+          dg::Initialization::slice_tags_to_exterior<
               typename system::spacetime_variables_tag,
               typename system::primitive_variables_tag>>,
       Initialization::Actions::Evolution<system>,
