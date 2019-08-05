@@ -8,6 +8,7 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/ComputeOperatorAction.hpp"
+#include "Elliptic/Actions/InitializeSystem.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeElement.hpp"
@@ -80,6 +81,7 @@ struct Metavariables {
 
   using initialization_actions =
       tmpl::list<dg::Actions::InitializeDomain<Dim>,
+                 elliptic::Actions::InitializeSystem,
                  elliptic::dg::Actions::InitializeElement<Dim>,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
