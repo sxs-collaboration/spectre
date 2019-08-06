@@ -7,7 +7,6 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Elliptic/Initialization/BoundaryConditions.hpp"
 #include "Elliptic/Initialization/LinearSolver.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Utilities/TMPL.hpp"
@@ -34,7 +33,6 @@ namespace Actions {
  *
  * The following initializers are chained together (in this order):
  *
- * - `elliptic::Initialization::BoundaryConditions`
  * - `elliptic::Initialization::LinearSolver`
  */
 template <size_t Dim>
@@ -47,13 +45,9 @@ struct InitializeElement {
       const Parallel::ConstGlobalCache<Metavariables>& cache,
       const ElementIndex<Dim>& array_index, const ActionList /*meta*/,
       const ParallelComponent* const parallel_component_meta) noexcept {
-    auto boundary_conditions_box =
-        elliptic::Initialization::BoundaryConditions<Metavariables>::initialize(
-            std::move(box), cache);
     auto linear_solver_box =
         elliptic::Initialization::LinearSolver<Metavariables>::initialize(
-            std::move(boundary_conditions_box), cache, array_index,
-            parallel_component_meta);
+            std::move(box), cache, array_index, parallel_component_meta);
     return std::make_tuple(std::move(linear_solver_box));
   }
 };

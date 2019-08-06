@@ -26,7 +26,8 @@ struct Inertial;
 /// \endcond
 
 namespace elliptic {
-namespace Initialization {
+namespace dg {
+namespace Actions {
 
 /*!
  * \brief Adds boundary contributions to the sources
@@ -65,14 +66,11 @@ namespace Initialization {
  *   - `sources_tag`
  */
 template <typename Metavariables>
-struct BoundaryConditions {
+struct ImposeInhomogeneousBoundaryConditionsOnSource {
   using system = typename Metavariables::system;
 
   using sources_tag =
       db::add_tag_prefix<Tags::Source, typename system::fields_tag>;
-
-  using simple_tags = db::AddSimpleTags<>;
-  using compute_tags = db::AddComputeTags<>;
 
   template <typename NormalDotNumericalFluxComputer,
             typename... NumericalFluxTags, typename... BoundaryDataTags>
@@ -88,10 +86,14 @@ struct BoundaryConditions {
         get<BoundaryDataTags>(boundary_data)..., normalized_face_normal);
   }
 
-  template <typename TagsList>
-  static auto initialize(
-      db::DataBox<TagsList>&& box,
-      const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     static constexpr const size_t volume_dim = system::volume_dim;
 
     const auto& analytic_solution =
@@ -164,8 +166,9 @@ struct BoundaryConditions {
             Tags::BoundaryDirectionsInterior<volume_dim>,
             Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box));
 
-    return std::move(box);
+    return {std::move(box)};
   }
 };
-}  // namespace Initialization
+}  // namespace Actions
+}  // namespace dg
 }  // namespace elliptic

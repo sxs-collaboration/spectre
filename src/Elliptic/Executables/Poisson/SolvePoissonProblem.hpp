@@ -11,6 +11,7 @@
 #include "Elliptic/Actions/InitializeSystem.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
+#include "Elliptic/DiscontinuousGalerkin/ImposeInhomogeneousBoundaryConditionsOnSource.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeElement.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeFluxes.hpp"
 #include "Elliptic/Systems/Poisson/Actions/Observe.hpp"
@@ -97,6 +98,8 @@ struct Metavariables {
           system,
           dg::Initialization::slice_tags_to_face<variables_tag, gradients_tag>,
           dg::Initialization::slice_tags_to_exterior<gradients_tag>>,
+      elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
+          Metavariables>,
       elliptic::dg::Actions::InitializeElement<Dim>,
       dg::Actions::InitializeMortars<Metavariables>,
       elliptic::dg::Actions::InitializeFluxes<Metavariables>,
