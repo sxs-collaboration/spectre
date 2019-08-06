@@ -7,8 +7,8 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Elliptic/DiscontinuousGalerkin/InitializeFluxes.hpp"
 #include "Elliptic/Initialization/BoundaryConditions.hpp"
-#include "Elliptic/Initialization/DiscontinuousGalerkin.hpp"
 #include "Elliptic/Initialization/Interface.hpp"
 #include "Elliptic/Initialization/LinearSolver.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
