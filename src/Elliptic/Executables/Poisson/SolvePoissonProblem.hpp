@@ -34,6 +34,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
@@ -82,16 +83,27 @@ struct Metavariables {
   // Specify all global synchronization points.
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
 
-  using initialization_actions =
-      tmpl::list<dg::Actions::InitializeDomain<Dim>,
-                 elliptic::Actions::InitializeSystem,
-                 elliptic::dg::Actions::InitializeElement<Dim>,
-                 dg::Actions::InitializeMortars<Metavariables>,
-                 elliptic::dg::Actions::InitializeFluxes<Metavariables>,
-                 // Initialization is done. Avoid introducing an extra phase by
-                 // advancing the linear solver to the first step here.
-                 typename linear_solver::prepare_step,
-                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+  // Construct tags that will be sliced to interfaces.
+  using variables_tag = typename system::variables_tag;
+  using gradients_tag =
+      db::add_tag_prefix<Tags::deriv,
+                         db::variables_tag_with_tags_list<
+                             variables_tag, typename system::gradient_tags>,
+                         tmpl::size_t<system::volume_dim>, Frame::Inertial>;
+
+  using initialization_actions = tmpl::list<
+      dg::Actions::InitializeDomain<Dim>, elliptic::Actions::InitializeSystem,
+      dg::Actions::InitializeInterfaces<
+          system,
+          dg::Initialization::slice_tags_to_face<variables_tag, gradients_tag>,
+          dg::Initialization::slice_tags_to_exterior<gradients_tag>>,
+      elliptic::dg::Actions::InitializeElement<Dim>,
+      dg::Actions::InitializeMortars<Metavariables>,
+      elliptic::dg::Actions::InitializeFluxes<Metavariables>,
+      // Initialization is done. Avoid introducing an extra phase by
+      // advancing the linear solver to the first step here.
+      typename linear_solver::prepare_step,
+      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::append<

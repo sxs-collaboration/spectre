@@ -53,7 +53,7 @@ namespace Initialization {
  *   - `Tags::Mesh<volume_dim>`
  *   - `Tags::Coordinates<volume_dim, Frame::Inertial>`
  *   - `Tags::BoundaryDirectionsInterior<volume_dim>`
- *   - `Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
+ *   - `Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
  *   Tags::Coordinates<volume_dim, Frame::Inertial>>`
  *   - `Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
  *   Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>`
@@ -108,7 +108,7 @@ struct BoundaryConditions {
           const db::item_type<Tags::BoundaryDirectionsInterior<volume_dim>>&
               boundary_directions,
           const db::item_type<
-              Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
+              Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
                               Tags::Coordinates<volume_dim, Frame::Inertial>>>&
               boundary_coordinates,
           const db::item_type<Tags::Interface<
@@ -154,7 +154,7 @@ struct BoundaryConditions {
         },
         get<Tags::Mesh<volume_dim>>(box),
         get<Tags::BoundaryDirectionsInterior<volume_dim>>(box),
-        get<Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
+        get<Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
                             Tags::Coordinates<volume_dim, Frame::Inertial>>>(
             box),
         get<Tags::Interface<
