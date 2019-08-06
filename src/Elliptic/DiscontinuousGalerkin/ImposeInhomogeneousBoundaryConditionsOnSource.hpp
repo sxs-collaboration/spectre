@@ -70,7 +70,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
   using system = typename Metavariables::system;
 
   using sources_tag =
-      db::add_tag_prefix<Tags::Source, typename system::fields_tag>;
+      db::add_tag_prefix<::Tags::Source, typename system::fields_tag>;
 
   template <typename NormalDotNumericalFluxComputer,
             typename... NumericalFluxTags, typename... BoundaryDataTags>
@@ -107,19 +107,19 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
           &analytic_solution, &normal_dot_numerical_flux_computer
         ](const gsl::not_null<db::item_type<sources_tag>*> sources,
           const Mesh<volume_dim>& mesh,
-          const db::item_type<Tags::BoundaryDirectionsInterior<volume_dim>>&
+          const db::item_type<::Tags::BoundaryDirectionsInterior<volume_dim>>&
               boundary_directions,
-          const db::item_type<
-              Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
-                              Tags::Coordinates<volume_dim, Frame::Inertial>>>&
+          const db::item_type<::Tags::Interface<
+              ::Tags::BoundaryDirectionsExterior<volume_dim>,
+              ::Tags::Coordinates<volume_dim, Frame::Inertial>>>&
               boundary_coordinates,
-          const db::item_type<Tags::Interface<
-              Tags::BoundaryDirectionsInterior<volume_dim>,
-              Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>>&
+          const db::item_type<::Tags::Interface<
+              ::Tags::BoundaryDirectionsInterior<volume_dim>,
+              ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<volume_dim>>>>&
               normalized_face_normals,
-          const db::item_type<Tags::Interface<
-              Tags::BoundaryDirectionsInterior<volume_dim>,
-              Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>&
+          const db::item_type<::Tags::Interface<
+              ::Tags::BoundaryDirectionsInterior<volume_dim>,
+              ::Tags::Magnitude<::Tags::UnnormalizedFaceNormal<volume_dim>>>>&
               magnitude_of_face_normals) noexcept {
           // Impose Dirichlet boundary conditions as contributions to the source
           for (const auto& direction : boundary_directions) {
@@ -134,7 +134,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
                 typename system::impose_boundary_conditions_on_fields{}));
             // Compute the numerical flux contribution from the Dirichlet data
             db::item_type<
-                db::add_tag_prefix<Tags::NormalDotNumericalFlux, sources_tag>>
+                db::add_tag_prefix<::Tags::NormalDotNumericalFlux, sources_tag>>
                 boundary_normal_dot_numerical_fluxes{
                     mortar_mesh.number_of_grid_points(), 0.};
             compute_dirichlet_boundary_normal_dot_numerical_flux(
@@ -154,17 +154,19 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
                               index_to_slice_at(mesh.extents(), direction));
           }
         },
-        get<Tags::Mesh<volume_dim>>(box),
-        get<Tags::BoundaryDirectionsInterior<volume_dim>>(box),
-        get<Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
-                            Tags::Coordinates<volume_dim, Frame::Inertial>>>(
+        get<::Tags::Mesh<volume_dim>>(box),
+        get<::Tags::BoundaryDirectionsInterior<volume_dim>>(box),
+        get<::Tags::Interface<
+            ::Tags::BoundaryDirectionsExterior<volume_dim>,
+            ::Tags::Coordinates<volume_dim, Frame::Inertial>>>(box),
+        get<::Tags::Interface<
+            ::Tags::BoundaryDirectionsInterior<volume_dim>,
+            ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<volume_dim>>>>(
             box),
-        get<Tags::Interface<
-            Tags::BoundaryDirectionsInterior<volume_dim>,
-            Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box),
-        get<Tags::Interface<
-            Tags::BoundaryDirectionsInterior<volume_dim>,
-            Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box));
+        get<::Tags::Interface<
+            ::Tags::BoundaryDirectionsInterior<volume_dim>,
+            ::Tags::Magnitude<::Tags::UnnormalizedFaceNormal<volume_dim>>>>(
+            box));
 
     return {std::move(box)};
   }
