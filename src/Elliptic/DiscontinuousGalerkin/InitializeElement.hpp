@@ -7,7 +7,6 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Elliptic/DiscontinuousGalerkin/InitializeFluxes.hpp"
 #include "Elliptic/Initialization/BoundaryConditions.hpp"
 #include "Elliptic/Initialization/Interface.hpp"
 #include "Elliptic/Initialization/LinearSolver.hpp"
@@ -39,7 +38,6 @@ namespace Actions {
  * - `elliptic::Initialization::Interface`
  * - `elliptic::Initialization::BoundaryConditions`
  * - `elliptic::Initialization::LinearSolver`
- * - `elliptic::Initialization::DiscontinuousGalerkin`
  */
 template <size_t Dim>
 struct InitializeElement {
@@ -61,9 +59,7 @@ struct InitializeElement {
         elliptic::Initialization::LinearSolver<Metavariables>::initialize(
             std::move(boundary_conditions_box), cache, array_index,
             parallel_component_meta);
-    auto dg_box = elliptic::Initialization::DiscontinuousGalerkin<
-        Metavariables>::initialize(std::move(linear_solver_box));
-    return std::make_tuple(std::move(dg_box));
+    return std::make_tuple(std::move(linear_solver_box));
   }
 };
 }  // namespace Actions

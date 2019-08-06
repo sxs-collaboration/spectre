@@ -12,6 +12,7 @@
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeElement.hpp"
+#include "Elliptic/DiscontinuousGalerkin/InitializeFluxes.hpp"
 #include "Elliptic/Systems/Poisson/Actions/Observe.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
@@ -88,6 +89,7 @@ struct Metavariables {
                  elliptic::Actions::InitializeSystem,
                  elliptic::dg::Actions::InitializeElement<Dim>,
                  dg::Actions::InitializeMortars<Metavariables>,
+                 elliptic::dg::Actions::InitializeFluxes<Metavariables>,
                  // Initialization is done. Avoid introducing an extra phase by
                  // advancing the linear solver to the first step here.
                  typename linear_solver::prepare_step,
