@@ -16,18 +16,26 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/Rectangle.hpp"
+#include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Domain/FaceNormal.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"
-#include "Elliptic/Initialization/BoundaryConditions.hpp"
-#include "Elliptic/Initialization/Domain.hpp"
+#include "Elliptic/DiscontinuousGalerkin/ImposeInhomogeneousBoundaryConditionsOnSource.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "Parallel/AddOptionsToDataBox.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -50,6 +58,8 @@ struct System {
   static constexpr size_t volume_dim = Dim;
   using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
   using impose_boundary_conditions_on_fields = tmpl::list<ScalarFieldTag>;
+  template <typename Tag>
+  using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
 };
 
 template <size_t Dim>
@@ -57,7 +67,11 @@ struct AnalyticSolution {
   tuples::TaggedTuple<ScalarFieldTag> variables(
       const tnsr::I<DataVector, Dim>& x,
       tmpl::list<ScalarFieldTag> /*meta*/) const noexcept {
-    return {Scalar<DataVector>(get<0>(x))};
+    Scalar<DataVector> solution{get<0>(x)};
+    for (size_t d = 1; d < Dim; d++) {
+      get(solution) += x.get(d);
+    }
+    return {std::move(solution)};
   }
   // clang-tidy: do not use references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
@@ -78,6 +92,37 @@ struct NumericalFlux {
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
+template <size_t Dim, typename Metavariables>
+struct ElementArray {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = ElementIndex<Dim>;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<tmpl::list<
+                  ::Tags::Domain<Dim, Frame::Inertial>,
+                  ::Tags::InitialExtents<Dim>,
+                  db::add_tag_prefix<::Tags::Source, typename Metavariables::
+                                                         system::fields_tag>>>,
+              dg::Actions::InitializeDomain<Dim>,
+              dg::Actions::InitializeInterfaces<
+                  typename Metavariables::system,
+                  dg::Initialization::slice_tags_to_face<>,
+                  dg::Initialization::slice_tags_to_exterior<>,
+                  dg::Initialization::face_compute_tags<>,
+                  dg::Initialization::exterior_compute_tags<>, false>>>,
+
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<elliptic::dg::Actions::
+                         ImposeInhomogeneousBoundaryConditionsOnSource<
+                             Metavariables>>>>;
+};
+
 template <size_t Dim>
 struct Metavariables {
   using system = System<Dim>;
@@ -85,70 +130,65 @@ struct Metavariables {
       OptionTags::AnalyticSolution<AnalyticSolution<Dim>>;
   using normal_dot_numerical_flux =
       OptionTags::NumericalFlux<NumericalFlux<Dim>>;
-  using component_list = tmpl::list<>;
+  using component_list = tmpl::list<ElementArray<Dim, Metavariables>>;
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag, normal_dot_numerical_flux>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
-template <size_t Dim>
-using arguments_compute_tags = db::AddComputeTags<
-    Tags::BoundaryDirectionsInterior<Dim>,
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<Dim>,
-                               Tags::Direction<Dim>>,
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<Dim>,
-                               Tags::InterfaceMesh<Dim>>,
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<Dim>,
-                               Tags::BoundaryCoordinates<Dim, Frame::Inertial>>,
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<Dim>,
-                               Tags::UnnormalizedFaceNormalCompute<Dim>>,
-    Tags::InterfaceComputeItem<
-        Tags::BoundaryDirectionsInterior<Dim>,
-        Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
-    Tags::InterfaceComputeItem<
-        Tags::BoundaryDirectionsInterior<Dim>,
-        Tags::NormalizedCompute<Tags::UnnormalizedFaceNormal<Dim>>>>;
+template <size_t Dim, typename DomainCreator>
+void test_impose_inhomogeneous_boundary_conditions_on_source(
+    const DomainCreator& domain_creator, const ElementId<Dim>& element_id,
+    const DataVector& source_expected) {
+  using metavariables = Metavariables<Dim>;
+  using system = typename metavariables::system;
+  using element_array = ElementArray<Dim, metavariables>;
+
+  db::item_type<db::add_tag_prefix<Tags::Source, typename system::fields_tag>>
+      source_vars{source_expected.size(), 0.};
+
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      {AnalyticSolution<Dim>{}, NumericalFlux<Dim>{}}};
+  ActionTesting::emplace_component_and_initialize<element_array>(
+      &runner, element_id,
+      {domain_creator.create_domain(), domain_creator.initial_extents(),
+       std::move(source_vars)});
+  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
+  const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
+    using tag = std::decay_t<decltype(tag_v)>;
+    return ActionTesting::get_databox_tag<element_array, tag>(runner,
+                                                              element_id);
+  };
+
+  CHECK(get_tag(Tags::Source<ScalarFieldTag>{}) ==
+        Scalar<DataVector>(source_expected));
+}
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
+SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InhomogeneousBoundaryConditions",
                   "[Unit][Elliptic][Actions]") {
+  domain::creators::register_derived_with_charm();
   {
     INFO("1D");
     // Reference element:
-    //    [X| | | ] -xi->
+    //    [X| | | ] -> xi
     //    ^       ^
     // -0.5       1.5
     const ElementId<1> element_id{0, {{SegmentId{2, 0}}}};
     const domain::creators::Interval<Frame::Inertial> domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
-    auto domain_box = elliptic::Initialization::Domain<1>::initialize(
-        db::DataBox<tmpl::list<>>{}, ElementIndex<1>{element_id},
-        domain_creator.initial_extents(), domain_creator.create_domain());
-
-    db::item_type<
-        db::add_tag_prefix<Tags::Source, typename System<1>::fields_tag>>
-        sources{4, 0.};
-    auto arguments_box =
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<db::add_tag_prefix<
-                            Tags::Source, typename System<1>::fields_tag>>,
-                        arguments_compute_tags<1>>(std::move(domain_box),
-                                                   std::move(sources));
-
-    ActionTesting::MockRuntimeSystem<Metavariables<1>> runner{
-        {AnalyticSolution<1>{}, NumericalFlux<1>{}}};
-
-    const auto box = elliptic::Initialization::BoundaryConditions<
-        Metavariables<1>>::initialize(std::move(arguments_box), runner.cache());
 
     // Expected boundary contribution to source in element X:
-    // [ -24 0 0 0 | -xi->
-    // -0.5 (field) * 2. (num. flux) * 6. (inverse logical mass) * 4. (jacobian
-    // for mass) = -24.
-    // This expectation assumes the diagonal mass matrix approximation.
+    // [ -24 0 0 0 | -> xi
+    // -0.5 (field) * 2. (num. flux) * 6. (inverse logical mass) * 4.
+    // (jacobian for mass) = -24. This expectation assumes the diagonal mass
+    // matrix approximation.
     const DataVector source_expected{-24., 0., 0., 0.};
-    CHECK(get<Tags::Source<ScalarFieldTag>>(box) ==
-          Scalar<DataVector>(source_expected));
+    test_impose_inhomogeneous_boundary_conditions_on_source(
+        domain_creator, element_id, source_expected);
   }
   {
     INFO("2D");
@@ -164,38 +204,19 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
     const ElementId<2> element_id{0, {{SegmentId{1, 0}, SegmentId{1, 1}}}};
     const domain::creators::Rectangle<Frame::Inertial> domain_creator{
         {{-0.5, 0.}}, {{1.5, 1.}}, {{false, false}}, {{1, 1}}, {{3, 3}}};
-    auto domain_box = elliptic::Initialization::Domain<2>::initialize(
-        db::DataBox<tmpl::list<>>{}, ElementIndex<2>{element_id},
-        domain_creator.initial_extents(), domain_creator.create_domain());
-
-    db::item_type<
-        db::add_tag_prefix<Tags::Source, typename System<3>::fields_tag>>
-        sources{9, 0.};
-    auto arguments_box =
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<db::add_tag_prefix<
-                            Tags::Source, typename System<2>::fields_tag>>,
-                        arguments_compute_tags<2>>(std::move(domain_box),
-                                                   std::move(sources));
-
-    ActionTesting::MockRuntimeSystem<Metavariables<2>> runner{
-        {AnalyticSolution<2>{}, NumericalFlux<2>{}}};
-
-    const auto box = elliptic::Initialization::BoundaryConditions<
-        Metavariables<2>>::initialize(std::move(arguments_box), runner.cache());
 
     // Expected boundary contribution to source in element X:
-    //   ^ eta
-    // -18 0 12
-    //  -6 0  0
-    //  -6 0  0 > xi
+    //  ^ eta
+    // 18 24 36
+    //  3  0  0
+    //  0  0  0 > xi
     // This is the sum of contributions from the following faces (see 1D):
-    // - upper eta: [ -12 0 12 | -xi->
-    // - lower xi: | -6 -6 -6 ] -eta->
+    // - upper eta: [ 12 24 36 | -> xi
+    // - lower xi: | 0 3 6 ] -> eta
     // This expectation assumes the diagonal mass matrix approximation.
-    const DataVector source_expected{-6., 0., 0., -6., 0., 0., -18., 0., 12.};
-    CHECK(get<Tags::Source<ScalarFieldTag>>(box) ==
-          Scalar<DataVector>(source_expected));
+    const DataVector source_expected{0., 0., 0., 3., 0., 0., 18., 24., 36.};
+    test_impose_inhomogeneous_boundary_conditions_on_source(
+        domain_creator, element_id, source_expected);
   }
   {
     INFO("3D");
@@ -207,50 +228,31 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Initialization.BoundaryConditions",
         {{false, false, false}},
         {{1, 1, 1}},
         {{2, 2, 2}}};
-    auto domain_box = elliptic::Initialization::Domain<3>::initialize(
-        db::DataBox<tmpl::list<>>{}, ElementIndex<3>{element_id},
-        domain_creator.initial_extents(), domain_creator.create_domain());
-
-    db::item_type<
-        db::add_tag_prefix<Tags::Source, typename System<3>::fields_tag>>
-        sources{8, 0.};
-    auto arguments_box =
-        db::create_from<db::RemoveTags<>,
-                        db::AddSimpleTags<db::add_tag_prefix<
-                            Tags::Source, typename System<3>::fields_tag>>,
-                        arguments_compute_tags<3>>(std::move(domain_box),
-                                                   std::move(sources));
-
-    ActionTesting::MockRuntimeSystem<Metavariables<3>> runner{
-        {AnalyticSolution<3>{}, NumericalFlux<3>{}}};
-
-    const auto box = elliptic::Initialization::BoundaryConditions<
-        Metavariables<3>>::initialize(std::move(arguments_box), runner.cache());
 
     // Expected boundary contribution to source in reference element (0, 1, 0):
     //                   7 eta
-    //         -6 ---- 4
+    //         18 ---- 20
     // zeta ^ / |    / |
-    //     -2 ---- 0   |
+    //      4 ---- 0   |
     //      |  -7 -|-- 5
     //      | /    | /
-    //     -3 ---- 1 > xi
+    //     -6 ---- 0 > xi
     // This is the sum of contributions from the following faces (see 1D):
     // - lower xi:
-    //   -2 -2 > zeta
-    //   -2 -2
+    //   -4 4 > zeta
+    //   -2 6
     //    v eta
     // - upper eta:
-    //   -4 4 > xi
-    //   -4 4
+    //   -4  4 > xi
+    //   12 20
     //    v zeta
     // - lower zeta:
-    //   -1 1 > xi
+    //   -2 0 > xi
     //   -1 1
     //    v eta
     // This expectation assumes the diagonal mass matrix approximation.
-    const DataVector source_expected{-3., 1., -7., 5., -2., 0., -6., 4.};
-    CHECK(get<Tags::Source<ScalarFieldTag>>(box) ==
-          Scalar<DataVector>(source_expected));
+    const DataVector source_expected{-6., 0., -7., 5., 4., 0., 18., 20.};
+    test_impose_inhomogeneous_boundary_conditions_on_source(
+        domain_creator, element_id, source_expected);
   }
 }
