@@ -194,5 +194,15 @@ DEFINE_STD_ARRAY_INPLACE_BINOP(ComplexModalVector,
                                ComplexModalVector, operator+=, std::plus<>())
 DEFINE_STD_ARRAY_INPLACE_BINOP(ComplexModalVector,
                                ComplexModalVector, operator-=, std::minus<>())
+
+namespace blaze {
+// Partial specialization to disable being able to take the l?Norm of a
+// ComplexModalVector. This does *not* prevent taking the norm of the square (or
+// some other math expression) of a ComplexModalVector.
+template <typename Abs, typename Power>
+struct DVecNormHelper<PointerVector<std::complex<double>, false, false, false,
+                                    ComplexModalVector>,
+                      Abs, Power> {};
+}  // namespace blaze
 /// \endcond
 MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(ComplexModalVector)
