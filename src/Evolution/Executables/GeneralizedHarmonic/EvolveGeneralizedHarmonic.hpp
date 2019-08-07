@@ -158,10 +158,12 @@ struct EvolutionMetavars {
         tmpl::list<gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
                    gr::Tags::InverseSpatialMetric<volume_dim, frame>,
                    gr::Tags::ExtrinsicCurvature<volume_dim, frame>,
-                   gr::Tags::SpatialChristoffelSecondKind<volume_dim, frame>>;
+                   gr::Tags::SpatialChristoffelSecondKind<volume_dim, frame>,
+                   gr::Tags::RicciTensor<volume_dim, frame, DataVector>>;
     using compute_items_on_target = tmpl::append<
         tmpl::list<StrahlkorperGr::Tags::AreaElement<frame>, Unity>,
         tags_to_observe>;
+
     using compute_target_points =
         intrp::Actions::ApparentHorizon<Horizon, ::Frame::Inertial>;
     using post_interpolation_callback =
@@ -174,7 +176,8 @@ struct EvolutionMetavars {
   using interpolator_source_vars =
       tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, frame>,
                  GeneralizedHarmonic::Tags::Pi<volume_dim, frame>,
-                 GeneralizedHarmonic::Tags::Phi<volume_dim, frame>>;
+                 GeneralizedHarmonic::Tags::Phi<volume_dim, frame>,
+                 gr::Tags::RicciTensor<volume_dim, frame, DataVector>>;
 
   using observation_events = tmpl::list<
       dg::Events::Registrars::ObserveNorms<volume_dim, constraint_tags>,
