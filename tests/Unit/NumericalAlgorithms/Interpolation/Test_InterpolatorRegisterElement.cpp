@@ -42,6 +42,27 @@ struct mock_interpolator {
           tmpl::list<intrp::Actions::InitializeInterpolator>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Registration, tmpl::list<>>>;
+  using initial_databox = db::compute_databox_type<
+      typename ::intrp::Actions::InitializeInterpolator::
+          template return_tag_list<Metavariables>>;
+  using component_being_mocked = intrp::Interpolator<Metavariables>;
+};
+
+template <typename Metavariables>
+struct mock_element {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+  using const_global_cache_tag_list = tmpl::list<>;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Registration,
+          tmpl::list<intrp::Actions::RegisterElementWithInterpolator>>>;
+  using initial_databox = db::compute_databox_type<tmpl::list<>>;
 };
 
 struct MockMetavariables {
@@ -54,7 +75,8 @@ struct MockMetavariables {
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolatorTargetA>;
 
-  using component_list = tmpl::list<mock_interpolator<MockMetavariables>>;
+  using component_list = tmpl::list<mock_interpolator<MockMetavariables>,
+                                    mock_element<MockMetavariables>>;
   using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
@@ -62,28 +84,46 @@ struct MockMetavariables {
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.RegisterElement",
                   "[Unit]") {
   using metavars = MockMetavariables;
-  using component = mock_interpolator<metavars>;
+  using interp_component = mock_interpolator<metavars>;
+  using elem_component = mock_element<metavars>;
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   runner.set_phase(metavars::Phase::Initialization);
-  ActionTesting::emplace_component<component>(&runner, 0);
-  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  ActionTesting::emplace_component<interp_component>(&runner, 0);
+  ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
+  ActionTesting::emplace_component<elem_component>(&runner, 0);
+  // There is no next_action on elem_component, so we don't call it here.
   runner.set_phase(metavars::Phase::Registration);
 
-  CHECK(ActionTesting::get_databox_tag<component,
+  CHECK(ActionTesting::get_databox_tag<interp_component,
                                        ::intrp::Tags::NumberOfElements>(
             runner, 0) == 0);
 
-  runner.simple_action<component, ::intrp::Actions::RegisterElement>(0);
+  runner.simple_action<interp_component, ::intrp::Actions::RegisterElement>(0);
 
-  CHECK(ActionTesting::get_databox_tag<component,
+  CHECK(ActionTesting::get_databox_tag<interp_component,
                                        ::intrp::Tags::NumberOfElements>(
             runner, 0) == 1);
 
-  runner.simple_action<component, ::intrp::Actions::RegisterElement>(0);
+  runner.simple_action<interp_component, ::intrp::Actions::RegisterElement>(0);
 
-  CHECK(ActionTesting::get_databox_tag<component,
+  CHECK(ActionTesting::get_databox_tag<interp_component,
                                        ::intrp::Tags::NumberOfElements>(
             runner, 0) == 2);
+
+  // Call RegisterElementWithInterpolator from element, check if
+  // it gets registered.
+  ActionTesting::next_action<elem_component>(make_not_null(&runner), 0);
+  runner.set_phase(metavars::Phase::Testing);
+
+  runner.invoke_queued_simple_action<interp_component>(0);
+
+  CHECK(ActionTesting::get_databox_tag<interp_component,
+                                       ::intrp::Tags::NumberOfElements>(
+            runner, 0) == 3);
+
+  // No more queued simple actions.
+  CHECK(runner.is_simple_action_queue_empty<interp_component>(0));
+  CHECK(runner.is_simple_action_queue_empty<elem_component>(0));
 }
 
 }  // namespace
