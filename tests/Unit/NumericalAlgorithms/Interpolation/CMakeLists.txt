@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_CleanUpInterpolator.cpp
   Test_InitializeInterpolationTarget.cpp
   Test_InitializeInterpolator.cpp
+  Test_InterpolateEvent.cpp
   Test_InterpolationTargetApparentHorizon.cpp
   Test_InterpolationTargetKerrHorizon.cpp
   Test_InterpolationTargetLineSegment.cpp
