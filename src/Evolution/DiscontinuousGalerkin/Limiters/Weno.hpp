@@ -324,8 +324,9 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
     };
     expand_pack(wrap_hweno_neighbor_solution_one_tensor(Tags{}, tensors)...);
   } else if (weno_type_ == WenoType::SimpleWeno) {
-    // For each neighbor, the simple WENO data is simply extrapolated. This
-    // can be done on the entire Variables of tags to limit.
+    // For each neighbor, the simple WENO data is obtained by extrapolation,
+    // with a constant offset added to preserve the correct mean value.
+    // The extrapolation step is done on the entire Variables:
     for (const auto& neighbor_and_data : neighbor_data) {
       const auto& neighbor = neighbor_and_data.first;
       const auto& direction = neighbor.first;
@@ -339,6 +340,23 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
       modified_neighbor_solutions.insert(
           std::make_pair(neighbor, interpolant.interpolate(data.volume_data)));
     }
+
+    // Then the correction is added one tensor component at a time:
+    const auto wrap_mean_correction = [&mesh, &modified_neighbor_solutions ](
+        auto tag, const auto tensor) noexcept {
+      for (size_t i = 0; i < tensor->size(); ++i) {
+        const double local_mean = mean_value((*tensor)[i], mesh);
+        for (auto& kv : modified_neighbor_solutions) {
+          DataVector& neighbor_component_to_correct =
+              get<decltype(tag)>(kv.second)[i];
+          const double neighbor_mean =
+              mean_value(neighbor_component_to_correct, mesh);
+          neighbor_component_to_correct += local_mean - neighbor_mean;
+        }
+      }
+      return '0';
+    };
+    expand_pack(wrap_mean_correction(Tags{}, tensors)...);
   } else {
     ERROR("WENO limiter not implemented for WenoType: " << weno_type_);
   }

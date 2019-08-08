@@ -13,6 +13,7 @@
 #include "Domain/ElementId.hpp"          // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Gsl.hpp"
 
 // IWYU pragma: no_forward_declare Variables
@@ -56,6 +57,10 @@ inline double unnormalized_nonlinear_weight(
 // Compute the WENO weighted reconstruction of several polynomials, see e.g.,
 // Eq. 4.3 of Zhu2016. This is fairly standard, though different references can
 // differ in their choice of oscillation/smoothness indicator.
+//
+// The neighbor tensors corresponding to `local_tensor` (i.e., the tensor in
+// each `neighbor_vars` value that is identified by `Tag`), must have the same
+// mean as the local tensor. This is checked with an ASSERT.
 template <typename Tag, size_t VolumeDim, typename TagsList>
 void reconstruct_from_weighted_sum(
     const gsl::not_null<db::item_type<Tag>*> local_tensor,
@@ -68,6 +73,20 @@ void reconstruct_from_weighted_sum(
   for (size_t tensor_storage_index = 0;
        tensor_storage_index < local_tensor->size(); ++tensor_storage_index) {
     auto& local_polynomial = (*local_tensor)[tensor_storage_index];
+
+#ifdef SPECTRE_DEBUG
+    // Check inputs match requirements
+    const double local_mean = mean_value(local_polynomial, mesh);
+    for (const auto& kv : neighbor_vars) {
+      const auto& neighbor_polynomial =
+          get<Tag>(kv.second)[tensor_storage_index];
+      const double neighbor_mean = mean_value(neighbor_polynomial, mesh);
+      ASSERT(equal_within_roundoff(local_mean, neighbor_mean),
+             "Invalid inputs to Weno_detail::reconstruct_from_weighted_sum:\n"
+             "The neighbor polynomials should have the same mean as the local\n"
+             "polynomial.");
+    }
+#endif  // ifdef SPECTRE_DEBUG
 
     // Store linear weights in `local_weights` and `neighbor_weights`
     // These weights will have to be generalized for multiple neighbors per
@@ -108,15 +127,12 @@ void reconstruct_from_weighted_sum(
 
     // Perform reconstruction, by superposition of local and neighbor
     // polynomials.
-    const double mean = mean_value(local_polynomial, mesh);
-    local_polynomial = mean + local_weight * (local_polynomial - mean);
+    local_polynomial *= local_weight;
     for (const auto& kv : neighbor_vars) {
       const auto& key = kv.first;
       const auto& neighbor_polynomial =
           get<Tag>(kv.second)[tensor_storage_index];
-      const double neighbor_mean = mean_value(neighbor_polynomial, mesh);
-      local_polynomial +=
-          neighbor_weights.at(key) * (neighbor_polynomial - neighbor_mean);
+      local_polynomial += neighbor_weights.at(key) * neighbor_polynomial;
     }
   }
 }

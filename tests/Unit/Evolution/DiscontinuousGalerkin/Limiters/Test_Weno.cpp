@@ -501,18 +501,33 @@ void test_simple_weno_1d(const std::unordered_set<Direction<1>>&
   VariablesMap<1> neighbor_vars{};
   VariablesMap<1> neighbor_modified_vars{};
 
+  const auto shift_vars_to_local_means = [&mesh, &local_vars ](
+      const Variables<tmpl::list<ScalarTag, VectorTag<1>>>& input) noexcept {
+    const auto& local_s = get<ScalarTag>(local_vars);
+    const auto& local_v = get<VectorTag<1>>(local_vars);
+    auto result = input;
+    auto& s = get<ScalarTag>(result);
+    auto& v = get<VectorTag<1>>(result);
+    get(s) += mean_value(get(local_s), mesh) - mean_value(get(s), mesh);
+    get<0>(v) +=
+        mean_value(get<0>(local_v), mesh) - mean_value(get<0>(v), mesh);
+    return result;
+  };
+
   const auto lower_xi =
       std::make_pair(Direction<1>::lower_xi(), ElementId<1>(1));
   if (directions_of_external_boundaries.count(lower_xi.first) == 0) {
     neighbor_vars[lower_xi] = make_lower_xi_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_xi] = make_lower_xi_vars(logical_coords);
+    neighbor_modified_vars[lower_xi] =
+        shift_vars_to_local_means(make_lower_xi_vars(logical_coords));
   }
 
   const auto upper_xi =
       std::make_pair(Direction<1>::upper_xi(), ElementId<1>(2));
   if (directions_of_external_boundaries.count(upper_xi.first) == 0) {
     neighbor_vars[upper_xi] = make_upper_xi_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_xi] = make_upper_xi_vars(logical_coords);
+    neighbor_modified_vars[upper_xi] =
+        shift_vars_to_local_means(make_upper_xi_vars(logical_coords));
   }
 
   const auto neighbor_data = make_neighbor_data_from_neighbor_vars(
@@ -594,32 +609,51 @@ void test_simple_weno_2d(const std::unordered_set<Direction<2>>&
   VariablesMap<2> neighbor_vars{};
   VariablesMap<2> neighbor_modified_vars{};
 
+  const auto shift_vars_to_local_means = [&mesh, &local_vars ](
+      const Variables<tmpl::list<ScalarTag, VectorTag<2>>>& input) noexcept {
+    const auto& local_s = get<ScalarTag>(local_vars);
+    const auto& local_v = get<VectorTag<2>>(local_vars);
+    auto result = input;
+    auto& s = get<ScalarTag>(result);
+    auto& v = get<VectorTag<2>>(result);
+    get(s) += mean_value(get(local_s), mesh) - mean_value(get(s), mesh);
+    get<0>(v) +=
+        mean_value(get<0>(local_v), mesh) - mean_value(get<0>(v), mesh);
+    get<1>(v) +=
+        mean_value(get<1>(local_v), mesh) - mean_value(get<1>(v), mesh);
+    return result;
+  };
+
   const auto lower_xi =
       std::make_pair(Direction<2>::lower_xi(), ElementId<2>(1));
   if (directions_of_external_boundaries.count(lower_xi.first) == 0) {
     neighbor_vars[lower_xi] = make_lower_xi_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_xi] = make_lower_xi_vars(logical_coords);
+    neighbor_modified_vars[lower_xi] =
+        shift_vars_to_local_means(make_lower_xi_vars(logical_coords));
   }
 
   const auto upper_xi =
       std::make_pair(Direction<2>::upper_xi(), ElementId<2>(2));
   if (directions_of_external_boundaries.count(upper_xi.first) == 0) {
     neighbor_vars[upper_xi] = make_upper_xi_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_xi] = make_upper_xi_vars(logical_coords);
+    neighbor_modified_vars[upper_xi] =
+        shift_vars_to_local_means(make_upper_xi_vars(logical_coords));
   }
 
   const auto lower_eta =
       std::make_pair(Direction<2>::lower_eta(), ElementId<2>(3));
   if (directions_of_external_boundaries.count(lower_eta.first) == 0) {
     neighbor_vars[lower_eta] = make_lower_eta_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_eta] = make_lower_eta_vars(logical_coords);
+    neighbor_modified_vars[lower_eta] =
+        shift_vars_to_local_means(make_lower_eta_vars(logical_coords));
   }
 
   const auto upper_eta =
       std::make_pair(Direction<2>::upper_eta(), ElementId<2>(4));
   if (directions_of_external_boundaries.count(upper_eta.first) == 0) {
     neighbor_vars[upper_eta] = make_upper_eta_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_eta] = make_upper_eta_vars(logical_coords);
+    neighbor_modified_vars[upper_eta] =
+        shift_vars_to_local_means(make_upper_eta_vars(logical_coords));
   }
 
   const auto neighbor_data = make_neighbor_data_from_neighbor_vars(
@@ -735,46 +769,69 @@ void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
   VariablesMap<3> neighbor_vars{};
   VariablesMap<3> neighbor_modified_vars{};
 
+  const auto shift_vars_to_local_means = [&mesh, &local_vars ](
+      const Variables<tmpl::list<ScalarTag, VectorTag<3>>>& input) noexcept {
+    const auto& local_s = get<ScalarTag>(local_vars);
+    const auto& local_v = get<VectorTag<3>>(local_vars);
+    auto result = input;
+    auto& s = get<ScalarTag>(result);
+    auto& v = get<VectorTag<3>>(result);
+    get(s) += mean_value(get(local_s), mesh) - mean_value(get(s), mesh);
+    get<0>(v) +=
+        mean_value(get<0>(local_v), mesh) - mean_value(get<0>(v), mesh);
+    get<1>(v) +=
+        mean_value(get<1>(local_v), mesh) - mean_value(get<1>(v), mesh);
+    get<2>(v) +=
+        mean_value(get<2>(local_v), mesh) - mean_value(get<2>(v), mesh);
+    return result;
+  };
+
   const auto lower_xi =
       std::make_pair(Direction<3>::lower_xi(), ElementId<3>(1));
   if (directions_of_external_boundaries.count(lower_xi.first) == 0) {
     neighbor_vars[lower_xi] = make_lower_xi_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_xi] = make_lower_xi_vars(logical_coords);
+    neighbor_modified_vars[lower_xi] =
+        shift_vars_to_local_means(make_lower_xi_vars(logical_coords));
   }
 
   const auto upper_xi =
       std::make_pair(Direction<3>::upper_xi(), ElementId<3>(2));
   if (directions_of_external_boundaries.count(upper_xi.first) == 0) {
     neighbor_vars[upper_xi] = make_upper_xi_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_xi] = make_upper_xi_vars(logical_coords);
+    neighbor_modified_vars[upper_xi] =
+        shift_vars_to_local_means(make_upper_xi_vars(logical_coords));
   }
 
   const auto lower_eta =
       std::make_pair(Direction<3>::lower_eta(), ElementId<3>(3));
   if (directions_of_external_boundaries.count(lower_eta.first) == 0) {
     neighbor_vars[lower_eta] = make_lower_eta_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_eta] = make_lower_eta_vars(logical_coords);
+    neighbor_modified_vars[lower_eta] =
+        shift_vars_to_local_means(make_lower_eta_vars(logical_coords));
   }
 
   const auto upper_eta =
       std::make_pair(Direction<3>::upper_eta(), ElementId<3>(4));
   if (directions_of_external_boundaries.count(upper_eta.first) == 0) {
     neighbor_vars[upper_eta] = make_upper_eta_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_eta] = make_upper_eta_vars(logical_coords);
+    neighbor_modified_vars[upper_eta] =
+        shift_vars_to_local_means(make_upper_eta_vars(logical_coords));
   }
 
   const auto lower_zeta =
       std::make_pair(Direction<3>::lower_zeta(), ElementId<3>(5));
   if (directions_of_external_boundaries.count(lower_zeta.first) == 0) {
     neighbor_vars[lower_zeta] = make_lower_zeta_vars(logical_coords, -2.0);
-    neighbor_modified_vars[lower_zeta] = make_lower_zeta_vars(logical_coords);
+    neighbor_modified_vars[lower_zeta] =
+        shift_vars_to_local_means(make_lower_zeta_vars(logical_coords));
   }
 
   const auto upper_zeta =
       std::make_pair(Direction<3>::upper_zeta(), ElementId<3>(6));
   if (directions_of_external_boundaries.count(upper_zeta.first) == 0) {
     neighbor_vars[upper_zeta] = make_upper_zeta_vars(logical_coords, 2.0);
-    neighbor_modified_vars[upper_zeta] = make_upper_zeta_vars(logical_coords);
+    neighbor_modified_vars[upper_zeta] =
+        shift_vars_to_local_means(make_upper_zeta_vars(logical_coords));
   }
 
   const auto neighbor_data = make_neighbor_data_from_neighbor_vars(
