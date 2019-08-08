@@ -90,6 +90,7 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.2.tar.gz -O bla
     && tar -xzf libsharp.tar.gz \
     && mv libsharp-* libsharp_build \
     && cd libsharp_build \
+    && sed -i 's/march=native/march=x86-64/' configure.ac \
     && autoconf \
     && ./configure --prefix=/usr/local --disable-openmp \
     && make -j4 \
@@ -148,7 +149,7 @@ RUN ln -s $(which clang++-5.0) /usr/local/bin/clang++ \
     && ln -s $(which clang-5.0) /usr/local/bin/clang \
     && ln -s $(which clang-format-5.0) /usr/local/bin/clang-format \
     && ln -s $(which clang-tidy-5.0) /usr/local/bin/clang-tidy
-RUN git clone https://charm.cs.illinois.edu/gerrit/charm \
+RUN git clone https://github.com/UIUC-PPL/charm \
     && cd /work/charm \
     && git checkout ${CHARM_GIT_TAG} \
     && ./build charm++ multicore-linux64 gcc ${PARALLEL_MAKE_ARG} -g -O0  \
