@@ -56,6 +56,9 @@ bool operator==(const ArrayComponentId& lhs,
 
 bool operator!=(const ArrayComponentId& lhs,
                 const ArrayComponentId& rhs) noexcept;
+
+std::ostream& operator<<(std::ostream& os,
+                         const ArrayComponentId& array_component_id) noexcept;
 }  // namespace observers
 
 namespace std {
