@@ -3,15 +3,19 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <cmath>
 #include <tuple>
 
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"           // IWYU pragma: keep
 #include "Utilities/DereferenceWrapper.hpp"  // IWYU pragma: keep
 #include "Utilities/Functional.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Math.hpp"        // IWYU pragma: keep
 #include "Utilities/TypeTraits.hpp"  // IWYU pragma: keep
 #include "tests/Unit/DataStructures/VectorImplTestHelper.hpp"
+#include "tests/Unit/TestHelpers.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_include <algorithm>
 
@@ -95,6 +99,27 @@ void test_data_vector_unary_math() noexcept {
   // the build.
 }
 
+namespace {
+void test_norms() noexcept {
+  // Test l1Norm and l2Norm:
+  MAKE_GENERATOR(gen);
+  UniformCustomDistribution<double> dist{-5, 10};
+  DataVector vector(30);
+  fill_with_random_values(make_not_null(&vector), make_not_null(&gen),
+                          make_not_null(&dist));
+  double l1norm = 0.0, l2norm = 0.0;
+  for (const double value : vector) {
+    l1norm += std::abs(value);
+    l2norm += square(value);
+  }
+  l2norm = std::sqrt(l2norm);
+  // Since l1Norm(vector) and l2Norm(vector) use SIMD we shouldn't expect the
+  // results to be bitwise identical.
+  CHECK(l1norm == approx(l1Norm(vector)));
+  CHECK(l2norm == approx(l2Norm(vector)));
+}
+}  // namespace
+
 SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
   {
     INFO("test construct and assign");
@@ -116,5 +141,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataVector", "[DataStructures][Unit]") {
   {
     INFO("test DataVector math operations");
     test_data_vector_unary_math();
+  }
+  {
+    INFO("test norms of DataVectors");
+    test_norms();
   }
 }

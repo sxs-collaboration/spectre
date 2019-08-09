@@ -462,6 +462,25 @@ void test_variables_prefix_semantics() noexcept {
   vars_to = std::move(prefix_vars_move_assign_from);
   CHECK_VARIABLES_APPROX(
       vars_to, VariablesType(number_of_grid_points, variables_vals[3]));
+
+  // Test swap with prefix
+  PrefixVariablesType prefix_vars_swap{number_of_grid_points};
+  VariablesType vars_swap{2 * number_of_grid_points};
+  fill_with_random_values(make_not_null(&prefix_vars_swap), make_not_null(&gen),
+                          make_not_null(&dist));
+  fill_with_random_values(make_not_null(&vars_swap), make_not_null(&gen),
+                          make_not_null(&dist));
+  const PrefixVariablesType expected_vars_swap(prefix_vars_swap);
+  const VariablesType expected_prefix_vars_swap(vars_swap);
+  swap(vars_swap, prefix_vars_swap);
+  CHECK(
+      gsl::span<const value_type>(expected_vars_swap.data(),
+                                  2 * number_of_grid_points) ==
+      gsl::span<const value_type>(vars_swap.data(), 2 * number_of_grid_points));
+  CHECK(gsl::span<const value_type>(expected_prefix_vars_swap.data(),
+                                    number_of_grid_points) ==
+        gsl::span<const value_type>(prefix_vars_swap.data(),
+                                    number_of_grid_points));
 }
 
 template <typename VectorType>

@@ -42,6 +42,15 @@ auto lift_flux(Variables<tmpl::list<FluxTags...>> flux,
                Scalar<DataVector> magnitude_of_face_normal) noexcept
     -> Variables<tmpl::list<db::remove_tag_prefix<FluxTags>...>> {
   auto lift_factor = std::move(get(magnitude_of_face_normal));
+  // The LGL weights are:
+  //   w_i = 2 / ((N + 1) * N * (P_{N}(xi_i))^2)
+  // and so at the end points (xi = +/- 1) we get:
+  //   w_0 = 2 / ((N + 1) * N)
+  //   w_N = 2 / ((N + 1) * N)
+  // The negative sign comes from bringing the boundary correction over to the
+  // RHS of the equal sign (e.g. `du/dt=Source - div Flux - boundary corr`),
+  // while the magnitude of the normal vector above accounts for the ratios of
+  // spatial metrics and Jacobians.
   lift_factor *= -0.5 * (extent_perpendicular_to_boundary *
                          (extent_perpendicular_to_boundary - 1));
 
