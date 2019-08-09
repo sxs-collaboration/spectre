@@ -149,8 +149,7 @@ void test_transform_and_inverse_transform() noexcept {
   const TransformJob<S, Representation, JobTags> job{l_max,
                                                      number_of_radial_points};
   const auto test_collocation_copy = test_collocation;
-  job.execute_transform(make_not_null(&coefficient_data),
-                        make_not_null(&collocation_data));
+  job.execute_transform(make_not_null(&coefficient_data), collocation_data);
 
   // approximation needs to be a little loose to consistently accommodate
   // the ratios of factorials in the analytic form
@@ -173,8 +172,8 @@ void test_transform_and_inverse_transform() noexcept {
                                transform_approx);
 
   SpinWeighted<ComplexModalVector, S> modes_from_function_call =
-      swsh_transform<Representation>(
-          make_not_null(&get(get<TestTag<S>>(collocation_data))), l_max);
+      swsh_transform<Representation>(get(get<TestTag<S>>(collocation_data)),
+                                     l_max);
   CHECK_ITERABLE_CUSTOM_APPROX(modes_from_function_call.data(), generated_modes,
                                transform_approx);
 
@@ -183,12 +182,10 @@ void test_transform_and_inverse_transform() noexcept {
   const TransformJob<S, Representation, InverseJobTags> inverse_job{
       l_max, number_of_radial_points};
   inverse_job.execute_inverse_transform(make_not_null(&collocation_data),
-                                        make_not_null(&coefficient_data));
+                                        coefficient_data);
   SpinWeighted<ComplexDataVector, S> collocation_values_from_function_call =
       inverse_swsh_transform<Representation>(
-          make_not_null(
-              &get(get<Tags::SwshTransform<TestTag<S>>>(coefficient_data))),
-          l_max);
+          get(get<Tags::SwshTransform<TestTag<S>>>(coefficient_data)), l_max);
   CHECK_ITERABLE_CUSTOM_APPROX(test_collocation, expected_collocation,
                                transform_approx);
 }

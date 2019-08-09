@@ -192,10 +192,17 @@ class TransformJob {
   /// (conjugated) during the execution of the transform if the `Spin` is
   /// negative, but are reverted to their original state by the end of the
   /// function execution.
+  ///
+  /// \warning The `input` is taken by const reference, but can be temporarily
+  /// altered in-place during intermediate parts of the computation. The input
+  /// data is guaranteed to return to its original state by the end of the
+  /// function. In a setting in which multiple threads access the same data
+  /// passed as input to this function, a lock must be used to prevent access
+  /// during the execution of the transform.
   template <typename InputVarsTagList, typename OutputVarsTagList>
-  void execute_transform(
-      gsl::not_null<Variables<OutputVarsTagList>*> output,
-      gsl::not_null<Variables<InputVarsTagList>*> input) const noexcept;
+  void execute_transform(gsl::not_null<Variables<OutputVarsTagList>*> output,
+                         const Variables<InputVarsTagList>& input) const
+      noexcept;
 
   /// \brief Execute the inverse spin-weighted spherical harmonic transform
   /// using libsharp.
@@ -208,10 +215,17 @@ class TransformJob {
   /// \param output A `Variables` which must contain each of the tags provided
   /// via `TagList`. The collocation data will be stored appropriately in this
   /// Variables.
+  ///
+  /// \warning The `input` is taken by const reference, but can be temporarily
+  /// altered in-place during intermediate parts of the computation. The input
+  /// data is guaranteed to return to its original state by the end of the
+  /// function. In a setting in which multiple threads access the same data
+  /// passed as input to this function, a lock must be used to prevent access
+  /// during the execution of the transform.
   template <typename InputVarsTagList, typename OutputVarsTagList>
   void execute_inverse_transform(
       gsl::not_null<Variables<OutputVarsTagList>*> output,
-      gsl::not_null<Variables<InputVarsTagList>*> input) const noexcept;
+      const Variables<InputVarsTagList>& input) const noexcept;
 
  private:
   size_t number_of_radial_grid_points_;
@@ -288,7 +302,7 @@ template <int Spin, ComplexRepresentation Representation, typename TagList>
 template <typename InputVarsTagList, typename OutputVarsTagList>
 void TransformJob<Spin, Representation, TagList>::execute_transform(
     const gsl::not_null<Variables<OutputVarsTagList>*> output,
-    const gsl::not_null<Variables<InputVarsTagList>*> input) const noexcept {
+    const Variables<InputVarsTagList>& input) const noexcept {
   // assemble a list of pointers into the collocation point data. This is
   // required because libsharp expects pointers to pointers.
   std::vector<detail::ComplexDataView<Representation>> pre_transform_views;
@@ -297,19 +311,22 @@ void TransformJob<Spin, Representation, TagList>::execute_transform(
   std::vector<double*> pre_transform_collocation_data;
   pre_transform_collocation_data.reserve(2 * number_of_radial_grid_points_ *
                                          tmpl::size<TagList>::value);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+  auto to_transform = const_cast<Variables<InputVarsTagList>*>(&input);
 
   // libsharp considers two arrays per transform when spin is not zero.
   const size_t num_transforms = (Spin == 0 ? 2 : 1) *
                                 number_of_radial_grid_points_ *
                                 tmpl::size<TagList>::value;
   tmpl::for_each<TagList>(
-      [&pre_transform_collocation_data, &pre_transform_views, &input,
+      [&pre_transform_collocation_data, &pre_transform_views, &to_transform,
        this ](auto tag_v) noexcept {
         using tag = typename decltype(tag_v)::type;
         detail::append_libsharp_collocation_pointers(
             make_not_null(&pre_transform_collocation_data),
             make_not_null(&pre_transform_views),
-            make_not_null(&get(get<tag>(*input)).data()), l_max_, Spin >= 0);
+            make_not_null(&get(get<tag>(*to_transform)).data()), l_max_,
+            Spin >= 0);
       });
   std::vector<std::complex<double>*> post_transform_coefficient_data;
   post_transform_coefficient_data.reserve(2 * number_of_radial_grid_points_ *
@@ -336,15 +353,20 @@ template <int Spin, ComplexRepresentation Representation, typename TagList>
 template <typename InputVarsTagList, typename OutputVarsTagList>
 void TransformJob<Spin, Representation, TagList>::execute_inverse_transform(
     const gsl::not_null<Variables<OutputVarsTagList>*> output,
-    const gsl::not_null<Variables<InputVarsTagList>*> input) const noexcept {
+    const Variables<InputVarsTagList>& input) const noexcept {
   std::vector<std::complex<double>*> pre_transform_coefficient_data;
   pre_transform_coefficient_data.reserve(2 * number_of_radial_grid_points_ *
                                          tmpl::size<CoefficientTagList>::value);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+  auto to_inverse_transform = const_cast<Variables<InputVarsTagList>&>(input);
+
   tmpl::for_each<CoefficientTagList>(
-      [&pre_transform_coefficient_data, &input, this](auto x) {
+      [&pre_transform_coefficient_data, &to_inverse_transform, this](auto x) {
         detail::append_libsharp_coefficient_pointers(
             make_not_null(&pre_transform_coefficient_data),
-            make_not_null(&get(get<typename decltype(x)::type>(*input)).data()),
+            make_not_null(
+                &get(get<typename decltype(x)::type>(to_inverse_transform))
+                     .data()),
             l_max_);
       });
 
@@ -410,21 +432,27 @@ void TransformJob<Spin, Representation, TagList>::execute_inverse_transform(
  * The result is a set of libsharp-compatible coefficients.
  * \see TransformJob for more details on the mathematics of the libsharp
  * data structures.
+ *
+ * \warning The `collocation` is taken by const reference, but can be
+ * temporarily altered in-place during intermediate parts of the computation.
+ * The input data is guaranteed to return to its original state by the end of
+ * the function. In a setting in which multiple threads access the same data
+ * passed as input to this function, a lock must be used to prevent access
+ * during the execution of the transform.
  */
 template <
     ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
     int Spin>
-void swsh_transform(
-    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
-        libsharp_coefficients,
-    gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> collocation,
-    size_t l_max) noexcept;
+void swsh_transform(gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
+                        libsharp_coefficients,
+                    const SpinWeighted<ComplexDataVector, Spin>& collocation,
+                    size_t l_max) noexcept;
 
 template <
     ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
     int Spin>
 SpinWeighted<ComplexModalVector, Spin> swsh_transform(
-    gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> collocation,
+    const SpinWeighted<ComplexDataVector, Spin>& collocation,
     size_t l_max) noexcept;
 // @}
 
@@ -454,22 +482,27 @@ SpinWeighted<ComplexModalVector, Spin> swsh_transform(
  * The result is a set of libsharp-compatible collocation values.
  * \see TransformJob for more details on the mathematics of the libsharp
  * data structures.
+ *
+ * \warning The `libsharp_coefficients` is taken by const reference, but can
+ * be temporarily altered in-place during intermediate parts of the computation.
+ * The input data is guaranteed to return to its original state by the end of
+ * the function. In a setting in which multiple threads access the same data
+ * passed as input to this function, a lock must be used to prevent access
+ * during the execution of the transform.
  */
 template <
     ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
     int Spin>
 void inverse_swsh_transform(
     gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> collocation,
-    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
-        libsharp_coefficients,
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_coefficients,
     size_t l_max) noexcept;
 
 template <
     ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
     int Spin>
 SpinWeighted<ComplexDataVector, Spin> inverse_swsh_transform(
-    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
-        libsharp_coefficients,
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_coefficients,
     size_t l_max) noexcept;
 // @}
 

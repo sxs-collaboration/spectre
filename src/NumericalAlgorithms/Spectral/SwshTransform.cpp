@@ -104,13 +104,12 @@ void execute_libsharp_transform_set(
 }  // namespace detail
 
 template <ComplexRepresentation Representation, int Spin>
-void swsh_transform(
-    const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
-        libsharp_coefficients,
-    const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> collocation,
-    const size_t l_max) noexcept {
+void swsh_transform(const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
+                        libsharp_coefficients,
+                    const SpinWeighted<ComplexDataVector, Spin>& collocation,
+                    const size_t l_max) noexcept {
   size_t number_of_radial_points =
-      collocation->data().size() / number_of_swsh_collocation_points(l_max);
+      collocation.data().size() / number_of_swsh_collocation_points(l_max);
 
   // append a list of pointers into the collocation point data. This is
   // required because libsharp expects pointers to pointers.
@@ -130,7 +129,11 @@ void swsh_transform(
 
   detail::append_libsharp_collocation_pointers(
       make_not_null(&pre_transform_collocation_data),
-      make_not_null(&pre_transform_views), make_not_null(&collocation->data()),
+      make_not_null(&pre_transform_views),
+      make_not_null(
+          // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+          &const_cast<SpinWeighted<ComplexDataVector, Spin>&>(collocation)
+               .data()),
       l_max, Spin >= 0);
 
   if (libsharp_coefficients->data().size() !=
@@ -158,7 +161,7 @@ void swsh_transform(
 
 template <ComplexRepresentation Representation, int Spin>
 SpinWeighted<ComplexModalVector, Spin> swsh_transform(
-    const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> collocation,
+    const SpinWeighted<ComplexDataVector, Spin>& collocation,
     const size_t l_max) noexcept {
   SpinWeighted<ComplexModalVector, Spin> result_vector{};
   swsh_transform<Representation, Spin>(make_not_null(&result_vector),
@@ -169,11 +172,10 @@ SpinWeighted<ComplexModalVector, Spin> swsh_transform(
 template <ComplexRepresentation Representation, int Spin>
 void inverse_swsh_transform(
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> collocation,
-    const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
-        libsharp_coefficients,
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_coefficients,
     const size_t l_max) noexcept {
   const size_t number_of_radial_points =
-      libsharp_coefficients->data().size() /
+      libsharp_coefficients.data().size() /
       (size_of_libsharp_coefficient_vector(l_max));
 
   const auto* collocation_metadata =
@@ -186,7 +188,11 @@ void inverse_swsh_transform(
 
   detail::append_libsharp_coefficient_pointers(
       make_not_null(&pre_transform_coefficient_data),
-      make_not_null(&libsharp_coefficients->data()), l_max);
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+      make_not_null(&const_cast<SpinWeighted<ComplexModalVector, Spin>&>(
+                         libsharp_coefficients)
+                         .data()),
+      l_max);
 
   std::vector<detail::ComplexDataView<Representation>> post_transform_views;
   post_transform_views.reserve(number_of_radial_points);
@@ -224,8 +230,7 @@ void inverse_swsh_transform(
 
 template <ComplexRepresentation Representation, int Spin>
 SpinWeighted<ComplexDataVector, Spin> inverse_swsh_transform(
-    const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
-        libsharp_coefficients,
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_coefficients,
     const size_t l_max) noexcept {
   SpinWeighted<ComplexDataVector, Spin> result_vector{};
   inverse_swsh_transform<Representation, Spin>(make_not_null(&result_vector),
@@ -240,24 +245,22 @@ SpinWeighted<ComplexDataVector, Spin> inverse_swsh_transform(
   template void swsh_transform<GET_REPRESENTATION(data), GET_SPIN(data)>(    \
       const gsl::not_null<SpinWeighted<ComplexModalVector, GET_SPIN(data)>*> \
           libsharp_coefficients,                                             \
-      const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*>  \
-          collocation,                                                       \
+      const SpinWeighted<ComplexDataVector, GET_SPIN(data)>& collocation,    \
       const size_t l_max) noexcept;                                          \
   template SpinWeighted<ComplexModalVector, GET_SPIN(data)>                  \
   swsh_transform<GET_REPRESENTATION(data), GET_SPIN(data)>(                  \
-      const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*>  \
-          collocation,                                                       \
+      const SpinWeighted<ComplexDataVector, GET_SPIN(data)>& collocation,    \
       const size_t l_max) noexcept;                                          \
   template void                                                              \
   inverse_swsh_transform<GET_REPRESENTATION(data), GET_SPIN(data)>(          \
       const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*>  \
           collocation,                                                       \
-      const gsl::not_null<SpinWeighted<ComplexModalVector, GET_SPIN(data)>*> \
+      const SpinWeighted<ComplexModalVector, GET_SPIN(data)>&                \
           libsharp_coefficients,                                             \
       const size_t l_max) noexcept;                                          \
   template SpinWeighted<ComplexDataVector, GET_SPIN(data)>                   \
   inverse_swsh_transform<GET_REPRESENTATION(data), GET_SPIN(data)>(          \
-      const gsl::not_null<SpinWeighted<ComplexModalVector, GET_SPIN(data)>*> \
+      const SpinWeighted<ComplexModalVector, GET_SPIN(data)>&                \
           libsharp_coefficients,                                             \
       const size_t l_max) noexcept;
 

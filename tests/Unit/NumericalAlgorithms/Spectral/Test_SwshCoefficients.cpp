@@ -172,8 +172,7 @@ void check_goldberg_mode_conversion() {
   }
 
   SpinWeighted<ComplexModalVector, Spin> test_modes =
-      swsh_transform<Representation>(
-          make_not_null(&goldberg_collocation_points), l_max);
+      swsh_transform<Representation>(goldberg_collocation_points, l_max);
 
   Approx swsh_approx =
       Approx::custom()
@@ -243,7 +242,7 @@ void check_goldberg_mode_conversion() {
   }
 
   const auto inverse_transform_set_from_goldberg =
-      inverse_swsh_transform<Representation>(make_not_null(&test_modes), l_max);
+      inverse_swsh_transform<Representation>(test_modes, l_max);
   CHECK_ITERABLE_CUSTOM_APPROX(inverse_transform_set_from_goldberg.data(),
                                goldberg_collocation_points.data(), swsh_approx);
 }
