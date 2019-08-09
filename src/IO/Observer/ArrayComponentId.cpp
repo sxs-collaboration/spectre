@@ -21,4 +21,9 @@ bool operator!=(const ArrayComponentId& lhs,
                 const ArrayComponentId& rhs) noexcept {
   return not(lhs == rhs);
 }
+
+std::ostream& operator<<(std::ostream& os,
+                         const ArrayComponentId& array_component_id) noexcept {
+  return os << std::hash<ArrayComponentId>{}(array_component_id);
+}
 }  // namespace observers
