@@ -60,10 +60,29 @@ using type_for_get = typename type_for_get_helper<
     typename tmpl::front<ConstGlobalCache_detail::get_list_of_matching_tags<
         ConstGlobalCacheTag, Metavariables>>::type>::type;
 
-template <typename ComponentFromList, typename ComponentToFind>
-struct get_component_if_mocked_helper
-    : std::is_same<typename ComponentFromList::component_being_mocked,
-                   ComponentToFind> {};
+template <class T, class = cpp17::void_t<>>
+struct has_component_being_mocked_alias : std::false_type {};
+
+template <class T>
+struct has_component_being_mocked_alias<
+    T, cpp17::void_t<typename T::component_being_mocked>> : std::true_type {};
+
+template <class T>
+constexpr bool has_component_being_mocked_alias_v =
+    has_component_being_mocked_alias<T>::value;
+
+template <typename ComponentToFind, typename ComponentFromList>
+struct get_component_if_mocked_helper {
+  static_assert(
+      has_component_being_mocked_alias_v<ComponentFromList>,
+      "The parallel component was not found, and it looks like it is not being "
+      "mocked. Did you forget to add it to the "
+      "'Metavariables::component_list'? See the first template parameter for "
+      "the component that we are looking for and the first template parameter "
+      "for the component that is being checked for mocking it.");
+  using type = std::is_same<typename ComponentFromList::component_being_mocked,
+                            ComponentToFind>;
+};
 
 /// In order to be able to use a mock action testing framework we need to be
 /// able to get the correct parallel component from the global cache even when
@@ -78,8 +97,8 @@ using get_component_if_mocked = tmpl::front<tmpl::type_from<tmpl::conditional_t<
     tmpl::list_contains_v<ComponentList, ParallelComponent>,
     tmpl::type_<tmpl::list<ParallelComponent>>,
     tmpl::lazy::find<ComponentList,
-                     get_component_if_mocked_helper<
-                         tmpl::_1, tmpl::pin<ParallelComponent>>>>>>;
+                     tmpl::type_<get_component_if_mocked_helper<
+                         tmpl::pin<ParallelComponent>, tmpl::_1>>>>>>;
 }  // namespace ConstGlobalCache_detail
 
 /// \ingroup ParallelGroup
