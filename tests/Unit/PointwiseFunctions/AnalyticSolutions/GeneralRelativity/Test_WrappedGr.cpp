@@ -132,13 +132,14 @@ void test_generalized_harmonic_solution(const Args&... args) noexcept {
 struct WrappedGr {
   using type =
       GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>;
+  static std::string name() { return option_name<type>(); }
   static constexpr OptionString help{"A wrapped generalized harmonic solution"};
 };
 
 void test_construct_from_options() {
   Options<tmpl::list<WrappedGr>> opts("");
   opts.parse(
-      "WrappedGr:\n"
+      "KerrSchild:\n"
       "  Mass: 0.5\n"
       "  Spin: [0.1,0.2,0.3]\n"
       "  Center: [1.0,3.0,2.0]");
