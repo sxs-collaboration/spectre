@@ -19,7 +19,7 @@
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "NumericalAlgorithms/Spectral/SwshTags.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/Spectral/SwshTransformJob.hpp"
+#include "NumericalAlgorithms/Spectral/SwshTransform.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -54,7 +54,7 @@ using TestDerivativeTagList =
                Tags::Derivative<ExpectedTestTag<-1>, Tags::EthEthbar>,
                Tags::Derivative<TestTag<2>, Tags::EthbarEthbar>>;
 
-/// [make_swsh_transform_job_list]
+/// [make_transform_job_list]
 using ExpectedInverseJobs = tmpl::list<
     TransformJob<
         -1, ComplexRepresentation::RealsThenImags,
@@ -66,13 +66,13 @@ using ExpectedInverseJobs = tmpl::list<
 
 static_assert(
     cpp17::is_same_v<
-        make_swsh_transform_job_list<ComplexRepresentation::RealsThenImags,
+        make_transform_job_list<ComplexRepresentation::RealsThenImags,
                                      TestDerivativeTagList>,
         ExpectedInverseJobs>,
-    "failed testing make_swsh_transform_job_list");
-/// [make_swsh_transform_job_list]
+    "failed testing make_transform_job_list");
+/// [make_transform_job_list]
 
-/// [make_swsh_transform_from_derivative_tags]
+/// [make_transform_from_derivative_tags]
 using ExpectedJobs =
     tmpl::list<TransformJob<-1, ComplexRepresentation::Interleaved,
                             tmpl::list<TestTag<-1>, ExpectedTestTag<-1>>>,
@@ -81,11 +81,11 @@ using ExpectedJobs =
 
 static_assert(
     cpp17::is_same_v<
-        make_swsh_transform_job_list_from_derivative_tags<
+        make_transform_job_list_from_derivative_tags<
             ComplexRepresentation::Interleaved, TestDerivativeTagList>,
         ExpectedJobs>,
-    "failed testing make_swsh_transform_job_list_from_derivative_tags");
-/// [make_swsh_transform_from_derivative_tags]
+    "failed testing make_transform_job_list_from_derivative_tags");
+/// [make_transform_from_derivative_tags]
 
 static_assert(
     cpp17::is_same_v<
@@ -124,7 +124,7 @@ void test_transform_and_inverse_transform() noexcept {
   Variables<tmpl::list<Tags::SwshTransform<ExpectedTestTag<S>>,
                        Tags::SwshTransform<TestTag<S>>>>
       coefficient_data{
-          number_of_swsh_coefficients(l_max) * 2 * number_of_radial_points,
+          size_of_libsharp_coefficient_vector(l_max) * number_of_radial_points,
           0.0};
 
   // randomly generate the mode coefficients
@@ -149,11 +149,10 @@ void test_transform_and_inverse_transform() noexcept {
   const TransformJob<S, Representation, JobTags> job{l_max,
                                                      number_of_radial_points};
   const auto test_collocation_copy = test_collocation;
-  job.execute_transform(make_not_null(&coefficient_data),
-                        make_not_null(&collocation_data));
+  job.execute_transform(make_not_null(&coefficient_data), collocation_data);
 
-  // approximation needs to be a little loose to consistently accommodate the
-  // ratios of factorials in the analytic form
+  // approximation needs to be a little loose to consistently accommodate
+  // the ratios of factorials in the analytic form
   Approx transform_approx =
       Approx::custom()
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e6)
@@ -172,18 +171,26 @@ void test_transform_and_inverse_transform() noexcept {
   CHECK_ITERABLE_CUSTOM_APPROX(transformed_modes, generated_modes,
                                transform_approx);
 
+  SpinWeighted<ComplexModalVector, S> modes_from_function_call =
+      swsh_transform<Representation>(get(get<TestTag<S>>(collocation_data)),
+                                     l_max);
+  CHECK_ITERABLE_CUSTOM_APPROX(modes_from_function_call.data(), generated_modes,
+                               transform_approx);
+
   // create the inverse transformation job and execute
   using InverseJobTags = tmpl::list<TestTag<S>>;
   const TransformJob<S, Representation, InverseJobTags> inverse_job{
       l_max, number_of_radial_points};
   inverse_job.execute_inverse_transform(make_not_null(&collocation_data),
-                                        make_not_null(&coefficient_data));
-
+                                        coefficient_data);
+  SpinWeighted<ComplexDataVector, S> collocation_values_from_function_call =
+      inverse_swsh_transform<Representation>(
+          get(get<Tags::SwshTransform<TestTag<S>>>(coefficient_data)), l_max);
   CHECK_ITERABLE_CUSTOM_APPROX(test_collocation, expected_collocation,
                                transform_approx);
 }
 
-SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Transform",
+SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshTransform",
                   "[Unit][NumericalAlgorithms]") {
   {
     INFO("Testing with ComplexRepresentation::Interleaved");

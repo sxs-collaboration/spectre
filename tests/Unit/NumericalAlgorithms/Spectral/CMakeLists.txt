@@ -18,7 +18,7 @@ set(LIBRARY_SOURCES
   Test_SwshCollocation.cpp
   Test_SwshTags.cpp
   Test_SwshTestHelpers.cpp
-  Test_SwshTransformJob.cpp
+  Test_SwshTransform.cpp
   )
 
 add_test_library(

@@ -3,14 +3,15 @@
 
 #pragma once
 
-#include <cmath>
 #include <complex>
 #include <cstddef>
 #include <sharp_cxx.h>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"  // IWYU pragma: keep
@@ -21,9 +22,19 @@
 
 // IWYU pragma: no_forward_declare Variables
 // IWYU pragma: no_forward_declare Coefficients
+// IWYU pragma: no_forward_declare SpinWeighted
+
+class ComplexDataVector;
+class ComplexModalVector;
 
 namespace Spectral {
 namespace Swsh {
+
+namespace detail {
+// libsharp has an internal maximum number of transforms that is not in the
+// public interface, so we must hard-code its value here
+static const size_t max_libsharp_transforms = 100;
+}  // namespace detail
 
 /*!
  * \ingroup SwshGroup
@@ -166,7 +177,8 @@ class TransformJob {
   /// coefficients are stored in the efficient 'triangular' form noted in the
   /// documentation for `TransformJob`.
   constexpr size_t coefficient_output_size() const noexcept {
-    return number_of_swsh_coefficients(l_max_) * number_of_radial_grid_points_;
+    return size_of_libsharp_coefficient_vector(l_max_) *
+           number_of_radial_grid_points_;
   }
 
   /// \brief Execute the forward spin-weighted spherical harmonic transform
@@ -180,10 +192,17 @@ class TransformJob {
   /// (conjugated) during the execution of the transform if the `Spin` is
   /// negative, but are reverted to their original state by the end of the
   /// function execution.
+  ///
+  /// \warning The `input` is taken by const reference, but can be temporarily
+  /// altered in-place during intermediate parts of the computation. The input
+  /// data is guaranteed to return to its original state by the end of the
+  /// function. In a setting in which multiple threads access the same data
+  /// passed as input to this function, a lock must be used to prevent access
+  /// during the execution of the transform.
   template <typename InputVarsTagList, typename OutputVarsTagList>
-  void execute_transform(
-      gsl::not_null<Variables<OutputVarsTagList>*> output,
-      gsl::not_null<Variables<InputVarsTagList>*> input) const noexcept;
+  void execute_transform(gsl::not_null<Variables<OutputVarsTagList>*> output,
+                         const Variables<InputVarsTagList>& input) const
+      noexcept;
 
   /// \brief Execute the inverse spin-weighted spherical harmonic transform
   /// using libsharp.
@@ -196,170 +215,188 @@ class TransformJob {
   /// \param output A `Variables` which must contain each of the tags provided
   /// via `TagList`. The collocation data will be stored appropriately in this
   /// Variables.
+  ///
+  /// \warning The `input` is taken by const reference, but can be temporarily
+  /// altered in-place during intermediate parts of the computation. The input
+  /// data is guaranteed to return to its original state by the end of the
+  /// function. In a setting in which multiple threads access the same data
+  /// passed as input to this function, a lock must be used to prevent access
+  /// during the execution of the transform.
   template <typename InputVarsTagList, typename OutputVarsTagList>
   void execute_inverse_transform(
       gsl::not_null<Variables<OutputVarsTagList>*> output,
-      gsl::not_null<Variables<InputVarsTagList>*> input) const noexcept;
+      const Variables<InputVarsTagList>& input) const noexcept;
 
  private:
   size_t number_of_radial_grid_points_;
   size_t l_max_;
   sharp_alm_info* alm_info_;
-  const Collocation<Representation>* collocation_metadata_;
+  const CollocationMetadata<Representation>* collocation_metadata_;
 };
+
+namespace detail {
+// appends to a vector of pointers `collocation_data` the set of pointers
+// associated with angular views of the provided collocation data `vector`. The
+// associated views are appended into `collocation_views`. If `positive_spin` is
+// false, this function will conjugate the views, and therefore potentially
+// conjugate (depending on `Representation`) the input data `vectors`. This
+// behavior is chosen to avoid frequent copies of the input data `vector` for
+// optimization. The conjugation must be undone after the call to libsharp
+// transforms using `conjugate_views` to restore the input data to its original
+// state.
+template <ComplexRepresentation Representation>
+void append_libsharp_collocation_pointers(
+    gsl::not_null<std::vector<double*>*> collocation_data,
+    gsl::not_null<std::vector<ComplexDataView<Representation>>*>
+        collocation_views,
+    gsl::not_null<ComplexDataVector*> vector, size_t l_max,
+    bool positive_spin) noexcept;
+
+// Perform a conjugation on a vector of `ComplexDataView`s if `Spin` < 0. This
+// is used for undoing the conjugation described in the code comment for
+// `append_libsharp_collocation_pointers`
+template <int Spin, ComplexRepresentation Representation>
+SPECTRE_ALWAYS_INLINE void conjugate_views(
+    gsl::not_null<std::vector<ComplexDataView<Representation>>*>
+        collocation_views) noexcept {
+  if (Spin < 0) {
+    for (auto& view : *collocation_views) {
+      view.conjugate();
+    }
+  }
+}
+
+// appends to a vector of pointers the set of pointers associated with
+// angular views of the provided coefficient vector. When working with the
+// libsharp coefficient representation, note the intricacies mentioned in
+// the documentation for `TransformJob`.
+void append_libsharp_coefficient_pointers(
+    gsl::not_null<std::vector<std::complex<double>*>*> coefficient_data,
+    gsl::not_null<ComplexModalVector*> vector, size_t l_max) noexcept;
+
+// perform the actual libsharp execution calls on an input and output set of
+// pointers. This function handles the complication of a limited maximum number
+// of simultaneous transforms, performing multiple execution calls on pointer
+// blocks if necessary.
+template <ComplexRepresentation Representation>
+void execute_libsharp_transform_set(
+    const sharp_jobtype& jobtype, int spin,
+    gsl::not_null<std::vector<std::complex<double>*>*> coefficient_data,
+    gsl::not_null<std::vector<double*>*> collocation_data,
+    gsl::not_null<const CollocationMetadata<Representation>*>
+        collocation_metadata,
+    const sharp_alm_info* alm_info, size_t num_transforms) noexcept;
+}  // namespace detail
 
 template <int Spin, ComplexRepresentation Representation, typename TagList>
 TransformJob<Spin, Representation, TagList>::TransformJob(
     const size_t l_max, const size_t number_of_radial_grid_points) noexcept
     : number_of_radial_grid_points_{number_of_radial_grid_points},
       l_max_{l_max},
-      collocation_metadata_{&precomputed_collocation<Representation>(l_max_)} {
-  alm_info_ = detail::precomputed_coefficients(l_max_).get_sharp_alm_info();
+      collocation_metadata_{
+          &cached_collocation_metadata<Representation>(l_max_)} {
+  alm_info_ = cached_coefficients_metadata(l_max_).get_sharp_alm_info();
 }
 
 template <int Spin, ComplexRepresentation Representation, typename TagList>
 template <typename InputVarsTagList, typename OutputVarsTagList>
 void TransformJob<Spin, Representation, TagList>::execute_transform(
     const gsl::not_null<Variables<OutputVarsTagList>*> output,
-    const gsl::not_null<Variables<InputVarsTagList>*> input) const noexcept {
+    const Variables<InputVarsTagList>& input) const noexcept {
   // assemble a list of pointers into the collocation point data. This is
   // required because libsharp expects pointers to pointers.
   std::vector<detail::ComplexDataView<Representation>> pre_transform_views;
   pre_transform_views.reserve(number_of_radial_grid_points_ *
                               tmpl::size<TagList>::value);
-  std::vector<const double*> pre_transform_collocation_data;
+  std::vector<double*> pre_transform_collocation_data;
   pre_transform_collocation_data.reserve(2 * number_of_radial_grid_points_ *
                                          tmpl::size<TagList>::value);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+  auto to_transform = const_cast<Variables<InputVarsTagList>*>(&input);
 
-  // for each Tag and each slice block in the radial direction, construct a
-  // ComplexDataView at the appropriate locations, then retrieve its real
-  // and imaginary data and put it in subsequent slots in the
-  // pre_transform_collocation_data.
-  size_t num_transforms = 0;
-  tmpl::for_each<TagList>([
-    &pre_transform_collocation_data, &pre_transform_views, &num_transforms,
-    &input, this
-  ](auto x) noexcept {
-    using transform_var_tag = typename decltype(x)::type;
-    decltype(auto) input_vector = get(get<transform_var_tag>(*input)).data();
-    for (size_t i = 0; i < number_of_radial_grid_points_; ++i) {
-      pre_transform_views.push_back(detail::ComplexDataView<Representation>{
-          make_not_null(&input_vector), collocation_metadata_->size(),
-          i * collocation_metadata_->size()});
-      pre_transform_collocation_data.push_back(
-          pre_transform_views.back().real_data());
-      // alteration needed because libsharp doesn't support negative spins
-      if (spin < 0) {
-        pre_transform_views.back().conjugate();
-      }
-      pre_transform_collocation_data.push_back(
-          pre_transform_views.back().imag_data());
-      // libsharp considers two arrays per transform when spin is not zero.
-      num_transforms += (spin == 0 ? 2 : 1);
-    }
-  });
-
+  // libsharp considers two arrays per transform when spin is not zero.
+  const size_t num_transforms = (Spin == 0 ? 2 : 1) *
+                                number_of_radial_grid_points_ *
+                                tmpl::size<TagList>::value;
+  tmpl::for_each<TagList>(
+      [&pre_transform_collocation_data, &pre_transform_views, &to_transform,
+       this ](auto tag_v) noexcept {
+        using tag = typename decltype(tag_v)::type;
+        detail::append_libsharp_collocation_pointers(
+            make_not_null(&pre_transform_collocation_data),
+            make_not_null(&pre_transform_views),
+            make_not_null(&get(get<tag>(*to_transform)).data()), l_max_,
+            Spin >= 0);
+      });
   std::vector<std::complex<double>*> post_transform_coefficient_data;
   post_transform_coefficient_data.reserve(2 * number_of_radial_grid_points_ *
                                           tmpl::size<TagList>::value);
 
-  // assemble list of locations in the output Variables for the destinations
-  // of the coefficient data
-  tmpl::for_each<CoefficientTagList>([
-    &post_transform_coefficient_data, &output, this
-  ](auto x) noexcept {
-    using coefficient_var_tag = typename decltype(x)::type;
-    decltype(auto) output_vector =
-        get(get<coefficient_var_tag>(*output)).data();
-    for (size_t i = 0; i < number_of_radial_grid_points_; ++i) {
-      // coefficients associated with the real part
-      post_transform_coefficient_data.push_back(
-          output_vector.data() + 2 * i * number_of_swsh_coefficients(l_max_));
-      // coefficients associated with the imaginary part
-      post_transform_coefficient_data.push_back(
-          output_vector.data() +
-          (2 * i + 1) * number_of_swsh_coefficients(l_max_));
-    }
-  });
+  tmpl::for_each<CoefficientTagList>(
+      [&post_transform_coefficient_data, &output, this ](auto x) noexcept {
+        detail::append_libsharp_coefficient_pointers(
+            make_not_null(&post_transform_coefficient_data),
+            make_not_null(
+                &get(get<typename decltype(x)::type>(*output)).data()),
+            l_max_);
+      });
 
-  sharp_execute(SHARP_MAP2ALM, abs(spin),
-                post_transform_coefficient_data.data(),
-                pre_transform_collocation_data.data(),
-                collocation_metadata_->get_sharp_geom_info(), alm_info_,
-                num_transforms, SHARP_DP, nullptr, nullptr);
+  detail::execute_libsharp_transform_set(
+      SHARP_MAP2ALM, spin, make_not_null(&post_transform_coefficient_data),
+      make_not_null(&pre_transform_collocation_data),
+      make_not_null(collocation_metadata_), alm_info_, num_transforms);
 
-  // libsharp only has the ability to transform positive spins, so we have to
-  // perform conjugation to deal with negative spins.
-  if (spin < 0) {
-    // fix the conjugation performed prior to transformation.
-    for (auto& view : pre_transform_views) {
-      view.conjugate();
-    }
-  }
+  detail::conjugate_views<Spin>(make_not_null(&pre_transform_views));
 }
 
 template <int Spin, ComplexRepresentation Representation, typename TagList>
 template <typename InputVarsTagList, typename OutputVarsTagList>
 void TransformJob<Spin, Representation, TagList>::execute_inverse_transform(
     const gsl::not_null<Variables<OutputVarsTagList>*> output,
-    const gsl::not_null<Variables<InputVarsTagList>*> input) const noexcept {
+    const Variables<InputVarsTagList>& input) const noexcept {
   std::vector<std::complex<double>*> pre_transform_coefficient_data;
   pre_transform_coefficient_data.reserve(2 * number_of_radial_grid_points_ *
                                          tmpl::size<CoefficientTagList>::value);
-  // assemble list of locations in the input Variables for the locations
-  // of the coefficient data
-  tmpl::for_each<CoefficientTagList>([&pre_transform_coefficient_data, &input,
-                                      this](auto x) {
-    using coefficient_var_tag = typename decltype(x)::type;
-    decltype(auto) input_vector = get(get<coefficient_var_tag>(*input)).data();
-    for (size_t i = 0; i < number_of_radial_grid_points_; ++i) {
-      pre_transform_coefficient_data.push_back(
-          input_vector.data() + 2 * i * number_of_swsh_coefficients(l_max_));
-      pre_transform_coefficient_data.push_back(
-          input_vector.data() +
-          (2 * i + 1) * number_of_swsh_coefficients(l_max_));
-    }
-  });
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
+  auto to_inverse_transform = const_cast<Variables<InputVarsTagList>&>(input);
+
+  tmpl::for_each<CoefficientTagList>(
+      [&pre_transform_coefficient_data, &to_inverse_transform, this](auto x) {
+        detail::append_libsharp_coefficient_pointers(
+            make_not_null(&pre_transform_coefficient_data),
+            make_not_null(
+                &get(get<typename decltype(x)::type>(to_inverse_transform))
+                     .data()),
+            l_max_);
+      });
 
   std::vector<detail::ComplexDataView<Representation>> post_transform_views;
   post_transform_views.reserve(number_of_radial_grid_points_ *
                                tmpl::size<TagList>::value);
-  std::vector<const double*> post_transform_collocation_data;
+  std::vector<double*> post_transform_collocation_data;
   post_transform_collocation_data.reserve(2 * number_of_radial_grid_points_ *
                                           tmpl::size<TagList>::value);
 
-  // for each tag in `TagList`, construct a ComplexDataView at the
-  // appropriate locations, then retrieve its real and imaginary data and put
-  // it in subsequent slots in the pre_transform_collocation_data
-  size_t num_transforms = 0;
-  tmpl::for_each<TagList>([&post_transform_collocation_data, &num_transforms,
+  // libsharp considers two arrays per transform when spin is not zero.
+  const size_t num_transforms = (Spin == 0 ? 2 : 1) *
+                                number_of_radial_grid_points_ *
+                                tmpl::size<TagList>::value;
+
+  tmpl::for_each<TagList>([&post_transform_collocation_data,
                            &post_transform_views, &output, this](auto x) {
-    using transform_var_tag = typename decltype(x)::type;
-    decltype(auto) output_vector = get(get<transform_var_tag>(*output)).data();
-    for (size_t i = 0; i < number_of_radial_grid_points_; ++i) {
-      post_transform_views.push_back(detail::ComplexDataView<Representation>{
-          make_not_null(&output_vector), collocation_metadata_->size(),
-          i * collocation_metadata_->size()});
-      post_transform_collocation_data.push_back(
-          post_transform_views.back().real_data());
-      post_transform_collocation_data.push_back(
-          post_transform_views.back().imag_data());
-      // libsharp considers two arrays per transform when spin is not zero.
-      num_transforms += (spin == 0 ? 2 : 1);
-    }
+    detail::append_libsharp_collocation_pointers(
+        make_not_null(&post_transform_collocation_data),
+        make_not_null(&post_transform_views),
+        make_not_null(&get(get<typename decltype(x)::type>(*output)).data()),
+        l_max_, true);
   });
 
-  sharp_execute(SHARP_ALM2MAP, abs(spin), pre_transform_coefficient_data.data(),
-                post_transform_collocation_data.data(),
-                collocation_metadata_->get_sharp_geom_info(), alm_info_,
-                num_transforms, SHARP_DP, nullptr, nullptr);
+  detail::execute_libsharp_transform_set(
+      SHARP_ALM2MAP, spin, make_not_null(&pre_transform_coefficient_data),
+      make_not_null(&post_transform_collocation_data),
+      make_not_null(collocation_metadata_), alm_info_, num_transforms);
 
-  if (spin < 0) {
-    // the conjugate is needed because libsharp doesn't handle negative spins.
-    for (auto& view : post_transform_views) {
-      view.conjugate();
-    }
-  }
+  detail::conjugate_views<Spin>(make_not_null(&post_transform_views));
 
   // The inverse transformed collocation data has just been placed in the
   // memory blocks controlled by the `ComplexDataView`s. Finally, that data
@@ -368,6 +405,106 @@ void TransformJob<Spin, Representation, TagList>::execute_inverse_transform(
     view.copy_back_to_source();
   }
 }
+
+// @{
+/*!
+ * \ingroup SwshGroup
+ * \brief Perform a forward libsharp spin-weighted spherical harmonic transform
+ * on a supplied `SpinWeighted<ComplexDataVector, Spin>`.
+ *
+ * \details This function places the result in a
+ * `SpinWeighted<ComplexModalVector, Spin>` either returned via the provided
+ * pointer or by value (causing an allocation) if no pointer is provided. This
+ * is a simpler interface to the same functionality as `TransformJob`. This
+ * function is most suitable if only a small number of quantities will be
+ * transformed. If many quantities are simultaneously transformed and
+ * performance is desired, consider creating a `TransformJob`, or set of
+ * `TransformJob`s from a tag list, potentially using `make_transform_job_list`.
+ *
+ * template parameters:
+ * - `Representation`: Either `ComplexRepresentation::Interleaved` or
+ * `ComplexRepresentation::RealsThenImags`, indicating the representation for
+ * intermediate steps of the transformation. The two representations will give
+ * identical results but may help or hurt performance depending on the task.
+ * If unspecified, defaults to `ComplexRepresentation::Interleaved`.
+ * - `Spin`: The spin-weight of the quantity being transformed.
+ *
+ * The result is a set of libsharp-compatible coefficients.
+ * \see TransformJob for more details on the mathematics of the libsharp
+ * data structures.
+ *
+ * \warning The `collocation` is taken by const reference, but can be
+ * temporarily altered in-place during intermediate parts of the computation.
+ * The input data is guaranteed to return to its original state by the end of
+ * the function. In a setting in which multiple threads access the same data
+ * passed as input to this function, a lock must be used to prevent access
+ * during the execution of the transform.
+ */
+template <
+    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
+    int Spin>
+void swsh_transform(gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
+                        libsharp_coefficients,
+                    const SpinWeighted<ComplexDataVector, Spin>& collocation,
+                    size_t l_max) noexcept;
+
+template <
+    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
+    int Spin>
+SpinWeighted<ComplexModalVector, Spin> swsh_transform(
+    const SpinWeighted<ComplexDataVector, Spin>& collocation,
+    size_t l_max) noexcept;
+// @}
+
+// @{
+/*!
+ * \ingroup SwshGroup
+ * \brief Perform an inverse libsharp spin-weighted spherical harmonic transform
+ * on a supplied `SpinWeighted<ComplexModalVector, Spin>`.
+ *
+ * \details This function places the result in a
+ * `SpinWeighted<ComplexDataVector, Spin>` either returned via the provided
+ * pointer or by value (causing an allocation) if no pointer is provided. This
+ * is a simpler interface to the same functionality as `TransformJob`. This
+ * function is most suitable if only a small number of quantities will be
+ * transformed. If many quantities are simultaneously transformed and
+ * performance is desired, consider creating a `TransformJob`, or set of
+ * `TransformJob`s from a tag list, potentially using `make_transform_job_list`.
+ *
+ * template parameters:
+ * - `Representation`: Either `ComplexRepresentation::Interleaved` or
+ * `ComplexRepresentation::RealsThenImags`, indicating the representation for
+ * intermediate steps of the transformation. The two representations will give
+ * identical results but may help or hurt performance depending on the task.
+ * If unspecified, defaults to `ComplexRepresentation::Interleaved`.
+ * - `Spin`: The spin-weight of the quantity being transformed.
+ *
+ * The result is a set of libsharp-compatible collocation values.
+ * \see TransformJob for more details on the mathematics of the libsharp
+ * data structures.
+ *
+ * \warning The `libsharp_coefficients` is taken by const reference, but can
+ * be temporarily altered in-place during intermediate parts of the computation.
+ * The input data is guaranteed to return to its original state by the end of
+ * the function. In a setting in which multiple threads access the same data
+ * passed as input to this function, a lock must be used to prevent access
+ * during the execution of the transform.
+ */
+template <
+    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
+    int Spin>
+void inverse_swsh_transform(
+    gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> collocation,
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_coefficients,
+    size_t l_max) noexcept;
+
+template <
+    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
+    int Spin>
+SpinWeighted<ComplexDataVector, Spin> inverse_swsh_transform(
+    const SpinWeighted<ComplexModalVector, Spin>& libsharp_coefficients,
+    size_t l_max) noexcept;
+// @}
 
 namespace detail {
 template <typename Job>
@@ -379,12 +516,12 @@ struct transform_job_is_not_empty<
 
 template <int MinSpin, ComplexRepresentation Representation, typename TagList,
           typename IndexSequence>
-struct make_swsh_transform_job_list_impl;
+struct make_transform_job_list_impl;
 
 template <int MinSpin, ComplexRepresentation Representation, typename TagList,
           int... Is>
-struct make_swsh_transform_job_list_impl<MinSpin, Representation, TagList,
-                                         std::integer_sequence<int, Is...>> {
+struct make_transform_job_list_impl<MinSpin, Representation, TagList,
+                                    std::integer_sequence<int, Is...>> {
   using type = tmpl::filter<
       tmpl::list<TransformJob<Is + MinSpin, Representation,
                               get_tags_with_spin<Is + MinSpin, TagList>>...>,
@@ -398,17 +535,16 @@ struct make_swsh_transform_job_list_impl<MinSpin, Representation, TagList,
 /// `ComplexRepresentation` to use for the transformations.
 ///
 /// \details Up to five `TransformJob` will be returned, corresponding to
-/// the possible spin values. Any number of transformations are aggregated into
-/// that set of `TransformJob`s. The number of transforms is up to five because
-/// the libsharp utility only has capability to perform spin-weighted spherical
-/// harmonic transforms for integer spin-weights from -2 to 2.
+/// the possible spin values. Any number of transformations are aggregated
+/// into that set of `TransformJob`s. The number of transforms is up to five
+/// because the libsharp utility only has capability to perform spin-weighted
+/// spherical harmonic transforms for integer spin-weights from -2 to 2.
 ///
-/// \snippet Test_SwshTransformJob.cpp make_swsh_transform_job_list
+/// \snippet Test_SwshTransform.cpp make_transform_job_list
 template <ComplexRepresentation Representation, typename TagList>
-using make_swsh_transform_job_list =
-    typename detail::make_swsh_transform_job_list_impl<
-        -2, Representation, TagList,
-        decltype(std::make_integer_sequence<int, 5>{})>::type;
+using make_transform_job_list = typename detail::make_transform_job_list_impl<
+    -2, Representation, TagList,
+    decltype(std::make_integer_sequence<int, 5>{})>::type;
 
 /// \ingroup SpectralGroup
 /// \brief Assemble a `tmpl::list` of `TransformJob`s given a list of
@@ -420,10 +556,10 @@ using make_swsh_transform_job_list =
 /// derivative routine, where one transforms the set of fields for which
 /// derivatives are required.
 ///
-/// \snippet Test_SwshTransformJob.cpp make_swsh_transform_from_derivative_tags
+/// \snippet Test_SwshTransform.cpp make_transform_from_derivative_tags
 template <ComplexRepresentation Representation, typename DerivativeTagList>
-using make_swsh_transform_job_list_from_derivative_tags =
-    typename detail::make_swsh_transform_job_list_impl<
+using make_transform_job_list_from_derivative_tags =
+    typename detail::make_transform_job_list_impl<
         -2, Representation,
         tmpl::transform<DerivativeTagList,
                         tmpl::bind<db::remove_tag_prefix, tmpl::_1>>,

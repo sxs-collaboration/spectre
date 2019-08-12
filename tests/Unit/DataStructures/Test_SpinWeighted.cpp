@@ -192,6 +192,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SpinWeighted",
   CHECK(size_and_value_created_spin_weight_m2.data() ==
         ComplexDataVector{5, 4.0});
   CHECK(size_and_value_created_spin_weight_m2.size() == 5);
+
+  // test destructive resize for vector type
+  SpinWeighted<ComplexDataVector, 2> destructive_resize_check{5, 4.0};
+  const SpinWeighted<ComplexDataVector, 2> destructive_resize_copy =
+      destructive_resize_check;
+  // check unchanged if no resize
+  destructive_resize_check.destructive_resize(5);
+  CHECK(destructive_resize_check == destructive_resize_copy);
+  // check resize occurs if appropriate
+  destructive_resize_check.destructive_resize(6);
+  CHECK(destructive_resize_check != destructive_resize_copy);
+  CHECK(destructive_resize_check.size() == destructive_resize_copy.size() + 1);
 }
 
 /// \cond HIDDEN_SYMBOLS
