@@ -20,7 +20,9 @@
 #include <ostream>
 #include <stack>
 #include <string>
-namespace PUP { class er; }
+namespace PUP {
+class er;
+}  // namespace PUP
 
 namespace tuples {
 
@@ -115,9 +117,8 @@ constexpr char expand_pack(Ts&&... /*unused*/) noexcept {
 }  // namespace tuples_detail
 
 namespace tuples_detail {
-template <class Tag,
-          bool Ebo = std::is_empty<typename Tag::type>::value &&
-                     !__is_final(typename Tag::type)>
+template <class Tag, bool Ebo = std::is_empty<typename Tag::type>::value &&
+                                !__is_final(typename Tag::type)>
 class TaggedTupleLeaf;
 
 template <class T, bool B>
@@ -272,8 +273,7 @@ template <class... Tags>
 class TaggedTuple;
 
 template <class Tag, class... Tags>
-constexpr const typename Tag::type& get(
-    const TaggedTuple<Tags...>& t) noexcept;
+constexpr const typename Tag::type& get(const TaggedTuple<Tags...>& t) noexcept;
 template <class Tag, class... Tags>
 constexpr typename Tag::type& get(TaggedTuple<Tags...>& t) noexcept;
 template <class Tag, class... Tags>
@@ -356,9 +356,8 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
   }
 
   // C++17 Draft 23.5.3.1 Construction
-  template <bool Dummy = true,
-            typename std::enable_if<
-                args_constructor<Dummy>::enable_default()>::type* = nullptr>
+  template <bool Dummy = true, typename std::enable_if<args_constructor<
+                                   Dummy>::enable_default()>::type* = nullptr>
   // clang-tidy: use = default, can't because won't compile
   constexpr TaggedTuple() noexcept(  // NOLINT
       tuples_detail::all<std::is_nothrow_default_constructible<

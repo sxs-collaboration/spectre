@@ -41,13 +41,13 @@ struct array {
 
   constexpr iterator begin() noexcept {
     return iterator(data_);  // NOLINT
-}
+  }
   constexpr const_iterator begin() const noexcept {
     return const_iterator(data_);  // NOLINT
   }
   constexpr iterator end() noexcept {
     return iterator(data_ + Size);  // NOLINT
-}
+  }
   constexpr const_iterator end() const noexcept {
     return const_iterator(data_ + Size);  // NOLINT
   }

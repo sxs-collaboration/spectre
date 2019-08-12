@@ -53,7 +53,6 @@ class BlockId {
   }
 
  private:
-
   size_t id_{0};
 };
 
