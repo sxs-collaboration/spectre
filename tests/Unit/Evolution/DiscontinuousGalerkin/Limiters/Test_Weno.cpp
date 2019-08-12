@@ -274,6 +274,9 @@ void test_weno_tci_1d() noexcept {
   }
   ();
 
+  // These means lead to slopes (as estimated from the difference of means
+  // between neighboring elements) that are larger than or less than the mean
+  // local slope. This should lead the MinmodTci to not activate, or activate.
   const std::array<double, 2> means_no_activation = {{5., -0.7}};
   const std::array<double, 2> means_activation = {{5., -0.6}};
 
@@ -293,8 +296,8 @@ void test_weno_tci_2d() noexcept {
   }
   ();
 
-  const std::array<double, 4> means_no_activation = {{-1., 1., -1., 1.}};
-  const std::array<double, 4> means_activation = {{-1., 1., -1., 0.9}};
+  const std::array<double, 4> means_no_activation = {{-1.1, 1.1, -1.1, 1.1}};
+  const std::array<double, 4> means_activation = {{-1.1, 1.1, -1.1, 0.9}};
 
   test_weno_tci_work(mesh, scalar, means_no_activation, means_activation);
 }
@@ -314,9 +317,9 @@ void test_weno_tci_3d() noexcept {
   ();
 
   const std::array<double, 6> means_no_activation = {
-      {-1., 1., -1., 1., 0.2, -0.2}};
+      {-1.1, 1.1, -1.1, 1.1, 0.25, -0.25}};
   const std::array<double, 6> means_activation = {
-      {-1., 1., -1., 1., 0.1, -0.2}};
+      {-1.1, 1.1, -1.1, 1.1, 0.1, -0.25}};
 
   test_weno_tci_work(mesh, scalar, means_no_activation, means_activation);
 }
