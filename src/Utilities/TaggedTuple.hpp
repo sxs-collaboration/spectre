@@ -714,7 +714,8 @@ using tagged_tuple_from_typelist =
 
 /// Stream operator for TaggedTuple
 template <class... Tags>
-std::ostream& operator<<(std::ostream& os, const TaggedTuple<Tags...>& t) {
+std::ostream& operator<<(std::ostream& os,
+                         const TaggedTuple<Tags...>& t) noexcept {
   os << "(";
   size_t current_value = 0;
   auto helper = make_overloader(

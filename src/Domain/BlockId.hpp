@@ -64,7 +64,8 @@ inline bool operator!=(const BlockId& lhs, const BlockId& rhs) noexcept {
   return not(lhs == rhs);
 }
 
-inline std::ostream& operator<<(std::ostream& os, const BlockId& block_id) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const BlockId& block_id) noexcept {
   return os << '[' << block_id.get_index() << ']';
 }
 
