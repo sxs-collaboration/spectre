@@ -63,7 +63,7 @@ struct CylindricalBlastWaveProxy : grmhd::AnalyticData::CylindricalBlastWave {
 
 void test_create_from_options() noexcept {
   const auto cylindrical_blast_wave =
-      test_creation<grmhd::AnalyticData::CylindricalBlastWave>(
+      TestHelpers::test_creation<grmhd::AnalyticData::CylindricalBlastWave>(
           "  InnerRadius: 0.8\n"
           "  OuterRadius: 1.0\n"
           "  InnerDensity: 1.0e-2\n"

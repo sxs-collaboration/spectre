@@ -116,7 +116,7 @@ void test_minkowski(const T& value) {
 
 template <size_t Dim>
 void test_option_creation() {
-  test_creation<gr::Solutions::Minkowski<Dim>>("");
+  TestHelpers::test_creation<gr::Solutions::Minkowski<Dim>>("");
 }
 }  // namespace
 

@@ -68,7 +68,7 @@ struct KomissarovShockProxy : grmhd::Solutions::KomissarovShock {
 
 void test_create_from_options() noexcept {
   const auto komissarov_shock =
-      test_creation<grmhd::Solutions::KomissarovShock>(
+      TestHelpers::test_creation<grmhd::Solutions::KomissarovShock>(
           "  AdiabaticIndex: 1.33\n"
           "  LeftDensity: 1.\n"
           "  RightDensity: 3.323\n"

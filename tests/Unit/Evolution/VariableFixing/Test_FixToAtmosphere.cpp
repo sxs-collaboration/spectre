@@ -106,7 +106,7 @@ void test_variable_fixer() noexcept {
   test_serialization(variable_fixer_1d);
 
   const auto fixer_from_options_1d =
-      test_creation<VariableFixing::FixToAtmosphere<Dim, 1>>(
+      TestHelpers::test_creation<VariableFixing::FixToAtmosphere<Dim, 1>>(
           "  DensityOfAtmosphere: 1.0e-12\n"
           "  DensityCutoff: 1.0e-11\n");
   test_variable_fixer<Dim>(fixer_from_options_1d);
@@ -117,7 +117,7 @@ void test_variable_fixer() noexcept {
   test_serialization(variable_fixer_2d);
 
   const auto fixer_from_options_2d =
-      test_creation<VariableFixing::FixToAtmosphere<Dim, 2>>(
+      TestHelpers::test_creation<VariableFixing::FixToAtmosphere<Dim, 2>>(
           "  DensityOfAtmosphere: 1.0e-12\n"
           "  DensityCutoff: 1.0e-11\n");
   test_variable_fixer<Dim>(fixer_from_options_2d);

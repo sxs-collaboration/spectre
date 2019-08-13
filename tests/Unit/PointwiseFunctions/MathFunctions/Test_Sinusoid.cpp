@@ -66,7 +66,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid",
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid.Factory",
                   "[PointwiseFunctions][Unit]") {
-  test_factory_creation<MathFunction<1>>(
+  TestHelpers::test_factory_creation<MathFunction<1>>(
       "  Sinusoid:\n"
       "    Amplitude: 3\n"
       "    Wavenumber: 2\n"

@@ -27,7 +27,7 @@
 namespace {
 
 void test_create_from_options() noexcept {
-  const auto star = test_creation<
+  const auto star = TestHelpers::test_creation<
       RelativisticEuler::Solutions::TovStar<gr::Solutions::TovSolution>>(
       "  CentralDensity: 1.0e-5\n"
       "  PolytropicConstant: 0.001\n"

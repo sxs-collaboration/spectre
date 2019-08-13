@@ -72,5 +72,5 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticData.GrMhd.OrszagTangVortex",
   test_variables(DataVector(5));
 
   test_serialization(OrszagTangVortex{});
-  test_creation<OrszagTangVortex>("");
+  TestHelpers::test_creation<OrszagTangVortex>("");
 }

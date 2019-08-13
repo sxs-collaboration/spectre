@@ -51,7 +51,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
           1.25);
   }
 
-  test_factory_creation<StepChooserType>(
+  TestHelpers::test_factory_creation<StepChooserType>(
       "  Increase:\n"
       "    Factor: 5.0");
 }

@@ -103,7 +103,7 @@ void test_solution(const DataType& used_for_size,
                                  Dim, Frame::Inertial, DataType>>{}))));
 
   const auto solution_from_options =
-      test_creation<RelativisticEuler::Solutions::SmoothFlow<Dim>>(
+      TestHelpers::test_creation<RelativisticEuler::Solutions::SmoothFlow<Dim>>(
           "  MeanVelocity: " + mean_velocity_opt +
           "\n"
           "  WaveVector: " +

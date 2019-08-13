@@ -76,7 +76,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory",
                   "[PointwiseFunctions][Unit]") {
-  test_factory_creation<MathFunction<1>>(
+  TestHelpers::test_factory_creation<MathFunction<1>>(
       "  Gaussian:\n"
       "    Amplitude: 3\n"
       "    Width: 2\n"

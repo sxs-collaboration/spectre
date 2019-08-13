@@ -68,16 +68,17 @@ struct MagnetizedFmDiskProxy : grmhd::AnalyticData::MagnetizedFmDisk {
 };
 
 void test_create_from_options() noexcept {
-  const auto disk = test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
-      "  BhMass: 1.3\n"
-      "  BhDimlessSpin: 0.345\n"
-      "  InnerEdgeRadius: 6.123\n"
-      "  MaxPressureRadius: 14.2\n"
-      "  PolytropicConstant: 0.065\n"
-      "  PolytropicExponent: 1.654\n"
-      "  ThresholdDensity: 0.42\n"
-      "  InversePlasmaBeta: 85.0\n"
-      "  BFieldNormGridRes: 6");
+  const auto disk =
+      TestHelpers::test_creation<grmhd::AnalyticData::MagnetizedFmDisk>(
+          "  BhMass: 1.3\n"
+          "  BhDimlessSpin: 0.345\n"
+          "  InnerEdgeRadius: 6.123\n"
+          "  MaxPressureRadius: 14.2\n"
+          "  PolytropicConstant: 0.065\n"
+          "  PolytropicExponent: 1.654\n"
+          "  ThresholdDensity: 0.42\n"
+          "  InversePlasmaBeta: 85.0\n"
+          "  BFieldNormGridRes: 6");
   CHECK(disk == grmhd::AnalyticData::MagnetizedFmDisk(
                     1.3, 0.345, 6.123, 14.2, 0.065, 1.654, 0.42, 85.0, 6));
 }

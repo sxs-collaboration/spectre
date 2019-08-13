@@ -46,7 +46,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.RadiallyFallingFloor",
   test_serialization(variable_fixer);
 
   const auto fixer_from_options =
-      test_creation<VariableFixing::RadiallyFallingFloor<3>>(
+      TestHelpers::test_creation<VariableFixing::RadiallyFallingFloor<3>>(
           "  MinimumRadius: 1.e-4\n"
           "  ScaleDensityFloor: 1.e-5\n"
           "  PowerDensityFloor: -1.5\n"

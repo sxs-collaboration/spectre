@@ -59,14 +59,15 @@ struct MagneticRotorProxy : grmhd::AnalyticData::MagneticRotor {
 };
 
 void test_create_from_options() noexcept {
-  const auto magnetic_rotor = test_creation<grmhd::AnalyticData::MagneticRotor>(
-      "  RotorRadius: 0.1\n"
-      "  RotorDensity: 10.0\n"
-      "  BackgroundDensity: 1.0\n"
-      "  Pressure: 1.0\n"
-      "  AngularVelocity: 9.95\n"
-      "  MagneticField: [3.5449077018, 0.0, 0.0]\n"
-      "  AdiabaticIndex: 1.6666666666666666");
+  const auto magnetic_rotor =
+      TestHelpers::test_creation<grmhd::AnalyticData::MagneticRotor>(
+          "  RotorRadius: 0.1\n"
+          "  RotorDensity: 10.0\n"
+          "  BackgroundDensity: 1.0\n"
+          "  Pressure: 1.0\n"
+          "  AngularVelocity: 9.95\n"
+          "  MagneticField: [3.5449077018, 0.0, 0.0]\n"
+          "  AdiabaticIndex: 1.6666666666666666");
   CHECK(magnetic_rotor == grmhd::AnalyticData::MagneticRotor(
                               0.1, 10.0, 1.0, 1.0, 9.95,
                               std::array<double, 3>{{3.5449077018, 0.0, 0.0}},

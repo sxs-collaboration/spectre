@@ -78,7 +78,7 @@ void test_solution(const double density, const double radius,
       make_with_value<Scalar<DataVector>>(far_away_coords, 1.));
 
   Xcts::Solutions::ConstantDensityStar created_solution =
-      test_creation<Xcts::Solutions::ConstantDensityStar>(options);
+      TestHelpers::test_creation<Xcts::Solutions::ConstantDensityStar>(options);
   CHECK(created_solution == solution);
   test_serialization(solution);
 }

@@ -10,6 +10,7 @@
 #include "Options/ParseOptions.hpp"
 #include "Utilities/NoSuchType.hpp"
 
+namespace TestHelpers {
 namespace TestCreation_detail {
 template <typename T>
 struct Opt {
@@ -34,7 +35,7 @@ T test_creation(const std::string& construction_string) noexcept {
 template <typename BaseClass, typename Metavariables = NoSuchType>
 std::unique_ptr<BaseClass> test_factory_creation(
     const std::string& construction_string) noexcept {
-  return test_creation<std::unique_ptr<BaseClass>, Metavariables>(
+  return TestHelpers::test_creation<std::unique_ptr<BaseClass>, Metavariables>(
       construction_string);
 }
 
@@ -50,3 +51,4 @@ T test_enum_creation(const std::string& enum_string) noexcept {
   options.parse("Opt: " + enum_string);
   return options.template get<TestCreation_detail::Opt<T>, Metavariables>();
 }
+}  // namespace TestHelpers

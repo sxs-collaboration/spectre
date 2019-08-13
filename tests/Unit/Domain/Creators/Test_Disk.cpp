@@ -141,7 +141,7 @@ void test_disk_boundaries_equiangular() {
 
 void test_disk_factory_equiangular() {
   INFO("Disk factory equiangular");
-  const auto disk = test_factory_creation<DomainCreator<2>>(
+  const auto disk = TestHelpers::test_factory_creation<DomainCreator<2>>(
       "  Disk:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -172,7 +172,7 @@ void test_disk_boundaries_equidistant() {
 
 void test_disk_factory_equidistant() {
   INFO("Disk factory equidistant");
-  const auto disk = test_factory_creation<DomainCreator<2>>(
+  const auto disk = TestHelpers::test_factory_creation<DomainCreator<2>>(
       "  Disk:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"

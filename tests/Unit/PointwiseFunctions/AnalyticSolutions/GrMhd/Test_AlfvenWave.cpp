@@ -69,7 +69,7 @@ struct AlfvenWaveProxy : grmhd::Solutions::AlfvenWave {
 };
 
 void test_create_from_options() noexcept {
-  const auto wave = test_creation<grmhd::Solutions::AlfvenWave>(
+  const auto wave = TestHelpers::test_creation<grmhd::Solutions::AlfvenWave>(
       "  WaveNumber: 2.2\n"
       "  Pressure: 1.23\n"
       "  RestMassDensity: 0.2\n"

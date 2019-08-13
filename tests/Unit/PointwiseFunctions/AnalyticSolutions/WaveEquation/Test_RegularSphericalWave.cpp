@@ -64,7 +64,7 @@ SPECTRE_TEST_CASE("Unit.AnalyticSolutions.WaveEquation.RegularSphericalWave",
                         DataVector({{0., 0., 0., 0.}}));
 
   const auto created_solution =
-      test_creation<ScalarWave::Solutions::RegularSphericalWave>(
+      TestHelpers::test_creation<ScalarWave::Solutions::RegularSphericalWave>(
           "  Profile:\n"
           "    Gaussian:\n"
           "      Amplitude: 1.\n"

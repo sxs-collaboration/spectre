@@ -206,7 +206,7 @@ void test_cylinder_boundaries_equiangular() {
 
 void test_cylinder_factory_equiangular() {
   INFO("Cylinder factory equiangular");
-  const auto cylinder = test_factory_creation<DomainCreator<3>>(
+  const auto cylinder = TestHelpers::test_factory_creation<DomainCreator<3>>(
       "  Cylinder:\n"
       "    InnerRadius: 1.0\n"
       "    OuterRadius: 3.0\n"
@@ -244,7 +244,7 @@ void test_cylinder_boundaries_equidistant() {
 
 void test_cylinder_factory_equidistant() {
   INFO("Cylinder factory equidistant");
-  const auto cylinder = test_factory_creation<DomainCreator<3>>(
+  const auto cylinder = TestHelpers::test_factory_creation<DomainCreator<3>>(
       "  Cylinder:\n"
       "    InnerRadius: 1.0\n"
       "    OuterRadius: 3.0\n"
@@ -282,7 +282,7 @@ void test_cylinder_boundaries_equiangular_not_periodic_in_z() {
 
 void test_cylinder_factory_equiangular_not_periodic_in_z() {
   INFO("Cylinder factory equiangular not periodic in z");
-  const auto cylinder = test_factory_creation<DomainCreator<3>>(
+  const auto cylinder = TestHelpers::test_factory_creation<DomainCreator<3>>(
       "  Cylinder:\n"
       "    InnerRadius: 1.0\n"
       "    OuterRadius: 3.0\n"
@@ -321,7 +321,7 @@ void test_cylinder_boundaries_equidistant_not_periodic_in_z() {
 
 void test_cylinder_factory_equidistant_not_periodic_in_z() {
   INFO("Cylinder factory equidistant not periodic in z");
-  const auto cylinder = test_factory_creation<DomainCreator<3>>(
+  const auto cylinder = TestHelpers::test_factory_creation<DomainCreator<3>>(
       "  Cylinder:\n"
       "    InnerRadius: 1.0\n"
       "    OuterRadius: 3.0\n"

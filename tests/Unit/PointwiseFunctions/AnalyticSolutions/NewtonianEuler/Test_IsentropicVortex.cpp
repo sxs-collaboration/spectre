@@ -78,8 +78,9 @@ void test_solution(
     input += "\n  PerturbAmplitude: " + perturbation_amplitude_option;
   }
 
-  const auto vortex_from_options =
-      test_creation<NewtonianEuler::Solutions::IsentropicVortex<Dim>>(input);
+  const auto vortex_from_options = TestHelpers::test_creation<
+      NewtonianEuler::Solutions::IsentropicVortex<Dim>>(input);
+
   CHECK(vortex_from_options == vortex);
 
   IsentropicVortexProxy<Dim> vortex_to_move(1.43, center, mean_velocity, 3.76,

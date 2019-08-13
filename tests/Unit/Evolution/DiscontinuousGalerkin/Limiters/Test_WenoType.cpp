@@ -11,9 +11,9 @@
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoType", "[Limiters][Unit]") {
   CHECK(Limiters::WenoType::Hweno ==
-        test_enum_creation<Limiters::WenoType>("Hweno"));
+        TestHelpers::test_enum_creation<Limiters::WenoType>("Hweno"));
   CHECK(Limiters::WenoType::SimpleWeno ==
-        test_enum_creation<Limiters::WenoType>("SimpleWeno"));
+        TestHelpers::test_enum_creation<Limiters::WenoType>("SimpleWeno"));
 
   CHECK(get_output(Limiters::WenoType::Hweno) == "Hweno");
   CHECK(get_output(Limiters::WenoType::SimpleWeno) == "SimpleWeno");
@@ -23,5 +23,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoType", "[Limiters][Unit]") {
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoType.OptionParseError",
                   "[Limiters][Unit]") {
   ERROR_TEST();
-  test_enum_creation<Limiters::WenoType>("BadType");
+  TestHelpers::test_enum_creation<Limiters::WenoType>("BadType");
 }

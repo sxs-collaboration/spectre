@@ -37,23 +37,23 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.IdealFluid",
                                        "ideal_fluid", dv_for_size, 4.0 / 3.0);
 
   TestHelpers::EquationsOfState::check(
-      test_factory_creation<EoS::EquationOfState<true, 2>>(
+      TestHelpers::test_factory_creation<EoS::EquationOfState<true, 2>>(
           {"  IdealFluid:\n"
            "    AdiabaticIndex: 1.6666666666666667\n"}),
       "ideal_fluid", d_for_size, 5.0 / 3.0);
   TestHelpers::EquationsOfState::check(
-      test_factory_creation<EoS::EquationOfState<true, 2>>(
+      TestHelpers::test_factory_creation<EoS::EquationOfState<true, 2>>(
           {"  IdealFluid:\n"
            "    AdiabaticIndex: 1.3333333333333333\n"}),
       "ideal_fluid", dv_for_size, 4.0 / 3.0);
 
   TestHelpers::EquationsOfState::check(
-      test_factory_creation<EoS::EquationOfState<false, 2>>(
+      TestHelpers::test_factory_creation<EoS::EquationOfState<false, 2>>(
           {"  IdealFluid:\n"
            "    AdiabaticIndex: 1.6666666666666667\n"}),
       "ideal_fluid", d_for_size, 5.0 / 3.0);
   TestHelpers::EquationsOfState::check(
-      test_factory_creation<EoS::EquationOfState<false, 2>>(
+      TestHelpers::test_factory_creation<EoS::EquationOfState<false, 2>>(
           {"  IdealFluid:\n"
            "    AdiabaticIndex: 1.3333333333333333\n"}),
       "ideal_fluid", dv_for_size, 4.0 / 3.0);

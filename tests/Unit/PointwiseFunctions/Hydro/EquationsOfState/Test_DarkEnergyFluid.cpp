@@ -38,23 +38,23 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.DarkEnergyFluid",
                                        1.0 / 3.0);
 
   TestHelpers::EquationsOfState::check(
-      test_factory_creation<EoS::EquationOfState<true, 2>>(
+      TestHelpers::test_factory_creation<EoS::EquationOfState<true, 2>>(
           {"  DarkEnergyFluid:\n"
            "    ParameterW: 1.0\n"}),
       "dark_energy_fluid", d_for_size, 1.0);
   TestHelpers::EquationsOfState::check(
-      test_factory_creation<EoS::EquationOfState<true, 2>>(
+      TestHelpers::test_factory_creation<EoS::EquationOfState<true, 2>>(
           {"  DarkEnergyFluid:\n"
            "    ParameterW: 0.3333333333333333\n"}),
       "dark_energy_fluid", d_for_size, 1.0 / 3.0);
 
   TestHelpers::EquationsOfState::check(
-      test_factory_creation<EoS::EquationOfState<true, 2>>(
+      TestHelpers::test_factory_creation<EoS::EquationOfState<true, 2>>(
           {"  DarkEnergyFluid:\n"
            "    ParameterW: 1.0\n"}),
       "dark_energy_fluid", dv_for_size, 1.0);
   TestHelpers::EquationsOfState::check(
-      test_factory_creation<EoS::EquationOfState<true, 2>>(
+      TestHelpers::test_factory_creation<EoS::EquationOfState<true, 2>>(
           {"  DarkEnergyFluid:\n"
            "    ParameterW: 0.3333333333333333\n"}),
       "dark_energy_fluid", dv_for_size, 1.0 / 3.0);

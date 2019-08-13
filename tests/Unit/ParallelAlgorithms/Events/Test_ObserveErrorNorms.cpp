@@ -319,7 +319,7 @@ void test_system() noexcept {
       ObservationTimeTag, typename System::vars_for_test>>>;
   Parallel::register_derived_classes_with_charm<EventType>();
   const auto factory_event =
-      test_factory_creation<EventType>("  ObserveErrorNorms");
+      TestHelpers::test_factory_creation<EventType>("  ObserveErrorNorms");
   auto serialized_event = serialize_and_deserialize(factory_event);
   test_observe<System>(std::move(serialized_event));
 }

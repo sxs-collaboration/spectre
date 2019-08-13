@@ -58,7 +58,7 @@ void test_solution() {
       {{{0., 1.}}}, std::make_tuple(), DataVector(5));
 
   Poisson::Solutions::Moustache<Dim> created_solution =
-      test_creation<Poisson::Solutions::Moustache<Dim>>("  ");
+      TestHelpers::test_creation<Poisson::Solutions::Moustache<Dim>>("  ");
   CHECK(created_solution == solution);
   test_serialization(solution);
 }

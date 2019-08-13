@@ -158,7 +158,7 @@ void test_1d() {
       deserialized_pw, x, t);
 
   const auto created_solution =
-      test_creation<ScalarWave::Solutions::PlaneWave<1>>(
+      TestHelpers::test_creation<ScalarWave::Solutions::PlaneWave<1>>(
           "  WaveVector: [-1.5]\n"
           "  Center: [2.4]\n"
           "  Profile:\n"
@@ -218,7 +218,7 @@ void test_2d() {
       deserialized_pw, x, t);
 
   const auto created_solution =
-      test_creation<ScalarWave::Solutions::PlaneWave<2>>(
+      TestHelpers::test_creation<ScalarWave::Solutions::PlaneWave<2>>(
           "  WaveVector: [1.5, -7.2]\n"
           "  Center: [2.4, -4.8]\n"
           "  Profile:\n"
@@ -296,7 +296,7 @@ void test_3d() {
       deserialized_pw, x, t);
 
   const auto created_solution =
-      test_creation<ScalarWave::Solutions::PlaneWave<3>>(
+      TestHelpers::test_creation<ScalarWave::Solutions::PlaneWave<3>>(
           "  WaveVector: [1.5, -7.2, 2.7]\n"
           "  Center: [2.4, -4.8, 8.4]\n"
           "  Profile:\n"

@@ -206,7 +206,7 @@ void test_sphere_boundaries_equiangular() {
 
 void test_sphere_factory_equiangular() {
   INFO("Sphere factory equiangular");
-  const auto sphere = test_factory_creation<DomainCreator<3>>(
+  const auto sphere = TestHelpers::test_factory_creation<DomainCreator<3>>(
       "  Sphere:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -239,7 +239,7 @@ void test_sphere_boundaries_equidistant() {
 
 void test_sphere_factory_equidistant() {
   INFO("Sphere factory equidistant");
-  const auto sphere = test_factory_creation<DomainCreator<3>>(
+  const auto sphere = TestHelpers::test_factory_creation<DomainCreator<3>>(
       "  Sphere:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"

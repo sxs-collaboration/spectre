@@ -132,13 +132,14 @@ void test_rectangle() {
 
 void test_rectangle_factory() {
   INFO("Rectangle factory");
-  const auto domain_creator = test_factory_creation<DomainCreator<2>>(
-      "  Rectangle:\n"
-      "    LowerBound: [0,0]\n"
-      "    UpperBound: [1,2]\n"
-      "    IsPeriodicIn: [True,False]\n"
-      "    InitialGridPoints: [3,4]\n"
-      "    InitialRefinement: [2,3]\n");
+  const auto domain_creator =
+      TestHelpers::test_factory_creation<DomainCreator<2>>(
+          "  Rectangle:\n"
+          "    LowerBound: [0,0]\n"
+          "    UpperBound: [1,2]\n"
+          "    IsPeriodicIn: [True,False]\n"
+          "    InitialGridPoints: [3,4]\n"
+          "    InitialRefinement: [2,3]\n");
   const auto* rectangle_creator =
       dynamic_cast<const creators::Rectangle*>(domain_creator.get());
   test_rectangle_construction(

@@ -80,9 +80,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.LimitLorentzFactor",
     test_serialization(variable_fixer);
     test_variable_fixer(serialize_and_deserialize(variable_fixer));
 
-    const auto fixer_from_options = test_creation<LimitLorentzFactor>(
-        "  MaxDensityCutoff: 1.0e-4\n"
-        "  LorentzFactorCap: 50.0\n");
+    const auto fixer_from_options =
+        TestHelpers::test_creation<LimitLorentzFactor>(
+            "  MaxDensityCutoff: 1.0e-4\n"
+            "  LorentzFactorCap: 50.0\n");
     test_variable_fixer(fixer_from_options);
   }
 }

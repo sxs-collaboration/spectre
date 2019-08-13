@@ -75,7 +75,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
   test_serialization(variable_fixer);
 
   const auto fixer_from_options =
-      test_creation<VariableFixing::FixConservatives>(
+      TestHelpers::test_creation<VariableFixing::FixConservatives>(
           "  MinimumValueOfD: 1.0e-12\n"
           "  CutoffD: 1.0e-11\n"
           "  SafetyFactorForB: 0.0\n"

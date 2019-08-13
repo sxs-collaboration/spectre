@@ -100,7 +100,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX",
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.PowX.Factory",
                   "[PointwiseFunctions][Unit]") {
-  test_factory_creation<MathFunction<1>>("  PowX:\n    Power: 3");
+  TestHelpers::test_factory_creation<MathFunction<1>>("  PowX:\n    Power: 3");
   // Catch requires us to have at least one CHECK in each test
   // The Unit.PointwiseFunctions.MathFunctions.PowX.Factory does not need to
   // check anything

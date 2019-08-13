@@ -49,10 +49,11 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
                                                          {{2.4, 2.4, 2.4}}, 15);
 
   // Test creation of options
-  const auto created_opts = test_creation<intrp::OptionHolders::LineSegment<3>>(
-      "  Begin: [1.0, 1.0, 1.0]\n"
-      "  End: [2.4, 2.4, 2.4]\n"
-      "  NumberOfPoints: 15");
+  const auto created_opts =
+      TestHelpers::test_creation<intrp::OptionHolders::LineSegment<3>>(
+          "  Begin: [1.0, 1.0, 1.0]\n"
+          "  End: [2.4, 2.4, 2.4]\n"
+          "  NumberOfPoints: 15");
   CHECK(created_opts == line_segment_opts);
 
   const auto domain_creator =

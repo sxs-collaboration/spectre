@@ -218,7 +218,7 @@ template <size_t Dim>
 void test_exponential_filter_creation() noexcept {
   using Filter = Filters::Exponential<0>;
 
-  const Filter filter = test_creation<Filter>(
+  const Filter filter = TestHelpers::test_creation<Filter>(
       "  Alpha: 36\n"
       "  HalfPower: 32\n");
 

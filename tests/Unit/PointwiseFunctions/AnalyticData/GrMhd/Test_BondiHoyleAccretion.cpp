@@ -59,7 +59,7 @@ struct BondiHoyleAccretionProxy : grmhd::AnalyticData::BondiHoyleAccretion {
 
 void test_create_from_options() noexcept {
   const auto accretion =
-      test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
+      TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
           "  BhMass: 1.0\n"
           "  BhDimlessSpin: 0.23\n"
           "  RestMassDensity: 2.7\n"

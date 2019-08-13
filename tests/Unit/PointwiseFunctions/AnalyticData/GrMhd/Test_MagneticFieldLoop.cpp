@@ -60,7 +60,7 @@ struct MagneticFieldLoopProxy : grmhd::AnalyticData::MagneticFieldLoop {
 
 void test_create_from_options() noexcept {
   const auto magnetic_field_loop =
-      test_creation<grmhd::AnalyticData::MagneticFieldLoop>(
+      TestHelpers::test_creation<grmhd::AnalyticData::MagneticFieldLoop>(
           "  Pressure: 3.0\n"
           "  RestMassDensity: 1.0\n"
           "  AdiabaticIndex: 1.66666666666666667\n"
