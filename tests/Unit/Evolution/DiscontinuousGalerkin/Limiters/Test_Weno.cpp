@@ -69,19 +69,22 @@ void test_weno_option_parsing() noexcept {
 
   const auto hweno_1d =
       TestHelpers::test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
-          "  Type: Hweno");
+          "Type: Hweno");
   const auto hweno_1d_default_weight =
       TestHelpers::test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
-          "  Type: Hweno\n  NeighborWeight: 0.001");
+          "Type: Hweno\n"
+          "NeighborWeight: 0.001");
   const auto hweno_1d_larger_weight =
       TestHelpers::test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
-          "  Type: Hweno\n  NeighborWeight: 0.01");
+          "Type: Hweno\n"
+          "NeighborWeight: 0.01");
   const auto hweno_1d_disabled =
       TestHelpers::test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
-          "  Type: Hweno\n  DisableForDebugging: True");
+          "Type: Hweno\n"
+          "DisableForDebugging: True");
   const auto simple_weno_1d =
       TestHelpers::test_creation<Limiters::Weno<1, tmpl::list<ScalarTag>>>(
-          "  Type: SimpleWeno");
+          "Type: SimpleWeno");
 
   // Check neighbor_weight default from options, op==, op!=
   CHECK(hweno_1d == hweno_1d_default_weight);
@@ -91,10 +94,12 @@ void test_weno_option_parsing() noexcept {
 
   const auto hweno_2d =
       TestHelpers::test_creation<Limiters::Weno<2, tmpl::list<ScalarTag>>>(
-          "  Type: Hweno");
+          "Type: Hweno");
   const auto hweno_3d_larger_weight = TestHelpers::test_creation<
       Limiters::Weno<3, tmpl::list<ScalarTag, VectorTag<3>>>>(
-      "  Type: Hweno\n  NeighborWeight: 0.01\n  DisableForDebugging: True");
+      "Type: Hweno\n"
+      "NeighborWeight: 0.01\n"
+      "DisableForDebugging: True");
 
   // Check that creation from options gives correct object
   const Limiters::Weno<1, tmpl::list<ScalarTag>> expected_hweno_1d(

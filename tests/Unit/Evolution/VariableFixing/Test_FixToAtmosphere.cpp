@@ -107,9 +107,9 @@ void test_variable_fixer() noexcept {
 
   const auto fixer_from_options_1d =
       TestHelpers::test_creation<VariableFixing::FixToAtmosphere<Dim, 1>>(
-          "  DensityOfAtmosphere: 1.0e-12\n"
-          "  DensityCutoff: 1.0e-11\n");
-  test_variable_fixer<Dim>(fixer_from_options_1d);
+          "DensityOfAtmosphere: 1.0e-12\n"
+          "DensityCutoff: 1.0e-11\n");
+  test_variable_fixer(fixer_from_options_1d);
 
   // Test for representative 2-d equation of state
   VariableFixing::FixToAtmosphere<Dim, 2> variable_fixer_2d{1.e-12, 1.e-11};
@@ -118,8 +118,8 @@ void test_variable_fixer() noexcept {
 
   const auto fixer_from_options_2d =
       TestHelpers::test_creation<VariableFixing::FixToAtmosphere<Dim, 2>>(
-          "  DensityOfAtmosphere: 1.0e-12\n"
-          "  DensityCutoff: 1.0e-11\n");
+          "DensityOfAtmosphere: 1.0e-12\n"
+          "DensityCutoff: 1.0e-11\n");
   test_variable_fixer<Dim>(fixer_from_options_2d);
 }
 }  // namespace

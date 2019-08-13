@@ -38,27 +38,27 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.EquationsOfState.PolytropicFluid",
 
   TestHelpers::EquationsOfState::check(
       TestHelpers::test_factory_creation<EoS::EquationOfState<true, 1>>(
-          {"  PolytropicFluid:\n"
-           "    PolytropicConstant: 100.0\n"
-           "    PolytropicExponent: 2.0\n"}),
+          {"PolytropicFluid:\n"
+           "  PolytropicConstant: 100.0\n"
+           "  PolytropicExponent: 2.0\n"}),
       "polytropic", d_for_size, 100.0, 2.0);
   TestHelpers::EquationsOfState::check(
       TestHelpers::test_factory_creation<EoS::EquationOfState<true, 1>>(
-          {"  PolytropicFluid:\n"
-           "    PolytropicConstant: 134.0\n"
-           "    PolytropicExponent: 1.5\n"}),
+          {"PolytropicFluid:\n"
+           "  PolytropicConstant: 134.0\n"
+           "  PolytropicExponent: 1.5\n"}),
       "polytropic", dv_for_size, 134.0, 1.5);
 
   TestHelpers::EquationsOfState::check(
       TestHelpers::test_factory_creation<EoS::EquationOfState<false, 1>>(
-          {"  PolytropicFluid:\n"
-           "    PolytropicConstant: 121.0\n"
-           "    PolytropicExponent: 1.2\n"}),
+          {"PolytropicFluid:\n"
+           "  PolytropicConstant: 121.0\n"
+           "  PolytropicExponent: 1.2\n"}),
       "polytropic", d_for_size, 121.0, 1.2);
   TestHelpers::EquationsOfState::check(
       TestHelpers::test_factory_creation<EoS::EquationOfState<false, 1>>(
-          {"  PolytropicFluid:\n"
-           "    PolytropicConstant: 117.0\n"
-           "    PolytropicExponent: 1.12\n"}),
+          {"PolytropicFluid:\n"
+           "  PolytropicConstant: 117.0\n"
+           "  PolytropicExponent: 1.12\n"}),
       "polytropic", dv_for_size, 117.0, 1.12);
 }

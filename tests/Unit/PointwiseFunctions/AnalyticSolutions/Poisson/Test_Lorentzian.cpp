@@ -51,7 +51,7 @@ void test_solution() {
 
   const Poisson::Solutions::Lorentzian<Dim> check_solution{};
   const Poisson::Solutions::Lorentzian<Dim> created_solution =
-      TestHelpers::test_creation<Poisson::Solutions::Lorentzian<Dim>>("  ");
+      TestHelpers::test_creation<Poisson::Solutions::Lorentzian<Dim>>("");
   CHECK(created_solution == check_solution);
   test_serialization(check_solution);
 }

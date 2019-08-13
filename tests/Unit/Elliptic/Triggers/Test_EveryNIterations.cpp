@@ -33,9 +33,9 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Triggers.EveryNIterations",
   Parallel::register_derived_classes_with_charm<TriggerType>();
 
   const auto trigger = TestHelpers::test_factory_creation<TriggerType>(
-      "  EveryNIterations:\n"
-      "    N: 3\n"
-      "    Offset: 5");
+      "EveryNIterations:\n"
+      "  N: 3\n"
+      "  Offset: 5");
 
   const auto sent_trigger = serialize_and_deserialize(trigger);
 

@@ -61,11 +61,11 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   CHECK_FALSE(can_change(end, mid, start));
 
   TestHelpers::test_factory_creation<TimeStepper>(
-      "  AdamsBashforthN:\n"
-      "    Order: 3");
+      "AdamsBashforthN:\n"
+      "  Order: 3");
   TestHelpers::test_factory_creation<LtsTimeStepper>(
-      "  AdamsBashforthN:\n"
-      "    Order: 3");
+      "AdamsBashforthN:\n"
+      "  Order: 3");
 
   TimeSteppers::AdamsBashforthN ab4(4);
   test_serialization(ab4);

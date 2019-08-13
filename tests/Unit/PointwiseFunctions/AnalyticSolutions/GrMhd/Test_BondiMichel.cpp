@@ -65,11 +65,11 @@ struct BondiMichelProxy : grmhd::Solutions::BondiMichel {
 
 void test_create_from_options() noexcept {
   const auto flow = TestHelpers::test_creation<grmhd::Solutions::BondiMichel>(
-      "  Mass: 1.2\n"
-      "  SonicRadius: 5.0\n"
-      "  SonicDensity: 0.05\n"
-      "  PolytropicExponent: 1.4\n"
-      "  MagFieldStrength: 2.0");
+      "Mass: 1.2\n"
+      "SonicRadius: 5.0\n"
+      "SonicDensity: 0.05\n"
+      "PolytropicExponent: 1.4\n"
+      "MagFieldStrength: 2.0");
   CHECK(flow == grmhd::Solutions::BondiMichel(1.2, 5.0, 0.05, 1.4, 2.0));
 }
 

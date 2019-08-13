@@ -18,8 +18,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.Convergence.Criteria",
   test_copy_semantics(criteria);
   const auto created_criteria =
       TestHelpers::test_creation<Convergence::Criteria>(
-          "  MaxIterations: 2\n"
-          "  AbsoluteResidual: 0.1\n"
-          "  RelativeResidual: 0.5\n");
+          "MaxIterations: 2\n"
+          "AbsoluteResidual: 0.1\n"
+          "RelativeResidual: 0.5\n");
   CHECK(created_criteria == criteria);
 }

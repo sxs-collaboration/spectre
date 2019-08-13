@@ -36,8 +36,8 @@ void test_type_traits() {
   test_serialization(relation);
   const auto created_relation = TestHelpers::test_creation<
       Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim>>(
-      "  BulkModulus: 1.\n"
-      "  ShearModulus: 2.\n");
+      "BulkModulus: 1.\n"
+      "ShearModulus: 2.\n");
   CHECK(created_relation == relation);
   Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim> moved_relation{
       1., 2.};

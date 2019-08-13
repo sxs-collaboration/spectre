@@ -70,12 +70,12 @@ struct AlfvenWaveProxy : grmhd::Solutions::AlfvenWave {
 
 void test_create_from_options() noexcept {
   const auto wave = TestHelpers::test_creation<grmhd::Solutions::AlfvenWave>(
-      "  WaveNumber: 2.2\n"
-      "  Pressure: 1.23\n"
-      "  RestMassDensity: 0.2\n"
-      "  AdiabaticIndex: 1.4\n"
-      "  BkgdMagneticField: [0.0, 0.0, 2.0]\n"
-      "  WaveMagneticField: [0.75, 0.0, 0.0]");
+      "WaveNumber: 2.2\n"
+      "Pressure: 1.23\n"
+      "RestMassDensity: 0.2\n"
+      "AdiabaticIndex: 1.4\n"
+      "BkgdMagneticField: [0.0, 0.0, 2.0]\n"
+      "WaveMagneticField: [0.75, 0.0, 0.0]");
   CHECK(wave == grmhd::Solutions::AlfvenWave(2.2, 1.23, 0.2, 1.4,
                                              {{0.0, 0.0, 2.0}},
                                              {{0.75, 0.0, 0.0}}));

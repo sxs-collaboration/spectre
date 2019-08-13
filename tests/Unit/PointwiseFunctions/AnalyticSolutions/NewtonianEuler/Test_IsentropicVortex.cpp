@@ -80,7 +80,6 @@ void test_solution(
 
   const auto vortex_from_options = TestHelpers::test_creation<
       NewtonianEuler::Solutions::IsentropicVortex<Dim>>(input);
-
   CHECK(vortex_from_options == vortex);
 
   IsentropicVortexProxy<Dim> vortex_to_move(1.43, center, mean_velocity, 3.76,

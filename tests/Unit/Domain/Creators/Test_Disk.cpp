@@ -142,12 +142,12 @@ void test_disk_boundaries_equiangular() {
 void test_disk_factory_equiangular() {
   INFO("Disk factory equiangular");
   const auto disk = TestHelpers::test_factory_creation<DomainCreator<2>>(
-      "  Disk:\n"
-      "    InnerRadius: 1\n"
-      "    OuterRadius: 3\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3]\n"
-      "    UseEquiangularMap: true\n");
+          "Disk:\n"
+          "  InnerRadius: 1\n"
+          "  OuterRadius: 3\n"
+          "  InitialRefinement: 2\n"
+          "  InitialGridPoints: [2,3]\n"
+          "  UseEquiangularMap: true\n");
 
   const double inner_radius = 1.0, outer_radius = 3.0;
   const size_t refinement_level = 2;
@@ -173,12 +173,12 @@ void test_disk_boundaries_equidistant() {
 void test_disk_factory_equidistant() {
   INFO("Disk factory equidistant");
   const auto disk = TestHelpers::test_factory_creation<DomainCreator<2>>(
-      "  Disk:\n"
-      "    InnerRadius: 1\n"
-      "    OuterRadius: 3\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3]\n"
-      "    UseEquiangularMap: false\n");
+          "Disk:\n"
+          "  InnerRadius: 1\n"
+          "  OuterRadius: 3\n"
+          "  InitialRefinement: 2\n"
+          "  InitialGridPoints: [2,3]\n"
+          "  UseEquiangularMap: false\n");
 
   const double inner_radius = 1.0, outer_radius = 3.0;
   const size_t refinement_level = 2;

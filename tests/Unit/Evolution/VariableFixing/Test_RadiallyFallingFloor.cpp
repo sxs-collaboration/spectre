@@ -47,10 +47,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.RadiallyFallingFloor",
 
   const auto fixer_from_options =
       TestHelpers::test_creation<VariableFixing::RadiallyFallingFloor<3>>(
-          "  MinimumRadius: 1.e-4\n"
-          "  ScaleDensityFloor: 1.e-5\n"
-          "  PowerDensityFloor: -1.5\n"
-          "  ScalePressureFloor: 0.33333333333333333e-7\n"
-          "  PowerPressureFloor: -2.5\n");
+          "MinimumRadius: 1.e-4\n"
+          "ScaleDensityFloor: 1.e-5\n"
+          "PowerDensityFloor: -1.5\n"
+          "ScalePressureFloor: 0.33333333333333333e-7\n"
+          "PowerPressureFloor: -2.5\n");
   test_variable_fixer(fixer_from_options);
 }

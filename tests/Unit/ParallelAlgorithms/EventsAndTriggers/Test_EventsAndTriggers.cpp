@@ -88,72 +88,72 @@ void check_trigger(const bool expected, const std::string& trigger_string) {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
-  TestHelpers::test_factory_creation<Event<tmpl::list<>>>("  Completion");
+  TestHelpers::test_factory_creation<Event<tmpl::list<>>>("Completion");
 
-  check_trigger(true, "  Always");
-  check_trigger(false, "  Not: Always");
+  check_trigger(true, "Always");
+  check_trigger(false, "Not: Always");
   check_trigger(true,
-                "  Not:\n"
-                "    Not: Always");
-
-  check_trigger(true,
-                "  And:\n"
-                "    - Always\n"
-                "    - Always");
-  check_trigger(false,
-                "  And:\n"
-                "    - Always\n"
-                "    - Not: Always");
-  check_trigger(false,
-                "  And:\n"
-                "    - Not: Always\n"
-                "    - Always");
-  check_trigger(false,
-                "  And:\n"
-                "    - Not: Always\n"
-                "    - Not: Always");
-  check_trigger(false,
-                "  And:\n"
-                "    - Always\n"
-                "    - Always\n"
-                "    - Not: Always");
+                "Not:\n"
+                "  Not: Always");
 
   check_trigger(true,
-                "  Or:\n"
-                "    - Always\n"
-                "    - Always");
-  check_trigger(true,
-                "  Or:\n"
-                "    - Always\n"
-                "    - Not: Always");
-  check_trigger(true,
-                "  Or:\n"
-                "    - Not: Always\n"
-                "    - Always");
+                "And:\n"
+                "  - Always\n"
+                "  - Always");
   check_trigger(false,
-                "  Or:\n"
-                "    - Not: Always\n"
-                "    - Not: Always");
+                "And:\n"
+                "  - Always\n"
+                "  - Not: Always");
+  check_trigger(false,
+                "And:\n"
+                "  - Not: Always\n"
+                "  - Always");
+  check_trigger(false,
+                "And:\n"
+                "  - Not: Always\n"
+                "  - Not: Always");
+  check_trigger(false,
+                "And:\n"
+                "  - Always\n"
+                "  - Always\n"
+                "  - Not: Always");
+
   check_trigger(true,
-                "  Or:\n"
-                "    - Not: Always\n"
-                "    - Not: Always\n"
-                "    - Always");
+                "Or:\n"
+                "  - Always\n"
+                "  - Always");
+  check_trigger(true,
+                "Or:\n"
+                "  - Always\n"
+                "  - Not: Always");
+  check_trigger(true,
+                "Or:\n"
+                "  - Not: Always\n"
+                "  - Always");
+  check_trigger(false,
+                "Or:\n"
+                "  - Not: Always\n"
+                "  - Not: Always");
+  check_trigger(true,
+                "Or:\n"
+                "  - Not: Always\n"
+                "  - Not: Always\n"
+                "  - Always");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers.creation",
                   "[Unit][Evolution]") {
   const auto events_and_triggers =
       TestHelpers::test_creation<EventsAndTriggersType>(
-          "  ? Not: Always\n"
-          "  : - Completion\n"
-          "  ? Or:\n"
-          "    - Not: Always\n"
-          "    - Always\n"
-          "  : - Completion\n"
-          "    - Completion\n"
-          "  ? Not: Always\n"
-          "  : - Completion\n");
+          "? Not: Always\n"
+          ": - Completion\n"
+          "? Or:\n"
+          "  - Not: Always\n"
+          "  - Always\n"
+          ": - Completion\n"
+          "  - Completion\n"
+          "? Not: Always\n"
+          ": - Completion\n");
 
   run_events_and_triggers(events_and_triggers, true);
 }

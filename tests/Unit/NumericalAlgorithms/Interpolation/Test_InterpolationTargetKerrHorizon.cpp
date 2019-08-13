@@ -65,10 +65,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
   // Test creation of options
   const auto created_opts =
       TestHelpers::test_creation<intrp::OptionHolders::KerrHorizon>(
-          "  Center: [0.05, 0.06, 0.07]\n"
-          "  DimensionlessSpin: [0.2, 0.3, 0.4]\n"
-          "  Lmax: 18\n"
-          "  Mass: 1.8");
+          "Center: [0.05, 0.06, 0.07]\n"
+          "DimensionlessSpin: [0.2, 0.3, 0.4]\n"
+          "Lmax: 18\n"
+          "Mass: 1.8");
   CHECK(created_opts == kerr_horizon_opts);
 
   const auto domain_creator =

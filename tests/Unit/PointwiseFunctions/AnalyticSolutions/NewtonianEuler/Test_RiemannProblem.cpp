@@ -67,19 +67,19 @@ void test_solution(const std::array<double, Dim> left_velocity,
 
   const auto solution_from_options = TestHelpers::test_creation<
       NewtonianEuler::Solutions::RiemannProblem<Dim>>(
-      "  AdiabaticIndex: 1.4\n"
-      "  InitialPosition: 0.5\n"
-      "  LeftMassDensity: 1.0\n"
-      "  LeftVelocity: " +
+      "AdiabaticIndex: 1.4\n"
+      "InitialPosition: 0.5\n"
+      "LeftMassDensity: 1.0\n"
+      "LeftVelocity: " +
       left_velocity_opt +
       "\n"
-      "  LeftPressure: 1.0\n"
-      "  RightMassDensity: 0.125\n"
-      "  RightVelocity: " +
+      "LeftPressure: 1.0\n"
+      "RightMassDensity: 0.125\n"
+      "RightVelocity: " +
       right_velocity_opt +
       "\n"
-      "  RightPressure: 0.1\n"
-      "  PressureStarTol: 1.e-6");
+      "RightPressure: 0.1\n"
+      "PressureStarTol: 1.e-6");
   CHECK(solution_from_options == solution);
 
   RiemannProblemProxy<Dim> solution_to_move(1.4, 0.5, 1.0, left_velocity, 1.0,

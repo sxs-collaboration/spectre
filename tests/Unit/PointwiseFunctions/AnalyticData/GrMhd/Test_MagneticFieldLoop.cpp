@@ -61,13 +61,13 @@ struct MagneticFieldLoopProxy : grmhd::AnalyticData::MagneticFieldLoop {
 void test_create_from_options() noexcept {
   const auto magnetic_field_loop =
       TestHelpers::test_creation<grmhd::AnalyticData::MagneticFieldLoop>(
-          "  Pressure: 3.0\n"
-          "  RestMassDensity: 1.0\n"
-          "  AdiabaticIndex: 1.66666666666666667\n"
-          "  AdvectionVelocity: [0.5, 0.04166666666666667, 0.0]\n"
-          "  MagFieldStrength: 0.001\n"
-          "  InnerRadius: 0.06\n"
-          "  OuterRadius: 0.3\n");
+          "Pressure: 3.0\n"
+          "RestMassDensity: 1.0\n"
+          "AdiabaticIndex: 1.66666666666666667\n"
+          "AdvectionVelocity: [0.5, 0.04166666666666667, 0.0]\n"
+          "MagFieldStrength: 0.001\n"
+          "InnerRadius: 0.06\n"
+          "OuterRadius: 0.3\n");
   CHECK(magnetic_field_loop ==
         grmhd::AnalyticData::MagneticFieldLoop(
             3.0, 1.0, 1.66666666666666667,

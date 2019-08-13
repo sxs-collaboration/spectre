@@ -163,13 +163,13 @@ void test_rotated_rectangles_factory() {
 
   const auto domain_creator =
       TestHelpers::test_factory_creation<DomainCreator<2>>(
-          "  RotatedRectangles:\n"
-          "    LowerBound: [0.1, -0.4]\n"
-          "    Midpoint:   [2.6, 3.2]\n"
-          "    UpperBound: [5.1, 6.2]\n"
-          "    IsPeriodicIn: [false, false]\n"
-          "    InitialGridPoints: [[3,2],[1,4]]\n"
-          "    InitialRefinement: [2,1]\n");
+          "RotatedRectangles:\n"
+          "  LowerBound: [0.1, -0.4]\n"
+          "  Midpoint:   [2.6, 3.2]\n"
+          "  UpperBound: [5.1, 6.2]\n"
+          "  IsPeriodicIn: [false, false]\n"
+          "  InitialGridPoints: [[3,2],[1,4]]\n"
+          "  InitialRefinement: [2,1]\n");
   const auto* rotated_rectangles_creator =
       dynamic_cast<const creators::RotatedRectangles*>(domain_creator.get());
   test_rotated_rectangles_construction(

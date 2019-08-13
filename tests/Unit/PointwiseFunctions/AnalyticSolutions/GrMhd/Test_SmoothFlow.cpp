@@ -69,11 +69,11 @@ struct SmoothFlowProxy : grmhd::Solutions::SmoothFlow {
 
 void test_create_from_options() noexcept {
   const auto flow = TestHelpers::test_creation<grmhd::Solutions::SmoothFlow>(
-      "  MeanVelocity: [0.1, -0.2, 0.3]\n"
-      "  WaveVector: [-0.13, -0.54, 0.04]\n"
-      "  Pressure: 1.23\n"
-      "  AdiabaticIndex: 1.4\n"
-      "  PerturbationSize: 0.75");
+      "MeanVelocity: [0.1, -0.2, 0.3]\n"
+      "WaveVector: [-0.13, -0.54, 0.04]\n"
+      "Pressure: 1.23\n"
+      "AdiabaticIndex: 1.4\n"
+      "PerturbationSize: 0.75");
   CHECK(flow == grmhd::Solutions::SmoothFlow({{0.1, -0.2, 0.3}},
                                              {{-0.13, -0.54, 0.04}}, 1.23, 1.4,
                                              0.75));

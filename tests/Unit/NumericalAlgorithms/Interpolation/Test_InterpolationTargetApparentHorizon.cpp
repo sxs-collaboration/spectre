@@ -69,12 +69,12 @@ SPECTRE_TEST_CASE(
   // Test creation of options
   const auto created_opts = TestHelpers::test_creation<
       intrp::OptionHolders::ApparentHorizon<Frame::Inertial>>(
-      "  FastFlow:\n"
-      "  Verbosity: Verbose\n"
-      "  InitialGuess:\n"
-      "    Center: [0.05, 0.06, 0.07]\n"
-      "    Radius: 2.0\n"
-      "    Lmax: 12");
+      "FastFlow:\n"
+      "Verbosity: Verbose\n"
+      "InitialGuess:\n"
+      "  Center: [0.05, 0.06, 0.07]\n"
+      "  Radius: 2.0\n"
+      "  Lmax: 12");
   CHECK(created_opts == apparent_horizon_opts);
 
   const auto domain_creator =

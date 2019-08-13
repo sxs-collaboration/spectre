@@ -60,8 +60,8 @@ struct ConstantM1Proxy : RadiationTransport::M1Grey::Solutions::ConstantM1 {
 void test_create_from_options() noexcept {
   const auto flow = TestHelpers::test_creation<
       RadiationTransport::M1Grey::Solutions::ConstantM1>(
-      "  MeanVelocity: [0.0, 0.2, 0.1]\n"
-      "  ComovingEnergyDensity: 1.3");
+      "MeanVelocity: [0.0, 0.2, 0.1]\n"
+      "ComovingEnergyDensity: 1.3");
   CHECK(flow == RadiationTransport::M1Grey::Solutions::ConstantM1(
                     {{0.0, 0.2, 0.1}}, 1.3));
 }

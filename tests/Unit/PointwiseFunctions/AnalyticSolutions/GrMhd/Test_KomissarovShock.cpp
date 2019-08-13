@@ -69,16 +69,16 @@ struct KomissarovShockProxy : grmhd::Solutions::KomissarovShock {
 void test_create_from_options() noexcept {
   const auto komissarov_shock =
       TestHelpers::test_creation<grmhd::Solutions::KomissarovShock>(
-          "  AdiabaticIndex: 1.33\n"
-          "  LeftDensity: 1.\n"
-          "  RightDensity: 3.323\n"
-          "  LeftPressure: 10.\n"
-          "  RightPressure: 55.36\n"
-          "  LeftVelocity: [0.83, 0., 0.]\n"
-          "  RightVelocity: [0.62, -0.44, 0.]\n"
-          "  LeftMagneticField: [10., 18.28, 0.]\n"
-          "  RightMagneticField: [10., 14.49, 0.]\n"
-          "  ShockSpeed: 0.5\n");
+          "AdiabaticIndex: 1.33\n"
+          "LeftDensity: 1.\n"
+          "RightDensity: 3.323\n"
+          "LeftPressure: 10.\n"
+          "RightPressure: 55.36\n"
+          "LeftVelocity: [0.83, 0., 0.]\n"
+          "RightVelocity: [0.62, -0.44, 0.]\n"
+          "LeftMagneticField: [10., 18.28, 0.]\n"
+          "RightMagneticField: [10., 14.49, 0.]\n"
+          "ShockSpeed: 0.5\n");
   CHECK(komissarov_shock == grmhd::Solutions::KomissarovShock(
                                 1.33, 1., 3.323, 10., 55.36,
                                 std::array<double, 3>{{0.83, 0., 0.}},

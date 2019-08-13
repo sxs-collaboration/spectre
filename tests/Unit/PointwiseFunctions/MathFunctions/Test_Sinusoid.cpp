@@ -67,10 +67,10 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid",
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Sinusoid.Factory",
                   "[PointwiseFunctions][Unit]") {
   TestHelpers::test_factory_creation<MathFunction<1>>(
-      "  Sinusoid:\n"
-      "    Amplitude: 3\n"
-      "    Wavenumber: 2\n"
-      "    Phase: -9");
+      "Sinusoid:\n"
+      "  Amplitude: 3\n"
+      "  Wavenumber: 2\n"
+      "  Phase: -9");
   // Catch requires us to have at least one CHECK in each test
   // The Unit.PointwiseFunctions.MathFunctions.Sinusoid.Factory does not need to
   // check anything

@@ -159,11 +159,11 @@ void test_1d() {
 
   const auto created_solution =
       TestHelpers::test_creation<ScalarWave::Solutions::PlaneWave<1>>(
-          "  WaveVector: [-1.5]\n"
-          "  Center: [2.4]\n"
-          "  Profile:\n"
-          "    PowX:\n"
-          "      Power: 3");
+          "WaveVector: [-1.5]\n"
+          "Center: [2.4]\n"
+          "Profile:\n"
+          "  PowX:\n"
+          "    Power: 3");
   CHECK(
       created_solution.variables(
           x, t,
@@ -219,11 +219,11 @@ void test_2d() {
 
   const auto created_solution =
       TestHelpers::test_creation<ScalarWave::Solutions::PlaneWave<2>>(
-          "  WaveVector: [1.5, -7.2]\n"
-          "  Center: [2.4, -4.8]\n"
-          "  Profile:\n"
-          "    PowX:\n"
-          "      Power: 3");
+          "WaveVector: [1.5, -7.2]\n"
+          "Center: [2.4, -4.8]\n"
+          "Profile:\n"
+          "  PowX:\n"
+          "    Power: 3");
   CHECK(
       created_solution.variables(
           x, t,
@@ -297,11 +297,11 @@ void test_3d() {
 
   const auto created_solution =
       TestHelpers::test_creation<ScalarWave::Solutions::PlaneWave<3>>(
-          "  WaveVector: [1.5, -7.2, 2.7]\n"
-          "  Center: [2.4, -4.8, 8.4]\n"
-          "  Profile:\n"
-          "    PowX:\n"
-          "      Power: 3");
+          "WaveVector: [1.5, -7.2, 2.7]\n"
+          "Center: [2.4, -4.8, 8.4]\n"
+          "Profile:\n"
+          "  PowX:\n"
+          "    Power: 3");
   CHECK(
       created_solution.variables(
           x, t,

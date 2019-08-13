@@ -38,9 +38,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Bump",
 
   const auto created_solution =
       TestHelpers::test_creation<Burgers::Solutions::Bump>(
-          "  HalfWidth: 5.\n"
-          "  Height: 3.\n"
-          "  Center: -8.\n");
+          "HalfWidth: 5.\n"
+          "Height: 3.\n"
+          "Center: -8.\n");
   const auto x = tnsr::I<DataVector, 1>{{{positions}}};
   const double t = 0.0;
   CHECK(created_solution.variables(x, t, tmpl::list<Burgers::Tags::U>{}) ==

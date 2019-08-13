@@ -91,6 +91,6 @@ SPECTRE_TEST_CASE(
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/Xcts"};
   test_solution(0.01, 1.,
-                "  Density: 0.01\n"
-                "  Radius: 1.\n");
+                "Density: 0.01\n"
+                "Radius: 1.\n");
 }

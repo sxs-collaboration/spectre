@@ -48,9 +48,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Step",
 
   const auto created_solution =
       TestHelpers::test_creation<Burgers::Solutions::Step>(
-          "  LeftValue: 2.3\n"
-          "  RightValue: 1.2\n"
-          "  InitialPosition: -0.5");
+          "LeftValue: 2.3\n"
+          "RightValue: 1.2\n"
+          "InitialPosition: -0.5");
   const auto x = tnsr::I<DataVector, 1>{{{positions}}};
   const double t = 0.0;
   CHECK(created_solution.variables(x, t, tmpl::list<Burgers::Tags::U>{}) ==

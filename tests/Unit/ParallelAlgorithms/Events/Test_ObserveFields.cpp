@@ -182,7 +182,7 @@ struct ScalarSystem {
       dg::Events::ObserveFields<volume_dim, ObservationTimeTag,
                                 all_vars_for_test,
                                 solution_for_test::vars_for_test>;
-  static constexpr auto creation_string_for_test = "  ObserveFields";
+  static constexpr auto creation_string_for_test = "ObserveFields";
   static ObserveEvent make_test_object() noexcept { return ObserveEvent{}; }
 };
 
@@ -274,8 +274,8 @@ struct ComplicatedSystem {
                                 all_vars_for_test,
                                 solution_for_test::vars_for_test>;
   static constexpr auto creation_string_for_test =
-      "  ObserveFields:\n"
-      "    VariablesToObserve: [Scalar, Vector, Tensor, Tensor2]";
+      "ObserveFields:\n"
+      "  VariablesToObserve: [Scalar, Vector, Tensor, Tensor2]";
   static ObserveEvent make_test_object() noexcept {
     return ObserveEvent({"Scalar", "Vector", "Tensor", "Tensor2"});
   }
@@ -412,7 +412,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.bad_field",
                   "[Unit][Evolution]") {
   ERROR_TEST();
   TestHelpers::test_creation<ScalarSystem::ObserveEvent>(
-      "  VariablesToObserve: [NotAVar]");
+      "VariablesToObserve: [NotAVar]");
 }
 
 // [[OutputRegex, Scalar specified multiple times]]
@@ -420,5 +420,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.repeated_field",
                   "[Unit][Evolution]") {
   ERROR_TEST();
   TestHelpers::test_creation<ScalarSystem::ObserveEvent>(
-      "  VariablesToObserve: [Scalar, Scalar]");
+      "VariablesToObserve: [Scalar, Scalar]");
 }

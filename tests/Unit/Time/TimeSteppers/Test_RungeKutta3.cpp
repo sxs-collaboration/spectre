@@ -20,7 +20,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.RungeKutta3", "[Unit][Time]") {
   TimeStepperTestUtils::check_convergence_order(stepper, 3);
   TimeStepperTestUtils::check_dense_output(stepper, 3);
 
-  TestHelpers::test_factory_creation<TimeStepper>("  RungeKutta3");
+  TestHelpers::test_factory_creation<TimeStepper>("RungeKutta3");
   test_serialization(stepper);
   test_serialization_via_base<TimeStepper, TimeSteppers::RungeKutta3>();
   // test operator !=

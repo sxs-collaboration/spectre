@@ -67,16 +67,18 @@ void test_minmod_option_parsing() noexcept {
   INFO("Test Minmod option parsing");
   const auto lambda_pi1_default =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-          "  Type: LambdaPi1");
+          "Type: LambdaPi1");
   const auto lambda_pi1_m0 =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-          "  Type: LambdaPi1\n  TvbmConstant: 0.0");
+          "Type: LambdaPi1\n"
+          "TvbmConstant: 0.0");
   const auto lambda_pi1_m1 =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-          "  Type: LambdaPi1\n  TvbmConstant: 1.0");
+          "Type: LambdaPi1\n"
+          "TvbmConstant: 1.0");
   const auto muscl_default =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-          "  Type: Muscl");
+          "Type: Muscl");
 
   // Test default TVBM value, operator==, and operator!=
   CHECK(lambda_pi1_default == lambda_pi1_m0);
@@ -84,15 +86,16 @@ void test_minmod_option_parsing() noexcept {
   CHECK(lambda_pi1_default != muscl_default);
 
   TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-      "  Type: LambdaPiN");
+      "Type: LambdaPiN");
   TestHelpers::test_creation<Limiters::Minmod<2, tmpl::list<ScalarTag>>>(
-      "  Type: LambdaPiN");
+      "Type: LambdaPiN");
   TestHelpers::test_creation<
       Limiters::Minmod<3, tmpl::list<ScalarTag, VectorTag<3>>>>(
-      "  Type: LambdaPiN");
+      "Type: LambdaPiN");
 
   TestHelpers::test_creation<Limiters::Minmod<3, tmpl::list<ScalarTag>>>(
-      "  Type: LambdaPiN\n  DisableForDebugging: True");
+      "Type: LambdaPiN\n"
+      "DisableForDebugging: True");
 }
 
 void test_minmod_serialization() noexcept {

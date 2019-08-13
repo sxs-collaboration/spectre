@@ -44,12 +44,12 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant", "[Unit][Time]") {
   CHECK(serialize_and_deserialize(constant_base)->desired_step(box, cache) ==
         5.4);
 
-  TestHelpers::test_factory_creation<StepChooserType>("  Constant: 5.4");
+  TestHelpers::test_factory_creation<StepChooserType>("Constant: 5.4");
 }
 
 // [[OutputRegex, Requested step magnitude should be positive]]
 SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Constant.bad_create",
                   "[Unit][Time]") {
   ERROR_TEST();
-  TestHelpers::test_factory_creation<StepChooserType>("  Constant: -5.4");
+  TestHelpers::test_factory_creation<StepChooserType>("Constant: -5.4");
 }

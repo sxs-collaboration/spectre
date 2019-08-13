@@ -56,12 +56,12 @@ SPECTRE_TEST_CASE(
           79.36507936507935, 38.75968992248062}};
   const Elasticity::Solutions::BentBeam created_solution =
       TestHelpers::test_creation<Elasticity::Solutions::BentBeam>(
-          "  Length: 5.\n"
-          "  Height: 1.\n"
-          "  BendingMoment: 0.5\n"
-          "  Material:\n"
-          "    BulkModulus: 79.36507936507935\n"
-          "    ShearModulus: 38.75968992248062\n");
+          "Length: 5.\n"
+          "Height: 1.\n"
+          "BendingMoment: 0.5\n"
+          "Material:\n"
+          "  BulkModulus: 79.36507936507935\n"
+          "  ShearModulus: 38.75968992248062\n");
   CHECK(created_solution == check_solution);
   test_serialization(check_solution);
 
