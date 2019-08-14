@@ -63,7 +63,7 @@ struct hash<A> {
 };
 }  // namespace std
 
-std::ostream& operator<<(std::ostream& os, const D&);
+std::ostream& operator<<(std::ostream& os, const D&) noexcept;
 
 bool operator==(const CClassInTestTypeTraits&, const CClassInTestTypeTraits&);
 

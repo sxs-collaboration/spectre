@@ -41,13 +41,13 @@ struct array {
 
   constexpr iterator begin() noexcept {
     return iterator(data_);  // NOLINT
-}
+  }
   constexpr const_iterator begin() const noexcept {
     return const_iterator(data_);  // NOLINT
   }
   constexpr iterator end() noexcept {
     return iterator(data_ + Size);  // NOLINT
-}
+  }
   constexpr const_iterator end() const noexcept {
     return const_iterator(data_ + Size);  // NOLINT
   }
@@ -168,12 +168,14 @@ inline constexpr bool operator>=(const array<T, Size>& lhs,
 }
 
 template <typename T>
-inline std::ostream& operator<<(std::ostream& os, const array<T, 0>& /*a*/) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const array<T, 0>& /*a*/) noexcept {
   return os << "()";
 }
 
 template <typename T, size_t N>
-inline std::ostream& operator<<(std::ostream& os, const array<T, N>& a) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const array<T, N>& a) noexcept {
   os << '(';
   for (size_t i = 0; i < N - 1; ++i) {
     os << a[i] << ',';

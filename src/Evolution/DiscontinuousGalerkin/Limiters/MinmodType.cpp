@@ -10,8 +10,8 @@
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 
-std::ostream& Limiters::operator<<(std::ostream& os,
-                                   const Limiters::MinmodType& minmod_type) {
+std::ostream& Limiters::operator<<(
+    std::ostream& os, const Limiters::MinmodType& minmod_type) noexcept {
   switch (minmod_type) {
     case Limiters::MinmodType::LambdaPi1:
       return os << "LambdaPi1";

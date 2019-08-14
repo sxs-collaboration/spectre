@@ -16,7 +16,7 @@ void Index<Dim>::pup(PUP::er& p) noexcept {
 }
 
 template <size_t N>
-std::ostream& operator<<(std::ostream& os, const Index<N>& i) {
+std::ostream& operator<<(std::ostream& os, const Index<N>& i) noexcept {
   return os << i.indices_;
 }
 
@@ -39,7 +39,7 @@ bool operator!=(const Index<Dim>& lhs, const Index<Dim>& rhs) noexcept {
   GEN_OP(==, DIM(data))                               \
   GEN_OP(!=, DIM(data))                               \
   template std::ostream& operator<<(std::ostream& os, \
-                                    const Index<DIM(data)>& i);
+                                    const Index<DIM(data)>& i) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2, 3, 4))
 

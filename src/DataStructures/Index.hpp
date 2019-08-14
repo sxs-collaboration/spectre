@@ -104,7 +104,7 @@ class Index {
 
   template <size_t N>
   friend std::ostream& operator<<(std::ostream& os,  // NOLINT
-                                  const Index<N>& i);
+                                  const Index<N>& i) noexcept;
 
   const size_t* data() const noexcept { return indices_.data(); }
   size_t* data() noexcept { return indices_.data(); }
@@ -123,7 +123,7 @@ template <size_t N>
 size_t collapsed_index(const Index<N>& index, const Index<N>& extents) noexcept;
 
 template <size_t N>
-std::ostream& operator<<(std::ostream& os, const Index<N>& i);
+std::ostream& operator<<(std::ostream& os, const Index<N>& i) noexcept;
 
 /// \cond HIDDEN_SYMBOLS
 #ifdef SPECTRE_DEBUG

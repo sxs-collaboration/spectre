@@ -223,7 +223,7 @@ class not_null {
 };
 
 template <class T>
-std::ostream& operator<<(std::ostream& os, const not_null<T>& val) {
+std::ostream& operator<<(std::ostream& os, const not_null<T>& val) noexcept {
   os << val.get();
   return os;
 }

@@ -64,7 +64,8 @@ struct TuplePrinter<0> {
  * \brief Output the items of a std::list
  */
 template <typename T>
-inline std::ostream& operator<<(std::ostream& os, const std::list<T>& v) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::list<T>& v) noexcept {
   sequence_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
@@ -74,7 +75,8 @@ inline std::ostream& operator<<(std::ostream& os, const std::list<T>& v) {
  * \brief Output the items of a std::vector
  */
 template <typename T>
-inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::vector<T>& v) noexcept {
   sequence_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
@@ -84,7 +86,8 @@ inline std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
  * \brief Output the items of a std::deque
  */
 template <typename T>
-inline std::ostream& operator<<(std::ostream& os, const std::deque<T>& v) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::deque<T>& v) noexcept {
   sequence_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
@@ -94,7 +97,8 @@ inline std::ostream& operator<<(std::ostream& os, const std::deque<T>& v) {
  * \brief Output the items of a std::array
  */
 template <typename T, size_t N>
-inline std::ostream& operator<<(std::ostream& os, const std::array<T, N>& a) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::array<T, N>& a) noexcept {
   sequence_print_helper(os, begin(a), end(a));
   return os;
 }
@@ -105,7 +109,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::array<T, N>& a) {
  */
 template <typename... Args>
 inline std::ostream& operator<<(std::ostream& os,
-                                const std::tuple<Args...>& t) {
+                                const std::tuple<Args...>& t) noexcept {
   os << "(";
   StdHelpers_detail::TuplePrinter<sizeof...(Args)>::print(os, t);
   os << ")";
@@ -118,7 +122,7 @@ inline std::ostream& operator<<(std::ostream& os,
  */
 template <typename K, typename V, typename H>
 inline std::ostream& operator<<(std::ostream& os,
-                                const std::unordered_map<K, V, H>& m) {
+                                const std::unordered_map<K, V, H>& m) noexcept {
   unordered_print_helper(
       os, begin(m), end(m),
       [](std::ostream& out,
@@ -133,7 +137,8 @@ inline std::ostream& operator<<(std::ostream& os,
  * \brief Output all the key, value pairs of a std::map
  */
 template <typename K, typename V, typename C>
-inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::map<K, V, C>& m) noexcept {
   sequence_print_helper(
       os, begin(m), end(m),
       [](std::ostream& out, typename std::map<K, V, C>::const_iterator it) {
@@ -148,7 +153,7 @@ inline std::ostream& operator<<(std::ostream& os, const std::map<K, V, C>& m) {
  */
 template <typename T>
 inline std::ostream& operator<<(std::ostream& os,
-                                const std::unordered_set<T>& v) {
+                                const std::unordered_set<T>& v) noexcept {
   unordered_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
@@ -158,7 +163,8 @@ inline std::ostream& operator<<(std::ostream& os,
  * \brief Output the items of a std::set
  */
 template <typename T, typename C>
-inline std::ostream& operator<<(std::ostream& os, const std::set<T, C>& v) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::set<T, C>& v) noexcept {
   sequence_print_helper(os, std::begin(v), std::end(v));
   return os;
 }
@@ -168,7 +174,8 @@ inline std::ostream& operator<<(std::ostream& os, const std::set<T, C>& v) {
  * \brief Stream operator for std::unique_ptr
  */
 template <typename T, Requires<tt::is_streamable<std::ostream, T>::value>>
-inline std::ostream& operator<<(std::ostream& os, const std::unique_ptr<T>& t) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::unique_ptr<T>& t) noexcept {
   return os << *t;
 }
 
@@ -177,7 +184,8 @@ inline std::ostream& operator<<(std::ostream& os, const std::unique_ptr<T>& t) {
  * \brief Stream operator for std::shared_ptr
  */
 template <typename T, Requires<tt::is_streamable<std::ostream, T>::value>>
-inline std::ostream& operator<<(std::ostream& os, const std::shared_ptr<T>& t) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::shared_ptr<T>& t) noexcept {
   return os << *t;
 }
 
@@ -186,7 +194,8 @@ inline std::ostream& operator<<(std::ostream& os, const std::shared_ptr<T>& t) {
  * \brief Stream operator for std::pair
  */
 template <typename T, typename U>
-inline std::ostream& operator<<(std::ostream& os, const std::pair<T, U>& t) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const std::pair<T, U>& t) noexcept {
   return os << "(" << t.first << ", " << t.second << ")";
 }
 
