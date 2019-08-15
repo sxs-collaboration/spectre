@@ -494,6 +494,11 @@
  */
 
 /*!
+ * \defgroup LimitersGroup Limiters
+ * \brief Limiters to control shocks and surfaces in the solution.
+ */
+
+/*!
  * \defgroup LinearSolverGroup  Linear Solver
  * \brief Algorithms to solve linear systems of equations
  *
@@ -617,24 +622,21 @@
  */
 
 /*!
- * \defgroup LimitersGroup Limiters
- * \brief Limiters to control shocks and surfaces in the solution.
- */
-
-/*!
  * \defgroup SpectralGroup Spectral
  * Things related to spectral transformations.
+ */
+
+// Note: this group is ordered by how it appears in the rendered Doxygen pages
+// (i.e., "Spin-weighted..."), rather than the group's name (i.e., "Swsh...").
+/*!
+ * \defgroup SwshGroup Spin-weighted spherical harmonics
+ * Utilities, tags, and metafunctions for using and manipulating spin-weighted
+ * spherical harmonics
  */
 
 /*!
  * \defgroup SurfacesGroup Surfaces
  * Things related to surfaces.
- */
-
-/*!
- * \defgroup SwshGroup Spin-weighted spherical harmonics
- * Utilities, tags, and metafunctions for using and manipulating spin-weighted
- * spherical harmonics
  */
 
 /*!

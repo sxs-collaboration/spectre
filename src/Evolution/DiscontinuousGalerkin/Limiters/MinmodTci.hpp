@@ -50,9 +50,8 @@ bool troubled_cell_indicator(
     gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     gsl::not_null<DataVector*> u_lin_buffer,
     gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const Limiters::MinmodType& minmod_type, double tvbm_constant,
-    const DataVector& u, const Element<VolumeDim>& element,
-    const Mesh<VolumeDim>& mesh,
+    Limiters::MinmodType minmod_type, double tvbm_constant, const DataVector& u,
+    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes,
@@ -77,7 +76,7 @@ bool troubled_cell_indicator(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data,
-    const Limiters::MinmodType& minmod_type, double tvbm_constant,
+    const Limiters::MinmodType minmod_type, const double tvbm_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size) noexcept {
   // Optimization: allocate temporary buffer to be used in TCI
