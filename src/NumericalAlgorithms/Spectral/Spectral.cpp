@@ -53,6 +53,15 @@ std::ostream& operator<<(std::ostream& os,
 template <Basis BasisType>
 Matrix spectral_indefinite_integral_matrix(size_t num_points) noexcept;
 
+template <>
+double compute_basis_function_normalization_square<Basis::FiniteDifference>(
+    const size_t /*k*/) noexcept {
+  ERROR(
+      "Invalid invokation of 'compute_basis_function_normalization_square' "
+      "with 'FiniteDifference' basis.");
+  return std::numeric_limits<double>::signaling_NaN();
+}
+
 namespace {
 
 // Caching mechanism
@@ -185,6 +194,23 @@ struct WeakFluxDifferentiationMatrixGenerator {
 };
 
 template <Basis BasisType, Quadrature QuadratureType>
+struct MassMatrixGenerator {
+  Matrix operator()(const size_t num_points) const noexcept {
+    auto normalized_vandermonde_matrix =
+        Spectral::modal_to_nodal_matrix<BasisType, QuadratureType>(num_points);
+    for (size_t j = 0; j < num_points; j++) {
+      const double normalization =
+          sqrt(compute_basis_function_normalization_square<BasisType>(j));
+      for (size_t i = 0; i < num_points; i++) {
+        normalized_vandermonde_matrix(i, j) /= normalization;
+      }
+    }
+    return inv(normalized_vandermonde_matrix *
+               trans(normalized_vandermonde_matrix));
+  }
+};
+
+template <Basis BasisType, Quadrature QuadratureType>
 struct IntegrationMatrixGenerator {
   Matrix operator()(const size_t num_points) const noexcept {
     return Spectral::modal_to_nodal_matrix<BasisType, QuadratureType>(
@@ -309,6 +335,7 @@ PRECOMPUTED_SPECTRAL_QUANTITY(differentiation_matrix, Matrix,
                               DifferentiationMatrixGenerator)
 PRECOMPUTED_SPECTRAL_QUANTITY(weak_flux_differentiation_matrix, Matrix,
                               WeakFluxDifferentiationMatrixGenerator)
+PRECOMPUTED_SPECTRAL_QUANTITY(mass_matrix, Matrix, MassMatrixGenerator)
 PRECOMPUTED_SPECTRAL_QUANTITY(integration_matrix, Matrix,
                               IntegrationMatrixGenerator)
 PRECOMPUTED_SPECTRAL_QUANTITY(modal_to_nodal_matrix, Matrix,
@@ -520,6 +547,7 @@ SPECTRAL_QUANTITY_FOR_MESH(collocation_points, DataVector)
 SPECTRAL_QUANTITY_FOR_MESH(quadrature_weights, DataVector)
 SPECTRAL_QUANTITY_FOR_MESH(differentiation_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(weak_flux_differentiation_matrix, Matrix)
+SPECTRAL_QUANTITY_FOR_MESH(mass_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(integration_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(modal_to_nodal_matrix, Matrix)
 SPECTRAL_QUANTITY_FOR_MESH(nodal_to_modal_matrix, Matrix)
@@ -554,6 +582,8 @@ Matrix interpolation_matrix(const Mesh<1>& mesh,
   template const Matrix&                                                      \
       Spectral::differentiation_matrix<BASIS(data), QUAD(data)>(              \
           size_t) noexcept;                                                   \
+  template const Matrix& Spectral::mass_matrix<BASIS(data), QUAD(data)>(      \
+      size_t) noexcept;                                                       \
   template const Matrix&                                                      \
       Spectral::weak_flux_differentiation_matrix<BASIS(data), QUAD(data)>(    \
           size_t) noexcept;                                                   \

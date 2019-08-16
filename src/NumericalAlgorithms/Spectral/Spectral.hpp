@@ -248,6 +248,11 @@ const Matrix& differentiation_matrix(size_t num_points) noexcept;
  */
 const Matrix& differentiation_matrix(const Mesh<1>& mesh) noexcept;
 
+template <Basis BasisType, Quadrature QuadratureType>
+const Matrix& mass_matrix(size_t num_points) noexcept;
+
+const Matrix& mass_matrix(const Mesh<1>& mesh) noexcept;
+
 /*!
  * \brief %Matrix used to compute the divergence of the flux in weak form.
  *
