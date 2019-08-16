@@ -81,3 +81,19 @@ def pressure_2d(mass_density_cons, momentum_density, energy_density):
 
 
 # End functions for testing PrimitiveFromConservative.cpp
+
+
+# Functions for testing Sources.cpp
+def source_mass_density_cons(first_arg, second_arg, third_arg, fourth_arg):
+    return np.exp(first_arg)
+
+
+def source_momentum_density(first_arg, second_arg, third_arg, fourth_arg):
+    return (first_arg - 1.5 * third_arg) * second_arg
+
+
+def source_energy_density(first_arg, second_arg, third_arg, fourth_arg):
+    return np.dot(second_arg, fourth_arg) + 3.0 * third_arg
+
+
+# End functions for testing Sources.cpp
