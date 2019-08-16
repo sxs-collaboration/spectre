@@ -1,18 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_AnalyticData")
+set(LIBRARY "Test_BurgersAnalyticData")
 
 set(LIBRARY_SOURCES
-  Test_Tags.cpp
+  Test_Sinusoid.cpp
   )
 
 add_test_library(
   ${LIBRARY}
-  "PointwiseFunctions/AnalyticData"
+  "PointwiseFunctions/AnalyticData/Burgers"
   "${LIBRARY_SOURCES}"
-  ""
+  "BurgersAnalyticData;Utilities"
   )
-
-add_subdirectory(Burgers)
-add_subdirectory(GrMhd)
