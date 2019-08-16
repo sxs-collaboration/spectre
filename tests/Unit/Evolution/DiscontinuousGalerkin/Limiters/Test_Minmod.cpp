@@ -332,6 +332,17 @@ void test_work(
   auto scalar_to_limit = input_scalar;
   auto vector_to_limit = input_vector;
 
+  // Minmod should preserve the mean, so expected = initial
+  const double expected_scalar_mean = mean_value(get(scalar_to_limit), mesh);
+  const auto expected_vector_means = [&vector_to_limit, &mesh ]() noexcept {
+    std::array<double, VolumeDim> means{};
+    for (size_t d = 0; d < VolumeDim; ++d) {
+      gsl::at(means, d) = mean_value(vector_to_limit.get(d), mesh);
+    }
+    return means;
+  }
+  ();
+
   const auto element = TestHelpers::Limiters::make_element<VolumeDim>();
   const Limiters::Minmod<VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>
       minmod(Limiters::MinmodType::LambdaPi1);
@@ -340,6 +351,12 @@ void test_work(
              element, mesh, logical_coords, element_size, neighbor_data);
 
   CHECK(limiter_activated);
+
+  CHECK(mean_value(get(scalar_to_limit), mesh) == approx(expected_scalar_mean));
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    CHECK(mean_value(vector_to_limit.get(d), mesh) ==
+          approx(gsl::at(expected_vector_means, d)));
+  }
 
   const auto expected_limiter_output = [&logical_coords, &mesh ](
       const DataVector& input,

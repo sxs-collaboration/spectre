@@ -422,11 +422,28 @@ void test_weno_work(
   auto scalar = get<ScalarTag>(local_vars);
   auto vector = get<VectorTag<VolumeDim>>(local_vars);
 
+  // WENO should preserve the mean, so expected = initial
+  const double expected_scalar_mean = mean_value(get(scalar), mesh);
+  const auto expected_vector_means = [&vector, &mesh ]() noexcept {
+    std::array<double, VolumeDim> means{};
+    for (size_t d = 0; d < VolumeDim; ++d) {
+      gsl::at(means, d) = mean_value(vector.get(d), mesh);
+    }
+    return means;
+  }
+  ();
+
   const Weno weno(weno_type, neighbor_linear_weight);
   const bool activated = weno(make_not_null(&scalar), make_not_null(&vector),
                               element, mesh, element_size, neighbor_data);
 
   CHECK(activated);
+
+  CHECK(mean_value(get(scalar), mesh) == approx(expected_scalar_mean));
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    CHECK(mean_value(vector.get(d), mesh) ==
+          approx(gsl::at(expected_vector_means, d)));
+  }
 
   auto expected_scalar = get<ScalarTag>(local_vars);
   Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
