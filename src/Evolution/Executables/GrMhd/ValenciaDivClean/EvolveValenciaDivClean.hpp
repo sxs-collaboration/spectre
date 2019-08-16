@@ -53,6 +53,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/SmoothFlow.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
@@ -181,6 +182,7 @@ struct EvolutionMetavars {
               typename system::spacetime_variables_tag,
               typename system::primitive_variables_tag>>,
       Initialization::Actions::Evolution<system>,
+      dg::Actions::InitializeMortars<EvolutionMetavars>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<3>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;

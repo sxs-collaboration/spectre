@@ -75,7 +75,13 @@ struct Gmres {
       tmpl::list<gmres_detail::ResidualMonitor<Metavariables>>;
 
   /*!
-   * \brief Initialize the tags used by the GMRES linear solver
+   * \brief Initialize the tags used by the GMRES linear solver.
+   *
+   * Since we have not started iterating yet, we initialize the state _before_
+   * the first iteration. So `LinearSolver::Tags::IterationId` is undefined at
+   * this point and `Tags::Next<LinearSolver::Tags::IterationId>` is the initial
+   * step number. Invoke `prepare_step` to advance the state to the first
+   * iteration.
    *
    * Uses:
    * - System:
@@ -121,7 +127,23 @@ struct Gmres {
       tmpl::list<observe_detail::reduction_data>>;
 
   /*!
-   * \brief Perform an iteration of the GMRES linear solver
+   * \brief Advance the linear solver to the next iteration.
+   *
+   * DataBox changes:
+   * - Adds: nothing
+   * - Removes: nothing
+   * - Modifies:
+   *   * `LinearSolver::Tags::IterationId`
+   *   * `Tags::Next<LinearSolver::Tags::IterationId>`
+   *   * `orthogonalization_iteration_id_tag`
+   */
+  using prepare_step = gmres_detail::PrepareStep;
+
+  /*!
+   * \brief Perform an iteration of the GMRES linear solver.
+   *
+   * \warning This action involves a blocking reduction, so it is a global
+   * synchronization point.
    *
    * Uses:
    * - System:
@@ -141,8 +163,6 @@ struct Gmres {
    * - Adds: nothing
    * - Removes: nothing
    * - Modifies:
-   *   * `LinearSolver::Tags::IterationId`
-   *   * `Tags::Next<LinearSolver::Tags::IterationId>`
    *   * `fields_tag`
    *   * `operand_tag`
    *   * `orthogonalization_iteration_id_tag`

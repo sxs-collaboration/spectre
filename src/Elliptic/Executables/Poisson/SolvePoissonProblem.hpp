@@ -12,6 +12,7 @@
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeElement.hpp"
+#include "Elliptic/DiscontinuousGalerkin/InitializeFluxes.hpp"
 #include "Elliptic/Systems/Poisson/Actions/Observe.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
@@ -34,6 +35,7 @@
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -62,6 +64,9 @@ struct Metavariables {
   using linear_solver = LinearSolver::Gmres<Metavariables>;
   using temporal_id = LinearSolver::Tags::IterationId;
 
+  // This is needed for InitializeMortars and will be removed ASAP.
+  static constexpr bool local_time_stepping = false;
+
   // Parse numerical flux parameters from the input file to store in the cache.
   using normal_dot_numerical_flux = OptionTags::NumericalFlux<
       Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
@@ -83,6 +88,11 @@ struct Metavariables {
       tmpl::list<dg::Actions::InitializeDomain<Dim>,
                  elliptic::Actions::InitializeSystem,
                  elliptic::dg::Actions::InitializeElement<Dim>,
+                 dg::Actions::InitializeMortars<Metavariables>,
+                 elliptic::dg::Actions::InitializeFluxes<Metavariables>,
+                 // Initialization is done. Avoid introducing an extra phase by
+                 // advancing the linear solver to the first step here.
+                 typename linear_solver::prepare_step,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   // Specify all parallel components that will execute actions at some point.
@@ -114,7 +124,8 @@ struct Metavariables {
                                      Metavariables>,
                              dg::Actions::ReceiveDataForFluxes<Metavariables>,
                              dg::Actions::ApplyFluxes,
-                             typename linear_solver::perform_step>>>,
+                             typename linear_solver::perform_step,
+                             typename linear_solver::prepare_step>>>,
 
           Parallel::ForwardAllOptionsToDataBox<
               Initialization::option_tags<initialization_actions>>>>,

@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <cstddef>
+#include <limits>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
@@ -74,9 +77,12 @@ struct InitializeElement {
             cache));
 
     return db::create_from<db::RemoveTags<>, simple_tags, compute_tags>(
-        std::move(box), db::item_type<LinearSolver::Tags::IterationId>{0},
-        db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>{1},
-        std::move(r), db::item_type<LinearSolver::Tags::HasConverged>{});
+        std::move(box),
+        // We have not started iterating yet, so the _next_ iteration ID is
+        // zero. We initialize the current iteration id such that it advances to
+        // zero by the increment operator.
+        std::numeric_limits<size_t>::max(), size_t{0}, std::move(r),
+        db::item_type<LinearSolver::Tags::HasConverged>{});
   }
 };
 

@@ -41,14 +41,19 @@ struct ElementArray {
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<>;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
-  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
-      typename Metavariables::Phase, Metavariables::Phase::Initialization,
-      tmpl::list<ActionTesting::InitializeDataBox<
-          tmpl::append<tmpl::list<VectorTag, operand_tag>,
-                       typename LinearSolver::cg_detail::InitializeElement<
-                           Metavariables>::simple_tags>,
-          typename LinearSolver::cg_detail::InitializeElement<
-              Metavariables>::compute_tags>>>>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<
+              tmpl::append<tmpl::list<VectorTag, operand_tag>,
+                           typename LinearSolver::cg_detail::InitializeElement<
+                               Metavariables>::simple_tags>,
+              typename LinearSolver::cg_detail::InitializeElement<
+                  Metavariables>::compute_tags>>>,
+
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing,
+                             tmpl::list<LinearSolver::cg_detail::PrepareStep>>>;
 };
 
 struct System {
@@ -74,7 +79,8 @@ SPECTRE_TEST_CASE(
   // Setup mock element array
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), 0,
-      {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.), 0_st, 0_st,
+      {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
+       std::numeric_limits<size_t>::max(), size_t{0},
        DenseVector<double>(3, 1.),
        db::item_type<LinearSolver::Tags::HasConverged>{}});
 
@@ -85,12 +91,6 @@ SPECTRE_TEST_CASE(
   };
 
   runner.set_phase(Metavariables::Phase::Testing);
-
-  {
-    CHECK(get_tag(LinearSolver::Tags::IterationId{}) == 0);
-    CHECK(get_tag(LinearSolver::Tags::Operand<VectorTag>{}) ==
-          DenseVector<double>(3, 2.));
-  }
 
   // Can't test the other element actions because reductions are not yet
   // supported. The full algorithm is tested in
@@ -105,13 +105,18 @@ SPECTRE_TEST_CASE(
             {1, 0., 0.}, 1, 0., 0.});
     CHECK(get_tag(LinearSolver::Tags::HasConverged{}));
   }
+  SECTION("PrepareStep") {
+    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
+    CHECK(get_tag(LinearSolver::Tags::IterationId{}) == 0);
+    CHECK(get_tag(Tags::Next<LinearSolver::Tags::IterationId>{}) == 1);
+  }
   SECTION("UpdateOperand") {
+    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
     ActionTesting::simple_action<element_array,
                                  LinearSolver::cg_detail::UpdateOperand>(
         make_not_null(&runner), 0, 2.,
         db::item_type<LinearSolver::Tags::HasConverged>{
             {1, 0., 0.}, 1, 0., 0.});
-    CHECK(get_tag(LinearSolver::Tags::IterationId{}) == 1);
     CHECK(get_tag(LinearSolver::Tags::Operand<VectorTag>{}) ==
           DenseVector<double>(3, 5.));
     CHECK(get_tag(LinearSolver::Tags::HasConverged{}));

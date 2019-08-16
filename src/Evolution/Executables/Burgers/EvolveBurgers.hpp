@@ -42,6 +42,7 @@
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -144,6 +145,7 @@ struct EvolutionMetavars {
               typename system::variables_tag>,
           dg::Initialization::slice_tags_to_exterior<>>,
       Initialization::Actions::Evolution<system>,
+      dg::Actions::InitializeMortars<EvolutionMetavars>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<1>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
