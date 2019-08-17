@@ -418,6 +418,20 @@ void test_throw_exception(const ThrowingFunctor& func,
                                                                       appx); \
   } while (false)
 
+template <typename Tag, typename TagList>
+const auto& extract_value_for_variables_comparison(
+    const Variables<TagList>& input_vars, std::true_type /*meta*/) noexcept {
+  // only Scalars of spin-weighted quantities are currently allowed. If that
+  // changes, then this solution will no longer be workable.
+  return get(get<Tag>(input_vars)).data();
+}
+
+template <typename Tag, typename TagList>
+const auto& extract_value_for_variables_comparison(
+    const Variables<TagList>& input_vars, std::false_type /*meta*/) noexcept {
+  return get<Tag>(input_vars);
+}
+
 template <typename T>
 struct check_variables_approx;
 
@@ -428,8 +442,11 @@ struct check_variables_approx<Variables<TagList>> {
                     Approx& appx = approx) {  // NOLINT
     tmpl::for_each<TagList>([&a, &b, &appx](auto x) {
       using Tag = typename decltype(x)::type;
-      auto& a_val = get<Tag>(a);
-      auto& b_val = get<Tag>(b);
+      INFO(Tag::name());
+      const auto& a_val = extract_value_for_variables_comparison<Tag>(
+          a, is_any_spin_weighted<typename Tag::type::type>{});
+      const auto& b_val = extract_value_for_variables_comparison<Tag>(
+          b, is_any_spin_weighted<typename Tag::type::type>{});
       CHECK_ITERABLE_CUSTOM_APPROX(a_val, b_val, appx);
     });
   }
