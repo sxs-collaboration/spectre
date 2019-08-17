@@ -1150,7 +1150,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Multiplicity",
       tensor;
 
   // Test multiplicity by iterator
-  for (auto it = tensor.begin(); it != tensor.end(); ++it) {
+  for (auto it = tensor.cbegin(); it != tensor.cend(); ++it) {
     const auto& indices = tensor.get_tensor_index(it);
     const size_t multiplicity = (indices[1] == indices[2] ? 1 : 2);
     CHECK(multiplicity == tensor.multiplicity(it));

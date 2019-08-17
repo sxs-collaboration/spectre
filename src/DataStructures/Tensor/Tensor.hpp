@@ -353,7 +353,7 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   ///
   /// \see TensorMetafunctions::compute_multiplicity
   SPECTRE_ALWAYS_INLINE constexpr size_t multiplicity(
-      const iterator& iter) const noexcept {
+      const const_iterator& iter) const noexcept {
     return structure::multiplicity(static_cast<size_t>(iter - begin()));
   }
   SPECTRE_ALWAYS_INLINE static constexpr size_t multiplicity(
