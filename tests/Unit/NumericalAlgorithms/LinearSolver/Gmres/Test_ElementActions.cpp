@@ -32,13 +32,14 @@ struct VectorTag : db::SimpleTag {
   static std::string name() noexcept { return "VectorTag"; }
 };
 
+using fields_tag = VectorTag;
 using initial_fields_tag =
-    db::add_tag_prefix<LinearSolver::Tags::Initial, VectorTag>;
-using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, VectorTag>;
+    db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
+using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
 using orthogonalization_iteration_id_tag =
     db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                        LinearSolver::Tags::IterationId>;
-using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<VectorTag>;
+using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
 
 template <typename Metavariables>
 struct ElementArray {
@@ -63,13 +64,8 @@ struct ElementArray {
           tmpl::list<LinearSolver::gmres_detail::PrepareStep>>>;
 };
 
-struct System {
-  using fields_tag = VectorTag;
-};
-
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
-  using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
@@ -107,7 +103,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
 
   SECTION("NormalizeInitialOperand") {
     ActionTesting::simple_action<
-        element_array, LinearSolver::gmres_detail::NormalizeInitialOperand>(
+        element_array,
+        LinearSolver::gmres_detail::NormalizeInitialOperand<fields_tag>>(
         make_not_null(&runner), 0, 4.,
         db::item_type<LinearSolver::Tags::HasConverged>{
             {1, 0., 0.}, 1, 0., 0.});
@@ -126,7 +123,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
     ActionTesting::simple_action<
         element_array,
-        LinearSolver::gmres_detail::NormalizeOperandAndUpdateField>(
+        LinearSolver::gmres_detail::NormalizeOperandAndUpdateField<fields_tag>>(
         make_not_null(&runner), 0, 4., DenseVector<double>{2., 4.},
         db::item_type<LinearSolver::Tags::HasConverged>{
             {1, 0., 0.}, 1, 0., 0.});

@@ -63,15 +63,16 @@ struct Metavariables {
 
   // The linear solver algorithm. We must use GMRES since the operator is
   // not positive-definite for the first-order system.
-  using linear_solver = LinearSolver::Gmres<Metavariables>;
+  using linear_solver =
+      LinearSolver::Gmres<Metavariables, typename system::fields_tag>;
   using temporal_id = LinearSolver::Tags::IterationId;
 
   // This is needed for InitializeMortars and will be removed ASAP.
   static constexpr bool local_time_stepping = false;
 
   // Parse numerical flux parameters from the input file to store in the cache.
-  using normal_dot_numerical_flux = OptionTags::NumericalFlux<
-      Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
+  using normal_dot_numerical_flux =
+      OptionTags::NumericalFlux<Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;

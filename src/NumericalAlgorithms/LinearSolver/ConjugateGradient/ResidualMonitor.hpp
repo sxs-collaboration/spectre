@@ -24,7 +24,7 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace cg_detail {
-template <typename Metavariables>
+template <typename FieldsTag>
 struct InitializeResidualMonitor;
 }  // namespace cg_detail
 }  // namespace LinearSolver
@@ -36,7 +36,7 @@ struct Criteria;
 namespace LinearSolver {
 namespace cg_detail {
 
-template <typename Metavariables>
+template <typename Metavariables, typename FieldsTag>
 struct ResidualMonitor {
   using chare_type = Parallel::Algorithms::Singleton;
   using const_global_cache_tag_list =
@@ -44,9 +44,9 @@ struct ResidualMonitor {
                  LinearSolver::OptionTags::ConvergenceCriteria>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<InitializeResidualMonitor<Metavariables>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<InitializeResidualMonitor<FieldsTag>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase,
@@ -65,10 +65,10 @@ struct ResidualMonitor {
   }
 };
 
-template <typename Metavariables>
+template <typename FieldsTag>
 struct InitializeResidualMonitor {
  private:
-  using fields_tag = typename Metavariables::system::fields_tag;
+  using fields_tag = FieldsTag;
   using residual_square_tag = db::add_tag_prefix<
       LinearSolver::Tags::MagnitudeSquare,
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
@@ -79,8 +79,9 @@ struct InitializeResidualMonitor {
           db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>>;
 
  public:
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,

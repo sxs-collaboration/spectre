@@ -24,9 +24,9 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace cg_detail {
-template <typename Metavariables>
+template <typename Metavariables, typename FieldsTag>
 struct ResidualMonitor;
-template <typename BroadcastTarget>
+template <typename FieldsTag, typename BroadcastTarget>
 struct InitializeResidual;
 }  // namespace cg_detail
 }  // namespace LinearSolver
@@ -35,11 +35,11 @@ struct InitializeResidual;
 namespace LinearSolver {
 namespace cg_detail {
 
-template <typename Metavariables, Initialization::MergePolicy MergePolicy =
-                                      Initialization::MergePolicy::Error>
+template <typename FieldsTag, Initialization::MergePolicy MergePolicy =
+                                  Initialization::MergePolicy::Error>
 struct InitializeElement {
  private:
-  using fields_tag = typename Metavariables::system::fields_tag;
+  using fields_tag = FieldsTag;
   using source_tag = db::add_tag_prefix<::Tags::Source, fields_tag>;
   using operator_applied_to_fields_tag =
       db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
@@ -49,8 +49,9 @@ struct InitializeElement {
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
 
  public:
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent>
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -70,13 +71,13 @@ struct InitializeElement {
     // Perform global reduction to compute initial residual magnitude square for
     // residual monitor
     Parallel::contribute_to_reduction<
-        cg_detail::InitializeResidual<ParallelComponent>>(
+        cg_detail::InitializeResidual<FieldsTag, ParallelComponent>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
             inner_product(residual, residual)},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
-        Parallel::get_parallel_component<ResidualMonitor<Metavariables>>(
-            cache));
+        Parallel::get_parallel_component<
+            ResidualMonitor<Metavariables, FieldsTag>>(cache));
 
     using compute_tags = db::AddComputeTags<
         ::Tags::NextCompute<LinearSolver::Tags::IterationId>>;
@@ -98,6 +99,7 @@ struct InitializeElement {
   }
 };
 
+template <typename FieldsTag>
 struct InitializeHasConverged {
   template <typename ParallelComponent, typename DbTagsList,
             typename Metavariables, typename ArrayIndex,

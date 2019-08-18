@@ -291,8 +291,4 @@ struct ElementArray {
   }
 };
 
-struct System {
-  using fields_tag = ::DistributedLinearSolverAlgorithmTestHelpers::fields_tag;
-};
-
 }  // namespace DistributedLinearSolverAlgorithmTestHelpers

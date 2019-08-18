@@ -62,7 +62,8 @@ struct VectorTag : db::SimpleTag {
   static std::string name() noexcept { return "VectorTag"; }
 };
 
-using operand_tag = LinearSolver::Tags::Operand<VectorTag>;
+using fields_tag = VectorTag;
+using operand_tag = LinearSolver::Tags::Operand<fields_tag>;
 using operator_tag = LinearSolver::Tags::OperatorAppliedTo<operand_tag>;
 
 struct ComputeOperatorAction {
@@ -245,10 +246,6 @@ struct OutputCleaner {
         *(global_cache.ckLocalBranch()));
     local_component.start_phase(next_phase);
   }
-};
-
-struct System {
-  using fields_tag = VectorTag;
 };
 
 }  // namespace LinearSolverAlgorithmTestHelpers
