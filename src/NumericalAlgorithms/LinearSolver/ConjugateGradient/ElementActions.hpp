@@ -34,29 +34,6 @@ struct ResidualMonitor;
 namespace LinearSolver {
 namespace cg_detail {
 
-struct InitializeHasConverged {
-  template <
-      typename ParallelComponent, typename DataBox, typename Metavariables,
-      typename ArrayIndex,
-      Requires<db::tag_is_retrievable_v<
-                   typename Metavariables::system::fields_tag, DataBox> and
-               db::tag_is_retrievable_v<LinearSolver::Tags::HasConverged,
-                                        DataBox>> = nullptr>
-  static void apply(DataBox& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const db::item_type<LinearSolver::Tags::HasConverged>&
-                        has_converged) noexcept {
-    db::mutate<LinearSolver::Tags::HasConverged>(
-        make_not_null(&box), [&has_converged](
-                                 const gsl::not_null<db::item_type<
-                                     LinearSolver::Tags::HasConverged>*>
-                                     local_has_converged) noexcept {
-          *local_has_converged = has_converged;
-        });
-  }
-};
-
 struct PrepareStep {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -67,17 +44,15 @@ struct PrepareStep {
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    db::mutate<LinearSolver::Tags::IterationId,
-               ::Tags::Next<LinearSolver::Tags::IterationId>>(
+    db::mutate<LinearSolver::Tags::IterationId>(
         make_not_null(&box),
         [](const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
                iteration_id,
-           const gsl::not_null<
-               db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>*>
+           const db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>&
                next_iteration_id) noexcept {
-          *iteration_id = *next_iteration_id;
-          (*next_iteration_id)++;
-        });
+          *iteration_id = next_iteration_id;
+        },
+        get<::Tags::Next<LinearSolver::Tags::IterationId>>(box));
     return {std::move(box)};
   }
 };
@@ -88,7 +63,7 @@ struct PerformStep {
             typename ParallelComponent>
   static std::tuple<DataBox&&, bool> apply(
       DataBox& box, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ActionList /*meta*/,
@@ -119,8 +94,9 @@ struct PerformStep {
         Parallel::get_parallel_component<ResidualMonitor<Metavariables>>(
             cache));
 
-    // Terminate algorithm for now. The reduction will be broadcast to the
-    // next action which is responsible for restarting the algorithm.
+    // Terminate algorithm for now. The `ResidualMonitor` will receive the
+    // reduction that is performed above and then broadcast to the following
+    // action, which is responsible for restarting the algorithm.
     return {std::move(box), true};
   }
 };
@@ -134,7 +110,7 @@ struct UpdateFieldValues {
                db::tag_is_retrievable_v<LinearSolver::Tags::HasConverged,
                                         DataBox>> = nullptr>
   static auto apply(DataBox& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const double alpha) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;

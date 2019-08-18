@@ -35,42 +35,6 @@ struct ResidualMonitor;
 namespace LinearSolver {
 namespace gmres_detail {
 
-struct NormalizeInitialOperand {
-  template <
-      typename ParallelComponent, typename DataBox, typename Metavariables,
-      typename ArrayIndex,
-      Requires<db::tag_is_retrievable_v<
-                   typename Metavariables::system::fields_tag, DataBox> and
-               db::tag_is_retrievable_v<LinearSolver::Tags::HasConverged,
-                                        DataBox>> = nullptr>
-  static void apply(DataBox& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const double residual_magnitude,
-                    const db::item_type<LinearSolver::Tags::HasConverged>&
-                        has_converged) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
-    using operand_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-    using basis_history_tag =
-        LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
-
-    db::mutate<operand_tag, basis_history_tag,
-               LinearSolver::Tags::HasConverged>(
-        make_not_null(&box),
-        [
-          residual_magnitude, &has_converged
-        ](const gsl::not_null<db::item_type<operand_tag>*> operand,
-          const gsl::not_null<db::item_type<basis_history_tag>*> basis_history,
-          const gsl::not_null<db::item_type<LinearSolver::Tags::HasConverged>*>
-              local_has_converged) noexcept {
-          *operand /= residual_magnitude;
-          basis_history->push_back(*operand);
-          *local_has_converged = has_converged;
-        });
-  }
-};
-
 struct PrepareStep {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -86,22 +50,19 @@ struct PrepareStep {
                            LinearSolver::Tags::IterationId>;
 
     db::mutate<LinearSolver::Tags::IterationId,
-               ::Tags::Next<LinearSolver::Tags::IterationId>,
                orthogonalization_iteration_id_tag>(
         make_not_null(&box),
         [](const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
                iteration_id,
            const gsl::not_null<
-               db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>*>
-               next_iteration_id,
-           const gsl::not_null<
                db::item_type<orthogonalization_iteration_id_tag>*>
-               orthogonalization_iteration_id) noexcept {
-          *iteration_id = *next_iteration_id;
-          (*next_iteration_id)++;
+               orthogonalization_iteration_id,
+           const db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>&
+               next_iteration_id) noexcept {
+          *iteration_id = next_iteration_id;
           *orthogonalization_iteration_id = 0;
-        });
-
+        },
+        get<::Tags::Next<LinearSolver::Tags::IterationId>>(box));
     return {std::move(box)};
   }
 };
@@ -112,7 +73,7 @@ struct PerformStep {
             typename ParallelComponent>
   static std::tuple<DataBox&&, bool> apply(
       DataBox& box, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& array_index,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ActionList /*meta*/,
@@ -148,6 +109,9 @@ struct PerformStep {
         Parallel::get_parallel_component<ResidualMonitor<Metavariables>>(
             cache));
 
+    // Terminate algorithm for now. The `ResidualMonitor` will receive the
+    // reduction that is performed above and then broadcast to the following
+    // action, which is responsible for restarting the algorithm.
     return {std::move(box), true};
   }
 };
@@ -161,7 +125,7 @@ struct OrthogonalizeOperand {
                db::tag_is_retrievable_v<LinearSolver::Tags::HasConverged,
                                         DataBox>> = nullptr>
   static void apply(DataBox& box,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
+                    Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const double orthogonalization) noexcept {
     using fields_tag = typename Metavariables::system::fields_tag;

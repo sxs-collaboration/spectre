@@ -51,11 +51,12 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
-              tmpl::append<tmpl::list<VectorTag, operand_tag>,
-                           typename LinearSolver::gmres_detail::
-                               InitializeElement<Metavariables>::simple_tags>,
-              typename LinearSolver::gmres_detail::InitializeElement<
-                  Metavariables>::compute_tags>>>,
+              tmpl::list<VectorTag, operand_tag,
+                         LinearSolver::Tags::IterationId, initial_fields_tag,
+                         orthogonalization_iteration_id_tag, basis_history_tag,
+                         LinearSolver::Tags::HasConverged>,
+              tmpl::list<
+                  ::Tags::NextCompute<LinearSolver::Tags::IterationId>>>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
@@ -85,8 +86,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), 0,
       {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
-       std::numeric_limits<size_t>::max(), size_t{0},
-       DenseVector<double>(3, -1.), 0_st,
+       std::numeric_limits<size_t>::max(), DenseVector<double>(3, -1.),
+       size_t{0},
        std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
                                         DenseVector<double>(3, 1.5)},
        db::item_type<LinearSolver::Tags::HasConverged>{}});

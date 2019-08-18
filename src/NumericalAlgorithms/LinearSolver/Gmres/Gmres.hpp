@@ -7,6 +7,7 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ResidualMonitor.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace LinearSolver {
@@ -83,6 +84,9 @@ struct Gmres {
    * step number. Invoke `prepare_step` to advance the state to the first
    * iteration.
    *
+   * \warning This action involves a blocking reduction, so it is a global
+   * synchronization point.
+   *
    * Uses:
    * - System:
    *   * `fields_tag`
@@ -120,7 +124,42 @@ struct Gmres {
    * not need to be initialized until it is computed for the first time in the
    * first step of the algorithm.
    */
-  using tags = gmres_detail::InitializeElement<Metavariables>;
+  using initialize_element = gmres_detail::InitializeElement<Metavariables>;
+
+  /*!
+   * \brief Reset the linear solver to its initial state.
+   *
+   * Uses:
+   * - System:
+   *   * `fields_tag`
+   *
+   * With:
+   * - `initial_fields_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>`
+   * - `operand_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
+   * - `orthogonalization_iteration_id_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
+   * LinearSolver::Tags::IterationId>`
+   * - `basis_history_tag` =
+   * `LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>`
+   *
+   * DataBox changes:
+   * - Adds: nothing
+   * - Removes: nothing
+   * - Modifies:
+   *   * `LinearSolver::Tags::IterationId`
+   *   * `initial_fields_tag`
+   *   * `orthogonalization_iteration_id_tag`
+   *   * `basis_history_tag`
+   *   * `LinearSolver::Tags::HasConverged`
+   *   * `operand_tag`
+   *
+   * \see `initialize_element`
+   */
+  using reinitialize_element =
+      gmres_detail::InitializeElement<Metavariables,
+                                      ::Initialization::MergePolicy::Overwrite>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<

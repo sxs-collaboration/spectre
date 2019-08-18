@@ -59,11 +59,15 @@ struct InitializeResidual {
     using initial_residual_magnitude_tag =
         db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
 
-    db::mutate<residual_square_tag>(
+    db::mutate<LinearSolver::Tags::IterationId, residual_square_tag>(
         make_not_null(&box), [residual_square](
+                                 const gsl::not_null<size_t*> iteration_id,
                                  const gsl::not_null<double*>
                                      local_residual_square) noexcept {
           *local_residual_square = residual_square;
+          // Also setting the LinearSolver::Tags::IterationId so
+          // re-initialization works:
+          *iteration_id = 0;
         });
     // Perform a separate `db::mutate` so that we can retrieve the
     // `residual_magnitude_tag` from the compute item

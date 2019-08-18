@@ -6,6 +6,7 @@
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/InitializeElement.hpp"
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitor.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace LinearSolver {
@@ -74,6 +75,9 @@ struct ConjugateGradient {
    * step number. Invoke `prepare_step` to advance the state to the first
    * iteration.
    *
+   * \warning This action involves a blocking reduction, so it is a global
+   * synchronization point.
+   *
    * Uses:
    * - System:
    *   * `fields_tag`
@@ -104,7 +108,35 @@ struct ConjugateGradient {
    * not need to be initialized until it is computed for the first time in the
    * first step of the algorithm.
    */
-  using tags = cg_detail::InitializeElement<Metavariables>;
+  using initialize_element = cg_detail::InitializeElement<Metavariables>;
+
+  /*!
+   * \brief Reset the linear solver to its initial state.
+   *
+   * Uses:
+   * - System:
+   *   * `fields_tag`
+   *
+   * With:
+   * - `operand_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
+   * - `residual_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>`
+   *
+   * DataBox changes:
+   * - Adds: nothing
+   * - Removes: nothing
+   * - Modifies:
+   *   * `LinearSolver::Tags::IterationId`
+   *   * `residual_tag`
+   *   * `LinearSolver::Tags::HasConverged`
+   *   * `operand_tag`
+   *
+   * \see `initialize_element`
+   */
+  using reinitialize_element =
+      cg_detail::InitializeElement<Metavariables,
+                                   ::Initialization::MergePolicy::Overwrite>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<

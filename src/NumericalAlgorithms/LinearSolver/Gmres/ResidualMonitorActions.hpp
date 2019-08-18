@@ -57,15 +57,34 @@ struct InitializeResidualMagnitude {
         db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
     using initial_residual_magnitude_tag =
         db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
+  using orthogonalization_iteration_id_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
+                         LinearSolver::Tags::IterationId>;
+  using orthogonalization_history_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
+                         fields_tag>;
 
-    db::mutate<residual_magnitude_tag, initial_residual_magnitude_tag>(
-        make_not_null(&box), [residual_magnitude](
-                                 const gsl::not_null<double*>
-                                     local_residual_magnitude,
-                                 const gsl::not_null<double*>
-                                     initial_residual_magnitude) noexcept {
+    db::mutate<LinearSolver::Tags::IterationId, residual_magnitude_tag,
+               initial_residual_magnitude_tag,
+               orthogonalization_iteration_id_tag,
+               orthogonalization_history_tag>(
+        make_not_null(&box),
+        [residual_magnitude](
+            const gsl::not_null<size_t*> iteration_id,
+            const gsl::not_null<double*> local_residual_magnitude,
+            const gsl::not_null<double*> initial_residual_magnitude,
+            const gsl::not_null<size_t*> orthogonalization_iteration_id,
+            const gsl::not_null<DenseMatrix<double>*>
+                orthogonalization_history) noexcept {
           *local_residual_magnitude = *initial_residual_magnitude =
               residual_magnitude;
+          // Also setting the following tags so re-initialization works:
+          // - LinearSolver::Tags::IterationId
+          // - orthogonalization_iteration_id_tag
+          // - orthogonalization_history_tag
+          *iteration_id = 0;
+          *orthogonalization_iteration_id = 0;
+          *orthogonalization_history = DenseMatrix<double>{2, 1, 0.};
         });
 
     LinearSolver::observe_detail::contribute_to_reduction_observer(box, cache);

@@ -14,6 +14,7 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -79,41 +80,27 @@ struct InitializeResidualMonitor {
 
  public:
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<DbTagsList,
-                                               residual_square_tag>> = nullptr>
+            typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    auto init_box = db::create_from<
-        db::RemoveTags<>,
-        db::AddSimpleTags<::LinearSolver::Tags::IterationId,
-                          residual_square_tag, initial_residual_magnitude_tag>,
-        db::AddComputeTags<
-            LinearSolver::Tags::MagnitudeCompute<residual_square_tag>,
-            LinearSolver::Tags::HasConvergedCompute<fields_tag>>>(
-        std::move(box), db::item_type<LinearSolver::Tags::IterationId>{0},
-        std::numeric_limits<double>::signaling_NaN(),
-        std::numeric_limits<double>::signaling_NaN());
-    return std::make_tuple(std::move(init_box), true);
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTagsList, residual_square_tag>> =
-                nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      const db::DataBox<DbTagsList>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    ERROR(
-        "Re-initialization not supported. Did you forget to terminate the "
-        "initialization phase?");
+    using compute_tags = db::AddComputeTags<
+        LinearSolver::Tags::MagnitudeCompute<residual_square_tag>,
+        LinearSolver::Tags::HasConvergedCompute<fields_tag>>;
+    return std::make_tuple(
+        ::Initialization::merge_into_databox<
+            InitializeResidualMonitor,
+            db::AddSimpleTags<LinearSolver::Tags::IterationId,
+                              residual_square_tag,
+                              initial_residual_magnitude_tag>,
+            compute_tags>(std::move(box),
+                          db::item_type<LinearSolver::Tags::IterationId>{0},
+                          std::numeric_limits<double>::signaling_NaN(),
+                          std::numeric_limits<double>::signaling_NaN()),
+        true);
   }
 };
 
