@@ -117,6 +117,9 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
       case Animal::Poodle:
         offset_animal = 1;
         break;
+      default:
+        offset_animal = std::numeric_limits<size_t>::max();
+        break;
     };
 
     switch (color) {
@@ -126,6 +129,9 @@ SPECTRE_TEST_CASE("Unit.Utilities.StaticCache", "[Utilities][Unit]") {
         return std::make_tuple(offset_animal, 2, value);
       case Color::Purple:
         return std::make_tuple(offset_animal, 3, value);
+      default:
+        return std::make_tuple(offset_animal, std::numeric_limits<int>::max(),
+                               value);
     };
   };
   /// [static_cache_with_enum]
