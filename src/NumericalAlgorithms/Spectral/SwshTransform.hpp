@@ -12,6 +12,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "DataStructures/Tags.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCoefficients.hpp"  // IWYU pragma: keep
@@ -34,19 +35,277 @@ namespace detail {
 // libsharp has an internal maximum number of transforms that is not in the
 // public interface, so we must hard-code its value here
 static const size_t max_libsharp_transforms = 100;
+
+// appends to a vector of pointers `collocation_data` the set of pointers
+// associated with angular views of the provided collocation data `vector`. The
+// associated views are appended into `collocation_views`. If `positive_spin` is
+// false, this function will conjugate the views, and therefore potentially
+// conjugate (depending on `Representation`) the input data `vectors`. This
+// behavior is chosen to avoid frequent copies of the input data `vector` for
+// optimization. The conjugation must be undone after the call to libsharp
+// transforms using `conjugate_views` to restore the input data to its original
+// state.
+template <ComplexRepresentation Representation>
+void append_libsharp_collocation_pointers(
+    gsl::not_null<std::vector<double*>*> collocation_data,
+    gsl::not_null<std::vector<ComplexDataView<Representation>>*>
+        collocation_views,
+    gsl::not_null<ComplexDataVector*> vector, size_t l_max,
+    bool positive_spin) noexcept;
+
+// Perform a conjugation on a vector of `ComplexDataView`s if `Spin` < 0. This
+// is used for undoing the conjugation described in the code comment for
+// `append_libsharp_collocation_pointers`
+template <int Spin, ComplexRepresentation Representation>
+SPECTRE_ALWAYS_INLINE void conjugate_views(
+    gsl::not_null<std::vector<ComplexDataView<Representation>>*>
+        collocation_views) noexcept {
+  if (Spin < 0) {
+    for (auto& view : *collocation_views) {
+      view.conjugate();
+    }
+  }
+}
+
+// appends to a vector of pointers the set of pointers associated with
+// angular views of the provided coefficient vector. When working with the
+// libsharp coefficient representation, note the intricacies mentioned in
+// the documentation for `TransformJob`.
+void append_libsharp_coefficient_pointers(
+    gsl::not_null<std::vector<std::complex<double>*>*> coefficient_data,
+    gsl::not_null<ComplexModalVector*> vector, size_t l_max) noexcept;
+
+// perform the actual libsharp execution calls on an input and output set of
+// pointers. This function handles the complication of a limited maximum number
+// of simultaneous transforms, performing multiple execution calls on pointer
+// blocks if necessary.
+template <ComplexRepresentation Representation>
+void execute_libsharp_transform_set(
+    const sharp_jobtype& jobtype, int spin,
+    gsl::not_null<std::vector<std::complex<double>*>*> coefficient_data,
+    gsl::not_null<std::vector<double*>*> collocation_data,
+    gsl::not_null<const CollocationMetadata<Representation>*>
+        collocation_metadata,
+    const sharp_alm_info* alm_info, size_t num_transforms) noexcept;
+
+// template 'implementation' for the `swsh_transform` function below which
+// performs an arbitrary number of transforms, and places them in the same
+// number of destination modal containers passed by pointer.
+// template notes: the parameter pack represents a collection of ordered modal
+// data passed by pointer, followed by ordered nodal data passed by const
+// reference. The first modal value is separated to infer the `Spin` template
+// parameter.
+template <ComplexRepresentation Representation, int Spin,
+          typename... ModalThenNodalTypes, size_t... Is>
+void swsh_transform_impl(
+    size_t l_max, size_t number_of_radial_points,
+    std::index_sequence<Is...> /*meta*/,
+    gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*> first_coefficient,
+    const ModalThenNodalTypes&... coefficients_then_collocations) noexcept;
+
+// template 'implementation' for the `inverse_swsh_transform` function below
+// which performs an arbitrary number of transforms, and places them in the same
+// number of destination nodal containers passed by pointer.
+// template notes: the parameter pack represents a collection of ordered nodal
+// data passed by pointer, followed by ordered modal data passed by const
+// reference. The first nodal value is separated to infer the `Spin` template
+// parameter.
+template <ComplexRepresentation Representation, int Spin,
+          typename... NodalThenModalTypes, size_t... Is>
+void inverse_swsh_transform_impl(
+    size_t l_max, size_t number_of_radial_points,
+    std::index_sequence<Is...> /*meta*/,
+    gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> first_collocation,
+    const NodalThenModalTypes&... collocations_then_coefficients) noexcept;
+
+// forward declaration for friend specification of helper from
+// `SwshDerivatives.hpp`
+template <typename Transform, typename FullTagList>
+struct dispatch_to_transform;
 }  // namespace detail
 
 /*!
  * \ingroup SwshGroup
- * \brief A class which gathers all necessary shared structure among several
- * spin-weighted spherical harmonic transforms and dispatches to libsharp. Each
- * `TransformJob` represents exactly one spin-weighted transform libsharp
- * execution call, and one inverse transform libsharp execution call.
+ * \brief Perform a forward libsharp spin-weighted spherical harmonic transform
+ * on any number of supplied `SpinWeighted<ComplexDataVector, Spin>`.
  *
+ * \details This function places the result in one or more
+ * `SpinWeighted<ComplexModalVector, Spin>` returned via provided
+ * pointer.  This is a simpler interface to the same functionality as the
+ * \ref DataBoxGroup mutation compatible `SwshTransform`.
+ *
+ * The following parameter ordering for the multiple input interface is enforced
+ * by the interior function calls, but is not obvious from the explicit
+ * parameter packs in this function signature:
+ *
+ * - `size_t l_max` : angular resolution for the transform
+ * - `size_t number_of_radial_points` : radial resolution (number of consecutive
+ * transforms in each of the vectors)
+ * - any number of `gsl::not_null<SpinWeighted<ComplexModalVector,
+ * Spin>*>`, all sharing the same `Spin` : The return-by-pointer containers for
+ * the transformed modal quantities
+ * - the same number of `const SpinWeighted<ComplexDataVector, Spin>&`, with the
+ * same `Spin` as the previous function argument set : The input containers of
+ * nodal spin-weighted spherical harmonic data.
+ *
+ * template parameters:
+ * - `Representation`: Either `ComplexRepresentation::Interleaved` or
+ * `ComplexRepresentation::RealsThenImags`, indicating the representation for
+ * intermediate steps of the transformation. The two representations will give
+ * identical results but may help or hurt performance depending on the task.
+ * If unspecified, defaults to `ComplexRepresentation::Interleaved`.
+ *
+ * The result is a set of libsharp-compatible coefficients.
+ * \see SwshTransform for more details on the mathematics of the libsharp
+ * data structures.
+ *
+ * \warning The collocation data is taken by const reference, but can be
+ * temporarily altered in-place during intermediate parts of the computation.
+ * The input data is guaranteed to return to its original state by the end of
+ * the function. In a setting in which multiple threads access the same data
+ * passed as input to this function, a lock must be used to prevent access
+ * during the execution of the transform.
+ */
+template <
+    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
+    int Spin, typename... ModalThenNodalTypes>
+void swsh_transform(
+    const size_t l_max, const size_t number_of_radial_points,
+    const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
+        first_coefficient,
+    const ModalThenNodalTypes&... coefficients_then_collocations) noexcept {
+  static_assert(
+      sizeof...(ModalThenNodalTypes) % 2 == 1,
+      "The number of modal arguments passed to swsh_transform must equal the "
+      "number of nodal arguments, so the total number of arguments must be "
+      "even.");
+  detail::swsh_transform_impl<Representation>(
+      l_max, number_of_radial_points,
+      std::make_index_sequence<(sizeof...(coefficients_then_collocations) + 1) /
+                               2>{},
+      first_coefficient, coefficients_then_collocations...);
+}
+
+/*!
+ * \ingroup SwshGroup
+ * \brief Perform a forward libsharp spin-weighted spherical harmonic transform
+ * on a single supplied `SpinWeighted<ComplexDataVector, Spin>`.
+ *
+ * \details This function returns a `SpinWeighted<ComplexModalVector, Spin>` by
+ * value (causing an allocation). This is a simpler interface to the same
+ * functionality as the \ref DataBoxGroup mutation compatible `SwshTransform`.
+ * If you have two or more vectors to transform at once, consider the
+ * pass-by-pointer version of `Spectral::Swsh::swsh_transform` or the \ref
+ * DataBoxGroup interface `InverseSwshTransform`, as they are more efficient for
+ * performing several transforms at once.
+ *
+ * The result is a set of libsharp-compatible coefficients.
+ * \see SwshTransform for more details on the mathematics of the libsharp
+ * data structures.
+ *
+ * \warning The collocation data is taken by const reference, but can be
+ * temporarily altered in-place during intermediate parts of the computation.
+ * The input data is guaranteed to return to its original state by the end of
+ * the function. In a setting in which multiple threads access the same data
+ * passed as input to this function, a lock must be used to prevent access
+ * during the execution of the transform.
+ */
+template <
+    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
+    int Spin>
+SpinWeighted<ComplexModalVector, Spin> swsh_transform(
+    size_t l_max, size_t number_of_radial_points,
+    const SpinWeighted<ComplexDataVector, Spin>& collocation) noexcept;
+
+/*!
+ * \ingroup SwshGroup
+ * \brief Perform an inverse libsharp spin-weighted spherical harmonic transform
+ * on any number of supplied `SpinWeighted<ComplexModalVector, Spin>`.
+ *
+ * \details This function places the result in one or more
+ * `SpinWeighted<ComplexDataVector, Spin>` returned via provided
+ * pointer.  This is a simpler interface to the same functionality as the
+ * \ref DataBoxGroup mutation compatible `InverseSwshTransform`.
+ *
+ * The following parameter ordering for the multiple input interface is enforced
+ * by the interior function calls, but is not obvious from the explicit
+ * parameter packs in this function signature:
+ *
+ * - `size_t l_max` : angular resolution for the transform
+ * - `size_t number_of_radial_points` : radial resolution (number of consecutive
+ * transforms in each of the vectors)
+ * - any number of `gsl::not_null<SpinWeighted<ComplexDataVector,
+ * Spin>*>`, all sharing the same `Spin` : The return-by-pointer containers for
+ * the transformed nodal quantities
+ * - the same number of `const SpinWeighted<ComplexModalVector, Spin>&`, with
+ * the same `Spin` as the previous function argument set : The input containers
+ * of modal spin-weighted spherical harmonic data.
+ *
+ * template parameters:
+ * - `Representation`: Either `ComplexRepresentation::Interleaved` or
+ * `ComplexRepresentation::RealsThenImags`, indicating the representation for
+ * intermediate steps of the transformation. The two representations will give
+ * identical results but may help or hurt performance depending on the task.
+ * If unspecified, defaults to `ComplexRepresentation::Interleaved`.
+ *
+ * The input is a set of libsharp-compatible coefficients.
+ * \see SwshTransform for more details on the mathematics of the libsharp
+ * data structures.
+ */
+template <
+    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
+    int Spin, typename... NodalThenModalTypes>
+void inverse_swsh_transform(
+    const size_t l_max, const size_t number_of_radial_points,
+    const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*>
+        first_collocation,
+    const NodalThenModalTypes&... collocations_then_coefficients) noexcept {
+  static_assert(
+      sizeof...(NodalThenModalTypes) % 2 == 1,
+      "The number of nodal arguments passed to inverse_swsh_transform must "
+      "equal the number of modal arguments, so the total number of arguments "
+      "must be even.");
+  detail::inverse_swsh_transform_impl<Representation>(
+      l_max, number_of_radial_points,
+      std::make_index_sequence<(sizeof...(collocations_then_coefficients) + 1) /
+                               2>{},
+      first_collocation, collocations_then_coefficients...);
+}
+
+/*!
+ * \ingroup SwshGroup
+ * \brief Perform an inverse libsharp spin-weighted spherical harmonic transform
+ * on a single supplied `SpinWeighted<ComplexModalVector, Spin>`.
+ *
+ * \details This function returns a `SpinWeighted<ComplexDataVector, Spin>` by
+ * value (causing an allocation). This is a simpler interface to the same
+ * functionality as the \ref DataBoxGroup mutation compatible
+ * `InverseSwshTransform`. If you have two or more vectors to transform at once,
+ * consider the pass-by-pointer version of
+ * `Spectral::Swsh::inverse_swsh_transform` or the \ref DataBoxGroup interface
+ * `SwshTransform`, as they are more efficient for performing several transforms
+ * at once.
+ *
+ * The input is a set of libsharp-compatible coefficients.
+ * \see SwshTransform for more details on the mathematics of the libsharp
+ * data structures.
+ */
+template <
+    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
+    int Spin>
+SpinWeighted<ComplexDataVector, Spin> inverse_swsh_transform(
+    size_t l_max, size_t number_of_radial_points,
+    const SpinWeighted<ComplexModalVector, Spin>&
+        libsharp_coefficients) noexcept;
+
+/*!
+ * \ingroup SwshGroup
+ * \brief A \ref DataBoxGroup mutate-compatible computational struct for
+ * performing several spin-weighted spherical harmonic transforms. Internally
+ * dispatches to libsharp.
  *
  * \details
  * Template Parameters:
- * - `Spin`: The spin weight for all of the fields to transform with this job.
  * - `Representation`: The element of the `ComplexRepresentation` enum which
  *   parameterizes how the data passed to libsharp will be represented. Two
  *   options are available:
@@ -63,8 +322,8 @@ static const size_t max_libsharp_transforms = 100;
  *
  *  For performance-sensitive code, both options should be tested, as each
  *  strategy has trade-offs.
- * - `TagList`: A `tmpl::list` of Tags to be forward and/or backward transformed
- *   with the `TransformJob`.
+ * - `TagList`: A `tmpl::list` of Tags to be forward transformed. The tags must
+ * represent the nodal data.
  *
  * \note The signs obtained from libsharp transformations must be handled
  * carefully. (In particular, it does not use the sign convention you will find
@@ -155,248 +414,246 @@ static const size_t max_libsharp_transforms = 100;
  * coefficients for \f$m=1\f$ and \f$1 \le \ell \le \ell_\mathrm{max} \f$, and
  * so on.
  */
-template <int Spin, ComplexRepresentation Representation, typename TagList>
-class TransformJob {
- public:
-  static_assert(cpp17::is_same_v<get_tags_with_spin<Spin, TagList>, TagList>,
-                "All Tags in TagList submitted to TransformJob must have the "
-                "same spin weight as the TransformJob Spin template parameter");
-  using CoefficientTagList = db::wrap_tags_in<Tags::SwshTransform, TagList>;
-  static constexpr int spin = Spin;
+template <typename TagList, ComplexRepresentation Representation =
+                                ComplexRepresentation::Interleaved>
+struct SwshTransform;
 
-  /// \brief Constructor for transform job. Both the `l_max` and
-  /// `number_of_radial_grid_points` must be specified for the transformation to
-  /// appropriately find all of the data in memory and associate it with the
-  /// correct collocation grid.
-  TransformJob(size_t l_max, size_t number_of_radial_grid_points) noexcept;
+/// \cond
+template <typename... TransformTags, ComplexRepresentation Representation>
+struct SwshTransform<tmpl::list<TransformTags...>, Representation> {
+  static constexpr int spin =
+      db::item_type<tmpl::front<tmpl::list<TransformTags...>>>::type::spin;
 
-  /// \brief Helper function for determining the size of allocation necessary to
-  /// store the coefficient data.
-  ///
-  /// \note This size is not the same as the collocation data size, as the
-  /// coefficients are stored in the efficient 'triangular' form noted in the
-  /// documentation for `TransformJob`.
-  constexpr size_t coefficient_output_size() const noexcept {
-    return size_of_libsharp_coefficient_vector(l_max_) *
-           number_of_radial_grid_points_;
+  static_assert(
+      tmpl2::flat_all_v<db::item_type<TransformTags>::type::spin == spin...>,
+      "All Tags in TagList submitted to SwshTransform must have the "
+      "same spin weight.");
+
+  using return_tags = tmpl::list<Tags::SwshTransform<TransformTags>...>;
+  using argument_tags =
+      tmpl::list<TransformTags..., Tags::LMax, Tags::NumberOfRadialPoints>;
+
+  static void apply(
+      const gsl::not_null<
+          db::item_type<Tags::SwshTransform<TransformTags>>*>... coefficients,
+      const db::item_type<TransformTags>&... collocations, const size_t l_max,
+      const size_t number_of_radial_points) noexcept {
+    // forward to the version which takes parameter packs of vectors
+    apply_to_vectors(make_not_null(&get(*coefficients))...,
+                     get(collocations)..., l_max, number_of_radial_points);
   }
 
-  /// \brief Execute the forward spin-weighted spherical harmonic transform
-  /// using libsharp.
-  ///
-  /// \param output A `Variables` which must contain `CoefficientTag<...>`s
-  /// for each of the tags provided via `TagList`. The coefficients will be
-  /// stored appropriately in this Variables.
-  /// \param input A `Variables` which must contain each of the tags provided
-  /// via `TagList`. The collocation points may be temporarily altered
-  /// (conjugated) during the execution of the transform if the `Spin` is
-  /// negative, but are reverted to their original state by the end of the
-  /// function execution.
-  ///
-  /// \warning The `input` is taken by const reference, but can be temporarily
-  /// altered in-place during intermediate parts of the computation. The input
-  /// data is guaranteed to return to its original state by the end of the
-  /// function. In a setting in which multiple threads access the same data
-  /// passed as input to this function, a lock must be used to prevent access
-  /// during the execution of the transform.
-  template <typename InputVarsTagList, typename OutputVarsTagList>
-  void execute_transform(gsl::not_null<Variables<OutputVarsTagList>*> output,
-                         const Variables<InputVarsTagList>& input) const
-      noexcept;
+  // the convenience transform functions call the private member directly, so
+  // need to be friends
+  // redundant declaration due to forward declaration needs in earlier part of
+  // file and friend requirements
+  template <ComplexRepresentation FriendRepresentation, int FriendSpin,
+            typename... CoefficientThenCollocationTypes, size_t... Is>
+  // NOLINTNEXTLINE(readability-redundant-declaratioon)
+  friend void detail::swsh_transform_impl(
+      size_t, size_t, std::index_sequence<Is...>,
+      gsl::not_null<SpinWeighted<ComplexModalVector, FriendSpin>*>,
+      const CoefficientThenCollocationTypes&...) noexcept;
 
-  /// \brief Execute the inverse spin-weighted spherical harmonic transform
-  /// using libsharp.
-  ///
-  /// \param input A `Variables` which must contain `CoefficientTag<...>`s
-  /// for each of the tags provided via `TagList`. The coefficients may be
-  /// temporarily altered (conjugated) during the execution of the transform if
-  /// the `Spin` is negative, but are reverted to their original state by the
-  /// end of the function execution.
-  /// \param output A `Variables` which must contain each of the tags provided
-  /// via `TagList`. The collocation data will be stored appropriately in this
-  /// Variables.
-  ///
-  /// \warning The `input` is taken by const reference, but can be temporarily
-  /// altered in-place during intermediate parts of the computation. The input
-  /// data is guaranteed to return to its original state by the end of the
-  /// function. In a setting in which multiple threads access the same data
-  /// passed as input to this function, a lock must be used to prevent access
-  /// during the execution of the transform.
-  template <typename InputVarsTagList, typename OutputVarsTagList>
-  void execute_inverse_transform(
-      gsl::not_null<Variables<OutputVarsTagList>*> output,
-      const Variables<InputVarsTagList>& input) const noexcept;
+  // friend declaration for helper function from `SwshDerivatives.hpp`
+  template <typename Transform, typename FullTagList>
+  friend struct detail::dispatch_to_transform;
 
  private:
-  size_t number_of_radial_grid_points_;
-  size_t l_max_;
-  sharp_alm_info* alm_info_;
-  const CollocationMetadata<Representation>* collocation_metadata_;
+  static void apply_to_vectors(
+      const gsl::not_null<typename db::item_type<
+          Tags::SwshTransform<TransformTags>>::type*>... coefficients,
+      const typename db::item_type<TransformTags>::type&... collocations,
+      size_t l_max, size_t number_of_radial_points) noexcept;
+};
+/// \endcond
+
+/*!
+ * \ingroup SwshGroup
+ * \brief A \ref DataBoxGroup mutate-compatible computational struct for
+ * performing several spin-weighted inverse spherical harmonic transforms.
+ * Internally dispatches to libsharp.
+ *
+ * \details
+ * Template Parameters:
+ * - `Representation`: The element of the `ComplexRepresentation` enum which
+ *   parameterizes how the data passed to libsharp will be represented. Two
+ *   options are available:
+ *  - `ComplexRepresentation:Interleaved`: indicates that the real and imaginary
+ *    parts of the collocation values will be passed to libsharp as pointers
+ *    into existing complex data structures, minimizing copies, but maintaining
+ *    a stride of 2 for 'adjacent' real or imaginary values.
+ *  - `ComplexRepresentation::RealsThenImags`: indicates that the real and
+ *    imaginary parts of the collocation values will be passed to libsharp as
+ *    separate contiguous blocks. At current, this introduces both allocations
+ *    and copies.  **optimization note** In the future most of the allocations
+ *    can be aggregated to calling code, which would pass in buffers by
+ *    `not_null` pointers.
+ *
+ *  For performance-sensitive code, both options should be tested, as each
+ *  strategy has trade-offs.
+ * - `TagList`: A `tmpl::list` of Tags to be inverse transformed. The tags must
+ * represent the nodal data being transformed to.
+ *
+ * \see `SwshTransform` for mathematical notes regarding the libsharp modal
+ * representation taken as input for this computational struct.
+ */
+template <typename TagList, ComplexRepresentation Representation =
+                                ComplexRepresentation::Interleaved>
+struct InverseSwshTransform;
+
+/// \cond
+template <typename... TransformTags, ComplexRepresentation Representation>
+struct InverseSwshTransform<tmpl::list<TransformTags...>, Representation> {
+  static constexpr int spin =
+      db::item_type<tmpl::front<tmpl::list<TransformTags...>>>::type::spin;
+
+  static_assert(
+      tmpl2::flat_all_v<db::item_type<TransformTags>::type::spin == spin...>,
+      "All Tags in TagList submitted to InverseSwshTransform must have the "
+      "same spin weight.");
+
+  using return_tags = tmpl::list<TransformTags...>;
+  using argument_tags = tmpl::list<Tags::SwshTransform<TransformTags>...,
+                                   Tags::LMax, Tags::NumberOfRadialPoints>;
+
+  static void apply(
+      const gsl::not_null<db::item_type<TransformTags>*>... collocations,
+      const db::item_type<Tags::SwshTransform<TransformTags>>&... coefficients,
+      const size_t l_max, const size_t number_of_radial_points) noexcept {
+    // forward to the version which takes parameter packs of vectors
+    apply_to_vectors(make_not_null(&get(*collocations))...,
+                     get(coefficients)..., l_max, number_of_radial_points);
+  }
+
+  // the convenience transform functions call the private member directly, so
+  // need to be friends
+  // redundant declaration due to forward declaration needs in earlier part of
+  // file and friend requirements
+  template <ComplexRepresentation FriendRepresentation, int FriendSpin,
+            typename... CollocationThenCoefficientTypes, size_t... Is>
+  // NOLINTNEXTLINE(readability-redundant-declaratioon)
+  friend void detail::inverse_swsh_transform_impl(
+      size_t, size_t, std::index_sequence<Is...>,
+      gsl::not_null<SpinWeighted<ComplexDataVector, FriendSpin>*>,
+      const CollocationThenCoefficientTypes&...) noexcept;
+
+  // friend declaration for helper function from `SwshDerivatives.hpp`
+  template <typename Transform, typename FullTagList>
+  friend struct detail::dispatch_to_transform;
+
+ private:
+  static void apply_to_vectors(
+      const gsl::not_null<
+          typename db::item_type<TransformTags>::type*>... collocations,
+      const typename db::item_type<
+          Tags::SwshTransform<TransformTags>>::type&... coefficients,
+      size_t l_max, size_t number_of_radial_points) noexcept;
 };
 
-namespace detail {
-// appends to a vector of pointers `collocation_data` the set of pointers
-// associated with angular views of the provided collocation data `vector`. The
-// associated views are appended into `collocation_views`. If `positive_spin` is
-// false, this function will conjugate the views, and therefore potentially
-// conjugate (depending on `Representation`) the input data `vectors`. This
-// behavior is chosen to avoid frequent copies of the input data `vector` for
-// optimization. The conjugation must be undone after the call to libsharp
-// transforms using `conjugate_views` to restore the input data to its original
-// state.
-template <ComplexRepresentation Representation>
-void append_libsharp_collocation_pointers(
-    gsl::not_null<std::vector<double*>*> collocation_data,
-    gsl::not_null<std::vector<ComplexDataView<Representation>>*>
-        collocation_views,
-    gsl::not_null<ComplexDataVector*> vector, size_t l_max,
-    bool positive_spin) noexcept;
+template <typename... TransformTags, ComplexRepresentation Representation>
+void SwshTransform<tmpl::list<TransformTags...>, Representation>::
+    apply_to_vectors(
+        const gsl::not_null<typename db::item_type<
+            Tags::SwshTransform<TransformTags>>::type*>... coefficients,
+        const typename db::item_type<TransformTags>::type&... collocations,
+        const size_t l_max, const size_t number_of_radial_points) noexcept {
+  EXPAND_PACK_LEFT_TO_RIGHT(coefficients->destructive_resize(
+      size_of_libsharp_coefficient_vector(l_max) * number_of_radial_points));
 
-// Perform a conjugation on a vector of `ComplexDataView`s if `Spin` < 0. This
-// is used for undoing the conjugation described in the code comment for
-// `append_libsharp_collocation_pointers`
-template <int Spin, ComplexRepresentation Representation>
-SPECTRE_ALWAYS_INLINE void conjugate_views(
-    gsl::not_null<std::vector<ComplexDataView<Representation>>*>
-        collocation_views) noexcept {
-  if (Spin < 0) {
-    for (auto& view : *collocation_views) {
-      view.conjugate();
-    }
-  }
-}
-
-// appends to a vector of pointers the set of pointers associated with
-// angular views of the provided coefficient vector. When working with the
-// libsharp coefficient representation, note the intricacies mentioned in
-// the documentation for `TransformJob`.
-void append_libsharp_coefficient_pointers(
-    gsl::not_null<std::vector<std::complex<double>*>*> coefficient_data,
-    gsl::not_null<ComplexModalVector*> vector, size_t l_max) noexcept;
-
-// perform the actual libsharp execution calls on an input and output set of
-// pointers. This function handles the complication of a limited maximum number
-// of simultaneous transforms, performing multiple execution calls on pointer
-// blocks if necessary.
-template <ComplexRepresentation Representation>
-void execute_libsharp_transform_set(
-    const sharp_jobtype& jobtype, int spin,
-    gsl::not_null<std::vector<std::complex<double>*>*> coefficient_data,
-    gsl::not_null<std::vector<double*>*> collocation_data,
-    gsl::not_null<const CollocationMetadata<Representation>*>
-        collocation_metadata,
-    const sharp_alm_info* alm_info, size_t num_transforms) noexcept;
-}  // namespace detail
-
-template <int Spin, ComplexRepresentation Representation, typename TagList>
-TransformJob<Spin, Representation, TagList>::TransformJob(
-    const size_t l_max, const size_t number_of_radial_grid_points) noexcept
-    : number_of_radial_grid_points_{number_of_radial_grid_points},
-      l_max_{l_max},
-      collocation_metadata_{
-          &cached_collocation_metadata<Representation>(l_max_)} {
-  alm_info_ = cached_coefficients_metadata(l_max_).get_sharp_alm_info();
-}
-
-template <int Spin, ComplexRepresentation Representation, typename TagList>
-template <typename InputVarsTagList, typename OutputVarsTagList>
-void TransformJob<Spin, Representation, TagList>::execute_transform(
-    const gsl::not_null<Variables<OutputVarsTagList>*> output,
-    const Variables<InputVarsTagList>& input) const noexcept {
   // assemble a list of pointers into the collocation point data. This is
   // required because libsharp expects pointers to pointers.
   std::vector<detail::ComplexDataView<Representation>> pre_transform_views;
-  pre_transform_views.reserve(number_of_radial_grid_points_ *
-                              tmpl::size<TagList>::value);
+  pre_transform_views.reserve(number_of_radial_points *
+                              sizeof...(TransformTags));
   std::vector<double*> pre_transform_collocation_data;
-  pre_transform_collocation_data.reserve(2 * number_of_radial_grid_points_ *
-                                         tmpl::size<TagList>::value);
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-  auto to_transform = const_cast<Variables<InputVarsTagList>*>(&input);
+  pre_transform_collocation_data.reserve(2 * number_of_radial_points *
+                                         sizeof...(TransformTags));
 
-  // libsharp considers two arrays per transform when spin is not zero.
-  const size_t num_transforms = (Spin == 0 ? 2 : 1) *
-                                number_of_radial_grid_points_ *
-                                tmpl::size<TagList>::value;
-  tmpl::for_each<TagList>(
-      [&pre_transform_collocation_data, &pre_transform_views, &to_transform,
-       this ](auto tag_v) noexcept {
-        using tag = typename decltype(tag_v)::type;
-        detail::append_libsharp_collocation_pointers(
-            make_not_null(&pre_transform_collocation_data),
-            make_not_null(&pre_transform_views),
-            make_not_null(&get(get<tag>(*to_transform)).data()), l_max_,
-            Spin >= 0);
-      });
+  // clang-tidy: const-cast, object is temporarily modified and returned to
+  // original state
+  EXPAND_PACK_LEFT_TO_RIGHT(detail::append_libsharp_collocation_pointers(
+      make_not_null(&pre_transform_collocation_data),
+      make_not_null(&pre_transform_views),
+      make_not_null(
+          &const_cast<typename db::item_type<TransformTags>::type&>(  // NOLINT
+               collocations)
+               .data()),
+      l_max, spin >= 0));
+
   std::vector<std::complex<double>*> post_transform_coefficient_data;
-  post_transform_coefficient_data.reserve(2 * number_of_radial_grid_points_ *
-                                          tmpl::size<TagList>::value);
+  post_transform_coefficient_data.reserve(2 * number_of_radial_points *
+                                          sizeof...(TransformTags));
 
-  tmpl::for_each<CoefficientTagList>(
-      [&post_transform_coefficient_data, &output, this ](auto x) noexcept {
-        detail::append_libsharp_coefficient_pointers(
-            make_not_null(&post_transform_coefficient_data),
-            make_not_null(
-                &get(get<typename decltype(x)::type>(*output)).data()),
-            l_max_);
-      });
+  EXPAND_PACK_LEFT_TO_RIGHT(detail::append_libsharp_coefficient_pointers(
+      make_not_null(&post_transform_coefficient_data),
+      make_not_null(&coefficients->data()), l_max));
+
+  const size_t num_transforms =
+      (spin == 0 ? 2 : 1) * number_of_radial_points * sizeof...(TransformTags);
+  const auto* collocation_metadata =
+      &cached_collocation_metadata<Representation>(l_max);
+  const auto* alm_info =
+      cached_coefficients_metadata(l_max).get_sharp_alm_info();
 
   detail::execute_libsharp_transform_set(
       SHARP_MAP2ALM, spin, make_not_null(&post_transform_coefficient_data),
       make_not_null(&pre_transform_collocation_data),
-      make_not_null(collocation_metadata_), alm_info_, num_transforms);
+      make_not_null(collocation_metadata), alm_info, num_transforms);
 
-  detail::conjugate_views<Spin>(make_not_null(&pre_transform_views));
+  detail::conjugate_views<spin>(make_not_null(&pre_transform_views));
 }
 
-template <int Spin, ComplexRepresentation Representation, typename TagList>
-template <typename InputVarsTagList, typename OutputVarsTagList>
-void TransformJob<Spin, Representation, TagList>::execute_inverse_transform(
-    const gsl::not_null<Variables<OutputVarsTagList>*> output,
-    const Variables<InputVarsTagList>& input) const noexcept {
-  std::vector<std::complex<double>*> pre_transform_coefficient_data;
-  pre_transform_coefficient_data.reserve(2 * number_of_radial_grid_points_ *
-                                         tmpl::size<CoefficientTagList>::value);
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-const-cast)
-  auto to_inverse_transform = const_cast<Variables<InputVarsTagList>&>(input);
+template <typename... TransformTags, ComplexRepresentation Representation>
+void InverseSwshTransform<tmpl::list<TransformTags...>, Representation>::
+    apply_to_vectors(
+        const gsl::not_null<
+            typename db::item_type<TransformTags>::type*>... collocations,
+        const typename db::item_type<
+            Tags::SwshTransform<TransformTags>>::type&... coefficients,
+        const size_t l_max, const size_t number_of_radial_points) noexcept {
+  EXPAND_PACK_LEFT_TO_RIGHT(collocations->destructive_resize(
+      number_of_swsh_collocation_points(l_max) * number_of_radial_points));
 
-  tmpl::for_each<CoefficientTagList>(
-      [&pre_transform_coefficient_data, &to_inverse_transform, this](auto x) {
-        detail::append_libsharp_coefficient_pointers(
-            make_not_null(&pre_transform_coefficient_data),
-            make_not_null(
-                &get(get<typename decltype(x)::type>(to_inverse_transform))
-                     .data()),
-            l_max_);
-      });
+  std::vector<std::complex<double>*> pre_transform_coefficient_data;
+  pre_transform_coefficient_data.reserve(2 * number_of_radial_points *
+                                         sizeof...(TransformTags));
+  // clang-tidy: const-cast, object is temporarily modified and returned to
+  // original state
+  EXPAND_PACK_LEFT_TO_RIGHT(detail::append_libsharp_coefficient_pointers(
+      make_not_null(&pre_transform_coefficient_data),
+      make_not_null(
+          &const_cast<typename db::item_type<  // NOLINT
+               Tags::SwshTransform<TransformTags>>::type&>(coefficients)
+               .data()),
+      l_max));
 
   std::vector<detail::ComplexDataView<Representation>> post_transform_views;
-  post_transform_views.reserve(number_of_radial_grid_points_ *
-                               tmpl::size<TagList>::value);
+  post_transform_views.reserve(number_of_radial_points *
+                               sizeof...(TransformTags));
   std::vector<double*> post_transform_collocation_data;
-  post_transform_collocation_data.reserve(2 * number_of_radial_grid_points_ *
-                                          tmpl::size<TagList>::value);
+  post_transform_collocation_data.reserve(2 * number_of_radial_points *
+                                          sizeof...(TransformTags));
+
+  EXPAND_PACK_LEFT_TO_RIGHT(detail::append_libsharp_collocation_pointers(
+      make_not_null(&post_transform_collocation_data),
+      make_not_null(&post_transform_views),
+      make_not_null(&collocations->data()), l_max, true));
 
   // libsharp considers two arrays per transform when spin is not zero.
-  const size_t num_transforms = (Spin == 0 ? 2 : 1) *
-                                number_of_radial_grid_points_ *
-                                tmpl::size<TagList>::value;
-
-  tmpl::for_each<TagList>([&post_transform_collocation_data,
-                           &post_transform_views, &output, this](auto x) {
-    detail::append_libsharp_collocation_pointers(
-        make_not_null(&post_transform_collocation_data),
-        make_not_null(&post_transform_views),
-        make_not_null(&get(get<typename decltype(x)::type>(*output)).data()),
-        l_max_, true);
-  });
+  const size_t num_transforms =
+      (spin == 0 ? 2 : 1) * number_of_radial_points * sizeof...(TransformTags);
+  const auto* collocation_metadata =
+      &cached_collocation_metadata<Representation>(l_max);
+  const auto* alm_info =
+      cached_coefficients_metadata(l_max).get_sharp_alm_info();
 
   detail::execute_libsharp_transform_set(
       SHARP_ALM2MAP, spin, make_not_null(&pre_transform_coefficient_data),
       make_not_null(&post_transform_collocation_data),
-      make_not_null(collocation_metadata_), alm_info_, num_transforms);
+      make_not_null(collocation_metadata), alm_info, num_transforms);
 
-  detail::conjugate_views<Spin>(make_not_null(&post_transform_views));
+  detail::conjugate_views<spin>(make_not_null(&post_transform_views));
 
   // The inverse transformed collocation data has just been placed in the
   // memory blocks controlled by the `ComplexDataView`s. Finally, that data
@@ -405,152 +662,108 @@ void TransformJob<Spin, Representation, TagList>::execute_inverse_transform(
     view.copy_back_to_source();
   }
 }
-
-// @{
-/*!
- * \ingroup SwshGroup
- * \brief Perform a forward libsharp spin-weighted spherical harmonic transform
- * on a supplied `SpinWeighted<ComplexDataVector, Spin>`.
- *
- * \details This function places the result in a
- * `SpinWeighted<ComplexModalVector, Spin>` either returned via the provided
- * pointer or by value (causing an allocation) if no pointer is provided. This
- * is a simpler interface to the same functionality as `TransformJob`. This
- * function is most suitable if only a small number of quantities will be
- * transformed. If many quantities are simultaneously transformed and
- * performance is desired, consider creating a `TransformJob`, or set of
- * `TransformJob`s from a tag list, potentially using `make_transform_job_list`.
- *
- * template parameters:
- * - `Representation`: Either `ComplexRepresentation::Interleaved` or
- * `ComplexRepresentation::RealsThenImags`, indicating the representation for
- * intermediate steps of the transformation. The two representations will give
- * identical results but may help or hurt performance depending on the task.
- * If unspecified, defaults to `ComplexRepresentation::Interleaved`.
- * - `Spin`: The spin-weight of the quantity being transformed.
- *
- * The result is a set of libsharp-compatible coefficients.
- * \see TransformJob for more details on the mathematics of the libsharp
- * data structures.
- *
- * \warning The `collocation` is taken by const reference, but can be
- * temporarily altered in-place during intermediate parts of the computation.
- * The input data is guaranteed to return to its original state by the end of
- * the function. In a setting in which multiple threads access the same data
- * passed as input to this function, a lock must be used to prevent access
- * during the execution of the transform.
- */
-template <
-    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
-    int Spin>
-void swsh_transform(gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
-                        libsharp_coefficients,
-                    const SpinWeighted<ComplexDataVector, Spin>& collocation,
-                    size_t l_max) noexcept;
-
-template <
-    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
-    int Spin>
-SpinWeighted<ComplexModalVector, Spin> swsh_transform(
-    const SpinWeighted<ComplexDataVector, Spin>& collocation,
-    size_t l_max) noexcept;
-// @}
-
-// @{
-/*!
- * \ingroup SwshGroup
- * \brief Perform an inverse libsharp spin-weighted spherical harmonic transform
- * on a supplied `SpinWeighted<ComplexModalVector, Spin>`.
- *
- * \details This function places the result in a
- * `SpinWeighted<ComplexDataVector, Spin>` either returned via the provided
- * pointer or by value (causing an allocation) if no pointer is provided. This
- * is a simpler interface to the same functionality as `TransformJob`. This
- * function is most suitable if only a small number of quantities will be
- * transformed. If many quantities are simultaneously transformed and
- * performance is desired, consider creating a `TransformJob`, or set of
- * `TransformJob`s from a tag list, potentially using `make_transform_job_list`.
- *
- * template parameters:
- * - `Representation`: Either `ComplexRepresentation::Interleaved` or
- * `ComplexRepresentation::RealsThenImags`, indicating the representation for
- * intermediate steps of the transformation. The two representations will give
- * identical results but may help or hurt performance depending on the task.
- * If unspecified, defaults to `ComplexRepresentation::Interleaved`.
- * - `Spin`: The spin-weight of the quantity being transformed.
- *
- * The result is a set of libsharp-compatible collocation values.
- * \see TransformJob for more details on the mathematics of the libsharp
- * data structures.
- *
- * \warning The `libsharp_coefficients` is taken by const reference, but can
- * be temporarily altered in-place during intermediate parts of the computation.
- * The input data is guaranteed to return to its original state by the end of
- * the function. In a setting in which multiple threads access the same data
- * passed as input to this function, a lock must be used to prevent access
- * during the execution of the transform.
- */
-template <
-    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
-    int Spin>
-void inverse_swsh_transform(
-    gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> collocation,
-    const SpinWeighted<ComplexModalVector, Spin>& libsharp_coefficients,
-    size_t l_max) noexcept;
-
-template <
-    ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
-    int Spin>
-SpinWeighted<ComplexDataVector, Spin> inverse_swsh_transform(
-    const SpinWeighted<ComplexModalVector, Spin>& libsharp_coefficients,
-    size_t l_max) noexcept;
-// @}
+/// \endcond
 
 namespace detail {
-template <typename Job>
-struct transform_job_is_not_empty : std::true_type {};
 
-template <int Spin, ComplexRepresentation Representation>
-struct transform_job_is_not_empty<
-    TransformJob<Spin, Representation, tmpl::list<>>> : std::false_type {};
+template <ComplexRepresentation Representation, int Spin,
+          typename... ModalThenNodalTypes, size_t... Is>
+void swsh_transform_impl(
+    const size_t l_max, const size_t number_of_radial_points,
+    std::index_sequence<Is...> /*meta*/,
+    const gsl::not_null<SpinWeighted<ComplexModalVector, Spin>*>
+        first_coefficient,
+    const ModalThenNodalTypes&... coefficients_then_collocations) noexcept {
+  SwshTransform<
+      tmpl::list<::Tags::SpinWeighted<::Tags::TempScalar<Is, ComplexDataVector>,
+                                      std::integral_constant<int, Spin>>...>>::
+      apply_to_vectors(first_coefficient, coefficients_then_collocations...,
+                       l_max, number_of_radial_points);
+}
 
+template <ComplexRepresentation Representation, int Spin,
+          typename... NodalThenModalTypes, size_t... Is>
+void inverse_swsh_transform_impl(
+    const size_t l_max, const size_t number_of_radial_points,
+    std::index_sequence<Is...> /*meta*/,
+    const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*>
+        first_collocation,
+    const NodalThenModalTypes&... collocations_then_coefficients) noexcept {
+  InverseSwshTransform<
+      tmpl::list<::Tags::SpinWeighted<::Tags::TempScalar<Is, ComplexDataVector>,
+                                      std::integral_constant<int, Spin>>...>>::
+      apply_to_vectors(first_collocation, collocations_then_coefficients...,
+                       l_max, number_of_radial_points);
+}
+
+// A metafunction for binning a provided tag list into `SwshTransform` objects
+// according to spin-weight
 template <int MinSpin, ComplexRepresentation Representation, typename TagList,
           typename IndexSequence>
-struct make_transform_job_list_impl;
+struct make_transform_list_impl;
 
 template <int MinSpin, ComplexRepresentation Representation, typename TagList,
           int... Is>
-struct make_transform_job_list_impl<MinSpin, Representation, TagList,
-                                    std::integer_sequence<int, Is...>> {
-  using type = tmpl::filter<
-      tmpl::list<TransformJob<Is + MinSpin, Representation,
-                              get_tags_with_spin<Is + MinSpin, TagList>>...>,
-      transform_job_is_not_empty<tmpl::_1>>;
+struct make_transform_list_impl<MinSpin, Representation, TagList,
+                                std::integer_sequence<int, Is...>> {
+  using type = tmpl::flatten<tmpl::list<tmpl::conditional_t<
+      not cpp17::is_same_v<get_tags_with_spin<Is + MinSpin, TagList>,
+                           tmpl::list<>>,
+      SwshTransform<get_tags_with_spin<Is + MinSpin, TagList>, Representation>,
+      tmpl::list<>>...>>;
+};
+
+// A metafunction for binning a provided tag list into `InverseSwshTransform`
+// objects according to spin-weight
+template <int MinSpin, ComplexRepresentation Representation, typename TagList,
+          typename IndexSequence>
+struct make_inverse_transform_list_impl;
+
+template <int MinSpin, ComplexRepresentation Representation, typename TagList,
+          int... Is>
+struct make_inverse_transform_list_impl<MinSpin, Representation, TagList,
+                                        std::integer_sequence<int, Is...>> {
+  using type = tmpl::flatten<tmpl::list<tmpl::conditional_t<
+      not cpp17::is_same_v<get_tags_with_spin<Is + MinSpin, TagList>,
+                           tmpl::list<>>,
+      InverseSwshTransform<get_tags_with_spin<Is + MinSpin, TagList>,
+                           Representation>,
+      tmpl::list<>>...>>;
 };
 }  // namespace detail
 
-/// \ingroup SpectralGroup
-/// \brief Assemble a `tmpl::list` of `TransformJob` given a list of tags
-/// `TagList` that need to be transformed. The `Representation` is the
-/// `ComplexRepresentation` to use for the transformations.
+// @{
+/// \ingroup SwshGroup
+/// \brief Assemble a `tmpl::list` of `SwshTransform`s or
+/// `InverseSwshTransform`s given a list of tags `TagList` that need to be
+/// transformed. The `Representation` is the
+/// `Spectral::Swsh::ComplexRepresentation` to use for the transformations.
 ///
-/// \details Up to five `TransformJob` will be returned, corresponding to
-/// the possible spin values. Any number of transformations are aggregated
-/// into that set of `TransformJob`s. The number of transforms is up to five
-/// because the libsharp utility only has capability to perform spin-weighted
-/// spherical harmonic transforms for integer spin-weights from -2 to 2.
+/// \details Up to five `SwshTransform`s or `InverseSwshTransform`s will be
+/// returned, corresponding to the possible spin values. Any number of
+/// transformations are aggregated into that set of `SwshTransform`s (or
+/// `InverseSwshTransform`s). The number of transforms is up to five because the
+/// libsharp utility only has capability to perform spin-weighted spherical
+/// harmonic transforms for integer spin-weights from -2 to 2.
 ///
-/// \snippet Test_SwshTransform.cpp make_transform_job_list
+/// \snippet Test_SwshTransform.cpp make_transform_list
 template <ComplexRepresentation Representation, typename TagList>
-using make_transform_job_list = typename detail::make_transform_job_list_impl<
+using make_transform_list = typename detail::make_transform_list_impl<
     -2, Representation, TagList,
     decltype(std::make_integer_sequence<int, 5>{})>::type;
 
-/// \ingroup SpectralGroup
-/// \brief Assemble a `tmpl::list` of `TransformJob`s given a list of
-/// `Derivative<Tag, Derivative>` that need to be computed. The
-/// `TransformJob`s constructed by this type alias correspond to the
-/// `Tag`s in the list.
+template <ComplexRepresentation Representation, typename TagList>
+using make_inverse_transform_list =
+    typename detail::make_inverse_transform_list_impl<
+        -2, Representation, TagList,
+        decltype(std::make_integer_sequence<int, 5>{})>::type;
+// @}
+
+/// \ingroup SwshGroup
+/// \brief Assemble a `tmpl::list` of `SwshTransform`s given a list of
+/// `Spectral::Swsh::Tags::Derivative<Tag, Derivative>` that need to be
+/// computed. The `SwshTransform`s constructed by this type alias correspond to
+/// the `Tag`s in the list.
 ///
 /// \details This is intended as a convenience utility for the first step of a
 /// derivative routine, where one transforms the set of fields for which
@@ -558,8 +771,8 @@ using make_transform_job_list = typename detail::make_transform_job_list_impl<
 ///
 /// \snippet Test_SwshTransform.cpp make_transform_from_derivative_tags
 template <ComplexRepresentation Representation, typename DerivativeTagList>
-using make_transform_job_list_from_derivative_tags =
-    typename detail::make_transform_job_list_impl<
+using make_transform_list_from_derivative_tags =
+    typename detail::make_transform_list_impl<
         -2, Representation,
         tmpl::transform<DerivativeTagList,
                         tmpl::bind<db::remove_tag_prefix, tmpl::_1>>,

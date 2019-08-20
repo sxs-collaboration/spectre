@@ -165,6 +165,22 @@ struct SwshTransform : db::PrefixTag, db::SimpleTag {
     return "SwshTransform(" + Tag::name() + ")";
   }
 };
+
+/// \ingroup SwshGroup
+/// \brief Tag for the maximum spin-weighted spherical harmonic l; sets angular
+/// resolution.
+struct LMax : db::SimpleTag {
+  using type = size_t;
+  static std::string name() noexcept { return "LMax"; }
+};
+
+/// \ingroup SwshGroup
+/// \brief Tag for the number of radial grid points in the three-dimensional
+/// representation of radially concentric spherical shells
+struct NumberOfRadialPoints : db::SimpleTag {
+  using type = size_t;
+  static std::string name() noexcept { return "NumberOfRadialPoints"; }
+};
 }  // namespace Tags
 
 namespace detail {
