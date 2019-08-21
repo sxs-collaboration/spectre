@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
     Spectral.cpp
     SwshCoefficients.cpp
     SwshCollocation.cpp
+    SwshDerivatives.cpp
     SwshFiltering.cpp
     SwshTags.cpp
     SwshTransform.cpp

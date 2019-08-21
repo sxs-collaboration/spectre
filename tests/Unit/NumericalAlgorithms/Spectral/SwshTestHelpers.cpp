@@ -85,9 +85,9 @@ std::complex<double>
 derivative_of_spin_weighted_spherical_harmonic<Tags::EthbarEth>(
     const int s, const int l, const int m, const double theta,
     const double phi) noexcept {
-  return -sqrt(static_cast<std::complex<double>>((l + s) * (l - s + 1))) *
-         derivative_of_spin_weighted_spherical_harmonic<Tags::Eth>(s - 1, l, m,
-                                                                   theta, phi);
+  return sqrt(static_cast<std::complex<double>>((l - s) * (l + s + 1))) *
+         derivative_of_spin_weighted_spherical_harmonic<Tags::Ethbar>(
+             s + 1, l, m, theta, phi);
 }
 
 template <>
@@ -95,9 +95,9 @@ std::complex<double>
 derivative_of_spin_weighted_spherical_harmonic<Tags::EthEthbar>(
     const int s, const int l, const int m, const double theta,
     const double phi) noexcept {
-  return sqrt(static_cast<std::complex<double>>((l - s) * (l + s + 1))) *
-         derivative_of_spin_weighted_spherical_harmonic<Tags::Ethbar>(
-             s + 1, l, m, theta, phi);
+  return -sqrt(static_cast<std::complex<double>>((l + s) * (l - s + 1))) *
+         derivative_of_spin_weighted_spherical_harmonic<Tags::Eth>(s - 1, l, m,
+                                                                   theta, phi);
 }
 
 template <>
