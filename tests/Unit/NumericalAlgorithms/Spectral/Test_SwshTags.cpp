@@ -50,7 +50,7 @@ static_assert(Derivative<Spin2TestTag, Ethbar>::spin == 1,
               "failed testing DerivativeTag with DerivativeType Ethbar");
 
 static_assert(
-    cpp17::is_same_v<Derivative<SpinMinus1TestTag, Ethbar>::derived_from,
+    cpp17::is_same_v<Derivative<SpinMinus1TestTag, Ethbar>::derivative_of,
                      SpinMinus1TestTag>,
     "failed testing DerivativeTag with DerivativeType Ethbar");
 
