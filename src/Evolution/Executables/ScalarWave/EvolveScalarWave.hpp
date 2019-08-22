@@ -77,6 +77,7 @@ class CProxy_ConstGlobalCache;
 
 template <size_t Dim>
 struct EvolutionMetavars {
+  static constexpr size_t volume_dim = Dim;
   // Customization/"input options" to simulation
   using system = ScalarWave::System<Dim>;
   using temporal_id = Tags::TimeId;
@@ -103,7 +104,6 @@ struct EvolutionMetavars {
                  OptionTags::TypedTimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
                  OptionTags::EventsAndTriggers<events, triggers>>;
-  using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
@@ -157,7 +157,7 @@ struct EvolutionMetavars {
           dg::Initialization::slice_tags_to_face<
               typename system::variables_tag>,
           dg::Initialization::slice_tags_to_exterior<>>,
-      Initialization::Actions::Evolution<system>,
+      Initialization::Actions::Evolution<EvolutionMetavars>,
       dg::Actions::InitializeMortars<EvolutionMetavars>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
@@ -190,9 +190,7 @@ struct EvolutionMetavars {
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables, Actions::AdvanceTime>>>>,
-          Parallel::ForwardAllOptionsToDataBox<
-              Initialization::option_tags<initialization_actions>>>>;
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
 
   static constexpr OptionString help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"

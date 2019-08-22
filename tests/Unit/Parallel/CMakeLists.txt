@@ -121,12 +121,24 @@ add_algorithm_test("AlgorithmNodelock" "")
 
 # Tests that do not require their own Chare setup and can work with the
 # unit tests
-set(PARALLEL_TESTS
-  Parallel/Test_ConstGlobalCacheDataBox.cpp
-  Parallel/Test_Parallel.cpp
-  Parallel/Test_ParallelComponentHelpers.cpp
-  Parallel/Test_PupStlCpp11.cpp
-  Parallel/Test_TypeTraits.cpp
+set(LIBRARY "Test_Parallel")
+
+set(LIBRARY_SOURCES
+  Test_ConstGlobalCacheDataBox.cpp
+  Test_Parallel.cpp
+  Test_ParallelComponentHelpers.cpp
+  Test_PupStlCpp11.cpp
+  Test_TypeTraits.cpp
   )
 
-set(SPECTRE_TESTS "${SPECTRE_TESTS};${PARALLEL_TESTS}" PARENT_SCOPE)
+add_test_library(
+  ${LIBRARY}
+  "Parallel"
+  "${LIBRARY_SOURCES}"
+  ""
+  )
+
+add_dependencies(
+  ${LIBRARY}
+  module_ConstGlobalCache
+  )

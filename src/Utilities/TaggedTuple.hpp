@@ -721,6 +721,7 @@ std::ostream& operator<<(std::ostream& os,
   auto helper = make_overloader(
       [&current_value, &os](const auto& element,
                             const std::integral_constant<bool, true> /*meta*/) {
+        using ::operator<<;
         os << element;
         current_value++;
         if (current_value < sizeof...(Tags)) {

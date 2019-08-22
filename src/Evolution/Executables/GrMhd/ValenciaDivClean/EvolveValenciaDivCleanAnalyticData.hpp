@@ -83,6 +83,7 @@ class CProxy_ConstGlobalCache;
 /// \endcond
 
 struct EvolutionMetavars {
+  static constexpr size_t volume_dim = 3;
   using analytic_data = grmhd::AnalyticData::CylindricalBlastWave;
 
   using system = grmhd::ValenciaDivClean::System<
@@ -170,7 +171,7 @@ struct EvolutionMetavars {
           dg::Initialization::slice_tags_to_exterior<
               typename system::spacetime_variables_tag,
               typename system::primitive_variables_tag>>,
-      Initialization::Actions::Evolution<system>,
+      Initialization::Actions::Evolution<EvolutionMetavars>,
       dg::Actions::InitializeMortars<EvolutionMetavars>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<3>,
@@ -207,9 +208,7 @@ struct EvolutionMetavars {
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables, Actions::AdvanceTime>>>>,
-          Parallel::ForwardAllOptionsToDataBox<
-              Initialization::option_tags<initialization_actions>>>>;
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
 
   using const_global_cache_tag_list =
       tmpl::list<analytic_data_tag,
@@ -217,8 +216,6 @@ struct EvolutionMetavars {
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
                  grmhd::ValenciaDivClean::OptionTags::DampingParameter,
                  OptionTags::EventsAndTriggers<events, triggers>>;
-
-  using domain_creator_tag = OptionTags::DomainCreator<3, Frame::Inertial>;
 
   static constexpr OptionString help{
       "Evolve analytic data using the Valencia formulation of the GRMHD system "

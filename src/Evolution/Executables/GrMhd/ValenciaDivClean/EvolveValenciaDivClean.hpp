@@ -86,13 +86,13 @@ class CProxy_ConstGlobalCache;
 /// \endcond
 
 struct EvolutionMetavars {
+  static constexpr size_t volume_dim = 3;
   // To switch which analytic solution is evolved you only need to change the
   // line `using analytic_solution = ...;` and include the header file for the
   // solution.
   //  using analytic_solution = grmhd::Solutions::SmoothFlow;
   using analytic_solution = RelativisticEuler::Solutions::FishboneMoncriefDisk;
 
-  using domain_creator_tag = OptionTags::DomainCreator<3, Frame::Inertial>;
   using system = grmhd::ValenciaDivClean::System<
       typename analytic_solution::equation_of_state_type>;
   static constexpr size_t thermodynamic_dim = system::thermodynamic_dim;
@@ -181,7 +181,7 @@ struct EvolutionMetavars {
           dg::Initialization::slice_tags_to_exterior<
               typename system::spacetime_variables_tag,
               typename system::primitive_variables_tag>>,
-      Initialization::Actions::Evolution<system>,
+      Initialization::Actions::Evolution<EvolutionMetavars>,
       dg::Actions::InitializeMortars<EvolutionMetavars>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<3>,
@@ -218,9 +218,7 @@ struct EvolutionMetavars {
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables, Actions::AdvanceTime>>>>,
-          Parallel::ForwardAllOptionsToDataBox<
-              Initialization::option_tags<initialization_actions>>>>;
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
 
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,

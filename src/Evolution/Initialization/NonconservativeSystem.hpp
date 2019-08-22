@@ -42,8 +42,7 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies: nothing
 struct NonconservativeSystem {
-  using initialization_option_tags =
-      tmpl::list<Initialization::Tags::InitialTime>;
+  using initialization_tags = tmpl::list<Initialization::Tags::InitialTime>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

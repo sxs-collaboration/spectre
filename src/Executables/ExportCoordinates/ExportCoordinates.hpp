@@ -8,10 +8,10 @@
 #include "AlgorithmArray.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
-#include "Domain/ElementIndex.hpp"
-#include "Domain/InitialElementIds.hpp"
+#include "Domain/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
+#include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -20,15 +20,14 @@
 #include "IO/Observer/VolumeActions.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/MakeString.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -90,87 +89,41 @@ struct ExportCoordinates {
 };
 }  // namespace Actions
 
-template <size_t Dim, typename Metavariables>
-struct ElementArray {
-  using chare_type = Parallel::Algorithms::Array;
-  using metavariables = Metavariables;
-  using array_index = ElementIndex<Dim>;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using options = tmpl::list<OptionTags::DomainCreator<Dim, Frame::Inertial>>;
-  using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              dg::Actions::InitializeDomain<Dim>,
-              ::Initialization::Actions::RemoveOptionsAndTerminatePhase>>,
-
-      Parallel::PhaseActions<
-          typename Metavariables::Phase,
-          Metavariables::Phase::RegisterWithObserver,
-          tmpl::list<observers::Actions::RegisterWithObservers<
-                         Actions::ExportCoordinates<Dim>>,
-                     Parallel::Actions::TerminatePhase>>,
-
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Export,
-                             tmpl::list<Actions::ExportCoordinates<Dim>>>>;
-
-  using add_options_to_databox =
-      Parallel::ForwardAllOptionsToDataBox<::Initialization::option_tags<
-          tmpl::list<dg::Actions::InitializeDomain<Dim>>>>;
-
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
-      const std::unique_ptr<DomainCreator<Dim, Frame::Inertial>>
-          domain_creator) noexcept {
-    auto& local_cache = *(global_cache.ckLocalBranch());
-    auto& element_array =
-        Parallel::get_parallel_component<ElementArray>(local_cache);
-
-    auto domain = domain_creator->create_domain();
-    for (const auto& block : domain.blocks()) {
-      const auto initial_ref_levs =
-          domain_creator->initial_refinement_levels()[block.id()];
-      const std::vector<ElementId<Dim>> element_ids =
-          initial_element_ids(block.id(), initial_ref_levs);
-      int which_proc = 0;
-      const int number_of_procs = Parallel::number_of_procs();
-      for (size_t i = 0; i < element_ids.size(); ++i) {
-        element_array(ElementIndex<Dim>(element_ids[i]))
-            .insert(global_cache,
-                    {domain_creator->initial_extents(),
-                     domain_creator->create_domain()},
-                    which_proc);
-        which_proc = which_proc + 1 == number_of_procs ? 0 : which_proc + 1;
-      }
-    }
-    element_array.doneInserting();
-  }
-
-  static void execute_next_phase(
-      const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
-    auto& local_cache = *(global_cache.ckLocalBranch());
-    auto& element_array =
-        Parallel::get_parallel_component<ElementArray>(local_cache);
-    element_array.start_phase(next_phase);
-  }
-};
-
 template <size_t Dim>
 struct Metavariables {
+  static constexpr size_t volume_dim = Dim;
+
   static constexpr OptionString help{
       "Export the inertial coordinates of the Domain specified in the input "
       "file. The output can be used to compute initial data externally, for "
       "instance."};
 
-  using const_global_cache_tag_list = tmpl::list<>;
-  using component_list = tmpl::list<ElementArray<Dim, Metavariables>,
-                                    observers::Observer<Metavariables>,
-                                    observers::ObserverWriter<Metavariables>>;
-  using observed_reduction_data_tags = tmpl::list<>;
-
   enum class Phase { Initialization, RegisterWithObserver, Export, Exit };
+
+  using const_global_cache_tag_list = tmpl::list<>;
+  using component_list = tmpl::list<
+      DgElementArray<
+          Metavariables,
+          tmpl::list<
+              Parallel::PhaseActions<
+                  typename Metavariables::Phase,
+                  Metavariables::Phase::Initialization,
+                  tmpl::list<dg::Actions::InitializeDomain<Dim>,
+                             ::Initialization::Actions::
+                                 RemoveOptionsAndTerminatePhase>>,
+              Parallel::PhaseActions<
+                  typename Metavariables::Phase,
+                  Metavariables::Phase::RegisterWithObserver,
+                  tmpl::list<observers::Actions::RegisterWithObservers<
+                                 Actions::ExportCoordinates<Dim>>,
+                             Parallel::Actions::TerminatePhase>>,
+              Parallel::PhaseActions<
+                  typename Metavariables::Phase, Metavariables::Phase::Export,
+                  tmpl::list<Actions::ExportCoordinates<Dim>>>>>,
+      observers::Observer<Metavariables>,
+      observers::ObserverWriter<Metavariables>>;
+
+  using observed_reduction_data_tags = tmpl::list<>;
 
   static Phase determine_next_phase(
       const Phase& current_phase,

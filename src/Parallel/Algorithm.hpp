@@ -164,10 +164,11 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
   /// \endcond
 
   /// Constructor used by Main to initialize the algorithm
-  template <class... OptionsTags>
-  AlgorithmImpl(const Parallel::CProxy_ConstGlobalCache<metavariables>&
-                    global_cache_proxy,
-                tuples::TaggedTuple<OptionsTags...> options) noexcept;
+  template <class... InitializationTags>
+  AlgorithmImpl(
+      const Parallel::CProxy_ConstGlobalCache<metavariables>&
+          global_cache_proxy,
+      tuples::TaggedTuple<InitializationTags...> initialization_items) noexcept;
 
   /// Charm++ migration constructor, used after a chare is migrated
   constexpr explicit AlgorithmImpl(CkMigrateMessage* /*msg*/) noexcept;
@@ -372,7 +373,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
   using all_cache_tags = ConstGlobalCache_detail::make_tag_list<metavariables>;
   using initial_databox = db::compute_databox_type<tmpl::flatten<tmpl::list<
       Tags::ConstGlobalCacheImpl<metavariables>,
-      typename ParallelComponent::add_options_to_databox::simple_tags,
+      typename ParallelComponent::initialization_tags,
       db::wrap_tags_in<Tags::FromConstGlobalCache, all_cache_tags>>>>;
   // The types held by the boost::variant, box_
   using databox_phase_types = typename Algorithm_detail::build_databox_types<
@@ -408,31 +409,24 @@ AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
-template <class... OptionsTags>
+template <class... InitializationTags>
 AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
     AlgorithmImpl(const Parallel::CProxy_ConstGlobalCache<metavariables>&
                       global_cache_proxy,
-                  tuples::TaggedTuple<OptionsTags...> options) noexcept
+                  tuples::TaggedTuple<InitializationTags...>
+                      initialization_items) noexcept
     : AlgorithmImpl() {
-  (void)options;  // avoid potential compiler warnings if there are no options.
+  (void)initialization_items;  // avoid potential compiler warnings if unused
   const_global_cache_ = global_cache_proxy.ckLocalBranch();
-  try {
-    // Create the DataBox containing items from the ConstGlobalCache, then pass
-    // that to the `add_options_to_databox`'s static `apply` function. If the
-    // parallel component does not have a `add_options_to_databox` member struct
-    // then the resulting operation just returns the DataBox that is passed in.
-    box_ = ParallelComponent::add_options_to_databox::apply(
-        db::create<db::AddSimpleTags<Tags::ConstGlobalCacheImpl<metavariables>>,
-                   db::AddComputeTags<db::wrap_tags_in<
-                       Tags::FromConstGlobalCache, all_cache_tags>>>(
-            static_cast<const Parallel::ConstGlobalCache<metavariables>*>(
-                const_global_cache_)),
-        std::move(get<OptionsTags>(options))...);
-  } catch (std::exception& e) {
-    ERROR(
-        "Could not retrieve the DataBox with only the ConstGlobalCache "
-        "tags.");
-  }
+  box_ = db::create<
+      db::AddSimpleTags<tmpl::flatten<
+          tmpl::list<Tags::ConstGlobalCacheImpl<metavariables>,
+                     typename ParallelComponent::initialization_tags>>>,
+      db::AddComputeTags<
+          db::wrap_tags_in<Tags::FromConstGlobalCache, all_cache_tags>>>(
+      static_cast<const Parallel::ConstGlobalCache<metavariables>*>(
+          const_global_cache_),
+      std::move(get<InitializationTags>(initialization_items))...);
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>

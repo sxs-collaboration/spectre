@@ -56,12 +56,12 @@ struct mock_interpolation_target {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-              InterpolationTargetTag>>>,
+              Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
   using add_options_to_databox =
       typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
+          Metavariables, InterpolationTargetTag>::AddOptionsToDataBox;
 };
 
 struct MockComputeTargetPoints {
@@ -94,8 +94,7 @@ struct MockMetavariables {
     using compute_target_points = MockComputeTargetPoints;
   };
   using temporal_id = ::Tags::TimeId;
-  using domain_frame = Frame::Inertial;
-  static constexpr size_t domain_dim = 3;
+  static constexpr size_t volume_dim = 3;
 
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>>;

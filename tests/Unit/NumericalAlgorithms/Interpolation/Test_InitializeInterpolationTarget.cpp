@@ -42,10 +42,10 @@ struct mock_interpolation_target {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>>>>;
+          Metavariables, InterpolationTargetTag>>>>;
   using add_options_to_databox =
       typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
+          Metavariables, InterpolationTargetTag>::AddOptionsToDataBox;
 };
 
 struct Metavariables {
@@ -54,8 +54,7 @@ struct Metavariables {
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
   using temporal_id = ::Tags::TimeId;
-  using domain_frame = Frame::Inertial;
-  static constexpr size_t domain_dim = 3;
+  static constexpr size_t volume_dim = 3;
 
   using component_list = tmpl::list<
       mock_interpolation_target<Metavariables, InterpolationTargetA>>;

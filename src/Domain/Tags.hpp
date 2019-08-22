@@ -6,11 +6,13 @@
 
 #pragma once
 
+#include <array>
 #include <cstddef>
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Index.hpp"
@@ -30,6 +32,7 @@
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 /// \cond
@@ -55,16 +58,49 @@ template <size_t VolumeDim, typename Frame>
 struct Domain : db::SimpleTag {
   static std::string name() noexcept { return "Domain"; }
   using type = ::Domain<VolumeDim, Frame>;
+  using option_tags = tmpl::list<::OptionTags::DomainCreator<VolumeDim, Frame>>;
+
+  static ::Domain<VolumeDim, Frame> create_from_options(
+      const std::unique_ptr<::DomainCreator<VolumeDim, Frame>>&
+          domain_creator) noexcept {
+    return domain_creator->create_domain();
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// The number of grid points per dimension for all elements in the initial
-/// computational domain
+/// The number of grid points per dimension for all elements in each block of
+/// the initial computational domain
 template <size_t Dim>
 struct InitialExtents : db::SimpleTag {
   static std::string name() noexcept { return "InitialExtents"; }
   using type = std::vector<std::array<size_t, Dim>>;
+  using option_tags =
+      tmpl::list<::OptionTags::DomainCreator<Dim, Frame::Inertial>>;
+
+  static std::vector<std::array<size_t, Dim>> create_from_options(
+      const std::unique_ptr<::DomainCreator<Dim, Frame::Inertial>>&
+          domain_creator) noexcept {
+    return domain_creator->initial_extents();
+  }
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
+/// The initial refinement level per dimension for all elements in each block of
+/// the initial computational domain
+template <size_t Dim>
+struct InitialRefinementLevels : db::SimpleTag {
+  static std::string name() noexcept { return "InitialRefinementLevels"; }
+  using type = std::vector<std::array<size_t, Dim>>;
+  using option_tags =
+      tmpl::list<::OptionTags::DomainCreator<Dim, Frame::Inertial>>;
+
+  static std::vector<std::array<size_t, Dim>> create_from_options(
+      const std::unique_ptr<::DomainCreator<Dim, Frame::Inertial>>&
+          domain_creator) noexcept {
+    return domain_creator->initial_refinement_levels();
+  }
 };
 
 /// \ingroup DataBoxTagsGroup

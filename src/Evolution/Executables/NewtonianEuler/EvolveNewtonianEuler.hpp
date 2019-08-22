@@ -82,9 +82,9 @@ class CProxy_ConstGlobalCache;
 
 template <size_t Dim>
 struct EvolutionMetavars {
-  using analytic_solution = NewtonianEuler::Solutions::IsentropicVortex<Dim>;
+  static constexpr size_t volume_dim = Dim;
 
-  using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
+  using analytic_solution = NewtonianEuler::Solutions::IsentropicVortex<Dim>;
 
   using system = NewtonianEuler::System<
       Dim, typename analytic_solution::equation_of_state_type>;
@@ -175,7 +175,7 @@ struct EvolutionMetavars {
           dg::Initialization::slice_tags_to_exterior<
               typename system::primitive_variables_tag,
               NewtonianEuler::Tags::SoundSpeed<DataVector>>>,
-      Initialization::Actions::Evolution<system>,
+      Initialization::Actions::Evolution<EvolutionMetavars>,
       dg::Actions::InitializeMortars<EvolutionMetavars>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<Dim>,
@@ -210,9 +210,7 @@ struct EvolutionMetavars {
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables, Actions::AdvanceTime>>>>,
-          Parallel::ForwardAllOptionsToDataBox<
-              Initialization::option_tags<initialization_actions>>>>;
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
 
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,

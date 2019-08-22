@@ -26,6 +26,7 @@
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
@@ -200,7 +201,6 @@ template <class Metavariables>
 struct NoOpsComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Initialization,
@@ -209,11 +209,9 @@ struct NoOpsComponent {
           typename Metavariables::Phase, Metavariables::Phase::NoOpsStart,
           tmpl::list<no_op_test::increment_count_actions_called,
                      no_op_test::no_op>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using options = tmpl::list<>;
-
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
@@ -363,7 +361,6 @@ struct MutateComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using array_index = ElementId;  // Just to test nothing breaks
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Initialization,
@@ -373,11 +370,10 @@ struct MutateComponent {
                              tmpl::list<add_remove_test::add_int_value_10,
                                         add_remove_test::increment_int0,
                                         add_remove_test::remove_int0>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using options = tmpl::list<>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
@@ -531,7 +527,6 @@ struct ReceiveComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using array_index = ElementId;  // Just to test nothing breaks
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Initialization,
@@ -542,11 +537,9 @@ struct ReceiveComponent {
                      add_remove_test::increment_int0,
                      add_remove_test::remove_int0,
                      receive_data_test::update_instance>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using options = tmpl::list<>;
-
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
@@ -643,7 +636,6 @@ struct AnyOrderComponent {
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using array_index = ElementId;  // Just to test nothing breaks
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
@@ -656,11 +648,9 @@ struct AnyOrderComponent {
                                         any_order::iterate_increment_int0,
                                         add_remove_test::remove_int0,
                                         receive_data_test::update_instance>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using options = tmpl::list<>;
-
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,

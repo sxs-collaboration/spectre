@@ -8,10 +8,10 @@
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/Initialize.hpp"
 #include "IO/Observer/Tags.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
-#include "Parallel/Invoke.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "Utilities/TMPL.hpp"
 
 namespace observers {
 /*!
@@ -27,16 +27,12 @@ template <class Metavariables>
 struct Observer {
   using chare_type = Parallel::Algorithms::Group;
   using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,
       tmpl::list<Actions::Initialize<Metavariables>>>>;
-
-  using options = tmpl::list<>;
-
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
-                         Metavariables>& /*global_cache*/) noexcept {}
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
@@ -55,15 +51,11 @@ struct ObserverWriter {
   using const_global_cache_tag_list =
       tmpl::list<OptionTags::ReductionFileName, OptionTags::VolumeFileName>;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,
       tmpl::list<Actions::InitializeWriter<Metavariables>>>>;
-
-  using options = tmpl::list<>;
-
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
-                         Metavariables>& /*global_cache*/) noexcept {}
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,

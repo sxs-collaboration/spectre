@@ -126,7 +126,7 @@ struct MockInterpolationTargetReceiveVars {
       for (size_t s = 0; s < global_offsets[i].size(); ++s) {
         // Coords at this point. They are the same as the input coordinates,
         // but in strange order because of global_offsets.
-        std::array<double, Metavariables::domain_dim> coords{
+        std::array<double, Metavariables::volume_dim> coords{
             {1.0 + 0.1 * global_offsets[i][s],
              1.0 + 0.12 * global_offsets[i][s],
              1.0 + 0.14 * global_offsets[i][s]}};
@@ -188,7 +188,7 @@ struct mock_interpolation_target {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-              InterpolationTargetTag>>>,
+              Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Registration, tmpl::list<>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
@@ -196,7 +196,7 @@ struct mock_interpolation_target {
 
   using add_options_to_databox =
       typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
+          Metavariables, InterpolationTargetTag>::AddOptionsToDataBox;
 
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::InterpolationTargetReceiveVars<
@@ -238,8 +238,7 @@ struct MockMetavariables {
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
   using temporal_id = ::Tags::TimeId;
-  using domain_frame = Frame::Inertial;
-  static constexpr size_t domain_dim = 3;
+  static constexpr size_t volume_dim = 3;
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
       mock_interpolator<MockMetavariables>>;

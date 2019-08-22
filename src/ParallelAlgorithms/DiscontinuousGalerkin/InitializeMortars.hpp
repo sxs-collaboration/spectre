@@ -88,7 +88,7 @@ struct InitializeMortars {
       typename flux_comm_types::simple_mortar_data_tag>;
 
  public:
-  using initialization_option_tags = tmpl::list<::Tags::InitialExtents<dim>>;
+  using initialization_tags = tmpl::list<::Tags::InitialExtents<dim>>;
 
   template <typename DataBox, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent,

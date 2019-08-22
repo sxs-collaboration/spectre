@@ -32,6 +32,28 @@ struct Inertial;
 }  // namespace Frame
 /// \endcond
 
+namespace Evolution_detail {
+// Global time stepping
+template <typename Metavariables,
+          Requires<not Metavariables::local_time_stepping> = nullptr>
+TimeDelta get_initial_time_step(
+    const Time& initial_time, const double initial_dt_value,
+    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) noexcept {
+  return (initial_dt_value > 0.0 ? 1 : -1) * initial_time.slab().duration();
+}
+
+// Local time stepping
+template <typename Metavariables,
+          Requires<Metavariables::local_time_stepping> = nullptr>
+TimeDelta get_initial_time_step(
+    const Time& initial_time, const double initial_dt_value,
+    const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+  const auto& step_controller =
+      Parallel::get<OptionTags::StepController>(cache);
+  return step_controller.choose_step(initial_time, initial_dt_value);
+}
+}  // namespace Evolution_detail
+
 namespace Initialization {
 namespace Actions {
 /// \ingroup InitializationGroup
@@ -55,18 +77,18 @@ namespace Actions {
 /// - Modifies: nothing
 ///
 /// \note HistoryEvolvedVariables is allocated, but needs to be initialized
-template <typename System>
+template <typename Metavariables>
 struct Evolution {
-  using initialization_option_tags =
+  using initialization_tags =
       tmpl::list<Tags::InitialTime, Tags::InitialTimeDelta,
-                 Tags::InitialSlabSize>;
+                 Tags::InitialSlabSize<Metavariables::local_time_stepping>>;
 
-  static constexpr size_t dim = System::volume_dim;
-  using variables_tag = typename System::variables_tag;
+  static constexpr size_t dim = Metavariables::volume_dim;
+  using variables_tag = typename Metavariables::system::variables_tag;
   using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
 
-  template <typename LocalSystem, bool IsInFluxConservativeForm =
-                                      LocalSystem::is_in_flux_conservative_form>
+  template <typename System, bool IsInFluxConservativeForm =
+                                 System::is_in_flux_conservative_form>
   struct ComputeTags {
     using type = db::AddComputeTags<
         ::Tags::Time,
@@ -77,8 +99,8 @@ struct Evolution {
             typename System::gradients_tags>>;
   };
 
-  template <typename LocalSystem>
-  struct ComputeTags<LocalSystem, true> {
+  template <typename System>
+  struct ComputeTags<System, true> {
     using type = db::AddComputeTags<
         ::Tags::Time,
         ::Tags::DivCompute<
@@ -88,29 +110,8 @@ struct Evolution {
                                     ::Tags::Coordinates<dim, Frame::Logical>>>>;
   };
 
-  // Global time stepping
-  template <typename Metavariables,
-            Requires<not Metavariables::local_time_stepping> = nullptr>
-  static TimeDelta get_initial_time_step(
-      const Time& initial_time, const double initial_dt_value,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) noexcept {
-    return (initial_dt_value > 0.0 ? 1 : -1) * initial_time.slab().duration();
-  }
-
-  // Local time stepping
-  template <typename Metavariables,
-            Requires<Metavariables::local_time_stepping> = nullptr>
-  static TimeDelta get_initial_time_step(
-      const Time& initial_time, const double initial_dt_value,
-      const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-    const auto& step_controller =
-        Parallel::get<OptionTags::StepController>(cache);
-    return step_controller.choose_step(initial_time, initial_dt_value);
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent,
             Requires<tmpl::list_contains_v<
                 typename db::DataBox<DbTagsList>::simple_item_tags,
                 Initialization::Tags::InitialTime>> = nullptr>
@@ -123,7 +124,8 @@ struct Evolution {
 
     const double initial_time_value = db::get<Tags::InitialTime>(box);
     const double initial_dt_value = db::get<Tags::InitialTimeDelta>(box);
-    const double initial_slab_size = db::get<Tags::InitialSlabSize>(box);
+    const double initial_slab_size =
+        db::get<Tags::InitialSlabSize<Metavariables::local_time_stepping>>(box);
 
     const bool time_runs_forward = initial_dt_value > 0.0;
     const Slab initial_slab =
@@ -133,8 +135,8 @@ struct Evolution {
             : Slab::with_duration_to_end(initial_time_value, initial_slab_size);
     const Time initial_time =
         time_runs_forward ? initial_slab.start() : initial_slab.end();
-    const TimeDelta initial_dt =
-        get_initial_time_step(initial_time, initial_dt_value, cache);
+    const TimeDelta initial_dt = Evolution_detail::get_initial_time_step(
+        initial_time, initial_dt_value, cache);
 
     const size_t num_grid_points =
         db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
@@ -154,7 +156,8 @@ struct Evolution {
         -static_cast<int64_t>(time_stepper.number_of_past_steps()),
         initial_time);
 
-    using compute_tags = typename ComputeTags<System>::type;
+    using compute_tags =
+        typename ComputeTags<typename Metavariables::system>::type;
     return std::make_tuple(
         merge_into_databox<
             Evolution,
@@ -170,9 +173,8 @@ struct Evolution {
             std::move(history)));
   }
 
-  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent,
             Requires<not tmpl::list_contains_v<
                 typename db::DataBox<DbTagsList>::simple_item_tags,
                 Initialization::Tags::InitialTime>> = nullptr>

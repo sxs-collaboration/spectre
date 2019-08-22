@@ -5,6 +5,7 @@
 
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
+#include "Utilities/TaggedTuple.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {
@@ -79,6 +80,88 @@ using get_const_global_cache_tags_from_pdal =
             PhaseDepActionList,
             get_action_list_from_phase_dep_action_list<tmpl::_1>>>,
         Parallel_detail::get_const_global_cache_tags_from_action<tmpl::_1>>>>;
+
+namespace detail {
+template <typename PhaseAction>
+struct get_initialization_actions_list {
+  using type = tmpl::list<>;
+};
+
+template <typename PhaseType, typename InitializationActionsList>
+struct get_initialization_actions_list<Parallel::PhaseActions<
+    PhaseType, PhaseType::Initialization, InitializationActionsList>> {
+  using type = InitializationActionsList;
+};
+}  // namespace detail
+
+/// \ingroup ParallelGroup
+/// \brief Given the phase dependent action list, return the list of
+/// actions in the Initialization phase (or an empty list if the Initialization
+/// phase is absent from the phase dependent action list)
+template <typename PhaseDepActionList>
+using get_initialization_actions_list = tmpl::flatten<tmpl::transform<
+    PhaseDepActionList, detail::get_initialization_actions_list<tmpl::_1>>>;
+
+namespace detail {
+template <typename Action, typename = cpp17::void_t<>>
+struct get_initialization_tags_from_action {
+  using type = tmpl::list<>;
+};
+
+template <typename Action>
+struct get_initialization_tags_from_action<
+    Action, cpp17::void_t<typename Action::initialization_tags>> {
+  using type = typename Action::initialization_tags;
+};
+}  // namespace detail
+
+/// \ingroup ParallelGroup
+/// \brief Given a list of initialization actions, and possibly a list of tags
+/// needed for allocation of an array component, returns a list of the
+/// unique initialization_tags for all the actions (and the allocate function).
+template <typename InitializationActionsList,
+          typename AllocationTagsList = tmpl::list<>>
+using get_initialization_tags = tmpl::remove_duplicates<tmpl::flatten<
+    tmpl::list<AllocationTagsList,
+               tmpl::transform<
+                   InitializationActionsList,
+                   detail::get_initialization_tags_from_action<tmpl::_1>>>>>;
+
+namespace detail {
+template <typename InitializationTag>
+struct get_option_tags_from_initialization_tag {
+  using type = typename InitializationTag::option_tags;
+};
+}  // namespace detail
+
+/// \ingroup ParallelGroup
+/// \brief Given a list of initialization tags, returns a list of the
+/// unique option tags required to construct them.
+template <typename InitializationTagsList>
+using get_option_tags = tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+    InitializationTagsList,
+    detail::get_option_tags_from_initialization_tag<tmpl::_1>>>>;
+
+namespace detail {
+template <typename Tag, typename... OptionTags, typename... OptionTagsForTag>
+typename Tag::type create_initialization_item_from_options(
+    const tuples::TaggedTuple<OptionTags...>& options,
+    tmpl::list<OptionTagsForTag...> /*meta*/) noexcept {
+  return Tag::create_from_options(tuples::get<OptionTagsForTag>(options)...);
+}
+}  // namespace detail
+
+/// \ingroup ParallelGroup
+/// \brief Given a list of tags and a tagged tuple containing items
+/// created from input options, return a tagged tuple of items constructed
+/// by calls to create_from_options for each tag in the list.
+template <typename... Tags, typename... OptionTags>
+tuples::TaggedTuple<Tags...> create_from_options(
+    const tuples::TaggedTuple<OptionTags...>& options,
+    tmpl::list<Tags...> /*meta*/) noexcept {
+  return {detail::create_initialization_item_from_options<Tags>(
+      options, typename Tags::option_tags{})...};
+}
 
 /// \cond
 namespace Algorithms {

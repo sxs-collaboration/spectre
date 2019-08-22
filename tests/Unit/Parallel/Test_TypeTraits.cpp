@@ -7,7 +7,6 @@
 #include "AlgorithmGroup.hpp"
 #include "AlgorithmNodegroup.hpp"
 #include "AlgorithmSingleton.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/TypeTraits.hpp"
 
 namespace PUP {
@@ -28,19 +27,19 @@ struct Metavariables {
 
 struct SingletonParallelComponent {
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using initialization_tags = tmpl::list<>;
 };
 struct ArrayParallelComponent {
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using initialization_tags = tmpl::list<>;
 };
 struct GroupParallelComponent {
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using initialization_tags = tmpl::list<>;
 };
 struct NodegroupParallelComponent {
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using initialization_tags = tmpl::list<>;
 };
 
 using singleton_proxy =

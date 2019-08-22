@@ -178,6 +178,9 @@ struct DiscontinuousGalerkin {
     }
   };
 
+  using initialization_tags =
+      tmpl::list<::Tags::InitialExtents<Metavariables::volume_dim>>;
+
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,

@@ -31,7 +31,8 @@ def create_interface_file(args):
               "Parallel::CProxy_ConstGlobalCache<\n" \
               "                      METAVARIABLES_FROM_COMPONENT>,\n" \
               "tuples::tagged_tuple_from_typelist<" \
-              "PARALLEL_COMPONENT_OPTIONS_SIMPLE_TAGS> options);\n" \
+              "PARALLEL_COMPONENT_INITIALIZATION_TAGS> initialization_items);" \
+              "\n" \
               "\n" \
               "    template <typename Action, typenameLDOTLDOTLDOT Args>\n" \
               "    entry void simple_action(\n" \
