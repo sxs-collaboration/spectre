@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/TagsDeclarations.hpp"
+#include "Evolution/Tags.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 
@@ -53,6 +54,50 @@ struct ConstraintGamma1 : db::SimpleTag {
 struct ConstraintGamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() noexcept { return "ConstraintGamma2"; }
+};
+
+/*!
+ * \brief Gauge control parameter determining when to start rolling-on the
+ * evolution gauge.
+ *
+ * \details The evolution gauge is gradually transitioned to (or
+ * *rolled-on* to) at the beginning of an evolution. This parameter sets
+ * the coordinate time at which roll-on begins.
+ */
+struct GaugeHRollOnStartTime : db::SimpleTag {
+  using type = double;
+  static std::string name() noexcept { return "GaugeHRollOnStartTime"; }
+};
+
+/*!
+ * \brief Gauge control parameter determining how long the transition to
+ * the evolution gauge should take at the start of an evolution.
+ *
+ * \details The evolution gauge is gradually transitioned to (or
+ * *rolled-on* to) at the beginning of an evolution. This parameter sets
+ * the width of the coordinate time window during which roll-on happens.
+ */
+struct GaugeHRollOnTimeWindow : db::SimpleTag {
+  using type = double;
+  static std::string name() noexcept { return "GaugeHRollOnTimeWindow"; }
+};
+
+/*!
+ * \brief Gauge control parameter to specify the spatial weighting function
+ * that enters damped harmonic gauge source function.
+ *
+ * \details The evolution gauge source function is multiplied by a spatial
+ * weight function which controls where and how much it sources the damped
+ * harmonic gauge equation. The weight function is:
+ * \f$ W(x^i) = \exp[-(r/\sigma_r)^2] \f$.
+ * This weight function can be written with an extra factor inside the exponent
+ * in literature, e.g. \cite Deppe2018uye. We will absorb it here in
+ * \f$\sigma_r\f$. The parameter this tag tags is \f$ \sigma_r \f$.
+ */
+template <typename Frame>
+struct GaugeHSpatialWeightDecayWidth : db::SimpleTag {
+  using type = double;
+  static std::string name() noexcept { return "GaugeHSpatialWeightDecayWidth"; }
 };
 
 /*!
@@ -214,6 +259,15 @@ struct ConstraintEnergy : db::SimpleTag {
 
 namespace OptionTags {
 /*!
+ * \ingroup OptionGroupsGroup
+ * Groups option tags related to the ValenciaDivClean evolution system.
+ */
+struct GeneralizedHarmonicGroup {
+  static std::string name() noexcept { return "GeneralizedHarmonic"; }
+  static constexpr OptionString help{"Options for the evolution system"};
+  using group = ::OptionTags::EvolutionSystemGroup;
+};
+/*!
  * \ingroup OptionTagsGroup
  * \brief Gauge control parameter determining when to start rolling-on the
  * evolution gauge.
@@ -222,11 +276,12 @@ namespace OptionTags {
  * *rolled-on* to) at the beginning of an evolution. This parameter sets
  * the coordinate time at which roll-on begins.
  */
-struct GaugeHRollOnStartTime : db::SimpleTag {
+struct GaugeRollOnStart : Tags::GaugeHRollOnStartTime {
   using type = double;
-  static std::string name() noexcept { return "GaugeHRollOnStartT"; }
+  static std::string name() noexcept { return "GaugeRollOnStart"; }
   static constexpr OptionString help{
       "Simulation time to start rolling-on evolution gauge"};
+  using group = GeneralizedHarmonicGroup;
 };
 
 /*!
@@ -238,11 +293,12 @@ struct GaugeHRollOnStartTime : db::SimpleTag {
  * *rolled-on* to) at the beginning of an evolution. This parameter sets
  * the width of the coordinate time window during which roll-on happens.
  */
-struct GaugeHRollOnTimeWindow : db::SimpleTag {
+struct GaugeRollOnWindow : Tags::GaugeHRollOnTimeWindow {
   using type = double;
-  static std::string name() noexcept { return "GaugeHRollOnTWindow"; }
+  static std::string name() noexcept { return "GaugeRollOnWindow"; }
   static constexpr OptionString help{
       "Duration of gauge roll-on in simulation time"};
+  using group = GeneralizedHarmonicGroup;
 };
 
 /*!
@@ -259,11 +315,12 @@ struct GaugeHRollOnTimeWindow : db::SimpleTag {
  * \f$\sigma_r\f$. The parameter this tag tags is \f$ \sigma_r \f$.
  */
 template <typename Frame>
-struct GaugeHSpatialWeightDecayWidth : db::SimpleTag {
+struct GaugeSpatialDecayWidth : Tags::GaugeHSpatialWeightDecayWidth<Frame> {
   using type = double;
-  static std::string name() noexcept { return "GaugeHDecayWidth"; }
+  static std::string name() noexcept { return "GaugeDecayWidth"; }
   static constexpr OptionString help{
       "Spatial width of weighting factor in evolution gauge"};
+  using group = GeneralizedHarmonicGroup;
 };
 }  // namespace OptionTags
 }  // namespace GeneralizedHarmonic

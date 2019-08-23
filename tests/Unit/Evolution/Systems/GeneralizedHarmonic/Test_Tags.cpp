@@ -62,15 +62,14 @@ void test_simple_tags() {
   CHECK(
       db::tag_name<GeneralizedHarmonic::Tags::ConstraintEnergy<Dim, Frame>>() ==
       "ConstraintEnergy");
+  CHECK(db::tag_name<GeneralizedHarmonic::Tags::GaugeHRollOnStartTime>() ==
+        "GaugeHRollOnStartTime");
+  CHECK(db::tag_name<GeneralizedHarmonic::Tags::GaugeHRollOnTimeWindow>() ==
+        "GaugeHRollOnTimeWindow");
   CHECK(
-      db::tag_name<GeneralizedHarmonic::OptionTags::GaugeHRollOnStartTime>() ==
-      "GaugeHRollOnStartT");
-  CHECK(
-      db::tag_name<GeneralizedHarmonic::OptionTags::GaugeHRollOnTimeWindow>() ==
-      "GaugeHRollOnTWindow");
-  CHECK(db::tag_name<GeneralizedHarmonic::OptionTags::
-                         GaugeHSpatialWeightDecayWidth<Frame>>() ==
-        "GaugeHDecayWidth");
+      db::tag_name<
+          GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<Frame>>() ==
+      "GaugeHSpatialWeightDecayWidth");
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Tags",
