@@ -91,123 +91,129 @@ void check_transforms(
 }
 
 template <typename ModalVectorType, typename NodalVectorType,
-          Spectral::Basis Basis, Spectral::Quadrature Quadrature>
-void test_1d() noexcept {
+          Spectral::Basis Basis, Spectral::Quadrature Quadrature,
+          typename Generator>
+void test_1d(const gsl::not_null<Generator*> generator) noexcept {
+  UniformCustomDistribution<size_t> dist{
+      1, Spectral::maximum_number_of_points<Basis> - 1};
+  const size_t order = dist(*generator);
   // Start at 1st order so we are independent of the minimum number of
   // coefficients.
-  for (size_t order = 1; order < Spectral::maximum_number_of_points<Basis>;
-       ++order) {
-    CAPTURE(order);
-    const Mesh<1> mesh(order + 1, Basis, Quadrature);
+  CAPTURE(order);
+  const Mesh<1> mesh(order + 1, Basis, Quadrature);
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      mesh, {{{{order}}}});
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      mesh, {{{{order}}, {{order / 2}}}});
+  if (order > 4) {
     check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        mesh, {{{{order}}}});
-    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        mesh, {{{{order}}, {{order / 2}}}});
-    if (order > 4) {
-      check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-          mesh, {{{{order}}, {{order / 3}}}});
-    }
+        mesh, {{{{order}}, {{order / 3}}}});
   }
 }
 
 template <typename ModalVectorType, typename NodalVectorType,
-          Spectral::Basis Basis, Spectral::Quadrature Quadrature>
-void test_2d() noexcept {
+          Spectral::Basis Basis, Spectral::Quadrature Quadrature,
+          typename Generator>
+void test_2d(const gsl::not_null<Generator*> generator) noexcept {
   // Start at one higher order so we can drop one order in the y-direction.
-  for (size_t order = Spectral::minimum_number_of_points<Basis, Quadrature> + 1;
-       order < Spectral::maximum_number_of_points<Basis>; ++order) {
-    CAPTURE(order);
-    const Mesh<2> mesh({{order + 1, order}}, Basis, Quadrature);
-    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        mesh, {{{{order, order - 1}}}});
-    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        mesh, {{{{order, order - 1}}, {{order / 2, order / 2}}}});
-    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        Mesh<2>{{{order + 1, order + 1}}, Basis, Quadrature},
-        {{{{order - 1, order}}, {{order / 2, order / 2}}}});
-    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        Mesh<2>{{{order + 1, order + 1}}, Basis, Quadrature},
-        {{{{order, order}}, {{order / 2, order / 2}}}});
-    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        mesh, {{{{order, order - 1}}, {{order / 3, order / 3}}}});
-  }
+  UniformCustomDistribution<size_t> dist{
+      Spectral::minimum_number_of_points<Basis, Quadrature> + 1,
+      Spectral::maximum_number_of_points<Basis> - 1};
+  const size_t order = dist(*generator);
+  CAPTURE(order);
+  const Mesh<2> mesh({{order + 1, order}}, Basis, Quadrature);
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      mesh, {{{{order, order - 1}}}});
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      mesh, {{{{order, order - 1}}, {{order / 2, order / 2}}}});
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      Mesh<2>{{{order + 1, order + 1}}, Basis, Quadrature},
+      {{{{order - 1, order}}, {{order / 2, order / 2}}}});
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      Mesh<2>{{{order + 1, order + 1}}, Basis, Quadrature},
+      {{{{order, order}}, {{order / 2, order / 2}}}});
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      mesh, {{{{order, order - 1}}, {{order / 3, order / 3}}}});
 }
 
 template <typename ModalVectorType, typename NodalVectorType,
-          Spectral::Basis Basis, Spectral::Quadrature Quadrature>
-void test_3d() noexcept {
+          Spectral::Basis Basis, Spectral::Quadrature Quadrature,
+          typename Generator>
+void test_3d(const gsl::not_null<Generator*> generator) noexcept {
   // Start at two orders higher so we can drop one order in the y-direction and
   // two in z-direction.
-  for (size_t order = Spectral::minimum_number_of_points<Basis, Quadrature> + 2;
-       order < Spectral::maximum_number_of_points<Basis>; ++order) {
-    CAPTURE(order);
-    const Mesh<3> mesh({{order + 1, order, order - 1}}, Basis, Quadrature);
-    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        mesh, {{{{order, order - 1, order - 2}}}});
-    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        mesh, {{{{order, order - 1, order - 2}},
-                {{order / 2, order / 2, order / 2}}}});
-    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        Mesh<3>{{{order + 1, order + 1, order + 1}}, Basis, Quadrature},
-        {{{{order, order, order}}}});
-    check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
-        mesh, {{{{order, order - 1, order - 2}},
-                {{order / 3, order / 3, order / 3}}}});
-  }
+  UniformCustomDistribution<size_t> dist{
+      Spectral::minimum_number_of_points<Basis, Quadrature> + 2,
+      Spectral::maximum_number_of_points<Basis> - 2};
+  const size_t order = dist(*generator);
+  CAPTURE(order);
+  const Mesh<3> mesh({{order + 1, order, order - 1}}, Basis, Quadrature);
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      mesh, {{{{order, order - 1, order - 2}}}});
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      mesh,
+      {{{{order, order - 1, order - 2}}, {{order / 2, order / 2, order / 2}}}});
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      Mesh<3>{{{order + 1, order + 1, order + 1}}, Basis, Quadrature},
+      {{{{order, order, order}}}});
+  check_transforms<ModalVectorType, NodalVectorType, Basis, Quadrature>(
+      mesh,
+      {{{{order, order - 1, order - 2}}, {{order / 3, order / 3, order / 3}}}});
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.CoefficientTransforms",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
+  MAKE_GENERATOR(generator);
   test_1d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_1d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
   test_2d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_2d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
   test_3d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_3d<ModalVector, DataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
 
   test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
   test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
   test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Legendre,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
 
   test_1d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_1d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
   test_2d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_2d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
   test_3d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_3d<ModalVector, DataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
 
   test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_1d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
   test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_2d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
   test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::GaussLobatto>();
+          Spectral::Quadrature::GaussLobatto>(make_not_null(&generator));
   test_3d<ComplexModalVector, ComplexDataVector, Spectral::Basis::Chebyshev,
-          Spectral::Quadrature::Gauss>();
+          Spectral::Quadrature::Gauss>(make_not_null(&generator));
 }
