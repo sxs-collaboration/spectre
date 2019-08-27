@@ -121,7 +121,7 @@ struct MockObserverWriter {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list =
-      tmpl::list<observers::OptionTags::ReductionFileName>;
+      tmpl::list<observers::Tags::ReductionFileName>;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       typename observers::Actions::InitializeWriter<Metavariables>::simple_tags;
@@ -309,9 +309,8 @@ SPECTRE_TEST_CASE(
                                                         2.0, {{0.0, 0.0, 0.0}});
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
                                                         1.5, {{0.0, 0.0, 0.0}});
-  tuples::TaggedTuple<observers::OptionTags::ReductionFileName,
-                      metavars::SurfaceA, metavars::SurfaceB,
-                      metavars::SurfaceC>
+  tuples::TaggedTuple<observers::Tags::ReductionFileName, metavars::SurfaceA,
+                      metavars::SurfaceB, metavars::SurfaceC>
       tuple_of_opts(h5_file_prefix, std::move(kerr_horizon_opts_A),
                     std::move(kerr_horizon_opts_B),
                     std::move(kerr_horizon_opts_C));

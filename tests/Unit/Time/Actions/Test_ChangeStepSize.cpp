@@ -54,7 +54,7 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list =
-      tmpl::list<OptionTags::TypedTimeStepper<LtsTimeStepper>>;
+      tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags = tmpl::list<Tags::TimeId, Tags::Next<Tags::TimeId>,
                                  Tags::TimeStep, history_tag>;

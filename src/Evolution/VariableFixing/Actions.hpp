@@ -42,7 +42,7 @@ namespace Actions {
 template <typename VariableFixer>
 struct FixVariables {
   using const_global_cache_tags =
-      tmpl::list<OptionTags::VariableFixer<VariableFixer>>;
+      tmpl::list<Tags::VariableFixer<VariableFixer>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -54,8 +54,7 @@ struct FixVariables {
       const Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    const auto& variable_fixer =
-        get<OptionTags::VariableFixer<VariableFixer>>(cache);
+    const auto& variable_fixer = get<Tags::VariableFixer<VariableFixer>>(cache);
     db::mutate_apply(variable_fixer, make_not_null(&box));
     return std::forward_as_tuple(std::move(box));
   }

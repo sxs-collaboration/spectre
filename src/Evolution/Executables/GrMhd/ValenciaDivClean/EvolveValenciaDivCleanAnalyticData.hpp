@@ -91,16 +91,16 @@ struct EvolutionMetavars {
   static constexpr size_t thermodynamic_dim = system::thermodynamic_dim;
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = false;
-  using analytic_data_tag = OptionTags::AnalyticData<analytic_data>;
+  using analytic_data_tag = Tags::AnalyticData<analytic_data>;
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
   using equation_of_state_tag = hydro::Tags::EquationOfState<
       typename analytic_data_tag::type::equation_of_state_type>;
-  using normal_dot_numerical_flux = OptionTags::NumericalFlux<
-      dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
+  using normal_dot_numerical_flux =
+      Tags::NumericalFlux<dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   // GRMHD is only implemented in 3D.
   // Do not limit the divergence-cleaning field Phi
-  using limiter = OptionTags::Limiter<Limiters::Minmod<
+  using limiter = Tags::Limiter<Limiters::Minmod<
       3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                     grmhd::ValenciaDivClean::Tags::TildeTau,
                     grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,
@@ -212,10 +212,10 @@ struct EvolutionMetavars {
 
   using const_global_cache_tag_list =
       tmpl::list<analytic_data_tag,
-                 OptionTags::TypedTimeStepper<tmpl::conditional_t<
+                 Tags::TimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
-                 grmhd::ValenciaDivClean::OptionTags::DampingParameter,
-                 OptionTags::EventsAndTriggers<events, triggers>>;
+                 grmhd::ValenciaDivClean::Tags::ConstraintDampingParameter,
+                 Tags::EventsAndTriggers<events, triggers>>;
 
   static constexpr OptionString help{
       "Evolve analytic data using the Valencia formulation of the GRMHD system "

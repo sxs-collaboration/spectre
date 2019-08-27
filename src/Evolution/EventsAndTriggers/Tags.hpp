@@ -8,12 +8,9 @@
 
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Serialize.hpp"
 
 namespace OptionTags {
-/// \cond
-struct EventsAndTriggersTagBase {};
-/// \endcond
-
 /// \ingroup OptionTagsGroup
 /// \ingroup EventsAndTriggersGroup
 /// Contains the events and triggers
@@ -35,8 +32,27 @@ struct EventsAndTriggersTagBase {};
 ///         OptionsForEvent4
 /// \endcode
 template <typename EventRegistrars, typename TriggerRegistrars>
-struct EventsAndTriggers : EventsAndTriggersTagBase {
+struct EventsAndTriggers {
   using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
   static constexpr OptionString help = "Events to run at triggers";
 };
 }  // namespace OptionTags
+
+namespace Tags {
+/// \cond
+struct EventsAndTriggersBase : db::BaseTag {};
+/// \endcond
+
+/// \ingroup EventsAndTriggersGroup
+/// Contains the events and triggers
+template <typename EventRegistrars, typename TriggerRegistrars>
+struct EventsAndTriggers : EventsAndTriggersBase, db::SimpleTag {
+  static std::string name() noexcept { return "EventsAndTriggers"; }
+  using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
+  using option_tags = tmpl::list<
+      ::OptionTags::EventsAndTriggers<EventRegistrars, TriggerRegistrars>>;
+  static type create_from_options(const type& events_and_triggers) noexcept {
+    return deserialize<type>(serialize<type>(events_and_triggers).data());
+  }
+};
+}  // namespace Tags

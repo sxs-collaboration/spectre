@@ -22,9 +22,9 @@
 
 /// \cond
 namespace LinearSolver {
-namespace OptionTags {
+namespace Tags {
 struct ConvergenceCriteria;
-}  // namespace OptionTags
+}  // namespace Tags
 }  // namespace LinearSolver
 /// \endcond
 
@@ -206,7 +206,7 @@ struct HasConverged : db::SimpleTag {
 };
 
 /*
- * \brief Employs the `LinearSolver::OptionTags::ConvergenceCriteria` to
+ * \brief Employs the `LinearSolver::Tags::ConvergenceCriteria` to
  * determine the linear solver has converged.
  */
 template <typename FieldsTag>
@@ -220,7 +220,7 @@ struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
 
  public:
   using argument_tags =
-      tmpl::list<LinearSolver::OptionTags::ConvergenceCriteria,
+      tmpl::list<LinearSolver::Tags::ConvergenceCriteria,
                  LinearSolver::Tags::IterationId, residual_magnitude_tag,
                  initial_residual_magnitude_tag>;
   static db::item_type<LinearSolver::Tags::HasConverged> function(
@@ -252,6 +252,23 @@ struct Group {
       "Options for the iterative linear solver";
 };
 
+struct ConvergenceCriteria {
+  static constexpr OptionString help =
+      "Determine convergence of the linear solve";
+  using type = Convergence::Criteria;
+  using group = Group;
+};
+
+struct Verbosity {
+  using type = ::Verbosity;
+  static constexpr OptionString help = "Logging verbosity";
+  using group = Group;
+  static type default_value() noexcept { return ::Verbosity::Quiet; }
+};
+
+}  // namespace OptionTags
+
+namespace Tags {
 /*!
  * \brief `Convergence::Criteria` that determine the linear solve has converged
  *
@@ -273,23 +290,25 @@ struct Group {
  * based on an estimate of the discretization residual.
  */
 struct ConvergenceCriteria : db::SimpleTag {
-  static constexpr OptionString help =
-      "Determine convergence of the linear solve";
   using type = Convergence::Criteria;
-  using group = Group;
-  // We need a `name()` so that this can be placed in the DataBox. Can be
-  // removed once we can retrieve cache tags through the DataBox.
   static std::string name() noexcept { return "ConvergenceCriteria"; }
+  using option_tags = tmpl::list<LinearSolver::OptionTags::ConvergenceCriteria>;
+  static Convergence::Criteria create_from_options(
+      const Convergence::Criteria& convergence_criteria) noexcept {
+    return convergence_criteria;
+  }
 };
 
-struct Verbosity {
+struct Verbosity : db::SimpleTag {
+  static std::string name() noexcept { return "Verbosity"; }
   using type = ::Verbosity;
-  static constexpr OptionString help = "Logging verbosity";
-  using group = Group;
-  static type default_value() { return ::Verbosity::Quiet; }
+  using option_tags = tmpl::list<LinearSolver::OptionTags::Verbosity>;
+  static ::Verbosity create_from_options(
+      const ::Verbosity& verbosity) noexcept {
+    return verbosity;
+  }
 };
-
-}  // namespace OptionTags
+}  // namespace Tags
 }  // namespace LinearSolver
 
 namespace Tags {

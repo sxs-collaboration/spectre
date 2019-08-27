@@ -74,7 +74,7 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
         db::apply<typename compute_largest_characteristic_speed::argument_tags>(
             compute_largest_characteristic_speed{}, box);
     const double time_stepper_stability_factor =
-        Parallel::get<OptionTags::TimeStepper>(cache).stable_step();
+        Parallel::get<Tags::TimeStepperBase>(cache).stable_step();
 
     return safety_factor_ * time_stepper_stability_factor *
            minimum_grid_spacing / speed;

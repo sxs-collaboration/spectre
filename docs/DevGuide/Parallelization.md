@@ -194,12 +194,12 @@ Each %Parallel Component struct must have the following type aliases:
    `tmpl::list` of tags that will be fetched from the DataBox by the
    action.  All `initialization_tags` are removed from the DataBox of
    the component at the end of the `Initialization` phase.
-5. `using const_global_cache_tag_list` is set to a `tmpl::list` of OptionTags
-   that are required by the parallel component. This is usually obtained from
-   the `phase_dependent_action_list` using the
-   `Parallel::get_const_global_cache_tags` metafunction. These options lead to
-   items that are stored in the ConstGlobalCaches (of which there is one copy
-   per Charm++ node).
+5. `using const_global_cache_tag_list` is set to a `tmpl::list` of
+   tags that are required by the parallel component. This is usually
+   obtained from the `phase_dependent_action_list` using the
+   `Parallel::get_const_global_cache_tags` metafunction. These tags
+   correspond to items that are stored in the ConstGlobalCaches (of
+   which there is one copy per Charm++ node).
 
 \note Array parallel components must also specify the type alias `using
 array_index`, which is set to the type that indexes the %Parallel Component

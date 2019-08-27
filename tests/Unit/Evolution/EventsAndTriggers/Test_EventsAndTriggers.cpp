@@ -34,7 +34,7 @@
 
 namespace {
 using events_and_triggers_tag =
-    OptionTags::EventsAndTriggers<tmpl::list<>, tmpl::list<>>;
+    Tags::EventsAndTriggers<tmpl::list<>, tmpl::list<>>;
 
 template <typename Metavariables>
 struct Component {

@@ -48,8 +48,7 @@ template <typename Metavariables,
 TimeDelta get_initial_time_step(
     const Time& initial_time, const double initial_dt_value,
     const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-  const auto& step_controller =
-      Parallel::get<OptionTags::StepController>(cache);
+  const auto& step_controller = Parallel::get<Tags::StepController>(cache);
   return step_controller.choose_step(initial_time, initial_dt_value);
 }
 }  // namespace Evolution_detail
@@ -149,7 +148,7 @@ struct Evolution {
     // The slab number is increased in the self-start phase each
     // time one order of accuracy is obtained, and the evolution
     // proper starts with slab 0.
-    const auto& time_stepper = Parallel::get<OptionTags::TimeStepper>(cache);
+    const auto& time_stepper = Parallel::get<::Tags::TimeStepperBase>(cache);
 
     const TimeId time_id(
         time_runs_forward,

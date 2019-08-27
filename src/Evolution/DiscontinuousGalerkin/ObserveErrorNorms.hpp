@@ -131,7 +131,7 @@ class ObserveErrorNorms<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
                   const ArrayIndex& /*array_index*/,
                   const ParallelComponent* const /*meta*/) const noexcept {
     const auto analytic_solution =
-        Parallel::get<OptionTags::AnalyticSolutionBase>(cache).variables(
+        Parallel::get<Tags::AnalyticSolutionBase>(cache).variables(
             inertial_coordinates, time.value(), tmpl::list<Tensors...>{});
 
     tuples::TaggedTuple<LocalSquareError<Tensors>...> local_square_errors;

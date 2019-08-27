@@ -69,6 +69,7 @@ struct NumberOfElements : db::SimpleTag {
 }  // namespace Initialization
 /// [array_allocation_tag]
 
+namespace OptionTags {
 // This option expects a list of N matrices that each have N*M rows and M
 // columns, where N is the `NumberOfElements` and M is a nonzero integer.
 // Therefore, this option specifies a (N*M,N*M) matrix that has its columns
@@ -87,6 +88,42 @@ struct Source {
 struct ExpectedResult {
   static constexpr OptionString help = "The solution x in the equation Ax=b";
   using type = std::vector<DenseVector<double>>;
+};
+}  // namespace OptionTags
+
+struct LinearOperator : db::SimpleTag {
+  static std::string name() noexcept { return "LinearOperator"; }
+  using type = std::vector<DenseMatrix<double, blaze::columnMajor>>;
+  using option_tags = tmpl::list<OptionTags::LinearOperator>;
+
+  static std::vector<DenseMatrix<double, blaze::columnMajor>>
+  create_from_options(
+      const std::vector<DenseMatrix<double, blaze::columnMajor>>&
+          linear_operator) noexcept {
+    return linear_operator;
+  }
+};
+
+struct Source : db::SimpleTag {
+  static std::string name() noexcept { return "Source"; }
+  using type = std::vector<DenseVector<double>>;
+  using option_tags = tmpl::list<OptionTags::Source>;
+
+  static std::vector<DenseVector<double>> create_from_options(
+      const std::vector<DenseVector<double>>& source) noexcept {
+    return source;
+  }
+};
+
+struct ExpectedResult : db::SimpleTag {
+  static std::string name() noexcept { return "ExpectedResult"; }
+  using type = std::vector<DenseVector<double>>;
+  using option_tags = tmpl::list<OptionTags::ExpectedResult>;
+
+  static std::vector<DenseVector<double>> create_from_options(
+      const std::vector<DenseVector<double>>& expected_result) noexcept {
+    return expected_result;
+  }
 };
 
 // The vector `x` we want to solve for

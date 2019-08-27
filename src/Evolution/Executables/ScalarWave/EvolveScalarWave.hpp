@@ -83,10 +83,10 @@ struct EvolutionMetavars {
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = true;
   using analytic_solution_tag =
-      OptionTags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
+      Tags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
   using boundary_condition_tag = analytic_solution_tag;
   using normal_dot_numerical_flux =
-      OptionTags::NumericalFlux<ScalarWave::UpwindFlux<Dim>>;
+      Tags::NumericalFlux<ScalarWave::UpwindFlux<Dim>>;
 
   // public for use by the Charm++ registration code
   using events = tmpl::list<
@@ -101,9 +101,9 @@ struct EvolutionMetavars {
   // metavariables
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,
-                 OptionTags::TypedTimeStepper<tmpl::conditional_t<
+                 Tags::TimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
-                 OptionTags::EventsAndTriggers<events, triggers>>;
+                 Tags::EventsAndTriggers<events, triggers>>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;

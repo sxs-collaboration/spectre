@@ -49,7 +49,7 @@ template <class Metavariables>
 struct ObserverWriter {
   using chare_type = Parallel::Algorithms::Nodegroup;
   using const_global_cache_tag_list =
-      tmpl::list<OptionTags::ReductionFileName, OptionTags::VolumeFileName>;
+      tmpl::list<Tags::ReductionFileName, Tags::VolumeFileName>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,

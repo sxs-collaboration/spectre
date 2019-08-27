@@ -83,8 +83,8 @@ struct observer_writer_component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list =
-      tmpl::list<observers::OptionTags::ReductionFileName,
-                 observers::OptionTags::VolumeFileName>;
+      tmpl::list<observers::Tags::ReductionFileName,
+                 observers::Tags::VolumeFileName>;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using component_being_mocked = observers::ObserverWriter<Metavariables>;

@@ -121,7 +121,7 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list =
-      tmpl::list<OptionTags::TypedTimeStepper<TimeStepper>>;
+      tmpl::list<Tags::TimeStepper<TimeStepper>>;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags = tmpl::flatten<db::AddSimpleTags<
       typename metavariables::system::variables_tag,

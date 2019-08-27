@@ -17,14 +17,12 @@
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
-namespace OptionTags {
-struct TimeStepper;
-}  // namespace OptionTags
 namespace Tags {
 template <typename Tag>
 struct Next;
 struct TimeId;
 struct TimeStep;
+struct TimeStepperBase;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -57,7 +55,7 @@ struct AdvanceTime {
                                       const gsl::not_null<TimeDelta*>
                                           time_step) noexcept {
           const auto& time_stepper =
-              Parallel::get<OptionTags::TimeStepper>(cache);
+              Parallel::get<Tags::TimeStepperBase>(cache);
           *time_id = *next_time_id;
           *time_step = time_step->with_slab(time_id->time().slab());
           *next_time_id = time_stepper.next_time_id(*next_time_id, *time_step);

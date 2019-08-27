@@ -86,8 +86,7 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
   using const_global_cache_tag_list =
-      tmpl::list<OptionTags::TypedTimeStepper<LtsTimeStepper>,
-                 NumericalFluxTag>;
+      tmpl::list<Tags::TimeStepper<LtsTimeStepper>, NumericalFluxTag>;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<Tags::Mesh<2>, Tags::Mortars<Tags::Mesh<1>, 2>,

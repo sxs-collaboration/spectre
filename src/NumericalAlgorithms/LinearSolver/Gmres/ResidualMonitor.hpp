@@ -40,8 +40,8 @@ template <typename Metavariables, typename FieldsTag>
 struct ResidualMonitor {
   using chare_type = Parallel::Algorithms::Singleton;
   using const_global_cache_tag_list =
-      tmpl::list<LinearSolver::OptionTags::Verbosity,
-                 LinearSolver::OptionTags::ConvergenceCriteria>;
+      tmpl::list<LinearSolver::Tags::Verbosity,
+                 LinearSolver::Tags::ConvergenceCriteria>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,

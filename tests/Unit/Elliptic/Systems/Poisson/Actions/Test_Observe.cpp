@@ -99,8 +99,8 @@ struct MockObserverWriterComponent {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list =
-      tmpl::list<observers::OptionTags::ReductionFileName,
-                 observers::OptionTags::VolumeFileName>;
+      tmpl::list<observers::Tags::ReductionFileName,
+                 observers::Tags::VolumeFileName>;
   using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
   using simple_tags =
@@ -151,15 +151,14 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Actions.Observe",
   using obs_writer = MockObserverWriterComponent<Metavariables>;
   using element_comp = MockElementArray<Metavariables>;
 
-  tuples::TaggedTuple<AnalyticSolutionTag,
-                      observers::OptionTags::ReductionFileName,
-                      observers::OptionTags::VolumeFileName>
+  tuples::TaggedTuple<AnalyticSolutionTag, observers::Tags::ReductionFileName,
+                      observers::Tags::VolumeFileName>
       cache_data{};
   const auto& reduction_file_name =
-      tuples::get<observers::OptionTags::ReductionFileName>(cache_data) =
+      tuples::get<observers::Tags::ReductionFileName>(cache_data) =
           "./Unit.Elliptic.Systems.Poisson.Actions_ReductionData";
   const auto& volume_file_name =
-      tuples::get<observers::OptionTags::VolumeFileName>(cache_data) =
+      tuples::get<observers::Tags::VolumeFileName>(cache_data) =
           "./Unit.Elliptic.Systems.Poisson.Actions_VolumeData";
   ActionTesting::MockRuntimeSystem<Metavariables> runner{cache_data};
 
