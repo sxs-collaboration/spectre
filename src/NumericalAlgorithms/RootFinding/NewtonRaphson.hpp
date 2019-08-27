@@ -12,6 +12,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "ErrorHandling/Exceptions.hpp"
+#include "Utilities/MakeString.hpp"
 
 namespace RootFinder {
 /*!
@@ -49,8 +50,11 @@ double newton_raphson(const Function& f, const double initial_guess,
       f, initial_guess, lower_bound, upper_bound,
       std::round(std::log2(std::pow(10, digits))), max_iters);
   if (max_iters >= max_iterations) {
-    throw convergence_error(
-        "newton_raphson reached max iterations without converging");
+    throw convergence_error(MakeString{}
+                            << "newton_raphson reached max iterations of "
+                            << max_iterations
+                            << " without converging. Best result is: " << result
+                            << " with residual " << f(result).first);
   }
   return result;
 }
@@ -98,8 +102,12 @@ DataVector newton_raphson(const Function& f, const DataVector& initial_guess,
         [&f, i ](double x) noexcept { return f(x, i); }, initial_guess[i],
         lower_bound[i], upper_bound[i], digits_binary, max_iters);
     if (max_iters >= max_iterations) {
-      throw convergence_error(
-          "newton_raphson reached max iterations without converging");
+      throw convergence_error(MakeString{}
+                              << "newton_raphson reached max iterations of "
+                              << max_iterations
+                              << " without converging. Best result is: "
+                              << result_vector[i] << " with residual "
+                              << f(result_vector[i], i).first);
     }
   }
   return result_vector;
