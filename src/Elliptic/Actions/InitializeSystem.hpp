@@ -45,7 +45,7 @@ namespace Actions {
  * - Adds:
  *   - `fields_tag`
  *   - `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>`
- *   - `db::add_tag_prefix<Tags::Source, fields_tag>`
+ *   - `db::add_tag_prefix<::Tags::FixedSource, fields_tag>`
  *   - `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
  *   - `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
  *   db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>>`
@@ -64,7 +64,8 @@ struct InitializeSystem {
     using fields_tag = typename system::fields_tag;
     using linear_operator_applied_to_fields_tag =
         db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
-    using sources_tag = db::add_tag_prefix<::Tags::Source, fields_tag>;
+    using fixed_sources_tag =
+        db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
     using linear_operand_tag =
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
     using linear_operator_applied_to_operand_tag =
@@ -76,7 +77,7 @@ struct InitializeSystem {
 
     using simple_tags =
         db::AddSimpleTags<fields_tag, linear_operator_applied_to_fields_tag,
-                          sources_tag, linear_operand_tag,
+                          fixed_sources_tag, linear_operand_tag,
                           linear_operator_applied_to_operand_tag>;
     using compute_tags = db::AddComputeTags<
         // The gradients are needed by the elliptic operator
@@ -98,11 +99,11 @@ struct InitializeSystem {
     // which defines the problem we want to solve.
     // We need only retrieve sources for the primal fields, since the auxiliary
     // fields will never be sourced.
-    db::item_type<sources_tag> sources{num_grid_points, 0.};
-    sources.assign_subset(
+    db::item_type<fixed_sources_tag> fixed_sources{num_grid_points, 0.};
+    fixed_sources.assign_subset(
         Parallel::get<typename Metavariables::analytic_solution_tag>(cache)
             .variables(inertial_coords,
-                       db::wrap_tags_in<::Tags::Source,
+                       db::wrap_tags_in<::Tags::FixedSource,
                                         typename system::primal_fields>{}));
 
     // Initialize the variables for the elliptic solve. Their initial value is
@@ -119,8 +120,8 @@ struct InitializeSystem {
         ::Initialization::merge_into_databox<InitializeSystem, simple_tags,
                                              compute_tags>(
             std::move(box), std::move(fields),
-            std::move(linear_operator_applied_to_fields), std::move(sources),
-            std::move(linear_operand),
+            std::move(linear_operator_applied_to_fields),
+            std::move(fixed_sources), std::move(linear_operand),
             std::move(linear_operator_applied_to_operand)));
   }
 };

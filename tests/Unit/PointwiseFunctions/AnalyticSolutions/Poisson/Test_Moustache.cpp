@@ -27,7 +27,7 @@ struct MoustacheProxy : Poisson::Solutions::Moustache<Dim> {
 
   using field_tags =
       tmpl::list<Poisson::Tags::Field, Poisson::Tags::AuxiliaryField<Dim>>;
-  using source_tags = tmpl::list<Tags::Source<Poisson::Tags::Field>>;
+  using source_tags = tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
@@ -49,7 +49,7 @@ void test_solution() {
       {"field", "auxiliary_field"}, {{{0., 1.}}}, std::make_tuple(),
       DataVector(5));
   pypp::check_with_random_values<
-      1, tmpl::list<Tags::Source<Poisson::Tags::Field>>>(
+      1, tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>>(
       &MoustacheProxy<Dim>::source_variables, solution, "Moustache", {"source"},
       {{{0., 1.}}}, std::make_tuple(), DataVector(5));
 

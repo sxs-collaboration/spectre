@@ -117,8 +117,9 @@ class BentBeam {
 
   auto variables(
       const tnsr::I<DataVector, 2>& x,
-      tmpl::list<::Tags::Source<Tags::Displacement<2>>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<::Tags::Source<Tags::Displacement<2>>>;
+      tmpl::list<::Tags::FixedSource<Tags::Displacement<2>>> /*meta*/) const
+      noexcept
+      -> tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<2>>>;
   // @}
 
   /// Retrieve a collection of variables at coordinates `x`

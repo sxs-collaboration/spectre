@@ -55,10 +55,10 @@ ProductOfSinusoids<Dim>::variables(
 }
 
 template <size_t Dim>
-tuples::TaggedTuple<::Tags::Source<Tags::Field>>
+tuples::TaggedTuple<::Tags::FixedSource<Tags::Field>>
 ProductOfSinusoids<Dim>::variables(
     const tnsr::I<DataVector, Dim>& x,
-    tmpl::list<::Tags::Source<Tags::Field>> /*meta*/) const noexcept {
+    tmpl::list<::Tags::FixedSource<Tags::Field>> /*meta*/) const noexcept {
   auto field_source = get<Tags::Field>(variables(x, tmpl::list<Tags::Field>{}));
   field_source.get() *= square(magnitude(wave_numbers_));
   return {std::move(field_source)};

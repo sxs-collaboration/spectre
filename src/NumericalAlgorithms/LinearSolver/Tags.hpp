@@ -181,7 +181,7 @@ struct OrthogonalizationHistory : db::PrefixTag, db::SimpleTag {
  * represented by the tags
  * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
  * db::add_tag_prefix<LinearSolver::Tags::Operand, Tag>>` and
- * `db::add_tag_prefix<::Tags::Source, Tag>`, respectively. Therefore, each
+ * `db::add_tag_prefix<::Tags::FixedSource, Tag>`, respectively. Therefore, each
  * basis vector is of the type `db::item_type<db::add_tag_prefix<Operand,
  * Tag>>`.
  */

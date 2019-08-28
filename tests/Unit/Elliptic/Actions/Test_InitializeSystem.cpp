@@ -45,14 +45,14 @@ struct System {
 
 template <size_t Dim>
 struct AnalyticSolution {
-  tuples::TaggedTuple<Tags::Source<ScalarFieldTag>> variables(
+  tuples::TaggedTuple<Tags::FixedSource<ScalarFieldTag>> variables(
       const tnsr::I<DataVector, Dim>& x,
-      tmpl::list<Tags::Source<ScalarFieldTag>> /*meta*/) const noexcept {
-    Scalar<DataVector> source{get<0>(x)};
+      tmpl::list<Tags::FixedSource<ScalarFieldTag>> /*meta*/) const noexcept {
+    Scalar<DataVector> fixed_source{get<0>(x)};
     for (size_t d = 1; d < Dim; d++) {
-      get(source) += x.get(d);
+      get(fixed_source) += x.get(d);
     }
-    return {source};
+    return {fixed_source};
   }
   // clang-tidy: do not use references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
@@ -144,7 +144,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     // Test the analytic source
     const auto& inertial_coords =
         get_tag(Tags::Coordinates<1, Frame::Inertial>{});
-    CHECK(get(get_tag(Tags::Source<ScalarFieldTag>{})) ==
+    CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
           get<0>(inertial_coords));
@@ -194,7 +194,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     // Test the analytic source
     const auto& inertial_coords =
         get_tag(Tags::Coordinates<2, Frame::Inertial>{});
-    CHECK(get(get_tag(Tags::Source<ScalarFieldTag>{})) ==
+    CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
           get<0>(inertial_coords) + get<1>(inertial_coords));
@@ -249,7 +249,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     // Test the analytic source
     const auto& inertial_coords =
         get_tag(Tags::Coordinates<3, Frame::Inertial>{});
-    CHECK(get(get_tag(Tags::Source<ScalarFieldTag>{})) ==
+    CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
           get<0>(inertial_coords) + get<1>(inertial_coords) +

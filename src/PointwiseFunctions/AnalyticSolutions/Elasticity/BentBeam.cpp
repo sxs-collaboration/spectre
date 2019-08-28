@@ -46,9 +46,11 @@ tuples::TaggedTuple<Tags::Stress<2>> BentBeam::variables(
   return {std::move(result)};
 }
 
-tuples::TaggedTuple<::Tags::Source<Tags::Displacement<2>>> BentBeam::variables(
+tuples::TaggedTuple<::Tags::FixedSource<Tags::Displacement<2>>>
+BentBeam::variables(
     const tnsr::I<DataVector, 2>& x,
-    tmpl::list<::Tags::Source<Tags::Displacement<2>>> /*meta*/) const noexcept {
+    tmpl::list<::Tags::FixedSource<Tags::Displacement<2>>> /*meta*/) const
+    noexcept {
   return {make_with_value<tnsr::I<DataVector, 2>>(x, 0.)};
 }
 

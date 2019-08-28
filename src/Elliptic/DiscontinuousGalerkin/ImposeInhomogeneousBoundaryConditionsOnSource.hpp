@@ -40,7 +40,7 @@ namespace Actions {
  * are currently supported.
  *
  * With:
- * - `sources_tag` = `db::add_tag_prefix<Tags::Source, system::fields_tag>`
+ * - `fixed_sources_tag` = `db::add_tag_prefix<Tags::FixedSource, fields_tag>`
  *
  * Uses:
  * - Metavariables:
@@ -63,14 +63,14 @@ namespace Actions {
  *
  * DataBox:
  * - Modifies:
- *   - `sources_tag`
+ *   - `fixed_sources_tag`
  */
 template <typename Metavariables>
 struct ImposeInhomogeneousBoundaryConditionsOnSource {
   using system = typename Metavariables::system;
 
-  using sources_tag =
-      db::add_tag_prefix<::Tags::Source, typename system::fields_tag>;
+  using fixed_sources_tag =
+      db::add_tag_prefix<::Tags::FixedSource, typename system::fields_tag>;
 
   template <typename NormalDotNumericalFluxComputer,
             typename... NumericalFluxTags, typename... BoundaryDataTags>
@@ -101,11 +101,11 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
     const auto& normal_dot_numerical_flux_computer =
         Parallel::get<typename Metavariables::normal_dot_numerical_flux>(cache);
 
-    db::mutate<sources_tag>(
+    db::mutate<fixed_sources_tag>(
         make_not_null(&box),
         [
           &analytic_solution, &normal_dot_numerical_flux_computer
-        ](const gsl::not_null<db::item_type<sources_tag>*> sources,
+        ](const gsl::not_null<db::item_type<fixed_sources_tag>*> fixed_sources,
           const Mesh<volume_dim>& mesh,
           const db::item_type<::Tags::BoundaryDirectionsInterior<volume_dim>>&
               boundary_directions,
@@ -132,8 +132,8 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
                 analytic_solution.variables(boundary_coordinates.at(direction),
                                             typename system::primal_fields{}));
             // Compute the numerical flux contribution from the Dirichlet data
-            db::item_type<
-                db::add_tag_prefix<::Tags::NormalDotNumericalFlux, sources_tag>>
+            db::item_type<db::add_tag_prefix<::Tags::NormalDotNumericalFlux,
+                                             fixed_sources_tag>>
                 boundary_normal_dot_numerical_fluxes{
                     mortar_mesh.number_of_grid_points(), 0.};
             compute_dirichlet_boundary_normal_dot_numerical_flux(
@@ -143,12 +143,12 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
                 normalized_face_normals.at(direction));
             // Flip sign of the boundary contributions, making them
             // contributions to the source
-            db::item_type<sources_tag> lifted_boundary_data{
+            db::item_type<fixed_sources_tag> lifted_boundary_data{
                 -1. *
                 ::dg::lift_flux(std::move(boundary_normal_dot_numerical_fluxes),
                                 mesh.extents(dimension),
                                 magnitude_of_face_normals.at(direction))};
-            add_slice_to_data(sources, std::move(lifted_boundary_data),
+            add_slice_to_data(fixed_sources, std::move(lifted_boundary_data),
                               mesh.extents(), dimension,
                               index_to_slice_at(mesh.extents(), direction));
           }

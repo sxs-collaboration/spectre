@@ -133,7 +133,7 @@ struct ScalarFieldTag : db::SimpleTag {
 };
 
 using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
-using sources_tag = db::add_tag_prefix<::Tags::Source, fields_tag>;
+using sources_tag = db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
 using operator_applied_to_fields_tag =
     db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
 using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;

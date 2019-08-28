@@ -99,19 +99,19 @@ struct ElementArray {
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<
-              ActionTesting::InitializeDataBox<tmpl::list<
-                  ::Tags::Domain<Dim, Frame::Inertial>,
-                  ::Tags::InitialExtents<Dim>,
-                  db::add_tag_prefix<::Tags::Source, typename Metavariables::
-                                                         system::fields_tag>>>,
-              dg::Actions::InitializeDomain<Dim>,
-              dg::Actions::InitializeInterfaces<
-                  typename Metavariables::system,
-                  dg::Initialization::slice_tags_to_face<>,
-                  dg::Initialization::slice_tags_to_exterior<>,
-                  dg::Initialization::face_compute_tags<>,
-                  dg::Initialization::exterior_compute_tags<>, false>>>,
+          tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
+                         ::Tags::Domain<Dim, Frame::Inertial>,
+                         ::Tags::InitialExtents<Dim>,
+                         db::add_tag_prefix<
+                             ::Tags::FixedSource,
+                             typename Metavariables::system::fields_tag>>>,
+                     dg::Actions::InitializeDomain<Dim>,
+                     dg::Actions::InitializeInterfaces<
+                         typename Metavariables::system,
+                         dg::Initialization::slice_tags_to_face<>,
+                         dg::Initialization::slice_tags_to_exterior<>,
+                         dg::Initialization::face_compute_tags<>,
+                         dg::Initialization::exterior_compute_tags<>, false>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
@@ -139,7 +139,8 @@ void test_impose_inhomogeneous_boundary_conditions_on_source(
   using system = typename metavariables::system;
   using element_array = ElementArray<Dim, metavariables>;
 
-  db::item_type<db::add_tag_prefix<Tags::Source, typename system::fields_tag>>
+  db::item_type<
+      db::add_tag_prefix<Tags::FixedSource, typename system::fields_tag>>
       source_vars{source_expected.size(), 0.};
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
@@ -158,7 +159,7 @@ void test_impose_inhomogeneous_boundary_conditions_on_source(
                                                               element_id);
   };
 
-  CHECK(get_tag(Tags::Source<ScalarFieldTag>{}) ==
+  CHECK(get_tag(Tags::FixedSource<ScalarFieldTag>{}) ==
         Scalar<DataVector>(source_expected));
 }
 }  // namespace

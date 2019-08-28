@@ -12,7 +12,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
-#include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "DataStructures/Tensor/Tensor.hpp"               // IWYU pragma: keep
 #include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -136,10 +136,11 @@ ConstantDensityStar::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<::Tags::Source<Xcts::Tags::ConformalFactor<DataType>>>
+tuples::TaggedTuple<::Tags::FixedSource<Xcts::Tags::ConformalFactor<DataType>>>
 ConstantDensityStar::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<::Tags::Source<Xcts::Tags::ConformalFactor<DataType>>> /*meta*/)
+    tmpl::list<
+        ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DataType>>> /*meta*/)
     const noexcept {
   return {make_with_value<Scalar<DataType>>(x, 0.)};
 }
@@ -182,10 +183,11 @@ bool operator!=(const ConstantDensityStar& lhs,
       tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactorGradient<        \
           3, Frame::Inertial, DTYPE(data)>>>) const noexcept;                \
   template tuples::TaggedTuple<                                              \
-      ::Tags::Source<Xcts::Tags::ConformalFactor<DTYPE(data)>>>              \
+      ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>         \
   ConstantDensityStar::variables(                                            \
       const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                       \
-      tmpl::list<::Tags::Source<Xcts::Tags::ConformalFactor<DTYPE(data)>>>)  \
+      tmpl::list<                                                            \
+          ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>)    \
       const noexcept;                                                        \
   template tuples::TaggedTuple<gr::Tags::EnergyDensity<DTYPE(data)>>         \
   ConstantDensityStar::variables(                                            \

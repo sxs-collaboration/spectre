@@ -31,7 +31,7 @@ struct BentBeamProxy : Elasticity::Solutions::BentBeam {
   using field_tags = tmpl::list<Elasticity::Tags::Displacement<2>,
                                 Elasticity::Tags::Stress<2>>;
   using source_tags =
-      tmpl::list<Tags::Source<Elasticity::Tags::Displacement<2>>>;
+      tmpl::list<Tags::FixedSource<Elasticity::Tags::Displacement<2>>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
       const tnsr::I<DataVector, 2>& x) const noexcept {
@@ -97,7 +97,7 @@ SPECTRE_TEST_CASE(
       std::make_tuple(5., 1., 0.5, 79.36507936507935, 38.75968992248062),
       DataVector(5));
   pypp::check_with_random_values<
-      1, tmpl::list<Tags::Source<Elasticity::Tags::Displacement<2>>>>(
+      1, tmpl::list<Tags::FixedSource<Elasticity::Tags::Displacement<2>>>>(
       &BentBeamProxy::source_variables, solution, "BentBeam", {"source"},
       {{{-5., 5.}}}, std::make_tuple(), DataVector(5));
 }

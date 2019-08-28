@@ -23,9 +23,9 @@ tuples::TaggedTuple<Tags::Field> Lorentzian<3>::variables(
 }
 
 template <>
-tuples::TaggedTuple<::Tags::Source<Tags::Field>> Lorentzian<3>::variables(
+tuples::TaggedTuple<::Tags::FixedSource<Tags::Field>> Lorentzian<3>::variables(
     const tnsr::I<DataVector, 3>& x,
-    tmpl::list<::Tags::Source<Tags::Field>> /*meta*/) noexcept {
+    tmpl::list<::Tags::FixedSource<Tags::Field>> /*meta*/) noexcept {
   return {Scalar<DataVector>(3. / pow<5>(sqrt(1. + get(dot_product(x, x)))))};
 }
 

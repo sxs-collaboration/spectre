@@ -29,7 +29,7 @@ using auxiliary_field_tags = tmpl::list<
 using initial_tags =
     db::wrap_tags_in<Tags::Initial,
                      tmpl::append<field_tags, auxiliary_field_tags>>;
-using source_tags = db::wrap_tags_in<Tags::Source, field_tags>;
+using source_tags = db::wrap_tags_in<Tags::FixedSource, field_tags>;
 
 struct ConstantDensityStarProxy : Xcts::Solutions::ConstantDensityStar {
   using Xcts::Solutions::ConstantDensityStar::ConstantDensityStar;

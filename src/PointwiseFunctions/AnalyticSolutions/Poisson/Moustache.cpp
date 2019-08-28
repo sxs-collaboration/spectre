@@ -63,9 +63,9 @@ tuples::TaggedTuple<Tags::AuxiliaryField<2>> Moustache<2>::variables(
 }
 
 template <>
-tuples::TaggedTuple<::Tags::Source<Tags::Field>> Moustache<1>::variables(
+tuples::TaggedTuple<::Tags::FixedSource<Tags::Field>> Moustache<1>::variables(
     const tnsr::I<DataVector, 1>& x,
-    tmpl::list<::Tags::Source<Tags::Field>> /*meta*/) const noexcept {
+    tmpl::list<::Tags::FixedSource<Tags::Field>> /*meta*/) const noexcept {
   const auto x1 = get<0>(x) - 0.5;
   // This polynomial is minus the laplacian of the 1D solution
   Scalar<DataVector> field_source(abs(x1) * (20. * square(x1) - 1.5));
@@ -73,9 +73,9 @@ tuples::TaggedTuple<::Tags::Source<Tags::Field>> Moustache<1>::variables(
 }
 
 template <>
-tuples::TaggedTuple<::Tags::Source<Tags::Field>> Moustache<2>::variables(
+tuples::TaggedTuple<::Tags::FixedSource<Tags::Field>> Moustache<2>::variables(
     const tnsr::I<DataVector, 2>& x,
-    tmpl::list<::Tags::Source<Tags::Field>> /*meta*/) const noexcept {
+    tmpl::list<::Tags::FixedSource<Tags::Field>> /*meta*/) const noexcept {
   const auto x1 = get<0>(x) - 0.5;
   const auto x2 = get<1>(x) - 0.5;
   const auto x1_square = square(x1);

@@ -30,7 +30,7 @@ struct ProductOfSinusoidsProxy : Poisson::Solutions::ProductOfSinusoids<Dim> {
 
   using field_tags =
       tmpl::list<Poisson::Tags::Field, Poisson::Tags::AuxiliaryField<Dim>>;
-  using source_tags = tmpl::list<Tags::Source<Poisson::Tags::Field>>;
+  using source_tags = tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
@@ -55,7 +55,7 @@ void test_solution(const std::array<double, Dim>& wave_numbers,
       "ProductOfSinusoids", {"field", "auxiliary_field"}, {{{0., 2. * M_PI}}},
       std::make_tuple(wave_numbers), DataVector(5));
   pypp::check_with_random_values<
-      1, tmpl::list<Tags::Source<Poisson::Tags::Field>>>(
+      1, tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>>(
       &ProductOfSinusoidsProxy<Dim>::source_variables, solution,
       "ProductOfSinusoids", {"source"}, {{{0., 2. * M_PI}}},
       std::make_tuple(wave_numbers), DataVector(5));
