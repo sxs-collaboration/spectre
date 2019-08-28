@@ -18,6 +18,7 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"
@@ -108,7 +109,8 @@ struct mock_interpolation_target {
   using array_index = size_t;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list =
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -117,9 +119,7 @@ struct mock_interpolation_target {
               Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
-  using add_options_to_databox =
-      typename intrp::Actions::InitializeInterpolationTarget<
-          Metavariables, InterpolationTargetTag>::AddOptionsToDataBox;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::InterpolationTargetReceiveVars<
@@ -173,12 +173,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   const auto domain_creator =
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{7, 7}}, false);
 
-  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {domain_creator.create_domain()}};
   runner.set_phase(metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_component>(&runner, 0);
   ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   runner.set_phase(metavars::Phase::Testing);
 

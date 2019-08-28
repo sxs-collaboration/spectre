@@ -9,8 +9,6 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "Domain/Domain.hpp"
-#include "Domain/Tags.hpp"                             // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -94,7 +92,6 @@ auto make_tuple_of_box(
 ///   - `Tags::IndicesOfFilledInterpPoints`
 ///   - `Tags::TemporalIds<Metavariables>`
 ///   - `Tags::CompletedTemporalIds<Metavariables>`
-///   - `::Tags::Domain<VolumeDim, Frame>`
 ///   - `::Tags::Variables<typename
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 /// - Removes: nothing
@@ -113,29 +110,10 @@ struct InitializeInterpolationTarget {
                    typename initialize_interpolation_target_detail::
                        initialization_tags<InterpolationTargetTag>::type>;
 
-  struct AddOptionsToDataBox {
-    using simple_tags =
-        tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>;
-    template <typename DbTagsList>
-    static auto apply(
-        db::DataBox<DbTagsList>&& box,
-        ::Domain<Metavariables::volume_dim, Frame::Inertial> domain) noexcept {
-      return db::create_from<db::RemoveTags<>, simple_tags>(std::move(box),
-                                                            std::move(domain));
-    }
-  };
-
-  using initialization_tags =
-      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>;
-
-  template <
-      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-      typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTagsList,
-                                     ::Tags::Domain<Metavariables::volume_dim,
-                                                    Frame::Inertial>> and
-               not tmpl::list_contains_v<
-                   DbTagsList, Tags::IndicesOfFilledInterpPoints>> = nullptr>
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent,
+            Requires<not tmpl::list_contains_v<
+                DbTagsList, Tags::IndicesOfFilledInterpPoints>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,

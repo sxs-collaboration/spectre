@@ -12,6 +12,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"
@@ -65,9 +66,10 @@ struct mock_interpolation_target {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using component_being_mocked = void;  // not needed.
-  using const_global_cache_tag_list =
+  using const_global_cache_tag_list = tmpl::flatten<tmpl::append<
       Parallel::get_const_global_cache_tags<tmpl::list<
-          typename Metavariables::InterpolationTargetA::compute_target_points>>;
+          typename Metavariables::InterpolationTargetA::compute_target_points>>,
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -75,9 +77,7 @@ struct mock_interpolation_target {
               Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
-  using add_options_to_databox =
-      typename intrp::Actions::InitializeInterpolationTarget<
-          Metavariables, InterpolationTargetTag>::AddOptionsToDataBox;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 };
 
 template <typename InterpolationTargetTag>
@@ -149,14 +149,16 @@ void test_interpolation_target(
                                 typename metavars::InterpolationTargetA>;
   using interp_component = mock_interpolator<metavars>;
 
-  tuples::TaggedTuple<typename metavars::InterpolationTargetA> tuple_of_opts(
-      std::move(options));
+  tuples::TaggedTuple<
+      typename metavars::InterpolationTargetA,
+      ::Tags::Domain<MetaVariables::volume_dim, Frame::Inertial>>
+      tuple_of_opts{std::move(options),
+                    std::move(domain_creator.create_domain())};
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   runner.set_phase(metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_component>(&runner, 0);
   ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   runner.set_phase(metavars::Phase::Testing);
 

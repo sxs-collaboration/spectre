@@ -26,6 +26,7 @@
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
+#include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
@@ -177,8 +178,10 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
-      tmpl::list<intrp::Actions::LineSegment<InterpolationTargetTag, 3>>>;
+  using const_global_cache_tag_list = tmpl::flatten<tmpl::append<
+      Parallel::get_const_global_cache_tags<
+          tmpl::list<intrp::Actions::LineSegment<InterpolationTargetTag, 3>>>,
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -188,9 +191,7 @@ struct mock_interpolation_target {
                              Metavariables::Phase::Registration, tmpl::list<>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
-  using add_options_to_databox =
-      typename intrp::Actions::InitializeInterpolationTarget<
-          Metavariables, InterpolationTargetTag>::AddOptionsToDataBox;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
@@ -282,27 +283,24 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
       {{1.1, 1.1, 1.1}}, {{2.5, 2.5, 2.5}}, 17);
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
                                                         1.0, {{0.0, 0.0, 0.0}});
-  tuples::TaggedTuple<metavars::InterpolationTargetA,
-                      metavars::InterpolationTargetB,
-                      metavars::InterpolationTargetC>
-      tuple_of_opts(std::move(line_segment_opts_A),
-                    std::move(line_segment_opts_B),
-                    std::move(kerr_horizon_opts_C));
-
-  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   const auto domain_creator =
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+  tuples::TaggedTuple<
+      metavars::InterpolationTargetA, ::Tags::Domain<3, Frame::Inertial>,
+      metavars::InterpolationTargetB, metavars::InterpolationTargetC>
+      tuple_of_opts(
+          std::move(line_segment_opts_A), domain_creator.create_domain(),
+          std::move(line_segment_opts_B), std::move(kerr_horizon_opts_C));
+
+  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   runner.set_phase(metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_a_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_a_component>(&runner, 0);
   ActionTesting::next_action<target_a_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_b_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_b_component>(&runner, 0);
   ActionTesting::next_action<target_b_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_c_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_c_component>(&runner, 0);
   ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
   runner.set_phase(metavars::Phase::Registration);
 

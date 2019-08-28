@@ -36,12 +36,12 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementIndex<volume_dim>;
 
-  using const_global_cache_tag_list =
-      Parallel::get_const_global_cache_tags_from_pdal<PhaseDepActionList>;
+  using const_global_cache_tag_list = tmpl::flatten<tmpl::append<
+      Parallel::get_const_global_cache_tags_from_pdal<PhaseDepActionList>,
+      tmpl::list<::Tags::Domain<volume_dim, Frame::Inertial>>>>;
 
   using array_allocation_tags =
-      tmpl::list<::Tags::Domain<volume_dim, Frame::Inertial>,
-                 ::Tags::InitialRefinementLevels<volume_dim>>;
+      tmpl::list<::Tags::InitialRefinementLevels<volume_dim>>;
 
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>,
@@ -66,10 +66,11 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
     Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
     const tuples::tagged_tuple_from_typelist<initialization_tags>&
         initialization_items) noexcept {
-  auto& dg_element_array = Parallel::get_parallel_component<DgElementArray>(
-      *(global_cache.ckLocalBranch()));
+  auto& local_cache = *(global_cache.ckLocalBranch());
+  auto& dg_element_array =
+      Parallel::get_parallel_component<DgElementArray>(local_cache);
   const auto& domain =
-      get<::Tags::Domain<volume_dim, Frame::Inertial>>(initialization_items);
+      Parallel::get<::Tags::Domain<volume_dim, Frame::Inertial>>(local_cache);
   const auto& initial_refinement_levels =
       get<::Tags::InitialRefinementLevels<volume_dim>>(initialization_items);
   for (const auto& block : domain.blocks()) {

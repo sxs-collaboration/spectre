@@ -26,6 +26,7 @@
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
+#include "Domain/Tags.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -162,9 +163,11 @@ struct MockInterpolationTarget {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
-      tmpl::list<typename InterpolationTargetTag::compute_target_points,
-                 typename InterpolationTargetTag::post_interpolation_callback>>;
+  using const_global_cache_tag_list = tmpl::flatten<tmpl::append<
+      Parallel::get_const_global_cache_tags<tmpl::list<
+          typename InterpolationTargetTag::compute_target_points,
+          typename InterpolationTargetTag::post_interpolation_callback>>,
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -176,9 +179,7 @@ struct MockInterpolationTarget {
               RegistrationHelper>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
-  using add_options_to_databox =
-      typename intrp::Actions::InitializeInterpolationTarget<
-          Metavariables, InterpolationTargetTag>::AddOptionsToDataBox;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
 };
@@ -309,26 +310,25 @@ SPECTRE_TEST_CASE(
                                                         2.0, {{0.0, 0.0, 0.0}});
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
                                                         1.5, {{0.0, 0.0, 0.0}});
-  tuples::TaggedTuple<observers::Tags::ReductionFileName, metavars::SurfaceA,
-                      metavars::SurfaceB, metavars::SurfaceC>
-      tuple_of_opts(h5_file_prefix, std::move(kerr_horizon_opts_A),
-                    std::move(kerr_horizon_opts_B),
-                    std::move(kerr_horizon_opts_C));
-
-  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   const auto domain_creator =
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+  tuples::TaggedTuple<observers::Tags::ReductionFileName, metavars::SurfaceA,
+                      ::Tags::Domain<3, Frame::Inertial>, metavars::SurfaceB,
+                      metavars::SurfaceC>
+      tuple_of_opts{h5_file_prefix, std::move(kerr_horizon_opts_A),
+                    domain_creator.create_domain(),
+                    std::move(kerr_horizon_opts_B),
+                    std::move(kerr_horizon_opts_C)};
+
+  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   runner.set_phase(metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_a_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_a_component>(&runner, 0);
   ActionTesting::next_action<target_a_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_b_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_b_component>(&runner, 0);
   ActionTesting::next_action<target_b_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_c_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_c_component>(&runner, 0);
   ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<obs_writer>(&runner, 0);
   ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);

@@ -169,9 +169,7 @@ struct mock_interpolation_target {
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<intrp::Actions::InitializeInterpolationTarget<
           Metavariables, InterpolationTargetTag>>>>;
-  using add_options_to_databox =
-      typename intrp::Actions::InitializeInterpolationTarget<
-          Metavariables, InterpolationTargetTag>::AddOptionsToDataBox;
+  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
@@ -221,7 +219,8 @@ struct MockMetavariables {
   using component_list =
       tmpl::list<mock_interpolation_target<MockMetavariables, AhA>,
                  mock_interpolator<MockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list =
+      tmpl::list<::Tags::Domain<3, Frame::Inertial>>;
 
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
@@ -247,11 +246,6 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       Strahlkorper<Frame::Inertial>{l_max, 2.8, {{0.0, 0.0, 0.0}}}, FastFlow{},
       Verbosity::Verbose);
 
-  tuples::TaggedTuple<typename metavars::AhA> tuple_of_opts(
-      std::move(apparent_horizon_opts));
-
-  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
-
   // The test finds an apparent horizon for a Schwarzschild or Kerr
   // metric with M=1.  We choose a spherical shell domain extending
   // from radius 1.9M to 2.9M; this ensures the horizon is
@@ -262,20 +256,26 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       1.9, 2.9, 1, {{grid_points_each_dimension, grid_points_each_dimension}},
       false);
 
+  tuples::TaggedTuple<::Tags::Domain<3, Frame::Inertial>,
+                      typename metavars::AhA>
+      tuple_of_opts{std::move(domain_creator.create_domain()),
+                    std::move(apparent_horizon_opts)};
+
+  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
+
   runner.set_phase(metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_component>(&runner, 0);
   ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   runner.set_phase(metavars::Phase::Registration);
 
   Slab slab(0.0, 1.0);
   TimeId temporal_id(true, 0, Time(slab, 0));
-  const auto domain = domain_creator.create_domain();
 
   // Create element_ids.
   std::vector<ElementId<3>> element_ids{};
+  Domain<3, Frame::Inertial> domain = domain_creator.create_domain();
   for (const auto& block : domain.blocks()) {
     const auto initial_ref_levs =
         domain_creator.initial_refinement_levels()[block.id()];
