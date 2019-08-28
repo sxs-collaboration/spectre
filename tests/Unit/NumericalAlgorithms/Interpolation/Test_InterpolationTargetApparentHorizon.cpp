@@ -19,7 +19,6 @@
 #include "Informer/Tags.hpp" // IWYU pragma: keep
 #include "Informer/Verbosity.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetApparentHorizon.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
 #include "Utilities/Gsl.hpp"

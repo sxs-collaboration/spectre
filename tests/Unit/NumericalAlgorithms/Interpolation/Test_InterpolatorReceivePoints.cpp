@@ -25,7 +25,6 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatorReceivePoints.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
@@ -119,7 +118,6 @@ struct mock_interpolation_target {
               Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using replace_these_simple_actions =
       tmpl::list<intrp::Actions::InterpolationTargetReceiveVars<
@@ -135,7 +133,6 @@ struct mock_interpolator {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<

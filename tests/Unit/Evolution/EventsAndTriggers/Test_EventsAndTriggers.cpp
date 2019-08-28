@@ -18,7 +18,6 @@
 #include "Evolution/EventsAndTriggers/LogicalTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Tags.hpp"
 #include "Evolution/EventsAndTriggers/Trigger.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "Utilities/Gsl.hpp"
@@ -42,7 +41,6 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<events_and_triggers_tag>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Testing,
       tmpl::list<Actions::RunEventsAndTriggers>>>;

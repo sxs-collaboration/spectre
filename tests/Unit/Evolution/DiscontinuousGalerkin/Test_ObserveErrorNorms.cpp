@@ -22,7 +22,6 @@
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -102,7 +101,6 @@ MockContributeReductionData::Results MockContributeReductionData::results{};
 template <typename Metavariables>
 struct ElementComponent {
   using component_being_mocked = void;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -121,7 +119,6 @@ struct MockObserverComponent {
       tmpl::list<observers::Actions::ContributeReductionData>;
   using with_these_simple_actions = tmpl::list<MockContributeReductionData>;
 
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;

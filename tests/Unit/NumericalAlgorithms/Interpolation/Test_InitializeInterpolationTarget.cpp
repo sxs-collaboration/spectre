@@ -17,7 +17,6 @@
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Tags.hpp"
@@ -46,7 +45,6 @@ struct mock_interpolation_target {
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<intrp::Actions::InitializeInterpolationTarget<
           Metavariables, InterpolationTargetTag>>>>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 };
 
 struct Metavariables {

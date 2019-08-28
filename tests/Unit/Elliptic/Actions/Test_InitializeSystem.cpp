@@ -23,7 +23,6 @@
 #include "Elliptic/Actions/InitializeSystem.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -65,7 +64,6 @@ struct ElementArray {
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tag_list =
       tmpl::list<::Tags::Domain<Dim, Frame::Inertial>>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

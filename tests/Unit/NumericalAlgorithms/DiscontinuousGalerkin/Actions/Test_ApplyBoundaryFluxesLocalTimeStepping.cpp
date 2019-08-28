@@ -28,7 +28,6 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
@@ -87,7 +86,6 @@ struct Component {
   using array_index = ElementIndex<2>;
   using const_global_cache_tag_list =
       tmpl::list<Tags::TimeStepper<LtsTimeStepper>, NumericalFluxTag>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<Tags::Mesh<2>, Tags::Mortars<Tags::Mesh<1>, 2>,
                         Tags::Mortars<Tags::MortarSize<1>, 2>, Tags::TimeStep,

@@ -32,7 +32,6 @@
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/FileSystem.hpp"
@@ -55,7 +54,6 @@ struct MockElementArray {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<LinearSolver::Tags::IterationId, Tags::Mesh<2>,
                         Poisson::Field, Tags::Coordinates<2, Frame::Inertial>>;
@@ -83,7 +81,6 @@ struct MockObserverComponent {
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
   using component_being_mocked = observers::Observer<Metavariables>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       typename observers::Actions::Initialize<Metavariables>::simple_tags;
   using compute_tags =
@@ -101,7 +98,6 @@ struct MockObserverWriterComponent {
   using const_global_cache_tag_list =
       tmpl::list<observers::Tags::ReductionFileName,
                  observers::Tags::VolumeFileName>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
   using simple_tags =
       typename observers::Actions::InitializeWriter<Metavariables>::simple_tags;

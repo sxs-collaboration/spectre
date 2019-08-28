@@ -15,7 +15,6 @@
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/M1Grey/UpdateM1Closure.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/RadiationTransport/Tags.hpp"  // IWYU pragma: keep
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -36,7 +35,6 @@ struct mock_component {
       typename Metavariables::neutrino_species>;
   using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
       tmpl::list<Actions::UpdateM1Closure>>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags = db::AddSimpleTags<tmpl::flatten<
       tmpl::list<typename Closure::return_tags, typename Closure::argument_tags,
                  Tags::Coordinates<3, Frame::Inertial>>>>;

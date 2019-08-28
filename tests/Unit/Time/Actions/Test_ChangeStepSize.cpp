@@ -10,7 +10,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/History.hpp"
@@ -55,7 +54,6 @@ struct Component {
   using array_index = int;
   using const_global_cache_tag_list =
       tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags = tmpl::list<Tags::TimeId, Tags::Next<Tags::TimeId>,
                                  Tags::TimeStep, history_tag>;
   using phase_dependent_action_list = tmpl::list<

@@ -13,7 +13,6 @@
 #include "IO/Observer/Tags.hpp"
 #include "IO/Observer/TypeOfObservation.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
 
@@ -48,7 +47,6 @@ struct element_component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndexType;
   using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase,
@@ -64,7 +62,6 @@ struct observer_component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using component_being_mocked = observers::Observer<Metavariables>;
   using simple_tags =
@@ -85,7 +82,6 @@ struct observer_writer_component {
   using const_global_cache_tag_list =
       tmpl::list<observers::Tags::ReductionFileName,
                  observers::Tags::VolumeFileName>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
   using simple_tags =

@@ -49,7 +49,6 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
@@ -123,7 +122,6 @@ struct MockObserverWriter {
   using array_index = size_t;
   using const_global_cache_tag_list =
       tmpl::list<observers::Tags::ReductionFileName>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       typename observers::Actions::InitializeWriter<Metavariables>::simple_tags;
   using compute_tags = typename observers::Actions::InitializeWriter<
@@ -179,7 +177,6 @@ struct MockInterpolationTarget {
               RegistrationHelper>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
 };
@@ -190,7 +187,6 @@ struct MockInterpolator {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
