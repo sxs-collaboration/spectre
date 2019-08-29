@@ -35,9 +35,11 @@ struct Operand;
 }  // namespace Tags
 }  // namespace LinearSolver
 namespace Poisson {
+namespace Tags {
 struct Field;
 template <size_t>
 struct AuxiliaryField;
+}  // namespace Tags
 }  // namespace Poisson
 namespace PUP {
 class er;
@@ -56,13 +58,12 @@ namespace Poisson {
  */
 template <size_t Dim>
 struct ComputeFirstOrderOperatorAction {
-  using argument_tags =
-      tmpl::list<Tags::deriv<LinearSolver::Tags::Operand<Field>,
-                             tmpl::size_t<Dim>, Frame::Inertial>,
-                 LinearSolver::Tags::Operand<AuxiliaryField<Dim>>,
-                 Tags::Mesh<Dim>,
-                 Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                                       Tags::Coordinates<Dim, Frame::Logical>>>;
+  using argument_tags = tmpl::list<
+      ::Tags::deriv<LinearSolver::Tags::Operand<Tags::Field>, tmpl::size_t<Dim>,
+                    Frame::Inertial>,
+      LinearSolver::Tags::Operand<Tags::AuxiliaryField<Dim>>, ::Tags::Mesh<Dim>,
+      ::Tags::InverseJacobian<::Tags::ElementMap<Dim>,
+                              ::Tags::Coordinates<Dim, Frame::Logical>>>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> operator_for_field_source,
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
@@ -85,9 +86,9 @@ struct ComputeFirstOrderOperatorAction {
 template <size_t Dim>
 struct ComputeFirstOrderNormalDotFluxes {
   using argument_tags =
-      tmpl::list<LinearSolver::Tags::Operand<Field>,
-                 LinearSolver::Tags::Operand<AuxiliaryField<Dim>>,
-                 Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
+      tmpl::list<LinearSolver::Tags::Operand<Tags::Field>,
+                 LinearSolver::Tags::Operand<Tags::AuxiliaryField<Dim>>,
+                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> normal_dot_flux_for_field,
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
@@ -150,16 +151,16 @@ struct FirstOrderInternalPenaltyFlux {
   // These tags are sliced to the interface of the element and passed to
   // `package_data` to provide the data needed to compute the numerical fluxes.
   using argument_tags =
-      tmpl::list<LinearSolver::Tags::Operand<Field>,
-                 Tags::deriv<LinearSolver::Tags::Operand<Field>,
-                             tmpl::size_t<Dim>, Frame::Inertial>,
-                 Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
+      tmpl::list<LinearSolver::Tags::Operand<Tags::Field>,
+                 ::Tags::deriv<LinearSolver::Tags::Operand<Tags::Field>,
+                               tmpl::size_t<Dim>, Frame::Inertial>,
+                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   // This is the data needed to compute the numerical flux.
   // `SendBoundaryFluxes` calls `package_data` to store these tags in a
   // Variables. Local and remote values of this data are then combined in the
   // `()` operator.
-  using package_tags = tmpl::list<LinearSolver::Tags::Operand<Field>,
+  using package_tags = tmpl::list<LinearSolver::Tags::Operand<Tags::Field>,
                                   NormalTimesFieldFlux, NormalDotGradFieldFlux>;
 
   // Following the packaged_data pointer, this function expects as arguments the

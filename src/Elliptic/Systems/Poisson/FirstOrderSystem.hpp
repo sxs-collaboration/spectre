@@ -56,10 +56,10 @@ struct FirstOrderSystem {
   static constexpr size_t volume_dim = Dim;
 
   // The physical fields to solve for
-  using primal_fields = tmpl::list<Field>;
-  using auxiliary_fields = tmpl::list<AuxiliaryField<Dim>>;
+  using primal_fields = tmpl::list<Tags::Field>;
+  using auxiliary_fields = tmpl::list<Tags::AuxiliaryField<Dim>>;
   using fields_tag =
-      Tags::Variables<tmpl::append<primal_fields, auxiliary_fields>>;
+      ::Tags::Variables<tmpl::append<primal_fields, auxiliary_fields>>;
 
   // The variables to compute bulk contributions and fluxes for.
   using variables_tag =
@@ -75,10 +75,10 @@ struct FirstOrderSystem {
   // The tag of the operator to compute magnitudes on the manifold, e.g. to
   // normalize vectors on the faces of an element
   template <typename Tag>
-  using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
+  using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;
 
   // The tags to instantiate derivative functions for
-  using gradient_tags = tmpl::list<LinearSolver::Tags::Operand<Field>>;
-  using divergence_tags = tmpl::list<AuxiliaryField<Dim>>;
+  using gradient_tags = tmpl::list<LinearSolver::Tags::Operand<Tags::Field>>;
+  using divergence_tags = tmpl::list<Tags::AuxiliaryField<Dim>>;
 };
 }  // namespace Poisson

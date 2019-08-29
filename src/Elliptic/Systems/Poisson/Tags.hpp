@@ -20,6 +20,7 @@ class DataVector;
  * \brief Items related to solving a Poisson equation \f$-\Delta u(x)=f(x)\f$.
  */
 namespace Poisson {
+namespace Tags {
 
 /*!
  * \brief The scalar field \f$u(x)\f$ to solve for
@@ -39,4 +40,5 @@ struct AuxiliaryField : db::SimpleTag {
   static std::string name() noexcept { return "AuxiliaryField"; }
 };
 
+}  // namespace Tags
 }  // namespace Poisson

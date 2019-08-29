@@ -32,13 +32,14 @@ void ComputeFirstOrderOperatorAction<Dim>::apply(
     const Mesh<Dim>& mesh,
     const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
         inverse_jacobian) noexcept {
-  auto div_vars = make_with_value<Variables<tmpl::list<AuxiliaryField<Dim>>>>(
-      auxiliary_field, 0.);
-  get<AuxiliaryField<Dim>>(div_vars) = auxiliary_field;
+  auto div_vars =
+      make_with_value<Variables<tmpl::list<Tags::AuxiliaryField<Dim>>>>(
+          auxiliary_field, 0.);
+  get<Tags::AuxiliaryField<Dim>>(div_vars) = auxiliary_field;
   // Tensors don't support math operations yet, so we have to `get` the
   // DataVector for the sign flip
   get(*operator_for_field_source) =
-      -1. * get(get<Tags::div<AuxiliaryField<Dim>>>(
+      -1. * get(get<::Tags::div<Tags::AuxiliaryField<Dim>>>(
                 divergence(div_vars, mesh, inverse_jacobian)));
   for (size_t d = 0; d < Dim; d++) {
     operator_for_auxiliary_field_source->get(d) =
@@ -77,7 +78,7 @@ void FirstOrderInternalPenaltyFlux<Dim>::package_data(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& grad_field,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
     const noexcept {
-  get<LinearSolver::Tags::Operand<Field>>(*packaged_data) = field;
+  get<LinearSolver::Tags::Operand<Tags::Field>>(*packaged_data) = field;
 
   for (size_t d = 0; d < Dim; d++) {
     get<NormalTimesFieldFlux>(*packaged_data).get(d) =
@@ -165,14 +166,14 @@ using div_tags = typename Poisson::FirstOrderSystem<Dim>::divergence_tags;
   template class Poisson::ComputeFirstOrderNormalDotFluxes<DIM(data)>;     \
   template class Poisson::FirstOrderInternalPenaltyFlux<DIM(data)>;        \
   template Variables<                                                      \
-      db::wrap_tags_in<Tags::deriv, grad_tags<DIM(data)>,                  \
+      db::wrap_tags_in<::Tags::deriv, grad_tags<DIM(data)>,                \
                        tmpl::size_t<DIM(data)>, Frame::Inertial>>          \
   partial_derivatives<grad_tags<DIM(data)>, variables_tags<DIM(data)>,     \
                       DIM(data), Frame::Inertial>(                         \
       const Variables<variables_tags<DIM(data)>>&, const Mesh<DIM(data)>&, \
       const InverseJacobian<DataVector, DIM(data), Frame::Logical,         \
                             Frame::Inertial>&) noexcept;                   \
-  template Variables<db::wrap_tags_in<Tags::div, div_tags<DIM(data)>>>     \
+  template Variables<db::wrap_tags_in<::Tags::div, div_tags<DIM(data)>>>   \
   divergence<div_tags<DIM(data)>, DIM(data), Frame::Inertial>(             \
       const Variables<div_tags<DIM(data)>>&, const Mesh<DIM(data)>&,       \
       const InverseJacobian<DataVector, DIM(data), Frame::Logical,         \

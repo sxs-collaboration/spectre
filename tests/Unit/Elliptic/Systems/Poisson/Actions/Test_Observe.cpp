@@ -53,9 +53,9 @@ struct MockElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
-  using simple_tags =
-      db::AddSimpleTags<LinearSolver::Tags::IterationId, Tags::Mesh<2>,
-                        Poisson::Field, Tags::Coordinates<2, Frame::Inertial>>;
+  using simple_tags = db::AddSimpleTags<LinearSolver::Tags::IterationId,
+                                        Tags::Mesh<2>, Poisson::Tags::Field,
+                                        Tags::Coordinates<2, Frame::Inertial>>;
   using compute_tags = db::AddComputeTags<>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -106,9 +106,9 @@ struct MockObserverWriterComponent {
 };
 
 struct AnalyticSolution {
-  tuples::TaggedTuple<Poisson::Field> variables(
+  tuples::TaggedTuple<Poisson::Tags::Field> variables(
       const tnsr::I<DataVector, 2>& x,
-      tmpl::list<Poisson::Field> /*meta*/) const noexcept {
+      tmpl::list<Poisson::Tags::Field> /*meta*/) const noexcept {
     return {Scalar<DataVector>(2. * get<0>(x) + get<1>(x))};
   }
   // clang-tidy: do not use references

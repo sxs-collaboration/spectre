@@ -40,11 +40,11 @@ namespace Actions {
  *     u^\mathrm{numerical}_i - u^\mathrm{analytic}_i\right)^2}\f$ over the grid
  *     points across all elements.
  * - Volume data:
- *   - `Poisson::Field::name()`: The numerical solution
+ *   - `Poisson::Tags::Field::name()`: The numerical solution
  *     \f$u^\mathrm{numerical}\f$
- *   - `Poisson::Field::name() + "Analytic"`: The analytic solution
+ *   - `Poisson::Tags::Field::name() + "Analytic"`: The analytic solution
  *     \f$u^\mathrm{analytic}\f$
- *   - `Poisson::Field::name() + "Error"`: The pointwise error
+ *   - `Poisson::Tags::Field::name() + "Error"`: The pointwise error
  *     \f$u^\mathrm{numerical} - u^\mathrm{analytic}\f$
  *   - `"InertialCoordinates_{x,y,z}"`
  *
@@ -55,7 +55,7 @@ namespace Actions {
  * - DataBox:
  *   - `LinearSolver::Tags::IterationId`
  *   - `Tags::Mesh<Dim>`
- *   - `Poisson::Field`
+ *   - `Poisson::Tags::Field`
  *   - `Tags::Coordinates<Dim, Frame::Inertial>`
  *
  * \note This action can be adjusted before compiling an executable to observe
@@ -96,19 +96,20 @@ struct Observe {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     const auto& iteration_id = get<LinearSolver::Tags::IterationId>(box);
-    const auto& mesh = get<Tags::Mesh<Dim>>(box);
+    const auto& mesh = get<::Tags::Mesh<Dim>>(box);
     const std::string element_name = MakeString{} << ElementId<Dim>(array_index)
                                                   << '/';
 
     // Retrieve the current numeric solution
-    const auto& field = get<Poisson::Field>(box);
+    const auto& field = get<Poisson::Tags::Field>(box);
 
     // Compute the analytic solution
     const auto& inertial_coordinates =
         db::get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
-    const auto field_analytic = get<Poisson::Field>(
+    const auto field_analytic = get<Poisson::Tags::Field>(
         Parallel::get<typename Metavariables::analytic_solution_tag>(cache)
-            .variables(inertial_coordinates, tmpl::list<Poisson::Field>{}));
+            .variables(inertial_coordinates,
+                       tmpl::list<Poisson::Tags::Field>{}));
 
     // Compute error between numeric and analytic solutions
     const DataVector field_error = get(field) - get(field_analytic);
@@ -121,11 +122,14 @@ struct Observe {
     // Remove tensor types, only storing individual components
     std::vector<TensorComponent> components;
     components.reserve(3 + Dim);
-    components.emplace_back(element_name + Poisson::Field::name(), get(field));
-    components.emplace_back(element_name + Poisson::Field::name() + "Analytic",
-                            get(field_analytic));
-    components.emplace_back(element_name + Poisson::Field::name() + "Error",
-                            field_error);
+    components.emplace_back(element_name + db::tag_name<Poisson::Tags::Field>(),
+                            get(field));
+    components.emplace_back(
+        element_name + db::tag_name<Poisson::Tags::Field>() + "Analytic",
+        get(field_analytic));
+    components.emplace_back(
+        element_name + db::tag_name<Poisson::Tags::Field>() + "Error",
+        field_error);
     components.emplace_back(element_name + "InertialCoordinates_x",
                             get<0>(inertial_coordinates));
     if (Dim >= 2) {

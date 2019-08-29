@@ -28,8 +28,9 @@ template <size_t Dim>
 struct ProductOfSinusoidsProxy : Poisson::Solutions::ProductOfSinusoids<Dim> {
   using Poisson::Solutions::ProductOfSinusoids<Dim>::ProductOfSinusoids;
 
-  using field_tags = tmpl::list<Poisson::Field, Poisson::AuxiliaryField<Dim>>;
-  using source_tags = tmpl::list<Tags::Source<Poisson::Field>>;
+  using field_tags =
+      tmpl::list<Poisson::Tags::Field, Poisson::Tags::AuxiliaryField<Dim>>;
+  using source_tags = tmpl::list<Tags::Source<Poisson::Tags::Field>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
@@ -49,11 +50,12 @@ void test_solution(const std::array<double, Dim>& wave_numbers,
                    const std::string& options) {
   const ProductOfSinusoidsProxy<Dim> solution(wave_numbers);
   pypp::check_with_random_values<
-      1, tmpl::list<Poisson::Field, Poisson::AuxiliaryField<Dim>>>(
+      1, tmpl::list<Poisson::Tags::Field, Poisson::Tags::AuxiliaryField<Dim>>>(
       &ProductOfSinusoidsProxy<Dim>::field_variables, solution,
       "ProductOfSinusoids", {"field", "auxiliary_field"}, {{{0., 2. * M_PI}}},
       std::make_tuple(wave_numbers), DataVector(5));
-  pypp::check_with_random_values<1, tmpl::list<Tags::Source<Poisson::Field>>>(
+  pypp::check_with_random_values<
+      1, tmpl::list<Tags::Source<Poisson::Tags::Field>>>(
       &ProductOfSinusoidsProxy<Dim>::source_variables, solution,
       "ProductOfSinusoids", {"source"}, {{{0., 2. * M_PI}}},
       std::make_tuple(wave_numbers), DataVector(5));

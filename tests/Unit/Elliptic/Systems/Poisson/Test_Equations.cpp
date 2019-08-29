@@ -53,9 +53,9 @@ void test_first_order_operator_action(db::DataBox<DbTagsList>&& domain_box) {
   const Poisson::Solutions::ProductOfSinusoids<Dim> solution(
       make_array<Dim>(1.));
   const auto auxiliary_field =
-      get<Poisson::AuxiliaryField<Dim>>(solution.variables(
-          inertial_coords,
-          tmpl::list<Poisson::Field, Poisson::AuxiliaryField<Dim>>{}));
+      get<Poisson::Tags::AuxiliaryField<Dim>>(solution.variables(
+          inertial_coords, tmpl::list<Poisson::Tags::Field,
+                                      Poisson::Tags::AuxiliaryField<Dim>>{}));
 
   auto grad_field = make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(
       inertial_coords, 0.);
@@ -66,55 +66,58 @@ void test_first_order_operator_action(db::DataBox<DbTagsList>&& domain_box) {
   auto box = db::create_from<
       db::RemoveTags<>,
       db::AddSimpleTags<
-          Tags::deriv<LinearSolver::Tags::Operand<Poisson::Field>,
+          Tags::deriv<LinearSolver::Tags::Operand<Poisson::Tags::Field>,
                       tmpl::size_t<Dim>, Frame::Inertial>,
-          LinearSolver::Tags::Operand<Poisson::AuxiliaryField<Dim>>,
+          LinearSolver::Tags::Operand<Poisson::Tags::AuxiliaryField<Dim>>,
           LinearSolver::Tags::OperatorAppliedTo<
-              LinearSolver::Tags::Operand<Poisson::Field>>,
-          LinearSolver::Tags::OperatorAppliedTo<
-              LinearSolver::Tags::Operand<Poisson::AuxiliaryField<Dim>>>>>(
+              LinearSolver::Tags::Operand<Poisson::Tags::Field>>,
+          LinearSolver::Tags::OperatorAppliedTo<LinearSolver::Tags::Operand<
+              Poisson::Tags::AuxiliaryField<Dim>>>>>(
       std::move(domain_box), std::move(grad_field), auxiliary_field,
       make_with_value<db::item_type<LinearSolver::Tags::OperatorAppliedTo<
-          LinearSolver::Tags::Operand<Poisson::Field>>>>(inertial_coords, 0.),
+          LinearSolver::Tags::Operand<Poisson::Tags::Field>>>>(inertial_coords,
+                                                               0.),
       make_with_value<db::item_type<LinearSolver::Tags::OperatorAppliedTo<
-          LinearSolver::Tags::Operand<Poisson::AuxiliaryField<Dim>>>>>(
+          LinearSolver::Tags::Operand<Poisson::Tags::AuxiliaryField<Dim>>>>>(
           inertial_coords, 0.));
 
   db::mutate_apply<
       tmpl::list<
           LinearSolver::Tags::OperatorAppliedTo<
-              LinearSolver::Tags::Operand<Poisson::Field>>,
+              LinearSolver::Tags::Operand<Poisson::Tags::Field>>,
           LinearSolver::Tags::OperatorAppliedTo<
-              LinearSolver::Tags::Operand<Poisson::AuxiliaryField<Dim>>>>,
+              LinearSolver::Tags::Operand<Poisson::Tags::AuxiliaryField<Dim>>>>,
       typename Poisson::ComputeFirstOrderOperatorAction<Dim>::argument_tags>(
       Poisson::ComputeFirstOrderOperatorAction<Dim>{}, make_not_null(&box));
 
   const auto auxiliary_source =
-      get<Tags::Source<Poisson::AuxiliaryField<Dim>>>(solution.variables(
+      get<Tags::Source<Poisson::Tags::AuxiliaryField<Dim>>>(solution.variables(
           inertial_coords,
-          tmpl::list<Tags::Source<Poisson::AuxiliaryField<Dim>>>{}));
+          tmpl::list<Tags::Source<Poisson::Tags::AuxiliaryField<Dim>>>{}));
 
   // Field volume contribution should be -div(v), which is not exactly the
   // source f because of discretization error
-  auto div_vars =
-      make_with_value<Variables<tmpl::list<Poisson::AuxiliaryField<Dim>>>>(
-          auxiliary_field, 0.);
-  get<Poisson::AuxiliaryField<Dim>>(div_vars) = auxiliary_field;
+  auto div_vars = make_with_value<
+      Variables<tmpl::list<Poisson::Tags::AuxiliaryField<Dim>>>>(
+      auxiliary_field, 0.);
+  get<Poisson::Tags::AuxiliaryField<Dim>>(div_vars) = auxiliary_field;
   auto div_auxiliary_field =
-      get<Tags::div<Poisson::AuxiliaryField<Dim>>>(divergence(
+      get<Tags::div<Poisson::Tags::AuxiliaryField<Dim>>>(divergence(
           div_vars, get<Tags::Mesh<Dim>>(box),
           get<Tags::InverseJacobian<Tags::ElementMap<Dim>,
                                     Tags::Coordinates<Dim, Frame::Logical>>>(
               box)));
   div_auxiliary_field.get() *= -1.;
-  CHECK_ITERABLE_APPROX(get<LinearSolver::Tags::OperatorAppliedTo<
-                            LinearSolver::Tags::Operand<Poisson::Field>>>(box),
-                        div_auxiliary_field);
+  CHECK_ITERABLE_APPROX(
+      get<LinearSolver::Tags::OperatorAppliedTo<
+          LinearSolver::Tags::Operand<Poisson::Tags::Field>>>(box),
+      div_auxiliary_field);
   // Auxiliary field volume contribution grad(u) - v should be exactly zero
   // since grad(u) was set to v, as opposed to being computed numerically
   CHECK_ITERABLE_APPROX(
       get<LinearSolver::Tags::OperatorAppliedTo<
-          LinearSolver::Tags::Operand<Poisson::AuxiliaryField<Dim>>>>(box),
+          LinearSolver::Tags::Operand<Poisson::Tags::AuxiliaryField<Dim>>>>(
+          box),
       auxiliary_source);
 }
 
@@ -131,7 +134,7 @@ void test_first_order_normal_dot_fluxes(
       make_array<Dim>(1.));
   const auto field_variables = solution.variables(
       inertial_coords,
-      tmpl::list<Poisson::Field, Poisson::AuxiliaryField<Dim>>{});
+      tmpl::list<Poisson::Tags::Field, Poisson::Tags::AuxiliaryField<Dim>>{});
 
   // Any numbers are fine, doesn't have anything to do with unit normal
   tnsr::i<DataVector, Dim, Frame::Inertial> unit_normal(num_points, 0.0);
@@ -146,14 +149,14 @@ void test_first_order_normal_dot_fluxes(
   Poisson::ComputeFirstOrderNormalDotFluxes<Dim>::apply(
       make_not_null(&normal_dot_flux_for_field),
       make_not_null(&normal_dot_flux_for_aux_field),
-      get<Poisson::Field>(field_variables),
-      get<Poisson::AuxiliaryField<Dim>>(field_variables), unit_normal);
+      get<Poisson::Tags::Field>(field_variables),
+      get<Poisson::Tags::AuxiliaryField<Dim>>(field_variables), unit_normal);
 
   DataVector normal_dot_flux_for_field_expected(num_points, 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     normal_dot_flux_for_field_expected +=
         unit_normal.get(d) *
-        get<Poisson::AuxiliaryField<Dim>>(field_variables).get(d);
+        get<Poisson::Tags::AuxiliaryField<Dim>>(field_variables).get(d);
   }
   CHECK_ITERABLE_APPROX(get(normal_dot_flux_for_field),
                         normal_dot_flux_for_field_expected);
@@ -162,7 +165,7 @@ void test_first_order_normal_dot_fluxes(
       normal_dot_flux_for_aux_field_expected(num_points, 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     normal_dot_flux_for_aux_field_expected.get(d) =
-        -unit_normal.get(d) * get(get<Poisson::Field>(field_variables));
+        -unit_normal.get(d) * get(get<Poisson::Tags::Field>(field_variables));
     CHECK_ITERABLE_APPROX(normal_dot_flux_for_aux_field.get(d),
                           normal_dot_flux_for_aux_field_expected.get(d));
   }
@@ -191,7 +194,7 @@ void test_first_order_internal_penalty_flux(
       make_array<Dim>(1.));
   const auto field_variables = solution.variables(
       inertial_coords,
-      tmpl::list<Poisson::Field, Poisson::AuxiliaryField<Dim>>{});
+      tmpl::list<Poisson::Tags::Field, Poisson::Tags::AuxiliaryField<Dim>>{});
 
   // Any numbers are fine, doesn't have anything to do with unit normal
   tnsr::i<DataVector, Dim, Frame::Inertial> unit_normal(num_points, 0.0);
@@ -210,7 +213,7 @@ void test_first_order_internal_penalty_flux(
   tnsr::i<DataVector, Dim, Frame::Inertial> grad_field(num_points, 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     grad_field.get(d) =
-        get<Poisson::AuxiliaryField<Dim>>(field_variables).get(d);
+        get<Poisson::Tags::AuxiliaryField<Dim>>(field_variables).get(d);
   }
 
   Poisson::FirstOrderInternalPenaltyFlux<Dim> flux_computer(10.);
@@ -222,20 +225,20 @@ void test_first_order_internal_penalty_flux(
   Scalar<DataVector> normal_dot_aux_field(num_points, 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     normal_times_field.get(d) =
-        unit_normal.get(d) * get(get<Poisson::Field>(field_variables));
+        unit_normal.get(d) * get(get<Poisson::Tags::Field>(field_variables));
     get(normal_dot_aux_field) +=
         unit_normal.get(d) *
-        get<Poisson::AuxiliaryField<Dim>>(field_variables).get(d);
+        get<Poisson::Tags::AuxiliaryField<Dim>>(field_variables).get(d);
   }
 
   // Consistency: u^*(u,u)=u
   {
     flux_computer.package_data(make_not_null(&packaged_data_int),
-                               get<Poisson::Field>(field_variables), grad_field,
-                               unit_normal);
+                               get<Poisson::Tags::Field>(field_variables),
+                               grad_field, unit_normal);
     flux_computer.package_data(make_not_null(&packaged_data_ext),
-                               get<Poisson::Field>(field_variables), grad_field,
-                               opposite_unit_normal);
+                               get<Poisson::Tags::Field>(field_variables),
+                               grad_field, opposite_unit_normal);
     apply_numerical_flux(
         flux_computer, packaged_data_int, packaged_data_ext,
         make_not_null(&normal_dot_numerical_flux_for_field),
@@ -255,15 +258,15 @@ void test_first_order_internal_penalty_flux(
   tnsr::i<DataVector, Dim, Frame::Inertial> ext_grad_field(num_points, 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     ext_grad_field.get(d) =
-        get<Poisson::AuxiliaryField<Dim>>(field_variables).get(d) +
+        get<Poisson::Tags::AuxiliaryField<Dim>>(field_variables).get(d) +
         inertial_coords.get(d);
   }
 
   // Conservation: u^* is single-valued (same on both sides of the interface)
   {
     flux_computer.package_data(make_not_null(&packaged_data_int),
-                               get<Poisson::Field>(field_variables), grad_field,
-                               unit_normal);
+                               get<Poisson::Tags::Field>(field_variables),
+                               grad_field, unit_normal);
     flux_computer.package_data(make_not_null(&packaged_data_ext), ext_field,
                                ext_grad_field, opposite_unit_normal);
     apply_numerical_flux(
@@ -292,8 +295,8 @@ void test_first_order_internal_penalty_flux(
   // Explicit data
   {
     flux_computer.package_data(make_not_null(&packaged_data_int),
-                               get<Poisson::Field>(field_variables), grad_field,
-                               unit_normal);
+                               get<Poisson::Tags::Field>(field_variables),
+                               grad_field, unit_normal);
     flux_computer.package_data(make_not_null(&packaged_data_ext), ext_field,
                                ext_grad_field, opposite_unit_normal);
     apply_numerical_flux(
@@ -306,14 +309,15 @@ void test_first_order_internal_penalty_flux(
     tnsr::I<DataVector, Dim, Frame::Inertial>
         expected_normal_dot_numerical_flux_for_aux_field(num_points, 0.0);
     get(expected_normal_dot_numerical_flux_for_field) =
-        -10. * (get(get<Poisson::Field>(field_variables)) - get(ext_field));
+        -10. *
+        (get(get<Poisson::Tags::Field>(field_variables)) - get(ext_field));
     for (size_t d = 0; d < Dim; d++) {
       get(expected_normal_dot_numerical_flux_for_field) +=
           0.5 * unit_normal.get(d) *
           (grad_field.get(d) + ext_grad_field.get(d));
       expected_normal_dot_numerical_flux_for_aux_field.get(d) =
           -0.5 * unit_normal.get(d) *
-          (get(get<Poisson::Field>(field_variables)) + get(ext_field));
+          (get(get<Poisson::Tags::Field>(field_variables)) + get(ext_field));
     }
 
     CHECK_ITERABLE_APPROX(get(normal_dot_numerical_flux_for_field),

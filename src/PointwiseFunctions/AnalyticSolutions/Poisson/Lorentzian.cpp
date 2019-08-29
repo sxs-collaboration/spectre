@@ -16,15 +16,16 @@ namespace Poisson {
 namespace Solutions {
 
 template <>
-tuples::TaggedTuple<Field> Lorentzian<3>::variables(
-    const tnsr::I<DataVector, 3>& x, tmpl::list<Field> /*meta*/) noexcept {
+tuples::TaggedTuple<Tags::Field> Lorentzian<3>::variables(
+    const tnsr::I<DataVector, 3>& x,
+    tmpl::list<Tags::Field> /*meta*/) noexcept {
   return {Scalar<DataVector>(1. / sqrt(1 + get(dot_product(x, x))))};
 }
 
 template <>
-tuples::TaggedTuple<::Tags::Source<Field>> Lorentzian<3>::variables(
+tuples::TaggedTuple<::Tags::Source<Tags::Field>> Lorentzian<3>::variables(
     const tnsr::I<DataVector, 3>& x,
-    tmpl::list<::Tags::Source<Field>> /*meta*/) noexcept {
+    tmpl::list<::Tags::Source<Tags::Field>> /*meta*/) noexcept {
   return {Scalar<DataVector>(3. / pow<5>(sqrt(1. + get(dot_product(x, x)))))};
 }
 

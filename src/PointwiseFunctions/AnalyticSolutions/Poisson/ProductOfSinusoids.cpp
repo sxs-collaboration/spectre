@@ -24,8 +24,8 @@ ProductOfSinusoids<Dim>::ProductOfSinusoids(
     : wave_numbers_(wave_numbers) {}
 
 template <size_t Dim>
-tuples::TaggedTuple<Field> ProductOfSinusoids<Dim>::variables(
-    const tnsr::I<DataVector, Dim>& x, tmpl::list<Field> /*meta*/) const
+tuples::TaggedTuple<Tags::Field> ProductOfSinusoids<Dim>::variables(
+    const tnsr::I<DataVector, Dim>& x, tmpl::list<Tags::Field> /*meta*/) const
     noexcept {
   auto field = make_with_value<Scalar<DataVector>>(x, 1.);
   for (size_t d = 0; d < Dim; d++) {
@@ -35,9 +35,10 @@ tuples::TaggedTuple<Field> ProductOfSinusoids<Dim>::variables(
 }
 
 template <size_t Dim>
-tuples::TaggedTuple<AuxiliaryField<Dim>> ProductOfSinusoids<Dim>::variables(
+tuples::TaggedTuple<Tags::AuxiliaryField<Dim>>
+ProductOfSinusoids<Dim>::variables(
     const tnsr::I<DataVector, Dim>& x,
-    tmpl::list<AuxiliaryField<Dim>> /*meta*/) const noexcept {
+    tmpl::list<Tags::AuxiliaryField<Dim>> /*meta*/) const noexcept {
   auto auxiliary_field =
       make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(x, 1.);
   for (size_t d = 0; d < Dim; d++) {
@@ -54,10 +55,11 @@ tuples::TaggedTuple<AuxiliaryField<Dim>> ProductOfSinusoids<Dim>::variables(
 }
 
 template <size_t Dim>
-tuples::TaggedTuple<::Tags::Source<Field>> ProductOfSinusoids<Dim>::variables(
+tuples::TaggedTuple<::Tags::Source<Tags::Field>>
+ProductOfSinusoids<Dim>::variables(
     const tnsr::I<DataVector, Dim>& x,
-    tmpl::list<::Tags::Source<Field>> /*meta*/) const noexcept {
-  auto field_source = get<Field>(variables(x, tmpl::list<Field>{}));
+    tmpl::list<::Tags::Source<Tags::Field>> /*meta*/) const noexcept {
+  auto field_source = get<Tags::Field>(variables(x, tmpl::list<Tags::Field>{}));
   field_source.get() *= square(magnitude(wave_numbers_));
   return {std::move(field_source)};
 }
