@@ -96,10 +96,14 @@ struct InitializeSystem {
 
     // Retrieve the sources of the elliptic system from the analytic solution,
     // which defines the problem we want to solve.
-    auto sources = variables_from_tagged_tuple(
+    // We need only retrieve sources for the primal fields, since the auxiliary
+    // fields will never be sourced.
+    db::item_type<sources_tag> sources{num_grid_points, 0.};
+    sources.assign_subset(
         Parallel::get<typename Metavariables::analytic_solution_tag>(cache)
             .variables(inertial_coords,
-                       db::get_variables_tags_list<sources_tag>{}));
+                       db::wrap_tags_in<::Tags::Source,
+                                        typename system::primal_fields>{}));
 
     // Initialize the variables for the elliptic solve. Their initial value is
     // determined by the linear solver. The value is also updated by the linear
