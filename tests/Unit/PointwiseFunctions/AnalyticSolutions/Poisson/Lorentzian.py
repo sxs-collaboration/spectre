@@ -10,7 +10,3 @@ def field(x):
 
 def source(x):
     return 3. / np.sqrt(1. + np.dot(x, x))**5
-
-
-def auxiliary_source(x):
-    return np.zeros(len(x))

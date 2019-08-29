@@ -61,11 +61,6 @@ class Lorentzian {
   static auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
                         tmpl::list<::Tags::Source<Field>> /*meta*/) noexcept
       -> tuples::TaggedTuple<::Tags::Source<Field>>;
-
-  static auto variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-      tmpl::list<::Tags::Source<AuxiliaryField<Dim>>> /*meta*/) noexcept
-      -> tuples::TaggedTuple<::Tags::Source<AuxiliaryField<Dim>>>;
   // @}
 
   /// Retrieve a collection of variables at coordinates `x`

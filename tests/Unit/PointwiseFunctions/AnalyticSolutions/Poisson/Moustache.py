@@ -4,7 +4,6 @@
 import numpy as np
 
 
-# Functions for testing ProductOfSinusoids.cpp
 def poly(x, coeffs):
     return np.sum(c * x**p for p, c in enumerate(coeffs))
 
@@ -30,7 +29,3 @@ def source(x):
             -0.5625 + 6.25 * r**2 - 6.125 * r**4 + 4.125 * (x[0] - 0.5)**4 \
             - 24.75 * (x[0] - 0.5)**2 * (x[1] - 0.5)**2                    \
             + 4.125 * (x[1] - 0.5)**4)
-
-def auxiliary_source(x):
-    return np.zeros(len(x))
-# End functions for testing ProductOfSinusoids.cpp

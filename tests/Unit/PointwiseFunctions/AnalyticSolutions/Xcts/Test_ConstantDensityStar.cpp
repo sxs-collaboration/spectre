@@ -29,9 +29,7 @@ using auxiliary_field_tags = tmpl::list<
 using initial_tags =
     db::wrap_tags_in<Tags::Initial,
                      tmpl::append<field_tags, auxiliary_field_tags>>;
-using source_tags =
-    db::wrap_tags_in<Tags::Source,
-                     tmpl::append<field_tags, auxiliary_field_tags>>;
+using source_tags = db::wrap_tags_in<Tags::Source, field_tags>;
 
 struct ConstantDensityStarProxy : Xcts::Solutions::ConstantDensityStar {
   using Xcts::Solutions::ConstantDensityStar::ConstantDensityStar;
@@ -66,8 +64,7 @@ void test_solution(const double density, const double radius,
       DataVector(5));
   pypp::check_with_random_values<1, source_tags>(
       &ConstantDensityStarProxy::source_variables, solution,
-      "ConstantDensityStar",
-      {"conformal_factor_source", "conformal_factor_gradient_source"},
+      "ConstantDensityStar", {"conformal_factor_source"},
       {{{-test_radius, test_radius}}}, std::make_tuple(density, radius),
       DataVector(5));
 

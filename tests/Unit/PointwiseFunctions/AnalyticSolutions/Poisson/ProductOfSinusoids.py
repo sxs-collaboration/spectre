@@ -4,7 +4,6 @@
 import numpy as np
 
 
-# Functions for testing ProductOfSinusoids.cpp
 def field(x, wave_numbers):
     x, wave_numbers = np.asarray(x), np.asarray(wave_numbers)
     return np.prod(np.sin(wave_numbers * x))
@@ -22,7 +21,3 @@ def auxiliary_field(x, wave_numbers):
 def source(x, wave_numbers):
     x, wave_numbers = np.asarray(x), np.asarray(wave_numbers)
     return np.sum(wave_numbers**2) * field(x, wave_numbers)
-
-def auxiliary_source(x, wave_numbers):
-    return np.zeros(x.shape)
-# End functions for testing ProductOfSinusoids.cpp

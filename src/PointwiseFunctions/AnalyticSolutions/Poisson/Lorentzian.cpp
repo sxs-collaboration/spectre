@@ -28,13 +28,6 @@ tuples::TaggedTuple<::Tags::Source<Field>> Lorentzian<3>::variables(
   return {Scalar<DataVector>(3. / pow<5>(sqrt(1. + get(dot_product(x, x)))))};
 }
 
-template <>
-tuples::TaggedTuple<::Tags::Source<AuxiliaryField<3>>> Lorentzian<3>::variables(
-    const tnsr::I<DataVector, 3>& x,
-    tmpl::list<::Tags::Source<AuxiliaryField<3>>> /*meta*/) noexcept {
-  return {make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(x, 0.)};
-}
-
 template <size_t Dim>
 void Lorentzian<Dim>::pup(PUP::er& /*p*/) noexcept {}
 

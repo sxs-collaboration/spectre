@@ -52,12 +52,6 @@ tuples::TaggedTuple<::Tags::Source<Tags::Displacement<2>>> BentBeam::variables(
   return {make_with_value<tnsr::I<DataVector, 2>>(x, 0.)};
 }
 
-tuples::TaggedTuple<::Tags::Source<Tags::Stress<2>>> BentBeam::variables(
-    const tnsr::I<DataVector, 2>& x,
-    tmpl::list<::Tags::Source<Tags::Stress<2>>> /*meta*/) const noexcept {
-  return {make_with_value<tnsr::II<DataVector, 2>>(x, 0.)};
-}
-
 void BentBeam::pup(PUP::er& p) noexcept {
   p | length_;
   p | height_;

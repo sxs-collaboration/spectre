@@ -63,14 +63,6 @@ tuples::TaggedTuple<::Tags::Source<Field>> ProductOfSinusoids<Dim>::variables(
 }
 
 template <size_t Dim>
-tuples::TaggedTuple<::Tags::Source<AuxiliaryField<Dim>>>
-ProductOfSinusoids<Dim>::variables(
-    const tnsr::I<DataVector, Dim>& x,
-    tmpl::list<::Tags::Source<AuxiliaryField<Dim>>> /*meta*/) const noexcept {
-  return {make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(x, 0.)};
-}
-
-template <size_t Dim>
 void ProductOfSinusoids<Dim>::pup(PUP::er& p) noexcept {
   p | wave_numbers_;
 }

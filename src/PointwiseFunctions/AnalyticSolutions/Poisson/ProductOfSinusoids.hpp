@@ -65,10 +65,6 @@ class ProductOfSinusoids {
   auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
                  tmpl::list<::Tags::Source<Field>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<::Tags::Source<Field>>;
-
-  auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-                 tmpl::list<::Tags::Source<AuxiliaryField<Dim>>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<::Tags::Source<AuxiliaryField<Dim>>>;
   // @}
 
   /// Retrieve a collection of variables at coordinates `x`

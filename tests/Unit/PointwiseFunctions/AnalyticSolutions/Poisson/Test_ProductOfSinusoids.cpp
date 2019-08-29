@@ -29,7 +29,7 @@ struct ProductOfSinusoidsProxy : Poisson::Solutions::ProductOfSinusoids<Dim> {
   using Poisson::Solutions::ProductOfSinusoids<Dim>::ProductOfSinusoids;
 
   using field_tags = tmpl::list<Poisson::Field, Poisson::AuxiliaryField<Dim>>;
-  using source_tags = db::wrap_tags_in<Tags::Source, field_tags>;
+  using source_tags = tmpl::list<Tags::Source<Poisson::Field>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
@@ -53,11 +53,9 @@ void test_solution(const std::array<double, Dim>& wave_numbers,
       &ProductOfSinusoidsProxy<Dim>::field_variables, solution,
       "ProductOfSinusoids", {"field", "auxiliary_field"}, {{{0., 2. * M_PI}}},
       std::make_tuple(wave_numbers), DataVector(5));
-  pypp::check_with_random_values<
-      1, tmpl::list<Tags::Source<Poisson::Field>,
-                    Tags::Source<Poisson::AuxiliaryField<Dim>>>>(
+  pypp::check_with_random_values<1, tmpl::list<Tags::Source<Poisson::Field>>>(
       &ProductOfSinusoidsProxy<Dim>::source_variables, solution,
-      "ProductOfSinusoids", {"source", "auxiliary_source"}, {{{0., 2. * M_PI}}},
+      "ProductOfSinusoids", {"source"}, {{{0., 2. * M_PI}}},
       std::make_tuple(wave_numbers), DataVector(5));
 
   Poisson::Solutions::ProductOfSinusoids<Dim> created_solution =

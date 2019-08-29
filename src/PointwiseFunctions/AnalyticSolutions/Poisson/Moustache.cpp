@@ -89,14 +89,6 @@ tuples::TaggedTuple<::Tags::Source<Field>> Moustache<2>::variables(
        4.125 * square(x2_square)));
   return {std::move(field_source)};
 }
-
-template <size_t Dim>
-tuples::TaggedTuple<::Tags::Source<AuxiliaryField<Dim>>>
-Moustache<Dim>::variables(
-    const tnsr::I<DataVector, Dim>& x,
-    tmpl::list<::Tags::Source<AuxiliaryField<Dim>>> /*meta*/) const noexcept {
-  return {make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(x, 0.)};
-}
 /// \endcond
 
 template <size_t Dim>

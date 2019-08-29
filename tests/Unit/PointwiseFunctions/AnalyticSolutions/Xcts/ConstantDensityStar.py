@@ -40,7 +40,3 @@ def initial_conformal_factor_gradient(x, density, radius):
 
 def conformal_factor_source(x, density, radius):
     return 0.
-
-
-def conformal_factor_gradient_source(x, density, radius):
-    return np.zeros(len(x))
