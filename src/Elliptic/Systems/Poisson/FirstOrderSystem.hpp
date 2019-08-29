@@ -56,8 +56,10 @@ struct FirstOrderSystem {
   static constexpr size_t volume_dim = Dim;
 
   // The physical fields to solve for
-  using fields_tag = Tags::Variables<tmpl::list<Field, AuxiliaryField<Dim>>>;
-  using impose_boundary_conditions_on_fields = tmpl::list<Field>;
+  using primal_fields = tmpl::list<Field>;
+  using auxiliary_fields = tmpl::list<AuxiliaryField<Dim>>;
+  using fields_tag =
+      Tags::Variables<tmpl::append<primal_fields, auxiliary_fields>>;
 
   // The variables to compute bulk contributions and fluxes for.
   using variables_tag =

@@ -199,7 +199,7 @@ struct FirstOrderInternalPenaltyFlux {
   // The first arguments to this function are the boundary contributions to
   // compute as not-null pointers, in the order they appear in the
   // `system::fields_tag`. They are followed by the field values of the tags in
-  // `system::impose_boundary_conditions_on_fields`. The last argument is the
+  // `system::primal_fields`. The last argument is the
   // normalized unit covector to the element face.
   void compute_dirichlet_boundary(
       gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,

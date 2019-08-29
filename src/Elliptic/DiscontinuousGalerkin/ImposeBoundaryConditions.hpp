@@ -37,7 +37,7 @@ namespace Actions {
  * homogeneous (zero) Dirichlet boundary conditions.
  *
  * This action imposes homogeneous boundary conditions on all fields in
- * `system::impose_boundary_conditions_on_fields`. The fields are wrapped in
+ * `system::primal_fields`. The fields are wrapped in
  * `LinearSolver::Tags::Operand`. The result should be a subset of the
  * `system::variables`. Because we are working with the linear solver operand,
  * we cannot impose non-zero boundary conditions here. Instead, non-zero
@@ -61,7 +61,7 @@ namespace Actions {
  * - System:
  *   - `volume_dim`
  *   - `variables_tag`
- *   - `impose_boundary_conditions_on_fields`
+ *   - `primal_fields`
  * - ConstGlobalCache:
  *   - `normal_dot_numerical_flux`
  * - DataBox:
@@ -93,8 +93,7 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
-    using dirichlet_tags =
-        typename system::impose_boundary_conditions_on_fields;
+    using dirichlet_tags = typename system::primal_fields;
     constexpr size_t volume_dim = system::volume_dim;
 
     // Set the data on exterior (ghost) faces to impose the boundary conditions
