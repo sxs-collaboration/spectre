@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "IO/DataImporter/Tags.hpp"
 #include "Options/Options.hpp"
 
 namespace OptionTags {
@@ -31,4 +32,13 @@ struct EvolutionSystemGroup {
   static constexpr OptionString help{"The system of hyperbolic PDEs"};
 };
 
+/*!
+ * \brief Holds option tags for importing numerical initial data for an
+ * evolution.
+ *
+ */
+struct NumericalInitialData {
+  using group = importer::OptionTags::Group;
+  static constexpr OptionString help{"Initial data for evolution."};
+};
 }  // namespace OptionTags
