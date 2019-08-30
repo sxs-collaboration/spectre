@@ -4,3 +4,17 @@
 add_subdirectory(Actions)
 add_subdirectory(DiscontinuousGalerkin)
 add_subdirectory(Systems)
+
+set(LIBRARY "Test_Elliptic")
+
+set(LIBRARY_SOURCES
+  Test_FirstOrderComputeTags.cpp
+  Test_Tags.cpp
+  )
+
+add_test_library(
+  ${LIBRARY}
+  "Elliptic/"
+  "${LIBRARY_SOURCES}"
+  "DataStructures;Utilities"
+  )
