@@ -4,8 +4,9 @@
 set(LIBRARY NewtonianEulerSolutions)
 
 set(LIBRARY_SOURCES
-    IsentropicVortex.cpp
-    )
+  IsentropicVortex.cpp
+  RiemannProblem.cpp
+  )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 

@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveNewtonianEuler3D
+# Executable: EvolveNewtonianEuler1D
 # Check: execute
 
 Evolution:
@@ -11,22 +11,22 @@ Evolution:
     RungeKutta3
 
 DomainCreator:
-  Brick:
-    LowerBound: [-0.25, 0.0, 0.0]
-    UpperBound: [0.75, 0.1, 0.1]
-    IsPeriodicIn: [false, false, false]
-    InitialRefinement: [4, 0, 0]
-    InitialGridPoints: [2, 2, 2]
+  Interval:
+    LowerBound: [-0.25]
+    UpperBound: [0.75]
+    IsPeriodicIn: [false]
+    InitialRefinement: [1]
+    InitialGridPoints: [2]
 
 AnalyticSolution:
   RiemannProblem:
     AdiabaticIndex: 1.4
     InitialPosition: 0.25
     LeftMassDensity: 1.0
-    LeftVelocity: [0.0, 0.5, -0.3]
+    LeftVelocity: [0.0]
     LeftPressure: 1.0
     RightMassDensity: 0.125
-    RightVelocity: [0.0, 0.2, 0.1]
+    RightVelocity: [0.0]
     RightPressure: 0.1
 
 NumericalFlux:

@@ -4,9 +4,6 @@
 import numpy as np
 
 
-# Functions for testing IsentropicVortex.cpp
-
-
 def mass_density(x, t, adiabatic_index, center, mean_velocity,
                  perturbation_amplitude, strength):
     x_tilde = x - center - t * np.array(mean_velocity)
@@ -43,4 +40,3 @@ def pressure(x, t, adiabatic_index, center, mean_velocity,
                     adiabatic_index)
 
 
-# End functions for testing IsentropicVortex.cpp

@@ -5,6 +5,7 @@ set(LIBRARY "Test_NewtonianEulerSolutions")
 
 set(LIBRARY_SOURCES
   Test_IsentropicVortex.cpp
+  Test_RiemannProblem.cpp
   )
 
 add_test_library(

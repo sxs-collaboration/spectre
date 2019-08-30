@@ -3,6 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <boost/math/tools/roots.hpp>
 #include <cmath>
 #include <cstddef>
 #include <utility>
@@ -12,6 +13,8 @@
 #include "ErrorHandling/Exceptions.hpp"
 #include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
 #include "Utilities/ConstantExpressions.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/MakeString.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
@@ -19,7 +22,7 @@ std::pair<double, double> func_and_deriv_free(double x) noexcept {
   return std::make_pair(2. - square(x), -2. * x);
 }
 struct FuncAndDeriv {
-  std::pair<double, double> operator()(double x) noexcept {
+  std::pair<double, double> operator()(double x) const noexcept {
     return std::make_pair(2. - square(x), -2. * x);
   }
 };
@@ -144,39 +147,88 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson.DataVector",
 SPECTRE_TEST_CASE(
     "Unit.Numerical.RootFinding.NewtonRaphson.convergence_error.Double",
     "[NumericalAlgorithms][RootFinding][Unit]") {
+  const size_t max_iterations = 2;
+  const size_t digits = 8;
+  const double guess = 1.5;
+  const double lower = 1.;
+  const double upper = 2.;
+  boost::uintmax_t max_iters = max_iterations;
+
+  const auto func_and_deriv = [](double x) noexcept {
+    return std::make_pair(2. - square(x), -2. * x);
+  };
+
+  // Exception message is expected to print the "best" result, so here
+  // we obtain that result directly with boost, as RootFinder::newton_raphson
+  // would throw an exception.
+  // clang-tidy: internal boost warning, can't fix it.
+  const auto best_result =
+      boost::math::tools::newton_raphson_iterate(  // NOLINT
+          func_and_deriv, guess, lower, upper,
+          std::round(std::log2(std::pow(10, digits))), max_iters);
   test_throw_exception(
-      []() {
-        const size_t digits = 8;
-        const double guess = 1.5;
-        const double lower = 1.;
-        const double upper = 2.;
-        const auto func_and_deriv = [](double x) noexcept {
-          return std::make_pair(2. - square(x), -2. * x);
-        };
+      [&func_and_deriv, &guess, &lower, &upper, &max_iters]() {
         RootFinder::newton_raphson(func_and_deriv, guess, lower, upper, digits,
-                                   2);
+                                   max_iters);
       },
-      convergence_error(
-          "newton_raphson reached max iterations without converging"));
+      convergence_error(MakeString{}
+                        << "newton_raphson reached max iterations of "
+                        << max_iterations
+                        << " without converging. Best result is: "
+                        << best_result << " with residual "
+                        << func_and_deriv(best_result).first));
 }
 
 SPECTRE_TEST_CASE(
     "Unit.Numerical.RootFinding.NewtonRaphson.convergence_error.DataVector",
     "[NumericalAlgorithms][RootFinding][Unit]") {
-  test_throw_exception(
-      []() {
-        const size_t digits = 8;
-        const DataVector guess{1.6, 1.9, -1.6, -1.9};
-        const DataVector lower{sqrt(2.), sqrt(2.), -2., -3.};
-        const DataVector upper{2., 3., -sqrt(2.), -sqrt(2.)};
-        const DataVector constant{2., 4., 2., 4.};
-        const auto func_and_deriv = [&constant](const double x,
-                                                const size_t i) noexcept {
-          return std::make_pair(constant[i] - square(x), -2. * x);
-        };
-        RootFinder::newton_raphson(func_and_deriv, guess, lower, upper, digits,
-                                   2);
-      },
-      convergence_error(
-          "newton_raphson reached max iterations without converging"));
+  const size_t max_iterations = 2;
+  const size_t digits = 8;
+  const auto digits_binary = std::round(std::log2(std::pow(10, digits)));
+  const DataVector lower{sqrt(2.), sqrt(2.), -2., -3.};
+  const DataVector upper{2., 3., -sqrt(2.), -sqrt(2.)};
+  const DataVector constant{2., 4., 2., 4.};
+
+  const auto func_and_deriv = [&constant](const double x,
+                                          const size_t i) noexcept {
+    return std::make_pair(constant[i] - square(x), -2. * x);
+  };
+
+  // We test with different guesses, the difference being the location of the
+  // element in the DataVector expected to throw the exception.
+  const std::array<DataVector, 4> guess{{{1.6, 1.9, -1.6, -1.9},
+                                         {sqrt(2.), 1.9, -1.6, -1.9},
+                                         {sqrt(2.), 2.0, -1.6, -1.9},
+                                         {sqrt(2.), 2.0, -sqrt(2.), -1.9}}};
+  for (size_t i = 0; i < guess.size(); ++i) {
+    const DataVector& current_guess = gsl::at(guess, i);
+    // Exception message is expected to print the "best" result, so here
+    // we obtain that result directly with boost, as RootFinder::newton_raphson
+    // would throw an exception.
+    DataVector best_result_vector{lower.size()};
+    for (size_t s = 0; s < best_result_vector.size(); ++s) {
+      boost::uintmax_t max_iters = max_iterations;
+      // clang-tidy: internal boost warning, can't fix it.
+      best_result_vector[s] =
+          boost::math::tools::newton_raphson_iterate(  // NOLINT
+              [&func_and_deriv, s ](double x) noexcept {
+                return func_and_deriv(x, s);
+              },
+              current_guess[s], lower[s], upper[s], digits_binary, max_iters);
+    }
+    for (size_t s = 0; s < best_result_vector.size(); ++s) {
+      boost::uintmax_t max_iters = max_iterations;
+      test_throw_exception(
+          [&func_and_deriv, &current_guess, &lower, &upper, &max_iters]() {
+            RootFinder::newton_raphson(func_and_deriv, current_guess, lower,
+                                       upper, digits, max_iters);
+          },
+          convergence_error(MakeString{}
+                            << "newton_raphson reached max iterations of "
+                            << max_iterations
+                            << " without converging. Best result is: "
+                            << best_result_vector[i] << " with residual "
+                            << func_and_deriv(best_result_vector[i], i).first));
+    }
+  }
 }
