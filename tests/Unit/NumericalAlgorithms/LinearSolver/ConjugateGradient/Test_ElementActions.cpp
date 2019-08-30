@@ -31,8 +31,9 @@ struct VectorTag : db::SimpleTag {
   static std::string name() noexcept { return "VectorTag"; }
 };
 
-using operand_tag = LinearSolver::Tags::Operand<VectorTag>;
-using residual_tag = LinearSolver::Tags::Residual<VectorTag>;
+using fields_tag = VectorTag;
+using operand_tag = LinearSolver::Tags::Operand<fields_tag>;
+using residual_tag = LinearSolver::Tags::Residual<fields_tag>;
 
 template <typename Metavariables>
 struct ElementArray {
@@ -45,24 +46,19 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
-              tmpl::append<tmpl::list<VectorTag, operand_tag>,
-                           typename LinearSolver::cg_detail::InitializeElement<
-                               Metavariables>::simple_tags>,
-              typename LinearSolver::cg_detail::InitializeElement<
-                  Metavariables>::compute_tags>>>,
+              tmpl::list<VectorTag, operand_tag,
+                         LinearSolver::Tags::IterationId, residual_tag,
+                         LinearSolver::Tags::HasConverged>,
+              tmpl::list<
+                  ::Tags::NextCompute<LinearSolver::Tags::IterationId>>>>>,
 
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing,
                              tmpl::list<LinearSolver::cg_detail::PrepareStep>>>;
 };
 
-struct System {
-  using fields_tag = VectorTag;
-};
-
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
-  using system = System;
   using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
@@ -80,8 +76,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::emplace_component_and_initialize<element_array>(
       make_not_null(&runner), 0,
       {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
-       std::numeric_limits<size_t>::max(), size_t{0},
-       DenseVector<double>(3, 1.),
+       std::numeric_limits<size_t>::max(), DenseVector<double>(3, 1.),
        db::item_type<LinearSolver::Tags::HasConverged>{}});
 
   // DataBox shortcuts
@@ -99,7 +94,8 @@ SPECTRE_TEST_CASE(
 
   SECTION("InitializeHasConverged") {
     ActionTesting::simple_action<
-        element_array, LinearSolver::cg_detail::InitializeHasConverged>(
+        element_array,
+        LinearSolver::cg_detail::InitializeHasConverged<fields_tag>>(
         make_not_null(&runner), 0,
         db::item_type<LinearSolver::Tags::HasConverged>{
             {1, 0., 0.}, 1, 0., 0.});
@@ -112,8 +108,8 @@ SPECTRE_TEST_CASE(
   }
   SECTION("UpdateOperand") {
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
-    ActionTesting::simple_action<element_array,
-                                 LinearSolver::cg_detail::UpdateOperand>(
+    ActionTesting::simple_action<
+        element_array, LinearSolver::cg_detail::UpdateOperand<fields_tag>>(
         make_not_null(&runner), 0, 2.,
         db::item_type<LinearSolver::Tags::HasConverged>{
             {1, 0., 0.}, 1, 0., 0.});

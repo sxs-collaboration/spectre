@@ -26,8 +26,11 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace gmres_detail {
+template <typename FieldsTag>
 struct NormalizeInitialOperand;
+template <typename FieldsTag>
 struct OrthogonalizeOperand;
+template <typename FieldsTag>
 struct NormalizeOperandAndUpdateField;
 }  // namespace gmres_detail
 }  // namespace LinearSolver
@@ -36,39 +39,57 @@ struct NormalizeOperandAndUpdateField;
 namespace LinearSolver {
 namespace gmres_detail {
 
-template <typename BroadcastTarget>
+template <typename FieldsTag, typename BroadcastTarget>
 struct InitializeResidualMagnitude {
+ private:
+  using fields_tag = FieldsTag;
+  using residual_magnitude_tag = db::add_tag_prefix<
+      LinearSolver::Tags::Magnitude,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+  using initial_residual_magnitude_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
+  using orthogonalization_iteration_id_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
+                         LinearSolver::Tags::IterationId>;
+  using orthogonalization_history_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
+                         fields_tag>;
+
+ public:
   template <
       typename ParallelComponent, typename DbTagsList, typename Metavariables,
-      typename ArrayIndex,
-      Requires<tmpl::list_contains_v<
-          DbTagsList,
-          db::add_tag_prefix<LinearSolver::Tags::Magnitude,
-                             db::add_tag_prefix<LinearSolver::Tags::Residual,
-                                                typename Metavariables::system::
-                                                    fields_tag>>>> = nullptr>
+      typename ArrayIndex, typename DataBox = db::DataBox<DbTagsList>,
+      Requires<db::tag_is_retrievable_v<residual_magnitude_tag, DataBox>> =
+          nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double residual_magnitude) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
-    using residual_magnitude_tag = db::add_tag_prefix<
-        LinearSolver::Tags::Magnitude,
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-    using initial_residual_magnitude_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
-
-    db::mutate<residual_magnitude_tag, initial_residual_magnitude_tag>(
-        make_not_null(&box), [residual_magnitude](
-                                 const gsl::not_null<double*>
-                                     local_residual_magnitude,
-                                 const gsl::not_null<double*>
-                                     initial_residual_magnitude) noexcept {
+    db::mutate<LinearSolver::Tags::IterationId, residual_magnitude_tag,
+               initial_residual_magnitude_tag,
+               orthogonalization_iteration_id_tag,
+               orthogonalization_history_tag>(
+        make_not_null(&box),
+        [residual_magnitude](
+            const gsl::not_null<size_t*> iteration_id,
+            const gsl::not_null<double*> local_residual_magnitude,
+            const gsl::not_null<double*> initial_residual_magnitude,
+            const gsl::not_null<size_t*> orthogonalization_iteration_id,
+            const gsl::not_null<DenseMatrix<double>*>
+                orthogonalization_history) noexcept {
           *local_residual_magnitude = *initial_residual_magnitude =
               residual_magnitude;
+          // Also setting the following tags so re-initialization works:
+          // - LinearSolver::Tags::IterationId
+          // - orthogonalization_iteration_id_tag
+          // - orthogonalization_history_tag
+          *iteration_id = 0;
+          *orthogonalization_iteration_id = 0;
+          *orthogonalization_history = DenseMatrix<double>{2, 1, 0.};
         });
 
-    LinearSolver::observe_detail::contribute_to_reduction_observer(box, cache);
+    LinearSolver::observe_detail::contribute_to_reduction_observer<FieldsTag>(
+        box, cache);
 
     // Determine whether the linear solver has already converged. This invokes
     // the compute item.
@@ -83,35 +104,33 @@ struct InitializeResidualMagnitude {
           has_converged);
     }
 
-    Parallel::simple_action<NormalizeInitialOperand>(
+    Parallel::simple_action<NormalizeInitialOperand<FieldsTag>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
         residual_magnitude, has_converged);
   }
 };
 
-template <typename BroadcastTarget>
+template <typename FieldsTag, typename BroadcastTarget>
 struct StoreOrthogonalization {
-  template <
-      typename ParallelComponent, typename DbTagsList, typename Metavariables,
-      typename ArrayIndex,
-      Requires<tmpl::list_contains_v<
-          DbTagsList,
-          db::add_tag_prefix<LinearSolver::Tags::Magnitude,
-                             db::add_tag_prefix<LinearSolver::Tags::Residual,
-                                                typename Metavariables::system::
-                                                    fields_tag>>>> = nullptr>
+ private:
+  using fields_tag = FieldsTag;
+  using orthogonalization_iteration_id_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
+                         LinearSolver::Tags::IterationId>;
+  using orthogonalization_history_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
+                         fields_tag>;
+
+ public:
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            typename DataBox = db::DataBox<DbTagsList>,
+            Requires<db::tag_is_retrievable_v<orthogonalization_history_tag,
+                                              DataBox>> = nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double orthogonalization) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
-    using orthogonalization_iteration_id_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                           LinearSolver::Tags::IterationId>;
-    using orthogonalization_history_tag =
-        db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
-                           fields_tag>;
-
     db::mutate<orthogonalization_history_tag,
                orthogonalization_iteration_id_tag>(
         make_not_null(&box),
@@ -129,40 +148,38 @@ struct StoreOrthogonalization {
         },
         get<LinearSolver::Tags::IterationId>(box));
 
-    Parallel::simple_action<OrthogonalizeOperand>(
+    Parallel::simple_action<OrthogonalizeOperand<FieldsTag>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
         orthogonalization);
   }
 };
 
-template <typename BroadcastTarget>
+template <typename FieldsTag, typename BroadcastTarget>
 struct StoreFinalOrthogonalization {
+ private:
+  using fields_tag = FieldsTag;
+  using residual_magnitude_tag = db::add_tag_prefix<
+      LinearSolver::Tags::Magnitude,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+  using initial_residual_magnitude_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
+  using orthogonalization_iteration_id_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
+                         LinearSolver::Tags::IterationId>;
+  using orthogonalization_history_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
+                         fields_tag>;
+
+ public:
   template <
       typename ParallelComponent, typename DbTagsList, typename Metavariables,
-      typename ArrayIndex,
-      Requires<tmpl::list_contains_v<
-          DbTagsList,
-          db::add_tag_prefix<LinearSolver::Tags::Magnitude,
-                             db::add_tag_prefix<LinearSolver::Tags::Residual,
-                                                typename Metavariables::system::
-                                                    fields_tag>>>> = nullptr>
+      typename ArrayIndex, typename DataBox = db::DataBox<DbTagsList>,
+      Requires<db::tag_is_retrievable_v<residual_magnitude_tag, DataBox>> =
+          nullptr>
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double orthogonalization) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
-    using residual_magnitude_tag = db::add_tag_prefix<
-        LinearSolver::Tags::Magnitude,
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-    using initial_residual_magnitude_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
-    using orthogonalization_iteration_id_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                           LinearSolver::Tags::IterationId>;
-    using orthogonalization_history_tag =
-        db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
-                           fields_tag>;
-
     db::mutate<orthogonalization_history_tag>(
         make_not_null(&box),
         [orthogonalization](
@@ -229,7 +246,8 @@ struct StoreFinalOrthogonalization {
     // logging and checking convergence before broadcasting back to the
     // elements.
 
-    LinearSolver::observe_detail::contribute_to_reduction_observer(box, cache);
+    LinearSolver::observe_detail::contribute_to_reduction_observer<FieldsTag>(
+        box, cache);
 
     // Determine whether the linear solver has converged. This invokes the
     // compute item.
@@ -250,7 +268,7 @@ struct StoreFinalOrthogonalization {
           get<LinearSolver::Tags::IterationId>(box), has_converged);
     }
 
-    Parallel::simple_action<NormalizeOperandAndUpdateField>(
+    Parallel::simple_action<NormalizeOperandAndUpdateField<FieldsTag>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
         sqrt(orthogonalization), minres, has_converged);
   }

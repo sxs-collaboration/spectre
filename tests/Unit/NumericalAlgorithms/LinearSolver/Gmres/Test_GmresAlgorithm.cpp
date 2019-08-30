@@ -20,9 +20,7 @@ namespace helpers = LinearSolverAlgorithmTestHelpers;
 namespace {
 
 struct Metavariables {
-  using system = helpers::System;
-
-  using linear_solver = LinearSolver::Gmres<Metavariables>;
+  using linear_solver = LinearSolver::Gmres<Metavariables, helpers::fields_tag>;
 
   using component_list =
       tmpl::append<tmpl::list<helpers::ElementArray<Metavariables>,

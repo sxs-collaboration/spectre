@@ -54,11 +54,11 @@ struct Registration {
  *   - `LinearSolver::Tags::IterationId`
  *   - `residual_magnitude_tag`
  */
-template <typename DbTagsList, typename Metavariables>
+template <typename FieldsTag, typename DbTagsList, typename Metavariables>
 void contribute_to_reduction_observer(
     db::DataBox<DbTagsList>& box,
     Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-  using fields_tag = typename Metavariables::system::fields_tag;
+  using fields_tag = FieldsTag;
   using residual_magnitude_tag = db::add_tag_prefix<
       LinearSolver::Tags::Magnitude,
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;

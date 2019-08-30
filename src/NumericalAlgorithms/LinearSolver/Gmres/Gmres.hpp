@@ -7,6 +7,7 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres/ElementActions.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/InitializeElement.hpp"
 #include "NumericalAlgorithms/LinearSolver/Gmres/ResidualMonitor.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace LinearSolver {
@@ -21,15 +22,13 @@ namespace LinearSolver {
  * invocation of the `perform_step` action expects that \f$A(q)\f$ has been
  * computed in a preceding action and stored in the DataBox as
  * %db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
- * db::add_tag_prefix<LinearSolver::Tags::Operand, typename
- * Metavariables::system::fields_tag>>.
+ * db::add_tag_prefix<LinearSolver::Tags::Operand, FieldsTag>>.
  *
  * Note that the operand \f$q\f$ for which \f$A(q)\f$ needs to be computed is
  * not the field \f$x\f$ we are solving for but
- * `db::add_tag_prefix<LinearSolver::Tags::Operand, typename
- * Metavariables::system::fields_tag>`. This field is initially set to the
- * residual \f$q_0 = b - A(x_0)\f$ where \f$x_0\f$ is the initial value of the
- * `Metavariables::system::fields_tag`.
+ * `db::add_tag_prefix<LinearSolver::Tags::Operand, FieldsTag>`. This field is
+ * initially set to the residual \f$q_0 = b - A(x_0)\f$ where \f$x_0\f$ is the
+ * initial value of the `FieldsTag`.
  *
  * When the `perform_step` action is invoked after the operator action
  * \f$A(q)\f$ has been computed and stored in the DataBox, the GMRES algorithm
@@ -62,17 +61,13 @@ namespace LinearSolver {
  * \see ConjugateGradient for a linear solver that is more efficient when the
  * linear operator \f$A\f$ is symmetric.
  */
-template <typename Metavariables>
+template <typename Metavariables, typename FieldsTag>
 struct Gmres {
   /*!
    * \brief The parallel components used by the GMRES linear solver
-   *
-   * Uses:
-   * - System:
-   *   * `fields_tag`
    */
   using component_list =
-      tmpl::list<gmres_detail::ResidualMonitor<Metavariables>>;
+      tmpl::list<gmres_detail::ResidualMonitor<Metavariables, FieldsTag>>;
 
   /*!
    * \brief Initialize the tags used by the GMRES linear solver.
@@ -83,23 +78,21 @@ struct Gmres {
    * step number. Invoke `prepare_step` to advance the state to the first
    * iteration.
    *
-   * Uses:
-   * - System:
-   *   * `fields_tag`
-   * - ConstGlobalCache: nothing
+   * \warning This action involves a blocking reduction, so it is a global
+   * synchronization point.
    *
    * With:
    * - `initial_fields_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>`
+   * `db::add_tag_prefix<LinearSolver::Tags::Initial, FieldsTag>`
    * - `operand_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
+   * `db::add_tag_prefix<LinearSolver::Tags::Operand, FieldsTag>`
    * - `operator_tag` =
    * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>`
    * - `orthogonalization_iteration_id_tag` =
    * `db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
    * LinearSolver::Tags::IterationId>`
    * - `basis_history_tag` =
-   * `LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>`
+   * `LinearSolver::Tags::KrylovSubspaceBasis<FieldsTag>`
    *
    * DataBox changes:
    * - Adds:
@@ -120,7 +113,42 @@ struct Gmres {
    * not need to be initialized until it is computed for the first time in the
    * first step of the algorithm.
    */
-  using tags = gmres_detail::InitializeElement<Metavariables>;
+  using initialize_element = gmres_detail::InitializeElement<FieldsTag>;
+
+  /*!
+   * \brief Reset the linear solver to its initial state.
+   *
+   * Uses:
+   * - System:
+   *   * `fields_tag`
+   *
+   * With:
+   * - `initial_fields_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>`
+   * - `operand_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
+   * - `orthogonalization_iteration_id_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
+   * LinearSolver::Tags::IterationId>`
+   * - `basis_history_tag` =
+   * `LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>`
+   *
+   * DataBox changes:
+   * - Adds: nothing
+   * - Removes: nothing
+   * - Modifies:
+   *   * `LinearSolver::Tags::IterationId`
+   *   * `initial_fields_tag`
+   *   * `orthogonalization_iteration_id_tag`
+   *   * `basis_history_tag`
+   *   * `LinearSolver::Tags::HasConverged`
+   *   * `operand_tag`
+   *
+   * \see `initialize_element`
+   */
+  using reinitialize_element =
+      gmres_detail::InitializeElement<FieldsTag,
+                                      ::Initialization::MergePolicy::Overwrite>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
@@ -145,31 +173,26 @@ struct Gmres {
    * \warning This action involves a blocking reduction, so it is a global
    * synchronization point.
    *
-   * Uses:
-   * - System:
-   *   * `fields_tag`
-   * - ConstGlobalCache: nothing
-   *
    * With:
    * - `operand_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
+   * `db::add_tag_prefix<LinearSolver::Tags::Operand, FieldsTag>`
    * - `orthogonalization_iteration_id_tag` =
    * `db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
    * LinearSolver::Tags::IterationId>`
    * - `basis_history_tag` =
-   * `LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>`
+   * `LinearSolver::Tags::KrylovSubspaceBasis<FieldsTag>`
    *
    * DataBox changes:
    * - Adds: nothing
    * - Removes: nothing
    * - Modifies:
-   *   * `fields_tag`
+   *   * `FieldsTag`
    *   * `operand_tag`
    *   * `orthogonalization_iteration_id_tag`
    *   * `basis_history_tag`
    *   * `LinearSolver::Tags::HasConverged`
    */
-  using perform_step = gmres_detail::PerformStep;
+  using perform_step = gmres_detail::PerformStep<FieldsTag>;
 };
 
 }  // namespace LinearSolver

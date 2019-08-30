@@ -14,6 +14,7 @@
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -23,7 +24,7 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace gmres_detail {
-template <typename Metavariables>
+template <typename FieldsTag>
 struct InitializeResidualMonitor;
 }  // namespace gmres_detail
 }  // namespace LinearSolver
@@ -35,7 +36,7 @@ struct Criteria;
 namespace LinearSolver {
 namespace gmres_detail {
 
-template <typename Metavariables>
+template <typename Metavariables, typename FieldsTag>
 struct ResidualMonitor {
   using chare_type = Parallel::Algorithms::Singleton;
   using const_global_cache_tag_list =
@@ -43,9 +44,9 @@ struct ResidualMonitor {
                  LinearSolver::OptionTags::ConvergenceCriteria>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<
-          typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<InitializeResidualMonitor<Metavariables>>>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             tmpl::list<InitializeResidualMonitor<FieldsTag>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase,
@@ -64,10 +65,10 @@ struct ResidualMonitor {
   }
 };
 
-template <typename Metavariables>
+template <typename FieldsTag>
 struct InitializeResidualMonitor {
  private:
-  using fields_tag = typename Metavariables::system::fields_tag;
+  using fields_tag = FieldsTag;
   using residual_magnitude_tag = db::add_tag_prefix<
       LinearSolver::Tags::Magnitude,
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
@@ -81,46 +82,32 @@ struct InitializeResidualMonitor {
                          fields_tag>;
 
  public:
-  template <
-      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-      typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTagsList, residual_magnitude_tag>> =
-          nullptr>
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename Metavariables, typename ActionList,
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    auto init_box = db::create_from<
-        db::RemoveTags<>,
-        db::AddSimpleTags<
-            residual_magnitude_tag, initial_residual_magnitude_tag,
-            LinearSolver::Tags::IterationId, orthogonalization_iteration_id_tag,
-            orthogonalization_history_tag>,
-        db::AddComputeTags<
-            LinearSolver::Tags::HasConvergedCompute<fields_tag>>>(
-        std::move(box), std::numeric_limits<double>::signaling_NaN(),
-        std::numeric_limits<double>::signaling_NaN(),
-        db::item_type<LinearSolver::Tags::IterationId>{0},
-        db::item_type<orthogonalization_iteration_id_tag>{0},
-        DenseMatrix<double>{2, 1, 0.});
-    return std::make_tuple(std::move(init_box), true);
-  }
-
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTagsList,
-                                           residual_magnitude_tag>> = nullptr>
-  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
-      const db::DataBox<DbTagsList>& /*box*/,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    ERROR(
-        "Re-initialization not supported. Did you forget to terminate the "
-        "initialization phase?");
+    using compute_tags =
+        db::AddComputeTags<LinearSolver::Tags::HasConvergedCompute<fields_tag>>;
+    return std::make_tuple(
+        ::Initialization::merge_into_databox<
+            InitializeResidualMonitor,
+            db::AddSimpleTags<residual_magnitude_tag,
+                              initial_residual_magnitude_tag,
+                              LinearSolver::Tags::IterationId,
+                              orthogonalization_iteration_id_tag,
+                              orthogonalization_history_tag>,
+            compute_tags>(std::move(box),
+                          std::numeric_limits<double>::signaling_NaN(),
+                          std::numeric_limits<double>::signaling_NaN(),
+                          db::item_type<LinearSolver::Tags::IterationId>{0},
+                          db::item_type<orthogonalization_iteration_id_tag>{0},
+                          DenseMatrix<double>{2, 1, 0.}),
+        true);
   }
 };
 

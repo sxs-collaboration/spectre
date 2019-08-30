@@ -22,9 +22,9 @@ namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 namespace {
 
 struct Metavariables {
-  using system = helpers_distributed::System;
-
-  using linear_solver = LinearSolver::ConjugateGradient<Metavariables>;
+  using linear_solver =
+      LinearSolver::ConjugateGradient<Metavariables,
+                                      typename helpers_distributed::fields_tag>;
 
   using component_list =
       tmpl::append<tmpl::list<helpers_distributed::ElementArray<Metavariables>,

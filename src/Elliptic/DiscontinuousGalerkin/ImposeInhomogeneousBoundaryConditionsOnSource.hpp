@@ -26,7 +26,8 @@ struct Inertial;
 /// \endcond
 
 namespace elliptic {
-namespace Initialization {
+namespace dg {
+namespace Actions {
 
 /*!
  * \brief Adds boundary contributions to the sources
@@ -53,7 +54,7 @@ namespace Initialization {
  *   - `Tags::Mesh<volume_dim>`
  *   - `Tags::Coordinates<volume_dim, Frame::Inertial>`
  *   - `Tags::BoundaryDirectionsInterior<volume_dim>`
- *   - `Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
+ *   - `Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
  *   Tags::Coordinates<volume_dim, Frame::Inertial>>`
  *   - `Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
  *   Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>`
@@ -65,14 +66,11 @@ namespace Initialization {
  *   - `sources_tag`
  */
 template <typename Metavariables>
-struct BoundaryConditions {
+struct ImposeInhomogeneousBoundaryConditionsOnSource {
   using system = typename Metavariables::system;
 
   using sources_tag =
-      db::add_tag_prefix<Tags::Source, typename system::fields_tag>;
-
-  using simple_tags = db::AddSimpleTags<>;
-  using compute_tags = db::AddComputeTags<>;
+      db::add_tag_prefix<::Tags::Source, typename system::fields_tag>;
 
   template <typename NormalDotNumericalFluxComputer,
             typename... NumericalFluxTags, typename... BoundaryDataTags>
@@ -88,10 +86,14 @@ struct BoundaryConditions {
         get<BoundaryDataTags>(boundary_data)..., normalized_face_normal);
   }
 
-  template <typename TagsList>
-  static auto initialize(
-      db::DataBox<TagsList>&& box,
-      const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
     static constexpr const size_t volume_dim = system::volume_dim;
 
     const auto& analytic_solution =
@@ -105,19 +107,19 @@ struct BoundaryConditions {
           &analytic_solution, &normal_dot_numerical_flux_computer
         ](const gsl::not_null<db::item_type<sources_tag>*> sources,
           const Mesh<volume_dim>& mesh,
-          const db::item_type<Tags::BoundaryDirectionsInterior<volume_dim>>&
+          const db::item_type<::Tags::BoundaryDirectionsInterior<volume_dim>>&
               boundary_directions,
-          const db::item_type<
-              Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
-                              Tags::Coordinates<volume_dim, Frame::Inertial>>>&
+          const db::item_type<::Tags::Interface<
+              ::Tags::BoundaryDirectionsExterior<volume_dim>,
+              ::Tags::Coordinates<volume_dim, Frame::Inertial>>>&
               boundary_coordinates,
-          const db::item_type<Tags::Interface<
-              Tags::BoundaryDirectionsInterior<volume_dim>,
-              Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>>&
+          const db::item_type<::Tags::Interface<
+              ::Tags::BoundaryDirectionsInterior<volume_dim>,
+              ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<volume_dim>>>>&
               normalized_face_normals,
-          const db::item_type<Tags::Interface<
-              Tags::BoundaryDirectionsInterior<volume_dim>,
-              Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>&
+          const db::item_type<::Tags::Interface<
+              ::Tags::BoundaryDirectionsInterior<volume_dim>,
+              ::Tags::Magnitude<::Tags::UnnormalizedFaceNormal<volume_dim>>>>&
               magnitude_of_face_normals) noexcept {
           // Impose Dirichlet boundary conditions as contributions to the source
           for (const auto& direction : boundary_directions) {
@@ -132,7 +134,7 @@ struct BoundaryConditions {
                 typename system::impose_boundary_conditions_on_fields{}));
             // Compute the numerical flux contribution from the Dirichlet data
             db::item_type<
-                db::add_tag_prefix<Tags::NormalDotNumericalFlux, sources_tag>>
+                db::add_tag_prefix<::Tags::NormalDotNumericalFlux, sources_tag>>
                 boundary_normal_dot_numerical_fluxes{
                     mortar_mesh.number_of_grid_points(), 0.};
             compute_dirichlet_boundary_normal_dot_numerical_flux(
@@ -152,20 +154,23 @@ struct BoundaryConditions {
                               index_to_slice_at(mesh.extents(), direction));
           }
         },
-        get<Tags::Mesh<volume_dim>>(box),
-        get<Tags::BoundaryDirectionsInterior<volume_dim>>(box),
-        get<Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
-                            Tags::Coordinates<volume_dim, Frame::Inertial>>>(
+        get<::Tags::Mesh<volume_dim>>(box),
+        get<::Tags::BoundaryDirectionsInterior<volume_dim>>(box),
+        get<::Tags::Interface<
+            ::Tags::BoundaryDirectionsExterior<volume_dim>,
+            ::Tags::Coordinates<volume_dim, Frame::Inertial>>>(box),
+        get<::Tags::Interface<
+            ::Tags::BoundaryDirectionsInterior<volume_dim>,
+            ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<volume_dim>>>>(
             box),
-        get<Tags::Interface<
-            Tags::BoundaryDirectionsInterior<volume_dim>,
-            Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box),
-        get<Tags::Interface<
-            Tags::BoundaryDirectionsInterior<volume_dim>,
-            Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box));
+        get<::Tags::Interface<
+            ::Tags::BoundaryDirectionsInterior<volume_dim>,
+            ::Tags::Magnitude<::Tags::UnnormalizedFaceNormal<volume_dim>>>>(
+            box));
 
-    return std::move(box);
+    return {std::move(box)};
   }
 };
-}  // namespace Initialization
+}  // namespace Actions
+}  // namespace dg
 }  // namespace elliptic
