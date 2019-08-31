@@ -147,6 +147,36 @@ struct has_initialization_phase<
 template <typename Metavariables>
 constexpr bool has_initialization_phase_v =
     has_initialization_phase<Metavariables>::value;
+
+template <typename Component, typename = cpp17::void_t<>>
+struct get_initialization_tags_from_component {
+  using type = tmpl::list<>;
+};
+
+template <typename Component>
+struct get_initialization_tags_from_component<
+    Component, cpp17::void_t<typename Component::initialization_tags>> {
+  using type = typename Component::initialization_tags;
+};
+
+// Given the tags `SimpleTags`, forwards them into the `DataBox`.
+template <typename SimpleTagsList>
+struct ForwardAllOptionsToDataBox;
+
+template <typename... SimpleTags>
+struct ForwardAllOptionsToDataBox<tmpl::list<SimpleTags...>> {
+  using simple_tags = tmpl::list<SimpleTags...>;
+
+  template <typename DbTagsList, typename... Args>
+  static auto apply(db::DataBox<DbTagsList>&& box, Args&&... args) noexcept {
+    static_assert(
+        sizeof...(SimpleTags) == sizeof...(Args),
+        "The number of arguments passed to ForwardAllOptionsToDataBox must "
+        "match the number of SimpleTags passed.");
+    return db::create_from<db::RemoveTags<>, simple_tags>(
+        std::move(box), std::forward<Args>(args)...);
+  }
+};
 }  // namespace detail
 
 /// \cond
@@ -357,9 +387,10 @@ class MockDistributedObject {
 
   using all_cache_tags =
       Parallel::ConstGlobalCache_detail::make_tag_list<metavariables>;
+  using initialization_tags =
+      typename detail::get_initialization_tags_from_component<Component>::type;
   using initial_tags = tmpl::flatten<tmpl::list<
-      Parallel::Tags::ConstGlobalCacheImpl<metavariables>,
-      typename Component::add_options_to_databox::simple_tags,
+      Parallel::Tags::ConstGlobalCacheImpl<metavariables>, initialization_tags,
       db::wrap_tags_in<Parallel::Tags::FromConstGlobalCache, all_cache_tags>>>;
   using initial_databox = db::compute_databox_type<initial_tags>;
 
@@ -388,7 +419,7 @@ class MockDistributedObject {
       tuples::tagged_tuple_from_typelist<inbox_tags_list>* inboxes,
       Options&&... opts)
       : array_index_(index), const_global_cache_(cache), inboxes_(inboxes) {
-    box_ = Component::add_options_to_databox::apply(
+    box_ = detail::ForwardAllOptionsToDataBox<initialization_tags>::apply(
         db::create<db::AddSimpleTags<
                        Parallel::Tags::ConstGlobalCacheImpl<metavariables>>,
                    db::AddComputeTags<db::wrap_tags_in<
@@ -1549,7 +1580,7 @@ class MockRuntimeSystem {
 
 /// Emplaces a distributed object with index `array_index` into the parallel
 /// component `Component`. The options `opts` are forwarded to be used in a call
-/// to `add_options_to_databox::apply`.
+/// to `detail::ForwardAllOptionsToDataBox::apply`.
 template <typename Component, typename... Options>
 void emplace_component(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
@@ -1562,8 +1593,8 @@ void emplace_component(
 
 /// Emplaces a distributed object with index `array_index` into the parallel
 /// component `Component`. The options `opts` are forwarded to be used in a call
-/// to `add_options_to_databox::apply`. Additionally, the simple tags in the
-/// DataBox are initialized from the values set in `initial_values`.
+/// to `detail::ForwardAllOptionsToDataBox::apply` Additionally, the simple tags
+/// in the DataBox are initialized from the values set in `initial_values`.
 template <typename Component, typename... Options,
           typename Metavars = typename Component::metavariables,
           Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>

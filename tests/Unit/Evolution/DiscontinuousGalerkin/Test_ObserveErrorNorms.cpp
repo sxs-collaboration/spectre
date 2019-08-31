@@ -22,7 +22,6 @@
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -102,7 +101,6 @@ MockContributeReductionData::Results MockContributeReductionData::results{};
 template <typename Metavariables>
 struct ElementComponent {
   using component_being_mocked = void;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
 
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
@@ -121,7 +119,6 @@ struct MockObserverComponent {
       tmpl::list<observers::Actions::ContributeReductionData>;
   using with_these_simple_actions = tmpl::list<MockContributeReductionData>;
 
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
@@ -137,8 +134,8 @@ struct Metavariables {
   using system = System;
   using component_list = tmpl::list<ElementComponent<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<
-      OptionTags::AnalyticSolution<typename System::solution_for_test>>;
+  using const_global_cache_tag_list =
+      tmpl::list<Tags::AnalyticSolution<typename System::solution_for_test>>;
   enum class Phase { Initialization, Testing, Exit };
 
   struct ObservationType {};
@@ -247,7 +244,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
 
   ActionTesting::MockRuntimeSystem<metavariables> runner(
       tuples::TaggedTuple<
-          OptionTags::AnalyticSolution<typename System::solution_for_test>>{
+          Tags::AnalyticSolution<typename System::solution_for_test>>{
           std::move(analytic_solution)});
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
                                                       0);

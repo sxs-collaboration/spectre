@@ -26,6 +26,17 @@ struct Name {
   static constexpr OptionString help{"A name"};
 };
 }  // namespace OptionTags
+
+namespace Tags {
+struct Name : db::SimpleTag {
+  using type = std::string;
+  static std::string name() noexcept { return "Name"; }
+  using option_tags = tmpl::list<OptionTags::Name>;
+  static std::string create_from_options(const std::string& name) noexcept {
+    return name;
+  }
+};
+}  // namespace Tags
 /// [executable_example_options]
 
 /// [executable_example_action]
@@ -37,8 +48,8 @@ struct PrintMessage {
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
     Parallel::printf("Hello %s from process %d on node %d!\n",
-                     Parallel::get<OptionTags::Name>(cache),
-                     Parallel::my_proc(), Parallel::my_node());
+                     Parallel::get<Tags::Name>(cache), Parallel::my_proc(),
+                     Parallel::my_node());
   }
 };
 }  // namespace Actions
@@ -47,7 +58,7 @@ struct PrintMessage {
 /// [executable_example_singleton]
 template <class Metavariables>
 struct HelloWorld {
-  using const_global_cache_tag_list = tmpl::list<OptionTags::Name>;
+  using const_global_cache_tag_list = tmpl::list<Tags::Name>;
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<

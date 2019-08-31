@@ -59,7 +59,7 @@ struct Metavariables {
   // The analytic solution and corresponding source to solve the Poisson
   // equation for
   using analytic_solution_tag =
-      OptionTags::AnalyticSolution<Poisson::Solutions::ProductOfSinusoids<Dim>>;
+      Tags::AnalyticSolution<Poisson::Solutions::ProductOfSinusoids<Dim>>;
 
   // The linear solver algorithm. We must use GMRES since the operator is
   // not positive-definite for the first-order system.
@@ -72,7 +72,7 @@ struct Metavariables {
 
   // Parse numerical flux parameters from the input file to store in the cache.
   using normal_dot_numerical_flux =
-      OptionTags::NumericalFlux<Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
+      Tags::NumericalFlux<Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;

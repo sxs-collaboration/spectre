@@ -74,7 +74,7 @@ class Main : public CBase_Main<Metavariables> {
   using parallel_component_options = Parallel::get_option_tags<
       typename ParallelComponent::initialization_tags>;
   using option_list = tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
-      const_global_cache_tags,
+      Parallel::get_option_tags<const_global_cache_tags>,
       tmpl::transform<component_list,
                       tmpl::bind<parallel_component_options, tmpl::_1>>>>>;
   using parallel_component_tag_list = tmpl::transform<
@@ -245,13 +245,9 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
                 std::move(args)...);
           });
 
-  const_global_cache_proxy_ =
-      options_.template apply<const_global_cache_tags, Metavariables>(
-          [](auto... args) {
-            return CProxy_ConstGlobalCache<Metavariables>::ckNew(
-                tuples::tagged_tuple_from_typelist<const_global_cache_tags>(
-                    std::move(args)...));
-          });
+  const_global_cache_proxy_ = CProxy_ConstGlobalCache<Metavariables>::ckNew(
+      Parallel::create_from_options(items_from_options,
+                                    const_global_cache_tags{}));
 
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;

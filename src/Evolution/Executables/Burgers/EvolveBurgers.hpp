@@ -79,12 +79,12 @@ struct EvolutionMetavars {
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = false;
   using analytic_solution_tag =
-      OptionTags::AnalyticSolution<Burgers::Solutions::Step>;
+      Tags::AnalyticSolution<Burgers::Solutions::Step>;
   using boundary_condition_tag = analytic_solution_tag;
-  using normal_dot_numerical_flux = OptionTags::NumericalFlux<
-      dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
-  using limiter = OptionTags::Limiter<
-      Limiters::Minmod<1, system::variables_tag::tags_list>>;
+  using normal_dot_numerical_flux =
+      Tags::NumericalFlux<dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
+  using limiter =
+      Tags::Limiter<Limiters::Minmod<1, system::variables_tag::tags_list>>;
 
   // public for use by the Charm++ registration code
   using events =
@@ -97,9 +97,9 @@ struct EvolutionMetavars {
 
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,
-                 OptionTags::TypedTimeStepper<tmpl::conditional_t<
+                 Tags::TimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
-                 OptionTags::EventsAndTriggers<events, triggers>>;
+                 Tags::EventsAndTriggers<events, triggers>>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;

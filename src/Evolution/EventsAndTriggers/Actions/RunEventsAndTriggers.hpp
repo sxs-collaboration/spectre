@@ -16,7 +16,7 @@ namespace Actions {
 /// \brief Run the events and triggers
 ///
 /// Uses:
-/// - ConstGlobalCache: the EventsAndTriggers tag, as required by
+/// - ConstGlobalCache: the EventsAndTriggersBase tag, as required by
 ///   events and triggers
 /// - DataBox: as required by events and triggers
 ///
@@ -34,7 +34,7 @@ struct RunEventsAndTriggers {
                     const ArrayIndex& array_index,
                     const ActionList /*meta*/,
                     const ParallelComponent* const component) noexcept {
-    Parallel::get<OptionTags::EventsAndTriggersTagBase>(cache).run_events(
+    Parallel::get<Tags::EventsAndTriggersBase>(cache).run_events(
         box, cache, array_index, component);
 
     return std::forward_as_tuple(std::move(box));

@@ -28,3 +28,18 @@ struct Limiter {
   using group = LimiterGroup;
 };
 }  // namespace OptionTags
+
+namespace Tags {
+/*!
+ * \brief The global cache tag for the limiter
+ */
+template <typename LimiterType>
+struct Limiter : db::SimpleTag {
+  static std::string name() noexcept { return "Limiter"; }
+  using type = LimiterType;
+  using option_tags = tmpl::list<::OptionTags::Limiter<LimiterType>>;
+  static LimiterType create_from_options(const LimiterType& limiter) noexcept {
+    return limiter;
+  }
+};
+}  // namespace Tags

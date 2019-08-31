@@ -88,8 +88,8 @@ struct InitializeResidual {
     const auto& has_converged = db::get<LinearSolver::Tags::HasConverged>(box);
 
     if (UNLIKELY(has_converged and
-                 static_cast<int>(get<LinearSolver::OptionTags::Verbosity>(
-                     cache)) >= static_cast<int>(::Verbosity::Quiet))) {
+                 static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+                     static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf(
           "The linear solver has converged without any iterations: %s\n",
           has_converged);
@@ -172,16 +172,16 @@ struct UpdateResidual {
     const auto& has_converged = get<LinearSolver::Tags::HasConverged>(box);
 
     // Do some logging
-    if (UNLIKELY(static_cast<int>(get<LinearSolver::OptionTags::Verbosity>(
-                     cache)) >= static_cast<int>(::Verbosity::Verbose))) {
+    if (UNLIKELY(static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+                 static_cast<int>(::Verbosity::Verbose))) {
       Parallel::printf(
           "Linear solver iteration %zu done. Remaining residual: %e\n",
           get<LinearSolver::Tags::IterationId>(box),
           get<residual_magnitude_tag>(box));
     }
     if (UNLIKELY(has_converged and
-                 static_cast<int>(get<LinearSolver::OptionTags::Verbosity>(
-                     cache)) >= static_cast<int>(::Verbosity::Quiet))) {
+                 static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+                     static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf(
           "The linear solver has converged in %zu iterations: %s\n",
           get<LinearSolver::Tags::IterationId>(box), has_converged);

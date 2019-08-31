@@ -21,6 +21,7 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/MinimumGridSpacing.hpp"
 #include "Domain/Tags.hpp"
+#include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -32,10 +33,6 @@ class ElementIndex;
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
-namespace Parallel {
-template <typename Metavariables>
-class ConstGlobalCache;
-}  // namespace Parallel
 /// \endcond
 
 namespace dg {
@@ -44,9 +41,11 @@ namespace Actions {
  * \ingroup InitializationGroup
  * \brief Initialize items related to the basic structure of the element
  *
- * DataBox:
+ * ConstGlobalCache:
  * - Uses:
  *   - `Tags::Domain<Dim, Frame::Inertial>`
+ * DataBox:
+ * - Uses:
  *   - `Tags::InitialExtents<Dim>`
  * - Adds:
  *   - `Tags::Mesh<Dim>`
@@ -62,16 +61,12 @@ namespace Actions {
  */
 template <size_t Dim>
 struct InitializeDomain {
-  using initialization_tags = tmpl::list<::Tags::InitialExtents<Dim>,
-                                         ::Tags::Domain<Dim, Frame::Inertial>>;
+  using initialization_tags = tmpl::list<::Tags::InitialExtents<Dim>>;
 
-  template <
-      typename DataBox, typename... InboxTags, typename Metavariables,
-      typename ActionList, typename ParallelComponent,
-      Requires<
-          db::tag_is_retrievable_v<::Tags::InitialExtents<Dim>, DataBox> and
-          db::tag_is_retrievable_v<::Tags::Domain<Dim, Frame::Inertial>,
-                                   DataBox>> = nullptr>
+  template <typename DataBox, typename... InboxTags, typename Metavariables,
+            typename ActionList, typename ParallelComponent,
+            Requires<db::tag_is_retrievable_v<::Tags::InitialExtents<Dim>,
+                                              DataBox>> = nullptr>
   static auto apply(DataBox& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -108,13 +103,11 @@ struct InitializeDomain {
             std::move(element_map)));
   }
 
-  template <
-      typename DataBox, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<
-          not db::tag_is_retrievable_v<::Tags::InitialExtents<Dim>, DataBox> or
-          not db::tag_is_retrievable_v<::Tags::Domain<Dim, Frame::Inertial>,
-                                       DataBox>> = nullptr>
+  template <typename DataBox, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
+            Requires<not db::tag_is_retrievable_v<::Tags::InitialExtents<Dim>,
+                                                  DataBox>> = nullptr>
   static std::tuple<DataBox&&> apply(
       DataBox& /*box*/, const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,

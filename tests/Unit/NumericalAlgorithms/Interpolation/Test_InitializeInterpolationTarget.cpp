@@ -14,6 +14,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/Tags.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -38,14 +39,12 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tag_list =
+      tmpl::list<::Tags::Domain<3, Frame::Inertial>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<intrp::Actions::InitializeInterpolationTarget<
           Metavariables, InterpolationTargetTag>>>>;
-  using add_options_to_databox =
-      typename intrp::Actions::InitializeInterpolationTarget<
-          Metavariables, InterpolationTargetTag>::AddOptionsToDataBox;
 };
 
 struct Metavariables {
@@ -54,7 +53,6 @@ struct Metavariables {
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
   using temporal_id = ::Tags::TimeId;
-  static constexpr size_t volume_dim = 3;
 
   using component_list = tmpl::list<
       mock_interpolation_target<Metavariables, InterpolationTargetA>>;
@@ -71,10 +69,10 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
   const auto domain_creator =
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
 
-  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {domain_creator.create_domain()}};
   runner.set_phase(Metavariables::Phase::Initialization);
-  ActionTesting::emplace_component<component>(&runner, 0,
-                                              domain_creator.create_domain());
+  ActionTesting::emplace_component<component>(&runner, 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   runner.set_phase(Metavariables::Phase::Testing);
 
@@ -86,9 +84,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
             runner, 0)
             .empty());
 
-  CHECK(ActionTesting::get_databox_tag<component,
-                                       ::Tags::Domain<3, Frame::Inertial>>(
-            runner, 0) == domain_creator.create_domain());
+  CHECK(Parallel::get<::Tags::Domain<3, Frame::Inertial>>(runner.cache()) ==
+        domain_creator.create_domain());
 
   const auto test_vars = db::item_type<
       ::Tags::Variables<tmpl::list<gr::Tags::Lapse<DataVector>>>>{};

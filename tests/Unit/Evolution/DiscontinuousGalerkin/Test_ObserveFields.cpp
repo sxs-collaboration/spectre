@@ -28,7 +28,6 @@
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
@@ -110,7 +109,6 @@ struct ElementComponent {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Metavariables::system::volume_dim>;
   using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
@@ -128,7 +126,6 @@ struct MockObserverComponent {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
@@ -140,8 +137,8 @@ struct Metavariables {
   using system = System;
   using component_list = tmpl::list<ElementComponent<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<
-      OptionTags::AnalyticSolution<typename System::solution_for_test>>;
+  using const_global_cache_tag_list =
+      tmpl::list<Tags::AnalyticSolution<typename System::solution_for_test>>;
   enum class Phase { Initialization, Testing, Exit };
 
   struct ObservationType {};
@@ -317,7 +314,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
       ActionTesting::MockRuntimeSystem<Metavariables<System>>;
   MockRuntimeSystem runner(
       tuples::TaggedTuple<
-          OptionTags::AnalyticSolution<typename System::solution_for_test>>{
+          Tags::AnalyticSolution<typename System::solution_for_test>>{
           std::move(analytic_solution)});
   ActionTesting::emplace_component<element_component>(make_not_null(&runner),
                                                       element_id);

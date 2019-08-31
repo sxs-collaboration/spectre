@@ -10,7 +10,6 @@
 #include "Domain/ElementIndex.hpp"
 #include "Elliptic/Actions/ComputeOperatorAction.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -52,7 +51,6 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndexType;
   using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<var_tag,
                         LinearSolver::Tags::OperatorAppliedTo<var_tag>>;

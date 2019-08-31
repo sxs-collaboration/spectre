@@ -47,7 +47,7 @@ namespace LinearSolver {
  * new \f$r^2\f$.
  * 4. `UpdateResidual` (on `ResidualMonitor`): Store the new \f$r^2\f$ and
  * broadcast the ratio of the new and old \f$r^2\f$, as well as a termination
- * flag if the `LinearSolver::OptionTags::ConvergenceCriteria` are met.
+ * flag if the `LinearSolver::Tags::ConvergenceCriteria` are met.
  * 5. `UpdateOperand` (on elements): Update \f$p\f$.
  *
  * \see Gmres for a linear solver that can invert nonsymmetric operators

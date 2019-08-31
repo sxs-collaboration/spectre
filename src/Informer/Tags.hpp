@@ -12,15 +12,6 @@
 enum class Verbosity;
 /// \endcond
 
-namespace Tags {
-/// \ingroup LoggingGroup
-/// \brief Tag for putting `::Verbosity` in a DataBox.
-struct Verbosity : db::SimpleTag {
-  static std::string name() noexcept { return "Verbosity"; }
-  using type = ::Verbosity;
-};
-}  // namespace Tags
-
 namespace OptionTags {
 /// \ingroup OptionTagsGroup
 /// \ingroup LoggingGroup
@@ -29,3 +20,17 @@ struct Verbosity {
   static constexpr OptionString help{"Verbosity"};
 };
 }  // namespace OptionTags
+
+namespace Tags {
+/// \ingroup LoggingGroup
+/// \brief Tag for putting `::Verbosity` in a DataBox.
+struct Verbosity : db::SimpleTag {
+  static std::string name() noexcept { return "Verbosity"; }
+  using type = ::Verbosity;
+  using option_tags = tmpl::list<OptionTags::Verbosity>;
+  static ::Verbosity create_from_options(
+      const ::Verbosity& verbosity) noexcept {
+    return verbosity;
+  }
+};
+}  // namespace Tags

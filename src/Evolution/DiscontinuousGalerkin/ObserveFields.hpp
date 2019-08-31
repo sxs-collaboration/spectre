@@ -211,7 +211,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
           element_name ](const auto tensor_tag_v, const auto& tensor,
                          const auto& local_cache) noexcept {
       const auto analytic_solution =
-          Parallel::get<OptionTags::AnalyticSolutionBase>(local_cache)
+          Parallel::get<Tags::AnalyticSolutionBase>(local_cache)
               .variables(inertial_coordinates, time.value(),
                          tmpl::list<AnalyticSolutionTensors...>{});
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;

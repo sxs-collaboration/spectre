@@ -39,6 +39,7 @@
 
 namespace LinearSolverAlgorithmTestHelpers {
 
+namespace OptionTags {
 struct LinearOperator {
   static constexpr OptionString help = "The linear operator A to invert.";
   using type = DenseMatrix<double>;
@@ -54,6 +55,51 @@ struct InitialGuess {
 struct ExpectedResult {
   static constexpr OptionString help = "The solution x in the equation Ax=b";
   using type = DenseVector<double>;
+};
+}  // namespace OptionTags
+
+struct LinearOperator : db::SimpleTag {
+  static std::string name() noexcept { return "LinearOperator"; }
+  using type = DenseMatrix<double>;
+  using option_tags = tmpl::list<OptionTags::LinearOperator>;
+
+  static DenseMatrix<double> create_from_options(
+      const DenseMatrix<double>& linear_operator) noexcept {
+    return linear_operator;
+  }
+};
+
+struct Source : db::SimpleTag {
+  static std::string name() noexcept { return "Source"; }
+  using type = DenseVector<double>;
+  using option_tags = tmpl::list<OptionTags::Source>;
+
+  static DenseVector<double> create_from_options(
+      const DenseVector<double>& source) noexcept {
+    return source;
+  }
+};
+
+struct InitialGuess : db::SimpleTag {
+  static std::string name() noexcept { return "InitialGuess"; }
+  using type = DenseVector<double>;
+  using option_tags = tmpl::list<OptionTags::InitialGuess>;
+
+  static DenseVector<double> create_from_options(
+      const DenseVector<double>& initial_guess) noexcept {
+    return initial_guess;
+  }
+};
+
+struct ExpectedResult : db::SimpleTag {
+  static std::string name() noexcept { return "ExpectedResult"; }
+  using type = DenseVector<double>;
+  using option_tags = tmpl::list<OptionTags::ExpectedResult>;
+
+  static DenseVector<double> create_from_options(
+      const DenseVector<double>& expected_result) noexcept {
+    return expected_result;
+  }
 };
 
 // The vector `x` we want to solve for
@@ -212,7 +258,7 @@ struct CleanOutput {
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const auto& reductions_file_name =
-        get<observers::OptionTags::ReductionFileName>(cache) + ".h5";
+        get<observers::Tags::ReductionFileName>(cache) + ".h5";
     if (file_system::check_if_file_exists(reductions_file_name)) {
       file_system::rm(reductions_file_name, true);
     } else if (CheckExpectedOutput) {

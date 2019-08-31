@@ -100,7 +100,7 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - `::Tags::Domain<VolumeDim, Frame>`
+///   - `::Tags::Domain<3, Frame>`
 ///   - `::ah::Tags::FastFlow`
 ///   - `StrahlkorperTags::CartesianCoords<Frame>`
 ///   - `::Tags::Variables<typename

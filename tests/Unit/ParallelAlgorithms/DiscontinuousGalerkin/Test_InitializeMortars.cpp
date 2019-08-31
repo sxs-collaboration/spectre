@@ -27,7 +27,6 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
@@ -53,14 +52,13 @@ struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using const_global_cache_tag_list =
+      tmpl::list<::Tags::Domain<Dim, Frame::Inertial>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<
               ActionTesting::InitializeDataBox<tmpl::list<
-                  ::Tags::Domain<Dim, Frame::Inertial>,
                   ::Tags::InitialExtents<Dim>, ::Tags::Next<TemporalId>>>,
               dg::Actions::InitializeDomain<Dim>,
               Initialization::Actions::AddComputeTags<tmpl::list<
@@ -130,10 +128,10 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
 
     using metavariables = Metavariables<1>;
     using element_array = ElementArray<1, metavariables>;
-    ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
+    ActionTesting::MockRuntimeSystem<metavariables> runner{
+        {domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id,
-        {domain_creator.create_domain(), domain_creator.initial_extents(), 0});
+        &runner, element_id, {domain_creator.initial_extents(), 0});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
@@ -188,10 +186,10 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
 
     using metavariables = Metavariables<2>;
     using element_array = ElementArray<2, metavariables>;
-    ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
+    ActionTesting::MockRuntimeSystem<metavariables> runner{
+        {domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id,
-        {domain_creator.create_domain(), domain_creator.initial_extents(), 0});
+        &runner, element_id, {domain_creator.initial_extents(), 0});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
@@ -268,10 +266,10 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
 
     using metavariables = Metavariables<3>;
     using element_array = ElementArray<3, metavariables>;
-    ActionTesting::MockRuntimeSystem<metavariables> runner{{}};
+    ActionTesting::MockRuntimeSystem<metavariables> runner{
+        {domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
-        &runner, element_id,
-        {domain_creator.create_domain(), domain_creator.initial_extents(), 0});
+        &runner, element_id, {domain_creator.initial_extents(), 0});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     ActionTesting::next_action<element_array>(make_not_null(&runner),

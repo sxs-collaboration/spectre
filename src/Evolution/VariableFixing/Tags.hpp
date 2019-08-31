@@ -31,3 +31,20 @@ struct VariableFixer {
   using group = VariableFixingGroup;
 };
 }  // namespace OptionTags
+
+namespace Tags {
+/*!
+ * \brief The global cache tag for the variable fixer
+ */
+template <typename VariableFixerType>
+struct VariableFixer : db::SimpleTag {
+  static std::string name() noexcept { return "VariableFixer"; }
+  using type = VariableFixerType;
+  using option_tags =
+      tmpl::list<::OptionTags::VariableFixer<VariableFixerType>>;
+  static VariableFixerType create_from_options(
+      const VariableFixerType& variable_fixer) noexcept {
+    return variable_fixer;
+  }
+};
+}  // namespace Tags

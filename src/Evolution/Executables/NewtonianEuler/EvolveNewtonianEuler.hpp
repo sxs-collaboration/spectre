@@ -92,7 +92,7 @@ struct EvolutionMetavars {
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = false;
 
-  using analytic_solution_tag = OptionTags::AnalyticSolution<analytic_solution>;
+  using analytic_solution_tag = Tags::AnalyticSolution<analytic_solution>;
   using boundary_condition_tag = analytic_solution_tag;
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
@@ -101,9 +101,9 @@ struct EvolutionMetavars {
       typename analytic_solution_tag::type::equation_of_state_type>;
 
   using normal_dot_numerical_flux =
-      OptionTags::NumericalFlux<dg::NumericalFluxes::Hll<system>>;
+      Tags::NumericalFlux<dg::NumericalFluxes::Hll<system>>;
 
-  using limiter = OptionTags::Limiter<Limiters::Minmod<
+  using limiter = Tags::Limiter<Limiters::Minmod<
       Dim, tmpl::list<NewtonianEuler::Tags::MassDensityCons<DataVector>,
                       NewtonianEuler::Tags::MomentumDensity<DataVector, Dim,
                                                             Frame::Inertial>,
@@ -214,9 +214,9 @@ struct EvolutionMetavars {
 
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag,
-                 OptionTags::TypedTimeStepper<tmpl::conditional_t<
+                 Tags::TimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
-                 OptionTags::EventsAndTriggers<events, triggers>>;
+                 Tags::EventsAndTriggers<events, triggers>>;
 
   static constexpr OptionString help{
       "Evolve the Newtonian Euler system in conservative form.\n\n"};
