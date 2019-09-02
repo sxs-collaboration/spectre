@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Math.hpp"
@@ -35,31 +36,37 @@ tuples::TaggedTuple<Tags::Field> Moustache<Dim>::variables(
 }
 
 template <>
-tuples::TaggedTuple<Tags::AuxiliaryField<1>> Moustache<1>::variables(
+tuples::TaggedTuple<
+    ::Tags::deriv<Tags::Field, tmpl::size_t<1>, Frame::Inertial>>
+Moustache<1>::variables(
     const tnsr::I<DataVector, 1>& x,
-    tmpl::list<Tags::AuxiliaryField<1>> /*meta*/) const noexcept {
+    tmpl::list<::Tags::deriv<Tags::Field, tmpl::size_t<1>,
+                             Frame::Inertial>> /*meta*/) const noexcept {
   const auto& x_d = get<0>(x);
-  tnsr::I<DataVector, 1> auxiliary_field{
+  tnsr::i<DataVector, 1> field_gradient{
       abs(x_d - 0.5) * evaluate_polynomial<double>({0.25, -3., 7.5, -5.}, x_d)};
-  return {std::move(auxiliary_field)};
+  return {std::move(field_gradient)};
 }
 
 template <>
-tuples::TaggedTuple<Tags::AuxiliaryField<2>> Moustache<2>::variables(
+tuples::TaggedTuple<
+    ::Tags::deriv<Tags::Field, tmpl::size_t<2>, Frame::Inertial>>
+Moustache<2>::variables(
     const tnsr::I<DataVector, 2>& x,
-    tmpl::list<Tags::AuxiliaryField<2>> /*meta*/) const noexcept {
-  auto auxiliary_field = make_with_value<tnsr::I<DataVector, 2>>(x, 0.);
+    tmpl::list<::Tags::deriv<Tags::Field, tmpl::size_t<2>,
+                             Frame::Inertial>> /*meta*/) const noexcept {
+  auto field_gradient = make_with_value<tnsr::i<DataVector, 2>>(x, 0.);
   auto norm_square = square(get<0>(x) - 0.5) + square(get<1>(x) - 0.5);
   for (size_t d = 0; d < 2; d++) {
     const auto& x_d = x.get(d);
     const auto& x_p = x.get((d + 1) % 2);
-    auxiliary_field.get(d) =
+    field_gradient.get(d) =
         sqrt(norm_square) * x_p * (1. - x_p) *
         (evaluate_polynomial<double>({0.25, -3.5, 7.5, -5.}, x_d) +
          evaluate_polynomial<double>({0.25, -1., 1.}, x_p) + 2. * x_d * x_p -
          2. * x_d * square(x_p));
   }
-  return {std::move(auxiliary_field)};
+  return {std::move(field_gradient)};
 }
 
 template <>

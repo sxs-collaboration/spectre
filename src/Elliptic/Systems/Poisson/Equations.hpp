@@ -57,7 +57,7 @@ namespace Poisson {
 template <size_t Dim>
 void euclidean_fluxes(
     gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> flux_for_field,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept;
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept;
 
 /*!
  * \brief Compute the fluxes \f$F^i_j=\delta^i_j u(x)\f$ for the auxiliary
@@ -66,7 +66,7 @@ void euclidean_fluxes(
  * \see Poisson::FirstOrderSystem
  */
 template <size_t Dim>
-void auxiliary_fluxes(gsl::not_null<tnsr::IJ<DataVector, Dim, Frame::Inertial>*>
+void auxiliary_fluxes(gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
                           flux_for_gradient,
                       const Scalar<DataVector>& field) noexcept;
 
@@ -82,12 +82,12 @@ struct EuclideanFluxes {
   static void apply(
       const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
           flux_for_field,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>&
+      const tnsr::i<DataVector, Dim, Frame::Inertial>&
           field_gradient) noexcept {
     euclidean_fluxes(flux_for_field, field_gradient);
   }
   static void apply(
-      const gsl::not_null<tnsr::IJ<DataVector, Dim, Frame::Inertial>*>
+      const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
           flux_for_gradient,
       const Scalar<DataVector>& field) noexcept {
     auxiliary_fluxes(flux_for_gradient, field);
@@ -163,7 +163,8 @@ struct FirstOrderInternalPenaltyFlux {
   using argument_tags =
       tmpl::list<LinearSolver::Tags::Operand<Tags::Field>,
                  ::Tags::div<::Tags::Flux<
-                     LinearSolver::Tags::Operand<Tags::AuxiliaryField<Dim>>,
+                     LinearSolver::Tags::Operand<::Tags::deriv<
+                         Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>,
                      tmpl::size_t<Dim>, Frame::Inertial>>,
                  ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
 
@@ -178,7 +179,7 @@ struct FirstOrderInternalPenaltyFlux {
   // types in `argument_tags`.
   void package_data(gsl::not_null<Variables<package_tags>*> packaged_data,
                     const Scalar<DataVector>& field,
-                    const tnsr::I<DataVector, Dim, Frame::Inertial>& grad_field,
+                    const tnsr::i<DataVector, Dim, Frame::Inertial>& grad_field,
                     const tnsr::i<DataVector, Dim, Frame::Inertial>&
                         interface_unit_normal) const noexcept;
 
@@ -188,7 +189,7 @@ struct FirstOrderInternalPenaltyFlux {
   // the packaged types for the exterior side.
   void operator()(
       gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
           numerical_flux_for_auxiliary_field,
       const Scalar<DataVector>& field_interior,
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
@@ -215,7 +216,7 @@ struct FirstOrderInternalPenaltyFlux {
   // normalized unit covector to the element face.
   void compute_dirichlet_boundary(
       gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
           numerical_flux_for_auxiliary_field,
       const Scalar<DataVector>& dirichlet_field,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)

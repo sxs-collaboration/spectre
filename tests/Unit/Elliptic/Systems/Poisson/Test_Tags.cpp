@@ -9,5 +9,4 @@
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Tags", "[Unit][Elliptic]") {
   CHECK(db::tag_name<Poisson::Tags::Field>() == "Field");
-  CHECK(db::tag_name<Poisson::Tags::AuxiliaryField<1>>() == "AuxiliaryField");
 }

@@ -8,7 +8,8 @@ def field(x, wave_numbers):
     x, wave_numbers = np.asarray(x), np.asarray(wave_numbers)
     return np.prod(np.sin(wave_numbers * x))
 
-def auxiliary_field(x, wave_numbers):
+
+def field_gradient(x, wave_numbers):
     x, wave_numbers = np.asarray(x), np.asarray(wave_numbers)
     try:
         dim = len(x)
@@ -17,6 +18,7 @@ def auxiliary_field(x, wave_numbers):
     return wave_numbers * np.cos(wave_numbers * x) * \
         np.array([field(np.delete(x, d), np.delete(wave_numbers, d))
                   for d in range(dim)])
+
 
 def source(x, wave_numbers):
     x, wave_numbers = np.asarray(x), np.asarray(wave_numbers)

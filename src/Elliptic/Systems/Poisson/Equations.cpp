@@ -26,14 +26,14 @@ template <size_t Dim>
 void euclidean_fluxes(
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
         flux_for_field,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept {
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept {
   for (size_t d = 0; d < Dim; d++) {
     flux_for_field->get(d) = field_gradient.get(d);
   }
 }
 
 template <size_t Dim>
-void auxiliary_fluxes(gsl::not_null<tnsr::IJ<DataVector, Dim, Frame::Inertial>*>
+void auxiliary_fluxes(gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
                           flux_for_gradient,
                       const Scalar<DataVector>& field) noexcept {
   std::fill(flux_for_gradient->begin(), flux_for_gradient->end(), 0.);
@@ -46,7 +46,7 @@ template <size_t Dim>
 void FirstOrderInternalPenaltyFlux<Dim>::package_data(
     const gsl::not_null<Variables<package_tags>*> packaged_data,
     const Scalar<DataVector>& field,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& grad_field,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& grad_field,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
     const noexcept {
   get<LinearSolver::Tags::Operand<Tags::Field>>(*packaged_data) = field;
@@ -67,7 +67,7 @@ void FirstOrderInternalPenaltyFlux<Dim>::package_data(
 template <size_t Dim>
 void FirstOrderInternalPenaltyFlux<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
         numerical_flux_for_auxiliary_field,
     const Scalar<DataVector>& field_interior,
     const tnsr::i<DataVector, Dim, Frame::Inertial>&
@@ -98,7 +98,7 @@ void FirstOrderInternalPenaltyFlux<Dim>::operator()(
 template <size_t Dim>
 void FirstOrderInternalPenaltyFlux<Dim>::compute_dirichlet_boundary(
     const gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
         numerical_flux_for_auxiliary_field,
     const Scalar<DataVector>& dirichlet_field,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
@@ -124,9 +124,9 @@ void FirstOrderInternalPenaltyFlux<Dim>::compute_dirichlet_boundary(
   template class Poisson::FirstOrderInternalPenaltyFlux<DIM(data)>;          \
   template void Poisson::euclidean_fluxes<DIM(data)>(                        \
       const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>, \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&) noexcept;      \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&) noexcept;      \
   template void Poisson::auxiliary_fluxes<DIM(data)>(                        \
-      gsl::not_null<tnsr::IJ<DataVector, DIM(data), Frame::Inertial>*>,      \
+      gsl::not_null<tnsr::Ij<DataVector, DIM(data), Frame::Inertial>*>,      \
       const Scalar<DataVector>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

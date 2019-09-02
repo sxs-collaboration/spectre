@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Elliptic/Systems/Poisson/Equations.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -82,7 +83,8 @@ template <size_t Dim>
 struct FirstOrderSystem {
  private:
   using field = Tags::Field;
-  using field_gradient = Tags::AuxiliaryField<Dim>;
+  using field_gradient =
+      ::Tags::deriv<field, tmpl::size_t<Dim>, Frame::Inertial>;
 
  public:
   static constexpr size_t volume_dim = Dim;

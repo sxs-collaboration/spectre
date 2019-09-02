@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"     // IWYU pragma: keep
 #include "Elliptic/Systems/Poisson/Tags.hpp"    // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -66,8 +67,10 @@ class Moustache {
       -> tuples::TaggedTuple<Tags::Field>;
 
   auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-                 tmpl::list<Tags::AuxiliaryField<Dim>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<Tags::AuxiliaryField<Dim>>;
+                 tmpl::list<::Tags::deriv<Tags::Field, tmpl::size_t<Dim>,
+                                          Frame::Inertial>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<
+          ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
 
   auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
                  tmpl::list<::Tags::FixedSource<Tags::Field>> /*meta*/) const

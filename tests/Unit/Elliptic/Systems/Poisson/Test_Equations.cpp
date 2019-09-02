@@ -64,7 +64,8 @@ void test_equations(const DataVector& used_for_size) {
 template <size_t Dim>
 void test_computers(const DataVector& used_for_size) {
   using field_tag = Poisson::Tags::Field;
-  using auxiliary_field_tag = Poisson::Tags::AuxiliaryField<Dim>;
+  using auxiliary_field_tag =
+      ::Tags::deriv<field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
   using field_flux_tag =
       ::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
   using auxiliary_flux_tag =
@@ -78,9 +79,9 @@ void test_computers(const DataVector& used_for_size) {
         db::create<db::AddSimpleTags<field_tag, auxiliary_field_tag,
                                      field_flux_tag, auxiliary_flux_tag>>(
             Scalar<DataVector>{num_points, 2.},
-            tnsr::I<DataVector, Dim>{num_points, 3.},
+            tnsr::i<DataVector, Dim>{num_points, 3.},
             tnsr::I<DataVector, Dim>{num_points, 0.},
-            tnsr::IJ<DataVector, Dim>{num_points, 0.});
+            tnsr::Ij<DataVector, Dim>{num_points, 0.});
 
     const Poisson::EuclideanFluxes<Dim> fluxes_computer{};
     using argument_tags = typename Poisson::EuclideanFluxes<Dim>::argument_tags;
@@ -94,7 +95,7 @@ void test_computers(const DataVector& used_for_size) {
 
     db::mutate_apply<tmpl::list<auxiliary_flux_tag>, argument_tags>(
         fluxes_computer, make_not_null(&box), get<field_tag>(box));
-    auto expected_auxiliary_flux = tnsr::IJ<DataVector, Dim>{num_points, 0.};
+    auto expected_auxiliary_flux = tnsr::Ij<DataVector, Dim>{num_points, 0.};
     Poisson::auxiliary_fluxes(make_not_null(&expected_auxiliary_flux),
                               get<field_tag>(box));
     CHECK(get<auxiliary_flux_tag>(box) == expected_auxiliary_flux);
@@ -143,7 +144,8 @@ template <size_t Dim, typename DbTagsList>
 void test_first_order_internal_penalty_flux(
     const db::DataBox<DbTagsList>& domain_box) {
   using field_tag = Poisson::Tags::Field;
-  using auxiliary_field_tag = Poisson::Tags::AuxiliaryField<Dim>;
+  using auxiliary_field_tag =
+      ::Tags::deriv<field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
 
   const auto num_points =
       get<Tags::Mesh<Dim>>(domain_box).number_of_grid_points();
@@ -174,7 +176,7 @@ void test_first_order_internal_penalty_flux(
 
   Poisson::FirstOrderInternalPenaltyFlux<Dim> flux_computer(10.);
   Scalar<DataVector> normal_dot_numerical_flux_for_field(num_points, 0.0);
-  tnsr::I<DataVector, Dim, Frame::Inertial>
+  tnsr::i<DataVector, Dim, Frame::Inertial>
       normal_dot_numerical_flux_for_aux_field(num_points, 0.0);
 
   tnsr::i<DataVector, Dim, Frame::Inertial> normal_times_field(num_points, 0.0);
@@ -210,7 +212,7 @@ void test_first_order_internal_penalty_flux(
   // Manufacture different data for the exterior
   Scalar<DataVector> ext_field(num_points, 0.0);
   get(ext_field) += get<0>(inertial_coords);
-  tnsr::I<DataVector, Dim, Frame::Inertial> ext_grad_field(num_points, 0.0);
+  tnsr::i<DataVector, Dim, Frame::Inertial> ext_grad_field(num_points, 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     ext_grad_field.get(d) = get<auxiliary_field_tag>(field_variables).get(d) +
                             inertial_coords.get(d);
@@ -230,7 +232,7 @@ void test_first_order_internal_penalty_flux(
 
     Scalar<DataVector> reversed_normal_dot_numerical_flux_for_field(num_points,
                                                                     0.0);
-    tnsr::I<DataVector, Dim, Frame::Inertial>
+    tnsr::i<DataVector, Dim, Frame::Inertial>
         reversed_normal_dot_numerical_flux_for_aux_field(num_points, 0.0);
     apply_numerical_flux(
         flux_computer, packaged_data_ext, packaged_data_int,
@@ -260,7 +262,7 @@ void test_first_order_internal_penalty_flux(
 
     Scalar<DataVector> expected_normal_dot_numerical_flux_for_field(num_points,
                                                                     0.0);
-    tnsr::I<DataVector, Dim, Frame::Inertial>
+    tnsr::i<DataVector, Dim, Frame::Inertial>
         expected_normal_dot_numerical_flux_for_aux_field(num_points, 0.0);
     get(expected_normal_dot_numerical_flux_for_field) =
         -10. * (get(get<field_tag>(field_variables)) - get(ext_field));
