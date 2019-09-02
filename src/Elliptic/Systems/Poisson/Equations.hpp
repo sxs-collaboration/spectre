@@ -52,11 +52,22 @@ namespace Poisson {
 
 /*!
  * \brief Compute the fluxes \f$F^i=\partial_i u(x)\f$ for the Poisson
- * equation on a flat metric in Cartesian coordinates.
+ * equation on a flat spatial metric in Cartesian coordinates.
  */
 template <size_t Dim>
 void euclidean_fluxes(
     gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> flux_for_field,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept;
+
+/*!
+ * \brief Compute the fluxes \f$F^i=\sqrt{\gamma}\gamma^{ij}\partial_j u(x)\f$
+ * for the curved-space Poisson equation on a spatial metric \f$\gamma_{ij}\f$.
+ */
+template <size_t Dim>
+void noneuclidean_fluxes(
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> flux_for_field,
+    const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+    const Scalar<DataVector>& det_spatial_metric,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept;
 
 /*!

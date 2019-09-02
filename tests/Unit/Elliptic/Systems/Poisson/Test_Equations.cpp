@@ -55,6 +55,9 @@ void test_equations(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(&Poisson::euclidean_fluxes<Dim>,
                                     "Equations", {"euclidean_fluxes"},
                                     {{{0., 1.}}}, used_for_size);
+  pypp::check_with_random_values<1>(&Poisson::noneuclidean_fluxes<Dim>,
+                                    "Equations", {"noneuclidean_fluxes"},
+                                    {{{0., 1.}}}, used_for_size);
   pypp::check_with_random_values<1>(
       &Poisson::auxiliary_fluxes<Dim>, "Equations",
       {MakeString{} << "auxiliary_fluxes_" << Dim << "d"}, {{{0., 1.}}},
