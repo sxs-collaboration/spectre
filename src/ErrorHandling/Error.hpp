@@ -10,6 +10,7 @@
 #include <string>
 
 #include "ErrorHandling/AbortWithErrorMessage.hpp"
+#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Parallel/Abort.hpp"
 #include "Utilities/Literals.hpp"
 
@@ -34,6 +35,7 @@
 // code generation).
 #define ERROR(m)                                                            \
   do {                                                                      \
+    disable_floating_point_exceptions();                                    \
     std::ostringstream avoid_name_collisions_ERROR;                         \
     /* clang-tidy: macro arg in parentheses */                              \
     avoid_name_collisions_ERROR << m; /* NOLINT */                          \

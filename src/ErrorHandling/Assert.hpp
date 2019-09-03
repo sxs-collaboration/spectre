@@ -10,6 +10,7 @@
 #include <string>
 
 #include "ErrorHandling/AbortWithErrorMessage.hpp"
+#include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Parallel/Abort.hpp"
 #include "Utilities/Literals.hpp"
 
@@ -37,6 +38,7 @@
 #define ASSERT(a, m)                                                          \
   do {                                                                        \
     if (!(a)) {                                                               \
+      disable_floating_point_exceptions();                                    \
       std::ostringstream avoid_name_collisions_ASSERT;                        \
       /* clang-tidy: macro arg in parentheses */                              \
       avoid_name_collisions_ASSERT << m; /* NOLINT */                         \
@@ -50,10 +52,12 @@
   do {                                                 \
     if (false) {                                       \
       static_cast<void>(a);                            \
+      disable_floating_point_exceptions();             \
       std::ostringstream avoid_name_collisions_ASSERT; \
       /* clang-tidy: macro arg in parentheses */       \
-      avoid_name_collisions_ASSERT << m;  /* NOLINT */ \
+      avoid_name_collisions_ASSERT << m; /* NOLINT */  \
       static_cast<void>(avoid_name_collisions_ASSERT); \
+      enable_floating_point_exceptions();              \
     }                                                  \
   } while (false)
 #endif
