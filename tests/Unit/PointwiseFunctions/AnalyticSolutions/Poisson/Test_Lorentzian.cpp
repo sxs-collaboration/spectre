@@ -24,7 +24,9 @@ template <size_t Dim>
 struct LorentzianProxy : Poisson::Solutions::Lorentzian<Dim> {
   using Poisson::Solutions::Lorentzian<Dim>::Lorentzian;
 
-  using field_tags = tmpl::list<Poisson::Tags::Field>;
+  using field_tags = tmpl::list<
+      Poisson::Tags::Field,
+      ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
   using source_tags = tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
@@ -41,9 +43,13 @@ struct LorentzianProxy : Poisson::Solutions::Lorentzian<Dim> {
 template <size_t Dim>
 void test_solution() {
   const LorentzianProxy<Dim> solution{};
-  pypp::check_with_random_values<1, tmpl::list<Poisson::Tags::Field>>(
-      &LorentzianProxy<Dim>::field_variables, solution, "Lorentzian", {"field"},
-      {{{-5., 5.}}}, std::make_tuple(), DataVector(5));
+  pypp::check_with_random_values<
+      1, tmpl::list<Poisson::Tags::Field,
+                    ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>,
+                                  Frame::Inertial>>>(
+      &LorentzianProxy<Dim>::field_variables, solution, "Lorentzian",
+      {"field", "field_gradient"}, {{{-5., 5.}}}, std::make_tuple(),
+      DataVector(5));
   pypp::check_with_random_values<
       1, tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>>(
       &LorentzianProxy<Dim>::source_variables, solution, "Lorentzian",
