@@ -11,6 +11,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeArray.hpp"  // IWYU pragma: keep
@@ -86,7 +87,7 @@ namespace Solutions {
  * \f$\epsilon \cos{z}\f$.
  */
 template <size_t Dim>
-class IsentropicVortex {
+class IsentropicVortex : public MarkAsAnalyticSolution {
   template <typename DataType>
   struct IntermediateVariables;
 

@@ -162,7 +162,7 @@ struct ImposeDirichletBoundaryConditions {
 
     static_assert(
         system::is_in_flux_conservative_form or
-            cpp17::is_same_v<typename Metavariables::analytic_solution_tag,
+            cpp17::is_same_v<typename Metavariables::initial_data_tag,
                              typename Metavariables::boundary_condition_tag>,
         "Only analytic boundary conditions, or dirichlet boundary conditions "
         "for conservative systems are implemented");
@@ -221,7 +221,7 @@ struct ImposeDirichletBoundaryConditions {
     static_assert(
         system::is_in_flux_conservative_form and
             system::has_primitive_and_conservative_vars and
-            cpp17::is_same_v<typename Metavariables::analytic_solution_tag,
+            cpp17::is_same_v<typename Metavariables::initial_data_tag,
                              typename Metavariables::boundary_condition_tag>,
         "Only analytic boundary conditions, or dirichlet boundary conditions "
         "for conservative systems are implemented");

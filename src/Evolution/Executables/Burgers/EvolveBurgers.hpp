@@ -78,9 +78,9 @@ struct EvolutionMetavars {
   using system = Burgers::System;
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = false;
-  using analytic_solution_tag =
+  using initial_data_tag =
       Tags::AnalyticSolution<Burgers::Solutions::Step>;
-  using boundary_condition_tag = analytic_solution_tag;
+  using boundary_condition_tag = initial_data_tag;
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
   using limiter =
@@ -96,7 +96,7 @@ struct EvolutionMetavars {
   using triggers = Triggers::time_triggers;
 
   using const_global_cache_tag_list =
-      tmpl::list<analytic_solution_tag,
+      tmpl::list<initial_data_tag,
                  Tags::TimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
                  Tags::EventsAndTriggers<events, triggers>>;

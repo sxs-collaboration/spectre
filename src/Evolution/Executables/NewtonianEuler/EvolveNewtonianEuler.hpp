@@ -83,22 +83,22 @@ class CProxy_ConstGlobalCache;
 template <size_t Dim>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
+  using initial_data = NewtonianEuler::Solutions::RiemannProblem<Dim>;
 
-  using analytic_solution = NewtonianEuler::Solutions::RiemannProblem<Dim>;
+  using equation_of_state_type = typename initial_data::equation_of_state_type;
 
-  using system = NewtonianEuler::System<
-      Dim, typename analytic_solution::equation_of_state_type>;
+  using system = NewtonianEuler::System<Dim, equation_of_state_type>;
 
   using temporal_id = Tags::TimeId;
   static constexpr bool local_time_stepping = false;
 
-  using analytic_solution_tag = Tags::AnalyticSolution<analytic_solution>;
-  using boundary_condition_tag = analytic_solution_tag;
+  using initial_data_tag = Tags::AnalyticSolution<initial_data>;
+  using boundary_condition_tag = initial_data_tag;
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
 
-  using equation_of_state_tag = hydro::Tags::EquationOfState<
-      typename analytic_solution_tag::type::equation_of_state_type>;
+  using equation_of_state_tag =
+      hydro::Tags::EquationOfState<equation_of_state_type>;
 
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<dg::NumericalFluxes::Hll<system>>;
@@ -213,7 +213,7 @@ struct EvolutionMetavars {
                       compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
 
   using const_global_cache_tag_list =
-      tmpl::list<analytic_solution_tag,
+      tmpl::list<initial_data_tag,
                  Tags::TimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
                  Tags::EventsAndTriggers<events, triggers>>;

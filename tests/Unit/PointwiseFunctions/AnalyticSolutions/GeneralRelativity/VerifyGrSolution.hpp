@@ -22,6 +22,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
+#include "Evolution/TypeTraits.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
@@ -53,6 +54,8 @@ void verify_time_independent_einstein_solution(
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& upper_bound,
     const double error_tolerance) noexcept {
+  static_assert(evolution::is_analytic_solution_v<Solution>,
+                "Solution was not derived from AnalyticSolution");
   // Shorter names for tags.
   using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
   using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>;

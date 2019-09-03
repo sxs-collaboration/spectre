@@ -12,6 +12,12 @@
  */
 
 /*!
+ * \defgroup AnalyticDataGroup Analytic Data
+ * \brief Analytic data used to specify (for example) initial data to the
+ * equations implemented in \ref EvolutionSystemsGroup.
+ */
+
+/*!
  * \defgroup AnalyticSolutionsGroup Analytic Solutions
  * \brief Analytic solutions to the equations implemented in \ref
  * EvolutionSystemsGroup and \ref EllipticSystemsGroup.

@@ -8,6 +8,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/IdealFluid.hpp"  // IWYU pragma: keep
@@ -56,10 +57,9 @@ namespace AnalyticData {
  * The magnetic field in the disk should rotate by about 90 degrees by t = 0.4.
  *
  */
-class MagneticRotor {
+class MagneticRotor : public MarkAsAnalyticData {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
-  using background_spacetime_type = gr::Solutions::Minkowski<3>;
 
   /// Radius of the rotor.
   struct RotorRadius {
