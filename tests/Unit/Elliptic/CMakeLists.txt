@@ -9,6 +9,7 @@ set(LIBRARY "Test_Elliptic")
 
 set(LIBRARY_SOURCES
   Test_FirstOrderComputeTags.cpp
+  Test_FirstOrderOperator.cpp
   Test_Tags.cpp
   )
 
