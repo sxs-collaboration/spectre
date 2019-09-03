@@ -10,11 +10,20 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/CoordinateMaps/Affine.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/Mesh.hpp"
+#include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/Moustache.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/PointwiseFunctions/AnalyticSolutions/FirstOrderEllipticSolutionsTestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestCreation.hpp"
@@ -69,6 +78,34 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Moustache",
                   "[PointwiseFunctions][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/Poisson"};
-  test_solution<1>();
-  test_solution<2>();
+
+  using AffineMap = domain::CoordinateMaps::Affine;
+  {
+    INFO("1D");
+    test_solution<1>();
+
+    using system = Poisson::FirstOrderSystem<1>;
+    const Poisson::Solutions::Moustache<1> solution{};
+    const typename system::fluxes fluxes_computer{};
+    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>
+        coord_map{{-1., 1., 0., 1.}};
+    FirstOrderEllipticSolutionsTestHelpers::
+        verify_solution_with_power_law_convergence<system>(
+            solution, fluxes_computer, coord_map, 3.e1, 2.5);
+  }
+  {
+    INFO("2D");
+    test_solution<2>();
+
+    using system = Poisson::FirstOrderSystem<2>;
+    const Poisson::Solutions::Moustache<2> solution{};
+    const typename system::fluxes fluxes_computer{};
+    using AffineMap2D =
+        domain::CoordinateMaps::ProductOf2Maps<AffineMap, AffineMap>;
+    const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap2D>
+        coord_map{{{-1., 1., 0., 1.}, {-1., 1., 0., 1.}}};
+    FirstOrderEllipticSolutionsTestHelpers::
+        verify_solution_with_power_law_convergence<system>(
+            solution, fluxes_computer, coord_map, 5., 2.);
+  }
 }
