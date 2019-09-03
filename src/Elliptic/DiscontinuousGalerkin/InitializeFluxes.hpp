@@ -9,6 +9,10 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/FirstOrderComputeTags.hpp"
+#include "Elliptic/Tags.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/NormalDotFlux.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -30,45 +34,50 @@ namespace Actions {
 /*!
  * \brief Initialize DataBox tags related to discontinuous Galerkin fluxes
  *
- * With:
- * - `normal_dot_flux_tag` = `db::add_tag_prefix<Tags::NormalDotFlux,
- * variables_tag>`
- * - `interface<Tag>` =
- * `Tags::Interface<Tags::InternalDirections<volume_dim>, Tag>`
- * - `boundary<Tag>` =
- * `Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>, Tag>`
- *
  * Uses:
- * - Metavariables:
- *   - Items required by `flux_comm_types`
  * - System:
  *   - `volume_dim`
  *   - `variables_tag`
- * - DataBox:
- *   - `Tags::InternalDirections<volume_dim>`
- *   - `Tags::BoundaryDirectionsInterior<volume_dim>`
- *   - `interface<Tags::Mesh<volume_dim - 1>>`
- *   - `boundary<Tags::Mesh<volume_dim - 1>>`
- *
- * DataBox:
- * - Adds:
- *   - `interface<normal_dot_flux_tag>`
- *   - `boundary<normal_dot_flux_tag>`
+ *   - `fluxes`
  */
 template <typename Metavariables>
 struct InitializeFluxes {
-  static constexpr size_t volume_dim = Metavariables::system::volume_dim;
-  using normal_dot_flux_tag =
-      db::add_tag_prefix<::Tags::NormalDotFlux,
-                         typename Metavariables::system::variables_tag>;
+ private:
+  using system = typename Metavariables::system;
+  static constexpr size_t volume_dim = system::volume_dim;
+  using vars_tag = typename system::variables_tag;
+  using fluxes_tag =
+      db::add_tag_prefix<::Tags::Flux, vars_tag, tmpl::size_t<volume_dim>,
+                         Frame::Inertial>;
+  using div_fluxes_tag = db::add_tag_prefix<::Tags::div, fluxes_tag>;
 
-  template <typename Tag>
-  using interface_tag =
-      Tags::Interface<Tags::InternalDirections<volume_dim>, Tag>;
-  template <typename Tag>
-  using boundary_tag =
-      Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>, Tag>;
+  template <typename Directions>
+  using face_tags =
+      tmpl::list<::Tags::Slice<Directions, fluxes_tag>,
+                 ::Tags::Slice<Directions, div_fluxes_tag>,
+                 // For the strong first-order DG scheme we also need the
+                 // interface normal dotted into the fluxes
+                 ::Tags::InterfaceCompute<
+                     Directions, ::Tags::NormalDotFluxCompute<
+                                     vars_tag, volume_dim, Frame::Inertial>>>;
 
+  using fluxes_compute_tag =
+      elliptic::Tags::FirstOrderFluxesCompute<volume_dim, system>;
+
+  using exterior_tags = tmpl::list<
+      // On exterior (ghost) boundary faces we compute the fluxes from the
+      // data that is being set there to impose boundary conditions. Then, we
+      // compute their normal-dot-fluxes. The flux divergences are sliced from
+      // the volume.
+      ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<volume_dim>,
+                               fluxes_compute_tag>,
+      ::Tags::InterfaceCompute<
+          ::Tags::BoundaryDirectionsExterior<volume_dim>,
+          ::Tags::NormalDotFluxCompute<vars_tag, volume_dim, Frame::Inertial>>,
+      ::Tags::Slice<::Tags::BoundaryDirectionsExterior<volume_dim>,
+                    div_fluxes_tag>>;
+
+ public:
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
             typename ActionList, typename ParallelComponent>
   static auto apply(db::DataBox<DbTagsList>& box,
@@ -77,39 +86,14 @@ struct InitializeFluxes {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const auto& internal_directions =
-        db::get<Tags::InternalDirections<volume_dim>>(box);
-    const auto& boundary_directions =
-        db::get<Tags::BoundaryDirectionsInterior<volume_dim>>(box);
-
-    db::item_type<interface_tag<normal_dot_flux_tag>>
-        interface_normal_dot_fluxes{};
-    for (const auto& direction : internal_directions) {
-      const size_t interface_num_points =
-          db::get<interface_tag<Tags::Mesh<volume_dim - 1>>>(box)
-              .at(direction)
-              .number_of_grid_points();
-      interface_normal_dot_fluxes[direction].initialize(interface_num_points,
-                                                        0.);
-    }
-    db::item_type<boundary_tag<normal_dot_flux_tag>>
-        boundary_normal_dot_fluxes{};
-    for (const auto& direction : boundary_directions) {
-      const size_t interface_num_points =
-          db::get<boundary_tag<Tags::Mesh<volume_dim - 1>>>(box)
-              .at(direction)
-              .number_of_grid_points();
-      boundary_normal_dot_fluxes[direction].initialize(interface_num_points,
-                                                       0.);
-    }
-
+    using compute_tags = tmpl::flatten<
+        tmpl::list<face_tags<::Tags::InternalDirections<volume_dim>>,
+                   face_tags<::Tags::BoundaryDirectionsInterior<volume_dim>>,
+                   exterior_tags>>;
     return std::make_tuple(
-        ::Initialization::merge_into_databox<
-            InitializeFluxes,
-            db::AddSimpleTags<interface_tag<normal_dot_flux_tag>,
-                              boundary_tag<normal_dot_flux_tag>>>(
-            std::move(box), std::move(interface_normal_dot_fluxes),
-            std::move(boundary_normal_dot_fluxes)));
+        ::Initialization::merge_into_databox<InitializeFluxes,
+                                             db::AddSimpleTags<>, compute_tags>(
+            std::move(box)));
   }
 };
 }  // namespace Actions
