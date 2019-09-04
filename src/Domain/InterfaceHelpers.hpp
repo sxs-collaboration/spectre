@@ -11,36 +11,41 @@
 
 namespace InterfaceHelpers_detail {
 
-// Pull volume_tags from BaseComputeItem, defaulting to an empty list.
-template <typename BaseComputeItem, typename = cpp17::void_t<>>
-struct volume_tags {
+template <typename T, typename = cpp17::void_t<>>
+struct get_volume_tags_impl {
   using type = tmpl::list<>;
 };
-
-template <typename BaseComputeItem>
-struct volume_tags<BaseComputeItem,
-                   cpp17::void_t<typename BaseComputeItem::volume_tags>> {
-  using type = typename BaseComputeItem::volume_tags;
+template <typename T>
+struct get_volume_tags_impl<T, cpp17::void_t<typename T::volume_tags>> {
+  using type = typename T::volume_tags;
 };
 
-// Add an Interface wrapper to a tag if it is not listed as being
-// taken from the volume.
-template <typename DirectionsTag, typename Tag, typename VolumeTags>
-struct interface_compute_item_argument_tag {
+}  // namespace InterfaceHelpers_detail
+
+/// Retrieve `T::volume_tags`, defaulting to an empty list
+template <typename T>
+using get_volume_tags =
+    tmpl::type_from<InterfaceHelpers_detail::get_volume_tags_impl<T>>;
+
+namespace InterfaceHelpers_detail {
+
+template <typename Tag, typename DirectionsTag, typename VolumeTags>
+struct make_interface_tag_impl {
   using type = tmpl::conditional_t<tmpl::list_contains_v<VolumeTags, Tag>, Tag,
                                    ::Tags::Interface<DirectionsTag, Tag>>;
 };
 
-// Compute the argument tags for the interface version of a compute item.
-template <typename DirectionsTag, typename BaseComputeItem>
-using interface_compute_item_argument_tags = tmpl::transform<
-    typename BaseComputeItem::argument_tags,
-    interface_compute_item_argument_tag<
-        tmpl::pin<DirectionsTag>, tmpl::_1,
-        tmpl::pin<typename volume_tags<BaseComputeItem>::type>>>;
+// Retrieve the `argument_tags` from the `InterfaceInvokable` and wrap them in
+// `::Tags::Interface` if they are not listed in
+// `InterfaceInvokable::volume_tags`.
+template <typename InterfaceInvokable, typename DirectionsTag>
+using get_interface_argument_tags = tmpl::transform<
+    typename InterfaceInvokable::argument_tags,
+    make_interface_tag_impl<tmpl::_1, tmpl::pin<DirectionsTag>,
+                            tmpl::pin<get_volume_tags<InterfaceInvokable>>>>;
 
-// Pull the direction's entry from interface arguments, passing volume
-// arguments through unchanged.
+/// Pull the direction's entry from interface arguments, passing volume
+/// arguments through unchanged.
 template <bool IsVolumeTag>
 struct unmap_interface_args;
 

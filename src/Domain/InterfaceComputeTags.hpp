@@ -29,8 +29,7 @@ template <typename DirectionsTag, typename BaseComputeItem,
           typename... ArgumentTags>
 struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
                              tmpl::list<ArgumentTags...>> {
-  using volume_tags =
-      typename InterfaceHelpers_detail::volume_tags<BaseComputeItem>::type;
+  using volume_tags = get_volume_tags<BaseComputeItem>;
   static_assert(
       tmpl::size<tmpl::list_difference<
               volume_tags, typename BaseComputeItem::argument_tags>>::value ==
@@ -128,8 +127,7 @@ struct InterfaceCompute : Interface<DirectionsTag, Tag>,
   };
   using tag = Tag;
   using forwarded_argument_tags =
-      InterfaceHelpers_detail::interface_compute_item_argument_tags<
-          DirectionsTag, Tag>;
+      InterfaceHelpers_detail::get_interface_argument_tags<Tag, DirectionsTag>;
   using argument_tags =
       tmpl::push_front<forwarded_argument_tags, DirectionsTag>;
 
