@@ -95,7 +95,7 @@ template <typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
 template <typename Tag>
 using interface_compute_tag =
-    Tags::InterfaceComputeItem<Tags::InternalDirections<2>, Tag>;
+    Tags::InterfaceCompute<Tags::InternalDirections<2>, Tag>;
 
 using n_dot_f_tag = interface_tag<Tags::NormalDotFlux<Tags::Variables<
     tmpl::list<Tags::NormalDotFlux<Var>, Tags::NormalDotFlux<Var2>>>>>;

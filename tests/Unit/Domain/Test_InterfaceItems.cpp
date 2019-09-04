@@ -142,26 +142,25 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
           Tags::Interface<templated_directions, TestTags::Double>>,
       db::AddComputeTags<
           internal_directions,
-          Tags::InterfaceComputeItem<internal_directions, Tags::Direction<dim>>,
+          Tags::InterfaceCompute<internal_directions, Tags::Direction<dim>>,
           TestTags::Negate<TestTags::Int>,
-          Tags::InterfaceComputeItem<internal_directions, TestTags::AddThree>,
-          Tags::InterfaceComputeItem<internal_directions,
-                                     TestTags::Negate<TestTags::Double>>,
-          Tags::InterfaceComputeItem<internal_directions,
-                                     TestTags::ComplexComputeItem<dim>>,
-          Tags::InterfaceComputeItem<templated_directions,
-                                     Tags::Direction<dim>>,
-          Tags::InterfaceComputeItem<templated_directions,
-                                     TestTags::Negate<TestTags::Double>>,
+          Tags::InterfaceCompute<internal_directions, TestTags::AddThree>,
+          Tags::InterfaceCompute<internal_directions,
+                                 TestTags::Negate<TestTags::Double>>,
+          Tags::InterfaceCompute<internal_directions,
+                                 TestTags::ComplexComputeItem<dim>>,
+          Tags::InterfaceCompute<templated_directions, Tags::Direction<dim>>,
+          Tags::InterfaceCompute<templated_directions,
+                                 TestTags::Negate<TestTags::Double>>,
           boundary_directions_interior,
-          Tags::InterfaceComputeItem<boundary_directions_interior,
-                                     Tags::Direction<dim>>,
-          Tags::InterfaceComputeItem<boundary_directions_interior,
-                                     TestTags::AddThree>,
-          Tags::InterfaceComputeItem<boundary_directions_interior,
-                                     TestTags::Negate<TestTags::Double>>,
-          Tags::InterfaceComputeItem<boundary_directions_interior,
-                                     TestTags::ComplexComputeItem<dim>>,
+          Tags::InterfaceCompute<boundary_directions_interior,
+                                 Tags::Direction<dim>>,
+          Tags::InterfaceCompute<boundary_directions_interior,
+                                 TestTags::AddThree>,
+          Tags::InterfaceCompute<boundary_directions_interior,
+                                 TestTags::Negate<TestTags::Double>>,
+          Tags::InterfaceCompute<boundary_directions_interior,
+                                 TestTags::ComplexComputeItem<dim>>,
           boundary_directions_exterior>>(
       std::move(element), 5,
       std::unordered_map<Direction<dim>, double>{
@@ -178,17 +177,17 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems", "[Unit][Domain]") {
       std::unordered_map<Direction<dim>, double>{
           {Direction<dim>::upper_xi(), 4.5}});
 
-    CHECK(get<Tags::BoundaryDirectionsInterior<dim>>(box) ==
-          std::unordered_set<Direction<dim>>{Direction<dim>::lower_eta(),
-                                             Direction<dim>::upper_eta(),
-                                             Direction<dim>::lower_zeta()});
+  CHECK(get<Tags::BoundaryDirectionsInterior<dim>>(box) ==
+        std::unordered_set<Direction<dim>>{Direction<dim>::lower_eta(),
+                                           Direction<dim>::upper_eta(),
+                                           Direction<dim>::lower_zeta()});
 
-    CHECK((get<Tags::Interface<internal_directions, Tags::Direction<dim>>>(
-              box)) ==
-          (std::unordered_map<Direction<dim>, Direction<dim>>{
-              {Direction<dim>::lower_xi(), Direction<dim>::lower_xi()},
-              {Direction<dim>::upper_xi(), Direction<dim>::upper_xi()},
-              {Direction<dim>::upper_zeta(), Direction<dim>::upper_zeta()}}));
+  CHECK(
+      (get<Tags::Interface<internal_directions, Tags::Direction<dim>>>(box)) ==
+      (std::unordered_map<Direction<dim>, Direction<dim>>{
+          {Direction<dim>::lower_xi(), Direction<dim>::lower_xi()},
+          {Direction<dim>::upper_xi(), Direction<dim>::upper_xi()},
+          {Direction<dim>::upper_zeta(), Direction<dim>::upper_zeta()}}));
 
   CHECK(get<Tags::BoundaryDirectionsInterior<dim>>(box) ==
         get<Tags::BoundaryDirectionsExterior<dim>>(box));
@@ -361,13 +360,13 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Subitems", "[Unit][Domain]") {
       db::AddSimpleTags<
           Tags::Mesh<dim>, Tags::Variables<tmpl::list<Var<2>>>, Var<3>,
           Tags::Interface<Dirs, Tags::Variables<tmpl::list<Var<0>>>>>,
-      db::AddComputeTags<
-          Dirs, VarPlusFiveCompute<3>,
-          Tags::InterfaceComputeItem<Dirs, Tags::Direction<dim>>,
-          Tags::InterfaceComputeItem<Dirs, Tags::InterfaceMesh<dim>>,
-          Tags::InterfaceComputeItem<Dirs, Compute<1>>,
-          Tags::Slice<Dirs, Tags::Variables<tmpl::list<Var<2>>>>,
-          Tags::Slice<Dirs, Var<3>>, Tags::Slice<Dirs, VarPlusFive<3>>>>(
+      db::AddComputeTags<Dirs, VarPlusFiveCompute<3>,
+                         Tags::InterfaceCompute<Dirs, Tags::Direction<dim>>,
+                         Tags::InterfaceCompute<Dirs, Tags::InterfaceMesh<dim>>,
+                         Tags::InterfaceCompute<Dirs, Compute<1>>,
+                         Tags::Slice<Dirs, Tags::Variables<tmpl::list<Var<2>>>>,
+                         Tags::Slice<Dirs, Var<3>>,
+                         Tags::Slice<Dirs, VarPlusFive<3>>>>(
       mesh, volume_var, volume_tensor,
       make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
 
@@ -447,10 +446,10 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
                         Tags::Interface<Dirs, simple_item_tag>>,
       db::AddComputeTags<
           Dirs, sliced_compute_item_tag, VarPlusFiveCompute<4>,
-          Tags::InterfaceComputeItem<Dirs, Tags::Direction<dim>>,
-          Tags::InterfaceComputeItem<Dirs, Tags::InterfaceMesh<dim>>,
-          Tags::InterfaceComputeItem<Dirs, compute_item_tag>,
-          Tags::InterfaceComputeItem<Dirs, Tags::BoundaryCoordinates<dim>>,
+          Tags::InterfaceCompute<Dirs, Tags::Direction<dim>>,
+          Tags::InterfaceCompute<Dirs, Tags::InterfaceMesh<dim>>,
+          Tags::InterfaceCompute<Dirs, compute_item_tag>,
+          Tags::InterfaceCompute<Dirs, Tags::BoundaryCoordinates<dim>>,
           Tags::Slice<Dirs, sliced_compute_item_tag>,
           Tags::Slice<Dirs, sliced_simple_item_tag>, Tags::Slice<Dirs, Var<4>>,
           Tags::Slice<Dirs, VarPlusFive<4>>>>(
@@ -511,11 +510,10 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.BaseTags", "[Unit][Domain]") {
         {Direction<2>::lower_xi(), xi_value},
         {Direction<2>::upper_eta(), eta_value}};
   };
-  const auto box =
-      db::create<db::AddSimpleTags<Tags::Interface<Dirs, SimpleDerived>>,
-                 db::AddComputeTags<
-                     Dirs, Tags::InterfaceComputeItem<Dirs, ComputeDerived>>>(
-          interface(4, 5));
+  const auto box = db::create<
+      db::AddSimpleTags<Tags::Interface<Dirs, SimpleDerived>>,
+      db::AddComputeTags<Dirs, Tags::InterfaceCompute<Dirs, ComputeDerived>>>(
+      interface(4, 5));
   CHECK(get<Tags::Interface<Dirs, SimpleBase>>(box) == interface(4, 5));
   CHECK(get<Tags::Interface<Dirs, ComputeBase>>(box) == interface(5.5, 6.5));
 }

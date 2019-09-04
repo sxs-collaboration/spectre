@@ -124,7 +124,7 @@ template <size_t Dim, typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
 template <size_t Dim, typename Tag>
 using interface_compute_tag =
-    Tags::InterfaceComputeItem<Tags::InternalDirections<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::InternalDirections<Dim>, Tag>;
 
 template <typename FluxCommTypes>
 using LocalData = typename FluxCommTypes::LocalData;

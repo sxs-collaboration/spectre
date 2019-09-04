@@ -91,8 +91,8 @@ struct UnnormalizedFaceNormalCompute
 /// represent ghost elements, the normals should correspond to the normals in
 /// said element, which are inverted with respect to the current element.
 template <size_t VolumeDim, typename Frame>
-struct InterfaceComputeItem<Tags::BoundaryDirectionsExterior<VolumeDim>,
-                            UnnormalizedFaceNormalCompute<VolumeDim, Frame>>
+struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                        UnnormalizedFaceNormalCompute<VolumeDim, Frame>>
     : db::PrefixTag,
       db::ComputeTag,
       Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,

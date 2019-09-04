@@ -131,21 +131,21 @@ template <typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
 template <typename Tag>
 using interface_compute_tag =
-    Tags::InterfaceComputeItem<Tags::InternalDirections<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::InternalDirections<Dim>, Tag>;
 
 template <typename Tag>
 using boundary_tag =
     Tags::Interface<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
 template <typename Tag>
 using boundary_compute_tag =
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
 
 template <typename Tag>
 using exterior_boundary_tag =
     Tags::Interface<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
 template <typename Tag>
 using exterior_boundary_compute_tag =
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
 
 template <typename FluxCommTypes>
 using mortar_data_tag = typename FluxCommTypes::simple_mortar_data_tag;

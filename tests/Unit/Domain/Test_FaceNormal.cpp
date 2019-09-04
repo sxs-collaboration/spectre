@@ -144,16 +144,16 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
                         Tags::ElementMap<2>>,
       db::AddComputeTags<
           Tags::BoundaryDirectionsExterior<2>,
-          Tags::InterfaceComputeItem<Directions, Tags::Direction<2>>,
-          Tags::InterfaceComputeItem<Directions, Tags::InterfaceMesh<2>>,
-          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
-                                     Tags::Direction<2>>,
-          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
-                                     Tags::InterfaceMesh<2>>,
-          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
-                                     Tags::UnnormalizedFaceNormalCompute<2>>,
-          Tags::InterfaceComputeItem<Directions,
-                                     Tags::UnnormalizedFaceNormalCompute<2>>>>(
+          Tags::InterfaceCompute<Directions, Tags::Direction<2>>,
+          Tags::InterfaceCompute<Directions, Tags::InterfaceMesh<2>>,
+          Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
+                                 Tags::Direction<2>>,
+          Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
+                                 Tags::InterfaceMesh<2>>,
+          Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
+                                 Tags::UnnormalizedFaceNormalCompute<2>>,
+          Tags::InterfaceCompute<Directions,
+                                 Tags::UnnormalizedFaceNormalCompute<2>>>>(
       Element<2>(ElementId<2>(0), {}),
       std::unordered_set<Direction<2>>{Direction<2>::upper_xi(),
                                        Direction<2>::lower_eta()},
@@ -163,7 +163,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
           make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
               CoordinateMaps::Rotation<2>(atan2(4., 3.)))));
 
-  CHECK((Tags::InterfaceComputeItem<
+  CHECK((Tags::InterfaceCompute<
             Tags::BoundaryDirectionsExterior<2>,
             Tags::UnnormalizedFaceNormalCompute<2>>::name()) ==
         "BoundaryDirectionsExterior<UnnormalizedFaceNormal>"s);
@@ -200,18 +200,18 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
       db::AddComputeTags<
           Tags::BoundaryDirectionsExterior<2>,
           Tags::BoundaryDirectionsInterior<2>,
-          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
-                                     Tags::Direction<2>>,
-          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
-                                     Tags::InterfaceMesh<2>>,
-          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<2>,
-                                     Tags::UnnormalizedFaceNormalCompute<2>>,
-          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<2>,
-                                     Tags::Direction<2>>,
-          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<2>,
-                                     Tags::InterfaceMesh<2>>,
-          Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<2>,
-                                     Tags::UnnormalizedFaceNormalCompute<2>>>>(
+          Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
+                                 Tags::Direction<2>>,
+          Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
+                                 Tags::InterfaceMesh<2>>,
+          Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<2>,
+                                 Tags::UnnormalizedFaceNormalCompute<2>>,
+          Tags::InterfaceCompute<Tags::BoundaryDirectionsInterior<2>,
+                                 Tags::Direction<2>>,
+          Tags::InterfaceCompute<Tags::BoundaryDirectionsInterior<2>,
+                                 Tags::InterfaceMesh<2>>,
+          Tags::InterfaceCompute<Tags::BoundaryDirectionsInterior<2>,
+                                 Tags::UnnormalizedFaceNormalCompute<2>>>>(
       Element<2>(ElementId<2>(0), {}),
       Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
       ElementMap<2, Frame::Inertial>(

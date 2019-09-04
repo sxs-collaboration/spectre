@@ -65,14 +65,14 @@ struct ElementArray {
               Initialization::Actions::AddComputeTags<tmpl::list<
                   ::Tags::InternalDirections<Dim>,
                   ::Tags::BoundaryDirectionsInterior<Dim>,
-                  ::Tags::InterfaceComputeItem<::Tags::InternalDirections<Dim>,
-                                               ::Tags::Direction<Dim>>,
-                  ::Tags::InterfaceComputeItem<
+                  ::Tags::InterfaceCompute<::Tags::InternalDirections<Dim>,
+                                           ::Tags::Direction<Dim>>,
+                  ::Tags::InterfaceCompute<
                       ::Tags::BoundaryDirectionsInterior<Dim>,
                       ::Tags::Direction<Dim>>,
-                  ::Tags::InterfaceComputeItem<::Tags::InternalDirections<Dim>,
-                                               ::Tags::InterfaceMesh<Dim>>,
-                  ::Tags::InterfaceComputeItem<
+                  ::Tags::InterfaceCompute<::Tags::InternalDirections<Dim>,
+                                           ::Tags::InterfaceMesh<Dim>>,
+                  ::Tags::InterfaceCompute<
                       ::Tags::BoundaryDirectionsInterior<Dim>,
                       ::Tags::InterfaceMesh<Dim>>>>>>,
 

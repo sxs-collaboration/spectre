@@ -148,22 +148,21 @@ struct InitializeInterfaces {
 
   template <typename ComputeTag, typename Directions>
   struct make_compute_tag {
-    using type = ::Tags::InterfaceComputeItem<Directions, ComputeTag>;
+    using type = ::Tags::InterfaceCompute<Directions, ComputeTag>;
   };
 
   template <typename Directions>
   using face_tags = tmpl::flatten<tmpl::list<
-      Directions,
-      ::Tags::InterfaceComputeItem<Directions, ::Tags::Direction<dim>>,
-      ::Tags::InterfaceComputeItem<Directions, ::Tags::InterfaceMesh<dim>>,
+      Directions, ::Tags::InterfaceCompute<Directions, ::Tags::Direction<dim>>,
+      ::Tags::InterfaceCompute<Directions, ::Tags::InterfaceMesh<dim>>,
       tmpl::transform<SliceTagsToFace,
                       make_slice_tag<tmpl::_1, tmpl::pin<Directions>>>,
-      ::Tags::InterfaceComputeItem<Directions,
-                                   ::Tags::UnnormalizedFaceNormalCompute<dim>>,
-      ::Tags::InterfaceComputeItem<Directions,
-                                   typename System::template magnitude_tag<
-                                       ::Tags::UnnormalizedFaceNormal<dim>>>,
-      ::Tags::InterfaceComputeItem<
+      ::Tags::InterfaceCompute<Directions,
+                               ::Tags::UnnormalizedFaceNormalCompute<dim>>,
+      ::Tags::InterfaceCompute<Directions,
+                               typename System::template magnitude_tag<
+                                   ::Tags::UnnormalizedFaceNormal<dim>>>,
+      ::Tags::InterfaceCompute<
           Directions,
           ::Tags::NormalizedCompute<::Tags::UnnormalizedFaceNormal<dim>>>,
       tmpl::transform<FaceComputeTags,
@@ -171,23 +170,23 @@ struct InitializeInterfaces {
 
   using exterior_face_tags = tmpl::flatten<tmpl::list<
       ::Tags::BoundaryDirectionsExterior<dim>,
-      ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
-                                   ::Tags::Direction<dim>>,
-      ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
-                                   ::Tags::InterfaceMesh<dim>>,
+      ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>,
+                               ::Tags::Direction<dim>>,
+      ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>,
+                               ::Tags::InterfaceMesh<dim>>,
       tmpl::transform<
           SliceTagsToExterior,
           make_slice_tag<tmpl::_1,
                          tmpl::pin<::Tags::BoundaryDirectionsExterior<dim>>>>,
-      ::Tags::InterfaceComputeItem<
+      ::Tags::InterfaceCompute<
           ::Tags::BoundaryDirectionsExterior<dim>,
           ::Tags::BoundaryCoordinates<dim, Frame::Inertial>>,
-      ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
-                                   ::Tags::UnnormalizedFaceNormalCompute<dim>>,
-      ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
-                                   typename System::template magnitude_tag<
-                                       ::Tags::UnnormalizedFaceNormal<dim>>>,
-      ::Tags::InterfaceComputeItem<
+      ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>,
+                               ::Tags::UnnormalizedFaceNormalCompute<dim>>,
+      ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>,
+                               typename System::template magnitude_tag<
+                                   ::Tags::UnnormalizedFaceNormal<dim>>>,
+      ::Tags::InterfaceCompute<
           ::Tags::BoundaryDirectionsExterior<dim>,
           ::Tags::NormalizedCompute<::Tags::UnnormalizedFaceNormal<dim>>>,
       tmpl::transform<

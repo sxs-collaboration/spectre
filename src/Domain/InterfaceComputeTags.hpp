@@ -115,9 +115,9 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
 /// \tparam DirectionsTag the item of Directions
 /// \tparam Tag the tag labeling the item
 template <typename DirectionsTag, typename Tag>
-struct InterfaceComputeItem : Interface<DirectionsTag, Tag>,
-                              db::ComputeTag,
-                              virtual db::PrefixTag {
+struct InterfaceCompute : Interface<DirectionsTag, Tag>,
+                          db::ComputeTag,
+                          virtual db::PrefixTag {
   static_assert(db::is_compute_item_v<Tag>,
                 "Cannot use a non compute item as an interface compute item.");
   // Defining name here prevents an ambiguous function call when using base
@@ -182,7 +182,7 @@ struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
 
 /// \cond
 template <typename DirectionsTag, size_t VolumeDim>
-struct InterfaceComputeItem<DirectionsTag, Direction<VolumeDim>>
+struct InterfaceCompute<DirectionsTag, Direction<VolumeDim>>
     : db::PrefixTag,
       db::ComputeTag,
       Tags::Interface<DirectionsTag, Direction<VolumeDim>> {
@@ -203,7 +203,7 @@ struct InterfaceComputeItem<DirectionsTag, Direction<VolumeDim>>
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// Computes the `VolumeDim-1` dimensional mesh on an interface from the volume
-/// mesh. `Tags::InterfaceComputeItem<Dirs, InterfaceMesh<VolumeDim>>` is
+/// mesh. `Tags::InterfaceCompute<Dirs, InterfaceMesh<VolumeDim>>` is
 /// retrievable as Tags::Interface<Dirs, Mesh<VolumeDim>>` from the DataBox.
 template <size_t VolumeDim>
 struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
@@ -220,7 +220,7 @@ struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationDomainGroup
 /// Computes the coordinates in the frame `Frame` on the faces defined by
-/// `Direction`. Intended to be prefixed by a `Tags::InterfaceComputeItem` to
+/// `Direction`. Intended to be prefixed by a `Tags::InterfaceCompute` to
 /// define the directions on which to compute the coordinates.
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct BoundaryCoordinates : db::ComputeTag,
@@ -243,7 +243,7 @@ struct BoundaryCoordinates : db::ComputeTag,
 namespace db {
 template <typename TagList, typename DirectionsTag, typename VariablesTag>
 struct Subitems<
-    TagList, Tags::InterfaceComputeItem<DirectionsTag, VariablesTag>,
+    TagList, Tags::InterfaceCompute<DirectionsTag, VariablesTag>,
     Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>>
     : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
 

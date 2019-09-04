@@ -134,17 +134,15 @@ struct DiscontinuousGalerkin {
 
     template <typename Tag>
     using interface_compute_tag =
-        ::Tags::InterfaceComputeItem<::Tags::InternalDirections<dim>, Tag>;
+        ::Tags::InterfaceCompute<::Tags::InternalDirections<dim>, Tag>;
 
     template <typename Tag>
     using boundary_interior_compute_tag =
-        ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsInterior<dim>,
-                                     Tag>;
+        ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsInterior<dim>, Tag>;
 
     template <typename Tag>
     using boundary_exterior_compute_tag =
-        ::Tags::InterfaceComputeItem<::Tags::BoundaryDirectionsExterior<dim>,
-                                     Tag>;
+        ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>, Tag>;
 
     using char_speed_tag = typename LocalSystem::char_speeds_tag;
 

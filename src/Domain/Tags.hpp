@@ -241,7 +241,7 @@ struct BoundaryDirectionsExterior : db::ComputeTag {
 ///
 /// If a SimpleTag is desired on the interface, then this tag can be added to
 /// the DataBox directly. If a ComputeTag which acts on Tags on the interface is
-/// desired, then the tag should be added using `InterfaceComputeItem`. If a
+/// desired, then the tag should be added using `InterfaceCompute`. If a
 /// ComputeTag which slices a TensorTag or a VariablesTag in the volume to an
 /// Interface is desired, then it should be added using `Slice`. In all cases,
 /// the tag can then be retrieved using `Tags::Interface<DirectionsTag, Tag>`.
@@ -258,7 +258,7 @@ struct BoundaryDirectionsExterior : db::ComputeTag {
 /// \tparam DirectionsTag the item of directions
 /// \tparam Tag the tag labeling the item
 ///
-/// \see InterfaceComputeItem, Slice
+/// \see InterfaceCompute, Slice
 template <typename DirectionsTag, typename Tag>
 struct Interface;
 
