@@ -28,6 +28,7 @@
 #include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"

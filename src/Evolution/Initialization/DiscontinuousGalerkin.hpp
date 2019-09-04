@@ -16,6 +16,7 @@
 #include "Domain/CreateInitialMesh.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"
 #include "Domain/OrientationMap.hpp"

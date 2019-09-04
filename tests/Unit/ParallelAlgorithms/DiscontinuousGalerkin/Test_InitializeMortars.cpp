@@ -21,6 +21,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"

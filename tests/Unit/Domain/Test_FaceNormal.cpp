@@ -28,6 +28,7 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Side.hpp"

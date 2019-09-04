@@ -14,6 +14,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
