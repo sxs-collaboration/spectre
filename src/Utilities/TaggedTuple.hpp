@@ -347,6 +347,8 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
       TaggedTuple<LTags...>&& t) noexcept;
 
  public:
+  using tags_list = tmpl::list<Tags...>;
+
   static constexpr size_t size() noexcept { return sizeof...(Tags); }
 
   // clang-tidy: runtime-references
@@ -493,6 +495,7 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
 template <>
 class TaggedTuple<> {
  public:
+  using tags_list = tmpl::list<>;
   static constexpr size_t size() noexcept { return 0; }
   TaggedTuple() noexcept = default;
   void swap(TaggedTuple& /*unused*/) noexcept {}
