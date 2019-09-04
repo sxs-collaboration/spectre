@@ -69,9 +69,33 @@ using get_component_if_mocked = tmpl::front<tmpl::type_from<tmpl::conditional_t<
 /// \ingroup ParallelGroup
 /// A Charm++ chare that caches constant data once per Charm++ node.
 ///
-/// Metavariables must define the following metavariables:
-///   - const_global_cache_tag_list   typelist of tags of constant data
-///   - component_list   typelist of ParallelComponents
+///` Metavariables` must define the following metavariables:
+///   - `component_list`   typelist of ParallelComponents
+///   - `const_global_cache_tags`   (possibly empty) typelist of tags of
+///     constant data
+///
+/// The tag list for the items added to the ConstGlobalCache is created by
+/// combining the following tag lists:
+/// - `Metavariables::const_global_cache_tags` which should contain only those
+///    tags that cannot be added from the following tag lists:
+/// - `Component::const_global_cache_tags` for each `Component` in
+///   `Metavariables::component_list` which should contain the tags needed by
+///   any simple actions called on the Component, as well as tags need by the
+///   `allocate_array` function of an array component.  The type alias may be
+///   omitted for an empty list.
+/// - `Action::const_global_cache_tags` for each `Action` in the
+///    `phase_dependent_action_list` of each `Component` of
+///    `Metavariables::component_list` which should contain the tags needed by
+///    that  Action.  The type alias may be omitted for an empty list.
+///
+/// The tags in the `const_global_cache_tags` type lists are db::SimpleTag%s
+/// that have a `using option_tags` type alias and a static function
+/// `create_from_options` that are used to create the constant data from input
+/// file options.
+///
+/// References to items in the ConstGlobalCache are also added to the
+/// db::DataBox of each `Component` in the `Metavariables::component_list` with
+/// the same tag with which they were inserted into the ConstGlobalCache.
 template <typename Metavariables>
 class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
   using parallel_component_tag_list = tmpl::transform<

@@ -124,10 +124,8 @@ struct ElementArray {
 template <size_t Dim>
 struct Metavariables {
   using system = System<Dim>;
-  using analytic_solution_tag =
-      OptionTags::AnalyticSolution<AnalyticSolution<Dim>>;
-  using normal_dot_numerical_flux =
-      OptionTags::NumericalFlux<NumericalFlux<Dim>>;
+  using analytic_solution_tag = Tags::AnalyticSolution<AnalyticSolution<Dim>>;
+  using normal_dot_numerical_flux = Tags::NumericalFlux<NumericalFlux<Dim>>;
   using component_list = tmpl::list<ElementArray<Dim, Metavariables>>;
   using const_global_cache_tag_list =
       tmpl::list<analytic_solution_tag, normal_dot_numerical_flux>;
