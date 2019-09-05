@@ -152,21 +152,21 @@ struct DiscontinuousGalerkin {
                       db::add_tag_prefix<::Tags::Flux,
                                          typename LocalSystem::variables_tag,
                                          tmpl::size_t<dim>, Frame::Inertial>>,
-        interface_compute_tag<::Tags::ComputeNormalDotFlux<
+        interface_compute_tag<::Tags::NormalDotFluxCompute<
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
         interface_compute_tag<char_speed_tag>,
         ::Tags::Slice<::Tags::BoundaryDirectionsInterior<dim>,
                       db::add_tag_prefix<::Tags::Flux,
                                          typename LocalSystem::variables_tag,
                                          tmpl::size_t<dim>, Frame::Inertial>>,
-        boundary_interior_compute_tag<::Tags::ComputeNormalDotFlux<
+        boundary_interior_compute_tag<::Tags::NormalDotFluxCompute<
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
         boundary_interior_compute_tag<char_speed_tag>,
         ::Tags::Slice<::Tags::BoundaryDirectionsExterior<dim>,
                       db::add_tag_prefix<::Tags::Flux,
                                          typename LocalSystem::variables_tag,
                                          tmpl::size_t<dim>, Frame::Inertial>>,
-        boundary_exterior_compute_tag<::Tags::ComputeNormalDotFlux<
+        boundary_exterior_compute_tag<::Tags::NormalDotFluxCompute<
             typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
         boundary_exterior_compute_tag<char_speed_tag>>;
 

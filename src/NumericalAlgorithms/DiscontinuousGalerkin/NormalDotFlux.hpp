@@ -27,7 +27,7 @@ namespace Tags {
 /// \brief Prefix computing a boundary unit normal vector dotted into
 /// the flux from a flux on the boundary.
 template <typename Tag, size_t VolumeDim, typename Fr>
-struct ComputeNormalDotFlux : db::add_tag_prefix<NormalDotFlux, Tag>,
+struct NormalDotFluxCompute : db::add_tag_prefix<NormalDotFlux, Tag>,
                               db::ComputeTag {
   using base = db::add_tag_prefix<NormalDotFlux, Tag>;
 

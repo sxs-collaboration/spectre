@@ -125,7 +125,7 @@ void check() {
   const auto normalized_normal =
       normalized_normal_tag::function(normal, magnitude_normal);
   using compute_n_dot_f =
-      Tags::ComputeNormalDotFlux<variables_tag<Dim, Frame>, Dim, Frame>;
+      Tags::NormalDotFluxCompute<variables_tag<Dim, Frame>, Dim, Frame>;
   static_assert(
       cpp17::is_same_v<typename compute_n_dot_f::argument_tags,
                        tmpl::list<flux_tag<Dim, Frame>,
@@ -144,7 +144,7 @@ void check() {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.ComputeNormalDotFlux", "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.Evolution.NormalDotFluxCompute", "[Unit][Evolution]") {
   check<1, Frame::Inertial>();
   check<1, Frame::Grid>();
   check<2, Frame::Inertial>();
