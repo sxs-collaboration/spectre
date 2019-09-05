@@ -22,7 +22,6 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
@@ -31,6 +30,7 @@
 #include "Parallel/ArrayIndex.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
@@ -364,11 +364,11 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
         std::string("InertialCoordinates_") + gsl::at({'x', 'y', 'z'}, i),
         get<coordinates_tag>(vars).get(i));
   }
-  System::check_data([&check_component, &vars](
+  System::check_data([&check_component, &vars ](
       const std::string& name, auto tag, const auto... indices) noexcept {
     check_component(name, get<decltype(tag)>(vars).get(indices...));
   });
-  System::solution_for_test::check_data([&check_component, &errors](
+  System::solution_for_test::check_data([&check_component, &errors ](
       const std::string& name, auto tag, const auto... indices) noexcept {
     check_component(name, get<decltype(tag)>(errors).get(indices...));
   });

@@ -5,8 +5,6 @@ set(LIBRARY "Test_EvolutionDiscontinuousGalerkin")
 
 set(LIBRARY_SOURCES
   Test_Filtering.cpp
-  Test_ObserveErrorNorms.cpp
-  Test_ObserveFields.cpp
   )
 
 add_test_library(
