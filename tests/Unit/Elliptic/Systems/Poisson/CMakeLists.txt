@@ -1,8 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-add_subdirectory(Actions)
-
 set(LIBRARY "Test_Poisson")
 
 set(LIBRARY_SOURCES

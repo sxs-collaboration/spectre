@@ -33,3 +33,9 @@ LinearSolver:
     AbsoluteResidual: 0
     RelativeResidual: 0
   Verbosity: Verbose
+
+EventsAndTriggers:
+  ? EveryNIterations:
+      N: 1
+  : - ObserveErrorNorms
+    - ObserveFields
