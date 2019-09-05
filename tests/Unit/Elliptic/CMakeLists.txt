@@ -4,6 +4,7 @@
 add_subdirectory(Actions)
 add_subdirectory(DiscontinuousGalerkin)
 add_subdirectory(Systems)
+add_subdirectory(Triggers)
 
 set(LIBRARY "Test_Elliptic")
 
