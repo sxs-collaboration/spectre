@@ -8,11 +8,11 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Domain/ElementId.hpp"
-#include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 

@@ -11,16 +11,16 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/EventsAndTriggers/Event.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
-#include "IO/Observer/ReductionActions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/ReductionActions.hpp"   // IWYU pragma: keep
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"

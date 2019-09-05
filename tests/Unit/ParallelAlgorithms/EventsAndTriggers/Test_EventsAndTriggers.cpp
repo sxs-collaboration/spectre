@@ -11,15 +11,15 @@
 #include <unordered_map>
 #include <utility>
 
-#include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
-#include "Evolution/EventsAndTriggers/Completion.hpp"
-#include "Evolution/EventsAndTriggers/Event.hpp"
-#include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"
-#include "Evolution/EventsAndTriggers/LogicalTriggers.hpp"  // IWYU pragma: keep
-#include "Evolution/EventsAndTriggers/Tags.hpp"
-#include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeVector.hpp"
 #include "Utilities/TMPL.hpp"
@@ -90,10 +90,8 @@ void check_trigger(const bool expected, const std::string& trigger_string) {
 SPECTRE_TEST_CASE("Unit.Evolution.EventsAndTriggers", "[Unit][Evolution]") {
   test_factory_creation<Event<tmpl::list<>>>("  Completion");
 
-  check_trigger(true,
-                "  Always");
-  check_trigger(false,
-                "  Not: Always");
+  check_trigger(true, "  Always");
+  check_trigger(false, "  Not: Always");
   check_trigger(true,
                 "  Not:\n"
                 "    Not: Always");

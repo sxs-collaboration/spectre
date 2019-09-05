@@ -8,9 +8,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"

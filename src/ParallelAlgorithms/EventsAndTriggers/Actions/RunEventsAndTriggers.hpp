@@ -6,8 +6,8 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Evolution/EventsAndTriggers/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 namespace Actions {
@@ -31,8 +31,7 @@ struct RunEventsAndTriggers {
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index,
-                    const ActionList /*meta*/,
+                    const ArrayIndex& array_index, const ActionList /*meta*/,
                     const ParallelComponent* const component) noexcept {
     Parallel::get<Tags::EventsAndTriggersBase>(cache).run_events(
         box, cache, array_index, component);

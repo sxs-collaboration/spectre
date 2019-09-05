@@ -14,10 +14,6 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
-#include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
-#include "Evolution/EventsAndTriggers/Event.hpp"
-#include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
-#include "Evolution/EventsAndTriggers/Tags.hpp"
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
@@ -43,6 +39,10 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -78,8 +78,7 @@ struct EvolutionMetavars {
   using system = Burgers::System;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
-  using initial_data_tag =
-      Tags::AnalyticSolution<Burgers::Solutions::Step>;
+  using initial_data_tag = Tags::AnalyticSolution<Burgers::Solutions::Step>;
   using boundary_condition_tag = initial_data_tag;
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<dg::NumericalFluxes::LocalLaxFriedrichs<system>>;

@@ -60,4 +60,4 @@ class Event : public PUP::able {
   }
 };
 
-#include "Evolution/EventsAndTriggers/Completion.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Completion.hpp"
