@@ -11,6 +11,7 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"
 #include "Evolution/Actions/ComputeVolumeSources.hpp"
+#include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.tpp"
@@ -49,6 +50,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey/ConstantM1.hpp"
@@ -110,12 +112,12 @@ struct EvolutionMetavars {
 
   // public for use by the Charm++ registration code
   using events = tmpl::flatten<tmpl::list<
-      tmpl::conditional_t<
-          evolution::is_analytic_solution_v<initial_data>,
-          dg::Events::Registrars::ObserveErrorNorms<3, analytic_variables_tags>,
-          tmpl::list<>>,
+      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+                          dg::Events::Registrars::ObserveErrorNorms<
+                              Tags::Time, analytic_variables_tags>,
+                          tmpl::list<>>,
       dg::Events::Registrars::ObserveFields<
-          3,
+          3, Tags::Time,
           tmpl::append<
               db::get_variables_tags_list<typename system::variables_tag>,
               db::get_variables_tags_list<
@@ -177,6 +179,12 @@ struct EvolutionMetavars {
               typename system::spacetime_variables_tag,
               typename system::primitive_variables_tag>>,
       Initialization::Actions::Evolution<EvolutionMetavars>,
+      tmpl::conditional_t<
+          evolution::is_analytic_solution_v<initial_data>,
+          Initialization::Actions::AddComputeTags<
+              tmpl::list<evolution::Tags::AnalyticCompute<
+                  3, initial_data_tag, analytic_variables_tags>>>,
+          tmpl::list<>>,
       dg::Actions::InitializeMortars<EvolutionMetavars>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<3>,
@@ -199,7 +207,7 @@ struct EvolutionMetavars {
                   Phase, Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
                                  observers::RegisterObservers<
-                                     element_observation_type>>,
+                                     Tags::Time, element_observation_type>>,
                              Parallel::Actions::TerminatePhase>>,
 
               Parallel::PhaseActions<

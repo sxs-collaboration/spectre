@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "Domain/Tags.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObservationId.hpp"
@@ -32,27 +33,24 @@
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
-namespace Tags {
-struct Time;
-}  // namespace Tags
 /// \endcond
 
 namespace dg {
 namespace Events {
-template <size_t VolumeDim, typename Tensors, typename EventRegistrars>
+template <typename ObservationValueTag, typename Tensors,
+          typename EventRegistrars>
 class ObserveErrorNorms;
 
 namespace Registrars {
-template <size_t VolumeDim, typename Tensors>
-struct ObserveErrorNorms {
-  template <typename RegistrarList>
-  using f = Events::ObserveErrorNorms<VolumeDim, Tensors, RegistrarList>;
-};
+template <typename ObservationValueTag, typename Tensors>
+using ObserveErrorNorms =
+    ::Registration::Registrar<Events::ObserveErrorNorms, ObservationValueTag,
+                              Tensors>;
 }  // namespace Registrars
 
-template <size_t VolumeDim, typename Tensors,
-          typename EventRegistrars =
-              tmpl::list<Registrars::ObserveErrorNorms<VolumeDim, Tensors>>>
+template <typename ObservationValueTag, typename Tensors,
+          typename EventRegistrars = tmpl::list<
+              Registrars::ObserveErrorNorms<ObservationValueTag, Tensors>>>
 class ObserveErrorNorms;  // IWYU pragma: keep
 
 /*!
@@ -61,7 +59,7 @@ class ObserveErrorNorms;  // IWYU pragma: keep
  * analytic solution.
  *
  * Writes reduction quantities:
- * - `Time`
+ * - `ObservationValueTag`
  * - `NumberOfPoints` = total number of points in the domain
  * - `Error(*)` = RMS errors in `Tensors` =
  *   \f$\operatorname{RMS}\left(\sqrt{\sum_{\text{independent components}}\left[
@@ -69,15 +67,14 @@ class ObserveErrorNorms;  // IWYU pragma: keep
  *   over all points
  *
  * \warning Currently, only one reduction observation event can be
- * triggered at a given time.  Causing multiple events to run at once
- * will produce unpredictable results.
+ * triggered at a given observation value.  Causing multiple events to run at
+ * once will produce unpredictable results.
  */
-template <size_t VolumeDim, typename... Tensors, typename EventRegistrars>
-class ObserveErrorNorms<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
-    : public Event<EventRegistrars> {
+template <typename ObservationValueTag, typename... Tensors,
+          typename EventRegistrars>
+class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
+                        EventRegistrars> : public Event<EventRegistrars> {
  private:
-  using coordinates_tag = ::Tags::Coordinates<VolumeDim, Frame::Inertial>;
-
   template <typename Tag>
   struct LocalSquareError {
     using type = double;
@@ -106,48 +103,47 @@ class ObserveErrorNorms<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
       "solution.\n"
       "\n"
       "Writes reduction quantities:\n"
-      " * Time\n"
+      " * ObservationValueTag\n"
       " * NumberOfPoints = total number of points in the domain\n"
       " * Error(*) = RMS errors in Tensors (see online help details)\n"
       "\n"
       "Warning: Currently, only one reduction observation event can be\n"
-      "triggered at a given time.  Causing multiple events to run at once\n"
-      "will produce unpredictable results.";
+      "triggered at a given observation value.  Causing multiple events to\n"
+      "run at once will produce unpredictable results.";
 
   ObserveErrorNorms() = default;
 
   using observed_reduction_data_tags =
       observers::make_reduction_data_tags<tmpl::list<ReductionData>>;
 
-  using argument_tags = tmpl::list<::Tags::Time, coordinates_tag, Tensors...>;
+  using argument_tags =
+      tmpl::list<ObservationValueTag, Tensors..., ::Tags::Analytic<Tensors>...>;
 
   template <typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
   void operator()(
-      const double time,
-      const db::const_item_type<coordinates_tag>& inertial_coordinates,
+      const db::const_item_type<ObservationValueTag>& observation_value,
       const db::const_item_type<Tensors>&... tensors,
+      const db::const_item_type<::Tags::Analytic<Tensors>>&... analytic_tensors,
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const ParallelComponent* const /*meta*/) const noexcept {
-    const auto analytic_solution =
-        Parallel::get<Tags::AnalyticSolutionBase>(cache).variables(
-            inertial_coordinates, time, tmpl::list<Tensors...>{});
-
     tuples::TaggedTuple<LocalSquareError<Tensors>...> local_square_errors;
-    const auto record_errors = [&analytic_solution, &local_square_errors](
-        const auto tensor_tag_v, const auto& tensor) noexcept {
+    const auto record_errors = [&local_square_errors](
+        const auto tensor_tag_v, const auto& tensor,
+        const auto& analytic_tensor) noexcept {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       double local_square_error = 0.0;
       for (size_t i = 0; i < tensor.size(); ++i) {
-        const auto error = tensor[i] - get<tensor_tag>(analytic_solution)[i];
+        const auto error = tensor[i] - analytic_tensor[i];
         local_square_error += alg::accumulate(square(error), 0.0);
       }
       get<LocalSquareError<tensor_tag>>(local_square_errors) =
           local_square_error;
       return 0;
     };
-    expand_pack(record_errors(tmpl::type_<Tensors>{}, tensors)...);
+    expand_pack(
+        record_errors(tmpl::type_<Tensors>{}, tensors, analytic_tensors)...);
     const size_t num_points = get_first_argument(tensors...).begin()->size();
 
     // Send data to reduction observer
@@ -158,19 +154,22 @@ class ObserveErrorNorms<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer,
         observers::ObservationId(
-            time, typename Metavariables::element_observation_type{}),
+            observation_value,
+            typename Metavariables::element_observation_type{}),
         std::string{"/element_data"},
-        std::vector<std::string>{"Time", "NumberOfPoints",
+        std::vector<std::string>{db::tag_name<ObservationValueTag>(),
+                                 "NumberOfPoints",
                                  ("Error(" + Tensors::name() + ")")...},
         ReductionData{
-            time, num_points,
+            static_cast<double>(observation_value), num_points,
             std::move(get<LocalSquareError<Tensors>>(local_square_errors))...});
   }
 };
 
 /// \cond
-template <size_t VolumeDim, typename... Tensors, typename EventRegistrars>
-PUP::able::PUP_ID ObserveErrorNorms<VolumeDim, tmpl::list<Tensors...>,
+template <typename ObservationValueTag, typename... Tensors,
+          typename EventRegistrars>
+PUP::able::PUP_ID ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
                                     EventRegistrars>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace Events

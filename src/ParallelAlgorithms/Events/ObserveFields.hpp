@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "Domain/ElementId.hpp"
@@ -48,27 +49,28 @@ struct Time;
 
 namespace dg {
 namespace Events {
-template <size_t VolumeDim, typename Tensors, typename AnalyticSolutionTensors,
-          typename EventRegistrars,
+template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
+          typename AnalyticSolutionTensors, typename EventRegistrars,
           typename NonSolutionTensors =
               tmpl::list_difference<Tensors, AnalyticSolutionTensors>>
 class ObserveFields;
 
 namespace Registrars {
-template <size_t VolumeDim, typename Tensors,
+template <size_t VolumeDim, typename ObservationValueTag, typename Tensors,
           typename AnalyticSolutionTensors = tmpl::list<>>
 struct ObserveFields {
   template <typename RegistrarList>
-  using f = Events::ObserveFields<VolumeDim, Tensors, AnalyticSolutionTensors,
-                                  RegistrarList>;
+  using f = Events::ObserveFields<VolumeDim, ObservationValueTag, Tensors,
+                                  AnalyticSolutionTensors, RegistrarList>;
 };
 }  // namespace Registrars
 
-template <size_t VolumeDim, typename Tensors,
-          typename AnalyticSolutionTensors = tmpl::list<>,
-          typename EventRegistrars = tmpl::list<Registrars::ObserveFields<
-              VolumeDim, Tensors, AnalyticSolutionTensors>>,
-          typename NonSolutionTensors>
+template <
+    size_t VolumeDim, typename ObservationValueTag, typename Tensors,
+    typename AnalyticSolutionTensors = tmpl::list<>,
+    typename EventRegistrars = tmpl::list<Registrars::ObserveFields<
+        VolumeDim, ObservationValueTag, Tensors, AnalyticSolutionTensors>>,
+    typename NonSolutionTensors>
 class ObserveFields;  // IWYU pragma: keep
 
 /*!
@@ -85,10 +87,10 @@ class ObserveFields;  // IWYU pragma: keep
  * triggered at a given time.  Causing multiple events to run at once
  * will produce unpredictable results.
  */
-template <size_t VolumeDim, typename... Tensors,
+template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
           typename... AnalyticSolutionTensors, typename EventRegistrars,
           typename... NonSolutionTensors>
-class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
+class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                     tmpl::list<AnalyticSolutionTensors...>, EventRegistrars,
                     tmpl::list<NonSolutionTensors...>>
     : public Event<EventRegistrars> {
@@ -149,7 +151,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
         PARSE_ERROR(
             context,
             name << " is not an available variable.  Available variables:\n"
-            << (std::vector<std::string>{Tensors::name()...}));
+                 << (std::vector<std::string>{Tensors::name()...}));
       }
       if (alg::count(variables_to_observe, name) != 1) {
         PARSE_ERROR(context, name << " specified multiple times");
@@ -158,16 +160,21 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     variables_to_observe_.insert(coordinates_tag::name());
   }
 
-  using argument_tags =
-      tmpl::list<::Tags::Time, ::Tags::Mesh<VolumeDim>, coordinates_tag,
-                 AnalyticSolutionTensors..., NonSolutionTensors...>;
+  using argument_tags = tmpl::list<ObservationValueTag, ::Tags::Mesh<VolumeDim>,
+                                   coordinates_tag, AnalyticSolutionTensors...,
+                                   ::Tags::Analytic<AnalyticSolutionTensors>...,
+                                   NonSolutionTensors...>;
 
   template <typename Metavariables, typename ParallelComponent>
   void operator()(
-      const double time, const Mesh<VolumeDim>& mesh,
-      const db::const_item_type<coordinates_tag>& inertial_coordinates,
+      const db::const_item_type<ObservationValueTag>& observation_value,
+      const Mesh<VolumeDim>& mesh,
+      const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
+          inertial_coordinates,
       const db::const_item_type<
           AnalyticSolutionTensors>&... analytic_solution_tensors,
+      const db::const_item_type<
+          ::Tags::Analytic<AnalyticSolutionTensors>>&... analytic_solutions,
       const db::const_item_type<NonSolutionTensors>&... non_solution_tensors,
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ElementIndex<VolumeDim>& array_index,
@@ -183,11 +190,11 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     components.reserve(alg::accumulate(
         std::initializer_list<size_t>{
             inertial_coordinates.size(),
-            db::const_item_type<AnalyticSolutionTensors>::size()...,
+            2 * db::const_item_type<AnalyticSolutionTensors>::size()...,
             db::const_item_type<NonSolutionTensors>::size()...},
         0_st));
 
-    const auto record_tensor_components = [this, &components, &element_name](
+    const auto record_tensor_components = [ this, &components, &element_name ](
         const auto tensor_tag_v, const auto& tensor) noexcept {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       if (variables_to_observe_.count(tensor_tag::name()) == 1) {
@@ -205,18 +212,13 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(
         tmpl::type_<NonSolutionTensors>{}, non_solution_tensors));
 
-    const auto record_errors =
-        [ this, &inertial_coordinates, &time, &components, &
-          element_name ](const auto tensor_tag_v, const auto& tensor,
-                         const auto& local_cache) noexcept {
-      const auto analytic_solution =
-          Parallel::get<Tags::AnalyticSolutionBase>(local_cache)
-              .variables(inertial_coordinates, time,
-                         tmpl::list<AnalyticSolutionTensors...>{});
+    const auto record_errors = [ this, &components, &element_name ](
+        const auto tensor_tag_v, const auto& tensor,
+        const auto& analytic_tensor) noexcept {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
       if (variables_to_observe_.count(tensor_tag::name()) == 1) {
         for (size_t i = 0; i < tensor.size(); ++i) {
-          DataVector error = tensor[i] - get<tensor_tag>(analytic_solution)[i];
+          DataVector error = tensor[i] - analytic_tensor[i];
           components.emplace_back(element_name + "Error(" + tensor_tag::name() +
                                       ")" + component_suffix(tensor, i),
                                   std::move(error));
@@ -225,7 +227,7 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     };
     EXPAND_PACK_LEFT_TO_RIGHT(
         record_errors(tmpl::type_<AnalyticSolutionTensors>{},
-                      analytic_solution_tensors, cache));
+                      analytic_solution_tensors, analytic_solutions));
 
     (void)(record_errors);  // Silence GCC warning about unused variable
 
@@ -237,7 +239,8 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     Parallel::simple_action<observers::Actions::ContributeVolumeData>(
         local_observer,
         observers::ObservationId(
-            time, typename Metavariables::element_observation_type{}),
+            observation_value,
+            typename Metavariables::element_observation_type{}),
         std::string{"/element_data"},
         observers::ArrayComponentId(
             std::add_pointer_t<ParallelComponent>{nullptr},
@@ -256,11 +259,11 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
 };
 
 /// \cond
-template <size_t VolumeDim, typename... Tensors,
+template <size_t VolumeDim, typename ObservationValueTag, typename... Tensors,
           typename... AnalyticSolutionTensors, typename EventRegistrars,
           typename... NonSolutionTensors>
 PUP::able::PUP_ID
-    ObserveFields<VolumeDim, tmpl::list<Tensors...>,
+    ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                   tmpl::list<AnalyticSolutionTensors...>, EventRegistrars,
                   tmpl::list<NonSolutionTensors...>>::my_PUP_ID = 0;  // NOLINT
 /// \endcond

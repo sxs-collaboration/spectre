@@ -12,6 +12,7 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"
 #include "Evolution/Actions/ComputeVolumeSources.hpp"
+#include "Evolution/ComputeTags.hpp"
 #include "Evolution/Conservative/UpdateConservatives.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
@@ -110,9 +111,10 @@ struct EvolutionMetavars {
                       NewtonianEuler::Tags::EnergyDensity<DataVector>>>>;
 
   using events = tmpl::list<
-      dg::Events::Registrars::ObserveErrorNorms<Dim, analytic_variables_tags>,
+      dg::Events::Registrars::ObserveErrorNorms<Tags::Time,
+                                                analytic_variables_tags>,
       dg::Events::Registrars::ObserveFields<
-          Dim,
+          Dim, Tags::Time,
           tmpl::append<
               db::get_variables_tags_list<typename system::variables_tag>,
               db::get_variables_tags_list<
@@ -174,6 +176,12 @@ struct EvolutionMetavars {
               typename system::primitive_variables_tag,
               NewtonianEuler::Tags::SoundSpeed<DataVector>>>,
       Initialization::Actions::Evolution<EvolutionMetavars>,
+      tmpl::conditional_t<
+          evolution::is_analytic_solution_v<initial_data>,
+          Initialization::Actions::AddComputeTags<
+              tmpl::list<evolution::Tags::AnalyticCompute<
+                  Dim, initial_data_tag, analytic_variables_tags>>>,
+          tmpl::list<>>,
       dg::Actions::InitializeMortars<EvolutionMetavars>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::Minmod<Dim>,
@@ -197,7 +205,7 @@ struct EvolutionMetavars {
                   Phase, Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
                                  observers::RegisterObservers<
-                                     element_observation_type>>,
+                                     Tags::Time, element_observation_type>>,
                              Parallel::Actions::TerminatePhase>>,
 
               Parallel::PhaseActions<
