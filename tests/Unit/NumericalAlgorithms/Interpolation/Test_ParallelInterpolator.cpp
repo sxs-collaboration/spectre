@@ -179,7 +179,7 @@ struct mock_interpolation_target {
   using array_index = size_t;
   using const_global_cache_tags = tmpl::flatten<tmpl::append<
       Parallel::get_const_global_cache_tags_from_actions<
-          tmpl::list<intrp::Actions::LineSegment<InterpolationTargetTag, 3>>>,
+          tmpl::list<typename InterpolationTargetTag::compute_target_points>>,
       tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -221,7 +221,6 @@ struct MockMetavariables {
         intrp::Actions::LineSegment<InterpolationTargetA, 3>;
     using post_interpolation_callback =
         TestFunction<InterpolationTargetA, Tags::Square>;
-    using type = typename compute_target_points::options_type;
   };
   struct InterpolationTargetB {
     using compute_items_on_source = tmpl::list<Tags::SquareComputeItem>;
@@ -231,7 +230,6 @@ struct MockMetavariables {
         intrp::Actions::LineSegment<InterpolationTargetB, 3>;
     using post_interpolation_callback =
         TestFunction<InterpolationTargetB, Tags::Negate>;
-    using type = typename compute_target_points::options_type;
   };
   struct InterpolationTargetC {
     using compute_items_on_source = tmpl::list<>;
@@ -240,8 +238,6 @@ struct MockMetavariables {
     using compute_target_points =
         intrp::Actions::KerrHorizon<InterpolationTargetC, ::Frame::Inertial>;
     using post_interpolation_callback = TestKerrHorizonIntegral;
-    // This `type` is so this tag can be used to read options.
-    using type = typename compute_target_points::options_type;
   };
 
   using interpolator_source_vars = tmpl::list<Tags::TestSolution>;
@@ -281,11 +277,13 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   const auto domain_creator =
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
   tuples::TaggedTuple<
-      metavars::InterpolationTargetA, ::Tags::Domain<3, Frame::Inertial>,
-      metavars::InterpolationTargetB, metavars::InterpolationTargetC>
+      intrp::Tags::LineSegment<metavars::InterpolationTargetA, 3>,
+      ::Tags::Domain<3, Frame::Inertial>,
+      intrp::Tags::LineSegment<metavars::InterpolationTargetB, 3>,
+      intrp::Tags::KerrHorizon<metavars::InterpolationTargetC>>
       tuple_of_opts(
           std::move(line_segment_opts_A), domain_creator.create_domain(),
-          std::move(line_segment_opts_B), std::move(kerr_horizon_opts_C));
+          std::move(line_segment_opts_B), kerr_horizon_opts_C);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   runner.set_phase(metavars::Phase::Initialization);

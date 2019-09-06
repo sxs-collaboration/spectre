@@ -28,7 +28,6 @@ struct MockMetavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::Actions::LineSegment<InterpolationTargetA, 3>;
-    using type = compute_target_points::options_type;
   };
   using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
@@ -71,7 +70,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
   }
   ();
 
-  InterpTargetTestHelpers::test_interpolation_target<MockMetavariables>(
+  InterpTargetTestHelpers::test_interpolation_target<
+      MockMetavariables,
+      intrp::Tags::LineSegment<MockMetavariables::InterpolationTargetA, 3>>(
       domain_creator, std::move(line_segment_opts),
       expected_block_coord_holders);
 }

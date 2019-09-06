@@ -214,8 +214,6 @@ struct MockMetavariables {
             tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
                 Tags::Square, ::Frame::Inertial>>,
             SurfaceA, SurfaceA>;
-    // This `type` is so this tag can be used to read options.
-    using type = typename compute_target_points::options_type;
   };
   struct SurfaceB {
     using compute_items_on_source = tmpl::list<>;
@@ -236,8 +234,6 @@ struct MockMetavariables {
                        StrahlkorperGr::Tags::SurfaceIntegral<
                            Tags::Negate, ::Frame::Inertial>>,
             SurfaceB, SurfaceB>;
-    // This `type` is so this tag can be used to read options.
-    using type = typename compute_target_points::options_type;
   };
   struct SurfaceC {
     using compute_items_on_source = tmpl::list<>;
@@ -255,8 +251,6 @@ struct MockMetavariables {
             tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
                 Tags::Negate, ::Frame::Inertial>>,
             SurfaceC, SurfaceC>;
-    // This `type` is so this tag can be used to read options.
-    using type = typename compute_target_points::options_type;
   };
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
@@ -306,13 +300,15 @@ SPECTRE_TEST_CASE(
                                                         1.5, {{0.0, 0.0, 0.0}});
   const auto domain_creator =
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
-  tuples::TaggedTuple<observers::Tags::ReductionFileName, metavars::SurfaceA,
-                      ::Tags::Domain<3, Frame::Inertial>, metavars::SurfaceB,
-                      metavars::SurfaceC>
-      tuple_of_opts{h5_file_prefix, std::move(kerr_horizon_opts_A),
+  tuples::TaggedTuple<observers::Tags::ReductionFileName,
+                      ::intrp::Tags::KerrHorizon<metavars::SurfaceA>,
+                      ::Tags::Domain<3, Frame::Inertial>,
+                      ::intrp::Tags::KerrHorizon<metavars::SurfaceB>,
+                      ::intrp::Tags::KerrHorizon<metavars::SurfaceC>>
+      tuple_of_opts{h5_file_prefix, kerr_horizon_opts_A,
                     domain_creator.create_domain(),
-                    std::move(kerr_horizon_opts_B),
-                    std::move(kerr_horizon_opts_C)};
+                    kerr_horizon_opts_B,
+                    kerr_horizon_opts_C};
 
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   runner.set_phase(metavars::Phase::Initialization);
