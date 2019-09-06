@@ -134,10 +134,11 @@ struct mock_interpolator {
       MockReceivePoints<typename Metavariables::InterpolationTargetA>>;
 };
 
-template <typename MetaVariables, typename DomainCreator,
-          typename InterpolationTargetOption, typename BlockCoordHolder>
+template <typename MetaVariables, typename InterpolationTargetOptionTag,
+          typename DomainCreator, typename BlockCoordHolder>
 void test_interpolation_target(
-    const DomainCreator& domain_creator, InterpolationTargetOption options,
+    const DomainCreator& domain_creator,
+    typename InterpolationTargetOptionTag::type options,
     const BlockCoordHolder& expected_block_coord_holders) noexcept {
   using metavars = MetaVariables;
   using target_component =
@@ -146,7 +147,7 @@ void test_interpolation_target(
   using interp_component = mock_interpolator<metavars>;
 
   tuples::TaggedTuple<
-      typename metavars::InterpolationTargetA,
+      InterpolationTargetOptionTag,
       ::Tags::Domain<MetaVariables::volume_dim, Frame::Inertial>>
       tuple_of_opts{std::move(options),
                     std::move(domain_creator.create_domain())};

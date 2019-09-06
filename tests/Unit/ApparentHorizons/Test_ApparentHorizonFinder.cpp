@@ -205,8 +205,6 @@ struct MockMetavariables {
     using post_interpolation_callback =
         intrp::callbacks::FindApparentHorizon<AhA>;
     using post_horizon_find_callback = PostHorizonFindCallback;
-    // This `type` is so this tag can be used to read options.
-    using type = typename compute_target_points::options_type;
   };
   using interpolator_source_vars =
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
@@ -256,7 +254,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       false);
 
   tuples::TaggedTuple<::Tags::Domain<3, Frame::Inertial>,
-                      typename metavars::AhA>
+                      typename ::intrp::Tags::ApparentHorizon<
+                          typename metavars::AhA, Frame::Inertial>>
       tuple_of_opts{std::move(domain_creator.create_domain()),
                     std::move(apparent_horizon_opts)};
 

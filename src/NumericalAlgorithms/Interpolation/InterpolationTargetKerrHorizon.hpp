@@ -67,7 +67,7 @@ struct KerrHorizon {
               const OptionContext& context = {});
 
   KerrHorizon() = default;
-  KerrHorizon(const KerrHorizon& /*rhs*/) = delete;
+  KerrHorizon(const KerrHorizon& /*rhs*/) = default;
   KerrHorizon& operator=(const KerrHorizon& /*rhs*/) = delete;
   KerrHorizon(KerrHorizon&& /*rhs*/) noexcept = default;
   KerrHorizon& operator=(KerrHorizon&& /*rhs*/) noexcept = default;
@@ -86,6 +86,31 @@ bool operator==(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept;
 bool operator!=(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept;
 
 }  // namespace OptionHolders
+
+namespace OptionTags {
+template <typename InterpolationTargetTag>
+struct KerrHorizon {
+  using type = OptionHolders::KerrHorizon;
+  static constexpr OptionString help{
+      "Options for interpolation onto Kerr horizon."};
+  static std::string name() noexcept {
+    return option_name<InterpolationTargetTag>();
+  }
+  using group = InterpolationTargets;
+};
+}  // namespace OptionTags
+
+namespace Tags {
+template <typename InterpolationTargetTag>
+struct KerrHorizon : db::SimpleTag {
+  using type = OptionHolders::KerrHorizon;
+  using option_tags =
+      tmpl::list<OptionTags::KerrHorizon<InterpolationTargetTag>>;
+  static type create_from_options(const type& option) noexcept {
+    return option;
+  }
+};
+}  // namespace Tags
 
 namespace Actions {
 /// \ingroup ActionsGroup
@@ -119,8 +144,8 @@ namespace Actions {
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag, typename Frame>
 struct KerrHorizon {
-  using options_type = OptionHolders::KerrHorizon;
-  using const_global_cache_tags = tmpl::list<InterpolationTargetTag>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::KerrHorizon<InterpolationTargetTag>>;
   using initialization_tags =
       tmpl::append<StrahlkorperTags::items_tags<Frame>,
                    StrahlkorperTags::compute_items_tags<Frame>>;
@@ -128,7 +153,8 @@ struct KerrHorizon {
   static auto initialize(
       db::DataBox<DbTags>&& box,
       const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-    const auto& options = Parallel::get<InterpolationTargetTag>(cache);
+    const auto& options =
+        Parallel::get<Tags::KerrHorizon<InterpolationTargetTag>>(cache);
 
     // Make a Strahlkorper with the correct shape.
     ::Strahlkorper<Frame> strahlkorper(

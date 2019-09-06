@@ -23,6 +23,17 @@ class ElementId;
 
 namespace intrp {
 
+
+namespace OptionTags {
+/*!
+ * \ingroup OptionGroupsGroup
+ * \brief Groups option tags for InterpolationTargets.
+ */
+struct InterpolationTargets {
+  static constexpr OptionString help{"Options for interpolation targets"};
+};
+}  // namespace OptionTags
+
 /// Tags for items held in the `DataBox` of `InterpolationTarget` or
 /// `Interpolator`.
 namespace Tags {

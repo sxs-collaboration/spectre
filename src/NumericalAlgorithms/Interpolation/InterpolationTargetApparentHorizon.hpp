@@ -65,7 +65,7 @@ struct ApparentHorizon {
                   Verbosity verbosity_in) noexcept;
 
   ApparentHorizon() = default;
-  ApparentHorizon(const ApparentHorizon& /*rhs*/) = delete;
+  ApparentHorizon(const ApparentHorizon& /*rhs*/) = default;
   ApparentHorizon& operator=(const ApparentHorizon& /*rhs*/) = delete;
   ApparentHorizon(ApparentHorizon&& /*rhs*/) noexcept = default;
   ApparentHorizon& operator=(ApparentHorizon&& /*rhs*/) noexcept = default;
@@ -87,6 +87,35 @@ bool operator!=(const ApparentHorizon<Frame>& lhs,
                 const ApparentHorizon<Frame>& rhs) noexcept;
 
 }  // namespace OptionHolders
+
+namespace OptionTags {
+struct ApparentHorizons {
+  static constexpr OptionString help{"Options for apparent horizon finders"};
+};
+
+template <typename InterpolationTargetTag, typename Frame>
+struct ApparentHorizon {
+  using type = OptionHolders::ApparentHorizon<Frame>;
+  static constexpr OptionString help{
+      "Options for interpolation onto apparent horizon."};
+  static std::string name() noexcept {
+    return option_name<InterpolationTargetTag>();
+  }
+  using group = ApparentHorizons;
+};
+}  // namespace OptionTags
+
+namespace Tags {
+template <typename InterpolationTargetTag, typename Frame>
+struct ApparentHorizon : db::SimpleTag {
+  using type = OptionHolders::ApparentHorizon<Frame>;
+  using option_tags =
+      tmpl::list<OptionTags::ApparentHorizon<InterpolationTargetTag, Frame>>;
+  static type create_from_options(const type& option) noexcept {
+    return option;
+  }
+};
+}  // namespace Tags
 
 namespace Actions {
 /// \ingroup ActionsGroup
@@ -123,8 +152,8 @@ namespace Actions {
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag, typename Frame>
 struct ApparentHorizon {
-  using options_type = OptionHolders::ApparentHorizon<Frame>;
-  using const_global_cache_tags = tmpl::list<InterpolationTargetTag>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::ApparentHorizon<InterpolationTargetTag, Frame>>;
   using initialization_tags =
       tmpl::append<StrahlkorperTags::items_tags<Frame>,
                    tmpl::list<::ah::Tags::FastFlow, ::Tags::Verbosity>,
@@ -133,7 +162,9 @@ struct ApparentHorizon {
   static auto initialize(
       db::DataBox<DbTags>&& box,
       const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-    const auto& options = Parallel::get<InterpolationTargetTag>(cache);
+    const auto& options =
+        Parallel::get<Tags::ApparentHorizon<InterpolationTargetTag, Frame>>(
+            cache);
 
     // Put Strahlkorper and its ComputeItems, FastFlow,
     // and verbosity into a new DataBox.
