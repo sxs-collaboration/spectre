@@ -4,8 +4,8 @@
 set(LIBRARY NewtonianEulerSources)
 
 set(LIBRARY_SOURCES
-  IsentropicVortexSource.cpp
   UniformAcceleration.cpp
+  VortexPerturbation.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})

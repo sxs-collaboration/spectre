@@ -74,7 +74,7 @@ namespace Solutions {
  * but a function of the \f$z\f$ coordinate, the resulting modified isentropic
  * vortex is still a solution to the Newtonian Euler system, but with source
  * terms that are proportional to \f$dv_z/dz\f$. (See
- * NewtonianEuler::Sources::IsentropicVortexSource.) For testing purposes,
+ * NewtonianEuler::Sources::VortexPerturbation.) For testing purposes,
  * we choose to write the velocity as a uniform field plus a periodic
  * perturbation,
  *

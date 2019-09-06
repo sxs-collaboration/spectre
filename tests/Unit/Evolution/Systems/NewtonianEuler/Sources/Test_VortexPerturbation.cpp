@@ -4,7 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include "DataStructures/DataVector.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/IsentropicVortexSource.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/VortexPerturbation.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -15,11 +15,11 @@
 
 namespace {
 
-void test_isentropic_vortex_sources(const DataVector& used_for_size) noexcept {
+void test_sources(const DataVector& used_for_size) noexcept {
   pypp::check_with_random_values<6>(
-      &NewtonianEuler::Sources::IsentropicVortexSource::apply, "TestFunctions",
-      {"vortex_mass_density_source", "vortex_momentum_density_source",
-       "vortex_energy_density_source"},
+      &NewtonianEuler::Sources::VortexPerturbation::apply, "VortexPerturbation",
+      {"mass_density_source", "momentum_density_source",
+       "energy_density_source"},
       {{{0., 1.E4},
         {-100., 100.},
         {0., 300.},
@@ -31,10 +31,10 @@ void test_isentropic_vortex_sources(const DataVector& used_for_size) noexcept {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.NewtonianEuler.Sources.Vortex",
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.NewtonianEuler.Sources.VortexPerturb",
                   "[Unit][Evolution]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/NewtonianEuler/Sources"};
 
-  test_isentropic_vortex_sources(DataVector(5));
+  test_sources(DataVector(5));
 }

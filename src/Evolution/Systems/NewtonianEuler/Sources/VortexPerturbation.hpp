@@ -63,7 +63,7 @@ namespace Sources {
  * where \f$v_z = v_z(z)\f$ is the \f$z-\f$component of the flow velocity,
  * and \f$p\f$ is the pressure.
  */
-struct IsentropicVortexSource {
+struct VortexPerturbation {
   /// The \f$z-\f$component of the vortex flow velocity.
   struct VelocityAlongZ {
     using type = Scalar<DataVector>;

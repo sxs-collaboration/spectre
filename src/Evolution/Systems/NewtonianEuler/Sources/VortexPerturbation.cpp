@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/NewtonianEuler/Sources/IsentropicVortexSource.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/VortexPerturbation.hpp"
 
 #include <cstddef>
 
@@ -17,7 +17,7 @@
 namespace NewtonianEuler {
 namespace Sources {
 
-void IsentropicVortexSource::apply(
+void VortexPerturbation::apply(
     const gsl::not_null<Scalar<DataVector>*> mass_density_source,
     const gsl::not_null<tnsr::I<DataVector, 3>*> momentum_density_source,
     const gsl::not_null<Scalar<DataVector>*> energy_density_source,
