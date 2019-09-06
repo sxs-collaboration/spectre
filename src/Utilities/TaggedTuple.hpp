@@ -347,6 +347,8 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
       TaggedTuple<LTags...>&& t) noexcept;
 
  public:
+  using tags_list = tmpl::list<Tags...>;
+
   static constexpr size_t size() noexcept { return sizeof...(Tags); }
 
   // clang-tidy: runtime-references
@@ -493,6 +495,7 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
 template <>
 class TaggedTuple<> {
  public:
+  using tags_list = tmpl::list<>;
   static constexpr size_t size() noexcept { return 0; }
   TaggedTuple() noexcept = default;
   void swap(TaggedTuple& /*unused*/) noexcept {}
@@ -711,6 +714,35 @@ struct tagged_tuple_typelist_impl<List<Tags...>> {
 template <typename T>
 using tagged_tuple_from_typelist =
     typename TaggedTuple_detail::tagged_tuple_typelist_impl<T>::type;
+
+namespace TaggedTuple_detail {
+template <typename... InputTags, typename... OutputTags>
+TaggedTuple<OutputTags...> reorder_impl(
+    TaggedTuple<InputTags...>&& input,
+    tmpl::list<OutputTags...> /*meta*/) noexcept {
+  static_assert(
+      cpp17::is_same_v<tmpl::list_difference<tmpl::list<OutputTags...>,
+                                             tmpl::list<InputTags...>>,
+                       tmpl::list<>> and
+          cpp17::is_same_v<tmpl::list_difference<tmpl::list<InputTags...>,
+                                                 tmpl::list<OutputTags...>>,
+                           tmpl::list<>>,
+      "The input and output TaggedTuples must be the same except"
+      "for ordering.");
+  return TaggedTuple<OutputTags...>(std::move(get<OutputTags>(input))...);
+}
+}  // namespace TaggedTuple_detail
+
+/// Given an input TaggedTuple, produce an output TaggedTuple
+/// with the tags in a different order.  All tags must be the same
+/// except for ordering.
+/// \example
+/// \snippet Test_TaggedTuple.cpp reorder_example
+template <typename ReturnedTaggedTuple, typename... Tags>
+ReturnedTaggedTuple reorder(TaggedTuple<Tags...> input) noexcept {
+  return TaggedTuple_detail::reorder_impl(
+      std::move(input), typename ReturnedTaggedTuple::tags_list{});
+}
 
 /// Stream operator for TaggedTuple
 template <class... Tags>

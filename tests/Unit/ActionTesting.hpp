@@ -1338,6 +1338,13 @@ class MockRuntimeSystem {
     });
   }
 
+  /// Construct from the tuple of ConstGlobalCache objects that might
+  /// be in a different order.
+  template <typename... Tags>
+  explicit MockRuntimeSystem(tuples::TaggedTuple<Tags...> cache_contents)
+      : MockRuntimeSystem(
+            tuples::reorder<CacheTuple>(std::move(cache_contents))) {}
+
   /// Emplace a component that does not need to be initialized.
   template <typename Component, typename... Options>
   void emplace_component(const typename Component::array_index& array_index,

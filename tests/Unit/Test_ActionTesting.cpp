@@ -179,6 +179,29 @@ struct SimpleActionMockMetavariables {
   enum class Phase { Initialization, Testing, Exit };
 };
 
+struct MockMetavariablesWithGlobalCacheTags {
+  using component_list = tmpl::list<
+      component_for_simple_action_mock<SimpleActionMockMetavariables>>;
+  using const_global_cache_tag_list = tmpl::list<ValueTag,PassedToB>;
+
+  enum class Phase { Initialization, Testing, Exit };
+};
+
+void test_mock_runtime_system_constructors() {
+  using metavars = MockMetavariablesWithGlobalCacheTags;
+  // Test whether we can construct with tagged tuples in different orders.
+  ActionTesting::MockRuntimeSystem<metavars> runner1{
+      tuples::TaggedTuple<ValueTag, PassedToB>{3, 7}};
+  ActionTesting::MockRuntimeSystem<metavars> runner2{
+      tuples::TaggedTuple<PassedToB, ValueTag>{7, 3}};
+  CHECK(Parallel::get<ValueTag>(runner1.cache()) ==
+        Parallel::get<ValueTag>(runner2.cache()));
+  CHECK(Parallel::get<PassedToB>(runner1.cache()) ==
+        Parallel::get<PassedToB>(runner2.cache()));
+  CHECK(Parallel::get<ValueTag>(runner1.cache()) == 3);
+  CHECK(Parallel::get<PassedToB>(runner1.cache()) == 7);
+}
+
 SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   using metavars = SimpleActionMockMetavariables;
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
@@ -239,6 +262,8 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
                                  threaded_action_b>(make_not_null(&runner), 0,
                                                     -50);
   CHECK(db::get<ValueTag>(box) == -50);
+
+  test_mock_runtime_system_constructors();
 }
 }  // namespace TestSimpleAndThreadedActions
 

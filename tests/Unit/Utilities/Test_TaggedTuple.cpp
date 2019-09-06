@@ -86,6 +86,29 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
   }
 
   test_serialization(test2);
+
+  // Test reorder with non-const lvalue, and make sure
+  // that the non-const lvalue doesn't change.
+  const auto test3 = tuples::reorder<
+      tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>>(test);
+  CHECK(test3 ==
+        tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>{
+            "bla@bla.bla", 0, std::vector<std::string>{"Mom", "Dad"}, 17,
+            "Eamonn"});
+  CHECK(test ==
+        tuples::TaggedTuple<name, age, email, parents, not_streamable_tag>{
+            "Eamonn", 17, "bla@bla.bla", std::vector<std::string>{"Mom", "Dad"},
+            0});
+
+  /// [reorder_example]
+  const auto test4 = tuples::reorder<
+      tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>>(
+      std::move(test));
+  /// [reorder_example]
+  CHECK(test4 ==
+        tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>{
+            "bla@bla.bla", 0, std::vector<std::string>{"Mom", "Dad"}, 17,
+            "Eamonn"});
 }
 
 namespace {
