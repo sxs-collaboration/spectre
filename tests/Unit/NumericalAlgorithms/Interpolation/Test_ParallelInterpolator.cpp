@@ -177,6 +177,7 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
+
   using const_global_cache_tags = tmpl::flatten<tmpl::append<
       Parallel::get_const_global_cache_tags_from_actions<
           tmpl::list<typename InterpolationTargetTag::compute_target_points>>,
