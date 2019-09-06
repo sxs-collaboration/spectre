@@ -26,7 +26,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -101,7 +101,7 @@ struct MockCleanUpInterpolator {
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
-    CHECK(temporal_id == TimeId(true, 0, Time(slab, Rational(13, 15))));
+    CHECK(temporal_id == TimeStepId(true, 0, Time(slab, Rational(13, 15))));
     // Put something in NumberOfElements so we can check later whether
     // this function was called.  This isn't the usual usage of
     // NumberOfElements.
@@ -123,7 +123,7 @@ struct MockComputeTargetPoints {
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
-    CHECK(temporal_id == TimeId(true, 0, Time(slab, Rational(14, 15))));
+    CHECK(temporal_id == TimeStepId(true, 0, Time(slab, Rational(14, 15))));
     // Increment IndicesOfFilledInterpPoints so we can check later
     // whether this function was called.  This isn't the usual usage
     // of IndicesOfFilledInterpPoints; this is done only for the test.
@@ -156,7 +156,7 @@ template <typename DbTags, typename TemporalId>
 void callback_impl(const db::DataBox<DbTags>& box,
                    const TemporalId& temporal_id) noexcept {
   Slab slab(0.0, 1.0);
-  CHECK(temporal_id == TimeId(true, 0, Time(slab, Rational(13, 15))));
+  CHECK(temporal_id == TimeStepId(true, 0, Time(slab, Rational(13, 15))));
   // The result should be the square of the first 10 integers, in
   // a Scalar<DataVector>.
   const Scalar<DataVector> expected{
@@ -222,7 +222,7 @@ struct MockMetavariables {
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-  using temporal_id = ::Tags::TimeId;
+  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
 
   using component_list = tmpl::list<
@@ -253,8 +253,8 @@ void test_interpolation_target_receive_vars() noexcept {
       &runner, 0,
       {db::item_type<intrp::Tags::IndicesOfFilledInterpPoints>{},
        db::item_type<typename intrp::Tags::TemporalIds<metavars>>{
-           TimeId(true, 0, Time(slab, Rational(13, 15))),
-           TimeId(true, 0, Time(slab, Rational(14, 15)))},
+           TimeStepId(true, 0, Time(slab, Rational(13, 15))),
+           TimeStepId(true, 0, Time(slab, Rational(14, 15)))},
        db::item_type<typename intrp::Tags::CompletedTemporalIds<metavars>>{},
        db::item_type<::Tags::Variables<typename metavars::InterpolationTargetA::
                                            vars_to_interpolate_to_target>>{
@@ -405,7 +405,7 @@ void test_interpolation_target_receive_vars() noexcept {
     CHECK(ActionTesting::get_databox_tag<
               target_component, intrp::Tags::CompletedTemporalIds<metavars>>(
               runner, 0)
-              .front() == TimeId(true, 0, Time(slab, Rational(13, 15))));
+              .front() == TimeStepId(true, 0, Time(slab, Rational(13, 15))));
 
     // And there is yet one more simple action, compute_target_points,
     // which here we mock just to check that it is called.

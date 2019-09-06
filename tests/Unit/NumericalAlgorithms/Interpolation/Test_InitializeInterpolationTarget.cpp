@@ -52,7 +52,7 @@ struct Metavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
-  using temporal_id = ::Tags::TimeId;
+  using temporal_id = ::Tags::TimeStepId;
 
   using component_list = tmpl::list<
       mock_interpolation_target<Metavariables, InterpolationTargetA>>;

@@ -16,7 +16,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep // for item_type<Tags::TimeStep>
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -151,7 +151,7 @@ using vars_to_save = typename vars_to_save_impl<
 /// Uses:
 /// - ConstGlobalCache: nothing
 /// - DataBox:
-///   - Tags::TimeId
+///   - Tags::TimeStepId
 ///   - Tags::TimeStep
 ///   - variables_tag
 ///   - primitive_variables_tag if the system has primitives
@@ -196,7 +196,7 @@ struct Initialize {
     // The slab number increments each time a new point is generated
     // until it reaches zero.
     const auto values_needed =
-        -db::get<::Tags::Next<::Tags::TimeId>>(box).slab_number();
+        -db::get<::Tags::Next<::Tags::TimeStepId>>(box).slab_number();
     const TimeDelta self_start_step = initial_step / (values_needed + 1);
 
     auto new_box = StoreInitialValues<tmpl::push_back<
@@ -220,7 +220,7 @@ struct Initialize {
 ///
 /// Uses:
 /// - ConstGlobalCache: nothing
-/// - DataBox: Tags::Next<Tags::TimeId>
+/// - DataBox: Tags::Next<Tags::TimeStepId>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -242,7 +242,7 @@ struct CheckForCompletion {
     // start the evolution proper.  The first thing the evolution loop
     // will do is update the time, so here we need to check if the
     // next time should be the first real step.
-    if (db::get<::Tags::Next<::Tags::TimeId>>(box).slab_number() == 0) {
+    if (db::get<::Tags::Next<::Tags::TimeStepId>>(box).slab_number() == 0) {
       return {std::move(box), false,
               tmpl::index_of<ActionList, ::Actions::Label<ExitTag>>::value};
     }
@@ -261,13 +261,13 @@ struct CheckForCompletion {
 /// - DataBox:
 ///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
 ///   - Tags::SubstepTime
-///   - Tags::TimeId
+///   - Tags::TimeStepId
 ///   - Tags::TimeStep
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
-/// - Modifies: Tags::Next<Tags::TimeId> if there is an order increase
+/// - Modifies: Tags::Next<Tags::TimeStepId> if there is an order increase
 struct CheckForOrderIncrease {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -291,19 +291,21 @@ struct CheckForOrderIncrease {
     const bool done_with_order = time == required_time;
 
     if (done_with_order) {
-      db::mutate<::Tags::Next<::Tags::TimeId>>(
+      db::mutate<::Tags::Next<::Tags::TimeStepId>>(
           make_not_null(&box),
-          [](const gsl::not_null<db::item_type<::Tags::Next<::Tags::TimeId>>*>
-                 next_time_id,
-             const db::item_type<::Tags::TimeId>& current_time_id) noexcept {
+          [
+          ](const gsl::not_null<
+                db::item_type<::Tags::Next<::Tags::TimeStepId>>*>
+                next_time_id,
+            const db::item_type<::Tags::TimeStepId>& current_time_id) noexcept {
             const Slab slab = current_time_id.step_time().slab();
             *next_time_id =
-                TimeId(current_time_id.time_runs_forward(),
-                       current_time_id.slab_number() + 1,
-                       current_time_id.time_runs_forward() ? slab.start()
-                                                           : slab.end());
+                TimeStepId(current_time_id.time_runs_forward(),
+                           current_time_id.slab_number() + 1,
+                           current_time_id.time_runs_forward() ? slab.start()
+                                                               : slab.end());
           },
-          db::get<::Tags::TimeId>(box));
+          db::get<::Tags::TimeStepId>(box));
     }
 
     return {std::move(box)};
@@ -319,7 +321,7 @@ struct CheckForOrderIncrease {
 /// Uses:
 /// - ConstGlobalCache: nothing
 /// - DataBox:
-///   - Tags::Next<Tags::TimeId>
+///   - Tags::Next<Tags::TimeStepId>
 ///   - SelfStart::Tags::InitialValue<variables_tag>
 ///   - SelfStart::Tags::InitialValue<primitive_variables_tag> if the system
 ///     has primitives
@@ -350,7 +352,7 @@ struct StartNextOrderIfReady {
         tmpl::index_of<ActionList, StartNextOrderIfReady>::value + 1;
 
     const bool done_with_order =
-        db::get<::Tags::Next<::Tags::TimeId>>(box).is_at_slab_boundary();
+        db::get<::Tags::Next<::Tags::TimeStepId>>(box).is_at_slab_boundary();
 
     if (done_with_order) {
       tmpl::for_each<detail::vars_to_save<system>>([&box](auto tag) noexcept {

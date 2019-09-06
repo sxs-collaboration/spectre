@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines class TimeId.
+/// Defines class TimeStepId.
 
 #pragma once
 
@@ -22,14 +22,14 @@ class er;
 ///
 /// A unique identifier for the temporal state of an integrated
 /// system.
-class TimeId {
+class TimeStepId {
  public:
-  TimeId() = default;
-  /// Create a TimeId at the start of a step.  If that step is at the
-  /// (evolution-defined) end of the slab the TimeId will be advanced
+  TimeStepId() = default;
+  /// Create a TimeStepId at the start of a step.  If that step is at the
+  /// (evolution-defined) end of the slab the TimeStepId will be advanced
   /// to the next slab.
-  TimeId(const bool time_runs_forward, const int64_t slab_number,
-         const Time& time) noexcept
+  TimeStepId(const bool time_runs_forward, const int64_t slab_number,
+             const Time& time) noexcept
       : time_runs_forward_(time_runs_forward),
         slab_number_(slab_number),
         step_time_(time),
@@ -37,11 +37,11 @@ class TimeId {
         substep_time_(time) {
     canonicalize();
   }
-  /// Create a TimeId at a substep at time `substep_time` in a step
+  /// Create a TimeStepId at a substep at time `substep_time` in a step
   /// starting at time `step_time`.
-  TimeId(const bool time_runs_forward, const int64_t slab_number,
-         const Time& step_time, const uint64_t substep,
-         const Time& substep_time) noexcept
+  TimeStepId(const bool time_runs_forward, const int64_t slab_number,
+             const Time& step_time, const uint64_t substep,
+             const Time& substep_time) noexcept
       : time_runs_forward_(time_runs_forward),
         slab_number_(slab_number),
         step_time_(step_time),
@@ -77,20 +77,20 @@ class TimeId {
   Time substep_time_{};
 };
 
-bool operator==(const TimeId& a, const TimeId& b) noexcept;
-bool operator!=(const TimeId& a, const TimeId& b) noexcept;
-bool operator<(const TimeId& a, const TimeId& b) noexcept;
-bool operator<=(const TimeId& a, const TimeId& b) noexcept;
-bool operator>(const TimeId& a, const TimeId& b) noexcept;
-bool operator>=(const TimeId& a, const TimeId& b) noexcept;
+bool operator==(const TimeStepId& a, const TimeStepId& b) noexcept;
+bool operator!=(const TimeStepId& a, const TimeStepId& b) noexcept;
+bool operator<(const TimeStepId& a, const TimeStepId& b) noexcept;
+bool operator<=(const TimeStepId& a, const TimeStepId& b) noexcept;
+bool operator>(const TimeStepId& a, const TimeStepId& b) noexcept;
+bool operator>=(const TimeStepId& a, const TimeStepId& b) noexcept;
 
-std::ostream& operator<<(std::ostream& s, const TimeId& id) noexcept;
+std::ostream& operator<<(std::ostream& s, const TimeStepId& id) noexcept;
 
-size_t hash_value(const TimeId& id) noexcept;
+size_t hash_value(const TimeStepId& id) noexcept;
 
 namespace std {
 template <>
-struct hash<TimeId> {
-  size_t operator()(const TimeId& id) const noexcept;
+struct hash<TimeStepId> {
+  size_t operator()(const TimeStepId& id) const noexcept;
 };
 }  // namespace std

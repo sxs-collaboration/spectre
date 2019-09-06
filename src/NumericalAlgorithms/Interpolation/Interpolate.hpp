@@ -17,9 +17,9 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-class TimeId;
+class TimeStepId;
 namespace Tags {
-struct TimeId;
+struct TimeStepId;
 template <size_t VolumeDim>
 struct Mesh;
 template <typename TagsList>
@@ -71,10 +71,10 @@ class Interpolate<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
   Interpolate() = default;
 
   using argument_tags =
-      tmpl::list<::Tags::TimeId, ::Tags::Mesh<VolumeDim>, Tensors...>;
+      tmpl::list<::Tags::TimeStepId, ::Tags::Mesh<VolumeDim>, Tensors...>;
 
   template <typename Metavariables, typename ParallelComponent>
-  void operator()(const TimeId& time_id, const Mesh<VolumeDim>& mesh,
+  void operator()(const TimeStepId& time_id, const Mesh<VolumeDim>& mesh,
                   const db::item_type<Tensors>&... tensors,
                   Parallel::ConstGlobalCache<Metavariables>& cache,
                   const ElementIndex<VolumeDim>& array_index,

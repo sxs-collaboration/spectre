@@ -16,7 +16,7 @@
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"  // IWYU pragma: keep
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -49,10 +49,10 @@ class BoundaryHistory {
 
   /// Add a new value to the end of the history of the indicated side.
   //@{
-  void local_insert(const TimeId& time_id, LocalVars vars) noexcept {
+  void local_insert(const TimeStepId& time_id, LocalVars vars) noexcept {
     local_data_.emplace_back(time_id.substep_time(), std::move(vars));
   }
-  void remote_insert(const TimeId& time_id, RemoteVars vars) noexcept {
+  void remote_insert(const TimeStepId& time_id, RemoteVars vars) noexcept {
     remote_data_.emplace_back(time_id.substep_time(), std::move(vars));
   }
   //@}
@@ -60,10 +60,12 @@ class BoundaryHistory {
   /// Add a new value to the front of the history of the indicated
   /// side.  This is often convenient for setting initial data.
   //@{
-  void local_insert_initial(const TimeId& time_id, LocalVars vars) noexcept {
+  void local_insert_initial(const TimeStepId& time_id,
+                            LocalVars vars) noexcept {
     local_data_.emplace_front(time_id.substep_time(), std::move(vars));
   }
-  void remote_insert_initial(const TimeId& time_id, RemoteVars vars) noexcept {
+  void remote_insert_initial(const TimeStepId& time_id,
+                             RemoteVars vars) noexcept {
     remote_data_.emplace_front(time_id.substep_time(), std::move(vars));
   }
   //@}

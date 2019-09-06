@@ -17,7 +17,7 @@
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -33,7 +33,7 @@ void take_step(
     const TimeStepper& stepper,
     F&& rhs,
     const TimeDelta& step_size) noexcept {
-  TimeId time_id(step_size.is_positive(), 0, *time);
+  TimeStepId time_id(step_size.is_positive(), 0, *time);
   for (uint64_t substep = 0;
        substep < stepper.number_of_substeps();
        ++substep) {
@@ -204,7 +204,7 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
   const Slab slab(0.875, 1.);
   const TimeDelta step_size = (forward ? 1 : -1) * slab.duration() / num_steps;
 
-  TimeId time_id(forward, 0, forward ? slab.start() : slab.end());
+  TimeStepId time_id(forward, 0, forward ? slab.start() : slab.end());
   double y = analytic(time_id.substep_time().value());
   TimeSteppers::History<double, double> volume_history;
   TimeSteppers::BoundaryHistory<double, double, double> boundary_history;
@@ -226,10 +226,10 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
       history_time -= history_step_size;
       volume_history.insert_initial(history_time,
                                     analytic(history_time.value()), 0.);
-      boundary_history.local_insert_initial(TimeId(forward, 0, history_time),
-                                            unused_local_deriv);
-      boundary_history.remote_insert_initial(TimeId(forward, 0, history_time),
-                                             driver(history_time.value()));
+      boundary_history.local_insert_initial(
+          TimeStepId(forward, 0, history_time), unused_local_deriv);
+      boundary_history.remote_insert_initial(
+          TimeStepId(forward, 0, history_time), driver(history_time.value()));
     }
   }
 
@@ -288,7 +288,7 @@ void check_dense_output(const TimeStepper& stepper,
                         const int expected_order) noexcept {
   const auto get_dense = [&stepper](TimeDelta step_size,
                                     const double time) noexcept {
-    TimeId time_id(true, 0, step_size.slab().start());
+    TimeStepId time_id(true, 0, step_size.slab().start());
     double y = 1.;
     TimeSteppers::History<double, double> history;
     initialize_history(time_id.substep_time(), &history,
@@ -363,7 +363,7 @@ void check_boundary_dense_output(const LtsTimeStepper& stepper) noexcept {
   };
 
   const auto make_time_id = [](const Time& t) noexcept {
-    return TimeId(true, 0, t);
+    return TimeStepId(true, 0, t);
   };
 
   TimeSteppers::BoundaryHistory<double, double, double> history;

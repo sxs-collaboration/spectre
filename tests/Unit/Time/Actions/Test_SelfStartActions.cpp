@@ -24,7 +24,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -127,8 +127,8 @@ struct Component {
       typename metavariables::system::test_primitive_variables_tags,
       db::add_tag_prefix<Tags::dt,
                          typename metavariables::system::variables_tag>,
-      history_tag, Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep,
-      Tags::Time>>;
+      history_tag, Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
+      Tags::TimeStep, Tags::Time>>;
   using compute_tags = db::AddComputeTags<Tags::SubstepTime>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
@@ -165,8 +165,9 @@ void emplace_component_and_initialize(
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<HasPrimitives>>>(
       runner, 0,
-      {initial_value, 0., db::item_type<history_tag>{}, TimeId{},
-       TimeId(forward_in_time, 1 - static_cast<int64_t>(order), initial_time),
+      {initial_value, 0., db::item_type<history_tag>{}, TimeStepId{},
+       TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
+                  initial_time),
        initial_time_step, std::numeric_limits<double>::signaling_NaN()});
 }
 
@@ -179,8 +180,10 @@ void emplace_component_and_initialize<true>(
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<true>>>(
       runner, 0,
-      {initial_value, initial_value, 0., db::item_type<history_tag>{}, TimeId{},
-       TimeId(forward_in_time, 1 - static_cast<int64_t>(order), initial_time),
+      {initial_value, initial_value, 0., db::item_type<history_tag>{},
+       TimeStepId{},
+       TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
+                  initial_time),
        initial_time_step, std::numeric_limits<double>::signaling_NaN()});
 }
 
@@ -304,7 +307,8 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
                   initial_time) < abs(initial_time_step));
         const auto next_time =
             ActionTesting::get_databox_tag<Component<Metavariables<>>,
-                                           Tags::Next<Tags::TimeId>>(runner, 0)
+                                           Tags::Next<Tags::TimeStepId>>(runner,
+                                                                         0)
                 .step_time();
         CHECK((next_time == initial_time) == last_point);
       }
@@ -350,11 +354,11 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
             runner, 0);
     CHECK(db::get<Var>(box) == initial_value);
     CHECK(db::get<Tags::TimeStep>(box) == initial_time_step);
-    CHECK(db::get<Tags::TimeId>(box) ==
-          TimeId(forward_in_time, 0, initial_time));
+    CHECK(db::get<Tags::TimeStepId>(box) ==
+          TimeStepId(forward_in_time, 0, initial_time));
     // This test only uses Adams-Bashforth.
-    CHECK(db::get<Tags::Next<Tags::TimeId>>(box) ==
-          TimeId(forward_in_time, 0, initial_time + initial_time_step));
+    CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
+          TimeStepId(forward_in_time, 0, initial_time + initial_time_step));
     CHECK(db::get<history_tag>(box).size() == order - 1);
   }
 }

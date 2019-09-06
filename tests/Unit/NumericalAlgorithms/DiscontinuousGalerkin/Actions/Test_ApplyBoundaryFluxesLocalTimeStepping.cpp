@@ -32,7 +32,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -104,7 +104,7 @@ struct Component {
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<Component<Metavariables>>;
-  using temporal_id = TimeId;
+  using temporal_id = TimeStepId;
   static constexpr bool local_time_stepping = true;
   using const_global_cache_tag_list = tmpl::list<>;
 
@@ -166,16 +166,16 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
   using mortar_data_tag =
       typename flux_comm_types::local_time_stepping_mortar_data_tag;
   typename mortar_data_tag::type mortar_data;
-  mortar_data[slow_mortar].local_insert(TimeId(true, 0, now),
+  mortar_data[slow_mortar].local_insert(TimeStepId(true, 0, now),
                                         gsl::at(local_data, 0));
-  mortar_data[fast_mortar].local_insert(TimeId(true, 0, now),
+  mortar_data[fast_mortar].local_insert(TimeStepId(true, 0, now),
                                         gsl::at(local_data, 1));
-  mortar_data[slow_mortar].remote_insert(TimeId(true, 0, now - time_step / 2),
-                                         gsl::at(remote_data, 0));
-  mortar_data[fast_mortar].remote_insert(TimeId(true, 0, now),
+  mortar_data[slow_mortar].remote_insert(
+      TimeStepId(true, 0, now - time_step / 2), gsl::at(remote_data, 0));
+  mortar_data[fast_mortar].remote_insert(TimeStepId(true, 0, now),
                                          gsl::at(remote_data, 1));
-  mortar_data[fast_mortar].remote_insert(TimeId(true, 0, now + time_step / 3),
-                                         gsl::at(remote_data, 2));
+  mortar_data[fast_mortar].remote_insert(
+      TimeStepId(true, 0, now + time_step / 3), gsl::at(remote_data, 2));
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(1), NumericalFlux{}}};

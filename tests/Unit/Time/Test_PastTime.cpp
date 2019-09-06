@@ -13,7 +13,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/Triggers/PastTime.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -35,15 +35,15 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.PastTime", "[Unit][Time]") {
   const auto check = [&sent_trigger, &slab](const Time& time,
                                             const bool time_runs_forward,
                                             const bool expected) noexcept {
-    auto box = db::create<db::AddSimpleTags<Tags::TimeId, Tags::Time>>(
-        TimeId(time_runs_forward, 0, slab.start()), time.value());
+    auto box = db::create<db::AddSimpleTags<Tags::TimeStepId, Tags::Time>>(
+        TimeStepId(time_runs_forward, 0, slab.start()), time.value());
     CHECK(sent_trigger->is_triggered(box) == expected);
-    db::mutate<Tags::TimeId>(
-        make_not_null(&box), [](const gsl::not_null<TimeId*> time_id) noexcept {
-          *time_id =
-              TimeId(time_id->time_runs_forward(), time_id->slab_number(),
+    db::mutate<Tags::TimeStepId>(make_not_null(&box), [
+    ](const gsl::not_null<TimeStepId*> time_id) noexcept {
+      *time_id =
+          TimeStepId(time_id->time_runs_forward(), time_id->slab_number(),
                      time_id->step_time(), 1, time_id->step_time());
-        });
+    });
     CHECK_FALSE(sent_trigger->is_triggered(box));
   };
   check(slab.start(), true, false);

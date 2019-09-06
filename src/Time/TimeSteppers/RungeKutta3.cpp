@@ -6,7 +6,7 @@
 #include <cmath>
 
 #include "ErrorHandling/Assert.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 
 namespace TimeSteppers {
 
@@ -23,8 +23,9 @@ double RungeKutta3::stable_step() const noexcept {
   return 0.5 * (1. + cbrt(4. + sqrt(17.)) - 1. / cbrt(4. + sqrt(17.)));
 }
 
-TimeId RungeKutta3::next_time_id(const TimeId& current_id,
-                                 const TimeDelta& time_step) const noexcept {
+TimeStepId RungeKutta3::next_time_id(
+    const TimeStepId& current_id,
+    const TimeDelta& time_step) const noexcept {
   switch (current_id.substep()) {
     case 0:
       ASSERT(current_id.substep_time() == current_id.step_time(),

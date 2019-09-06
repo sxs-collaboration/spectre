@@ -11,7 +11,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -20,7 +20,7 @@ namespace Tags {
 template <typename Tag>
 struct Next;
 struct Time;
-struct TimeId;
+struct TimeStepId;
 struct TimeStep;
 struct TimeStepperBase;
 }  // namespace Tags
@@ -34,15 +34,15 @@ namespace Actions {
 ///
 /// Uses:
 /// - ConstGlobalCache: OptionTags::TimeStepper
-/// - DataBox: Tags::TimeId, Tags::TimeStep
+/// - DataBox: Tags::TimeStepId, Tags::TimeStep
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
 /// - Modifies:
-///   - Tags::Next<Tags::TimeId>
+///   - Tags::Next<Tags::TimeStepId>
 ///   - Tags::Time
-///   - Tags::TimeId
+///   - Tags::TimeStepId
 ///   - Tags::TimeStep
 struct AdvanceTime {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -53,13 +53,13 @@ struct AdvanceTime {
       const Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
-    db::mutate<Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep,
+    db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                Tags::Time>(
-        make_not_null(&box), [&cache](const gsl::not_null<TimeId*> time_id,
-                                      const gsl::not_null<TimeId*> next_time_id,
-                                      const gsl::not_null<TimeDelta*> time_step,
-                                      const gsl::not_null<double*>
-                                          time) noexcept {
+        make_not_null(&box), [&cache](
+                                 const gsl::not_null<TimeStepId*> time_id,
+                                 const gsl::not_null<TimeStepId*> next_time_id,
+                                 const gsl::not_null<TimeDelta*> time_step,
+                                 const gsl::not_null<double*> time) noexcept {
           const auto& time_stepper =
               Parallel::get<Tags::TimeStepperBase>(cache);
           *time_id = *next_time_id;

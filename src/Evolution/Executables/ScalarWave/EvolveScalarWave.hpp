@@ -80,7 +80,7 @@ struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
   // Customization/"input options" to simulation
   using system = ScalarWave::System<Dim>;
-  using temporal_id = Tags::TimeId;
+  using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = true;
   using initial_data_tag =
       Tags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;

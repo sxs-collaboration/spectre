@@ -38,7 +38,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -59,7 +59,7 @@
 namespace {
 constexpr size_t Dim = 2;
 
-using TemporalId = Tags::TimeId;
+using TemporalId = Tags::TimeStepId;
 
 struct Var : db::SimpleTag {
   static std::string name() noexcept { return "Var"; }
@@ -349,7 +349,7 @@ void run_test() {
     const Slab slab(1.2, 3.4);
     const Time start = slab.start();
 
-    TimeId initial_time(true, 4, start);
+    TimeStepId initial_time(true, 4, start);
 
     db::item_type<mortar_data_tag<flux_comm_types>> mortar_history{};
     for (const auto& mortar_id : external_mortar_ids) {

@@ -20,7 +20,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/Rational.hpp"
@@ -68,7 +68,7 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
   };
-  using temporal_id = ::Tags::TimeId;
+  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags =
@@ -84,7 +84,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.CleanUp", "[Unit]") {
   using interp_component = mock_interpolator<metavars>;
 
   Slab slab(0.0, 1.0);
-  TimeId temporal_id(true, 0, Time(slab, Rational(12, 13)));
+  TimeStepId temporal_id(true, 0, Time(slab, Rational(12, 13)));
 
   // Make a VolumeVarsInfo that contains a single temporal_id but
   // no data (since we don't need data for this test).

@@ -14,7 +14,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -46,7 +46,7 @@ struct Component {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
   using const_global_cache_tag_list = tmpl::list<>;
-  using simple_tags = db::AddSimpleTags<Tags::TimeId, variables_tag,
+  using simple_tags = db::AddSimpleTags<Tags::TimeStepId, variables_tag,
                                         dt_variables_tag, history_tag>;
   using compute_tags = db::AddComputeTags<Tags::SubstepTime>;
   using phase_dependent_action_list = tmpl::list<
@@ -70,7 +70,7 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
                   "[Unit][Time][Actions]") {
   const Slab slab(1., 3.);
-  const TimeId time_id(true, 8, slab.start());
+  const TimeStepId time_id(true, 8, slab.start());
 
   history_tag::type history{};
   history.insert(slab.end(), 2., 3.);

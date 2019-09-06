@@ -20,7 +20,7 @@
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -160,7 +160,7 @@ void test_interpolation_target(
   runner.set_phase(metavars::Phase::Testing);
 
   Slab slab(0.0, 1.0);
-  TimeId temporal_id(true, 0, Time(slab, 0));
+  TimeStepId temporal_id(true, 0, Time(slab, 0));
 
   ActionTesting::simple_action<
       target_component,
@@ -210,7 +210,7 @@ void test_interpolation_target(
   }
 
   // Call again at a different temporal_id
-  TimeId new_temporal_id(true, 0, Time(slab, 1));
+  TimeStepId new_temporal_id(true, 0, Time(slab, 1));
   ActionTesting::simple_action<
       target_component,
       typename metavars::InterpolationTargetA::compute_target_points>(

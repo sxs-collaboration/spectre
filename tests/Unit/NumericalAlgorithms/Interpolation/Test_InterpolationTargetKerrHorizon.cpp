@@ -33,7 +33,7 @@ struct MockMetavariables {
         ::intrp::Actions::KerrHorizon<InterpolationTargetA, ::Frame::Inertial>;
     using type = compute_target_points::options_type;
   };
-  using temporal_id = ::Tags::TimeId;
+  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;

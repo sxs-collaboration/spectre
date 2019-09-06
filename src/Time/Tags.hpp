@@ -21,17 +21,17 @@
 #include "Time/StepChoosers/StepChooser.hpp"        // IWYU pragma: keep
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Tags {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Tag for ::TimeId for the algorithm state
-struct TimeId : db::SimpleTag {
-  static std::string name() noexcept { return "TimeId"; }
-  using type = ::TimeId;
+/// \brief Tag for ::TimeStepId for the algorithm state
+struct TimeStepId : db::SimpleTag {
+  static std::string name() noexcept { return "TimeStepId"; }
+  using type = ::TimeStepId;
   template <typename Tag>
   using step_prefix = typename Tags::dt<Tag>;
 };
@@ -46,13 +46,14 @@ struct TimeStep : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Tag for compute item for ::Time of the current substep (from TimeId)
+/// \brief Tag for compute item for ::Time of the current substep (from
+/// TimeStepId)
 struct SubstepTime : db::ComputeTag {
   static std::string name() noexcept { return "SubstepTime"; }
-  static auto function(const ::TimeId& id) noexcept {
+  static auto function(const ::TimeStepId& id) noexcept {
     return id.substep_time();
   }
-  using argument_tags = tmpl::list<TimeId>;
+  using argument_tags = tmpl::list<TimeStepId>;
 };
 
 /// \ingroup DataBoxTagsGroup

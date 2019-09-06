@@ -25,7 +25,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -64,7 +64,7 @@ struct Lapse : db::SimpleTag {
 struct MockInterpolatorReceiveVolumeData {
   struct Results {
     // Hardcode expected types here.
-    db::item_type<::Tags::TimeId> temporal_id{};
+    db::item_type<::Tags::TimeStepId> temporal_id{};
     ElementId<3> element_id{};
     Mesh<3> mesh{};
     Variables<tmpl::list<Tags::Lapse>> vars{};
@@ -128,7 +128,7 @@ struct MockMetavariables {
   struct InterpolatorTargetA {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Lapse>;
   };
-  using temporal_id = ::Tags::TimeId;
+  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<Tags::Lapse>;
   using interpolation_target_tags = tmpl::list<InterpolatorTargetA>;
@@ -167,7 +167,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   const auto box = db::create<db::AddSimpleTags<
       metavars::temporal_id, ::Tags::Mesh<metavars::volume_dim>,
       ::Tags::Variables<typename decltype(vars)::tags_list>>>(
-      TimeId(true, 0, Slab(0., observation_time).end()), mesh, vars);
+      TimeStepId(true, 0, Slab(0., observation_time).end()), mesh, vars);
 
   intrp::Events::Interpolate<metavars::volume_dim,
                              metavars::interpolator_source_vars> event{};

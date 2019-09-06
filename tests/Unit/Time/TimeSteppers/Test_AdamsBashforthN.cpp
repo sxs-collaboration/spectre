@@ -16,7 +16,7 @@
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/ForceInline.hpp"
@@ -51,7 +51,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
     TimeSteppers::History<double, double> history;
     history.insert(first, 0., 0.);
     history.insert(second, 0., 0.);
-    return stepper.can_change_step_size(TimeId(true, 0, now), history);
+    return stepper.can_change_step_size(TimeStepId(true, 0, now), history);
   };
   CHECK(can_change(start, mid, end));
   CHECK_FALSE(can_change(start, end, mid));
@@ -110,7 +110,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
     TimeSteppers::History<double, double> history;
     history.insert(first, 0., 0.);
     history.insert(second, 0., 0.);
-    return stepper.can_change_step_size(TimeId(false, 0, now), history);
+    return stepper.can_change_step_size(TimeStepId(false, 0, now), history);
   };
   CHECK_FALSE(can_change(start, mid, end));
   CHECK_FALSE(can_change(start, end, mid));
@@ -199,7 +199,7 @@ void do_lts_test(const std::array<TimeDelta, 2>& dt) noexcept {
   };
 
   const auto make_time_id = [forward_in_time](const Time& t) noexcept {
-    return TimeId(forward_in_time, 0, t);
+    return TimeStepId(forward_in_time, 0, t);
   };
 
   const Slab slab = dt[0].slab();
@@ -260,7 +260,7 @@ void check_lts_vts() noexcept {
   const Slab slab(0., 1.);
 
   const auto make_time_id = [](const Time& t) noexcept {
-    return TimeId(true, 0, t);
+    return TimeStepId(true, 0, t);
   };
 
   Time t = slab.start();
@@ -404,13 +404,13 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Boundary.Reversal",
 
   const Slab slab(0., 1.);
   TimeSteppers::BoundaryHistory<double, double, double> history{};
-  const auto add_history = [&df, &history](const TimeId& time_id) noexcept {
+  const auto add_history = [&df, &history](const TimeStepId& time_id) noexcept {
     history.local_insert(time_id, df(time_id.step_time().value()));
     history.remote_insert(time_id, 0.);
   };
-  add_history(TimeId(true, 0, slab.start()));
-  add_history(TimeId(true, 0, slab.end()));
-  add_history(TimeId(true, 1, slab.start() + slab.duration() / 3));
+  add_history(TimeStepId(true, 0, slab.start()));
+  add_history(TimeStepId(true, 0, slab.end()));
+  add_history(TimeStepId(true, 1, slab.start() + slab.duration() / 3));
   double y = f(1. / 3.);
   y += ab3.compute_boundary_delta(
       [](const double local, const double /*remote*/) noexcept {
