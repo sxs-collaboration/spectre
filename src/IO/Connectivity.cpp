@@ -8,8 +8,7 @@
 #include "DataStructures/Index.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"
 
-namespace vis {
-namespace detail {
+namespace vis::detail {
 std::ostream& operator<<(std::ostream& os, const Topology& topology) noexcept {
   switch (topology) {
     case Topology::Line:
@@ -140,5 +139,5 @@ template std::vector<CellInTopology> compute_cells<2>(
     const Index<2>& extents) noexcept;
 template std::vector<CellInTopology> compute_cells<3>(
     const Index<3>& extents) noexcept;
-}  // namespace detail
-}  // namespace vis
+}  // namespace vis::detail
+

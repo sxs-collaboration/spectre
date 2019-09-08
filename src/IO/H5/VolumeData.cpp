@@ -10,18 +10,24 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <vector>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TensorData.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
+#include "ErrorHandling/ExpectsAndEnsures.hpp"
 #include "IO/Connectivity.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Header.hpp"
 #include "IO/H5/Helpers.hpp"
+#include "IO/H5/SpectralIo.hpp"
 #include "IO/H5/Version.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/GetOutput.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/Numeric.hpp"
 
 /// \cond HIDDEN_SYMBOLS
@@ -48,8 +54,8 @@ void append_element_extents_and_connectivity(
   // Generate the connectivity data for the element
   // Possible optimization: local_connectivity.reserve(BLAH) if we can figure
   // out size without computing all the connectivities.
-  const std::vector<int> connectivity =
-      [&extents, &total_points_so_far ]() noexcept {
+  const std::vector<int> connectivity = [&extents,
+                                         &total_points_so_far]() noexcept {
     std::vector<int> local_connectivity;
     for (const auto& cell : vis::detail::compute_cells(extents)) {
       for (const auto& bounding_indices : cell.bounding_indices) {
@@ -58,8 +64,7 @@ void append_element_extents_and_connectivity(
       }
     }
     return local_connectivity;
-  }
-  ();
+  }();
   *total_points_so_far += element_num_points;
   total_connectivity->insert(total_connectivity->end(), connectivity.begin(),
                              connectivity.end());
@@ -74,10 +79,12 @@ void append_element_name(const gsl::not_null<std::string*> grid_names,
          "The expected format of the tensor component names is "
          "'GROUP_NAME/COMPONENT_NAME' but could not find a '/' in '"
              << first_tensor_name << "'.");
+
   const auto spatial_name =
       first_tensor_name.substr(0, first_tensor_name.find_last_of('/'));
   *grid_names += spatial_name + VolumeData::separator();
 }
+
 }  // namespace
 
 VolumeData::VolumeData(const bool subfile_exists, detail::OpenGroup&& group,
@@ -119,7 +126,7 @@ VolumeData::VolumeData(const bool subfile_exists, detail::OpenGroup&& group,
 // an `observation_group` in a `VolumeData` file.
 void VolumeData::write_volume_data(
     const size_t observation_id, const double observation_value,
-    const std::vector<ExtentsAndTensorVolumeData>& elements) noexcept {
+    const std::vector<ElementVolumeData>& elements) noexcept {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadWrite);
@@ -144,9 +151,10 @@ void VolumeData::write_volume_data(
                                      get_component_name),
       boost::make_transform_iterator(elements.front().tensor_components.end(),
                                      get_component_name));
-
-  // The dimension of the grid is the number of extents per element.
-  // Only written once per VolumeData file, as if two observation id's
+  // The dimension of the grid is the number of extents per element. I.e., if
+  // the extents are [8,5,7] for any element, the dimension of the grid is 3.
+  // Only written once per VolumeData file (All volume data in a single file
+  // should have the same dimensionality)
   if (not contains_attribute(volume_data_group_.id(), "", "dimension")) {
     h5::write_to_attribute(volume_data_group_.id(), "dimension",
                            elements.front().extents.size());
@@ -157,18 +165,37 @@ void VolumeData::write_volume_data(
   std::vector<size_t> total_extents;
   std::string grid_names;
   std::vector<int> total_connectivity;
-  // We need to keep track the total number of points inserted into the
-  // connectivity after each iteration to be sure each point gets a
-  // unique representation in the topology data
+  std::vector<int> quadratures;
+  std::vector<int> bases;
+  // Keep a running count of the number of points so far to use as a global
+  // index for the connectivity
   int total_points_so_far = 0;
   // Loop over tensor componenents
   for (size_t i = 0; i < component_names.size(); i++) {
     std::string component_name = component_names[i];
-
+    // Write the data for the tensor component
+    if (h5::contains_dataset_or_group(observation_group.id(), "",
+                                      component_name)) {
+      ERROR("Trying to write tensor component '"
+            << component_name
+            << "' which already exists in HDF5 file in group '" << name_ << '/'
+            << "ObservationId" << std::to_string(observation_id) << "'");
+    }
     std::vector<double> contiguous_tensor_data{};
-    for (auto& element : elements) {
-      if (i == 0) {  // True if first tensor component being accessed
+    for (const auto& element : elements) {
+      if (UNLIKELY(i == 0)) {  // True if first tensor component being accessed
         append_element_name(&grid_names, element);
+        // append element basis
+        alg::transform(element.basis, std::back_inserter(bases),
+                       [](const Spectral::Basis t) noexcept {
+                         return static_cast<int>(t);
+                       });
+        // append element quadraature
+        alg::transform(element.quadrature, std::back_inserter(quadratures),
+                       [](const Spectral::Quadrature t) noexcept {
+                         return static_cast<int>(t);
+                       });
+
         append_element_extents_and_connectivity(
             &total_extents, &total_connectivity, &total_points_so_far, dim,
             element);
@@ -179,16 +206,6 @@ void VolumeData::write_volume_data(
                                     tensor_data_on_grid.end());
 
     }  // for each element
-
-    // Write the data for the tensor component
-    if (h5::contains_dataset_or_group(observation_group.id(), "",
-                                      component_name)) {
-      ERROR("Trying to write tensor component '"
-            << component_name
-            << "' which already exists in HDF5 file in group '" << name_ << '/'
-            << "ObservationId" << std::to_string(observation_id) << "'");
-    }
-
     h5::write_data(observation_group.id(), contiguous_tensor_data,
                    {contiguous_tensor_data.size()}, component_name);
   }  // for each component
@@ -203,6 +220,22 @@ void VolumeData::write_volume_data(
   std::vector<char> grid_names_as_chars(grid_names.begin(), grid_names.end());
   h5::write_data(observation_group.id(), grid_names_as_chars,
                  {grid_names_as_chars.size()}, "grid_names");
+  // Write the coded quadrature, along with the dictionary
+  const auto io_quadratures = h5_detail::allowed_quadratures();
+  std::vector<std::string> quadrature_dict(io_quadratures.size());
+  alg::transform(io_quadratures, quadrature_dict.begin(),
+                 get_output<Spectral::Quadrature>);
+  h5_detail::write_dictionary("Quadrature dictionary", quadrature_dict,
+                              observation_group);
+  h5::write_data(observation_group.id(), quadratures, {quadratures.size()},
+                 "quadratures");
+  // Write the coded basis, along with the dictionary
+  const auto io_bases = h5_detail::allowed_bases();
+  std::vector<std::string> basis_dict(io_bases.size());
+  alg::transform(io_bases, basis_dict.begin(), get_output<Spectral::Basis>);
+  h5_detail::write_dictionary("Basis dictionary", basis_dict,
+                              observation_group);
+  h5::write_data(observation_group.id(), bases, {bases.size()}, "bases");
   // Write the Connectivity
   h5::write_data(observation_group.id(), total_connectivity,
                  {total_connectivity.size()}, "connectivity");
@@ -217,8 +250,8 @@ std::vector<size_t> VolumeData::list_observation_ids() const noexcept {
           boost::make_transform_iterator(names.end(), helper)};
 }
 
-double VolumeData::get_observation_value(const size_t observation_id) const
-    noexcept {
+double VolumeData::get_observation_value(
+    const size_t observation_id) const noexcept {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadOnly);
@@ -231,14 +264,18 @@ std::vector<std::string> VolumeData::list_tensor_components(
   auto tensor_components =
       get_group_names(volume_data_group_.id(),
                       "ObservationId" + std::to_string(observation_id));
-  std::remove(tensor_components.begin(), tensor_components.end(),
-              "connectivity");
-  std::remove(tensor_components.begin(), tensor_components.end(),
-              "total_extents");
-  std::remove(tensor_components.begin(), tensor_components.end(), "grid_names");
+  auto remove_data_name = [&tensor_components](const std::string& data_name) {
+    // NOLINTNEXTLINE(bugprone-unused-return-value)
+    alg::remove(tensor_components, data_name);
+  };
+  remove_data_name("connectivity");
+  remove_data_name("total_extents");
+  remove_data_name("grid_names");
+  remove_data_name("quadratures");
+  remove_data_name("bases");
   // std::remove moves the element to the end of the vector, so we still need to
   // actually erase it from the vector
-  tensor_components.erase(tensor_components.end() - 3, tensor_components.end());
+  tensor_components.erase(tensor_components.end() - 5, tensor_components.end());
 
   return tensor_components;
 }
@@ -252,8 +289,8 @@ std::vector<std::string> VolumeData::get_grid_names(
       h5::read_data<1, std::vector<char>>(observation_group.id(), "grid_names");
   const std::string all_names(names.begin(), names.end());
   std::vector<std::string> grid_names{};
-  boost::split(grid_names, all_names, [this](const char c) noexcept {
-    return c == this->separator();
+  boost::split(grid_names, all_names, [](const char c) noexcept {
+    return c == h5::VolumeData::separator();
   });
   // boost::split counts the last separator as a split even though there are no
   // characters after it, so the last entry of the vector is empty
@@ -262,8 +299,8 @@ std::vector<std::string> VolumeData::get_grid_names(
 }
 
 DataVector VolumeData::get_tensor_component(
-    const size_t observation_id, const std::string& tensor_component) const
-    noexcept {
+    const size_t observation_id,
+    const std::string& tensor_component) const noexcept {
   const std::string path = "ObservationId" + std::to_string(observation_id);
   detail::OpenGroup observation_group(volume_data_group_.id(), path,
                                       AccessType::ReadOnly);
@@ -320,8 +357,8 @@ std::pair<size_t, size_t> offset_and_length_for_grid(
     const auto element_index =
         std::distance(all_grid_names.begin(), found_grid_name);
     const size_t element_data_offset = std::accumulate(
-        all_extents.begin(), all_extents.begin() + element_index,
-        0_st, [](size_t offset, std::vector<size_t> extents) noexcept {
+        all_extents.begin(), all_extents.begin() + element_index, 0_st,
+        [](const size_t offset, const std::vector<size_t>& extents) noexcept {
           return offset + alg::accumulate(extents, 1_st, std::multiplies<>{});
         });
     const size_t element_data_length = alg::accumulate(
@@ -332,6 +369,49 @@ std::pair<size_t, size_t> offset_and_length_for_grid(
 
 size_t VolumeData::get_dimension() const noexcept {
   return h5::read_value_attribute<double>(volume_data_group_.id(), "dimension");
+}
+
+std::vector<std::vector<std::string>> VolumeData::get_bases(
+    const size_t observation_id) const noexcept {
+  const std::string path = "ObservationId" + std::to_string(observation_id);
+  detail::OpenGroup observation_group(volume_data_group_.id(), path,
+                                      AccessType::ReadOnly);
+  const auto dim =
+      h5::read_value_attribute<size_t>(volume_data_group_.id(), "dimension");
+  const auto bases_per_element = static_cast<long>(dim);
+
+  const std::vector<int> bases_coded =
+      h5::read_data<1, std::vector<int>>(observation_group.id(), "bases");
+  auto all_bases = h5_detail::decode_with_dictionary_name(
+      "Basis dictionary", bases_coded, observation_group);
+
+  std::vector<std::vector<std::string>> element_bases;
+  for (auto iter = all_bases.begin(); iter != all_bases.end();
+       std::advance(iter, bases_per_element)) {
+    element_bases.emplace_back(iter, std::next(iter, bases_per_element));
+  }
+  return element_bases;
+}
+std::vector<std::vector<std::string>> VolumeData::get_quadratures(
+    const size_t observation_id) const noexcept {
+  const std::string path = "ObservationId" + std::to_string(observation_id);
+  detail::OpenGroup observation_group(volume_data_group_.id(), path,
+                                      AccessType::ReadOnly);
+  const auto dim =
+      h5::read_value_attribute<size_t>(volume_data_group_.id(), "dimension");
+  const auto quadratures_per_element = static_cast<long>(dim);
+  const std::vector<int> quadratures_coded =
+      h5::read_data<1, std::vector<int>>(observation_group.id(), "quadratures");
+  auto all_quadratures = h5_detail::decode_with_dictionary_name(
+      "Quadrature dictionary", quadratures_coded, observation_group);
+  std::vector<std::vector<std::string>> element_quadratures;
+  for (auto iter = all_quadratures.begin(); iter != all_quadratures.end();
+       std::advance(iter, quadratures_per_element)) {
+    element_quadratures.emplace_back(iter,
+                                     std::next(iter, quadratures_per_element));
+  }
+
+  return element_quadratures;
 }
 
 }  // namespace h5

@@ -11,6 +11,7 @@ spectre_target_sources(
   Helpers.cpp
   OpenGroup.cpp
   SourceArchive.cpp
+  SpectralIo.cpp
   StellarCollapseEos.cpp
   Version.cpp
   VolumeData.cpp
@@ -29,6 +30,7 @@ spectre_target_headers(
   Object.hpp
   OpenGroup.hpp
   SourceArchive.hpp
+  SpectralIo.hpp
   StellarCollapseEos.hpp
   Type.hpp
   Version.hpp

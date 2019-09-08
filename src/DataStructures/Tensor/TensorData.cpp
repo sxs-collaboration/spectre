@@ -30,3 +30,9 @@ void ExtentsAndTensorVolumeData::pup(PUP::er& p) noexcept {
   p | extents;
   p | tensor_components;
 }
+
+void ElementVolumeData::pup(PUP::er& p) noexcept {
+  ExtentsAndTensorVolumeData::pup(p);
+  p | quadrature;
+  p | basis;
+}

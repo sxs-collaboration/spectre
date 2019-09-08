@@ -18,6 +18,7 @@
 
 /// \cond
 class DataVector;
+class ElementVolumeData;
 class ExtentsAndTensorVolumeData;
 /// \endcond
 
@@ -98,7 +99,7 @@ class VolumeData : public h5::Object {
   /// `GRID_NAME/TENSOR_NAME_COMPONENT`, e.g. `Element0/T_xx`
   void write_volume_data(
       size_t observation_id, double observation_value,
-      const std::vector<ExtentsAndTensorVolumeData>& elements) noexcept;
+      const std::vector<ElementVolumeData>& elements) noexcept;
 
   /// List all the integral observation ids in the subfile
   std::vector<size_t> list_observation_ids() const noexcept;
@@ -119,28 +120,39 @@ class VolumeData : public h5::Object {
   }
 
   /// List all the tensor components at observation id `observation_id`
-  std::vector<std::string> list_tensor_components(size_t observation_id) const
-      noexcept;
+  std::vector<std::string> list_tensor_components(
+      size_t observation_id) const noexcept;
 
   /// List the names of all the grids at observation id `observation_id`
   std::vector<std::string> get_grid_names(size_t observation_id) const noexcept;
 
   /// Read a tensor component with name `tensor_component` at observation id
   /// `observation_id` from all grids in the file
-  DataVector get_tensor_component(size_t observation_id,
-                                  const std::string& tensor_component) const
-      noexcept;
+  DataVector get_tensor_component(
+      size_t observation_id,
+      const std::string& tensor_component) const noexcept;
 
   /// Read the extents of all the grids stored in the file at the observation id
   /// `observation_id`
-  std::vector<std::vector<size_t>> get_extents(size_t observation_id) const
-      noexcept;
+  std::vector<std::vector<size_t>> get_extents(
+      size_t observation_id) const noexcept;
 
-  /// Read the dimensionality of the grids.
+  /// Read the dimensionality of the grids.  Note : This is the dimension of
+  /// the grids as manifolds, not the dimension of the embedding space.  For
+  /// example, the volume data of a sphere is 2-dimensional, even though
+  /// each point has an x, y, and z coordinate.
   size_t get_dimension() const noexcept;
 
   /// Return the character used as a separator between grids in the subfile.
   static char separator() noexcept { return ':'; }
+
+  /// Return the basis being used for each element along each axis
+  std::vector<std::vector<std::string>> get_bases(
+      size_t observation_id) const noexcept;
+
+  /// Return the quadrature being used for each element along each axis
+  std::vector<std::vector<std::string>> get_quadratures(
+      size_t observation_id) const noexcept;
 
  private:
   detail::OpenGroup group_{};

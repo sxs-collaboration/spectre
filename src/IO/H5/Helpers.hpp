@@ -72,8 +72,8 @@ Type read_value_attribute(hid_t location_id, const std::string& name) noexcept;
  * \ingroup HDF5Group
  * \brief Read rank-1 of type `Type` from an HDF5 attribute named `name`
  */
-template <typename T>
-std::vector<T> read_rank1_attribute(hid_t group_id,
+template <typename Type>
+std::vector<Type> read_rank1_attribute(hid_t group_id,
                                     const std::string& name) noexcept;
 
 /*!

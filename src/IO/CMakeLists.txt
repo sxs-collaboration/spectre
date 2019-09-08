@@ -30,6 +30,7 @@ target_link_libraries(
   INTERFACE
   Domain
   DomainStructure
+  Spectral
   )
 
 add_subdirectory(H5)

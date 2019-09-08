@@ -49,7 +49,7 @@ struct TensorData : db::SimpleTag {
   using type =
       std::unordered_map<observers::ObservationId,
                          std::unordered_map<observers::ArrayComponentId,
-                                            ExtentsAndTensorVolumeData>>;
+                                            ElementVolumeData>>;
 };
 
 /// \cond

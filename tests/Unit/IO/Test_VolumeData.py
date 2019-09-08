@@ -57,6 +57,8 @@ class TestVolumeData(unittest.TestCase):
         observation_ids = [0, 1]
         observation_values = {0: 7.0, 1: 1.3}
         grid_names = ["grid_1", "grid_2"]
+        basis = ds.Legendre
+        quad = ds.Gauss
 
         # Insert .vol file to h5 file
         self.h5_file.insert_vol("/element_data", version=0)
@@ -64,34 +66,37 @@ class TestVolumeData(unittest.TestCase):
 
         # Set TensorComponent and ExtentsAndTensorVolumeData to
         # be written
-        extents_and_tensor_vol_grid_1 = [
-            ds.ExtentsAndTensorVolumeData([2, 2, 2], [
+
+        element_vol_data_grid_1 = [
+            ds.ElementVolumeData([2, 2, 2], [
                 ds.TensorComponent(
                     grid_names[0] + "/field_1",
                     ds.DataVector(self.tensor_component_data[2 * i])),
                 ds.TensorComponent(
                     grid_names[0] + "/field_2",
                     ds.DataVector(self.tensor_component_data[2 * i + 1]))
-            ]) for i, observation_id in enumerate(observation_ids)
+            ], [basis, basis, basis], [quad, quad, quad])
+            for i, observation_id in enumerate(observation_ids)
         ]
-        extents_and_tensor_vol_grid_2 = [
-            ds.ExtentsAndTensorVolumeData([2, 2, 2], [
+
+        element_vol_data_grid_2 = [
+            ds.ElementVolumeData([2, 2, 2], [
                 ds.TensorComponent(
                     grid_names[1] + "/field_1",
                     ds.DataVector(self.tensor_component_data[2 * i + 1])),
                 ds.TensorComponent(
                     grid_names[1] + "/field_2",
                     ds.DataVector(self.tensor_component_data[2 * i]))
-            ]) for i, observation_id in enumerate(observation_ids)
+            ], [basis, basis, basis], [quad, quad, quad])
+            for i, observation_id in enumerate(observation_ids)
         ]
 
         # Write extents and tensor volume data to volfile
+
         for i, observation_id in enumerate(observation_ids):
             self.vol_file.write_volume_data(
-                observation_id, observation_values[observation_id], [
-                    extents_and_tensor_vol_grid_1[i],
-                    extents_and_tensor_vol_grid_2[i]
-                ])
+                observation_id, observation_values[observation_id],
+                [element_vol_data_grid_1[i], element_vol_data_grid_2[i]])
 
     def tearDown(self):
         self.h5_file.close()
@@ -122,6 +127,13 @@ class TestVolumeData(unittest.TestCase):
         extents = self.vol_file.get_extents(observation_id=obs_id)
         expected_extents = [[2, 2, 2], [2, 2, 2]]
         self.assertEqual(extents, expected_extents)
+        bases = self.vol_file.get_bases(obs_id)
+        expected_bases = [["Legendre", "Legendre", "Legendre"],
+                          ["Legendre", "Legendre", "Legendre"]]
+        self.assertEqual(bases, expected_bases)
+        quadratures = self.vol_file.get_quadratures(obs_id)
+        expected_quadratures = [["Gauss", "Gauss", "Gauss"],
+                                ["Gauss", "Gauss", "Gauss"]]
 
     # Test that the tensor components, and tensor data  are retrieved correctly
     def test_tensor_components(self):
@@ -134,7 +146,7 @@ class TestVolumeData(unittest.TestCase):
                          set(expected_tensor_component_names))
         # Test tensor component data at specified obs_id
         for i, expected_tensor_component_data in\
-             enumerate(self.tensor_component_data[:2]):
+            enumerate(self.tensor_component_data[:2]):
             npt.assert_almost_equal(
                 np.asarray(
                     self.vol_file.get_tensor_component(
@@ -147,7 +159,6 @@ class TestVolumeData(unittest.TestCase):
         obs_id = self.vol_file.list_observation_ids()[0]
         all_grid_names = self.vol_file.get_grid_names(observation_id=obs_id)
         all_extents = self.vol_file.get_extents(observation_id=obs_id)
-
         self.assertEqual(
             spectre_h5.offset_and_length_for_grid(
                 grid_name='grid_1',
