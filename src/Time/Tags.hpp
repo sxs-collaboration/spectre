@@ -46,10 +46,20 @@ struct TimeStep : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Tag for compute item for ::Time of the current substep (from
-/// TimeStepId)
-struct SubstepTime : db::ComputeTag {
-  static std::string name() noexcept { return "SubstepTime"; }
+/// \brief Tag for ::Time of the current substep
+///
+/// \see SubstepTimeCompute
+struct SubstepTime : db::SimpleTag {
+  using type = ::Time;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup TimeGroup
+/// \brief Tag for computing the substep time from (from `Tags::TimeStepId`)
+///
+/// \see SubstepTime
+struct SubstepTimeCompute : SubstepTime, db::ComputeTag {
+  using base = SubstepTime;
   static auto function(const ::TimeStepId& id) noexcept {
     return id.substep_time();
   }

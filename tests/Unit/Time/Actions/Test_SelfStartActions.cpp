@@ -127,7 +127,7 @@ struct Component {
                          typename metavariables::system::variables_tag>,
       history_tag, Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
       Tags::TimeStep, Tags::Time>>;
-  using compute_tags = db::AddComputeTags<Tags::SubstepTime>;
+  using compute_tags = db::AddComputeTags<Tags::SubstepTimeCompute>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
 

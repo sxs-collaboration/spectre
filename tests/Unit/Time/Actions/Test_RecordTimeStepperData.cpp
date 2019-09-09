@@ -14,7 +14,6 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
@@ -45,9 +44,9 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using simple_tags = db::AddSimpleTags<Tags::TimeStepId, variables_tag,
+  using simple_tags = db::AddSimpleTags<Tags::SubstepTime, variables_tag,
                                         dt_variables_tag, history_tag>;
-  using compute_tags = db::AddComputeTags<Tags::SubstepTime>;
+  using compute_tags = db::AddComputeTags<>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -68,7 +67,6 @@ struct Metavariables {
 SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
                   "[Unit][Time][Actions]") {
   const Slab slab(1., 3.);
-  const TimeStepId time_id(true, 8, slab.start());
 
   history_tag::type history{};
   history.insert(slab.end(), 2., 3.);
@@ -80,7 +78,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
   MockRuntimeSystem runner{{}};
 
   ActionTesting::emplace_component_and_initialize<component>(
-      &runner, 0, {time_id, 4., 5., std::move(history)});
+      &runner, 0, {slab.start(), 4., 5., std::move(history)});
   runner.set_phase(Metavariables::Phase::Testing);
   runner.next_action<component>(0);
   auto& box =
