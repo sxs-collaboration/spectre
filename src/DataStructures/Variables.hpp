@@ -443,6 +443,43 @@ class Variables<tmpl::list<Tags...>> {
   tuples::TaggedTuple<Tags...> reference_variable_data_;
 };
 
+// The above Variables implementation doesn't work for an empty parameter pack,
+// so specialize here.
+template<>
+class Variables<tmpl::list<>> {
+ public:
+  Variables() noexcept = default;
+  explicit Variables(const size_t /*number_of_grid_points*/) noexcept {};
+  static constexpr size_t size() noexcept { return 0; }
+};
+
+// gcc8 screams when the empty Variables has pup as a member function, so we
+// declare pup as a free function here.
+// clang-tidy: runtime-references
+SPECTRE_ALWAYS_INLINE void pup(
+    PUP::er& /*p*/,                                    // NOLINT
+    Variables<tmpl::list<>>& /* unused */) noexcept {  // NOLINT
+}
+SPECTRE_ALWAYS_INLINE void operator|(
+    PUP::er& /*p*/, Variables<tmpl::list<>>& /* unused */) noexcept {  // NOLINT
+}
+
+SPECTRE_ALWAYS_INLINE bool operator==(
+    const Variables<tmpl::list<>>& /*lhs*/,
+    const Variables<tmpl::list<>>& /*rhs*/) noexcept {
+  return true;
+}
+SPECTRE_ALWAYS_INLINE bool operator!=(
+    const Variables<tmpl::list<>>& /*lhs*/,
+    const Variables<tmpl::list<>>& /*rhs*/) noexcept {
+  return false;
+}
+
+inline std::ostream& operator<<(std::ostream& os,
+                                const Variables<tmpl::list<>>& /*d*/) noexcept {
+  return os << "{}";
+}
+
 template <typename... Tags>
 Variables<tmpl::list<Tags...>>::Variables() noexcept {
   // This makes an assertion trigger if one tries to assign to
