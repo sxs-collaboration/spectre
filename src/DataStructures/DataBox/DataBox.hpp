@@ -351,18 +351,6 @@ struct create_dependency_graph {
 }  // namespace DataBox_detail
 
 namespace DataBox_detail {
-// Check if a tag has a name method
-template <typename Tag, typename = std::nullptr_t>
-struct tag_has_name {
-  static_assert(cpp17::is_same_v<Tag, const void* const*>,
-                "The tag does not have a static method 'name()' that returns a "
-                "std::string. See the first template parameter of "
-                "db::DataBox_detail::tag_has_name to see the problematic tag.");
-};
-template <typename Tag>
-struct tag_has_name<
-    Tag, Requires<cpp17::is_same_v<decltype(Tag::name()), std::string>>> {};
-
 template <typename Tag, typename = std::nullptr_t>
 struct check_simple_or_compute_tag {
   static_assert(cpp17::is_same_v<Tag, const void* const*>,
@@ -459,7 +447,6 @@ class DataBox<tmpl::list<Tags...>>
 #ifdef SPECTRE_DEBUG
   // Destructor is used for triggering assertions
   ~DataBox() noexcept {
-    EXPAND_PACK_LEFT_TO_RIGHT(DataBox_detail::tag_has_name<Tags>{});
     EXPAND_PACK_LEFT_TO_RIGHT(
         DataBox_detail::check_simple_or_compute_tag<Tags>{});
   }
@@ -1195,7 +1182,7 @@ SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::get() const noexcept
   using derived_tag = DataBox_detail::first_matching_tag<tags_list, Tag>;
   if (UNLIKELY(mutate_locked_box_)) {
     ERROR("Unable to retrieve a (compute) item '"
-          << derived_tag::name()
+          << db::tag_name<derived_tag>()
           << "' from the DataBox from within a "
              "call to mutate. You must pass these either through the capture "
              "list of the lambda or the constructor of a class, this "
@@ -1508,7 +1495,7 @@ const Type& get_item_from_box(const DataBox<tmpl::list<TagsInBox...>>& box,
   if (result == nullptr) {
     std::string tags_in_box;
     const auto print_helper = [&tags_in_box](auto tag) noexcept {
-      tags_in_box += "  " + decltype(tag)::name() + "\n";
+      tags_in_box += "  " + db::tag_name<decltype(tag)>() + "\n";
     };
     EXPAND_PACK_LEFT_TO_RIGHT(print_helper(Tags{}));
     ERROR("Could not find the tag named \""
