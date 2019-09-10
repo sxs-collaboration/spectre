@@ -95,7 +95,7 @@ struct EvolutionMetavars {
                      1, db::get_variables_tags_list<system::variables_tag>>>;
   using triggers = Triggers::time_triggers;
 
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<initial_data_tag,
                  Tags::TimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,

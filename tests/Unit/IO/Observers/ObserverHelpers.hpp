@@ -46,7 +46,6 @@ struct element_component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndexType;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase,
@@ -61,7 +60,6 @@ struct observer_component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using component_being_mocked = observers::Observer<Metavariables>;
   using simple_tags =
@@ -79,9 +77,8 @@ struct observer_writer_component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list =
-      tmpl::list<observers::Tags::ReductionFileName,
-                 observers::Tags::VolumeFileName>;
+  using const_global_cache_tags = tmpl::list<observers::Tags::ReductionFileName,
+                                             observers::Tags::VolumeFileName>;
 
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
   using simple_tags =
@@ -108,7 +105,6 @@ struct Metavariables {
       tmpl::list<element_component<Metavariables, TypeOfObservation>,
                  observer_component<Metavariables>,
                  observer_writer_component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   /// [make_reduction_data_tags]
   using observed_reduction_data_tags =

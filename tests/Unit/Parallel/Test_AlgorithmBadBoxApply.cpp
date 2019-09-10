@@ -45,7 +45,6 @@ struct Component {
                                         tmpl::list<>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
@@ -61,7 +60,6 @@ struct Component {
 
 struct TestMetavariables {
   using component_list = tmpl::list<Component<TestMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   enum class Phase { Initialization, Execute, Exit };
 

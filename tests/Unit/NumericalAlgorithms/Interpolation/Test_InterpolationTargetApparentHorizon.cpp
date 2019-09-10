@@ -47,7 +47,6 @@ struct MockMetavariables {
       tmpl::list<InterpTargetTestHelpers::mock_interpolation_target<
                      MockMetavariables, InterpolationTargetA>,
                  InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace

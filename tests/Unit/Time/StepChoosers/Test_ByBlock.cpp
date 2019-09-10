@@ -25,7 +25,6 @@
 namespace {
 struct Metavariables {
   using component_list = tmpl::list<>;
-  using const_global_cache_tag_list = tmpl::list<>;
 };
 }  // namespace
 

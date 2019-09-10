@@ -80,8 +80,6 @@ struct Component {
               tmpl::list<dg::Actions::ExponentialFilter<
                   0, tmpl::list<Tags::VectorVar<dim>, Tags::ScalarVar>>>>>>;
   /// [action_list_example]
-  using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
-      typename tmpl::at_c<phase_dependent_action_list, 1>::action_list>;
 };
 
 template <size_t Dim, bool FilterIndividually>
@@ -91,7 +89,6 @@ struct Metavariables {
   using system = System<Dim>;
   static constexpr bool local_time_stepping = true;
   using component_list = tmpl::list<Component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 

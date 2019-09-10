@@ -50,7 +50,6 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndexType;
-  using const_global_cache_tag_list = tmpl::list<>;
   using simple_tags =
       db::AddSimpleTags<var_tag,
                         LinearSolver::Tags::OperatorAppliedTo<var_tag>>;
@@ -66,7 +65,6 @@ struct Component {
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
   using system = System;
-  using const_global_cache_tag_list = tmpl::list<>;
   using temporal_id = TemporalId;
   enum class Phase { Initialization, Testing, Exit };
 };

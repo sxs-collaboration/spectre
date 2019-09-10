@@ -58,7 +58,7 @@ struct PrintMessage {
 /// [executable_example_singleton]
 template <class Metavariables>
 struct HelloWorld {
-  using const_global_cache_tag_list = tmpl::list<Tags::Name>;
+  using const_global_cache_tags = tmpl::list<Tags::Name>;
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
@@ -83,8 +83,6 @@ void HelloWorld<Metavariables>::execute_next_phase(
 
 /// [executable_example_metavariables]
 struct Metavars {
-  using const_global_cache_tag_list = tmpl::list<>;
-
   using component_list = tmpl::list<HelloWorld<Metavars>>;
 
   static constexpr OptionString help{

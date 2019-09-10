@@ -431,7 +431,6 @@ struct Initialize {
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
@@ -460,7 +459,6 @@ struct SingletonParallelComponent {
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
@@ -507,7 +505,6 @@ struct ArrayParallelComponent {
 template <class Metavariables>
 struct GroupParallelComponent {
   using chare_type = Parallel::Algorithms::Group;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -524,7 +521,6 @@ struct GroupParallelComponent {
 template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -545,7 +541,6 @@ struct TestMetavariables {
                  ArrayParallelComponent<TestMetavariables>,
                  GroupParallelComponent<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   static constexpr const char* const help{"Test Algorithm in parallel"};
   static constexpr bool ignore_unrecognized_command_line_options = false;

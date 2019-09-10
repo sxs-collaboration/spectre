@@ -41,9 +41,8 @@ struct DgElementArray {
   using phase_dependent_action_list = PhaseDepActionList;
   using array_index = ElementIndex<volume_dim>;
 
-  using const_global_cache_tag_list = tmpl::flatten<tmpl::append<
-      Parallel::get_const_global_cache_tags_from_pdal<PhaseDepActionList>,
-      tmpl::list<::Tags::Domain<volume_dim, Frame::Inertial>>>>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::Domain<volume_dim, Frame::Inertial>>;
 
   using array_allocation_tags =
       tmpl::list<::Tags::InitialRefinementLevels<volume_dim>>;

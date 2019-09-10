@@ -100,7 +100,6 @@ struct Metavariables {
 
   enum class Phase { Initialization, RegisterWithObserver, Export, Exit };
 
-  using const_global_cache_tag_list = tmpl::list<>;
   using component_list = tmpl::list<
       DgElementArray<
           Metavariables,

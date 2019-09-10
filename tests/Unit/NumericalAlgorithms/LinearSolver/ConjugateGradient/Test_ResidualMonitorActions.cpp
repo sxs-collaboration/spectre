@@ -85,9 +85,9 @@ struct MockResidualMonitor {
   // testing framework
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       typename LinearSolver::cg_detail::ResidualMonitor<
-          Metavariables, fields_tag>::const_global_cache_tag_list;
+          Metavariables, fields_tag>::const_global_cache_tags;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<
@@ -159,7 +159,6 @@ struct MockElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<ActionTesting::InitializeDataBox<check_tags>>>>;
@@ -177,7 +176,6 @@ struct Metavariables {
   using component_list = tmpl::list<MockResidualMonitor<Metavariables>,
                                     MockElementArray<Metavariables>,
                                     helpers::MockObserverWriter<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, RegisterWithObserver, Testing, Exit };
 };
 }  // namespace

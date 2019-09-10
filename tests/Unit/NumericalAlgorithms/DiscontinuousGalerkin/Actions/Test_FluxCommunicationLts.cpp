@@ -158,7 +158,7 @@ struct lts_component {
   using metavariables = MV;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tag_list = tmpl::list<NumericalFluxTag<Dim>>;
+  using const_global_cache_tags = tmpl::list<NumericalFluxTag<Dim>>;
   using flux_comm_types = dg::FluxCommunicationTypes<MV>;
 
   using simple_tags = db::AddSimpleTags<
@@ -192,7 +192,6 @@ struct LtsMetavariables {
   using system = System<Dim>;
   using component_list = tmpl::list<lts_component<Dim, LtsMetavariables>>;
   using temporal_id = TemporalId;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag<Dim>;
   enum class Phase { Initialization, Testing, Exit };

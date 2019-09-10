@@ -103,7 +103,7 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tag_list = tmpl::list<NumericalFluxTag<Flux>>;
+  using const_global_cache_tags = tmpl::list<NumericalFluxTag<Flux>>;
   using simple_tags =
       db::AddSimpleTags<Tags::Mesh<Dim>, Tags::Coordinates<Dim, Frame::Logical>,
                         Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
@@ -126,7 +126,6 @@ struct Metavariables {
   using component_list = tmpl::list<component<Dim, Flux, Metavariables>>;
   using temporal_id = TemporalId;
   static constexpr bool local_time_stepping = false;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag<Flux>;
   enum class Phase { Initialization, Testing, Exit };

@@ -120,7 +120,7 @@ struct MockObserverWriter {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<observers::Tags::ReductionFileName>;
   using simple_tags =
       typename observers::Actions::InitializeWriter<Metavariables>::simple_tags;
@@ -161,8 +161,8 @@ struct MockInterpolationTarget {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::flatten<tmpl::append<
-      Parallel::get_const_global_cache_tags<tmpl::list<
+  using const_global_cache_tags = tmpl::flatten<tmpl::append<
+      Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
           typename InterpolationTargetTag::compute_target_points,
           typename InterpolationTargetTag::post_interpolation_callback>>,
       tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>>>;
@@ -186,7 +186,6 @@ struct MockInterpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -277,7 +276,6 @@ struct MockMetavariables {
                  MockInterpolationTarget<MockMetavariables, SurfaceB>,
                  MockInterpolationTarget<MockMetavariables, SurfaceC>,
                  MockInterpolator<MockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
 

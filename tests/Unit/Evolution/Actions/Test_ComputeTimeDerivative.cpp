@@ -51,7 +51,6 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndexType;
-  using const_global_cache_tag_list = tmpl::list<>;
   using simple_tags = tmpl::list<var_tag, Tags::dt<var_tag>>;
 
   using phase_dependent_action_list = tmpl::list<
@@ -66,7 +65,6 @@ struct component {
 struct Metavariables {
   using component_list = tmpl::list<component<Metavariables>>;
   using system = System;
-  using const_global_cache_tag_list = tmpl::list<>;
   using temporal_id = TemporalId;
 
   enum class Phase { Initialization, Testing, Exit };

@@ -63,7 +63,7 @@ struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<::Tags::Domain<Dim, Frame::Inertial>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -87,7 +87,6 @@ template <size_t Dim>
 struct Metavariables {
   using system = System<Dim>;
   using component_list = tmpl::list<ElementArray<Dim, Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 

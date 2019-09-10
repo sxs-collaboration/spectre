@@ -55,8 +55,9 @@ specify the following:
   `DgElementArray` parallel component listed. An example of a `component_list`
   for one of the test executables is:
   \snippet Test_AlgorithmCore.cpp component_list_example
-- `using const_global_cache_tag_list`: a (possibly empty) `tmpl::list` of
-  OptionTags that are needed by the metavariables.
+- `using const_global_cache_tags`: a `tmpl::list` of tags that are
+  used to place items in the ConstGlobalCache.  The alias may be
+  omitted if the list is empty.
 - `Phase`: an `enum class` that must contain at least `Initialization` and
   `Exit`. Phases are described in the next section.
 - `determine_next_phase`: a static function with the signature
@@ -194,12 +195,12 @@ Each %Parallel Component struct must have the following type aliases:
    `tmpl::list` of tags that will be fetched from the DataBox by the
    action.  All `initialization_tags` are removed from the DataBox of
    the component at the end of the `Initialization` phase.
-5. `using const_global_cache_tag_list` is set to a `tmpl::list` of
-   tags that are required by the parallel component. This is usually
-   obtained from the `phase_dependent_action_list` using the
-   `Parallel::get_const_global_cache_tags` metafunction. These tags
-   correspond to items that are stored in the ConstGlobalCaches (of
-   which there is one copy per Charm++ node).
+5. `using const_global_cache_tags` is set to a `tmpl::list` of tags
+   that are required by the `allocate_array` function of a parallel
+   component, or simple actions called on the parallel component.
+   These tags correspond to items that are stored in the
+   ConstGlobalCaches (of which there is one copy per Charm++ node).
+   The alias can be omitted if the list is empty.
 
 \note Array parallel components must also specify the type alias `using
 array_index`, which is set to the type that indexes the %Parallel Component

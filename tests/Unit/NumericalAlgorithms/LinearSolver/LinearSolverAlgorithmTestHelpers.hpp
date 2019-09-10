@@ -222,7 +222,7 @@ struct ElementArray {
   /// [action_list]
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<LinearOperator, Source, InitialGuess, ExpectedResult>;
 
   static void allocate_array(
@@ -283,7 +283,6 @@ struct OutputCleaner {
                                         tmpl::list<CleanOutput<true>>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,

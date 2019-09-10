@@ -39,8 +39,7 @@ template <typename Metavariables>
 class Main : public CBase_Main<Metavariables> {
  public:
   using component_list = typename Metavariables::component_list;
-  using const_global_cache_tags =
-      ConstGlobalCache_detail::make_tag_list<Metavariables>;
+  using const_global_cache_tags = get_const_global_cache_tags<Metavariables>;
 
   /// \cond HIDDEN_SYMBOLS
   /// The constructor used to register the class

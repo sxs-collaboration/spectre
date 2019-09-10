@@ -105,7 +105,6 @@ struct ElementComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Metavariables::system::volume_dim>;
-  using const_global_cache_tag_list = tmpl::list<>;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
@@ -122,7 +121,6 @@ struct MockObserverComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list = tmpl::list<>;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
                                         Metavariables::Phase::Initialization,
@@ -134,7 +132,7 @@ struct Metavariables {
   using system = System;
   using component_list = tmpl::list<ElementComponent<Metavariables>,
                                     MockObserverComponent<Metavariables>>;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<Tags::AnalyticSolution<typename System::solution_for_test>>;
   enum class Phase { Initialization, Testing, Exit };
 

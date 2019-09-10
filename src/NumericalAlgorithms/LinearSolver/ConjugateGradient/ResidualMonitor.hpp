@@ -39,7 +39,7 @@ namespace cg_detail {
 template <typename Metavariables, typename FieldsTag>
 struct ResidualMonitor {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<LinearSolver::Tags::Verbosity,
                  LinearSolver::Tags::ConvergenceCriteria>;
   using metavariables = Metavariables;

@@ -122,9 +122,10 @@ struct InterpolationTarget {
     }
   };
   using chare_type = ::Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
-      tmpl::list<typename InterpolationTargetTag::compute_target_points,
-                 typename InterpolationTargetTag::post_interpolation_callback>>;
+  using const_global_cache_tags =
+      Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
+          typename InterpolationTargetTag::compute_target_points,
+          typename InterpolationTargetTag::post_interpolation_callback>>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<

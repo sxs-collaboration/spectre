@@ -11,7 +11,6 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/CharmRegistration.hpp"
-#include "Parallel/ConstGlobalCacheHelper.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
@@ -36,7 +35,7 @@ struct type_for_get_helper<std::unique_ptr<T, D>> {
 // Note: Returned list does not need to be size 1
 template <class ConstGlobalCacheTag, class Metavariables>
 using get_list_of_matching_tags =
-    tmpl::filter<ConstGlobalCache_detail::make_tag_list<Metavariables>,
+    tmpl::filter<get_const_global_cache_tags<Metavariables>,
                  std::is_base_of<tmpl::pin<ConstGlobalCacheTag>, tmpl::_1>>;
 
 template <class ConstGlobalCacheTag, class Metavariables>
@@ -69,24 +68,24 @@ using get_component_if_mocked = tmpl::front<tmpl::type_from<tmpl::conditional_t<
 /// \ingroup ParallelGroup
 /// A Charm++ chare that caches constant data once per Charm++ node.
 ///
-///` Metavariables` must define the following metavariables:
+/// `Metavariables` must define the following metavariables:
 ///   - `component_list`   typelist of ParallelComponents
 ///   - `const_global_cache_tags`   (possibly empty) typelist of tags of
 ///     constant data
 ///
 /// The tag list for the items added to the ConstGlobalCache is created by
 /// combining the following tag lists:
-/// - `Metavariables::const_global_cache_tags` which should contain only those
-///    tags that cannot be added from the following tag lists:
-/// - `Component::const_global_cache_tags` for each `Component` in
-///   `Metavariables::component_list` which should contain the tags needed by
-///   any simple actions called on the Component, as well as tags need by the
-///   `allocate_array` function of an array component.  The type alias may be
-///   omitted for an empty list.
-/// - `Action::const_global_cache_tags` for each `Action` in the
-///    `phase_dependent_action_list` of each `Component` of
-///    `Metavariables::component_list` which should contain the tags needed by
-///    that  Action.  The type alias may be omitted for an empty list.
+///   - `Metavariables::const_global_cache_tags` which should contain only those
+///     tags that cannot be added from the other tag lists below.
+///   - `Component::const_global_cache_tags` for each `Component` in
+///     `Metavariables::component_list` which should contain the tags needed by
+///     any simple actions called on the Component, as well as tags need by the
+///     `allocate_array` function of an array component.  The type alias may be
+///     omitted for an empty list.
+///   - `Action::const_global_cache_tags` for each `Action` in the
+///     `phase_dependent_action_list` of each `Component` of
+///     `Metavariables::component_list` which should contain the tags needed by
+///     that  Action.  The type alias may be omitted for an empty list.
 ///
 /// The tags in the `const_global_cache_tags` type lists are db::SimpleTag%s
 /// that have a `using option_tags` type alias and a static function
@@ -110,10 +109,9 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
   /// Typelist of the ParallelComponents stored in the ConstGlobalCache
   using component_list = typename Metavariables::component_list;
 
-  explicit ConstGlobalCache(
-      tuples::tagged_tuple_from_typelist<
-          ConstGlobalCache_detail::make_tag_list<Metavariables>>
-          const_global_cache) noexcept
+  explicit ConstGlobalCache(tuples::tagged_tuple_from_typelist<
+                            get_const_global_cache_tags<Metavariables>>
+                                const_global_cache) noexcept
       : const_global_cache_(std::move(const_global_cache)) {}
   explicit ConstGlobalCache(CkMigrateMessage* /*msg*/) {}
   ~ConstGlobalCache() noexcept override {
@@ -157,8 +155,7 @@ class ConstGlobalCache : public CBase_ConstGlobalCache<Metavariables> {
               typename MV::component_list,
               ParallelComponentTag>>&;  // NOLINT
 
-  tuples::tagged_tuple_from_typelist<
-      ConstGlobalCache_detail::make_tag_list<Metavariables>>
+  tuples::tagged_tuple_from_typelist<get_const_global_cache_tags<Metavariables>>
       const_global_cache_;
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       parallel_components_;

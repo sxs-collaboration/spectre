@@ -52,8 +52,7 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list =
-      tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
+  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
   using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
                                  Tags::TimeStep, history_tag>;
   using phase_dependent_action_list = tmpl::list<
@@ -68,7 +67,7 @@ struct Component {
 struct Metavariables {
   using system = System;
   static constexpr bool local_time_stepping = true;
-  using const_global_cache_tag_list = change_step_size::const_global_cache_tags;
+  using const_global_cache_tags = change_step_size::const_global_cache_tags;
   using component_list = tmpl::list<Component<Metavariables>>;
   enum class Phase { Initialization, Testing, Exit };
 };

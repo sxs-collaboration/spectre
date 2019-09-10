@@ -53,7 +53,6 @@ struct MockElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
-  using const_global_cache_tag_list = tmpl::list<>;
   using simple_tags =
       db::AddSimpleTags<LinearSolver::Tags::IterationId, Tags::Mesh<2>,
                         Poisson::Field, Tags::Coordinates<2, Frame::Inertial>>;
@@ -79,7 +78,6 @@ struct MockObserverComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
   using component_being_mocked = observers::Observer<Metavariables>;
   using simple_tags =
       typename observers::Actions::Initialize<Metavariables>::simple_tags;
@@ -95,9 +93,8 @@ struct MockObserverWriterComponent {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list =
-      tmpl::list<observers::Tags::ReductionFileName,
-                 observers::Tags::VolumeFileName>;
+  using const_global_cache_tags = tmpl::list<observers::Tags::ReductionFileName,
+                                             observers::Tags::VolumeFileName>;
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
   using simple_tags =
       typename observers::Actions::InitializeWriter<Metavariables>::simple_tags;
@@ -127,7 +124,7 @@ struct Metavariables {
                                     MockObserverComponent<Metavariables>,
                                     MockObserverWriterComponent<Metavariables>>;
   using analytic_solution_tag = AnalyticSolutionTag;
-  using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
+  using const_global_cache_tags = tmpl::list<analytic_solution_tag>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;

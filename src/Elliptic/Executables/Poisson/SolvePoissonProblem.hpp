@@ -75,7 +75,7 @@ struct Metavariables {
       Tags::NumericalFlux<Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
 
   // Collect all items to store in the cache.
-  using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
+  using const_global_cache_tags = tmpl::list<analytic_solution_tag>;
 
   // Collect all reduction tags for observers
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<

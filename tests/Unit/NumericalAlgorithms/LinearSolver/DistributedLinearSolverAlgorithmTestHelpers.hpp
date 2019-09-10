@@ -299,7 +299,7 @@ struct ElementArray {
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>,
       array_allocation_tags>;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<LinearOperator, Source, ExpectedResult>;
   using array_index = int;
 
