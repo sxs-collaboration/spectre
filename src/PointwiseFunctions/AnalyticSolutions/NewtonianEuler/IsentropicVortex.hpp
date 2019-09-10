@@ -142,7 +142,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   IsentropicVortex(double adiabatic_index,
                    const std::array<double, Dim>& center,
                    const std::array<double, Dim>& mean_velocity,
-                   double perturbation_amplitude, double strength);
+                   double perturbation_amplitude, double strength) noexcept;
 
   /// Retrieve a collection of hydrodynamic variables at position x and time t
   template <typename DataType, typename... Tags>

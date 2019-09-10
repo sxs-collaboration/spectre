@@ -27,7 +27,7 @@ template <size_t Dim>
 IsentropicVortex<Dim>::IsentropicVortex(
     const double adiabatic_index, const std::array<double, Dim>& center,
     const std::array<double, Dim>& mean_velocity,
-    const double perturbation_amplitude, const double strength)
+    const double perturbation_amplitude, const double strength) noexcept
     : adiabatic_index_(adiabatic_index),
       center_(center),
       mean_velocity_(mean_velocity),
