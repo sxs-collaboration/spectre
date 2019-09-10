@@ -230,6 +230,7 @@ struct MockMetavariables {
   struct InterpolationTargetA {
     using vars_to_interpolate_to_target = tmpl::list<Tags::Square>;
     using compute_items_on_source = tmpl::list<Tags::SquareComputeItem>;
+    using compute_items_on_target = tmpl::list<>;
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;

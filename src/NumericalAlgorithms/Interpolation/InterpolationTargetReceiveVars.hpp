@@ -86,26 +86,13 @@ void callback_and_cleanup(
   const auto temporal_id =
       db::get<Tags::TemporalIds<Metavariables>>(*box).front();
 
-  // Add compute_items_on_target to the box.
-  auto box_with_more_items = db::create_from<
-      db::RemoveTags<>, db::AddSimpleTags<>,
-      db::AddComputeTags<
-          typename InterpolationTargetTag::compute_items_on_target>>(
-      std::move(*box));
-
   // apply_callback should return true if we are done with this
   // temporal_id.  It should return false only if the callback
   // calls another `intrp::Action` that needs the volume data at this
   // same temporal_id.  If it returns false, we exit here and do not
   // clean up.
-  const bool done_with_temporal_id = apply_callback<InterpolationTargetTag>(
-      make_not_null(&box_with_more_items), cache, temporal_id);
-
-  // Remove compute_items_on_target from the box.
-  *box = db::create_from<
-      db::RemoveTags<typename InterpolationTargetTag::compute_items_on_target>,
-      db::AddSimpleTags<>, db::AddComputeTags<>>(
-      std::move(box_with_more_items));
+  const bool done_with_temporal_id =
+      apply_callback<InterpolationTargetTag>(box, cache, temporal_id);
 
   if (not done_with_temporal_id) {
     return;

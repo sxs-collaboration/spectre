@@ -63,21 +63,20 @@ template <
     typename InterpolationTargetTag, typename DbTags, typename Metavariables,
     Requires<not has_empty_initialization_tags_v<InterpolationTargetTag>> =
         nullptr>
-auto make_tuple_of_box(
+auto make_initial_box(
     db::DataBox<DbTags>&& box,
     const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-  return std::make_tuple(
-      InterpolationTargetTag::compute_target_points::initialize(std::move(box),
-                                                                cache));
+  return InterpolationTargetTag::compute_target_points::initialize(
+      std::move(box), cache);
 }
 
 template <
     typename InterpolationTargetTag, typename DbTags, typename Metavariables,
     Requires<has_empty_initialization_tags_v<InterpolationTargetTag>> = nullptr>
-auto make_tuple_of_box(
+auto make_initial_box(
     db::DataBox<DbTags>&& box,
     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) noexcept {
-  return std::make_tuple(std::move(box));
+  return std::move(box);
 }
 
 }  // namespace initialize_interpolation_target_detail
@@ -120,7 +119,7 @@ struct InitializeInterpolationTarget {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    return initialize_interpolation_target_detail::make_tuple_of_box<
+    auto init_box = initialize_interpolation_target_detail::make_initial_box<
         InterpolationTargetTag>(
         db::create_from<db::RemoveTags<>,
                         db::get_items<return_tag_list_initial>>(
@@ -131,6 +130,15 @@ struct InitializeInterpolationTarget {
                 ::Tags::Variables<typename InterpolationTargetTag::
                                       vars_to_interpolate_to_target>>{}),
         cache);
+    // compute_items_on_target will depend on compute items added in
+    // make_initial_box, so compute_items_on_target must be added
+    // in a separate step.
+    return std::make_tuple(
+        db::create_from<
+            db::RemoveTags<>, db::AddSimpleTags<>,
+            db::AddComputeTags<
+                typename InterpolationTargetTag::compute_items_on_target>>(
+            std::move(init_box)));
   }
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,

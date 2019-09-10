@@ -25,6 +25,7 @@ struct MockMetavariables {
   struct InterpolationTargetA {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
+    using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::Actions::LineSegment<InterpolationTargetA, 3>;
     using type = compute_target_points::options_type;

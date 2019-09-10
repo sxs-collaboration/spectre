@@ -92,6 +92,7 @@ namespace {
 // Counter to ensure that this function is called
 size_t test_schwarzschild_horizon_called = 0;
 struct TestSchwarzschildHorizon {
+  using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -124,6 +125,7 @@ struct TestSchwarzschildHorizon {
 // Counter to ensure that this function is called
 size_t test_kerr_horizon_called = 0;
 struct TestKerrHorizon {
+  using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
