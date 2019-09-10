@@ -54,11 +54,8 @@ class Event : public PUP::able {
            const ArrayIndex& array_index,
            const ComponentPointer /*meta*/) noexcept {
     call_with_dynamic_type<void, creatable_classes>(
-        this,
-        [&box, &cache, &array_index](auto* const event) noexcept {
-          using EventType = std::decay_t<decltype(*event)>;
-          db::apply<typename EventType::argument_tags>(
-              *event, box, cache, array_index, ComponentPointer{});
+        this, [&box, &cache, &array_index ](auto* const event) noexcept {
+          db::apply(*event, box, cache, array_index, ComponentPointer{});
         });
   }
 };

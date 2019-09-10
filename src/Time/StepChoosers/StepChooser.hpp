@@ -64,10 +64,8 @@ class StepChooser : public PUP::able {
       const db::DataBox<DbTags>& box,
       const Parallel::ConstGlobalCache<Metavariables>& cache) const noexcept {
     const auto result = call_with_dynamic_type<double, creatable_classes>(
-        this, [&box, &cache](const auto* const chooser) noexcept {
-          using ChooserType = std::decay_t<decltype(*chooser)>;
-          return db::apply<typename ChooserType::argument_tags>(*chooser, box,
-                                                                cache);
+        this, [&box, &cache ](const auto* const chooser) noexcept {
+          return db::apply(*chooser, box, cache);
         });
     ASSERT(
         result > 0.,

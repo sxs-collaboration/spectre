@@ -57,11 +57,8 @@ class Trigger : public PUP::able {
   template <typename DbTags>
   bool is_triggered(const db::DataBox<DbTags>& box) noexcept {
     return call_with_dynamic_type<bool, creatable_classes>(
-        this,
-        [&box](auto* const trigger) noexcept {
-          using TriggerType = std::decay_t<decltype(*trigger)>;
-          return db::apply<typename TriggerType::argument_tags>(
-              *trigger, box);
+        this, [&box](auto* const trigger) noexcept {
+          return db::apply(*trigger, box);
         });
   }
 };
