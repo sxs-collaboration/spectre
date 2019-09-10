@@ -288,7 +288,15 @@ void test_kerr(FastFlow::Flow::type type_of_flow, const double mass,
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.FastFlowSchwarzschild",
                   "[Utilities][Unit]") {
   test_schwarzschild(FastFlow::FlowType::Fast, 100);
+}
+
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.JacobiSchwarzschild",
+                  "[Utilities][Unit]") {
   test_schwarzschild(FastFlow::FlowType::Jacobi, 200);
+}
+
+SPECTRE_TEST_CASE("Unit.ApparentHorizons.CurvatureSchwarzschild",
+                  "[Utilities][Unit]") {
   test_schwarzschild(FastFlow::FlowType::Curvature, 200);
 }
 
