@@ -23,6 +23,7 @@ set(LIBRARY_SOURCES
   Test_FaceNormal.cpp
   Test_IndexToSliceAt.cpp
   Test_InitialElementIds.cpp
+  Test_InterfaceHelpers.cpp
   Test_InterfaceItems.cpp
   Test_LogicalCoordinates.cpp
   Test_Mesh.cpp

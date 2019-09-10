@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DirectionMap.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -73,4 +74,56 @@ struct unmap_interface_args<false> {
   }
 };
 
+template <typename DirectionsTag, typename VolumeTags,
+          typename InterfaceInvokable, typename DbTagsList,
+          typename... ArgumentTags, typename... ExtraArgs>
+SPECTRE_ALWAYS_INLINE constexpr auto interface_apply_impl(
+    InterfaceInvokable&& interface_invokable,
+    const db::DataBox<DbTagsList>& box, tmpl::list<ArgumentTags...> /*meta*/,
+    ExtraArgs&&... extra_args) noexcept {
+  using interface_return_type = std::decay_t<decltype(interface_invokable(
+      std::declval<db::item_type<ArgumentTags, DbTagsList>>()...,
+      std::declval<ExtraArgs&&>()...))>;
+  constexpr size_t volume_dim = DirectionsTag::volume_dim;
+  DirectionMap<volume_dim, interface_return_type> result{};
+  for (const auto& direction : get<DirectionsTag>(box)) {
+    auto interface_value = interface_invokable(
+        unmap_interface_args<tmpl::list_contains_v<VolumeTags, ArgumentTags>>::
+            apply(direction,
+                  get<tmpl::type_from<make_interface_tag_impl<
+                      ArgumentTags, DirectionsTag, VolumeTags>>>(box))...,
+        extra_args...);
+    result.insert({direction, std::move(interface_value)});
+  }
+  return result;
+}
+
 }  // namespace InterfaceHelpers_detail
+
+/*!
+ * \brief Apply the `interface_invokable` to the `box` on all interfaces given
+ * by the `DirectionsTag`.
+ *
+ * \details The `interface_invokable` is expected to be invokable with the types
+ * held by the `ArgumentTags`, followed by the `extra_args`. The `ArgumentTags`
+ * will be prefixed as `::Tags::Interface<DirectionsTag, ArgumentTag>` and thus
+ * taken from the interface, except for those specified in the `VolumeTags`.
+ *
+ * This function returns a `DirectionMap` that holds the value returned by
+ * the `interface_invokable` in every direction of the `DirectionsTag`.
+ *
+ * Here is an example how to use this function:
+ *
+ * \snippet Test_InterfaceHelpers.cpp interface_apply_example
+ */
+template <typename DirectionsTag, typename ArgumentTags, typename VolumeTags,
+          typename InterfaceInvokable, typename DbTagsList,
+          typename... ExtraArgs>
+SPECTRE_ALWAYS_INLINE constexpr auto interface_apply(
+    InterfaceInvokable&& interface_invokable,
+    const db::DataBox<DbTagsList>& box, ExtraArgs&&... extra_args) noexcept {
+  return InterfaceHelpers_detail::interface_apply_impl<DirectionsTag,
+                                                       VolumeTags>(
+      std::forward<InterfaceInvokable>(interface_invokable), box,
+      ArgumentTags{}, std::forward<ExtraArgs>(extra_args)...);
+}
