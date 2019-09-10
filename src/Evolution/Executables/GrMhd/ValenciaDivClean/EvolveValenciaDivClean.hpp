@@ -109,7 +109,7 @@ struct EvolutionMetavars {
   using equation_of_state_type = typename initial_data::equation_of_state_type;
   using system = grmhd::ValenciaDivClean::System<equation_of_state_type>;
   static constexpr size_t thermodynamic_dim = system::thermodynamic_dim;
-  using temporal_id = Tags::TimeId;
+  using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
   using initial_data_tag =
       tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,

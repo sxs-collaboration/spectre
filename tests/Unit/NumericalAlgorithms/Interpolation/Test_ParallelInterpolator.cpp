@@ -44,7 +44,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
@@ -249,7 +249,7 @@ struct MockMetavariables {
   using interpolation_target_tags =
       tmpl::list<InterpolationTargetA, InterpolationTargetB,
                  InterpolationTargetC>;
-  using temporal_id = ::Tags::TimeId;
+  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
@@ -302,7 +302,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   runner.set_phase(metavars::Phase::Registration);
 
   Slab slab(0.0, 1.0);
-  TimeId temporal_id(true, 0, Time(slab, 0));
+  TimeStepId temporal_id(true, 0, Time(slab, 0));
   const auto domain = domain_creator.create_domain();
 
   // Create Element_ids.
@@ -327,15 +327,15 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   ActionTesting::simple_action<
       target_a_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, std::vector<TimeId>{temporal_id});
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
   ActionTesting::simple_action<
       target_b_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetB>>(
-      make_not_null(&runner), 0, std::vector<TimeId>{temporal_id});
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
   ActionTesting::simple_action<
       target_c_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetC>>(
-      make_not_null(&runner), 0, std::vector<TimeId>{temporal_id});
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {
@@ -384,7 +384,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   ActionTesting::simple_action<
       target_a_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                               metavars::InterpolationTargetA>>(
-      make_not_null(&runner), 0, std::vector<TimeId>{temporal_id});
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
   // ...so make sure it was ignored by checking that there isn't anything
   // else in the simple_action queue of the target or the interpolator.
   CHECK(ActionTesting::is_simple_action_queue_empty<target_a_component>(runner,

@@ -76,7 +76,7 @@ class CProxy_ConstGlobalCache;
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = 1;
   using system = Burgers::System;
-  using temporal_id = Tags::TimeId;
+  using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
   using initial_data_tag =
       Tags::AnalyticSolution<Burgers::Solutions::Step>;

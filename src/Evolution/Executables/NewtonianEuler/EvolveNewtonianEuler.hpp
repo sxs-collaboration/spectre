@@ -89,7 +89,7 @@ struct EvolutionMetavars {
 
   using system = NewtonianEuler::System<Dim, equation_of_state_type>;
 
-  using temporal_id = Tags::TimeId;
+  using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
 
   using initial_data_tag = Tags::AnalyticSolution<initial_data>;

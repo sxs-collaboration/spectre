@@ -19,7 +19,7 @@
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -54,7 +54,7 @@ struct Component {
   using array_index = int;
   using const_global_cache_tag_list =
       tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
-  using simple_tags = tmpl::list<Tags::TimeId, Tags::Next<Tags::TimeId>,
+  using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
                                  Tags::TimeStep, history_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -97,10 +97,11 @@ void check(const bool time_runs_forward,
   // Initialize the component
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
-      {TimeId(time_runs_forward, 0, time),
-       TimeId(time_runs_forward, 0,
-              (time_runs_forward ? time.slab().start() : time.slab().end()) +
-                  initial_step_size),
+      {TimeStepId(time_runs_forward, 0, time),
+       TimeStepId(
+           time_runs_forward, 0,
+           (time_runs_forward ? time.slab().start() : time.slab().end()) +
+               initial_step_size),
        initial_step_size, db::item_type<history_tag>{}});
 
   runner.set_phase(Metavariables::Phase::Testing);
@@ -110,8 +111,8 @@ void check(const bool time_runs_forward,
           runner, 0);
 
   CHECK(db::get<Tags::TimeStep>(box) == expected_step);
-  CHECK(db::get<Tags::Next<Tags::TimeId>>(box) ==
-        TimeId(time_runs_forward, 0, time + expected_step));
+  CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
+        TimeStepId(time_runs_forward, 0, time + expected_step));
 }
 }  // namespace
 

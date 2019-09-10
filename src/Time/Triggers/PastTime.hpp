@@ -11,14 +11,14 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace Tags {
 struct Time;
-struct TimeId;
+struct TimeStepId;
 }  // namespace Tags
 /// \endcond
 
@@ -51,14 +51,14 @@ class PastTime : public Trigger<TriggerRegistrars> {
   explicit PastTime(const double trigger_time) noexcept
       : trigger_time_(trigger_time) {}
 
-  using argument_tags = tmpl::list<Tags::Time, Tags::TimeId>;
+  using argument_tags = tmpl::list<Tags::Time, Tags::TimeStepId>;
 
-  bool operator()(const Time& time, const TimeId& time_id) const noexcept {
+  bool operator()(const double time, const TimeStepId& time_id) const noexcept {
     if (not time_id.is_at_slab_boundary()) {
       return false;
     }
     return evolution_greater<double>{time_id.time_runs_forward()}(
-        time.value(), trigger_time_);
+        time, trigger_time_);
   }
 
   // clang-tidy: google-runtime-references

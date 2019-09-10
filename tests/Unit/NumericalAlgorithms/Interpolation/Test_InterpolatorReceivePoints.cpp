@@ -30,7 +30,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
@@ -152,7 +152,7 @@ struct Metavariables {
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-  using temporal_id = ::Tags::TimeId;
+  using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<mock_interpolation_target<Metavariables, InterpolationTargetA>,
@@ -198,7 +198,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   }
   ();
   Slab slab(0.0, 1.0);
-  TimeId temporal_id(true, 0, Time(slab, Rational(11, 15)));
+  TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));
 
   runner.simple_action<
       mock_interpolator<metavars>,

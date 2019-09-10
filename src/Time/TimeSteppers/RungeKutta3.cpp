@@ -6,7 +6,7 @@
 #include <cmath>
 
 #include "ErrorHandling/Assert.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 
 namespace TimeSteppers {
 
@@ -23,22 +23,25 @@ double RungeKutta3::stable_step() const noexcept {
   return 0.5 * (1. + cbrt(4. + sqrt(17.)) - 1. / cbrt(4. + sqrt(17.)));
 }
 
-TimeId RungeKutta3::next_time_id(const TimeId& current_id,
-                                 const TimeDelta& time_step) const noexcept {
+TimeStepId RungeKutta3::next_time_id(
+    const TimeStepId& current_id,
+    const TimeDelta& time_step) const noexcept {
   switch (current_id.substep()) {
     case 0:
-      ASSERT(current_id.time() == current_id.step_time(), "Wrong substep time");
+      ASSERT(current_id.substep_time() == current_id.step_time(),
+             "Wrong substep time");
       return {current_id.time_runs_forward(), current_id.slab_number(),
               current_id.step_time(), 1, current_id.step_time() + time_step};
     case 1:
-      ASSERT(current_id.time() == current_id.step_time() + time_step,
+      ASSERT(current_id.substep_time() == current_id.step_time() + time_step,
              "Wrong substep time");
       return {current_id.time_runs_forward(), current_id.slab_number(),
               current_id.step_time(), 2,
               current_id.step_time() + time_step / 2};
     case 2:
-      ASSERT(current_id.time() == current_id.step_time() + time_step / 2,
-             "Wrong substep time");
+      ASSERT(
+          current_id.substep_time() == current_id.step_time() + time_step / 2,
+          "Wrong substep time");
       return {current_id.time_runs_forward(), current_id.slab_number(),
               current_id.step_time() + time_step};
     default:

@@ -22,7 +22,7 @@
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-struct TimeId;
+struct TimeStepId;
 namespace TimeSteppers {
 template <typename Vars, typename DerivVars>
 class History;
@@ -65,8 +65,8 @@ class RungeKutta3 : public TimeStepper::Inherit {
 
   double stable_step() const noexcept override;
 
-  TimeId next_time_id(const TimeId& current_id,
-                      const TimeDelta& time_step) const noexcept override;
+  TimeStepId next_time_id(const TimeStepId& current_id,
+                          const TimeDelta& time_step) const noexcept override;
 
   WRAPPED_PUPable_decl_template(RungeKutta3);  // NOLINT
 

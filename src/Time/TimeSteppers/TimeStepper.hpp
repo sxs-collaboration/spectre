@@ -9,7 +9,7 @@
 #include <type_traits>
 
 #include "Parallel/CharmPupable.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -83,9 +83,10 @@ class TimeStepper : public PUP::able {
   /// stably as a multiple of the step for Euler's method.
   virtual double stable_step() const noexcept = 0;
 
-  /// The TimeId after the current substep
-  virtual TimeId next_time_id(const TimeId& current_id,
-                              const TimeDelta& time_step) const noexcept = 0;
+  /// The TimeStepId after the current substep
+  virtual TimeStepId next_time_id(
+      const TimeStepId& current_id,
+      const TimeDelta& time_step) const noexcept = 0;
 };
 
 // LtsTimeStepper cannot be split out into its own file because the
@@ -157,7 +158,7 @@ class LtsTimeStepper : public TimeStepper::Inherit {
   /// boundaries.
   template <typename Vars, typename DerivVars>
   bool can_change_step_size(
-      const TimeId& time_id,
+      const TimeStepId& time_id,
       const TimeSteppers::History<Vars, DerivVars>& history) const noexcept {
     return LtsTimeStepper_detail::fake_virtual_can_change_step_size<
         creatable_classes>(this, time_id, history);

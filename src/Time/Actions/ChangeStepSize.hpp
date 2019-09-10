@@ -18,7 +18,7 @@
 
 /// \cond
 class TimeDelta;
-class TimeId;
+class TimeStepId;
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
@@ -34,13 +34,13 @@ namespace Actions {
 ///   - Tags::TimeStepperBase
 /// - DataBox:
 ///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
-///   - Tags::TimeId
+///   - Tags::TimeStepId
 ///   - Tags::TimeStep
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
-/// - Modifies: Tags::Next<Tags::TimeId>, Tags::TimeStep
+/// - Modifies: Tags::Next<Tags::TimeStepId>, Tags::TimeStep
 template <typename StepChooserRegistrars>
 struct ChangeStepSize {
   using step_choosers_tag = Tags::StepChoosers<StepChooserRegistrars>;
@@ -66,7 +66,7 @@ struct ChangeStepSize {
     const auto& step_choosers = Parallel::get<step_choosers_tag>(cache);
     const auto& step_controller = Parallel::get<Tags::StepController>(cache);
 
-    const auto& time_id = db::get<Tags::TimeId>(box);
+    const auto& time_id = db::get<Tags::TimeStepId>(box);
 
     if (not time_stepper.can_change_step_size(
             time_id,
@@ -91,15 +91,15 @@ struct ChangeStepSize {
     }
 
     const auto new_step =
-        step_controller.choose_step(time_id.time(), desired_step);
+        step_controller.choose_step(time_id.step_time(), desired_step);
     if (new_step != current_step) {
       const auto new_next_time_id =
           time_stepper.next_time_id(time_id, new_step);
 
-      db::mutate<Tags::Next<Tags::TimeId>, Tags::TimeStep>(
+      db::mutate<Tags::Next<Tags::TimeStepId>, Tags::TimeStep>(
           make_not_null(&box),
           [&new_next_time_id, &new_step](
-              const gsl::not_null<TimeId*> next_time_id,
+              const gsl::not_null<TimeStepId*> next_time_id,
               const gsl::not_null<TimeDelta*> time_step) noexcept {
             *next_time_id = new_next_time_id;
             *time_step = new_step;

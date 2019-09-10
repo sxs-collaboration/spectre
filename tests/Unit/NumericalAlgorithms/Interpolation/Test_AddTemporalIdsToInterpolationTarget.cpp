@@ -20,7 +20,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Rational.hpp"
 #include "Utilities/Requires.hpp"
@@ -74,7 +74,7 @@ struct MockComputeTargetPoints {
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
-    CHECK(temporal_id == TimeId(true, 0, Time(slab, 0)));
+    CHECK(temporal_id == TimeStepId(true, 0, Time(slab, 0)));
     // Put something in IndicesOfFilledInterpPts so we can check later whether
     // this function was called.  This isn't the usual usage of
     // IndicesOfFilledInterpPoints.
@@ -93,7 +93,7 @@ struct MockMetavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points = MockComputeTargetPoints;
   };
-  using temporal_id = ::Tags::TimeId;
+  using temporal_id = ::Tags::TimeStepId;
 
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>>;
@@ -122,9 +122,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
             .empty());
 
   Slab slab(0.0, 1.0);
-  const std::vector<TimeId> temporal_ids = {
-      TimeId(true, 0, Time(slab, 0)),
-      TimeId(true, 0, Time(slab, Rational(1, 3)))};
+  const std::vector<TimeStepId> temporal_ids = {
+      TimeStepId(true, 0, Time(slab, 0)),
+      TimeStepId(true, 0, Time(slab, Rational(1, 3)))};
 
   runner.simple_action<target_component,
                        ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
@@ -133,7 +133,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
   CHECK(ActionTesting::get_databox_tag<target_component,
                                        ::intrp::Tags::TemporalIds<metavars>>(
             runner, 0) ==
-        std::deque<TimeId>(temporal_ids.begin(), temporal_ids.end()));
+        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
 
   // Add the same temporal_ids again, which should do nothing...
   runner.simple_action<target_component,
@@ -143,7 +143,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
   CHECK(ActionTesting::get_databox_tag<target_component,
                                        ::intrp::Tags::TemporalIds<metavars>>(
             runner, 0) ==
-        std::deque<TimeId>(temporal_ids.begin(), temporal_ids.end()));
+        std::deque<TimeStepId>(temporal_ids.begin(), temporal_ids.end()));
 
   runner.invoke_queued_simple_action<target_component>(0);
 
@@ -154,9 +154,9 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
             .size() == 1);
 
   // Call again; it should not call MockComputeTargetPoints this time.
-  const std::vector<TimeId> temporal_ids_2 = {
-      TimeId(true, 0, Time(slab, Rational(2, 3))),
-      TimeId(true, 0, Time(slab, Rational(3, 3)))};
+  const std::vector<TimeStepId> temporal_ids_2 = {
+      TimeStepId(true, 0, Time(slab, Rational(2, 3))),
+      TimeStepId(true, 0, Time(slab, Rational(3, 3)))};
   runner.simple_action<target_component,
                        ::intrp::Actions::AddTemporalIdsToInterpolationTarget<
                            metavars::InterpolationTargetA>>(0, temporal_ids_2);

@@ -14,7 +14,7 @@
 #include "Time/History.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -22,7 +22,9 @@
 namespace {
 Time make_time(const double t) noexcept { return Slab(t, t + 0.5).start(); }
 
-TimeId make_time_id(const double t) noexcept { return {true, 0, make_time(t)}; }
+TimeStepId make_time_id(const double t) noexcept {
+  return {true, 0, make_time(t)};
+}
 
 // Requires `it` to point at 0. in the sequence of times -1., 0., 1., 2.
 template <typename Iterator>

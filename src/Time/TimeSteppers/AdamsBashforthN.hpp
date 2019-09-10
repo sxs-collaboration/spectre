@@ -25,7 +25,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"  // IWYU pragma: keep
 #include "Utilities/CachedFunction.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -216,12 +216,12 @@ class AdamsBashforthN : public LtsTimeStepper::Inherit {
 
   double stable_step() const noexcept override;
 
-  TimeId next_time_id(const TimeId& current_id,
-                      const TimeDelta& time_step) const noexcept override;
+  TimeStepId next_time_id(const TimeStepId& current_id,
+                          const TimeDelta& time_step) const noexcept override;
 
   template <typename Vars, typename DerivVars>
   bool can_change_step_size(
-      const TimeId& time_id,
+      const TimeStepId& time_id,
       const TimeSteppers::History<Vars, DerivVars>& history) const noexcept;
 
   WRAPPED_PUPable_decl_template(AdamsBashforthN);  // NOLINT
@@ -686,7 +686,7 @@ AdamsBashforthN::boundary_impl(
 
 template <typename Vars, typename DerivVars>
 bool AdamsBashforthN::can_change_step_size(
-    const TimeId& time_id,
+    const TimeStepId& time_id,
     const TimeSteppers::History<Vars, DerivVars>& history) const noexcept {
   // We need to forbid local time-stepping before initialization is
   // complete.  The self-start procedure itself should never consider
@@ -695,7 +695,7 @@ bool AdamsBashforthN::can_change_step_size(
   // "real" values.
   const evolution_less<Time> less{time_id.time_runs_forward()};
   return history.size() == 0 or
-         (less(history.back(), time_id.time()) and
+         (less(history.back(), time_id.step_time()) and
           std::is_sorted(history.begin(), history.end(), less));
 }
 

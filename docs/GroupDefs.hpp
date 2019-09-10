@@ -460,7 +460,7 @@
  *
  * - `system`: See above.
  * - `temporal_id`: A DataBox tag that identifies steps in the algorithm.
- * Generally use `Tags::TimeId`.
+ * Generally use `Tags::TimeStepId`.
  */
 
 /*!

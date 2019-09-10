@@ -22,7 +22,6 @@
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/Numeric.hpp"
@@ -124,7 +123,7 @@ class ObserveErrorNorms<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
 
   template <typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
-  void operator()(const Time& time,
+  void operator()(const double time,
                   const db::item_type<coordinates_tag>& inertial_coordinates,
                   const db::item_type<Tensors>&... tensors,
                   Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -132,7 +131,7 @@ class ObserveErrorNorms<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
                   const ParallelComponent* const /*meta*/) const noexcept {
     const auto analytic_solution =
         Parallel::get<Tags::AnalyticSolutionBase>(cache).variables(
-            inertial_coordinates, time.value(), tmpl::list<Tensors...>{});
+            inertial_coordinates, time, tmpl::list<Tensors...>{});
 
     tuples::TaggedTuple<LocalSquareError<Tensors>...> local_square_errors;
     const auto record_errors = [&analytic_solution, &local_square_errors](
@@ -158,12 +157,12 @@ class ObserveErrorNorms<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
     Parallel::simple_action<observers::Actions::ContributeReductionData>(
         local_observer,
         observers::ObservationId(
-            time.value(), typename Metavariables::element_observation_type{}),
+            time, typename Metavariables::element_observation_type{}),
         std::string{"/element_data"},
         std::vector<std::string>{"Time", "NumberOfPoints",
                                  ("Error(" + Tensors::name() + ")")...},
         ReductionData{
-            time.value(), num_points,
+            time, num_points,
             std::move(get<LocalSquareError<Tensors>>(local_square_errors))...});
   }
 };

@@ -22,7 +22,7 @@
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -59,13 +59,13 @@ namespace Actions {
 /// \brief Initialize items related to time-evolution of the system
 ///
 /// Since we have not started the evolution yet, we initialize the state
-/// _before_ the initial time. So `Tags::TimeId` is undefined at this point,
-/// and `Tags::Next<Tags::TimeId>` is the initial time.
+/// _before_ the initial time. So `Tags::TimeStepId` is undefined at this point,
+/// and `Tags::Next<Tags::TimeStepId>` is the initial time.
 ///
 /// DataBox changes:
 /// - Adds:
-///   * Tags::TimeId
-///   * `Tags::Next<Tags::TimeId>`
+///   * Tags::TimeStepId
+///   * `Tags::Next<Tags::TimeStepId>`
 ///   * Tags::TimeStep
 ///   * `db::add_tag_prefix<Tags::dt, variables_tag>`
 ///   * `Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>`
@@ -90,7 +90,7 @@ struct Evolution {
                                  System::is_in_flux_conservative_form>
   struct ComputeTags {
     using type = db::AddComputeTags<
-        ::Tags::Time,
+        ::Tags::SubstepTime,
         ::Tags::DerivCompute<
             variables_tag,
             ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
@@ -101,7 +101,7 @@ struct Evolution {
   template <typename System>
   struct ComputeTags<System, true> {
     using type = db::AddComputeTags<
-        ::Tags::Time,
+        ::Tags::SubstepTime,
         ::Tags::DivCompute<
             db::add_tag_prefix<::Tags::Flux, variables_tag, tmpl::size_t<dim>,
                                Frame::Inertial>,
@@ -150,7 +150,7 @@ struct Evolution {
     // proper starts with slab 0.
     const auto& time_stepper = Parallel::get<::Tags::TimeStepperBase>(cache);
 
-    const TimeId time_id(
+    const TimeStepId time_id(
         time_runs_forward,
         -static_cast<int64_t>(time_stepper.number_of_past_steps()),
         initial_time);
@@ -160,7 +160,8 @@ struct Evolution {
     return std::make_tuple(
         merge_into_databox<
             Evolution,
-            db::AddSimpleTags<::Tags::TimeId, ::Tags::Next<::Tags::TimeId>,
+            db::AddSimpleTags<::Tags::TimeStepId,
+                              ::Tags::Next<::Tags::TimeStepId>, ::Tags::Time,
                               ::Tags::TimeStep, dt_variables_tag,
                               ::Tags::HistoryEvolvedVariables<
                                   variables_tag, dt_variables_tag>>,
@@ -168,8 +169,8 @@ struct Evolution {
             std::move(box),
             // At this point we have not started evolution yet, so the current
             // time is undefined and _next_ is the initial time.
-            TimeId{}, time_id, initial_dt, std::move(dt_vars),
-            std::move(history)));
+            TimeStepId{}, time_id, std::numeric_limits<double>::signaling_NaN(),
+            initial_dt, std::move(dt_vars), std::move(history)));
   }
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,

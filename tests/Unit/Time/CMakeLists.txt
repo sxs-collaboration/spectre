@@ -11,7 +11,7 @@ set(LIBRARY_SOURCES
   Test_Slab.cpp
   Test_SpecifiedSlabs.cpp
   Test_Time.cpp
-  Test_TimeId.cpp
+  Test_TimeStepId.cpp
   )
 
 add_subdirectory(Actions)
