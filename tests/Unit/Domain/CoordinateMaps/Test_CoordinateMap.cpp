@@ -9,8 +9,11 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
+#include "ControlSystem/PiecewisePolynomial.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -23,6 +26,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CoordinateMaps/SpecialMobius.hpp"
+#include "Domain/CoordinateMaps/Translation.hpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
@@ -33,6 +37,7 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
+class FunctionOfTime;
 
 namespace domain {
 namespace {
@@ -888,6 +893,123 @@ void test_coordinate_maps_are_identity() {
     CHECK(get<2, 0>(wedge_1_jac_inv) == get<2, 0>(wedge_2_jac_inv));
   }
 }
+
+void test_time_dependent_map() {
+  INFO("Time dependent CoordinateMap")
+  // define vars for FunctionOfTime::PiecewisePolynomial f(t) = t**2.
+  const double initial_time = -1.;
+  const double final_time = 4.4;
+  constexpr size_t deriv_order = 3;
+
+  const std::array<DataVector, deriv_order + 1> init_func{
+      {{1.0}, {-2.0}, {2.0}, {0.0}}};
+  FunctionsOfTime::PiecewisePolynomial<deriv_order> function_of_time_derived(
+      initial_time, init_func);
+  FunctionOfTime& function_of_time = function_of_time_derived;
+
+  const std::unordered_map<std::string, FunctionOfTime&> functions_of_time = {
+      {"trans", function_of_time}};
+  const CoordMapsTimeDependent::Translation trans_map{};
+
+  // affine(x) = 1.5 * x + 5.5
+  domain::CoordinateMaps::Affine affine_map{-1., 1., 4., 7.};
+
+  const auto time_dependent_map_first =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(trans_map,
+                                                           affine_map);
+  const auto time_dependent_map_second =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(affine_map,
+                                                           trans_map);
+
+  const tnsr::I<double, 1, Frame::Logical> tnsr_double_logical{{{3.2}}};
+  const tnsr::I<DataVector, 1, Frame::Logical> tnsr_datavector_logical{
+      DataVector{{-4.3, 10.1, -3.5}}};
+
+  const tnsr::I<double, 1, Frame::Inertial> tnsr_double_inertial_1{{{39.34}}};
+  const tnsr::I<double, 1, Frame::Inertial> tnsr_double_inertial_2{{{29.66}}};
+
+  const tnsr::I<DataVector, 1, Frame::Inertial> tnsr_datavector_inertial_1{
+      DataVector{28.09, 49.69, 29.29}};
+  const tnsr::I<DataVector, 1, Frame::Inertial> tnsr_datavector_inertial_2{
+      DataVector{18.41, 40.01, 19.61}};
+
+  CHECK_ITERABLE_APPROX(time_dependent_map_first(tnsr_double_logical,
+                                                 final_time, functions_of_time),
+                        tnsr_double_inertial_1);
+
+  CHECK_ITERABLE_APPROX(time_dependent_map_second(
+                            tnsr_double_logical, final_time, functions_of_time),
+                        tnsr_double_inertial_2);
+
+  CHECK_ITERABLE_APPROX(time_dependent_map_first(tnsr_datavector_logical,
+                                                 final_time, functions_of_time),
+                        tnsr_datavector_inertial_1);
+  CHECK_ITERABLE_APPROX(
+      time_dependent_map_second(tnsr_datavector_logical, final_time,
+                                functions_of_time),
+      tnsr_datavector_inertial_2);
+
+  CHECK_ITERABLE_APPROX(
+      *(time_dependent_map_first.inverse(tnsr_double_inertial_1, final_time,
+                                         functions_of_time)),
+      tnsr_double_logical);
+  CHECK_ITERABLE_APPROX(
+      *(time_dependent_map_second.inverse(tnsr_double_inertial_2, final_time,
+                                          functions_of_time)),
+      tnsr_double_logical);
+
+  CHECK(time_dependent_map_first
+            .jacobian(tnsr_double_logical, final_time, functions_of_time)
+            .get(0, 0) == 1.5);
+  CHECK(time_dependent_map_first
+            .inv_jacobian(tnsr_double_logical, final_time, functions_of_time)
+            .get(0, 0) == 2. / 3.);
+  CHECK_ITERABLE_APPROX(
+      time_dependent_map_first
+          .jacobian(tnsr_datavector_logical, final_time, functions_of_time)
+          .get(0, 0),
+      (DataVector{1.5, 1.5, 1.5}));
+  CHECK_ITERABLE_APPROX(
+      time_dependent_map_first
+          .inv_jacobian(tnsr_datavector_logical, final_time, functions_of_time)
+          .get(0, 0),
+      (DataVector{2. / 3., 2. / 3., 2. / 3.}));
+
+  test_serialization(time_dependent_map_first);
+
+  const auto serialized_map =
+      serialize_and_deserialize(time_dependent_map_first);
+
+  CHECK_ITERABLE_APPROX(
+      serialized_map(tnsr_double_logical, final_time, functions_of_time),
+      tnsr_double_inertial_1);
+
+  CHECK_ITERABLE_APPROX(
+      serialized_map(tnsr_datavector_logical, final_time, functions_of_time),
+      tnsr_datavector_inertial_1);
+
+  CHECK_ITERABLE_APPROX(
+      *(serialized_map.inverse(tnsr_double_inertial_1, final_time,
+                               functions_of_time)),
+      tnsr_double_logical);
+
+  CHECK(serialized_map
+            .jacobian(tnsr_double_logical, final_time, functions_of_time)
+            .get(0, 0) == 1.5);
+  CHECK(serialized_map
+            .inv_jacobian(tnsr_double_logical, final_time, functions_of_time)
+            .get(0, 0) == 2. / 3.);
+  CHECK_ITERABLE_APPROX(
+      serialized_map
+          .jacobian(tnsr_datavector_logical, final_time, functions_of_time)
+          .get(0, 0),
+      (DataVector{1.5, 1.5, 1.5}));
+  CHECK_ITERABLE_APPROX(
+      serialized_map
+          .inv_jacobian(tnsr_datavector_logical, final_time, functions_of_time)
+          .get(0, 0),
+      (DataVector{2. / 3., 2. / 3., 2. / 3.}));
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
@@ -898,5 +1020,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
   test_coordinate_map_with_rotation_wedge();
   test_make_vector_coordinate_map_base();
   test_coordinate_maps_are_identity();
+  test_time_dependent_map();
 }
 }  // namespace domain
