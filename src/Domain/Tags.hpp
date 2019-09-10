@@ -187,6 +187,7 @@ struct VariablesBoundaryData : db::BaseTag {};
 /// The set of directions to neighboring Elements
 template <size_t VolumeDim>
 struct InternalDirections : db::ComputeTag {
+  static constexpr size_t volume_dim = VolumeDim;
   static std::string name() noexcept { return "InternalDirections"; }
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
@@ -205,6 +206,7 @@ struct InternalDirections : db::ComputeTag {
 /// faces.
 template <size_t VolumeDim>
 struct BoundaryDirectionsInterior : db::ComputeTag {
+  static constexpr size_t volume_dim = VolumeDim;
   static std::string name() noexcept { return "BoundaryDirectionsInterior"; }
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
@@ -219,6 +221,7 @@ struct BoundaryDirectionsInterior : db::ComputeTag {
 /// faces.
 template <size_t VolumeDim>
 struct BoundaryDirectionsExterior : db::ComputeTag {
+  static constexpr size_t volume_dim = VolumeDim;
   static std::string name() noexcept { return "BoundaryDirectionsExterior"; }
   using argument_tags = tmpl::list<Element<VolumeDim>>;
   static constexpr auto function(const ::Element<VolumeDim>& element) noexcept {
