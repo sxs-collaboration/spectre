@@ -222,7 +222,7 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
   }
 
   const auto wrap_compute_means =
-      [&mesh, &packaged_data ](auto tag, const auto& tensor) noexcept {
+      [&mesh, &packaged_data ](auto tag, const auto tensor) noexcept {
     for (size_t i = 0; i < tensor.size(); ++i) {
       // Compute the mean using the local orientation of the tensor and mesh.
       get<::Tags::Mean<decltype(tag)>>(packaged_data->means)[i] =
@@ -237,7 +237,7 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
 
   (packaged_data->volume_data).initialize(mesh.number_of_grid_points());
   const auto wrap_copy_tensor = [&packaged_data](auto tag,
-                                                 const auto& tensor) noexcept {
+                                                 const auto tensor) noexcept {
     get<decltype(tag)>(packaged_data->volume_data) = tensor;
     return '0';
   };
@@ -311,7 +311,7 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
     }
     const auto wrap_hweno_neighbor_solution_one_tensor =
         [&element, &mesh, &neighbor_data, &
-         modified_neighbor_solutions ](auto tag, const auto& tensor) noexcept {
+         modified_neighbor_solutions ](auto tag, const auto tensor) noexcept {
       for (const auto& neighbor_and_data : neighbor_data) {
         const auto& primary_neighbor = neighbor_and_data.first;
         auto& modified_tensor = get<decltype(tag)>(
@@ -347,7 +347,7 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
   // solutions.
   const auto wrap_reconstruct_one_tensor =
       [ this, &mesh, &
-        modified_neighbor_solutions ](auto tag, const auto& tensor) noexcept {
+        modified_neighbor_solutions ](auto tag, const auto tensor) noexcept {
     Weno_detail::reconstruct_from_weighted_sum<decltype(tag)>(
         tensor, mesh, neighbor_linear_weight_, modified_neighbor_solutions);
     return '0';

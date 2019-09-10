@@ -103,7 +103,7 @@ bool troubled_cell_indicator(
   // track of whether a previous component needed limiting... and if so, then
   // we simply skip any work.
   bool some_component_needs_limiting = false;
-  const auto wrap_tci_one_tensor = [&](auto tag, const auto& tensor) noexcept {
+  const auto wrap_tci_one_tensor = [&](auto tag, const auto tensor) noexcept {
     if (some_component_needs_limiting) {
       // Skip this tensor completely
       return '0';
