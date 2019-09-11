@@ -293,7 +293,6 @@ struct GeneralizedHarmonicGroup {
  */
 struct GaugeRollOnStart {
   using type = double;
-  static std::string name() noexcept { return "GaugeRollOnStart"; }
   static constexpr OptionString help{
       "Simulation time to start rolling-on evolution gauge"};
   using group = GeneralizedHarmonicGroup;
@@ -310,7 +309,6 @@ struct GaugeRollOnStart {
  */
 struct GaugeRollOnWindow {
   using type = double;
-  static std::string name() noexcept { return "GaugeRollOnWindow"; }
   static constexpr OptionString help{
       "Duration of gauge roll-on in simulation time"};
   using group = GeneralizedHarmonicGroup;

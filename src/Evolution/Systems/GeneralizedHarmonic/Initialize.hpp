@@ -46,17 +46,6 @@ namespace Actions {
 template <size_t Dim>
 struct InitializeConstraintsTags {
   using frame = Frame::Inertial;
-  using simple_tags = db::AddSimpleTags<>;
-  using compute_tags = db::AddComputeTags<
-      GeneralizedHarmonic::Tags::GaugeConstraintCompute<Dim, frame>,
-      GeneralizedHarmonic::Tags::FourIndexConstraintCompute<Dim, frame>,
-      // following tags added to observe constraints
-      ::Tags::PointwiseL2NormCompute<
-          GeneralizedHarmonic::Tags::GaugeConstraint<Dim, frame>>,
-      ::Tags::PointwiseL2NormCompute<
-          GeneralizedHarmonic::Tags::ThreeIndexConstraint<Dim, frame>>,
-      ::Tags::PointwiseL2NormCompute<
-          GeneralizedHarmonic::Tags::FourIndexConstraint<Dim, frame>>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -67,9 +56,20 @@ struct InitializeConstraintsTags {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    using compute_tags = db::AddComputeTags<
+        GeneralizedHarmonic::Tags::GaugeConstraintCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::FourIndexConstraintCompute<Dim, frame>,
+        // following tags added to observe constraints
+        ::Tags::PointwiseL2NormCompute<
+            GeneralizedHarmonic::Tags::GaugeConstraint<Dim, frame>>,
+        ::Tags::PointwiseL2NormCompute<
+            GeneralizedHarmonic::Tags::ThreeIndexConstraint<Dim, frame>>,
+        ::Tags::PointwiseL2NormCompute<
+            GeneralizedHarmonic::Tags::FourIndexConstraint<Dim, frame>>>;
+
     return std::make_tuple(
         Initialization::merge_into_databox<InitializeConstraintsTags,
-                                           simple_tags, compute_tags>(
+                                           db::AddSimpleTags<>, compute_tags>(
             std::move(box)));
   }
 };
@@ -77,40 +77,6 @@ struct InitializeConstraintsTags {
 template <size_t Dim>
 struct InitializeGHAnd3Plus1VariablesTags {
   using frame = Frame::Inertial;
-  using system = GeneralizedHarmonic::System<Dim>;
-  using variables_tag = typename system::variables_tag;
-
-  using simple_tags = db::AddSimpleTags<>;
-  using compute_tags = db::AddComputeTags<
-      gr::Tags::SpatialMetricCompute<Dim, frame, DataVector>,
-      gr::Tags::DetAndInverseSpatialMetricCompute<Dim, frame, DataVector>,
-      gr::Tags::ShiftCompute<Dim, frame, DataVector>,
-      gr::Tags::LapseCompute<Dim, frame, DataVector>,
-      gr::Tags::SqrtDetSpatialMetricCompute<Dim, frame, DataVector>,
-      gr::Tags::SpacetimeNormalOneFormCompute<Dim, frame, DataVector>,
-      gr::Tags::SpacetimeNormalVectorCompute<Dim, frame, DataVector>,
-      gr::Tags::InverseSpacetimeMetricCompute<Dim, frame, DataVector>,
-      GeneralizedHarmonic::Tags::DerivSpatialMetricCompute<Dim, frame>,
-      GeneralizedHarmonic::Tags::DerivLapseCompute<Dim, frame>,
-      GeneralizedHarmonic::Tags::DerivShiftCompute<Dim, frame>,
-      GeneralizedHarmonic::Tags::TimeDerivSpatialMetricCompute<Dim, frame>,
-      GeneralizedHarmonic::Tags::TimeDerivLapseCompute<Dim, frame>,
-      GeneralizedHarmonic::Tags::TimeDerivShiftCompute<Dim, frame>,
-      gr::Tags::DerivativesOfSpacetimeMetricCompute<Dim, frame>,
-      gr::Tags::DerivSpacetimeMetricCompute<Dim, frame>,
-      GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
-      gr::Tags::SpacetimeChristoffelFirstKindCompute<Dim, frame, DataVector>,
-      gr::Tags::SpacetimeChristoffelSecondKindCompute<Dim, frame, DataVector>,
-      gr::Tags::TraceSpacetimeChristoffelFirstKindCompute<Dim, frame,
-                                                          DataVector>,
-      gr::Tags::SpatialChristoffelFirstKindCompute<Dim, frame, DataVector>,
-      gr::Tags::SpatialChristoffelSecondKindCompute<Dim, frame, DataVector>,
-      gr::Tags::TraceSpatialChristoffelFirstKindCompute<Dim, frame, DataVector>,
-      GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<Dim, frame>,
-      GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<Dim, frame>,
-      GeneralizedHarmonic::Tags::ConstraintGamma0Compute<Dim, frame>,
-      GeneralizedHarmonic::Tags::ConstraintGamma1Compute<Dim, frame>,
-      GeneralizedHarmonic::Tags::ConstraintGamma2Compute<Dim, frame>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -121,9 +87,41 @@ struct InitializeGHAnd3Plus1VariablesTags {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
+    using compute_tags = db::AddComputeTags<
+        gr::Tags::SpatialMetricCompute<Dim, frame, DataVector>,
+        gr::Tags::DetAndInverseSpatialMetricCompute<Dim, frame, DataVector>,
+        gr::Tags::ShiftCompute<Dim, frame, DataVector>,
+        gr::Tags::LapseCompute<Dim, frame, DataVector>,
+        gr::Tags::SqrtDetSpatialMetricCompute<Dim, frame, DataVector>,
+        gr::Tags::SpacetimeNormalOneFormCompute<Dim, frame, DataVector>,
+        gr::Tags::SpacetimeNormalVectorCompute<Dim, frame, DataVector>,
+        gr::Tags::InverseSpacetimeMetricCompute<Dim, frame, DataVector>,
+        GeneralizedHarmonic::Tags::DerivSpatialMetricCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::DerivLapseCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::DerivShiftCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::TimeDerivSpatialMetricCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::TimeDerivLapseCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::TimeDerivShiftCompute<Dim, frame>,
+        gr::Tags::DerivativesOfSpacetimeMetricCompute<Dim, frame>,
+        gr::Tags::DerivSpacetimeMetricCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
+        gr::Tags::SpacetimeChristoffelFirstKindCompute<Dim, frame, DataVector>,
+        gr::Tags::SpacetimeChristoffelSecondKindCompute<Dim, frame, DataVector>,
+        gr::Tags::TraceSpacetimeChristoffelFirstKindCompute<Dim, frame,
+                                                            DataVector>,
+        gr::Tags::SpatialChristoffelFirstKindCompute<Dim, frame, DataVector>,
+        gr::Tags::SpatialChristoffelSecondKindCompute<Dim, frame, DataVector>,
+        gr::Tags::TraceSpatialChristoffelFirstKindCompute<Dim, frame,
+                                                          DataVector>,
+        GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::ConstraintGamma0Compute<Dim, frame>,
+        GeneralizedHarmonic::Tags::ConstraintGamma1Compute<Dim, frame>,
+        GeneralizedHarmonic::Tags::ConstraintGamma2Compute<Dim, frame>>;
+
     return std::make_tuple(
         Initialization::merge_into_databox<InitializeGHAnd3Plus1VariablesTags,
-                                           simple_tags, compute_tags>(
+                                           db::AddSimpleTags<>, compute_tags>(
             std::move(box)));
   }
 };
@@ -131,15 +129,6 @@ struct InitializeGHAnd3Plus1VariablesTags {
 template <size_t Dim>
 struct InitializeGaugeTags {
   using frame = Frame::Inertial;
-  using system = GeneralizedHarmonic::System<Dim>;
-  using variables_tag = typename system::variables_tag;
-
-  using simple_tags = db::AddSimpleTags<
-      GeneralizedHarmonic::Tags::InitialGaugeH<Dim, frame>,
-      GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<Dim, frame>>;
-  using compute_tags = db::AddComputeTags<
-      GeneralizedHarmonic::DampedHarmonicHCompute<Dim, frame>,
-      GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<Dim, frame>>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -204,6 +193,13 @@ struct InitializeGaugeTags {
         GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
             Dim, frame>::function(dt_initial_gauge_source,
                                   d_initial_gauge_source);
+    // Add all gauge tags
+    using simple_tags = db::AddSimpleTags<
+        GeneralizedHarmonic::Tags::InitialGaugeH<Dim, frame>,
+        GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<Dim, frame>>;
+    using compute_tags = db::AddComputeTags<
+        GeneralizedHarmonic::DampedHarmonicHCompute<Dim, frame>,
+        GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<Dim, frame>>;
 
     // Finally, insert gauge related quantities to the box
     return std::make_tuple(
