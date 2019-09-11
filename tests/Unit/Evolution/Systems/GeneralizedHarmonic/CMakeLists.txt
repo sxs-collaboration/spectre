@@ -6,6 +6,7 @@ add_subdirectory(GaugeSourceFunctions)
 set(LIBRARY "Test_GeneralizedHarmonic")
 
 set(LIBRARY_SOURCES
+  Test_BoundaryConditions.cpp
   Test_Characteristics.cpp
   Test_Constraints.cpp
   Test_DuDt.cpp

@@ -16,6 +16,7 @@
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
+#include "Evolution/DiscontinuousGalerkin/Filtering.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
@@ -216,15 +217,21 @@ struct EvolutionMetavars {
           volume_dim,
           tmpl::append<
               typename system::variables_tag::tags_list,
-              tmpl::list<::Tags::PointwiseL2Norm<
-                             GeneralizedHarmonic::Tags::GaugeConstraint<
-                                 volume_dim, frame>>,
-                         ::Tags::PointwiseL2Norm<
-                             GeneralizedHarmonic::Tags::ThreeIndexConstraint<
-                                 volume_dim, frame>>,
-                         ::Tags::PointwiseL2Norm<
-                             GeneralizedHarmonic::Tags::FourIndexConstraint<
-                                 volume_dim, frame>>>>,
+              tmpl::list<
+                  ::Tags::PointwiseL2Norm<
+                      GeneralizedHarmonic::Tags::GaugeConstraint<volume_dim,
+                                                                 frame>>,
+                  ::Tags::PointwiseL2Norm<
+                      GeneralizedHarmonic::Tags::TwoIndexConstraint<volume_dim,
+                                                                    frame>>,
+                  ::Tags::PointwiseL2Norm<
+                      GeneralizedHarmonic::Tags::ThreeIndexConstraint<
+                          volume_dim, frame>>,
+                  ::Tags::PointwiseL2Norm<
+                      GeneralizedHarmonic::Tags::FourIndexConstraint<
+                          volume_dim, frame>>,
+                  ::Tags::PointwiseL2Norm<GeneralizedHarmonic::Tags::
+                                              FConstraint<volume_dim, frame>>>>,
           typename system::variables_tag::tags_list>>;
   using triggers = Triggers::time_triggers;
 
@@ -261,13 +268,14 @@ struct EvolutionMetavars {
       Actions::ComputeTimeDerivative,
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           Tags::BoundaryDirectionsInterior<volume_dim>>,
-      dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
+      // dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
-      dg::Actions::ApplyFluxes, Actions::RecordTimeStepperData>>;
-
-  using update_variables = tmpl::flatten<tmpl::list<
+      dg::Actions::ApplyFluxes,
       GeneralizedHarmonic::Actions::
           ImposeConstraintPreservingBoundaryConditions<EvolutionMetavars>,
+      Actions::RecordTimeStepperData>>;
+
+  using update_variables = tmpl::flatten<tmpl::list<
       Actions::UpdateU,
       dg::Actions::ExponentialFilter<
           0, typename system::variables_tag::type::tags_list>>>;
@@ -285,6 +293,9 @@ struct EvolutionMetavars {
       dg::Actions::InitializeDomain<volume_dim>,
       Initialization::Actions::NonconservativeSystem,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
+      Initialization::Actions::Evolution<EvolutionMetavars>,
+      GeneralizedHarmonic::Actions::InitializeGauge<volume_dim>,
+      GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
       dg::Actions::InitializeInterfaces<
           system,
           dg::Initialization::slice_tags_to_face<
@@ -293,8 +304,14 @@ struct EvolutionMetavars {
               gr::Tags::DetAndInverseSpatialMetricCompute<volume_dim, frame,
                                                           DataVector>,
               gr::Tags::Shift<volume_dim, frame, DataVector>,
-              gr::Tags::Lapse<DataVector>>,
+              gr::Tags::Lapse<DataVector>,
+              GeneralizedHarmonic::Tags::ThreeIndexConstraint<volume_dim,
+                                                              frame>,
+              GeneralizedHarmonic::Tags::GaugeH<volume_dim, frame>,
+              GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<volume_dim,
+                                                              frame>>,
           dg::Initialization::slice_tags_to_exterior<
+              typename system::variables_tag,
               gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
               gr::Tags::DetAndInverseSpatialMetricCompute<volume_dim, frame,
                                                           DataVector>,
@@ -322,11 +339,9 @@ struct EvolutionMetavars {
               GeneralizedHarmonic::CharacteristicFieldsCompute<volume_dim,
                                                                frame>,
               GeneralizedHarmonic::CharacteristicSpeedsCompute<volume_dim,
-                                                               frame>>>,
-      Initialization::Actions::Evolution<EvolutionMetavars>,
-      GeneralizedHarmonic::Actions::InitializeGauge<volume_dim>,
-      GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
-      dg::Actions::InitializeMortars<EvolutionMetavars, true>,
+                                                               frame>>,
+          false>,
+      dg::Actions::InitializeMortars<EvolutionMetavars, false>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
