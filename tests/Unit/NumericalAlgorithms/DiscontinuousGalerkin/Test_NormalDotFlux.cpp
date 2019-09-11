@@ -16,7 +16,7 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Domain/FaceNormal.hpp"
-#include "Evolution/Conservative/Tags.hpp"
+#include "Domain/NormalDotFlux.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
