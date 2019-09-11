@@ -28,6 +28,11 @@ struct InitialTime : db::SimpleTag {
   static std::string name() noexcept { return "InitialTime"; }
 };
 
+struct InitialMass : db::SimpleTag {
+  using type = double;
+  static std::string name() noexcept { return "InitialMass"; }
+};
+
 struct DummyTimeTag : db::SimpleTag {
   static std::string name() noexcept { return "DummyTime"; }
   using type = double;
@@ -74,6 +79,8 @@ struct Action0 {
 };
 
 struct Action1 {
+  using initialization_tags = tmpl::list<InitialMass>;
+  using initialization_tags_to_keep = tmpl::list<InitialMass>;
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
@@ -124,9 +131,12 @@ SPECTRE_TEST_CASE(
 
   MockRuntimeSystem runner{{}};
   const double initial_time = 3.7;
-  ActionTesting::emplace_component<component>(&runner, 0, initial_time);
+  const double initial_mass = 2.1;
+  ActionTesting::emplace_component<component>(&runner, 0, initial_time,
+                                              initial_mass);
   runner.set_phase(Metavariables::Phase::Initialization);
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
   CHECK(not ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner,
                                                                        0));
   CHECK(not ActionTesting::tag_is_retrievable<component,
@@ -138,24 +148,30 @@ SPECTRE_TEST_CASE(
   // Runs Action0
   runner.next_action<component>(0);
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner, 0));
   CHECK(not ActionTesting::tag_is_retrievable<component,
                                               TagMultiplyByTwo<DummyTimeTag>>(
       runner, 0));
   CHECK(ActionTesting::get_databox_tag<component, InitialTime>(runner, 0) ==
         initial_time);
+  CHECK(ActionTesting::get_databox_tag<component, InitialMass>(runner, 0) ==
+        initial_mass);
   CHECK(ActionTesting::get_databox_tag<component, DummyTimeTag>(runner, 0) ==
         3.0 * initial_time);
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
   // Runs Action1
   runner.next_action<component>(0);
   CHECK(ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component,
                                           TagMultiplyByTwo<DummyTimeTag>>(
       runner, 0));
   CHECK(ActionTesting::get_databox_tag<component, InitialTime>(runner, 0) ==
         initial_time);
+  CHECK(ActionTesting::get_databox_tag<component, InitialMass>(runner, 0) ==
+        initial_mass);
   CHECK(ActionTesting::get_databox_tag<component, DummyTimeTag>(runner, 0) ==
         3.0 * initial_time);
   CHECK(
@@ -166,10 +182,13 @@ SPECTRE_TEST_CASE(
   runner.next_action<component>(0);
   CHECK(
       not ActionTesting::tag_is_retrievable<component, InitialTime>(runner, 0));
+  CHECK(ActionTesting::tag_is_retrievable<component, InitialMass>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner, 0));
   CHECK(ActionTesting::tag_is_retrievable<component,
                                           TagMultiplyByTwo<DummyTimeTag>>(
       runner, 0));
+  CHECK(ActionTesting::get_databox_tag<component, InitialMass>(runner, 0) ==
+        initial_mass);
   CHECK(ActionTesting::get_databox_tag<component, DummyTimeTag>(runner, 0) ==
         3.0 * initial_time);
   CHECK(
