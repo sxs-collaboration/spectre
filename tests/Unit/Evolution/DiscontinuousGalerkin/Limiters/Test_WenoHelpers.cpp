@@ -127,6 +127,13 @@ void test_reconstruction_1d() noexcept {
   // WENO reconstruction should preserve the mean, so expected = initial
   const double expected_scalar_mean = mean_value(get(scalar), mesh);
 
+  const auto shift_data_to_local_mean =
+      [&mesh, &expected_scalar_mean ](const ScalarTag::type& data) noexcept {
+    auto result = data;
+    get(result) += expected_scalar_mean - mean_value(get(data), mesh);
+    return result;
+  };
+
   std::unordered_map<std::pair<Direction<1>, ElementId<1>>,
                      Variables<tmpl::list<ScalarTag>>,
                      boost::hash<std::pair<Direction<1>, ElementId<1>>>>
@@ -137,10 +144,10 @@ void test_reconstruction_1d() noexcept {
       neighbor_vars[std::make_pair(Direction<1>::upper_xi(), ElementId<1>(2))];
   vars_lower_xi.initialize(mesh.number_of_grid_points());
   vars_upper_xi.initialize(mesh.number_of_grid_points());
-  get<ScalarTag>(vars_lower_xi) =
-      ScalarTag::type{{{evaluate_polynomial({{0., 1., 0., 1., 0.}})}}};
-  get<ScalarTag>(vars_upper_xi) =
-      ScalarTag::type{{{evaluate_polynomial({{0., 0., 1., 1., 2.}})}}};
+  get<ScalarTag>(vars_lower_xi) = shift_data_to_local_mean(
+      ScalarTag::type{{{evaluate_polynomial({{0., 1., 0., 1., 0.}})}}});
+  get<ScalarTag>(vars_upper_xi) = shift_data_to_local_mean(
+      ScalarTag::type{{{evaluate_polynomial({{0., 0., 1., 1., 2.}})}}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
       make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars);
@@ -178,6 +185,14 @@ void test_reconstruction_2d() noexcept {
   const std::array<double, 2> expected_vector_means = {
       {mean_value(get<0>(vector), mesh), mean_value(get<1>(vector), mesh)}};
 
+  const auto shift_data_to_local_mean = [&mesh, &expected_vector_means ](
+      const VectorTag<2>::type& data) noexcept {
+    auto result = data;
+    get<0>(result) += expected_vector_means[0] - mean_value(get<0>(data), mesh);
+    get<1>(result) += expected_vector_means[1] - mean_value(get<1>(data), mesh);
+    return result;
+  };
+
   std::unordered_map<std::pair<Direction<2>, ElementId<2>>,
                      Variables<tmpl::list<VectorTag<2>>>,
                      boost::hash<std::pair<Direction<2>, ElementId<2>>>>
@@ -194,18 +209,22 @@ void test_reconstruction_2d() noexcept {
   vars_upper_xi.initialize(mesh.number_of_grid_points());
   vars_lower_eta.initialize(mesh.number_of_grid_points());
   vars_upper_eta.initialize(mesh.number_of_grid_points());
-  get<VectorTag<2>>(vars_lower_xi) = VectorTag<2>::type{
-      {{evaluate_polynomial({{0., 1., 0., 0., 1., 1., 0., 0., 0}}),
-        evaluate_polynomial({{1., 0.1, 0., 0.1, 0., 0., 0., 0.}})}}};
-  get<VectorTag<2>>(vars_upper_xi) = VectorTag<2>::type{
-      {{evaluate_polynomial({{0., 0., 1., 1., 2., 1., 0., 1., 1.}}),
-        evaluate_polynomial({{0., 1., 0., 1., 0., 0., 0., 0., 0.}})}}};
-  get<VectorTag<2>>(vars_lower_eta) = VectorTag<2>::type{
-      {{evaluate_polynomial({{1., 0., 0., 0., 0.5, 0., 0., 0., 0.5}}),
-        evaluate_polynomial({{1., 0., 1., 1., 0., 0., 0., 0.}})}}};
-  get<VectorTag<2>>(vars_upper_eta) = VectorTag<2>::type{
-      {{evaluate_polynomial({{1., 0., 0., 0.5, 1., 0., 0., 0., 0.}}),
-        evaluate_polynomial({{0., 0., 0., 1., 0., 0., 1., 1., 1.}})}}};
+  get<VectorTag<2>>(vars_lower_xi) =
+      shift_data_to_local_mean(VectorTag<2>::type{
+          {{evaluate_polynomial({{0., 1., 0., 0., 1., 1., 0., 0., 0}}),
+            evaluate_polynomial({{1., 0.1, 0., 0.1, 0., 0., 0., 0.}})}}});
+  get<VectorTag<2>>(vars_upper_xi) =
+      shift_data_to_local_mean(VectorTag<2>::type{
+          {{evaluate_polynomial({{0., 0., 1., 1., 2., 1., 0., 1., 1.}}),
+            evaluate_polynomial({{0., 1., 0., 1., 0., 0., 0., 0., 0.}})}}});
+  get<VectorTag<2>>(vars_lower_eta) =
+      shift_data_to_local_mean(VectorTag<2>::type{
+          {{evaluate_polynomial({{1., 0., 0., 0., 0.5, 0., 0., 0., 0.5}}),
+            evaluate_polynomial({{1., 0., 1., 1., 0., 0., 0., 0.}})}}});
+  get<VectorTag<2>>(vars_upper_eta) =
+      shift_data_to_local_mean(VectorTag<2>::type{
+          {{evaluate_polynomial({{1., 0., 0., 0.5, 1., 0., 0., 0., 0.}}),
+            evaluate_polynomial({{0., 0., 0., 1., 0., 0., 1., 1., 1.}})}}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<VectorTag<2>>(
       make_not_null(&vector), mesh, neighbor_linear_weight, neighbor_vars);
@@ -252,6 +271,13 @@ void test_reconstruction_3d() noexcept {
   // WENO reconstruction should preserve the mean, so expected = initial
   const double expected_scalar_mean = mean_value(get(scalar), mesh);
 
+  const auto shift_data_to_local_mean =
+      [&mesh, &expected_scalar_mean ](const ScalarTag::type& data) noexcept {
+    auto result = data;
+    get(result) += expected_scalar_mean - mean_value(get(data), mesh);
+    return result;
+  };
+
   // We skip one neighbor, lower_eta, to simulate an external boundary
   std::unordered_map<std::pair<Direction<3>, ElementId<3>>,
                      Variables<tmpl::list<ScalarTag>>,
@@ -272,16 +298,16 @@ void test_reconstruction_3d() noexcept {
   vars_upper_eta.initialize(mesh.number_of_grid_points());
   vars_lower_zeta.initialize(mesh.number_of_grid_points());
   vars_upper_zeta.initialize(mesh.number_of_grid_points());
-  get<ScalarTag>(vars_lower_xi) =
-      ScalarTag::type{{{evaluate_polynomial({{0.3, 0.2, 0.2, 0., 0., 0.1}})}}};
-  get<ScalarTag>(vars_upper_xi) =
-      ScalarTag::type{{{evaluate_polynomial({{2.5, 1., 0., 0., 1., 1.}})}}};
-  get<ScalarTag>(vars_upper_eta) =
-      ScalarTag::type{{{evaluate_polynomial({{1., 0.5, 0.5, 0.2, 0.2, 0.2}})}}};
-  get<ScalarTag>(vars_lower_zeta) =
-      ScalarTag::type{{{evaluate_polynomial({{1., 0.2, 0., 0., 0., 0.}})}}};
-  get<ScalarTag>(vars_upper_zeta) =
-      ScalarTag::type{{{evaluate_polynomial({{0.1, 0., 0.5, 0.2, 0.2, 0.2}})}}};
+  get<ScalarTag>(vars_lower_xi) = shift_data_to_local_mean(
+      ScalarTag::type{{{evaluate_polynomial({{0.3, 0.2, 0.2, 0., 0., 0.1}})}}});
+  get<ScalarTag>(vars_upper_xi) = shift_data_to_local_mean(
+      ScalarTag::type{{{evaluate_polynomial({{2.5, 1., 0., 0., 1., 1.}})}}});
+  get<ScalarTag>(vars_upper_eta) = shift_data_to_local_mean(ScalarTag::type{
+      {{evaluate_polynomial({{1., 0.5, 0.5, 0.2, 0.2, 0.2}})}}});
+  get<ScalarTag>(vars_lower_zeta) = shift_data_to_local_mean(
+      ScalarTag::type{{{evaluate_polynomial({{1., 0.2, 0., 0., 0., 0.}})}}});
+  get<ScalarTag>(vars_upper_zeta) = shift_data_to_local_mean(ScalarTag::type{
+      {{evaluate_polynomial({{0.1, 0., 0.5, 0.2, 0.2, 0.2}})}}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
       make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars);
