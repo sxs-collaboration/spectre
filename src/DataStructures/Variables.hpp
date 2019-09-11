@@ -988,5 +988,10 @@ using Tempiaa = TempTensor<N, tnsr::iaa<DataType, SpatialDim, Fr>>;
 template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
           typename DataType = DataVector>
 using Tempabb = TempTensor<N, tnsr::abb<DataType, SpatialDim, Fr>>;
+
+// Rank 4
+template <size_t N, size_t SpatialDim, typename Fr = Frame::Inertial,
+          typename DataType = DataVector>
+using Tempijaa = TempTensor<N, tnsr::ijaa<DataType, SpatialDim, Fr>>;
 // @}
 }  // namespace Tags

@@ -57,15 +57,21 @@ struct InitializeConstraintsTags {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using compute_tags = db::AddComputeTags<
+        GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<Dim, frame>,
         GeneralizedHarmonic::Tags::GaugeConstraintCompute<Dim, frame>,
         GeneralizedHarmonic::Tags::FourIndexConstraintCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::FConstraintCompute<Dim, frame>,
         // following tags added to observe constraints
+        ::Tags::PointwiseL2NormCompute<
+            GeneralizedHarmonic::Tags::TwoIndexConstraint<Dim, frame>>,
         ::Tags::PointwiseL2NormCompute<
             GeneralizedHarmonic::Tags::GaugeConstraint<Dim, frame>>,
         ::Tags::PointwiseL2NormCompute<
             GeneralizedHarmonic::Tags::ThreeIndexConstraint<Dim, frame>>,
         ::Tags::PointwiseL2NormCompute<
-            GeneralizedHarmonic::Tags::FourIndexConstraint<Dim, frame>>>;
+            GeneralizedHarmonic::Tags::FourIndexConstraint<Dim, frame>>,
+        ::Tags::PointwiseL2NormCompute<
+            GeneralizedHarmonic::Tags::FConstraint<Dim, frame>>>;
 
     return std::make_tuple(
         Initialization::merge_into_databox<InitializeConstraintsTags,
@@ -199,7 +205,9 @@ struct InitializeGaugeTags {
         GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<Dim, frame>>;
     using compute_tags = db::AddComputeTags<
         GeneralizedHarmonic::DampedHarmonicHCompute<Dim, frame>,
-        GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<Dim, frame>>;
+        GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::DerivGaugeHFromSpacetimeDerivGaugeHCompute<
+            Dim, frame>>;
 
     // Finally, insert gauge related quantities to the box
     return std::make_tuple(
