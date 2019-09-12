@@ -195,20 +195,52 @@ static_assert(
 namespace {
 struct PureBaseTag : db::BaseTag {};
 
-struct SimpleTag : PureBaseTag, db::SimpleTag {
+struct UnnamedSimpleTag : PureBaseTag, db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "SimpleTag"; }
 };
 
-struct ComputeTag : SimpleTag, db::ComputeTag {
+struct NamedSimpleTag : PureBaseTag, db::SimpleTag {
+  using type = double;
+  static std::string name() noexcept { return "NamedSimpleTag::name"; }
+};
+
+struct NamedComputeTag : UnnamedSimpleTag, db::ComputeTag {
   using argument_list = tmpl::list<>;
-  static std::string name() noexcept { return "ComputeTag"; }
+  static std::string name() noexcept { return "NamedComputeTag::name"; }
+};
+
+struct BasedComputeTag : UnnamedSimpleTag, db::ComputeTag {
+  using base = UnnamedSimpleTag;
+  using argument_list = tmpl::list<>;
+};
+
+struct NamedBasedComputeTag : UnnamedSimpleTag, db::ComputeTag {
+  using base = UnnamedSimpleTag;
+  using argument_list = tmpl::list<>;
+  static std::string name() noexcept { return "NamedBasedComputeTag::name"; }
+};
+
+struct InheritedComputeTag : NamedSimpleTag, db::ComputeTag {
+  using argument_list = tmpl::list<>;
+};
+
+template <typename Tag>
+struct UnnamedPrefix : db::PrefixTag, db::SimpleTag {
+  using tag = Tag;
 };
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBoxTag",
                   "[Unit][DataStructures]") {
   CHECK(db::tag_name<PureBaseTag>() == "PureBaseTag");
-  CHECK(db::tag_name<SimpleTag>() == "SimpleTag");
-  CHECK(db::tag_name<ComputeTag>() == "ComputeTag");
+  CHECK(db::tag_name<UnnamedSimpleTag>() == "UnnamedSimpleTag");
+  CHECK(db::tag_name<NamedSimpleTag>() == "NamedSimpleTag::name");
+  CHECK(db::tag_name<NamedComputeTag>() == "NamedComputeTag::name");
+  CHECK(db::tag_name<BasedComputeTag>() == "UnnamedSimpleTag");
+  CHECK(db::tag_name<NamedBasedComputeTag>() == "NamedBasedComputeTag::name");
+  CHECK(db::tag_name<InheritedComputeTag>() == "NamedSimpleTag::name");
+  CHECK(db::tag_name<UnnamedPrefix<UnnamedSimpleTag>>() ==
+        "UnnamedPrefix(UnnamedSimpleTag)");
+  CHECK(db::tag_name<UnnamedPrefix<NamedSimpleTag>>() ==
+        "UnnamedPrefix(NamedSimpleTag::name)");
 }
