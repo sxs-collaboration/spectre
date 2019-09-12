@@ -37,11 +37,11 @@ DomainCreator:
     InitialRefinement: [2, 2]
     InitialGridPoints: [4, 4]
 
-# If filtering is enabled in the executable the filter can be controlled using:
-# Filtering:
-#   ExpFilter0:
-#     Alpha: 12
-#     HalfPower: 32
+# Filtering is being tested by the 2D executable (see EvolveScalarWave.hpp)
+Filtering:
+  ExpFilter0:
+    Alpha: 12
+    HalfPower: 32
 
 NumericalFlux:
   Upwind:
