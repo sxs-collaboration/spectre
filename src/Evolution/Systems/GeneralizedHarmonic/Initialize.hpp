@@ -57,21 +57,26 @@ struct InitializeConstraintsTags {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using compute_tags = db::AddComputeTags<
-        GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<Dim, frame>,
         GeneralizedHarmonic::Tags::GaugeConstraintCompute<Dim, frame>,
-        GeneralizedHarmonic::Tags::FourIndexConstraintCompute<Dim, frame>,
         GeneralizedHarmonic::Tags::FConstraintCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::FourIndexConstraintCompute<Dim, frame>,
+        GeneralizedHarmonic::Tags::ConstraintEnergyCompute<Dim, frame>,
+
         // following tags added to observe constraints
         ::Tags::PointwiseL2NormCompute<
-            GeneralizedHarmonic::Tags::TwoIndexConstraint<Dim, frame>>,
-        ::Tags::PointwiseL2NormCompute<
             GeneralizedHarmonic::Tags::GaugeConstraint<Dim, frame>>,
+        ::Tags::PointwiseL2NormCompute<
+            GeneralizedHarmonic::Tags::FConstraint<Dim, frame>>,
+        ::Tags::PointwiseL2NormCompute<
+            GeneralizedHarmonic::Tags::TwoIndexConstraint<Dim, frame>>,
         ::Tags::PointwiseL2NormCompute<
             GeneralizedHarmonic::Tags::ThreeIndexConstraint<Dim, frame>>,
         ::Tags::PointwiseL2NormCompute<
             GeneralizedHarmonic::Tags::FourIndexConstraint<Dim, frame>>,
         ::Tags::PointwiseL2NormCompute<
-            GeneralizedHarmonic::Tags::FConstraint<Dim, frame>>>;
+            GeneralizedHarmonic::Tags::ConstraintEnergy<Dim, frame>>>;
 
     return std::make_tuple(
         Initialization::merge_into_databox<InitializeConstraintsTags,
