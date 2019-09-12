@@ -154,9 +154,17 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
     IntermediateVariables<DataType> vars(x, t, center_, mean_velocity_,
-                                         perturbation_amplitude_, strength_);
+                                         strength_);
     return {tuples::get<Tags>(variables(tmpl::list<Tags>{}, vars))...};
   }
+
+  /// Function of `z` coordinate to compute the perturbation generating
+  /// a source term. Public so the corresponding source class can also use it.
+  template <typename DataType>
+  DataType perturbation_profile(const DataType& z) const noexcept;
+
+  template <typename DataType>
+  DataType deriv_of_perturbation_profile(const DataType& z) const noexcept;
 
   const EquationsOfState::PolytropicFluid<false>& equation_of_state() const
       noexcept {
@@ -197,13 +205,12 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
     IntermediateVariables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
                           double t, const std::array<double, Dim>& center,
                           const std::array<double, Dim>& mean_velocity,
-                          double perturbation_amplitude,
                           double strength) noexcept;
     DataType x_tilde{};
     DataType y_tilde{};
     DataType profile{};
-    // (3D only) Extra term in the velocity along z that generates sources.
-    DataType perturbation{};
+    // (3D only) z-coordinate to compute perturbation term
+    DataType z_coord{};
   };
 
   template <size_t SpatialDim>

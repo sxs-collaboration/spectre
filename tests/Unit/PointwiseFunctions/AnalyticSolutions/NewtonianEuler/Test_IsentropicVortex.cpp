@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <random>
 #include <string>
 #include <tuple>
 
@@ -105,6 +106,23 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.Vortex",
                    "[-0.04, 0.14, 0.3]");
   test_solution<3>(DataVector(5), center_3d, "[-0.53, -0.1, 1.4]",
                    mean_velocity_3d, "[-0.04, 0.14, 0.3]");
+}
+
+SPECTRE_TEST_CASE(
+    "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.Vortex.Pert",
+    "[Unit][PointwiseFunctions]") {
+  NewtonianEuler::Solutions::IsentropicVortex<3> vortex(
+      1.3, {{3.21, -1.4}}, {{0.12, -0.53}}, 0.05, 1.7);
+
+  MAKE_GENERATOR(gen);
+  std::uniform_real_distribution<> distribution(-3.0, 3.0);
+  const double random_z = distribution(gen);
+  const DataVector random_z_dv = {{random_z, random_z - 1.0, random_z + 2.0,
+                                   3.0 * random_z, exp(random_z)}};
+  CHECK(vortex.perturbation_profile(random_z) == sin(random_z));
+  CHECK(vortex.perturbation_profile(random_z_dv) == sin(random_z_dv));
+  CHECK(vortex.deriv_of_perturbation_profile(random_z) == cos(random_z));
+  CHECK(vortex.deriv_of_perturbation_profile(random_z_dv) == cos(random_z_dv));
 }
 
 // [[OutputRegex, The strength must be non-negative.]]

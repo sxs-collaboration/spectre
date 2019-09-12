@@ -51,20 +51,34 @@ void IsentropicVortex<Dim>::pup(PUP::er& p) noexcept {
   p | equation_of_state_;
 }
 
+// Can be any smooth function of z. For testing purposes, we choose sin(z).
+template <size_t Dim>
+template <typename DataType>
+DataType IsentropicVortex<Dim>::perturbation_profile(const DataType& z) const
+    noexcept {
+  return sin(z);
+}
+
+template <size_t Dim>
+template <typename DataType>
+DataType IsentropicVortex<Dim>::deriv_of_perturbation_profile(
+    const DataType& z) const noexcept {
+  return cos(z);
+}
+
 template <size_t Dim>
 template <typename DataType>
 IsentropicVortex<Dim>::IntermediateVariables<DataType>::IntermediateVariables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x, const double t,
     const std::array<double, Dim>& center,
     const std::array<double, Dim>& mean_velocity,
-    const double perturbation_amplitude, const double strength) noexcept {
+    const double strength) noexcept {
   x_tilde = get<0>(x) - center[0] - t * mean_velocity[0];
   y_tilde = get<1>(x) - center[1] - t * mean_velocity[1];
   profile = 0.5 * strength *
             exp(0.5 - 0.5 * (square(x_tilde) + square(y_tilde))) / M_PI;
   if (Dim == 3) {
-    // Can be any smooth function of z. For testing purpose, we choose sin(z).
-    perturbation = perturbation_amplitude * sin(get<Dim - 1>(x));
+    z_coord = get<Dim - 1>(x);
   }
 }
 
@@ -94,7 +108,8 @@ IsentropicVortex<Dim>::variables(
   get<0>(velocity) -= vars.y_tilde * vars.profile;
   get<1>(velocity) += vars.x_tilde * vars.profile;
   if (Dim == 3) {
-    get<Dim - 1>(velocity) += vars.perturbation;
+    get<Dim - 1>(velocity) +=
+        perturbation_amplitude_ * perturbation_profile(vars.z_coord);
   }
   return velocity;
 }
@@ -144,15 +159,24 @@ bool operator!=(const IsentropicVortex<Dim>& lhs,
 
 #define INSTANTIATE_CLASS(_, data)                                            \
   template class IsentropicVortex<DIM(data)>;                                 \
-  template struct IsentropicVortex<DIM(data)>::IntermediateVariables<double>; \
-  template struct IsentropicVortex<DIM(                                       \
-      data)>::IntermediateVariables<DataVector>;                              \
   template bool operator==(const IsentropicVortex<DIM(data)>&,                \
                            const IsentropicVortex<DIM(data)>&) noexcept;      \
   template bool operator!=(const IsentropicVortex<DIM(data)>&,                \
                            const IsentropicVortex<DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (2, 3))
+
+#define INSTANTIATE_MEMBERS(_, data)                                           \
+  template struct IsentropicVortex<DIM(data)>::IntermediateVariables<DTYPE(    \
+      data)>;                                                                  \
+  template DTYPE(data)                                                         \
+      IsentropicVortex<DIM(data)>::perturbation_profile(const DTYPE(data) & z) \
+          const noexcept;                                                      \
+  template DTYPE(data)                                                         \
+      IsentropicVortex<DIM(data)>::deriv_of_perturbation_profile(              \
+          const DTYPE(data) & z) const noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_MEMBERS, (2, 3), (double, DataVector))
 
 #define INSTANTIATE_SCALARS(_, data)                     \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data)>> \
