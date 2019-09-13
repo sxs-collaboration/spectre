@@ -13,8 +13,8 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/Filtering.hpp"
-#include "Evolution/DiscontinuousGalerkin/ObserveErrorNorms.hpp"
 #include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"
+#include "Evolution/DiscontinuousGalerkin/ObserveNorms.hpp"
 #include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
@@ -111,9 +111,17 @@ struct EvolutionMetavars {
 
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<GeneralizedHarmonic::UpwindFlux<volume_dim>>;
+
+  using constraint_tags = tmpl::list<
+      GeneralizedHarmonic::Tags::GaugeConstraint<volume_dim, frame>,
+      GeneralizedHarmonic::Tags::TwoIndexConstraint<volume_dim, frame>,
+      GeneralizedHarmonic::Tags::FConstraint<volume_dim, frame>,
+      GeneralizedHarmonic::Tags::ThreeIndexConstraint<volume_dim, frame>,
+      GeneralizedHarmonic::Tags::FourIndexConstraint<volume_dim, frame>,
+      GeneralizedHarmonic::Tags::ConstraintEnergy<volume_dim, frame>>;
+
   using events = tmpl::list<
-      dg::Events::Registrars::ObserveErrorNorms<
-          volume_dim, typename system::variables_tag::tags_list>,
+      dg::Events::Registrars::ObserveNorms<volume_dim, constraint_tags>,
       dg::Events::Registrars::ObserveFields<
           volume_dim,
           tmpl::append<
