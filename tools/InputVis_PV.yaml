@@ -2,34 +2,43 @@
 # See LICENSE.txt for details.
 
 #Path to XDMF file
-file_path: ScalarWave3DPeriodicVol_data.xmf
-#insert path here
+File_path: GrMhdVol_30.xmf
+#          insert path here
 
-#Set Variable display
-Variable_properties:
-  Variable_name: Psi
+#Set Scalar Variable display
+Scalar_variable_properties:
+  Variable_name: RestMassDensity
 #          insert name of variable here
 #          Choose one representation from: Surface, Points, Wireframe, Outline, Feature Edges, Surface With Edges, Point Gaussian, 3D Glyphs
   Representation: Surface
 #          insert one of the above here
-  Color_map: Viridis (matplotlib)
+  Color_map: Inferno (matplotlib)
 #          Viridis (matplotlib), Inferno (matplotlib) or Cool to Warm
   Opacity:
 #          Choose Opacity function: 'Constant' or 'Proportional'
     Function_type: Proportional
-    Value: 1
+    Value: 0.6
 #          insert value between 0 and 1 if Function_type chosen is 'Constant'
 
+#Add vector variable
+Vector_variable_properties:
+  Add_vector_field: True
+#             enter True/False
+  Variable_name: SpatialVelocity
+#             enter name of vector variable
+  Color_map: Viridis (matplotlib)
+#             Viridis (matplotlib), Inferno (matplotlib) or Cool to Warm
+
 #Choose Filter
-Filter:
+Filters:
   Clip:
     Apply: False
-#          enter True/False
-    Clip_type: Sphere
-#          Choose Clip type from: Plane, Box, Sphere, Cylinder
+#        enter True/False
+    Clip_type: Plane
+#        Choose Clip type from: Plane, Box, Sphere, Cylinder
 #   -- For Plane --
-    Origin: [3.14, 3.14, 3.14]
-    Normal: [1, 0, 0]
+    Origin: [0, 0, 0]
+    Normal: [0, 1, 0]
 #   -- For Box --
     Position: [0,0,0]
     Rotation: [0,0,0]
@@ -41,10 +50,9 @@ Filter:
     Center_c: [3.14,3.14,3.14]
     Radius_c: 3.14
     Axis: [1,0,0]
-
   Slice:
     Apply: False
-#          enter True/False
+#           enter True/False
     Slice_type: Plane
 #          Choose Slice type from: Plane, Box, Sphere, Cylinder
 #   -- For Plane --
@@ -62,15 +70,10 @@ Filter:
     Radius_c: 3.14
     Axis: [1,0,0]
 
-#  Contour:
-#    Apply: False
-#          enter True/False
-#    Contour_variable: Error(Psi)
-#          contour by this variable
-
 #Warping
 Warp:
-  Add_warp: False
+  Add_warp: True
+#             enter True/False
 
 #Image/Animation Save Properties
 Save_properties:
