@@ -23,7 +23,7 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
 #include "IO/DataImporter/DataFileReader.hpp"
 #include "IO/DataImporter/ElementActions.hpp"
-#include "IO/Observer/Actions.hpp"  // IWYU pragma: keep
+#include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/RegisterObservers.hpp"
@@ -45,6 +45,7 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
 #include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
+#include "ParallelAlgorithms/Events/ObserveNorms.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
@@ -106,9 +107,17 @@ struct EvolutionMetavars {
 
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<GeneralizedHarmonic::UpwindFlux<volume_dim>>;
+
+  using constraint_tags = tmpl::list<
+      GeneralizedHarmonic::Tags::GaugeConstraint<volume_dim, frame>,
+      GeneralizedHarmonic::Tags::TwoIndexConstraint<volume_dim, frame>,
+      GeneralizedHarmonic::Tags::FConstraint<volume_dim, frame>,
+      GeneralizedHarmonic::Tags::ThreeIndexConstraint<volume_dim, frame>,
+      GeneralizedHarmonic::Tags::FourIndexConstraint<volume_dim, frame>,
+      GeneralizedHarmonic::Tags::ConstraintEnergy<volume_dim, frame>>;
+
   using events = tmpl::list<
-      dg::Events::Registrars::ObserveErrorNorms<
-          volume_dim, typename system::variables_tag::tags_list>,
+      dg::Events::Registrars::ObserveNorms<volume_dim, constraint_tags>,
       dg::Events::Registrars::ObserveFields<
           volume_dim,
           tmpl::append<
