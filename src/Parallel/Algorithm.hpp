@@ -370,7 +370,7 @@ class AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>> {
 
   bool terminate_{true};
 
-  using all_cache_tags = ConstGlobalCache_detail::make_tag_list<metavariables>;
+  using all_cache_tags = get_const_global_cache_tags<metavariables>;
   using initial_databox = db::compute_databox_type<tmpl::flatten<tmpl::list<
       Tags::ConstGlobalCacheImpl<metavariables>,
       typename ParallelComponent::initialization_tags,

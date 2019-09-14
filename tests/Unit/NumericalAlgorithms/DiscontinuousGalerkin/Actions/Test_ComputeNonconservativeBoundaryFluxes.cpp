@@ -106,7 +106,6 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
-  using const_global_cache_tag_list = tmpl::list<>;
   using simple_tags =
       db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
@@ -134,7 +133,6 @@ struct component {
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 

@@ -251,7 +251,6 @@ struct reduce_threaded_method {
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using array_index = int;
   using phase_dependent_action_list =
@@ -304,7 +303,6 @@ struct ArrayParallelComponent {
 template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
@@ -345,7 +343,6 @@ struct TestMetavariables {
   using component_list =
       tmpl::list<ArrayParallelComponent<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   static constexpr const char* const help{"Test nodelocks in Algorithm"};
   static constexpr bool ignore_unrecognized_command_line_options = false;

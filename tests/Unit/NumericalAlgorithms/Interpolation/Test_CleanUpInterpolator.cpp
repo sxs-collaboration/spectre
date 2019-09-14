@@ -44,7 +44,6 @@ struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
   using simple_tags = db::get_items<
       intrp::Actions::InitializeInterpolator::return_tag_list<Metavariables>>;
   using phase_dependent_action_list = tmpl::list<
@@ -75,7 +74,6 @@ struct MockMetavariables {
       tmpl::list<InterpolationTagA, InterpolationTagB, InterpolationTagC>;
 
   using component_list = tmpl::list<mock_interpolator<MockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 

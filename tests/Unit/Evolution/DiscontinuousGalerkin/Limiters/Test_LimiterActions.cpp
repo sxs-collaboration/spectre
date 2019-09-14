@@ -104,7 +104,7 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tag_list = tmpl::list<LimiterTag>;
+  using const_global_cache_tags = tmpl::list<LimiterTag>;
   using simple_tags =
       db::AddSimpleTags<TemporalId, Tags::Mesh<Dim>, Tags::Element<Dim>,
                         Tags::ElementMap<Dim>, Var>;
@@ -121,7 +121,6 @@ struct component {
 template <size_t Dim>
 struct Metavariables {
   using component_list = tmpl::list<component<Dim, Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   using limiter = LimiterTag;
   using system = System<Dim>;
   using temporal_id = TemporalId;

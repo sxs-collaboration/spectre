@@ -84,7 +84,7 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<Tags::TimeStepper<LtsTimeStepper>, NumericalFluxTag>;
   using simple_tags =
       db::AddSimpleTags<Tags::Mesh<2>, Tags::Mortars<Tags::Mesh<1>, 2>,
@@ -106,7 +106,6 @@ struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
   using temporal_id = TimeStepId;
   static constexpr bool local_time_stepping = true;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag;
   enum class Phase { Initialization, Testing, Exit };

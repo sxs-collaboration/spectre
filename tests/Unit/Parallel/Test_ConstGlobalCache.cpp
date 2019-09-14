@@ -95,7 +95,7 @@ struct shape_of_nametag : shape_of_nametag_base {
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = tmpl::list<name, age, height>;
+  using const_global_cache_tags = tmpl::list<name, age, height>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
@@ -107,7 +107,7 @@ struct SingletonParallelComponent {
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = tmpl::list<height, shape_of_nametag>;
+  using const_global_cache_tags = tmpl::list<height, shape_of_nametag>;
   using array_index = int;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
@@ -120,7 +120,7 @@ struct ArrayParallelComponent {
 template <class Metavariables>
 struct GroupParallelComponent {
   using chare_type = Parallel::Algorithms::Group;
-  using const_global_cache_tag_list = tmpl::list<name>;
+  using const_global_cache_tags = tmpl::list<name>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
@@ -132,7 +132,7 @@ struct GroupParallelComponent {
 template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list = tmpl::list<height>;
+  using const_global_cache_tags = tmpl::list<height>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
@@ -147,7 +147,6 @@ struct TestMetavariables {
                  ArrayParallelComponent<TestMetavariables>,
                  GroupParallelComponent<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Testing, Exit };
 };
 
@@ -155,8 +154,8 @@ struct TestMetavariables {
 
 SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
   {
-    using tag_list = typename Parallel::ConstGlobalCache_detail::make_tag_list<
-        TestMetavariables>;
+    using tag_list =
+        typename Parallel::get_const_global_cache_tags<TestMetavariables>;
     static_assert(
         cpp17::is_same_v<tag_list,
                          tmpl::list<name, age, height, shape_of_nametag>>,
@@ -174,8 +173,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
   }
 
   {
-    using tag_list = typename Parallel::ConstGlobalCache_detail::make_tag_list<
-        TestMetavariables>;
+    using tag_list =
+        typename Parallel::get_const_global_cache_tags<TestMetavariables>;
     static_assert(
         cpp17::is_same_v<tag_list,
                          tmpl::list<name, age, height, shape_of_nametag>>,

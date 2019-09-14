@@ -385,8 +385,7 @@ class MockDistributedObject {
   using PhaseType =
       typename tmpl::front<phase_dependent_action_lists>::phase_type;
 
-  using all_cache_tags =
-      Parallel::ConstGlobalCache_detail::make_tag_list<metavariables>;
+  using all_cache_tags = Parallel::get_const_global_cache_tags<metavariables>;
   using initialization_tags =
       typename detail::get_initialization_tags_from_component<Component>::type;
   using initial_tags = tmpl::flatten<tmpl::list<
@@ -1315,7 +1314,7 @@ class MockRuntimeSystem {
 
   using GlobalCache = Parallel::ConstGlobalCache<Metavariables>;
   using CacheTuple = tuples::tagged_tuple_from_typelist<
-      Parallel::ConstGlobalCache_detail::make_tag_list<Metavariables>>;
+      Parallel::get_const_global_cache_tags<Metavariables>>;
 
   using mock_objects_tags =
       tmpl::transform<typename Metavariables::component_list,

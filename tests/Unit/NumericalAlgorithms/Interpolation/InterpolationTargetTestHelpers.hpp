@@ -65,8 +65,8 @@ struct mock_interpolation_target {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using component_being_mocked = void;  // not needed.
-  using const_global_cache_tag_list = tmpl::flatten<tmpl::append<
-      Parallel::get_const_global_cache_tags<tmpl::list<
+  using const_global_cache_tags = tmpl::flatten<tmpl::append<
+      Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
           typename Metavariables::InterpolationTargetA::compute_target_points>>,
       tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>>>;
   using phase_dependent_action_list = tmpl::list<
@@ -120,7 +120,6 @@ struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

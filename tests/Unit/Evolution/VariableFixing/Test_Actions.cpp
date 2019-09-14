@@ -42,14 +42,10 @@ struct mock_component {
                              Metavariables::Phase::Testing,
                              tmpl::list<VariableFixing::Actions::FixVariables<
                                  VariableFixing::RadiallyFallingFloor<3>>>>>;
-  using const_global_cache_tag_list =
-      Parallel::get_const_global_cache_tags_from_pdal<
-          phase_dependent_action_list>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<mock_component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace

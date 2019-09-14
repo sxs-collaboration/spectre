@@ -99,7 +99,7 @@ struct EvolutionMetavars {
 
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<initial_data_tag,
                  Tags::TimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,

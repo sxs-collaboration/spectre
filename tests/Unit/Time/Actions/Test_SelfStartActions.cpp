@@ -108,7 +108,6 @@ struct Metavariables {
   static constexpr bool has_primitives = HasPrimitives;
   using system = System<HasPrimitives>;
   using component_list = tmpl::list<Component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<>;
   using temporal_id = TemporalId;
 
@@ -120,8 +119,7 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list =
-      tmpl::list<Tags::TimeStepper<TimeStepper>>;
+  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
   using simple_tags = tmpl::flatten<db::AddSimpleTags<
       typename metavariables::system::variables_tag,
       typename metavariables::system::test_primitive_variables_tags,

@@ -39,7 +39,7 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<::Tags::Domain<3, Frame::Inertial>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -57,7 +57,6 @@ struct Metavariables {
 
   using component_list = tmpl::list<
       mock_interpolation_target<Metavariables, InterpolationTargetA>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 

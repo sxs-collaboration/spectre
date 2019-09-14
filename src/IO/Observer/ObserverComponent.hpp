@@ -26,7 +26,6 @@ namespace observers {
 template <class Metavariables>
 struct Observer {
   using chare_type = Parallel::Algorithms::Group;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename metavariables::Phase, metavariables::Phase::Initialization,
@@ -48,7 +47,7 @@ struct Observer {
 template <class Metavariables>
 struct ObserverWriter {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<Tags::ReductionFileName, Tags::VolumeFileName>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<

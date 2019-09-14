@@ -16,6 +16,10 @@ struct Tag0 {};
 struct Tag1 {};
 struct Tag2 {};
 struct Tag3 {};
+struct Tag4 {};
+struct Tag5 {};
+struct Tag6 {};
+struct Tag7 {};
 
 struct Action0 {
   using inbox_tags = tmpl::list<Tag0, Tag1>;
@@ -23,6 +27,7 @@ struct Action0 {
 struct Action1 {};
 struct Action2 {
   using inbox_tags = tmpl::list<Tag1, Tag2, Tag3>;
+  using const_global_cache_tags = tmpl::list<Tag6>;
 };
 
 struct InitTag0 {};
@@ -61,6 +66,7 @@ struct ComponentExecute {
                                         tmpl::list<Action0, Action1>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
+  using const_global_cache_tags = tmpl::list<Tag2, Tag4>;
 };
 
 struct ComponentInitAndExecute {
@@ -81,6 +87,7 @@ struct ComponentInitWithAllocate {
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>,
       array_allocation_tags>;
+  using const_global_cache_tags = tmpl::list<Tag1, Tag5, Tag7>;
 };
 
 struct ComponentExecuteWithAllocate {
@@ -103,17 +110,90 @@ struct ComponentInitAndExecuteWithAllocate {
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>,
       array_allocation_tags>;
+  using const_global_cache_tags = tmpl::list<Tag2, Tag4>;
 };
 
-static_assert(cpp17::is_same_v<Parallel::get_inbox_tags_from_action<Action2>,
-                               tmpl::list<Tag1, Tag2, Tag3>>,
-              "Failed testing get_inbox_tags_from_action");
+struct Metavariables0 {
+  using component_list = tmpl::list<ComponentInit>;
+};
+
+struct Metavariables1 {
+  using const_global_cache_tags = tmpl::list<Tag0, Tag4>;
+  using component_list = tmpl::list<>;
+};
+
+struct Metavariables2 {
+  using component_list = tmpl::list<ComponentInitWithAllocate>;
+};
+
+struct Metavariables3 {
+  using const_global_cache_tags = tmpl::list<Tag0, Tag4>;
+  using component_list = tmpl::list<ComponentInitWithAllocate>;
+};
+
+struct Metavariables4 {
+  using component_list = tmpl::list<ComponentInitAndExecute>;
+};
+
+struct Metavariables5 {
+  using const_global_cache_tags = tmpl::list<Tag0, Tag4>;
+  using component_list = tmpl::list<ComponentInitAndExecute>;
+};
+
+struct Metavariables6 {
+  using component_list = tmpl::list<ComponentInitAndExecuteWithAllocate>;
+};
+
+struct Metavariables7 {
+  using const_global_cache_tags = tmpl::list<Tag0, Tag4>;
+  using component_list = tmpl::list<ComponentInitAndExecuteWithAllocate>;
+};
 
 static_assert(
     cpp17::is_same_v<
         Parallel::get_inbox_tags<tmpl::list<Action0, Action1, Action2>>,
         tmpl::list<Tag0, Tag1, Tag2, Tag3>>,
     "Failed testing get_inbox_tags");
+
+static_assert(
+    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables0>,
+                     tmpl::list<>>,
+    "Failed testing get_const_global_cache_tags");
+
+static_assert(
+    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables1>,
+                     tmpl::list<Tag0, Tag4>>,
+    "Failed testing get_const_global_cache_tags");
+
+static_assert(
+    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables2>,
+                     tmpl::list<Tag1, Tag5, Tag7>>,
+    "Failed testing get_const_global_cache_tags");
+
+static_assert(
+    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables3>,
+                     tmpl::list<Tag0, Tag4, Tag1, Tag5, Tag7>>,
+    "Failed testing get_const_global_cache_tags");
+
+static_assert(
+    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables4>,
+                     tmpl::list<Tag6>>,
+    "Failed testing get_const_global_cache_tags");
+
+static_assert(
+    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables5>,
+                     tmpl::list<Tag0, Tag4, Tag6>>,
+    "Failed testing get_const_global_cache_tags");
+
+static_assert(
+    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables6>,
+                     tmpl::list<Tag2, Tag4, Tag6>>,
+    "Failed testing get_const_global_cache_tags");
+
+static_assert(
+    cpp17::is_same_v<Parallel::get_const_global_cache_tags<Metavariables7>,
+                     tmpl::list<Tag0, Tag4, Tag2, Tag6>>,
+    "Failed testing get_const_global_cache_tags");
 
 static_assert(
     cpp17::is_same_v<Parallel::get_initialization_actions_list<

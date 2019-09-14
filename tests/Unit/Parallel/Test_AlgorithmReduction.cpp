@@ -104,7 +104,6 @@ struct ProcessCustomReductionAction {
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
@@ -229,7 +228,6 @@ struct ArrayReduce {
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
   using array_index = int;
   using phase_dependent_action_list =
@@ -272,7 +270,6 @@ struct TestMetavariables {
   using component_list =
       tmpl::list<SingletonParallelComponent<TestMetavariables>,
                  ArrayParallelComponent<TestMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   static constexpr const char* const help{"Test reductions using Algorithm"};
   static constexpr bool ignore_unrecognized_command_line_options = false;

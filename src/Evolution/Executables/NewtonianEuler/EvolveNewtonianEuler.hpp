@@ -212,7 +212,7 @@ struct EvolutionMetavars {
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
                       compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
 
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<initial_data_tag,
                  Tags::TimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,

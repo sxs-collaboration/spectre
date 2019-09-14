@@ -182,7 +182,7 @@ struct mock_interpolation_target {
   using array_index = size_t;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>;
 
   using phase_dependent_action_list = tmpl::list<
@@ -212,7 +212,6 @@ struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
   using simple_tags = db::get_items<
       intrp::Actions::InitializeInterpolator::return_tag_list<Metavariables>>;
   using phase_dependent_action_list = tmpl::list<
@@ -239,7 +238,6 @@ struct MockMetavariables {
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
       mock_interpolator<MockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
 

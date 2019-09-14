@@ -160,7 +160,7 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tag_list = tmpl::list<NumericalFluxTag<Dim>>;
+  using const_global_cache_tags = tmpl::list<NumericalFluxTag<Dim>>;
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   using simple_tags =
@@ -197,7 +197,6 @@ struct Metavariables {
   using system = System<Dim>;
   using component_list = tmpl::list<component<Dim, Metavariables>>;
   using temporal_id = TemporalId;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag<Dim>;
   enum class Phase { Initialization, Testing, Exit };

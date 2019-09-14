@@ -163,9 +163,10 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
-      tmpl::list<typename InterpolationTargetTag::compute_target_points,
-                 typename InterpolationTargetTag::post_interpolation_callback>>;
+  using const_global_cache_tags =
+      Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
+          typename InterpolationTargetTag::compute_target_points,
+          typename InterpolationTargetTag::post_interpolation_callback>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<intrp::Actions::InitializeInterpolationTarget<
@@ -180,7 +181,6 @@ struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<intrp::Actions::InitializeInterpolator>>>;
@@ -218,7 +218,7 @@ struct MockMetavariables {
   using component_list =
       tmpl::list<mock_interpolation_target<MockMetavariables, AhA>,
                  mock_interpolator<MockMetavariables>>;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<::Tags::Domain<3, Frame::Inertial>>;
 
   enum class Phase { Initialization, Registration, Testing, Exit };

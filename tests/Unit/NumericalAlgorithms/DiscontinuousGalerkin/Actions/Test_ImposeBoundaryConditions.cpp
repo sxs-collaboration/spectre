@@ -194,7 +194,7 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<NumericalFluxTag, BoundaryConditionTag>;
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
@@ -240,7 +240,6 @@ struct Metavariables {
   using system = System<HasPrimitiveAndConservativeVars>;
   using component_list = tmpl::list<component<Metavariables>>;
   using temporal_id = TemporalId;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag;
   using boundary_condition_tag = BoundaryConditionTag;

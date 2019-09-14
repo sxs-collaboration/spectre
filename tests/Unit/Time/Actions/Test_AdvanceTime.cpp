@@ -34,8 +34,7 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list =
-      tmpl::list<Tags::TimeStepper<TimeStepper>>;
+  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
 
   using simple_tags =
       db::AddSimpleTags<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
@@ -52,7 +51,6 @@ struct Component {
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   enum class Phase { Initialization, Testing, Exit };
 };

@@ -9,7 +9,7 @@
 #include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {
-namespace Parallel_detail {
+namespace detail {
 template <class Action, class = cpp17::void_t<>>
 struct get_inbox_tags_from_action {
   using type = tmpl::list<>;
@@ -20,15 +20,7 @@ struct get_inbox_tags_from_action<Action,
                                   cpp17::void_t<typename Action::inbox_tags>> {
   using type = typename Action::inbox_tags;
 };
-}  // namespace Parallel_detail
-
-/*!
- * \ingroup ParallelGroup
- * \brief Given an Action returns the list of inbox tags for that action
- */
-template <class Action>
-using get_inbox_tags_from_action =
-    typename Parallel_detail::get_inbox_tags_from_action<Action>::type;
+}  // namespace detail
 
 /*!
  * \ingroup ParallelGroup
@@ -36,50 +28,59 @@ using get_inbox_tags_from_action =
  */
 template <class ActionsList>
 using get_inbox_tags = tmpl::remove_duplicates<tmpl::join<tmpl::transform<
-    ActionsList, Parallel_detail::get_inbox_tags_from_action<tmpl::_1>>>>;
+    ActionsList, detail::get_inbox_tags_from_action<tmpl::_1>>>>;
 
-namespace Parallel_detail {
-template <class Action, class = cpp17::void_t<>>
-struct get_const_global_cache_tags_from_action {
+namespace detail {
+// ParallelStruct is a metavariables, component, or action struct
+template <class ParallelStruct, class = cpp17::void_t<>>
+struct get_const_global_cache_tags_from_parallel_struct {
   using type = tmpl::list<>;
 };
 
-template <class Action>
-struct get_const_global_cache_tags_from_action<
-    Action, cpp17::void_t<typename Action::const_global_cache_tags>> {
-  using type = typename Action::const_global_cache_tags;
+template <class ParallelStruct>
+struct get_const_global_cache_tags_from_parallel_struct<
+    ParallelStruct,
+    cpp17::void_t<typename ParallelStruct::const_global_cache_tags>> {
+  using type = typename ParallelStruct::const_global_cache_tags;
 };
-}  // namespace Parallel_detail
+
+template <class Component>
+struct get_const_global_cache_tags_from_pdal {
+  using type = tmpl::join<tmpl::transform<
+      tmpl::flatten<tmpl::transform<
+          typename Component::phase_dependent_action_list,
+          get_action_list_from_phase_dep_action_list<tmpl::_1>>>,
+      get_const_global_cache_tags_from_parallel_struct<tmpl::_1>>>;
+};
+}  // namespace detail
 
 /*!
  * \ingroup ParallelGroup
- * \brief Given an Action returns the contents of the
- * `const_global_cache_tags` alias for that action, or an empty list
- * if no such alias exists.
- */
-template <class Action>
-using get_const_global_cache_tags_from_action =
-    typename Parallel_detail::get_const_global_cache_tags_from_action<
-        Action>::type;
-
-/*!
- * \ingroup ParallelGroup
- * \brief Given a list of Actions, get a list of the unique tags
- * specified in the actions' `const_global_cache_tags` aliases.
+ * \brief Given a list of Actions, get a list of the unique tags specified in
+ * the actions' `const_global_cache_tags` aliases.
  */
 template <class ActionsList>
-using get_const_global_cache_tags =
+using get_const_global_cache_tags_from_actions =
     tmpl::remove_duplicates<tmpl::join<tmpl::transform<
         ActionsList,
-        Parallel_detail::get_const_global_cache_tags_from_action<tmpl::_1>>>>;
+        detail::get_const_global_cache_tags_from_parallel_struct<tmpl::_1>>>>;
 
-template <class PhaseDepActionList>
-using get_const_global_cache_tags_from_pdal =
-    tmpl::remove_duplicates<tmpl::join<tmpl::transform<
-        tmpl::flatten<tmpl::transform<
-            PhaseDepActionList,
-            get_action_list_from_phase_dep_action_list<tmpl::_1>>>,
-        Parallel_detail::get_const_global_cache_tags_from_action<tmpl::_1>>>>;
+/*!
+ * \ingroup ParallelGroup
+ * \brief Given the metavariables, get a list of the unique tags that will
+ * specify the items in the ConstGlobalCache.
+ */
+template <typename Metavariables>
+using get_const_global_cache_tags =
+    tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
+        typename detail::get_const_global_cache_tags_from_parallel_struct<
+            Metavariables>::type,
+        tmpl::transform<
+            typename Metavariables::component_list,
+            detail::get_const_global_cache_tags_from_parallel_struct<tmpl::_1>>,
+        tmpl::transform<
+            typename Metavariables::component_list,
+            detail::get_const_global_cache_tags_from_pdal<tmpl::_1>>>>>;
 
 namespace detail {
 template <typename PhaseAction>

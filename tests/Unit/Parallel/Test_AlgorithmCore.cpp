@@ -210,7 +210,6 @@ struct NoOpsComponent {
                      no_op_test::no_op>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
@@ -371,7 +370,6 @@ struct MutateComponent {
                                         add_remove_test::remove_int0>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
 
   static void execute_next_phase(
@@ -538,7 +536,6 @@ struct ReceiveComponent {
                      receive_data_test::update_instance>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
@@ -649,7 +646,6 @@ struct AnyOrderComponent {
                                         receive_data_test::update_instance>>>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
@@ -671,7 +667,6 @@ struct TestMetavariables {
                                     ReceiveComponent<TestMetavariables>,
                                     AnyOrderComponent<TestMetavariables>>;
   /// [component_list_example]
-  using const_global_cache_tag_list = tmpl::list<>;
 
   /// [help_string_example]
   static constexpr OptionString help =

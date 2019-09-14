@@ -48,7 +48,6 @@ struct component_for_simple_action_mock {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Initialization,
@@ -174,7 +173,6 @@ struct threaded_action_b_mock {
 struct SimpleActionMockMetavariables {
   using component_list = tmpl::list<
       component_for_simple_action_mock<SimpleActionMockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   enum class Phase { Initialization, Testing, Exit };
 };
@@ -182,7 +180,7 @@ struct SimpleActionMockMetavariables {
 struct MockMetavariablesWithGlobalCacheTags {
   using component_list = tmpl::list<
       component_for_simple_action_mock<SimpleActionMockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<ValueTag,PassedToB>;
+  using const_global_cache_tags = tmpl::list<ValueTag, PassedToB>;
 
   enum class Phase { Initialization, Testing, Exit };
 };
@@ -307,7 +305,6 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using phase_dependent_action_list =
       tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
@@ -317,7 +314,6 @@ struct Component {
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   enum class Phase { Testing, Exit };
 };

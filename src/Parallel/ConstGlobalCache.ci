@@ -2,7 +2,6 @@
 // See LICENSE.txt for details.
 
 module ConstGlobalCache {
-  include "Parallel/ConstGlobalCacheHelper.hpp";
   include "Parallel/ParallelComponentHelpers.hpp";
   include "Utilities/TaggedTuple.hpp";
   namespace Parallel {
@@ -11,7 +10,7 @@ module ConstGlobalCache {
   nodegroup[migratable] ConstGlobalCache {
     entry ConstGlobalCache(
         tuples::tagged_tuple_from_typelist<
-            typename ConstGlobalCache_detail::make_tag_list<Metavariables>>&);
+            get_const_global_cache_tags<Metavariables>>&);
     entry void set_parallel_components(
         tuples::tagged_tuple_from_typelist<tmpl::transform<
             typename Metavariables::component_list,
