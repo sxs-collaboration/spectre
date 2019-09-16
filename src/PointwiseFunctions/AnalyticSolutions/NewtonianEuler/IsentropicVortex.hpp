@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/VortexPerturbation.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
@@ -93,6 +94,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
 
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<false>;
+  using source_term_type = Sources::VortexPerturbation<Dim>;
 
   /// The adiabatic index of the fluid.
   struct AdiabaticIndex {
@@ -176,6 +178,10 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
     return equation_of_state_;
   }
 
+  const Sources::VortexPerturbation<Dim>& source_term() const noexcept {
+    return source_term_;
+  }
+
   // clang-tidy: no runtime references
   void pup(PUP::er& /*p*/) noexcept;  //  NOLINT
 
@@ -236,6 +242,13 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   // so the relation between the pressure and the mass density is polytropic,
   // where the polytropic exponent corresponds to the adiabatic index.
   EquationsOfState::PolytropicFluid<false> equation_of_state_{};
+
+  // In 2-D the source terms vanish. Since we can't have this member typed for
+  // Dim = 3 only (?) we opt to have it in 2-D as well. This member will then be
+  // initialized in 2 and 3-D, but the 2-D class won't introduce any source
+  // terms, and its apply function won't modify anything
+  // (see Sources::VortexPerturbation implementation for details.)
+  Sources::VortexPerturbation<Dim> source_term_{};
 };
 
 template <size_t Dim>
