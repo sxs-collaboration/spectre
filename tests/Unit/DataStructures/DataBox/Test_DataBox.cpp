@@ -66,7 +66,6 @@ struct Tag2 : db::SimpleTag, Tag2Base {
 };
 struct Tag3 : db::SimpleTag {
   using type = std::string;
-  static std::string name() noexcept { return "Tag3"; }
 };
 
 /// [databox_compute_item_tag_example]
