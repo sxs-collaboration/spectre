@@ -127,6 +127,7 @@ class ExponentialFilter<FilterIndex, tmpl::list<TagsToFilter...>> {
   /// rescaled by.
   struct Alpha {
     using type = double;
+    using group = ::OptionTags::FilteringGroup;
     static constexpr OptionString help =
         "exp(-alpha) is rescaling of highest coefficient";
     static type lower_bound() noexcept { return 0.0; }
@@ -140,6 +141,7 @@ class ExponentialFilter<FilterIndex, tmpl::list<TagsToFilter...>> {
    */
   struct HalfPower {
     using type = unsigned;
+    using group = ::OptionTags::FilteringGroup;
     static constexpr OptionString help =
         "Half of the exponent in the generalized Gaussian";
     static type lower_bound() noexcept { return 1; }
@@ -151,6 +153,7 @@ class ExponentialFilter<FilterIndex, tmpl::list<TagsToFilter...>> {
   /// approach is to not compile the filter into the executable.
   struct DisableForDebugging {
     using type = bool;
+    using group = ::OptionTags::FilteringGroup;
     static type default_value() noexcept { return false; }
     static constexpr OptionString help = {"Disable the filter"};
   };
@@ -161,7 +164,12 @@ class ExponentialFilter<FilterIndex, tmpl::list<TagsToFilter...>> {
   }
   using group = ::OptionTags::FilteringGroup;
 
-  using options = tmpl::list<Alpha, HalfPower, DisableForDebugging>;
+  using option_tags = tmpl::list<Alpha, HalfPower, DisableForDebugging>;
+  static ExponentialFilter create_from_options(const double& alpha,
+                                               const double& half_power,
+                                               bool disable_for_debugging) {
+    return ExponentialFilter(alpha, half_power, disable_for_debugging);
+  }
   static constexpr OptionString help = {"An exponential filter."};
 
   ExponentialFilter() = default;

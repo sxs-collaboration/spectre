@@ -164,7 +164,13 @@ struct EvolutionMetavars {
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       dg::Actions::ApplyFluxes, Actions::RecordTimeStepperData>>;
-  using update_variables = tmpl::flatten<tmpl::list<Actions::UpdateU>>;
+
+  using update_variables = tmpl::flatten<tmpl::list<
+      GeneralizedHarmonic::Actions::
+          ImposeConstraintPreservingBoundaryConditions<EvolutionMetavars>,
+      Actions::UpdateU,
+      dg::Actions::ExponentialFilter<
+          0, typename system::variables_tag::type::tags_list>>>;
 
   enum class Phase {
     Initialization,
