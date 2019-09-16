@@ -183,10 +183,9 @@ struct EvolutionMetavars {
                           tmpl::list<>>,
       GeneralizedHarmonic::Actions::
           ImposeConstraintPreservingBoundaryConditions<EvolutionMetavars>,
-      Actions::UpdateU  //,
-                        // dg::Actions::ExponentialFilter<
-      // 0, typename system::variables_tag::type::tags_list>
-      >>;
+      Actions::UpdateU,
+      dg::Actions::ExponentialFilter<
+          0, typename system::variables_tag::type::tags_list>>>;
 
   enum class Phase {
     Initialization,

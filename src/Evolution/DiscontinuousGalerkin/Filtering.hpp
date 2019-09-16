@@ -161,7 +161,12 @@ class ExponentialFilter<FilterIndex, tmpl::list<TagsToFilter...>> {
   }
   using group = ::OptionTags::FilteringGroup;
 
-  using options = tmpl::list<Alpha, HalfPower, DisableForDebugging>;
+  using option_tags = tmpl::list<Alpha, HalfPower, DisableForDebugging>;
+  static ExponentialFilter create_from_options(const double& alpha,
+                                               const double& half_power,
+                                               bool disable_for_debugging) {
+    return ExponentialFilter(alpha, half_power, disable_for_debugging);
+  }
   static constexpr OptionString help = {"An exponential filter."};
 
   ExponentialFilter() = default;
