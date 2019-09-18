@@ -33,7 +33,14 @@ struct RemoveOptionsAndTerminatePhase {
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using tags_to_remove = Parallel::get_initialization_tags<ActionList>;
+    using initialization_tags = Parallel::get_initialization_tags<ActionList>;
+    using initialization_tags_to_keep =
+        Parallel::get_initialization_tags_to_keep<ActionList>;
+    // Keep the tags that are in initialization_tags_to_keep.
+    using tags_to_remove = tmpl::remove_if<
+        initialization_tags,
+        tmpl::bind<tmpl::list_contains, tmpl::pin<initialization_tags_to_keep>,
+                   tmpl::_1>>;
     // Retrieve the `initialization_tags` that are still in the DataBox
     // and remove them.
     using tags_to_remove_this_time = tmpl::filter<

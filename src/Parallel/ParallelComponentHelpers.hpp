@@ -114,6 +114,17 @@ struct get_initialization_tags_from_action<
     Action, cpp17::void_t<typename Action::initialization_tags>> {
   using type = typename Action::initialization_tags;
 };
+
+template <typename Action, typename = cpp17::void_t<>>
+struct get_initialization_tags_to_keep_from_action {
+  using type = tmpl::list<>;
+};
+
+template <typename Action>
+struct get_initialization_tags_to_keep_from_action<
+    Action, cpp17::void_t<typename Action::initialization_tags_to_keep>> {
+  using type = typename Action::initialization_tags_to_keep;
+};
 }  // namespace detail
 
 /// \ingroup ParallelGroup
@@ -127,6 +138,17 @@ using get_initialization_tags = tmpl::remove_duplicates<tmpl::flatten<
                tmpl::transform<
                    InitializationActionsList,
                    detail::get_initialization_tags_from_action<tmpl::_1>>>>>;
+
+/// \ingroup ParallelGroup
+/// \brief Given a list of initialization actions, returns a list of
+/// the unique initialization_tags_to_keep for all the actions.  These
+/// are the tags that are not removed from the DataBox after
+/// initialization.
+template <typename InitializationActionsList>
+using get_initialization_tags_to_keep =
+    tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
+        InitializationActionsList,
+        detail::get_initialization_tags_to_keep_from_action<tmpl::_1>>>>;
 
 namespace detail {
 template <typename InitializationTag>
