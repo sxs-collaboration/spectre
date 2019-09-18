@@ -120,9 +120,7 @@ struct ConjugateGradient {
    *
    * \see `initialize_element`
    */
-  using reinitialize_element =
-      cg_detail::InitializeElement<FieldsTag,
-                                   ::Initialization::MergePolicy::Overwrite>;
+  using prepare_solve = cg_detail::PrepareSolve<FieldsTag>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<

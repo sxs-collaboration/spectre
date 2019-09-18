@@ -146,9 +146,7 @@ struct Gmres {
    *
    * \see `initialize_element`
    */
-  using reinitialize_element =
-      gmres_detail::InitializeElement<FieldsTag,
-                                      ::Initialization::MergePolicy::Overwrite>;
+  using prepare_solve = gmres_detail::PrepareSolve<FieldsTag>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<

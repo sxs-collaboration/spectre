@@ -80,10 +80,6 @@ struct InitializeResidualMagnitude {
                 orthogonalization_history) noexcept {
           *local_residual_magnitude = *initial_residual_magnitude =
               residual_magnitude;
-          // Also setting the following tags so re-initialization works:
-          // - LinearSolver::Tags::IterationId
-          // - orthogonalization_iteration_id_tag
-          // - orthogonalization_history_tag
           *iteration_id = 0;
           *orthogonalization_iteration_id = 0;
           *orthogonalization_history = DenseMatrix<double>{2, 1, 0.};

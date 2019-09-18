@@ -278,20 +278,22 @@ template <typename Metavariables>
 struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
   using metavariables = Metavariables;
+  using linear_solver = typename Metavariables::linear_solver;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<InitializeElement,
-                     typename Metavariables::linear_solver::initialize_element,
+                     typename linear_solver::initialize_element,
+                     typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase,
           Metavariables::Phase::PerformLinearSolve,
           tmpl::list<LinearSolver::Actions::TerminateIfConverged,
-                     typename Metavariables::linear_solver::prepare_step,
+                     typename linear_solver::prepare_step,
                      ComputeOperatorAction,
-                     typename Metavariables::linear_solver::perform_step>>,
+                     typename linear_solver::perform_step>>,
 
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::TestResult,

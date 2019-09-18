@@ -197,6 +197,7 @@ struct ElementArray {
   using chare_type = Parallel::Algorithms::Array;
   using array_index = int;
   using metavariables = Metavariables;
+  using linear_solver = typename Metavariables::linear_solver;
   // In each step of the algorithm we must provide A(p). The linear solver then
   // takes care of updating x and p, as well as the internal variables r, its
   // magnitude and the iteration step number.
@@ -205,16 +206,17 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<InitializeElement,
-                     typename Metavariables::linear_solver::initialize_element,
+                     typename linear_solver::initialize_element,
+                     typename linear_solver::prepare_solve,
                      Parallel::Actions::TerminatePhase>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase,
           Metavariables::Phase::PerformLinearSolve,
           tmpl::list<LinearSolver::Actions::TerminateIfConverged,
-                     typename Metavariables::linear_solver::prepare_step,
+                     typename linear_solver::prepare_step,
                      ComputeOperatorAction,
-                     typename Metavariables::linear_solver::perform_step>>,
+                     typename linear_solver::perform_step>>,
 
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::TestResult,

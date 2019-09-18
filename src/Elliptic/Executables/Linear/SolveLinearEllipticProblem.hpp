@@ -133,45 +133,47 @@ struct Metavariables {
       typename linear_solver::initialize_element,
       dg::Actions::InitializeMortars<Metavariables>,
       elliptic::dg::Actions::InitializeFluxes<Metavariables>,
-      // Initialization is done. Avoid introducing an extra phase by
-      // advancing the linear solver to the first step here.
-      typename linear_solver::prepare_step,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
+  using build_linear_operator_actions = tmpl::list<
+      dg::Actions::SendDataForFluxes<Metavariables>,
+      Actions::MutateApply<elliptic::FirstOrderOperator<
+          volume_dim, LinearSolver::Tags::OperatorAppliedTo,
+          typename system::variables_tag>>,
+      elliptic::dg::Actions::ImposeHomogeneousDirichletBoundaryConditions<
+          Metavariables>,
+      dg::Actions::ReceiveDataForFluxes<Metavariables>,
+      dg::Actions::ApplyFluxes>;
+
+  using dg_element_array = elliptic::DgElementArray<
+      Metavariables,
+      tmpl::list<Parallel::PhaseActions<Phase, Phase::Initialization,
+                                        initialization_actions>,
+                 Parallel::PhaseActions<
+                     Phase, Phase::RegisterWithObserver,
+                     tmpl::list<observers::Actions::RegisterWithObservers<
+                                    observers::RegisterObservers<
+                                        LinearSolver::Tags::IterationId,
+                                        element_observation_type>>,
+                                // We prepare the linear solve here to avoid
+                                // adding an extra phase. We can't do that
+                                // before registration because the
+                                // `prepare_solve` action may contribute to
+                                // observers.
+                                typename linear_solver::prepare_solve,
+                                Parallel::Actions::TerminatePhase>>,
+                 Parallel::PhaseActions<
+                     Phase, Phase::Solve,
+                     tmpl::list<typename linear_solver::prepare_step,
+                                Actions::RunEventsAndTriggers,
+                                LinearSolver::Actions::TerminateIfConverged,
+                                build_linear_operator_actions,
+                                typename linear_solver::perform_step>>>>;
+
   // Specify all parallel components that will execute actions at some point.
-  using component_list = tmpl::append<
-      tmpl::list<elliptic::DgElementArray<
-          Metavariables,
-          tmpl::list<
-              Parallel::PhaseActions<Phase, Phase::Initialization,
-                                     initialization_actions>,
-
-              Parallel::PhaseActions<
-                  Phase, Phase::RegisterWithObserver,
-                  tmpl::list<observers::Actions::RegisterWithObservers<
-                                 observers::RegisterObservers<
-                                     LinearSolver::Tags::IterationId,
-                                     element_observation_type>>,
-                             Parallel::Actions::TerminatePhase>>,
-
-              Parallel::PhaseActions<
-                  Phase, Phase::Solve,
-                  tmpl::list<
-                      Actions::RunEventsAndTriggers,
-                      LinearSolver::Actions::TerminateIfConverged,
-                      dg::Actions::SendDataForFluxes<Metavariables>,
-                      Actions::MutateApply<elliptic::FirstOrderOperator<
-                          volume_dim, LinearSolver::Tags::OperatorAppliedTo,
-                          typename system::variables_tag>>,
-                      elliptic::dg::Actions::
-                          ImposeHomogeneousDirichletBoundaryConditions<
-                              Metavariables>,
-                      dg::Actions::ReceiveDataForFluxes<Metavariables>,
-                      dg::Actions::ApplyFluxes,
-                      typename linear_solver::perform_step,
-                      typename linear_solver::prepare_step>>>>>,
-      typename linear_solver::component_list,
-      tmpl::list<observers::Observer<Metavariables>,
+  using component_list = tmpl::flatten<
+      tmpl::list<dg_element_array, typename linear_solver::component_list,
+                 observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>>;
 
   // Specify the transitions between phases.

@@ -67,8 +67,6 @@ struct InitializeResidual {
                                  const gsl::not_null<double*>
                                      local_residual_square) noexcept {
           *local_residual_square = residual_square;
-          // Also setting the LinearSolver::Tags::IterationId so
-          // re-initialization works:
           *iteration_id = 0;
         });
     // Perform a separate `db::mutate` so that we can retrieve the

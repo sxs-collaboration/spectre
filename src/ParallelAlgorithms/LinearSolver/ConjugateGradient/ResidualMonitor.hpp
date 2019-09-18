@@ -99,7 +99,9 @@ struct InitializeResidualMonitor {
                               residual_square_tag,
                               initial_residual_magnitude_tag>,
             compute_tags>(std::move(box),
-                          db::item_type<LinearSolver::Tags::IterationId>{0},
+                          // The `InitializeResidual` action populates these
+                          // tags with initial values
+                          std::numeric_limits<size_t>::max(),
                           std::numeric_limits<double>::signaling_NaN(),
                           std::numeric_limits<double>::signaling_NaN()),
         true);

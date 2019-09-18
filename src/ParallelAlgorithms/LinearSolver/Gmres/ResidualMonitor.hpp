@@ -103,11 +103,13 @@ struct InitializeResidualMonitor {
                               orthogonalization_iteration_id_tag,
                               orthogonalization_history_tag>,
             compute_tags>(std::move(box),
+                          // The `InitializeResidualMagnitude` action populates
+                          // these tags with initial values
                           std::numeric_limits<double>::signaling_NaN(),
                           std::numeric_limits<double>::signaling_NaN(),
-                          db::item_type<LinearSolver::Tags::IterationId>{0},
-                          db::item_type<orthogonalization_iteration_id_tag>{0},
-                          DenseMatrix<double>{2, 1, 0.}),
+                          std::numeric_limits<size_t>::max(),
+                          std::numeric_limits<size_t>::max(),
+                          DenseMatrix<double>{}),
         true);
   }
 };
