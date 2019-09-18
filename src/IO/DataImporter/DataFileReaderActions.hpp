@@ -113,7 +113,7 @@ struct ReadElementData {
   }
 
  public:
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<Tags::DataFileName<ImporterOptionsGroup>,
                  Tags::VolumeDataSubgroup<ImporterOptionsGroup>,
                  Tags::ObservationValue<ImporterOptionsGroup>>;

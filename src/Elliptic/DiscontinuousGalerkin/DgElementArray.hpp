@@ -45,7 +45,7 @@ struct import_numeric_data_cache_tags {
 template <typename Metavariables, typename DgElementArray>
 struct import_numeric_data_cache_tags<Metavariables, DgElementArray, true> {
   using type = typename read_element_data_action<
-      Metavariables, DgElementArray>::const_global_cache_tag_list;
+      Metavariables, DgElementArray>::const_global_cache_tags;
 };
 
 template <typename Metavariables, typename DgElementArray,

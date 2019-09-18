@@ -6,6 +6,9 @@
 #include <cstddef>
 #include <vector>
 
+#include "AlgorithmSingleton.hpp"
+#include "ApparentHorizons/ComputeItems.hpp"
+#include "ApparentHorizons/Tags.hpp"
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -36,12 +39,28 @@
 #include "IO/Observer/ObserverComponent.hpp"  // IWYU pragma: keep
 #include "IO/Observer/RegisterObservers.hpp"
 #include "IO/Observer/Tags.hpp"  // IWYU pragma: keep
+#include "Informer/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyBoundaryFluxesLocalTimeStepping.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/Interpolation/AddTemporalIdsToInterpolationTarget.hpp"
+#include "NumericalAlgorithms/Interpolation/Callbacks/FindApparentHorizon.hpp"
+#include "NumericalAlgorithms/Interpolation/Callbacks/ObserveTimeSeriesOnSurface.hpp"
+#include "NumericalAlgorithms/Interpolation/CleanUpInterpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
+#include "NumericalAlgorithms/Interpolation/Interpolate.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTarget.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTargetApparentHorizon.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp"
+#include "NumericalAlgorithms/Interpolation/Interpolator.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolatorReceivePoints.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolatorReceiveVolumeData.hpp"
+#include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"
+#include "NumericalAlgorithms/Interpolation/Tags.hpp"
+#include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -120,7 +139,48 @@ struct EvolutionMetavars {
       GeneralizedHarmonic::Tags::FourIndexConstraint<volume_dim, frame>,
       GeneralizedHarmonic::Tags::ConstraintEnergy<volume_dim, frame>>;
 
-  using events = tmpl::list<
+  // HACK until proper compute tags are cherry-picked
+  struct Unity : db::ComputeTag {
+    static std::string name() noexcept { return "Unity"; }
+    static Scalar<DataVector> function(
+        const Scalar<DataVector>& used_for_size) noexcept {
+      return make_with_value<Scalar<DataVector>>(used_for_size, 1.0);
+    }
+    using argument_tags =
+        tmpl::list<StrahlkorperGr::Tags::AreaElement<Frame::Inertial>>;
+  };
+
+  struct Horizon {
+    using tags_to_observe =
+        tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<Unity, frame>>;
+    using compute_items_on_source = tmpl::list<
+        gr::Tags::SpatialMetricCompute<volume_dim, frame, DataVector>,
+        ah::Tags::InverseSpatialMetricCompute<volume_dim, frame>,
+        ah::Tags::ExtrinsicCurvatureCompute<volume_dim, frame>,
+        ah::Tags::SpatialChristoffelSecondKindCompute<volume_dim, frame>>;
+    using vars_to_interpolate_to_target =
+        tmpl::list<gr::Tags::SpatialMetric<volume_dim, frame, DataVector>,
+                   gr::Tags::InverseSpatialMetric<volume_dim, frame>,
+                   gr::Tags::ExtrinsicCurvature<volume_dim, frame>,
+                   gr::Tags::SpatialChristoffelSecondKind<volume_dim, frame>>;
+    using compute_items_on_target = tmpl::append<
+        tmpl::list<StrahlkorperGr::Tags::AreaElement<frame>, Unity>,
+        tags_to_observe>;
+    using compute_target_points =
+        intrp::Actions::ApparentHorizon<Horizon, ::Frame::Inertial>;
+    using post_interpolation_callback =
+        intrp::callbacks::FindApparentHorizon<Horizon>;
+    using post_horizon_find_callback =
+        intrp::callbacks::ObserveTimeSeriesOnSurface<tags_to_observe, Horizon,
+                                                     Horizon>;
+  };
+  using interpolation_target_tags = tmpl::list<Horizon>;
+  using interpolator_source_vars =
+      tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, frame>,
+                 GeneralizedHarmonic::Tags::Pi<volume_dim, frame>,
+                 GeneralizedHarmonic::Tags::Phi<volume_dim, frame>>;
+
+  using observation_events = tmpl::list<
       dg::Events::Registrars::ObserveNorms<volume_dim, constraint_tags>,
       dg::Events::Registrars::ObserveFields<
           volume_dim,
@@ -144,9 +204,14 @@ struct EvolutionMetavars {
           typename system::variables_tag::tags_list>>;
   using triggers = Triggers::time_triggers;
 
+  // Events include the observation events and finding the horizon
+  using events = tmpl::push_back<
+      observation_events,
+      intrp::Events::Registrars::Interpolate<3, interpolator_source_vars>>;
+
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
-  using const_global_cache_tag_list = tmpl::list<
+  using const_global_cache_tags = tmpl::list<
       initial_data_tag,
       Tags::TimeStepper<tmpl::conditional_t<local_time_stepping, LtsTimeStepper,
                                             TimeStepper>>,
@@ -163,8 +228,9 @@ struct EvolutionMetavars {
   struct ObservationType {};
   using element_observation_type = ObservationType;
 
-  using observed_reduction_data_tags =
-      observers::collect_reduction_data_tags<Event<events>::creatable_classes>;
+  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
+      tmpl::push_back<Event<observation_events>::creatable_classes,
+                      typename Horizon::post_horizon_find_callback>>;
 
   using compute_rhs = tmpl::flatten<
       tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes<
@@ -190,7 +256,7 @@ struct EvolutionMetavars {
   enum class Phase {
     Initialization,
     InitializeTimeStepperHistory,
-    RegisterWithObserver,
+    Register,
     ImportData,
     Evolve,
     Exit
@@ -252,6 +318,8 @@ struct EvolutionMetavars {
   using component_list = tmpl::flatten<tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
+      intrp::Interpolator<EvolutionMetavars>,
+      intrp::InterpolationTarget<EvolutionMetavars, Horizon>,
       tmpl::conditional_t<is_numerical_initial_data_v<initial_data>,
                           importer::DataFileReader<EvolutionMetavars>,
                           tmpl::list<>>,
@@ -265,16 +333,17 @@ struct EvolutionMetavars {
                   tmpl::flatten<tmpl::list<SelfStart::self_start_procedure<
                       compute_rhs, update_variables>>>>,
               Parallel::PhaseActions<
-                  Phase, Phase::RegisterWithObserver,
-                  tmpl::flatten<
-                      tmpl::list<observers::Actions::RegisterWithObservers<
-                                     observers::RegisterObservers<
-                                         element_observation_type>>,
-                                 tmpl::conditional_t<
-                                     is_numerical_initial_data_v<initial_data>,
-                                     importer::Actions::RegisterWithImporter,
-                                     tmpl::list<>>,
-                                 Parallel::Actions::TerminatePhase>>>,
+                  Phase, Phase::Register,
+                  tmpl::flatten<tmpl::list<
+                      intrp::Actions::RegisterElementWithInterpolator,
+                      observers::Actions::RegisterWithObservers<
+                          observers::RegisterObservers<
+                              element_observation_type>>,
+                      tmpl::conditional_t<
+                          is_numerical_initial_data_v<initial_data>,
+                          importer::Actions::RegisterWithImporter,
+                          tmpl::list<>>,
+                      Parallel::Actions::TerminatePhase>>>,
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
                   tmpl::flatten<tmpl::list<
@@ -298,8 +367,8 @@ struct EvolutionMetavars {
       case Phase::Initialization:
         return Phase::InitializeTimeStepperHistory;
       case Phase::InitializeTimeStepperHistory:
-        return Phase::RegisterWithObserver;
-      case Phase::RegisterWithObserver:
+        return Phase::Register;
+      case Phase::Register:
         return is_numerical_initial_data_v<initial_data> ? Phase::ImportData
                                                          : Phase::Evolve;
       case Phase::ImportData:
