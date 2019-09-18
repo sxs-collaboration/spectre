@@ -32,11 +32,28 @@ struct type_for_get_helper<std::unique_ptr<T, D>> {
   using type = T;
 };
 
+// This struct provides a better error message if
+// an unknown tag is requested from the ConstGlobalCache.
+template <typename ConstGlobalCacheTag, typename ListOfPossibleTags>
+struct list_of_matching_tags_helper {
+  using type = tmpl::filter<ListOfPossibleTags,
+               std::is_base_of<tmpl::pin<ConstGlobalCacheTag>, tmpl::_1>>;
+  static_assert(not cpp17::is_same_v<type, tmpl::list<>>,
+                "Trying to get a nonexistent tag from the ConstGlobalCache. "
+                "To diagnose the problem, search for "
+                "'list_of_matching_tags_helper' in the error message. "
+                "The first template parameter of "
+                "'list_of_matching_tags_helper' is the requested tag, and "
+                "the second template parameter is a tmpl::list of all the "
+                "tags in the ConstGlobalCache.  One possible bug that may "
+                "lead to this error message is a missing or misspelled "
+                "const_global_cache_tags type alias.");
+};
+
 // Note: Returned list does not need to be size 1
 template <class ConstGlobalCacheTag, class Metavariables>
-using get_list_of_matching_tags =
-    tmpl::filter<get_const_global_cache_tags<Metavariables>,
-                 std::is_base_of<tmpl::pin<ConstGlobalCacheTag>, tmpl::_1>>;
+using get_list_of_matching_tags = typename list_of_matching_tags_helper<
+    ConstGlobalCacheTag, get_const_global_cache_tags<Metavariables>>::type;
 
 template <class ConstGlobalCacheTag, class Metavariables>
 using type_for_get = typename type_for_get_helper<
