@@ -20,6 +20,53 @@
 #include "Utilities/TaggedTuple.hpp"
 
 namespace elliptic {
+namespace DgElementArray_detail {
+
+template <typename Metavariables, typename DgElementArray>
+using read_element_data_action = importer::ThreadedActions::ReadElementData<
+    elliptic::OptionTags::NumericInitialGuess,
+    typename Metavariables::initial_guess::import_fields,
+    ::Actions::SetData<typename Metavariables::initial_guess::import_fields>,
+    DgElementArray>;
+
+template <typename Metavariables, typename DgElementArray,
+          bool Enable = elliptic::is_numeric_initial_guess_v<
+              typename Metavariables::initial_guess>>
+struct import_numeric_data_cache_tags {
+  using type = tmpl::list<>;
+};
+
+template <typename Metavariables, typename DgElementArray>
+struct import_numeric_data_cache_tags<Metavariables, DgElementArray, true> {
+  using type = typename read_element_data_action<
+      Metavariables, DgElementArray>::const_global_cache_tags;
+};
+
+template <typename Metavariables, typename DgElementArray,
+          bool Enable = elliptic::is_numeric_initial_guess_v<
+              typename Metavariables::initial_guess>>
+struct try_import_data {
+  static void apply(
+      const typename Metavariables::Phase /*next_phase*/,
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
+};
+
+template <typename Metavariables, typename DgElementArray>
+struct try_import_data<Metavariables, DgElementArray, true> {
+  static void apply(
+      const typename Metavariables::Phase next_phase,
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+    if (next_phase == Metavariables::Phase::ImportData) {
+      auto& local_cache = *(global_cache.ckLocalBranch());
+      Parallel::threaded_action<
+          read_element_data_action<Metavariables, DgElementArray>>(
+          Parallel::get_parallel_component<
+              importer::DataFileReader<Metavariables>>(local_cache));
+    }
+  }
+};
+
+}  // namespace DgElementArray_detail
 /*!
  * \brief The parallel component responsible for managing the DG elements that
  * compose the computational domain

@@ -35,7 +35,6 @@ struct DataFileReader {
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<detail::InitializeDataFileReader>>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   using initialization_tags = Parallel::get_initialization_tags<
       Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
