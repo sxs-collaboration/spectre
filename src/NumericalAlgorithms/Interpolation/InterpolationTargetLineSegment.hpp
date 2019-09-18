@@ -66,7 +66,7 @@ struct LineSegment {
 
   LineSegment() = default;
   LineSegment(const LineSegment& /*rhs*/) = delete;
-  LineSegment& operator=(const LineSegment& /*rhs*/) = delete;
+  LineSegment& operator=(const LineSegment& /*rhs*/) = default;
   LineSegment(LineSegment&& /*rhs*/) noexcept = default;
   LineSegment& operator=(LineSegment&& /*rhs*/) noexcept = default;
   ~LineSegment() = default;
@@ -87,6 +87,31 @@ bool operator!=(const LineSegment<VolumeDim>& lhs,
                 const LineSegment<VolumeDim>& rhs) noexcept;
 
 }  // namespace OptionHolders
+
+namespace OptionTags {
+template <typename InterpolationTargetTag, size_t VolumeDim>
+struct LineSegment {
+  using type = OptionHolders::LineSegment<VolumeDim>;
+  static constexpr OptionString help{
+      "Options for interpolation onto line segment."};
+  static std::string name() noexcept {
+    return option_name<InterpolationTargetTag>();
+  }
+  using group = InterpolationTargets;
+};
+}  // namespace OptionTags
+
+namespace Tags {
+template <typename InterpolationTargetTag, size_t VolumeDim>
+struct LineSegment : db::SimpleTag {
+  using type = OptionHolders::LineSegment<VolumeDim>;
+  using option_tags =
+      tmpl::list<OptionTags::LineSegment<InterpolationTargetTag, VolumeDim>>;
+  static type create_from_options(const type& option) noexcept {
+    return option;
+  }
+};
+}  // namespace Tags
 
 namespace Actions {
 /// \ingroup ActionsGroup
@@ -109,8 +134,8 @@ namespace Actions {
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag, size_t VolumeDim>
 struct LineSegment {
-  using options_type = OptionHolders::LineSegment<VolumeDim>;
-  using const_global_cache_tags = tmpl::list<InterpolationTargetTag>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::LineSegment<InterpolationTargetTag, VolumeDim>>;
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex,
             Requires<tmpl::list_contains_v<
@@ -120,7 +145,9 @@ struct LineSegment {
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
-    const auto& options = Parallel::get<InterpolationTargetTag>(cache);
+    const auto& options =
+        Parallel::get<Tags::LineSegment<InterpolationTargetTag, VolumeDim>>(
+            cache);
 
     // Fill points on a line segment
     const double fractional_distance = 1.0 / (options.number_of_points - 1);
