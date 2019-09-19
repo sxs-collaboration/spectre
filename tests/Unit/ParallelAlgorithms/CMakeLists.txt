@@ -3,4 +3,5 @@
 
 add_subdirectory(Actions)
 add_subdirectory(DiscontinuousGalerkin)
+add_subdirectory(Events)
 add_subdirectory(Initialization)
