@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <boost/optional/optional_io.hpp>
 #include <cstddef>
 #include <unordered_map>
 #include <unordered_set>

@@ -89,6 +89,12 @@ namespace intrp {
 ///      needs the volume data at this temporal_id (such as another iteration of
 ///      the horizon finder).
 ///
+///      post_interpolation_callback can optionally have a static constexpr
+///      double called `fill_invalid_points_with`.  Any points outside the
+///      Domain will be filled with this value. If this variable is not defined,
+///      then the `apply` function must check for invalid points,
+///      and should typically exit with an error message if it finds any.
+///
 /// `Metavariables` must contain the following type aliases:
 /// - interpolator_source_vars:
 ///      A `tmpl::list` of tags that define a `Variables` sent from all

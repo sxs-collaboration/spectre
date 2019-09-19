@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <unordered_map>
 #include <unordered_set>
@@ -44,8 +45,8 @@ struct Info {
   /// `block_coord_holders` even after all `Element`s have sent their
   /// data (this is because this `Info` lives only on a single core,
   /// and this core will have access only to the local `Element`s).
-  std::vector<IdPair<domain::BlockId,
-                     tnsr::I<double, VolumeDim, typename ::Frame::Logical>>>
+  std::vector<boost::optional<IdPair<
+      domain::BlockId, tnsr::I<double, VolumeDim, typename ::Frame::Logical>>>>
       block_coord_holders;
   /// `vars` holds the interpolated `Variables` on some subset of the
   /// points in `block_coord_holders`.  The grid points inside vars

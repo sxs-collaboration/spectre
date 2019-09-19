@@ -140,6 +140,7 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies:
 ///   - `Tags::IndicesOfFilledInterpPoints`
+///   - `Tags::IndicesOfInvalidInterpPoints`
 ///   - `::Tags::Variables<typename
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 ///

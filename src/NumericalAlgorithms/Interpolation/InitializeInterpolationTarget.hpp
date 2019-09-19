@@ -89,6 +89,7 @@ auto make_initial_box(
 /// DataBox changes:
 /// - Adds:
 ///   - `Tags::IndicesOfFilledInterpPoints`
+///   - `Tags::IndicesOfInvalidInterpPoints`
 ///   - `Tags::TemporalIds<Metavariables>`
 ///   - `Tags::CompletedTemporalIds<Metavariables>`
 ///   - `::Tags::Variables<typename
@@ -100,7 +101,8 @@ auto make_initial_box(
 template <typename Metavariables, typename InterpolationTargetTag>
 struct InitializeInterpolationTarget {
   using return_tag_list_initial = tmpl::list<
-      Tags::IndicesOfFilledInterpPoints, Tags::TemporalIds<Metavariables>,
+      Tags::IndicesOfFilledInterpPoints, Tags::IndicesOfInvalidInterpPoints,
+      Tags::TemporalIds<Metavariables>,
       Tags::CompletedTemporalIds<Metavariables>,
       ::Tags::Variables<
           typename InterpolationTargetTag::vars_to_interpolate_to_target>>;
@@ -124,6 +126,7 @@ struct InitializeInterpolationTarget {
         db::create_from<db::RemoveTags<>,
                         db::get_items<return_tag_list_initial>>(
             std::move(box), db::item_type<Tags::IndicesOfFilledInterpPoints>{},
+            db::item_type<Tags::IndicesOfInvalidInterpPoints>{},
             db::item_type<Tags::TemporalIds<Metavariables>>{},
             db::item_type<Tags::CompletedTemporalIds<Metavariables>>{},
             db::item_type<

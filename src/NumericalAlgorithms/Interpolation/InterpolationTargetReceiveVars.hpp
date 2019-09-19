@@ -17,6 +17,7 @@
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "Utilities/TypeTraits.hpp"
 
 /// \cond
 // IWYU pragma: no_forward_declare db::DataBox
@@ -74,6 +75,61 @@ auto apply_callback(
   return true;
 }
 
+// type trait testing if the class has a fill_invalid_points_with member.
+template <typename T, typename = void>
+struct has_fill_invalid_points_with : std::false_type {};
+
+template <typename T>
+struct has_fill_invalid_points_with<
+    T, cpp17::void_t<decltype(
+           T::post_interpolation_callback::fill_invalid_points_with)>>
+    : std::true_type {};
+
+template <typename T>
+constexpr bool has_fill_invalid_points_with_v =
+    has_fill_invalid_points_with<T>::value;
+
+// Fills invalid points with some constant value.
+template <typename InterpolationTargetTag, typename DbTags,
+          Requires<not has_fill_invalid_points_with_v<InterpolationTargetTag>> =
+              nullptr>
+void fill_invalid_points(
+    const gsl::not_null<db::DataBox<DbTags>*> /*box*/) noexcept {}
+
+template <
+    typename InterpolationTargetTag, typename DbTags,
+    Requires<has_fill_invalid_points_with_v<InterpolationTargetTag>> = nullptr>
+void fill_invalid_points(
+    const gsl::not_null<db::DataBox<DbTags>*> box) noexcept {
+  if (not db::get<Tags::IndicesOfInvalidInterpPoints>(*box).empty()) {
+    db::mutate<
+        Tags::IndicesOfInvalidInterpPoints,
+        ::Tags::Variables<
+            typename InterpolationTargetTag::vars_to_interpolate_to_target>>(
+        box, [](const gsl::not_null<
+                    db::item_type<Tags::IndicesOfInvalidInterpPoints>*>
+                    indices_of_invalid_points,
+                const gsl::not_null<db::item_type<
+                    ::Tags::Variables<typename InterpolationTargetTag::
+                                          vars_to_interpolate_to_target>>*>
+                    vars_dest) noexcept {
+          const size_t npts_dest = vars_dest->number_of_grid_points();
+          const size_t nvars = vars_dest->number_of_independent_components;
+          for (auto index : *indices_of_invalid_points) {
+            for (size_t v = 0; v < nvars; ++v) {
+              // clang-tidy: no pointer arithmetic
+              vars_dest->data()[index + v * npts_dest] =  // NOLINT
+                  InterpolationTargetTag::post_interpolation_callback::
+                      fill_invalid_points_with;
+            }
+          }
+          // Further functions may test if there are invalid points.
+          // Clear the invalid points now, since we have filled them.
+          indices_of_invalid_points->clear();
+        });
+  }
+}
+
 /// Calls the callback function, tells interpolators to clean up the current
 /// temporal_id, and then if there are more temporal_ids to be interpolated,
 /// starts the next one.
@@ -85,6 +141,10 @@ void callback_and_cleanup(
         cache) noexcept {
   const auto temporal_id =
       db::get<Tags::TemporalIds<Metavariables>>(*box).front();
+
+  // Before doing anything else, deal with the possibility that some
+  // of the points might be outside of the Domain.
+  fill_invalid_points<InterpolationTargetTag>(box);
 
   // apply_callback should return true if we are done with this
   // temporal_id.  It should return false only if the callback
@@ -117,7 +177,7 @@ void callback_and_cleanup(
         // large, so we limit its size.  We assume that
         // asynchronous calls to AddTemporalIdsToInterpolationTarget do not span
         // more than 10 temporal_ids.
-        if(completed_ids->size() > 10) {
+        if (completed_ids->size() > 10) {
           completed_ids->pop_front();
         }
       });
@@ -230,12 +290,13 @@ struct InterpolationTargetReceiveVars {
           }
         });
 
-    if (db::get<Tags::IndicesOfFilledInterpPoints>(box).size() ==
+    if (db::get<Tags::IndicesOfFilledInterpPoints>(box).size() +
+            db::get<Tags::IndicesOfInvalidInterpPoints>(box).size() ==
         db::get<::Tags::Variables<
             typename InterpolationTargetTag::vars_to_interpolate_to_target>>(
             box)
             .number_of_grid_points()) {
-      // All the points have been interpolated.
+      // All the valid points have been interpolated.
       InterpolationTarget_detail::callback_and_cleanup<InterpolationTargetTag>(
           make_not_null(&box), make_not_null(&cache));
     }
