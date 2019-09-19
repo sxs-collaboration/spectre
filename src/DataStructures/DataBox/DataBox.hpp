@@ -657,8 +657,7 @@ struct compute_item_function_pointer_type_impl<false> {
   template <typename FullTagList, typename ComputeItem,
             typename... ComputeItemArgumentsTags>
   using f = db::item_type<ComputeItem, FullTagList> (*)(
-      std::add_lvalue_reference_t<std::add_const_t<
-          db::item_type<ComputeItemArgumentsTags, FullTagList>>>...);
+      const db::item_type<ComputeItemArgumentsTags, FullTagList>&...);
 };
 
 template <>
@@ -667,10 +666,8 @@ struct compute_item_function_pointer_type_impl<true> {
   template <typename FullTagList, typename ComputeItem,
             typename... ComputeItemArgumentsTags>
   using f =
-      void (*)(gsl::not_null<
-                   std::add_pointer_t<db::item_type<ComputeItem, FullTagList>>>,
-               std::add_lvalue_reference_t<std::add_const_t<
-                   db::item_type<ComputeItemArgumentsTags, FullTagList>>>...);
+      void (*)(gsl::not_null<db::item_type<ComputeItem, FullTagList>*>,
+               const db::item_type<ComputeItemArgumentsTags, FullTagList>&...);
 };
 
 // Computes the function pointer type of the compute item
@@ -1539,21 +1536,17 @@ struct Apply;
 
 template <typename... Tags>
 struct Apply<tmpl::list<Tags...>> {
-  template <
-      typename F, typename BoxTags, typename... Args,
-      Requires<is_apply_callable_v<
-          F, const std::add_lvalue_reference_t<db::item_type<Tags, BoxTags>>...,
-          Args...>> = nullptr>
+  template <typename F, typename BoxTags, typename... Args,
+            Requires<is_apply_callable_v<
+                F, const db::item_type<Tags, BoxTags>&..., Args...>> = nullptr>
   static constexpr auto apply(F&& /*f*/, const DataBox<BoxTags>& box,
                               Args&&... args) noexcept {
     return F::apply(::db::get<Tags>(box)..., std::forward<Args>(args)...);
   }
 
-  template <
-      typename F, typename BoxTags, typename... Args,
-      Requires<not is_apply_callable_v<
-          F, const std::add_lvalue_reference_t<db::item_type<Tags, BoxTags>>...,
-          Args...>> = nullptr>
+  template <typename F, typename BoxTags, typename... Args,
+            Requires<not is_apply_callable_v<
+                F, const db::item_type<Tags, BoxTags>&..., Args...>> = nullptr>
   static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
                               Args&&... args) noexcept {
     static_assert(
@@ -1677,13 +1670,12 @@ SPECTRE_ALWAYS_INLINE constexpr auto apply(const DataBox<BoxTags>& box,
 }
 
 namespace DataBox_detail {
-template <typename... ReturnTags, typename... ArgumentTags, typename F,
-          typename BoxTags, typename... Args,
-          Requires<is_apply_callable_v<
-              F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
-              const std::add_lvalue_reference_t<
-                  db::item_type<ArgumentTags, BoxTags>>...,
-              Args...>> = nullptr>
+template <
+    typename... ReturnTags, typename... ArgumentTags, typename F,
+    typename BoxTags, typename... Args,
+    Requires<is_apply_callable_v<
+        F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
+        const db::item_type<ArgumentTags, BoxTags>&..., Args...>> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F&& /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> box,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
@@ -1706,13 +1698,12 @@ SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
       db::get<ArgumentTags>(*box)..., std::forward<Args>(args)...);
 }
 
-template <typename... ReturnTags, typename... ArgumentTags, typename F,
-          typename BoxTags, typename... Args,
-          Requires<::tt::is_callable_v<
-              F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
-              const std::add_lvalue_reference_t<
-                  db::item_type<ArgumentTags, BoxTags>>...,
-              Args...>> = nullptr>
+template <
+    typename... ReturnTags, typename... ArgumentTags, typename F,
+    typename BoxTags, typename... Args,
+    Requires<::tt::is_callable_v<
+        F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
+        const db::item_type<ArgumentTags, BoxTags>&..., Args...>> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F&& f, const gsl::not_null<db::DataBox<BoxTags>*> box,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
@@ -1750,14 +1741,11 @@ template <
     Requires<
         not(is_apply_callable_v<
                 F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
-                const std::add_lvalue_reference_t<
-                    db::item_type<ArgumentTags, BoxTags>>...,
-                Args...> or
+                const db::item_type<ArgumentTags, BoxTags>&..., Args...> or
             ::tt::is_callable_v<
                 F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
-                const std::add_lvalue_reference_t<
-                    db::item_type<ArgumentTags, BoxTags>>...,
-                Args...>)> = nullptr>
+                const db::item_type<ArgumentTags, BoxTags>&..., Args...>)> =
+        nullptr>
 SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> /*box*/,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
