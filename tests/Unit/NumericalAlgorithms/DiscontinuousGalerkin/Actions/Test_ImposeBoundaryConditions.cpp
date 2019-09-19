@@ -29,6 +29,7 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"
@@ -158,14 +159,14 @@ using boundary_tag =
     Tags::Interface<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
 template <typename Tag>
 using boundary_compute_tag =
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
 
 template <typename Tag>
 using external_boundary_tag =
     Tags::Interface<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
 template <typename Tag>
 using external_boundary_compute_tag =
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
 
 template <typename FluxCommTypes>
 using mortar_data_tag = typename FluxCommTypes::simple_mortar_data_tag;

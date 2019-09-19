@@ -21,6 +21,7 @@
 #include "Domain/Domain.hpp"
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"
@@ -64,14 +65,14 @@ struct ElementArray {
               Initialization::Actions::AddComputeTags<tmpl::list<
                   ::Tags::InternalDirections<Dim>,
                   ::Tags::BoundaryDirectionsInterior<Dim>,
-                  ::Tags::InterfaceComputeItem<::Tags::InternalDirections<Dim>,
-                                               ::Tags::Direction<Dim>>,
-                  ::Tags::InterfaceComputeItem<
+                  ::Tags::InterfaceCompute<::Tags::InternalDirections<Dim>,
+                                           ::Tags::Direction<Dim>>,
+                  ::Tags::InterfaceCompute<
                       ::Tags::BoundaryDirectionsInterior<Dim>,
                       ::Tags::Direction<Dim>>,
-                  ::Tags::InterfaceComputeItem<::Tags::InternalDirections<Dim>,
-                                               ::Tags::InterfaceMesh<Dim>>,
-                  ::Tags::InterfaceComputeItem<
+                  ::Tags::InterfaceCompute<::Tags::InternalDirections<Dim>,
+                                           ::Tags::InterfaceMesh<Dim>>,
+                  ::Tags::InterfaceCompute<
                       ::Tags::BoundaryDirectionsInterior<Dim>,
                       ::Tags::InterfaceMesh<Dim>>>>>>,
 

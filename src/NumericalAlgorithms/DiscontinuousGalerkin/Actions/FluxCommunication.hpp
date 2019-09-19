@@ -232,6 +232,10 @@ struct SendDataForFluxes {
     const auto& next_temporal_id =
         db::get<Tags::Next<typename Metavariables::temporal_id>>(box);
 
+    const auto packaged_data = DgActions_detail::compute_packaged_data(
+        box, normal_dot_numerical_flux_computer,
+        Tags::InternalDirections<volume_dim>{}, Metavariables{});
+
     for (const auto& direction_neighbors : element.neighbors()) {
       const auto& direction = direction_neighbors.first;
       const size_t dimension = direction.dimension();
@@ -247,10 +251,6 @@ struct SendDataForFluxes {
       // We store one copy of the Variables and send another, since we need
       // the data on both sides of the mortar.
 
-      const auto packaged_data = DgActions_detail::compute_packaged_data(
-          box, direction, normal_dot_numerical_flux_computer,
-          Tags::InternalDirections<volume_dim>{}, Metavariables{});
-
       const auto direction_from_neighbor = orientation(direction.opposite());
 
       for (const auto& neighbor : neighbors_in_direction) {
@@ -262,8 +262,9 @@ struct SendDataForFluxes {
             Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>(box)
                 .at(mortar_id);
 
-        auto projected_packaged_data = project_to_mortar(
-            packaged_data, boundary_mesh, mortar_mesh, mortar_size);
+        auto projected_packaged_data =
+            project_to_mortar(packaged_data.at(direction), boundary_mesh,
+                              mortar_mesh, mortar_size);
 
         typename flux_comm_types::LocalData local_data{};
         local_data.magnitude_of_face_normal = db::get<Tags::Interface<

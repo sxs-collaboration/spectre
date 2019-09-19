@@ -34,6 +34,7 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"
@@ -130,7 +131,7 @@ template <size_t Dim, typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
 template <size_t Dim, typename Tag>
 using interface_compute_tag =
-    Tags::InterfaceComputeItem<Tags::InternalDirections<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::InternalDirections<Dim>, Tag>;
 
 template <typename FluxCommTypes>
 using mortar_data_tag = typename FluxCommTypes::simple_mortar_data_tag;

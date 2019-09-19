@@ -14,6 +14,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
@@ -90,8 +91,8 @@ struct UnnormalizedFaceNormalCompute
 /// represent ghost elements, the normals should correspond to the normals in
 /// said element, which are inverted with respect to the current element.
 template <size_t VolumeDim, typename Frame>
-struct InterfaceComputeItem<Tags::BoundaryDirectionsExterior<VolumeDim>,
-                            UnnormalizedFaceNormalCompute<VolumeDim, Frame>>
+struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                        UnnormalizedFaceNormalCompute<VolumeDim, Frame>>
     : db::PrefixTag,
       db::ComputeTag,
       Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
