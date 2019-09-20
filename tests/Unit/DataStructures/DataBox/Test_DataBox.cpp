@@ -82,6 +82,12 @@ struct ComputeTag1 : db::ComputeTag {
   using argument_tags = tmpl::list<Tag2, ComputeTag0>;
 };
 
+struct ComputeFromBase : db::ComputeTag {
+  static std::string name() noexcept { return "ComputeFromBase"; }
+  static std::string function(const std::string& s) noexcept { return s; }
+  using argument_tags = tmpl::list<Tag2Base>;
+};
+
 struct TagTensor : db::ComputeTag {
   static std::string name() noexcept { return "TagTensor"; }
   static constexpr auto function = get_tensor;
@@ -438,7 +444,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
                         test_databox_tags::Tag2,
                         test_databox_tags::TagPrefix<test_databox_tags::Tag0>>,
       db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
+                         test_databox_tags::ComputeTag1,
+                         test_databox_tags::ComputeFromBase>>(
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s, 8.7);
   const auto& compute_string =
       db::get_item_from_box<std::string>(original_box, "ComputeTag1");
@@ -450,6 +457,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
   /// [databox_name_prefix]
   CHECK(db::get_item_from_box<double>(original_box, "TagPrefix(Tag0)") == 8.7);
   /// [databox_name_prefix]
+  CHECK(db::get_item_from_box<std::string>(original_box, "ComputeFromBase") ==
+        "My Sample String"s);
 }
 
 // [[OutputRegex, Could not find the tag named "time__" in the DataBox]]

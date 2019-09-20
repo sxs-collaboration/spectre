@@ -1524,7 +1524,8 @@ template <typename Type, typename TagList>
 constexpr const Type& get_item_from_box(const DataBox<TagList>& box,
                                         const std::string& tag_name) noexcept {
   using tags = tmpl::filter<
-      TagList, std::is_same<tmpl::bind<item_type, tmpl::_1>, tmpl::pin<Type>>>;
+      TagList, std::is_same<tmpl::bind<item_type, tmpl::_1, tmpl::pin<TagList>>,
+                            tmpl::pin<Type>>>;
   return DataBox_detail::get_item_from_box<Type>(box, tag_name, tags{});
 }
 
