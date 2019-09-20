@@ -14,11 +14,11 @@ namespace Parallel {
  */
 template <typename PhaseType, PhaseType Phase, typename ActionsList>
 struct PhaseActions {
-  using action_list = ActionsList;
+  using action_list = tmpl::flatten<ActionsList>;
   using phase_type = PhaseType;
   static constexpr phase_type phase = Phase;
   using integral_constant_phase = std::integral_constant<PhaseType, Phase>;
-  static constexpr size_t number_of_actions = tmpl::size<ActionsList>::value;
+  static constexpr size_t number_of_actions = tmpl::size<action_list>::value;
 };
 
 /*!

@@ -220,10 +220,9 @@ struct EvolutionMetavars {
               Parallel::PhaseActions<Phase, Phase::Initialization,
                                      initialization_actions>,
 
-              Parallel::PhaseActions<
-                  Phase, Phase::InitializeTimeStepperHistory,
-                  tmpl::flatten<tmpl::list<SelfStart::self_start_procedure<
-                      compute_rhs, update_variables>>>>,
+              Parallel::PhaseActions<Phase, Phase::InitializeTimeStepperHistory,
+                                     SelfStart::self_start_procedure<
+                                         compute_rhs, update_variables>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
@@ -234,7 +233,7 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
-                  tmpl::flatten<tmpl::list<
+                  tmpl::list<
                       VariableFixing::Actions::FixVariables<
                           VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
                       Actions::UpdateConservatives,
@@ -242,7 +241,7 @@ struct EvolutionMetavars {
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>;
 
   using const_global_cache_tags =
       tmpl::list<initial_data_tag,
