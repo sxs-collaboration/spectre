@@ -6,26 +6,28 @@
 
 #pragma once
 
-#include <algorithm>
-#include <cassert>
+#include <cstddef>
 #include <functional>
+#include <initializer_list>
+#include <ostream>
 #include <pup.h>
 #include <string>
-#include <type_traits>
-#include <unordered_map>
+#include <tuple>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Deferred.hpp"
-#include "ErrorHandling/Assert.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/StaticAssert.hpp"
-#include "Utilities/BoostHelpers.hpp"  // for pup variant
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/NoSuchType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+
+// IWYU pragma: no_forward_declare brigand::get_destination
+// IWYU pragma: no_forward_declare brigand::get_source
 
 /*!
  * \ingroup DataBoxGroup
@@ -66,9 +68,6 @@ constexpr bool tag_is_retrievable_v =
               std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>::value;
 
 namespace DataBox_detail {
-template <class Tag, class Type>
-class DataBoxLeaf;
-
 template <class Tag, class Type>
 class DataBoxLeaf {
   using value_type = Deferred<Type>;

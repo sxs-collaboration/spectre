@@ -17,10 +17,11 @@
 /// \endcond
 #include <brigand/brigand.hpp>
 
-#include <initializer_list>
+#include <cstddef>
+#include <initializer_list>  // IWYU pragma: keep
+#include <type_traits>
 
-#include "Utilities/Digraph.hpp"
-#include "Utilities/ForceInline.hpp"
+#include "Utilities/Digraph.hpp"  // IWYU pragma: export
 
 namespace brigand {
 namespace detail {
