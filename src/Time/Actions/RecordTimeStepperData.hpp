@@ -64,8 +64,8 @@ struct RecordTimeStepperData {
         make_not_null(&box),
         [](const gsl::not_null<db::item_type<dt_variables_tag>*> dt_vars,
            const gsl::not_null<db::item_type<history_tag>*> history,
-           const db::item_type<variables_tag>& vars,
-           const db::item_type<Tags::SubstepTime>& time) noexcept {
+           const db::const_item_type<variables_tag>& vars,
+           const db::const_item_type<Tags::SubstepTime>& time) noexcept {
           history->insert(time, vars, std::move(*dt_vars));
         },
         db::get<variables_tag>(box), db::get<Tags::SubstepTime>(box));

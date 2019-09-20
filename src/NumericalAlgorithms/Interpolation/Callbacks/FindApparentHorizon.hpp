@@ -199,11 +199,12 @@ struct FindApparentHorizon {
     db::mutate_apply<tmpl::list<::Tags::Variables<vars_tags>>,
                      tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Inertial>,
                                 ::ah::Tags::FastFlow>>(
-        [](const gsl::not_null<db::item_type<::Tags::Variables<vars_tags>>*>
-               vars,
-           const db::item_type<StrahlkorperTags::Strahlkorper<Frame::Inertial>>&
-               strahlkorper,
-           const db::item_type<::ah::Tags::FastFlow>& fast_flow) noexcept {
+        [
+        ](const gsl::not_null<db::item_type<::Tags::Variables<vars_tags>>*>
+              vars,
+          const db::const_item_type<
+              StrahlkorperTags::Strahlkorper<Frame::Inertial>>& strahlkorper,
+          const db::const_item_type<::ah::Tags::FastFlow>& fast_flow) noexcept {
           const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
           const auto prolonged_strahlkorper =
               Strahlkorper<Frame::Inertial>(L_mesh, L_mesh, strahlkorper);

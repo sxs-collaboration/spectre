@@ -73,9 +73,10 @@ using is_a_tensor = tt::is_a<Tensor, T>;
 template <typename TagsList>
 auto get_tensor_from_box(const db::DataBox<TagsList>& box,
                          const std::string& tag_name) {
-  using tags =
-      tmpl::filter<TagsList, tmpl::bind<DataBoxHelpers_detail::is_a_tensor,
-                                        tmpl::bind<db::item_type, tmpl::_1>>>;
+  using tags = tmpl::filter<TagsList,
+                            tmpl::bind<DataBoxHelpers_detail::is_a_tensor,
+                                       tmpl::bind<db::const_item_type, tmpl::_1,
+                                                  tmpl::pin<TagsList>>>>;
   return DataBoxHelpers_detail::get_tensor_from_box<tags>(box, tag_name);
 }
 

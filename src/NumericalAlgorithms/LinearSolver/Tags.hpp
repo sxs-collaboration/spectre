@@ -182,7 +182,7 @@ struct OrthogonalizationHistory : db::PrefixTag, db::SimpleTag {
  * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
  * db::add_tag_prefix<LinearSolver::Tags::Operand, Tag>>` and
  * `db::add_tag_prefix<::Tags::FixedSource, Tag>`, respectively. Therefore, each
- * basis vector is of the type `db::item_type<db::add_tag_prefix<Operand,
+ * basis vector is of the type `db::const_item_type<db::add_tag_prefix<Operand,
  * Tag>>`.
  */
 template <typename Tag>
@@ -192,7 +192,8 @@ struct KrylovSubspaceBasis : db::PrefixTag, db::SimpleTag {
     // operator
     return "KrylovSubspaceBasis(" + Tag::name() + ")";
   }
-  using type = std::vector<db::item_type<db::add_tag_prefix<Operand, Tag>>>;
+  using type =
+      std::vector<db::const_item_type<db::add_tag_prefix<Operand, Tag>>>;
   using tag = Tag;
 };
 
@@ -223,7 +224,7 @@ struct HasConvergedCompute : LinearSolver::Tags::HasConverged, db::ComputeTag {
       tmpl::list<LinearSolver::Tags::ConvergenceCriteria,
                  LinearSolver::Tags::IterationId, residual_magnitude_tag,
                  initial_residual_magnitude_tag>;
-  static db::item_type<LinearSolver::Tags::HasConverged> function(
+  static db::const_item_type<LinearSolver::Tags::HasConverged> function(
       const Convergence::Criteria& convergence_criteria,
       const size_t& iteration_id, const double& residual_magnitude,
       const double& initial_residual_magnitude) noexcept {

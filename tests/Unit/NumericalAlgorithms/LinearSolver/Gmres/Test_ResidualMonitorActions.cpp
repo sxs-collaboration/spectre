@@ -112,7 +112,7 @@ struct MockNormalizeInitialOperand {
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
                     const double residual_magnitude,
-                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                    const db::const_item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
     db::mutate<CheckValueTag, CheckConvergedTag>(
         make_not_null(&box),
@@ -153,7 +153,7 @@ struct MockNormalizeOperandAndUpdateField {
                     const ArrayIndex& /*array_index*/,
                     const double normalization,
                     const DenseVector<double>& minres,
-                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                    const db::const_item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
     db::mutate<CheckValueTag, CheckVectorTag, CheckConvergedTag>(
         make_not_null(&box),

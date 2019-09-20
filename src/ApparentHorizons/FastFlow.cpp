@@ -63,8 +63,8 @@ namespace {
 template <typename Frame>
 DataVector fast_flow_weight(
     const Scalar<DataVector>& one_form_magnitude,
-    const db::item_type<StrahlkorperTags::Rhat<Frame>>& r_hat,
-    const db::item_type<StrahlkorperTags::Radius<Frame>>& radius,
+    const db::const_item_type<StrahlkorperTags::Rhat<Frame>>& r_hat,
+    const db::const_item_type<StrahlkorperTags::Radius<Frame>>& radius,
     const tnsr::II<DataVector, 3, Frame>& inverse_surface_metric) noexcept {
   // Form Euclidean surface metric
   auto flat_metric =

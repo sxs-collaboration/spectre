@@ -104,9 +104,10 @@ struct Hll {
                              tmpl::list<NormalDotFluxTags...>> {
     static void function(
         const gsl::not_null<Variables<package_tags>*> packaged_data,
-        const db::item_type<NormalDotFluxTags>&... n_dot_f_to_package,
-        const db::item_type<VariablesTags>&... u_to_package,
-        const db::item_type<char_speeds_tag>& characteristic_speeds) noexcept {
+        const db::const_item_type<NormalDotFluxTags>&... n_dot_f_to_package,
+        const db::const_item_type<VariablesTags>&... u_to_package,
+        const db::const_item_type<char_speeds_tag>&
+            characteristic_speeds) noexcept {
       expand_pack((get<VariablesTags>(*packaged_data) = u_to_package)...);
       expand_pack(
           (get<NormalDotFluxTags>(*packaged_data) = n_dot_f_to_package)...);
@@ -149,21 +150,23 @@ struct Hll {
     static void function(
         const gsl::not_null<
             db::item_type<NormalDotNumericalFluxTags>*>... n_dot_numerical_f,
-        const db::item_type<NormalDotFluxTags>&... n_dot_f_interior,
-        const db::item_type<VariablesTags>&... u_interior,
-        const db::item_type<MinSignalSpeed>& min_signal_speed_interior,
-        const db::item_type<MaxSignalSpeed>& max_signal_speed_interior,
-        const db::item_type<NormalDotFluxTags>&... minus_n_dot_f_exterior,
-        const db::item_type<VariablesTags>&... u_exterior,
-        const db::item_type<MinSignalSpeed>& min_signal_speed_exterior,
-        const db::item_type<MaxSignalSpeed>&
+        const db::const_item_type<NormalDotFluxTags>&... n_dot_f_interior,
+        const db::const_item_type<VariablesTags>&... u_interior,
+        const db::const_item_type<MinSignalSpeed>& min_signal_speed_interior,
+        const db::const_item_type<MaxSignalSpeed>& max_signal_speed_interior,
+        const db::const_item_type<NormalDotFluxTags>&... minus_n_dot_f_exterior,
+        const db::const_item_type<VariablesTags>&... u_exterior,
+        const db::const_item_type<MinSignalSpeed>& min_signal_speed_exterior,
+        const db::const_item_type<MaxSignalSpeed>&
             max_signal_speed_exterior) noexcept {
-      auto min_signal_speed = make_with_value<db::item_type<MinSignalSpeed>>(
-          min_signal_speed_interior,
-          std::numeric_limits<double>::signaling_NaN());
-      auto max_signal_speed = make_with_value<db::item_type<MaxSignalSpeed>>(
-          max_signal_speed_interior,
-          std::numeric_limits<double>::signaling_NaN());
+      auto min_signal_speed =
+          make_with_value<db::const_item_type<MinSignalSpeed>>(
+              min_signal_speed_interior,
+              std::numeric_limits<double>::signaling_NaN());
+      auto max_signal_speed =
+          make_with_value<db::const_item_type<MaxSignalSpeed>>(
+              max_signal_speed_interior,
+              std::numeric_limits<double>::signaling_NaN());
       for (size_t s = 0; s < min_signal_speed.begin()->size(); ++s) {
         get(min_signal_speed)[s] = std::min(get(min_signal_speed_interior)[s],
                                             -get(max_signal_speed_exterior)[s]);

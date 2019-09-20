@@ -197,7 +197,8 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
           DerivativeTags>>*>... transform_of_derivative_scalars,
       const gsl::not_null<db::item_type<Tags::SwshTransform<
           DeDuplicatedDifferentiatedFromTags>>*>... transform_of_input_scalars,
-      const db::item_type<DeDuplicatedDifferentiatedFromTags>&... input_scalars,
+      const db::const_item_type<DeDuplicatedDifferentiatedFromTags>&...
+          input_scalars,
       const size_t l_max, const size_t number_of_radial_points) noexcept {
     apply_to_vectors(make_not_null(&get(*transform_of_derivative_scalars))...,
                      make_not_null(&get(*transform_of_input_scalars))...,
@@ -224,8 +225,8 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
       const gsl::not_null<typename db::item_type<Tags::SwshTransform<
           DeDuplicatedDifferentiatedFromTags>>::type*>... transform_of_inputs,
       const gsl::not_null<
-          typename db::item_type<DerivativeTags>::type*>... derivatives,
-      const typename db::item_type<
+          typename db::const_item_type<DerivativeTags>::type*>... derivatives,
+      const typename db::const_item_type<
           DeDuplicatedDifferentiatedFromTags>::type&... inputs,
       const size_t l_max, const size_t number_of_radial_points) noexcept {
     // perform the forward transform on the minimal set of input nodal

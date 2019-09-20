@@ -43,7 +43,7 @@ void interpolate_data(
           const gsl::not_null<
               db::item_type<Tags::InterpolatedVarsHolders<Metavariables>>*>
               holders,
-          const db::item_type<Tags::VolumeVarsInfo<Metavariables>>&
+          const db::const_item_type<Tags::VolumeVarsInfo<Metavariables>>&
               volume_vars_info) noexcept {
         auto& interp_info =
             get<Vars::HolderTag<InterpolationTargetTag, Metavariables>>(

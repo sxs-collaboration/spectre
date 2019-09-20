@@ -52,7 +52,7 @@ struct reduction_data_type<tmpl::list<Ts...>> {
   // the list of things being observed.
   using type = Parallel::ReductionData<
       Parallel::ReductionDatum<double, funcl::AssertEqual<>>,
-      Parallel::ReductionDatum<typename db::item_type<Ts>,
+      Parallel::ReductionDatum<db::const_item_type<Ts>,
                                funcl::AssertEqual<>>...>;
 };
 

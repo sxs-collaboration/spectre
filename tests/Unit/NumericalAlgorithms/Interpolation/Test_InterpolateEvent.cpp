@@ -77,7 +77,8 @@ struct MockInterpolatorReceiveVolumeData {
       db::DataBox<DbTags>& /*box*/,
       Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
-      const db::item_type<typename Metavariables::temporal_id>& temporal_id,
+      const db::const_item_type<typename Metavariables::temporal_id>&
+          temporal_id,
       const ElementId<VolumeDim>& element_id, const ::Mesh<VolumeDim>& mesh,
       Variables<typename Metavariables::interpolator_source_vars>&&
           vars) noexcept {

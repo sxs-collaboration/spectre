@@ -57,8 +57,8 @@ struct PrepareStep {
            const gsl::not_null<
                db::item_type<orthogonalization_iteration_id_tag>*>
                orthogonalization_iteration_id,
-           const db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>&
-               next_iteration_id) noexcept {
+           const db::const_item_type<::Tags::Next<
+               LinearSolver::Tags::IterationId>>& next_iteration_id) noexcept {
           *iteration_id = next_iteration_id;
           *orthogonalization_iteration_id = 0;
         },
@@ -97,7 +97,7 @@ struct PerformStep {
     db::mutate<operand_tag>(
         make_not_null(&box),
         [](const gsl::not_null<db::item_type<operand_tag>*> operand,
-           const db::item_type<operator_tag>& operator_action) noexcept {
+           const db::const_item_type<operator_tag>& operator_action) noexcept {
           *operand = db::item_type<operand_tag>(operator_action);
         },
         get<operator_tag>(box));
@@ -151,7 +151,8 @@ struct OrthogonalizeOperand {
             const gsl::not_null<
                 db::item_type<orthogonalization_iteration_id_tag>*>
                 orthogonalization_iteration_id,
-            const db::item_type<basis_history_tag>& basis_history) noexcept {
+            const db::const_item_type<basis_history_tag>&
+                basis_history) noexcept {
           *operand -= orthogonalization *
                       gsl::at(basis_history, *orthogonalization_iteration_id);
           (*orthogonalization_iteration_id)++;
@@ -212,7 +213,7 @@ struct NormalizeOperandAndUpdateField {
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const double normalization,
                     const DenseVector<double>& minres,
-                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                    const db::const_item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
     db::mutate<operand_tag, basis_history_tag, fields_tag,
                LinearSolver::Tags::HasConverged>(
@@ -224,7 +225,8 @@ struct NormalizeOperandAndUpdateField {
           const gsl::not_null<db::item_type<fields_tag>*> field,
           const gsl::not_null<db::item_type<LinearSolver::Tags::HasConverged>*>
               local_has_converged,
-          const db::item_type<initial_fields_tag>& initial_field) noexcept {
+          const db::const_item_type<initial_fields_tag>&
+              initial_field) noexcept {
           *operand /= normalization;
           basis_history->push_back(*operand);
           *field = initial_field;

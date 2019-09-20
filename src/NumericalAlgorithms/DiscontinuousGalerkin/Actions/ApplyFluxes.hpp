@@ -88,10 +88,10 @@ struct ApplyFluxes {
         [&cache](
             const gsl::not_null<db::item_type<dt_variables_tag>*> dt_vars,
             const gsl::not_null<db::item_type<mortar_data_tag>*> mortar_data,
-            const db::item_type<Tags::Mesh<volume_dim>>& mesh,
-            const db::item_type<Tags::Mortars<Tags::Mesh<volume_dim - 1>,
-                                              volume_dim>>& mortar_meshes,
-            const db::item_type<
+            const db::const_item_type<Tags::Mesh<volume_dim>>& mesh,
+            const db::const_item_type<Tags::Mortars<Tags::Mesh<volume_dim - 1>,
+                                                    volume_dim>>& mortar_meshes,
+            const db::const_item_type<
                 Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>&
                 mortar_sizes) noexcept {
           const auto& normal_dot_numerical_flux_computer =

@@ -41,7 +41,7 @@ struct OtherDataTag : db::SimpleTag {
 template <typename VarsTag>
 struct SomeComputeTag : db::ComputeTag {
   static std::string name() noexcept { return "SomeComputeTag"; }
-  static size_t function(const db::item_type<VarsTag>& vars) {
+  static size_t function(const db::const_item_type<VarsTag>& vars) {
     return vars.number_of_grid_points();
   }
   using argument_tags = tmpl::list<VarsTag>;

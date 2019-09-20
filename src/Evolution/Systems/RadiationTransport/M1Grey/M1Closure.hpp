@@ -140,17 +140,17 @@ struct ComputeM1Closure<tmpl::list<NeutrinoSpecies...>> {
           db::item_type<Tags::TildeHNormal<NeutrinoSpecies>>*>... tilde_hn,
       const gsl::not_null<db::item_type<
           Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>>*>... tilde_hi,
-      const db::item_type<
+      const db::const_item_type<
           Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
-      const db::item_type<
+      const db::const_item_type<
           Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>&... tilde_s,
-      const db::item_type<
+      const db::const_item_type<
           hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>&
           spatial_velocity,
-      const db::item_type<hydro::Tags::LorentzFactor<DataVector>>&
+      const db::const_item_type<hydro::Tags::LorentzFactor<DataVector>>&
           lorentz_factor,
-      const db::item_type<gr::Tags::SpatialMetric<3>>& spatial_metric,
-      const db::item_type<gr::Tags::InverseSpatialMetric<3>>&
+      const db::const_item_type<gr::Tags::SpatialMetric<3>>& spatial_metric,
+      const db::const_item_type<gr::Tags::InverseSpatialMetric<3>>&
           inv_spatial_metric) noexcept {
     EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_closure_impl(
         closure_factor, tilde_p, tilde_j, tilde_hn, tilde_hi, tilde_e, tilde_s,

@@ -43,15 +43,15 @@
 namespace GeneralizedHarmonic {
 namespace GeneralizedHarmonic_detail {
 template <size_t Dim>
-db::item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>
+db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>
 weight_char_fields(
-    const db::item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
         char_fields_int,
-    const db::item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
         char_speeds_int,
-    const db::item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
         char_fields_ext,
-    const db::item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
         char_speeds_ext) noexcept;
 }  // namespace GeneralizedHarmonic_detail
 }  // namespace GeneralizedHarmonic

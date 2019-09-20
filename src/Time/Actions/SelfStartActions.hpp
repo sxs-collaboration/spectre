@@ -103,7 +103,7 @@ struct InitialValue : db::PrefixTag, db::SimpleTag {
     return "InitialValue(" + Tag::name() + ")";
   }
   using tag = Tag;
-  using type = std::tuple<db::item_type<Tag>>;
+  using type = std::tuple<db::const_item_type<Tag>>;
 };
 }  // namespace Tags
 
@@ -292,9 +292,9 @@ struct CheckForOrderIncrease {
           make_not_null(&box),
           [
           ](const gsl::not_null<
-                db::item_type<::Tags::Next<::Tags::TimeStepId>>*>
-                next_time_id,
-            const db::item_type<::Tags::TimeStepId>& current_time_id) noexcept {
+                db::item_type<::Tags::Next<::Tags::TimeStepId>>*> next_time_id,
+            const db::const_item_type<::Tags::TimeStepId>&
+                current_time_id) noexcept {
             const Slab slab = current_time_id.step_time().slab();
             *next_time_id =
                 TimeStepId(current_time_id.time_runs_forward(),
@@ -357,7 +357,7 @@ struct StartNextOrderIfReady {
         db::mutate<Tag>(
             make_not_null(&box),
             [](const gsl::not_null<db::item_type<Tag>*> value,
-               const db::item_type<Tags::InitialValue<Tag>>&
+               const db::const_item_type<Tags::InitialValue<Tag>>&
                    initial_value) noexcept {
               *value = get<0>(initial_value);
             },
@@ -408,7 +408,7 @@ struct Cleanup {
     db::mutate<::Tags::TimeStep>(
         make_not_null(&box),
         [](const gsl::not_null<db::item_type<::Tags::TimeStep>*> time_step,
-           const db::item_type<initial_step_tag>& initial_step) noexcept {
+           const db::const_item_type<initial_step_tag>& initial_step) noexcept {
           *time_step = get<0>(initial_step);
         },
         db::get<initial_step_tag>(box));

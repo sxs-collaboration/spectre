@@ -140,7 +140,7 @@ struct StoreOrthogonalization {
             const gsl::not_null<
                 db::item_type<orthogonalization_iteration_id_tag>*>
                 orthogonalization_iteration_id,
-            const db::item_type<LinearSolver::Tags::IterationId>&
+            const db::const_item_type<LinearSolver::Tags::IterationId>&
                 iteration_id) noexcept {
           (*orthogonalization_history)(*orthogonalization_iteration_id,
                                        iteration_id) = orthogonalization;
@@ -185,8 +185,9 @@ struct StoreFinalOrthogonalization {
         [orthogonalization](
             const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
                 orthogonalization_history,
-            const db::item_type<LinearSolver::Tags::IterationId>& iteration_id,
-            const db::item_type<orthogonalization_iteration_id_tag>&
+            const db::const_item_type<LinearSolver::Tags::IterationId>&
+                iteration_id,
+            const db::const_item_type<orthogonalization_iteration_id_tag>&
                 orthogonalization_iteration_id) noexcept {
           (*orthogonalization_history)(orthogonalization_iteration_id,
                                        iteration_id) = sqrt(orthogonalization);

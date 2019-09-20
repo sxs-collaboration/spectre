@@ -28,7 +28,7 @@ template <typename Metavariables>
 struct LimiterCommunicationTag {
   static constexpr size_t volume_dim = Metavariables::system::volume_dim;
   using packaged_data_t = typename Metavariables::limiter::type::PackagedData;
-  using temporal_id = db::item_type<typename Metavariables::temporal_id>;
+  using temporal_id = db::const_item_type<typename Metavariables::temporal_id>;
   using type =
       std::map<temporal_id,
                std::unordered_map<

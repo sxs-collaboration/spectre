@@ -251,9 +251,9 @@ void test_detail_functions(const DataType& used_for_size) noexcept {
 // Wrap `DampedHarmonicHCompute::function` here to make its time
 // argument a double, allowing for `pypp::check_with_random_values` to work.
 template <size_t SpatialDim, typename Frame>
-db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame>>
+db::const_item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame>>
 wrap_DampedHarmonicHCompute(
-    const db::item_type<GeneralizedHarmonic::Tags::InitialGaugeH<
+    const db::const_item_type<GeneralizedHarmonic::Tags::InitialGaugeH<
         SpatialDim, Frame>>& gauge_h_init,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
@@ -273,9 +273,9 @@ template <size_t SpatialDim, typename Frame>
 void test_damped_harmonic_h_function(const DataVector& used_for_size) noexcept {
   // H_a
   pypp::check_with_random_values<1>(
-      static_cast<db::item_type<
+      static_cast<db::const_item_type<
           GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame>> (*)(
-          const db::item_type<
+          const db::const_item_type<
               GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame>>&,
           const Scalar<DataVector>&,
           const tnsr::I<DataVector, SpatialDim, Frame>&,
@@ -1056,13 +1056,15 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
 // Wrap `SpacetimeDerivDampedHarmonicHCompute::function` here to make its time
 // argument a double, allowing for `pypp::check_with_random_values` to work.
 template <size_t SpatialDim, typename Frame>
-db::item_type<
+db::const_item_type<
     GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>
 wrap_SpacetimeDerivDampedHarmonicHCompute(
-    const db::item_type<GeneralizedHarmonic::Tags::InitialGaugeH<
+    const db::const_item_type<GeneralizedHarmonic::Tags::InitialGaugeH<
+
         SpatialDim, Frame>>& gauge_h_init,
-    const db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-        SpatialDim, Frame>>& dgauge_h_init,
+    const db::const_item_type<
+        GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
+            SpatialDim, Frame>>& dgauge_h_init,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
     const tnsr::a<DataVector, SpatialDim, Frame>&
@@ -1087,23 +1089,24 @@ template <size_t SpatialDim, typename Frame>
 void test_deriv_damped_harmonic_h_function(
     const DataVector& used_for_size) noexcept {
   pypp::check_with_random_values<1>(
-      static_cast<db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
-          SpatialDim, Frame>> (*)(
-          const db::item_type<
-              GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame>>&,
-          const db::item_type<
-              GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<SpatialDim,
-                                                                     Frame>>&,
-          const Scalar<DataVector>&,
-          const tnsr::I<DataVector, SpatialDim, Frame>&,
-          const tnsr::a<DataVector, SpatialDim, Frame>&,
-          const Scalar<DataVector>&,
-          const tnsr::II<DataVector, SpatialDim, Frame>&,
-          const tnsr::aa<DataVector, SpatialDim, Frame>&,
-          const tnsr::aa<DataVector, SpatialDim, Frame>&,
-          const tnsr::iaa<DataVector, SpatialDim, Frame>&, const double,
-          const double, const double,
-          const tnsr::I<DataVector, SpatialDim, Frame>&, const double)>(
+      static_cast<
+          db::const_item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
+              SpatialDim, Frame>> (*)(
+              const db::const_item_type<
+                  GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame>>&,
+              const db::const_item_type<
+                  GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
+                      SpatialDim, Frame>>&,
+              const Scalar<DataVector>&,
+              const tnsr::I<DataVector, SpatialDim, Frame>&,
+              const tnsr::a<DataVector, SpatialDim, Frame>&,
+              const Scalar<DataVector>&,
+              const tnsr::II<DataVector, SpatialDim, Frame>&,
+              const tnsr::aa<DataVector, SpatialDim, Frame>&,
+              const tnsr::aa<DataVector, SpatialDim, Frame>&,
+              const tnsr::iaa<DataVector, SpatialDim, Frame>&, const double,
+              const double, const double,
+              const tnsr::I<DataVector, SpatialDim, Frame>&, const double)>(
           &wrap_SpacetimeDerivDampedHarmonicHCompute<SpatialDim, Frame>),
       "Evolution.Systems.GeneralizedHarmonic.GaugeSourceFunctions."
       "DampedHarmonic",

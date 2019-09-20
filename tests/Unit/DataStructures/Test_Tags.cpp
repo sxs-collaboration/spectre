@@ -86,7 +86,7 @@ void test_multiplies_tag() noexcept {
       Tags::SpinWeighted<ComplexScalarTag, std::integral_constant<int, 1>>,
       Tags::SpinWeighted<ComplexScalarTag, std::integral_constant<int, -2>>>;
   static_assert(
-      cpp17::is_same_v<db::item_type<test_multiplies_tag>,
+      cpp17::is_same_v<db::const_item_type<test_multiplies_tag>,
                        Scalar<SpinWeighted<ComplexDataVector, -1>>>,
       "Failed testing Tags::Multiplies for Tags::SpinWeighted operands");
   CHECK(test_multiplies_tag::name() ==

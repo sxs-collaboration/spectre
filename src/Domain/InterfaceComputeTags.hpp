@@ -43,7 +43,7 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
     using type = std::decay_t<decltype(BaseComputeItem::function(
         std::declval<typename InterfaceHelpers_detail::unmap_interface_args<
             tmpl::list_contains_v<volume_tags, ArgumentTags>>::
-                         template f<db::item_type<ArgumentTags>>>()...))>;
+                         template f<db::const_item_type<ArgumentTags>>>()...))>;
   };
 
   template <class ComputeItem>
@@ -52,14 +52,14 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
   };
 
  public:
-  using return_type =
-      std::unordered_map<typename db::item_type<DirectionsTag>::value_type,
-                         typename ComputeItemType<BaseComputeItem>::type>;
+  using return_type = std::unordered_map<
+      typename db::const_item_type<DirectionsTag>::value_type,
+      typename ComputeItemType<BaseComputeItem>::type>;
 
   static constexpr void apply(
       const gsl::not_null<return_type*> result,
-      const db::item_type<DirectionsTag>& directions,
-      const db::item_type<ArgumentTags>&... args) noexcept {
+      const db::const_item_type<DirectionsTag>& directions,
+      const db::const_item_type<ArgumentTags>&... args) noexcept {
     apply_helper(
         std::integral_constant<bool,
                                db::has_return_type_member_v<BaseComputeItem>>{},
@@ -70,8 +70,8 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
   static constexpr void apply_helper(
       std::false_type /*has_return_type_member*/,
       const gsl::not_null<return_type*> result,
-      const db::item_type<DirectionsTag>& directions,
-      const db::item_type<ArgumentTags>&... args) noexcept {
+      const db::const_item_type<DirectionsTag>& directions,
+      const db::const_item_type<ArgumentTags>&... args) noexcept {
     for (const auto& direction : directions) {
       (*result)[direction] = BaseComputeItem::function(
           InterfaceHelpers_detail::unmap_interface_args<tmpl::list_contains_v<
@@ -82,8 +82,8 @@ struct evaluate_compute_item<DirectionsTag, BaseComputeItem,
   static constexpr void apply_helper(
       std::true_type /*has_return_type_member*/,
       const gsl::not_null<return_type*> result,
-      const db::item_type<DirectionsTag>& directions,
-      const db::item_type<ArgumentTags>&... args) noexcept {
+      const db::const_item_type<DirectionsTag>& directions,
+      const db::const_item_type<ArgumentTags>&... args) noexcept {
     for (const auto& direction : directions) {
       BaseComputeItem::function(
           make_not_null(&(*result)[direction]),
@@ -155,18 +155,16 @@ struct InterfaceCompute : Interface<DirectionsTag, Tag>,
 template <typename DirectionsTag, typename Tag>
 struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
   static constexpr size_t volume_dim =
-      db::item_type<DirectionsTag>::value_type::volume_dim;
+      db::const_item_type<DirectionsTag>::value_type::volume_dim;
 
   using return_type =
-      std::unordered_map<::Direction<volume_dim>, db::item_type<Tag>>;
+      std::unordered_map<::Direction<volume_dim>, db::const_item_type<Tag>>;
 
   static constexpr void function(
-      const gsl::not_null<
-          std::unordered_map<::Direction<volume_dim>, db::item_type<Tag>>*>
-          sliced_vars,
+      const gsl::not_null<return_type*> sliced_vars,
       const ::Mesh<volume_dim>& mesh,
       const std::unordered_set<::Direction<volume_dim>>& directions,
-      const db::item_type<Tag>& variables) noexcept {
+      const db::const_item_type<Tag>& variables) noexcept {
     for (const auto& direction : directions) {
       data_on_slice(make_not_null(&((*sliced_vars)[direction])), variables,
                     mesh.extents(), direction.dimension(),
@@ -242,12 +240,12 @@ namespace db {
 template <typename TagList, typename DirectionsTag, typename VariablesTag>
 struct Subitems<
     TagList, Tags::InterfaceCompute<DirectionsTag, VariablesTag>,
-    Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>>
+    Requires<tt::is_a_v<Variables, const_item_type<VariablesTag, TagList>>>>
     : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
 
 template <typename TagList, typename DirectionsTag, typename VariablesTag>
 struct Subitems<
     TagList, Tags::Slice<DirectionsTag, VariablesTag>,
-    Requires<tt::is_a_v<Variables, item_type<VariablesTag, TagList>>>>
+    Requires<tt::is_a_v<Variables, const_item_type<VariablesTag, TagList>>>>
     : detail::InterfaceSubitemsImpl<TagList, DirectionsTag, VariablesTag> {};
 }  // namespace db

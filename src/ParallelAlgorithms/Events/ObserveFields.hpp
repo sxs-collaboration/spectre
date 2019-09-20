@@ -165,10 +165,10 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
   template <typename Metavariables, typename ParallelComponent>
   void operator()(
       const double time, const Mesh<VolumeDim>& mesh,
-      const db::item_type<coordinates_tag>& inertial_coordinates,
-      const db::item_type<
+      const db::const_item_type<coordinates_tag>& inertial_coordinates,
+      const db::const_item_type<
           AnalyticSolutionTensors>&... analytic_solution_tensors,
-      const db::item_type<NonSolutionTensors>&... non_solution_tensors,
+      const db::const_item_type<NonSolutionTensors>&... non_solution_tensors,
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ElementIndex<VolumeDim>& array_index,
       const ParallelComponent* const /*meta*/) const noexcept {
@@ -183,8 +183,8 @@ class ObserveFields<VolumeDim, tmpl::list<Tensors...>,
     components.reserve(alg::accumulate(
         std::initializer_list<size_t>{
             inertial_coordinates.size(),
-            db::item_type<AnalyticSolutionTensors>::size()...,
-            db::item_type<NonSolutionTensors>::size()...},
+            db::const_item_type<AnalyticSolutionTensors>::size()...,
+            db::const_item_type<NonSolutionTensors>::size()...},
         0_st));
 
     const auto record_tensor_components = [this, &components, &element_name](

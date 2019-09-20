@@ -60,9 +60,10 @@ struct UpdateU {
 
     db::mutate<variables_tag, history_tag>(
         make_not_null(&box),
-        [&cache](const gsl::not_null<db::item_type<variables_tag>*> vars,
-                 const gsl::not_null<db::item_type<history_tag>*> history,
-                 const db::item_type<Tags::TimeStep>& time_step) noexcept {
+        [&cache](
+            const gsl::not_null<db::item_type<variables_tag>*> vars,
+            const gsl::not_null<db::item_type<history_tag>*> history,
+            const db::const_item_type<Tags::TimeStep>& time_step) noexcept {
           const auto& time_stepper =
               Parallel::get<Tags::TimeStepperBase>(cache);
           time_stepper.update_u(vars, history, time_step);

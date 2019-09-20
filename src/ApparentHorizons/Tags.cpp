@@ -26,7 +26,7 @@ aliases::ThetaPhi<Frame> ThetaPhi<Frame>::function(
 
 template <typename Frame>
 aliases::OneForm<Frame> Rhat<Frame>::function(
-    const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept {
+    const db::const_item_type<ThetaPhi<Frame>>& theta_phi) noexcept {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
 
@@ -41,7 +41,7 @@ aliases::OneForm<Frame> Rhat<Frame>::function(
 
 template <typename Frame>
 aliases::Jacobian<Frame> Jacobian<Frame>::function(
-    const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept {
+    const db::const_item_type<ThetaPhi<Frame>>& theta_phi) noexcept {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
   const DataVector sin_phi = sin(phi);
@@ -60,7 +60,7 @@ aliases::Jacobian<Frame> Jacobian<Frame>::function(
 
 template <typename Frame>
 aliases::InvJacobian<Frame> InvJacobian<Frame>::function(
-    const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept {
+    const db::const_item_type<ThetaPhi<Frame>>& theta_phi) noexcept {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
   const DataVector sin_phi = sin(phi);
@@ -79,7 +79,7 @@ aliases::InvJacobian<Frame> InvJacobian<Frame>::function(
 
 template <typename Frame>
 aliases::InvHessian<Frame> InvHessian<Frame>::function(
-    const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept {
+    const db::const_item_type<ThetaPhi<Frame>>& theta_phi) noexcept {
   const auto& theta = get<0>(theta_phi);
   const auto& phi = get<1>(theta_phi);
   const DataVector sin_phi = sin(phi);
@@ -135,7 +135,7 @@ aliases::InvHessian<Frame> InvHessian<Frame>::function(
 template <typename Frame>
 aliases::Vector<Frame> CartesianCoords<Frame>::function(
     const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
-    const db::item_type<Rhat<Frame>>& r_hat) noexcept {
+    const db::const_item_type<Rhat<Frame>>& r_hat) noexcept {
   auto coords = make_with_value<aliases::Vector<Frame>>(radius, 0.0);
   for (size_t d = 0; d < 3; ++d) {
     coords.get(d) = gsl::at(strahlkorper.center(), d) + r_hat.get(d) * radius;
@@ -146,7 +146,7 @@ aliases::Vector<Frame> CartesianCoords<Frame>::function(
 template <typename Frame>
 aliases::OneForm<Frame> DxRadius<Frame>::function(
     const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
-    const db::item_type<InvJacobian<Frame>>& inv_jac) noexcept {
+    const db::const_item_type<InvJacobian<Frame>>& inv_jac) noexcept {
   auto dx_radius = make_with_value<aliases::OneForm<Frame>>(radius, 0.0);
   const DataVector one_over_r = 1.0 / radius;
   const auto dr = strahlkorper.ylm_spherepack().gradient(radius);
@@ -163,8 +163,8 @@ aliases::OneForm<Frame> DxRadius<Frame>::function(
 template <typename Frame>
 aliases::SecondDeriv<Frame> D2xRadius<Frame>::function(
     const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
-    const db::item_type<InvJacobian<Frame>>& inv_jac,
-    const db::item_type<InvHessian<Frame>>& inv_hess) noexcept {
+    const db::const_item_type<InvJacobian<Frame>>& inv_jac,
+    const db::const_item_type<InvHessian<Frame>>& inv_hess) noexcept {
   auto d2x_radius = make_with_value<aliases::SecondDeriv<Frame>>(radius, 0.0);
   const DataVector one_over_r_squared = 1.0 / square(radius);
   const auto derivs =
@@ -201,7 +201,7 @@ aliases::SecondDeriv<Frame> D2xRadius<Frame>::function(
 template <typename Frame>
 DataVector LaplacianRadius<Frame>::function(
     const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
-    const db::item_type<ThetaPhi<Frame>>& theta_phi) noexcept {
+    const db::const_item_type<ThetaPhi<Frame>>& theta_phi) noexcept {
   const auto derivs =
       strahlkorper.ylm_spherepack().first_and_second_derivative(radius);
   return get<0, 0>(derivs.second) + get<1, 1>(derivs.second) +
@@ -210,8 +210,8 @@ DataVector LaplacianRadius<Frame>::function(
 
 template <typename Frame>
 aliases::OneForm<Frame> NormalOneForm<Frame>::function(
-    const db::item_type<DxRadius<Frame>>& dx_radius,
-    const db::item_type<Rhat<Frame>>& r_hat) noexcept {
+    const db::const_item_type<DxRadius<Frame>>& dx_radius,
+    const db::const_item_type<Rhat<Frame>>& r_hat) noexcept {
   auto one_form = make_with_value<aliases::OneForm<Frame>>(r_hat, 0.0);
   for (size_t d = 0; d < 3; ++d) {
     one_form.get(d) = r_hat.get(d) - dx_radius.get(d);
@@ -222,8 +222,8 @@ aliases::OneForm<Frame> NormalOneForm<Frame>::function(
 template <typename Frame>
 aliases::Jacobian<Frame> Tangents<Frame>::function(
     const ::Strahlkorper<Frame>& strahlkorper, const DataVector& radius,
-    const db::item_type<Rhat<Frame>>& r_hat,
-    const db::item_type<Jacobian<Frame>>& jac) noexcept {
+    const db::const_item_type<Rhat<Frame>>& r_hat,
+    const db::const_item_type<Jacobian<Frame>>& jac) noexcept {
   const auto dr = strahlkorper.ylm_spherepack().gradient(radius);
   auto tangents = make_with_value<aliases::Jacobian<Frame>>(radius, 0.0);
   for (size_t i = 0; i < 2; ++i) {

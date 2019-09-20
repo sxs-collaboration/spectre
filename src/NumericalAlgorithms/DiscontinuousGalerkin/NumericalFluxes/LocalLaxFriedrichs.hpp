@@ -73,9 +73,10 @@ struct LocalLaxFriedrichs {
                              tmpl::list<NormalDotFluxTags...>> {
     static void apply(
         const gsl::not_null<Variables<package_tags>*> packaged_data,
-        const db::item_type<NormalDotFluxTags>&... n_dot_f_to_package,
-        const db::item_type<VariablesTags>&... u_to_package,
-        const db::item_type<char_speeds_tag>& characteristic_speeds) noexcept {
+        const db::const_item_type<NormalDotFluxTags>&... n_dot_f_to_package,
+        const db::const_item_type<VariablesTags>&... u_to_package,
+        const db::const_item_type<char_speeds_tag>&
+            characteristic_speeds) noexcept {
       ASSERT(packaged_data->number_of_grid_points() ==
              characteristic_speeds[0].size(),
              "Size of packaged data (" << packaged_data->number_of_grid_points()
@@ -109,12 +110,13 @@ struct LocalLaxFriedrichs {
     static void apply(
         const gsl::not_null<
             db::item_type<NormalDotNumericalFluxTags>*>... n_dot_numerical_f,
-        const db::item_type<NormalDotFluxTags>&... n_dot_f_interior,
-        const db::item_type<VariablesTags>&... u_interior,
-        const db::item_type<MaxAbsCharSpeed>& max_abs_speed_interior,
-        const db::item_type<NormalDotFluxTags>&... minus_n_dot_f_exterior,
-        const db::item_type<VariablesTags>&... u_exterior,
-        const db::item_type<MaxAbsCharSpeed>& max_abs_speed_exterior) noexcept {
+        const db::const_item_type<NormalDotFluxTags>&... n_dot_f_interior,
+        const db::const_item_type<VariablesTags>&... u_interior,
+        const db::const_item_type<MaxAbsCharSpeed>& max_abs_speed_interior,
+        const db::const_item_type<NormalDotFluxTags>&... minus_n_dot_f_exterior,
+        const db::const_item_type<VariablesTags>&... u_exterior,
+        const db::const_item_type<MaxAbsCharSpeed>&
+            max_abs_speed_exterior) noexcept {
       const Scalar<DataVector> max_abs_speed(DataVector(
           max(get(max_abs_speed_interior), get(max_abs_speed_exterior))));
       const auto assemble_numerical_flux = [&max_abs_speed](

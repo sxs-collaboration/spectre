@@ -24,13 +24,13 @@ class Variables;
 namespace GeneralizedHarmonic {
 namespace GeneralizedHarmonic_detail {
 template <typename FieldTag>
-db::item_type<FieldTag> weight_char_field(
-    const db::item_type<FieldTag>& char_field_int,
+db::const_item_type<FieldTag> weight_char_field(
+    const db::const_item_type<FieldTag>& char_field_int,
     const DataVector& char_speed_int,
-    const db::item_type<FieldTag>& char_field_ext,
+    const db::const_item_type<FieldTag>& char_field_ext,
     const DataVector& char_speed_ext) noexcept {
   const DataVector& char_speed_avg{0.5 * (char_speed_int + char_speed_ext)};
-  db::item_type<FieldTag> weighted_char_field = char_field_int;
+  db::const_item_type<FieldTag> weighted_char_field = char_field_int;
   auto weighted_char_field_it = weighted_char_field.begin();
   for (auto int_it = char_field_int.begin(), ext_it = char_field_ext.begin();
        int_it != char_field_int.end();
@@ -49,15 +49,15 @@ db::item_type<FieldTag> weight_char_field(
 // (if the char speed is outgoing) or the product of the exterior char field
 // and its char speed (if the char speed is incoming).
 template <size_t Dim>
-db::item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>
+db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>
 weight_char_fields(
-    const db::item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
         char_fields_int,
-    const db::item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
         char_speeds_int,
-    const db::item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
         char_fields_ext,
-    const db::item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
         char_speeds_ext) noexcept {
   const auto& u_psi_int =
       get<Tags::UPsi<Dim, Frame::Inertial>>(char_fields_int);
@@ -88,7 +88,7 @@ weight_char_fields(
   const DataVector& char_speed_u_minus_ext{char_speeds_ext[3]};
 
   auto weighted_char_fields = make_with_value<
-      db::item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>>(
+      db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>>(
       char_speed_u_psi_int, 0.0);
 
   get<Tags::UPsi<Dim, Frame::Inertial>>(weighted_char_fields) =
