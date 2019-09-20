@@ -600,18 +600,10 @@ class DataBox<tmpl::list<Tags...>>
   constexpr void merge_old_box(db::DataBox<tmpl::list<OldTags...>>&& old_box,
                                tmpl::list<TagsToCopy...> /*meta*/) noexcept;
 
-  // Serialization of DataBox
-  // make_deferred_helper is used to expand the parameter pack
-  // ComputeItemArgumentsTags
-  template <typename Tag, typename... ComputeItemArgumentsTags>
-  Deferred<db::item_type<Tag>> make_deferred_helper(
-      tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept;
-
   // clang-tidy: no non-const references
   template <typename... NonSubitemsTags, typename... ComputeTags>
   void pup_impl(PUP::er& p, tmpl::list<NonSubitemsTags...> /*meta*/,  // NOLINT
                 tmpl::list<ComputeTags...> /*meta*/) noexcept;
-  // End serialization of DataBox
 
   // Mutating items in the DataBox
   template <typename ParentTag>
@@ -976,15 +968,6 @@ DataBox<tmpl::list<Tags...>> DataBox<tmpl::list<Tags...>>::deep_copy() const
 ////////////////////////////////////////////////////////////////
 // Serialization of DataBox
 
-// Function used to expand the parameter pack ComputeItemArgumentsTags
-template <typename... Tags>
-template <typename Tag, typename... ComputeItemArgumentsTags>
-Deferred<db::item_type<Tag>> DataBox<tmpl::list<Tags...>>::make_deferred_helper(
-    tmpl::list<ComputeItemArgumentsTags...> /*meta*/) noexcept {
-  return make_deferred<db::item_type<Tag>>(
-      Tag::function, get_deferred<ComputeItemArgumentsTags>()...);
-}
-
 template <typename... Tags>
 template <typename... NonSubitemsTags, typename... ComputeTags>
 void DataBox<tmpl::list<Tags...>>::pup_impl(
@@ -1010,16 +993,9 @@ void DataBox<tmpl::list<Tags...>>::pup_impl(
     (void)this;  // Compiler bug warns this isn't used
     using tag = decltype(current_tag);
     if (p.isUnpacking()) {
-      get_deferred<tag>() =
-          make_deferred_helper<tag>(typename tag::argument_tags{});
+      add_compute_item_to_box<tag, tmpl::list<Tags...>>();
     }
     get_deferred<tag>().pack_unpack_lazy_function(p);
-    if (p.isUnpacking()) {
-      add_sub_compute_item_tags_to_box<tag>(
-          typename Subitems<tmpl::list<Tags...>, tag>::type{},
-          typename has_return_type_member<
-              Subitems<tmpl::list<Tags...>, tag>>::type{});
-    }
   };
   (void)pup_compute_item;  // Silence GCC warning about unused variable
   EXPAND_PACK_LEFT_TO_RIGHT(pup_compute_item(ComputeTags{}));

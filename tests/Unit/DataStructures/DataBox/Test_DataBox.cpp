@@ -1750,6 +1750,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Subitems",
   CHECK(*db::get<test_subitems::Second<0>>(box) == 12.);
   CHECK(*db::get<test_subitems::Second<1>>(box) == 24.);
 
+  {
+    const auto copy_box = serialize_and_deserialize(box);
+    CHECK(*db::get<test_subitems::First<0>>(copy_box) == 5);
+    CHECK(*db::get<test_subitems::First<1>>(copy_box) == 6);
+    CHECK(*db::get<test_subitems::Second<0>>(copy_box) == 12.);
+    CHECK(*db::get<test_subitems::Second<1>>(copy_box) == 24.);
+  }
+
   static_assert(
       cpp17::is_same_v<
           decltype(box),
@@ -2604,6 +2612,21 @@ void serialization_subitem_compute_items() noexcept {  // NOLINT
   test_subitems::Parent<2, true>::count = 0;
   test_subitems::Parent<3, true, true>::count = 0;
 }
+
+// Test serialization of a DataBox with compute items depending on base tags
+void serialization_compute_items_of_base_tags() noexcept {
+  auto original_box =
+      db::create<db::AddSimpleTags<test_databox_tags::Tag2>,
+                 db::AddComputeTags<test_databox_tags::ComputeFromBase>>(
+          "My Sample String"s);
+  CHECK(db::get<test_databox_tags::Tag2>(original_box) == "My Sample String");
+  CHECK(db::get<test_databox_tags::ComputeFromBase>(original_box) ==
+        "My Sample String");
+  auto copied_box = serialize_and_deserialize(original_box);
+  CHECK(db::get<test_databox_tags::Tag2>(copied_box) == "My Sample String");
+  CHECK(db::get<test_databox_tags::ComputeFromBase>(copied_box) ==
+        "My Sample String");
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Serialization",
@@ -2611,6 +2634,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Serialization",
   serialization_non_subitem_simple_items();
   serialization_subitems_simple_items();
   serialization_subitem_compute_items();
+  serialization_compute_items_of_base_tags();
 }
 
 // Test `item_type_if_contained_t` and `tag_is_retrievable_v`
