@@ -125,7 +125,7 @@ struct SpatialRicci : db::SimpleTag {
 };
 
 /*!
- * \brief The energy density \f$E=t_a t_b T^{ab}\f$, where \f$t_a\f$ denotes the
+ * \brief The energy density \f$E=n_a n_b T^{ab}\f$, where \f$n_a\f$ denotes the
  * normal to the spatial hypersurface
  */
 template <typename DataType>
@@ -140,6 +140,15 @@ struct EnergyDensity : db::SimpleTag {
 template <typename DataType>
 struct StressTrace : db::SimpleTag {
   using type = Scalar<DataType>;
+};
+
+/*!
+ * \brief The spatial momentum density \f$S^i=-\gamma^{ij}n^aT_{aj}\f$, where
+ * \f$n_a\f$ denotes the normal to the spatial hypersurface
+ */
+template <size_t Dim, typename Frame, typename DataType>
+struct MomentumDensity : db::SimpleTag {
+  using type = tnsr::I<DataType, Dim, Frame>;
 };
 
 /*!
