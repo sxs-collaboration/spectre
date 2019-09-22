@@ -175,10 +175,10 @@ void test_exponential_filter_action(const double alpha,
 
     Scalar<DataVector> expected_scalar(mesh.number_of_grid_points(), 0.0);
     tnsr::I<DataVector, Dim> expected_vector(mesh.number_of_grid_points(), 0.0);
-    apply_matrices(&get(expected_scalar), filter_scalar,
+    apply_matrices(make_not_null(&get(expected_scalar)), filter_scalar,
                    get(get<Tags::ScalarVar>(initial_vars)), mesh.extents());
     for (size_t d = 0; d < Dim; d++) {
-      apply_matrices(&expected_vector.get(d), filter_vector,
+      apply_matrices(make_not_null(&expected_vector.get(d)), filter_vector,
                      get<Tags::VectorVar<Dim>>(initial_vars).get(d),
                      mesh.extents());
     }

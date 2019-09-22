@@ -7,7 +7,6 @@
 #include <cstddef>
 #include <ostream>
 
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/Variables.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
@@ -20,12 +19,12 @@ class Index;
 /// \endcond
 
 namespace apply_matrices_detail {
-template <size_t Dim, bool... DimensionIsIdentity>
+template <typename ElementType, size_t Dim, bool... DimensionIsIdentity>
 struct Impl {
   template <typename MatrixType>
-  static void apply(gsl::not_null<double*> result,
+  static void apply(gsl::not_null<ElementType*> result,
                     const std::array<MatrixType, Dim>& matrices,
-                    const double* data, const Index<Dim>& extents,
+                    const ElementType* data, const Index<Dim>& extents,
                     size_t number_of_independent_components) noexcept;
 };
 
@@ -40,8 +39,8 @@ size_t result_size(const std::array<MatrixType, Dim>& matrices,
       num_points_result *= extents[d];
     } else {
       ASSERT(cols == extents[d],
-             "Matrix " << d << " has wrong number of columns: "
-             << cols << " (expected " << extents[d] << ")");
+             "Matrix " << d << " has wrong number of columns: " << cols
+                       << " (expected " << extents[d] << ")");
       num_points_result *= dereference_wrapper(gsl::at(matrices, d)).rows();
     }
   }
@@ -49,6 +48,7 @@ size_t result_size(const std::array<MatrixType, Dim>& matrices,
 }
 }  // namespace apply_matrices_detail
 
+// @{
 /// \ingroup NumericalAlgorithmsGroup
 /// \brief Multiply by matrices in each dimension
 ///
@@ -57,7 +57,12 @@ size_t result_size(const std::array<MatrixType, Dim>& matrices,
 /// `matrices[1]`, and so on.  If any of the matrices are empty they
 /// will be treated as the identity, but the matrix multiplications
 /// will be skipped for increased efficiency.
-//@{
+///
+/// \note The element type stored in the vectors to be transformed may be either
+/// `double` or `std::complex<double>`. The matrix, however, must be real. In
+/// the case of acting on a vector of complex values, the matrix is treated as
+/// having zero imaginary part. This is chosen for efficiency in all
+/// use-cases for spectral matrix arithmetic so far encountered.
 template <typename VariableTags, typename MatrixType, size_t Dim>
 void apply_matrices(const gsl::not_null<Variables<VariableTags>*> result,
                     const std::array<MatrixType, Dim>& matrices,
@@ -65,13 +70,15 @@ void apply_matrices(const gsl::not_null<Variables<VariableTags>*> result,
                     const Index<Dim>& extents) noexcept {
   ASSERT(u.number_of_grid_points() == extents.product(),
          "Mismatch between extents (" << extents.product()
-         << ") and variables (" << u.number_of_grid_points() << ").");
+                                      << ") and variables ("
+                                      << u.number_of_grid_points() << ").");
   ASSERT(result->number_of_grid_points() ==
-         apply_matrices_detail::result_size(matrices, extents),
+             apply_matrices_detail::result_size(matrices, extents),
          "result has wrong size.  Expected "
-         << apply_matrices_detail::result_size(matrices, extents)
-         << ", received " << result->number_of_grid_points());
-  apply_matrices_detail::Impl<Dim>::apply(result->data(), matrices, u.data(),
+             << apply_matrices_detail::result_size(matrices, extents)
+             << ", received " << result->number_of_grid_points());
+  apply_matrices_detail::Impl<typename Variables<VariableTags>::value_type,
+                              Dim>::apply(result->data(), matrices, u.data(),
                                           extents,
                                           u.number_of_independent_components);
 }
@@ -86,28 +93,40 @@ Variables<VariableTags> apply_matrices(
   return result;
 }
 
-template <typename MatrixType, size_t Dim>
-void apply_matrices(const gsl::not_null<DataVector*> result,
+// clang tidy mistakenly fails to identify this as a function definition
+template <typename ResultType, typename MatrixType, typename VectorType,
+          size_t Dim>
+void apply_matrices(const gsl::not_null<ResultType*> result,  // NOLINT
                     const std::array<MatrixType, Dim>& matrices,
-                    const DataVector& u, const Index<Dim>& extents) noexcept {
+                    const VectorType& u, const Index<Dim>& extents) noexcept {
   ASSERT(u.size() == extents.product(),
          "Mismatch between extents (" << extents.product() << ") and size ("
-         << u.size() << ").");
-  ASSERT(result->size() ==
-         apply_matrices_detail::result_size(matrices, extents),
-         "result has wrong size.  Expected "
-         << apply_matrices_detail::result_size(matrices, extents)
-         << ", received " << result->size());
-  apply_matrices_detail::Impl<Dim>::apply(result->data(), matrices, u.data(),
-                                          extents, 1);
+                                      << u.size() << ").");
+  ASSERT(
+      result->size() == apply_matrices_detail::result_size(matrices, extents),
+      "result has wrong size.  Expected "
+          << apply_matrices_detail::result_size(matrices, extents)
+          << ", received " << result->size());
+  apply_matrices_detail::Impl<typename VectorType::ElementType, Dim>::apply(
+      result->data(), matrices, u.data(), extents, 1);
 }
 
-template <typename MatrixType, size_t Dim>
-DataVector apply_matrices(const std::array<MatrixType, Dim>& matrices,
-                          const DataVector& u,
+template <typename MatrixType, typename VectorType, size_t Dim>
+VectorType apply_matrices(const std::array<MatrixType, Dim>& matrices,
+                          const VectorType& u,
                           const Index<Dim>& extents) noexcept {
-  DataVector result(apply_matrices_detail::result_size(matrices, extents));
+  VectorType result(apply_matrices_detail::result_size(matrices, extents));
   apply_matrices(make_not_null(&result), matrices, u, extents);
   return result;
 }
-//@}
+
+template <typename ResultType, typename MatrixType, typename VectorType,
+          size_t Dim>
+ResultType apply_matrices(const std::array<MatrixType, Dim>& matrices,
+                          const VectorType& u,
+                          const Index<Dim>& extents) noexcept {
+  ResultType result(apply_matrices_detail::result_size(matrices, extents));
+  apply_matrices(make_not_null(&result), matrices, u, extents);
+  return result;
+}
+// @}
