@@ -294,4 +294,33 @@ std::vector<size_t> oriented_offset_on_slice(
       neighbor_second_axis_is_aligned, neighbor_axes_are_transposed);
 }
 
+template <typename T>
+void orient_each_component(
+    const gsl::not_null<gsl::span<T>*> oriented_variables,
+    const gsl::span<const T>& variables, const size_t num_pts,
+    const std::vector<size_t>& oriented_offset) noexcept {
+  const size_t num_components = variables.size() / num_pts;
+  ASSERT(oriented_variables->size() == variables.size(),
+         "The number of oriented variables, "
+             << oriented_variables->size() / num_pts
+             << ", must be equal to the number of variables, "
+             << variables.size() / num_pts);
+  for (size_t component_index = 0; component_index < num_components;
+       ++component_index) {
+    const size_t offset = component_index * num_pts;
+    for (size_t s = 0; s < num_pts; ++s) {
+      gsl::at((*oriented_variables), offset + oriented_offset[s]) =
+          gsl::at(variables, offset + s);
+    }
+  }
+}
+
+template void orient_each_component(
+    const gsl::not_null<gsl::span<double>*> oriented_variables,
+    const gsl::span<const double>& variables, const size_t num_pts,
+    const std::vector<size_t>& oriented_offset) noexcept;
+template void orient_each_component(
+    const gsl::not_null<gsl::span<std::complex<double>>*> oriented_variables,
+    const gsl::span<const std::complex<double>>& variables,
+    const size_t num_pts, const std::vector<size_t>& oriented_offset) noexcept;
 }  // namespace OrientationMapHelpers_detail
