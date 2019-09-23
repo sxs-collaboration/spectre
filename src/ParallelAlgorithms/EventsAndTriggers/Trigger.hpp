@@ -63,4 +63,4 @@ class Trigger : public PUP::able {
   }
 };
 
-#include "Evolution/EventsAndTriggers/LogicalTriggers.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/LogicalTriggers.hpp"

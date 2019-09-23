@@ -6,9 +6,9 @@
 #include <limits>
 #include <pup.h>
 
-#include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
 #include "Time/EvolutionOrdering.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"

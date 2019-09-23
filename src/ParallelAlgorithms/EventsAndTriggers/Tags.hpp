@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Serialize.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 
 namespace OptionTags {
 /// \ingroup OptionTagsGroup

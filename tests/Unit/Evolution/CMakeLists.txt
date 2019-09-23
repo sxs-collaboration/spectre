@@ -4,7 +4,6 @@
 add_subdirectory(Actions)
 add_subdirectory(Conservative)
 add_subdirectory(DiscontinuousGalerkin)
-add_subdirectory(EventsAndTriggers)
 add_subdirectory(Systems)
 add_subdirectory(VariableFixing)
 

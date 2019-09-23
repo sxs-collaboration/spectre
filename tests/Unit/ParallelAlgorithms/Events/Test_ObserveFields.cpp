@@ -22,7 +22,6 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
-#include "Evolution/EventsAndTriggers/Event.hpp"
 #include "IO/Observer/ArrayComponentId.hpp"
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
@@ -31,6 +30,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"

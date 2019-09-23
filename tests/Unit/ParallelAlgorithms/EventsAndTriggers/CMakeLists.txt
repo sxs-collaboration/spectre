@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_EvolutionEventsAndTriggers")
+set(LIBRARY "Test_EventsAndTriggers")
 
 set(LIBRARY_SOURCES
   Test_EventsAndTriggers.cpp
@@ -9,7 +9,7 @@ set(LIBRARY_SOURCES
 
 add_test_library(
   ${LIBRARY}
-  "Evolution/EventsAndTriggers/"
+  "ParallelAlgorithms/EventsAndTriggers/"
   "${LIBRARY_SOURCES}"
   "ErrorHandling;Utilities"
   )

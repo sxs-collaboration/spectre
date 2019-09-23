@@ -8,16 +8,18 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Evolution/EventsAndTriggers/Event.hpp"  // IWYU pragma: keep // for option parsing
-#include "Evolution/EventsAndTriggers/Trigger.hpp"  // IWYU pragma: keep // for option parsing
 #include "Options/Options.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"  // IWYU pragma: keep // for option parsing
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"  // IWYU pragma: keep // for option parsing
 
 /// \cond
 namespace Parallel {
-template <typename Metavariables> class ConstGlobalCache;
+template <typename Metavariables>
+class ConstGlobalCache;
 }  // namespace Parallel
 namespace db {
-template <typename TagsList> class DataBox;
+template <typename TagsList>
+class DataBox;
 }  // namespace db
 /// \endcond
 

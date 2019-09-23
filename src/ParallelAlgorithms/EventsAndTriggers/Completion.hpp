@@ -3,10 +3,10 @@
 
 #pragma once
 
-#include "Evolution/EventsAndTriggers/Event.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -25,7 +25,7 @@ class Completion : public Event<EventRegistrars> {
 
   using options = tmpl::list<>;
   static constexpr OptionString help = {
-    "Sets the termination flag for the code to exit."};
+      "Sets the termination flag for the code to exit."};
 
   Completion() = default;
 
@@ -37,7 +37,7 @@ class Completion : public Event<EventRegistrars> {
                   const Component* const /*meta*/) const noexcept {
     auto al_gore =
         Parallel::get_parallel_component<Component>(cache)[array_index]
-        .ckLocal();
+            .ckLocal();
     al_gore->set_terminate(true);
   }
 };
