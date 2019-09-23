@@ -51,11 +51,16 @@ void test_1d_orient_variables() noexcept {
   Variables<tmpl::list<ScalarTensor, Coords<1>>> vars(extents.product());
   get(get<ScalarTensor>(vars)) = DataVector{{1.0, 2.0, 3.0, 4.0}};
   get<0>(get<Coords<1>>(vars)) = DataVector{{0.5, 0.6, 0.7, 0.8}};
+  const std::vector<double> vars_vector(vars.data(), vars.data() + vars.size());
 
   // Check aligned case
   {
     const auto oriented_vars = orient_variables(vars, extents, {});
     CHECK(oriented_vars == vars);
+
+    const std::vector<double> oriented_vars_vector =
+        orient_variables(vars_vector, extents, {});
+    CHECK(oriented_vars_vector == vars_vector);
   }
 
   // Check anti-aligned case
@@ -68,6 +73,12 @@ void test_1d_orient_variables() noexcept {
     get(get<ScalarTensor>(expected_vars)) = DataVector{{4.0, 3.0, 2.0, 1.0}};
     get<0>(get<Coords<1>>(expected_vars)) = DataVector{{0.8, 0.7, 0.6, 0.5}};
     CHECK(oriented_vars == expected_vars);
+
+    const std::vector<double> oriented_vars_vector =
+        orient_variables(vars_vector, extents, orientation_map);
+    const std::vector<double> expected_vars_vector(
+        expected_vars.data(), expected_vars.data() + expected_vars.size());
+    CHECK(oriented_vars_vector == expected_vars_vector);
   }
 }
 
@@ -88,6 +99,13 @@ void test_2d_orient_variables_simple_case_by_hand() noexcept {
   get(get<ScalarTensor>(expected_vars)) =
       DataVector{{2.0, 4.0, 6.0, 1.0, 3.0, 5.0}};
   CHECK(oriented_vars == expected_vars);
+
+  const std::vector<double> vars_vector(vars.data(), vars.data() + vars.size());
+  const std::vector<double> oriented_vars_vector =
+      orient_variables(vars_vector, extents, orientation_map);
+  const std::vector<double> expected_vars_vector(
+      expected_vars.data(), expected_vars.data() + expected_vars.size());
+  CHECK(oriented_vars_vector == expected_vars_vector);
 }
 
 // Test orient_variables using a general orientation.
@@ -122,6 +140,13 @@ void test_2d_with_orientation(
   get<Coords<2>>(expected_vars) =
       map_oriented(logical_coordinates(orientation_map.inverse_map()(mesh)));
   CHECK(oriented_vars == expected_vars);
+
+  const std::vector<double> vars_vector(vars.data(), vars.data() + vars.size());
+  const std::vector<double> oriented_vars_vector =
+      orient_variables(vars_vector, extents, orientation_map);
+  const std::vector<double> expected_vars_vector(
+      expected_vars.data(), expected_vars.data() + expected_vars.size());
+  CHECK(oriented_vars_vector == expected_vars_vector);
 }
 
 void test_2d_orient_variables() noexcept {
@@ -165,6 +190,13 @@ void test_3d_orient_variables_simple_case_by_hand() noexcept {
       {0.0, 6.0, 12.0, 18.0, 2.0, 8.0, 14.0, 20.0, 4.0, 10.0, 16.0, 22.0,
        1.0, 7.0, 13.0, 19.0, 3.0, 9.0, 15.0, 21.0, 5.0, 11.0, 17.0, 23.0}};
   CHECK(oriented_vars == expected_vars);
+
+  const std::vector<double> vars_vector(vars.data(), vars.data() + vars.size());
+  const std::vector<double> oriented_vars_vector =
+      orient_variables(vars_vector, extents, orientation_map);
+  const std::vector<double> expected_vars_vector(
+      expected_vars.data(), expected_vars.data() + expected_vars.size());
+  CHECK(oriented_vars_vector == expected_vars_vector);
 }
 
 // Test orient_variables using a general orientation.

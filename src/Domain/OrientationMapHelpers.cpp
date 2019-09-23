@@ -324,3 +324,38 @@ template void orient_each_component(
     const gsl::span<const std::complex<double>>& variables,
     const size_t num_pts, const std::vector<size_t>& oriented_offset) noexcept;
 }  // namespace OrientationMapHelpers_detail
+
+template <size_t VolumeDim>
+std::vector<double> orient_variables(
+    const std::vector<double>& variables, const Index<VolumeDim>& extents,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept {
+  // Skip work (aside from a copy) if neighbor is aligned
+  if (orientation_of_neighbor.is_aligned()) {
+    return variables;
+  }
+
+  const size_t number_of_grid_points = extents.product();
+  ASSERT(variables.size() % number_of_grid_points == 0,
+         "The size of the variables must be divisible by the number of grid "
+         "points. Number of grid points: "
+             << number_of_grid_points << " size: " << variables.size());
+  std::vector<double> oriented_variables(variables.size());
+  const auto oriented_offset = OrientationMapHelpers_detail::oriented_offset(
+      extents, orientation_of_neighbor);
+  auto oriented_vars_view = gsl::make_span(oriented_variables);
+  OrientationMapHelpers_detail::orient_each_component(
+      make_not_null(&oriented_vars_view), gsl::make_span(variables),
+      number_of_grid_points, oriented_offset);
+
+  return oriented_variables;
+}
+
+template std::vector<double> orient_variables<1>(
+    const std::vector<double>& variables, const Index<1>& extents,
+    const OrientationMap<1>& orientation_of_neighbor) noexcept;
+template std::vector<double> orient_variables<2>(
+    const std::vector<double>& variables, const Index<2>& extents,
+    const OrientationMap<2>& orientation_of_neighbor) noexcept;
+template std::vector<double> orient_variables<3>(
+    const std::vector<double>& variables, const Index<3>& extents,
+    const OrientationMap<3>& orientation_of_neighbor) noexcept;

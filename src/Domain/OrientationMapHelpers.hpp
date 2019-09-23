@@ -111,3 +111,19 @@ Variables<TagsList> orient_variables_on_slice(
   return oriented_variables;
 }
 // }@
+
+/// \ingroup ComputationalDomainGroup
+/// Orient data in a `std::vector<double>` representing one or more tensor
+/// components.
+///
+/// In most cases the `Variables` version of `orient_variables` should be
+/// called. However, in some cases the tags and thus the type of the data being
+/// sent is determined at runtime. In these cases the `std::vector` version of
+/// `orient_variables` is useful. A concrete example of this is when hybridizing
+/// DG with finite difference methods, where sometimes the data sent is both the
+/// variables for reconstruction and the fluxes for either the DG or finite
+/// difference scheme, while at other points only one of these three is sent.
+template <size_t VolumeDim>
+std::vector<double> orient_variables(
+    const std::vector<double>& variables, const Index<VolumeDim>& extents,
+    const OrientationMap<VolumeDim>& orientation_of_neighbor) noexcept;
