@@ -92,7 +92,7 @@ void vector_test_construct_and_assign(
   move_assignment_initialized = std::move(initializer_list_constructed_copy);
   CHECK(move_assignment_initialized.is_owning());
 
-  const VectorType move_constructed{std::move(move_assignment_initialized)};
+  VectorType move_constructed{std::move(move_assignment_initialized)};
   CHECK(move_constructed.is_owning());
   CHECK(move_constructed == pointer_size_constructed);
 
@@ -100,6 +100,14 @@ void vector_test_construct_and_assign(
   const VectorType copy_constructed{move_constructed};  // NOLINT
   CHECK(copy_constructed.is_owning());
   CHECK(copy_constructed == pointer_size_constructed);
+
+  // check the destructive resize utility
+  const VectorType destructive_resize_check_copy = move_constructed;
+  move_constructed.destructive_resize(move_constructed.size());
+  CHECK(move_constructed == destructive_resize_check_copy);
+  move_constructed.destructive_resize(move_constructed.size() + 1);
+  CHECK(move_constructed != destructive_resize_check_copy);
+  CHECK(move_constructed.size() == destructive_resize_check_copy.size() + 1);
 }
 
 /// \ingroup TestingFrameworkGroup
@@ -507,12 +515,13 @@ void test_function_on_vector_operands(
   const size_t size = size_distribution(generator);
   // using each distribution, generate a value for the appropriate operand type
   // and put it in a tuple.
-  auto operand_values = std::make_tuple(make_with_random_values<Operands>(
-      make_not_null(&generator),
-      UniformCustomDistribution<
-          tt::get_fundamental_type_t<get_vector_element_type_t<Operands>>>{
-          std::get<Is>(bounds)},
-      size)...);
+  std::tuple<std::decay_t<Operands>...> operand_values{
+      make_with_random_values<Operands>(
+          make_not_null(&generator),
+          UniformCustomDistribution<
+              tt::get_fundamental_type_t<get_vector_element_type_t<Operands>>>{
+              std::get<Is>(bounds)},
+          size)...};
   // wrap the tuple of random values according to the passed in `Wraps`
   auto wrapped_operands = wrap_tuple<Wraps...>(
       operand_values, std::make_index_sequence<sizeof...(Bounds)>{});

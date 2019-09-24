@@ -6,6 +6,7 @@
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ElementActions.hpp"
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/InitializeElement.hpp"
 #include "NumericalAlgorithms/LinearSolver/ConjugateGradient/ResidualMonitor.hpp"
+#include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace LinearSolver {
@@ -21,15 +22,13 @@ namespace LinearSolver {
  * of the `perform_step` action expects that \f$A(p)\f$ has been computed in a
  * preceding action and stored in the DataBox as
  * %db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
- * db::add_tag_prefix<LinearSolver::Tags::Operand, typename
- * Metavariables::system::fields_tag>>.
+ * db::add_tag_prefix<LinearSolver::Tags::Operand, FieldsTag>>.
  *
  * Note that the operand \f$p\f$ for which \f$A(p)\f$ needs to be computed is
  * not the field \f$x\f$ we are solving for but
- * `db::add_tag_prefix<LinearSolver::Tags::Operand, typename
- * Metavariables::system::fields_tag>`. This field is initially set to the
- * residual \f$r = b - A(x_0)\f$ where \f$x_0\f$ is the initial value of the
- * `Metavariables::system::fields_tag`.
+ * `db::add_tag_prefix<LinearSolver::Tags::Operand, FieldsTag>`. This field is
+ * initially set to the residual \f$r = b - A(x_0)\f$ where \f$x_0\f$ is the
+ * initial value of the `FieldsTag`.
  *
  * When the `perform_step` action is invoked after the operator action
  * \f$A(p)\f$ has been computed and stored in the DataBox, the conjugate
@@ -48,38 +47,39 @@ namespace LinearSolver {
  * new \f$r^2\f$.
  * 4. `UpdateResidual` (on `ResidualMonitor`): Store the new \f$r^2\f$ and
  * broadcast the ratio of the new and old \f$r^2\f$, as well as a termination
- * flag if the `LinearSolver::OptionTags::ConvergenceCriteria` are met.
+ * flag if the `LinearSolver::Tags::ConvergenceCriteria` are met.
  * 5. `UpdateOperand` (on elements): Update \f$p\f$.
  *
  * \see Gmres for a linear solver that can invert nonsymmetric operators
  * \f$A\f$.
  */
-template <typename Metavariables>
+template <typename Metavariables, typename FieldsTag>
 struct ConjugateGradient {
   /*!
    * \brief The parallel components used by the conjugate gradient linear solver
-   *
-   * Uses:
-   * - System:
-   *   * `fields_tag`
    */
-  using component_list = tmpl::list<cg_detail::ResidualMonitor<Metavariables>>;
+  using component_list =
+      tmpl::list<cg_detail::ResidualMonitor<Metavariables, FieldsTag>>;
 
   /*!
-   * \brief Initialize the tags used by the conjugate gradient linear solver
+   * \brief Initialize the tags used by the conjugate gradient linear solver.
    *
-   * Uses:
-   * - System:
-   *   * `fields_tag`
-   * - ConstGlobalCache: nothing
+   * Since we have not started iterating yet, we initialize the state _before_
+   * the first iteration. So `LinearSolver::Tags::IterationId` is undefined at
+   * this point and `Tags::Next<LinearSolver::Tags::IterationId>` is the initial
+   * step number. Invoke `prepare_step` to advance the state to the first
+   * iteration.
+   *
+   * \warning This action involves a blocking reduction, so it is a global
+   * synchronization point.
    *
    * With:
    * - `operand_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
+   * `db::add_tag_prefix<LinearSolver::Tags::Operand, FieldsTag>`
    * - `operator_tag` =
    * `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>`
    * - `residual_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>`
+   * `db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>`
    *
    * DataBox changes:
    * - Adds:
@@ -98,25 +98,38 @@ struct ConjugateGradient {
    * not need to be initialized until it is computed for the first time in the
    * first step of the algorithm.
    */
-  using tags = cg_detail::InitializeElement<Metavariables>;
+  using initialize_element = cg_detail::InitializeElement<FieldsTag>;
+
+  /*!
+   * \brief Reset the linear solver to its initial state.
+   *
+   * With:
+   * - `operand_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Operand, FieldsTag>`
+   * - `residual_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>`
+   *
+   * DataBox changes:
+   * - Adds: nothing
+   * - Removes: nothing
+   * - Modifies:
+   *   * `LinearSolver::Tags::IterationId`
+   *   * `residual_tag`
+   *   * `LinearSolver::Tags::HasConverged`
+   *   * `operand_tag`
+   *
+   * \see `initialize_element`
+   */
+  using reinitialize_element =
+      cg_detail::InitializeElement<FieldsTag,
+                                   ::Initialization::MergePolicy::Overwrite>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
       tmpl::list<observe_detail::reduction_data>>;
 
   /*!
-   * \brief Perform an iteration of the conjugate gradient linear solver
-   *
-   * Uses:
-   * - System:
-   *   * `fields_tag`
-   * - ConstGlobalCache: nothing
-   *
-   * With:
-   * - `operand_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
-   * - `residual_tag` =
-   * `db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>`
+   * \brief Advance the linear solver to the next iteration.
    *
    * DataBox changes:
    * - Adds: nothing
@@ -124,12 +137,31 @@ struct ConjugateGradient {
    * - Modifies:
    *   * `LinearSolver::Tags::IterationId`
    *   * `Tags::Next<LinearSolver::Tags::IterationId>`
-   *   * `fields_tag`
+   */
+  using prepare_step = cg_detail::PrepareStep;
+
+  /*!
+   * \brief Perform an iteration of the conjugate gradient linear solver.
+   *
+   * \warning This action involves a blocking reduction, so it is a global
+   * synchronization point.
+   *
+   * With:
+   * - `operand_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Operand, FieldsTag>`
+   * - `residual_tag` =
+   * `db::add_tag_prefix<LinearSolver::Tags::Residual, FieldsTag>`
+   *
+   * DataBox changes:
+   * - Adds: nothing
+   * - Removes: nothing
+   * - Modifies:
+   *   * `FieldsTag`
    *   * `operand_tag`
    *   * `residual_tag`
    *   * `LinearSolver::Tags::HasConverged`
    */
-  using perform_step = cg_detail::PerformStep;
+  using perform_step = cg_detail::PerformStep<FieldsTag>;
 };
 
 }  // namespace LinearSolver

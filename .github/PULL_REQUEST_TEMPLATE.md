@@ -8,6 +8,7 @@ At a high level, describe what this PR does.
 
 - [ ] Bugfix
 - [ ] New feature
+- [ ] Refactor
 
 ### Component:
 

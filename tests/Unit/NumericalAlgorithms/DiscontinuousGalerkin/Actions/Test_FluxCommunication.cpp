@@ -34,6 +34,7 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"
@@ -45,7 +46,6 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
@@ -131,7 +131,7 @@ template <size_t Dim, typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
 template <size_t Dim, typename Tag>
 using interface_compute_tag =
-    Tags::InterfaceComputeItem<Tags::InternalDirections<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::InternalDirections<Dim>, Tag>;
 
 template <typename FluxCommTypes>
 using mortar_data_tag = typename FluxCommTypes::simple_mortar_data_tag;
@@ -161,8 +161,7 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tag_list = tmpl::list<NumericalFluxTag<Dim>>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using const_global_cache_tags = tmpl::list<NumericalFluxTag<Dim>>;
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   using simple_tags =
@@ -177,7 +176,7 @@ struct component {
       Tags::InternalDirections<Dim>,
       interface_compute_tag<Dim, Tags::Direction<Dim>>,
       interface_compute_tag<Dim, Tags::InterfaceMesh<Dim>>,
-      interface_compute_tag<Dim, Tags::UnnormalizedFaceNormal<Dim>>,
+      interface_compute_tag<Dim, Tags::UnnormalizedFaceNormalCompute<Dim>>,
       interface_compute_tag<
           Dim, Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       interface_compute_tag<
@@ -199,7 +198,6 @@ struct Metavariables {
   using system = System<Dim>;
   using component_list = tmpl::list<component<Dim, Metavariables>>;
   using temporal_id = TemporalId;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag<Dim>;
   enum class Phase { Initialization, Testing, Exit };

@@ -10,7 +10,6 @@
 #include "Domain/ElementIndex.hpp"
 #include "Elliptic/Actions/ComputeOperatorAction.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -51,8 +50,6 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndexType;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<var_tag,
                         LinearSolver::Tags::OperatorAppliedTo<var_tag>>;
@@ -62,13 +59,12 @@ struct Component {
           tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
-          tmpl::list<Elliptic::Actions::ComputeOperatorAction>>>;
+          tmpl::list<elliptic::Actions::ComputeOperatorAction>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
   using system = System;
-  using const_global_cache_tag_list = tmpl::list<>;
   using temporal_id = TemporalId;
   enum class Phase { Initialization, Testing, Exit };
 };

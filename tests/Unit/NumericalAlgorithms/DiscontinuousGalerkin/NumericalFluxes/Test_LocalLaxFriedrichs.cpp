@@ -137,6 +137,13 @@ void test_llf_flux(const DataVector& used_for_size) noexcept {
       used_for_size);
 }
 
+template <size_t Dim>
+void test_conservation(const DataVector& used_for_size) noexcept {
+  TestHelpers::NumericalFluxes::test_conservation<Dim>(
+      dg::NumericalFluxes::LocalLaxFriedrichs<
+          TestHelpers::NumericalFluxes::System<Dim>>{},
+      used_for_size);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Fluxes.LocalLaxFriedrichs",
@@ -148,4 +155,5 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Fluxes.LocalLaxFriedrichs",
 
   GENERATE_UNINITIALIZED_DATAVECTOR;
   CHECK_FOR_DATAVECTORS(test_llf_flux, (1, 2, 3))
+  CHECK_FOR_DATAVECTORS(test_conservation, (1, 2, 3))
 }

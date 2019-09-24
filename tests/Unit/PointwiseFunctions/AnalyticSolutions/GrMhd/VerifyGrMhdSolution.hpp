@@ -15,6 +15,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Fluxes.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Sources.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
+#include "Evolution/TypeTraits.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
@@ -120,6 +121,8 @@ void verify_grmhd_solution(const Solution& solution,
                            const Mesh<3>& mesh, const double error_tolerance,
                            const double time,
                            const double delta_time) noexcept {
+  static_assert(evolution::is_analytic_solution_v<Solution>,
+                "Solution was not derived from AnalyticSolution");
   // Set up coordinates
   const auto x_logical = logical_coordinates(mesh);
   const auto x = block.coordinate_map()(x_logical);

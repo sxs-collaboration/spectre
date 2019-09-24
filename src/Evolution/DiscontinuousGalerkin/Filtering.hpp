@@ -20,6 +20,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/StaticCache.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -243,69 +244,22 @@ class ExponentialFilter<FilterIndex, tmpl::list<TagsToFilter...>> {
 
  private:
   const Matrix& filter_matrix(const Mesh<1>& mesh) const noexcept {
-    // All these switch gymnastics are to translate the runtime mesh values into
-    // compile time template parameters. This is used so we have a sparse lazy
-    // cache where we only cache matrices that we actually need for the meshes
-    // used in the simulation.
-    switch (mesh.basis(0)) {
-      case Spectral::Basis::Legendre:
-        switch (mesh.quadrature(0)) {
-          case Spectral::Quadrature::Gauss:
-            return filter_matrix_impl<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::Gauss>(
-                mesh,
-                std::make_index_sequence<Spectral::maximum_number_of_points<
-                    Spectral::Basis::Legendre>>{});
-          case Spectral::Quadrature::GaussLobatto:
-            return filter_matrix_impl<Spectral::Basis::Legendre,
-                                      Spectral::Quadrature::GaussLobatto>(
-                mesh,
-                std::make_index_sequence<Spectral::maximum_number_of_points<
-                    Spectral::Basis::Legendre>>{});
-          default:
-            ERROR("Missing quadrature in exponential filter matrix action.");
-        }
-      case Spectral::Basis::Chebyshev:
-        switch (mesh.quadrature(0)) {
-          case Spectral::Quadrature::Gauss:
-            return filter_matrix_impl<Spectral::Basis::Chebyshev,
-                                      Spectral::Quadrature::Gauss>(
-                mesh,
-                std::make_index_sequence<Spectral::maximum_number_of_points<
-                    Spectral::Basis::Chebyshev>>{});
-          case Spectral::Quadrature::GaussLobatto:
-            return filter_matrix_impl<Spectral::Basis::Chebyshev,
-                                      Spectral::Quadrature::GaussLobatto>(
-                mesh.slice_through(0),
-                std::make_index_sequence<Spectral::maximum_number_of_points<
-                    Spectral::Basis::Chebyshev>>{});
-          default:
-            ERROR("Missing quadrature in exponential filter matrix action.");
-        }
-      default:
-        ERROR("Missing basis in exponential filter matrix action.");
+    const auto cache_function = [this](
+        const size_t extents, const Spectral::Basis basis,
+        const Spectral::Quadrature quadrature) noexcept {
+      return Spectral::filtering::exponential_filter(
+          Mesh<1>{extents, basis, quadrature}, alpha_, half_power_);
     };
-  }
 
-  template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
-            size_t I>
-  static const Matrix& filter_matrix_cache(const Mesh<1>& mesh,
-                                           const double alpha,
-                                           const unsigned half_power) noexcept {
-    static Matrix matrix =
-        Spectral::filtering::exponential_filter(mesh, alpha, half_power);
-    return matrix;
-  }
-
-  template <Spectral::Basis BasisType, Spectral::Quadrature QuadratureType,
-            size_t... Is>
-  const Matrix& filter_matrix_impl(const Mesh<1>& mesh,
-                                   std::index_sequence<Is...> /*meta*/) const
-      noexcept {
-    static const std::array<const Matrix& (*)(const Mesh<1>&, double, unsigned),
-                            sizeof...(Is)>
-        cache{{&filter_matrix_cache<BasisType, QuadratureType, Is>...}};
-    return gsl::at(cache, mesh.extents(0))(mesh, alpha_, half_power_);
+    const static auto cache = make_static_cache<
+        CacheRange<
+            1,
+            Spectral::maximum_number_of_points<Spectral::Basis::Legendre> + 1>,
+        CacheEnumeration<Spectral::Basis, Spectral::Basis::Legendre,
+                         Spectral::Basis::Chebyshev>,
+        CacheEnumeration<Spectral::Quadrature, Spectral::Quadrature::Gauss,
+                         Spectral::Quadrature::GaussLobatto>>(cache_function);
+    return cache(mesh.extents(0), mesh.basis(0), mesh.quadrature(0));
   }
 
   double alpha_{36.0};

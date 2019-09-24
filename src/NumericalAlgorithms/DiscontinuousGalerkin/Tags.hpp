@@ -32,7 +32,9 @@ struct SimpleBoundaryData : db::SimpleTag {
 /// Data on mortars, indexed by (Direction, ElementId) pairs
 template <typename Tag, size_t VolumeDim>
 struct Mortars : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "Mortars"; }
+  static std::string name() noexcept {
+    return "Mortars(" + db::tag_name<Tag>() + ")";
+  }
   using tag = Tag;
   using Key = std::pair<::Direction<VolumeDim>, ::ElementId<VolumeDim>>;
   using type = std::unordered_map<Key, db::item_type<Tag>, boost::hash<Key>>;
@@ -61,7 +63,7 @@ struct NumericalFluxGroup {
 
 /*!
  * \ingroup OptionTagsGroup
- * \brief The global cache tag that retrieves the parameters for the numerical
+ * \brief The option tag that retrieves the parameters for the numerical
  * flux from the input file
  */
 template <typename NumericalFluxType>
@@ -74,3 +76,20 @@ struct NumericalFlux {
   using group = NumericalFluxGroup;
 };
 }  // namespace OptionTags
+
+namespace Tags {
+/*!
+ * \brief The global cache tag for the numerical flux
+ */
+template <typename NumericalFluxType>
+struct NumericalFlux : db::SimpleTag {
+  static std::string name() noexcept { return "NumericalFlux"; }
+  using type = NumericalFluxType;
+  using option_tags =
+      tmpl::list<::OptionTags::NumericalFlux<NumericalFluxType>>;
+  static NumericalFluxType create_from_options(
+      const NumericalFluxType& numerical_flux) noexcept {
+    return numerical_flux;
+  }
+};
+}  // namespace Tags

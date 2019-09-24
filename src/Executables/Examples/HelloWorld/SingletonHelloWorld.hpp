@@ -9,12 +9,14 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Printf.hpp"
+#include "Utilities/TMPL.hpp"
 /// [executable_example_includes]
 
 /// [executable_example_options]
@@ -24,6 +26,17 @@ struct Name {
   static constexpr OptionString help{"A name"};
 };
 }  // namespace OptionTags
+
+namespace Tags {
+struct Name : db::SimpleTag {
+  using type = std::string;
+  static std::string name() noexcept { return "Name"; }
+  using option_tags = tmpl::list<OptionTags::Name>;
+  static std::string create_from_options(const std::string& name) noexcept {
+    return name;
+  }
+};
+}  // namespace Tags
 /// [executable_example_options]
 
 /// [executable_example_action]
@@ -35,8 +48,8 @@ struct PrintMessage {
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/) {
     Parallel::printf("Hello %s from process %d on node %d!\n",
-                     Parallel::get<OptionTags::Name>(cache),
-                     Parallel::my_proc(), Parallel::my_node());
+                     Parallel::get<Tags::Name>(cache), Parallel::my_proc(),
+                     Parallel::my_node());
   }
 };
 }  // namespace Actions
@@ -45,16 +58,14 @@ struct PrintMessage {
 /// [executable_example_singleton]
 template <class Metavariables>
 struct HelloWorld {
-  using const_global_cache_tag_list = tmpl::list<OptionTags::Name>;
+  using const_global_cache_tags = tmpl::list<Tags::Name>;
   using chare_type = Parallel::Algorithms::Singleton;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Execute, tmpl::list<>>>;
-  using options = tmpl::list<>;
-  static void initialize(Parallel::CProxy_ConstGlobalCache<
-                         Metavariables>& /* global_cache */) noexcept {}
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept;
@@ -72,8 +83,6 @@ void HelloWorld<Metavariables>::execute_next_phase(
 
 /// [executable_example_metavariables]
 struct Metavars {
-  using const_global_cache_tag_list = tmpl::list<>;
-
   using component_list = tmpl::list<HelloWorld<Metavars>>;
 
   static constexpr OptionString help{

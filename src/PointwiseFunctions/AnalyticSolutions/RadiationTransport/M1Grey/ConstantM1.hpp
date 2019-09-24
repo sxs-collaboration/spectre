@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/MakeArray.hpp"            // IWYU pragma: keep
@@ -36,9 +37,8 @@ namespace Solutions {
  * (i.e. comoving, with an isotropic pressure P=J/3)
  *
  */
-class ConstantM1 {
+class ConstantM1 : public MarkAsAnalyticSolution {
  public:
-  using background_spacetime_type = gr::Solutions::Minkowski<3>;
 
   /// The mean flow velocity.
   struct MeanVelocity {

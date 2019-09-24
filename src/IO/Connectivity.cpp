@@ -10,7 +10,7 @@
 
 namespace vis {
 namespace detail {
-std::ostream& operator<<(std::ostream& os, const Topology& topology) {
+std::ostream& operator<<(std::ostream& os, const Topology& topology) noexcept {
   switch (topology) {
     case Topology::Line:
       return os << "Line";

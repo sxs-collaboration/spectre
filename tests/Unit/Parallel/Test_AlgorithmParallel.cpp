@@ -18,12 +18,12 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Printf.hpp"
 #include "Utilities/Gsl.hpp"
@@ -431,21 +431,18 @@ struct Initialize {
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::PerformSingletonAlgorithm,
                              tmpl::list<SingletonActions::CountReceives>>>;
-  using options = tmpl::list<>;
-
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      const Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+      const Parallel::CProxy_ConstGlobalCache<Metavariables>&
+          global_cache) noexcept {
     if (next_phase == Metavariables::Phase::PerformSingletonAlgorithm) {
       auto& local_cache = *(global_cache.ckLocalBranch());
       /// [perform_algorithm]
@@ -462,9 +459,7 @@ struct SingletonParallelComponent {
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Initialization,
@@ -474,11 +469,14 @@ struct ArrayParallelComponent {
           Metavariables::Phase::PerformArrayAlgorithm,
           tmpl::list<ArrayActions::AddIntValue10, ArrayActions::IncrementInt0,
                      ArrayActions::RemoveInt0, ArrayActions::SendToSingleton>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
   using array_index = int;
-  using options = tmpl::list<>;
 
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+  static void allocate_array(
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache,
+      const tuples::tagged_tuple_from_typelist<initialization_tags>&
+      /*initialization_items*/) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     auto& array_proxy =
         Parallel::get_parallel_component<ArrayParallelComponent>(local_cache);
@@ -494,7 +492,7 @@ struct ArrayParallelComponent {
 
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) {
+      Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
     auto& local_cache = *(global_cache.ckLocalBranch());
     if (next_phase == Metavariables::Phase::PerformArrayAlgorithm) {
       Parallel::get_parallel_component<ArrayParallelComponent>(local_cache)
@@ -507,40 +505,34 @@ struct ArrayParallelComponent {
 template <class Metavariables>
 struct GroupParallelComponent {
   using chare_type = Parallel::Algorithms::Group;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<GroupActions::Initialize, GroupActions::CheckComponentType>>>;
-  using options = tmpl::list<>;
-
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
+      Parallel::CProxy_ConstGlobalCache<
+          Metavariables>& /*global_cache*/) noexcept {}
 };
 
 template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list = tmpl::list<>;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<NodegroupActions::Initialize,
                  GroupActions::CheckComponentType>>>;
-  using options = tmpl::list<>;
-
-  static void initialize(
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 
   static void execute_next_phase(
       const typename Metavariables::Phase /*next_phase*/,
-      Parallel::CProxy_ConstGlobalCache<Metavariables>& /*global_cache*/) {}
+      Parallel::CProxy_ConstGlobalCache<
+          Metavariables>& /*global_cache*/) noexcept {}
 };
 
 struct TestMetavariables {
@@ -549,7 +541,6 @@ struct TestMetavariables {
                  ArrayParallelComponent<TestMetavariables>,
                  GroupParallelComponent<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   static constexpr const char* const help{"Test Algorithm in parallel"};
   static constexpr bool ignore_unrecognized_command_line_options = false;

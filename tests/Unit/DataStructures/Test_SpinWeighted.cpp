@@ -75,7 +75,7 @@ void test_spinweights() {
   UniformCustomDistribution<size_t> size_dist{5, 10};
   const size_t size = size_dist(gen);
 
-  const auto spin_weight_0 =
+  auto spin_weight_0 =
       make_with_random_values<SpinWeighted<SpinWeightedType, 0>>(
           make_not_null(&gen), make_not_null(&spin_weighted_dist), size);
   const auto spin_weight_1 =
@@ -157,6 +157,18 @@ void test_spinweights() {
         SpinWeighted<decltype(std::declval<SpinWeightedType>() /
                               std::declval<SpinWeightedType>()),
                      2>{no_spin_weight / spin_weight_m2.data()});
+  CHECK(-spin_weight_1 ==
+        SpinWeighted<SpinWeightedType, 1>(-spin_weight_1.data()));
+  CHECK(spin_weight_m2 ==
+        SpinWeighted<SpinWeightedType, -2>(spin_weight_m2.data()));
+
+  SpinWeighted<SpinWeightedType, 0> sum = spin_weight_0 + spin_weight_0;
+  spin_weight_0 += spin_weight_0;
+  CHECK(spin_weight_0 == sum);
+
+  SpinWeighted<SpinWeightedType, 0> difference = spin_weight_0 - no_spin_weight;
+  spin_weight_0 -= no_spin_weight;
+  CHECK(spin_weight_0 == difference);
 }
 
 using SpinWeightedTypePairs =
@@ -170,6 +182,28 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SpinWeighted",
     using type_pair = typename decltype(x)::type;
     test_spinweights<tmpl::front<type_pair>, tmpl::back<type_pair>>();
   });
+
+  SpinWeighted<ComplexDataVector, 1> size_created_spin_weight_1{5};
+  CHECK(size_created_spin_weight_1.data().size() == 5);
+  CHECK(size_created_spin_weight_1.size() == 5);
+
+  SpinWeighted<ComplexDataVector, -2> size_and_value_created_spin_weight_m2{
+      5, 4.0};
+  CHECK(size_and_value_created_spin_weight_m2.data() ==
+        ComplexDataVector{5, 4.0});
+  CHECK(size_and_value_created_spin_weight_m2.size() == 5);
+
+  // test destructive resize for vector type
+  SpinWeighted<ComplexDataVector, 2> destructive_resize_check{5, 4.0};
+  const SpinWeighted<ComplexDataVector, 2> destructive_resize_copy =
+      destructive_resize_check;
+  // check unchanged if no resize
+  destructive_resize_check.destructive_resize(5);
+  CHECK(destructive_resize_check == destructive_resize_copy);
+  // check resize occurs if appropriate
+  destructive_resize_check.destructive_resize(6);
+  CHECK(destructive_resize_check != destructive_resize_copy);
+  CHECK(destructive_resize_check.size() == destructive_resize_copy.size() + 1);
 }
 
 /// \cond HIDDEN_SYMBOLS

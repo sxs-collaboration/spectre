@@ -12,25 +12,9 @@
 #include "Evolution/Tags.hpp"
 #include "Options/Options.hpp"
 
+/// \cond
 class DataVector;
-
-namespace OptionTags {
-/// \ingroup OptionGroupsGroup
-/// Groups option tags related to the ValenciaDivClean evolution system.
-struct ValenciaDivCleanGroup {
-  static std::string name() noexcept { return "ValenciaDivClean"; }
-  static constexpr OptionString help{"Options for the evolution system"};
-  using group = EvolutionSystemGroup;
-};
-
-/// \brief The constraint damping parameter
-struct DampingParameter {
-  using type = double;
-  static constexpr OptionString help{
-      "Constraint damping parameter for divergence cleaning"};
-  using group = ValenciaDivCleanGroup;
-};
-}  // namespace OptionTags
+/// \endcond
 
 namespace grmhd {
 namespace ValenciaDivClean {
@@ -42,12 +26,6 @@ namespace Tags {
 struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, 9>;
   static std::string name() noexcept { return "CharacteristicSpeeds"; }
-};
-
-/// The constraint damping parameter for divergence cleaning
-struct ConstraintDampingParameter : db::SimpleTag {
-  using type = double;
-  static std::string name() noexcept { return "ConstraintDampingParameter"; }
 };
 
 /// The densitized rest-mass density \f${\tilde D}\f$
@@ -82,6 +60,38 @@ struct TildePhi : db::SimpleTag {
   static std::string name() noexcept { return "TildePhi"; }
 };
 
+}  // namespace Tags
+
+namespace OptionTags {
+/// \ingroup OptionGroupsGroup
+/// Groups option tags related to the ValenciaDivClean evolution system.
+struct ValenciaDivCleanGroup {
+  static std::string name() noexcept { return "ValenciaDivClean"; }
+  static constexpr OptionString help{"Options for the evolution system"};
+  using group = ::OptionTags::EvolutionSystemGroup;
+};
+
+/// \brief The constraint damping parameter
+struct DampingParameter {
+  static std::string name() noexcept { return "DampingParameter"; }
+  using type = double;
+  static constexpr OptionString help{
+      "Constraint damping parameter for divergence cleaning"};
+  using group = ValenciaDivCleanGroup;
+};
+}  // namespace OptionTags
+
+namespace Tags {
+/// The constraint damping parameter for divergence cleaning
+struct ConstraintDampingParameter : db::SimpleTag {
+  static std::string name() noexcept { return "ConstraintDampingParameter"; }
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::DampingParameter>;
+  static double create_from_options(
+      const double constraint_damping_parameter) noexcept {
+    return constraint_damping_parameter;
+  }
+};
 }  // namespace Tags
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

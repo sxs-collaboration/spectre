@@ -25,7 +25,7 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace cg_detail {
-template <typename Metavariables>
+template <typename Metavariables, typename FieldsTag>
 struct ResidualMonitor;
 }  // namespace cg_detail
 }  // namespace LinearSolver
@@ -34,43 +34,53 @@ struct ResidualMonitor;
 namespace LinearSolver {
 namespace cg_detail {
 
-struct InitializeHasConverged {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
+struct PrepareStep {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static void apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-                    const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    const db::item_type<LinearSolver::Tags::HasConverged>&
-                        has_converged) noexcept {
-    db::mutate<LinearSolver::Tags::HasConverged>(
-        make_not_null(&box), [&has_converged](
-                                 const gsl::not_null<db::item_type<
-                                     LinearSolver::Tags::HasConverged>*>
-                                     local_has_converged) noexcept {
-          *local_has_converged = has_converged;
-        });
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    db::mutate<LinearSolver::Tags::IterationId>(
+        make_not_null(&box),
+        [](const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
+               iteration_id,
+           const db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>&
+               next_iteration_id) noexcept {
+          *iteration_id = next_iteration_id;
+        },
+        get<::Tags::Next<LinearSolver::Tags::IterationId>>(box));
+    return {std::move(box)};
   }
 };
 
+template <typename FieldsTag>
 struct PerformStep {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static auto apply(db::DataBox<DbTagsList>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
+  static std::tuple<db::DataBox<DbTagsList>&&, bool> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index,
+      // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+      const ActionList /*meta*/,
+      // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
+      const ParallelComponent* const /*meta*/) noexcept {
+    using fields_tag = FieldsTag;
     using operand_tag =
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
     using operator_tag =
         db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
+
+    ASSERT(get<LinearSolver::Tags::IterationId>(box) !=
+               std::numeric_limits<size_t>::max(),
+           "Linear solve iteration ID is at initial state. Did you forget to "
+           "invoke 'PrepareStep'?");
 
     // At this point Ap must have been computed in a previous action
     // We compute the inner product <p,p> w.r.t A. This requires a global
@@ -78,39 +88,45 @@ struct PerformStep {
     const double local_conj_grad_inner_product =
         inner_product(get<operand_tag>(box), get<operator_tag>(box));
 
-    Parallel::contribute_to_reduction<ComputeAlpha<ParallelComponent>>(
+    Parallel::contribute_to_reduction<
+        ComputeAlpha<FieldsTag, ParallelComponent>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
             local_conj_grad_inner_product},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
-        Parallel::get_parallel_component<ResidualMonitor<Metavariables>>(
-            cache));
+        Parallel::get_parallel_component<
+            ResidualMonitor<Metavariables, FieldsTag>>(cache));
 
-    // Terminate algorithm for now. The reduction will be broadcast to the
-    // next action which is responsible for restarting the algorithm.
-    return std::tuple<db::DataBox<DbTagsList>&&, bool>(std::move(box), true);
+    // Terminate algorithm for now. The `ResidualMonitor` will receive the
+    // reduction that is performed above and then broadcast to the following
+    // action, which is responsible for restarting the algorithm.
+    return {std::move(box), true};
   }
 };
 
+template <typename FieldsTag>
 struct UpdateFieldValues {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-                    const Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    const double alpha) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
-    using operand_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-    using operator_tag =
-        db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
-    using residual_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
+ private:
+  using fields_tag = FieldsTag;
+  using operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+  using operator_tag =
+      db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, operand_tag>;
+  using residual_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
 
+ public:
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            typename DataBox = db::DataBox<DbTagsList>,
+            Requires<db::tag_is_retrievable_v<residual_tag, DataBox> and
+                     db::tag_is_retrievable_v<fields_tag, DataBox> and
+                     db::tag_is_retrievable_v<operand_tag, DataBox> and
+                     db::tag_is_retrievable_v<operator_tag, DataBox>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
+                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const ArrayIndex& array_index,
+                    const double alpha) noexcept {
     // Received global reduction result, proceed with conjugate gradient.
     db::mutate<residual_tag, fields_tag>(
         make_not_null(&box),
@@ -127,67 +143,55 @@ struct UpdateFieldValues {
     const auto& r = get<residual_tag>(box);
     const double local_residual_magnitude_square = inner_product(r, r);
 
-    Parallel::contribute_to_reduction<UpdateResidual<ParallelComponent>>(
+    Parallel::contribute_to_reduction<
+        UpdateResidual<FieldsTag, ParallelComponent>>(
         Parallel::ReductionData<
             Parallel::ReductionDatum<double, funcl::Plus<>>>{
             local_residual_magnitude_square},
         Parallel::get_parallel_component<ParallelComponent>(cache)[array_index],
-        Parallel::get_parallel_component<ResidualMonitor<Metavariables>>(
-            cache));
+        Parallel::get_parallel_component<
+            ResidualMonitor<Metavariables, FieldsTag>>(cache));
   }
 };
 
+template <typename FieldsTag>
 struct UpdateOperand {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+ private:
+  using fields_tag = FieldsTag;
+  using operand_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+  using residual_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
+
+ public:
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            typename DataBox = db::DataBox<DbTagsList>,
+            Requires<db::tag_is_retrievable_v<fields_tag, DataBox> and
+                     db::tag_is_retrievable_v<LinearSolver::Tags::HasConverged,
+                                              DataBox> and
+                     db::tag_is_retrievable_v<residual_tag, DataBox>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& array_index, const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
-                    const double res_ratio,
+                    const ArrayIndex& array_index, const double res_ratio,
                     const db::item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
-    using operand_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
-    using residual_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>;
-
-    // Prepare conjugate gradient for next iteration
-    db::mutate<operand_tag, LinearSolver::Tags::HasConverged,
-               LinearSolver::Tags::IterationId,
-               ::Tags::Next<LinearSolver::Tags::IterationId>>(
+    db::mutate<operand_tag, LinearSolver::Tags::HasConverged>(
         make_not_null(&box),
         [
           res_ratio, &has_converged
         ](const gsl::not_null<db::item_type<operand_tag>*> p,
           const gsl::not_null<db::item_type<LinearSolver::Tags::HasConverged>*>
               local_has_converged,
-          const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
-              iteration_id,
-          const gsl::not_null<
-              db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>*>
-              next_iteration_id,
           const db::item_type<residual_tag>& r) noexcept {
           *p = r + res_ratio * *p;
           *local_has_converged = has_converged;
-          (*iteration_id)++;
-          *next_iteration_id = *iteration_id + 1;
         },
         get<residual_tag>(box));
 
     // Proceed with algorithm
-    // We use `ckLocal()` here since this is essentially retrieving "self",
-    // which is guaranteed to be on the local processor. This ensures the calls
-    // are evaluated in order.
     Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
-        .ckLocal()
-        ->set_terminate(false);
-    Parallel::get_parallel_component<ParallelComponent>(cache)[array_index]
-        .perform_algorithm();
+        .perform_algorithm(true);
   }
 };
 

@@ -19,7 +19,7 @@ namespace amr {
 
 template <size_t VolumeDim>
 bool update_amr_decision(
-    gsl::not_null<std::array<amr::Flag, VolumeDim>*> my_current_amr_flags,
+    const gsl::not_null<std::array<amr::Flag, VolumeDim>*> my_current_amr_flags,
     const Element<VolumeDim>& element, const ElementId<VolumeDim>& neighbor_id,
     const std::array<amr::Flag, VolumeDim>& neighbor_amr_flags) noexcept {
   const auto& element_id = element.id();
@@ -105,11 +105,12 @@ bool update_amr_decision(
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template bool update_amr_decision(                                         \
-      gsl::not_null<std::array<amr::Flag, DIM(data)>*> my_current_amr_flags, \
-      const Element<DIM(data)>& element,                                     \
-      const ElementId<DIM(data)>& neighbor_id,                               \
+#define INSTANTIATE(_, data)                                 \
+  template bool update_amr_decision(                         \
+      const gsl::not_null<std::array<amr::Flag, DIM(data)>*> \
+          my_current_amr_flags,                              \
+      const Element<DIM(data)>& element,                     \
+      const ElementId<DIM(data)>& neighbor_id,               \
       const std::array<amr::Flag, DIM(data)>& neighbor_amr_flags) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))

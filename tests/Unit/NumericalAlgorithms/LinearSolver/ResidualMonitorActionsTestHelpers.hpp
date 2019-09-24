@@ -48,15 +48,14 @@ using observer_writer_tags =
                CheckReductionNamesTag, CheckReductionDataTag>;
 
 struct MockWriteReductionData {
-  template <typename... InboxTags, typename Metavariables, typename ActionList,
-            typename ParallelComponent, typename ArrayIndex,
-            typename... ReductionDatums>
-  static void apply(db::DataBox<observer_writer_tags>& box,  // NOLINT
-                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            typename... ReductionDatums,
+            Requires<tmpl::list_contains_v<DbTagsList, CheckObservationIdTag>> =
+                nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const gsl::not_null<CmiNodeLock*> /*node_lock*/,
                     const observers::ObservationId& observation_id,
                     const std::string& subfile_name,
@@ -88,10 +87,10 @@ struct MockObserverWriter {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Initialization,
+      tmpl::list<ActionTesting::InitializeDataBox<observer_writer_tags>>>>;
   using component_being_mocked = observers::ObserverWriter<Metavariables>;
-  using initial_databox = db::compute_databox_type<observer_writer_tags>;
 
   using replace_these_threaded_actions =
       tmpl::list<observers::ThreadedActions::WriteReductionData>;

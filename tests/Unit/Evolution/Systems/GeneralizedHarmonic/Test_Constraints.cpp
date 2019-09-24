@@ -118,24 +118,24 @@ void test_gauge_constraint_analytic(
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
   // Get ingredients for computing the gauge constraint
-  const auto& inverse_spatial_metric =
+  const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
-  const auto& inverse_spacetime_metric =
+  const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
-  const auto& gauge_function = GeneralizedHarmonic::gauge_source(
+  const auto gauge_function = GeneralizedHarmonic::gauge_source(
       lapse, dt_lapse, d_lapse, shift, dt_shift, d_shift, spatial_metric,
       trace(gr::extrinsic_curvature(lapse, shift, d_shift, spatial_metric,
                                     dt_spatial_metric, d_spatial_metric),
             inverse_spatial_metric),
       trace_last_indices(gr::christoffel_first_kind(d_spatial_metric),
                          inverse_spatial_metric));
-  const auto& phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
-                                             spatial_metric, d_spatial_metric);
-  const auto& pi = GeneralizedHarmonic::pi(
+  const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
+                                            spatial_metric, d_spatial_metric);
+  const auto pi = GeneralizedHarmonic::pi(
       lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
-  const auto& normal_one_form =
+  const auto normal_one_form =
       gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
-  const auto& normal_vector = gr::spacetime_normal_vector(lapse, shift);
+  const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Get the constraint, and check that it vanishes
   auto constraint =
@@ -229,16 +229,16 @@ void test_two_index_constraint_analytic(
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
   // Compute quantities from variables for the two-index constraint
-  const auto& inverse_spatial_metric =
+  const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
-  const auto& inverse_spacetime_metric =
+  const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
-  const auto& normal_one_form =
+  const auto normal_one_form =
       gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
-  const auto& normal_vector = gr::spacetime_normal_vector(lapse, shift);
+  const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Arbitrary choice for gamma2
-  const auto& gamma2 = make_with_value<Scalar<DataVector>>(x, 4.0);
+  const auto gamma2 = make_with_value<Scalar<DataVector>>(x, 4.0);
 
   // Compute derivatives d_psi, d_phi, d_pi, and d_gauge_function numerically
   Variables<VariablesTags> gh_vars(data_size);
@@ -274,7 +274,7 @@ void test_two_index_constraint_analytic(
       get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
 
   // Compute the three-index constraint
-  const auto& three_index_constraint =
+  const auto three_index_constraint =
       GeneralizedHarmonic::three_index_constraint(d_spacetime_metric, phi);
 
   // Get the constraint, and check that it vanishes to error_tolerance
@@ -399,8 +399,8 @@ void test_f_constraint_random(const DataType& used_for_size) noexcept {
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &GeneralizedHarmonic::f_constraint<SpatialDim, Frame, DataType>),
       "TestFunctions", "f_constraint", {{{-10.0, 10.0}}}, used_for_size,
-      1.0e-10);  // Loosen tolerance to avoid occasional failures of this test
-                 // (suspected accumulated roundoff error)
+      1.0e-9);  // Loosen tolerance to avoid occasional failures of this test
+                // (suspected accumulated roundoff error)
 }
 
 // Test the return-by-reference F constraint
@@ -458,16 +458,16 @@ void test_f_constraint_analytic(const Solution& solution,
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
   // Compute quantities from variables for the two-index constraint
-  const auto& inverse_spatial_metric =
+  const auto inverse_spatial_metric =
       determinant_and_inverse(spatial_metric).second;
-  const auto& inverse_spacetime_metric =
+  const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
-  const auto& normal_one_form =
+  const auto normal_one_form =
       gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
-  const auto& normal_vector = gr::spacetime_normal_vector(lapse, shift);
+  const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Arbitrary choice for gamma2
-  const auto& gamma2 = make_with_value<Scalar<DataVector>>(x, 4.0);
+  const auto gamma2 = make_with_value<Scalar<DataVector>>(x, 4.0);
 
   // Compute derivatives d_psi, d_phi, d_pi, and d_gauge_function numerically
   Variables<VariablesTags> gh_vars(data_size);
@@ -503,7 +503,7 @@ void test_f_constraint_analytic(const Solution& solution,
       get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
 
   // Compute the three-index constraint
-  const auto& three_index_constraint =
+  const auto three_index_constraint =
       GeneralizedHarmonic::three_index_constraint(d_spacetime_metric, phi);
 
   // Get the constraint, and check that it vanishes to error_tolerance
@@ -596,17 +596,17 @@ void test_constraint_energy_analytic(const Solution& solution,
   const auto& dt_spatial_metric =
       get<Tags::dt<gr::Tags::SpatialMetric<3>>>(vars);
 
-  const auto& determinant_and_inverse_spatial_metric =
+  const auto determinant_and_inverse_spatial_metric =
       determinant_and_inverse(spatial_metric);
   const auto& determinant_spatial_metric =
       determinant_and_inverse_spatial_metric.first;
   const auto& inverse_spatial_metric =
       determinant_and_inverse_spatial_metric.second;
-  const auto& inverse_spacetime_metric =
+  const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
-  const auto& normal_one_form =
+  const auto normal_one_form =
       gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
-  const auto& normal_vector = gr::spacetime_normal_vector(lapse, shift);
+  const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Compute derivative d_phi numerically
   Variables<VariablesTags> gh_vars(data_size);
@@ -642,21 +642,21 @@ void test_constraint_energy_analytic(const Solution& solution,
       get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
 
   // Arbitrary choice for gamma2
-  const auto& gamma2 = make_with_value<Scalar<DataVector>>(x, 4.0);
+  const auto gamma2 = make_with_value<Scalar<DataVector>>(x, 4.0);
 
   // Get the constraints
-  const auto& gauge_constraint = GeneralizedHarmonic::gauge_constraint(
+  const auto gauge_constraint = GeneralizedHarmonic::gauge_constraint(
       gauge_function, normal_one_form, normal_vector, inverse_spatial_metric,
       inverse_spacetime_metric, pi, phi);
-  const auto& three_index_constraint =
+  const auto three_index_constraint =
       GeneralizedHarmonic::three_index_constraint(d_spacetime_metric, phi);
-  const auto& four_index_constraint =
+  const auto four_index_constraint =
       GeneralizedHarmonic::four_index_constraint(d_phi);
-  const auto& two_index_constraint = GeneralizedHarmonic::two_index_constraint(
+  const auto two_index_constraint = GeneralizedHarmonic::two_index_constraint(
       d_gauge_function, normal_one_form, normal_vector, inverse_spatial_metric,
       inverse_spacetime_metric, pi, phi, d_pi, d_phi, gamma2,
       three_index_constraint);
-  const auto& f_constraint = GeneralizedHarmonic::f_constraint(
+  const auto f_constraint = GeneralizedHarmonic::f_constraint(
       gauge_function, d_gauge_function, normal_one_form, normal_vector,
       inverse_spatial_metric, inverse_spacetime_metric, pi, phi, d_pi, d_phi,
       gamma2, three_index_constraint);
@@ -748,9 +748,9 @@ void test_constraint_compute_items(
       gr::spacetime_normal_vector(lapse, shift);
   const auto spacetime_normal_one_form =
       gr::spacetime_normal_one_form<3, Frame::Inertial, DataVector>(lapse);
-  const auto inverse_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
-  const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
+  const auto det_and_inv = determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inv.first;
+  const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
 

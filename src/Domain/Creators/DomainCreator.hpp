@@ -106,7 +106,7 @@ class DomainCreator {
 
   virtual Domain<VolumeDim, TargetFrame> create_domain() const = 0;
 
-  /// Obtain the initial grid extents of the block with the given index.
+  /// Obtain the initial grid extents of the Element%s in each block.
   virtual std::vector<std::array<size_t, VolumeDim>> initial_extents() const
       noexcept = 0;
 

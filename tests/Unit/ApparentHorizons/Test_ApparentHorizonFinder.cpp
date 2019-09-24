@@ -13,6 +13,7 @@
 #include "ApparentHorizons/ComputeItems.hpp"  // IWYU pragma: keep
 #include "ApparentHorizons/FastFlow.hpp"
 #include "ApparentHorizons/Strahlkorper.hpp"
+#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
@@ -43,7 +44,6 @@
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrHorizon.hpp"
@@ -54,7 +54,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -92,6 +92,7 @@ namespace {
 // Counter to ensure that this function is called
 size_t test_schwarzschild_horizon_called = 0;
 struct TestSchwarzschildHorizon {
+  using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -106,6 +107,17 @@ struct TestSchwarzschildHorizon {
     Approx custom_approx = Approx::custom().epsilon(1.e-2).scale(1.0);
     CHECK_ITERABLE_CUSTOM_APPROX(horizon_radius, expected_radius,
                                  custom_approx);
+
+    // Test that InverseSpatialMetric can be retrieved from the
+    // DataBox and that its number of grid points is the same
+    // as that of the strahlkorper.
+    const auto& strahlkorper =
+        get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
+    const auto& inv_metric =
+        get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(box);
+    CHECK(strahlkorper.ylm_spherepack().physical_size() ==
+          get<0,0>(inv_metric).size());
+
     ++test_schwarzschild_horizon_called;
   }
 };
@@ -113,6 +125,7 @@ struct TestSchwarzschildHorizon {
 // Counter to ensure that this function is called
 size_t test_kerr_horizon_called = 0;
 struct TestKerrHorizon {
+  using observation_types = tmpl::list<>;
   template <typename DbTags, typename Metavariables>
   static void apply(const db::DataBox<DbTags>& box,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -132,6 +145,15 @@ struct TestKerrHorizon {
     Approx custom_approx = Approx::custom().epsilon(1.e-3).scale(1.0);
     CHECK_ITERABLE_CUSTOM_APPROX(horizon_radius, get(expected_radius),
                                  custom_approx);
+
+    // Test that InverseSpatialMetric can be retrieved from the
+    // DataBox and that its number of grid points is the same
+    // as that of the strahlkorper.
+    const auto& inv_metric =
+        get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(box);
+    CHECK(strahlkorper.ylm_spherepack().physical_size() ==
+          get<0,0>(inv_metric).size());
+
     ++test_kerr_horizon_called;
   }
 };
@@ -141,16 +163,14 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
-      tmpl::list<typename InterpolationTargetTag::compute_target_points,
-                 typename InterpolationTargetTag::post_interpolation_callback>>;
+  using const_global_cache_tags =
+      Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
+          typename InterpolationTargetTag::compute_target_points,
+          typename InterpolationTargetTag::post_interpolation_callback>>;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>>>>;
-  using add_options_to_databox =
-      typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
+          Metavariables, InterpolationTargetTag>>>>;
 
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
@@ -161,8 +181,6 @@ struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
       typename Metavariables::Phase, Metavariables::Phase::Initialization,
       tmpl::list<intrp::Actions::InitializeInterpolator>>>;
@@ -187,21 +205,19 @@ struct MockMetavariables {
     using post_interpolation_callback =
         intrp::callbacks::FindApparentHorizon<AhA>;
     using post_horizon_find_callback = PostHorizonFindCallback;
-    // This `type` is so this tag can be used to read options.
-    using type = typename compute_target_points::options_type;
   };
   using interpolator_source_vars =
       tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
                  GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
                  GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>;
   using interpolation_target_tags = tmpl::list<AhA>;
-  using temporal_id  = ::Tags::TimeId;
-  using domain_frame = Frame::Inertial;
-  static constexpr size_t domain_dim = 3;
+  using temporal_id  = ::Tags::TimeStepId;
+  static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<mock_interpolation_target<MockMetavariables, AhA>,
                  mock_interpolator<MockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::Domain<3, Frame::Inertial>>;
 
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
@@ -227,11 +243,6 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       Strahlkorper<Frame::Inertial>{l_max, 2.8, {{0.0, 0.0, 0.0}}}, FastFlow{},
       Verbosity::Verbose);
 
-  tuples::TaggedTuple<typename metavars::AhA> tuple_of_opts(
-      std::move(apparent_horizon_opts));
-
-  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
-
   // The test finds an apparent horizon for a Schwarzschild or Kerr
   // metric with M=1.  We choose a spherical shell domain extending
   // from radius 1.9M to 2.9M; this ensures the horizon is
@@ -242,20 +253,27 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
       1.9, 2.9, 1, {{grid_points_each_dimension, grid_points_each_dimension}},
       false);
 
+  tuples::TaggedTuple<::Tags::Domain<3, Frame::Inertial>,
+                      typename ::intrp::Tags::ApparentHorizon<
+                          typename metavars::AhA, Frame::Inertial>>
+      tuple_of_opts{std::move(domain_creator.create_domain()),
+                    std::move(apparent_horizon_opts)};
+
+  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
+
   runner.set_phase(metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_component>(&runner, 0);
   ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   runner.set_phase(metavars::Phase::Registration);
 
   Slab slab(0.0, 1.0);
-  TimeId temporal_id(true, 0, Time(slab, 0));
-  const auto domain = domain_creator.create_domain();
+  TimeStepId temporal_id(true, 0, Time(slab, 0));
 
   // Create element_ids.
   std::vector<ElementId<3>> element_ids{};
+  Domain<3, Frame::Inertial> domain = domain_creator.create_domain();
   for (const auto& block : domain.blocks()) {
     const auto initial_ref_levs =
         domain_creator.initial_refinement_levels()[block.id()];
@@ -277,7 +295,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
   ActionTesting::simple_action<
       target_component, intrp::Actions::AddTemporalIdsToInterpolationTarget<
                             typename metavars::AhA>>(
-      make_not_null(&runner), 0, std::vector<TimeId>{temporal_id});
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {

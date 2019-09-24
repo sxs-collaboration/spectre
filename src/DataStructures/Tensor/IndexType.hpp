@@ -25,7 +25,7 @@ enum class UpLo {
 };
 
 /// \cond HIDDEN_SYMBOLS
-inline std::ostream& operator<<(std::ostream& os, const UpLo& ul) {
+inline std::ostream& operator<<(std::ostream& os, const UpLo& ul) noexcept {
   return os << (ul == UpLo::Up ? "Up"s : "Lo"s);
 }
 /// \endcond
@@ -73,22 +73,23 @@ constexpr bool is_frame_physical_v = is_frame_physical<CheckFrame>::value;
 
 /// \cond HIDDEN_SYMBOLS
 inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::Logical& /*meta*/) {
+                                const Frame::Logical& /*meta*/) noexcept {
   return os << "Logical";
 }
-inline std::ostream& operator<<(std::ostream& os, const Frame::Grid& /*meta*/) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const Frame::Grid& /*meta*/) noexcept {
   return os << "Grid";
 }
 inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::Inertial& /*meta*/) {
+                                const Frame::Inertial& /*meta*/) noexcept {
   return os << "Inertial";
 }
 inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::Distorted& /*meta*/) {
+                                const Frame::Distorted& /*meta*/) noexcept {
   return os << "Distorted";
 }
 inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::NoFrame& /*meta*/) {
+                                const Frame::NoFrame& /*meta*/) noexcept {
   return os << "NoFrame";
 }
 /// \endcond
@@ -138,7 +139,8 @@ enum class IndexType : char {
 };
 
 /// \cond HIDDEN_SYMBOLS
-inline std::ostream& operator<<(std::ostream& os, const IndexType& index_type) {
+inline std::ostream& operator<<(std::ostream& os,
+                                const IndexType& index_type) noexcept {
   return os << (index_type == IndexType::Spatial ? "Spatial" : "Spacetime");
 }
 /// \endcond

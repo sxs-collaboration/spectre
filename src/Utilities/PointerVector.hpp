@@ -85,6 +85,196 @@ template <typename T>
 const bool blaze_is_numeric_v = blaze_is_numeric<T>;
 #endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 
+#if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 2))
+// The code to the corresponding endif has the following license applied to it
+// since it is a modification of the Blaze v3.3 code.
+//
+//  Copyright (C) 2012-2018 Klaus Iglberger - All Rights Reserved
+//
+//  This file is part of the Blaze library. You can redistribute it and/or
+//  modify it under the terms of the New (Revised) BSD License. Redistribution
+//  and use in source and binary forms, with or without modification, are
+//  permitted provided that the following conditions are met:
+//
+//  1. Redistributions of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//  2. Redistributions in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//  3. Neither the names of the Blaze development group nor the names of its
+//     contributors may be used to endorse or promote products derived from this
+//     software without specific prior written permission.
+//
+//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+//  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+//  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+//  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+//  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+//  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+//  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+//  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+//  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+//  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+//  POSSIBILITY OF SUCH DAMAGE.
+namespace blaze {
+template <typename T>
+BLAZE_ALWAYS_INLINE constexpr EnableIf_<Or<IsBuiltin<T>, IsComplex<T>>, T>
+evaluate(const T& a) noexcept {
+  return a;
+}
+
+template <typename T>
+BLAZE_ALWAYS_INLINE constexpr decltype(auto) pow2(const T& a) noexcept(
+    noexcept(a * a)) {
+  return (a * a);
+}
+
+struct Pow2 {
+  explicit inline Pow2() noexcept = default;
+  template <typename T>
+  BLAZE_ALWAYS_INLINE constexpr decltype(auto) operator()(const T& a) const
+      noexcept {
+    return pow2(a);
+  }
+
+  template <typename T>
+  static constexpr bool simdEnabled() {
+    return HasSIMDMult<T, T>::value;
+  }
+
+  template <typename T>
+  BLAZE_ALWAYS_INLINE decltype(auto) load(const T& a) const {
+    BLAZE_CONSTRAINT_MUST_BE_SIMD_PACK(T);
+    return pow2(a);
+  }
+};
+
+template <typename VT, typename Abs, typename Power>
+struct DVecNormHelper {
+  using CT = RemoveReference_<CompositeType_<VT>>;
+
+  // NOLINTNEXTLINE
+  BLAZE_CREATE_HAS_DATA_OR_FUNCTION_MEMBER_TYPE_TRAIT(HasSIMDEnabled,
+                                                      simdEnabled);
+  // NOLINTNEXTLINE
+  BLAZE_CREATE_HAS_DATA_OR_FUNCTION_MEMBER_TYPE_TRAIT(HasLoad, load);
+
+  struct UseSIMDEnabledFlag {
+    enum : bool {
+      value = Power::BLAZE_TEMPLATE simdEnabled<ElementType_<VT>>()
+    };
+  };
+
+  enum : bool {
+    value = useOptimizedKernels && CT::simdEnabled &&
+            If_<And<HasSIMDEnabled<Abs>, HasSIMDEnabled<Power>>,
+                UseSIMDEnabledFlag, And<HasLoad<Abs>, HasLoad<Power>>>::value &&
+            HasSIMDAdd<ElementType_<CT>, ElementType_<CT>>::value
+  };
+};
+
+template <typename VT, bool TF, typename Abs, typename Power, typename Root>
+inline decltype(auto) norm_backend(const DenseVector<VT, TF>& dv, Abs abs,
+                                   Power power, Root root,
+                                   FalseType /*meta*/) noexcept {
+  using CT = CompositeType_<VT>;
+  using ET = ElementType_<VT>;
+  using RT = decltype(evaluate(root(std::declval<ET>())));
+
+  if ((~dv).size() == 0UL) {
+    return RT();
+  }
+
+  CT tmp(~dv);
+
+  const size_t N(tmp.size());
+
+  ET norm(power(abs(tmp[0UL])));
+  size_t i(1UL);
+
+  for (; (i + 4UL) <= N; i += 4UL) {
+    norm += power(abs(tmp[i])) + power(abs(tmp[i + 1UL])) +
+            power(abs(tmp[i + 2UL])) + power(abs(tmp[i + 3UL]));
+  }
+  for (; (i + 2UL) <= N; i += 2UL) {
+    norm += power(abs(tmp[i])) + power(abs(tmp[i + 1UL]));
+  }
+  for (; i < N; ++i) {
+    norm += power(abs(tmp[i]));
+  }
+
+  return evaluate(root(norm));
+}
+
+template <typename VT, bool TF, typename Abs, typename Power, typename Root>
+inline decltype(auto) norm_backend(const DenseVector<VT, TF>& dv, Abs abs,
+                                   Power power, Root root,
+                                   TrueType /*meta*/) noexcept {
+  using CT = CompositeType_<VT>;
+  using ET = ElementType_<VT>;
+  using RT = decltype(evaluate(root(std::declval<ET>())));
+
+  enum : size_t { SIMDSIZE = SIMDTrait<ET>::size };
+
+  if ((~dv).size() == 0UL) {
+    return RT();
+  }
+
+  CT tmp(~dv);
+
+  const size_t N(tmp.size());
+
+  constexpr bool remainder(!usePadding || !IsPadded<VT>::value);
+
+  const size_t ipos((remainder) ? (N & size_t(-SIMDSIZE)) : (N));
+  BLAZE_INTERNAL_ASSERT(!remainder || (N - (N % SIMDSIZE)) == ipos,
+                        "Invalid end calculation");
+
+  SIMDTrait_<ET> xmm1, xmm2, xmm3, xmm4;
+  size_t i(0UL);
+
+  for (; (i + SIMDSIZE * 3UL) < ipos; i += SIMDSIZE * 4UL) {
+    xmm1 += power(abs(tmp.load(i)));
+    xmm2 += power(abs(tmp.load(i + SIMDSIZE)));
+    xmm3 += power(abs(tmp.load(i + SIMDSIZE * 2UL)));
+    xmm4 += power(abs(tmp.load(i + SIMDSIZE * 3UL)));
+  }
+  for (; (i + SIMDSIZE) < ipos; i += SIMDSIZE * 2UL) {
+    xmm1 += power(abs(tmp.load(i)));
+    xmm2 += power(abs(tmp.load(i + SIMDSIZE)));
+  }
+  for (; i < ipos; i += SIMDSIZE) {
+    xmm1 += power(abs(tmp.load(i)));
+  }
+
+  ET norm(sum(xmm1 + xmm2 + xmm3 + xmm4));
+
+  for (; remainder && i < N; ++i) {
+    norm += power(abs(tmp[i]));
+  }
+
+  return evaluate(root(norm));
+}
+
+template <typename VT, bool TF, typename Abs, typename Power, typename Root>
+decltype(auto) norm_backend(const DenseVector<VT, TF>& dv, Abs abs, Power power,
+                            Root root) {
+  return norm_backend(~dv, abs, power, root,
+                      Bool<DVecNormHelper<VT, Abs, Power>::value>());
+}
+
+template <typename VT, bool TF>
+decltype(auto) l1Norm(const DenseVector<VT, TF>& dv) noexcept {
+  return norm_backend(~dv, Abs(), Noop(), Noop());
+}
+
+template <typename VT, bool TF>
+inline decltype(auto) l2Norm(const DenseVector<VT, TF>& dv) noexcept {
+  return norm_backend(~dv, Noop(), Pow2(), Sqrt());
+}
+}  // namespace blaze
+#endif  // ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 2))
+
 namespace blaze {
 template <typename T>
 BLAZE_ALWAYS_INLINE SIMDdouble step_function(const SIMDf64<T>& v) noexcept
@@ -1400,6 +1590,43 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::divAssign(
   }
 }
 /// \endcond
+
+#define CHECK_FOR_SIZE_ZERO(SCALAR_TYPE)                                       \
+  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
+  inline bool operator==(                                                      \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& a,                \
+      const SCALAR_TYPE& b) noexcept {                                         \
+    ASSERT(a.size() != 0,                                                      \
+           "Comparing an empty vector to a value usually indicates a bug, "    \
+           "and so is disallowed.");                                           \
+    return static_cast<const typename PointerVector<                           \
+               Type, AF, PF, TF, ExprResultType>::BaseType&>(a) == b;          \
+  }                                                                            \
+                                                                               \
+  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
+  inline bool operator==(                                                      \
+      const SCALAR_TYPE& a,                                                    \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& b) noexcept {     \
+    return b == a;                                                             \
+  }                                                                            \
+                                                                               \
+  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
+  inline bool operator!=(                                                      \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& a,                \
+      const SCALAR_TYPE& b) noexcept {                                         \
+    return not(a == b);                                                        \
+  }                                                                            \
+                                                                               \
+  template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType> \
+  inline bool operator!=(                                                      \
+      const SCALAR_TYPE& a,                                                    \
+      const PointerVector<Type, AF, PF, TF, ExprResultType>& b) noexcept {     \
+    return not(a == b);                                                        \
+  }
+
+CHECK_FOR_SIZE_ZERO(double)
+CHECK_FOR_SIZE_ZERO(std::complex<double>)
+#undef CHECK_FOR_SIZE_ZERO
 
 // There is a bug either in Blaze or in vector intrinsics implementation in GCC
 // that results in _mm_set1_epi64 not being callable with an `unsigned long`.

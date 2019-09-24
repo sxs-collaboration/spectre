@@ -24,8 +24,11 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace cg_detail {
+template <typename FieldsTag>
 struct InitializeHasConverged;
+template <typename FieldsTag>
 struct UpdateFieldValues;
+template <typename FieldsTag>
 struct UpdateOperand;
 }  // namespace cg_detail
 }  // namespace LinearSolver
@@ -34,34 +37,38 @@ struct UpdateOperand;
 namespace LinearSolver {
 namespace cg_detail {
 
-template <typename BroadcastTarget>
+template <typename FieldsTag, typename BroadcastTarget>
 struct InitializeResidual {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+ private:
+  using fields_tag = FieldsTag;
+  using residual_square_tag = db::add_tag_prefix<
+      LinearSolver::Tags::MagnitudeSquare,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+  using residual_magnitude_tag = db::add_tag_prefix<
+      LinearSolver::Tags::Magnitude,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+  using initial_residual_magnitude_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
+
+ public:
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            typename DataBox = db::DataBox<DbTagsList>,
+            Requires<db::tag_is_retrievable_v<residual_square_tag, DataBox>> =
+                nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const double residual_square) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
-    using residual_square_tag = db::add_tag_prefix<
-        LinearSolver::Tags::MagnitudeSquare,
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-    using residual_magnitude_tag = db::add_tag_prefix<
-        LinearSolver::Tags::Magnitude,
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-    using initial_residual_magnitude_tag =
-        db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
-
-    db::mutate<residual_square_tag>(
+    db::mutate<LinearSolver::Tags::IterationId, residual_square_tag>(
         make_not_null(&box), [residual_square](
+                                 const gsl::not_null<size_t*> iteration_id,
                                  const gsl::not_null<double*>
                                      local_residual_square) noexcept {
           *local_residual_square = residual_square;
+          // Also setting the LinearSolver::Tags::IterationId so
+          // re-initialization works:
+          *iteration_id = 0;
         });
     // Perform a separate `db::mutate` so that we can retrieve the
     // `residual_magnitude_tag` from the compute item
@@ -73,71 +80,72 @@ struct InitializeResidual {
         },
         get<residual_magnitude_tag>(box));
 
-    LinearSolver::observe_detail::contribute_to_reduction_observer(box, cache);
+    LinearSolver::observe_detail::contribute_to_reduction_observer<FieldsTag>(
+        box, cache);
 
     // Determine whether the linear solver has converged. This invokes the
     // compute item.
     const auto& has_converged = db::get<LinearSolver::Tags::HasConverged>(box);
 
     if (UNLIKELY(has_converged and
-                 static_cast<int>(get<LinearSolver::OptionTags::Verbosity>(
-                     cache)) >= static_cast<int>(::Verbosity::Quiet))) {
+                 static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+                     static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf(
           "The linear solver has converged without any iterations: %s\n",
           has_converged);
     }
 
-    Parallel::simple_action<InitializeHasConverged>(
+    Parallel::simple_action<InitializeHasConverged<FieldsTag>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
         has_converged);
   }
 };
 
-template <typename BroadcastTarget>
+template <typename FieldsTag, typename BroadcastTarget>
 struct ComputeAlpha {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+ private:
+  using fields_tag = FieldsTag;
+  using residual_square_tag = db::add_tag_prefix<
+      LinearSolver::Tags::MagnitudeSquare,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+
+ public:
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            typename DataBox = db::DataBox<DbTagsList>,
+            Requires<db::tag_is_retrievable_v<residual_square_tag, DataBox>> =
+                nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const double conj_grad_inner_product) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
-    using residual_square_tag = db::add_tag_prefix<
-        LinearSolver::Tags::MagnitudeSquare,
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-
-    Parallel::simple_action<UpdateFieldValues>(
+    Parallel::simple_action<UpdateFieldValues<FieldsTag>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
         get<residual_square_tag>(box) / conj_grad_inner_product);
   }
 };
 
-template <typename BroadcastTarget>
+template <typename FieldsTag, typename BroadcastTarget>
 struct UpdateResidual {
-  template <typename... DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<sizeof...(DbTags) != 0> = nullptr>
-  static auto apply(db::DataBox<tmpl::list<DbTags...>>& box,
-                    tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+ private:
+  using fields_tag = FieldsTag;
+  using residual_square_tag = db::add_tag_prefix<
+      LinearSolver::Tags::MagnitudeSquare,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+  using residual_magnitude_tag = db::add_tag_prefix<
+      LinearSolver::Tags::Magnitude,
+      db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
+
+ public:
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            typename DataBox = db::DataBox<DbTagsList>,
+            Requires<db::tag_is_retrievable_v<residual_square_tag, DataBox>> =
+                nullptr>
+  static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
-                    const ActionList /*meta*/,
-                    const ParallelComponent* const /*meta*/,
                     const double residual_square) noexcept {
-    using fields_tag = typename Metavariables::system::fields_tag;
-    using residual_square_tag = db::add_tag_prefix<
-        LinearSolver::Tags::MagnitudeSquare,
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-    using residual_magnitude_tag = db::add_tag_prefix<
-        LinearSolver::Tags::Magnitude,
-        db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;
-
     // Compute the residual ratio before mutating the DataBox
     const double res_ratio = residual_square / get<residual_square_tag>(box);
 
@@ -156,29 +164,30 @@ struct UpdateResidual {
     // logging and checking convergence before broadcasting back to the
     // elements.
 
-    LinearSolver::observe_detail::contribute_to_reduction_observer(box, cache);
+    LinearSolver::observe_detail::contribute_to_reduction_observer<FieldsTag>(
+        box, cache);
 
     // Determine whether the linear solver has converged. This invokes the
     // compute item.
     const auto& has_converged = get<LinearSolver::Tags::HasConverged>(box);
 
     // Do some logging
-    if (UNLIKELY(static_cast<int>(get<LinearSolver::OptionTags::Verbosity>(
-                     cache)) >= static_cast<int>(::Verbosity::Verbose))) {
+    if (UNLIKELY(static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+                 static_cast<int>(::Verbosity::Verbose))) {
       Parallel::printf(
           "Linear solver iteration %zu done. Remaining residual: %e\n",
           get<LinearSolver::Tags::IterationId>(box),
           get<residual_magnitude_tag>(box));
     }
     if (UNLIKELY(has_converged and
-                 static_cast<int>(get<LinearSolver::OptionTags::Verbosity>(
-                     cache)) >= static_cast<int>(::Verbosity::Quiet))) {
+                 static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+                     static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf(
           "The linear solver has converged in %zu iterations: %s\n",
           get<LinearSolver::Tags::IterationId>(box), has_converged);
     }
 
-    Parallel::simple_action<UpdateOperand>(
+    Parallel::simple_action<UpdateOperand<FieldsTag>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache), res_ratio,
         has_converged);
   }

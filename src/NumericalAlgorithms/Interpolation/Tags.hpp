@@ -23,6 +23,17 @@ class ElementId;
 
 namespace intrp {
 
+
+namespace OptionTags {
+/*!
+ * \ingroup OptionGroupsGroup
+ * \brief Groups option tags for InterpolationTargets.
+ */
+struct InterpolationTargets {
+  static constexpr OptionString help{"Options for interpolation targets"};
+};
+}  // namespace OptionTags
+
 /// Tags for items held in the `DataBox` of `InterpolationTarget` or
 /// `Interpolator`.
 namespace Tags {
@@ -30,6 +41,17 @@ namespace Tags {
 /// Keeps track of which points have been filled with interpolated data.
 struct IndicesOfFilledInterpPoints : db::SimpleTag {
   static std::string name() noexcept { return "IndicesOfFilledInterpPoints"; }
+  using type = std::unordered_set<size_t>;
+};
+
+/// Keeps track of points that cannot be filled with interpolated data.
+///
+/// The InterpolationTarget can decide what to do with these points.
+/// In most cases the correct action is to throw an error, but in other
+/// cases one might wish to fill these points with a default value or
+/// take some other action.
+struct IndicesOfInvalidInterpPoints : db::SimpleTag {
+  static std::string name() noexcept { return "IndicesOfInvalidInterpPoints"; }
   using type = std::unordered_set<size_t>;
 };
 
@@ -53,7 +75,7 @@ struct CompletedTemporalIds : db::SimpleTag {
 template <typename Metavariables>
 struct VolumeVarsInfo : db::SimpleTag {
   struct Info {
-    Mesh<Metavariables::domain_dim> mesh;
+    Mesh<Metavariables::volume_dim> mesh;
     Variables<typename Metavariables::interpolator_source_vars> vars;
 
     void pup(PUP::er& p) noexcept {  // NOLINT
@@ -63,7 +85,7 @@ struct VolumeVarsInfo : db::SimpleTag {
   };
   using type = std::unordered_map<
       typename Metavariables::temporal_id::type,
-      std::unordered_map<ElementId<Metavariables::domain_dim>, Info>>;
+      std::unordered_map<ElementId<Metavariables::volume_dim>, Info>>;
   static std::string name() noexcept { return "VolumeVarsInfo"; }
 };
 

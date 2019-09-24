@@ -20,7 +20,9 @@
 #include <ostream>
 #include <stack>
 #include <string>
-namespace PUP { class er; }
+namespace PUP {
+class er;
+}  // namespace PUP
 
 namespace tuples {
 
@@ -115,9 +117,8 @@ constexpr char expand_pack(Ts&&... /*unused*/) noexcept {
 }  // namespace tuples_detail
 
 namespace tuples_detail {
-template <class Tag,
-          bool Ebo = std::is_empty<typename Tag::type>::value &&
-                     !__is_final(typename Tag::type)>
+template <class Tag, bool Ebo = std::is_empty<typename Tag::type>::value &&
+                                !__is_final(typename Tag::type)>
 class TaggedTupleLeaf;
 
 template <class T, bool B>
@@ -272,8 +273,7 @@ template <class... Tags>
 class TaggedTuple;
 
 template <class Tag, class... Tags>
-constexpr const typename Tag::type& get(
-    const TaggedTuple<Tags...>& t) noexcept;
+constexpr const typename Tag::type& get(const TaggedTuple<Tags...>& t) noexcept;
 template <class Tag, class... Tags>
 constexpr typename Tag::type& get(TaggedTuple<Tags...>& t) noexcept;
 template <class Tag, class... Tags>
@@ -347,6 +347,8 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
       TaggedTuple<LTags...>&& t) noexcept;
 
  public:
+  using tags_list = tmpl::list<Tags...>;
+
   static constexpr size_t size() noexcept { return sizeof...(Tags); }
 
   // clang-tidy: runtime-references
@@ -356,9 +358,8 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
   }
 
   // C++17 Draft 23.5.3.1 Construction
-  template <bool Dummy = true,
-            typename std::enable_if<
-                args_constructor<Dummy>::enable_default()>::type* = nullptr>
+  template <bool Dummy = true, typename std::enable_if<args_constructor<
+                                   Dummy>::enable_default()>::type* = nullptr>
   // clang-tidy: use = default, can't because won't compile
   constexpr TaggedTuple() noexcept(  // NOLINT
       tuples_detail::all<std::is_nothrow_default_constructible<
@@ -494,6 +495,7 @@ class TaggedTuple : private tuples_detail::TaggedTupleLeaf<Tags>... {  // NOLINT
 template <>
 class TaggedTuple<> {
  public:
+  using tags_list = tmpl::list<>;
   static constexpr size_t size() noexcept { return 0; }
   TaggedTuple() noexcept = default;
   void swap(TaggedTuple& /*unused*/) noexcept {}
@@ -713,14 +715,45 @@ template <typename T>
 using tagged_tuple_from_typelist =
     typename TaggedTuple_detail::tagged_tuple_typelist_impl<T>::type;
 
+namespace TaggedTuple_detail {
+template <typename... InputTags, typename... OutputTags>
+TaggedTuple<OutputTags...> reorder_impl(
+    TaggedTuple<InputTags...>&& input,
+    tmpl::list<OutputTags...> /*meta*/) noexcept {
+  static_assert(
+      cpp17::is_same_v<tmpl::list_difference<tmpl::list<OutputTags...>,
+                                             tmpl::list<InputTags...>>,
+                       tmpl::list<>> and
+          cpp17::is_same_v<tmpl::list_difference<tmpl::list<InputTags...>,
+                                                 tmpl::list<OutputTags...>>,
+                           tmpl::list<>>,
+      "The input and output TaggedTuples must be the same except"
+      "for ordering.");
+  return TaggedTuple<OutputTags...>(std::move(get<OutputTags>(input))...);
+}
+}  // namespace TaggedTuple_detail
+
+/// Given an input TaggedTuple, produce an output TaggedTuple
+/// with the tags in a different order.  All tags must be the same
+/// except for ordering.
+/// \example
+/// \snippet Test_TaggedTuple.cpp reorder_example
+template <typename ReturnedTaggedTuple, typename... Tags>
+ReturnedTaggedTuple reorder(TaggedTuple<Tags...> input) noexcept {
+  return TaggedTuple_detail::reorder_impl(
+      std::move(input), typename ReturnedTaggedTuple::tags_list{});
+}
+
 /// Stream operator for TaggedTuple
 template <class... Tags>
-std::ostream& operator<<(std::ostream& os, const TaggedTuple<Tags...>& t) {
+std::ostream& operator<<(std::ostream& os,
+                         const TaggedTuple<Tags...>& t) noexcept {
   os << "(";
   size_t current_value = 0;
   auto helper = make_overloader(
       [&current_value, &os](const auto& element,
                             const std::integral_constant<bool, true> /*meta*/) {
+        using ::operator<<;
         os << element;
         current_value++;
         if (current_value < sizeof...(Tags)) {

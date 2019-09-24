@@ -28,17 +28,17 @@ void test_spherical_harmonic_collocation() noexcept {
   const size_t l_max = sdist(gen);
 
   CAPTURE(l_max);
-  const Collocation<Representation>& precomputed_collocation_value =
-      precomputed_collocation<Representation>(l_max);
+  const CollocationMetadata<Representation>& precomputed_collocation_value =
+      cached_collocation_metadata<Representation>(l_max);
 
-  const Collocation<Representation>& another_precomputed_collocation =
-      precomputed_collocation<Representation>(l_max);
+  const CollocationMetadata<Representation>& another_precomputed_collocation =
+      cached_collocation_metadata<Representation>(l_max);
 
   // checks that the same pointer is in both
   CHECK(precomputed_collocation_value.get_sharp_geom_info() ==
         another_precomputed_collocation.get_sharp_geom_info());
 
-  const Collocation<Representation> computed_collocation{l_max};
+  const CollocationMetadata<Representation> computed_collocation{l_max};
 
   CHECK(precomputed_collocation_value.l_max() == l_max);
   CHECK(computed_collocation.l_max() == l_max);
@@ -125,24 +125,24 @@ void test_spherical_harmonic_collocation() noexcept {
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.SwshCollocation",
                   "[Unit][NumericalAlgorithms]") {
   {
-    INFO("Collocation based on contiguous complex data (Interleaved)");
+    INFO("CollocationMetadata based on contiguous complex data (Interleaved)");
     test_spherical_harmonic_collocation<ComplexRepresentation::Interleaved>();
   }
   {
     INFO(
-        "Collocation based on a pair of contiguous blocks representing complex "
-        "data (RealsThenImags)");
+        "CollocationMetadata based on a pair of contiguous blocks representing "
+        "complex data (RealsThenImags)");
     test_spherical_harmonic_collocation<
         ComplexRepresentation::RealsThenImags>();
   }
 }
 
-// [[OutputRegex, is not below the maximum l_max]]
+// [[OutputRegex, Index out of range]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.NumericalAlgorithms.Spectral.SwshCollocation.PrecomputationOverrun",
     "[Unit][NumericalAlgorithms]") {
   ERROR_TEST();
-  precomputed_collocation<ComplexRepresentation::RealsThenImags>(
+  cached_collocation_metadata<ComplexRepresentation::RealsThenImags>(
       collocation_maximum_l_max + 1);
   ERROR("Failed to trigger ERROR in an error test");
 }

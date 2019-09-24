@@ -19,14 +19,15 @@ FunctionOfTimeUpdater<DerivOrder>::FunctionOfTimeUpdater(
 
 template <size_t DerivOrder>
 void FunctionOfTimeUpdater<DerivOrder>::measure(
-    double time, const DataVector& raw_q) noexcept {
+    const double time, const DataVector& raw_q) noexcept {
   averager_.update(time, raw_q, timescale_tuner_.current_timescale());
 }
 
 template <size_t DerivOrder>
 void FunctionOfTimeUpdater<DerivOrder>::modify(
-    gsl::not_null<FunctionsOfTime::PiecewisePolynomial<DerivOrder>*> f_of_t,
-    double time) noexcept {
+    const gsl::not_null<FunctionsOfTime::PiecewisePolynomial<DerivOrder>*>
+        f_of_t,
+    const double time) noexcept {
   if (averager_(time)) {
     std::array<DataVector, DerivOrder + 1> q_and_derivs = averager_(time).get();
     // get the time offset due to averaging

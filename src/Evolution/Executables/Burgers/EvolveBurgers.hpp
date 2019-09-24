@@ -11,17 +11,13 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Actions/ComputeVolumeFluxes.hpp"    // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"
-#include "Evolution/DiscontinuousGalerkin/ObserveErrorNorms.hpp"
-#include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/LimiterActions.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Minmod.hpp"
-#include "Evolution/DiscontinuousGalerkin/SlopeLimiters/Tags.hpp"
-#include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
-#include "Evolution/EventsAndTriggers/Event.hpp"
-#include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
-#include "Evolution/EventsAndTriggers/Tags.hpp"
-#include "Evolution/Systems/Burgers/Equations.hpp"  // IWYU pragma: keep // for LocalLaxFriedrichsFlux
+#include "Evolution/DiscontinuousGalerkin/Limiters/LimiterActions.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/Tags.hpp"
+#include "Evolution/Initialization/ConservativeSystem.hpp"
+#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
+#include "Evolution/Initialization/Evolution.hpp"
+#include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/Burgers/System.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -31,11 +27,23 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/DiscontinuousGalerkin/NumericalFluxes/LocalLaxFriedrichs.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
+#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
+#include "ParallelAlgorithms/Events/ObserveFields.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Burgers/Step.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
@@ -66,16 +74,16 @@ class CProxy_ConstGlobalCache;
 /// \endcond
 
 struct EvolutionMetavars {
+  static constexpr size_t volume_dim = 1;
   using system = Burgers::System;
-  using temporal_id = Tags::TimeId;
+  using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
-  using analytic_solution_tag =
-      OptionTags::AnalyticSolution<Burgers::Solutions::Step>;
-  using boundary_condition_tag = analytic_solution_tag;
+  using initial_data_tag = Tags::AnalyticSolution<Burgers::Solutions::Step>;
+  using boundary_condition_tag = initial_data_tag;
   using normal_dot_numerical_flux =
-      OptionTags::NumericalFlux<Burgers::LocalLaxFriedrichsFlux>;
-  using limiter = OptionTags::SlopeLimiter<
-      SlopeLimiters::Minmod<1, system::variables_tag::tags_list>>;
+      Tags::NumericalFlux<dg::NumericalFluxes::LocalLaxFriedrichs<system>>;
+  using limiter =
+      Tags::Limiter<Limiters::Minmod<1, system::variables_tag::tags_list>>;
 
   // public for use by the Charm++ registration code
   using events =
@@ -86,12 +94,11 @@ struct EvolutionMetavars {
                      1, db::get_variables_tags_list<system::variables_tag>>>;
   using triggers = Triggers::time_triggers;
 
-  using const_global_cache_tag_list =
-      tmpl::list<analytic_solution_tag,
-                 OptionTags::TypedTimeStepper<tmpl::conditional_t<
+  using const_global_cache_tags =
+      tmpl::list<initial_data_tag,
+                 Tags::TimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
-                 OptionTags::EventsAndTriggers<events, triggers>>;
-  using domain_creator_tag = OptionTags::DomainCreator<1, Frame::Inertial>;
+                 Tags::EventsAndTriggers<events, triggers>>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
@@ -117,8 +124,8 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      Actions::UpdateU, SlopeLimiters::Actions::SendData<EvolutionMetavars>,
-      SlopeLimiters::Actions::Limit<EvolutionMetavars>>>;
+      Actions::UpdateU, Limiters::Actions::SendData<EvolutionMetavars>,
+      Limiters::Actions::Limit<EvolutionMetavars>>>;
 
   enum class Phase {
     Initialization,
@@ -128,20 +135,35 @@ struct EvolutionMetavars {
     Exit
   };
 
+  using initialization_actions = tmpl::list<
+      dg::Actions::InitializeDomain<1>,
+      Initialization::Actions::ConservativeSystem,
+      dg::Actions::InitializeInterfaces<
+          system,
+          dg::Initialization::slice_tags_to_face<
+              typename system::variables_tag>,
+          dg::Initialization::slice_tags_to_exterior<>>,
+      Initialization::Actions::Evolution<EvolutionMetavars>,
+      dg::Actions::InitializeMortars<EvolutionMetavars>,
+      Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
+      Initialization::Actions::Minmod<1>,
+      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
           EvolutionMetavars,
           tmpl::list<
-              Parallel::PhaseActions<
-                  Phase, Phase::Initialization,
-                  tmpl::list<dg::Actions::InitializeElement<1>>>,
+              Parallel::PhaseActions<Phase, Phase::Initialization,
+                                     initialization_actions>,
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
-                      observers::RegisterObservers<element_observation_type>>>>,
+                                 observers::RegisterObservers<
+                                     element_observation_type>>,
+                             Parallel::Actions::TerminatePhase>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
@@ -151,12 +173,11 @@ struct EvolutionMetavars {
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
                   tmpl::flatten<tmpl::list<
-                      Actions::AdvanceTime, Actions::RunEventsAndTriggers,
+                      Actions::RunEventsAndTriggers,
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables>>>>,
-          typename dg::Actions::InitializeElement<1>::AddOptionsToDataBox>>;
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
 
   static constexpr OptionString help{
       "Evolve the Burgers equation.\n\n"

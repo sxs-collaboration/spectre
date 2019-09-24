@@ -15,22 +15,23 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Serialize.hpp"
 #include "Time/BoundaryHistory.hpp"
 #include "Time/History.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"        // IWYU pragma: keep
 #include "Time/StepControllers/StepController.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Tags {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Tag for ::TimeId for the algorithm state
-struct TimeId : db::SimpleTag {
-  static std::string name() noexcept { return "TimeId"; }
-  using type = ::TimeId;
+/// \brief Tag for ::TimeStepId for the algorithm state
+struct TimeStepId : db::SimpleTag {
+  static std::string name() noexcept { return "TimeStepId"; }
+  using type = ::TimeStepId;
   template <typename Tag>
   using step_prefix = typename Tags::dt<Tag>;
 };
@@ -45,11 +46,22 @@ struct TimeStep : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Tag for compute item for current ::Time (from TimeId)
-struct Time : db::ComputeTag {
+/// \brief Tag for compute item for ::Time of the current substep (from
+/// TimeStepId)
+struct SubstepTime : db::ComputeTag {
+  static std::string name() noexcept { return "SubstepTime"; }
+  static auto function(const ::TimeStepId& id) noexcept {
+    return id.substep_time();
+  }
+  using argument_tags = tmpl::list<TimeStepId>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup TimeGroup
+/// \brief Tag for the current time as a double
+struct Time : db::SimpleTag {
   static std::string name() noexcept { return "Time"; }
-  static auto function(const ::TimeId& id) noexcept { return id.time(); }
-  using argument_tags = tmpl::list<TimeId>;
+  using type = double;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -81,15 +93,8 @@ namespace OptionTags {
 
 /// \ingroup OptionTagsGroup
 /// \ingroup TimeGroup
-/// \brief The ::TimeStepper
-struct TimeStepper {};
-
-/// \ingroup OptionTagsGroup
-/// \ingroup TimeGroup
-/// \brief The ::TimeStepper, specifying a (base) type.  Can be
-/// retrieved through OptionTags::TimeStepper.
 template <typename StepperType>
-struct TypedTimeStepper : TimeStepper {
+struct TimeStepper {
   static std::string name() noexcept { return "TimeStepper"; }
   static constexpr OptionString help{"The time stepper"};
   using type = std::unique_ptr<StepperType>;
@@ -146,3 +151,45 @@ struct InitialSlabSize {
   using group = EvolutionGroup;
 };
 }  // namespace OptionTags
+
+namespace Tags {
+/// \ingroup TimeGroup
+/// \brief The ::TimeStepper
+struct TimeStepperBase : db::BaseTag {};
+
+/// \ingroup TimeGroup
+/// \brief The ::TimeStepper, specifying a (base) type.  Can be
+/// retrieved through Tags::TimeStepper.
+template <typename StepperType>
+struct TimeStepper : TimeStepperBase, db::SimpleTag {
+  static std::string name() noexcept { return "TimeStepper"; }
+  using type = std::unique_ptr<StepperType>;
+  using option_tags = tmpl::list<::OptionTags::TimeStepper<StepperType>>;
+  static std::unique_ptr<StepperType> create_from_options(
+      const std::unique_ptr<StepperType>& time_stepper) noexcept {
+    return deserialize<type>(serialize<type>(time_stepper).data());
+  }
+};
+
+/// \ingroup TimeGroup
+template <typename Registrars>
+struct StepChoosers : db::SimpleTag {
+  static std::string name() noexcept { return "StepChoosers"; }
+  using type = std::vector<std::unique_ptr<::StepChooser<Registrars>>>;
+  using option_tags = tmpl::list<::OptionTags::StepChoosers<Registrars>>;
+  static type create_from_options(const type& step_choosers) noexcept {
+    return deserialize<type>(serialize<type>(step_choosers).data());
+  }
+};
+
+/// \ingroup TimeGroup
+struct StepController : db::SimpleTag {
+  static std::string name() noexcept { return "StepController"; }
+  using type = std::unique_ptr<::StepController>;
+  using option_tags = tmpl::list<::OptionTags::StepController>;
+  static std::unique_ptr<::StepController> create_from_options(
+      const std::unique_ptr<::StepController>& step_controller) noexcept {
+    return deserialize<type>(serialize<type>(step_controller).data());
+  }
+};
+}  // namespace Tags

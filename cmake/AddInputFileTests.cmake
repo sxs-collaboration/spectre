@@ -98,12 +98,24 @@ function(add_input_file_tests INPUT_FILE_DIR)
     set(INPUT_FILE_CHECKS "parse;${INPUT_FILE_CHECKS}")
     list(REMOVE_DUPLICATES "INPUT_FILE_CHECKS")
 
+    # Read the timeout duration specified in input file, empty is accepted.
+    # The default duration is 2 seconds.
+    string(REGEX MATCH "#[ ]*Timeout:[^\n]+"
+      INPUT_FILE_TIMEOUT "${INPUT_FILE_CONTENTS}")
+    if("${INPUT_FILE_TIMEOUT}" STREQUAL "")
+      set(INPUT_FILE_TIMEOUT "${TIMEOUT}")
+    else()
+      string(REGEX REPLACE "#[ ]*Timeout:[ ]*" ""
+        INPUT_FILE_TIMEOUT "${INPUT_FILE_TIMEOUT}")
+      string(STRIP "${INPUT_FILE_TIMEOUT}" INPUT_FILE_TIMEOUT)
+    endif()
+
     foreach(CHECK_TYPE ${INPUT_FILE_CHECKS})
       add_single_input_file_test(
         ${INPUT_FILE}
         ${INPUT_FILE_EXECUTABLE}
         ${CHECK_TYPE}
-        ${TIMEOUT}
+        ${INPUT_FILE_TIMEOUT}
         )
     endforeach()
     add_dependencies(test-executables ${INPUT_FILE_EXECUTABLE})

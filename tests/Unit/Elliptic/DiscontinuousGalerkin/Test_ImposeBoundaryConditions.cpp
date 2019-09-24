@@ -28,6 +28,7 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
@@ -37,7 +38,6 @@
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -131,21 +131,21 @@ template <typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
 template <typename Tag>
 using interface_compute_tag =
-    Tags::InterfaceComputeItem<Tags::InternalDirections<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::InternalDirections<Dim>, Tag>;
 
 template <typename Tag>
 using boundary_tag =
     Tags::Interface<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
 template <typename Tag>
 using boundary_compute_tag =
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
 
 template <typename Tag>
 using exterior_boundary_tag =
     Tags::Interface<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
 template <typename Tag>
 using exterior_boundary_compute_tag =
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
 
 template <typename FluxCommTypes>
 using mortar_data_tag = typename FluxCommTypes::simple_mortar_data_tag;
@@ -183,8 +183,7 @@ struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tag_list = tmpl::list<NumericalFluxTag>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using const_global_cache_tags = tmpl::list<NumericalFluxTag>;
 
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
   using simple_tags = db::AddSimpleTags<
@@ -200,7 +199,7 @@ struct ElementArray {
       Tags::BoundaryDirectionsInterior<Dim>,
       boundary_compute_tag<Tags::Direction<Dim>>,
       boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
-      boundary_compute_tag<Tags::UnnormalizedFaceNormal<Dim>>,
+      boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,
       boundary_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       boundary_compute_tag<
@@ -209,7 +208,7 @@ struct ElementArray {
       exterior_boundary_compute_tag<Tags::Direction<Dim>>,
       exterior_boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
       exterior_boundary_compute_tag<Tags::BoundaryCoordinates<Dim>>,
-      exterior_boundary_compute_tag<Tags::UnnormalizedFaceNormal<Dim>>,
+      exterior_boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,
       exterior_boundary_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       exterior_boundary_compute_tag<
@@ -223,7 +222,7 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
-              Elliptic::dg::Actions::
+              elliptic::dg::Actions::
                   ImposeHomogeneousDirichletBoundaryConditions<Metavariables>,
               dg::Actions::ReceiveDataForFluxes<Metavariables>>>>;
 };
@@ -232,7 +231,6 @@ struct Metavariables {
   using system = System;
   using component_list = tmpl::list<ElementArray<Metavariables>>;
   using temporal_id = TemporalId;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag;
   enum class Phase { Initialization, Testing, Exit };

@@ -25,7 +25,7 @@ Here is an overview of what is described in detail in the sections below:
   simulated.
 - \ref dev_guide_parallelization_phases_of_execution "Phases": Defines distinct
   simulation phases separated by a global synchronization point,
-  e.g. `%Initialization`, `Evolve` and `Exit`.
+  e.g. `Initialization`, `Evolve` and `Exit`.
 - \ref dev_guide_parallelization_core_algorithm "Algorithm": In each phase,
   repeatedly iterates over a list of actions until the current phase ends.
 - \ref dev_guide_parallelization_parallel_components "Parallel component":
@@ -55,9 +55,10 @@ specify the following:
   `DgElementArray` parallel component listed. An example of a `component_list`
   for one of the test executables is:
   \snippet Test_AlgorithmCore.cpp component_list_example
-- `using const_global_cache_tag_list`: a (possibly empty) `tmpl::list` of
-  OptionTags that are needed by the metavariables.
-- `Phase`: an `enum class` that must contain at least `%Initialization` and
+- `using const_global_cache_tags`: a `tmpl::list` of tags that are
+  used to place items in the ConstGlobalCache.  The alias may be
+  omitted if the list is empty.
+- `Phase`: an `enum class` that must contain at least `Initialization` and
   `Exit`. Phases are described in the next section.
 - `determine_next_phase`: a static function with the signature
   \code
@@ -90,7 +91,7 @@ phases, where after each phase a global synchronization occurs. By global
 synchronization we mean that no parallel components are executing or have more
 tasks to execute: everything is waiting to be told what tasks to perform next.
 
-Every executable must have at least two phases, `%Initialization` and
+Every executable must have at least two phases, `Initialization` and
 `Exit`. The next phase is decided by the static member function
 `determine_next_phase` in the metavariables. Currently this function has access
 to the phase that is
@@ -100,13 +101,19 @@ making. Here is an example of a `determine_next_phase` function and the `Phase`
 enum class:
 \snippet Test_AlgorithmCore.cpp determine_next_phase_example
 
-In contrast, an evolution executable might have phases `%Initialization`,
-`SetInitialData`, `Evolve`, and `Exit`, but have a similar `switch` or `if-else`
-logic in the `determine_next_phase` function. The first phase that is entered is
-always `%Initialization`. During the `%Initialization` phase the `initialize`
-function is called on all parallel components. Once all parallel components'
-`initialize` function is complete, the next phase is determined and the
-`execute_next_phase` function is called after on all the parallel components.
+In contrast, an evolution executable might have phases
+`Initialization`, `SetInitialData`, `Evolve`, and `Exit`, but have a
+similar `switch` or `if-else` logic in the `determine_next_phase`
+function. The first phase that is entered is always
+`Initialization`. During the `Initialization` phase the
+`Parallel::ConstGlobalCache` is created, all non-array components are created,
+and empty array components are created.  Next, the function
+`allocate_array_components_and_execute_initialization_phase` is called
+which allocates the elements of each array component, and then starts
+the `Initialization` phase on all parallel components. Once all
+parallel components' `Initialization` phase is complete, the next
+phase is determined and the `execute_next_phase` function is called on
+all the parallel components.
 
 At the end of an execution the `Exit` phase has the executable wait to make sure
 no parallel components are performing or need to perform any more tasks, and
@@ -165,39 +172,41 @@ Each %Parallel Component struct must have the following type aliases:
    Component struct have a template parameter `Metavariables` that is the
    global metavariables struct. Examples of this technique are given below.
 3. `using phase_dependent_action_list` is set to a `tmpl::list` of
-   `Parallel::PhaseActions<PhaseType, Phase, tmpl::list<Actions...>>` where each
-   `PhaseAction` represents a PDAL that will be executed on the parallel
-   component during the specified phase. The  %Actions are executed in the order
-   that they are given in the `tmpl::list`s of the PDALs, but the phases need
-   not be run in linear order. However, `DataBox` types are constructed assuming
-   the phases are performed from first in the `phase_dependent_action_list` to
-   the last. Simple actions (described below) can be executed in any phase. If
-   there are no iterable actions in a phase then a `PhaseAction` need not be
-   specified for that phase. However, at least one `PhaseAction`, even it if is
-   empty, must be specified.
-4. `using options` is set to a (possibly empty) `tmpl::list` of the option
-   structs. The options are read in from the input file specified in the main
-   `Metavariables` struct. After being read in they are passed to the
-   `initialize` function of the parallel component, which is described below.
-   These options are typically only used during initialization.
-5. `using add_options_to_databox` is set to a struct that contains a static
-   `apply` function taking arguments `(db::DataBox<DbTagsList>&&, options...)`
-   where the `options...` are the arguments read from the input file using the
-   `options` type alias. Typically the `add_options_to_databox` will insert the
-   options into the `DataBox` for use during initialization. The
-   `add_options_to_databox` struct must also contain a type list named
-   `simple_tags` which contains a list of all the tags that the `apply` function
-   will add to the DataBox. No compute tags may be added at this stage. A
-   reasonable location for this struct is inside the action that will do the
-   initialization. Two reasonable defaults are provided,
-   `Parallel::AddNoOptionsToDataBox` and
-   `Parallel::ForwardAllOptionsToDataBox`.
-6. `using const_global_cache_tag_list` is set to a `tmpl::list` of OptionTags
-   that are required by the parallel component. This is usually obtained from
-   the `phase_dependent_action_list` using the
-   `Parallel::get_const_global_cache_tags` metafunction. These options lead to
-   items that are stored in the ConstGlobalCaches (of which there is one copy
-   per Charm++ node).
+   `Parallel::PhaseActions<PhaseType, Phase, tmpl::list<Actions...>>`
+   where each `PhaseAction` represents a PDAL that will be executed on
+   the parallel component during the specified phase. The %Actions are
+   executed in the order that they are given in the `tmpl::list`s of
+   the PDALs, but the phases need not be run in linear order. However,
+   `db::DataBox` types are constructed assuming the phases are
+   performed from first in the `phase_dependent_action_list` to the
+   last. Simple actions (described below) can be executed in any
+   phase. If there are no iterable actions in a phase then a
+   `PhaseAction` need not be specified for that phase. However, at
+   least one `PhaseAction`, even if it is empty, must be specified.
+4. `using initialization_tags` which is a `tmpl::list` of all the tags
+   that will be inserted into the initial `db::DataBox` of each component.
+   These tags are db::SimpleTag%s that have have a `using option_tags`
+   type alias and a static function `create_from_options` (see the
+   example below).  This list can usually be constructed from the
+   initialization actions of the component (i.e. the list of actions
+   in the `PhaseAction` list for the `Initialization` phase) using the
+   helper function `Parallel::get_initialization_tags` (see the
+   examples of components below).  Each initialization action may
+   specify a type alias `using initialization_tags` which are a
+   `tmpl::list` of tags that will be fetched from the db::DataBox by the
+   action.  All `initialization_tags` are removed from the db::DataBox of
+   the component at the end of the `Initialization` phase, except for
+   tags listed in a type alias `using initialization_tags_to_keep` that
+   may appear in each initialization action.
+5. `using const_global_cache_tags` is set to a `tmpl::list` of tags
+   that are required by the `allocate_array` function of an array
+   component, or simple actions called on the parallel component.
+   These tags correspond to items that are stored in the
+   Parallel::ConstGlobalCache (of which there is one copy per Charm++
+   node).  The alias can be omitted if the list is empty.  (See
+   `array_allocation_tags` below for specifying tags needed for the
+   `allocate_array` function, but will not be added to the
+   Parallel::ConstGlobalCache.)
 
 \note Array parallel components must also specify the type alias `using
 array_index`, which is set to the type that indexes the %Parallel Component
@@ -211,26 +220,27 @@ to provide is a plain-old-data
 ([POD](http://en.cppreference.com/w/cpp/concept/PODType)) struct of the size of
 at most 3 integers.
 
-%Parallel Components have a static `initialize` function that is used
-effectively as the constructor of the components. The signature of the
-initialize functions must be:
+%Parallel array components have a static `allocate_array` function
+that is used to construct the elements of the array. The
+signature of the `allocate_array` functions must be:
 \code
-static void initialize(
-   Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache, opts...);
+static void allocate_array(
+    Parallel::CProxy_ConstGlobalCache<metavariables>& global_cache,
+    const tuples::tagged_tuple_from_typelist<initialization_tags>&
+    initialization_items) noexcept;
 \endcode
-The `initialize` function is called by the Main parallel component when
-the execution starts and will typically insert elements into array parallel
-components. The `%Initialization` phase and actions can be thought of as a
-constructor call that sets the initial state of the parallel component. The
-`initialize` function also receives arguments that are read from the input file
-which were specified in the `options` typelist described above. The options are
-usually used to initialize the parallel component, for example by determining
-how many elements are necessary in an array.  The `initialize` function must
-also pass a `TaggedTuple` when creating the component that holds the options
-needed to initialize the parallel component. These options are specified in the
-`add_options_to_databox` type alias of the parallel component. The `initialize`
-functions of different parallel components are called in random order and so it
-is not safe to have them depend on each other.
+The `allocate_array` function is called by the Main parallel component
+when the execution starts and will typically insert elements into
+array parallel components. If the `allocate_array` function depends
+upon input options, the array component must specify a `using
+array_allocation_tags` type alias that is a `tmpl::list` of tags which
+are db::SimpleTag%s that have have a `using option_tags` type alias
+and a static function `create_from_options`. An example is:
+\snippet DistributedLinearSolverAlgorithmTestHelpers.hpp array_allocation_tag
+
+The `allocate_array` functions of different
+array components are called in random order and so it is not safe to
+have them depend on each other.
 
 Each parallel component must also decide what to do in the different phases of
 the execution. This is controlled by an `execute_next_phase` function with
@@ -266,7 +276,7 @@ For those familiar with Charm++, actions should be thought of as effectively
 being entry methods. They are functions that can be invoked on a remote object
 (chare/parallel component) using a `CProxy` (see the [Charm++
 manual](http://charm.cs.illinois.edu/help)), which is retrieved from the
-ConstGlobalCache using the parallel component struct and the
+Parallel::ConstGlobalCache using the parallel component struct and the
 `Parallel::get_parallel_component()` function. %Actions are structs with a
 static `apply` method and come in three variants: simple actions, iterable
 actions, and reduction actions. One important thing to note
@@ -289,27 +299,30 @@ and methods using template parameters and invocation of actions. This approach
 allows us to eliminate the need for users to work with Charm++'s interface
 files, which can be error prone and difficult to use.
 
-The ConstGlobalCache is passed to each action so that the action has access
-to global data and is able to invoke actions on other parallel components. The
-`ParallelComponent` template parameter is the tag of the parallel component that
-invoked the action. A proxy to the calling parallel component can then be
-retrieved from the ConstGlobalCache. The remote entry method invocations are
-slightly different for different types of actions, so they will be discussed
-below. However, one thing that is disallowed for all actions is calling an
-action locally from within an action on the same parallel component.
-Specifically,
+The Parallel::ConstGlobalCache is passed to each action so that the
+action has access to global data and is able to invoke actions on
+other parallel components. The `ParallelComponent` template parameter
+is the tag of the parallel component that invoked the action. A proxy
+to the calling parallel component can then be retrieved from the
+Parallel::ConstGlobalCache. The remote entry method invocations are
+slightly different for different types of actions, so they will be
+discussed below. However, one thing that is disallowed for all actions
+is calling an action locally from within an action on the same
+parallel component.  Specifically,
 
 \snippet Test_AlgorithmNestedApply1.cpp bad_recursive_call
 
-Here `ckLocal()`  is a Charm++ provided method that returns a pointer to the
-local (currently executing) parallel component. See the [Charm++
-manual](http://charm.cs.illinois.edu/help) for more information.
-However, you are able to queue a new action to be executed later on the same
-parallel component by getting your own parallel component from the
-ConstGlobalCache (`Parallel::get_parallel_component<ParallelComponent>(cache)`).
-The difference between the two calls is that by calling an action through the
-parallel component you will first finish the series of actions you are in, then
-when they are complete Charm++ will call the next queued action.
+Here `ckLocal()` is a Charm++ provided method that returns a pointer
+to the local (currently executing) parallel component. See the
+[Charm++ manual](http://charm.cs.illinois.edu/help) for more
+information.  However, you are able to queue a new action to be
+executed later on the same parallel component by getting your own
+parallel component from the Parallel::ConstGlobalCache
+(`Parallel::get_parallel_component<ParallelComponent>(cache)`).  The
+difference between the two calls is that by calling an action through
+the parallel component you will first finish the series of actions you
+are in, then when they are complete Charm++ will call the next queued
+action.
 
 Array, group, and nodegroup parallel components can have actions invoked in two
 ways. First is a broadcast where the action is called on all elements of the
@@ -335,21 +348,22 @@ That is, it is equal to the `action_list` type alias in the current PDAL.
 
 ## 1. Simple Actions {#dev_guide_parallelization_simple_actions}
 
-Simple actions are designed to be called in a similar fashion to member
-functions of classes. They are the direct analog of entry methods in Charm++
-except that the member data is stored in the `db::DataBox` that is passed in as
-the first argument. A simple action must return void but can use `db::mutate` to
-change values of items in the `DataBox` if the `DataBox` is taken as a non-const
-reference. In some cases you will need specific items to be in the `DataBox`
-otherwise the action won't compile. To restrict which `DataBox`es can be passed
-you should use `Requires` in the action's `apply` function template parameter
-list. For example,
+Simple actions are designed to be called in a similar fashion to
+member functions of classes. They are the direct analog of entry
+methods in Charm++ except that the member data is stored in the
+`db::DataBox` that is passed in as the first argument. A simple action
+must return void but can use `db::mutate` to change values of items in
+the `db::DataBox` if the `db::DataBox` is taken as a non-const
+reference. In some cases you will need specific items to be in the
+`db::DataBox` otherwise the action won't compile. To restrict which
+`db::DataBox`es can be passed you should use `Requires` in the
+action's `apply` function template parameter list. For example,
 \snippet Test_AlgorithmCore.cpp requires_action
 where the conditional checks if any element in the parameter pack `DbTags` is
 `CountActionsCalled`.
 
 A simple action that does not take any arguments can be called using a `CProxy`
-from the ConstGlobalCache as follows:
+from the Parallel::ConstGlobalCache as follows:
 
 \snippet Test_AlgorithmCore.cpp simple_action_call
 
@@ -400,33 +414,36 @@ It is the responsibility of the iterable action to remove data from the inboxes
 that will no longer be needed. The removal of unneeded data should be done in
 the `apply` function.
 
-Iterable actions can change the type of the DataBox by adding or removing
-elements/tags from the DataBox. The only requirement is that the last action in
-each PDAL returns a DataBox that is the same type for each
-iteration. Iterable actions can also request that the algorithm no
-longer be executed, and control which action in the current PDAL will be
-executed next. This is all done via the return value from the `apply` function.
-The `apply` function for iterable actions must return a `std::tuple` of one,
-two, or three elements. The first element of the tuple is the new DataBox,
-which can be the same as the type passed in or a DataBox with different tags.
-Most iterable actions will simply return:
+Iterable actions can change the type of the db::DataBox by adding or
+removing elements/tags from the db::DataBox. The only requirement is
+that the last action in each PDAL returns a db::DataBox that is the
+same type for each iteration. Iterable actions can also request that
+the algorithm no longer be executed, and control which action in the
+current PDAL will be executed next. This is all done via the return
+value from the `apply` function.  The `apply` function for iterable
+actions must return a `std::tuple` of one, two, or three elements. The
+first element of the tuple is the new db::DataBox, which can be the
+same as the type passed in or a db::DataBox with different tags.  Most
+iterable actions will simply return:
 
 \snippet Test_AlgorithmParallel.cpp return_forward_as_tuple
 
-By returning the DataBox as a reference in a `std::tuple` we avoid any
-unnecessary copying of the DataBox. The second argument is an optional bool, and
-controls whether or not the algorithm is terminated. If the bool is `true` then
-the algorithm is terminated, by default it is `false`. Here is an example of how
-to return a DataBox with the same type that is passed in and also terminate
+By returning the db::DataBox as a reference in a `std::tuple` we avoid
+any unnecessary copying of the db::DataBox. The second argument is an
+optional bool, and controls whether or not the algorithm is
+terminated. If the bool is `true` then the algorithm is terminated, by
+default it is `false`. Here is an example of how to return a
+db::DataBox with the same type that is passed in and also terminate
 the algorithm:
 
 \snippet Test_AlgorithmParallel.cpp return_with_termination
 
-Notice that we again return a reference to the DataBox, which is done to avoid
-any copying. After an algorithm has been terminated it can be restarted by
-passing `false` to the `set_terminate` method or by calling `receive_data(...,
-true)`. Since the order in which messages are received is undefined in most
-cases the `receive_data(..., true)` call should be used to restart the
+Notice that we again return a reference to the db::DataBox, which is
+done to avoid any copying. After an algorithm has been terminated it
+can be restarted by passing `false` to the `set_terminate` method or
+by calling `receive_data(..., true)`. Since the order in which
+messages are received is undefined in most cases the
+`receive_data(..., true)` call should be used to restart the
 algorithm.
 
 The third optional element in the returned `std::tuple` is a `size_t` whose
@@ -437,11 +454,12 @@ get an `tmpl::integral_constant` with the value of the index of the element
 
 \snippet Test_AlgorithmCore.cpp out_of_order_action
 
-Again a reference to the DataBox is returned, while the termination `bool` and
-next action `size_t` are returned by value. The metafunction call
-`tmpl::index_of<ActionList, iterate_increment_int0>::%value` returns a `size_t`
-whose value is that of the action `iterate_increment_int0` in the PDAL.
-The indexing of actions in the PDAL starts at `0`.
+Again a reference to the db::DataBox is returned, while the
+termination `bool` and next action `size_t` are returned by value. The
+metafunction call `tmpl::index_of<ActionList,
+iterate_increment_int0>::%value` returns a `size_t` whose value is
+that of the action `iterate_increment_int0` in the PDAL.  The indexing
+of actions in the PDAL starts at `0`.
 
 Iterable actions are invoked as part of the algorithm and so the only way
 to request they be invoked is by having the algorithm run on the parallel

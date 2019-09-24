@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>  // IWYU pragma: keep
+#include <limits>
 #include <memory>
 #include <string>
 #include <tuple>
@@ -16,16 +17,14 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"   // IWYU pragma: keep
-#include "Time/Actions/AdvanceTime.hpp"            // IWYU pragma: keep
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/PrettyType.hpp"
@@ -109,7 +108,6 @@ struct Metavariables {
   static constexpr bool has_primitives = HasPrimitives;
   using system = System<HasPrimitives>;
   using component_list = tmpl::list<Component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<>;
   using temporal_id = TemporalId;
 
@@ -121,16 +119,15 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list =
-      tmpl::list<OptionTags::TypedTimeStepper<TimeStepper>>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
   using simple_tags = tmpl::flatten<db::AddSimpleTags<
       typename metavariables::system::variables_tag,
       typename metavariables::system::test_primitive_variables_tags,
       db::add_tag_prefix<Tags::dt,
                          typename metavariables::system::variables_tag>,
-      history_tag, Tags::TimeId, Tags::Next<Tags::TimeId>, Tags::TimeStep>>;
-  using compute_tags = db::AddComputeTags<Tags::Time>;
+      history_tag, Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
+      Tags::TimeStep, Tags::Time>>;
+  using compute_tags = db::AddComputeTags<Tags::SubstepTime>;
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
 
@@ -142,7 +139,7 @@ struct Component {
                      tmpl::list<Actions::ComputeTimeDerivative,
                                 Actions::RecordTimeStepperData>,
                      update_actions>,
-                 Actions::AdvanceTime, Actions::ComputeTimeDerivative,
+                 Actions::ComputeTimeDerivative,
                  Actions::RecordTimeStepperData, update_actions>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -158,7 +155,7 @@ using MockRuntimeSystem =
     ActionTesting::MockRuntimeSystem<Metavariables<HasPrimitives>>;
 
 template <bool HasPrimitives = false>
-void emplace_component(
+void emplace_component_and_initialize(
     const gsl::not_null<MockRuntimeSystem<HasPrimitives>*> runner,
     const bool forward_in_time, const Time& initial_time,
     const TimeDelta& initial_time_step, const size_t order,
@@ -166,13 +163,14 @@ void emplace_component(
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<HasPrimitives>>>(
       runner, 0,
-      {initial_value, 0., db::item_type<history_tag>{}, TimeId{},
-       TimeId(forward_in_time, 1 - static_cast<int64_t>(order), initial_time),
-       initial_time_step});
+      {initial_value, 0., db::item_type<history_tag>{}, TimeStepId{},
+       TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
+                  initial_time),
+       initial_time_step, std::numeric_limits<double>::signaling_NaN()});
 }
 
 template <>
-void emplace_component<true>(
+void emplace_component_and_initialize<true>(
     const gsl::not_null<MockRuntimeSystem<true>*> runner,
     const bool forward_in_time, const Time& initial_time,
     const TimeDelta& initial_time_step, const size_t order,
@@ -180,9 +178,11 @@ void emplace_component<true>(
   ActionTesting::emplace_component_and_initialize<
       Component<Metavariables<true>>>(
       runner, 0,
-      {initial_value, initial_value, 0., db::item_type<history_tag>{}, TimeId{},
-       TimeId(forward_in_time, 1 - static_cast<int64_t>(order), initial_time),
-       initial_time_step});
+      {initial_value, initial_value, 0., db::item_type<history_tag>{},
+       TimeStepId{},
+       TimeStepId(forward_in_time, 1 - static_cast<int64_t>(order),
+                  initial_time),
+       initial_time_step, std::numeric_limits<double>::signaling_NaN()});
 }
 
 namespace detail {
@@ -253,11 +253,10 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
 
   MockRuntimeSystem<> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(order)}};
-  emplace_component(make_not_null(&runner), forward_in_time, initial_time,
-                    initial_time_step, order, initial_value);
+  emplace_component_and_initialize(make_not_null(&runner), forward_in_time,
+                                   initial_time, initial_time_step, order,
+                                   initial_value);
 
-  runner.set_phase(Metavariables<>::Phase::Initialization);
-  runner.next_action<Component<Metavariables<>>>(0);
   runner.set_phase(Metavariables<>::Phase::Testing);
 
   {
@@ -302,12 +301,13 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
             not_self_start_action>(make_not_null(&runner));
         CHECK(not jumped);
         CHECK(abs(ActionTesting::get_databox_tag<Component<Metavariables<>>,
-                                                 Tags::Time>(runner, 0) -
+                                                 Tags::SubstepTime>(runner, 0) -
                   initial_time) < abs(initial_time_step));
         const auto next_time =
             ActionTesting::get_databox_tag<Component<Metavariables<>>,
-                                           Tags::Next<Tags::TimeId>>(runner, 0)
-                .time();
+                                           Tags::Next<Tags::TimeStepId>>(runner,
+                                                                         0)
+                .step_time();
         CHECK((next_time == initial_time) == last_point);
       }
       {
@@ -337,14 +337,26 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
   }
   {
     INFO("Cleanup");
+    // Make sure we reach Cleanup to check the flow is sane...
     run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
              not_self_start_action>(make_not_null(&runner));
+    // ...and then finish the procedure.
+    while (not ActionTesting::get_terminate<Component<Metavariables<>>>(runner,
+                                                                        0)) {
+      ActionTesting::next_action<Component<Metavariables<>>>(
+          make_not_null(&runner), 0);
+    }
     const auto& box =
         ActionTesting::get_databox<Component<Metavariables<>>,
                                    tmpl::append<simple_tags, compute_tags>>(
             runner, 0);
     CHECK(db::get<Var>(box) == initial_value);
     CHECK(db::get<Tags::TimeStep>(box) == initial_time_step);
+    CHECK(db::get<Tags::TimeStepId>(box) ==
+          TimeStepId(forward_in_time, 0, initial_time));
+    // This test only uses Adams-Bashforth.
+    CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
+          TimeStepId(forward_in_time, 0, initial_time + initial_time_step));
     CHECK(db::get<history_tag>(box).size() == order - 1);
   }
 }
@@ -362,9 +374,9 @@ double error_in_step(const size_t order, const double step) noexcept {
   using component = Component<Metavariables<TestPrimitives>>;
   MockRuntimeSystem<TestPrimitives> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(order)}};
-  emplace_component<TestPrimitives>(make_not_null(&runner), forward_in_time,
-                                    initial_time, initial_time_step, order,
-                                    initial_value);
+  emplace_component_and_initialize<TestPrimitives>(
+      make_not_null(&runner), forward_in_time, initial_time, initial_time_step,
+      order, initial_value);
   runner.set_phase(Metavariables<TestPrimitives>::Phase::Testing);
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,

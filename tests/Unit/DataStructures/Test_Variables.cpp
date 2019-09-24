@@ -40,18 +40,17 @@ namespace VariablesTestTags_detail {
 /// [simple_variables_tag]
 template <typename VectorType>
 struct tensor : db::SimpleTag {
-  static std::string name() noexcept { return "tensor"; }
+  static std::string name() noexcept { return "tensor name"; }
   using type = tnsr::I<VectorType, 3, Frame::Grid>;
 };
 /// [simple_variables_tag]
 template <typename VectorType>
 struct scalar : db::SimpleTag {
-  static std::string name() noexcept { return "scalar"; }
   using type = Scalar<VectorType>;
 };
 template <typename VectorType>
 struct scalar2 : db::SimpleTag {
-  static std::string name() noexcept { return "scalar2"; }
+  static std::string name() noexcept { return "scalar2 name"; }
   using type = Scalar<VectorType>;
 };
 
@@ -220,7 +219,7 @@ void test_variables_construction_and_access() noexcept {
 
   // Test stream operator
   const std::string expected_output =
-      "tensor:\n"
+      "tensor name:\n"
       "T(0)=(" +
       expected_output_tensor +
       ")\n"
@@ -234,7 +233,7 @@ void test_variables_construction_and_access() noexcept {
       "T()=(" +
       expected_output_initial +
       ")\n\n"
-      "scalar2:\n"
+      "scalar2 name:\n"
       "T()=(" +
       expected_output_initial + ")";
   CHECK(get_output(filled_variables) == expected_output);
@@ -255,7 +254,7 @@ void test_variables_construction_and_access() noexcept {
           tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
                      VariablesTestTags_detail::scalar<VectorType>,
                      VariablesTestTags_detail::scalar2<VectorType>>>::name() ==
-      "Variables(tensor,scalar,scalar2)");
+      "Variables(tensor name,scalar,scalar2 name)");
 }
 
 template <typename VectorType>
@@ -463,6 +462,25 @@ void test_variables_prefix_semantics() noexcept {
   vars_to = std::move(prefix_vars_move_assign_from);
   CHECK_VARIABLES_APPROX(
       vars_to, VariablesType(number_of_grid_points, variables_vals[3]));
+
+  // Test swap with prefix
+  PrefixVariablesType prefix_vars_swap{number_of_grid_points};
+  VariablesType vars_swap{2 * number_of_grid_points};
+  fill_with_random_values(make_not_null(&prefix_vars_swap), make_not_null(&gen),
+                          make_not_null(&dist));
+  fill_with_random_values(make_not_null(&vars_swap), make_not_null(&gen),
+                          make_not_null(&dist));
+  const PrefixVariablesType expected_vars_swap(prefix_vars_swap);
+  const VariablesType expected_prefix_vars_swap(vars_swap);
+  swap(vars_swap, prefix_vars_swap);
+  CHECK(
+      gsl::span<const value_type>(expected_vars_swap.data(),
+                                  2 * number_of_grid_points) ==
+      gsl::span<const value_type>(vars_swap.data(), 2 * number_of_grid_points));
+  CHECK(gsl::span<const value_type>(expected_prefix_vars_swap.data(),
+                                    number_of_grid_points) ==
+        gsl::span<const value_type>(prefix_vars_swap.data(),
+                                    number_of_grid_points));
 }
 
 template <typename VectorType>

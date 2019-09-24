@@ -5,6 +5,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <utility>
 #include <vector>
@@ -12,15 +13,15 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"
 #include "NumericalAlgorithms/Interpolation/SendPointsToInterpolator.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -65,19 +66,17 @@ struct mock_interpolation_target {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
   using component_being_mocked = void;  // not needed.
-  using const_global_cache_tag_list =
-      Parallel::get_const_global_cache_tags<tmpl::list<
-          typename Metavariables::InterpolationTargetA::compute_target_points>>;
+  using const_global_cache_tags = tmpl::flatten<tmpl::append<
+      Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
+          typename Metavariables::InterpolationTargetA::compute_target_points>>,
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-              InterpolationTargetTag>>>,
+              Metavariables, InterpolationTargetTag>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
-  using add_options_to_databox =
-      typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
 };
 
 template <typename InterpolationTargetTag>
@@ -92,8 +91,9 @@ struct MockReceivePoints {
       Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id,
-      std::vector<IdPair<domain::BlockId,
-                         tnsr::I<double, VolumeDim, typename Frame::Logical>>>&&
+      std::vector<boost::optional<
+          IdPair<domain::BlockId,
+                 tnsr::I<double, VolumeDim, typename Frame::Logical>>>>&&
           block_coord_holders) noexcept {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         make_not_null(&box),
@@ -122,8 +122,6 @@ struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -138,10 +136,11 @@ struct mock_interpolator {
       MockReceivePoints<typename Metavariables::InterpolationTargetA>>;
 };
 
-template <typename MetaVariables, typename DomainCreator,
-          typename InterpolationTargetOption, typename BlockCoordHolder>
+template <typename MetaVariables, typename InterpolationTargetOptionTag,
+          typename DomainCreator, typename BlockCoordHolder>
 void test_interpolation_target(
-    const DomainCreator& domain_creator, InterpolationTargetOption options,
+    const DomainCreator& domain_creator,
+    typename InterpolationTargetOptionTag::type options,
     const BlockCoordHolder& expected_block_coord_holders) noexcept {
   using metavars = MetaVariables;
   using target_component =
@@ -149,19 +148,21 @@ void test_interpolation_target(
                                 typename metavars::InterpolationTargetA>;
   using interp_component = mock_interpolator<metavars>;
 
-  tuples::TaggedTuple<typename metavars::InterpolationTargetA> tuple_of_opts(
-      std::move(options));
+  tuples::TaggedTuple<
+      InterpolationTargetOptionTag,
+      ::Tags::Domain<MetaVariables::volume_dim, Frame::Inertial>>
+      tuple_of_opts{std::move(options),
+                    std::move(domain_creator.create_domain())};
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   runner.set_phase(metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_component>(&runner, 0);
   ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
   runner.set_phase(metavars::Phase::Testing);
 
   Slab slab(0.0, 1.0);
-  TimeId temporal_id(true, 0, Time(slab, 0));
+  TimeStepId temporal_id(true, 0, Time(slab, 0));
 
   ActionTesting::simple_action<
       target_component,
@@ -205,13 +206,14 @@ void test_interpolation_target(
   CHECK(block_coord_holders.size() == number_of_points);
 
   for (size_t i = 0; i < number_of_points; ++i) {
-    CHECK(block_coord_holders[i].id == expected_block_coord_holders[i].id);
-    CHECK_ITERABLE_APPROX(block_coord_holders[i].data,
-                          expected_block_coord_holders[i].data);
+    CHECK(block_coord_holders[i].get().id ==
+          expected_block_coord_holders[i].get().id);
+    CHECK_ITERABLE_APPROX(block_coord_holders[i].get().data,
+                          expected_block_coord_holders[i].get().data);
   }
 
   // Call again at a different temporal_id
-  TimeId new_temporal_id(true, 0, Time(slab, 1));
+  TimeStepId new_temporal_id(true, 0, Time(slab, 1));
   ActionTesting::simple_action<
       target_component,
       typename metavars::InterpolationTargetA::compute_target_points>(
@@ -224,9 +226,10 @@ void test_interpolation_target(
   const auto& new_block_coord_holders =
       vars_infos.at(new_temporal_id).block_coord_holders;
   for (size_t i = 0; i < number_of_points; ++i) {
-    CHECK(new_block_coord_holders[i].id == expected_block_coord_holders[i].id);
-    CHECK_ITERABLE_APPROX(new_block_coord_holders[i].data,
-                          expected_block_coord_holders[i].data);
+    CHECK(new_block_coord_holders[i].get().id ==
+          expected_block_coord_holders[i].get().id);
+    CHECK_ITERABLE_APPROX(new_block_coord_holders[i].get().data,
+                          expected_block_coord_holders[i].get().data);
   }
 }
 

@@ -14,7 +14,6 @@
 #include "DataStructures/Variables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
-#include "Time/Time.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -38,7 +37,7 @@ void weight_function(const gsl::not_null<Scalar<DataType>*> weight,
   if (UNLIKELY(get_size(get(*weight)) != get_size(get<0>(coords)))) {
     *weight = Scalar<DataType>(get_size(get<0>(coords)));
   }
-  const auto& r_squared = dot_product(coords, coords);
+  const auto r_squared = dot_product(coords, coords);
   get(*weight) = exp(-get(r_squared) / pow<2>(sigma_r));
 }
 
@@ -411,14 +410,14 @@ DampedHarmonicHCompute<SpatialDim, Frame>::function(
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
-    const Time& time, const double& t_start, const double& sigma_t,
+    const double& time, const double& t_start, const double& sigma_t,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double& sigma_r) noexcept {
   typename db::item_type<Tags::GaugeH<SpatialDim, Frame>> gauge_h{
       get_size(get(lapse))};
   GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
-      sqrt_det_spatial_metric, spacetime_metric, time.value(), coords, 1., 1.,
+      sqrt_det_spatial_metric, spacetime_metric, time, coords, 1., 1.,
       1.,                // amp_coef_{L1, L2, S}
       4, 4, 4,           // exp_{L1, L2, S}
       t_start, sigma_t,  // _h_init
@@ -768,7 +767,7 @@ SpacetimeDerivDampedHarmonicHCompute<SpatialDim, Frame>::function(
     const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
     const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const Time& time,
+    const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const double& time,
     const double& t_start, const double& sigma_t,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double& sigma_r) noexcept {
@@ -777,7 +776,7 @@ SpacetimeDerivDampedHarmonicHCompute<SpatialDim, Frame>::function(
   GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h(
       make_not_null(&d4_gauge_h), gauge_h_init, dgauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
-      inverse_spatial_metric, spacetime_metric, pi, phi, time.value(), coords,
+      inverse_spatial_metric, spacetime_metric, pi, phi, time, coords,
       1., 1., 1.,        // amp_coef_{L1, L2, S}
       4, 4, 4,           // exp_{L1, L2, S}
       t_start, sigma_t,  // _h_init

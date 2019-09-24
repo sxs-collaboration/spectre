@@ -6,6 +6,9 @@
 #include <utility>
 
 #include "ApparentHorizons/FastFlow.hpp"
+#include "ApparentHorizons/Strahlkorper.hpp"
+#include "ApparentHorizons/Tags.hpp"
+#include "ApparentHorizons/YlmSpherepack.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Informer/Verbosity.hpp"
@@ -33,11 +36,6 @@ template <typename Metavariables>
 struct TemporalIds;
 }  // namespace Tags
 }  // namespace intrp
-namespace ah {
-namespace Tags {
-struct FastFlow;
-}  // namespace Tags
-}  // namespace ah
 namespace Tags {
 struct Verbosity;
 }  // namespace Tags
@@ -63,7 +61,6 @@ namespace callbacks {
 /// Uses:
 /// - Metavariables:
 ///   - `temporal_id`
-///   - `domain_frame`
 /// - DataBox:
 ///   - `::Tags::Verbosity`
 ///   - `::gr::Tags::InverseSpatialMetric<3,Frame>`
@@ -81,32 +78,43 @@ namespace callbacks {
 /// see InterpolationTarget for a description of InterpolationTargetTag.
 template <typename InterpolationTargetTag>
 struct FindApparentHorizon {
+  using observation_types = typename InterpolationTargetTag::
+      post_horizon_find_callback::observation_types;
   template <typename DbTags, typename Metavariables>
   static bool apply(
       const gsl::not_null<db::DataBox<DbTags>*> box,
       const gsl::not_null<Parallel::ConstGlobalCache<Metavariables>*> cache,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+
+    // Before doing anything else, deal with the possibility that some
+    // of the points might be outside of the Domain.
+    const auto num_invalid_pts =
+        db::get<Tags::IndicesOfInvalidInterpPoints>(*box).size();
+    if(num_invalid_pts > 0) {
+      ERROR("FindApparentHorizon: Found points that are not in any block");
+    }
+
     const auto& verbosity = db::get<::Tags::Verbosity>(*box);
-    const auto& inv_g = db::get<::gr::Tags::InverseSpatialMetric<
-        3, typename Metavariables::domain_frame>>(*box);
-    const auto& ex_curv = db::get<::gr::Tags::ExtrinsicCurvature<
-        3, typename Metavariables::domain_frame>>(*box);
-    const auto& christoffel = db::get<::gr::Tags::SpatialChristoffelSecondKind<
-        3, typename Metavariables::domain_frame>>(*box);
+    const auto& inv_g =
+        db::get<::gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(*box);
+    const auto& ex_curv =
+        db::get<::gr::Tags::ExtrinsicCurvature<3, Frame::Inertial>>(*box);
+    const auto& christoffel =
+        db::get<::gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial>>(
+            *box);
 
     std::pair<FastFlow::Status, FastFlow::IterInfo> status_and_info;
 
     // Do a FastFlow iteration.
-    db::mutate<::ah::Tags::FastFlow, StrahlkorperTags::Strahlkorper<
-                                     typename Metavariables::domain_frame>>(
+    db::mutate<::ah::Tags::FastFlow,
+               StrahlkorperTags::Strahlkorper<Frame::Inertial>>(
         box, [&inv_g, &ex_curv, &christoffel, &status_and_info ](
                  const gsl::not_null<::FastFlow*> fast_flow,
-                 const gsl::not_null<
-                     ::Strahlkorper<typename Metavariables::domain_frame>*>
+                 const gsl::not_null<::Strahlkorper<Frame::Inertial>*>
                      strahlkorper) noexcept {
-          status_and_info = fast_flow->template iterate_horizon_finder<
-              typename Metavariables::domain_frame>(strahlkorper, inv_g,
-                                                    ex_curv, christoffel);
+          status_and_info =
+              fast_flow->template iterate_horizon_finder<Frame::Inertial>(
+                  strahlkorper, inv_g, ex_curv, christoffel);
         });
 
     // Determine whether we have converged, whether we need another step,
@@ -177,6 +185,51 @@ struct FindApparentHorizon {
             << " failed, reason = " << status);
     }
     // If we get here, the horizon finder has converged.
+
+    // The interpolated variables
+    // ::Tags::Variables<InterpolationTargetTag::vars_to_interpolate_to_target>
+    // have been interpolated from the volume to the points on the
+    // prolonged_strahlkorper, not to the points on the actual
+    // strahlkorper.  So here we do a restriction of these quantities onto
+    // the actual strahlkorper.
+
+    // Type alias to make code more understandable.
+    using vars_tags =
+        typename InterpolationTargetTag::vars_to_interpolate_to_target;
+    db::mutate_apply<tmpl::list<::Tags::Variables<vars_tags>>,
+                     tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Inertial>,
+                                ::ah::Tags::FastFlow>>(
+        [](const gsl::not_null<db::item_type<::Tags::Variables<vars_tags>>*>
+               vars,
+           const db::item_type<StrahlkorperTags::Strahlkorper<Frame::Inertial>>&
+               strahlkorper,
+           const db::item_type<::ah::Tags::FastFlow>& fast_flow) noexcept {
+          const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
+          const auto prolonged_strahlkorper =
+              Strahlkorper<Frame::Inertial>(L_mesh, L_mesh, strahlkorper);
+          auto new_vars = db::item_type<::Tags::Variables<vars_tags>>(
+              strahlkorper.ylm_spherepack().physical_size());
+
+          tmpl::for_each<vars_tags>([
+            &strahlkorper, &prolonged_strahlkorper, &vars, &new_vars
+          ](auto tag_v) noexcept {
+            using tag = typename decltype(tag_v)::type;
+            const auto& old_var = get<tag>(*vars);
+            auto& new_var = get<tag>(new_vars);
+            auto old_iter = old_var.begin();
+            auto new_iter = new_var.begin();
+            for (; old_iter != old_var.end() and new_iter != new_var.end();
+                 ++old_iter, ++new_iter) {
+              *new_iter = strahlkorper.ylm_spherepack().spec_to_phys(
+                  prolonged_strahlkorper.ylm_spherepack().prolong_or_restrict(
+                      prolonged_strahlkorper.ylm_spherepack().phys_to_spec(
+                          *old_iter),
+                      strahlkorper.ylm_spherepack()));
+            }
+          });
+          *vars = std::move(new_vars);
+        },
+        box);
 
     InterpolationTargetTag::post_horizon_find_callback::apply(*box, *cache,
                                                               temporal_id);

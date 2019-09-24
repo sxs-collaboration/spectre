@@ -22,8 +22,8 @@
 namespace {
 // Define this alias so we don't need to keep typing this monster.
 template <size_t Dim>
-using block_logical_coord_holder =
-    IdPair<domain::BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>;
+using block_logical_coord_holder = boost::optional<
+    IdPair<domain::BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>>;
 }  // namespace
 
 template <size_t Dim>
@@ -40,8 +40,13 @@ element_logical_coordinates(const std::vector<ElementId<Dim>>& element_ids,
 
   // Loop over points
   for (size_t offset = 0; offset < block_coord_holders.size(); ++offset) {
-    const auto& block_id = block_coord_holders[offset].id;
-    const auto& x_block_logical = block_coord_holders[offset].data;
+    // Skip points that are not in any block.
+    if (not block_coord_holders[offset]) {
+      continue;
+    }
+
+    const auto& block_id = block_coord_holders[offset].get().id;
+    const auto& x_block_logical = block_coord_holders[offset].get().data;
     // Need to loop over elements, because the block doesn't know
     // things like the refinement_level of each element.
     for (size_t index = 0; index < element_ids.size(); ++index) {

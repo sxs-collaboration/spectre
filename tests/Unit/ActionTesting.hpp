@@ -147,6 +147,36 @@ struct has_initialization_phase<
 template <typename Metavariables>
 constexpr bool has_initialization_phase_v =
     has_initialization_phase<Metavariables>::value;
+
+template <typename Component, typename = cpp17::void_t<>>
+struct get_initialization_tags_from_component {
+  using type = tmpl::list<>;
+};
+
+template <typename Component>
+struct get_initialization_tags_from_component<
+    Component, cpp17::void_t<typename Component::initialization_tags>> {
+  using type = typename Component::initialization_tags;
+};
+
+// Given the tags `SimpleTags`, forwards them into the `DataBox`.
+template <typename SimpleTagsList>
+struct ForwardAllOptionsToDataBox;
+
+template <typename... SimpleTags>
+struct ForwardAllOptionsToDataBox<tmpl::list<SimpleTags...>> {
+  using simple_tags = tmpl::list<SimpleTags...>;
+
+  template <typename DbTagsList, typename... Args>
+  static auto apply(db::DataBox<DbTagsList>&& box, Args&&... args) noexcept {
+    static_assert(
+        sizeof...(SimpleTags) == sizeof...(Args),
+        "The number of arguments passed to ForwardAllOptionsToDataBox must "
+        "match the number of SimpleTags passed.");
+    return db::create_from<db::RemoveTags<>, simple_tags>(
+        std::move(box), std::forward<Args>(args)...);
+  }
+};
 }  // namespace detail
 
 /// \cond
@@ -163,7 +193,7 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent,
             typename ArrayIndex,
-            Requires<not tmpl2::flat_all_v<
+            Requires<not tmpl2::flat_any_v<
                 tmpl::list_contains_v<DbTagsList, SimpleTags>...>> = nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -187,15 +217,18 @@ struct InitializeDataBox<tmpl::list<SimpleTags...>, ComputeTagsList> {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent,
             typename ArrayIndex,
-            Requires<tmpl2::flat_all_v<
+            Requires<tmpl2::flat_any_v<
                 tmpl::list_contains_v<DbTagsList, SimpleTags>...>> = nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
-      db::DataBox<DbTagsList>& box,
+      db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box)};
+    ERROR(
+        "Tried to apply ActionTesting::InitializeDataBox even though one or "
+        "more of its tags are already in the DataBox. Did you call next_action "
+        "too many times in the initialization phase?");
   }
 
   /// Sets the initial values of simple tags in the DataBox.
@@ -352,11 +385,11 @@ class MockDistributedObject {
   using PhaseType =
       typename tmpl::front<phase_dependent_action_lists>::phase_type;
 
-  using all_cache_tags =
-      Parallel::ConstGlobalCache_detail::make_tag_list<metavariables>;
+  using all_cache_tags = Parallel::get_const_global_cache_tags<metavariables>;
+  using initialization_tags =
+      typename detail::get_initialization_tags_from_component<Component>::type;
   using initial_tags = tmpl::flatten<tmpl::list<
-      Parallel::Tags::ConstGlobalCacheImpl<metavariables>,
-      typename Component::add_options_to_databox::simple_tags,
+      Parallel::Tags::ConstGlobalCacheImpl<metavariables>, initialization_tags,
       db::wrap_tags_in<Parallel::Tags::FromConstGlobalCache, all_cache_tags>>>;
   using initial_databox = db::compute_databox_type<initial_tags>;
 
@@ -364,10 +397,8 @@ class MockDistributedObject {
   using databox_phase_types =
       typename Parallel::Algorithm_detail::build_databox_types<
           tmpl::list<>, phase_dependent_action_lists, initial_databox,
-          tmpl::list<tuples::tagged_tuple_from_typelist<inbox_tags_list>,
-                     Parallel::ConstGlobalCache<metavariables>,
-                     typename Component::array_index, all_actions_list,
-                     std::add_pointer_t<Component>>>::type;
+          inbox_tags_list, metavariables, typename Component::array_index,
+          Component>::type;
   template <typename T>
   struct get_databox_types {
     using type = typename T::databox_types;
@@ -387,7 +418,7 @@ class MockDistributedObject {
       tuples::tagged_tuple_from_typelist<inbox_tags_list>* inboxes,
       Options&&... opts)
       : array_index_(index), const_global_cache_(cache), inboxes_(inboxes) {
-    box_ = Component::add_options_to_databox::apply(
+    box_ = detail::ForwardAllOptionsToDataBox<initialization_tags>::apply(
         db::create<db::AddSimpleTags<
                        Parallel::Tags::ConstGlobalCacheImpl<metavariables>>,
                    db::AddComputeTags<db::wrap_tags_in<
@@ -721,11 +752,15 @@ class MockDistributedObject {
 
   template <typename Tag, typename... Variants>
   bool tag_is_retrievable_visitation(
-      const boost::variant<Variants...>& /*box*/) const noexcept {
+      const boost::variant<Variants...>& box) const noexcept {
     bool is_retrievable = false;
-    const auto helper = [&is_retrievable](auto box_type) noexcept {
+    const auto helper = [&box, &is_retrievable ](auto box_type) noexcept {
       using DataBoxType = typename decltype(box_type)::type;
-      is_retrievable |= db::tag_is_retrievable_v<Tag, DataBoxType>;
+      if (static_cast<int>(
+              tmpl::index_of<tmpl::list<Variants...>, DataBoxType>::value) ==
+          box.which()) {
+        is_retrievable = db::tag_is_retrievable_v<Tag, DataBoxType>;
+      }
     };
     EXPAND_PACK_LEFT_TO_RIGHT(helper(tmpl::type_<Variants>{}));
     return is_retrievable;
@@ -807,21 +842,21 @@ void MockDistributedObject<Component>::next_action_impl(
     // ```
     const auto invoke_this_action = make_overloader(
         [this](auto& my_box, std::integral_constant<size_t, 1> /*meta*/)
-            SPECTRE_JUST_ALWAYS_INLINE noexcept {
+            noexcept {
               std::tie(box_) = this_action::apply(
                   my_box, *inboxes_, *const_global_cache_,
                   cpp17::as_const(array_index_), actions_list{},
                   std::add_pointer_t<Component>{});
             },
         [this](auto& my_box, std::integral_constant<size_t, 2> /*meta*/)
-            SPECTRE_JUST_ALWAYS_INLINE noexcept {
+            noexcept {
               std::tie(box_, terminate_) = this_action::apply(
                   my_box, *inboxes_, *const_global_cache_,
                   cpp17::as_const(array_index_), actions_list{},
                   std::add_pointer_t<Component>{});
             },
         [this](auto& my_box, std::integral_constant<size_t, 3> /*meta*/)
-            SPECTRE_JUST_ALWAYS_INLINE noexcept {
+            noexcept {
               std::tie(box_, terminate_, algorithm_step_) = this_action::apply(
                   my_box, *inboxes_, *const_global_cache_,
                   cpp17::as_const(array_index_), actions_list{},
@@ -1127,6 +1162,7 @@ class MockArrayElementProxy {
   // Actions may call this, but since tests step through actions manually it has
   // no effect.
   void perform_algorithm() noexcept {}
+  void perform_algorithm(const bool /*restart_if_terminated*/) noexcept {}
 
   MockDistributedObject<Component>* ckLocal() { return &local_algorithm_; }
 
@@ -1278,7 +1314,7 @@ class MockRuntimeSystem {
 
   using GlobalCache = Parallel::ConstGlobalCache<Metavariables>;
   using CacheTuple = tuples::tagged_tuple_from_typelist<
-      Parallel::ConstGlobalCache_detail::make_tag_list<Metavariables>>;
+      Parallel::get_const_global_cache_tags<Metavariables>>;
 
   using mock_objects_tags =
       tmpl::transform<typename Metavariables::component_list,
@@ -1300,6 +1336,13 @@ class MockRuntimeSystem {
           &tuples::get<InboxesTag<Component>>(inboxes_));
     });
   }
+
+  /// Construct from the tuple of ConstGlobalCache objects that might
+  /// be in a different order.
+  template <typename... Tags>
+  explicit MockRuntimeSystem(tuples::TaggedTuple<Tags...> cache_contents)
+      : MockRuntimeSystem(
+            tuples::reorder<CacheTuple>(std::move(cache_contents))) {}
 
   /// Emplace a component that does not need to be initialized.
   template <typename Component, typename... Options>
@@ -1543,7 +1586,7 @@ class MockRuntimeSystem {
 
 /// Emplaces a distributed object with index `array_index` into the parallel
 /// component `Component`. The options `opts` are forwarded to be used in a call
-/// to `add_options_to_databox::apply`.
+/// to `detail::ForwardAllOptionsToDataBox::apply`.
 template <typename Component, typename... Options>
 void emplace_component(
     const gsl::not_null<MockRuntimeSystem<typename Component::metavariables>*>
@@ -1556,8 +1599,8 @@ void emplace_component(
 
 /// Emplaces a distributed object with index `array_index` into the parallel
 /// component `Component`. The options `opts` are forwarded to be used in a call
-/// to `add_options_to_databox::apply`. Additionally, the simple tags in the
-/// DataBox are initialized from the values set in `initial_values`.
+/// to `detail::ForwardAllOptionsToDataBox::apply` Additionally, the simple tags
+/// in the DataBox are initialized from the values set in `initial_values`.
 template <typename Component, typename... Options,
           typename Metavars = typename Component::metavariables,
           Requires<detail::has_initialization_phase_v<Metavars>> = nullptr>

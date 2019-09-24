@@ -8,9 +8,11 @@
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/ComputeOperatorAction.hpp"
+#include "Elliptic/Actions/InitializeSystem.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
-#include "Elliptic/DiscontinuousGalerkin/InitializeElement.hpp"
+#include "Elliptic/DiscontinuousGalerkin/ImposeInhomogeneousBoundaryConditionsOnSource.hpp"
+#include "Elliptic/DiscontinuousGalerkin/InitializeFluxes.hpp"
 #include "Elliptic/Systems/Poisson/Actions/Observe.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
@@ -25,11 +27,16 @@
 #include "NumericalAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Functional.hpp"
@@ -38,6 +45,8 @@
 /// \cond
 template <size_t Dim>
 struct Metavariables {
+  static constexpr size_t volume_dim = Dim;
+
   static constexpr OptionString help{
       "Find the solution to a Poisson problem in Dim spatial dimensions.\n"
       "Analytic solution: ProductOfSinusoids\n"
@@ -50,22 +59,23 @@ struct Metavariables {
   // The analytic solution and corresponding source to solve the Poisson
   // equation for
   using analytic_solution_tag =
-      OptionTags::AnalyticSolution<Poisson::Solutions::ProductOfSinusoids<Dim>>;
+      Tags::AnalyticSolution<Poisson::Solutions::ProductOfSinusoids<Dim>>;
 
   // The linear solver algorithm. We must use GMRES since the operator is
   // not positive-definite for the first-order system.
-  using linear_solver = LinearSolver::Gmres<Metavariables>;
+  using linear_solver =
+      LinearSolver::Gmres<Metavariables, typename system::fields_tag>;
   using temporal_id = LinearSolver::Tags::IterationId;
 
-  // Parse numerical flux parameters from the input file to store in the cache.
-  using normal_dot_numerical_flux = OptionTags::NumericalFlux<
-      Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
+  // This is needed for InitializeMortars and will be removed ASAP.
+  static constexpr bool local_time_stepping = false;
 
-  // Set up the domain creator from the input file.
-  using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
+  // Parse numerical flux parameters from the input file to store in the cache.
+  using normal_dot_numerical_flux =
+      Tags::NumericalFlux<Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
 
   // Collect all items to store in the cache.
-  using const_global_cache_tag_list = tmpl::list<analytic_solution_tag>;
+  using const_global_cache_tags = tmpl::list<analytic_solution_tag>;
 
   // Collect all reduction tags for observers
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
@@ -74,19 +84,43 @@ struct Metavariables {
   // Specify all global synchronization points.
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
 
+  // Construct tags that will be sliced to interfaces.
+  using variables_tag = typename system::variables_tag;
+  using gradients_tag =
+      db::add_tag_prefix<Tags::deriv,
+                         db::variables_tag_with_tags_list<
+                             variables_tag, typename system::gradient_tags>,
+                         tmpl::size_t<system::volume_dim>, Frame::Inertial>;
+
+  using initialization_actions = tmpl::list<
+      dg::Actions::InitializeDomain<Dim>, elliptic::Actions::InitializeSystem,
+      dg::Actions::InitializeInterfaces<
+          system,
+          dg::Initialization::slice_tags_to_face<variables_tag, gradients_tag>,
+          dg::Initialization::slice_tags_to_exterior<gradients_tag>>,
+      elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
+          Metavariables>,
+      typename linear_solver::initialize_element,
+      dg::Actions::InitializeMortars<Metavariables>,
+      elliptic::dg::Actions::InitializeFluxes<Metavariables>,
+      // Initialization is done. Avoid introducing an extra phase by
+      // advancing the linear solver to the first step here.
+      typename linear_solver::prepare_step,
+      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+
   // Specify all parallel components that will execute actions at some point.
   using component_list = tmpl::append<
-      tmpl::list<Elliptic::DgElementArray<
+      tmpl::list<elliptic::DgElementArray<
           Metavariables,
           tmpl::list<
-              Parallel::PhaseActions<
-                  Phase, Phase::Initialization,
-                  tmpl::list<Elliptic::dg::Actions::InitializeElement<Dim>>>,
+              Parallel::PhaseActions<Phase, Phase::Initialization,
+                                     initialization_actions>,
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
-                      Poisson::Actions::Observe>>>,
+                                 Poisson::Actions::Observe>,
+                             Parallel::Actions::TerminatePhase>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::Solve,
@@ -95,18 +129,16 @@ struct Metavariables {
                              dg::Actions::ComputeNonconservativeBoundaryFluxes<
                                  Tags::InternalDirections<Dim>>,
                              dg::Actions::SendDataForFluxes<Metavariables>,
-                             Elliptic::Actions::ComputeOperatorAction,
+                             elliptic::Actions::ComputeOperatorAction,
                              dg::Actions::ComputeNonconservativeBoundaryFluxes<
                                  Tags::BoundaryDirectionsInterior<Dim>>,
-                             Elliptic::dg::Actions::
+                             elliptic::dg::Actions::
                                  ImposeHomogeneousDirichletBoundaryConditions<
                                      Metavariables>,
                              dg::Actions::ReceiveDataForFluxes<Metavariables>,
                              dg::Actions::ApplyFluxes,
-                             typename linear_solver::perform_step>>>,
-
-          typename Elliptic::dg::Actions::InitializeElement<
-              Dim>::AddOptionsToDataBox>>,
+                             typename linear_solver::perform_step,
+                             typename linear_solver::prepare_step>>>>>,
       typename linear_solver::component_list,
       tmpl::list<observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>>;

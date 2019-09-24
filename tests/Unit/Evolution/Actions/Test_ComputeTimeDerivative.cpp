@@ -11,7 +11,6 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/ElementIndex.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -52,8 +51,6 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndexType;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags = tmpl::list<var_tag, Tags::dt<var_tag>>;
 
   using phase_dependent_action_list = tmpl::list<
@@ -68,7 +65,6 @@ struct component {
 struct Metavariables {
   using component_list = tmpl::list<component<Metavariables>>;
   using system = System;
-  using const_global_cache_tag_list = tmpl::list<>;
   using temporal_id = TemporalId;
 
   enum class Phase { Initialization, Testing, Exit };

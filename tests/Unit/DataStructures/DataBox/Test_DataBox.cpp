@@ -59,13 +59,13 @@ struct Tag1 : db::SimpleTag {
   using type = std::vector<double>;
   static std::string name() noexcept { return "Tag1"; }
 };
-struct Tag2 : db::SimpleTag {
+struct Tag2Base : db::BaseTag {};
+struct Tag2 : db::SimpleTag, Tag2Base {
   using type = std::string;
   static std::string name() noexcept { return "Tag2"; }
 };
 struct Tag3 : db::SimpleTag {
   using type = std::string;
-  static std::string name() noexcept { return "Tag3"; }
 };
 
 /// [databox_compute_item_tag_example]
@@ -498,6 +498,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
   db::apply<
       tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>>(
       check_result_no_args, original_box);
+  db::apply<
+      tmpl::list<test_databox_tags::Tag2Base, test_databox_tags::ComputeTag1>>(
+      check_result_no_args, original_box);
 
   /// [apply_example]
   auto check_result_args = [](const std::string& sample_string,
@@ -529,6 +532,27 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
       ApplyCallable{}, original_box,
       db::get<test_databox_tags::Tag1>(original_box));
   /// [apply_struct_example]
+  db::apply<
+      tmpl::list<test_databox_tags::Tag2Base, test_databox_tags::ComputeTag1>>(
+      ApplyCallable{}, original_box,
+      db::get<test_databox_tags::Tag1>(original_box));
+  /// [apply_stateless_struct_example]
+  struct StatelessApplyCallable {
+    using argument_tags =
+        tmpl::list<test_databox_tags::Tag2, test_databox_tags::ComputeTag1>;
+    static void apply(const std::string& sample_string,
+                      const std::string& computed_string,
+                      const std::vector<double>& vector) noexcept {
+      CHECK(sample_string == "My Sample String"s);
+      CHECK(computed_string == "My Sample String6.28"s);
+      CHECK(vector == (std::vector<double>{8.7, 93.2, 84.7}));
+    }
+  };
+  db::apply<StatelessApplyCallable>(
+      original_box, db::get<test_databox_tags::Tag1>(original_box));
+  /// [apply_stateless_struct_example]
+  db::apply(StatelessApplyCallable{}, original_box,
+            db::get<test_databox_tags::Tag1>(original_box));
 }
 
 // [[OutputRegex, Could not find the tag named "TagTensor__" in the DataBox]]
@@ -626,7 +650,8 @@ static_assert(
 }  // namespace
 
 namespace test_databox_tags {
-struct ScalarTag : db::SimpleTag {
+struct ScalarTagBase : db::BaseTag {};
+struct ScalarTag : db::SimpleTag, ScalarTagBase {
   using type = Scalar<DataVector>;
   static std::string name() noexcept { return "ScalarTag"; }
 };
@@ -1097,6 +1122,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
     /// [mutate_apply_struct_example_stateful]
     db::mutate_apply(TestDataboxMutateApply{}, make_not_null(&box));
     /// [mutate_apply_struct_example_stateful]
+    struct TestDataboxMutateApplyBase {
+      using return_tags = tmpl::list<test_databox_tags::ScalarTagBase>;
+      using argument_tags = tmpl::list<test_databox_tags::Tag2Base>;
+
+      static void apply(const gsl::not_null<Scalar<DataVector>*> scalar,
+                        const std::string& tag2) noexcept {
+        CHECK(*scalar == Scalar<DataVector>(DataVector(2, 6.)));
+        CHECK(tag2 == "My Sample String"s);
+      }
+    };
+    db::mutate_apply(TestDataboxMutateApplyBase{}, make_not_null(&box));
+
     CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
           Scalar<DataVector>(DataVector(2, 6.)));
@@ -1122,6 +1159,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
         },
         make_not_null(&box));
     /// [mutate_apply_lambda_example]
+    db::mutate_apply<tmpl::list<test_databox_tags::ScalarTagBase>,
+                     tmpl::list<test_databox_tags::Tag2Base>>(
+        [](const gsl::not_null<Scalar<DataVector>*> scalar,
+           const std::string& tag2) {
+          CHECK(*scalar == Scalar<DataVector>(DataVector(2, 12.)));
+          CHECK(tag2 == "My Sample String"s);
+        },
+        make_not_null(&box));
     CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
           Scalar<DataVector>(DataVector(2, 12.)));

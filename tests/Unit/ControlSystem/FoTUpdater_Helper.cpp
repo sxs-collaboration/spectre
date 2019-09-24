@@ -23,9 +23,9 @@ Translation<DerivOrder>::Translation(DataVector target_coords) noexcept
 
 template <size_t DerivOrder>
 void Translation<DerivOrder>::operator()(
-    gsl::not_null<FunctionOfTimeUpdater<DerivOrder>*> updater,
-    const FunctionsOfTime::PiecewisePolynomial<DerivOrder>& f_of_t, double time,
-    const DataVector& coords) noexcept {
+    const gsl::not_null<FunctionOfTimeUpdater<DerivOrder>*> updater,
+    const FunctionsOfTime::PiecewisePolynomial<DerivOrder>& f_of_t,
+    const double time, const DataVector& coords) noexcept {
   const DataVector q = coords - target_coords_ - f_of_t.func(time)[0];
   updater->measure(time, q);
 }

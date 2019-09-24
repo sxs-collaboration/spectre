@@ -6,7 +6,7 @@ set(LIBRARY Time)
 set(LIBRARY_SOURCES
     Slab.cpp
     Time.cpp
-    TimeId.cpp
+    TimeStepId.cpp
     )
 
 add_subdirectory(StepChoosers)

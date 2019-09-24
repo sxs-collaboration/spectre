@@ -76,13 +76,15 @@ struct LocalLaxFriedrichs {
         const db::item_type<NormalDotFluxTags>&... n_dot_f_to_package,
         const db::item_type<VariablesTags>&... u_to_package,
         const db::item_type<char_speeds_tag>& characteristic_speeds) noexcept {
+      ASSERT(packaged_data->number_of_grid_points() ==
+             characteristic_speeds[0].size(),
+             "Size of packaged data (" << packaged_data->number_of_grid_points()
+             << ") does not match size of characteristic speeds ("
+             << characteristic_speeds[0].size() << ")");
       expand_pack((get<VariablesTags>(*packaged_data) = u_to_package)...);
       expand_pack(
           (get<NormalDotFluxTags>(*packaged_data) = n_dot_f_to_package)...);
       Scalar<DataVector>& char_speed = get<MaxAbsCharSpeed>(*packaged_data);
-      if (get(char_speed).size() != characteristic_speeds[0].size()) {
-        get(char_speed) = DataVector(characteristic_speeds[0].size());
-      }
 
       for (size_t s = 0; s < characteristic_speeds[0].size(); ++s) {
         double local_max_speed = 0.0;

@@ -21,7 +21,6 @@
 #include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
@@ -61,7 +60,6 @@ struct Component {
 
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<::Tags::Mesh<dim>,
                         typename metavariables::system::variables_tag>;
@@ -82,8 +80,6 @@ struct Component {
               tmpl::list<dg::Actions::ExponentialFilter<
                   0, tmpl::list<Tags::VectorVar<dim>, Tags::ScalarVar>>>>>>;
   /// [action_list_example]
-  using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
-      typename tmpl::at_c<phase_dependent_action_list, 1>::action_list>;
 };
 
 template <size_t Dim, bool FilterIndividually>
@@ -93,7 +89,6 @@ struct Metavariables {
   using system = System<Dim>;
   static constexpr bool local_time_stepping = true;
   using component_list = tmpl::list<Component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
@@ -180,10 +175,10 @@ void test_exponential_filter_action(const double alpha,
 
     Scalar<DataVector> expected_scalar(mesh.number_of_grid_points(), 0.0);
     tnsr::I<DataVector, Dim> expected_vector(mesh.number_of_grid_points(), 0.0);
-    apply_matrices(&get(expected_scalar), filter_scalar,
+    apply_matrices(make_not_null(&get(expected_scalar)), filter_scalar,
                    get(get<Tags::ScalarVar>(initial_vars)), mesh.extents());
     for (size_t d = 0; d < Dim; d++) {
-      apply_matrices(&expected_vector.get(d), filter_vector,
+      apply_matrices(make_not_null(&expected_vector.get(d)), filter_vector,
                      get<Tags::VectorVar<Dim>>(initial_vars).get(d),
                      mesh.extents());
     }

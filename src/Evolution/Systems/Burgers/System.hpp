@@ -8,7 +8,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Evolution/Conservative/ConservativeDuDt.hpp"
-#include "Evolution/Systems/Burgers/Equations.hpp"
+#include "Evolution/Systems/Burgers/Characteristics.hpp"
 #include "Evolution/Systems/Burgers/Fluxes.hpp"
 #include "Evolution/Systems/Burgers/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
@@ -32,6 +32,8 @@ struct System {
   using volume_fluxes = Fluxes;
   using compute_largest_characteristic_speed =
       ComputeLargestCharacteristicSpeed;
+
+  using char_speeds_tag = Tags::CharacteristicSpeedsCompute;
 
   template <typename Tag>
   using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;

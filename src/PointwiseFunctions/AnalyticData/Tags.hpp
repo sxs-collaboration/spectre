@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Options/Options.hpp"
+#include "Parallel/Serialize.hpp"
 
 namespace OptionTags {
 /// \ingroup OptionGroupsGroup
@@ -15,18 +16,32 @@ struct AnalyticDataGroup {
 };
 
 /// \ingroup OptionTagsGroup
-/// Can be used to retrieve the analytic data from the cache without having
-/// to know the template parameters of AnalyticData.
-struct AnalyticDataBase {};
-
-/// \ingroup OptionTagsGroup
 /// The analytic data, with the type of the analytic data set as the template
 /// parameter
-template <typename SolutionType>
-struct AnalyticData : AnalyticDataBase {
-  static std::string name() noexcept { return option_name<SolutionType>(); }
+template <typename DataType>
+struct AnalyticData {
+  static std::string name() noexcept { return option_name<DataType>(); }
   static constexpr OptionString help = "Options for the analytic data";
-  using type = SolutionType;
+  using type = DataType;
   using group = AnalyticDataGroup;
 };
 }  // namespace OptionTags
+
+namespace Tags {
+/// Can be used to retrieve the analytic solution from the cache without having
+/// to know the template parameters of AnalyticData.
+struct AnalyticDataBase : db::BaseTag {};
+
+/// The analytic data, with the type of the analytic data set as the
+/// template parameter
+template <typename DataType>
+struct AnalyticData : AnalyticDataBase, db::SimpleTag {
+  static std::string name() noexcept { return "AnalyticData"; }
+  using type = DataType;
+  using option_tags = tmpl::list<::OptionTags::AnalyticData<DataType>>;
+  static DataType create_from_options(
+      const DataType& analytic_solution) noexcept {
+    return deserialize<type>(serialize<type>(analytic_solution).data());
+  }
+};
+}  // namespace Tags

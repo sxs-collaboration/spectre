@@ -58,9 +58,7 @@ void interpolate_data(
 
           // Get list of ElementIds that have the correct temporal_id and that
           // have not yet been interpolated.
-          std::vector<
-              ElementId<Metavariables::domain_dim>>
-              element_ids;
+          std::vector<ElementId<Metavariables::volume_dim>> element_ids;
 
           for (const auto& volume_info_inner : volume_info_outer.second) {
             // Have we interpolated this element before?
@@ -107,9 +105,8 @@ void interpolate_data(
                 });
 
             // Now interpolate.
-            intrp::Irregular<Metavariables::domain_dim>
-                interpolator(volume_info.mesh,
-                             element_coord_holder.element_logical_coords);
+            intrp::Irregular<Metavariables::volume_dim> interpolator(
+                volume_info.mesh, element_coord_holder.element_logical_coords);
             interp_info.vars.emplace_back(interpolator.interpolate(local_vars));
             interp_info.global_offsets.emplace_back(
                 element_coord_holder.offsets);

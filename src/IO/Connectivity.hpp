@@ -22,7 +22,7 @@ namespace detail {
  */
 enum class Topology { Line, Quad, Hexahedron };
 
-std::ostream& operator<<(std::ostream& os, const Topology& topology);
+std::ostream& operator<<(std::ostream& os, const Topology& topology) noexcept;
 
 /*!
  * \brief Represents the number of cells in a particular topology

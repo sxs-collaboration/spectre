@@ -8,7 +8,7 @@
 
 namespace amr {
 
-std::ostream& operator<<(std::ostream& os, const Flag& flag) {
+std::ostream& operator<<(std::ostream& os, const Flag& flag) noexcept {
   switch (flag) {
     case Flag::Undefined:
       os << "Undefined";

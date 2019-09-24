@@ -39,6 +39,13 @@ class ModalVector;
 class ComplexModalVector
     : public VectorImpl<std::complex<double>, ComplexModalVector> {
  public:
+  ComplexModalVector() = default;
+  ComplexModalVector(const ComplexModalVector&) = default;
+  ComplexModalVector(ComplexModalVector&&) = default;
+  ComplexModalVector& operator=(const ComplexModalVector&) = default;
+  ComplexModalVector& operator=(ComplexModalVector&&) = default;
+  ~ComplexModalVector() = default;
+
   using VectorImpl<std::complex<double>, ComplexModalVector>::operator=;
   using VectorImpl<std::complex<double>, ComplexModalVector>::VectorImpl;
 
@@ -57,17 +64,21 @@ struct AddTrait<ComplexModalVector, ComplexModalVector> {
   using Type = ComplexModalVector;
 };
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexModalVector, ModalVector,
-                                               AddTrait);
+                                               AddTrait, ComplexModalVector);
 template <>
 struct SubTrait<ComplexModalVector, ComplexModalVector> {
   using Type = ComplexModalVector;
 };
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexModalVector, ModalVector,
-                                               SubTrait);
+                                               SubTrait, ComplexModalVector);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexModalVector,
-                                               std::complex<double>, MultTrait);
+                                               std::complex<double>, MultTrait,
+                                               ComplexModalVector);
+BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ModalVector,
+                                               std::complex<double>, MultTrait,
+                                               ComplexModalVector);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ComplexModalVector, double,
-                                               MultTrait);
+                                               MultTrait, ComplexModalVector);
 template <>
 struct DivTrait<ComplexModalVector, std::complex<double>> {
   using Type = ComplexModalVector;
@@ -88,7 +99,9 @@ struct UnaryMapTrait<ComplexModalVector, Operator> {
                      // (-) w/doubles
                      blaze::AddScalar<ComplexModalVector::ElementType>,
                      blaze::SubScalarRhs<ComplexModalVector::ElementType>,
-                     blaze::SubScalarLhs<ComplexModalVector::ElementType>>,
+                     blaze::SubScalarLhs<ComplexModalVector::ElementType>,
+                     blaze::AddScalar<double>, blaze::SubScalarRhs<double>,
+                     blaze::SubScalarLhs<double>>,
           Operator>,
       "Only unary operations permitted on a ComplexModalVector are:"
       " conj, imag, and real");
@@ -134,7 +147,9 @@ struct MapTrait<ComplexModalVector, Operator> {
                      // (-) w/doubles
                      blaze::AddScalar<ComplexModalVector::ElementType>,
                      blaze::SubScalarRhs<ComplexModalVector::ElementType>,
-                     blaze::SubScalarLhs<ComplexModalVector::ElementType>>,
+                     blaze::SubScalarLhs<ComplexModalVector::ElementType>,
+                     blaze::AddScalar<double>, blaze::SubScalarRhs<double>,
+                     blaze::SubScalarLhs<double>>,
           Operator>,
       "Only unary operations permitted on a ComplexModalVector are:"
       " conj, imag, and real");
@@ -179,5 +194,15 @@ DEFINE_STD_ARRAY_INPLACE_BINOP(ComplexModalVector,
                                ComplexModalVector, operator+=, std::plus<>())
 DEFINE_STD_ARRAY_INPLACE_BINOP(ComplexModalVector,
                                ComplexModalVector, operator-=, std::minus<>())
+
+namespace blaze {
+// Partial specialization to disable being able to take the l?Norm of a
+// ComplexModalVector. This does *not* prevent taking the norm of the square (or
+// some other math expression) of a ComplexModalVector.
+template <typename Abs, typename Power>
+struct DVecNormHelper<PointerVector<std::complex<double>, false, false, false,
+                                    ComplexModalVector>,
+                      Abs, Power> {};
+}  // namespace blaze
 /// \endcond
 MAKE_WITH_VALUE_IMPL_DEFINITION_FOR(ComplexModalVector)

@@ -3,18 +3,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Load what we need from `/root/.bashrc`
-. /etc/profile.d/lmod.sh
-export PATH=$PATH:/work/spack/bin
-. /work/spack/share/spack/setup-env.sh
-spack load benchmark
-spack load blaze
-spack load brigand
-spack load catch
-spack load gsl
-spack load libsharp
-spack load libxsmm
-spack load yaml-cpp
 export PATH=$PATH:/work/texlive/bin/x86_64-linux
 
 ccache -z
@@ -56,23 +44,28 @@ touch ${SPECTRE_BUILD_DIR}/tmp/coverage.info
 if [ -z "${RUN_CLANG_TIDY}" ] \
     && [ -z "${RUN_IWYU}" ] \
     && [ -z "${BUILD_DOC}" ]; then
-    if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build libraries" ]]; then
+    if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build stage 1" ]]; then
         time make libs -j2
         time make test-libs-domain -j2
         time make test-libs-elliptic -j2
         time make test-libs-evolution -j2
-        time make test-libs-numerical-algorithms -j2
     fi
 
-    if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build test libraries" ]]; then
-        time make test-libs-data-structures -j2
+    if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build stage 2" ]]; then
+        time make test-libs-numerical-algorithms -j2
+        # Build DataStructures in serial because the DataVector tests
+        # are very memory intensive to compile
+        time make test-libs-data-structures -j1
         time make test-libs-pointwise-functions -j2
+    fi
+
+    if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build stage 3" ]]; then
         time make test-libs-other -j2
         time make -j2
     fi
 
     if [[ ${TRAVIS_BUILD_STAGE_NAME} = \
-          "Build executables, run tests, clangtidy, and doxygen" ]]; then
+          "Build stage 4, clangtidy, and doxygen" ]]; then
         # Build major executables in serial to avoid hitting memory limits.
         time make test-executables -j1
         time ctest --output-on-failure -j2

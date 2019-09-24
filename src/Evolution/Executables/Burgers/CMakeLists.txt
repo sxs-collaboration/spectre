@@ -8,8 +8,8 @@ set(LIBS_TO_LINK
   DomainCreators
   IO
   Informer
+  Limiters
   LinearOperators
-  SlopeLimiters
   Time
   Utilities
   )

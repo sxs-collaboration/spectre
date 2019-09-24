@@ -15,7 +15,7 @@
 
 namespace PUP {
 class er;
-}
+}  // namespace PUP
 
 namespace {
 struct name {
@@ -27,6 +27,9 @@ struct age {
 };
 struct email {
   using type = std::string;
+};
+struct parents {
+  using type = std::vector<std::string>;
 };
 
 struct not_streamable {
@@ -48,17 +51,17 @@ struct not_streamable_tag {
 
 SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
   /// [construction_example]
-  tuples::TaggedTuple<name, age, email, not_streamable_tag> test(
-      "bla", 17, "bla@bla.bla", 0);
+  tuples::TaggedTuple<name, age, email, parents, not_streamable_tag> test(
+      "bla", 17, "bla@bla.bla", std::vector<std::string>{"Mom", "Dad"}, 0);
   /// [construction_example]
   static_assert(tuples::TaggedTuple<name, age, email>::size() == 3,
                 "Failed to test size of TaggedTuple");
   {
     std::stringstream ss;
     ss << test;
-    CHECK(ss.str() == "(bla, 17, bla@bla.bla, NOT STREAMABLE)");
+    CHECK(ss.str() == "(bla, 17, bla@bla.bla, (Mom,Dad), NOT STREAMABLE)");
   }
-  CHECK(test.size() == 4);
+  CHECK(test.size() == 5);
   /// [get_example]
   CHECK("bla" == tuples::get<name>(test));
   CHECK(17 == tuples::get<age>(test));
@@ -83,6 +86,29 @@ SPECTRE_TEST_CASE("Unit.Utilities.TaggedTuple", "[Utilities][Unit]") {
   }
 
   test_serialization(test2);
+
+  // Test reorder with non-const lvalue, and make sure
+  // that the non-const lvalue doesn't change.
+  const auto test3 = tuples::reorder<
+      tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>>(test);
+  CHECK(test3 ==
+        tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>{
+            "bla@bla.bla", 0, std::vector<std::string>{"Mom", "Dad"}, 17,
+            "Eamonn"});
+  CHECK(test ==
+        tuples::TaggedTuple<name, age, email, parents, not_streamable_tag>{
+            "Eamonn", 17, "bla@bla.bla", std::vector<std::string>{"Mom", "Dad"},
+            0});
+
+  /// [reorder_example]
+  const auto test4 = tuples::reorder<
+      tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>>(
+      std::move(test));
+  /// [reorder_example]
+  CHECK(test4 ==
+        tuples::TaggedTuple<email, not_streamable_tag, parents, age, name>{
+            "bla@bla.bla", 0, std::vector<std::string>{"Mom", "Dad"}, 17,
+            "Eamonn"});
 }
 
 namespace {

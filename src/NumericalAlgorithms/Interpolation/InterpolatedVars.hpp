@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <boost/optional.hpp>
 #include <cstddef>
 #include <unordered_map>
 #include <unordered_set>
@@ -44,8 +45,8 @@ struct Info {
   /// `block_coord_holders` even after all `Element`s have sent their
   /// data (this is because this `Info` lives only on a single core,
   /// and this core will have access only to the local `Element`s).
-  std::vector<IdPair<domain::BlockId,
-                     tnsr::I<double, VolumeDim, typename ::Frame::Logical>>>
+  std::vector<boost::optional<IdPair<
+      domain::BlockId, tnsr::I<double, VolumeDim, typename ::Frame::Logical>>>>
       block_coord_holders;
   /// `vars` holds the interpolated `Variables` on some subset of the
   /// points in `block_coord_holders`.  The grid points inside vars
@@ -85,9 +86,8 @@ void operator|(PUP::er& p, Info<VolumeDim, TagList>& t) noexcept {  // NOLINT
 template <typename Metavariables,
           typename InterpolationTargetTag, typename TagList>
 struct Holder {
-  std::unordered_map<
-      typename Metavariables::temporal_id::type,
-      Info<Metavariables::domain_dim, TagList>>
+  std::unordered_map<typename Metavariables::temporal_id::type,
+                     Info<Metavariables::volume_dim, TagList>>
       infos;
   std::unordered_set<typename Metavariables::temporal_id::type>
       temporal_ids_when_data_has_been_interpolated;

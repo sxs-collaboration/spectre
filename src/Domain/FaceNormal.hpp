@@ -14,6 +14,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
@@ -65,8 +66,15 @@ namespace Tags {
 /// \ingroup ComputationalDomainGroup
 /// The unnormalized face normal one form
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
-struct UnnormalizedFaceNormal : db::ComputeTag {
+struct UnnormalizedFaceNormal : db::SimpleTag {
   static std::string name() noexcept { return "UnnormalizedFaceNormal"; }
+  using type = tnsr::i<DataVector, VolumeDim, Frame>;
+};
+
+template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+struct UnnormalizedFaceNormalCompute
+    : db::ComputeTag, UnnormalizedFaceNormal<VolumeDim, Frame> {
+  using base = UnnormalizedFaceNormal<VolumeDim, Frame>;
   static constexpr tnsr::i<DataVector, VolumeDim, Frame> (*function)(
       const ::Mesh<VolumeDim - 1>&, const ::ElementMap<VolumeDim, Frame>&,
       const ::Direction<VolumeDim>&) = unnormalized_face_normal;
@@ -83,8 +91,8 @@ struct UnnormalizedFaceNormal : db::ComputeTag {
 /// represent ghost elements, the normals should correspond to the normals in
 /// said element, which are inverted with respect to the current element.
 template <size_t VolumeDim, typename Frame>
-struct InterfaceComputeItem<Tags::BoundaryDirectionsExterior<VolumeDim>,
-                            UnnormalizedFaceNormal<VolumeDim, Frame>>
+struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
+                        UnnormalizedFaceNormalCompute<VolumeDim, Frame>>
     : db::PrefixTag,
       db::ComputeTag,
       Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,

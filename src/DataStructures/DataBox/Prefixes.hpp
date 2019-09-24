@@ -24,15 +24,21 @@ class Variables;  // IWYU pragma: keep
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a time derivative
+///
+/// \snippet Test_DataBoxPrefixes.cpp dt_name
 template <typename Tag>
 struct dt : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "dt(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "dt(" + db::tag_name<Tag>() + ")";
+  }
   using type = db::item_type<Tag>;
   using tag = Tag;
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a flux
+///
+/// \snippet Test_DataBoxPrefixes.cpp flux_name
 template <typename Tag, typename VolumeDim, typename Fr,
           typename = std::nullptr_t>
 struct Flux;
@@ -45,7 +51,9 @@ struct Flux<Tag, VolumeDim, Fr,
   using type = TensorMetafunctions::prepend_spatial_index<
       db::item_type<Tag>, VolumeDim::value, UpLo::Up, Fr>;
   using tag = Tag;
-  static std::string name() noexcept { return "Flux"; }
+  static std::string name() noexcept {
+    return "Flux(" + db::tag_name<Tag>() + ")";
+  }
 };
 
 template <typename Tag, typename VolumeDim, typename Fr>
@@ -54,7 +62,9 @@ struct Flux<Tag, VolumeDim, Fr,
     : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static std::string name() noexcept { return "Flux"; }
+  static std::string name() noexcept {
+    return "Flux(" + db::tag_name<Tag>() + ")";
+  }
 };
 /// \endcond
 
@@ -66,36 +76,50 @@ template <typename Tag>
 struct Source : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static std::string name() noexcept { return "Source(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "Source(" + db::tag_name<Tag>() + ")";
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating the initial value of a quantity
+///
+/// \snippet Test_DataBoxPrefixes.cpp initial_name
 template <typename Tag>
 struct Initial : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static std::string name() noexcept { return "Initial(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "Initial(" + db::tag_name<Tag>() + ")";
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a boundary unit normal vector dotted into
 /// the flux
+///
+/// \snippet Test_DataBoxPrefixes.cpp normal_dot_flux_name
 template <typename Tag>
 struct NormalDotFlux : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static std::string name() noexcept { return "NormalDotFlux"; }
+  static std::string name() noexcept {
+    return "NormalDotFlux(" + db::tag_name<Tag>() + ")";
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \brief Prefix indicating a boundary unit normal vector dotted into
 /// the numerical flux
+///
+/// \snippet Test_DataBoxPrefixes.cpp normal_dot_numerical_flux_name
 template <typename Tag>
 struct NormalDotNumericalFlux : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static std::string name() noexcept { return "NormalDotNumericalFlux"; }
+  static std::string name() noexcept {
+    return "NormalDotNumericalFlux(" + db::tag_name<Tag>() + ")";
+  }
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -107,6 +131,16 @@ template <typename Tag>
 struct Next : db::PrefixTag, db::SimpleTag {
   using type = db::item_type<Tag>;
   using tag = Tag;
-  static std::string name() noexcept { return "Next(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "Next(" + db::tag_name<Tag>() + ")";
+  }
 };
+
+/// \ingroup DataBoxTagsGroup
+/// \brief Compute item for `Tags::Next<Tag>`
+///
+/// Requires that a template specialization for the requested `Tag` is defined.
+template <typename Tag>
+struct NextCompute;
+
 }  // namespace Tags

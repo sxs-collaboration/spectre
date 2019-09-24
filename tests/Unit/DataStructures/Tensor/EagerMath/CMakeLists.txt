@@ -7,9 +7,9 @@ set(LIBRARY_SOURCES
   Test_CrossProduct.cpp
   Test_Determinant.cpp
   Test_DeterminantAndInverse.cpp
-  Test_DivideBy.cpp
   Test_DotProduct.cpp
   Test_Magnitude.cpp
+  Test_Norms.cpp
   )
 
 add_test_library(

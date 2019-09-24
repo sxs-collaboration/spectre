@@ -5,9 +5,6 @@ set(LIBRARY "Test_EvolutionDiscontinuousGalerkin")
 
 set(LIBRARY_SOURCES
   Test_Filtering.cpp
-  Test_InitializeElement.cpp
-  Test_ObserveErrorNorms.cpp
-  Test_ObserveFields.cpp
   )
 
 add_test_library(
@@ -22,4 +19,4 @@ add_dependencies(
   module_ConstGlobalCache
   )
 
-add_subdirectory(SlopeLimiters)
+add_subdirectory(Limiters)

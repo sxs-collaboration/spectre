@@ -31,14 +31,10 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
-#include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
-#include "Utilities/Rational.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
@@ -260,14 +256,10 @@ wrap_DampedHarmonicHCompute(
     const double t, const double t_start, const double sigma_t,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double sigma_r) noexcept {
-  const Slab slab(0, t);
-  const Rational frac(1);
-  const Time current_time(slab, frac);
   return GeneralizedHarmonic::DampedHarmonicHCompute<
       SpatialDim, Frame>::function(gauge_h_init, lapse, shift,
                                    sqrt_det_spatial_metric, spacetime_metric,
-                                   current_time, t_start, sigma_t, coords,
-                                   sigma_r);
+                                   t, t_start, sigma_t, coords, sigma_r);
 }
 
 // Compare with Python implementation
@@ -342,10 +334,9 @@ void test_damped_harmonic_h_function_term_1_of_4(
   }
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
+  const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
 
   // Initialize settings
@@ -433,13 +424,12 @@ void test_damped_harmonic_h_function_term_2_of_4(
   }
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
+  const auto spacetime_unit_normal_one_form =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
+  const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
 
   // Initialize settings
@@ -450,11 +440,11 @@ void test_damped_harmonic_h_function_term_2_of_4(
   const double sigma_t_L1 = pdist(generator) * 0.2;
   const double r_max = pdist(generator) * 0.7;
 
-  const auto& log_fac_1 = log(get(sqrt_det_spatial_metric) / get(lapse));
+  const auto log_fac_1 = log(get(sqrt_det_spatial_metric) / get(lapse));
   const double roll_on_L1 =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L1, sigma_t_L1);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
@@ -536,13 +526,12 @@ void test_damped_harmonic_h_function_term_3_of_4(
   }
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
+  const auto spacetime_unit_normal_one_form =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
+  const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
 
   // Initialize settings
@@ -555,11 +544,11 @@ void test_damped_harmonic_h_function_term_3_of_4(
   const double roll_on_L2 =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L2, sigma_t_L2);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
-  const auto& log_fac_2 = log(1. / get(lapse));
+  const auto log_fac_2 = log(1. / get(lapse));
   const auto h_prefac1 = amp_coef_L2 * roll_on_L2 * get(weight) *
                          pow(log_fac_2, exp_L2) * log_fac_2;
 
@@ -638,12 +627,11 @@ void test_damped_harmonic_h_function_term_4_of_4(
   }
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
+  const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
-  const auto& one_over_lapse = 1. / get(lapse);
+  const auto one_over_lapse = 1. / get(lapse);
 
   // Initialize settings
   const double amp_coef_S = pdist(generator);
@@ -655,11 +643,11 @@ void test_damped_harmonic_h_function_term_4_of_4(
   const double roll_on_S =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_S, sigma_t_S);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
-  const auto& log_fac_1 = log(get(sqrt_det_spatial_metric) * one_over_lapse);
+  const auto log_fac_1 = log(get(sqrt_det_spatial_metric) * one_over_lapse);
   const auto h_prefac2 = -amp_coef_S * roll_on_S * get(weight) *
                          pow(log_fac_1, exp_S) * one_over_lapse;
 
@@ -730,10 +718,9 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   const auto& spatial_metric = get<gr::Tags::SpatialMetric<SpatialDim>>(vars);
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
+  const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
 
   // Initialize settings
@@ -746,7 +733,7 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   const double roll_on_L1 =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L1, sigma_t_L1);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
@@ -794,16 +781,16 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
       }
     }
   }
-  const auto& spacetime_unit_normal_one_form_ab_initio =
+  const auto spacetime_unit_normal_one_form_ab_initio =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio);
-  const auto& det_spatial_metric_ab_initio =
+  const auto det_spatial_metric_ab_initio =
       determinant_and_inverse(spatial_metric_ab_initio).first;
   Scalar<DataVector> sqrt_det_spatial_metric_ab_initio(
       sqrt(get(det_spatial_metric_ab_initio)));
 
   // compute GR dependent terms
-  const auto& log_fac_1 =
+  const auto log_fac_1 =
       log(get(sqrt_det_spatial_metric_ab_initio) / get(lapse_ab_initio));
 
   const auto h_prefac1 = amp_coef_L1 * roll_on_L1 * get(weight) *
@@ -857,10 +844,9 @@ void test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   const auto& spatial_metric = get<gr::Tags::SpatialMetric<SpatialDim>>(vars);
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
+  const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
 
   // Initialize settings
@@ -872,7 +858,7 @@ void test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   const double roll_on_L2 =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_L2, sigma_t_L2);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
@@ -909,12 +895,12 @@ void test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   // 3) compute lapse
   const Scalar<DataVector> lapse_ab_initio{sqrt(1. / (1. + H2))};
 
-  const auto& spacetime_unit_normal_one_form_ab_initio =
+  const auto spacetime_unit_normal_one_form_ab_initio =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio);
 
   // compute GR dependent terms
-  const auto& log_fac_2 = log(1. / get(lapse_ab_initio));
+  const auto log_fac_2 = log(1. / get(lapse_ab_initio));
 
   // compute other terms
   const auto h_prefac1 = amp_coef_L2 * roll_on_L2 * get(weight) *
@@ -968,10 +954,9 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   const auto& spatial_metric = get<gr::Tags::SpatialMetric<SpatialDim>>(vars);
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
+  const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
 
   // Initialize settings
@@ -983,7 +968,7 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   const double roll_on_S =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
           t, t_start_S, sigma_t_S);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
 
@@ -1037,15 +1022,15 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
       }
     }
   }
-  const auto& spacetime_metric_ab_initio = gr::spacetime_metric(
+  const auto spacetime_metric_ab_initio = gr::spacetime_metric(
       lapse_ab_initio, shift_ab_initio, spatial_metric_ab_initio);
-  const auto& det_spatial_metric_ab_initio =
+  const auto det_spatial_metric_ab_initio =
       determinant_and_inverse(spatial_metric_ab_initio).first;
   Scalar<DataVector> sqrt_det_spatial_metric_ab_initio(
       sqrt(get(det_spatial_metric_ab_initio)));
 
   // compute GR dependent terms
-  const auto& log_fac_1 =
+  const auto log_fac_1 =
       log(get(sqrt_det_spatial_metric_ab_initio) / get(lapse_ab_initio));
 
   const auto h_prefac2 = -amp_coef_S * roll_on_S * get(weight) *
@@ -1092,16 +1077,12 @@ wrap_SpacetimeDerivDampedHarmonicHCompute(
     const double t_start, const double sigma_t,
     const tnsr::I<DataVector, SpatialDim, Frame>& coords,
     const double sigma_r) noexcept {
-  const Slab slab(0, t);
-  const Rational frac(1);
-  const Time current_time(slab, frac);
   return GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<
       SpatialDim, Frame>::function(gauge_h_init, dgauge_h_init, lapse, shift,
                                    spacetime_unit_normal_one_form,
                                    sqrt_det_spatial_metric,
                                    inverse_spatial_metric, spacetime_metric, pi,
-                                   phi, current_time, t_start, sigma_t, coords,
-                                   sigma_r);
+                                   phi, t, t_start, sigma_t, coords, sigma_r);
 }
 // Compare with Python implementation
 template <size_t SpatialDim, typename Frame>
@@ -1202,15 +1183,14 @@ void test_deriv_damped_harmonic_h_function_term_1_of_4(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
+  const auto spacetime_unit_normal_one_form =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse);
-  const auto& inverse_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
+  const auto det_and_inv = determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inv.first;
+  const auto& inverse_spatial_metric = det_and_inv.second;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
                                             spatial_metric, d_spatial_metric);
@@ -1337,21 +1317,20 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
+  const auto spacetime_unit_normal_one_form =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
       gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift);
-  const auto& inverse_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
+  const auto det_and_inv = determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inv.first;
+  const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift, inverse_spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
                                             spatial_metric, d_spatial_metric);
@@ -1360,7 +1339,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
 
   // commonly used terms
   const auto exp_fac_1 = 1. / 2.;
-  const auto& log_fac_1 =
+  const auto log_fac_1 =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
           DataVector>(lapse, sqrt_det_spatial_metric, exp_fac_1);
 
@@ -1377,7 +1356,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
           t, t_start_L1, sigma_t_L1);
   const auto d0_roll_on_L1 = GeneralizedHarmonic::DampedHarmonicGauge_detail::
       time_deriv_of_roll_on_function(t, t_start_L1, sigma_t_L1);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
@@ -1403,7 +1382,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
       make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
           get(lapse), 0.);
   {
-    const auto& d4_log_fac_mu1 =
+    const auto d4_log_fac_mu1 =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
@@ -1542,21 +1521,20 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
+  const auto spacetime_unit_normal_one_form =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
       gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift);
-  const auto& inverse_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
+  const auto det_and_inv = determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inv.first;
+  const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift, inverse_spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
                                             spatial_metric, d_spatial_metric);
@@ -1565,7 +1543,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
 
   // commonly used terms
   const auto exp_fac_2 = 0.;
-  const auto& log_fac_2 =
+  const auto log_fac_2 =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
           DataVector>(lapse, sqrt_det_spatial_metric, exp_fac_2);
 
@@ -1583,7 +1561,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
           t, t_start_L2, sigma_t_L2);
   const auto d0_roll_on_L2 = GeneralizedHarmonic::DampedHarmonicGauge_detail::
       time_deriv_of_roll_on_function(t, t_start_L2, sigma_t_L2);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
@@ -1609,7 +1587,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
       make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
           get(lapse), 0.);
   {
-    const auto& d4_log_fac_mu2 =
+    const auto d4_log_fac_mu2 =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
@@ -1748,21 +1726,20 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
+  const auto spacetime_unit_normal_one_form =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
       gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift);
-  const auto& inverse_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
+  const auto det_and_inv = determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inv.first;
+  const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift, inverse_spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
                                             spatial_metric, d_spatial_metric);
@@ -1774,8 +1751,8 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
 
   // commonly used terms
   const auto exp_fac_1 = 1. / 2.;
-  const auto& one_over_lapse = 1. / get(lapse);
-  const auto& log_fac_1 =
+  const auto one_over_lapse = 1. / get(lapse);
+  const auto log_fac_1 =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
           DataVector>(lapse, sqrt_det_spatial_metric, exp_fac_1);
 
@@ -1792,7 +1769,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
           t, t_start_S, sigma_t_S);
   const auto d0_roll_on_S = GeneralizedHarmonic::DampedHarmonicGauge_detail::
       time_deriv_of_roll_on_function(t, t_start_S, sigma_t_S);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
@@ -1816,7 +1793,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
       make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
           get(lapse), 0.);
   {
-    const auto& d4_log_fac_muS =
+    const auto d4_log_fac_muS =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
@@ -1958,21 +1935,20 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
+  const auto spacetime_unit_normal_one_form =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
       gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift);
-  const auto& inverse_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
+  const auto det_and_inv = determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inv.first;
+  const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift, inverse_spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
                                             spatial_metric, d_spatial_metric);
@@ -2015,7 +1991,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
           t, t_start_L1, sigma_t_L1);
   const auto d0_roll_on_L1 = GeneralizedHarmonic::DampedHarmonicGauge_detail::
       time_deriv_of_roll_on_function(t, t_start_L1, sigma_t_L1);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
@@ -2113,19 +2089,19 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
     }
   }
 
-  const auto& spacetime_unit_normal_one_form_ab_initio =
+  const auto spacetime_unit_normal_one_form_ab_initio =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio);
   const auto spacetime_unit_normal_ab_initio =
       gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio, shift_ab_initio);
-  const auto& inverse_spatial_metric_ab_initio =
-      determinant_and_inverse(spatial_metric_ab_initio).second;
+  const auto det_and_inv_ab_initio =
+      determinant_and_inverse(spatial_metric_ab_initio);
+  const auto& det_spatial_metric_ab_initio = det_and_inv_ab_initio.first;
+  const auto& inverse_spatial_metric_ab_initio = det_and_inv_ab_initio.second;
   const auto inverse_spacetime_metric_ab_initio =
       gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio, shift_ab_initio, inverse_spatial_metric_ab_initio);
-  const auto& det_spatial_metric_ab_initio =
-      determinant_and_inverse(spatial_metric_ab_initio).first;
   Scalar<DataVector> sqrt_det_spatial_metric_ab_initio(
       sqrt(get(det_spatial_metric_ab_initio)));
   const auto phi_ab_initio = GeneralizedHarmonic::phi(
@@ -2137,7 +2113,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
 
   // commonly used terms
   const auto exp_fac_1 = 1. / 2.;
-  const auto& log_fac_1 =
+  const auto log_fac_1 =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
           DataVector>(lapse_ab_initio, sqrt_det_spatial_metric_ab_initio,
                       exp_fac_1);
@@ -2162,7 +2138,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
       make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
           get(lapse), 0.);
   {
-    const auto& d4_log_fac_mu1 =
+    const auto d4_log_fac_mu1 =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
@@ -2259,21 +2235,20 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
+  const auto spacetime_unit_normal_one_form =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
       gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift);
-  const auto& inverse_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
+  const auto det_and_inv = determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inv.first;
+  const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift, inverse_spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
                                             spatial_metric, d_spatial_metric);
@@ -2317,7 +2292,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
           t, t_start_L2, sigma_t_L2);
   const auto d0_roll_on_L2 = GeneralizedHarmonic::DampedHarmonicGauge_detail::
       time_deriv_of_roll_on_function(t, t_start_L2, sigma_t_L2);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
@@ -2415,19 +2390,19 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
     }
   }
 
-  const auto& spacetime_unit_normal_one_form_ab_initio =
+  const auto spacetime_unit_normal_one_form_ab_initio =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio);
   const auto spacetime_unit_normal_ab_initio =
       gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio, shift_ab_initio);
-  const auto& inverse_spatial_metric_ab_initio =
-      determinant_and_inverse(spatial_metric_ab_initio).second;
+  const auto det_and_inv_ab_initio =
+      determinant_and_inverse(spatial_metric_ab_initio);
+  const auto& det_spatial_metric_ab_initio = det_and_inv_ab_initio.first;
+  const auto& inverse_spatial_metric_ab_initio = det_and_inv_ab_initio.second;
   const auto inverse_spacetime_metric_ab_initio =
       gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio, shift_ab_initio, inverse_spatial_metric_ab_initio);
-  const auto& det_spatial_metric_ab_initio =
-      determinant_and_inverse(spatial_metric_ab_initio).first;
   Scalar<DataVector> sqrt_det_spatial_metric_ab_initio(
       sqrt(get(det_spatial_metric_ab_initio)));
   const auto phi_ab_initio = GeneralizedHarmonic::phi(
@@ -2439,7 +2414,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
 
   // commonly used terms
   const auto exp_fac_2 = 0.;
-  const auto& log_fac_2 =
+  const auto log_fac_2 =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
           DataVector>(lapse_ab_initio, sqrt_det_spatial_metric_ab_initio,
                       exp_fac_2);
@@ -2463,7 +2438,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
       make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
           get(lapse_ab_initio), 0.);
   {
-    const auto& d4_log_fac_mu2 =
+    const auto d4_log_fac_mu2 =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
@@ -2560,21 +2535,20 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
       get<typename Solution::template DerivSpatialMetric<DataVector>>(vars);
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
+  const auto spacetime_unit_normal_one_form =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
       gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift);
-  const auto& inverse_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
+  const auto det_and_inv = determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inv.first;
+  const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift, inverse_spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
                                             spatial_metric, d_spatial_metric);
@@ -2620,7 +2594,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
           t, t_start_S, sigma_t_S);
   const auto d0_roll_on_S = GeneralizedHarmonic::DampedHarmonicGauge_detail::
       time_deriv_of_roll_on_function(t, t_start_S, sigma_t_S);
-  const auto& weight =
+  const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
           SpatialDim, Frame::Inertial, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
@@ -2718,18 +2692,18 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
     }
   }
 
-  const auto& spacetime_metric_ab_initio = gr::spacetime_metric(
+  const auto spacetime_metric_ab_initio = gr::spacetime_metric(
       lapse_ab_initio, shift_ab_initio, spatial_metric_ab_initio);
   const auto spacetime_unit_normal_ab_initio =
       gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio, shift_ab_initio);
-  const auto& inverse_spatial_metric_ab_initio =
-      determinant_and_inverse(spatial_metric_ab_initio).second;
+  const auto det_and_inv_ab_initio =
+      determinant_and_inverse(spatial_metric_ab_initio);
+  const auto& det_spatial_metric_ab_initio = det_and_inv_ab_initio.first;
+  const auto& inverse_spatial_metric_ab_initio = det_and_inv_ab_initio.second;
   const auto inverse_spacetime_metric_ab_initio =
       gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
           lapse_ab_initio, shift_ab_initio, inverse_spatial_metric_ab_initio);
-  const auto& det_spatial_metric_ab_initio =
-      determinant_and_inverse(spatial_metric_ab_initio).first;
   Scalar<DataVector> sqrt_det_spatial_metric_ab_initio(
       sqrt(get(det_spatial_metric_ab_initio)));
   const auto phi_ab_initio = GeneralizedHarmonic::phi(
@@ -2741,8 +2715,8 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
 
   // commonly used terms
   const auto exp_fac_1 = 1. / 2.;
-  const auto& one_over_lapse = 1. / get(lapse_ab_initio);
-  const auto& log_fac_1 =
+  const auto one_over_lapse = 1. / get(lapse_ab_initio);
+  const auto log_fac_1 =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse<
           DataVector>(lapse_ab_initio, sqrt_det_spatial_metric_ab_initio,
                       exp_fac_1);
@@ -2764,7 +2738,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
       make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
           get(lapse_ab_initio), 0.);
   {
-    const auto& d4_log_fac_muS =
+    const auto d4_log_fac_muS =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
                 SpatialDim, Frame::Inertial, DataVector>(
@@ -2867,10 +2841,6 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
   const auto x = coord_map(x_logical);
   // Arbitrary time for time-independent solution.
   const double t = pdist(generator) * 0.4;
-  const Slab slab(0, t);
-  const Rational frac(1);
-  const Time current_time(slab, frac);
-  const TimeId current_time_id(true, 0, current_time);
 
   // Randomized 3 + 1 quantities
   // Note: Ranges from which random numbers are drawn to populate 3+1 tensors
@@ -2914,21 +2884,20 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
 
   // Get ingredients
-  const auto& spacetime_metric =
+  const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
-  const auto& spacetime_unit_normal_one_form =
+  const auto spacetime_unit_normal_one_form =
       gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
       gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift);
-  const auto& inverse_spatial_metric =
-      determinant_and_inverse(spatial_metric).second;
+  const auto det_and_inv = determinant_and_inverse(spatial_metric);
+  const auto& det_spatial_metric = det_and_inv.first;
+  const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
           lapse, shift, inverse_spatial_metric);
-  const auto& det_spatial_metric =
-      determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
                                             spatial_metric, d_spatial_metric);
@@ -2984,32 +2953,23 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
           gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
           gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
           GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>, ::Tags::TimeId,
+          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>, ::Tags::Time,
           ::Tags::Coordinates<3, Frame::Inertial>,
           GeneralizedHarmonic::OptionTags::GaugeHRollOnStartTime,
           GeneralizedHarmonic::OptionTags::GaugeHRollOnTimeWindow,
           GeneralizedHarmonic::OptionTags::GaugeHSpatialWeightDecayWidth<
               Frame::Inertial>>,
       db::AddComputeTags<
-          ::Tags::Time,
           GeneralizedHarmonic::DampedHarmonicHCompute<3, Frame::Inertial>,
           GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<
               3, Frame::Inertial>>>(
       gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
-      inverse_spatial_metric, spacetime_metric, pi, phi, current_time_id, x,
+      inverse_spatial_metric, spacetime_metric, pi, phi, t, x,
       t_start_S, sigma_t_S, r_max);
 
   // Verify that locally computed H_a matches the same obtained through its
   // ComputeTag from databox
-  CHECK(db::get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(box) == shift);
-  CHECK(db::get<::Tags::Time>(box) == current_time);
-  CHECK(db::get<GeneralizedHarmonic::OptionTags::GaugeHRollOnStartTime>(box) ==
-        t_start_S);
-  CHECK(db::get<GeneralizedHarmonic::OptionTags::GaugeHRollOnTimeWindow>(box) ==
-        sigma_t_S);
-  CHECK(db::get<GeneralizedHarmonic::OptionTags::GaugeHSpatialWeightDecayWidth<
-            Frame::Inertial>>(box) == r_max);
   CHECK(db::get<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>>(box) ==
         gauge_h_expected);
   CHECK(

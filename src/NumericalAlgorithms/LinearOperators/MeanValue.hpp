@@ -2,7 +2,7 @@
 // See LICENSE.txt for details.
 
 /// \file
-/// Defines function mean_value and mean_value_on_boundary.
+/// Defines functions mean_value and mean_value_on_boundary.
 
 #pragma once
 
@@ -22,17 +22,26 @@ class Mesh;
 
 /*!
  * \ingroup NumericalAlgorithmsGroup
- * \brief Compute the mean value of a grid-function over a manifold.
- * \f$mean value = \int f dV / \int dV\f$
+ * \brief Compute the mean value of a function over a manifold.
  *
- * \remarks The mean value is computed on the reference element(s).
- * \note The mean w.r.t. a different set of coordinates x can be computed
- * by pre-multiplying the argument f by the Jacobian J = dx/dxi of the mapping
- * from the reference coordinates xi to the coordinates x.
+ * Given a function \f$f\f$, compute its mean value \f$\bar{f}\f$ with respect
+ * to the logical coordinates \f$\boldsymbol{\xi} = (\xi, \eta, \zeta)\f$. E.g.,
+ * in 1 dimension, \f$\bar{f} = \int_{-1}^1 f d\xi \Big/ \int_{-1}^1 d\xi\f$.
  *
- * \returns the mean value of `f` on the manifold
- * \param f the grid function of which to find the mean.
- * \param mesh the Mesh of the manifold on which f is located.
+ * \note
+ * The mean w.r.t. a different set of coordinates
+ * \f$\boldsymbol{x} = \boldsymbol{x}(\boldsymbol{\xi})\f$ can't be directly
+ * computed using this function. Before calling `mean_value`, \f$f\f$ must be
+ * pre-multiplied by the Jacobian determinant
+ * \f$J = \det d\boldsymbol{x}/d\boldsymbol{\xi}\f$ of the mapping
+ * \f$\boldsymbol{x}(\boldsymbol{\xi})\f$. Additionally, the output of
+ * `mean_value` must be multiplied by a factor
+ * \f$2^{\text{d}} / \int J d^{\text{d}}\xi\f$ (in \f$d\f$ dimensions), to
+ * account for the different volume of the manifold in the \f$\boldsymbol{x}\f$
+ * coordinates.
+ *
+ * \param f the function to average.
+ * \param mesh the Mesh defining the grid points on the manifold.
  */
 template <size_t Dim>
 double mean_value(const DataVector& f, const Mesh<Dim>& mesh) noexcept {
@@ -42,15 +51,16 @@ double mean_value(const DataVector& f, const Mesh<Dim>& mesh) noexcept {
 // @{
 /*!
  * \ingroup NumericalAlgorithmsGroup
- * Compute the mean value of a grid-function on a boundary of a manifold.
- * \f$mean value = \int f dV / \int dV\f$
+ * \brief Compute the mean value of a function over a boundary of a manifold.
  *
- * \remarks The mean value is computed on the reference element(s).
+ * Given a function \f$f\f$, compute its mean value \f$\bar{f}\f$, over a
+ * boundary, with respect to the logical coordinates
+ * \f$\boldsymbol{\xi} = (\xi, \eta, \zeta)\f$.
  *
- * \returns the mean value of `f` on the boundary of the manifold
+ * \see `mean_value` for notes about means w.r.t. other coordinates.
  *
- * - `f` the grid function of which to find the mean.
- * - `mesh` the Mesh of the manifold on which f is located.
+ * - `f` the function to average.
+ * - `mesh` the Mesh defining the grid points on the manifold.
  * - `d` the dimension which is sliced away to get the boundary.
  * - `side` whether it is the lower or upper boundary in the d-th dimension.
  * - `boundary_buffer` is a pointer to a DataVector of size

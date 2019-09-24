@@ -23,10 +23,10 @@ void register_pupables();
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Informer/InfoFromBuild.hpp"
 #include "Parallel/Abort.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Exit.hpp"
+#include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Parallel/Printf.hpp"
 #include "Utilities/TMPL.hpp"
@@ -95,50 +95,50 @@ struct shape_of_nametag : shape_of_nametag_base {
 template <class Metavariables>
 struct SingletonParallelComponent {
   using chare_type = Parallel::Algorithms::Singleton;
-  using const_global_cache_tag_list = tmpl::list<name, age, height>;
-  using options = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<name, age, height>;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
 template <class Metavariables>
 struct ArrayParallelComponent {
   using chare_type = Parallel::Algorithms::Array;
-  using const_global_cache_tag_list = tmpl::list<height, shape_of_nametag>;
+  using const_global_cache_tags = tmpl::list<height, shape_of_nametag>;
   using array_index = int;
-  using options = tmpl::list<>;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
 template <class Metavariables>
 struct GroupParallelComponent {
   using chare_type = Parallel::Algorithms::Group;
-  using const_global_cache_tag_list = tmpl::list<name>;
-  using options = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<name>;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
 template <class Metavariables>
 struct NodegroupParallelComponent {
   using chare_type = Parallel::Algorithms::Nodegroup;
-  using const_global_cache_tag_list = tmpl::list<height>;
-  using options = tmpl::list<>;
+  using const_global_cache_tags = tmpl::list<height>;
   using metavariables = Metavariables;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
+  using initialization_tags = Parallel::get_initialization_tags<
+      Parallel::get_initialization_actions_list<phase_dependent_action_list>>;
 };
 
 struct TestMetavariables {
@@ -147,7 +147,6 @@ struct TestMetavariables {
                  ArrayParallelComponent<TestMetavariables>,
                  GroupParallelComponent<TestMetavariables>,
                  NodegroupParallelComponent<TestMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Testing, Exit };
 };
 
@@ -155,8 +154,8 @@ struct TestMetavariables {
 
 SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
   {
-    using tag_list = typename Parallel::ConstGlobalCache_detail::make_tag_list<
-        TestMetavariables>;
+    using tag_list =
+        typename Parallel::get_const_global_cache_tags<TestMetavariables>;
     static_assert(
         cpp17::is_same_v<tag_list,
                          tmpl::list<name, age, height, shape_of_nametag>>,
@@ -174,8 +173,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.ConstGlobalCache", "[Unit][Parallel]") {
   }
 
   {
-    using tag_list = typename Parallel::ConstGlobalCache_detail::make_tag_list<
-        TestMetavariables>;
+    using tag_list =
+        typename Parallel::get_const_global_cache_tags<TestMetavariables>;
     static_assert(
         cpp17::is_same_v<tag_list,
                          tmpl::list<name, age, height, shape_of_nametag>>,

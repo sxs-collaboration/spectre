@@ -8,6 +8,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
@@ -206,7 +207,7 @@ namespace Solutions {
  * Right now we use (\f$\ref{eq:sphertocartsimple}\f$), but we may
  * wish to use the other transformation in the future.
  */
-class KerrSchild {
+class KerrSchild : public MarkAsAnalyticSolution {
  public:
   static constexpr size_t volume_dim = 3;
   struct Mass {

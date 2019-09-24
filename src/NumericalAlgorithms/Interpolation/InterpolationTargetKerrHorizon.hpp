@@ -67,7 +67,7 @@ struct KerrHorizon {
               const OptionContext& context = {});
 
   KerrHorizon() = default;
-  KerrHorizon(const KerrHorizon& /*rhs*/) = delete;
+  KerrHorizon(const KerrHorizon& /*rhs*/) = default;
   KerrHorizon& operator=(const KerrHorizon& /*rhs*/) = delete;
   KerrHorizon(KerrHorizon&& /*rhs*/) noexcept = default;
   KerrHorizon& operator=(KerrHorizon&& /*rhs*/) noexcept = default;
@@ -87,6 +87,31 @@ bool operator!=(const KerrHorizon& lhs, const KerrHorizon& rhs) noexcept;
 
 }  // namespace OptionHolders
 
+namespace OptionTags {
+template <typename InterpolationTargetTag>
+struct KerrHorizon {
+  using type = OptionHolders::KerrHorizon;
+  static constexpr OptionString help{
+      "Options for interpolation onto Kerr horizon."};
+  static std::string name() noexcept {
+    return option_name<InterpolationTargetTag>();
+  }
+  using group = InterpolationTargets;
+};
+}  // namespace OptionTags
+
+namespace Tags {
+template <typename InterpolationTargetTag>
+struct KerrHorizon : db::SimpleTag {
+  using type = OptionHolders::KerrHorizon;
+  using option_tags =
+      tmpl::list<OptionTags::KerrHorizon<InterpolationTargetTag>>;
+  static type create_from_options(const type& option) noexcept {
+    return option;
+  }
+};
+}  // namespace Tags
+
 namespace Actions {
 /// \ingroup ActionsGroup
 /// \brief Sends points on a Kerr horizon to an `Interpolator`.
@@ -104,7 +129,7 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - `::Tags::Domain<VolumeDim, Frame>`
+///   - `::Tags::Domain<3, Frame>`
 ///   - `::Tags::Variables<typename
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 ///
@@ -119,8 +144,8 @@ namespace Actions {
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag, typename Frame>
 struct KerrHorizon {
-  using options_type = OptionHolders::KerrHorizon;
-  using const_global_cache_tags = tmpl::list<InterpolationTargetTag>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::KerrHorizon<InterpolationTargetTag>>;
   using initialization_tags =
       tmpl::append<StrahlkorperTags::items_tags<Frame>,
                    StrahlkorperTags::compute_items_tags<Frame>>;
@@ -128,7 +153,8 @@ struct KerrHorizon {
   static auto initialize(
       db::DataBox<DbTags>&& box,
       const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-    const auto& options = Parallel::get<InterpolationTargetTag>(cache);
+    const auto& options =
+        Parallel::get<Tags::KerrHorizon<InterpolationTargetTag>>(cache);
 
     // Make a Strahlkorper with the correct shape.
     ::Strahlkorper<Frame> strahlkorper(
@@ -156,12 +182,11 @@ struct KerrHorizon {
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     // In the future, when we add support for multiple Frames,
     // the code that transforms coordinates from the Strahlkorper Frame
-    // to `Metavariables::domain_frame` will go here.  That transformation
+    // to Frame::Inertial will go here.  That transformation
     // may depend on `temporal_id`.
     send_points_to_interpolator<InterpolationTargetTag>(
         box, cache,
-        db::get<StrahlkorperTags::CartesianCoords<
-            typename Metavariables::domain_frame>>(box),
+        db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box),
         temporal_id);
   }
 };

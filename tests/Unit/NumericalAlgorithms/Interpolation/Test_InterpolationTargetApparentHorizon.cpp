@@ -32,14 +32,13 @@ struct MockMetavariables {
   struct InterpolationTargetA {
     using vars_to_interpolate_to_target =
         tmpl::list<gr::Tags::Lapse<DataVector>>;
+    using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::Actions::ApparentHorizon<InterpolationTargetA,
                                           ::Frame::Inertial>;
-    using type = compute_target_points::options_type;
   };
-  using temporal_id = ::Tags::TimeId;
-  using domain_frame = Frame::Inertial;
-  static constexpr size_t domain_dim = 3;
+  using temporal_id = ::Tags::TimeStepId;
+  static constexpr size_t volume_dim = 3;
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
 
@@ -47,7 +46,6 @@ struct MockMetavariables {
       tmpl::list<InterpTargetTestHelpers::mock_interpolation_target<
                      MockMetavariables, InterpolationTargetA>,
                  InterpTargetTestHelpers::mock_interpolator<MockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace
@@ -119,7 +117,10 @@ SPECTRE_TEST_CASE(
   }
   ();
 
-  InterpTargetTestHelpers::test_interpolation_target<MockMetavariables>(
+  InterpTargetTestHelpers::test_interpolation_target<
+      MockMetavariables,
+      intrp::Tags::ApparentHorizon<MockMetavariables::InterpolationTargetA,
+                                   Frame::Inertial>>(
       domain_creator, std::move(apparent_horizon_opts),
       expected_block_coord_holders);
 }

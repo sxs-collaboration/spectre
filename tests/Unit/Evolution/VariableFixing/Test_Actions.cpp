@@ -12,7 +12,6 @@
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "Evolution/VariableFixing/Actions.hpp"
 #include "Evolution/VariableFixing/RadiallyFallingFloor.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"      // IWYU pragma: keep
@@ -32,7 +31,6 @@ struct mock_component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                                  hydro::Tags::Pressure<DataVector>,
                                  ::Tags::Coordinates<3, Frame::Inertial>>;
@@ -44,14 +42,10 @@ struct mock_component {
                              Metavariables::Phase::Testing,
                              tmpl::list<VariableFixing::Actions::FixVariables<
                                  VariableFixing::RadiallyFallingFloor<3>>>>>;
-  using const_global_cache_tag_list =
-      Parallel::get_const_global_cache_tags_from_pdal<
-          phase_dependent_action_list>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<mock_component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 }  // namespace

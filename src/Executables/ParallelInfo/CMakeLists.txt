@@ -24,4 +24,5 @@ add_dependencies(
 target_link_libraries(
   ${EXECUTABLE}
   ErrorHandling
+  Informer
   )

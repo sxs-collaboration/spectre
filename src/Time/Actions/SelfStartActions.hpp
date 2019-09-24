@@ -10,12 +10,13 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "Parallel/GotoAction.hpp"  // IWYU pragma: keep
+#include "Parallel/Actions/Goto.hpp"     // IWYU pragma: keep
+#include "Parallel/Actions/TerminatePhase.hpp"     // IWYU pragma: keep
 #include "Time/Actions/AdvanceTime.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep // for item_type<Tags::TimeStep>
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -150,7 +151,7 @@ using vars_to_save = typename vars_to_save_impl<
 /// Uses:
 /// - ConstGlobalCache: nothing
 /// - DataBox:
-///   - Tags::TimeId
+///   - Tags::TimeStepId
 ///   - Tags::TimeStep
 ///   - variables_tag
 ///   - primitive_variables_tag if the system has primitives
@@ -182,10 +183,7 @@ struct Initialize {
  public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                DbTags, Tags::InitialValue<tmpl::front<detail::vars_to_save<
-                            typename Metavariables::system>>>>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -198,7 +196,7 @@ struct Initialize {
     // The slab number increments each time a new point is generated
     // until it reaches zero.
     const auto values_needed =
-        -db::get<::Tags::Next<::Tags::TimeId>>(box).slab_number();
+        -db::get<::Tags::Next<::Tags::TimeStepId>>(box).slab_number();
     const TimeDelta self_start_step = initial_step / (values_needed + 1);
 
     auto new_box = StoreInitialValues<tmpl::push_back<
@@ -214,31 +212,15 @@ struct Initialize {
 
     return std::make_tuple(std::move(new_box));
   }
-
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<
-                DbTags, Tags::InitialValue<tmpl::front<detail::vars_to_save<
-                            typename Metavariables::system>>>>> = nullptr>
-  static std::tuple<db::DataBox<DbTags>&&> apply(
-      db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box)};
-  }
 };
 
 /// \ingroup ActionsGroup
 /// \ingroup TimeGroup
-/// Terminates the self-start phase if the required order has been
-/// reached.
+/// Exits the self-start loop if the required order has been reached.
 ///
 /// Uses:
 /// - ConstGlobalCache: nothing
-/// - DataBox: Tags::Next<Tags::TimeId>
+/// - DataBox: Tags::Next<Tags::TimeStepId>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -260,17 +242,12 @@ struct CheckForCompletion {
     // start the evolution proper.  The first thing the evolution loop
     // will do is update the time, so here we need to check if the
     // next time should be the first real step.
-    if (db::get<::Tags::Next<::Tags::TimeId>>(box).slab_number() == 0) {
+    if (db::get<::Tags::Next<::Tags::TimeStepId>>(box).slab_number() == 0) {
       return {std::move(box), false,
               tmpl::index_of<ActionList, ::Actions::Label<ExitTag>>::value};
     }
     return {std::move(box), false,
             tmpl::index_of<ActionList, CheckForCompletion>::value + 1};
-    // Once we have full support for phases this action should
-    // terminate the phase:
-    // return std::tuple<db::DataBox<DbTags>&&, bool>(
-    //     std::move(box),
-    //     db::get<::Tags::Next<::Tags::TimeId>>(box).slab_number() == 0);
   }
 };
 
@@ -283,14 +260,14 @@ struct CheckForCompletion {
 /// - ConstGlobalCache: nothing
 /// - DataBox:
 ///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
-///   - Tags::Time
-///   - Tags::TimeId
+///   - Tags::SubstepTime
+///   - Tags::TimeStepId
 ///   - Tags::TimeStep
 ///
 /// DataBox changes:
 /// - Adds: nothing
 /// - Removes: nothing
-/// - Modifies: Tags::Next<Tags::TimeId> if there is an order increase
+/// - Modifies: Tags::Next<Tags::TimeStepId> if there is an order increase
 struct CheckForOrderIncrease {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -303,7 +280,7 @@ struct CheckForOrderIncrease {
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     using variables_tag = typename Metavariables::system::variables_tag;
 
-    const auto& time = db::get<::Tags::Time>(box);
+    const auto& time = db::get<::Tags::SubstepTime>(box);
     const auto& time_step = db::get<::Tags::TimeStep>(box);
     const auto& history = db::get<::Tags::HistoryEvolvedVariables<
         variables_tag, db::add_tag_prefix<::Tags::dt, variables_tag>>>(box);
@@ -314,19 +291,21 @@ struct CheckForOrderIncrease {
     const bool done_with_order = time == required_time;
 
     if (done_with_order) {
-      db::mutate<::Tags::Next<::Tags::TimeId>>(
+      db::mutate<::Tags::Next<::Tags::TimeStepId>>(
           make_not_null(&box),
-          [](const gsl::not_null<db::item_type<::Tags::Next<::Tags::TimeId>>*>
-                 next_time_id,
-             const db::item_type<::Tags::TimeId>& current_time_id) noexcept {
-            const Slab slab = current_time_id.time().slab();
+          [
+          ](const gsl::not_null<
+                db::item_type<::Tags::Next<::Tags::TimeStepId>>*>
+                next_time_id,
+            const db::item_type<::Tags::TimeStepId>& current_time_id) noexcept {
+            const Slab slab = current_time_id.step_time().slab();
             *next_time_id =
-                TimeId(current_time_id.time_runs_forward(),
-                       current_time_id.slab_number() + 1,
-                       current_time_id.time_runs_forward() ? slab.start()
-                                                           : slab.end());
+                TimeStepId(current_time_id.time_runs_forward(),
+                           current_time_id.slab_number() + 1,
+                           current_time_id.time_runs_forward() ? slab.start()
+                                                               : slab.end());
           },
-          db::get<::Tags::TimeId>(box));
+          db::get<::Tags::TimeStepId>(box));
     }
 
     return {std::move(box)};
@@ -342,7 +321,7 @@ struct CheckForOrderIncrease {
 /// Uses:
 /// - ConstGlobalCache: nothing
 /// - DataBox:
-///   - Tags::Next<Tags::TimeId>
+///   - Tags::Next<Tags::TimeStepId>
 ///   - SelfStart::Tags::InitialValue<variables_tag>
 ///   - SelfStart::Tags::InitialValue<primitive_variables_tag> if the system
 ///     has primitives
@@ -373,7 +352,7 @@ struct StartNextOrderIfReady {
         tmpl::index_of<ActionList, StartNextOrderIfReady>::value + 1;
 
     const bool done_with_order =
-        db::get<::Tags::Next<::Tags::TimeId>>(box).is_at_slab_boundary();
+        db::get<::Tags::Next<::Tags::TimeStepId>>(box).is_at_slab_boundary();
 
     if (done_with_order) {
       tmpl::for_each<detail::vars_to_save<system>>([&box](auto tag) noexcept {
@@ -420,8 +399,7 @@ struct Cleanup {
  public:
   template <typename DbTags, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTags, initial_step_tag>> = nullptr>
+            typename ParallelComponent>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -439,20 +417,7 @@ struct Cleanup {
         db::get<initial_step_tag>(box));
 
     using remove_tags = tmpl::filter<DbTags, is_a_initial_value<tmpl::_1>>;
-    return std::make_tuple(db::create_from<remove_tags>(std::move(box)), true);
-  }
-
-  template <
-      typename DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTags, initial_step_tag>> = nullptr>
-  static std::tuple<db::DataBox<DbTags>&&, bool> apply(
-      db::DataBox<DbTags>& box,
-      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
-      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
-      const ParallelComponent* const /*meta*/) noexcept {
-    return {std::move(box), true};
+    return std::make_tuple(db::create_from<remove_tags>(std::move(box)));
   }
 };
 }  // namespace Actions
@@ -484,6 +449,8 @@ using self_start_procedure = tmpl::flatten<tmpl::list<
     UpdateVariables,
     ::Actions::Goto<detail::PhaseStart>,
     ::Actions::Label<detail::PhaseEnd>,
-    SelfStart::Actions::Cleanup>>;
+    SelfStart::Actions::Cleanup,
+    ::Actions::AdvanceTime,
+    Parallel::Actions::TerminatePhase>>;
 // clang-format on
 }  // namespace SelfStart

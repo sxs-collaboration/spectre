@@ -9,7 +9,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/NodeLock.hpp"
@@ -25,6 +24,7 @@
 // IWYU pragma: no_include <lrtslock.h>
 
 namespace {
+namespace TestSimpleAndThreadedActions {
 struct simple_action_a;
 struct simple_action_a_mock;
 struct simple_action_c;
@@ -48,8 +48,6 @@ struct component_for_simple_action_mock {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Initialization,
@@ -175,10 +173,32 @@ struct threaded_action_b_mock {
 struct SimpleActionMockMetavariables {
   using component_list = tmpl::list<
       component_for_simple_action_mock<SimpleActionMockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   enum class Phase { Initialization, Testing, Exit };
 };
+
+struct MockMetavariablesWithGlobalCacheTags {
+  using component_list = tmpl::list<
+      component_for_simple_action_mock<SimpleActionMockMetavariables>>;
+  using const_global_cache_tags = tmpl::list<ValueTag, PassedToB>;
+
+  enum class Phase { Initialization, Testing, Exit };
+};
+
+void test_mock_runtime_system_constructors() {
+  using metavars = MockMetavariablesWithGlobalCacheTags;
+  // Test whether we can construct with tagged tuples in different orders.
+  ActionTesting::MockRuntimeSystem<metavars> runner1{
+      tuples::TaggedTuple<ValueTag, PassedToB>{3, 7}};
+  ActionTesting::MockRuntimeSystem<metavars> runner2{
+      tuples::TaggedTuple<PassedToB, ValueTag>{7, 3}};
+  CHECK(Parallel::get<ValueTag>(runner1.cache()) ==
+        Parallel::get<ValueTag>(runner2.cache()));
+  CHECK(Parallel::get<PassedToB>(runner1.cache()) ==
+        Parallel::get<PassedToB>(runner2.cache()));
+  CHECK(Parallel::get<ValueTag>(runner1.cache()) == 3);
+  CHECK(Parallel::get<PassedToB>(runner1.cache()) == 7);
+}
 
 SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   using metavars = SimpleActionMockMetavariables;
@@ -240,5 +260,78 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
                                  threaded_action_b>(make_not_null(&runner), 0,
                                                     -50);
   CHECK(db::get<ValueTag>(box) == -50);
+
+  test_mock_runtime_system_constructors();
 }
+}  // namespace TestSimpleAndThreadedActions
+
+namespace TestIsRetrievable {
+struct DummyTimeTag : db::SimpleTag {
+  static std::string name() noexcept { return "DummyTime"; }
+  using type = int;
+};
+
+struct Action0 {
+  template <
+      typename DbTagsList, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<not tmpl::list_contains_v<DbTagsList, DummyTimeTag>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    return std::make_tuple(
+        db::create_from<db::RemoveTags<>, db::AddSimpleTags<DummyTimeTag>>(
+            std::move(box), 6));
+  }
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
+            Requires<tmpl::list_contains_v<DbTagsList, DummyTimeTag>> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {std::move(box)};
+  }
+};
+
+template <typename Metavariables>
+struct Component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+
+  using phase_dependent_action_list =
+      tmpl::list<Parallel::PhaseActions<typename Metavariables::Phase,
+                                        Metavariables::Phase::Testing,
+                                        tmpl::list<Action0>>>;
+};
+
+struct Metavariables {
+  using component_list = tmpl::list<Component<Metavariables>>;
+
+  enum class Phase { Testing, Exit };
+};
+
+SPECTRE_TEST_CASE("Unit.ActionTesting.IsRetrievable", "[Unit]") {
+  using metavars = Metavariables;
+  using component = Component<Metavariables>;
+
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  ActionTesting::emplace_component<component>(&runner, 0);
+  runner.set_phase(Metavariables::Phase::Testing);
+  CHECK(not ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner,
+                                                                       0));
+  // Runs Action0
+  runner.next_action<component>(0);
+  CHECK(ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner, 0));
+  CHECK(ActionTesting::get_databox_tag<component, DummyTimeTag>(runner, 0) ==
+        6);
+}
+}  // namespace TestIsRetrievable
 }  // namespace

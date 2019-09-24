@@ -316,7 +316,7 @@ struct WriteReductionData {
       in_reduction_data.finalize();
       WriteReductionData::write_data(
           subfile_name, std::move(legend), std::move(in_reduction_data.data()),
-          Parallel::get<OptionTags::ReductionFileName>(cache),
+          Parallel::get<Tags::ReductionFileName>(cache),
           std::make_index_sequence<sizeof...(ReductionDatums)>{});
       Parallel::unlock(&file_lock);
     }

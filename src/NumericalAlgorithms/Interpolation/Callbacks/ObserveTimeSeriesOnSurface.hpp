@@ -92,6 +92,9 @@ struct ObserveTimeSeriesOnSurface {
       tmpl::list<typename detail::reduction_data_type<TagsToObserve>::type>>;
   using observation_types = tmpl::list<ObservationType>;
 
+  static constexpr double fill_invalid_points_with =
+      std::numeric_limits<double>::quiet_NaN();
+
   template <typename DbTags, typename Metavariables>
   static void apply(
       const db::DataBox<DbTags>& box,
@@ -104,10 +107,11 @@ struct ObserveTimeSeriesOnSurface {
     // always guaranteed to be present.
     Parallel::threaded_action<observers::ThreadedActions::WriteReductionData>(
         proxy[0],
-        observers::ObservationId(temporal_id.time().value(), ObservationType{}),
+        observers::ObservationId(temporal_id.substep_time().value(),
+                                 ObservationType{}),
         std::string{"/" + pretty_type::short_name<InterpolationTargetTag>()},
         detail::make_legend(TagsToObserve{}),
-        detail::make_reduction_data(box, temporal_id.time().value(),
+        detail::make_reduction_data(box, temporal_id.substep_time().value(),
                                     TagsToObserve{}));
   }
 };

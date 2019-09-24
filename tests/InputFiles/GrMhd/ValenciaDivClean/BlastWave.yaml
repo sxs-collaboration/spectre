@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveValenciaDivCleanAnalyticData
+# Executable: EvolveCylindricalBlastWave
 # Check: execute
 
 Evolution:
@@ -35,7 +35,7 @@ EvolutionSystem:
   ValenciaDivClean:
     DampingParameter: 0.0
 
-SlopeLimiter:
+Limiter:
   Minmod:
     Type: Muscl
     TvbmConstant: 0

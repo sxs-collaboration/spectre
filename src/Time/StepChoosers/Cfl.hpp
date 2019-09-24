@@ -70,11 +70,9 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
       const Parallel::ConstGlobalCache<Metavariables>& cache) const noexcept {
     using compute_largest_characteristic_speed =
         typename Metavariables::system::compute_largest_characteristic_speed;
-    const double speed =
-        db::apply<typename compute_largest_characteristic_speed::argument_tags>(
-            compute_largest_characteristic_speed{}, box);
+    const double speed = db::apply<compute_largest_characteristic_speed>(box);
     const double time_stepper_stability_factor =
-        Parallel::get<OptionTags::TimeStepper>(cache).stable_step();
+        Parallel::get<Tags::TimeStepperBase>(cache).stable_step();
 
     return safety_factor_ * time_stepper_stability_factor *
            minimum_grid_spacing / speed;

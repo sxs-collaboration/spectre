@@ -16,17 +16,17 @@
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Domain/Creators/Shell.hpp"
 #include "Domain/Domain.hpp"
+#include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolationTarget.hpp"
 #include "NumericalAlgorithms/Interpolation/InitializeInterpolator.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/InterpolationTargetReceiveVars.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -76,19 +76,19 @@ struct mock_interpolation_target {
   using array_index = size_t;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
-  using const_global_cache_tag_list = tmpl::list<>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>;
   using simple_tags =
       db::get_items<typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template return_tag_list<Metavariables>>;
+          Metavariables, InterpolationTargetTag>::return_tag_list>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
-          tmpl::list<ActionTesting::InitializeDataBox<simple_tags>>>,
+          tmpl::list<ActionTesting::InitializeDataBox<
+              simple_tags,
+              typename InterpolationTargetTag::compute_items_on_target>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
-  using add_options_to_databox =
-      typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
 };
 
 template <typename InterpolationTargetTag>
@@ -103,14 +103,16 @@ struct MockCleanUpInterpolator {
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
-    CHECK(temporal_id == TimeId(true, 0, Time(slab, Rational(13, 15))));
+    CHECK(temporal_id == TimeStepId(true, 0, Time(slab, Rational(13, 15))));
     // Put something in NumberOfElements so we can check later whether
     // this function was called.  This isn't the usual usage of
     // NumberOfElements.
     db::mutate<intrp::Tags::NumberOfElements>(
-        make_not_null(&box),
-        [](const gsl::not_null<db::item_type<intrp::Tags::NumberOfElements>*>
-               number_of_elements) noexcept { ++(*number_of_elements); });
+        make_not_null(&box), [](const gsl::not_null<
+                                 db::item_type<intrp::Tags::NumberOfElements>*>
+                                    number_of_elements) noexcept {
+          ++(*number_of_elements);
+        });
   }
 };
 
@@ -125,15 +127,16 @@ struct MockComputeTargetPoints {
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     Slab slab(0.0, 1.0);
-    CHECK(temporal_id == TimeId(true, 0, Time(slab, Rational(14, 15))));
+    CHECK(temporal_id == TimeStepId(true, 0, Time(slab, Rational(14, 15))));
     // Increment IndicesOfFilledInterpPoints so we can check later
     // whether this function was called.  This isn't the usual usage
     // of IndicesOfFilledInterpPoints; this is done only for the test.
     db::mutate<intrp::Tags::IndicesOfFilledInterpPoints>(
-        make_not_null(&box),
-        [](const gsl::not_null<
-            db::item_type<intrp::Tags::IndicesOfFilledInterpPoints>*>
-               indices) noexcept { indices->insert(indices->size() + 1); });
+        make_not_null(&box), [](const gsl::not_null<db::item_type<
+                                    intrp::Tags::IndicesOfFilledInterpPoints>*>
+                                    indices) noexcept {
+          indices->insert(indices->size() + 1);
+        });
   }
 };
 
@@ -158,7 +161,7 @@ template <typename DbTags, typename TemporalId>
 void callback_impl(const db::DataBox<DbTags>& box,
                    const TemporalId& temporal_id) noexcept {
   Slab slab(0.0, 1.0);
-  CHECK(temporal_id == TimeId(true, 0, Time(slab, Rational(13, 15))));
+  CHECK(temporal_id == TimeStepId(true, 0, Time(slab, Rational(13, 15))));
   // The result should be the square of the first 10 integers, in
   // a Scalar<DataVector>.
   const Scalar<DataVector> expected{
@@ -192,13 +195,37 @@ struct MockPostInterpolationCallbackNoCleanup {
   }
 };
 
+template <size_t NumberOfInvalidInterpolationPoints>
+struct MockPostInterpolationCallbackWithInvalidPoints {
+  static constexpr double fill_invalid_points_with = 15.0;
+
+  template <typename DbTags, typename Metavariables>
+  static void apply(
+      const db::DataBox<DbTags>& box,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const typename Metavariables::temporal_id::type& temporal_id) noexcept {
+    Slab slab(0.0, 1.0);
+    CHECK(temporal_id == TimeStepId(true, 0, Time(slab, Rational(13, 15))));
+
+    // The result should be the square of the first 10 integers, in
+    // a Scalar<DataVector>, followed by several 225s.
+    DataVector expected_dv(NumberOfInvalidInterpolationPoints + 10);
+    for (size_t i = 0; i < 10; ++i) {
+      expected_dv[i] = double(i * i);
+    }
+    for (size_t i = 10; i < 10 + NumberOfInvalidInterpolationPoints; ++i) {
+      expected_dv[i] = 225.0;
+    }
+    const Scalar<DataVector> expected{expected_dv};
+    CHECK_ITERABLE_APPROX(expected, db::get<Tags::Square>(box));
+  }
+};
+
 template <typename Metavariables>
 struct mock_interpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -225,18 +252,17 @@ struct MockMetavariables {
   };
   using interpolator_source_vars = tmpl::list<gr::Tags::Lapse<DataVector>>;
   using interpolation_target_tags = tmpl::list<InterpolationTargetA>;
-  using temporal_id = ::Tags::TimeId;
-  using domain_frame = Frame::Inertial;
-  static constexpr size_t domain_dim = 3;
+  using temporal_id = ::Tags::TimeStepId;
+  static constexpr size_t volume_dim = 3;
 
   using component_list = tmpl::list<
       mock_interpolation_target<MockMetavariables, InterpolationTargetA>,
       mock_interpolator<MockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
-template <typename MockCallbackType, size_t NumberOfExpectedCleanUpActions>
+template <typename MockCallbackType, size_t NumberOfExpectedCleanUpActions,
+          size_t NumberOfInvalidPointsToAdd>
 void test_interpolation_target_receive_vars() noexcept {
   using metavars = MockMetavariables<MockCallbackType>;
   using interp_component = mock_interpolator<metavars>;
@@ -249,20 +275,29 @@ void test_interpolation_target_receive_vars() noexcept {
   Slab slab(0.0, 1.0);
   const size_t num_points = 10;
 
-  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  // Add indices of invalid points (if there are any) at the end.
+  std::unordered_set<size_t> invalid_indices{};
+  for (size_t index = num_points;
+       index < num_points + NumberOfInvalidPointsToAdd; ++index) {
+    invalid_indices.insert(index);
+  }
+
+  ActionTesting::MockRuntimeSystem<metavars> runner{
+      {domain_creator.create_domain()}};
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component_and_initialize<target_component>(
       &runner, 0,
       {db::item_type<intrp::Tags::IndicesOfFilledInterpPoints>{},
+       db::item_type<intrp::Tags::IndicesOfInvalidInterpPoints>{
+           invalid_indices},
        db::item_type<typename intrp::Tags::TemporalIds<metavars>>{
-           TimeId(true, 0, Time(slab, Rational(13, 15))),
-           TimeId(true, 0, Time(slab, Rational(14, 15)))},
+           TimeStepId(true, 0, Time(slab, Rational(13, 15))),
+           TimeStepId(true, 0, Time(slab, Rational(14, 15)))},
        db::item_type<typename intrp::Tags::CompletedTemporalIds<metavars>>{},
        db::item_type<::Tags::Variables<typename metavars::InterpolationTargetA::
                                            vars_to_interpolate_to_target>>{
-           num_points}},
-      domain_creator.create_domain());
+           num_points + NumberOfInvalidPointsToAdd}});
   runner.set_phase(metavars::Phase::Testing);
 
   // Now set up the vars.
@@ -409,7 +444,7 @@ void test_interpolation_target_receive_vars() noexcept {
     CHECK(ActionTesting::get_databox_tag<
               target_component, intrp::Tags::CompletedTemporalIds<metavars>>(
               runner, 0)
-              .front() == TimeId(true, 0, Time(slab, Rational(13, 15))));
+              .front() == TimeStepId(true, 0, Time(slab, Rational(13, 15))));
 
     // And there is yet one more simple action, compute_target_points,
     // which here we mock just to check that it is called.
@@ -434,8 +469,10 @@ void test_interpolation_target_receive_vars() noexcept {
 
 SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.ReceiveVars",
                   "[Unit]") {
-  test_interpolation_target_receive_vars<MockPostInterpolationCallback, 1>();
+  test_interpolation_target_receive_vars<MockPostInterpolationCallback, 1, 0>();
   test_interpolation_target_receive_vars<MockPostInterpolationCallbackNoCleanup,
-                                         0>();
+                                         0, 0>();
+  test_interpolation_target_receive_vars<
+      MockPostInterpolationCallbackWithInvalidPoints<3>, 1, 3>();
 }
 }  // namespace

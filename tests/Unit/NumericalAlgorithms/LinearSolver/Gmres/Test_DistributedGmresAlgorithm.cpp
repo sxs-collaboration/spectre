@@ -22,19 +22,14 @@ namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 namespace {
 
 struct Metavariables {
-  using system = helpers_distributed::System;
-
-  using linear_solver = LinearSolver::Gmres<Metavariables>;
+  using linear_solver =
+      LinearSolver::Gmres<Metavariables, helpers_distributed::fields_tag>;
 
   using component_list =
       tmpl::append<tmpl::list<helpers_distributed::ElementArray<Metavariables>,
                               observers::ObserverWriter<Metavariables>,
                               helpers::OutputCleaner<Metavariables>>,
                    typename linear_solver::component_list>;
-  using const_global_cache_tag_list = tmpl::list<>;
-
-  struct ObservationType {};
-  using element_observation_type = ObservationType;
 
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<tmpl::list<linear_solver>>;
@@ -45,6 +40,7 @@ struct Metavariables {
 
   enum class Phase {
     Initialization,
+    RegisterWithObserver,
     PerformLinearSolve,
     TestResult,
     CleanOutput,
@@ -57,6 +53,8 @@ struct Metavariables {
           Metavariables>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:
+        return Phase::RegisterWithObserver;
+      case Phase::RegisterWithObserver:
         return Phase::PerformLinearSolve;
       case Phase::PerformLinearSolve:
         return Phase::TestResult;

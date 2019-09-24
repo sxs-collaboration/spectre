@@ -28,12 +28,11 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -85,10 +84,8 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
-  using const_global_cache_tag_list =
-      tmpl::list<OptionTags::TypedTimeStepper<LtsTimeStepper>,
-                 NumericalFluxTag>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using const_global_cache_tags =
+      tmpl::list<Tags::TimeStepper<LtsTimeStepper>, NumericalFluxTag>;
   using simple_tags =
       db::AddSimpleTags<Tags::Mesh<2>, Tags::Mortars<Tags::Mesh<1>, 2>,
                         Tags::Mortars<Tags::MortarSize<1>, 2>, Tags::TimeStep,
@@ -107,9 +104,8 @@ struct Component {
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<Component<Metavariables>>;
-  using temporal_id = TimeId;
+  using temporal_id = TimeStepId;
   static constexpr bool local_time_stepping = true;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag;
   enum class Phase { Initialization, Testing, Exit };
@@ -169,16 +165,16 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyBoundaryFluxesLocalTimeStepping",
   using mortar_data_tag =
       typename flux_comm_types::local_time_stepping_mortar_data_tag;
   typename mortar_data_tag::type mortar_data;
-  mortar_data[slow_mortar].local_insert(TimeId(true, 0, now),
+  mortar_data[slow_mortar].local_insert(TimeStepId(true, 0, now),
                                         gsl::at(local_data, 0));
-  mortar_data[fast_mortar].local_insert(TimeId(true, 0, now),
+  mortar_data[fast_mortar].local_insert(TimeStepId(true, 0, now),
                                         gsl::at(local_data, 1));
-  mortar_data[slow_mortar].remote_insert(TimeId(true, 0, now - time_step / 2),
-                                         gsl::at(remote_data, 0));
-  mortar_data[fast_mortar].remote_insert(TimeId(true, 0, now),
+  mortar_data[slow_mortar].remote_insert(
+      TimeStepId(true, 0, now - time_step / 2), gsl::at(remote_data, 0));
+  mortar_data[fast_mortar].remote_insert(TimeStepId(true, 0, now),
                                          gsl::at(remote_data, 1));
-  mortar_data[fast_mortar].remote_insert(TimeId(true, 0, now + time_step / 3),
-                                         gsl::at(remote_data, 2));
+  mortar_data[fast_mortar].remote_insert(
+      TimeStepId(true, 0, now + time_step / 3), gsl::at(remote_data, 2));
 
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {std::make_unique<TimeSteppers::AdamsBashforthN>(1), NumericalFlux{}}};

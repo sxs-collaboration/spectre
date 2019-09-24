@@ -41,6 +41,13 @@
  */
 class DataVector : public VectorImpl<double, DataVector> {
  public:
+  DataVector() = default;
+  DataVector(const DataVector&) = default;
+  DataVector(DataVector&&) = default;
+  DataVector& operator=(const DataVector&) = default;
+  DataVector& operator=(DataVector&&) = default;
+  ~DataVector() = default;
+
   using VectorImpl<double, DataVector>::operator=;
   using VectorImpl<double, DataVector>::VectorImpl;
 

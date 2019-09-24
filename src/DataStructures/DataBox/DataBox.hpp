@@ -57,6 +57,14 @@ struct is_databox<DataBox<tmpl::list<Tags...>>> : std::true_type {};
 /// \endcond
 // @}
 
+/// \ingroup DataBoxGroup
+/// Equal to `true` if `Tag` can be retrieved from a `DataBox` of type
+/// `DataBoxType`.
+template <typename Tag, typename DataBoxType>
+constexpr bool tag_is_retrievable_v =
+    tmpl::any<typename DataBoxType::tags_list,
+              std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>::value;
+
 namespace DataBox_detail {
 template <class Tag, class Type>
 class DataBoxLeaf;
@@ -343,18 +351,6 @@ struct create_dependency_graph {
 }  // namespace DataBox_detail
 
 namespace DataBox_detail {
-// Check if a tag has a name method
-template <typename Tag, typename = std::nullptr_t>
-struct tag_has_name {
-  static_assert(cpp17::is_same_v<Tag, const void* const*>,
-                "The tag does not have a static method 'name()' that returns a "
-                "std::string. See the first template parameter of "
-                "db::DataBox_detail::tag_has_name to see the problematic tag.");
-};
-template <typename Tag>
-struct tag_has_name<
-    Tag, Requires<cpp17::is_same_v<decltype(Tag::name()), std::string>>> {};
-
 template <typename Tag, typename = std::nullptr_t>
 struct check_simple_or_compute_tag {
   static_assert(cpp17::is_same_v<Tag, const void* const*>,
@@ -451,7 +447,6 @@ class DataBox<tmpl::list<Tags...>>
 #ifdef SPECTRE_DEBUG
   // Destructor is used for triggering assertions
   ~DataBox() noexcept {
-    EXPAND_PACK_LEFT_TO_RIGHT(DataBox_detail::tag_has_name<Tags>{});
     EXPAND_PACK_LEFT_TO_RIGHT(
         DataBox_detail::check_simple_or_compute_tag<Tags>{});
   }
@@ -939,7 +934,18 @@ constexpr DataBox<tmpl::list<Tags...>>::DataBox(
   merge_old_box(std::forward<Box>(old_box), tmpl::list<KeepTags...>{});
 
   // Add in new simple and compute tags
+
+// Silence "maybe-uninitialized" warning for GCC-6. The warning only occurs in
+// Release mode.
+// Note that clang also defines `__GNUC__`, so we need to exclude it.
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7
   std::tuple<Args...> args_tuple(std::forward<Args>(args)...);
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7
+#pragma GCC diagnostic pop
+#endif  // defined(__GNUC__) && !defined(__clang__) && __GNUC__ < 7
   add_items_to_box<tmpl::list<Tags...>>(
       args_tuple, tmpl::list<AddTags...>{},
       std::make_index_sequence<sizeof...(AddTags)>{},
@@ -1176,7 +1182,7 @@ SPECTRE_ALWAYS_INLINE auto DataBox<tmpl::list<Tags...>>::get() const noexcept
   using derived_tag = DataBox_detail::first_matching_tag<tags_list, Tag>;
   if (UNLIKELY(mutate_locked_box_)) {
     ERROR("Unable to retrieve a (compute) item '"
-          << derived_tag::name()
+          << db::tag_name<derived_tag>()
           << "' from the DataBox from within a "
              "call to mutate. You must pass these either through the capture "
              "list of the lambda or the constructor of a class, this "
@@ -1489,7 +1495,7 @@ const Type& get_item_from_box(const DataBox<tmpl::list<TagsInBox...>>& box,
   if (result == nullptr) {
     std::string tags_in_box;
     const auto print_helper = [&tags_in_box](auto tag) noexcept {
-      tags_in_box += "  " + decltype(tag)::name() + "\n";
+      tags_in_box += "  " + db::tag_name<decltype(tag)>() + "\n";
     };
     EXPAND_PACK_LEFT_TO_RIGHT(print_helper(Tags{}));
     ERROR("Could not find the tag named \""
@@ -1534,26 +1540,29 @@ struct Apply;
 
 template <typename... Tags>
 struct Apply<tmpl::list<Tags...>> {
-  template <typename F, typename BoxTags, typename... Args,
-            Requires<is_apply_callable_v<
-                F, const std::add_lvalue_reference_t<db::item_type<Tags>>...,
-                Args...>> = nullptr>
+  template <
+      typename F, typename BoxTags, typename... Args,
+      Requires<is_apply_callable_v<
+          F, const std::add_lvalue_reference_t<db::item_type<Tags, BoxTags>>...,
+          Args...>> = nullptr>
   static constexpr auto apply(F&& /*f*/, const DataBox<BoxTags>& box,
-                              Args&&... args) {
+                              Args&&... args) noexcept {
     return F::apply(::db::get<Tags>(box)..., std::forward<Args>(args)...);
   }
 
-  template <typename F, typename BoxTags, typename... Args,
-            Requires<not is_apply_callable_v<
-                F, const std::add_lvalue_reference_t<db::item_type<Tags>>...,
-                Args...>> = nullptr>
+  template <
+      typename F, typename BoxTags, typename... Args,
+      Requires<not is_apply_callable_v<
+          F, const std::add_lvalue_reference_t<db::item_type<Tags, BoxTags>>...,
+          Args...>> = nullptr>
   static constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
-                              Args&&... args) {
+                              Args&&... args) noexcept {
     static_assert(
         tt::is_callable_v<
             std::remove_pointer_t<F>,
             tmpl::conditional_t<cpp17::is_same_v<Tags, ::Tags::DataBox>,
-                                const DataBox<BoxTags>&, item_type<Tags>>...,
+                                const DataBox<BoxTags>&,
+                                item_type<Tags, BoxTags>>...,
             Args...>,
         "Cannot call the function f with the list of tags and "
         "arguments specified. Check that the Tags::type and the "
@@ -1562,11 +1571,22 @@ struct Apply<tmpl::list<Tags...>> {
                               std::forward<Args>(args)...);
   }
 };
+
+template <typename F, typename = cpp17::void_t<>>
+struct has_argument_tags : std::false_type {};
+
+template <typename F>
+struct has_argument_tags<F, cpp17::void_t<typename F::argument_tags>>
+    : std::true_type {};
+
+template <typename F>
+constexpr bool has_argument_tags_v = has_argument_tags<F>::value;
 }  // namespace DataBox_detail
 
+// @{
 /*!
  * \ingroup DataBoxGroup
- * \brief Apply the function `f` with argument Tags `TagsList` from
+ * \brief Apply the invokable `f` with argument Tags `TagsList` from
  * DataBox `box`
  *
  * \details
@@ -1574,6 +1594,9 @@ struct Apply<tmpl::list<Tags...>> {
  * `db::item_type<TagsList>..., Args...` where the first pack expansion
  * is over the elements in the type list `TagsList`, or have a static
  * `apply` function that is callable with the same types.
+ * If the class that implements the static `apply` functions also provides an
+ * `argument_tags` typelist, then it is used and no explicit `TagsList` template
+ * parameter should be specified.
  *
  * \usage
  * Given a function `func` that takes arguments of types
@@ -1606,22 +1629,63 @@ struct Apply<tmpl::list<Tags...>> {
  * \param args the arguments to pass to the function that are not in the
  * DataBox, `box`
  */
-template <typename TagsList, typename F, typename BoxTags, typename... Args>
-inline constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
-                            Args&&... args) {
+template <typename TagsList, typename F, typename BoxTags, typename... Args,
+          Requires<not DataBox_detail::has_argument_tags_v<std::decay_t<F>>> =
+              nullptr>
+SPECTRE_ALWAYS_INLINE constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
+                                           Args&&... args) noexcept {
   return DataBox_detail::Apply<TagsList>::apply(std::forward<F>(f), box,
                                                 std::forward<Args>(args)...);
+}
+
+template <typename F, typename BoxTags, typename... Args,
+          typename ArgumentTags = typename std::decay_t<F>::argument_tags>
+SPECTRE_ALWAYS_INLINE constexpr auto apply(F&& f, const DataBox<BoxTags>& box,
+                                           Args&&... args) noexcept {
+  return DataBox_detail::Apply<ArgumentTags>::apply(
+      std::forward<F>(f), box, std::forward<Args>(args)...);
+}
+// @}
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Apply the function `F::apply` that takes as arguments the
+ * `F::argument_tags` and `args`.
+ *
+ * \details
+ * `F` must have a `tmpl::list` type alias `argument_tags`, as well as a static
+ * `apply` function. The `apply` function must take the types of the
+ * `argument_tags` as constant references. It can also take the `Args` as
+ * additional arguments.
+ *
+ * \example
+ * \snippet Test_DataBox.cpp apply_stateless_struct_example
+ *
+ * \tparam F The invokable to apply
+ * \param box The DataBox out of which to retrieve the Tags to pass to `F`
+ * \param args The arguments to pass to the function that are not in the
+ * DataBox, `box`
+ */
+template <typename F, typename BoxTags, typename... Args>
+SPECTRE_ALWAYS_INLINE constexpr auto apply(const DataBox<BoxTags>& box,
+                                           Args&&... args) noexcept {
+  static_assert(
+      DataBox_detail::has_argument_tags_v<F>,
+      "The stateless invokable does not specify an 'argument_tags' type "
+      "list. Did you forget to add it to the class? The class is listed as the "
+      "first template parameter below.");
+  return apply(F{}, box, std::forward<Args>(args)...);
 }
 
 namespace DataBox_detail {
 template <typename... ReturnTags, typename... ArgumentTags, typename F,
           typename BoxTags, typename... Args,
           Requires<is_apply_callable_v<
-              F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+              F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
               const std::add_lvalue_reference_t<
                   db::item_type<ArgumentTags, BoxTags>>...,
               Args...>> = nullptr>
-inline constexpr auto mutate_apply(
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F&& /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> box,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... args) noexcept {
@@ -1633,7 +1697,8 @@ inline constexpr auto mutate_apply(
       "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
       box,
-      [](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
+      [](const gsl::not_null<
+             db::item_type<ReturnTags, BoxTags>*>... mutated_items,
          const db::item_type<ArgumentTags, BoxTags>&... args_items,
          decltype(std::forward<Args>(args))... l_args) noexcept {
         return std::decay_t<F>::apply(mutated_items..., args_items...,
@@ -1645,11 +1710,11 @@ inline constexpr auto mutate_apply(
 template <typename... ReturnTags, typename... ArgumentTags, typename F,
           typename BoxTags, typename... Args,
           Requires<::tt::is_callable_v<
-              F, const gsl::not_null<db::item_type<ReturnTags>*>...,
+              F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
               const std::add_lvalue_reference_t<
                   db::item_type<ArgumentTags, BoxTags>>...,
               Args...>> = nullptr>
-inline constexpr auto mutate_apply(
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F&& f, const gsl::not_null<db::DataBox<BoxTags>*> box,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... args) noexcept {
@@ -1661,7 +1726,8 @@ inline constexpr auto mutate_apply(
       "inside mutate_apply.");
   ::db::mutate<ReturnTags...>(
       box,
-      [&f](const gsl::not_null<db::item_type<ReturnTags>*>... mutated_items,
+      [&f](const gsl::not_null<
+               db::item_type<ReturnTags, BoxTags>*>... mutated_items,
            const db::item_type<ArgumentTags, BoxTags>&... args_items,
            decltype(std::forward<Args>(args))... l_args) noexcept {
         return f(mutated_items..., args_items...,
@@ -1682,28 +1748,29 @@ constexpr void error_mutate_apply_not_callable() noexcept {
 template <
     typename... ReturnTags, typename... ArgumentTags, typename F,
     typename BoxTags, typename... Args,
-    Requires<not(is_apply_callable_v<
-                     F, const gsl::not_null<db::item_type<ReturnTags>*>...,
-                     const std::add_lvalue_reference_t<
-                         db::item_type<ArgumentTags, BoxTags>>...,
-                     Args...> or
-                 ::tt::is_callable_v<
-                     F, const gsl::not_null<db::item_type<ReturnTags>*>...,
-                     const std::add_lvalue_reference_t<
-                         db::item_type<ArgumentTags, BoxTags>>...,
-                     Args...>)> = nullptr>
-inline constexpr auto mutate_apply(
+    Requires<
+        not(is_apply_callable_v<
+                F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
+                const std::add_lvalue_reference_t<
+                    db::item_type<ArgumentTags, BoxTags>>...,
+                Args...> or
+            ::tt::is_callable_v<
+                F, const gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
+                const std::add_lvalue_reference_t<
+                    db::item_type<ArgumentTags, BoxTags>>...,
+                Args...>)> = nullptr>
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F /*f*/, const gsl::not_null<db::DataBox<BoxTags>*> /*box*/,
     tmpl::list<ReturnTags...> /*meta*/, tmpl::list<ArgumentTags...> /*meta*/,
     Args&&... /*args*/) noexcept {
   error_mutate_apply_not_callable<
-      F, gsl::not_null<db::item_type<ReturnTags>*>...,
+      F, gsl::not_null<db::item_type<ReturnTags, BoxTags>*>...,
       const db::item_type<ArgumentTags, BoxTags>&..., Args&&...>();
 }
 
 template <typename Tag, typename BoxTags>
 constexpr int check_mutate_apply_mutate_tag() noexcept {
-  static_assert(tmpl::list_contains_v<BoxTags, Tag>,
+  static_assert(tag_is_retrievable_v<Tag, DataBox<BoxTags>>,
                 "A tag to mutate is not in the DataBox.  See the first "
                 "template argument for the missing tag, and the second for the "
                 "available tags.");
@@ -1719,16 +1786,10 @@ constexpr bool check_mutate_apply_mutate_tags(
 
 template <typename Tag, typename BoxTags>
 constexpr int check_mutate_apply_apply_tag() noexcept {
-  // This static assert is triggered for the mutate_apply on line
-  // 86 of ComputeNonConservativeBoundaryFluxes, with the tag Interface<Dirs,
-  // Normalized...>, which is the base tag of InterfaceComputeItem<Dirs,
-  // Normalized...> and so can be retrieved from the DataBox, but still triggers
-  // this assert.
-
-  //  static_assert(tmpl::list_contains_v<BoxTags, Tag>,
-  //                "A tag to apply with is not in the DataBox.  See the first "
-  //                "template argument for the missing tag, and the second for
-  //                the " "available tags.");
+  static_assert(tag_is_retrievable_v<Tag, DataBox<BoxTags>>,
+                "A tag to apply with is not in the DataBox.  See the first "
+                "template argument for the missing tag, and the second for the "
+                "available tags.");
   return 0;
 }
 
@@ -1794,7 +1855,7 @@ template <typename MutateTags, typename ArgumentTags, typename F,
           typename BoxTags, typename... Args,
           Requires<not DataBox_detail::has_return_tags_and_argument_tags_v<
               std::decay_t<F>>> = nullptr>
-inline constexpr auto mutate_apply(
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F&& f, const gsl::not_null<DataBox<BoxTags>*> box,
     Args&&... args) noexcept(DataBox_detail::
                                  check_mutate_apply_mutate_tags(
@@ -1820,7 +1881,7 @@ template <typename F, typename BoxTags, typename... Args,
               std::decay_t<F>>> = nullptr,
           typename MutateTags = typename std::decay_t<F>::return_tags,
           typename ArgumentTags = typename std::decay_t<F>::argument_tags>
-inline constexpr auto mutate_apply(
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     F&& f, const gsl::not_null<DataBox<BoxTags>*> box,
     Args&&... args) noexcept(DataBox_detail::
                                  check_mutate_apply_mutate_tags(
@@ -1865,8 +1926,8 @@ inline constexpr auto mutate_apply(
  * DataBox, `box`
  */
 template <typename F, typename BoxTags, typename... Args>
-inline constexpr auto mutate_apply(const gsl::not_null<DataBox<BoxTags>*> box,
-                                   Args&&... args) noexcept {
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
+    const gsl::not_null<DataBox<BoxTags>*> box, Args&&... args) noexcept {
   static_assert(
       DataBox_detail::has_return_tags_and_argument_tags_v<F>,
       "The stateless mutator does not specify both 'argument_tags' and "
@@ -1917,9 +1978,7 @@ using compute_databox_type = typename DataBox_detail::compute_dbox_type<
 /// returned by `db::get<Tag>`) if the tag is in the `DataBox` of type
 /// `DataBoxType`, otherwise returns `NoSuchType`.
 template <typename Tag, typename DataBoxType,
-          bool = tmpl::size<tmpl::filter<
-                     typename DataBoxType::tags_list,
-                     std::is_base_of<tmpl::pin<Tag>, tmpl::_1>>>::value != 0>
+          bool = tag_is_retrievable_v<Tag, DataBoxType>>
 struct item_type_if_contained;
 
 /// \cond
@@ -1938,12 +1997,4 @@ template <typename Tag, typename DataBoxType>
 using item_type_if_contained_t =
     typename item_type_if_contained<Tag, DataBoxType>::type;
 // @}
-
-/// \ingroup DataBoxGroup
-/// Equal to `true` if `Tag` can be retrieved from a `DataBox` of type
-/// `DataBoxType`.
-template <typename Tag, typename DataBoxType>
-constexpr bool tag_is_retrievable_v =
-    not std::is_same<NoSuchType,
-                     item_type_if_contained_t<Tag, DataBoxType>>::value;
 }  // namespace db

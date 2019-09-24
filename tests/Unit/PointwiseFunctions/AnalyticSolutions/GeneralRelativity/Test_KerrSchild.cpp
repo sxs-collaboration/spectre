@@ -184,66 +184,6 @@ void test_einstein_solution() noexcept {
       std::numeric_limits<double>::epsilon() * 1.e5);
 }
 
-void test_double_vs_datavector() noexcept {
-  // Parameters for KerrSchild solution
-  const double mass = 1.7;
-  const std::array<double, 3> spin{{0.1, 0.2, 0.3}};
-  const std::array<double, 3> center{{0.3, 0.2, 0.4}};
-  gr::Solutions::KerrSchild solution(mass, spin, center);
-
-  const double t = 1.3;
-  const auto x1 = spatial_coords(0.0);
-  const auto x2 = spatial_coords(DataVector{0.0, 0.0, 0.0});
-
-  const auto vars1 =
-      solution.variables(x1, t, gr::Solutions::KerrSchild::tags<double>{});
-  const auto& lapse1 = get<gr::Tags::Lapse<double>>(vars1);
-  const auto& dt_lapse1 = get<Tags::dt<gr::Tags::Lapse<double>>>(vars1);
-  const auto& d_lapse1 =
-      get<gr::Solutions::KerrSchild::DerivLapse<double>>(vars1);
-  const auto& shift1 = get<gr::Tags::Shift<3, Frame::Inertial, double>>(vars1);
-  const auto& d_shift1 =
-      get<gr::Solutions::KerrSchild::DerivShift<double>>(vars1);
-  const auto& dt_shift1 =
-      get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, double>>>(vars1);
-  const auto& g1 =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, double>>(vars1);
-  const auto& dt_g1 =
-      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, double>>>(vars1);
-  const auto& d_g1 =
-      get<gr::Solutions::KerrSchild::DerivSpatialMetric<double>>(vars1);
-
-  const auto vars2 =
-      solution.variables(x2, t, gr::Solutions::KerrSchild::tags<DataVector>{});
-  const auto& lapse2 = get<gr::Tags::Lapse<DataVector>>(vars2);
-  const auto& dt_lapse2 = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars2);
-  const auto& d_lapse2 =
-      get<gr::Solutions::KerrSchild::DerivLapse<DataVector>>(vars2);
-  const auto& shift2 =
-      get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars2);
-  const auto& d_shift2 =
-      get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(vars2);
-  const auto& dt_shift2 =
-      get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(vars2);
-  const auto& g2 =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars2);
-  const auto& dt_g2 =
-      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
-          vars2);
-  const auto& d_g2 =
-      get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(vars2);
-
-  check_tensor_doubles_approx_equals_tensor_datavectors(lapse2, lapse1);
-  check_tensor_doubles_approx_equals_tensor_datavectors(shift2, shift1);
-  check_tensor_doubles_approx_equals_tensor_datavectors(g2, g1);
-  check_tensor_doubles_approx_equals_tensor_datavectors(dt_lapse2, dt_lapse1);
-  check_tensor_doubles_approx_equals_tensor_datavectors(dt_shift2, dt_shift1);
-  check_tensor_doubles_approx_equals_tensor_datavectors(dt_g2, dt_g1);
-  check_tensor_doubles_approx_equals_tensor_datavectors(d_lapse2, d_lapse1);
-  check_tensor_doubles_approx_equals_tensor_datavectors(d_shift2, d_shift1);
-  check_tensor_doubles_approx_equals_tensor_datavectors(d_g2, d_g1);
-}
-
 void test_serialize() noexcept {
   gr::Solutions::KerrSchild solution(3.0, {{0.2, 0.3, 0.2}}, {{0.0, 3.0, 4.0}});
   test_serialization(solution);
@@ -275,7 +215,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
   test_schwarzschild<DataVector>(DataVector{0.0, 0.0, 0.0});
   test_schwarzschild<double>(0.0);
   test_einstein_solution();
-  test_double_vs_datavector();
   test_copy_and_move();
   test_serialize();
   test_construct_from_options();

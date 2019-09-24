@@ -10,7 +10,6 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/History.hpp"
@@ -20,7 +19,7 @@
 #include "Time/StepControllers/BinaryFraction.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
@@ -53,10 +52,8 @@ struct Component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list =
-      tmpl::list<OptionTags::TypedTimeStepper<LtsTimeStepper>>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
-  using simple_tags = tmpl::list<Tags::TimeId, Tags::Next<Tags::TimeId>,
+  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<LtsTimeStepper>>;
+  using simple_tags = tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>,
                                  Tags::TimeStep, history_tag>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -70,7 +67,7 @@ struct Component {
 struct Metavariables {
   using system = System;
   static constexpr bool local_time_stepping = true;
-  using const_global_cache_tag_list = change_step_size::const_global_cache_tags;
+  using const_global_cache_tags = change_step_size::const_global_cache_tags;
   using component_list = tmpl::list<Component<Metavariables>>;
   enum class Phase { Initialization, Testing, Exit };
 };
@@ -99,10 +96,11 @@ void check(const bool time_runs_forward,
   // Initialize the component
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0,
-      {TimeId(time_runs_forward, 0, time),
-       TimeId(time_runs_forward, 0,
-              (time_runs_forward ? time.slab().start() : time.slab().end()) +
-                  initial_step_size),
+      {TimeStepId(time_runs_forward, 0, time),
+       TimeStepId(
+           time_runs_forward, 0,
+           (time_runs_forward ? time.slab().start() : time.slab().end()) +
+               initial_step_size),
        initial_step_size, db::item_type<history_tag>{}});
 
   runner.set_phase(Metavariables::Phase::Testing);
@@ -112,8 +110,8 @@ void check(const bool time_runs_forward,
           runner, 0);
 
   CHECK(db::get<Tags::TimeStep>(box) == expected_step);
-  CHECK(db::get<Tags::Next<Tags::TimeId>>(box) ==
-        TimeId(time_runs_forward, 0, time + expected_step));
+  CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
+        TimeStepId(time_runs_forward, 0, time + expected_step));
 }
 }  // namespace
 

@@ -94,24 +94,28 @@ MagnetizedFmDisk::MagnetizedFmDisk(
   }
 
   const auto b_field = unnormalized_magnetic_field(grid);
-  const auto spatial_metric = get<
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(variables(
+  const auto unmagnetized_vars = variables(
       grid,
-      tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>{}));
+      tmpl::list<
+          gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+          hydro::Tags::LorentzFactor<DataVector>,
+          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>{});
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
+          unmagnetized_vars);
 
   const tnsr::I<double, 3, Frame::Inertial> x_max{
       {{max_pressure_radius_, bh_spin_a_, 0.0}}};
 
-  const double b_squared_max = max(
-      get(dot_product(b_field, b_field, spatial_metric)) /
-          square(get(get<hydro::Tags::LorentzFactor<DataVector>>(variables(
-              grid, tmpl::list<hydro::Tags::LorentzFactor<DataVector>>{})))) +
-      square(get(dot_product(
-          b_field,
-          get<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>(
-              variables(grid, tmpl::list<hydro::Tags::SpatialVelocity<
-                                  DataVector, 3, Frame::Inertial>>{})),
-          spatial_metric))));
+  const double b_squared_max =
+      max(get(dot_product(b_field, b_field, spatial_metric)) /
+              square(get(get<hydro::Tags::LorentzFactor<DataVector>>(
+                  unmagnetized_vars))) +
+          square(get(dot_product(
+              b_field,
+              get<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>(
+                  unmagnetized_vars),
+              spatial_metric))));
   ASSERT(b_squared_max > 0.0, "Max b squared is zero.");
   b_field_normalization_ =
       sqrt(2.0 *

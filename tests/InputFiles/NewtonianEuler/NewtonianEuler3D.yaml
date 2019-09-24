@@ -1,0 +1,56 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveNewtonianEuler3D
+# Check: execute
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.0001
+  TimeStepper:
+    RungeKutta3
+
+DomainCreator:
+  Brick:
+    LowerBound: [-0.25, 0.0, 0.0]
+    UpperBound: [0.75, 0.1, 0.1]
+    IsPeriodicIn: [false, false, false]
+    InitialRefinement: [4, 0, 0]
+    InitialGridPoints: [2, 2, 2]
+
+AnalyticSolution:
+  RiemannProblem:
+    AdiabaticIndex: 1.4
+    InitialPosition: 0.25
+    LeftMassDensity: 1.0
+    LeftVelocity: [0.0, 0.5, -0.3]
+    LeftPressure: 1.0
+    RightMassDensity: 0.125
+    RightVelocity: [0.0, 0.2, 0.1]
+    RightPressure: 0.1
+
+NumericalFlux:
+  Hll:
+
+Limiter:
+  Minmod:
+    # Uncomment line below to turn off the limiter:
+    # DisableForDebugging: True
+    Type: LambdaPiN
+    # Recommended value from minmod papers:
+    TvbmConstant: 50.0
+
+EventsAndTriggers:
+  # ? EveryNSlabs:
+  #     N: 100
+  #     Offset: 0
+  # : - ObserveFields:
+  #       VariablesToObserve: [MassDensity]
+  # ? PastTime: 0.7501
+  ? SpecifiedSlabs:
+      Slabs: [10]
+  : - Completion
+
+Observers:
+  VolumeFileName: "./NewtonianEulerVolume"
+  ReductionFileName: "./NewtonianEulerReductions"

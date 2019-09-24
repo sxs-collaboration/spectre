@@ -16,7 +16,7 @@ struct TestStream {
   std::vector<int> b{0, 4, 8, -7};
 };
 
-std::ostream& operator<<(std::ostream& os, const TestStream& t) {
+std::ostream& operator<<(std::ostream& os, const TestStream& t) noexcept {
   os << t.a << " (";
   for (size_t i = 0; i < t.b.size() - 1; ++i) {
     os << t.b[i] << ",";

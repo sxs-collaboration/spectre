@@ -160,6 +160,12 @@ void test_factory_with_metavars() {
   // `creatable_classes`
   CHECK(opts.get<OptionType, Metavars<false>>()->name() ==
         "TestWithArg(stuff)no");
+  auto result_true = opts.apply<tmpl::list<OptionType>, Metavars<true>>(
+      [&](auto arg) { return arg; });
+  CHECK(result_true->name() == "TestWithArg(stuff)yes");
+  auto result_false = opts.apply<tmpl::list<OptionType>, Metavars<false>>(
+      [&](auto arg) { return arg; });
+  CHECK(result_false->name() == "TestWithArg(stuff)no");
 }
 
 void test_factory_object_vector() {

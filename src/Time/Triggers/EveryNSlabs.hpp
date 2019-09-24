@@ -6,16 +6,16 @@
 #include <cstdint>
 #include <pup.h>
 
-#include "Evolution/EventsAndTriggers/Trigger.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
-#include "Time/TimeId.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Trigger.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace Tags {
-struct TimeId;
+struct TimeStepId;
 }  // namespace Tags
 /// \endcond
 
@@ -58,9 +58,9 @@ class EveryNSlabs : public Trigger<TriggerRegistrars> {
   EveryNSlabs(const uint64_t interval, const uint64_t offset) noexcept
       : interval_(interval), offset_(offset) {}
 
-  using argument_tags = tmpl::list<Tags::TimeId>;
+  using argument_tags = tmpl::list<Tags::TimeStepId>;
 
-  bool operator()(const TimeId& time_id) const noexcept {
+  bool operator()(const TimeStepId& time_id) const noexcept {
     if (not time_id.is_at_slab_boundary()) {
       return false;
     }

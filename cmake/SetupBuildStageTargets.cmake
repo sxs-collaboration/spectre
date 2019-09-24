@@ -32,7 +32,6 @@ add_dependencies(test-libs-domain
 add_dependencies(test-libs-elliptic
   Test_EllipticActions
   Test_EllipticDG
-  Test_EllipticInitialization
   Test_Elasticity
   Test_Poisson
   Test_PoissonActions
@@ -43,8 +42,8 @@ add_dependencies(test-libs-evolution
   Test_EvolutionActions
   Test_EvolutionConservative
   Test_EvolutionDiscontinuousGalerkin
-  Test_SlopeLimiters
-  Test_EvolutionEventsAndTriggers
+  Test_Limiters
+  Test_EventsAndTriggers
   Test_Burgers
   Test_CurvedScalarWave
   Test_GeneralizedHarmonic
@@ -67,8 +66,8 @@ add_dependencies(test-libs-numerical-algorithms
   Test_LinearOperators
   Test_LinearSolver
   Test_LinearSolverActions
-  # Test_ConjugateGradient
-  # Test_Gmres
+  Test_ConjugateGradient
+  Test_Gmres
   Test_RootFinding
   Test_Spectral
   )

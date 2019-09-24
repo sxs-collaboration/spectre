@@ -45,11 +45,11 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
   using element_comp =
       helpers::element_component<metavariables, type_of_observation>;
 
-  tuples::TaggedTuple<observers::OptionTags::ReductionFileName,
-                      observers::OptionTags::VolumeFileName>
+  tuples::TaggedTuple<observers::Tags::ReductionFileName,
+                      observers::Tags::VolumeFileName>
       cache_data{};
   const auto& output_file_prefix =
-      tuples::get<observers::OptionTags::ReductionFileName>(cache_data) =
+      tuples::get<observers::Tags::ReductionFileName>(cache_data) =
           "./Unit.IO.Observers.ReductionObserver";
   ActionTesting::MockRuntimeSystem<metavariables> runner{cache_data};
   ActionTesting::emplace_component<obs_component>(&runner, 0);

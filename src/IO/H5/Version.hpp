@@ -39,8 +39,8 @@ class Version : public h5::Object {
   Version(const Version& /*rhs*/) = delete;
   Version& operator=(const Version& /*rhs*/) = delete;
 
-  Version(Version&& /*rhs*/) noexcept = default;             // NOLINT
-  Version& operator=(Version&& /*rhs*/) noexcept = default;  // NOLINT
+  Version(Version&& /*rhs*/) noexcept = delete;             // NOLINT
+  Version& operator=(Version&& /*rhs*/) noexcept = delete;  // NOLINT
   ~Version() override = default;
   /// \endcond
 

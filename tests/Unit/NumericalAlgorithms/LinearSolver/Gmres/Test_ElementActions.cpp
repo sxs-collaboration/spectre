@@ -31,80 +31,66 @@ struct VectorTag : db::SimpleTag {
   static std::string name() noexcept { return "VectorTag"; }
 };
 
+using fields_tag = VectorTag;
 using initial_fields_tag =
-    db::add_tag_prefix<LinearSolver::Tags::Initial, VectorTag>;
-using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, VectorTag>;
+    db::add_tag_prefix<LinearSolver::Tags::Initial, fields_tag>;
+using operand_tag = db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
 using orthogonalization_iteration_id_tag =
     db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
                        LinearSolver::Tags::IterationId>;
-using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<VectorTag>;
-
-template <typename Metavariables>
-using element_tags =
-    tmpl::append<tmpl::list<VectorTag, operand_tag>,
-                 typename LinearSolver::gmres_detail::InitializeElement<
-                     Metavariables>::simple_tags,
-                 typename LinearSolver::gmres_detail::InitializeElement<
-                     Metavariables>::compute_tags>;
+using basis_history_tag = LinearSolver::Tags::KrylovSubspaceBasis<fields_tag>;
 
 template <typename Metavariables>
 struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<element_tags<Metavariables>>;
-};
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<
+              tmpl::list<VectorTag, operand_tag,
+                         LinearSolver::Tags::IterationId, initial_fields_tag,
+                         orthogonalization_iteration_id_tag, basis_history_tag,
+                         LinearSolver::Tags::HasConverged>,
+              tmpl::list<
+                  ::Tags::NextCompute<LinearSolver::Tags::IterationId>>>>>,
 
-struct System {
-  using fields_tag = VectorTag;
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Testing,
+          tmpl::list<LinearSolver::gmres_detail::PrepareStep>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
-  using system = System;
-  using const_global_cache_tag_list = tmpl::list<>;
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
                   "[Unit][NumericalAlgorithms][LinearSolver][Actions]") {
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<ElementArray<Metavariables>>;
+  using element_array = ElementArray<Metavariables>;
 
-  const int self_id{0};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
 
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(
-          self_id,
-          db::create<
-              tmpl::append<tmpl::list<VectorTag, operand_tag>,
-                           typename LinearSolver::gmres_detail::
-                               InitializeElement<Metavariables>::simple_tags>,
-              typename LinearSolver::gmres_detail::InitializeElement<
-                  Metavariables>::compute_tags>(
-              DenseVector<double>(3, 0.), DenseVector<double>(3, 2.), 0_st,
-              0_st, DenseVector<double>(3, -1.), 0_st,
-              std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
-                                               DenseVector<double>(3, 1.5)},
-              db::item_type<LinearSolver::Tags::HasConverged>{}));
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
-  const auto get_box = [&runner, &self_id]() -> decltype(auto) {
-    return runner.algorithms<ElementArray<Metavariables>>()
-        .at(self_id)
-        .get_databox<ElementArray<Metavariables>::initial_databox>();
+  // Setup mock element array
+  ActionTesting::emplace_component_and_initialize<element_array>(
+      make_not_null(&runner), 0,
+      {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
+       std::numeric_limits<size_t>::max(), DenseVector<double>(3, -1.),
+       size_t{0},
+       std::vector<DenseVector<double>>{DenseVector<double>(3, 0.5),
+                                        DenseVector<double>(3, 1.5)},
+       db::item_type<LinearSolver::Tags::HasConverged>{}});
+
+  // DataBox shortcuts
+  const auto get_tag = [&runner](auto tag_v) -> decltype(auto) {
+    using tag = std::decay_t<decltype(tag_v)>;
+    return ActionTesting::get_databox_tag<element_array, tag>(runner, 0);
   };
-  {
-    const auto& box = get_box();
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
-    CHECK(db::get<initial_fields_tag>(box) == DenseVector<double>(3, -1.));
-    CHECK(db::get<operand_tag>(box) == DenseVector<double>(3, 2.));
-    CHECK(db::get<basis_history_tag>(box).size() == 2);
-  }
+
+  runner.set_phase(Metavariables::Phase::Testing);
 
   // Can't test the other element actions because reductions are not yet
   // supported. The full algorithm is tested in
@@ -112,34 +98,36 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Gmres.ElementActions",
   // `Test_DistributedGmresAlgorithm.cpp`.
 
   SECTION("NormalizeInitialOperand") {
-    runner.simple_action<ElementArray<Metavariables>,
-                         LinearSolver::gmres_detail::NormalizeInitialOperand>(
-        self_id, 4.,
+    ActionTesting::simple_action<
+        element_array,
+        LinearSolver::gmres_detail::NormalizeInitialOperand<fields_tag>>(
+        make_not_null(&runner), 0, 4.,
         db::item_type<LinearSolver::Tags::HasConverged>{
             {1, 0., 0.}, 1, 0., 0.});
-    const auto& box = get_box();
-    CHECK_ITERABLE_APPROX(db::get<operand_tag>(box),
-                          DenseVector<double>(3, 0.5));
-    CHECK(db::get<basis_history_tag>(box).size() == 3);
-    CHECK(db::get<basis_history_tag>(box)[2] == db::get<operand_tag>(box));
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
+    CHECK_ITERABLE_APPROX(get_tag(operand_tag{}), DenseVector<double>(3, 0.5));
+    CHECK(get_tag(basis_history_tag{}).size() == 3);
+    CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
+    CHECK(get_tag(LinearSolver::Tags::HasConverged{}));
+  }
+  SECTION("PrepareStep") {
+    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
+    CHECK(get_tag(LinearSolver::Tags::IterationId{}) == 0);
+    CHECK(get_tag(Tags::Next<LinearSolver::Tags::IterationId>{}) == 1);
+    CHECK(get_tag(orthogonalization_iteration_id_tag{}) == 0);
   }
   SECTION("NormalizeOperandAndUpdateField") {
-    runner.simple_action<
-        ElementArray<Metavariables>,
-        LinearSolver::gmres_detail::NormalizeOperandAndUpdateField>(
-        self_id, 4., DenseVector<double>{2., 4.},
+    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
+    ActionTesting::simple_action<
+        element_array,
+        LinearSolver::gmres_detail::NormalizeOperandAndUpdateField<fields_tag>>(
+        make_not_null(&runner), 0, 4., DenseVector<double>{2., 4.},
         db::item_type<LinearSolver::Tags::HasConverged>{
             {1, 0., 0.}, 1, 0., 0.});
-    const auto& box = get_box();
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
-    CHECK(db::get<orthogonalization_iteration_id_tag>(box) == 0);
-    CHECK_ITERABLE_APPROX(db::get<operand_tag>(box),
-                          DenseVector<double>(3, 0.5));
-    CHECK(db::get<basis_history_tag>(box).size() == 3);
-    CHECK(db::get<basis_history_tag>(box)[2] == db::get<operand_tag>(box));
+    CHECK_ITERABLE_APPROX(get_tag(operand_tag{}), DenseVector<double>(3, 0.5));
+    CHECK(get_tag(basis_history_tag{}).size() == 3);
+    CHECK(get_tag(basis_history_tag{})[2] == get_tag(operand_tag{}));
     // minres * basis_history - initial = 2 * 0.5 + 4 * 1.5 - 1 = 6
-    CHECK_ITERABLE_APPROX(db::get<VectorTag>(box), DenseVector<double>(3, 6.));
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
+    CHECK_ITERABLE_APPROX(get_tag(VectorTag{}), DenseVector<double>(3, 6.));
+    CHECK(get_tag(LinearSolver::Tags::HasConverged{}));
   }
 }

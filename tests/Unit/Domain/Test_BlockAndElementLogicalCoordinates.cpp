@@ -5,6 +5,8 @@
 
 #include <algorithm>
 #include <array>
+#include <boost/optional.hpp>
+#include <boost/optional/optional_io.hpp>
 #include <cstddef>
 #include <iterator>
 #include <limits>
@@ -140,7 +142,8 @@ void fuzzy_test_block_and_element_logical_coordinates(
   test_serialization(block_logical_result);
 
   for (size_t s = 0; s < n_pts; ++s) {
-    CHECK(block_logical_result[s].id.get_index() == element_ids[s].block_id());
+    CHECK(block_logical_result[s].get().id.get_index() ==
+          element_ids[s].block_id());
     // We don't know block logical coordinates here, so we can't
     // test them.
   }
@@ -223,8 +226,8 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
   test_serialization(block_logical_result);
 
   for (size_t s = 0; s < n_pts; ++s) {
-    CHECK(block_logical_result[s].id.get_index() == block_ids[s]);
-    CHECK_ITERABLE_APPROX(block_logical_result[s].data, block_coords[s]);
+    CHECK(block_logical_result[s].get().id.get_index() == block_ids[s]);
+    CHECK_ITERABLE_APPROX(block_logical_result[s].get().data, block_coords[s]);
   }
 }
 
@@ -315,8 +318,9 @@ void test_block_and_element_logical_coordinates(
   const auto block_logical_result =
       block_logical_coordinates(domain, frame_coords);
   for (size_t s = 0; s < x_frame.size(); ++s) {
-    CHECK(block_logical_result[s].id.get_index() == expected_block_ids[s]);
-    CHECK_ITERABLE_APPROX(block_logical_result[s].data,
+    CHECK(block_logical_result[s].get().id.get_index() ==
+          expected_block_ids[s]);
+    CHECK_ITERABLE_APPROX(block_logical_result[s].get().data,
                           expected_logical_coords[s]);
   }
 
@@ -421,6 +425,13 @@ void test_block_logical_coordinates1fail() noexcept {
   }
   const auto block_logical_result =
       block_logical_coordinates(domain, frame_coords);
+  // points 1.1 and -0.2 are not in any block. They correspond to
+  // indices 1 and 2 in the list of points, so they should be cast
+  // to 'false'.
+  CHECK(block_logical_result[0]);
+  CHECK_FALSE(block_logical_result[1]);
+  CHECK_FALSE(block_logical_result[2]);
+  CHECK(block_logical_result[3]);
 }
 
 template <typename TargetFrame>
@@ -512,11 +523,5 @@ SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
   fuzzy_test_block_and_element_logical_coordinates1<Frame::Grid>(20);
   fuzzy_test_block_and_element_logical_coordinates1<Frame::Grid>(0);
   fuzzy_test_block_and_element_logical_coordinates_shell<Frame::Grid>(20);
-}
-
-// [[OutputRegex, Found points that are not in any block.:
-// x_frame = \(T\(0\)=1\.1,T\(0\)=-0\.2\)]]
-SPECTRE_TEST_CASE("Unit.Domain.BlockLogicalCoords.Fail", "[Domain][Unit]") {
-  ERROR_TEST();
   test_block_logical_coordinates1fail<Frame::Grid>();
 }

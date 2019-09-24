@@ -23,8 +23,9 @@ namespace gsl {
 template <class T>
 class not_null;
 }  // namespace gsl
-class Time;
 /// \endcond
+
+// IWYU pragma: no_include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 
 // IWYU pragma: no_forward_declare Tags::Time
 // IWYU pragma: no_forward_declare Tags::Coordinates
@@ -65,7 +66,7 @@ struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
       const tnsr::I<DataVector, SpatialDim, Frame>& shift,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
-      const Time& time, const double& t_start, const double& sigma_t,
+      const double& time, const double& t_start, const double& sigma_t,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords,
       const double& sigma_r) noexcept;
 };
@@ -182,7 +183,7 @@ struct SpacetimeDerivDampedHarmonicHCompute
       const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
       const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
       const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
-      const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const Time& time,
+      const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const double& time,
       const double& t_start, const double& sigma_t,
       const tnsr::I<DataVector, SpatialDim, Frame>& coords,
       const double& sigma_r) noexcept;

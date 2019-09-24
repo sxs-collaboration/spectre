@@ -36,6 +36,15 @@
 #
 # Cron Jobs:
 # - Branch: develop, Interval: daily, Options: Always run
+#
+# Updating or adding new stages:
+# - Make sure all stages are specified in the `stages:` section below that
+#   defines the order of the stages.
+# - Make sure the stage names in the `jobs` section (using the `stage:` label)
+#   match exactly the names of the stages in the stage order section.
+# - Make sure that all stages are accounted for in the `.travis/BuildLinux.sh`
+#   file. Note that the `${TRAVIS_BUILD_STAGE_NAME}` capitalizes only the first
+#   letter regardless of how you capitalize your stage names.
 
 language: cpp
 
@@ -47,9 +56,10 @@ services:
 
 # Specify the order of stages.
 stages:
-  - Build Libraries
-  - Build Test Libraries
-  - Build Executables, Run Tests, ClangTidy, and Doxygen
+  - Build stage 1
+  - Build stage 2
+  - Build stage 3
+  - Build stage 4, ClangTidy, and Doxygen
 
 # Set up travis configurations of Linux and macOS.
 #
@@ -58,7 +68,7 @@ stages:
 jobs:
   fast_finish: true
   include:
-  - stage: Build Executables, Run Tests, ClangTidy, and Doxygen
+  - stage: Build stage 4, ClangTidy, and Doxygen
     os: linux
     dist: trusty
     env: CHECK_COMMITS=true
@@ -90,14 +100,14 @@ jobs:
     compiler: clang
     name: test check files
 
-  # First stage: build libraries
+  # Build stage 1
   - &Gcc6Debug
     os: linux
     compiler: gcc-6
     dist: trusty
     env: BUILD_TYPE=Debug COMPILER=gcc-6
     name: gcc-6 debug
-    stage: Build Libraries
+    stage: Build stage 1
   - &Gcc6Release
     os: linux
     compiler: gcc-6
@@ -128,18 +138,54 @@ jobs:
     dist: trusty
     env: BUILD_TYPE=Release COMPILER=gcc-8
     name: gcc-8 release
-  - &ClangDebug
+  - &Gcc9Debug
     os: linux
-    compiler: clang
+    compiler: gcc-9
     dist: trusty
-    env: BUILD_TYPE=Debug
-    name: clang debug
-  - &ClangRelease
+    env: BUILD_TYPE=Debug COMPILER=gcc-9
+    name: gcc-9 debug
+  - &Gcc9Release
     os: linux
-    compiler: clang
+    compiler: gcc-9
     dist: trusty
-    env: BUILD_TYPE=Release
-    name: clang release
+    env: BUILD_TYPE=Release COMPILER=gcc-9
+    name: gcc-9 release
+  - &Clang4Debug
+    os: linux
+    compiler: clang-4.0
+    dist: trusty
+    env: BUILD_TYPE=Debug COMPILER=clang-4.0
+    name: clang-4 debug
+  - &Clang4Release
+    os: linux
+    compiler: clang-4.0
+    dist: trusty
+    env: BUILD_TYPE=Release COMPILER=clang-4.0
+    name: clang-4 release
+  - &Clang5Debug
+    os: linux
+    compiler: clang-5.0
+    dist: trusty
+    env: BUILD_TYPE=Debug COMPILER=clang-5.0
+    name: clang-5 debug
+  - &Clang5Release
+    os: linux
+    compiler: clang-5.0
+    dist: trusty
+    env: BUILD_TYPE=Release COMPILER=clang-5.0
+    name: clang-5 release
+  - &Clang8Debug
+    os: linux
+    compiler: clang-8
+    dist: trusty
+    env: BUILD_TYPE=Debug COMPILER=clang-8
+    name: clang-8 debug
+  - &Clang8Release
+    os: linux
+    compiler: clang-8
+    dist: trusty
+    env: BUILD_TYPE=Release COMPILER=clang-8
+    name: clang-8 release
   # - &MacOsDebug9_2
   #   os: osx
   #   env: BUILD_TYPE=Debug
@@ -153,27 +199,56 @@ jobs:
   #   compiler: clang
   #   name: osx xcode 9.2 release
 
-  # Build test libraries
+  # Build stage 2
   - <<: *Gcc6Debug
-    stage: Build Test Libraries
+    stage: Build stage 2
   - <<: *Gcc6Release
   - <<: *Gcc7Debug
   - <<: *Gcc7Release
   - <<: *Gcc8Debug
   - <<: *Gcc8Release
-  - <<: *ClangDebug
-  - <<: *ClangRelease
+  - <<: *Gcc9Debug
+  - <<: *Gcc9Release
+  - <<: *Clang4Debug
+  - <<: *Clang4Release
+  - <<: *Clang5Debug
+  - <<: *Clang5Release
+  - <<: *Clang8Debug
+  - <<: *Clang8Release
 
-  # Last stage: Build test executables, run tests, clang tidy, and docs.
+  # Build stage 3
   - <<: *Gcc6Debug
-    stage: Build Executables, Run Tests, ClangTidy, and Doxygen
+    stage: Build stage 3
   - <<: *Gcc6Release
   - <<: *Gcc7Debug
   - <<: *Gcc7Release
   - <<: *Gcc8Debug
   - <<: *Gcc8Release
-  - <<: *ClangDebug
-  - <<: *ClangRelease
+  - <<: *Gcc9Debug
+  - <<: *Gcc9Release
+  - <<: *Clang4Debug
+  - <<: *Clang4Release
+  - <<: *Clang5Debug
+  - <<: *Clang5Release
+  - <<: *Clang8Debug
+  - <<: *Clang8Release
+
+  # Last stage: Build stage 4, clang tidy, and docs.
+  - <<: *Gcc6Debug
+    stage: Build stage 4, ClangTidy, and Doxygen
+  - <<: *Gcc6Release
+  - <<: *Gcc7Debug
+  - <<: *Gcc7Release
+  - <<: *Gcc8Debug
+  - <<: *Gcc8Release
+  - <<: *Gcc9Debug
+  - <<: *Gcc9Release
+  - <<: *Clang4Debug
+  - <<: *Clang4Release
+  - <<: *Clang5Debug
+  - <<: *Clang5Release
+  - <<: *Clang8Debug
+  - <<: *Clang8Release
 
 
 # Travis allows caching of data between builds to reduce build times or perform

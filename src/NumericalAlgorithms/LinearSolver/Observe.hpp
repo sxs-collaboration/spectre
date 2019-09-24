@@ -7,6 +7,7 @@
 #include "IO/Observer/ObservationId.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
 #include "IO/Observer/ReductionActions.hpp"
+#include "IO/Observer/TypeOfObservation.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
@@ -24,6 +25,20 @@ using reduction_data = Parallel::ReductionData<
 
 struct ObservationType {};
 
+struct Registration {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename ArrayIndex>
+  static std::pair<observers::TypeOfObservation, observers::ObservationId>
+  register_info(const db::DataBox<DbTagsList>& /*box*/,
+                const ArrayIndex& /*array_index*/) noexcept {
+    observers::ObservationId fake_initial_observation_id{0., ObservationType{}};
+    return {
+        observers::TypeOfObservation::Reduction,
+        std::move(fake_initial_observation_id)  // NOLINT
+    };
+  }
+};
+
 /*!
  * \brief Contributes data from the residual monitor to the reduction observer
  *
@@ -39,11 +54,11 @@ struct ObservationType {};
  *   - `LinearSolver::Tags::IterationId`
  *   - `residual_magnitude_tag`
  */
-template <typename DbTagsList, typename Metavariables>
+template <typename FieldsTag, typename DbTagsList, typename Metavariables>
 void contribute_to_reduction_observer(
     db::DataBox<DbTagsList>& box,
     Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-  using fields_tag = typename Metavariables::system::fields_tag;
+  using fields_tag = FieldsTag;
   using residual_magnitude_tag = db::add_tag_prefix<
       LinearSolver::Tags::Magnitude,
       db::add_tag_prefix<LinearSolver::Tags::Residual, fields_tag>>;

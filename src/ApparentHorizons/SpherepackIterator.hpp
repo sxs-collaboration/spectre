@@ -134,7 +134,7 @@ inline bool operator!=(const SpherepackIterator& lhs,
 
 inline std::ostream& operator<<(
     std::ostream& os,
-    const SpherepackIterator::CoefficientArray& coefficient_array) {
+    const SpherepackIterator::CoefficientArray& coefficient_array) noexcept {
   return os << (coefficient_array == SpherepackIterator::CoefficientArray::a
                     ? 'a'
                     : 'b');

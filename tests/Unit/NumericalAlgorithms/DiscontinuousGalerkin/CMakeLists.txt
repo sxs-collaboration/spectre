@@ -6,7 +6,9 @@ set(LIBRARY "Test_NumericalDiscontinuousGalerkin")
 set(LIBRARY_SOURCES
   Test_LiftFlux.cpp
   Test_MortarHelpers.cpp
+  Test_NormalDotFlux.cpp
   Test_SimpleBoundaryData.cpp
+  Test_Tags.cpp
   )
 
 add_subdirectory(Actions)

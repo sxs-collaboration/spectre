@@ -7,6 +7,7 @@
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Options/Options.hpp"
+#include "PointwiseFunctions/AnalyticData/AnalyticData.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/KerrSchildCoords.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
@@ -84,11 +85,10 @@ namespace AnalyticData {
  * \anchor penner_11 [2] A.J. Penner, MNRAS
  * [414 (2011) 1467](http://cdsads.u-strasbg.fr/abs/2011MNRAS.414.1467P)
  */
-class BondiHoyleAccretion {
-  using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
-  using background_spacetime_type = gr::Solutions::KerrSchild;
-
+class BondiHoyleAccretion : public MarkAsAnalyticData {
  public:
+  using equation_of_state_type = EquationsOfState::PolytropicFluid<true>;
+
   /// The mass of the black hole, \f$M\f$.
   struct BhMass {
     using type = double;

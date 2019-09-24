@@ -38,6 +38,13 @@ class ModalVector;
  */
 class DiagonalModalOperator : public VectorImpl<double, DiagonalModalOperator> {
  public:
+  DiagonalModalOperator() = default;
+  DiagonalModalOperator(const DiagonalModalOperator&) = default;
+  DiagonalModalOperator(DiagonalModalOperator&&) = default;
+  DiagonalModalOperator& operator=(const DiagonalModalOperator&) = default;
+  DiagonalModalOperator& operator=(DiagonalModalOperator&&) = default;
+  ~DiagonalModalOperator() = default;
+
   using VectorImpl<double, DiagonalModalOperator>::operator=;
   using VectorImpl<double, DiagonalModalOperator>::VectorImpl;
 
@@ -48,7 +55,7 @@ namespace blaze {
 VECTOR_BLAZE_TRAIT_SPECIALIZE_ARITHMETIC_TRAITS(DiagonalModalOperator);
 BLAZE_TRAIT_SPECIALIZE_COMPATIBLE_BINARY_TRAIT(ModalVector,
                                                DiagonalModalOperator,
-                                               MultTrait);
+                                               MultTrait, ModalVector);
 
 #if ((BLAZE_MAJOR_VERSION == 3) && (BLAZE_MINOR_VERSION <= 3))
 template <typename Operator>
@@ -61,7 +68,16 @@ struct UnaryMapTrait<DiagonalModalOperator, Operator> {
               blaze::AddScalar<DiagonalModalOperator::ElementType>,
               blaze::SubScalarRhs<DiagonalModalOperator::ElementType>,
               blaze::SubScalarLhs<DiagonalModalOperator::ElementType>,
-              blaze::DivideScalarByVector<DiagonalModalOperator::ElementType>>,
+              blaze::DivideScalarByVector<DiagonalModalOperator::ElementType>,
+              // With these and the blaze traits in
+              // `ComplexDiagonalModalOperator.hpp`, the `DiagonalModalOperator`
+              // can be operated with a `std::complex<double>` to produce a
+              // `ComplexDiagonalModalOperator`, analogous to implicit casting
+              // in the standard library
+              blaze::AddScalar<std::complex<double>>,
+              blaze::SubScalarRhs<std::complex<double>>,
+              blaze::SubScalarLhs<std::complex<double>>,
+              blaze::DivideScalarByVector<std::complex<double>>>,
           Operator>,
       "This unary operation is not permitted on a DiagonalModalOperator");
   using Type = DiagonalModalOperator;
@@ -88,7 +104,16 @@ struct MapTrait<DiagonalModalOperator, Operator> {
               blaze::AddScalar<DiagonalModalOperator::ElementType>,
               blaze::SubScalarRhs<DiagonalModalOperator::ElementType>,
               blaze::SubScalarLhs<DiagonalModalOperator::ElementType>,
-              blaze::DivideScalarByVector<DiagonalModalOperator::ElementType>>,
+              blaze::DivideScalarByVector<DiagonalModalOperator::ElementType>,
+              // With these and the blaze traits in
+              // `ComplexDiagonalModalOperator.hpp`, the `DiagonalModalOperator`
+              // can be operated with a `std::complex<double>` to produce a
+              // `ComplexDiagonalModalOperator`, analogous to implicit casting
+              // in the standard library
+              blaze::AddScalar<std::complex<double>>,
+              blaze::SubScalarRhs<std::complex<double>>,
+              blaze::SubScalarLhs<std::complex<double>>,
+              blaze::DivideScalarByVector<std::complex<double>>>,
           Operator>,
       "This unary operation is not permitted on a DiagonalModalOperator");
   using Type = DiagonalModalOperator;

@@ -26,7 +26,8 @@ namespace {
 void test_create_initial_element(
     const ElementId<2>& element_id, const Block<2, Frame::Inertial>& block,
     const DirectionMap<2, Neighbors<2>>& expected_neighbors) noexcept {
-  const auto created_element = create_initial_element(element_id, block);
+  const auto created_element =
+      domain::Initialization::create_initial_element(element_id, block);
   const Element<2> expected_element{element_id, expected_neighbors};
   CHECK(created_element == expected_element);
 }

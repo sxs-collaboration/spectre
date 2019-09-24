@@ -6,10 +6,16 @@
 #include <tuple>
 #include <utility>  // for declval
 
+#include "Parallel/PhaseDependentActionList.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
 namespace Parallel {
+/// \cond
+template <typename Metavariables>
+class ConstGlobalCache;
+/// \endcond
+
 namespace Algorithm_detail {
 template <bool, typename AdditionalArgsList>
 struct build_action_return_types_impl;
@@ -66,14 +72,17 @@ struct PhaseDependentDataBoxTypes {
   static constexpr phase_type phase = Phase;
 };
 
-template <typename CumulativeDataboxTypes, typename InputDataBox,
-          typename AdditionalArgsList, typename PhaseDepActionLists>
+template <typename CumulativeDataboxTypes, typename PhaseDepActionLists,
+          typename InputDataBox, typename InboxTagsList, typename Metavariables,
+          typename ArrayIndex, typename ParallelComponent>
 struct build_databox_types;
 
 template <typename CumulativeDataboxTypes, typename InputDataBox,
-          typename AdditionalArgsList>
+          typename InboxTagsList, typename Metavariables, typename ArrayIndex,
+          typename ParallelComponent>
 struct build_databox_types<CumulativeDataboxTypes, tmpl::list<>, InputDataBox,
-                           AdditionalArgsList> {
+                           InboxTagsList, Metavariables, ArrayIndex,
+                           ParallelComponent> {
   using type = CumulativeDataboxTypes;
 };
 
@@ -91,15 +100,24 @@ struct build_databox_types<CumulativeDataboxTypes, tmpl::list<>, InputDataBox,
 // compile time leading to significantly more complex code and also longer
 // compile times.
 template <typename CumulativeDataboxTypes, typename InputDataBox,
-          typename AdditionalArgsList, typename CurrentPhaseDepActionList,
+          typename InboxTagsList, typename Metavariables, typename ArrayIndex,
+          typename ParallelComponent, typename CurrentPhaseDepActionList,
           typename... Rest>
-struct build_databox_types<CumulativeDataboxTypes,
-                           tmpl::list<CurrentPhaseDepActionList, Rest...>,
-                           InputDataBox, AdditionalArgsList> {
+struct build_databox_types<
+    CumulativeDataboxTypes, tmpl::list<CurrentPhaseDepActionList, Rest...>,
+    InputDataBox,
+
+    InboxTagsList, Metavariables, ArrayIndex, ParallelComponent> {
+  using additional_args_list =
+      tmpl::list<tuples::tagged_tuple_from_typelist<InboxTagsList>,
+                 Parallel::ConstGlobalCache<Metavariables>, ArrayIndex,
+                 typename CurrentPhaseDepActionList::action_list,
+                 std::add_pointer_t<ParallelComponent>>;
   using action_list_of_this_phase =
       typename CurrentPhaseDepActionList::action_list;
-  using databox_types_for_this_phase = typename build_action_return_types<
-      action_list_of_this_phase>::template f<InputDataBox, AdditionalArgsList>;
+  using databox_types_for_this_phase =
+      typename build_action_return_types<action_list_of_this_phase>::template f<
+          InputDataBox, additional_args_list>;
   using current_phase_dep_databox_types =
       PhaseDependentDataBoxTypes<typename CurrentPhaseDepActionList::phase_type,
                                  CurrentPhaseDepActionList::phase,
@@ -109,7 +127,8 @@ struct build_databox_types<CumulativeDataboxTypes,
 
   using type = typename build_databox_types<
       cumulative_databox_types, tmpl::list<Rest...>,
-      tmpl::back<databox_types_for_this_phase>, AdditionalArgsList>::type;
+      tmpl::back<databox_types_for_this_phase>, InboxTagsList, Metavariables,
+      ArrayIndex, ParallelComponent>::type;
 };
 
 CREATE_IS_CALLABLE(is_ready)

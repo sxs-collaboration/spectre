@@ -253,6 +253,99 @@ void test_area_element(const Solution& solution, const double& surface_radius,
   CHECK_ITERABLE_APPROX(get(area_element), expected(get(area_element).size()));
 }
 
+void test_euclidean_surface_integral_of_vector(
+    const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept {
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+      db::AddComputeTags<
+          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
+
+  const auto& normal_one_form =
+      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
+  const auto& r_hat = db::get<StrahlkorperTags::Rhat<Frame::Inertial>>(box);
+  const auto& radius = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+  const auto& jacobian =
+      db::get<StrahlkorperTags::Jacobian<Frame::Inertial>>(box);
+
+  const auto euclidean_area_element = StrahlkorperGr::euclidean_area_element(
+      jacobian, normal_one_form, radius, r_hat);
+
+  // Create arbitrary vector
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> dist(-1., 1.);
+  const auto test_vector = make_with_random_values<tnsr::I<DataVector, 3>>(
+      make_not_null(&generator), make_not_null(&dist), radius);
+
+  // Test against integrating this scalar.
+  const auto scalar = Scalar<DataVector>(
+      get(dot_product(test_vector, normal_one_form)) /
+      sqrt(get(dot_product(normal_one_form, normal_one_form))));
+
+  const auto integral_1 = StrahlkorperGr::surface_integral_of_scalar(
+      euclidean_area_element, scalar, strahlkorper);
+  const auto integral_2 = StrahlkorperGr::euclidean_surface_integral_of_vector(
+      euclidean_area_element, test_vector, normal_one_form, strahlkorper);
+
+  CHECK(integral_1 == approx(integral_2));
+}
+
+template <typename Solution, typename Frame>
+void test_euclidean_surface_integral_of_vector_2(
+    const Solution& solution, const Strahlkorper<Frame>& strahlkorper,
+    double expected_area) noexcept {
+  // Another test:  Integrate (assuming Euclidean metric) the vector
+  // V^i = s_j \delta^{ij} (s_k s_l \delta^{kl})^{-1/2} A A_euclid^{-1}
+  // where s_j is the unnormalized Strahlkorper normal one-form,
+  // A is the correct (curved) area element in Kerr,
+  // and A_euclid is the euclidean area element.
+  // This integral should give the area of the horizon, which is
+  // 16 pi M_irr^2 = 8 pi M^2 (1 + sqrt(1-chi^2))
+
+  const auto box = db::create<
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame>>,
+      db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame>>>(
+      strahlkorper);
+
+  // Get spatial metric
+  const double t = 0.0;
+  const auto& cart_coords =
+      db::get<StrahlkorperTags::CartesianCoords<Frame>>(box);
+  const auto vars = solution.variables(
+      cart_coords, t, typename Solution::template tags<DataVector>{});
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame, DataVector>>(vars);
+
+  // Get everything we need for the integral
+  const auto& normal_one_form =
+      db::get<StrahlkorperTags::NormalOneForm<Frame>>(box);
+  const auto& r_hat = db::get<StrahlkorperTags::Rhat<Frame>>(box);
+  const auto& radius = db::get<StrahlkorperTags::Radius<Frame>>(box);
+  const auto& jacobian = db::get<StrahlkorperTags::Jacobian<Frame>>(box);
+  const auto euclidean_area_element = StrahlkorperGr::euclidean_area_element(
+      jacobian, normal_one_form, radius, r_hat);
+
+  // Make the test vector
+  // V^i = s_j \delta^{ij} (s_k s_l \delta^{kl})^{-1/2} A A_euclid^{-1}
+  // where A is the area element and A_euclid is the euclidean area element.
+  const auto area_element = StrahlkorperGr::area_element(
+      spatial_metric, jacobian, normal_one_form, radius, r_hat);
+  const auto test_vector_factor = Scalar<DataVector>(
+      get(area_element) / get(euclidean_area_element) /
+      sqrt(get(dot_product(normal_one_form, normal_one_form))));
+  auto test_vector = make_with_value<tnsr::I<DataVector, 3, Frame>>(r_hat, 0.0);
+  for (size_t i = 0; i < 3; ++i) {
+    test_vector.get(i) = normal_one_form.get(i) * get(test_vector_factor);
+  }
+
+  const auto area_integral =
+      StrahlkorperGr::euclidean_surface_integral_of_vector(
+          euclidean_area_element, test_vector, normal_one_form, strahlkorper);
+
+  // approx here because we are integrating over a Strahlkorper
+  // at finite resolution.
+  CHECK(area_integral == approx(expected_area));
+}
+
 void test_euclidean_area_element(
     const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept {
   const auto box = db::create<
@@ -492,7 +585,7 @@ void test_spin_function(const Solution& solution,
   const auto& deriv_spatial_metric =
       get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars);
-  const auto& extrinsic_curvature = gr::extrinsic_curvature(
+  const auto extrinsic_curvature = gr::extrinsic_curvature(
       get<gr::Tags::Lapse<DataVector>>(vars),
       get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
       get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
@@ -505,7 +598,7 @@ void test_spin_function(const Solution& solution,
   const auto& tangents =
       db::get<StrahlkorperTags::Tangents<Frame::Inertial>>(box);
 
-  const auto& spin_function = StrahlkorperGr::spin_function(
+  const auto spin_function = StrahlkorperGr::spin_function(
       tangents, ylm, unit_normal_vector, area_element, extrinsic_curvature);
 
   auto integrand = spin_function;
@@ -565,7 +658,7 @@ void test_dimensionful_spin_magnitude(
   const auto& deriv_spatial_metric =
       get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars);
-  const auto& extrinsic_curvature = gr::extrinsic_curvature(
+  const auto extrinsic_curvature = gr::extrinsic_curvature(
       get<gr::Tags::Lapse<DataVector>>(vars),
       get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
       get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
@@ -650,7 +743,7 @@ void test_spin_vector(
   const auto& deriv_spatial_metric =
       get<Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
                       tmpl::size_t<3>, Frame::Inertial>>(vars);
-  const auto& extrinsic_curvature = gr::extrinsic_curvature(
+  const auto extrinsic_curvature = gr::extrinsic_curvature(
       get<gr::Tags::Lapse<DataVector>>(vars),
       get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
       get<Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
@@ -663,7 +756,7 @@ void test_spin_vector(
   const auto& tangents =
       db::get<StrahlkorperTags::Tangents<Frame::Inertial>>(box);
 
-  const auto& spin_function = StrahlkorperGr::spin_function(
+  const auto spin_function = StrahlkorperGr::spin_function(
       tangents, ylm, unit_normal_vector, area_element, extrinsic_curvature);
 
   const auto ricci_scalar = TestHelpers::Kerr::horizon_ricci_scalar(
@@ -752,7 +845,7 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
       2.0, [](const size_t size) noexcept { return DataVector(size, 4.0); });
 
   // Check the area of a Kerr horizon
-  constexpr int l_max = 20;
+  constexpr int l_max = 22;
   const double mass = 4.444;
   const std::array<double, 3> spin{{0.4, 0.33, 0.22}};
   const std::array<double, 3> center{{0.0, 0.0, 0.0}};
@@ -794,6 +887,11 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.StrahlkorperGr.AreaElement",
                                inside_kerr_horizon);
   test_integral_correspondence(gr::Solutions::KerrSchild{mass, spin, center},
                                outside_kerr_horizon);
+
+  test_euclidean_surface_integral_of_vector(kerr_horizon);
+  test_euclidean_surface_integral_of_vector_2(
+      gr::Solutions::KerrSchild{mass, spin, center}, kerr_horizon,
+      expected_area);
 }
 
 SPECTRE_TEST_CASE(

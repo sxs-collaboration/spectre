@@ -56,8 +56,8 @@ namespace OptionHolders {
 /// The `target_points` form a 3D mesh ordered with \f$r\f$ varying fastest,
 /// then \f$\theta\f$, and finally \f$\phi\f$ varying slowest.
 ///
-/// \note Input coordinates (radii, angles) are interpreted in the frame given
-/// by `Metavariables::domain_frame`
+/// \note Input coordinates (radii, angles) are interpreted in the
+/// `Frame::Inertial`
 struct WedgeSectionTorus {
   struct MinRadius {
     using type = double;
@@ -129,7 +129,7 @@ struct WedgeSectionTorus {
                     const OptionContext& context = {});
 
   WedgeSectionTorus() = default;
-  WedgeSectionTorus(const WedgeSectionTorus& /*rhs*/) = delete;
+  WedgeSectionTorus(const WedgeSectionTorus& /*rhs*/) = default;
   WedgeSectionTorus& operator=(const WedgeSectionTorus& /*rhs*/) = delete;
   WedgeSectionTorus(WedgeSectionTorus&& /*rhs*/) noexcept = default;
   WedgeSectionTorus& operator=(WedgeSectionTorus&& /*rhs*/) noexcept = default;
@@ -156,6 +156,31 @@ bool operator!=(const WedgeSectionTorus& lhs,
 
 }  // namespace OptionHolders
 
+namespace OptionTags {
+template <typename InterpolationTargetTag>
+struct WedgeSectionTorus {
+  using type = OptionHolders::WedgeSectionTorus;
+  static constexpr OptionString help{
+      "Options for interpolation onto Kerr horizon."};
+  static std::string name() noexcept {
+    return option_name<InterpolationTargetTag>();
+  }
+  using group = InterpolationTargets;
+};
+}  // namespace OptionTags
+
+namespace Tags {
+template <typename InterpolationTargetTag>
+struct WedgeSectionTorus : db::SimpleTag {
+  using type = OptionHolders::WedgeSectionTorus;
+  using option_tags =
+      tmpl::list<OptionTags::WedgeSectionTorus<InterpolationTargetTag>>;
+  static type create_from_options(const type& option) noexcept {
+    return option;
+  }
+};
+}  // namespace Tags
+
 namespace Actions {
 /// \ingroup ActionsGroup
 /// \brief Sends points in a wedge-sectioned torus to an `Interpolator`.
@@ -177,8 +202,8 @@ namespace Actions {
 /// For requirements on InterpolationTargetTag, see InterpolationTarget
 template <typename InterpolationTargetTag>
 struct WedgeSectionTorus {
-  using options_type = OptionHolders::WedgeSectionTorus;
-  using const_global_cache_tags = tmpl::list<InterpolationTargetTag>;
+  using const_global_cache_tags =
+      tmpl::list<Tags::WedgeSectionTorus<InterpolationTargetTag>>;
   template <typename ParallelComponent, typename DbTags, typename Metavariables,
             typename ArrayIndex,
             Requires<tmpl::list_contains_v<
@@ -188,7 +213,8 @@ struct WedgeSectionTorus {
       Parallel::ConstGlobalCache<Metavariables>& cache,
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
-    const auto& options = Parallel::get<InterpolationTargetTag>(cache);
+    const auto& options =
+        Parallel::get<Tags::WedgeSectionTorus<InterpolationTargetTag>>(cache);
 
     // Compute locations of constant r/theta/phi surfaces
     const size_t num_radial = options.number_of_radial_points;
@@ -264,8 +290,7 @@ struct WedgeSectionTorus {
 
     // Compute x/y/z coordinates
     // Note: theta measured from +z axis, phi measured from +x axis
-    tnsr::I<DataVector, 3, typename Metavariables::domain_frame> target_points(
-        num_total);
+    tnsr::I<DataVector, 3, Frame::Inertial> target_points(num_total);
     get<0>(target_points) = radii * sin(thetas) * cos(phis);
     get<1>(target_points) = radii * sin(thetas) * sin(phis);
     get<2>(target_points) = radii * cos(thetas);

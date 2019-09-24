@@ -12,6 +12,12 @@
  */
 
 /*!
+ * \defgroup AnalyticDataGroup Analytic Data
+ * \brief Analytic data used to specify (for example) initial data to the
+ * equations implemented in \ref EvolutionSystemsGroup.
+ */
+
+/*!
  * \defgroup AnalyticSolutionsGroup Analytic Solutions
  * \brief Analytic solutions to the equations implemented in \ref
  * EvolutionSystemsGroup and \ref EllipticSystemsGroup.
@@ -454,7 +460,7 @@
  *
  * - `system`: See above.
  * - `temporal_id`: A DataBox tag that identifies steps in the algorithm.
- * Generally use `Tags::TimeId`.
+ * Generally use `Tags::TimeStepId`.
  */
 
 /*!
@@ -485,6 +491,17 @@
 /*!
  * \defgroup HDF5Group HDF5
  * \brief Functions and classes for manipulating HDF5 files
+ */
+
+/*!
+ * \defgroup InitializationGroup Initialization
+ * \brief Actions and metafunctions used for initialization of parallel
+ * components.
+ */
+
+/*!
+ * \defgroup LimitersGroup Limiters
+ * \brief Limiters to control shocks and surfaces in the solution.
  */
 
 /*!
@@ -520,10 +537,10 @@
  * - `component_list`: A `tmpl::list` that collects the additional parallel
  * components this linear solver uses. The executables will append these to
  * their own `component_list`.
- * - `tags`: A type that follows the same structure as those that initialize
- * other parts of the DataBox in `InitializeElement.hpp` files. This means it
- * exposes `simple_tags`, `compute_tags` and a static `initialize` function so
- * that it can be chained into the DataBox initialization.
+ * - `initialize_element`: An action that initializes the DataBox items
+ * required by the linear solver.
+ * - `reinitialize_element`: An action that resets the linear solver to its
+ * initial state.
  * - `perform_step`: The action to be executed after the linear operator has
  * been applied to the operand and written to the DataBox (see above). It will
  * converge the fields towards their solution and update the operand before
@@ -611,24 +628,21 @@
  */
 
 /*!
- * \defgroup SlopeLimitersGroup Slope Limiters
- * \brief Slope limiters to control shocks and surfaces in the solution.
- */
-
-/*!
  * \defgroup SpectralGroup Spectral
  * Things related to spectral transformations.
+ */
+
+// Note: this group is ordered by how it appears in the rendered Doxygen pages
+// (i.e., "Spin-weighted..."), rather than the group's name (i.e., "Swsh...").
+/*!
+ * \defgroup SwshGroup Spin-weighted spherical harmonics
+ * Utilities, tags, and metafunctions for using and manipulating spin-weighted
+ * spherical harmonics
  */
 
 /*!
  * \defgroup SurfacesGroup Surfaces
  * Things related to surfaces.
- */
-
-/*!
- * \defgroup SwshGroup Spin-weighted spherical harmonics
- * Utilities, tags, and metafunctions for using and manipulating spin-weighted
- * spherical harmonics
  */
 
 /*!

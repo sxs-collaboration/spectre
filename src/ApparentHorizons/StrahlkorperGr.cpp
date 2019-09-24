@@ -565,6 +565,18 @@ double surface_integral_of_scalar(
 }
 
 template <typename Frame>
+double euclidean_surface_integral_of_vector(
+    const Scalar<DataVector>& area_element,
+    const tnsr::I<DataVector, 3, Frame>& vector,
+    const tnsr::i<DataVector, 3, Frame>& normal_one_form,
+    const Strahlkorper<Frame>& strahlkorper) noexcept {
+  const DataVector integrand =
+      get(area_element) * get(dot_product(vector, normal_one_form)) /
+      sqrt(get(dot_product(normal_one_form, normal_one_form)));
+  return strahlkorper.ylm_spherepack().definite_integral(integrand.data());
+}
+
+template <typename Frame>
 Scalar<DataVector> spin_function(
     const StrahlkorperTags::aliases::Jacobian<Frame>& tangents,
     const YlmSpherepack& ylm,
@@ -624,11 +636,11 @@ double dimensionful_spin_magnitude(
     const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept {
   const Scalar<DataVector> sin_theta{sin(ylm.theta_phi_points()[0])};
 
-  const auto& surface_metric =
+  const auto surface_metric =
       get_surface_metric(spatial_metric, tangents, sin_theta);
-  const auto& inverse_surface_metric =
+  const auto inverse_surface_metric =
       determinant_and_inverse(surface_metric).second;
-  const auto& trace_christoffel_second_kind = get_trace_christoffel_second_kind(
+  const auto trace_christoffel_second_kind = get_trace_christoffel_second_kind(
       surface_metric, inverse_surface_metric, sin_theta, ylm);
 
   const size_t matrix_dimension = get_matrix_dimension(ylm);
@@ -650,7 +662,7 @@ double dimensionful_spin_magnitude(
 
   // Get normalized potentials (Kerr normalization) corresponding to the
   // eigenvectors with three smallest-magnitude eigenvalues.
-  const auto& potentials =
+  const auto potentials =
       get_normalized_spin_potentials(smallest_eigenvectors, ylm, area_element);
 
   return get_spin_magnitude(potentials, spin_function, area_element, ylm);
@@ -753,6 +765,13 @@ StrahlkorperGr::euclidean_area_element<Frame::Inertial>(
 
 template double StrahlkorperGr::surface_integral_of_scalar(
     const Scalar<DataVector>& area_element, const Scalar<DataVector>& scalar,
+    const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept;
+
+template
+double StrahlkorperGr::euclidean_surface_integral_of_vector(
+    const Scalar<DataVector>& area_element,
+    const tnsr::I<DataVector, 3, Frame::Inertial>& vector,
+    const tnsr::i<DataVector, 3, Frame::Inertial>& normal_one_form,
     const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept;
 
 template Scalar<DataVector> StrahlkorperGr::spin_function<Frame::Inertial>(

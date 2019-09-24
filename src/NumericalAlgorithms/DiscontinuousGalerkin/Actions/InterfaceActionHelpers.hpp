@@ -10,6 +10,7 @@
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/InterfaceHelpers.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
@@ -17,82 +18,72 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 
 namespace DgActions_detail {
+
 template <typename Metavariables, typename DataBoxType, typename DirectionsTag,
-          typename NumericalFlux>
-auto compute_packaged_data(
+          typename NumericalFlux, size_t VolumeDim = DirectionsTag::volume_dim,
+          typename FluxCommTypes = dg::FluxCommunicationTypes<Metavariables>,
+          typename PackagedData = typename FluxCommTypes::PackagedData>
+DirectionMap<VolumeDim, PackagedData> compute_packaged_data(
     const DataBoxType& box,
-    const Direction<Metavariables::system::volume_dim>& direction,
     const NumericalFlux& normal_dot_numerical_flux_computer,
-    const DirectionsTag /*meta*/, const Metavariables /*meta*/) noexcept ->
-    typename dg::FluxCommunicationTypes<Metavariables>::PackagedData {
-  constexpr size_t volume_dim = Metavariables::system::volume_dim;
-
-  using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
-
-  using package_arguments =
-  typename Metavariables::normal_dot_numerical_flux::type::argument_tags;
-
-  const auto &face_mesh =
-      db::get<Tags::Interface<DirectionsTag, Tags::Mesh<volume_dim - 1>>>(box)
-          .at(direction);
-
-  return db::apply<tmpl::transform<
-      package_arguments, tmpl::bind<Tags::Interface, DirectionsTag, tmpl::_1>>>(
-      [&face_mesh, &direction,
-       &normal_dot_numerical_flux_computer ](const auto&... args) noexcept {
-        typename flux_comm_types::PackagedData ret(
-            face_mesh.number_of_grid_points(), 0.0);
-        normal_dot_numerical_flux_computer.package_data(make_not_null(&ret),
-                                                        args.at(direction)...);
-        return ret;
+    const DirectionsTag /*meta*/, const Metavariables /*meta*/) noexcept {
+  return interface_apply<
+      DirectionsTag,
+      tmpl::flatten<tmpl::list<::Tags::Mesh<VolumeDim - 1>,
+                               typename NumericalFlux::argument_tags>>,
+      get_volume_tags<NumericalFlux>>(
+      [&normal_dot_numerical_flux_computer](
+          const ::Mesh<VolumeDim - 1>& face_mesh,
+          const auto&... args) noexcept {
+        PackagedData result{face_mesh.number_of_grid_points()};
+        normal_dot_numerical_flux_computer.package_data(make_not_null(&result),
+                                                        args...);
+        return result;
       },
       box);
 }
 
 template <typename Metavariables, typename DataBoxType, typename DirectionsTag,
-          typename NumericalFlux>
-auto compute_local_mortar_data(
+          typename NumericalFlux, size_t VolumeDim = DirectionsTag::volume_dim,
+          typename FluxCommTypes = dg::FluxCommunicationTypes<Metavariables>,
+          typename LocalData = typename FluxCommTypes::LocalData>
+DirectionMap<VolumeDim, LocalData> compute_local_mortar_data(
     const DataBoxType& box,
-    const Direction<Metavariables::system::volume_dim>& direction,
     const NumericalFlux& normal_dot_numerical_flux_computer,
-    const DirectionsTag /*meta*/, const Metavariables /*meta*/) noexcept ->
-    typename dg::FluxCommunicationTypes<Metavariables>::LocalData {
-  constexpr size_t volume_dim = Metavariables::system::volume_dim;
-
-  using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
-
+    const DirectionsTag /*meta*/, const Metavariables /*meta*/) noexcept {
   using normal_dot_fluxes_tag =
-  Tags::Interface<DirectionsTag,
-                  typename flux_comm_types::normal_dot_fluxes_tag>;
+      Tags::Interface<DirectionsTag,
+                      typename FluxCommTypes::normal_dot_fluxes_tag>;
 
-  const auto &face_mesh =
-      db::get<Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
-                              Tags::Mesh<volume_dim - 1>>>(box)
-          .at(direction);
+  const auto& face_meshes =
+      db::get<Tags::Interface<DirectionsTag, Tags::Mesh<VolumeDim - 1>>>(box);
+  const auto& magnitude_of_face_normals = db::get<Tags::Interface<
+      DirectionsTag, Tags::Magnitude<Tags::UnnormalizedFaceNormal<VolumeDim>>>>(
+      box);
+  const auto& normal_dot_fluxes = db::get<normal_dot_fluxes_tag>(box);
 
   const auto packaged_data =
-      compute_packaged_data(box, direction, normal_dot_numerical_flux_computer,
+      compute_packaged_data(box, normal_dot_numerical_flux_computer,
                             DirectionsTag{}, Metavariables{});
 
-  typename flux_comm_types::LocalData interface_data{};
-  interface_data.magnitude_of_face_normal = db::get<Tags::Interface<
-      DirectionsTag,
-      Tags::Magnitude<Tags::UnnormalizedFaceNormal<volume_dim>>>>(box)
-      .at(direction);
+  DirectionMap<VolumeDim, LocalData> all_interface_data{};
+  for (const auto& direction : get<DirectionsTag>(box)) {
+    LocalData interface_data{};
+    interface_data.magnitude_of_face_normal =
+        magnitude_of_face_normals.at(direction);
+    interface_data.mortar_data.initialize(
+        face_meshes.at(direction).number_of_grid_points());
+    interface_data.mortar_data.assign_subset(packaged_data.at(direction));
 
-  interface_data.mortar_data.initialize(face_mesh.number_of_grid_points());
-  interface_data.mortar_data.assign_subset(packaged_data);
-
-  if (tmpl::size<typename flux_comm_types::LocalMortarData::tags_list>::value !=
-      tmpl::size<typename flux_comm_types::PackagedData::tags_list>::value) {
-    // The local fluxes were not (all) included in the packaged
-    // data, so we need to add them to the mortar data
-    // explicitly.
-    const auto &normal_dot_fluxes =
-        db::get<normal_dot_fluxes_tag>(box).at(direction);
-    interface_data.mortar_data.assign_subset(normal_dot_fluxes);
+    if (tmpl::size<typename FluxCommTypes::LocalMortarData::tags_list>::value !=
+        tmpl::size<typename FluxCommTypes::PackagedData::tags_list>::value) {
+      // The local fluxes were not (all) included in the packaged
+      // data, so we need to add them to the mortar data
+      // explicitly.
+      interface_data.mortar_data.assign_subset(normal_dot_fluxes.at(direction));
+    }
+    all_interface_data.insert({direction, std::move(interface_data)});
   }
-
-  return interface_data;
+  return all_interface_data;
 }
 }  // namespace DgActions_detail

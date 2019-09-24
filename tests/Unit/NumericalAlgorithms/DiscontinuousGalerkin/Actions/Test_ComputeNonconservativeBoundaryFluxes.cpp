@@ -28,12 +28,12 @@
 #include "Domain/ElementIndex.hpp"  // IWYU pragma: keep
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"  // IWYU pragma: keep
 #include "Domain/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
@@ -95,7 +95,7 @@ template <typename Tag>
 using interface_tag = Tags::Interface<Tags::InternalDirections<2>, Tag>;
 template <typename Tag>
 using interface_compute_tag =
-    Tags::InterfaceComputeItem<Tags::InternalDirections<2>, Tag>;
+    Tags::InterfaceCompute<Tags::InternalDirections<2>, Tag>;
 
 using n_dot_f_tag = interface_tag<Tags::NormalDotFlux<Tags::Variables<
     tmpl::list<Tags::NormalDotFlux<Var>, Tags::NormalDotFlux<Var2>>>>>;
@@ -107,8 +107,6 @@ struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<2>;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using simple_tags =
       db::AddSimpleTags<Tags::Element<2>, Tags::Mesh<2>, Tags::ElementMap<2>,
                         interface_tag<Tags::Variables<tmpl::list<Var, Var2>>>,
@@ -116,7 +114,7 @@ struct component {
   using compute_tags = db::AddComputeTags<
       Tags::InternalDirections<2>, interface_compute_tag<Tags::Direction<2>>,
       interface_compute_tag<Tags::InterfaceMesh<2>>,
-      interface_compute_tag<Tags::UnnormalizedFaceNormal<2>>,
+      interface_compute_tag<Tags::UnnormalizedFaceNormalCompute<2>>,
       interface_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<2>>>,
       interface_compute_tag<
@@ -136,7 +134,6 @@ struct component {
 struct Metavariables {
   using system = System;
   using component_list = tmpl::list<component<Metavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Testing, Exit };
 };
 

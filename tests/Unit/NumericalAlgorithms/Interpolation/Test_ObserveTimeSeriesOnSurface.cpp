@@ -26,6 +26,7 @@
 #include "Domain/InitialElementIds.hpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
+#include "Domain/Tags.hpp"
 #include "IO/H5/AccessType.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
@@ -48,7 +49,6 @@
 #include "NumericalAlgorithms/Interpolation/InterpolatorRegisterElement.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/Interpolation/TryToInterpolate.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
@@ -56,7 +56,7 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
@@ -120,9 +120,8 @@ struct MockObserverWriter {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list =
-      tmpl::list<observers::OptionTags::ReductionFileName>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
+  using const_global_cache_tags =
+      tmpl::list<observers::Tags::ReductionFileName>;
   using simple_tags =
       typename observers::Actions::InitializeWriter<Metavariables>::simple_tags;
   using compute_tags = typename observers::Actions::InitializeWriter<
@@ -142,24 +141,42 @@ struct MockObserverWriter {
 
 template <typename Metavariables, typename InterpolationTargetTag>
 struct MockInterpolationTarget {
+ private:
+  struct RegistrationHelper {
+    template <typename ParallelComponent, typename DbTagsList,
+              typename ArrayIndex>
+    static std::pair<observers::TypeOfObservation, observers::ObservationId>
+    register_info(const db::DataBox<DbTagsList>& /*box*/,
+                  const ArrayIndex& /*array_index*/) noexcept {
+      observers::ObservationId fake_initial_observation_id{
+          0., InterpolationTargetTag{}};
+      return {
+          observers::TypeOfObservation::Reduction,
+          std::move(fake_initial_observation_id)  // NOLINT
+      };
+    }
+  };
+
+ public:
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = Parallel::get_const_global_cache_tags<
-      tmpl::list<typename InterpolationTargetTag::compute_target_points,
-                 typename InterpolationTargetTag::post_interpolation_callback>>;
+  using const_global_cache_tags = tmpl::flatten<tmpl::append<
+      Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
+          typename InterpolationTargetTag::compute_target_points,
+          typename InterpolationTargetTag::post_interpolation_callback>>,
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<intrp::Actions::InitializeInterpolationTarget<
-              InterpolationTargetTag>>>,
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Registration, tmpl::list<>>,
+              Metavariables, InterpolationTargetTag>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Registration,
+          tmpl::list<::observers::Actions::RegisterSingletonWithObserverWriter<
+              RegistrationHelper>>>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing, tmpl::list<>>>;
-  using add_options_to_databox =
-      typename intrp::Actions::InitializeInterpolationTarget<
-          InterpolationTargetTag>::template AddOptionsToDataBox<Metavariables>;
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
 };
@@ -169,8 +186,6 @@ struct MockInterpolator {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -199,8 +214,6 @@ struct MockMetavariables {
             tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
                 Tags::Square, ::Frame::Inertial>>,
             SurfaceA, SurfaceA>;
-    // This `type` is so this tag can be used to read options.
-    using type = typename compute_target_points::options_type;
   };
   struct SurfaceB {
     using compute_items_on_source = tmpl::list<>;
@@ -221,8 +234,6 @@ struct MockMetavariables {
                        StrahlkorperGr::Tags::SurfaceIntegral<
                            Tags::Negate, ::Frame::Inertial>>,
             SurfaceB, SurfaceB>;
-    // This `type` is so this tag can be used to read options.
-    using type = typename compute_target_points::options_type;
   };
   struct SurfaceC {
     using compute_items_on_source = tmpl::list<>;
@@ -240,8 +251,6 @@ struct MockMetavariables {
             tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
                 Tags::Negate, ::Frame::Inertial>>,
             SurfaceC, SurfaceC>;
-    // This `type` is so this tag can be used to read options.
-    using type = typename compute_target_points::options_type;
   };
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
@@ -253,16 +262,14 @@ struct MockMetavariables {
       tmpl::list<Tags::TestSolution,
                  gr::Tags::SpatialMetric<3, Frame::Inertial>>;
   using interpolation_target_tags = tmpl::list<SurfaceA, SurfaceB, SurfaceC>;
-  using temporal_id = ::Tags::TimeId;
-  using domain_frame = Frame::Inertial;
-  static constexpr size_t domain_dim = 3;
+  using temporal_id = ::Tags::TimeStepId;
+  static constexpr size_t volume_dim = 3;
   using component_list =
       tmpl::list<MockObserverWriter<MockMetavariables>,
                  MockInterpolationTarget<MockMetavariables, SurfaceA>,
                  MockInterpolationTarget<MockMetavariables, SurfaceB>,
                  MockInterpolationTarget<MockMetavariables, SurfaceC>,
                  MockInterpolator<MockMetavariables>>;
-  using const_global_cache_tag_list = tmpl::list<>;
   enum class Phase { Initialization, Registration, Testing, Exit };
 };
 
@@ -291,34 +298,34 @@ SPECTRE_TEST_CASE(
                                                         2.0, {{0.0, 0.0, 0.0}});
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
                                                         1.5, {{0.0, 0.0, 0.0}});
-  tuples::TaggedTuple<observers::OptionTags::ReductionFileName,
-                      metavars::SurfaceA, metavars::SurfaceB,
-                      metavars::SurfaceC>
-      tuple_of_opts(h5_file_prefix, std::move(kerr_horizon_opts_A),
-                    std::move(kerr_horizon_opts_B),
-                    std::move(kerr_horizon_opts_C));
-
-  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   const auto domain_creator =
       domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+  tuples::TaggedTuple<observers::Tags::ReductionFileName,
+                      ::intrp::Tags::KerrHorizon<metavars::SurfaceA>,
+                      ::Tags::Domain<3, Frame::Inertial>,
+                      ::intrp::Tags::KerrHorizon<metavars::SurfaceB>,
+                      ::intrp::Tags::KerrHorizon<metavars::SurfaceC>>
+      tuple_of_opts{h5_file_prefix, kerr_horizon_opts_A,
+                    domain_creator.create_domain(),
+                    kerr_horizon_opts_B,
+                    kerr_horizon_opts_C};
+
+  ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   runner.set_phase(metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_a_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_a_component>(&runner, 0);
   ActionTesting::next_action<target_a_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_b_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_b_component>(&runner, 0);
   ActionTesting::next_action<target_b_component>(make_not_null(&runner), 0);
-  ActionTesting::emplace_component<target_c_component>(
-      &runner, 0, domain_creator.create_domain());
+  ActionTesting::emplace_component<target_c_component>(&runner, 0);
   ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<obs_writer>(&runner, 0);
   ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
   runner.set_phase(metavars::Phase::Registration);
 
   Slab slab(0.0, 1.0);
-  TimeId temporal_id(true, 0, Time(slab, 0));
+  TimeStepId temporal_id(true, 0, Time(slab, 0));
   const auto domain = domain_creator.create_domain();
 
   // Create element_ids.
@@ -339,39 +346,24 @@ SPECTRE_TEST_CASE(
   }
 
   // Register the InterpolationTargets with the ObserverWriter.
-  ActionTesting::simple_action<
-      target_a_component,
-      ::observers::Actions::RegisterSingletonWithObserverWriter>(
-      make_not_null(&runner), 0,
-      observers::ObservationId(temporal_id.time().value(),
-                               typename metavars::SurfaceA{}));
-  ActionTesting::simple_action<
-      target_b_component,
-      ::observers::Actions::RegisterSingletonWithObserverWriter>(
-      make_not_null(&runner), 0,
-      observers::ObservationId(temporal_id.time().value(),
-                               typename metavars::SurfaceB{}));
-  ActionTesting::simple_action<
-      target_c_component,
-      ::observers::Actions::RegisterSingletonWithObserverWriter>(
-      make_not_null(&runner), 0,
-      observers::ObservationId(temporal_id.time().value(),
-                               typename metavars::SurfaceC{}));
+  ActionTesting::next_action<target_a_component>(make_not_null(&runner), 0);
+  ActionTesting::next_action<target_b_component>(make_not_null(&runner), 0);
+  ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
 
   // Tell the InterpolationTargets that we want to interpolate at
   // temporal_id.
   ActionTesting::simple_action<
       target_a_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceA>>(
-      make_not_null(&runner), 0, std::vector<TimeId>{temporal_id});
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
   ActionTesting::simple_action<
       target_b_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceB>>(
-      make_not_null(&runner), 0, std::vector<TimeId>{temporal_id});
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
   ActionTesting::simple_action<
       target_c_component,
       intrp::Actions::AddTemporalIdsToInterpolationTarget<metavars::SurfaceC>>(
-      make_not_null(&runner), 0, std::vector<TimeId>{temporal_id});
+      make_not_null(&runner), 0, std::vector<TimeStepId>{temporal_id});
 
   // There should be three queued simple actions (registration), so invoke
   // them and check that there are no more.

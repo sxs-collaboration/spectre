@@ -233,7 +233,7 @@ struct RegisterWithObservers {
   template <typename DbTagList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent>
-  static std::tuple<db::DataBox<DbTagList>&&, bool> apply(
+  static std::tuple<db::DataBox<DbTagList>&&> apply(
       db::DataBox<DbTagList>& box,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
       Parallel::ConstGlobalCache<Metavariables>& cache,
@@ -266,7 +266,7 @@ struct RegisterWithObservers {
             Parallel::ArrayIndex<std::decay_t<ArrayIndex>>{array_index}),
         std::move(                                                // NOLINT
             type_of_observation_and_observation_id_pair.first));  // NOLINT
-    return {std::move(box), true};
+    return {std::move(box)};
   }
 };
 
@@ -298,13 +298,36 @@ struct RegisterWithObservers {
  *```
  *
  */
+template <typename RegisterHelper>
 struct RegisterSingletonWithObserverWriter {
-  template <typename ParallelComponent, typename DbTagList,
-            typename Metavariables, typename ArrayIndex>
-  static void apply(const db::DataBox<DbTagList>& /*box*/,
-                    Parallel::ConstGlobalCache<Metavariables>& cache,
-                    const ArrayIndex& /*array_index*/,
-                    const observers::ObservationId& observation_id) noexcept {
+  template <typename DbTagList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagList>&&, bool> apply(
+      db::DataBox<DbTagList>& box,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& array_index, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    std::pair<observers::TypeOfObservation, observers::ObservationId>
+        type_of_observation_and_observation_id_pair =
+            RegisterHelper::template register_info<ParallelComponent>(
+                box, array_index);
+
+    switch (type_of_observation_and_observation_id_pair.first) {
+      case TypeOfObservation::Reduction:
+        break;
+      case TypeOfObservation::ReductionAndVolume:
+      case TypeOfObservation::Volume:
+        ERROR(
+            "Registering volume observations is not supported for singletons. "
+            "The TypeOfObservation should be 'Reduction'.");
+      default:
+        ERROR(
+            "Registering an unknown TypeOfObservation. It should be "
+            "'Reduction' for singleton.");
+    };
+
     // The actual value of the processing element doesn't matter
     // here; it is used only to give an ObserverWriter a count of how many
     // times it will be called.
@@ -316,7 +339,10 @@ struct RegisterSingletonWithObserverWriter {
         Actions::RegisterReductionContributorWithObserverWriter>(
         Parallel::get_parallel_component<
             observers::ObserverWriter<Metavariables>>(cache)[0],
-        observation_id, fake_processing_element);
+        std::move(                                                // NOLINT
+            type_of_observation_and_observation_id_pair.second),  // NOLINT
+        fake_processing_element);
+    return {std::move(box), true};
   }
 };
 }  // namespace Actions

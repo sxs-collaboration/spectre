@@ -281,7 +281,7 @@ struct ComponentNameImpl {
     }
     // Create string labeling get_tensor_index
     std::stringstream ss;
-    const auto& canonical_tensor_index =
+    const auto canonical_tensor_index =
         Structure::get_canonical_tensor_index(storage_index);
     for (size_t r = 0; r < Structure::rank(); ++r) {
       ss << gsl::at(labels, r)[gsl::at(canonical_tensor_index, r)];

@@ -29,20 +29,17 @@
 #include "Domain/ElementIndex.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/FaceNormal.hpp"
+#include "Domain/InterfaceComputeTags.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
-#include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Parallel/AddOptionsToDataBox.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
-#include "Time/TimeId.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -59,12 +56,11 @@
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
 // IWYU pragma: no_forward_declare dg::Actions::ImposeDirichletBoundaryConditions
-// IWYU pragma: no_forward_declare dg::Actions::ReceiveDataForFluxes
 
 namespace {
 constexpr size_t Dim = 2;
 
-using TemporalId = Tags::TimeId;
+using TemporalId = Tags::TimeStepId;
 
 struct Var : db::SimpleTag {
   static std::string name() noexcept { return "Var"; }
@@ -121,11 +117,11 @@ struct BoundaryCondition {
     return tuples::TaggedTuple<Var>{Scalar<DataVector>{{{{30., 40., 50.}}}}};
   }
 
-  tuples::TaggedTuple<Var> variables(const tnsr::I<DataVector, Dim>& /*x*/,
-                                     double /*t*/,
-                                     tmpl::list<PrimitiveVar> /*meta*/) const
-      noexcept {
-    return tuples::TaggedTuple<Var>{Scalar<DataVector>{{{{15., 20., 25.}}}}};
+  tuples::TaggedTuple<PrimitiveVar> variables(
+      const tnsr::I<DataVector, Dim>& /*x*/, double /*t*/,
+      tmpl::list<PrimitiveVar> /*meta*/) const noexcept {
+    return tuples::TaggedTuple<PrimitiveVar>{
+        Scalar<DataVector>{{{{15., 20., 25.}}}}};
   }
   // clang-tidy: do not use references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
@@ -159,24 +155,18 @@ struct System {
 };
 
 template <typename Tag>
-using interface_tag = Tags::Interface<Tags::InternalDirections<Dim>, Tag>;
-template <typename Tag>
-using interface_compute_tag =
-    Tags::InterfaceComputeItem<Tags::InternalDirections<Dim>, Tag>;
-
-template <typename Tag>
 using boundary_tag =
     Tags::Interface<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
 template <typename Tag>
 using boundary_compute_tag =
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::BoundaryDirectionsInterior<Dim>, Tag>;
 
 template <typename Tag>
 using external_boundary_tag =
     Tags::Interface<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
 template <typename Tag>
 using external_boundary_compute_tag =
-    Tags::InterfaceComputeItem<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
+    Tags::InterfaceCompute<Tags::BoundaryDirectionsExterior<Dim>, Tag>;
 
 template <typename FluxCommTypes>
 using mortar_data_tag = typename FluxCommTypes::simple_mortar_data_tag;
@@ -184,9 +174,6 @@ template <typename FluxCommTypes>
 using LocalMortarData = typename FluxCommTypes::LocalMortarData;
 template <typename FluxCommTypes>
 using PackagedData = typename FluxCommTypes::PackagedData;
-template <typename FluxCommTypes>
-using normal_dot_fluxes_tag =
-    interface_tag<typename FluxCommTypes::normal_dot_fluxes_tag>;
 template <typename FluxCommTypes>
 using bdry_normal_dot_fluxes_tag =
     boundary_tag<typename FluxCommTypes::normal_dot_fluxes_tag>;
@@ -198,41 +185,32 @@ using bdry_vars_tag = boundary_tag<Tags::Variables<tmpl::list<Var>>>;
 using external_bdry_vars_tag =
     external_boundary_tag<Tags::Variables<tmpl::list<Var>>>;
 
-template <typename FluxCommTypes>
-using fluxes_tag = typename FluxCommTypes::FluxesTag;
-
-using other_data_tag = interface_tag<Tags::Variables<tmpl::list<OtherData>>>;
 using bdry_other_data_tag =
     boundary_tag<Tags::Variables<tmpl::list<OtherData>>>;
 using external_bdry_other_data_tag =
     external_boundary_tag<Tags::Variables<tmpl::list<OtherData>>>;
-using mortar_next_temporal_ids_tag = Tags::Mortars<Tags::Next<TemporalId>, Dim>;
-using mortar_meshes_tag = Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>;
-using mortar_sizes_tag = Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>;
 
 template <typename Metavariables>
 struct component {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tag_list =
+  using const_global_cache_tags =
       tmpl::list<NumericalFluxTag, BoundaryConditionTag>;
-  using add_options_to_databox = Parallel::AddNoOptionsToDataBox;
   using flux_comm_types = dg::FluxCommunicationTypes<Metavariables>;
 
   using simple_tags = db::AddSimpleTags<
-      TemporalId, Tags::Next<TemporalId>, Tags::Mesh<Dim>, Tags::Element<Dim>,
+      TemporalId, Tags::Time, Tags::Mesh<Dim>, Tags::Element<Dim>,
       Tags::ElementMap<Dim>, bdry_normal_dot_fluxes_tag<flux_comm_types>,
       bdry_other_data_tag, external_bdry_normal_dot_fluxes_tag<flux_comm_types>,
       external_bdry_other_data_tag, external_bdry_vars_tag,
-      mortar_data_tag<flux_comm_types>, mortar_next_temporal_ids_tag,
-      mortar_meshes_tag, mortar_sizes_tag>;
+      mortar_data_tag<flux_comm_types>>;
 
   using compute_tags = db::AddComputeTags<
-      Tags::Time, Tags::BoundaryDirectionsInterior<Dim>,
+      Tags::BoundaryDirectionsInterior<Dim>,
       boundary_compute_tag<Tags::Direction<Dim>>,
       boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
-      boundary_compute_tag<Tags::UnnormalizedFaceNormal<Dim>>,
+      boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,
       boundary_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       boundary_compute_tag<
@@ -241,7 +219,7 @@ struct component {
       external_boundary_compute_tag<Tags::Direction<Dim>>,
       external_boundary_compute_tag<Tags::InterfaceMesh<Dim>>,
       external_boundary_compute_tag<Tags::BoundaryCoordinates<Dim>>,
-      external_boundary_compute_tag<Tags::UnnormalizedFaceNormal<Dim>>,
+      external_boundary_compute_tag<Tags::UnnormalizedFaceNormalCompute<Dim>>,
       external_boundary_compute_tag<
           Tags::EuclideanMagnitude<Tags::UnnormalizedFaceNormal<Dim>>>,
       external_boundary_compute_tag<
@@ -255,8 +233,7 @@ struct component {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::list<
-              dg::Actions::ImposeDirichletBoundaryConditions<Metavariables>,
-              dg::Actions::ReceiveDataForFluxes<Metavariables>>>>;
+              dg::Actions::ImposeDirichletBoundaryConditions<Metavariables>>>>;
 };
 
 template <bool HasPrimitiveAndConservativeVars>
@@ -264,38 +241,23 @@ struct Metavariables {
   using system = System<HasPrimitiveAndConservativeVars>;
   using component_list = tmpl::list<component<Metavariables>>;
   using temporal_id = TemporalId;
-  using const_global_cache_tag_list = tmpl::list<>;
 
   using normal_dot_numerical_flux = NumericalFluxTag;
   using boundary_condition_tag = BoundaryConditionTag;
-  using analytic_solution_tag = boundary_condition_tag;
+  using initial_data_tag = boundary_condition_tag;
   enum class Phase { Initialization, Testing, Exit };
 };
-
-template <typename Component>
-using compute_items = typename Component::compute_tags;
 
 template <bool HasConservativeAndPrimitiveVars>
 void run_test() {
   using metavariables = Metavariables<HasConservativeAndPrimitiveVars>;
   using flux_comm_types = typename component<metavariables>::flux_comm_types;
   using my_component = component<metavariables>;
-  using simple_tags = typename my_component::simple_tags;
-  using compute_tags = typename my_component::compute_tags;
   const Mesh<2> mesh{3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
 
-  //      xi      Block       +- xi
-  //      |     0   |   1     |
-  // eta -+ +-------+-+-+---+ eta
-  //        |       |X| |   |
-  //        |       +-+-+   |
-  //        |       | | |   |
-  //        +-------+-+-+---+
-  // We run the actions on the indicated element.
   const ElementId<2> self_id(1, {{{2, 0}, {1, 0}}});
   const ElementId<2> west_id(0);
-  const ElementId<2> east_id(1, {{{2, 1}, {1, 0}}});
   const ElementId<2> south_id(1, {{{2, 0}, {1, 1}}});
 
   using Affine = domain::CoordinateMaps::Affine;
@@ -345,7 +307,7 @@ void run_test() {
 
     auto map = ElementMap<2, Frame::Inertial>(self_id, coordmap->get_clone());
 
-    db::item_type<normal_dot_fluxes_tag<flux_comm_types>>
+    db::item_type<bdry_normal_dot_fluxes_tag<flux_comm_types>>
         bdry_normal_dot_fluxes;
     for (const auto& direction : external_directions) {
       auto& flux_vars = bdry_normal_dot_fluxes[direction];
@@ -353,14 +315,14 @@ void run_test() {
       get<Tags::NormalDotFlux<Var>>(flux_vars) = data.bdry_fluxes.at(direction);
     }
 
-    db::item_type<other_data_tag> bdry_other_data;
+    db::item_type<bdry_other_data_tag> bdry_other_data;
     for (const auto& direction : external_directions) {
       auto& other_data_vars = bdry_other_data[direction];
       other_data_vars.initialize(3);
       get<OtherData>(other_data_vars) = data.bdry_other_data.at(direction);
     }
 
-    db::item_type<normal_dot_fluxes_tag<flux_comm_types>>
+    db::item_type<external_bdry_normal_dot_fluxes_tag<flux_comm_types>>
         external_bdry_normal_dot_fluxes;
     for (const auto& direction : external_directions) {
       auto& flux_vars = external_bdry_normal_dot_fluxes[direction];
@@ -369,7 +331,7 @@ void run_test() {
           data.external_bdry_fluxes.at(direction);
     }
 
-    db::item_type<other_data_tag> external_bdry_other_data;
+    db::item_type<external_bdry_other_data_tag> external_bdry_other_data;
     for (const auto& direction : external_directions) {
       auto& other_data_vars = external_bdry_other_data[direction];
       other_data_vars.initialize(3);
@@ -386,35 +348,26 @@ void run_test() {
 
     const Slab slab(1.2, 3.4);
     const Time start = slab.start();
-    const Time end = slab.end();
 
-    TimeId initial_time(true, 4, start);
-    TimeId next_time(true, 4, end);
+    TimeStepId initial_time(true, 4, start);
 
     db::item_type<mortar_data_tag<flux_comm_types>> mortar_history{};
-    db::item_type<mortar_next_temporal_ids_tag> mortar_next_temporal_ids{};
-    db::item_type<mortar_meshes_tag> mortar_meshes{};
-    db::item_type<mortar_sizes_tag> mortar_sizes{};
     for (const auto& mortar_id : external_mortar_ids) {
       mortar_history.insert({mortar_id, {}});
-      mortar_next_temporal_ids.insert({mortar_id, initial_time});
-      mortar_meshes.insert({mortar_id, mesh.slice_away(0)});
-      mortar_sizes.insert({mortar_id, {{Spectral::MortarSize::Full}}});
     }
 
     ActionTesting::emplace_component_and_initialize<my_component>(
         &runner, self_id,
-        {initial_time, next_time, mesh, element, std::move(map),
+        {initial_time, start.value(), mesh, element, std::move(map),
          std::move(bdry_normal_dot_fluxes), std::move(bdry_other_data),
          std::move(external_bdry_normal_dot_fluxes),
          std::move(external_bdry_other_data), std::move(external_bdry_vars),
-         std::move(mortar_history), std::move(mortar_next_temporal_ids),
-         std::move(mortar_meshes), std::move(mortar_sizes)});
+         std::move(mortar_history)});
   }
   runner.set_phase(metavariables::Phase::Testing);
 
-  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
   CHECK(ActionTesting::is_ready<my_component>(runner, self_id));
+  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
 
   // Check that BC's were indeed applied.
   const auto& external_vars =
@@ -431,15 +384,10 @@ void run_test() {
       Scalar<DataVector>({{{30., 40., 50.}}});
   CHECK(external_vars == expected_vars);
 
-  // ReceiveDataForFluxes
-  ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);
-  const auto& self_box =
-      ActionTesting::get_databox<my_component,
-                                 tmpl::append<simple_tags, compute_tags>>(
-          runner, self_id);
-
   auto mortar_history = serialize_and_deserialize(
-      db::get<mortar_data_tag<flux_comm_types>>(self_box));
+      ActionTesting::get_databox_tag<my_component,
+                                     mortar_data_tag<flux_comm_types>>(
+          runner, self_id));
   CHECK(mortar_history.size() == 2);
   const auto check_mortar = [&mortar_history](
       const std::pair<Direction<2>, ElementId<2>>& mortar_id,

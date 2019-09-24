@@ -55,7 +55,6 @@ namespace db {
  *
  * \derivedrequires
  * - type alias `type` of the type this SimpleTag represents
- * - static `std::string name()` method that returns a runtime name for the tag.
  *
  * \example
  * \snippet Test_DataBox.cpp databox_tag_example
@@ -208,32 +207,6 @@ template <typename TagList, typename Tag>
 constexpr bool has_no_matching_tag_v = has_no_matching_tag<TagList, Tag>::value;
 }  // namespace DataBox_detail
 
-namespace DataBox_detail {
-template <typename Tag, typename = cpp17::void_t<>>
-struct tag_name_impl {
-  static std::string name() noexcept { return pretty_type::short_name<Tag>(); }
-};
-
-template <typename Tag>
-struct tag_name_impl<Tag, cpp17::void_t<decltype(Tag::name())>> : public Tag {};
-}  // namespace DataBox_detail
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Get the name of a DataBoxTag, including prefixes
- *
- * \details
- * Given a DataBoxTag returns the name of the DataBoxTag as a std::string. If
- * the DataBoxTag is also a PrefixTag then the prefix is added.
- *
- * \tparam Tag the DataBoxTag whose name to get
- * \return string holding the DataBoxTag's name
- */
-template <typename Tag>
-std::string tag_name() noexcept {
-  return DataBox_detail::tag_name_impl<Tag>::name();
-}
-
 // @{
 /*!
  * \ingroup DataBoxGroup
@@ -307,6 +280,54 @@ struct is_base_tag<Tag, Requires<cpp17::is_base_of_v<db::BaseTag, Tag> and
 template <typename Tag>
 constexpr bool is_base_tag_v = is_base_tag<Tag>::value;
 // @}
+
+namespace DataBox_detail {
+template <typename Tag, typename = cpp17::void_t<>>
+struct tag_name_impl;
+
+template <typename Tag, typename = std::nullptr_t, typename = cpp17::void_t<>>
+struct tag_name_impl2 {
+  static_assert(not is_compute_item_v<Tag>,
+                "Compute tags must have a name function or a base alias.");
+  static std::string name() noexcept { return pretty_type::short_name<Tag>(); }
+};
+
+template <typename Tag>
+struct tag_name_impl2<Tag, Requires<is_compute_item_v<Tag>>,
+                      cpp17::void_t<typename Tag::base>>
+    : tag_name_impl<typename Tag::base> {};
+
+template <typename Tag>
+struct tag_name_impl2<Tag, Requires<cpp17::is_base_of_v<db::PrefixTag, Tag> and
+                                    not is_compute_item_v<Tag>>> {
+  static std::string name() noexcept {
+    return pretty_type::short_name<Tag>() + "(" +
+           tag_name_impl<typename Tag::tag>::name() + ")";
+  }
+};
+
+template <typename Tag, typename>
+struct tag_name_impl : tag_name_impl2<Tag> {};
+
+template <typename Tag>
+struct tag_name_impl<Tag, cpp17::void_t<decltype(Tag::name())>> : public Tag {};
+}  // namespace DataBox_detail
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Get the name of a DataBoxTag, including prefixes
+ *
+ * \details
+ * Given a DataBoxTag returns the name of the DataBoxTag as a std::string. If
+ * the DataBoxTag is also a PrefixTag then the prefix is added.
+ *
+ * \tparam Tag the DataBoxTag whose name to get
+ * \return string holding the DataBoxTag's name
+ */
+template <typename Tag>
+std::string tag_name() noexcept {
+  return DataBox_detail::tag_name_impl<Tag>::name();
+}
 
 template <class T, class = void>
 struct has_return_type_member : std::false_type {};

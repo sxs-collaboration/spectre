@@ -30,35 +30,33 @@ struct VectorTag : db::SimpleTag {
   static std::string name() noexcept { return "VectorTag"; }
 };
 
-using operand_tag = LinearSolver::Tags::Operand<VectorTag>;
-using residual_tag = LinearSolver::Tags::Residual<VectorTag>;
-
-template <typename Metavariables>
-using element_tags =
-    tmpl::append<tmpl::list<VectorTag, operand_tag>,
-                 typename LinearSolver::cg_detail::InitializeElement<
-                     Metavariables>::simple_tags,
-                 typename LinearSolver::cg_detail::InitializeElement<
-                     Metavariables>::compute_tags>;
+using fields_tag = VectorTag;
+using operand_tag = LinearSolver::Tags::Operand<fields_tag>;
+using residual_tag = LinearSolver::Tags::Residual<fields_tag>;
 
 template <typename Metavariables>
 struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = int;
-  using const_global_cache_tag_list = tmpl::list<>;
-  using action_list = tmpl::list<>;
-  using initial_databox = db::compute_databox_type<element_tags<Metavariables>>;
-};
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<ActionTesting::InitializeDataBox<
+              tmpl::list<VectorTag, operand_tag,
+                         LinearSolver::Tags::IterationId, residual_tag,
+                         LinearSolver::Tags::HasConverged>,
+              tmpl::list<
+                  ::Tags::NextCompute<LinearSolver::Tags::IterationId>>>>>,
 
-struct System {
-  using fields_tag = VectorTag;
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing,
+                             tmpl::list<LinearSolver::cg_detail::PrepareStep>>>;
 };
 
 struct Metavariables {
   using component_list = tmpl::list<ElementArray<Metavariables>>;
-  using system = System;
-  using const_global_cache_tag_list = tmpl::list<>;
+  enum class Phase { Initialization, Testing, Exit };
 };
 
 }  // namespace
@@ -66,37 +64,24 @@ struct Metavariables {
 SPECTRE_TEST_CASE(
     "Unit.Numerical.LinearSolver.ConjugateGradient.ElementActions",
     "[Unit][NumericalAlgorithms][LinearSolver][Actions]") {
-  using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
-  using MockDistributedObjectsTag =
-      MockRuntimeSystem::MockDistributedObjectsTag<ElementArray<Metavariables>>;
+  using element_array = ElementArray<Metavariables>;
 
-  const int self_id{0};
+  ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
 
-  MockRuntimeSystem::TupleOfMockDistributedObjects dist_objects{};
-  tuples::get<MockDistributedObjectsTag>(dist_objects)
-      .emplace(
-          self_id,
-          db::create<
-              tmpl::append<tmpl::list<VectorTag, operand_tag>,
-                           typename LinearSolver::cg_detail::InitializeElement<
-                               Metavariables>::simple_tags>,
-              typename LinearSolver::cg_detail::InitializeElement<
-                  Metavariables>::compute_tags>(
-              DenseVector<double>(3, 0.), DenseVector<double>(3, 2.), 0_st,
-              0_st, DenseVector<double>(3, 1.),
-              db::item_type<LinearSolver::Tags::HasConverged>{}));
-  MockRuntimeSystem runner{{}, std::move(dist_objects)};
-  const auto get_box = [&runner, &self_id]() -> decltype(auto) {
-    return runner.algorithms<ElementArray<Metavariables>>()
-        .at(self_id)
-        .get_databox<ElementArray<Metavariables>::initial_databox>();
+  // Setup mock element array
+  ActionTesting::emplace_component_and_initialize<element_array>(
+      make_not_null(&runner), 0,
+      {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
+       std::numeric_limits<size_t>::max(), DenseVector<double>(3, 1.),
+       db::item_type<LinearSolver::Tags::HasConverged>{}});
+
+  // DataBox shortcuts
+  const auto get_tag = [&runner](auto tag_v) -> decltype(auto) {
+    using tag = std::decay_t<decltype(tag_v)>;
+    return ActionTesting::get_databox_tag<element_array, tag>(runner, 0);
   };
-  {
-    const auto& box = get_box();
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 0);
-    CHECK(db::get<LinearSolver::Tags::Operand<VectorTag>>(box) ==
-          DenseVector<double>(3, 2.));
-  }
+
+  runner.set_phase(Metavariables::Phase::Testing);
 
   // Can't test the other element actions because reductions are not yet
   // supported. The full algorithm is tested in
@@ -104,23 +89,28 @@ SPECTRE_TEST_CASE(
   // `Test_DistributedConjugateGradientAlgorithm.cpp`.
 
   SECTION("InitializeHasConverged") {
-    runner.simple_action<ElementArray<Metavariables>,
-                         LinearSolver::cg_detail::InitializeHasConverged>(
-        self_id, db::item_type<LinearSolver::Tags::HasConverged>{
-                     {1, 0., 0.}, 1, 0., 0.});
-    const auto& box = get_box();
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
-  }
-  SECTION("UpdateOperand") {
-    runner.simple_action<ElementArray<Metavariables>,
-                         LinearSolver::cg_detail::UpdateOperand>(
-        self_id, 2.,
+    ActionTesting::simple_action<
+        element_array,
+        LinearSolver::cg_detail::InitializeHasConverged<fields_tag>>(
+        make_not_null(&runner), 0,
         db::item_type<LinearSolver::Tags::HasConverged>{
             {1, 0., 0.}, 1, 0., 0.});
-    const auto& box = get_box();
-    CHECK(db::get<LinearSolver::Tags::IterationId>(box) == 1);
-    CHECK(db::get<LinearSolver::Tags::Operand<VectorTag>>(box) ==
+    CHECK(get_tag(LinearSolver::Tags::HasConverged{}));
+  }
+  SECTION("PrepareStep") {
+    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
+    CHECK(get_tag(LinearSolver::Tags::IterationId{}) == 0);
+    CHECK(get_tag(Tags::Next<LinearSolver::Tags::IterationId>{}) == 1);
+  }
+  SECTION("UpdateOperand") {
+    ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
+    ActionTesting::simple_action<
+        element_array, LinearSolver::cg_detail::UpdateOperand<fields_tag>>(
+        make_not_null(&runner), 0, 2.,
+        db::item_type<LinearSolver::Tags::HasConverged>{
+            {1, 0., 0.}, 1, 0., 0.});
+    CHECK(get_tag(LinearSolver::Tags::Operand<VectorTag>{}) ==
           DenseVector<double>(3, 5.));
-    CHECK(db::get<LinearSolver::Tags::HasConverged>(box));
+    CHECK(get_tag(LinearSolver::Tags::HasConverged{}));
   }
 }

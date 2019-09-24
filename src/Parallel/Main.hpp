@@ -39,8 +39,7 @@ template <typename Metavariables>
 class Main : public CBase_Main<Metavariables> {
  public:
   using component_list = typename Metavariables::component_list;
-  using const_global_cache_tags =
-      ConstGlobalCache_detail::make_tag_list<Metavariables>;
+  using const_global_cache_tags = get_const_global_cache_tags<Metavariables>;
 
   /// \cond HIDDEN_SYMBOLS
   /// The constructor used to register the class
@@ -62,17 +61,19 @@ class Main : public CBase_Main<Metavariables> {
   explicit Main(CkMigrateMessage* /*msg*/)
       : options_("Uninitialized after migration") {}
 
-  /// Initialize the parallel_components.
-  void initialize() noexcept;
+  /// Allocate the initial elements of array components, and then execute the
+  /// initialization phase on each component
+  void allocate_array_components_and_execute_initialization_phase() noexcept;
 
   /// Determine the next phase of the simulation and execute it.
   void execute_next_phase() noexcept;
 
  private:
   template <typename ParallelComponent>
-  using parallel_component_options = typename ParallelComponent::options;
+  using parallel_component_options = Parallel::get_option_tags<
+      typename ParallelComponent::initialization_tags>;
   using option_list = tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
-      const_global_cache_tags,
+      Parallel::get_option_tags<const_global_cache_tags>,
       tmpl::transform<component_list,
                       tmpl::bind<parallel_component_options, tmpl::_1>>>>>;
   using parallel_component_tag_list = tmpl::transform<
@@ -236,13 +237,16 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
     ERROR(e.what());
   }
 
-  const_global_cache_proxy_ =
-      options_.template apply<const_global_cache_tags, Metavariables>(
-          [](auto... args) {
-            return CProxy_ConstGlobalCache<Metavariables>::ckNew(
-                tuples::tagged_tuple_from_typelist<const_global_cache_tags>(
-                    std::move(args)...));
+  const auto items_from_options =
+      options_.template apply<option_list, Metavariables>(
+          [](auto... args) noexcept {
+            return tuples::tagged_tuple_from_typelist<option_list>(
+                std::move(args)...);
           });
+
+  const_global_cache_proxy_ = CProxy_ConstGlobalCache<Metavariables>::ckNew(
+      Parallel::create_from_options(items_from_options,
+                                    const_global_cache_tags{}));
 
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
@@ -259,23 +263,18 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
       const_global_cache_proxy_.ckGetGroupID());
 
   tmpl::for_each<group_component_list>([
-    this, &the_parallel_components, &const_global_cache_dependency
+    this, &the_parallel_components, &items_from_options, &
+    const_global_cache_dependency
   ](auto parallel_component_v) noexcept {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     using ParallelComponentProxy =
         Parallel::proxy_from_parallel_component<parallel_component>;
-    using add_options_to_databox =
-        typename parallel_component::add_options_to_databox;
     tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
         ParallelComponentProxy::ckNew(
             const_global_cache_proxy_,
-            options_.template apply<
-                typename add_options_to_databox::simple_tags, Metavariables>(
-                [](auto... args) noexcept {
-                  return tuples::tagged_tuple_from_typelist<
-                      typename add_options_to_databox::simple_tags>(
-                      std::move(args)...);
-                }),
+            Parallel::create_from_options(
+                items_from_options,
+                typename parallel_component::initialization_tags{}),
             &const_global_cache_dependency);
   });
 
@@ -284,27 +283,23 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
       tmpl::filter<component_list,
                    Parallel::is_chare_proxy<tmpl::bind<
                        Parallel::proxy_from_parallel_component, tmpl::_1>>>;
-  tmpl::for_each<singleton_component_list>([ this, &the_parallel_components ](
-      auto parallel_component_v) noexcept {
+  tmpl::for_each<singleton_component_list>([
+    this, &the_parallel_components, &items_from_options
+  ](auto parallel_component_v) noexcept {
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     using ParallelComponentProxy =
         Parallel::proxy_from_parallel_component<parallel_component>;
-    using add_options_to_databox =
-        typename parallel_component::add_options_to_databox;
     tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
         ParallelComponentProxy::ckNew(
             const_global_cache_proxy_,
-            options_
-                .template apply<typename add_options_to_databox::simple_tags,
-                                Metavariables>([](auto... args) noexcept {
-                  return tuples::tagged_tuple_from_typelist<
-                      typename add_options_to_databox::simple_tags>(
-                      std::move(args)...);
-                }));
+            Parallel::create_from_options(
+                items_from_options,
+                typename parallel_component::initialization_tags{}));
   });
 
-  // Create proxies for empty array chares (which are created by the
-  // initialize functions of the parallel_components)
+  // Create proxies for empty array chares (whose elements will be created by
+  // the allocate functions of the array components during
+  // execute_initialization_phase)
   using array_component_list = tmpl::filter<
       component_list,
       tmpl::and_<Parallel::is_array_proxy<tmpl::bind<
@@ -340,26 +335,45 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
   // Send the complete list of parallel_components to the ConstGlobalCache on
   // each Charm++ node.  After all nodes have finished, the callback is
   // executed.
-  CkCallback callback(CkIndex_Main<Metavariables>::initialize(),
-                      this->thisProxy);
+  CkCallback callback(
+      CkIndex_Main<Metavariables>::
+          allocate_array_components_and_execute_initialization_phase(),
+      this->thisProxy);
   const_global_cache_proxy_.set_parallel_components(the_parallel_components,
                                                     callback);
 }
 
 template <typename Metavariables>
-void Main<Metavariables>::initialize() noexcept {
-  tmpl::for_each<component_list>([this](auto parallel_component) noexcept {
-    using ParallelComponent = tmpl::type_from<decltype(parallel_component)>;
-    options_.template apply<typename ParallelComponent::options, Metavariables>(
-        [this](auto... opts) {
-          ParallelComponent::initialize(const_global_cache_proxy_,
-                                        std::move(opts)...);
-          ASSERT(current_phase_ == Metavariables::Phase::Initialization,
-                 "Must be in the Initialization phase during initialization.");
-          Parallel::get_parallel_component<ParallelComponent>(
-              *(const_global_cache_proxy_.ckLocalBranch()))
-              .start_phase(current_phase_);
-        });
+void Main<Metavariables>::
+    allocate_array_components_and_execute_initialization_phase() noexcept {
+  ASSERT(current_phase_ == Metavariables::Phase::Initialization,
+         "Must be in the Initialization phase.");
+  // This is created again to avoid sending it through Charm++ callbacks, and
+  // so it goes cleanly out of scope after initialization
+  const auto items_from_options =
+      options_.template apply<option_list, Metavariables>(
+          [](auto... args) noexcept {
+            return tuples::tagged_tuple_from_typelist<option_list>(
+                std::move(args)...);
+          });
+  using array_component_list =
+      tmpl::filter<component_list,
+                   Parallel::is_array_proxy<tmpl::bind<
+                       Parallel::proxy_from_parallel_component, tmpl::_1>>>;
+  tmpl::for_each<array_component_list>([ this, &items_from_options ](
+      auto parallel_component_v) noexcept {
+    using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
+    parallel_component::allocate_array(
+        const_global_cache_proxy_,
+        Parallel::create_from_options(
+            items_from_options,
+            typename parallel_component::initialization_tags{}));
+  });
+  tmpl::for_each<component_list>([this](auto parallel_component_v) noexcept {
+    using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
+    Parallel::get_parallel_component<parallel_component>(
+        *(const_global_cache_proxy_.ckLocalBranch()))
+        .start_phase(current_phase_);
   });
   CkStartQD(CkCallback(CkIndex_Main<Metavariables>::execute_next_phase(),
                        this->thisProxy));

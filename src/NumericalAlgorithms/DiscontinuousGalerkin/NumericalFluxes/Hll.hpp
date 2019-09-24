@@ -166,9 +166,9 @@ struct Hll {
           std::numeric_limits<double>::signaling_NaN());
       for (size_t s = 0; s < min_signal_speed.begin()->size(); ++s) {
         get(min_signal_speed)[s] = std::min(get(min_signal_speed_interior)[s],
-                                            get(min_signal_speed_exterior)[s]);
+                                            -get(max_signal_speed_exterior)[s]);
         get(max_signal_speed)[s] = std::max(get(max_signal_speed_interior)[s],
-                                            get(max_signal_speed_exterior)[s]);
+                                            -get(min_signal_speed_exterior)[s]);
       }
       const DataVector one_over_cp_minus_cm =
           1.0 / (get(max_signal_speed) - get(min_signal_speed));

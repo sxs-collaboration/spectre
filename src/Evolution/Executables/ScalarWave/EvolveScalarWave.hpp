@@ -13,13 +13,9 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/Filtering.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/InitializeElement.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/ObserveErrorNorms.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/ObserveFields.hpp"  // IWYU pragma: keep
-#include "Evolution/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
-#include "Evolution/EventsAndTriggers/Event.hpp"
-#include "Evolution/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
-#include "Evolution/EventsAndTriggers/Tags.hpp"
+#include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
+#include "Evolution/Initialization/Evolution.hpp"
+#include "Evolution/Initialization/NonconservativeSystem.hpp"
 #include "Evolution/Systems/ScalarWave/Equations.hpp"  // IWYU pragma: keep // for UpwindFlux
 #include "Evolution/Systems/ScalarWave/System.hpp"
 #include "IO/Observer/Actions.hpp"            // IWYU pragma: keep
@@ -33,10 +29,21 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Options/Options.hpp"
+#include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
+#include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
+#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/Events/ObserveFields.hpp"      // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
+#include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/MathFunctions/MathFunction.hpp"
@@ -45,6 +52,7 @@
 #include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"       // IWYU pragma: keep
 #include "Time/Actions/UpdateU.hpp"                // IWYU pragma: keep
+#include "Time/StepChoosers/ByBlock.hpp"           // IWYU pragma: keep
 #include "Time/StepChoosers/Cfl.hpp"               // IWYU pragma: keep
 #include "Time/StepChoosers/Constant.hpp"          // IWYU pragma: keep
 #include "Time/StepChoosers/Increase.hpp"          // IWYU pragma: keep
@@ -69,15 +77,16 @@ class CProxy_ConstGlobalCache;
 
 template <size_t Dim>
 struct EvolutionMetavars {
+  static constexpr size_t volume_dim = Dim;
   // Customization/"input options" to simulation
   using system = ScalarWave::System<Dim>;
-  using temporal_id = Tags::TimeId;
+  using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = true;
-  using analytic_solution_tag =
-      OptionTags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
-  using boundary_condition_tag = analytic_solution_tag;
+  using initial_data_tag =
+      Tags::AnalyticSolution<ScalarWave::Solutions::PlaneWave<Dim>>;
+  using boundary_condition_tag = initial_data_tag;
   using normal_dot_numerical_flux =
-      OptionTags::NumericalFlux<ScalarWave::UpwindFlux<Dim>>;
+      Tags::NumericalFlux<ScalarWave::UpwindFlux<Dim>>;
 
   // public for use by the Charm++ registration code
   using events = tmpl::list<
@@ -90,12 +99,11 @@ struct EvolutionMetavars {
 
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
-  using const_global_cache_tag_list =
-      tmpl::list<analytic_solution_tag,
-                 OptionTags::TypedTimeStepper<tmpl::conditional_t<
+  using const_global_cache_tags =
+      tmpl::list<initial_data_tag,
+                 Tags::TimeStepper<tmpl::conditional_t<
                      local_time_stepping, LtsTimeStepper, TimeStepper>>,
-                 OptionTags::EventsAndTriggers<events, triggers>>;
-  using domain_creator_tag = OptionTags::DomainCreator<Dim, Frame::Inertial>;
+                 Tags::EventsAndTriggers<events, triggers>>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
@@ -104,7 +112,8 @@ struct EvolutionMetavars {
       typename Event<events>::creatable_classes>;
 
   using step_choosers =
-      tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
+      tmpl::list<StepChoosers::Registrars::ByBlock<Dim>,
+                 StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
                  StepChoosers::Registrars::Constant,
                  StepChoosers::Registrars::Increase>;
 
@@ -140,15 +149,27 @@ struct EvolutionMetavars {
     Exit
   };
 
+  using initialization_actions = tmpl::list<
+      dg::Actions::InitializeDomain<system::volume_dim>,
+      Initialization::Actions::NonconservativeSystem,
+      dg::Actions::InitializeInterfaces<
+          system,
+          dg::Initialization::slice_tags_to_face<
+              typename system::variables_tag>,
+          dg::Initialization::slice_tags_to_exterior<>>,
+      Initialization::Actions::Evolution<EvolutionMetavars>,
+      dg::Actions::InitializeMortars<EvolutionMetavars>,
+      Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
+      Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+
   using component_list = tmpl::list<
       observers::Observer<EvolutionMetavars>,
       observers::ObserverWriter<EvolutionMetavars>,
       DgElementArray<
           EvolutionMetavars,
           tmpl::list<
-              Parallel::PhaseActions<
-                  Phase, Phase::Initialization,
-                  tmpl::list<dg::Actions::InitializeElement<Dim>>>,
+              Parallel::PhaseActions<Phase, Phase::Initialization,
+                                     initialization_actions>,
 
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
@@ -157,10 +178,10 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
-                  tmpl::list<Actions::AdvanceTime,
-                             observers::Actions::RegisterWithObservers<
+                  tmpl::list<observers::Actions::RegisterWithObservers<
                                  observers::RegisterObservers<
-                                     element_observation_type>>>>,
+                                     element_observation_type>>,
+                             Parallel::Actions::TerminatePhase>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
@@ -169,8 +190,7 @@ struct EvolutionMetavars {
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables, Actions::AdvanceTime>>>>,
-          typename dg::Actions::InitializeElement<Dim>::AddOptionsToDataBox>>;
+                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
 
   static constexpr OptionString help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
@@ -183,6 +203,8 @@ struct EvolutionMetavars {
           EvolutionMetavars>& /*cache_proxy*/) noexcept {
     switch (current_phase) {
       case Phase::Initialization:
+        return Phase::InitializeTimeStepperHistory;
+      case Phase::InitializeTimeStepperHistory:
         return Phase::RegisterWithObserver;
       case Phase::RegisterWithObserver:
         return Phase::Evolve;
