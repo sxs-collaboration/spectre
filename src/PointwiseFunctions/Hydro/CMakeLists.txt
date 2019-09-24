@@ -19,3 +19,7 @@ target_link_libraries(
   INTERFACE DataStructures
   INTERFACE ErrorHandling
   )
+
+if(BUILD_PYTHON_BINDINGS)
+  add_subdirectory(EquationsOfState/Python)
+endif()
