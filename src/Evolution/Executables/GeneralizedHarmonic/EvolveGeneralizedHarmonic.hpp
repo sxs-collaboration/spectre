@@ -232,26 +232,27 @@ struct EvolutionMetavars {
       tmpl::push_back<Event<observation_events>::creatable_classes,
                       typename Horizon::post_horizon_find_callback>>;
 
-  using compute_rhs = tmpl::flatten<
-      tmpl::list<dg::Actions::ComputeNonconservativeBoundaryFluxes<
-                     Tags::InternalDirections<volume_dim>>,
-                 dg::Actions::SendDataForFluxes<EvolutionMetavars>,
-                 Actions::ComputeTimeDerivative,
-                 dg::Actions::ComputeNonconservativeBoundaryFluxes<
-                     Tags::BoundaryDirectionsInterior<volume_dim>>,
-                 dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
-                 tmpl::conditional_t<local_time_stepping, tmpl::list<>,
-                                     dg::Actions::ApplyFluxes>,
-                 Actions::RecordTimeStepperData>>;
+  using compute_rhs = tmpl::flatten<tmpl::list<
+      dg::Actions::ComputeNonconservativeBoundaryFluxes<
+          Tags::InternalDirections<volume_dim>>,
+      dg::Actions::SendDataForFluxes<EvolutionMetavars>,
+      Actions::ComputeTimeDerivative,
+      dg::Actions::ComputeNonconservativeBoundaryFluxes<
+          Tags::BoundaryDirectionsInterior<volume_dim>>,
+      dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
+      tmpl::conditional_t<local_time_stepping, tmpl::list<>,
+                          dg::Actions::ApplyFluxes>,
+      GeneralizedHarmonic::Actions::
+          ImposeConstraintPreservingBoundaryConditions<EvolutionMetavars>,
+      Actions::RecordTimeStepperData>>;
   using update_variables = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      GeneralizedHarmonic::Actions::
-          ImposeConstraintPreservingBoundaryConditions<EvolutionMetavars>,
-      Actions::UpdateU,
-      dg::Actions::ExponentialFilter<
-          0, typename system::variables_tag::type::tags_list>>>;
+      Actions::UpdateU  //,
+                        // dg::Actions::ExponentialFilter<
+      // 0, typename system::variables_tag::type::tags_list>
+      >>;
 
   enum class Phase {
     Initialization,
