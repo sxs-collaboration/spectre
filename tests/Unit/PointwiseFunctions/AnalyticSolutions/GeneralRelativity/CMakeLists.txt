@@ -17,3 +17,5 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "Test_Pypp;GeneralRelativitySolutions;GeneralizedHarmonic;GeneralRelativity;Utilities"
   )
+
+add_subdirectory(Python)
