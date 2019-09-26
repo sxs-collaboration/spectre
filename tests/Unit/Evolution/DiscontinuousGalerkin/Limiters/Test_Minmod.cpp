@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <functional>
 #include <limits>
+#include <random>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -43,6 +44,7 @@
 #include "tests/Unit/Evolution/DiscontinuousGalerkin/Limiters/TestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 // IWYU pragma: no_forward_declare Limiters::Minmod
@@ -95,6 +97,83 @@ void test_minmod_serialization() noexcept {
   const Limiters::Minmod<1, tmpl::list<ScalarTag>> minmod(
       Limiters::MinmodType::LambdaPi1);
   test_serialization(minmod);
+}
+
+template <size_t VolumeDim>
+void test_package_data_work(
+    const Mesh<VolumeDim>& mesh,
+    const OrientationMap<VolumeDim>& orientation_map) noexcept {
+  const DataVector used_for_size(mesh.number_of_grid_points());
+  MAKE_GENERATOR(generator);
+  std::uniform_real_distribution<> dist(-1., 1.);
+
+  const auto input_scalar = make_with_random_values<ScalarTag::type>(
+      make_not_null(&generator), make_not_null(&dist), used_for_size);
+  const auto input_vector =
+      make_with_random_values<typename VectorTag<VolumeDim>::type>(
+          make_not_null(&generator), make_not_null(&dist), used_for_size);
+  const auto element_size =
+      make_with_random_values<std::array<double, VolumeDim>>(
+          make_not_null(&generator), make_not_null(&dist), 0.0);
+
+  using TagList = tmpl::list<ScalarTag, VectorTag<VolumeDim>>;
+  const Limiters::Minmod<VolumeDim, TagList> minmod(
+      Limiters::MinmodType::LambdaPiN);
+  typename Limiters::Minmod<VolumeDim, TagList>::PackagedData packaged_data{};
+
+  minmod.package_data(make_not_null(&packaged_data), input_scalar, input_vector,
+                      mesh, element_size, orientation_map);
+
+  CHECK(packaged_data.element_size ==
+        orientation_map.permute_from_neighbor(element_size));
+
+  // Means are just numbers and don't care about orientations
+  CHECK(get(get<::Tags::Mean<ScalarTag>>(packaged_data.means)) ==
+        mean_value(get(input_scalar), mesh));
+  for (size_t i = 0; i < VolumeDim; ++i) {
+    CHECK(get<::Tags::Mean<VectorTag<VolumeDim>>>(packaged_data.means).get(i) ==
+          mean_value(input_vector.get(i), mesh));
+  }
+}
+
+void test_package_data_1d() noexcept {
+  INFO("Test Minmod package_data in 1D");
+  const Mesh<1> mesh(4, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto);
+
+  const OrientationMap<1> orientation_aligned{};
+  test_package_data_work(mesh, orientation_aligned);
+
+  const OrientationMap<1> orientation_flipped(
+      std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
+  test_package_data_work(mesh, orientation_flipped);
+}
+
+void test_package_data_2d() noexcept {
+  INFO("Test WENO package_data in 2D");
+  const Mesh<2> mesh({{4, 6}}, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto);
+
+  const OrientationMap<2> orientation_aligned{};
+  test_package_data_work(mesh, orientation_aligned);
+
+  const OrientationMap<2> orientation_rotated(std::array<Direction<2>, 2>{
+      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}});
+  test_package_data_work(mesh, orientation_rotated);
+}
+
+void test_package_data_3d() noexcept {
+  INFO("Test WENO package_data in 3D");
+  const Mesh<3> mesh({{4, 6, 3}}, Spectral::Basis::Legendre,
+                     Spectral::Quadrature::GaussLobatto);
+
+  const OrientationMap<3> orientation_aligned{};
+  test_package_data_work(mesh, orientation_aligned);
+
+  const OrientationMap<3> orientation_rotated(std::array<Direction<3>, 3>{
+      {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
+       Direction<3>::lower_eta()}});
+  test_package_data_work(mesh, orientation_rotated);
 }
 
 // Helper function to wrap the allocation of the optimization buffers for the
@@ -910,56 +989,6 @@ void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
                               0.925 / 0.8125);
 }
 
-// Helper function for testing Minmod::package_data()
-template <size_t VolumeDim>
-void test_package_data_work(
-    const Scalar<DataVector>& input_scalar,
-    const tnsr::I<DataVector, VolumeDim>& input_vector,
-    const Mesh<VolumeDim>& mesh,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
-    const std::array<double, VolumeDim>& element_size,
-    const OrientationMap<VolumeDim>& orientation_map) noexcept {
-  // To streamline the testing of the op() function, the test sets up
-  // identical data for all components of input_vector. To better test the
-  // package_data function, we first modify the input so the data
-  // aren't all identical:
-  auto modified_vector = input_vector;
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    modified_vector.get(d) += (d + 1.0) - 2.7 * square(logical_coords.get(d));
-  }
-
-  const Limiters::Minmod<VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>
-      minmod(Limiters::MinmodType::LambdaPi1);
-  typename Limiters::Minmod<
-      VolumeDim, tmpl::list<ScalarTag, VectorTag<VolumeDim>>>::PackagedData
-      packaged_data{};
-
-  // First we test package_data with an identity orientation_map
-  minmod.package_data(make_not_null(&packaged_data), input_scalar,
-                      modified_vector, mesh, element_size, {});
-
-  // Should not normally look inside the package, but we do so here for testing.
-  double lhs = get(get<Tags::Mean<ScalarTag>>(packaged_data.means));
-  CHECK(lhs == approx(mean_value(get(input_scalar), mesh)));
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    lhs = get<Tags::Mean<VectorTag<VolumeDim>>>(packaged_data.means).get(d);
-    CHECK(lhs == approx(mean_value(modified_vector.get(d), mesh)));
-  }
-  CHECK(packaged_data.element_size == element_size);
-
-  // Then we test with a reorientation, as if sending the data to another Block
-  minmod.package_data(make_not_null(&packaged_data), input_scalar,
-                      modified_vector, mesh, element_size, orientation_map);
-  lhs = get(get<Tags::Mean<ScalarTag>>(packaged_data.means));
-  CHECK(lhs == approx(mean_value(get(input_scalar), mesh)));
-  for (size_t d = 0; d < VolumeDim; ++d) {
-    lhs = get<Tags::Mean<VectorTag<VolumeDim>>>(packaged_data.means).get(d);
-    CHECK(lhs == approx(mean_value(modified_vector.get(d), mesh)));
-  }
-  CHECK(packaged_data.element_size ==
-        orientation_map.permute_from_neighbor(element_size));
-}
-
 // Helper function for testing Minmod::op()
 template <size_t VolumeDim>
 void test_work(
@@ -1030,8 +1059,7 @@ void test_work(
 
 void test_minmod_limiter_1d() noexcept {
   // The goals of this test are,
-  // 1. check Minmod::package_data
-  // 2. check that Minmod::op() limits different tensors independently
+  // 1. check that Minmod::op() limits different tensors independently
   // See comments in the 3D test for full details.
   //
   // a. Generate data to fill all tensor components.
@@ -1049,11 +1077,6 @@ void test_minmod_limiter_1d() noexcept {
   const double mean = mean_value(data, mesh);
   const auto input_scalar = ScalarTag::type{data};
   const auto input_vector = VectorTag<1>::type{data};
-
-  const OrientationMap<1> test_reorientation(
-      std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}});
-  test_package_data_work(input_scalar, input_vector, mesh, logical_coords,
-                         element_size, test_reorientation);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   std::unordered_map<
@@ -1088,9 +1111,8 @@ void test_minmod_limiter_1d() noexcept {
 
 void test_minmod_limiter_2d() noexcept {
   // The goals of this test are,
-  // 1. check Minmod::package_data
-  // 2. check that Minmod::op() limits different tensors independently
-  // 3. check that Minmod::op() limits different dimensions independently
+  // 1. check that Minmod::op() limits different tensors independently
+  // 2. check that Minmod::op() limits different dimensions independently
   // See comments in the 3D test for full details.
   //
   // a. Generate data to fill all tensor components.
@@ -1111,11 +1133,6 @@ void test_minmod_limiter_2d() noexcept {
   const double mean = mean_value(data, mesh);
   const auto input_scalar = ScalarTag::type{data};
   const auto input_vector = VectorTag<2>::type{data};
-
-  const OrientationMap<2> test_reorientation(std::array<Direction<2>, 2>{
-      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}});
-  test_package_data_work(input_scalar, input_vector, mesh, logical_coords,
-                         element_size, test_reorientation);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   std::unordered_map<
@@ -1182,9 +1199,8 @@ void test_minmod_limiter_2d() noexcept {
 
 void test_minmod_limiter_3d() noexcept {
   // The goals of this test are,
-  // 1. check Minmod::package_data
-  // 2. check that Minmod::op() limits different tensors independently
-  // 3. check that Minmod::op() limits different dimensions independently
+  // 1. check that Minmod::op() limits different tensors independently
+  // 2. check that Minmod::op() limits different dimensions independently
   //
   // The steps taken to meet these goals are:
   // a. set up values in two Tensor<DataVector>s, one scalar and one vector,
@@ -1217,12 +1233,6 @@ void test_minmod_limiter_3d() noexcept {
   const double mean = mean_value(data, mesh);
   const auto input_scalar = ScalarTag::type{data};
   const auto input_vector = VectorTag<3>::type{data};
-
-  const OrientationMap<3> test_reorientation(std::array<Direction<3>, 3>{
-      {Direction<3>::lower_eta(), Direction<3>::upper_xi(),
-       Direction<3>::lower_zeta()}});
-  test_package_data_work(input_scalar, input_vector, mesh, logical_coords,
-                         element_size, test_reorientation);
 
   // b. Generate neighbor data for the scalar and vector Tensors.
   std::unordered_map<
@@ -1319,6 +1329,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Minmod", "[Limiters][Unit]") {
     INFO("Test Minmod option-parsing and serialization");
     test_minmod_option_parsing();
     test_minmod_serialization();
+  }
+
+  {
+    INFO("Test Minmod package_data");
+    test_package_data_1d();
+    test_package_data_2d();
+    test_package_data_3d();
   }
 
   {
