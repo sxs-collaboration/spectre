@@ -286,7 +286,8 @@ void test_euclidean_surface_integral_of_vector(
   const auto integral_2 = StrahlkorperGr::euclidean_surface_integral_of_vector(
       euclidean_area_element, test_vector, normal_one_form, strahlkorper);
 
-  CHECK(integral_1 == approx(integral_2));
+  Approx custom_approx = Approx::custom().epsilon(1.e-13).scale(1.0);
+  CHECK(integral_1 == custom_approx(integral_2));
 }
 
 template <typename Solution, typename Frame>
@@ -500,8 +501,8 @@ void test_integral_correspondence(
       euclidean_area_element, scalar_1, strahlkorper);
   const double integral_2 = StrahlkorperGr::surface_integral_of_scalar(
       area_element, scalar_2, strahlkorper);
-
-  CHECK(integral_1 == approx(integral_2));
+  Approx custom_approx = Approx::custom().epsilon(1.e-13).scale(1.0);
+  CHECK(integral_1 == custom_approx(integral_2));
 }
 
 template <typename Solution, typename Fr>
