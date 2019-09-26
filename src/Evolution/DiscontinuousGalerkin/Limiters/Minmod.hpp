@@ -6,16 +6,16 @@
 #include <array>
 #include <cstdlib>
 #include <limits>
-#include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/Tags.hpp"
+#include "DataStructures/Tags.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "Options/Options.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -24,6 +24,8 @@
 class DataVector;
 template <size_t VolumeDim>
 class Direction;
+template <size_t Dim, typename T>
+class DirectionMap;
 template <size_t VolumeDim>
 class Element;
 template <size_t VolumeDim>
@@ -37,11 +39,6 @@ namespace boost {
 template <class T>
 struct hash;
 }  // namespace boost
-
-namespace gsl {
-template <class T>
-class not_null;
-}  // namespace gsl
 
 namespace PUP {
 class er;
@@ -65,6 +62,32 @@ struct SizeOfElement;
 /// \endcond
 
 namespace Limiters {
+
+namespace Minmod_detail {
+// Implements the troubled-cell indicator for the Minmod limiter.
+//
+// Because the Minmod limiter uses the same algorithm to detect troubled cells
+// and to correct the data on these cells, we optimize by having the TCI return
+// (by reference) some additional data that are used by the limiter in the case
+// where the TCI returns true (i.e., the case where limiting is needed).
+//
+// Note: This function is only made available in this header file to facilitate
+// testing.
+template <size_t VolumeDim>
+bool minmod_tci_wrapper(
+    gsl::not_null<double*> u_mean,
+    gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
+    gsl::not_null<DataVector*> u_lin_buffer,
+    gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
+    Limiters::MinmodType minmod_type, double tvbm_constant, const DataVector& u,
+    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    const std::array<double, VolumeDim>& element_size,
+    const DirectionMap<VolumeDim, double>& effective_neighbor_means,
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes,
+    const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
+                               gsl::span<std::pair<size_t, size_t>>>,
+                     VolumeDim>& volume_and_slice_indices) noexcept;
+}  // namespace Minmod_detail
 
 /// \ingroup LimitersGroup
 /// \brief A general minmod slope limiter

@@ -5,6 +5,7 @@ set(LIBRARY Limiters)
 
 set(LIBRARY_SOURCES
   HwenoModifiedSolution.cpp
+  Minmod.cpp
   MinmodHelpers.cpp
   MinmodTci.cpp
   MinmodType.cpp

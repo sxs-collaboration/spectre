@@ -83,7 +83,7 @@ bool limit_one_tensor(
     DataVector& u = (*tensor)[i];
     double u_mean;
     std::array<double, VolumeDim> u_limited_slopes{};
-    const bool reduce_slope = troubled_cell_indicator(
+    const bool reduce_slope = minmod_tci_wrapper(
         make_not_null(&u_mean), make_not_null(&u_limited_slopes), u_lin_buffer,
         boundary_buffer, minmod_type, tvbm_constant, u, element, mesh,
         element_size, effective_neighbor_means, effective_neighbor_sizes,
