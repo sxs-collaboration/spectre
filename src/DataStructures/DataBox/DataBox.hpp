@@ -1083,7 +1083,8 @@ void mutate(const gsl::not_null<DataBox<TagList>*> box, Invokable&& invokable,
       "One of the tags being mutated could not be found in the DataBox or "
       "is a base tag identifying more than one tag.");
   static_assert(
-      not tmpl2::flat_any_v<db::is_compute_item_v<
+      not tmpl2::flat_any_v<tmpl::list_contains_v<
+          typename DataBox<TagList>::compute_with_subitems_tags,
           DataBox_detail::first_matching_tag<TagList, MutateTags>>...>,
       "Cannot mutate a compute item");
   if (UNLIKELY(box->mutate_locked_box_)) {
