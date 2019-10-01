@@ -68,7 +68,7 @@ namespace OptionTags {
 struct ValenciaDivCleanGroup {
   static std::string name() noexcept { return "ValenciaDivClean"; }
   static constexpr OptionString help{"Options for the evolution system"};
-  using group = ::OptionTags::EvolutionSystemGroup;
+  using group = evolution::OptionTags::SystemGroup;
 };
 
 /// \brief The constraint damping parameter
