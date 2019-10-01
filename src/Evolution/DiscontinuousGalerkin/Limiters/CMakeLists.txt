@@ -9,7 +9,7 @@ set(LIBRARY_SOURCES
   MinmodTci.cpp
   MinmodType.cpp
   WenoGridHelpers.cpp
-  WenoHelpers.cpp
+  WenoOscillationIndicator.cpp
   WenoType.cpp
   )
 

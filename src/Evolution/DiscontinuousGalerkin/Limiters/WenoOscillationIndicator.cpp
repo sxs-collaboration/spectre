@@ -1,7 +1,9 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
+
+#include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"  // IWYU pragma: keep
