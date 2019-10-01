@@ -4,7 +4,6 @@
 set(LIBRARY "Test_EllipticActions")
 
 set(LIBRARY_SOURCES
-  Test_ComputeOperatorAction.cpp
   Test_InitializeSystem.cpp
   )
 

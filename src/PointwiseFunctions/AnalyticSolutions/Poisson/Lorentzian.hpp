@@ -55,17 +55,13 @@ class Lorentzian {
   // @{
   /// Retrieve variable at coordinates `x`
   static auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-                        tmpl::list<Field> /*meta*/) noexcept
-      -> tuples::TaggedTuple<Field>;
-
-  static auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-                        tmpl::list<::Tags::Source<Field>> /*meta*/) noexcept
-      -> tuples::TaggedTuple<::Tags::Source<Field>>;
+                        tmpl::list<Tags::Field> /*meta*/) noexcept
+      -> tuples::TaggedTuple<Tags::Field>;
 
   static auto variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-      tmpl::list<::Tags::Source<AuxiliaryField<Dim>>> /*meta*/) noexcept
-      -> tuples::TaggedTuple<::Tags::Source<AuxiliaryField<Dim>>>;
+      tmpl::list<::Tags::FixedSource<Tags::Field>> /*meta*/) noexcept
+      -> tuples::TaggedTuple<::Tags::FixedSource<Tags::Field>>;
   // @}
 
   /// Retrieve a collection of variables at coordinates `x`

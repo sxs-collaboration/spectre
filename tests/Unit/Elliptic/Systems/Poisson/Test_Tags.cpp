@@ -8,6 +8,5 @@
 #include "Elliptic/Systems/Poisson/Tags.hpp"
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Tags", "[Unit][Elliptic]") {
-  CHECK(Poisson::Field::name() == "Field");
-  CHECK(Poisson::AuxiliaryField<1>::name() == "AuxiliaryField");
+  CHECK(db::tag_name<Poisson::Tags::Field>() == "Field");
 }

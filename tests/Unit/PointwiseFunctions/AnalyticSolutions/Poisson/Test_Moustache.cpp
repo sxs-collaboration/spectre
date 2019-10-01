@@ -11,6 +11,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/Moustache.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -25,8 +26,10 @@ template <size_t Dim>
 struct MoustacheProxy : Poisson::Solutions::Moustache<Dim> {
   using Poisson::Solutions::Moustache<Dim>::Moustache;
 
-  using field_tags = tmpl::list<Poisson::Field, Poisson::AuxiliaryField<Dim>>;
-  using source_tags = db::wrap_tags_in<Tags::Source, field_tags>;
+  using field_tags = tmpl::list<
+      Poisson::Tags::Field,
+      ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
+  using source_tags = tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
@@ -43,16 +46,16 @@ template <size_t Dim>
 void test_solution() {
   const MoustacheProxy<Dim> solution{};
   pypp::check_with_random_values<
-      1, tmpl::list<Poisson::Field, Poisson::AuxiliaryField<Dim>>>(
+      1, tmpl::list<Poisson::Tags::Field,
+                    ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>,
+                                  Frame::Inertial>>>(
       &MoustacheProxy<Dim>::field_variables, solution, "Moustache",
-      {"field", "auxiliary_field"}, {{{0., 1.}}}, std::make_tuple(),
+      {"field", "field_gradient"}, {{{0., 1.}}}, std::make_tuple(),
       DataVector(5));
   pypp::check_with_random_values<
-      1, tmpl::list<Tags::Source<Poisson::Field>,
-                    Tags::Source<Poisson::AuxiliaryField<Dim>>>>(
-      &MoustacheProxy<Dim>::source_variables, solution, "Moustache",
-      {"source", "auxiliary_source"}, {{{0., 1.}}}, std::make_tuple(),
-      DataVector(5));
+      1, tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>>(
+      &MoustacheProxy<Dim>::source_variables, solution, "Moustache", {"source"},
+      {{{0., 1.}}}, std::make_tuple(), DataVector(5));
 
   Poisson::Solutions::Moustache<Dim> created_solution =
       test_creation<Poisson::Solutions::Moustache<Dim>>("  ");

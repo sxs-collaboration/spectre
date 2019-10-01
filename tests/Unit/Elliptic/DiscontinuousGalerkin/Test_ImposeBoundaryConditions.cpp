@@ -121,7 +121,7 @@ struct NumericalFluxTag {
 struct System {
   static constexpr const size_t volume_dim = Dim;
   using variables_tag = vars_tag;
-  using impose_boundary_conditions_on_fields = tmpl::list<ScalarField>;
+  using primal_fields = tmpl::list<ScalarField>;
 
   template <typename Tag>
   using magnitude_tag = Tags::EuclideanMagnitude<Tag>;

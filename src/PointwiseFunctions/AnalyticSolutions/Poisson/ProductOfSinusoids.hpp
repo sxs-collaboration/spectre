@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"     // IWYU pragma: keep
 #include "Elliptic/Systems/Poisson/Tags.hpp"    // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -55,20 +56,18 @@ class ProductOfSinusoids {
   // @{
   /// Retrieve variable at coordinates `x`
   auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-                 tmpl::list<Field> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<Field>;
+                 tmpl::list<Tags::Field> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<Tags::Field>;
 
   auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-                 tmpl::list<AuxiliaryField<Dim>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<AuxiliaryField<Dim>>;
+                 tmpl::list<::Tags::deriv<Tags::Field, tmpl::size_t<Dim>,
+                                          Frame::Inertial>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<
+          ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
 
   auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-                 tmpl::list<::Tags::Source<Field>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<::Tags::Source<Field>>;
-
-  auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
-                 tmpl::list<::Tags::Source<AuxiliaryField<Dim>>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<::Tags::Source<AuxiliaryField<Dim>>>;
+                 tmpl::list<::Tags::FixedSource<Tags::Field>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<::Tags::FixedSource<Tags::Field>>;
   // @}
 
   /// Retrieve a collection of variables at coordinates `x`

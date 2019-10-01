@@ -37,7 +37,7 @@ namespace Actions {
  * homogeneous (zero) Dirichlet boundary conditions.
  *
  * This action imposes homogeneous boundary conditions on all fields in
- * `system::impose_boundary_conditions_on_fields`. The fields are wrapped in
+ * `system::primal_fields`. The fields are wrapped in
  * `LinearSolver::Tags::Operand`. The result should be a subset of the
  * `system::variables`. Because we are working with the linear solver operand,
  * we cannot impose non-zero boundary conditions here. Instead, non-zero
@@ -61,7 +61,7 @@ namespace Actions {
  * - System:
  *   - `volume_dim`
  *   - `variables_tag`
- *   - `impose_boundary_conditions_on_fields`
+ *   - `primal_fields`
  * - ConstGlobalCache:
  *   - `normal_dot_numerical_flux`
  * - DataBox:
@@ -93,22 +93,21 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
-    using dirichlet_tags =
-        typename system::impose_boundary_conditions_on_fields;
+    using dirichlet_tags = typename system::primal_fields;
     constexpr size_t volume_dim = system::volume_dim;
 
     // Set the data on exterior (ghost) faces to impose the boundary conditions
-    db::mutate<Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
-                               typename system::variables_tag>>(
+    db::mutate<::Tags::Interface<::Tags::BoundaryDirectionsExterior<volume_dim>,
+                                 typename system::variables_tag>>(
         make_not_null(&box),
         // Need to use system::volume_dim below instead of just
         // volume_dim to avoid an ICE on gcc 7.
-        [](const gsl::not_null<db::item_type<Tags::Interface<
-               Tags::BoundaryDirectionsExterior<system::volume_dim>,
+        [](const gsl::not_null<db::item_type<::Tags::Interface<
+               ::Tags::BoundaryDirectionsExterior<system::volume_dim>,
                typename system::variables_tag>>*>
                exterior_boundary_vars,
-           const db::item_type<Tags::Interface<
-               Tags::BoundaryDirectionsInterior<system::volume_dim>,
+           const db::item_type<::Tags::Interface<
+               ::Tags::BoundaryDirectionsInterior<system::volume_dim>,
                typename system::variables_tag>>& interior_vars) noexcept {
           for (auto& exterior_direction_and_vars : *exterior_boundary_vars) {
             auto& direction = exterior_direction_and_vars.first;
@@ -137,10 +136,10 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
             });
           }
         },
-        get<Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
-                            typename system::variables_tag>>(box));
+        get<::Tags::Interface<::Tags::BoundaryDirectionsInterior<volume_dim>,
+                              typename system::variables_tag>>(box));
 
-    const auto& element = db::get<Tags::Element<volume_dim>>(box);
+    const auto& element = db::get<::Tags::Element<volume_dim>>(box);
     const auto& temporal_id = db::get<typename Metavariables::temporal_id>(box);
 
     const auto& normal_dot_numerical_flux_computer =
@@ -148,23 +147,23 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
 
     auto interior_data = DgActions_detail::compute_local_mortar_data(
         box, normal_dot_numerical_flux_computer,
-        Tags::BoundaryDirectionsInterior<volume_dim>{}, Metavariables{});
+        ::Tags::BoundaryDirectionsInterior<volume_dim>{}, Metavariables{});
 
     auto exterior_data = DgActions_detail::compute_packaged_data(
         box, normal_dot_numerical_flux_computer,
-        Tags::BoundaryDirectionsExterior<volume_dim>{}, Metavariables{});
+        ::Tags::BoundaryDirectionsExterior<volume_dim>{}, Metavariables{});
 
     // Store local and packaged data on the mortars
     for (const auto& direction : element.external_boundaries()) {
       const auto mortar_id = std::make_pair(
           direction, ElementId<volume_dim>::external_boundary_id());
 
-      db::mutate<Tags::VariablesBoundaryData>(
+      db::mutate<::Tags::VariablesBoundaryData>(
           make_not_null(&box),
           [
             &mortar_id, &temporal_id, &direction, &interior_data, &exterior_data
           ](const gsl::not_null<
-              db::item_type<Tags::VariablesBoundaryData, DbTags>*>
+              db::item_type<::Tags::VariablesBoundaryData, DbTags>*>
                 mortar_data) noexcept {
             mortar_data->at(mortar_id).local_insert(
                 temporal_id, std::move(interior_data.at(direction)));

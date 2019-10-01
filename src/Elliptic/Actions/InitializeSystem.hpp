@@ -11,7 +11,9 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "Elliptic/FirstOrderComputeTags.hpp"
+#include "Elliptic/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
@@ -29,27 +31,41 @@ namespace Actions {
  *
  * \note Currently the sources are always retrieved from an analytic solution.
  *
+ * With:
+ * - `linear_operand_tag` = `db::add_tag_prefix<LinearSolver::Tags::Operand,
+ * fields_tag>`
+ * - `fluxes_tag` = `db::add_tag_prefix<Tags::Flux, linear_operand_tag,
+ * tmpl::size_t<Dim>, Frame::Inertial>`
+ * - `sources_tag` = `db::add_tag_prefix<Tags::Source, linear_operand_tag>`
+ *
  * Uses:
  * - Metavariables:
  *   - `analytic_solution_tag`
  * - System:
- *   - `volume_dim`
  *   - `fields_tag`
- *   - `gradient_tags`
+ *   - `primal_fields`
+ *   - `primal_variables`
+ *   - `auxiliary_variables`
+ *   - `fluxes`
+ *   - `sources`
  * - DataBox:
- *   - `Tags::Mesh<volume_dim>`
+ *   - `Tags::Mesh<Dim>`
  *   - `Tags::Coordinates<Dim, Frame::Inertial>`
  *   - All items required by the added compute tags
  *
  * DataBox:
+ * - Uses:
+ *   - `elliptic::Tags::FluxesComputer<fluxes>`
  * - Adds:
  *   - `fields_tag`
  *   - `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>`
- *   - `db::add_tag_prefix<Tags::Source, fields_tag>`
- *   - `db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>`
+ *   - `db::add_tag_prefix<::Tags::FixedSource, fields_tag>`
+ *   - `linear_operand_tag`
  *   - `db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
- *   db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>>`
- *   - `Tags::deriv<variables_tag, volume_dim, Frame::Inertial>>`
+ *   linear_operand_tag>`
+ *   - `fluxes_tag`
+ *   - `sources_tag`
+ *   - `Tags::div<fluxes_tag>`
  */
 struct InitializeSystem {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -64,24 +80,31 @@ struct InitializeSystem {
     using fields_tag = typename system::fields_tag;
     using linear_operator_applied_to_fields_tag =
         db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo, fields_tag>;
-    using sources_tag = db::add_tag_prefix<::Tags::Source, fields_tag>;
+    using fixed_sources_tag =
+        db::add_tag_prefix<::Tags::FixedSource, fields_tag>;
     using linear_operand_tag =
         db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
     using linear_operator_applied_to_operand_tag =
         db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
                            linear_operand_tag>;
+    using fluxes_tag = db::add_tag_prefix<::Tags::Flux, linear_operand_tag,
+                                          tmpl::size_t<Dim>, Frame::Inertial>;
     using inv_jacobian_tag =
         ::Tags::InverseJacobian<::Tags::ElementMap<Dim>,
                                 ::Tags::Coordinates<Dim, Frame::Logical>>;
 
+    using fluxes_compute_tag =
+        elliptic::Tags::FirstOrderFluxesCompute<Dim, system>;
+    using sources_compute_tag =
+        elliptic::Tags::FirstOrderSourcesCompute<system>;
+
     using simple_tags =
         db::AddSimpleTags<fields_tag, linear_operator_applied_to_fields_tag,
-                          sources_tag, linear_operand_tag,
+                          fixed_sources_tag, linear_operand_tag,
                           linear_operator_applied_to_operand_tag>;
-    using compute_tags = db::AddComputeTags<
-        // The gradients are needed by the elliptic operator
-        ::Tags::DerivCompute<linear_operand_tag, inv_jacobian_tag,
-                             typename system::gradient_tags>>;
+    using compute_tags =
+        db::AddComputeTags<fluxes_compute_tag, sources_compute_tag,
+                           ::Tags::DivCompute<fluxes_tag, inv_jacobian_tag>>;
 
     const auto& mesh = db::get<::Tags::Mesh<Dim>>(box);
     const size_t num_grid_points = mesh.number_of_grid_points();
@@ -96,10 +119,14 @@ struct InitializeSystem {
 
     // Retrieve the sources of the elliptic system from the analytic solution,
     // which defines the problem we want to solve.
-    auto sources = variables_from_tagged_tuple(
+    // We need only retrieve sources for the primal fields, since the auxiliary
+    // fields will never be sourced.
+    db::item_type<fixed_sources_tag> fixed_sources{num_grid_points, 0.};
+    fixed_sources.assign_subset(
         Parallel::get<typename Metavariables::analytic_solution_tag>(cache)
             .variables(inertial_coords,
-                       db::get_variables_tags_list<sources_tag>{}));
+                       db::wrap_tags_in<::Tags::FixedSource,
+                                        typename system::primal_fields>{}));
 
     // Initialize the variables for the elliptic solve. Their initial value is
     // determined by the linear solver. The value is also updated by the linear
@@ -115,8 +142,8 @@ struct InitializeSystem {
         ::Initialization::merge_into_databox<InitializeSystem, simple_tags,
                                              compute_tags>(
             std::move(box), std::move(fields),
-            std::move(linear_operator_applied_to_fields), std::move(sources),
-            std::move(linear_operand),
+            std::move(linear_operator_applied_to_fields),
+            std::move(fixed_sources), std::move(linear_operand),
             std::move(linear_operator_applied_to_operand)));
   }
 };

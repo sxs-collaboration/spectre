@@ -180,7 +180,7 @@ struct InitializeElement {
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeElement,
-            db::AddSimpleTags<VectorTag, ::Tags::Source<VectorTag>,
+            db::AddSimpleTags<VectorTag, ::Tags::FixedSource<VectorTag>,
                               LinearSolver::Tags::OperatorAppliedTo<VectorTag>,
                               operand_tag, operator_tag>>(
             std::move(box), initial_guess, source,

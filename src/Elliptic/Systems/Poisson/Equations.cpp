@@ -23,50 +23,22 @@
 namespace Poisson {
 
 template <size_t Dim>
-void ComputeFirstOrderOperatorAction<Dim>::apply(
-    const gsl::not_null<Scalar<DataVector>*> operator_for_field_source,
+void euclidean_fluxes(
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-        operator_for_auxiliary_field_source,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& grad_field,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& auxiliary_field,
-    const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-        inverse_jacobian) noexcept {
-  auto div_vars = make_with_value<Variables<tmpl::list<AuxiliaryField<Dim>>>>(
-      auxiliary_field, 0.);
-  get<AuxiliaryField<Dim>>(div_vars) = auxiliary_field;
-  // Tensors don't support math operations yet, so we have to `get` the
-  // DataVector for the sign flip
-  get(*operator_for_field_source) =
-      -1. * get(get<Tags::div<AuxiliaryField<Dim>>>(
-                divergence(div_vars, mesh, inverse_jacobian)));
+        flux_for_field,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept {
   for (size_t d = 0; d < Dim; d++) {
-    operator_for_auxiliary_field_source->get(d) =
-        grad_field.get(d) - auxiliary_field.get(d);
+    flux_for_field->get(d) = field_gradient.get(d);
   }
 }
 
 template <size_t Dim>
-void ComputeFirstOrderNormalDotFluxes<Dim>::apply(
-    const gsl::not_null<Scalar<DataVector>*> normal_dot_flux_for_field,
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-        normal_dot_flux_for_auxiliary_field,
-    const Scalar<DataVector>& field,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& auxiliary_field,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
-        interface_unit_normal) noexcept {
-  // The minus sign in the equation is canceled by the one in `lift_flux`
-  get(*normal_dot_flux_for_field) =
-      get<0>(interface_unit_normal) * get<0>(auxiliary_field);
-  for (size_t d = 1; d < Dim; d++) {
-    get(*normal_dot_flux_for_field) +=
-        interface_unit_normal.get(d) * auxiliary_field.get(d);
-  }
-
-  // The minus sign is to cancel the one in `lift_flux`
+void auxiliary_fluxes(gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
+                          flux_for_gradient,
+                      const Scalar<DataVector>& field) noexcept {
+  std::fill(flux_for_gradient->begin(), flux_for_gradient->end(), 0.);
   for (size_t d = 0; d < Dim; d++) {
-    normal_dot_flux_for_auxiliary_field->get(d) =
-        -interface_unit_normal.get(d) * get(field);
+    flux_for_gradient->get(d, d) = get(field);
   }
 }
 
@@ -77,7 +49,7 @@ void FirstOrderInternalPenaltyFlux<Dim>::package_data(
     const tnsr::i<DataVector, Dim, Frame::Inertial>& grad_field,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
     const noexcept {
-  get<LinearSolver::Tags::Operand<Field>>(*packaged_data) = field;
+  get<LinearSolver::Tags::Operand<Tags::Field>>(*packaged_data) = field;
 
   for (size_t d = 0; d < Dim; d++) {
     get<NormalTimesFieldFlux>(*packaged_data).get(d) =
@@ -95,7 +67,7 @@ void FirstOrderInternalPenaltyFlux<Dim>::package_data(
 template <size_t Dim>
 void FirstOrderInternalPenaltyFlux<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
         numerical_flux_for_auxiliary_field,
     const Scalar<DataVector>& field_interior,
     const tnsr::i<DataVector, Dim, Frame::Inertial>&
@@ -109,11 +81,11 @@ void FirstOrderInternalPenaltyFlux<Dim>::operator()(
   // Need polynomial degress and element size to compute this dynamically
   const double penalty = penalty_parameter_;
 
-  // The minus sign is to cancel the one in `lift_flux`
+  // The minus sign in the equation is canceled by the one in `lift_flux`
   for (size_t d = 0; d < Dim; d++) {
     numerical_flux_for_auxiliary_field->get(d) =
-        -0.5 * (normal_times_field_interior.get(d) -
-                minus_normal_times_field_exterior.get(d));
+        0.5 * (normal_times_field_interior.get(d) -
+               minus_normal_times_field_exterior.get(d));
   }
 
   // The minus sign in the equation is canceled by the one in `lift_flux`
@@ -126,7 +98,7 @@ void FirstOrderInternalPenaltyFlux<Dim>::operator()(
 template <size_t Dim>
 void FirstOrderInternalPenaltyFlux<Dim>::compute_dirichlet_boundary(
     const gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
         numerical_flux_for_auxiliary_field,
     const Scalar<DataVector>& dirichlet_field,
     const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
@@ -134,10 +106,10 @@ void FirstOrderInternalPenaltyFlux<Dim>::compute_dirichlet_boundary(
   // Need polynomial degress and element size to compute this dynamically
   const double penalty = penalty_parameter_;
 
-  // The minus sign is to cancel the one in `lift_flux`
+  // The minus sign in the equation is canceled by the one in `lift_flux`
   for (size_t d = 0; d < Dim; d++) {
     numerical_flux_for_auxiliary_field->get(d) =
-        -interface_unit_normal.get(d) * get(dirichlet_field);
+        interface_unit_normal.get(d) * get(dirichlet_field);
   }
 
   // The minus sign in the equation is canceled by the one in `lift_flux`
@@ -146,39 +118,41 @@ void FirstOrderInternalPenaltyFlux<Dim>::compute_dirichlet_boundary(
 
 }  // namespace Poisson
 
-// Instantiate needed gradient and divergence templates
-#include "NumericalAlgorithms/LinearOperators/Divergence.tpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"  // IWYU pragma: keep
-
-template <size_t Dim>
-using variables_tags =
-    typename Poisson::FirstOrderSystem<Dim>::variables_tag::type::tags_list;
-template <size_t Dim>
-using grad_tags = typename Poisson::FirstOrderSystem<Dim>::gradient_tags;
-template <size_t Dim>
-using div_tags = typename Poisson::FirstOrderSystem<Dim>::divergence_tags;
-
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(_, data)                                             \
-  template class Poisson::ComputeFirstOrderOperatorAction<DIM(data)>;      \
-  template class Poisson::ComputeFirstOrderNormalDotFluxes<DIM(data)>;     \
-  template class Poisson::FirstOrderInternalPenaltyFlux<DIM(data)>;        \
-  template Variables<                                                      \
-      db::wrap_tags_in<Tags::deriv, grad_tags<DIM(data)>,                  \
-                       tmpl::size_t<DIM(data)>, Frame::Inertial>>          \
-  partial_derivatives<grad_tags<DIM(data)>, variables_tags<DIM(data)>,     \
-                      DIM(data), Frame::Inertial>(                         \
-      const Variables<variables_tags<DIM(data)>>&, const Mesh<DIM(data)>&, \
-      const InverseJacobian<DataVector, DIM(data), Frame::Logical,         \
-                            Frame::Inertial>&) noexcept;                   \
-  template Variables<db::wrap_tags_in<Tags::div, div_tags<DIM(data)>>>     \
-  divergence<div_tags<DIM(data)>, DIM(data), Frame::Inertial>(             \
-      const Variables<div_tags<DIM(data)>>&, const Mesh<DIM(data)>&,       \
-      const InverseJacobian<DataVector, DIM(data), Frame::Logical,         \
+#define INSTANTIATE(_, data)                                                 \
+  template class Poisson::FirstOrderInternalPenaltyFlux<DIM(data)>;          \
+  template void Poisson::euclidean_fluxes<DIM(data)>(                        \
+      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>, \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&) noexcept;      \
+  template void Poisson::auxiliary_fluxes<DIM(data)>(                        \
+      gsl::not_null<tnsr::Ij<DataVector, DIM(data), Frame::Inertial>*>,      \
+      const Scalar<DataVector>&) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+// Instantiate derivative templates
+#include "DataStructures/DataBox/Prefixes.hpp"
+#include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
+#include "Elliptic/Systems/Poisson/Tags.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/Divergence.tpp"  // IWYU pragma: keep
+#include "Utilities/TMPL.hpp"
+
+template <size_t Dim>
+using variables_tag = typename Poisson::FirstOrderSystem<Dim>::variables_tag;
+template <size_t Dim>
+using fluxes_tags_list = db::get_variables_tags_list<db::add_tag_prefix<
+    ::Tags::Flux, variables_tag<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
+
+#define INSTANTIATE_DERIVS(_, data)                                            \
+  template Variables<db::wrap_tags_in<Tags::div, fluxes_tags_list<DIM(data)>>> \
+  divergence<fluxes_tags_list<DIM(data)>, DIM(data), Frame::Inertial>(         \
+      const Variables<fluxes_tags_list<DIM(data)>>&, const Mesh<DIM(data)>&,   \
+      const InverseJacobian<DataVector, DIM(data), Frame::Logical,             \
                             Frame::Inertial>&) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE_DERIVS, (1, 2, 3))
 
-#undef INSTANTIATION
+#undef INSTANTIATE
+#undef INSTANTIATE_DERIVS
 #undef DIM

@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <pup.h>
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
@@ -21,7 +22,8 @@
 #include "Domain/ElementId.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/Actions/InitializeSystem.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+#include "Elliptic/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
 #include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -36,22 +38,67 @@ struct ScalarFieldTag : db::SimpleTag {
 };
 
 template <size_t Dim>
+struct AuxiliaryFieldTag : db::SimpleTag {
+  static std::string name() noexcept { return "AuxiliaryFieldTag"; };
+  using type = tnsr::i<DataVector, Dim>;
+};
+
+template <size_t Dim>
+struct Fluxes {
+  using argument_tags = tmpl::list<>;
+  static void apply(
+      const gsl::not_null<tnsr::I<DataVector, Dim>*> flux_for_field,
+      const tnsr::i<DataVector, Dim>& auxiliary_field) {
+    for (size_t d = 0; d < Dim; d++) {
+      flux_for_field->get(d) = auxiliary_field.get(d);
+    }
+  }
+  static void apply(
+      const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_aux_field,
+      const Scalar<DataVector>& field) {
+    for (size_t d = 0; d < Dim; d++) {
+      flux_for_aux_field->get(d, d) = get(field);
+    }
+  }
+  // clang-tidy: no runtime references
+  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+};
+
+struct Sources {
+  using argument_tags = tmpl::list<>;
+  static void apply(const gsl::not_null<Scalar<DataVector>*> source_for_field,
+                    const Scalar<DataVector>& field) {
+    get(*source_for_field) = get(field);
+  }
+};
+
+template <size_t Dim>
 struct System {
   static constexpr size_t volume_dim = Dim;
-  using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
-  using gradient_tags = tmpl::list<LinearSolver::Tags::Operand<ScalarFieldTag>>;
+  using fields_tag =
+      Tags::Variables<tmpl::list<ScalarFieldTag, AuxiliaryFieldTag<Dim>>>;
+  using primal_fields = tmpl::list<ScalarFieldTag>;
+  using auxiliary_fields = tmpl::list<AuxiliaryFieldTag<Dim>>;
+  using variables_tag =
+      db::add_tag_prefix<LinearSolver::Tags::Operand, fields_tag>;
+  using primal_variables =
+      db::wrap_tags_in<LinearSolver::Tags::Operand, primal_fields>;
+  using auxiliary_variables =
+      db::wrap_tags_in<LinearSolver::Tags::Operand, auxiliary_fields>;
+  using fluxes = Fluxes<Dim>;
+  using sources = Sources;
 };
 
 template <size_t Dim>
 struct AnalyticSolution {
-  tuples::TaggedTuple<Tags::Source<ScalarFieldTag>> variables(
+  tuples::TaggedTuple<Tags::FixedSource<ScalarFieldTag>> variables(
       const tnsr::I<DataVector, Dim>& x,
-      tmpl::list<Tags::Source<ScalarFieldTag>> /*meta*/) const noexcept {
-    Scalar<DataVector> source{get<0>(x)};
+      tmpl::list<Tags::FixedSource<ScalarFieldTag>> /*meta*/) const noexcept {
+    Scalar<DataVector> fixed_source{get<0>(x)};
     for (size_t d = 1; d < Dim; d++) {
-      get(source) += x.get(d);
+      get(fixed_source) += x.get(d);
     }
-    return {source};
+    return {fixed_source};
   }
   // clang-tidy: do not use references
   void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
@@ -81,7 +128,9 @@ struct Metavariables {
   using system = System<Dim>;
   using component_list = tmpl::list<ElementArray<Dim, Metavariables>>;
   using analytic_solution_tag = Tags::AnalyticSolution<AnalyticSolution<Dim>>;
-  using const_global_cache_tags = tmpl::list<analytic_solution_tag>;
+  using const_global_cache_tags =
+      tmpl::list<analytic_solution_tag,
+                 elliptic::Tags::FluxesComputer<Fluxes<Dim>>>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
@@ -98,8 +147,22 @@ void check_compute_items(
         ElementArray<Dim, Metavariables<Dim>>, tag>(runner, element_id);
   };
   CHECK(tag_is_retrievable(
-      ::Tags::deriv<LinearSolver::Tags::Operand<ScalarFieldTag>,
-                    tmpl::size_t<Dim>, Frame::Inertial>{}));
+      ::Tags::Flux<LinearSolver::Tags::Operand<ScalarFieldTag>,
+                   tmpl::size_t<Dim>, Frame::Inertial>{}));
+  CHECK(tag_is_retrievable(
+      ::Tags::Flux<LinearSolver::Tags::Operand<AuxiliaryFieldTag<Dim>>,
+                   tmpl::size_t<Dim>, Frame::Inertial>{}));
+  CHECK(tag_is_retrievable(
+      ::Tags::div<::Tags::Flux<LinearSolver::Tags::Operand<ScalarFieldTag>,
+                               tmpl::size_t<Dim>, Frame::Inertial>>{}));
+  CHECK(tag_is_retrievable(
+      ::Tags::div<
+          ::Tags::Flux<LinearSolver::Tags::Operand<AuxiliaryFieldTag<Dim>>,
+                       tmpl::size_t<Dim>, Frame::Inertial>>{}));
+  CHECK(tag_is_retrievable(
+      ::Tags::Source<LinearSolver::Tags::Operand<ScalarFieldTag>>{}));
+  CHECK(tag_is_retrievable(
+      ::Tags::Source<LinearSolver::Tags::Operand<AuxiliaryFieldTag<Dim>>>{}));
 }
 
 }  // namespace
@@ -120,7 +183,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     using metavariables = Metavariables<1>;
     using element_array = ElementArray<1, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {AnalyticSolution<1>{}, domain_creator.create_domain()}};
+        {AnalyticSolution<1>{}, Fluxes<1>{}, domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_extents()});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
@@ -143,7 +206,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     // Test the analytic source
     const auto& inertial_coords =
         get_tag(Tags::Coordinates<1, Frame::Inertial>{});
-    CHECK(get(get_tag(Tags::Source<ScalarFieldTag>{})) ==
+    CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
           get<0>(inertial_coords));
@@ -170,7 +233,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     using metavariables = Metavariables<2>;
     using element_array = ElementArray<2, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {AnalyticSolution<2>{}, domain_creator.create_domain()}};
+        {AnalyticSolution<2>{}, Fluxes<2>{}, domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_extents()});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
@@ -193,7 +256,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     // Test the analytic source
     const auto& inertial_coords =
         get_tag(Tags::Coordinates<2, Frame::Inertial>{});
-    CHECK(get(get_tag(Tags::Source<ScalarFieldTag>{})) ==
+    CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
           get<0>(inertial_coords) + get<1>(inertial_coords));
@@ -225,7 +288,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     using metavariables = Metavariables<3>;
     using element_array = ElementArray<3, metavariables>;
     ActionTesting::MockRuntimeSystem<metavariables> runner{
-        {AnalyticSolution<3>{}, domain_creator.create_domain()}};
+        {AnalyticSolution<3>{}, Fluxes<3>{}, domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_extents()});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
@@ -248,7 +311,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     // Test the analytic source
     const auto& inertial_coords =
         get_tag(Tags::Coordinates<3, Frame::Inertial>{});
-    CHECK(get(get_tag(Tags::Source<ScalarFieldTag>{})) ==
+    CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
           get<0>(inertial_coords) + get<1>(inertial_coords) +

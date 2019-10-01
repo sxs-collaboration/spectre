@@ -7,14 +7,15 @@
 
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
-#include "Elliptic/Actions/ComputeOperatorAction.hpp"
 #include "Elliptic/Actions/InitializeSystem.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeInhomogeneousBoundaryConditionsOnSource.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeFluxes.hpp"
+#include "Elliptic/FirstOrderOperator.hpp"
 #include "Elliptic/Systems/Poisson/Actions/Observe.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
+#include "Elliptic/Tags.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
@@ -33,6 +34,7 @@
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "Parallel/Reduction.hpp"
 #include "Parallel/RegisterDerivedClassesWithCharm.hpp"
+#include "ParallelAlgorithms/Actions/MutateApply.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
@@ -75,7 +77,9 @@ struct Metavariables {
       Tags::NumericalFlux<Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
 
   // Collect all items to store in the cache.
-  using const_global_cache_tags = tmpl::list<analytic_solution_tag>;
+  using const_global_cache_tags =
+      tmpl::list<analytic_solution_tag,
+                 elliptic::Tags::FluxesComputer<typename system::fluxes>>;
 
   // Collect all reduction tags for observers
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
@@ -84,20 +88,13 @@ struct Metavariables {
   // Specify all global synchronization points.
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
 
-  // Construct tags that will be sliced to interfaces.
-  using variables_tag = typename system::variables_tag;
-  using gradients_tag =
-      db::add_tag_prefix<Tags::deriv,
-                         db::variables_tag_with_tags_list<
-                             variables_tag, typename system::gradient_tags>,
-                         tmpl::size_t<system::volume_dim>, Frame::Inertial>;
-
   using initialization_actions = tmpl::list<
       dg::Actions::InitializeDomain<Dim>, elliptic::Actions::InitializeSystem,
       dg::Actions::InitializeInterfaces<
           system,
-          dg::Initialization::slice_tags_to_face<variables_tag, gradients_tag>,
-          dg::Initialization::slice_tags_to_exterior<gradients_tag>>,
+          dg::Initialization::slice_tags_to_face<
+              typename system::variables_tag>,
+          dg::Initialization::slice_tags_to_exterior<>>,
       elliptic::dg::Actions::ImposeInhomogeneousBoundaryConditionsOnSource<
           Metavariables>,
       typename linear_solver::initialize_element,
@@ -126,12 +123,10 @@ struct Metavariables {
                   Phase, Phase::Solve,
                   tmpl::list<Poisson::Actions::Observe,
                              LinearSolver::Actions::TerminateIfConverged,
-                             dg::Actions::ComputeNonconservativeBoundaryFluxes<
-                                 Tags::InternalDirections<Dim>>,
                              dg::Actions::SendDataForFluxes<Metavariables>,
-                             elliptic::Actions::ComputeOperatorAction,
-                             dg::Actions::ComputeNonconservativeBoundaryFluxes<
-                                 Tags::BoundaryDirectionsInterior<Dim>>,
+                             Actions::MutateApply<elliptic::FirstOrderOperator<
+                                 Dim, LinearSolver::Tags::OperatorAppliedTo,
+                                 typename system::variables_tag>>,
                              elliptic::dg::Actions::
                                  ImposeHomogeneousDirichletBoundaryConditions<
                                      Metavariables>,

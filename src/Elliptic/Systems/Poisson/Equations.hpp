@@ -7,10 +7,12 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
 #include "Utilities/Gsl.hpp"
@@ -35,9 +37,11 @@ struct Operand;
 }  // namespace Tags
 }  // namespace LinearSolver
 namespace Poisson {
+namespace Tags {
 struct Field;
 template <size_t>
 struct AuxiliaryField;
+}  // namespace Tags
 }  // namespace Poisson
 namespace PUP {
 class er;
@@ -47,55 +51,62 @@ class er;
 namespace Poisson {
 
 /*!
- * \brief The bulk contribution to the linear operator action for the
- * first order formulation of the Poisson equation.
- *
- * \details The bulk contribution for the equation sourced by \f$f(x)\f$ is
- * \f$-\nabla \cdot \boldsymbol{v}(x)\f$ and the one for the auxiliary equation
- * is \f$\nabla u(x) - \boldsymbol{v}(x)\f$ (see `Poisson::FirstOrderSystem`).
+ * \brief Compute the fluxes \f$F^i=\partial_i u(x)\f$ for the Poisson
+ * equation on a flat metric in Cartesian coordinates.
  */
 template <size_t Dim>
-struct ComputeFirstOrderOperatorAction {
-  using argument_tags =
-      tmpl::list<Tags::deriv<LinearSolver::Tags::Operand<Field>,
-                             tmpl::size_t<Dim>, Frame::Inertial>,
-                 LinearSolver::Tags::Operand<AuxiliaryField<Dim>>,
-                 Tags::Mesh<Dim>,
-                 Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                                       Tags::Coordinates<Dim, Frame::Logical>>>;
+void euclidean_fluxes(
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> flux_for_field,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept;
+
+/*!
+ * \brief Compute the fluxes \f$F^i_j=\delta^i_j u(x)\f$ for the auxiliary
+ * field in the first-order formulation of the Poisson equation.
+ *
+ * \see Poisson::FirstOrderSystem
+ */
+template <size_t Dim>
+void auxiliary_fluxes(gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
+                          flux_for_gradient,
+                      const Scalar<DataVector>& field) noexcept;
+
+/*!
+ * \brief Compute the fluxes \f$F^i_A\f$ for the Poisson equation on a flat
+ * metric in Cartesian coordinates.
+ *
+ * \see Poisson::FirstOrderSystem
+ */
+template <size_t Dim>
+struct EuclideanFluxes {
+  using argument_tags = tmpl::list<>;
   static void apply(
-      gsl::not_null<Scalar<DataVector>*> operator_for_field_source,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-          operator_for_auxiliary_field_source,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& grad_field,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& auxiliary_field,
-      const Mesh<Dim>& mesh,
-      const InverseJacobian<DataVector, Dim, Frame::Logical, Frame::Inertial>&
-          inverse_jacobian) noexcept;
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          flux_for_field,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+          field_gradient) noexcept {
+    euclidean_fluxes(flux_for_field, field_gradient);
+  }
+  static void apply(
+      const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
+          flux_for_gradient,
+      const Scalar<DataVector>& field) noexcept {
+    auxiliary_fluxes(flux_for_gradient, field);
+  }
+  // clang-tidy: no runtime references
+  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 
 /*!
- * \brief The interface normal dotted into the fluxes for the first order
- * formulation of the Poisson equation.
+ * \brief Compute the sources \f$S_A\f$ for the Poisson equation.
  *
- * \details For the sourced equation this is \f$-\boldsymbol{n} \cdot
- * \boldsymbol{v}(x)\f$ and for the auxiliary equation it is
- * \f$\boldsymbol{n} u\f$ (see `Poisson::FirstOrderSystem` and `dg::lift_flux`).
+ * \see Poisson::FirstOrderSystem
  */
-template <size_t Dim>
-struct ComputeFirstOrderNormalDotFluxes {
-  using argument_tags =
-      tmpl::list<LinearSolver::Tags::Operand<Field>,
-                 LinearSolver::Tags::Operand<AuxiliaryField<Dim>>,
-                 Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
-  static void apply(
-      gsl::not_null<Scalar<DataVector>*> normal_dot_flux_for_field,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-          normal_dot_flux_for_auxiliary_field,
-      const Scalar<DataVector>& field,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& auxiliary_field,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
-          interface_unit_normal) noexcept;
+struct Sources {
+  using argument_tags = tmpl::list<>;
+  static void apply(const gsl::not_null<Scalar<DataVector>*> source_for_field,
+                    const Scalar<DataVector>& /*field*/) noexcept {
+    get(*source_for_field) = 0.;
+  }
 };
 
 /*!
@@ -150,16 +161,18 @@ struct FirstOrderInternalPenaltyFlux {
   // These tags are sliced to the interface of the element and passed to
   // `package_data` to provide the data needed to compute the numerical fluxes.
   using argument_tags =
-      tmpl::list<LinearSolver::Tags::Operand<Field>,
-                 Tags::deriv<LinearSolver::Tags::Operand<Field>,
-                             tmpl::size_t<Dim>, Frame::Inertial>,
-                 Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
+      tmpl::list<LinearSolver::Tags::Operand<Tags::Field>,
+                 ::Tags::div<::Tags::Flux<
+                     LinearSolver::Tags::Operand<::Tags::deriv<
+                         Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>,
+                     tmpl::size_t<Dim>, Frame::Inertial>>,
+                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   // This is the data needed to compute the numerical flux.
   // `SendBoundaryFluxes` calls `package_data` to store these tags in a
   // Variables. Local and remote values of this data are then combined in the
   // `()` operator.
-  using package_tags = tmpl::list<LinearSolver::Tags::Operand<Field>,
+  using package_tags = tmpl::list<LinearSolver::Tags::Operand<Tags::Field>,
                                   NormalTimesFieldFlux, NormalDotGradFieldFlux>;
 
   // Following the packaged_data pointer, this function expects as arguments the
@@ -176,7 +189,7 @@ struct FirstOrderInternalPenaltyFlux {
   // the packaged types for the exterior side.
   void operator()(
       gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
           numerical_flux_for_auxiliary_field,
       const Scalar<DataVector>& field_interior,
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
@@ -199,11 +212,11 @@ struct FirstOrderInternalPenaltyFlux {
   // The first arguments to this function are the boundary contributions to
   // compute as not-null pointers, in the order they appear in the
   // `system::fields_tag`. They are followed by the field values of the tags in
-  // `system::impose_boundary_conditions_on_fields`. The last argument is the
+  // `system::primal_fields`. The last argument is the
   // normalized unit covector to the element face.
   void compute_dirichlet_boundary(
       gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
           numerical_flux_for_auxiliary_field,
       const Scalar<DataVector>& dirichlet_field,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
