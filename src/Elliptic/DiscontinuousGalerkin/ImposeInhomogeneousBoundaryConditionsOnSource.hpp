@@ -15,6 +15,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -65,9 +66,17 @@ namespace Actions {
  * - Modifies:
  *   - `fixed_sources_tag`
  */
-template <typename Metavariables>
-struct ImposeInhomogeneousBoundaryConditionsOnSource {
+template <typename Metavariables,
+          typename FluxesArgs =
+              typename Metavariables::system::fluxes::argument_tags>
+struct ImposeInhomogeneousBoundaryConditionsOnSource;
+
+template <typename Metavariables, typename... FluxesArgs>
+struct ImposeInhomogeneousBoundaryConditionsOnSource<
+    Metavariables, tmpl::list<FluxesArgs...>> {
   using system = typename Metavariables::system;
+  using fluxes_computer_tag =
+      elliptic::Tags::FluxesComputer<typename system::fluxes>;
 
   using fixed_sources_tag =
       db::add_tag_prefix<::Tags::FixedSource, typename system::fields_tag>;
@@ -79,11 +88,14 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
           numerical_fluxes,
       const NormalDotNumericalFluxComputer& normal_dot_numerical_flux_computer,
       const Variables<tmpl::list<BoundaryDataTags...>>& boundary_data,
+      const db::item_type<fluxes_computer_tag>& fluxes_computer,
+      const db::item_type<FluxesArgs>&... fluxes_args,
       const tnsr::i<DataVector, system::volume_dim, Frame::Inertial>&
           normalized_face_normal) noexcept {
     normal_dot_numerical_flux_computer.compute_dirichlet_boundary(
         make_not_null(&get<NumericalFluxTags>(*numerical_fluxes))...,
-        get<BoundaryDataTags>(boundary_data)..., normalized_face_normal);
+        get<BoundaryDataTags>(boundary_data)..., fluxes_computer,
+        fluxes_args..., normalized_face_normal);
   }
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
@@ -113,6 +125,10 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
               ::Tags::BoundaryDirectionsExterior<volume_dim>,
               ::Tags::Coordinates<volume_dim, Frame::Inertial>>>&
               boundary_coordinates,
+          const db::const_item_type<fluxes_computer_tag>& fluxes_computer,
+          const db::const_item_type<
+              ::Tags::Interface<::Tags::BoundaryDirectionsExterior<volume_dim>,
+                                FluxesArgs>>&... fluxes_args,
           const db::const_item_type<::Tags::Interface<
               ::Tags::BoundaryDirectionsInterior<volume_dim>,
               ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<volume_dim>>>>&
@@ -139,7 +155,8 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
             compute_dirichlet_boundary_normal_dot_numerical_flux(
                 make_not_null(&boundary_normal_dot_numerical_fluxes),
                 normal_dot_numerical_flux_computer,
-                std::move(dirichlet_boundary_data),
+                std::move(dirichlet_boundary_data), fluxes_computer,
+                fluxes_args.at(direction)...,
                 normalized_face_normals.at(direction));
             // Flip sign of the boundary contributions, making them
             // contributions to the source
@@ -158,6 +175,9 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
         get<::Tags::Interface<
             ::Tags::BoundaryDirectionsExterior<volume_dim>,
             ::Tags::Coordinates<volume_dim, Frame::Inertial>>>(box),
+        get<fluxes_computer_tag>(box),
+        get<::Tags::Interface<::Tags::BoundaryDirectionsExterior<volume_dim>,
+                              FluxesArgs>>(box)...,
         get<::Tags::Interface<
             ::Tags::BoundaryDirectionsInterior<volume_dim>,
             ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<volume_dim>>>>(
