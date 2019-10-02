@@ -120,6 +120,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
     using type = double;
     static constexpr OptionString help = {
         "The amplitude of the perturbation producing sources."};
+    static constexpr type default_value() noexcept { return 0.0; }
   };
 
   /// The strength of the vortex.
@@ -129,8 +130,12 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
     static type lower_bound() noexcept { return 0.0; }
   };
 
-  using options = tmpl::list<AdiabaticIndex, Center, MeanVelocity,
-                             PerturbAmplitude, Strength>;
+  using options = tmpl::conditional_t<
+      Dim == 3,
+      tmpl::list<AdiabaticIndex, Center, MeanVelocity, Strength,
+                 PerturbAmplitude>,
+      tmpl::list<AdiabaticIndex, Center, MeanVelocity, Strength>>;
+
   static constexpr OptionString help = {
       "Newtonian Isentropic Vortex. Works in 2 and 3 dimensions."};
 
@@ -144,7 +149,9 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   IsentropicVortex(double adiabatic_index,
                    const std::array<double, Dim>& center,
                    const std::array<double, Dim>& mean_velocity,
-                   double perturbation_amplitude, double strength) noexcept;
+                   double strength,
+                   double perturbation_amplitude =
+                       PerturbAmplitude::default_value()) noexcept;
 
   /// Retrieve a collection of hydrodynamic variables at position x and time t
   template <typename DataType, typename... Tags>
@@ -235,7 +242,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
       make_array<Dim>(std::numeric_limits<double>::signaling_NaN());
   std::array<double, Dim> mean_velocity_ =
       make_array<Dim>(std::numeric_limits<double>::signaling_NaN());
-  double perturbation_amplitude_ = std::numeric_limits<double>::signaling_NaN();
+  double perturbation_amplitude_ = 0.0;
   double strength_ = std::numeric_limits<double>::signaling_NaN();
 
   // This is an ideal gas undergoing an isentropic process,

@@ -27,7 +27,7 @@ struct VortexPerturbation3dProxy
                             const std::array<double, 3>& vortex_mean_velocity,
                             const double vortex_strength)
       : vortex_(adiabatic_index, vortex_center, vortex_mean_velocity,
-                perturbation_amplitude, vortex_strength) {}
+                vortex_strength, perturbation_amplitude) {}
   void apply_helper(
       const gsl::not_null<Scalar<DataVector>*> source_mass_density_cons,
       const gsl::not_null<tnsr::I<DataVector, 3>*> source_momentum_density,

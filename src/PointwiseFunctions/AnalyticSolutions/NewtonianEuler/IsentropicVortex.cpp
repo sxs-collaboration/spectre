@@ -5,6 +5,7 @@
 
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <pup.h>  // IWYU pragma: keep
 
 #include "DataStructures/DataVector.hpp"                   // IWYU pragma: keep
@@ -27,8 +28,8 @@ namespace Solutions {
 template <size_t Dim>
 IsentropicVortex<Dim>::IsentropicVortex(
     const double adiabatic_index, const std::array<double, Dim>& center,
-    const std::array<double, Dim>& mean_velocity,
-    const double perturbation_amplitude, const double strength) noexcept
+    const std::array<double, Dim>& mean_velocity, const double strength,
+    const double perturbation_amplitude) noexcept
     : adiabatic_index_(adiabatic_index),
       center_(center),
       mean_velocity_(mean_velocity),
@@ -36,6 +37,14 @@ IsentropicVortex<Dim>::IsentropicVortex(
       strength_(strength),
       // Polytropic constant is set equal to 1.0
       equation_of_state_(1.0, adiabatic_index) {
+  if (Dim == 2) {
+    ASSERT(
+        abs(perturbation_amplitude_) < std::numeric_limits<double>::epsilon(),
+        "A nonzero perturbation amplitude only makes sense in 3 dimensions. "
+        "The value given was "
+            << perturbation_amplitude);
+  }
+
   ASSERT(strength_ >= 0.0,
          "The strength must be non-negative. The value given "
          "was "
