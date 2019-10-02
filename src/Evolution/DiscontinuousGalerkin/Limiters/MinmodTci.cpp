@@ -5,49 +5,18 @@
 
 #include <algorithm>
 #include <array>
-#include <cmath>
 #include <limits>
 #include <utility>
 
-#include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
-
-namespace {
-// Encodes the return status of the minmod_tvbm function.
-struct MinmodResult {
-  const double value;
-  const bool activated;
-};
-
-// The TVBM-corrected minmod function, see e.g. Cockburn reference Eq. 2.26.
-MinmodResult minmod_tvbm(const double a, const double b, const double c,
-                         const double tvbm_scale) noexcept {
-  if (fabs(a) <= tvbm_scale) {
-    return {a, false};
-  }
-  if ((std::signbit(a) == std::signbit(b)) and
-      (std::signbit(a) == std::signbit(c))) {
-    // The if/else group below could be more simply written as
-    //   std::copysign(std::min({fabs(a), fabs(b), fabs(c)}), a);
-    // however, by separating different cases, we gain the ability to
-    // distinguish whether or not the limiter activated.
-    if (fabs(a) <= fabs(b) and fabs(a) <= fabs(c)) {
-      return {a, false};
-    } else {
-      return {std::copysign(std::min(fabs(b), fabs(c)), a), true};
-    }
-  } else {
-    return {0.0, true};
-  }
-}
-}  // namespace
 
 namespace Limiters {
 namespace Minmod_detail {
@@ -86,31 +55,9 @@ bool troubled_cell_indicator(
     &u_mean, &element, &element_size, &effective_neighbor_means, &
     effective_neighbor_sizes
   ](const size_t dim, const Side& side) noexcept {
-    const auto& externals = element.external_boundaries();
-    const auto dir = Direction<VolumeDim>(dim, side);
-    const bool has_neighbors = (externals.find(dir) == externals.end());
-    if (has_neighbors) {
-      const double neighbor_mean = effective_neighbor_means.at(dir);
-      const double neighbor_size = effective_neighbor_sizes.at(dir);
-
-      // Compute an effective element-center-to-neighbor-center distance
-      // that accounts for the possibility of different refinement levels
-      // or discontinuous maps (e.g., at Block boundaries). Treated naively,
-      // these domain features can make a smooth solution appear to be
-      // non-smooth in the logical coordinates, which could potentially lead
-      // to the limiter triggering erroneously. This effective distance is
-      // used to scale the difference in the means, so that a linear function
-      // at a refinement or Block boundary will still appear smooth to the
-      // limiter. The factor is normalized to be 1.0 on a uniform grid.
-      // Note that this is not "by the book" Minmod, but an attempt to
-      // generalize Minmod to work on non-uniform grids.
-      const double distance_factor =
-          0.5 * (1.0 + neighbor_size / gsl::at(element_size, dim));
-      return (side == Side::Lower ? -1.0 : 1.0) * (neighbor_mean - *u_mean) /
-             distance_factor;
-    } else {
-      return 0.0;
-    }
+    return effective_difference_to_neighbor(
+        *u_mean, element, element_size, effective_neighbor_means,
+        effective_neighbor_sizes, dim, side);
   };
 
   // The LambdaPiN limiter allows high-order solutions to escape limiting if
