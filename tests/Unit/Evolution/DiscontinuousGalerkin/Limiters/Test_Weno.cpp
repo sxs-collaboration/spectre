@@ -30,6 +30,7 @@
 #include "Evolution/DiscontinuousGalerkin/Limiters/HwenoModifiedSolution.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Weno.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoType.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -448,13 +449,15 @@ void test_weno_work(
   auto expected_scalar = get<ScalarTag>(local_vars);
   Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
       make_not_null(&expected_scalar), mesh, neighbor_linear_weight,
-      expected_neighbor_modified_vars);
+      expected_neighbor_modified_vars,
+      Limiters::Weno_detail::DerivativeWeight::Unity);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_scalar, scalar, local_approx);
 
   auto expected_vector = get<VectorTag<VolumeDim>>(local_vars);
   Limiters::Weno_detail::reconstruct_from_weighted_sum<VectorTag<VolumeDim>>(
       make_not_null(&expected_vector), mesh, neighbor_linear_weight,
-      expected_neighbor_modified_vars);
+      expected_neighbor_modified_vars,
+      Limiters::Weno_detail::DerivativeWeight::Unity);
   CHECK_ITERABLE_CUSTOM_APPROX(expected_vector, vector, local_approx);
 }
 

@@ -19,6 +19,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -81,7 +82,8 @@ void test_reconstruction_1d() noexcept {
       ScalarTag::type{{{evaluate_polynomial({{0., 0., 1., 1., 2.}})}}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
-      make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars);
+      make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars,
+      Limiters::Weno_detail::DerivativeWeight::Unity);
 
   CHECK(mean_value(get(scalar), mesh) == approx(expected_scalar_mean));
 
@@ -158,7 +160,8 @@ void test_reconstruction_2d() noexcept {
             evaluate_polynomial({{0., 0., 0., 1., 0., 0., 1., 1., 1.}})}}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<VectorTag<2>>(
-      make_not_null(&vector), mesh, neighbor_linear_weight, neighbor_vars);
+      make_not_null(&vector), mesh, neighbor_linear_weight, neighbor_vars,
+      Limiters::Weno_detail::DerivativeWeight::Unity);
 
   CHECK(mean_value(get<0>(vector), mesh) == approx(expected_vector_means[0]));
   CHECK(mean_value(get<1>(vector), mesh) == approx(expected_vector_means[1]));
@@ -241,7 +244,8 @@ void test_reconstruction_3d() noexcept {
       {{evaluate_polynomial({{0.1, 0., 0.5, 0.2, 0.2, 0.2}})}}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
-      make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars);
+      make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars,
+      Limiters::Weno_detail::DerivativeWeight::Unity);
 
   CHECK(mean_value(get(scalar), mesh) == approx(expected_scalar_mean));
 

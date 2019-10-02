@@ -4,6 +4,7 @@
 #pragma once
 
 #include <cstddef>
+#include <ostream>
 
 /// \cond
 class DataVector;
@@ -13,6 +14,19 @@ class Mesh;
 
 namespace Limiters {
 namespace Weno_detail {
+
+// Denote different schemes for computing related oscillation indicators by
+// changing the relative weight given to each derivative of the input data.
+// - Unity: l'th derivative has weight 1
+// - PowTwoEll: l'th derivative has weight 2^(2 l - 1)
+//   This penalizes higher derivatives more strongly: w(l=4) = 128
+// - PowTwoEllOverEllFactorial: l'th derivative has weight 2^(2 l - 1) / (l!)^2
+//   This penalizes the 1st and 2nd derivatives most strongly, but then higher
+//   derivatives have decreasing weights so are weakly penalized: w(l=4) = 0.222
+enum class DerivativeWeight { Unity, PowTwoEll, PowTwoEllOverEllFactorial };
+
+std::ostream& operator<<(std::ostream& os,
+                         DerivativeWeight derivative_weight) noexcept;
 
 // Compute the WENO oscillation indicator (also called the smoothness indicator)
 //
@@ -27,7 +41,8 @@ namespace Weno_detail {
 // implementation.
 template <size_t VolumeDim>
 double oscillation_indicator(const DataVector& data,
-                             const Mesh<VolumeDim>& mesh) noexcept;
+                             const Mesh<VolumeDim>& mesh,
+                             DerivativeWeight derivative_weight) noexcept;
 
 }  // namespace Weno_detail
 }  // namespace Limiters

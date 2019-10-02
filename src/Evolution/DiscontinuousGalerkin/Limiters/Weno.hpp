@@ -367,7 +367,8 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
       [ this, &mesh, &
         modified_neighbor_solutions ](auto tag, const auto tensor) noexcept {
     Weno_detail::reconstruct_from_weighted_sum<decltype(tag)>(
-        tensor, mesh, neighbor_linear_weight_, modified_neighbor_solutions);
+        tensor, mesh, neighbor_linear_weight_, modified_neighbor_solutions,
+        Weno_detail::DerivativeWeight::Unity);
     return '0';
   };
   expand_pack(wrap_reconstruct_one_tensor(Tags{}, tensors)...);

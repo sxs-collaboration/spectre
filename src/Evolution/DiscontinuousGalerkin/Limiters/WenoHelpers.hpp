@@ -55,7 +55,8 @@ void reconstruct_from_weighted_sum(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         Variables<TagsList>,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_vars) noexcept {
+        neighbor_vars,
+    const DerivativeWeight derivative_weight) noexcept {
   for (size_t tensor_storage_index = 0;
        tensor_storage_index < local_tensor->size(); ++tensor_storage_index) {
     auto& local_polynomial = (*local_tensor)[tensor_storage_index];
@@ -90,14 +91,16 @@ void reconstruct_from_weighted_sum(
     // Update `local_weights` and `neighbor_weights` to hold the unnormalized
     // nonlinear weights.
     local_weight = unnormalized_nonlinear_weight(
-        local_weight, oscillation_indicator(local_polynomial, mesh));
+        local_weight,
+        oscillation_indicator(local_polynomial, mesh, derivative_weight));
     for (const auto& kv : neighbor_vars) {
       const auto& key = kv.first;
       const auto& neighbor_tensor_component =
           get<Tag>(kv.second)[tensor_storage_index];
       neighbor_weights[key] = unnormalized_nonlinear_weight(
           neighbor_weights[key],
-          oscillation_indicator(neighbor_tensor_component, mesh));
+          oscillation_indicator(neighbor_tensor_component, mesh,
+                                derivative_weight));
     }
 
     // Update `local_weights` and `neighbor_weights` to hold the normalized
