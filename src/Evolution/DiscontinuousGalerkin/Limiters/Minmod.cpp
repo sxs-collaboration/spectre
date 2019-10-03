@@ -11,6 +11,7 @@
 #include "Domain/Element.hpp"  // IWYU pragma: keep
 #include "Domain/Side.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"
 #include "NumericalAlgorithms/LinearOperators/Linearize.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -63,30 +64,10 @@ bool minmod_tci_wrapper(
   // The LambdaPiN limiter allows high-order solutions to escape limiting if
   // the boundary values are not too different from the mean value:
   if (minmod_type == Limiters::MinmodType::LambdaPiN) {
-    bool u_needs_limiting = false;
-    for (size_t d = 0; d < VolumeDim; ++d) {
-      const double u_lower = mean_value_on_boundary(
-          &(gsl::at(*boundary_buffer, d)),
-          gsl::at(volume_and_slice_indices, d).first, u, mesh, d, Side::Lower);
-      const double u_upper = mean_value_on_boundary(
-          &(gsl::at(*boundary_buffer, d)),
-          gsl::at(volume_and_slice_indices, d).second, u, mesh, d, Side::Upper);
-      const double diff_lower = difference_to_neighbor(d, Side::Lower);
-      const double diff_upper = difference_to_neighbor(d, Side::Upper);
-
-      // Results from SpECTRE paper (https://arxiv.org/abs/1609.00098) used
-      // minmod_tvbm(..., 0.0), rather than minmod_tvbm(..., tvbm_scale)
-      const bool activated_lower =
-          minmod_tvbm(*u_mean - u_lower, diff_lower, diff_upper, tvbm_scale)
-              .activated;
-      const bool activated_upper =
-          minmod_tvbm(u_upper - *u_mean, diff_lower, diff_upper, tvbm_scale)
-              .activated;
-      if (activated_lower or activated_upper) {
-        u_needs_limiting = true;
-        break;
-      }
-    }
+    bool u_needs_limiting = troubled_cell_indicator(
+        boundary_buffer, tvbm_constant, u, element, mesh, element_size,
+        effective_neighbor_means, effective_neighbor_sizes,
+        volume_and_slice_indices);
 
     if (not u_needs_limiting) {
       // Skip the limiting step for this tensor component
