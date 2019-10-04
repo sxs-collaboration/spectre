@@ -3,13 +3,15 @@
 
 #pragma once
 
+#include <boost/variant/get.hpp>
 #include <boost/variant/variant.hpp>
+#include <exception>
+#include <string>
+#include <utility>
 
 #include "DataStructures/DataBox/DataBox.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Error.hpp"
-#include "Parallel/AlgorithmMetafunctions.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/Overloader.hpp"
 #include "Utilities/PrettyType.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
