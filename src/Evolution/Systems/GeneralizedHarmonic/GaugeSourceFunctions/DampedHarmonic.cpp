@@ -321,11 +321,9 @@ spacetime_deriv_of_power_log_factor_metric_lapse(
 // contain the temporal and spatial roll-on functions.
 template <size_t SpatialDim, typename Frame>
 void damped_harmonic_h(
-    const gsl::not_null<
-        typename db::item_type<Tags::GaugeH<SpatialDim, Frame>>*>
+    const gsl::not_null<db::item_type<Tags::GaugeH<SpatialDim, Frame>>*>
         gauge_h,
-    const typename db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>&
-        gauge_h_init,
+    const db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>& gauge_h_init,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
@@ -338,8 +336,8 @@ void damped_harmonic_h(
     const double sigma_t_L2, const double t_start_S, const double sigma_t_S,
     const double sigma_r) noexcept {
   if (UNLIKELY(get_size(get<0>(*gauge_h)) != get_size(get(lapse)))) {
-    *gauge_h = typename db::item_type<Tags::GaugeH<SpatialDim, Frame>>(
-        get_size(get(lapse)));
+    *gauge_h =
+        db::item_type<Tags::GaugeH<SpatialDim, Frame>>(get_size(get(lapse)));
   }
   // Use a TempBuffer to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
@@ -401,33 +399,6 @@ void damped_harmonic_h(
   }
 }
 
-template <size_t SpatialDim, typename Frame>
-typename db::item_type<Tags::GaugeH<SpatialDim, Frame>>
-DampedHarmonicHCompute<SpatialDim, Frame>::function(
-    const typename db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>&
-        gauge_h_init,
-    const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
-    const double& time, const double& t_start, const double& sigma_t,
-    const tnsr::I<DataVector, SpatialDim, Frame>& coords,
-    const double& sigma_r) noexcept {
-  typename db::item_type<Tags::GaugeH<SpatialDim, Frame>> gauge_h{
-      get_size(get(lapse))};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame>(
-      make_not_null(&gauge_h), gauge_h_init, lapse, shift,
-      sqrt_det_spatial_metric, spacetime_metric, time, coords, 1., 1.,
-      1.,                // amp_coef_{L1, L2, S}
-      4, 4, 4,           // exp_{L1, L2, S}
-      t_start, sigma_t,  // _h_init
-      t_start, sigma_t,  // _L1
-      t_start, sigma_t,  // _L2
-      t_start, sigma_t,  // _S
-      sigma_r);
-  return gauge_h;
-}
-
 // Spacetime derivatives of the damped harmonic gauge source function.
 //
 // The following functions and struct compute spacetime derivatives, i.e.
@@ -446,12 +417,11 @@ DampedHarmonicHCompute<SpatialDim, Frame>::function(
 template <size_t SpatialDim, typename Frame>
 void spacetime_deriv_damped_harmonic_h(
     const gsl::not_null<
-        typename db::item_type<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>*>
+        db::item_type<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>*>
         d4_gauge_h,
-    const typename db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>&
-        gauge_h_init,
-    const typename db::item_type<
-        Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>>& dgauge_h_init,
+    const db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>& gauge_h_init,
+    const db::item_type<Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>>&
+        dgauge_h_init,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
     const tnsr::a<DataVector, SpatialDim, Frame>&
@@ -469,9 +439,8 @@ void spacetime_deriv_damped_harmonic_h(
     const double sigma_t_L2, const double t_start_S, const double sigma_t_S,
     const double sigma_r) noexcept {
   if (UNLIKELY(get_size(get<0, 0>(*d4_gauge_h)) != get_size(get(lapse)))) {
-    *d4_gauge_h =
-        typename db::item_type<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>(
-            get(lapse));
+    *d4_gauge_h = db::item_type<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>(
+        get(lapse));
   }
   // Use a TempBuffer to reduce total number of allocations. This is especially
   // important in a multithreaded environment.
@@ -751,41 +720,6 @@ void spacetime_deriv_damped_harmonic_h(
     }
   }
 }
-
-template <size_t SpatialDim, typename Frame>
-typename db::item_type<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>
-SpacetimeDerivDampedHarmonicHCompute<SpatialDim, Frame>::function(
-    const typename db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>&
-        gauge_h_init,
-    const typename db::item_type<
-        Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>>& dgauge_h_init,
-    const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, SpatialDim, Frame>& shift,
-    const tnsr::a<DataVector, SpatialDim, Frame>&
-        spacetime_unit_normal_one_form,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::II<DataVector, SpatialDim, Frame>& inverse_spatial_metric,
-    const tnsr::aa<DataVector, SpatialDim, Frame>& spacetime_metric,
-    const tnsr::aa<DataVector, SpatialDim, Frame>& pi,
-    const tnsr::iaa<DataVector, SpatialDim, Frame>& phi, const double& time,
-    const double& t_start, const double& sigma_t,
-    const tnsr::I<DataVector, SpatialDim, Frame>& coords,
-    const double& sigma_r) noexcept {
-  typename db::item_type<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>
-      d4_gauge_h{get_size(get(lapse))};
-  GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h(
-      make_not_null(&d4_gauge_h), gauge_h_init, dgauge_h_init, lapse, shift,
-      spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
-      inverse_spatial_metric, spacetime_metric, pi, phi, time, coords,
-      1., 1., 1.,        // amp_coef_{L1, L2, S}
-      4, 4, 4,           // exp_{L1, L2, S}
-      t_start, sigma_t,  // _h_init
-      t_start, sigma_t,  // _L1
-      t_start, sigma_t,  // _L2
-      t_start, sigma_t,  // _S
-      sigma_r);
-  return d4_gauge_h;
-}
 }  // namespace GeneralizedHarmonic
 
 // Explicit Instantiations
@@ -877,6 +811,58 @@ SpacetimeDerivDampedHarmonicHCompute<SpatialDim, Frame>::function(
           const tnsr::iaa<DTYPE(data), DIM(data), FRAME(data)>& phi,          \
           const double g_exponent, const int exponent) noexcept;
 
+#define INSTANTIATE_DV_FUNC(_, data)                                           \
+  template void GeneralizedHarmonic::damped_harmonic_h(                        \
+      const gsl::not_null<db::item_type<                                       \
+          GeneralizedHarmonic::Tags::GaugeH<DIM(data), FRAME(data)>>*>         \
+          gauge_h,                                                             \
+      const db::item_type<                                                     \
+          GeneralizedHarmonic::Tags::InitialGaugeH<DIM(data), FRAME(data)>>&   \
+          gauge_h_init,                                                        \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
+      const Scalar<DataVector>& sqrt_det_spatial_metric,                       \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& spacetime_metric,    \
+      const double time,                                                       \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& coords,               \
+      const double amp_coef_L1, const double amp_coef_L2,                      \
+      const double amp_coef_S, const int exp_L1, const int exp_L2,             \
+      const int exp_S, const double t_start_h_init,                            \
+      const double sigma_t_h_init, const double t_start_L1,                    \
+      const double sigma_t_L1, const double t_start_L2,                        \
+      const double sigma_t_L2, const double t_start_S, const double sigma_t_S, \
+      const double sigma_r) noexcept;                                          \
+  template void GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h(        \
+      const gsl::not_null<                                                     \
+          db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<       \
+              DIM(data), FRAME(data)>>*>                                       \
+          d4_gauge_h,                                                          \
+      const db::item_type<                                                     \
+          GeneralizedHarmonic::Tags::InitialGaugeH<DIM(data), FRAME(data)>>&   \
+          gauge_h_init,                                                        \
+      const db::item_type<                                                     \
+          GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<              \
+              DIM(data), FRAME(data)>>& dgauge_h_init,                         \
+      const Scalar<DataVector>& lapse,                                         \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& shift,                \
+      const tnsr::a<DataVector, DIM(data), FRAME(data)>&                       \
+          spacetime_unit_normal_one_form,                                      \
+      const Scalar<DataVector>& sqrt_det_spatial_metric,                       \
+      const tnsr::II<DataVector, DIM(data), FRAME(data)>&                      \
+          inverse_spatial_metric,                                              \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& spacetime_metric,    \
+      const tnsr::aa<DataVector, DIM(data), FRAME(data)>& pi,                  \
+      const tnsr::iaa<DataVector, DIM(data), FRAME(data)>& phi,                \
+      const double time,                                                       \
+      const tnsr::I<DataVector, DIM(data), FRAME(data)>& coords,               \
+      const double amp_coef_L1, const double amp_coef_L2,                      \
+      const double amp_coef_S, const int exp_L1, const int exp_L2,             \
+      const int exp_S, const double t_start_h_init,                            \
+      const double sigma_t_h_init, const double t_start_L1,                    \
+      const double sigma_t_L1, const double t_start_L2,                        \
+      const double sigma_t_L2, const double t_start_S, const double sigma_t_S, \
+      const double sigma_r) noexcept;
+
 #define INSTANTIATE_SCALAR_FUNC(_, data)                                    \
   template void                                                             \
   GeneralizedHarmonic::DampedHarmonicGauge_detail::log_factor_metric_lapse( \
@@ -890,25 +876,19 @@ SpacetimeDerivDampedHarmonicHCompute<SpatialDim, Frame>::function(
       const Scalar<DTYPE_SCAL(data)>& sqrt_det_spatial_metric,              \
       const double exponent) noexcept;
 
-#define INSTANTIATE_COMPUTE_ITEM(_, data)                                    \
-  template struct GeneralizedHarmonic::DampedHarmonicHCompute<DIM(data),     \
-                                                              FRAME(data)>;  \
-  template struct GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute< \
-      DIM(data), FRAME(data)>;
-
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
                         (Frame::Inertial))
 
-GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR_FUNC, (double, DataVector))
-
-GENERATE_INSTANTIATIONS(INSTANTIATE_COMPUTE_ITEM, (1, 2, 3), (DataVector),
+GENERATE_INSTANTIATIONS(INSTANTIATE_DV_FUNC, (1, 2, 3), (DataVector),
                         (Frame::Inertial))
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR_FUNC, (double, DataVector))
 
 #undef DIM
 #undef DTYPE
 #undef FRAME
 #undef DTYPE_SCAL
 #undef INSTANTIATE
+#undef INSTANTIATE_DV_FUNC
 #undef INSTANTIATE_SCALAR_FUNC
-#undef INSTANTIATE_COMPUTE_ITEM
 /// \endcond

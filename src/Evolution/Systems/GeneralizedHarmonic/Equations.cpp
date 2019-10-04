@@ -9,6 +9,7 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/GeneralizedHarmonic/Characteristics.hpp"
+#include "Evolution/Systems/GeneralizedHarmonic/System.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -496,16 +497,58 @@ void UpwindFlux<Dim>::operator()(
 /// \endcond
 }  // namespace GeneralizedHarmonic
 
-// Explicit Instantiations
+// Explicit instantiations of structs defined in `Equations.cpp` as well as of
+// `partial_derivatives` function for use in the computation of spatial
+// derivatives of `gradients_tags`, and of the initial gauge source function
+// (needed in `Initialize.hpp`).
 /// \cond
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
+
+using derivative_frame = Frame::Inertial;
+
+template <size_t Dim>
+using derivative_tags_initial_gauge =
+    tmpl::list<GeneralizedHarmonic::Tags::InitialGaugeH<Dim, derivative_frame>>;
+
+template <size_t Dim>
+using variables_tags_initial_gauge =
+    tmpl::list<GeneralizedHarmonic::Tags::InitialGaugeH<Dim, derivative_frame>>;
+
+template <size_t Dim>
+using derivative_tags =
+    typename GeneralizedHarmonic::System<Dim>::gradients_tags;
+
+template <size_t Dim>
+using variables_tags =
+    typename GeneralizedHarmonic::System<Dim>::variables_tag::tags_list;
+
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define INSTANTIATE(_, data)                                              \
-  template struct GeneralizedHarmonic::ComputeDuDt<DIM(data)>;            \
-  template struct GeneralizedHarmonic::ComputeNormalDotFluxes<DIM(data)>; \
-  template struct GeneralizedHarmonic::UpwindFlux<DIM(data)>;
+#define INSTANTIATE(_, data)                                                 \
+  template struct GeneralizedHarmonic::ComputeDuDt<DIM(data)>;               \
+  template struct GeneralizedHarmonic::ComputeNormalDotFluxes<DIM(data)>;    \
+  template struct GeneralizedHarmonic::UpwindFlux<DIM(data)>;                \
+  template Variables<                                                        \
+      db::wrap_tags_in<::Tags::deriv, derivative_tags<DIM(data)>,            \
+                       tmpl::size_t<DIM(data)>, derivative_frame>>           \
+  partial_derivatives<derivative_tags<DIM(data)>, variables_tags<DIM(data)>, \
+                      DIM(data), derivative_frame>(                          \
+      const Variables<variables_tags<DIM(data)>>& u,                         \
+      const Mesh<DIM(data)>& mesh,                                           \
+      const InverseJacobian<DataVector, DIM(data), Frame::Logical,           \
+                            derivative_frame>& inverse_jacobian) noexcept;   \
+  template Variables<db::wrap_tags_in<                                       \
+      ::Tags::deriv, derivative_tags_initial_gauge<DIM(data)>,               \
+      tmpl::size_t<DIM(data)>, derivative_frame>>                            \
+  partial_derivatives<derivative_tags_initial_gauge<DIM(data)>,              \
+                      variables_tags_initial_gauge<DIM(data)>, DIM(data),    \
+                      derivative_frame>(                                     \
+      const Variables<variables_tags_initial_gauge<DIM(data)>>& u,           \
+      const Mesh<DIM(data)>& mesh,                                           \
+      const InverseJacobian<DataVector, DIM(data), Frame::Logical,           \
+                            derivative_frame>& inverse_jacobian) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
-#undef DIM
 #undef INSTANTIATE
+#undef DIM
 /// \endcond
