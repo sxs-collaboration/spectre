@@ -1210,10 +1210,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::stream(
 
 template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline std::enable_if_t<
-    not(PointerVector<Type, AF, PF, TF, ExprResultType>::template PointerVector<
-        Type, AF, PF, TF, ExprResultType>::BLAZE_TEMPLATE
-            VectorizedAssign<VT>::value)>
+inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF, ExprResultType>::
+                                BLAZE_TEMPLATE VectorizedAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF, ExprResultType>::assign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
@@ -1290,10 +1288,8 @@ PointerVector<Type, AF, PF, TF, ExprResultType>::assign(
 
 template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline std::enable_if_t<
-    not(PointerVector<Type, AF, PF, TF, ExprResultType>::template PointerVector<
-        Type, AF, PF, TF, ExprResultType>::BLAZE_TEMPLATE
-            VectorizedAddAssign<VT>::value)>
+inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF, ExprResultType>::
+                                BLAZE_TEMPLATE VectorizedAddAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF, ExprResultType>::addAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
@@ -1368,10 +1364,8 @@ inline void PointerVector<Type, AF, PF, TF, ExprResultType>::addAssign(
 
 template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline std::enable_if_t<
-    not(PointerVector<Type, AF, PF, TF, ExprResultType>::template PointerVector<
-        Type, AF, PF, TF, ExprResultType>::BLAZE_TEMPLATE
-            VectorizedSubAssign<VT>::value)>
+inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF, ExprResultType>::
+                                BLAZE_TEMPLATE VectorizedSubAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF, ExprResultType>::subAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
@@ -1446,10 +1440,8 @@ inline void PointerVector<Type, AF, PF, TF, ExprResultType>::subAssign(
 
 template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline std::enable_if_t<
-    not(PointerVector<Type, AF, PF, TF, ExprResultType>::template PointerVector<
-        Type, AF, PF, TF, ExprResultType>::BLAZE_TEMPLATE
-            VectorizedMultAssign<VT>::value)>
+inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF, ExprResultType>::
+                                BLAZE_TEMPLATE VectorizedMultAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF, ExprResultType>::multAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
@@ -1526,10 +1518,8 @@ inline void PointerVector<Type, AF, PF, TF, ExprResultType>::multAssign(
 
 template <typename Type, bool AF, bool PF, bool TF, typename ExprResultType>
 template <typename VT>
-inline std::enable_if_t<
-    not(PointerVector<Type, AF, PF, TF, ExprResultType>::template PointerVector<
-        Type, AF, PF, TF, ExprResultType>::BLAZE_TEMPLATE
-            VectorizedDivAssign<VT>::value)>
+inline std::enable_if_t<not(PointerVector<Type, AF, PF, TF, ExprResultType>::
+                                BLAZE_TEMPLATE VectorizedDivAssign<VT>::value)>
 PointerVector<Type, AF, PF, TF, ExprResultType>::divAssign(
     const blaze::DenseVector<VT, TF>& rhs) {
   BLAZE_INTERNAL_ASSERT(size_ == (~rhs).size(), "Invalid vector sizes");
