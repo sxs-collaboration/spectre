@@ -126,9 +126,11 @@ void test_exponential_filter_action(const double alpha,
   using metavariables = Metavariables<Dim, FilterIndividually>;
   using component = Component<metavariables>;
 
+  // Division by Dim to reduce time of test
   for (size_t num_pts =
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       num_pts < Spectral::maximum_number_of_points<BasisType>; ++num_pts) {
+       num_pts < Spectral::maximum_number_of_points<BasisType> / Dim;
+       ++num_pts) {
     CAPTURE(num_pts);
     const Mesh<Dim> mesh(num_pts, BasisType, QuadratureType);
 
@@ -196,19 +198,19 @@ template <size_t Dim, bool FilterIndividually>
 void invoke_test_exponential_filter_action(
     const double alpha, const unsigned half_power,
     const bool disable_for_debugging) noexcept {
-  test_exponential_filter_action<1, Spectral::Basis::Legendre,
+  test_exponential_filter_action<Dim, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto,
                                  FilterIndividually>(alpha, half_power,
                                                      disable_for_debugging);
-  test_exponential_filter_action<1, Spectral::Basis::Legendre,
+  test_exponential_filter_action<Dim, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::Gauss,
                                  FilterIndividually>(alpha, half_power,
                                                      disable_for_debugging);
-  test_exponential_filter_action<1, Spectral::Basis::Chebyshev,
+  test_exponential_filter_action<Dim, Spectral::Basis::Chebyshev,
                                  Spectral::Quadrature::GaussLobatto,
                                  FilterIndividually>(alpha, half_power,
                                                      disable_for_debugging);
-  test_exponential_filter_action<1, Spectral::Basis::Chebyshev,
+  test_exponential_filter_action<Dim, Spectral::Basis::Chebyshev,
                                  Spectral::Quadrature::Gauss,
                                  FilterIndividually>(alpha, half_power,
                                                      disable_for_debugging);
