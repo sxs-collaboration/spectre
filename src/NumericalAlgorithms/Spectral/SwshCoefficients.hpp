@@ -11,6 +11,7 @@
 #include "DataStructures/ComplexModalVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "NumericalAlgorithms/Spectral/SwshSettings.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
@@ -130,9 +131,6 @@ constexpr SPECTRE_ALWAYS_INLINE double sharp_swsh_sign(
 }
 
 namespace detail {
-
-constexpr size_t coefficients_maximum_l_max = collocation_maximum_l_max;
-
 struct DestroySharpAlm {
   void operator()(sharp_alm_info* to_delete) noexcept {
     sharp_destroy_alm_info(to_delete);

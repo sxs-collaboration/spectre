@@ -47,22 +47,21 @@ struct EthbarEthbar {};
 /// no derivative is taken.
 struct NoDerivative {};
 
-namespace detail {
-
 // utility function for determining the change of spin after a spin-weighted
 // derivative has been applied.
 template <typename DerivativeKind>
-constexpr int derivative_spin_weight_adjustment = 0;
+constexpr int derivative_spin_weight = 0;
 
 template <>
-constexpr int derivative_spin_weight_adjustment<Eth> = 1;
+constexpr int derivative_spin_weight<Eth> = 1;
 template <>
-constexpr int derivative_spin_weight_adjustment<Ethbar> = -1;
+constexpr int derivative_spin_weight<Ethbar> = -1;
 template <>
-constexpr int derivative_spin_weight_adjustment<EthEth> = 2;
+constexpr int derivative_spin_weight<EthEth> = 2;
 template <>
-constexpr int derivative_spin_weight_adjustment<EthbarEthbar> = -2;
+constexpr int derivative_spin_weight<EthbarEthbar> = -2;
 
+namespace detail {
 // The below tags are used to find the new type represented by the spin-weighted
 // derivative of a spin-weighted quantity. The derivatives alter the spin
 // weights, and so the utility `adjust_spin_weight_t<Tag, DerivativeKind>` is a
@@ -74,15 +73,14 @@ constexpr int derivative_spin_weight_adjustment<EthbarEthbar> = -2;
 template <typename DataType, typename DerivativeKind>
 struct adjust_spin_weight {
   using type =
-      Scalar<SpinWeighted<DataType,
-                          derivative_spin_weight_adjustment<DerivativeKind>>>;
+      Scalar<SpinWeighted<DataType, derivative_spin_weight<DerivativeKind>>>;
 };
 
 // case for if there is a `Tag::type::spin`
 template <typename DataType, int Spin, typename DerivativeKind>
 struct adjust_spin_weight<SpinWeighted<DataType, Spin>, DerivativeKind> {
-  using type = Scalar<SpinWeighted<
-      DataType, Spin + derivative_spin_weight_adjustment<DerivativeKind>>>;
+  using type = Scalar<
+      SpinWeighted<DataType, Spin + derivative_spin_weight<DerivativeKind>>>;
 };
 
 template <typename Tag, typename DerivativeKind>
@@ -113,7 +111,7 @@ std::string compose_spin_weighted_derivative_name(
 ///   applied.
 /// - `tag`: An alias to the wrapped tag `Tag`. Provided for applicability to
 ///   general `db::PrefixTag` functionality.
-/// - `derived_from`: Another alias to the wrapped tag `Tag`. Provided so that
+/// - `derivative_of`: Another alias to the wrapped tag `Tag`. Provided so that
 ///   utilities that use this prefix for taking derivatives can have a more
 ///   expressive code style.
 /// - `derivative_kind`: Type alias to `DerivativeKind`, represents the kind of
@@ -124,9 +122,9 @@ template <typename Tag, typename DerivativeKind>
 struct Derivative : db::PrefixTag, db::SimpleTag {
   using type = detail::adjust_spin_weight_t<Tag, DerivativeKind>;
   using tag = Tag;
-  // derived_from is provided as a second alias so that utilities that assume a
+  // derivative_of is provided as a second alias so that utilities that assume a
   // derivative prefix tag fail earlier during compilation
-  using derived_from = Tag;
+  using derivative_of = Tag;
   using derivative_kind = DerivativeKind;
   const static int spin = type::type::spin;
   static std::string name() noexcept {
@@ -192,6 +190,17 @@ template <typename PrefixTag, typename S>
 struct wrapped_has_spin : has_spin<typename PrefixTag::tag, S> {};
 
 }  // namespace detail
+
+/// \ingroup SwshGroup
+/// \brief A metafunction for determining the coefficient buffers needed by
+/// `angular_derivatives()` to avoid repeatedly allocating space for modal
+/// data each time a derivative is taken.
+/// \note Using these buffers is required to use the batch
+/// `angular_derivatives()` rather than the individual `angular_derivative()`.
+template <typename DerivativeTag>
+using coefficient_buffer_tags_for_derivative_tag = tmpl::list<
+    Spectral::Swsh::Tags::SwshTransform<typename DerivativeTag::derivative_of>,
+    Spectral::Swsh::Tags::SwshTransform<DerivativeTag>>;
 
 /// \ingroup SwshGroup
 /// \brief Extract from `TagList` the subset of those tags that have a static

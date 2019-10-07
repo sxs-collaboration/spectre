@@ -8,6 +8,7 @@
 #include <sharp_cxx.h>
 
 #include "NumericalAlgorithms/Spectral/ComplexDataView.hpp"
+#include "NumericalAlgorithms/Spectral/SwshSettings.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -49,12 +50,6 @@ number_of_swsh_phi_collocation_points(const size_t l_max) noexcept {
   return (2 * l_max + 1);
 }
 
-// In the static caching mechanism, we permit an l_max up to this macro
-// value. Higher l_max values may still be created manually using the
-// `CollocationMetadata` constructor. If l_max's are used several times at
-// higher value, consider increasing this value, but only after memory costs
-// have been evaluated.
-constexpr size_t collocation_maximum_l_max = 200;
 
 namespace detail {
 // Helping functor to appropriately delete a stored `sharp_geom_info**`
