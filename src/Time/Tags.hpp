@@ -46,10 +46,20 @@ struct TimeStep : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Tag for compute item for ::Time of the current substep (from
-/// TimeStepId)
-struct SubstepTime : db::ComputeTag {
-  static std::string name() noexcept { return "SubstepTime"; }
+/// \brief Tag for ::Time of the current substep
+///
+/// \see SubstepTimeCompute
+struct SubstepTime : db::SimpleTag {
+  using type = ::Time;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup TimeGroup
+/// \brief Tag for computing the substep time from (from `Tags::TimeStepId`)
+///
+/// \see SubstepTime
+struct SubstepTimeCompute : SubstepTime, db::ComputeTag {
+  using base = SubstepTime;
   static auto function(const ::TimeStepId& id) noexcept {
     return id.substep_time();
   }
@@ -66,16 +76,24 @@ struct Time : db::SimpleTag {
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Prefix for TimeStepper history
+/// Tag for the TimeStepper history
+///
+/// Leaving both template parameters unspecified gives a base tag.
 ///
 /// \tparam Tag tag for the variables
 /// \tparam DtTag tag for the time derivative of the variables
+template <typename Tag = void, typename DtTag = void>
+struct HistoryEvolvedVariables;
+
+/// \cond
+template <>
+struct HistoryEvolvedVariables<> : db::BaseTag {};
+
 template <typename Tag, typename DtTag>
-struct HistoryEvolvedVariables : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "HistoryEvolvedVariables"; }
-  using tag = Tag;
+struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
   using type = TimeSteppers::History<db::item_type<Tag>, db::item_type<DtTag>>;
 };
+/// \endcond
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
