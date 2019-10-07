@@ -161,7 +161,7 @@ void test_grid_helpers_3d() {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoGridHelpers",
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Weno.GridHelpers",
                   "[Limiters][Unit]") {
   test_check_element_no_href();
   test_grid_helpers_1d();

@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_MinmodType.cpp
   Test_Weno.cpp
   Test_WenoGridHelpers.cpp
+  Test_WenoOscillationIndicator.cpp
   Test_WenoHelpers.cpp
   Test_WenoType.cpp
   )

@@ -19,6 +19,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -28,75 +29,6 @@
 // IWYU pragma: no_forward_declare Variables
 
 namespace {
-
-void test_oscillation_indicator_1d() noexcept {
-  const Mesh<1> mesh(5, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const DataVector& x = get<0>(logical_coords);
-
-  const auto data = DataVector{1. + x - pow<4>(x)};
-  const auto indicator =
-      Limiters::Weno_detail::oscillation_indicator(data, mesh);
-
-  // Expected result computed in Mathematica:
-  // f[x_] := 1 + x - x^4
-  // Integrate[Sum[Evaluate[D[f[x], {x, i}]^2], {i, 1, 4}], {x, -1, 1}]
-  const double expected = 56006. / 35.;
-  CHECK(indicator == approx(expected));
-}
-
-void test_oscillation_indicator_2d() noexcept {
-  const Mesh<2> mesh({{4, 5}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const DataVector& x = get<0>(logical_coords);
-  const DataVector& y = get<1>(logical_coords);
-
-  const auto data =
-      DataVector{square(x) + cube(y) - 2.5 * x * y + square(x) * y};
-  const auto indicator =
-      Limiters::Weno_detail::oscillation_indicator(data, mesh);
-
-  // Expected result computed in Mathematica:
-  // g[x_, y_] := x^2 + y^3 - (5/2) x y + x^2 y
-  // Integrate[
-  //  Sum[Evaluate[D[g[x, y], {x, i}, {y, j}]^2], {i, 1, 3}, {j, 1, 4}]
-  //   + Sum[Evaluate[D[g[x, y], {x, i}]^2], {i, 1, 3}]
-  //   + Sum[Evaluate[D[g[x, y], {y, j}]^2], {j, 1, 4}],
-  //  {x, -1, 1}, {y, -1, 1}]
-  const double expected = 2647. / 9.;
-  CHECK(indicator == approx(expected));
-}
-
-void test_oscillation_indicator_3d() noexcept {
-  const Mesh<3> mesh({{4, 3, 5}}, Spectral::Basis::Legendre,
-                     Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const DataVector& x = get<0>(logical_coords);
-  const DataVector& y = get<1>(logical_coords);
-  const DataVector& z = get<2>(logical_coords);
-
-  const auto data = DataVector{square(x) + 2. * y + z - 6. * cube(z) -
-                               3. * x * square(y) * cube(z) - x * y + y * z};
-  const auto indicator =
-      Limiters::Weno_detail::oscillation_indicator(data, mesh);
-
-  // Expected result computed in Mathematica:
-  // h[x_, y_, z_] := x^2 + 2 y + z - 6 z^3 - 3 x y^2 z^3 - x y + y z
-  // Integrate[
-  //  Sum[Evaluate[D[h[x, y, z], {x, i}, {y, j}, {z, k}]^2],
-  //      {i, 1, 3}, {j, 1, 2}, {k, 1, 4}]
-  //   + Sum[Evaluate[ D[h[x, y, z], {x, i}, {y, j}]^2], {i, 1, 3}, {j, 1, 2}]
-  //   + Sum[Evaluate[ D[h[x, y, z], {x, i}, {z, k}]^2], {i, 1, 3}, {k, 1, 4}]
-  //   + Sum[Evaluate[ D[h[x, y, z], {y, j}, {z, k}]^2], {j, 1, 2}, {k, 1, 4}]
-  //   + Sum[Evaluate[ D[h[x, y, z], {x, i}]^2], {i, 1, 3}]
-  //   + Sum[Evaluate[ D[h[x, y, z], {y, j}]^2], {j, 1, 2}]
-  //   + Sum[Evaluate[ D[h[x, y, z], {z, k}]^2], {k, 1, 4}],
-  //  {x, -1, 1}, {y, -1, 1}, {z, -1, 1}]
-  const double expected = 3066352. / 75.;
-  CHECK(indicator == approx(expected));
-}
 
 struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
@@ -150,7 +82,8 @@ void test_reconstruction_1d() noexcept {
       ScalarTag::type{{{evaluate_polynomial({{0., 0., 1., 1., 2.}})}}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
-      make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars);
+      make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars,
+      Limiters::Weno_detail::DerivativeWeight::Unity);
 
   CHECK(mean_value(get(scalar), mesh) == approx(expected_scalar_mean));
 
@@ -227,7 +160,8 @@ void test_reconstruction_2d() noexcept {
             evaluate_polynomial({{0., 0., 0., 1., 0., 0., 1., 1., 1.}})}}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<VectorTag<2>>(
-      make_not_null(&vector), mesh, neighbor_linear_weight, neighbor_vars);
+      make_not_null(&vector), mesh, neighbor_linear_weight, neighbor_vars,
+      Limiters::Weno_detail::DerivativeWeight::Unity);
 
   CHECK(mean_value(get<0>(vector), mesh) == approx(expected_vector_means[0]));
   CHECK(mean_value(get<1>(vector), mesh) == approx(expected_vector_means[1]));
@@ -310,7 +244,8 @@ void test_reconstruction_3d() noexcept {
       {{evaluate_polynomial({{0.1, 0., 0.5, 0.2, 0.2, 0.2}})}}});
 
   Limiters::Weno_detail::reconstruct_from_weighted_sum<ScalarTag>(
-      make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars);
+      make_not_null(&scalar), mesh, neighbor_linear_weight, neighbor_vars,
+      Limiters::Weno_detail::DerivativeWeight::Unity);
 
   CHECK(mean_value(get(scalar), mesh) == approx(expected_scalar_mean));
 
@@ -324,28 +259,7 @@ void test_reconstruction_3d() noexcept {
 
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoHelpers.OscillationIndicator",
-                  "[Limiters][Unit]") {
-  test_oscillation_indicator_1d();
-  test_oscillation_indicator_2d();
-  test_oscillation_indicator_3d();
-}
-
-// At the moment, this TEST_CASE cannot be merged with the OscillationIndicator
-// TEST_CASE.
-//
-// This is because the function `oscillation_indicator` uses a static variable
-// to cache the expensive computation of an intermediate result, which depends
-// on the mesh. This caching is simplistic, and assumes a single mesh is used.
-// This assumption is okay for our simple grids right now, but the caching will
-// need to become more sophisticated when we want to handle more general
-// domains.
-//
-// Until the caching is improved, the tests must choose between:
-// - all tests (with a particular VolumeDim) use the same mesh, OR
-// - tests use different meshes but are in different TEST_CASEs.
-// We opt for the latter, as this provides a more rigorous test of the code.
-SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.WenoHelpers.Reconstruction",
+SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Weno.Helpers",
                   "[Limiters][Unit]") {
   test_reconstruction_1d();
   test_reconstruction_2d();

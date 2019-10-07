@@ -11,6 +11,7 @@
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Domain/Direction.hpp"          // IWYU pragma: keep
 #include "Domain/ElementId.hpp"          // IWYU pragma: keep
+#include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/EqualWithinRoundoff.hpp"
@@ -31,21 +32,6 @@ struct hash;
 
 namespace Limiters {
 namespace Weno_detail {
-
-// Compute the WENO oscillation indicator (also called the smoothness indicator)
-//
-// The oscillation indicator measures the amount of variation in the input data,
-// with larger indicator values corresponding to a larger amount of variation
-// (either from large monotonic slopes or from oscillations).
-//
-// Implements an indicator similar to that of Eq. 23 of Dumbser2007, but with
-// the necessary adaptations for use on square/cube grids. We favor this
-// indicator because it is formulated in the reference coordinates, which we
-// use for the WENO reconstruction, and because it lends itself to an efficient
-// implementation.
-template <size_t VolumeDim>
-double oscillation_indicator(const DataVector& data,
-                             const Mesh<VolumeDim>& mesh) noexcept;
 
 // Compute the unnormalized nonlinear WENO weights. This is a fairly standard
 // choice of weights; see e.g., Eq. 3.9 of Zhong2013 or Eq. 3.6 of Zhu2016.
@@ -69,7 +55,8 @@ void reconstruct_from_weighted_sum(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
         Variables<TagsList>,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_vars) noexcept {
+        neighbor_vars,
+    const DerivativeWeight derivative_weight) noexcept {
   for (size_t tensor_storage_index = 0;
        tensor_storage_index < local_tensor->size(); ++tensor_storage_index) {
     auto& local_polynomial = (*local_tensor)[tensor_storage_index];
@@ -104,14 +91,16 @@ void reconstruct_from_weighted_sum(
     // Update `local_weights` and `neighbor_weights` to hold the unnormalized
     // nonlinear weights.
     local_weight = unnormalized_nonlinear_weight(
-        local_weight, oscillation_indicator(local_polynomial, mesh));
+        local_weight,
+        oscillation_indicator(local_polynomial, mesh, derivative_weight));
     for (const auto& kv : neighbor_vars) {
       const auto& key = kv.first;
       const auto& neighbor_tensor_component =
           get<Tag>(kv.second)[tensor_storage_index];
       neighbor_weights[key] = unnormalized_nonlinear_weight(
           neighbor_weights[key],
-          oscillation_indicator(neighbor_tensor_component, mesh));
+          oscillation_indicator(neighbor_tensor_component, mesh,
+                                derivative_weight));
     }
 
     // Update `local_weights` and `neighbor_weights` to hold the normalized
