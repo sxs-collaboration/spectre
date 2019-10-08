@@ -95,11 +95,11 @@ struct ComputeSources {
           Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>*>... sources_tilde_e,
       const gsl::not_null<db::item_type<
           Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>*>... sources_tilde_s,
-      const db::item_type<
+      const db::const_item_type<
           Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
-      const db::item_type<
+      const db::const_item_type<
           Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>&... tilde_s,
-      const db::item_type<
+      const db::const_item_type<
           Tags::TildeP<Frame::Inertial, NeutrinoSpecies>>&... tilde_p,
       const Scalar<DataVector>& lapse,
       const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,

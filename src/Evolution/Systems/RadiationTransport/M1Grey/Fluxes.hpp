@@ -79,11 +79,11 @@ struct ComputeFluxes {
       const gsl::not_null<db::item_type<
           ::Tags::Flux<Tags::TildeS<Frame::Inertial, NeutrinoSpecies>,
                        tmpl::size_t<3>, Frame::Inertial>>*>... tilde_s_flux,
-      const db::item_type<
+      const db::const_item_type<
           Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
-      const db::item_type<
+      const db::const_item_type<
           Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>&... tilde_s,
-      const db::item_type<
+      const db::const_item_type<
           Tags::TildeP<Frame::Inertial, NeutrinoSpecies>>&... tilde_p,
       const Scalar<DataVector>& lapse,
       const tnsr::I<DataVector, 3, Frame::Inertial>& shift,

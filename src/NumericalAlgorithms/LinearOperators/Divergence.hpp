@@ -41,19 +41,20 @@ struct div;
 
 /// \cond
 template <typename Tag>
-struct div<Tag, Requires<tt::is_a_v<Tensor, db::item_type<Tag>>>>
+struct div<Tag, Requires<tt::is_a_v<Tensor, db::const_item_type<Tag>>>>
     : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept { return "div(" + Tag::name() + ")"; }
   using tag = Tag;
-  using type = TensorMetafunctions::remove_first_index<db::item_type<Tag>>;
+  using type =
+      TensorMetafunctions::remove_first_index<db::const_item_type<Tag>>;
 };
 
 template <typename Tag>
-struct div<Tag, Requires<tt::is_a_v<::Variables, db::item_type<Tag>>>>
+struct div<Tag, Requires<tt::is_a_v<::Variables, db::const_item_type<Tag>>>>
     : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept { return "div(" + Tag::name() + ")"; }
   using tag = Tag;
-  using type = db::item_type<Tag>;
+  using type = db::const_item_type<Tag>;
 };
 /// \endcond
 }  // namespace Tags
@@ -80,7 +81,7 @@ template <typename Tag, typename InverseJacobianTag>
 struct DivCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
  private:
   using inv_jac_indices =
-      typename db::item_type<InverseJacobianTag>::index_list;
+      typename db::const_item_type<InverseJacobianTag>::index_list;
   static constexpr auto dim = tmpl::back<inv_jac_indices>::dim;
   static_assert(cpp17::is_same_v<typename tmpl::front<inv_jac_indices>::Frame,
                                  Frame::Logical>,
@@ -88,7 +89,7 @@ struct DivCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
 
  public:
   static constexpr auto function =
-      divergence<typename db::item_type<Tag>::tags_list, dim,
+      divergence<typename db::const_item_type<Tag>::tags_list, dim,
                  typename tmpl::back<inv_jac_indices>::Frame>;
   using argument_tags = tmpl::list<Tag, Tags::Mesh<dim>, InverseJacobianTag>;
 };

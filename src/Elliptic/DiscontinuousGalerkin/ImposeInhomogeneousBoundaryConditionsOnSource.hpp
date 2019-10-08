@@ -107,17 +107,17 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource {
           &analytic_solution, &normal_dot_numerical_flux_computer
         ](const gsl::not_null<db::item_type<fixed_sources_tag>*> fixed_sources,
           const Mesh<volume_dim>& mesh,
-          const db::item_type<::Tags::BoundaryDirectionsInterior<volume_dim>>&
-              boundary_directions,
-          const db::item_type<::Tags::Interface<
+          const db::const_item_type<::Tags::BoundaryDirectionsInterior<
+              volume_dim>>& boundary_directions,
+          const db::const_item_type<::Tags::Interface<
               ::Tags::BoundaryDirectionsExterior<volume_dim>,
               ::Tags::Coordinates<volume_dim, Frame::Inertial>>>&
               boundary_coordinates,
-          const db::item_type<::Tags::Interface<
+          const db::const_item_type<::Tags::Interface<
               ::Tags::BoundaryDirectionsInterior<volume_dim>,
               ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<volume_dim>>>>&
               normalized_face_normals,
-          const db::item_type<::Tags::Interface<
+          const db::const_item_type<::Tags::Interface<
               ::Tags::BoundaryDirectionsInterior<volume_dim>,
               ::Tags::Magnitude<::Tags::UnnormalizedFaceNormal<volume_dim>>>>&
               magnitude_of_face_normals) noexcept {

@@ -29,7 +29,7 @@ Variables<db::wrap_tags_in<Tags::div, FluxTags>> divergence(
     using DivFluxTag = Tags::div<FluxTag>;
 
     using first_index =
-        tmpl::front<typename db::item_type<FluxTag>::index_list>;
+        tmpl::front<typename db::const_item_type<FluxTag>::index_list>;
     static_assert(
         cpp17::is_same_v<typename first_index::Frame, DerivativeFrame> and
             first_index::ul == UpLo::Up,

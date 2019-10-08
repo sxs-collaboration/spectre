@@ -27,11 +27,12 @@ struct AnalyticCompute
   using argument_tags =
       tmpl::list<AnalyticSolutionTag, ::Tags::Coordinates<Dim, Frame::Inertial>,
                  ::Tags::Time>;
-  static db::item_type<base> function(
-      const db::item_type<AnalyticSolutionTag>& analytic_solution_computer,
+  static db::const_item_type<base> function(
+      const db::const_item_type<AnalyticSolutionTag>&
+          analytic_solution_computer,
       const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
       const double& time) noexcept {
-    return db::item_type<base>(
+    return db::const_item_type<base>(
         variables_from_tagged_tuple(analytic_solution_computer.variables(
             inertial_coords, time, AnalyticFieldsTagList{})));
   }

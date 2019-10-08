@@ -64,9 +64,9 @@ struct NormalDotFluxCompute : db::add_tag_prefix<NormalDotFlux, Tag>,
       Tags::Normalized<Tags::UnnormalizedFaceNormal<VolumeDim, Fr>>;
 
  public:
-  static auto function(const db::item_type<flux_tag>& flux,
-                       const db::item_type<normal_tag>& normal) noexcept {
-    using tags_list = typename db::item_type<Tag>::tags_list;
+  static auto function(const db::const_item_type<flux_tag>& flux,
+                       const db::const_item_type<normal_tag>& normal) noexcept {
+    using tags_list = typename db::const_item_type<Tag>::tags_list;
     auto result = make_with_value<
         ::Variables<db::wrap_tags_in<NormalDotFlux, tags_list>>>(flux, 0.);
 

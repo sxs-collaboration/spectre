@@ -102,7 +102,7 @@ struct MockInitializeHasConverged {
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/,
-                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                    const db::const_item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
     db::mutate<CheckConvergedTag>(
         make_not_null(&box), [&has_converged](const gsl::not_null<
@@ -138,7 +138,7 @@ struct MockUpdateOperand {
   static void apply(db::DataBox<DbTagsList>& box,  // NOLINT
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
                     const ArrayIndex& /*array_index*/, const double res_ratio,
-                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                    const db::const_item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
     db::mutate<CheckValueTag, CheckConvergedTag>(
         make_not_null(&box),

@@ -72,7 +72,7 @@ bool troubled_cell_indicator(
 // - a variable `element_size` that is a `std::array<double, VolumeDim>`
 template <size_t VolumeDim, typename PackagedData, typename... Tags>
 bool troubled_cell_indicator(
-    const db::item_type<Tags>&... tensors,
+    const db::const_item_type<Tags>&... tensors,
     const std::unordered_map<
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&

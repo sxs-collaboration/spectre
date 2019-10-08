@@ -82,7 +82,7 @@ SPECTRE_ALWAYS_INLINE constexpr auto interface_apply_impl(
     const db::DataBox<DbTagsList>& box, tmpl::list<ArgumentTags...> /*meta*/,
     ExtraArgs&&... extra_args) noexcept {
   using interface_return_type = std::decay_t<decltype(interface_invokable(
-      std::declval<db::item_type<ArgumentTags, DbTagsList>>()...,
+      std::declval<db::const_item_type<ArgumentTags, DbTagsList>>()...,
       std::declval<ExtraArgs&&>()...))>;
   constexpr size_t volume_dim = DirectionsTag::volume_dim;
   DirectionMap<volume_dim, interface_return_type> result{};

@@ -41,8 +41,9 @@ struct FirstOrderFluxesCompute<
   using argument_tags = tmpl::list<VarsTag, fluxes_computer_tag, FluxesArgs...>;
   using volume_tags = tmpl::list<fluxes_computer_tag>;
   static constexpr auto function(
-      const db::item_type<VarsTag>& vars, const FluxesComputer& fluxes_computer,
-      const db::item_type<FluxesArgs>&... fluxes_args) noexcept {
+      const db::const_item_type<VarsTag>& vars,
+      const FluxesComputer& fluxes_computer,
+      const db::const_item_type<FluxesArgs>&... fluxes_args) noexcept {
     auto fluxes = make_with_value<db::item_type<base>>(vars, 0.);
     // Compute fluxes for primal fields
     fluxes_computer.apply(
@@ -76,8 +77,8 @@ struct FirstOrderSourcesCompute<
   using base = db::add_tag_prefix<::Tags::Source, VarsTag>;
   using argument_tags = tmpl::list<VarsTag, SourcesArgs...>;
   static constexpr auto function(
-      const db::item_type<VarsTag>& vars,
-      const db::item_type<SourcesArgs>&... sources_args) noexcept {
+      const db::const_item_type<VarsTag>& vars,
+      const db::const_item_type<SourcesArgs>&... sources_args) noexcept {
     auto sources = make_with_value<db::item_type<base>>(vars, 0.);
     // Compute sources for primal fields
     SourcesComputer::apply(

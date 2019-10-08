@@ -80,12 +80,12 @@ struct ApplyBoundaryFluxesLocalTimeStepping {
         [&cache](
             const gsl::not_null<db::item_type<variables_tag>*> vars,
             const gsl::not_null<db::item_type<mortar_data_tag>*> mortar_data,
-            const db::item_type<Tags::Mesh<volume_dim>>& mesh,
-            const db::item_type<Tags::Mortars<Tags::Mesh<volume_dim - 1>,
-                                              volume_dim>>& mortar_meshes,
-            const db::item_type<Tags::Mortars<Tags::MortarSize<volume_dim - 1>,
-                                              volume_dim>>& mortar_sizes,
-            const db::item_type<Tags::TimeStep>& time_step) noexcept {
+            const db::const_item_type<Tags::Mesh<volume_dim>>& mesh,
+            const db::const_item_type<Tags::Mortars<Tags::Mesh<volume_dim - 1>,
+                                                    volume_dim>>& mortar_meshes,
+            const db::const_item_type<Tags::Mortars<
+                Tags::MortarSize<volume_dim - 1>, volume_dim>>& mortar_sizes,
+            const db::const_item_type<Tags::TimeStep>& time_step) noexcept {
           // Having the lambda just wrap another lambda works around a
           // gcc 6.4.0 segfault.
           [

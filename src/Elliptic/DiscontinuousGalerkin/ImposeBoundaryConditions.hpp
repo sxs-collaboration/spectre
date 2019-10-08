@@ -106,7 +106,7 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
                ::Tags::BoundaryDirectionsExterior<system::volume_dim>,
                typename system::variables_tag>>*>
                exterior_boundary_vars,
-           const db::item_type<::Tags::Interface<
+           const db::const_item_type<::Tags::Interface<
                ::Tags::BoundaryDirectionsInterior<system::volume_dim>,
                typename system::variables_tag>>& interior_vars) noexcept {
           for (auto& exterior_direction_and_vars : *exterior_boundary_vars) {

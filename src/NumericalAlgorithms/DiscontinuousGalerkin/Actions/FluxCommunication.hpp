@@ -84,7 +84,7 @@ struct ReceiveDataForFluxes {
                        mortar_data,
                    const gsl::not_null<db::item_type<neighbor_temporal_id_tag>*>
                        neighbor_next_temporal_ids,
-                   const db::item_type<Tags::Next<temporal_id_tag>>&
+                   const db::const_item_type<Tags::Next<temporal_id_tag>>&
                        local_next_temporal_id) noexcept {
           auto& inbox =
               tuples::get<typename flux_comm_types::FluxesTag>(inboxes);

@@ -120,6 +120,32 @@ struct TagPrefix : db::PrefixTag, db::SimpleTag {
   }
 };
 /// [databox_prefix_tag_example]
+
+struct PointerBase : db::BaseTag {};
+
+struct Pointer : PointerBase, db::SimpleTag {
+  using type = std::unique_ptr<int>;
+};
+
+struct PointerComputeItemBase : db::BaseTag {};
+
+struct PointerComputeItem : PointerComputeItemBase, db::ComputeTag {
+  static std::string name() noexcept { return "PointerComputeItem"; }
+  static std::unique_ptr<int> function(const int& p) noexcept {
+    return std::make_unique<int>(p + 1);
+  }
+  using argument_tags = tmpl::list<Pointer>;
+};
+
+struct PointerComputeItemMutating : db::ComputeTag {
+  static std::string name() noexcept { return "PointerComputeItemMutating"; }
+  using return_type = std::unique_ptr<int>;
+  static void function(const gsl::not_null<return_type*> ret, const int& arg,
+                       const int& same_arg) noexcept {
+    *ret = std::make_unique<int>(arg + same_arg);
+  }
+  using argument_tags = tmpl::list<PointerComputeItem, PointerComputeItemBase>;
+};
 }  // namespace test_databox_tags
 
 namespace {
@@ -286,6 +312,71 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
     // Check retrieving compute item result
     CHECK(6.28 == db::get<test_databox_tags::ComputeTag0>(box));
   }
+  {
+    const auto box = db::create<
+        db::AddSimpleTags<test_databox_tags::Pointer>,
+        db::AddComputeTags<test_databox_tags::PointerComputeItem,
+                           test_databox_tags::PointerComputeItemMutating>>(
+        std::make_unique<int>(3));
+    using DbTags = decltype(box)::tags_list;
+    static_assert(
+        cpp17::is_same_v<db::const_item_type<test_databox_tags::Pointer>, int>,
+        "Wrong type for const_item_type on unique_ptr simple item");
+    static_assert(cpp17::is_same_v<
+                      decltype(db::get<test_databox_tags::Pointer>(box)),
+                      const db::const_item_type<test_databox_tags::Pointer>&>,
+                  "Wrong type for get on unique_ptr simple item");
+    CHECK(db::get<test_databox_tags::Pointer>(box) == 3);
+
+    static_assert(
+        cpp17::is_same_v<
+            db::const_item_type<test_databox_tags::PointerBase, DbTags>, int>,
+        "Wrong type for const_item_type on unique_ptr simple item by base");
+    static_assert(
+        cpp17::is_same_v<
+            decltype(db::get<test_databox_tags::PointerBase>(box)),
+            const db::const_item_type<test_databox_tags::PointerBase, DbTags>&>,
+        "Wrong type for get on unique_ptr simple item by base");
+    CHECK(db::get<test_databox_tags::PointerBase>(box) == 3);
+
+    static_assert(
+        cpp17::is_same_v<
+            db::const_item_type<test_databox_tags::PointerComputeItem>, int>,
+        "Wrong type for const_item_type on unique_ptr compute item");
+    static_assert(
+        cpp17::is_same_v<
+            decltype(db::get<test_databox_tags::PointerComputeItem>(box)),
+            const db::const_item_type<test_databox_tags::PointerComputeItem>&>,
+        "Wrong type for get on unique_ptr compute item");
+    CHECK(db::get<test_databox_tags::PointerComputeItem>(box) == 4);
+
+    static_assert(
+        cpp17::is_same_v<db::const_item_type<
+                             test_databox_tags::PointerComputeItemBase, DbTags>,
+                         int>,
+        "Wrong type for const_item_type on unique_ptr compute item by base");
+    static_assert(
+        cpp17::is_same_v<
+            decltype(db::get<test_databox_tags::PointerComputeItemBase>(box)),
+            const db::const_item_type<test_databox_tags::PointerComputeItemBase,
+                                      DbTags>&>,
+        "Wrong type for get on unique_ptr compute item by base");
+    CHECK(db::get<test_databox_tags::PointerComputeItemBase>(box) == 4);
+
+    static_assert(
+        cpp17::is_same_v<
+            db::const_item_type<test_databox_tags::PointerComputeItemMutating>,
+            int>,
+        "Wrong type for const_item_type on unique_ptr");
+    static_assert(
+        cpp17::is_same_v<
+            decltype(
+                db::get<test_databox_tags::PointerComputeItemMutating>(box)),
+            const db::const_item_type<
+                test_databox_tags::PointerComputeItemMutating>&>,
+        "Wrong type for get on unique_ptr");
+    CHECK(db::get<test_databox_tags::PointerComputeItemMutating>(box) == 8);
+  }
 }
 
 namespace ArgumentTypeTags {
@@ -366,10 +457,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate",
                   "[Unit][DataStructures]") {
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
+                        test_databox_tags::Tag2, test_databox_tags::Pointer>,
       db::AddComputeTags<test_databox_tags::ComputeTag0,
                          test_databox_tags::ComputeTag1>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+      std::make_unique<int>(3));
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
         3.14 * 2.0);
   /// [databox_mutate_example]
@@ -388,6 +480,36 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate",
   /// [databox_mutate_example]
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(original_box)) ==
         10.32 * 2.0);
+
+  db::mutate<test_databox_tags::Pointer>(make_not_null(&original_box), [
+  ](auto p) noexcept {
+    static_assert(cpp17::is_same_v<db::item_type<test_databox_tags::Pointer>,
+                                   std::unique_ptr<int>>,
+                  "Wrong type for item_type on unique_ptr");
+    static_assert(
+        cpp17::is_same_v<
+            decltype(p),
+            gsl::not_null<db::item_type<test_databox_tags::Pointer>*>>,
+        "Wrong type for mutate on unique_ptr");
+    CHECK(**p == 3);
+    *p = std::make_unique<int>(5);
+  });
+  db::mutate<test_databox_tags::PointerBase>(make_not_null(&original_box), [
+  ](auto p) noexcept {
+    using DbTags = decltype(original_box)::tags_list;
+    static_assert(
+        cpp17::is_same_v<db::item_type<test_databox_tags::PointerBase, DbTags>,
+                         std::unique_ptr<int>>,
+        "Wrong type for item_type on unique_ptr by base");
+    static_assert(
+        cpp17::is_same_v<decltype(p),
+                         gsl::not_null<db::item_type<
+                             test_databox_tags::PointerBase, DbTags>*>>,
+        "Wrong type for mutate on unique_ptr by base");
+    CHECK(**p == 5);
+    *p = std::make_unique<int>(7);
+  });
+  CHECK(db::get<test_databox_tags::Pointer>(original_box) == 7);
 }
 
 // [[OutputRegex, Unable to retrieve a \(compute\) item 'ComputeTag0' from the
@@ -442,11 +564,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
                         test_databox_tags::Tag2,
-                        test_databox_tags::TagPrefix<test_databox_tags::Tag0>>,
+                        test_databox_tags::TagPrefix<test_databox_tags::Tag0>,
+                        test_databox_tags::Pointer>,
       db::AddComputeTags<test_databox_tags::ComputeTag0,
                          test_databox_tags::ComputeTag1,
-                         test_databox_tags::ComputeFromBase>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s, 8.7);
+                         test_databox_tags::ComputeFromBase,
+                         test_databox_tags::PointerComputeItem,
+                         test_databox_tags::PointerComputeItemMutating>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s, 8.7,
+      std::make_unique<int>(3));
   const auto& compute_string =
       db::get_item_from_box<std::string>(original_box, "ComputeTag1");
   /// [get_item_from_box]
@@ -459,6 +585,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.get_item_from_box",
   /// [databox_name_prefix]
   CHECK(db::get_item_from_box<std::string>(original_box, "ComputeFromBase") ==
         "My Sample String"s);
+
+  CHECK(db::get_item_from_box<int>(original_box, "Pointer") == 3);
+  CHECK(db::get_item_from_box<int>(original_box, "PointerComputeItem") == 4);
+  CHECK(db::get_item_from_box<int>(original_box,
+                                   "PointerComputeItemMutating") == 8);
 }
 
 // [[OutputRegex, Could not find the tag named "time__" in the DataBox]]
@@ -495,10 +626,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
                   "[Unit][DataStructures]") {
   auto original_box = db::create<
       db::AddSimpleTags<test_databox_tags::Tag0, test_databox_tags::Tag1,
-                        test_databox_tags::Tag2>,
+                        test_databox_tags::Tag2, test_databox_tags::Pointer>,
       db::AddComputeTags<test_databox_tags::ComputeTag0,
-                         test_databox_tags::ComputeTag1>>(
-      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s);
+                         test_databox_tags::ComputeTag1,
+                         test_databox_tags::PointerComputeItem,
+                         test_databox_tags::PointerComputeItemMutating>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+      std::make_unique<int>(3));
   auto check_result_no_args = [](const std::string& sample_string,
                                  const auto& computed_string) {
     CHECK(sample_string == "My Sample String"s);
@@ -562,6 +696,40 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.apply",
   /// [apply_stateless_struct_example]
   db::apply(StatelessApplyCallable{}, original_box,
             db::get<test_databox_tags::Tag1>(original_box));
+
+  db::apply<tmpl::list<test_databox_tags::Pointer,
+                       test_databox_tags::PointerComputeItem,
+                       test_databox_tags::PointerComputeItemMutating,
+                       test_databox_tags::PointerBase,
+                       test_databox_tags::PointerComputeItemBase>>(
+      [](const int& simple, const int& compute, const int& compute_mutating,
+         const int& simple_base, const int& compute_base) noexcept {
+        CHECK(simple == 3);
+        CHECK(simple_base == 3);
+        CHECK(compute == 4);
+        CHECK(compute_base == 4);
+        CHECK(compute_mutating == 8);
+      },
+      original_box);
+
+  struct PointerApplyCallable {
+    using argument_tags =
+        tmpl::list<test_databox_tags::Pointer,
+                   test_databox_tags::PointerComputeItem,
+                   test_databox_tags::PointerComputeItemMutating,
+                   test_databox_tags::PointerBase,
+                   test_databox_tags::PointerComputeItemBase>;
+    static void apply(const int& simple, const int& compute,
+                      const int& compute_mutating, const int& simple_base,
+                      const int& compute_base) noexcept {
+      CHECK(simple == 3);
+      CHECK(simple_base == 3);
+      CHECK(compute == 4);
+      CHECK(compute_base == 4);
+      CHECK(compute_mutating == 8);
+    }
+  };
+  db::apply<PointerApplyCallable>(original_box);
 }
 
 // [[OutputRegex, Could not find the tag named "TagTensor__" in the DataBox]]
@@ -618,7 +786,7 @@ struct Var2 : db::SimpleTag {
 template <class Tag, class VolumeDim, class Frame>
 struct PrefixTag0 : db::PrefixTag, db::SimpleTag {
   using type = TensorMetafunctions::prepend_spatial_index<
-      db::item_type<Tag>, VolumeDim::value, UpLo::Lo, Frame>;
+      db::const_item_type<Tag>, VolumeDim::value, UpLo::Lo, Frame>;
   using tag = Tag;
   static std::string name() noexcept {
     return "PrefixTag0(" + tag::name() + ")";
@@ -1105,18 +1273,22 @@ struct TestDataboxMutateApply {
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
                   "[Unit][DataStructures]") {
-  auto box =
-      db::create<db::AddSimpleTags<
-                     test_databox_tags::Tag0, test_databox_tags::Tag1,
-                     test_databox_tags::Tag2,
-                     Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
-                                                test_databox_tags::VectorTag>>>,
-                 db::AddComputeTags<test_databox_tags::ComputeTag0,
-                                    test_databox_tags::ComputeTag1,
-                                    test_databox_tags::MultiplyScalarByTwo>>(
-          3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
-          Variables<tmpl::list<test_databox_tags::ScalarTag,
-                               test_databox_tags::VectorTag>>(2, 3.));
+  auto box = db::create<
+      db::AddSimpleTags<
+          test_databox_tags::Tag0, test_databox_tags::Tag1,
+          test_databox_tags::Tag2,
+          Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
+                                     test_databox_tags::VectorTag>>,
+          test_databox_tags::Pointer>,
+      db::AddComputeTags<test_databox_tags::ComputeTag0,
+                         test_databox_tags::ComputeTag1,
+                         test_databox_tags::MultiplyScalarByTwo,
+                         test_databox_tags::PointerComputeItem,
+                         test_databox_tags::PointerComputeItemMutating>>(
+      3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
+      Variables<tmpl::list<test_databox_tags::ScalarTag,
+                           test_databox_tags::VectorTag>>(2, 3.),
+      std::make_unique<int>(3));
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 3.)));
@@ -1229,6 +1401,62 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
           Scalar<DataVector>(DataVector(2, 12.)));
     CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
           (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+  }
+
+  SECTION("unique_ptr") {
+    db::mutate_apply<tmpl::list<test_databox_tags::Pointer>, tmpl::list<>>(
+        [](const gsl::not_null<std::unique_ptr<int>*> p) noexcept { **p = 5; },
+        make_not_null(&box));
+    db::mutate_apply<tmpl::list<>,
+                     tmpl::list<test_databox_tags::Pointer,
+                                test_databox_tags::PointerComputeItem,
+                                test_databox_tags::PointerComputeItemMutating>>(
+        [](const int& simple, const int& compute,
+           const int& compute_mutating) noexcept {
+          CHECK(simple == 5);
+          CHECK(compute == 6);
+          CHECK(compute_mutating == 12);
+        },
+        make_not_null(&box));
+    db::mutate_apply<tmpl::list<test_databox_tags::PointerBase>, tmpl::list<>>(
+        [](const gsl::not_null<std::unique_ptr<int>*> p) noexcept { **p = 6; },
+        make_not_null(&box));
+    db::mutate_apply<tmpl::list<>,
+                     tmpl::list<test_databox_tags::PointerBase,
+                                test_databox_tags::PointerComputeItemBase>>(
+        [](const int& simple_base, const int& compute_base) noexcept {
+          CHECK(simple_base == 6);
+          CHECK(compute_base == 7);
+        },
+        make_not_null(&box));
+
+    struct PointerMutateApply {
+      using return_tags = tmpl::list<test_databox_tags::Pointer>;
+      using argument_tags =
+          tmpl::list<test_databox_tags::PointerComputeItem,
+                     test_databox_tags::PointerComputeItemMutating>;
+      static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
+                        const int& compute,
+                        const int& compute_mutating) noexcept {
+        **ret = 7;
+        CHECK(compute == 7);
+        CHECK(compute_mutating == 14);
+      }
+    };
+    db::mutate_apply<PointerMutateApply>(make_not_null(&box));
+
+    struct PointerMutateApplyBase {
+      using return_tags = tmpl::list<test_databox_tags::PointerBase>;
+      using argument_tags =
+          tmpl::list<test_databox_tags::PointerComputeItemBase>;
+      static void apply(const gsl::not_null<std::unique_ptr<int>*> ret,
+                        const int& compute_base) noexcept {
+        **ret = 8;
+        CHECK(compute_base == 8);
+      }
+    };
+    db::mutate_apply<PointerMutateApplyBase>(make_not_null(&box));
+    CHECK(db::get<test_databox_tags::Pointer>(box) == 8);
   }
 }
 
@@ -1705,16 +1933,16 @@ struct Subitems<TagList,
   using type = tmpl::list<test_subitems::First<N>, test_subitems::Second<N>>;
   using tag = test_subitems::Parent<N, Compute>;
 
-  template <typename Subtag>
+  template <typename Subtag, typename LocalTag = tag>
   static void create_item(
-      const gsl::not_null<item_type<tag>*> parent_value,
+      const gsl::not_null<item_type<LocalTag>*> parent_value,
       const gsl::not_null<item_type<Subtag>*> sub_value) noexcept {
     *sub_value = std::get<Subtag::index>(*parent_value);
   }
 
   template <typename Subtag>
-  static item_type<Subtag> create_compute_item(
-      const item_type<tag>& parent_value) noexcept {
+  static const_item_type<Subtag> create_compute_item(
+      const const_item_type<tag>& parent_value) noexcept {
     // clang-tidy: do not use const_cast
     // We need a non-const object to set up the aliasing since in the
     // simple-item case the alias can be used to modify the original
@@ -2627,6 +2855,23 @@ void serialization_compute_items_of_base_tags() noexcept {
   CHECK(db::get<test_databox_tags::ComputeFromBase>(copied_box) ==
         "My Sample String");
 }
+
+void serialization_of_pointers() noexcept {
+  const auto box = db::create<
+      db::AddSimpleTags<test_databox_tags::Pointer>,
+      db::AddComputeTags<test_databox_tags::PointerComputeItem,
+                         test_databox_tags::PointerComputeItemMutating>>(
+      std::make_unique<int>(3));
+  const auto check = [](const decltype(box)& check_box) noexcept {
+    CHECK(db::get<test_databox_tags::Pointer>(check_box) == 3);
+    CHECK(db::get<test_databox_tags::PointerComputeItem>(check_box) == 4);
+    CHECK(db::get<test_databox_tags::PointerComputeItemMutating>(check_box) ==
+          8);
+  };
+  check(serialize_and_deserialize(box));  // before compute items evaluated
+  check(box);
+  check(serialize_and_deserialize(box));  // after compute items evaluated
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Serialization",
@@ -2635,6 +2880,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Serialization",
   serialization_subitems_simple_items();
   serialization_subitem_compute_items();
   serialization_compute_items_of_base_tags();
+  serialization_of_pointers();
 }
 
 // Test `item_type_if_contained_t` and `tag_is_retrievable_v`

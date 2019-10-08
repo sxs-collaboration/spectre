@@ -71,7 +71,7 @@ template <typename Tag>
 struct Negate : db::PrefixTag, db::ComputeTag {
   static std::string name() noexcept { return "Negate"; }
   using tag = Tag;
-  static constexpr auto function(const db::item_type<Tag>& x) noexcept {
+  static constexpr auto function(const db::const_item_type<Tag>& x) noexcept {
     return -x;
   }
   using argument_tags = tmpl::list<Tag>;

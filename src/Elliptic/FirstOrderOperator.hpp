@@ -65,8 +65,8 @@ struct FirstOrderOperator {
   using argument_tags = tmpl::list<div_fluxes_tag, sources_tag>;
   static void apply(const gsl::not_null<db::item_type<operator_tag>*>
                         operator_applied_to_vars,
-                    const db::item_type<div_fluxes_tag>& div_fluxes,
-                    const db::item_type<sources_tag>& sources) noexcept {
+                    const db::const_item_type<div_fluxes_tag>& div_fluxes,
+                    const db::const_item_type<sources_tag>& sources) noexcept {
     *operator_applied_to_vars = sources - div_fluxes;
   }
 };

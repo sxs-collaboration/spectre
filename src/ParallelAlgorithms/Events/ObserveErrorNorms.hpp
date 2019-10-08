@@ -123,12 +123,13 @@ class ObserveErrorNorms<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
 
   template <typename Metavariables, typename ArrayIndex,
             typename ParallelComponent>
-  void operator()(const double time,
-                  const db::item_type<coordinates_tag>& inertial_coordinates,
-                  const db::item_type<Tensors>&... tensors,
-                  Parallel::ConstGlobalCache<Metavariables>& cache,
-                  const ArrayIndex& /*array_index*/,
-                  const ParallelComponent* const /*meta*/) const noexcept {
+  void operator()(
+      const double time,
+      const db::const_item_type<coordinates_tag>& inertial_coordinates,
+      const db::const_item_type<Tensors>&... tensors,
+      Parallel::ConstGlobalCache<Metavariables>& cache,
+      const ArrayIndex& /*array_index*/,
+      const ParallelComponent* const /*meta*/) const noexcept {
     const auto analytic_solution =
         Parallel::get<Tags::AnalyticSolutionBase>(cache).variables(
             inertial_coordinates, time, tmpl::list<Tensors...>{});

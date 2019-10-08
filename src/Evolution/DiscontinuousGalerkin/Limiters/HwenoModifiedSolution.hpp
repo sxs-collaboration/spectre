@@ -524,8 +524,8 @@ using LimiterNeighborData = std::unordered_map<
 template <typename Tag, size_t VolumeDim, typename Package>
 void hweno_modified_neighbor_solution(
     const gsl::not_null<db::item_type<Tag>*> modified_tensor,
-    const db::item_type<Tag>& local_tensor, const Element<VolumeDim>& element,
-    const Mesh<VolumeDim>& mesh,
+    const db::const_item_type<Tag>& local_tensor,
+    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const LimiterNeighborData<VolumeDim, Package>& neighbor_data,
     const std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>&
         primary_neighbor) noexcept {

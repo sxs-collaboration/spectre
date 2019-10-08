@@ -342,23 +342,33 @@ template <class T>
 constexpr bool has_return_type_member_v = has_return_type_member<T>::value;
 
 namespace DataBox_detail {
+template <typename T>
+const T& convert_to_const_type(const T& item) noexcept {
+  return item;
+}
+
+template <typename T>
+const T& convert_to_const_type(const std::unique_ptr<T>& item) noexcept {
+  return *item;
+}
+
 template <typename TagList, typename Tag>
-struct item_type_impl;
+struct storage_type_impl;
 
 template <int SelectTagType>
-struct dispatch_item_type;
+struct dispatch_storage_type;
 
 template <typename ArgsList>
 struct compute_item_type;
 
 template <typename TagList, typename Tag>
-struct item_type_impl {
-  // item_type_impl is intentionally a lazy metafunction rather than a
+struct storage_type_impl {
+  // storage_type_impl is intentionally a lazy metafunction rather than a
   // metaclosure or a metacontinuation. The reason is that it is quite likely we
   // call `db::item_type<Tag>` multiple times within the same translation unit
   // and so we want to memoize the resulting type. However, we do not want to
   // memoize the dispatch calls.
-  using type = typename dispatch_item_type<
+  using type = typename dispatch_storage_type<
       is_base_tag_v<Tag>
           ? 4
           : (is_compute_item_v<Tag>and has_return_type_member_v<Tag>)
@@ -370,7 +380,7 @@ struct item_type_impl {
 };
 
 template <>
-struct dispatch_item_type<0> {
+struct dispatch_storage_type<0> {
   // Tag is not a tag. This is necessary for SFINAE friendliness, specifically
   // if someone calls Requires<tt::is_a_v<std::vector, db::item_type<Tag>>>
   // with, say Tag = double, then this should probably SFINAE away, not fail to
@@ -380,14 +390,14 @@ struct dispatch_item_type<0> {
 };
 
 template <>
-struct dispatch_item_type<1> {
+struct dispatch_storage_type<1> {
   // simple item
   template <typename TagList, typename Tag>
   using f = typename Tag::type;
 };
 
 template <>
-struct dispatch_item_type<2> {
+struct dispatch_storage_type<2> {
   // compute item
   template <typename TagList, typename Tag>
   using f = typename compute_item_type<typename Tag::argument_tags>::template f<
@@ -395,16 +405,16 @@ struct dispatch_item_type<2> {
 };
 
 template <>
-struct dispatch_item_type<3> {
+struct dispatch_storage_type<3> {
   // mutating compute item
   template <typename TagList, typename Tag>
   using f = typename Tag::return_type;
 };
 
 template <>
-struct dispatch_item_type<4> {
+struct dispatch_storage_type<4> {
   // base tag item: retrieve the derived tag from the tag list then call
-  // item_type_impl on the result.
+  // storage_type_impl on the result.
   // We do not check that there is only one matching tag in the DataBox because
   // the uniqueness is only checked in get and mutate. The reason for that is
   // that it is fine to have multiple derived tags in the DataBox as long as
@@ -412,10 +422,45 @@ struct dispatch_item_type<4> {
   // same, it is undefined behavior if they are not and the user's
   // responsibility.
   template <typename TagList, typename Tag>
-  using f =
-      typename item_type_impl<TagList, first_matching_tag<TagList, Tag>>::type;
+  using f = typename storage_type_impl<TagList,
+                                       first_matching_tag<TagList, Tag>>::type;
 };
 
+// The type internally stored in a simple or compute item.  For
+// convenience in implementing the various tag type metafunctions,
+// this will also look up types for db::BaseTags, even though they
+// cannot actually store anything.
+template <typename Tag, typename TagList>
+using storage_type = typename storage_type_impl<TagList, Tag>::type;
+
+template <typename TagList, typename Tag>
+struct item_type_impl {
+  static_assert(not is_compute_item_v<Tag>,
+                "Can't call item_type on a compute item because compute items "
+                "cannot be modified.  You probably wanted const_item_type.");
+  using type = DataBox_detail::storage_type<Tag, TagList>;
+};
+}  // namespace DataBox_detail
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Get the type that is returned by `get<Tag>`. If it is a base
+ * tag then a `TagList` must be passed as a second argument.
+ */
+template <typename Tag, typename TagList = NoSuchType>
+using const_item_type =
+    std::decay_t<decltype(DataBox_detail::convert_to_const_type(
+        std::declval<DataBox_detail::storage_type<Tag, TagList>>()))>;
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Get the type that can be written to the `Tag`. If it is a
+ * base tag then a `TagList` must be passed as a second argument.
+ */
+template <typename Tag, typename TagList = NoSuchType>
+using item_type = typename DataBox_detail::item_type_impl<TagList, Tag>::type;
+
+namespace DataBox_detail {
 CREATE_IS_CALLABLE(function)
 
 template <typename Tag, typename TagList, typename TagTypesList>
@@ -431,7 +476,7 @@ struct check_compute_item_is_invokable<Tag, tmpl::list<Tags...>,
       " after the static assert error: "
       "'check_compute_item_is_invokable<TheItemThatsFailingToBeCalled, "
       "brigand::list<PassedTags...>, "
-      "brigand::list<item_type<PassedTags>...>>'");
+      "brigand::list<const_item_type<PassedTags>...>>'");
 };
 
 template <typename... Args>
@@ -441,20 +486,11 @@ struct compute_item_type<tmpl::list<Args...>> {
 #ifdef SPECTRE_DEBUG
       (void)check_compute_item_is_invokable<
           Tag, tmpl::list<Args...>,
-          tmpl::list<typename item_type_impl<TagList, Args>::type...>>{},
+          tmpl::list<const_item_type<Args, TagList>...>>{},
 #endif  // SPECTRE_DEBUG
-      Tag::function(
-          std::declval<typename item_type_impl<TagList, Args>::type>()...));
+      Tag::function(std::declval<const_item_type<Args, TagList>>()...));
 };
 }  // namespace DataBox_detail
-
-/*!
- * \ingroup DataBoxGroup
- * \brief Get the type that is returned by the `Tag`. If it is a base tag then a
- * `TagList` must be passed as a second argument.
- */
-template <typename Tag, typename TagList = NoSuchType>
-using item_type = typename DataBox_detail::item_type_impl<TagList, Tag>::type;
 
 /// \ingroup DataBoxTagsGroup
 /// \brief Create a new list of Tags by wrapping each tag in `TagList` using the

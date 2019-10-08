@@ -113,8 +113,8 @@ struct PointwiseL2Norm : db::SimpleTag {
 template <typename Tag>
 struct PointwiseL2NormCompute : PointwiseL2Norm<Tag>, db::ComputeTag {
   using base = PointwiseL2Norm<Tag>;
-  static constexpr db::item_type<PointwiseL2Norm<Tag>> (*function)(
-      const db::item_type<Tag>&) = pointwise_l2_norm;
+  static constexpr db::const_item_type<PointwiseL2Norm<Tag>> (*function)(
+      const db::const_item_type<Tag>&) = pointwise_l2_norm;
   using argument_tags = tmpl::list<Tag>;
 };
 
@@ -144,8 +144,8 @@ struct L2Norm : db::SimpleTag {
 template <typename Tag>
 struct L2NormCompute : L2Norm<Tag>, db::ComputeTag {
   using base = L2Norm<Tag>;
-  static constexpr db::item_type<L2Norm<Tag>> (*function)(
-      const db::item_type<Tag>&) = l2_norm;
+  static constexpr db::const_item_type<L2Norm<Tag>> (*function)(
+      const db::const_item_type<Tag>&) = l2_norm;
   using argument_tags = tmpl::list<Tag>;
 };
 }  // namespace Tags

@@ -25,13 +25,13 @@ struct Var2 : db::SimpleTag {
 template <typename Tag>
 struct Prefix : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
-  using type = db::item_type<Tag>;
+  using type = db::const_item_type<Tag>;
 };
 
 template <typename Tag, typename Arg1, typename Arg2>
 struct PrefixWithArgs : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
-  using type = db::item_type<Tag>;
+  using type = db::const_item_type<Tag>;
 };
 }  // namespace
 

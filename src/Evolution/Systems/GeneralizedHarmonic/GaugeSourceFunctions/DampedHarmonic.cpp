@@ -323,7 +323,8 @@ template <size_t SpatialDim, typename Frame>
 void damped_harmonic_h(
     const gsl::not_null<db::item_type<Tags::GaugeH<SpatialDim, Frame>>*>
         gauge_h,
-    const db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>& gauge_h_init,
+    const db::const_item_type<Tags::InitialGaugeH<SpatialDim, Frame>>&
+        gauge_h_init,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
@@ -419,9 +420,10 @@ void spacetime_deriv_damped_harmonic_h(
     const gsl::not_null<
         db::item_type<Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>>*>
         d4_gauge_h,
-    const db::item_type<Tags::InitialGaugeH<SpatialDim, Frame>>& gauge_h_init,
-    const db::item_type<Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>>&
-        dgauge_h_init,
+    const db::const_item_type<Tags::InitialGaugeH<SpatialDim, Frame>>&
+        gauge_h_init,
+    const db::const_item_type<
+        Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>>& dgauge_h_init,
     const Scalar<DataVector>& lapse,
     const tnsr::I<DataVector, SpatialDim, Frame>& shift,
     const tnsr::a<DataVector, SpatialDim, Frame>&

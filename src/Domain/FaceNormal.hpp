@@ -104,8 +104,10 @@ struct InterfaceCompute<Tags::BoundaryDirectionsExterior<VolumeDim>,
   }
 
   static auto function(
-      const db::item_type<Tags::Interface<dirs, Mesh<VolumeDim - 1>>>& meshes,
-      const db::item_type<Tags::ElementMap<VolumeDim, Frame>>& map) noexcept {
+      const db::const_item_type<Tags::Interface<dirs, Mesh<VolumeDim - 1>>>&
+          meshes,
+      const db::const_item_type<Tags::ElementMap<VolumeDim, Frame>>&
+          map) noexcept {
     std::unordered_map<::Direction<VolumeDim>,
                        tnsr::i<DataVector, VolumeDim, Frame>>
         normals{};

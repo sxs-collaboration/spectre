@@ -75,7 +75,7 @@ class Interpolate<VolumeDim, tmpl::list<Tensors...>, EventRegistrars>
 
   template <typename Metavariables, typename ParallelComponent>
   void operator()(const TimeStepId& time_id, const Mesh<VolumeDim>& mesh,
-                  const db::item_type<Tensors>&... tensors,
+                  const db::const_item_type<Tensors>&... tensors,
                   Parallel::ConstGlobalCache<Metavariables>& cache,
                   const ElementIndex<VolumeDim>& array_index,
                   const ParallelComponent* const /*meta*/) const noexcept {

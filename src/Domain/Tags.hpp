@@ -149,12 +149,12 @@ struct Coordinates : db::SimpleTag {
 /// frame must be the source frame of `MapTag`
 template <class MapTag, class SourceCoordsTag>
 struct MappedCoordinates
-    : Coordinates<db::item_type<MapTag>::dim,
-                  typename db::item_type<MapTag>::target_frame>,
+    : Coordinates<db::const_item_type<MapTag>::dim,
+                  typename db::const_item_type<MapTag>::target_frame>,
       db::ComputeTag {
   static constexpr auto function(
-      const db::item_type<MapTag>& element_map,
-      const db::item_type<SourceCoordsTag>& source_coords) noexcept {
+      const db::const_item_type<MapTag>& element_map,
+      const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {
     return element_map(source_coords);
   }
   using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
@@ -170,8 +170,8 @@ struct InverseJacobian : db::ComputeTag, db::PrefixTag {
   using tag = MapTag;
   static std::string name() noexcept { return "InverseJacobian"; }
   static constexpr auto function(
-      const db::item_type<MapTag>& element_map,
-      const db::item_type<SourceCoordsTag>& source_coords) noexcept {
+      const db::const_item_type<MapTag>& element_map,
+      const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {
     return element_map.inv_jacobian(source_coords);
   }
   using argument_tags = tmpl::list<MapTag, SourceCoordsTag>;
@@ -252,7 +252,7 @@ struct BoundaryDirectionsExterior : db::ComputeTag {
 /// a type's base classes in C++.)
 ///
 /// It must be possible to determine the type associated with `Tag`
-/// without reference to a DataBox, i.e., `db::item_type<Tag>` must
+/// without reference to a DataBox, i.e., `db::const_item_type<Tag>` must
 /// work.
 ///
 /// \tparam DirectionsTag the item of directions
@@ -284,9 +284,12 @@ struct Interface : virtual db::SimpleTag,
     return "Interface<" + DirectionsTag::name() + ", " + Tag::name() + ">";
   };
   using tag = Tag;
-  using type =
-      std::unordered_map<typename db::item_type<DirectionsTag>::value_type,
-                         db::item_type<Tag>>;
+  // The use of db::const_item_type<Tag> assumes we will never store
+  // unique_ptrs on interfaces.  This is probably a reasonable
+  // assumption.
+  using type = std::unordered_map<
+      typename db::const_item_type<DirectionsTag>::value_type,
+      db::const_item_type<Tag>>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -305,7 +308,7 @@ namespace detail {
 template <typename TagList, typename DirectionsTag, typename VariablesTag>
 struct InterfaceSubitemsImpl {
   using type = tmpl::transform<
-      typename item_type<VariablesTag>::tags_list,
+      typename const_item_type<VariablesTag>::tags_list,
       tmpl::bind<Tags::Interface, tmpl::pin<DirectionsTag>, tmpl::_1>>;
 
   using tag = Tags::Interface<DirectionsTag, VariablesTag>;

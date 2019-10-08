@@ -63,8 +63,8 @@ struct InitializeElement {
     db::mutate<operand_tag>(
         make_not_null(&box),
         [](const gsl::not_null<db::item_type<operand_tag>*> operand,
-           const db::item_type<source_tag>& source,
-           const db::item_type<operator_applied_to_fields_tag>&
+           const db::const_item_type<source_tag>& source,
+           const db::const_item_type<operator_applied_to_fields_tag>&
                operator_applied_to_fields) noexcept {
           *operand = source - operator_applied_to_fields;
         },
@@ -127,7 +127,7 @@ struct NormalizeInitialOperand {
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
                     const double residual_magnitude,
-                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                    const db::const_item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
     db::mutate<operand_tag, basis_history_tag,
                LinearSolver::Tags::HasConverged>(

@@ -60,8 +60,8 @@ struct InitializeElement {
     db::mutate<operand_tag>(
         make_not_null(&box),
         [](const gsl::not_null<db::item_type<operand_tag>*> operand,
-           const db::item_type<source_tag>& source,
-           const db::item_type<operator_applied_to_fields_tag>&
+           const db::const_item_type<source_tag>& source,
+           const db::const_item_type<operator_applied_to_fields_tag>&
                operator_applied_to_fields) noexcept {
           *operand = source - operator_applied_to_fields;
         },
@@ -109,7 +109,7 @@ struct InitializeHasConverged {
   static void apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index,
-                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                    const db::const_item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
     db::mutate<LinearSolver::Tags::HasConverged>(
         make_not_null(&box), [&has_converged](

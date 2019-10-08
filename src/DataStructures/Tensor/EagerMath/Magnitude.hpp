@@ -76,8 +76,8 @@ struct Magnitude : db::PrefixTag, db::SimpleTag {
 template <typename Tag>
 struct EuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
   using base = Magnitude<Tag>;
-  static constexpr Scalar<DataVector> (*function)(const db::item_type<Tag>&) =
-      magnitude;
+  static constexpr Scalar<DataVector> (*function)(
+      const db::const_item_type<Tag>&) = magnitude;
   using argument_tags = tmpl::list<Tag>;
 };
 
@@ -90,7 +90,8 @@ template <typename Tag, typename MetricTag>
 struct NonEuclideanMagnitude : Magnitude<Tag>, db::ComputeTag {
   using base = Magnitude<Tag>;
   static constexpr Scalar<DataVector> (*function)(
-      const db::item_type<Tag>&, const db::item_type<MetricTag>&) = magnitude;
+      const db::const_item_type<Tag>&,
+      const db::const_item_type<MetricTag>&) = magnitude;
   using argument_tags = tmpl::list<Tag, MetricTag>;
 };
 
@@ -105,7 +106,7 @@ struct Normalized : db::PrefixTag, db::SimpleTag {
     return "Normalized(" + Tag::name() + ")";
   }
   using tag = Tag;
-  using type = db::item_type<Tag>;
+  using type = db::const_item_type<Tag>;
 };
 
 /// \ingroup DataBoxTagsGroup
@@ -117,9 +118,9 @@ template <typename Tag>
 struct NormalizedCompute : Normalized<Tag>, db::ComputeTag {
   using base = Normalized<Tag>;
   static constexpr auto function(
-      const db::item_type<Tag>&
+      const db::const_item_type<Tag>&
           vector_in,  // Compute items need to take const references
-      const db::item_type<Magnitude<Tag>>& magnitude) noexcept {
+      const db::const_item_type<Magnitude<Tag>>& magnitude) noexcept {
     auto vector = vector_in;
     for (size_t d = 0; d < vector.index_dim(0); ++d) {
       vector.get(d) /= get(magnitude);
@@ -137,8 +138,8 @@ struct NormalizedCompute : Normalized<Tag>, db::ComputeTag {
 template <typename Tag>
 struct Sqrt : db::ComputeTag {
   static std::string name() noexcept { return "Sqrt(" + Tag::name() + ")"; }
-  static constexpr Scalar<DataVector> (*function)(const db::item_type<Tag>&) =
-      sqrt_magnitude;
+  static constexpr Scalar<DataVector> (*function)(
+      const db::const_item_type<Tag>&) = sqrt_magnitude;
   using argument_tags = tmpl::list<Tag>;
 };
 }  // namespace Tags

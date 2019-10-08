@@ -91,7 +91,8 @@ struct HistoryEvolvedVariables<> : db::BaseTag {};
 
 template <typename Tag, typename DtTag>
 struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
-  using type = TimeSteppers::History<db::item_type<Tag>, db::item_type<DtTag>>;
+  using type = TimeSteppers::History<db::const_item_type<Tag>,
+                                     db::const_item_type<DtTag>>;
 };
 /// \endcond
 

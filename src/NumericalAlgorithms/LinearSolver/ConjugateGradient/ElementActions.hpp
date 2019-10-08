@@ -48,8 +48,8 @@ struct PrepareStep {
         make_not_null(&box),
         [](const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
                iteration_id,
-           const db::item_type<::Tags::Next<LinearSolver::Tags::IterationId>>&
-               next_iteration_id) noexcept {
+           const db::const_item_type<::Tags::Next<
+               LinearSolver::Tags::IterationId>>& next_iteration_id) noexcept {
           *iteration_id = next_iteration_id;
         },
         get<::Tags::Next<LinearSolver::Tags::IterationId>>(box));
@@ -132,8 +132,8 @@ struct UpdateFieldValues {
         make_not_null(&box),
         [alpha](const gsl::not_null<db::item_type<residual_tag>*> r,
                 const gsl::not_null<db::item_type<fields_tag>*> x,
-                const db::item_type<operand_tag>& p,
-                const db::item_type<operator_tag>& Ap) noexcept {
+                const db::const_item_type<operand_tag>& p,
+                const db::const_item_type<operator_tag>& Ap) noexcept {
           *x += alpha * p;
           *r -= alpha * Ap;
         },
@@ -174,7 +174,7 @@ struct UpdateOperand {
   static auto apply(db::DataBox<DbTagsList>& box,
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& array_index, const double res_ratio,
-                    const db::item_type<LinearSolver::Tags::HasConverged>&
+                    const db::const_item_type<LinearSolver::Tags::HasConverged>&
                         has_converged) noexcept {
     db::mutate<operand_tag, LinearSolver::Tags::HasConverged>(
         make_not_null(&box),
@@ -183,7 +183,7 @@ struct UpdateOperand {
         ](const gsl::not_null<db::item_type<operand_tag>*> p,
           const gsl::not_null<db::item_type<LinearSolver::Tags::HasConverged>*>
               local_has_converged,
-          const db::item_type<residual_tag>& r) noexcept {
+          const db::const_item_type<residual_tag>& r) noexcept {
           *p = r + res_ratio * *p;
           *local_has_converged = has_converged;
         },

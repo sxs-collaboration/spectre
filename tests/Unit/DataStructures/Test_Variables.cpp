@@ -57,7 +57,7 @@ struct scalar2 : db::SimpleTag {
 /// [prefix_variables_tag]
 template <class Tag>
 struct Prefix0 : db::PrefixTag, db::SimpleTag {
-  using type = db::item_type<Tag>;
+  using type = db::const_item_type<Tag>;
   using tag = Tag;
   static std::string name() noexcept { return "Prefix0"; }
 };
@@ -65,21 +65,21 @@ struct Prefix0 : db::PrefixTag, db::SimpleTag {
 
 template <class Tag>
 struct Prefix1 : db::PrefixTag, db::SimpleTag {
-  using type = db::item_type<Tag>;
+  using type = db::const_item_type<Tag>;
   using tag = Tag;
   static std::string name() noexcept { return "Prefix1"; }
 };
 
 template <class Tag>
 struct Prefix2 : db::PrefixTag, db::SimpleTag {
-  using type = db::item_type<Tag>;
+  using type = db::const_item_type<Tag>;
   using tag = Tag;
   static std::string name() noexcept { return "Prefix2"; }
 };
 
 template <class Tag>
 struct Prefix3 : db::PrefixTag, db::SimpleTag {
-  using type = db::item_type<Tag>;
+  using type = db::const_item_type<Tag>;
   using tag = Tag;
   static std::string name() noexcept { return "Prefix3"; }
 };
