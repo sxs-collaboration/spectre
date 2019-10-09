@@ -5,7 +5,12 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
+#include "Evolution/Systems/RelativisticEuler/Valencia/TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace gsl {
@@ -39,16 +44,36 @@ namespace Valencia {
  * pressure.
  */
 template <size_t Dim>
-void fluxes(
-    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_d_flux,
-    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_tau_flux,
-    gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*> tilde_s_flux,
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
-    const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const Scalar<DataVector>& pressure,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity) noexcept;
+struct ComputeFluxes {
+  using return_tags =
+      tmpl::list<::Tags::Flux<RelativisticEuler::Valencia::Tags::TildeD,
+                              tmpl::size_t<Dim>, Frame::Inertial>,
+                 ::Tags::Flux<RelativisticEuler::Valencia::Tags::TildeTau,
+                              tmpl::size_t<Dim>, Frame::Inertial>,
+                 ::Tags::Flux<RelativisticEuler::Valencia::Tags::TildeS<Dim>,
+                              tmpl::size_t<Dim>, Frame::Inertial>>;
+
+  using argument_tags =
+      tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,
+                 RelativisticEuler::Valencia::Tags::TildeTau,
+                 RelativisticEuler::Valencia::Tags::TildeS<Dim>,
+                 gr::Tags::Lapse<>, gr::Tags::Shift<Dim>,
+                 gr::Tags::SqrtDetSpatialMetric<>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>>;
+
+  static void apply(
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_d_flux,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_tau_flux,
+      gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*> tilde_s_flux,
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
+      const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const Scalar<DataVector>& pressure,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>&
+          spatial_velocity) noexcept;
+};
 }  // namespace Valencia
 }  // namespace RelativisticEuler
