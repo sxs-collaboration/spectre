@@ -59,7 +59,6 @@ namespace Valencia {
  */
 template <size_t Dim>
 void compute_source_terms_of_u(
-    gsl::not_null<Scalar<DataVector>*> source_tilde_d,
     gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
     gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> source_tilde_s,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,

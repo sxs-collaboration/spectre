@@ -40,7 +40,6 @@ namespace Valencia {
 
 template <size_t Dim>
 void compute_source_terms_of_u(
-    const gsl::not_null<Scalar<DataVector>*> source_tilde_d,
     const gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
         source_tilde_s,
@@ -55,8 +54,6 @@ void compute_source_terms_of_u(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, Dim, Frame::Inertial>&
         extrinsic_curvature) noexcept {
-  get(*source_tilde_d) = 0.0;
-
   const auto tilde_s_M = raise_or_lower_index(tilde_s, inv_spatial_metric);
   const auto tilde_s_MN =
       densitized_stress(tilde_s_M, spatial_velocity, inv_spatial_metric,
@@ -97,7 +94,6 @@ void compute_source_terms_of_u(
 
 #define INSTANTIATION(_, data)                                                 \
   template void RelativisticEuler::Valencia::compute_source_terms_of_u(        \
-      const gsl::not_null<Scalar<DataVector>*> source_tilde_d,                 \
       const gsl::not_null<Scalar<DataVector>*> source_tilde_tau,               \
       const gsl::not_null<tnsr::i<DataVector, DIM(data), Frame::Inertial>*>    \
           source_tilde_s,                                                      \
