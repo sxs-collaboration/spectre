@@ -6,7 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
-#include "Evolution/Systems/RelativisticEuler/Valencia/Equations.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/Sources.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -21,7 +21,7 @@ void test_source_terms(const DataVector& used_for_size) {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.RelativisticEuler.Valencia.Equations",
+SPECTRE_TEST_CASE("Unit.RelativisticEuler.Valencia.Sources",
                   "[Unit][RelativisticEuler]") {
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/RelativisticEuler/Valencia"};
