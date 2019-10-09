@@ -159,7 +159,7 @@ void test_primitive_from_conservative(
   auto tilde_tau = make_with_value<Scalar<DataVector>>(used_for_size, 0.0);
   auto tilde_s = make_with_value<tnsr::i<DataVector, Dim>>(used_for_size, 0.0);
 
-  RelativisticEuler::Valencia::conservative_from_primitive(
+  RelativisticEuler::Valencia::ConservativeFromPrimitive<Dim>::apply(
       make_not_null(&tilde_d), make_not_null(&tilde_tau),
       make_not_null(&tilde_s), expected_rest_mass_density,
       expected_specific_internal_energy, expected_specific_enthalpy,
