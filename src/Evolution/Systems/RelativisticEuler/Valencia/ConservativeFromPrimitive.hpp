@@ -49,11 +49,11 @@ void conservative_from_primitive(
     gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> tilde_s,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& spatial_velocity_oneform,
-    const Scalar<DataVector>& spatial_velocity_squared,
-    const Scalar<DataVector>& lorentz_factor,
     const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& pressure,
-    const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept;
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
+    const Scalar<DataVector>& lorentz_factor,
+    const Scalar<DataVector>& sqrt_det_spatial_metric,
+    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) noexcept;
 }  // namespace Valencia
 }  // namespace RelativisticEuler

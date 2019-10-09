@@ -154,10 +154,6 @@ void test_primitive_from_conservative(
   const auto& inv_spatial_metric = det_and_inv.second;
   const Scalar<DataVector> sqrt_det_spatial_metric =
       Scalar<DataVector>{sqrt(get(det_and_inv.first))};
-  const auto spatial_velocity_oneform =
-      raise_or_lower_index(expected_spatial_velocity, spatial_metric);
-  const auto spatial_velocity_squared =
-      dot_product(spatial_velocity_oneform, expected_spatial_velocity);
 
   auto tilde_d = make_with_value<Scalar<DataVector>>(used_for_size, 0.0);
   auto tilde_tau = make_with_value<Scalar<DataVector>>(used_for_size, 0.0);
@@ -166,9 +162,9 @@ void test_primitive_from_conservative(
   RelativisticEuler::Valencia::conservative_from_primitive(
       make_not_null(&tilde_d), make_not_null(&tilde_tau),
       make_not_null(&tilde_s), expected_rest_mass_density,
-      expected_specific_internal_energy, spatial_velocity_oneform,
-      spatial_velocity_squared, expected_lorentz_factor,
-      expected_specific_enthalpy, expected_pressure, sqrt_det_spatial_metric);
+      expected_specific_internal_energy, expected_specific_enthalpy,
+      expected_pressure, expected_spatial_velocity, expected_lorentz_factor,
+      sqrt_det_spatial_metric, spatial_metric);
 
   auto rest_mass_density =
       make_with_value<Scalar<DataVector>>(used_for_size, 0.0);

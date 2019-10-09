@@ -4,6 +4,15 @@
 import numpy as np
 
 
+def spatial_velocity_oneform(spatial_velocity, spatial_metric):
+    return np.einsum("a, ia", spatial_velocity, spatial_metric)
+
+
+def spatial_velocity_squared(spatial_velocity, spatial_metric):
+    return np.einsum("ab, ab", spatial_metric,
+                     np.outer(spatial_velocity, spatial_velocity))
+
+
 # Functions for testing Characteristics.cpp
 def characteristic_speeds(lapse, shift, spatial_velocity, spatial_velocity_sqrd,
                           sound_speed_sqrd, normal_oneform):
@@ -27,26 +36,27 @@ def characteristic_speeds(lapse, shift, spatial_velocity, spatial_velocity_sqrd,
 
 
 # Functions for testing ConservativeFromPrimitive.cpp
-def tilde_d(rest_mass_density, specific_internal_energy,
-            spatial_velocity_oneform, spatial_velocity_squared, lorentz_factor,
-            specific_enthalpy, pressure, sqrt_det_spatial_metric):
+def tilde_d(rest_mass_density, specific_internal_energy, specific_enthalpy,
+            pressure, spatial_velocity, lorentz_factor, sqrt_det_spatial_metric,
+            spatial_metric):
     return lorentz_factor * rest_mass_density * sqrt_det_spatial_metric
 
 
-def tilde_tau(rest_mass_density, specific_internal_energy,
-              spatial_velocity_oneform, spatial_velocity_squared,
-              lorentz_factor, specific_enthalpy, pressure,
-              sqrt_det_spatial_metric):
-    return ((pressure * spatial_velocity_squared
-             + (lorentz_factor/(1.0 + lorentz_factor) * spatial_velocity_squared
+def tilde_tau(rest_mass_density, specific_internal_energy, specific_enthalpy,
+              pressure, spatial_velocity, lorentz_factor,
+              sqrt_det_spatial_metric, spatial_metric):
+    v_squared = spatial_velocity_squared(spatial_velocity, spatial_metric)
+    return ((pressure * v_squared
+             + (lorentz_factor/(1.0 + lorentz_factor) * v_squared
                 + specific_internal_energy) * rest_mass_density)
             * lorentz_factor**2 * sqrt_det_spatial_metric)
 
 
-def tilde_s(rest_mass_density, specific_internal_energy,
-            spatial_velocity_oneform, spatial_velocity_squared, lorentz_factor,
-            specific_enthalpy, pressure, sqrt_det_spatial_metric):
-    return (spatial_velocity_oneform * lorentz_factor**2 * specific_enthalpy
+def tilde_s(rest_mass_density, specific_internal_energy, specific_enthalpy,
+            pressure, spatial_velocity, lorentz_factor, sqrt_det_spatial_metric,
+            spatial_metric):
+    return (spatial_velocity_oneform(spatial_velocity, spatial_metric)
+            * lorentz_factor**2 * specific_enthalpy
             * rest_mass_density * sqrt_det_spatial_metric)
 
 
