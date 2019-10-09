@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   EquationsOfState/Test_PolytropicFluid.cpp
   Test_LorentzFactor.cpp
   Test_MassFlux.cpp
+  Test_SoundSpeedSquared.cpp
   Test_SpecificEnthalpy.cpp
   Test_Tags.cpp
   )
