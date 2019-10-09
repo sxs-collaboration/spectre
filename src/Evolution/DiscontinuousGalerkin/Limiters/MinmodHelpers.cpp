@@ -44,6 +44,30 @@ template <size_t VolumeDim>
 void allocate_buffers(
     const gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>
         contiguous_buffer,
+    const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
+    const Mesh<VolumeDim>& mesh) noexcept {
+  const size_t half_number_boundary_points = alg::accumulate(
+      alg::iota(std::array<size_t, VolumeDim>{{}}, 0_st),
+      0_st, [&mesh](const size_t state, const size_t d) noexcept {
+        return state + mesh.slice_away(d).number_of_grid_points();
+      });
+  contiguous_buffer->reset(static_cast<double*>(
+      // clang-tidy incorrectly thinks this is a 0-byte malloc
+      // NOLINTNEXTLINE(clang-analyzer-unix.API)
+      malloc(sizeof(double) * half_number_boundary_points)));
+  size_t alloc_offset = 0;
+  for (size_t d = 0; d < VolumeDim; ++d) {
+    const size_t num_points = mesh.slice_away(d).number_of_grid_points();
+    gsl::at(*boundary_buffer, d)
+        .set_data_ref(contiguous_buffer->get() + alloc_offset, num_points);
+    alloc_offset += num_points;
+  }
+}
+
+template <size_t VolumeDim>
+void allocate_buffers(
+    const gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>
+        contiguous_buffer,
     const gsl::not_null<DataVector*> u_lin_buffer,
     const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
     const Mesh<VolumeDim>& mesh) noexcept {
@@ -93,6 +117,10 @@ double effective_difference_to_neighbor(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                   \
+  template void allocate_buffers<DIM(data)>(                                   \
+      const gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>,        \
+      const gsl::not_null<std::array<DataVector, DIM(data)>*>,                 \
+      const Mesh<DIM(data)>&) noexcept;                                        \
   template void allocate_buffers<DIM(data)>(                                   \
       const gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>,        \
       const gsl::not_null<DataVector*>,                                        \

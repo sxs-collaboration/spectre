@@ -10,13 +10,13 @@
 #include <utility>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataVector.hpp"
 #include "DataStructures/SliceIterator.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodHelpers.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
+class DataVector;
 template <size_t VolumeDim>
 class Direction;
 template <size_t Dim, typename T>
@@ -74,14 +74,10 @@ bool troubled_cell_indicator(
     const double tvbm_constant, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size) noexcept {
-  // Optimization: allocate temporary buffer to be used in TCI
-  // TODO(FH): consider a more specialized helper function that doesn't allocate
-  //           u_lin_buffer, because we don't need that buffer here.
+  // Optimization: allocate temporary buffer for multiple DataVectors
   std::unique_ptr<double[], decltype(&free)> contiguous_buffer(nullptr, &free);
-  DataVector u_lin_buffer{};
   std::array<DataVector, VolumeDim> boundary_buffer{};
   Minmod_detail::allocate_buffers(make_not_null(&contiguous_buffer),
-                                  make_not_null(&u_lin_buffer),
                                   make_not_null(&boundary_buffer), mesh);
 
   // Optimization: precompute the slice indices since this is (surprisingly)

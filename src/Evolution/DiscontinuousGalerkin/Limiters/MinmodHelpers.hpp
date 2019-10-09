@@ -44,8 +44,17 @@ struct MinmodResult {
 MinmodResult minmod_tvbm(double a, double b, double c,
                          double tvbm_scale) noexcept;
 
+// Allocate the buffer `boundary_buffer` to the correct sizes expected by
+// `troubled_cell_indicator` for its arguments
+template <size_t VolumeDim>
+void allocate_buffers(
+    gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>
+        contiguous_buffer,
+    gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
+    const Mesh<VolumeDim>& mesh) noexcept;
+
 // Allocate the buffers `u_lin_buffer` and `boundary_buffer` to the correct
-// sizes expected by `troubled_cell_indicator` for its arguments
+// sizes expected by the Minmod limiter.
 template <size_t VolumeDim>
 void allocate_buffers(
     gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>
