@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   EquationsOfState/PolytropicFluid.cpp
   LorentzFactor.cpp
   MassFlux.cpp
+  SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
   )
 
