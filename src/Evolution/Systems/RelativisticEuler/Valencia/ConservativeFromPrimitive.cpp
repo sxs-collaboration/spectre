@@ -18,7 +18,7 @@ namespace RelativisticEuler {
 namespace Valencia {
 
 template <size_t Dim>
-void conservative_from_primitive(
+void ConservativeFromPrimitive<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,
     const gsl::not_null<Scalar<DataVector>*> tilde_tau,
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> tilde_s,
@@ -60,29 +60,15 @@ void conservative_from_primitive(
   }
 }
 
-}  // namespace Valencia
-}  // namespace RelativisticEuler
-
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(_, data)                                                 \
-  template void RelativisticEuler::Valencia::conservative_from_primitive(      \
-      const gsl::not_null<Scalar<DataVector>*> tilde_d,                        \
-      const gsl::not_null<Scalar<DataVector>*> tilde_tau,                      \
-      const gsl::not_null<tnsr::i<DataVector, DIM(data), Frame::Inertial>*>    \
-          tilde_s,                                                             \
-      const Scalar<DataVector>& rest_mass_density,                             \
-      const Scalar<DataVector>& specific_internal_energy,                      \
-      const Scalar<DataVector>& specific_enthalpy,                             \
-      const Scalar<DataVector>& pressure,                                      \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& spatial_velocity, \
-      const Scalar<DataVector>& lorentz_factor,                                \
-      const Scalar<DataVector>& sqrt_det_spatial_metric,                       \
-      const tnsr::ii<DataVector, DIM(data), Frame::Inertial>&                  \
-          spatial_metric) noexcept;
+#define INSTANTIATION(_, data) \
+  template class ConservativeFromPrimitive<DIM(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
+}  // namespace Valencia
+}  // namespace RelativisticEuler
 /// \endcond
