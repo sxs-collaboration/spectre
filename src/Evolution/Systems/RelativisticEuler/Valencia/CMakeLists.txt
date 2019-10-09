@@ -6,9 +6,9 @@ set(LIBRARY Valencia)
 set(LIBRARY_SOURCES
   Characteristics.cpp
   ConservativeFromPrimitive.cpp
-  Equations.cpp
   Fluxes.cpp
   PrimitiveFromConservative.cpp
+  Sources.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
