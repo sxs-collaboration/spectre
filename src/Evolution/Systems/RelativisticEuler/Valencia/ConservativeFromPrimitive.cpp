@@ -13,18 +13,19 @@
 namespace RelativisticEuler {
 namespace Valencia {
 
-template <typename DataType, size_t Dim>
+template <size_t Dim>
 void conservative_from_primitive(
-    const gsl::not_null<Scalar<DataType>*> tilde_d,
-    const gsl::not_null<Scalar<DataType>*> tilde_tau,
-    const gsl::not_null<tnsr::i<DataType, Dim, Frame::Inertial>*> tilde_s,
-    const Scalar<DataType>& rest_mass_density,
-    const Scalar<DataType>& specific_internal_energy,
-    const tnsr::i<DataType, Dim, Frame::Inertial>& spatial_velocity_oneform,
-    const Scalar<DataType>& spatial_velocity_squared,
-    const Scalar<DataType>& lorentz_factor,
-    const Scalar<DataType>& specific_enthalpy, const Scalar<DataType>& pressure,
-    const Scalar<DataType>& sqrt_det_spatial_metric) noexcept {
+    const gsl::not_null<Scalar<DataVector>*> tilde_d,
+    const gsl::not_null<Scalar<DataVector>*> tilde_tau,
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> tilde_s,
+    const Scalar<DataVector>& rest_mass_density,
+    const Scalar<DataVector>& specific_internal_energy,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& spatial_velocity_oneform,
+    const Scalar<DataVector>& spatial_velocity_squared,
+    const Scalar<DataVector>& lorentz_factor,
+    const Scalar<DataVector>& specific_enthalpy,
+    const Scalar<DataVector>& pressure,
+    const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept {
   get(*tilde_d) = get(sqrt_det_spatial_metric) * get(rest_mass_density) *
                   get(lorentz_factor);
 
@@ -44,28 +45,26 @@ void conservative_from_primitive(
 }  // namespace Valencia
 }  // namespace RelativisticEuler
 
-#define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(_, data)                                               \
-  template void RelativisticEuler::Valencia::conservative_from_primitive(    \
-      const gsl::not_null<Scalar<DTYPE(data)>*> tilde_d,                     \
-      const gsl::not_null<Scalar<DTYPE(data)>*> tilde_tau,                   \
-      const gsl::not_null<tnsr::i<DTYPE(data), DIM(data), Frame::Inertial>*> \
-          tilde_s,                                                           \
-      const Scalar<DTYPE(data)>& rest_mass_density,                          \
-      const Scalar<DTYPE(data)>& specific_internal_energy,                   \
-      const tnsr::i<DTYPE(data), DIM(data), Frame::Inertial>&                \
-          spatial_velocity_oneform,                                          \
-      const Scalar<DTYPE(data)>& spatial_velocity_squared,                   \
-      const Scalar<DTYPE(data)>& lorentz_factor,                             \
-      const Scalar<DTYPE(data)>& specific_enthalpy,                          \
-      const Scalar<DTYPE(data)>& pressure,                                   \
-      const Scalar<DTYPE(data)>& sqrt_det_spatial_metric) noexcept;
+#define INSTANTIATION(_, data)                                              \
+  template void RelativisticEuler::Valencia::conservative_from_primitive(   \
+      const gsl::not_null<Scalar<DataVector>*> tilde_d,                     \
+      const gsl::not_null<Scalar<DataVector>*> tilde_tau,                   \
+      const gsl::not_null<tnsr::i<DataVector, DIM(data), Frame::Inertial>*> \
+          tilde_s,                                                          \
+      const Scalar<DataVector>& rest_mass_density,                          \
+      const Scalar<DataVector>& specific_internal_energy,                   \
+      const tnsr::i<DataVector, DIM(data), Frame::Inertial>&                \
+          spatial_velocity_oneform,                                         \
+      const Scalar<DataVector>& spatial_velocity_squared,                   \
+      const Scalar<DataVector>& lorentz_factor,                             \
+      const Scalar<DataVector>& specific_enthalpy,                          \
+      const Scalar<DataVector>& pressure,                                   \
+      const Scalar<DataVector>& sqrt_det_spatial_metric) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (double, DataVector), (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
-#undef DTYPE
 /// \endcond
