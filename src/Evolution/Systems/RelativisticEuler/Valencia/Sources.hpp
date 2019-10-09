@@ -6,16 +6,26 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/TagsDeclarations.hpp"
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 
 /// \cond
+class DataVector;
+
 namespace gsl {
 template <typename T>
 class not_null;
 }  // namespace gsl
 
-class DataVector;
+namespace Tags {
+template <typename>
+struct Source;
+}  // namespace Tags
 /// \endcond
 
 namespace RelativisticEuler {
@@ -58,19 +68,38 @@ namespace Valencia {
  * the extrinsic curvature.
  */
 template <size_t Dim>
-void compute_source_terms_of_u(
-    gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
-    gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> source_tilde_s,
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
-    const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& d_lapse,
-    const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_shift,
-    const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>&
-        extrinsic_curvature) noexcept;
+struct ComputeSources {
+  using return_tags = tmpl::list<
+      ::Tags::Source<RelativisticEuler::Valencia::Tags::TildeTau>,
+      ::Tags::Source<RelativisticEuler::Valencia::Tags::TildeS<Dim>>>;
+
+  using argument_tags = tmpl::list<
+      RelativisticEuler::Valencia::Tags::TildeD,
+      RelativisticEuler::Valencia::Tags::TildeTau,
+      RelativisticEuler::Valencia::Tags::TildeS<Dim>,
+      hydro::Tags::SpatialVelocity<DataVector, Dim>,
+      hydro::Tags::Pressure<DataVector>, gr::Tags::Lapse<>,
+      ::Tags::deriv<gr::Tags::Lapse<>, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::Shift<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<Dim>, tmpl::size_t<Dim>,
+                    Frame::Inertial>,
+      gr::Tags::InverseSpatialMetric<Dim>, gr::Tags::SqrtDetSpatialMetric<>,
+      gr::Tags::ExtrinsicCurvature<Dim>>;
+
+  static void apply(
+      gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> source_tilde_s,
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
+      const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_lapse,
+      const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_shift,
+      const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
+      const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const tnsr::ii<DataVector, Dim, Frame::Inertial>&
+          extrinsic_curvature) noexcept;
+};
 }  // namespace Valencia
 }  // namespace RelativisticEuler

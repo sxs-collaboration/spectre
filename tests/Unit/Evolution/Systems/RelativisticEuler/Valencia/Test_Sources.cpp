@@ -13,11 +13,10 @@
 namespace {
 
 template <size_t Dim>
-void test_source_terms(const DataVector& used_for_size) {
+void test_sources(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(
-      &RelativisticEuler::Valencia::compute_source_terms_of_u<Dim>,
-      "TestFunctions", {"source_tilde_tau", "source_tilde_s"}, {{{0.0, 1.0}}},
-      used_for_size);
+      &RelativisticEuler::Valencia::ComputeSources<Dim>::apply, "TestFunctions",
+      {"source_tilde_tau", "source_tilde_s"}, {{{0.0, 1.0}}}, used_for_size);
 }
 }  // namespace
 
@@ -27,5 +26,5 @@ SPECTRE_TEST_CASE("Unit.RelativisticEuler.Valencia.Sources",
       "Evolution/Systems/RelativisticEuler/Valencia"};
 
   GENERATE_UNINITIALIZED_DATAVECTOR;
-  CHECK_FOR_DATAVECTORS(test_source_terms, (1, 2, 3))
+  CHECK_FOR_DATAVECTORS(test_sources, (1, 2, 3))
 }
