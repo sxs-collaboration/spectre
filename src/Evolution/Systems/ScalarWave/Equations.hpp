@@ -63,8 +63,8 @@ namespace ScalarWave {
 template <size_t Dim>
 struct ComputeDuDt {
   using argument_tags =
-      tmpl::list<Pi, Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::Inertial>,
-                 Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
+      tmpl::list<Pi, ::Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::Inertial>,
+                 ::Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> dt_pi,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
@@ -86,7 +86,7 @@ template <size_t Dim>
 struct ComputeNormalDotFluxes {
   using argument_tags =
       tmpl::list<Pi, Phi<Dim>,
-                 Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
+                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
   static void apply(gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
                     gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
                         phi_normal_dot_flux,
@@ -138,14 +138,14 @@ struct UpwindFlux {
   // Variables. Local and remote values of this data are then combined in the
   // `()` operator.
   using package_tags =
-      tmpl::list<Tags::NormalDotFlux<Pi>, Tags::NormalDotFlux<Phi<Dim>>, Pi,
+      tmpl::list<::Tags::NormalDotFlux<Pi>, ::Tags::NormalDotFlux<Phi<Dim>>, Pi,
                  NormalTimesFluxPi>;
 
   // These tags on the interface of the element are passed to
   // `package_data` to provide the data needed to compute the numerical fluxes.
   using argument_tags =
-      tmpl::list<Tags::NormalDotFlux<Pi>, Tags::NormalDotFlux<Phi<Dim>>, Pi,
-                 Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
+      tmpl::list<::Tags::NormalDotFlux<Pi>, ::Tags::NormalDotFlux<Phi<Dim>>, Pi,
+                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   // pseudo-interface: used internally by Algorithm infrastructure, not
   // user-level code

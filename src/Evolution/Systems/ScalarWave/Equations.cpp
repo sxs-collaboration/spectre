@@ -152,7 +152,7 @@ using derivative_frame = Frame::Inertial;
   template class ScalarWave::ComputeNormalDotFluxes<DIM(data)>;              \
   template class ScalarWave::UpwindFlux<DIM(data)>;                          \
   template Variables<                                                        \
-      db::wrap_tags_in<Tags::deriv, derivative_tags<DIM(data)>,              \
+      db::wrap_tags_in<::Tags::deriv, derivative_tags<DIM(data)>,            \
                        tmpl::size_t<DIM(data)>, derivative_frame>>           \
   partial_derivatives<derivative_tags<DIM(data)>, variables_tags<DIM(data)>, \
                       DIM(data), derivative_frame>(                          \
