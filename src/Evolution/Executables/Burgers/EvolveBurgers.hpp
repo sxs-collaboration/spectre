@@ -111,7 +111,7 @@ struct EvolutionMetavars {
                  StepChoosers::Registrars::Constant,
                  StepChoosers::Registrars::Increase>;
 
-  using compute_rhs = tmpl::flatten<tmpl::list<
+  using step_actions = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       Actions::ComputeTimeDerivative,
@@ -119,8 +119,7 @@ struct EvolutionMetavars {
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           dg::Actions::ApplyFluxes>,
-      Actions::RecordTimeStepperData>>;
-  using update_variables = tmpl::flatten<tmpl::list<
+      Actions::RecordTimeStepperData,
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
@@ -167,8 +166,7 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
-                  tmpl::flatten<tmpl::list<SelfStart::self_start_procedure<
-                      compute_rhs, update_variables>>>>,
+                  SelfStart::self_start_procedure<step_actions>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
@@ -177,7 +175,7 @@ struct EvolutionMetavars {
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
+                      step_actions, Actions::AdvanceTime>>>>>>;
 
   static constexpr OptionString help{
       "Evolve the Burgers equation.\n\n"

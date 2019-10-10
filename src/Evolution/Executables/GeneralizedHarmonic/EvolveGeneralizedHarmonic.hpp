@@ -132,7 +132,7 @@ struct EvolutionMetavars {
   using observed_reduction_data_tags =
       observers::collect_reduction_data_tags<Event<events>::creatable_classes>;
 
-  using compute_rhs = tmpl::flatten<tmpl::list<
+  using step_actions = tmpl::flatten<tmpl::list<
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           Tags::InternalDirections<volume_dim>>,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
@@ -141,8 +141,8 @@ struct EvolutionMetavars {
           Tags::BoundaryDirectionsInterior<volume_dim>>,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
-      dg::Actions::ApplyFluxes, Actions::RecordTimeStepperData>>;
-  using update_variables = tmpl::flatten<tmpl::list<Actions::UpdateU>>;
+      dg::Actions::ApplyFluxes, Actions::RecordTimeStepperData,
+      Actions::UpdateU>>;
 
   enum class Phase {
     Initialization,
@@ -212,7 +212,7 @@ struct EvolutionMetavars {
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
                   tmpl::flatten<tmpl::list<SelfStart::self_start_procedure<
-                      compute_rhs, update_variables>>>>,
+                      step_actions>>>>,
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
@@ -222,8 +222,8 @@ struct EvolutionMetavars {
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
                   tmpl::flatten<
-                      tmpl::list<Actions::RunEventsAndTriggers, compute_rhs,
-                                 update_variables, Actions::AdvanceTime>>>>>>;
+                      tmpl::list<Actions::RunEventsAndTriggers, step_actions,
+                                 Actions::AdvanceTime>>>>>>;
 
   static constexpr OptionString help{
       "Evolve a generalized harmonic analytic solution.\n\n"

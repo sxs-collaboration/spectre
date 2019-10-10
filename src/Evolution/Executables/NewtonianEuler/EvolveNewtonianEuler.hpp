@@ -131,7 +131,7 @@ struct EvolutionMetavars {
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       typename Event<events>::creatable_classes>;
 
-  using compute_rhs = tmpl::flatten<tmpl::list<
+  using step_actions = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       Actions::ComputeTimeDerivative,
@@ -139,16 +139,14 @@ struct EvolutionMetavars {
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           dg::Actions::ApplyFluxes>,
-      Actions::RecordTimeStepperData>>;
-
-  // Conservative `UpdatePrimitives` expects system to possess
-  // list of recovery schemes so we use `MutateApply` instead.
-  using update_variables = tmpl::flatten<tmpl::list<
+      Actions::RecordTimeStepperData,
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
       Actions::UpdateU, Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
+      // Conservative `UpdatePrimitives` expects system to possess
+      // list of recovery schemes so we use `MutateApply` instead.
       Actions::MutateApply<typename system::primitive_from_conservative>>>;
 
   enum class Phase {
@@ -192,8 +190,8 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
-                  tmpl::flatten<tmpl::list<SelfStart::self_start_procedure<
-                      compute_rhs, update_variables>>>>,
+                  tmpl::flatten<tmpl::list<
+                      SelfStart::self_start_procedure<step_actions>>>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
@@ -210,7 +208,7 @@ struct EvolutionMetavars {
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
+                      step_actions, Actions::AdvanceTime>>>>>>;
 
   using const_global_cache_tags =
       tmpl::list<initial_data_tag,
