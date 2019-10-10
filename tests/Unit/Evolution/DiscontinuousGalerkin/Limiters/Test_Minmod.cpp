@@ -821,176 +821,6 @@ void test_minmod_tci_wrapper_3d() noexcept {
   test_activates(input, {{3.8, 2.1, 2.1, 2.7, 2.2, 2.5}}, {{0.0, 0.0, 0.0}});
 }
 
-// Test that the limiter activates in the x-direction only. Domain quantities
-// and input Scalar may be of higher dimension VolumeDim.
-template <size_t VolumeDim>
-void test_limiter_activates_work(
-    const Limiters::Minmod<VolumeDim, tmpl::list<ScalarTag>>& minmod,
-    const ScalarTag::type& input, const Element<VolumeDim>& element,
-    const Mesh<VolumeDim>& mesh,
-    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
-    const std::array<double, VolumeDim>& element_size,
-    const std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        typename Limiters::Minmod<VolumeDim,
-                                  tmpl::list<ScalarTag>>::PackagedData,
-        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
-        neighbor_data,
-    const double expected_slope) noexcept {
-  auto input_to_limit = input;
-  const bool limiter_activated =
-      minmod(make_not_null(&input_to_limit), element, mesh, logical_coords,
-             element_size, neighbor_data);
-  CHECK(limiter_activated);
-  const ScalarTag::type expected_output = [&logical_coords, &mesh ](
-      const ScalarTag::type& in, const double slope) noexcept {
-    const double mean = mean_value(get(in), mesh);
-    return ScalarTag::type(mean + get<0>(logical_coords) * slope);
-  }
-  (input, expected_slope);
-  CHECK_ITERABLE_APPROX(input_to_limit, expected_output);
-}
-
-// Make a 2D element with two neighbors in lower_xi, one neighbor in upper_xi.
-// Check that lower_xi data from two neighbors is correctly combined in the
-// limiting operation.
-void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
-  const auto element = Element<2>{
-      ElementId<2>{0},
-      Element<2>::Neighbors_t{
-          {Direction<2>::lower_xi(),
-           {std::unordered_set<ElementId<2>>{ElementId<2>(1), ElementId<2>(7)},
-            OrientationMap<2>{}}},
-          {Direction<2>::upper_xi(),
-           TestHelpers::Limiters::make_neighbor_with_id<2>(2)}}};
-  const auto mesh =
-      Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const double dx = 1.0;
-  const auto element_size = make_array<2>(dx);
-
-  const auto mean = 2.0;
-  const auto func = [&mean](
-      const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
-    return mean + 1.2 * get<0>(coords);
-  };
-  const auto input = ScalarTag::type(func(logical_coords));
-
-  const auto make_neighbors = [&dx](const double left1, const double left2,
-                                    const double right, const double left1_size,
-                                    const double left2_size) noexcept {
-    using Pack = Limiters::Minmod<2, tmpl::list<ScalarTag>>::PackagedData;
-    return std::unordered_map<
-        std::pair<Direction<2>, ElementId<2>>, Pack,
-        boost::hash<std::pair<Direction<2>, ElementId<2>>>>{
-        std::make_pair(
-            std::make_pair(Direction<2>::lower_xi(), ElementId<2>(1)),
-            Pack{Scalar<double>(left1), make_array(left1_size, dx)}),
-        std::make_pair(
-            std::make_pair(Direction<2>::lower_xi(), ElementId<2>(7)),
-            Pack{Scalar<double>(left2), make_array(left2_size, dx)}),
-        std::make_pair(
-            std::make_pair(Direction<2>::upper_xi(), ElementId<2>(2)),
-            Pack{Scalar<double>(right), make_array<2>(dx)}),
-    };
-  };
-
-  const Limiters::Minmod<2, tmpl::list<ScalarTag>> minmod(
-      Limiters::MinmodType::LambdaPi1);
-
-  // Make two left neighbors with different mean values
-  const auto neighbor_data_two_means =
-      make_neighbors(mean - 1.1, mean - 1.0, mean + 1.4, dx, dx);
-  // Effective neighbor mean (1.1 + 1.0) / 2.0 => 1.05
-  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
-                              element_size, neighbor_data_two_means, 1.05);
-
-  // Make two left neighbors with different means and sizes
-  const auto neighbor_data_two_sizes =
-      make_neighbors(mean - 1.1, mean - 1.0, mean + 1.4, dx, 0.5 * dx);
-  // Effective neighbor mean (1.1 + 1.0) / 2.0 => 1.05
-  // Average neighbor size (1.0 + 0.5) / 2.0 => 0.75
-  // Effective distance (0.75 + 1.0) / 2.0 => 0.875
-  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
-                              element_size, neighbor_data_two_sizes,
-                              1.05 / 0.875);
-}
-
-// See above, but in 3D and with 4 upper_xi neighbors
-void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
-  const auto element = Element<3>{
-      ElementId<3>{0},
-      Element<3>::Neighbors_t{
-          {Direction<3>::lower_xi(),
-           TestHelpers::Limiters::make_neighbor_with_id<3>(1)},
-          {Direction<3>::upper_xi(),
-           {std::unordered_set<ElementId<3>>{ElementId<3>(2), ElementId<3>(7),
-                                             ElementId<3>(8), ElementId<3>(9)},
-            OrientationMap<3>{}}},
-      }};
-  const auto mesh =
-      Mesh<3>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
-  const auto logical_coords = logical_coordinates(mesh);
-  const double dx = 1.0;
-  const auto element_size = make_array<3>(dx);
-
-  const auto mean = 2.0;
-  const auto func = [&mean](
-      const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
-    return mean + 1.2 * get<0>(coords);
-  };
-  const auto input = ScalarTag::type(func(logical_coords));
-
-  const auto make_neighbors = [&dx](
-      const double left, const double right1, const double right2,
-      const double right3, const double right4, const double right1_size,
-      const double right2_size, const double right3_size,
-      const double right4_size) noexcept {
-    using Pack = Limiters::Minmod<3, tmpl::list<ScalarTag>>::PackagedData;
-    return std::unordered_map<
-        std::pair<Direction<3>, ElementId<3>>, Pack,
-        boost::hash<std::pair<Direction<3>, ElementId<3>>>>{
-        std::make_pair(
-            std::make_pair(Direction<3>::lower_xi(), ElementId<3>(1)),
-            Pack{Scalar<double>(left), make_array<3>(dx)}),
-        std::make_pair(
-            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(2)),
-            Pack{Scalar<double>(right1), make_array(right1_size, dx, dx)}),
-        std::make_pair(
-            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(7)),
-            Pack{Scalar<double>(right2), make_array(right2_size, dx, dx)}),
-        std::make_pair(
-            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(8)),
-            Pack{Scalar<double>(right3), make_array(right3_size, dx, dx)}),
-        std::make_pair(
-            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(9)),
-            Pack{Scalar<double>(right4), make_array(right4_size, dx, dx)}),
-    };
-  };
-
-  const Limiters::Minmod<3, tmpl::list<ScalarTag>> minmod(
-      Limiters::MinmodType::LambdaPi1);
-
-  // Make four right neighbors with different mean values
-  const auto neighbor_data_two_means =
-      make_neighbors(mean - 1.4, mean + 1.0, mean + 1.1, mean - 0.2, mean + 1.8,
-                     dx, dx, dx, dx);
-  // Effective neighbor mean (1.0 + 1.1 - 0.2 + 1.8) / 4.0 => 0.925
-  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
-                              element_size, neighbor_data_two_means, 0.925);
-
-  // Make four right neighbors with different means and sizes
-  const auto neighbor_data_two_sizes =
-      make_neighbors(mean - 1.4, mean + 1.0, mean + 1.1, mean - 0.2, mean + 1.8,
-                     dx, 0.5 * dx, 0.5 * dx, 0.5 * dx);
-  // Effective neighbor mean (1.0 + 1.1 - 0.2 + 1.8) / 4.0 => 0.925
-  // Average neighbor size (1.0 + 0.5 + 0.5 + 0.5) / 4.0 => 0.625
-  // Effective distance (0.625 + 1.0) / 2.0 => 0.8125
-  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
-                              element_size, neighbor_data_two_sizes,
-                              0.925 / 0.8125);
-}
-
 // Helper function for testing Minmod::op()
 template <size_t VolumeDim>
 void test_work(
@@ -1325,6 +1155,176 @@ void test_minmod_limiter_3d() noexcept {
 
   test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
             element_size, target_scalar_slope, target_vector_slope);
+}
+
+// Test that the limiter activates in the x-direction only. Domain quantities
+// and input Scalar may be of higher dimension VolumeDim.
+template <size_t VolumeDim>
+void test_limiter_activates_work(
+    const Limiters::Minmod<VolumeDim, tmpl::list<ScalarTag>>& minmod,
+    const ScalarTag::type& input, const Element<VolumeDim>& element,
+    const Mesh<VolumeDim>& mesh,
+    const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+    const std::array<double, VolumeDim>& element_size,
+    const std::unordered_map<
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
+        typename Limiters::Minmod<VolumeDim,
+                                  tmpl::list<ScalarTag>>::PackagedData,
+        boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
+        neighbor_data,
+    const double expected_slope) noexcept {
+  auto input_to_limit = input;
+  const bool limiter_activated =
+      minmod(make_not_null(&input_to_limit), element, mesh, logical_coords,
+             element_size, neighbor_data);
+  CHECK(limiter_activated);
+  const ScalarTag::type expected_output = [&logical_coords, &mesh ](
+      const ScalarTag::type& in, const double slope) noexcept {
+    const double mean = mean_value(get(in), mesh);
+    return ScalarTag::type(mean + get<0>(logical_coords) * slope);
+  }
+  (input, expected_slope);
+  CHECK_ITERABLE_APPROX(input_to_limit, expected_output);
+}
+
+// Make a 2D element with two neighbors in lower_xi, one neighbor in upper_xi.
+// Check that lower_xi data from two neighbors is correctly combined in the
+// limiting operation.
+void test_minmod_limiter_two_lower_xi_neighbors() noexcept {
+  const auto element = Element<2>{
+      ElementId<2>{0},
+      Element<2>::Neighbors_t{
+          {Direction<2>::lower_xi(),
+           {std::unordered_set<ElementId<2>>{ElementId<2>(1), ElementId<2>(7)},
+            OrientationMap<2>{}}},
+          {Direction<2>::upper_xi(),
+           TestHelpers::Limiters::make_neighbor_with_id<2>(2)}}};
+  const auto mesh =
+      Mesh<2>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto logical_coords = logical_coordinates(mesh);
+  const double dx = 1.0;
+  const auto element_size = make_array<2>(dx);
+
+  const auto mean = 2.0;
+  const auto func = [&mean](
+      const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
+    return mean + 1.2 * get<0>(coords);
+  };
+  const auto input = ScalarTag::type(func(logical_coords));
+
+  const auto make_neighbors = [&dx](const double left1, const double left2,
+                                    const double right, const double left1_size,
+                                    const double left2_size) noexcept {
+    using Pack = Limiters::Minmod<2, tmpl::list<ScalarTag>>::PackagedData;
+    return std::unordered_map<
+        std::pair<Direction<2>, ElementId<2>>, Pack,
+        boost::hash<std::pair<Direction<2>, ElementId<2>>>>{
+        std::make_pair(
+            std::make_pair(Direction<2>::lower_xi(), ElementId<2>(1)),
+            Pack{Scalar<double>(left1), make_array(left1_size, dx)}),
+        std::make_pair(
+            std::make_pair(Direction<2>::lower_xi(), ElementId<2>(7)),
+            Pack{Scalar<double>(left2), make_array(left2_size, dx)}),
+        std::make_pair(
+            std::make_pair(Direction<2>::upper_xi(), ElementId<2>(2)),
+            Pack{Scalar<double>(right), make_array<2>(dx)}),
+    };
+  };
+
+  const Limiters::Minmod<2, tmpl::list<ScalarTag>> minmod(
+      Limiters::MinmodType::LambdaPi1);
+
+  // Make two left neighbors with different mean values
+  const auto neighbor_data_two_means =
+      make_neighbors(mean - 1.1, mean - 1.0, mean + 1.4, dx, dx);
+  // Effective neighbor mean (1.1 + 1.0) / 2.0 => 1.05
+  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
+                              element_size, neighbor_data_two_means, 1.05);
+
+  // Make two left neighbors with different means and sizes
+  const auto neighbor_data_two_sizes =
+      make_neighbors(mean - 1.1, mean - 1.0, mean + 1.4, dx, 0.5 * dx);
+  // Effective neighbor mean (1.1 + 1.0) / 2.0 => 1.05
+  // Average neighbor size (1.0 + 0.5) / 2.0 => 0.75
+  // Effective distance (0.75 + 1.0) / 2.0 => 0.875
+  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
+                              element_size, neighbor_data_two_sizes,
+                              1.05 / 0.875);
+}
+
+// See above, but in 3D and with 4 upper_xi neighbors
+void test_minmod_limiter_four_upper_xi_neighbors() noexcept {
+  const auto element = Element<3>{
+      ElementId<3>{0},
+      Element<3>::Neighbors_t{
+          {Direction<3>::lower_xi(),
+           TestHelpers::Limiters::make_neighbor_with_id<3>(1)},
+          {Direction<3>::upper_xi(),
+           {std::unordered_set<ElementId<3>>{ElementId<3>(2), ElementId<3>(7),
+                                             ElementId<3>(8), ElementId<3>(9)},
+            OrientationMap<3>{}}},
+      }};
+  const auto mesh =
+      Mesh<3>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
+  const auto logical_coords = logical_coordinates(mesh);
+  const double dx = 1.0;
+  const auto element_size = make_array<3>(dx);
+
+  const auto mean = 2.0;
+  const auto func = [&mean](
+      const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
+    return mean + 1.2 * get<0>(coords);
+  };
+  const auto input = ScalarTag::type(func(logical_coords));
+
+  const auto make_neighbors = [&dx](
+      const double left, const double right1, const double right2,
+      const double right3, const double right4, const double right1_size,
+      const double right2_size, const double right3_size,
+      const double right4_size) noexcept {
+    using Pack = Limiters::Minmod<3, tmpl::list<ScalarTag>>::PackagedData;
+    return std::unordered_map<
+        std::pair<Direction<3>, ElementId<3>>, Pack,
+        boost::hash<std::pair<Direction<3>, ElementId<3>>>>{
+        std::make_pair(
+            std::make_pair(Direction<3>::lower_xi(), ElementId<3>(1)),
+            Pack{Scalar<double>(left), make_array<3>(dx)}),
+        std::make_pair(
+            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(2)),
+            Pack{Scalar<double>(right1), make_array(right1_size, dx, dx)}),
+        std::make_pair(
+            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(7)),
+            Pack{Scalar<double>(right2), make_array(right2_size, dx, dx)}),
+        std::make_pair(
+            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(8)),
+            Pack{Scalar<double>(right3), make_array(right3_size, dx, dx)}),
+        std::make_pair(
+            std::make_pair(Direction<3>::upper_xi(), ElementId<3>(9)),
+            Pack{Scalar<double>(right4), make_array(right4_size, dx, dx)}),
+    };
+  };
+
+  const Limiters::Minmod<3, tmpl::list<ScalarTag>> minmod(
+      Limiters::MinmodType::LambdaPi1);
+
+  // Make four right neighbors with different mean values
+  const auto neighbor_data_two_means =
+      make_neighbors(mean - 1.4, mean + 1.0, mean + 1.1, mean - 0.2, mean + 1.8,
+                     dx, dx, dx, dx);
+  // Effective neighbor mean (1.0 + 1.1 - 0.2 + 1.8) / 4.0 => 0.925
+  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
+                              element_size, neighbor_data_two_means, 0.925);
+
+  // Make four right neighbors with different means and sizes
+  const auto neighbor_data_two_sizes =
+      make_neighbors(mean - 1.4, mean + 1.0, mean + 1.1, mean - 0.2, mean + 1.8,
+                     dx, 0.5 * dx, 0.5 * dx, 0.5 * dx);
+  // Effective neighbor mean (1.0 + 1.1 - 0.2 + 1.8) / 4.0 => 0.925
+  // Average neighbor size (1.0 + 0.5 + 0.5 + 0.5) / 4.0 => 0.625
+  // Effective distance (0.625 + 1.0) / 2.0 => 0.8125
+  test_limiter_activates_work(minmod, input, element, mesh, logical_coords,
+                              element_size, neighbor_data_two_sizes,
+                              0.925 / 0.8125);
 }
 
 }  // namespace
