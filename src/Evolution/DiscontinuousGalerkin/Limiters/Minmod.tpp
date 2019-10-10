@@ -162,7 +162,7 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
     return false;
   }
 
-  // Optimization: allocate temporary buffer to be used in `limit_one_tensor`
+  // Optimization: allocate a single buffer to avoid multiple allocations
   std::unique_ptr<double[], decltype(&free)> contiguous_buffer(nullptr, &free);
   DataVector u_lin_buffer{};
   std::array<DataVector, VolumeDim> boundary_buffer{};

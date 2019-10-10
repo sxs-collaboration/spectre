@@ -61,8 +61,8 @@ bool minmod_limited_slopes(
         effective_neighbor_sizes, dim, side);
   };
 
-  // The LambdaPiN limiter allows high-order solutions to escape limiting if
-  // the boundary values are not too different from the mean value:
+  // The LambdaPiN limiter calls a simple troubled-cell indicator to avoid
+  // limiting solutions that appear smooth:
   if (minmod_type == Limiters::MinmodType::LambdaPiN) {
     const bool u_needs_limiting = troubled_cell_indicator(
         boundary_buffer, tvbm_constant, u, element, mesh, element_size,

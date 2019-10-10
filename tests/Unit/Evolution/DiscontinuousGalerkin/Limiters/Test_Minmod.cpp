@@ -259,7 +259,7 @@ void test_minmod_activates(
   CHECK_ITERABLE_APPROX(u_limited_slopes, expected_slopes);
 }
 
-// Test that TCI does not detect a troubled cell.
+// Test that TCI does not detect a cell that is not troubled.
 template <size_t VolumeDim>
 void test_minmod_does_not_activate(
     const Limiters::MinmodType& minmod_type, const double tvbm_constant,
@@ -516,8 +516,8 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
   const auto test_does_not_activate = [&element, &mesh, &element_size ](
       const double tvbm_constant, const DataVector& local_input,
       const double left, const double right) noexcept {
-    // Because in this test the TCI is LambdaPiN, no slopes are returned, and
-    // no comparison is made. So set these to NaN
+    // Because in this test the limiter is LambdaPiN, no slopes are returned,
+    // and no comparison is made. So set these to NaN
     const auto original_slopes =
         make_array<1>(std::numeric_limits<double>::signaling_NaN());
     test_minmod_does_not_activate(
@@ -681,7 +681,7 @@ void test_minmod_slopes_with_different_size_neighbor(
 }
 
 // In 1D, test combinations of MinmodType, TVBM constant, polynomial order, etc.
-// Check that each combination has the expected TCI behavior.
+// Check that each combination reduces the slopes as expected.
 void test_minmod_limited_slopes_1d() noexcept {
   INFO("Testing Minmod minmod_limited_slopes in 1D");
   for (const auto& minmod_type :
@@ -702,8 +702,7 @@ void test_minmod_limited_slopes_1d() noexcept {
   test_lambda_pin_troubled_cell_tvbm_correction(4);
 }
 
-// In 2D, test that the dimension-by-dimension application of the TCI works as
-// expected.
+// In 2D, test that the slopes are correctly reduced dimension-by-dimension.
 void test_minmod_limited_slopes_2d() noexcept {
   INFO("Testing Minmod minmod_limited_slopes in 2D");
   const auto minmod_type = Limiters::MinmodType::LambdaPi1;
@@ -758,8 +757,7 @@ void test_minmod_limited_slopes_2d() noexcept {
   test_activates(input, {{3.9, 4.2, -0.5, 2.9}}, {{0.0, 0.0}});
 }
 
-// In 3D, test that the dimension-by-dimension application of the TCI works as
-// expected.
+// In 3D, test that the slopes are correctly reduced dimension-by-dimension.
 void test_minmod_limited_slopes_3d() noexcept {
   INFO("Testing Minmod minmod_limited_slopes in 3D");
   const auto minmod_type = Limiters::MinmodType::LambdaPi1;
@@ -891,11 +889,10 @@ void test_limiter_work(
 
 void test_minmod_limiter_1d() noexcept {
   INFO("Test Minmod limiter in 1D");
-  // The goals of this test are,
-  // 1. check that Minmod::op() limits different tensors independently
-  // See comments in the 3D test for full details.
+  // This test checks that Minmod limits different tensor components
+  // independently
   //
-  // a. Generate data to fill all tensor components.
+  // We fill each local tensor component with the same volume data
   const auto mesh =
       Mesh<1>(3, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto);
   const auto logical_coords = logical_coordinates(mesh);
@@ -911,7 +908,8 @@ void test_minmod_limiter_1d() noexcept {
   const auto input_scalar = ScalarTag::type{data};
   const auto input_vector = VectorTag<1>::type{data};
 
-  // b. Generate neighbor data for the scalar and vector Tensors.
+  // We fill the neighbor mean data with different values for each tensor
+  // component, so that each component is limited in a different way
   std::unordered_map<
       std::pair<Direction<1>, ElementId<1>>,
       Limiters::Minmod<1, tmpl::list<ScalarTag, VectorTag<1>>>::PackagedData,
@@ -945,12 +943,11 @@ void test_minmod_limiter_1d() noexcept {
 
 void test_minmod_limiter_2d() noexcept {
   INFO("Test Minmod limiter in 2D");
-  // The goals of this test are,
-  // 1. check that Minmod::op() limits different tensors independently
-  // 2. check that Minmod::op() limits different dimensions independently
-  // See comments in the 3D test for full details.
+  // This test checks that Minmod limits...
+  // - different tensor components independently
+  // - different dimensions independently
   //
-  // a. Generate data to fill all tensor components.
+  // We fill each local tensor component with the same volume data
   const auto mesh =
       Mesh<2>(std::array<size_t, 2>{{3, 3}}, Spectral::Basis::Legendre,
               Spectral::Quadrature::GaussLobatto);
@@ -969,7 +966,8 @@ void test_minmod_limiter_2d() noexcept {
   const auto input_scalar = ScalarTag::type{data};
   const auto input_vector = VectorTag<2>::type{data};
 
-  // b. Generate neighbor data for the scalar and vector Tensors.
+  // We fill the neighbor mean data with different values for each tensor
+  // component, so that each component is limited in a different way
   std::unordered_map<
       std::pair<Direction<2>, ElementId<2>>,
       Limiters::Minmod<2, tmpl::list<ScalarTag, VectorTag<2>>>::PackagedData,
@@ -1035,23 +1033,11 @@ void test_minmod_limiter_2d() noexcept {
 
 void test_minmod_limiter_3d() noexcept {
   INFO("Test Minmod limiter in 3D");
-  // The goals of this test are,
-  // 1. check that Minmod::op() limits different tensors independently
-  // 2. check that Minmod::op() limits different dimensions independently
+  // This test checks that Minmod limits...
+  // - different tensor components independently
+  // - different dimensions independently
   //
-  // The steps taken to meet these goals are:
-  // a. set up values in two Tensor<DataVector>s, one scalar and one vector,
-  //    then test that Minmod::package_data has correct output
-  // b. set up neighbor values for these two tensors, then test that
-  //    Minmod::op() has correct output
-  //
-  // These steps are detailed through the test.
-  //
-  // a. Generate data to fill all tensor components. Note that:
-  // - There is no loss of generality from using the same data in every tensor
-  //   component, because the neighbor states (and limiter action) will differ.
-  // - Quadratic terms are centered on the element so they don't affect the
-  //   mean slope on the element.
+  // We fill each local tensor component with the same volume data
   const auto mesh =
       Mesh<3>(std::array<size_t, 3>{{3, 3, 4}}, Spectral::Basis::Legendre,
               Spectral::Quadrature::GaussLobatto);
@@ -1071,7 +1057,8 @@ void test_minmod_limiter_3d() noexcept {
   const auto input_scalar = ScalarTag::type{data};
   const auto input_vector = VectorTag<3>::type{data};
 
-  // b. Generate neighbor data for the scalar and vector Tensors.
+  // We fill the neighbor mean data with different values for each tensor
+  // component, so that each component is limited in a different way
   std::unordered_map<
       std::pair<Direction<3>, ElementId<3>>,
       Limiters::Minmod<3, tmpl::list<ScalarTag, VectorTag<3>>>::PackagedData,
