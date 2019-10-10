@@ -90,17 +90,17 @@ auto make_six_neighbors(const std::array<double, 6>& values) noexcept {
 
 // Test that TCI detects a troubled cell when expected
 template <size_t VolumeDim>
-void test_minmod_tci_activation(
-    const bool expected_activation, const double tvbm_constant,
+void test_tci_detection(
+    const bool expected_detection, const double tvbm_constant,
     const DataVector& input, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes) noexcept {
-  const bool tci_activated = wrap_allocations_and_tci(
+  const bool troubled_cell_detected = wrap_allocations_and_tci(
       tvbm_constant, input, element, mesh, element_size,
       effective_neighbor_means, effective_neighbor_sizes);
-  CHECK(tci_activated == expected_activation);
+  CHECK(troubled_cell_detected == expected_detection);
 }
 
 void test_tci_on_linear_function(const size_t number_of_grid_points) noexcept {
@@ -112,15 +112,15 @@ void test_tci_on_linear_function(const size_t number_of_grid_points) noexcept {
 
   // Lambda takes tvbm_scale = tvbm_constant * h^2, to facilitate specifying
   // critical threshold values for testing
-  const auto test_activation = [&mesh, &element ](
+  const auto test_tci = [&mesh, &element ](
       const bool expected, const DataVector& input, const double left_mean,
       const double right_mean, const double tvbm_scale) noexcept {
     const double h = 1.2;
     const double tvbm_constant = tvbm_scale / square(h);
     const auto element_size = make_array<1>(h);
-    test_minmod_tci_activation(
-        expected, tvbm_constant, input, element, mesh, element_size,
-        make_two_neighbors(left_mean, right_mean), make_two_neighbors(h, h));
+    test_tci_detection(expected, tvbm_constant, input, element, mesh,
+                       element_size, make_two_neighbors(left_mean, right_mean),
+                       make_two_neighbors(h, h));
   };
 
   // mean = 1.6
@@ -132,22 +132,22 @@ void test_tci_on_linear_function(const size_t number_of_grid_points) noexcept {
   ();
 
   // Test trigger due to left, right neighbors
-  test_activation(false, input, 1.35, 1.85, 0.0);
-  test_activation(true, input, 1.45, 1.85, 0.0);
-  test_activation(true, input, 1.35, 1.75, 0.0);
-  test_activation(true, input, 1.45, 1.75, 0.0);
+  test_tci(false, input, 1.35, 1.85, 0.0);
+  test_tci(true, input, 1.45, 1.85, 0.0);
+  test_tci(true, input, 1.35, 1.75, 0.0);
+  test_tci(true, input, 1.45, 1.75, 0.0);
 
   // Test trigger due to slope changing sign
-  test_activation(true, input, 1.7, 1.85, 0.0);
-  test_activation(true, input, 1.45, 1.5, 0.0);
+  test_tci(true, input, 1.7, 1.85, 0.0);
+  test_tci(true, input, 1.45, 1.5, 0.0);
 
   // Test TVBM can avoid the triggers
-  test_activation(true, input, 1.45, 1.75, 0.19);
-  test_activation(true, input, 1.7, 1.85, 0.19);
-  test_activation(true, input, 1.45, 1.5, 0.19);
-  test_activation(false, input, 1.45, 1.75, 0.21);
-  test_activation(false, input, 1.7, 1.85, 0.21);
-  test_activation(false, input, 1.45, 1.5, 0.21);
+  test_tci(true, input, 1.45, 1.75, 0.19);
+  test_tci(true, input, 1.7, 1.85, 0.19);
+  test_tci(true, input, 1.45, 1.5, 0.19);
+  test_tci(false, input, 1.45, 1.75, 0.21);
+  test_tci(false, input, 1.7, 1.85, 0.21);
+  test_tci(false, input, 1.45, 1.5, 0.21);
 }
 
 void test_tci_on_quadratic_function(
@@ -160,15 +160,15 @@ void test_tci_on_quadratic_function(
 
   // Lambda takes tvbm_scale = tvbm_constant * h^2, to facilitate specifying
   // critical threshold values for testing
-  const auto test_activation = [&mesh, &element ](
+  const auto test_tci = [&mesh, &element ](
       const bool expected, const DataVector& input, const double left_mean,
       const double right_mean, const double tvbm_scale) noexcept {
     const double h = 1.2;
     const double tvbm_constant = tvbm_scale / square(h);
     const auto element_size = make_array<1>(h);
-    test_minmod_tci_activation(
-        expected, tvbm_constant, input, element, mesh, element_size,
-        make_two_neighbors(left_mean, right_mean), make_two_neighbors(h, h));
+    test_tci_detection(expected, tvbm_constant, input, element, mesh,
+                       element_size, make_two_neighbors(left_mean, right_mean),
+                       make_two_neighbors(h, h));
   };
 
   // mean = 1.5
@@ -181,15 +181,15 @@ void test_tci_on_quadratic_function(
   ();
 
   // Test trigger due to left, right neighbors
-  test_activation(false, input, 1.15, 1.85, 0.0);
-  test_activation(true, input, 1.25, 1.85, 0.0);
-  test_activation(true, input, 1.15, 1.75, 0.0);
-  test_activation(true, input, 1.25, 1.75, 0.0);
+  test_tci(false, input, 1.15, 1.85, 0.0);
+  test_tci(true, input, 1.25, 1.85, 0.0);
+  test_tci(true, input, 1.15, 1.75, 0.0);
+  test_tci(true, input, 1.25, 1.75, 0.0);
 
   // Test TVBM can avoid the trigger
-  test_activation(true, input, 1.25, 1.85, 0.11);
-  test_activation(true, input, 1.25, 1.85, 0.29);
-  test_activation(false, input, 1.25, 1.85, 0.31);
+  test_tci(true, input, 1.25, 1.85, 0.11);
+  test_tci(true, input, 1.25, 1.85, 0.29);
+  test_tci(false, input, 1.25, 1.85, 0.31);
 
   // mean = 1.5
   // delta_left = -0.1
@@ -202,24 +202,24 @@ void test_tci_on_quadratic_function(
 
   // Because left-to-mean and mean-to-right slopes have different signs,
   // any TCI call with TVBM=0 should trigger
-  test_activation(true, input2, 1.7, 1.9, 0.0);
-  test_activation(true, input2, 1.7, 1.3, 0.0);
-  test_activation(true, input2, 1.3, 1.7, 0.0);
-  test_activation(true, input2, 1.1, 1.9, 0.0);
+  test_tci(true, input2, 1.7, 1.9, 0.0);
+  test_tci(true, input2, 1.7, 1.3, 0.0);
+  test_tci(true, input2, 1.3, 1.7, 0.0);
+  test_tci(true, input2, 1.1, 1.9, 0.0);
 
   // Conversely, because left-to-mean and mean-to-right slopes have different
   // signs, calls with TVBM>0 give results that depend on neighbor means
-  test_activation(true, input2, 1.7, 1.3, 0.11);
-  test_activation(true, input2, 1.7, 1.3, 0.29);
-  test_activation(false, input2, 1.7, 1.3, 0.31);
+  test_tci(true, input2, 1.7, 1.3, 0.11);
+  test_tci(true, input2, 1.7, 1.3, 0.29);
+  test_tci(false, input2, 1.7, 1.3, 0.31);
 
-  test_activation(true, input2, 1.3, 1.7, 0.11);
-  test_activation(true, input2, 1.3, 1.7, 0.29);
-  test_activation(false, input2, 1.3, 1.7, 0.31);
+  test_tci(true, input2, 1.3, 1.7, 0.11);
+  test_tci(true, input2, 1.3, 1.7, 0.29);
+  test_tci(false, input2, 1.3, 1.7, 0.31);
 
-  test_activation(false, input2, 1.1, 1.9, 0.11);
-  test_activation(false, input2, 1.1, 1.9, 0.29);
-  test_activation(false, input2, 1.1, 1.9, 0.31);
+  test_tci(false, input2, 1.1, 1.9, 0.11);
+  test_tci(false, input2, 1.1, 1.9, 0.29);
+  test_tci(false, input2, 1.1, 1.9, 0.31);
 }
 
 void test_tci_at_boundary(const size_t number_of_grid_points) noexcept {
@@ -240,7 +240,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points) noexcept {
   const auto element_at_lower_xi_boundary =
       TestHelpers::Limiters::make_element<1>({{Direction<1>::lower_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
-    test_minmod_tci_activation(
+    test_tci_detection(
         true, tvbm_constant, input, element_at_lower_xi_boundary, mesh,
         element_size, {{std::make_pair(Direction<1>::upper_xi(), neighbor)}},
         {{std::make_pair(Direction<1>::upper_xi(), element_size[0])}});
@@ -250,7 +250,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points) noexcept {
   const auto element_at_upper_xi_boundary =
       TestHelpers::Limiters::make_element<1>({{Direction<1>::upper_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
-    test_minmod_tci_activation(
+    test_tci_detection(
         true, tvbm_constant, input, element_at_upper_xi_boundary, mesh,
         element_size, {{std::make_pair(Direction<1>::lower_xi(), neighbor)}},
         {{std::make_pair(Direction<1>::lower_xi(), element_size[0])}});
@@ -268,15 +268,13 @@ void test_tci_with_different_size_neighbor(
   const double dx = 1.0;
   const auto element_size = make_array<1>(dx);
 
-  const auto test_activation =
-      [&tvbm_constant, &element, &mesh, &element_size ](
-          const bool expected_activation, const DataVector& local_input,
-          const double left, const double right, const double left_size,
-          const double right_size) noexcept {
-    test_minmod_tci_activation(expected_activation, tvbm_constant, local_input,
-                               element, mesh, element_size,
-                               make_two_neighbors(left, right),
-                               make_two_neighbors(left_size, right_size));
+  const auto test_tci = [&tvbm_constant, &element, &mesh, &element_size ](
+      const bool expected_detection, const DataVector& local_input,
+      const double left, const double right, const double left_size,
+      const double right_size) noexcept {
+    test_tci_detection(expected_detection, tvbm_constant, local_input, element,
+                       mesh, element_size, make_two_neighbors(left, right),
+                       make_two_neighbors(left_size, right_size));
   };
 
   const double eps = 100.0 * std::numeric_limits<double>::epsilon();
@@ -288,26 +286,26 @@ void test_tci_with_different_size_neighbor(
   ();
 
   // Establish baseline using evenly-sized elements
-  test_activation(false, input, 0.8 - eps, 3.2 + eps, dx, dx);
+  test_tci(false, input, 0.8 - eps, 3.2 + eps, dx, dx);
 
   const double larger = 2.0 * dx;
   const double smaller = 0.5 * dx;
 
   // Larger neighbor with same mean => true reduction in slope => trigger
-  test_activation(true, input, 0.8 - eps, 3.2, dx, larger);
+  test_tci(true, input, 0.8 - eps, 3.2, dx, larger);
   // Larger neighbor with larger mean => same slope => no trigger
-  test_activation(false, input, 0.8 - eps, 3.8 + eps, dx, larger);
+  test_tci(false, input, 0.8 - eps, 3.8 + eps, dx, larger);
 
   // Smaller neighbor with same mean => increased slope => no trigger
-  test_activation(false, input, 0.8 - eps, 3.2 + eps, dx, smaller);
+  test_tci(false, input, 0.8 - eps, 3.2 + eps, dx, smaller);
   // Smaller neighbor with lower mean => same slope => no trigger
-  test_activation(false, input, 0.8 - eps, 2.9 + eps, dx, smaller);
+  test_tci(false, input, 0.8 - eps, 2.9 + eps, dx, smaller);
 
-  test_activation(true, input, 0.8, 3.2 + eps, larger, dx);
-  test_activation(false, input, 0.2 - eps, 3.2 + eps, larger, dx);
+  test_tci(true, input, 0.8, 3.2 + eps, larger, dx);
+  test_tci(false, input, 0.2 - eps, 3.2 + eps, larger, dx);
 
-  test_activation(false, input, 0.8 - eps, 3.2 + eps, smaller, dx);
-  test_activation(false, input, 1.1 - eps, 3.2 + eps, smaller, dx);
+  test_tci(false, input, 0.8 - eps, 3.2 + eps, smaller, dx);
+  test_tci(false, input, 1.1 - eps, 3.2 + eps, smaller, dx);
 }
 
 // In 1D, test combinations of TVBM constant, polynomial order, etc.
@@ -334,14 +332,12 @@ void test_minmod_tci_2d() noexcept {
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<2>(2.0);
 
-  const auto test_activation =
-      [&tvbm_constant, &element, &mesh, &element_size ](
-          const bool expected_activation, const DataVector& local_input,
-          const std::array<double, 4>& neighbor_means) noexcept {
-    test_minmod_tci_activation(expected_activation, tvbm_constant, local_input,
-                               element, mesh, element_size,
-                               make_four_neighbors(neighbor_means),
-                               make_four_neighbors(make_array<4>(2.0)));
+  const auto test_tci = [&tvbm_constant, &element, &mesh, &element_size ](
+      const bool expected_detection, const DataVector& local_input,
+      const std::array<double, 4>& neighbor_means) noexcept {
+    test_tci_detection(expected_detection, tvbm_constant, local_input, element,
+                       mesh, element_size, make_four_neighbors(neighbor_means),
+                       make_four_neighbors(make_array<4>(2.0)));
   };
 
   const auto input = [&mesh]() noexcept {
@@ -353,19 +349,19 @@ void test_minmod_tci_2d() noexcept {
   ();
 
   // Case with no activation
-  test_activation(false, input, {{1.9, 4.2, -0.5, 5.6}});
+  test_tci(false, input, {{1.9, 4.2, -0.5, 5.6}});
 
   // Limit because of xi-direction neighbors
-  test_activation(true, input, {{2.2, 4.2, -0.5, 5.6}});
-  test_activation(true, input, {{1.9, 3.2, -0.5, 5.6}});
+  test_tci(true, input, {{2.2, 4.2, -0.5, 5.6}});
+  test_tci(true, input, {{1.9, 3.2, -0.5, 5.6}});
 
   // Limit because of eta-direction neighbors
-  test_activation(true, input, {{1.9, 4.2, 1.5, 5.6}});
-  test_activation(true, input, {{1.9, 4.2, -0.5, 2.9}});
+  test_tci(true, input, {{1.9, 4.2, 1.5, 5.6}});
+  test_tci(true, input, {{1.9, 4.2, -0.5, 2.9}});
 
   // Limit for xi and eta directions
-  test_activation(true, input, {{2.2, 4.2, 1.5, 5.6}});
-  test_activation(true, input, {{3.9, 4.2, -0.5, 2.9}});
+  test_tci(true, input, {{2.2, 4.2, 1.5, 5.6}});
+  test_tci(true, input, {{3.9, 4.2, -0.5, 2.9}});
 }
 
 // In 3D, test that the dimension-by-dimension application of the TCI works as
@@ -378,14 +374,12 @@ void test_minmod_tci_3d() noexcept {
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<3>(2.0);
 
-  const auto test_activation =
-      [&tvbm_constant, &element, &mesh, &element_size ](
-          const bool expected_activation, const DataVector& local_input,
-          const std::array<double, 6>& neighbor_means) noexcept {
-    test_minmod_tci_activation(expected_activation, tvbm_constant, local_input,
-                               element, mesh, element_size,
-                               make_six_neighbors(neighbor_means),
-                               make_six_neighbors(make_array<6>(2.0)));
+  const auto test_tci = [&tvbm_constant, &element, &mesh, &element_size ](
+      const bool expected_detection, const DataVector& local_input,
+      const std::array<double, 6>& neighbor_means) noexcept {
+    test_tci_detection(expected_detection, tvbm_constant, local_input, element,
+                       mesh, element_size, make_six_neighbors(neighbor_means),
+                       make_six_neighbors(make_array<6>(2.0)));
   };
 
   const auto input = [&mesh]() noexcept {
@@ -399,23 +393,23 @@ void test_minmod_tci_3d() noexcept {
   ();
 
   // Case with no activation
-  test_activation(false, input, {{3.8, -0.1, 1.5, 2.7, 1.2, 2.5}});
+  test_tci(false, input, {{3.8, -0.1, 1.5, 2.7, 1.2, 2.5}});
 
   // Limit because of xi-direction neighbors
-  test_activation(true, input, {{3.4, -0.1, 1.5, 2.7, 1.2, 2.5}});
-  test_activation(true, input, {{3.8, 2.1, 1.5, 2.7, 1.2, 2.5}});
+  test_tci(true, input, {{3.4, -0.1, 1.5, 2.7, 1.2, 2.5}});
+  test_tci(true, input, {{3.8, 2.1, 1.5, 2.7, 1.2, 2.5}});
 
   // Limit because of eta-direction neighbors
-  test_activation(true, input, {{3.8, -0.1, 1.9, 2.7, 1.2, 2.5}});
-  test_activation(true, input, {{3.8, -0.1, 1.5, 2.3, 1.2, 2.5}});
+  test_tci(true, input, {{3.8, -0.1, 1.9, 2.7, 1.2, 2.5}});
+  test_tci(true, input, {{3.8, -0.1, 1.5, 2.3, 1.2, 2.5}});
 
   // Limit because of zeta-direction neighbors
-  test_activation(true, input, {{3.8, -0.1, 1.5, 2.7, 2.2, 2.5}});
-  test_activation(true, input, {{3.8, -0.1, 1.5, 2.7, 1.2, 2.1}});
+  test_tci(true, input, {{3.8, -0.1, 1.5, 2.7, 2.2, 2.5}});
+  test_tci(true, input, {{3.8, -0.1, 1.5, 2.7, 1.2, 2.1}});
 
   // Limit for xi, eta, and zeta directions
-  test_activation(true, input, {{3.4, -0.1, 1.5, 2.3, 1.2, 2.1}});
-  test_activation(true, input, {{3.8, 2.1, 2.1, 2.7, 2.2, 2.5}});
+  test_tci(true, input, {{3.4, -0.1, 1.5, 2.3, 1.2, 2.1}});
+  test_tci(true, input, {{3.8, 2.1, 2.1, 2.7, 2.2, 2.5}});
 }
 
 struct ScalarTag : db::SimpleTag {
@@ -508,51 +502,51 @@ void test_minmod_tci_several_tensors() noexcept {
   get<2>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = 1.8;
   get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = 3.1;
   get<2>(get<::Tags::Mean<VectorTag<3>>>(upper_zeta_neighbor.means)) = 0.5;
-  bool activation =
+  const bool trigger_base_case =
       Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
                                                        ScalarTag, VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvbm_constant, element,
           mesh, element_size);
-  CHECK_FALSE(activation);
+  CHECK_FALSE(trigger_base_case);
 
   // Case where the scalar triggers limiting
   get(get<::Tags::Mean<ScalarTag>>(upper_xi_neighbor.means)) = 2.0;
-  activation =
+  const bool trigger_scalar =
       Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
                                                        ScalarTag, VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvbm_constant, element,
           mesh, element_size);
-  CHECK(activation);
+  CHECK(trigger_scalar);
 
   // Case where the vector x-component triggers limiting
   get(get<::Tags::Mean<ScalarTag>>(upper_xi_neighbor.means)) = 3.3;
   get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -0.1;
-  activation =
+  const bool trigger_vector_x =
       Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
                                                        ScalarTag, VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvbm_constant, element,
           mesh, element_size);
-  CHECK(activation);
+  CHECK(trigger_vector_x);
 
   // Case where the vector y-component triggers limiting
   get<0>(get<::Tags::Mean<VectorTag<3>>>(lower_zeta_neighbor.means)) = -1.8;
   get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = -0.2;
-  activation =
+  const bool trigger_vector_y =
       Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
                                                        ScalarTag, VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvbm_constant, element,
           mesh, element_size);
-  CHECK(activation);
+  CHECK(trigger_vector_y);
 
   // Case where the vector z-component triggers limiting
   get<1>(get<::Tags::Mean<VectorTag<3>>>(upper_eta_neighbor.means)) = 0.1;
   get<2>(get<::Tags::Mean<VectorTag<3>>>(lower_xi_neighbor.means)) = 1.9;
-  activation =
+  const bool trigger_vector_z =
       Limiters::Minmod_detail::troubled_cell_indicator<3, TestPackagedData,
                                                        ScalarTag, VectorTag<3>>(
           local_scalar, local_vector, neighbor_data, tvbm_constant, element,
           mesh, element_size);
-  CHECK(activation);
+  CHECK(trigger_vector_z);
 }
 
 }  // namespace
