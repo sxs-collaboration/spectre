@@ -37,11 +37,7 @@ struct hash;
 namespace Limiters {
 namespace Minmod_detail {
 
-// Implements the troubled-cell indicator corresponding to the Minmod limiter.
-//
-// The troubled-cell indicator (TCI) determines whether or not limiting is
-// needed. See Limiters::Minmod for a full description of the Minmod
-// limiter.
+// Implements the TVB troubled-cell indicator from Cockburn1999.
 template <size_t VolumeDim>
 bool troubled_cell_indicator(
     gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
@@ -54,12 +50,11 @@ bool troubled_cell_indicator(
                                gsl::span<std::pair<size_t, size_t>>>,
                      VolumeDim>& volume_and_slice_indices) noexcept;
 
-// Implements the minmod troubled-cell indicator on several tensors.
+// Implements the TVB troubled-cell indicator from Cockburn1999 for several
+// tensors.
 //
 // Internally loops over all tensors and tensor components, calling the above
-// function for each case. Returns true if any of the components needs limiting.
-// Optimization: stops as soon as one component needs limiting, because no
-// intermediate results are passed "up" out of this function.
+// function for each case. Returns true if any component needs limiting.
 //
 // Expects type `PackagedData` to contain, as in Limiters::Minmod:
 // - a variable `means` that is a `TaggedTuple<Tags::Mean<Tags>...>`
@@ -74,7 +69,7 @@ bool troubled_cell_indicator(
     const double tvbm_constant, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size) noexcept {
-  // Optimization: allocate temporary buffer for multiple DataVectors
+  // Optimization: allocate a single buffer to avoid multiple allocations
   std::unique_ptr<double[], decltype(&free)> contiguous_buffer(nullptr, &free);
   std::array<DataVector, VolumeDim> boundary_buffer{};
   Minmod_detail::allocate_buffers(make_not_null(&contiguous_buffer),
