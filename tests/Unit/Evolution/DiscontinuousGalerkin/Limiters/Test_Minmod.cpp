@@ -64,6 +64,7 @@ struct VectorTag : db::SimpleTag {
 };
 
 void test_minmod_option_parsing() noexcept {
+  INFO("Test Minmod option parsing");
   const auto lambda_pi1_default =
       test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "  Type: LambdaPi1");
@@ -94,6 +95,7 @@ void test_minmod_option_parsing() noexcept {
 }
 
 void test_minmod_serialization() noexcept {
+  INFO("Test Minmod serialization");
   const Limiters::Minmod<1, tmpl::list<ScalarTag>> minmod(
       Limiters::MinmodType::LambdaPi1);
   test_serialization(minmod);
@@ -1058,6 +1060,7 @@ void test_work(
 }
 
 void test_minmod_limiter_1d() noexcept {
+  INFO("Test Minmod limiter in 1D");
   // The goals of this test are,
   // 1. check that Minmod::op() limits different tensors independently
   // See comments in the 3D test for full details.
@@ -1110,6 +1113,7 @@ void test_minmod_limiter_1d() noexcept {
 }
 
 void test_minmod_limiter_2d() noexcept {
+  INFO("Test Minmod limiter in 2D");
   // The goals of this test are,
   // 1. check that Minmod::op() limits different tensors independently
   // 2. check that Minmod::op() limits different dimensions independently
@@ -1198,6 +1202,7 @@ void test_minmod_limiter_2d() noexcept {
 }
 
 void test_minmod_limiter_3d() noexcept {
+  INFO("Test Minmod limiter in 3D");
   // The goals of this test are,
   // 1. check that Minmod::op() limits different tensors independently
   // 2. check that Minmod::op() limits different dimensions independently
@@ -1325,40 +1330,26 @@ void test_minmod_limiter_3d() noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Minmod", "[Limiters][Unit]") {
-  {
-    INFO("Test Minmod option-parsing and serialization");
-    test_minmod_option_parsing();
-    test_minmod_serialization();
-  }
+  test_minmod_option_parsing();
+  test_minmod_serialization();
 
-  {
-    INFO("Test Minmod package_data");
-    test_package_data_1d();
-    test_package_data_2d();
-    test_package_data_3d();
-  }
+  test_package_data_1d();
+  test_package_data_2d();
+  test_package_data_3d();
 
-  {
-    INFO("Test Minmod TCI wrapper");
-    test_minmod_tci_wrapper_1d();
-    test_minmod_tci_wrapper_2d();
-    test_minmod_tci_wrapper_3d();
-  }
+  // These functions test
+  // - the TCI for the limiter, i.e., when the limiter activates
+  // - the reduced slopes requested in the event of an activation
+  test_minmod_tci_wrapper_1d();
+  test_minmod_tci_wrapper_2d();
+  test_minmod_tci_wrapper_3d();
 
-  {
-    INFO("Test Minmod limiter in 1d");
-    test_minmod_limiter_1d();
-  }
+  // These functions test the correctness of the limited solution
+  test_minmod_limiter_1d();
+  test_minmod_limiter_2d();
+  test_minmod_limiter_3d();
 
-  {
-    INFO("Test Minmod limiter in 2d");
-    test_minmod_limiter_2d();
-    test_minmod_limiter_two_lower_xi_neighbors();
-  }
-
-  {
-    INFO("Test Minmod limiter in 3d");
-    test_minmod_limiter_3d();
-    test_minmod_limiter_four_upper_xi_neighbors();
-  }
+  // These functions test the limiter with h-refinement
+  test_minmod_limiter_two_lower_xi_neighbors();
+  test_minmod_limiter_four_upper_xi_neighbors();
 }
