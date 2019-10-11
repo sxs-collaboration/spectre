@@ -135,7 +135,7 @@ struct EvolutionMetavars {
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
       typename Event<events>::creatable_classes>;
 
-  using compute_rhs = tmpl::flatten<tmpl::list<
+  using step_actions = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
       Actions::ComputeVolumeSources, Actions::ComputeTimeDerivative,
@@ -146,9 +146,7 @@ struct EvolutionMetavars {
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           dg::Actions::ApplyFluxes>,
-      Actions::RecordTimeStepperData>>;
-
-  using update_variables = tmpl::flatten<tmpl::list<
+      Actions::RecordTimeStepperData,
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
@@ -193,9 +191,9 @@ struct EvolutionMetavars {
               Parallel::PhaseActions<Phase, Phase::Initialization,
                                      initialization_actions>,
 
-              Parallel::PhaseActions<Phase, Phase::InitializeTimeStepperHistory,
-                                     SelfStart::self_start_procedure<
-                                         compute_rhs, update_variables>>,
+              Parallel::PhaseActions<
+                  Phase, Phase::InitializeTimeStepperHistory,
+                  SelfStart::self_start_procedure<step_actions>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
@@ -211,7 +209,7 @@ struct EvolutionMetavars {
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
+                      step_actions, Actions::AdvanceTime>>>>>>;
 
   using const_global_cache_tags =
       tmpl::list<initial_data_tag,

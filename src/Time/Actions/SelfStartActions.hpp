@@ -422,32 +422,43 @@ struct Cleanup {
 namespace detail {
 struct PhaseStart;
 struct PhaseEnd;
+
+template <typename StepActions>
+struct self_start_procedure_impl {
+  using flat_actions = tmpl::flatten<tmpl::list<StepActions>>;
+  static_assert(
+      tmpl::list_contains_v<flat_actions, ::Actions::RecordTimeStepperData>,
+      "Self-start action loop must call Actions::RecordTimeStepperData to "
+      "update the history.");
+  // clang-format off
+  using type = tmpl::flatten<tmpl::list<
+      SelfStart::Actions::Initialize,
+      ::Actions::Label<detail::PhaseStart>,
+      SelfStart::Actions::CheckForCompletion<detail::PhaseEnd>,
+      ::Actions::AdvanceTime,
+      SelfStart::Actions::CheckForOrderIncrease,
+      tmpl::replace<flat_actions, ::Actions::RecordTimeStepperData,
+                    tmpl::list<::Actions::RecordTimeStepperData,
+                               SelfStart::Actions::StartNextOrderIfReady<
+                                   detail::PhaseStart>>>,
+      ::Actions::Goto<detail::PhaseStart>,
+      ::Actions::Label<detail::PhaseEnd>,
+      SelfStart::Actions::Cleanup,
+      ::Actions::AdvanceTime,
+      Parallel::Actions::TerminatePhase>>;
+  // clang-format on
+};
 }  // namespace detail
 
 /// \ingroup TimeGroup
 /// The list of actions required to self-start an integrator.
 ///
-/// \tparam ComputeRhs Action or list of actions computing and
-/// recording the system derivative.
-/// \tparam UpdateVariables Action or list of actions updating the
-/// evolved variables (but not the time).
+/// \tparam StepActions List of actions computing and recording the
+/// system derivative and updating the evolved variables (but not the
+/// time).
 ///
 /// \see SelfStart
-// clang-format off
-template <typename ComputeRhs, typename UpdateVariables>
-using self_start_procedure = tmpl::flatten<tmpl::list<
-    SelfStart::Actions::Initialize,
-    ::Actions::Label<detail::PhaseStart>,
-    SelfStart::Actions::CheckForCompletion<detail::PhaseEnd>,
-    ::Actions::AdvanceTime,
-    SelfStart::Actions::CheckForOrderIncrease,
-    ComputeRhs,
-    SelfStart::Actions::StartNextOrderIfReady<detail::PhaseStart>,
-    UpdateVariables,
-    ::Actions::Goto<detail::PhaseStart>,
-    ::Actions::Label<detail::PhaseEnd>,
-    SelfStart::Actions::Cleanup,
-    ::Actions::AdvanceTime,
-    Parallel::Actions::TerminatePhase>>;
-// clang-format on
+template <typename StepActions>
+using self_start_procedure =
+    typename detail::self_start_procedure_impl<StepActions>::type;
 }  // namespace SelfStart

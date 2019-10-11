@@ -131,16 +131,14 @@ struct Component {
 
   static constexpr bool has_primitives = Metavariables::has_primitives;
 
-  using update_actions = tmpl::conditional_t<
-      has_primitives, tmpl::list<Actions::UpdateU, Actions::UpdatePrimitives>,
-      Actions::UpdateU>;
+  using step_actions =
+      tmpl::list<Actions::ComputeTimeDerivative, Actions::RecordTimeStepperData,
+                 tmpl::conditional_t<
+                     has_primitives,
+                     tmpl::list<Actions::UpdateU, Actions::UpdatePrimitives>,
+                     Actions::UpdateU>>;
   using action_list = tmpl::flatten<
-      tmpl::list<SelfStart::self_start_procedure<
-                     tmpl::list<Actions::ComputeTimeDerivative,
-                                Actions::RecordTimeStepperData>,
-                     update_actions>,
-                 Actions::ComputeTimeDerivative,
-                 Actions::RecordTimeStepperData, update_actions>>;
+      tmpl::list<SelfStart::self_start_procedure<step_actions>, step_actions>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

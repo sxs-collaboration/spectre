@@ -117,7 +117,7 @@ struct EvolutionMetavars {
                  StepChoosers::Registrars::Constant,
                  StepChoosers::Registrars::Increase>;
 
-  using compute_rhs = tmpl::flatten<tmpl::list<
+  using step_actions = tmpl::flatten<tmpl::list<
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           Tags::InternalDirections<Dim>>,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
@@ -128,18 +128,18 @@ struct EvolutionMetavars {
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           dg::Actions::ApplyFluxes>,
-      Actions::RecordTimeStepperData>>;
-  // To add filtering to the executable add the action:
-  //
-  // dg::Actions::ExponentialFilter<0,
-  //        tmpl::list<ScalarWave::Pi, ScalarWave::Psi, ScalarWave::Phi<Dim>>>
-  //
-  // to the end of `update_variables` so it is after `Actions::UpdateU`.
-  using update_variables = tmpl::flatten<tmpl::list<
+      Actions::RecordTimeStepperData,
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      Actions::UpdateU>>;
+      Actions::UpdateU
+      // To add filtering to the executable add the action:
+      //
+      // dg::Actions::ExponentialFilter<0,
+      //     tmpl::list<ScalarWave::Pi, ScalarWave::Psi, ScalarWave::Phi<Dim>>>
+      //
+      // here.
+      >>;
 
   enum class Phase {
     Initialization,
@@ -173,8 +173,7 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
-                  tmpl::flatten<tmpl::list<SelfStart::self_start_procedure<
-                      compute_rhs, update_variables>>>>,
+                  SelfStart::self_start_procedure<step_actions>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
@@ -190,7 +189,7 @@ struct EvolutionMetavars {
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      compute_rhs, update_variables, Actions::AdvanceTime>>>>>>;
+                      step_actions, Actions::AdvanceTime>>>>>>;
 
   static constexpr OptionString help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
