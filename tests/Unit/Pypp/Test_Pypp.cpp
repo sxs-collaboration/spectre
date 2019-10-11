@@ -24,6 +24,7 @@
 #include "tests/Unit/Pypp/Pypp.hpp"
 #include "tests/Unit/Pypp/PyppFundamentals.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -340,10 +341,7 @@ SPECTRE_TEST_CASE("Unit.Pypp.Tensor.DataVector", "[Pypp][Unit]") {
 namespace {
 template <typename T>
 void test_einsum(const T& used_for_size) {
-  std::random_device r;
-  const auto seed = r();
-  std::mt19937 generator(seed);
-  INFO("seed" << seed);
+  MAKE_GENERATOR(generator);
   std::uniform_real_distribution<> dist(-10., 10.);
 
   const auto nn_generator = make_not_null(&generator);

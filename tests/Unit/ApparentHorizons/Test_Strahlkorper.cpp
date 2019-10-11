@@ -40,7 +40,7 @@ void test_invert_spec_phys_transform() {
   DataVector radius(YlmSpherepack::physical_size(l_grid, l_grid), avg_radius);
   {
     std::uniform_real_distribution<double> ran(0.0, 1.0);
-    std::mt19937 gen;
+    MAKE_GENERATOR(gen);
     for (auto& r : radius) {
       r += delta_radius * ran(gen);
     }

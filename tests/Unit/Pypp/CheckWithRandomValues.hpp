@@ -54,6 +54,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace pypp {
@@ -352,8 +353,7 @@ void check_with_random_values(
     const T& used_for_size, const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
-  INFO("seed: " << seed);
-  std::mt19937 generator(seed);
+  MAKE_GENERATOR(generator, seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
   using number_of_not_null =
       tmpl::count_if<typename f_info::argument_types,
@@ -434,8 +434,7 @@ void check_with_random_values(
     const T& used_for_size, const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
-  INFO("seed: " << seed);
-  std::mt19937 generator(seed);
+  MAKE_GENERATOR(generator, seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
   using number_of_not_null =
       tmpl::count_if<typename f_info::argument_types,
@@ -543,8 +542,7 @@ void check_with_random_values(
     const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
-  INFO("seed: " << seed);
-  std::mt19937 generator(seed);
+  MAKE_GENERATOR(generator, seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
   using number_of_not_null =
       tmpl::count_if<typename f_info::argument_types,
@@ -644,8 +642,7 @@ void check_with_random_values(
     const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
-  INFO("seed: " << seed);
-  std::mt19937 generator(seed);
+  MAKE_GENERATOR(generator, seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
   using number_of_not_null =
       tmpl::count_if<typename f_info::argument_types,
