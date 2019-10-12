@@ -166,6 +166,11 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   template <typename DataType>
   DataType deriv_of_perturbation_profile(const DataType& z) const noexcept;
 
+  // To be used by VortexPerturbation source term
+  double perturbation_amplitude() const noexcept {
+    return perturbation_amplitude_;
+  }
+
   const EquationsOfState::PolytropicFluid<false>& equation_of_state() const
       noexcept {
     return equation_of_state_;
