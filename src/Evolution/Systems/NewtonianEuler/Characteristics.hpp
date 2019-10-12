@@ -7,6 +7,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/Matrix.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"               // for get
 #include "DataStructures/Tensor/TypeAliases.hpp"          // IWYU pragma: keep
@@ -60,6 +61,57 @@ std::array<DataVector, Dim + 2> characteristic_speeds(
     const tnsr::I<DataVector, Dim>& velocity,
     const Scalar<DataVector>& sound_speed,
     const tnsr::i<DataVector, Dim>& normal) noexcept;
+// @}
+
+// @{
+/*!
+ * \brief Compute the transform matrices between the conserved variables and
+ * the characteristic variables of the NewtonianEuler system.
+ *
+ * Let \f$u\f$ be the conserved (i.e., evolved) variables of the Newtonian Euler
+ * system, and \f$w\f$ the characteristic variables of this system with respect
+ * to a unit normal one form \f$n_i\f$.  The function `left_eigenvectors`
+ * computes the matrix \f$\Omega_{L}\f$ corresponding to the transform
+ * \f$w = \Omega_{L} u\f$. The function `right_eigenvectors` computes the matrix
+ * \f$\Omega_{R}\f$ corresponding to the inverse transform
+ * \f$u = \Omega_{R} w\f$. Here the components of \f$u\f$ are ordered as
+ * \f$u = \{\rho, \rho v_x, \rho v_y, \rho v_z, e\}\f$ in 3D, and the components
+ * of \f$w\f$ are ordered by their corresponding eigenvalues
+ * (i.e., characteristic speeds)
+ * \f$\lambda = \{v_n - c_s, v_n, v_n, v_n, v_n + c_s\}\f$. In these
+ * expressions, \f$\rho\f$ is the fluid mass density, \f$v_{x,y,z}\f$ are the
+ * components of the fluid velocity, \f$e\f$ is the total energy density,
+ * \f$v_n\f$ is the component of the velocity along the unit normal \f$n_i\f$,
+ * and \f$c_s\f$ is the sound speed.
+ *
+ * For a short discussion of the characteristic transformation and the matrices
+ * \f$\Omega_{L}\f$ and \f$\Omega_{R}\f$, see \cite Kulikovskii2000 Chapter 3.
+ *
+ * Here we briefly summarize the procedure. With \f$F^x(u)\f$ the Newtonian
+ * Euler flux in direction \f$x\f$, then the flux Jacobian along \f$x\f$ is the
+ * matrix \f$A_x = \partial F^x_{\beta}(u) / \partial u_{\alpha}\f$. The indices
+ * \f$\alpha, \beta\f$ range over the different evolved fields. In higher
+ * dimensions, the flux Jacobian along the unit normal \f$n_i\f$ is
+ * \f$A = n_x A_x + n_y A_y + n_z A_z\f$.
+ * This matrix can be diagonalized as \f$A = \Omega_{R} \Lambda \Omega_{L}\f$.
+ * Here \f$\Lambda = \mathrm{diag}(v_n - c_s, v_n, v_n, v_n, v_n + c_s)\f$
+ * is a diagonal matrix containing the characteristic speeds; \f$\Omega_{R}\f$
+ * is a matrix whose columns are the right eigenvectors of \f$A\f$;
+ * \f$\Omega_{L}\f$ is the inverse of \f$R\f$.
+ */
+template <size_t Dim>
+Matrix right_eigenvectors(const tnsr::I<double, Dim>& velocity,
+                          const Scalar<double>& sound_speed_squared,
+                          const Scalar<double>& specific_enthalpy,
+                          const Scalar<double>& kappa_over_density,
+                          const tnsr::i<double, Dim>& unit_normal) noexcept;
+
+template <size_t Dim>
+Matrix left_eigenvectors(const tnsr::I<double, Dim>& velocity,
+                         const Scalar<double>& sound_speed_squared,
+                         const Scalar<double>& specific_enthalpy,
+                         const Scalar<double>& kappa_over_density,
+                         const tnsr::i<double, Dim>& unit_normal) noexcept;
 // @}
 
 namespace Tags {
