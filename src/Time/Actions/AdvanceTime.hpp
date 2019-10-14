@@ -9,13 +9,17 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
+namespace Parallel {
+template <typename Metavariables>
+class ConstGlobalCache;
+}  // namespace Parallel
 namespace Tags {
 template <typename Tag>
 struct Next;
@@ -33,8 +37,10 @@ namespace Actions {
 /// \brief Advance time one substep
 ///
 /// Uses:
-/// - ConstGlobalCache: OptionTags::TimeStepper
-/// - DataBox: Tags::TimeStepId, Tags::TimeStep
+/// - DataBox:
+///   - Tags::TimeStep
+///   - Tags::TimeStepId
+///   - Tags::TimeStepperBase
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -50,23 +56,23 @@ struct AdvanceTime {
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {  // NOLINT const
     db::mutate<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
                Tags::Time>(
-        make_not_null(&box), [&cache](
-                                 const gsl::not_null<TimeStepId*> time_id,
-                                 const gsl::not_null<TimeStepId*> next_time_id,
-                                 const gsl::not_null<TimeDelta*> time_step,
-                                 const gsl::not_null<double*> time) noexcept {
-          const auto& time_stepper =
-              Parallel::get<Tags::TimeStepperBase>(cache);
+        make_not_null(&box),
+        [](const gsl::not_null<TimeStepId*> time_id,
+           const gsl::not_null<TimeStepId*> next_time_id,
+           const gsl::not_null<TimeDelta*> time_step,
+           const gsl::not_null<double*> time,
+           const TimeStepper& time_stepper) noexcept {
           *time_id = *next_time_id;
           *time_step = time_step->with_slab(time_id->step_time().slab());
           *next_time_id = time_stepper.next_time_id(*next_time_id, *time_step);
           *time = time_id->substep_time().value();
-        });
+        },
+        db::get<Tags::TimeStepperBase>(box));
 
     return std::forward_as_tuple(std::move(box));
   }

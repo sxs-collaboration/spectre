@@ -108,7 +108,7 @@ struct InitializeCharacteristicEvolution {
     template <typename TagList>
     static auto initialize(
         db::DataBox<TagList>&& box,
-        const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+        const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) noexcept {
       const double initial_time_value =
           db::get<InitializationTags::StartTime>(box);
       const double step_size = db::get<InitializationTags::TargetStepSize>(box);
@@ -119,8 +119,7 @@ struct InitializeCharacteristicEvolution {
       const TimeDelta fixed_time_step =
           TimeDelta{single_step_slab, Rational{1, 1}};
       TimeStepId initial_time_id{true, 0, initial_time};
-      const auto& time_stepper =
-          Parallel::get<::Tags::TimeStepper<TimeStepper>>(cache);
+      const auto& time_stepper = db::get<::Tags::TimeStepper<TimeStepper>>(box);
       TimeStepId second_time_id =
           time_stepper.next_time_id(initial_time_id, fixed_time_step);
 
