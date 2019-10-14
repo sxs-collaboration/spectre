@@ -11,6 +11,7 @@ add_custom_target(test-libs-domain)
 add_custom_target(test-libs-elliptic)
 add_custom_target(test-libs-evolution)
 add_custom_target(test-libs-numerical-algorithms)
+add_custom_target(test-libs-parallel-algorithms)
 add_custom_target(test-libs-pointwise-functions)
 add_custom_target(test-libs-other)
 
@@ -66,6 +67,18 @@ add_dependencies(test-libs-numerical-algorithms
   Test_LinearOperators
   Test_RootFinding
   Test_Spectral
+  )
+
+add_dependencies(test-libs-parallel-algorithms
+  Test_EventsAndTriggers
+  Test_Initialization
+  Test_InitializationActions
+  Test_ParallelAlgorithmsActions
+  Test_ParallelAlgorithmsEvents
+  Test_ParallelConjugateGradient
+  Test_ParallelDiscontinuousGalerkin
+  Test_ParallelGmres
+  Test_ParallelLinearSolver
   )
 
 add_dependencies(test-libs-pointwise-functions

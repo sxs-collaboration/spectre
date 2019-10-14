@@ -53,6 +53,7 @@ if [ -z "${RUN_CLANG_TIDY}" ] \
 
     if [[ ${TRAVIS_BUILD_STAGE_NAME} = "Build stage 2" ]]; then
         time make test-libs-numerical-algorithms -j2
+        time make test-libs-parallel-algorithms -j2
         # Build DataStructures in serial because the DataVector tests
         # are very memory intensive to compile
         time make test-libs-data-structures -j1
