@@ -14,9 +14,9 @@
 #include "Elliptic/FirstOrderComputeTags.hpp"
 #include "Elliptic/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/Divergence.hpp"
-#include "NumericalAlgorithms/LinearSolver/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
+#include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace elliptic {
