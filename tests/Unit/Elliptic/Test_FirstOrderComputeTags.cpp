@@ -95,9 +95,6 @@ void test_first_order_compute_tags() {
           std::move(vars), FluxesComputer{}, 3.);
 
   // Check computed fluxes
-  const auto& fluxes =
-      get<db::add_tag_prefix<::Tags::Flux, vars_tag, tmpl::size_t<Dim>,
-                             Frame::Inertial>>(box);
   for (size_t d = 0; d < Dim; d++) {
     CHECK(get<::Tags::Flux<FieldTag, tmpl::size_t<Dim>, Frame::Inertial>>(box)
               .get(d) == DataVector{num_points, 3. * (d + 1.)});
@@ -114,7 +111,6 @@ void test_first_order_compute_tags() {
   }
 
   // Check computed sources
-  const auto& sources = get<db::add_tag_prefix<::Tags::Source, vars_tag>>(box);
   CHECK(get(get<::Tags::Source<FieldTag>>(box)) == DataVector{num_points, 18.});
   for (size_t d = 0; d < Dim; d++) {
     CHECK(get<::Tags::Source<AuxiliaryFieldTag<Dim>>>(box).get(d) ==
