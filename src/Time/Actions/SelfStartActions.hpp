@@ -197,7 +197,16 @@ struct Initialize {
     // until it reaches zero.
     const auto values_needed =
         -db::get<::Tags::Next<::Tags::TimeStepId>>(box).slab_number();
-    const TimeDelta self_start_step = initial_step / (values_needed + 1);
+    TimeDelta self_start_step = initial_step;
+
+    // Make sure the starting procedure fits in a slab.
+    if (abs(self_start_step * values_needed).fraction() >= 1) {
+      // Decrease the step so that the generated history will be
+      // entirely before the first step.  This ensures we will not
+      // generate any duplicate times in the history as we start the
+      // real evolution.
+      self_start_step /= (values_needed + 1);
+    }
 
     auto new_box = StoreInitialValues<tmpl::push_back<
         detail::vars_to_save<system>, ::Tags::TimeStep>>::apply(std::move(box));
