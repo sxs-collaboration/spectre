@@ -54,6 +54,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 #include "tests/Unit/Pypp/Pypp.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace pypp {
@@ -167,14 +168,19 @@ void check_with_random_values_impl(
     const auto result =
         tuples::get<Tag>((klass.*f)(std::get<ArgumentIs>(args)...));
     INFO("function: " << function_names[count]);
-    CHECK_ITERABLE_CUSTOM_APPROX(
-        result,
-        (pypp::call<std::decay_t<decltype(result)>>(
-            module_name, function_names[count], std::get<ArgumentIs>(args)...,
-            forward_to_pypp<std::decay_t<decltype(result)>>(
-                std::get<MemberArgsIs>(member_args), used_for_size)...)),
-        Approx::custom().epsilon(epsilon).scale(1.0));
-    count++;
+    try {
+      CHECK_ITERABLE_CUSTOM_APPROX(
+          result,
+          (pypp::call<std::decay_t<decltype(result)>>(
+              module_name, function_names[count], std::get<ArgumentIs>(args)...,
+              forward_to_pypp<std::decay_t<decltype(result)>>(
+                  std::get<MemberArgsIs>(member_args), used_for_size)...)),
+          Approx::custom().epsilon(epsilon).scale(1.0));
+      count++;
+    } catch (const std::exception& e) {
+      INFO("Python call failed: " << e.what());
+      CHECK(false);
+    }
   });
 }
 
@@ -214,13 +220,18 @@ void check_with_random_values_impl(
           bool, not cpp17::is_same_v<NoSuchType, std::decay_t<Klass>>>{},
       std::forward<F>(f));
   INFO("function: " << function_name);
-  CHECK_ITERABLE_CUSTOM_APPROX(
-      result,
-      pypp::call<ResultType>(
-          module_name, function_name, std::get<ArgumentIs>(args)...,
-          forward_to_pypp<ResultType>(std::get<MemberArgsIs>(member_args),
-                                      used_for_size)...),
-      Approx::custom().epsilon(epsilon).scale(1.0));
+  try {
+    CHECK_ITERABLE_CUSTOM_APPROX(
+        result,
+        pypp::call<ResultType>(
+            module_name, function_name, std::get<ArgumentIs>(args)...,
+            forward_to_pypp<ResultType>(std::get<MemberArgsIs>(member_args),
+                                        used_for_size)...),
+        Approx::custom().epsilon(epsilon).scale(1.0));
+    } catch (const std::exception& e) {
+      INFO("Python call failed: " << e.what());
+      CHECK(false);
+    }
 }
 
 template <class F, class T, class Klass, class... ReturnTypes,
@@ -277,14 +288,19 @@ void check_with_random_values_impl(
     (void)used_for_size;  // avoid compiler warning
     constexpr size_t iter = decltype(result_i)::value;
     INFO("function: " << function_names[iter]);
-    CHECK_ITERABLE_CUSTOM_APPROX(
-        std::get<iter>(results),
-        (pypp::call<std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
-            module_name, function_names[iter], std::get<ArgumentIs>(args)...,
-            forward_to_pypp<
-                std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
-                std::get<MemberArgsIs>(member_args), used_for_size)...)),
-        Approx::custom().epsilon(epsilon).scale(1.0));
+    try {
+      CHECK_ITERABLE_CUSTOM_APPROX(
+          std::get<iter>(results),
+          (pypp::call<std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
+              module_name, function_names[iter], std::get<ArgumentIs>(args)...,
+              forward_to_pypp<
+                  std::tuple_element_t<iter, std::tuple<ReturnTypes...>>>(
+                  std::get<MemberArgsIs>(member_args), used_for_size)...)),
+          Approx::custom().epsilon(epsilon).scale(1.0));
+    } catch (const std::exception& e) {
+      INFO("Python call failed: " << e.what());
+      CHECK(false);
+    }
     return '0';
   };
   (void)std::initializer_list<char>{
@@ -337,8 +353,7 @@ void check_with_random_values(
     const T& used_for_size, const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
-  INFO("seed: " << seed);
-  std::mt19937 generator(seed);
+  MAKE_GENERATOR(generator, seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
   using number_of_not_null =
       tmpl::count_if<typename f_info::argument_types,
@@ -419,8 +434,7 @@ void check_with_random_values(
     const T& used_for_size, const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
-  INFO("seed: " << seed);
-  std::mt19937 generator(seed);
+  MAKE_GENERATOR(generator, seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
   using number_of_not_null =
       tmpl::count_if<typename f_info::argument_types,
@@ -528,8 +542,7 @@ void check_with_random_values(
     const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
-  INFO("seed: " << seed);
-  std::mt19937 generator(seed);
+  MAKE_GENERATOR(generator, seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
   using number_of_not_null =
       tmpl::count_if<typename f_info::argument_types,
@@ -629,8 +642,7 @@ void check_with_random_values(
     const double epsilon = 1.0e-12,
     const typename std::random_device::result_type seed =
         std::random_device{}()) {
-  INFO("seed: " << seed);
-  std::mt19937 generator(seed);
+  MAKE_GENERATOR(generator, seed);
   using f_info = tt::function_info<cpp20::remove_cvref_t<F>>;
   using number_of_not_null =
       tmpl::count_if<typename f_info::argument_types,

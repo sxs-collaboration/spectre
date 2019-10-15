@@ -28,6 +28,7 @@
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
+#include "Utilities/MakeString.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/StdArrayHelpers.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
@@ -382,12 +383,14 @@ void test_throw_exception(const ThrowingFunctor& func,
 //   In this case the DUMMY_TOKEN is not necessary.
 #define MAKE_GENERATOR(...)                                             \
   std::mt19937 MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN); \
-  INFO("Seed is: " << [&MAKE_GENERATOR_IMPL_FIRST_ARG(                  \
-           __VA_ARGS__, DUMMY_TOKEN)]() noexcept {                      \
-    const auto seed = (MAKE_GENERATOR_IMPL_SECOND_ARG(                  \
+  /* Capture everything because we don't know what passed seed uses */  \
+  INFO("Seed is: " << [&]() noexcept {                                  \
+    const auto MAKE_GENERATOR_seed = (MAKE_GENERATOR_IMPL_SECOND_ARG(   \
         __VA_ARGS__, std::random_device{}(), DUMMY_TOKEN));             \
-    MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN).seed(seed); \
-    return seed;                                                        \
+    MAKE_GENERATOR_IMPL_FIRST_ARG(__VA_ARGS__, DUMMY_TOKEN)             \
+        .seed(MAKE_GENERATOR_seed);                                     \
+    return MakeString{} << MAKE_GENERATOR_seed << " from " __FILE__ ":" \
+                        << __LINE__;                                    \
   }())
 
 /*!

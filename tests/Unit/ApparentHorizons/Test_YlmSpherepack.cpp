@@ -457,7 +457,7 @@ void test_interpolation(
     std::vector<std::array<double, 2>> points;
     {
       std::uniform_real_distribution<double> ran(0.0, 1.0);
-      std::mt19937 gen;
+      MAKE_GENERATOR(gen);
       for (int n = 0; n < 10; ++n) {
         const double th = (2.0 * ran(gen) - 1.0) * M_PI;
         const double ph = 2.0 * ran(gen) * M_PI;

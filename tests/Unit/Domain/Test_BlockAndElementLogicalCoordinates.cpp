@@ -47,7 +47,7 @@ void fuzzy_test_block_and_element_logical_coordinates(
   // Random element_id for each point.
   const auto element_ids = [&all_element_ids, &n_pts ]() noexcept {
     std::uniform_int_distribution<size_t> ran(0, all_element_ids.size()-1);
-    std::mt19937 gen;
+    MAKE_GENERATOR(gen);
     std::vector<ElementId<Dim>> ids(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       ids[s] = all_element_ids[ran(gen)];
@@ -61,7 +61,7 @@ void fuzzy_test_block_and_element_logical_coordinates(
   const auto element_coords = [&n_pts]() noexcept {
     // Assumes logical coords go from -1 to 1.
     std::uniform_real_distribution<double> ran(-1.0, 1.0);
-    std::mt19937 gen;
+    MAKE_GENERATOR(gen);
     std::vector<tnsr::I<double, Dim, Frame::Logical>> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       for (size_t d = 0; d < Dim; ++d) {
@@ -179,7 +179,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
   // Random block_id for each point.
   const auto block_ids = [&n_pts, &n_blocks ]() noexcept {
     std::uniform_int_distribution<size_t> ran(0, n_blocks-1);
-    std::mt19937 gen;
+    MAKE_GENERATOR(gen);
     std::vector<size_t> ids(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       ids[s] = ran(gen);
@@ -194,7 +194,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
   const auto block_coords = [&n_pts]() noexcept {
     // Assumes logical coords go from -1 to 1.
     std::uniform_real_distribution<double> ran(-1.0, 1.0);
-    std::mt19937 gen;
+    MAKE_GENERATOR(gen);
     std::vector<tnsr::I<double, Dim, Frame::Logical>> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       for (size_t d = 0; d < Dim; ++d) {
