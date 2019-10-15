@@ -24,6 +24,18 @@ struct SomeVolumeArgument : VolumeArgumentBase, db::SimpleTag {
   static std::string name() noexcept { return "SomeVolumeArgument"; }
 };
 
+/// [interface_invokable_example]
+struct ComputeSomethingOnInterface {
+  using argument_tags = tmpl::list<SomeNumber, SomeVolumeArgument>;
+  using volume_tags = tmpl::list<SomeVolumeArgument>;
+  static double apply(const double& some_number_on_interface,
+                      const double& volume_argument,
+                      const double factor) noexcept {
+    return factor * some_number_on_interface + volume_argument;
+  }
+};
+/// [interface_invokable_example]
+
 template <size_t Dim, typename DirectionsTag>
 void test_interface_apply(
     const Element<Dim>& element,
@@ -58,6 +70,16 @@ void test_interface_apply(
   /// [interface_apply_example]
 
   // Test volume base tag
+  // GCC <= 8 can't handle the recursive template instantiations for base tags
+  // in `db::DataBox_detail::storage_type_impl` that occur when instantiating
+  // the `interface_apply` overload for a _stateless_ invokable here, i.e. the
+  // one that is _not_ SFINAE-selected in the function call below. The template
+  // parameter substitutions `InterfaceInvokable=tmpl::list<SomeNumber,
+  // VolumeArgumentBase>` and `DbTagsList=tmpl::list<VolumeArgumentBase>` is
+  // made, which fails the SFINAE-selection but still tries to (unsuccessfully)
+  // instantiate `storage_type_impl` for the `DbTagsList` and the
+  // `VolumeArgumentBase` tag.
+#if defined(__clang__) || (defined(__GNUC__) && __GNUC__ > 8)
   const auto computed_numbers_with_base_tag =
       interface_apply<DirectionsTag, tmpl::list<SomeNumber, VolumeArgumentBase>,
                       tmpl::list<VolumeArgumentBase>>(
@@ -67,6 +89,14 @@ void test_interface_apply(
           },
           box, 2.);
   CHECK(computed_numbers_with_base_tag == computed_number_on_interfaces);
+#endif  // defined(__clang__) || (defined(__GNUC__) && __GNUC__ > 8)
+
+  // Test overload that takes a stateless invokable
+  /// [interface_apply_example_stateless]
+  const auto computed_numbers_with_struct =
+      interface_apply<DirectionsTag, ComputeSomethingOnInterface>(box, 2.);
+  /// [interface_apply_example_stateless]
+  CHECK(computed_numbers_with_struct == computed_number_on_interfaces);
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceHelpers", "[Unit][Domain]") {
