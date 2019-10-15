@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarWave1D
+# Executable: EvolvePlaneWave1D
 # Check: parse;execute
 
 AnalyticSolution:
@@ -61,5 +61,5 @@ EventsAndTriggers:
               SafetyFactor: 20
 
 Observers:
-  VolumeFileName: "ScalarWave1DPeriodicVolume"
-  ReductionFileName: "ScalarWave1DPeriodicReductions"
+  VolumeFileName: "PlaneWave1DPeriodicVolume"
+  ReductionFileName: "PlaneWave1DPeriodicReductions"

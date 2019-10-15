@@ -19,7 +19,7 @@ class TestIOH5VolumeData(unittest.TestCase):
                                         "IO/pythontest.h5")
         # The other tests require external data, so we use the file
         # `VolTestData.h5` which contains data output from the spectre
-        # EvolveScalarWave3D executable.  However, the file does not contain the
+        # EvolvePlaneWave3D executable.  However, the file does not contain the
         # source tree (for file size reasons), so it should not be used as an
         # example output for any other reason than testing VolumeData.
         self.file_name_r = os.path.join(Informer.unit_test_path(),

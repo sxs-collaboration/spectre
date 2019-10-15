@@ -17,24 +17,30 @@ set(LIBS_TO_LINK
     WaveEquation
   )
 
-add_spectre_parallel_executable(
-  EvolveScalarWave1D
-  EvolveScalarWave
-  Evolution/Executables/ScalarWave
-  EvolutionMetavars<1>
-  "${LIBS_TO_LINK}"
-)
-add_spectre_parallel_executable(
-  EvolveScalarWave2D
-  EvolveScalarWave
-  Evolution/Executables/ScalarWave
-  EvolutionMetavars<2>
-  "${LIBS_TO_LINK}"
-)
-add_spectre_parallel_executable(
-  EvolveScalarWave3D
-  EvolveScalarWave
-  Evolution/Executables/ScalarWave
-  EvolutionMetavars<3>
-  "${LIBS_TO_LINK}"
-)
+function(add_scalar_wave_executable EXECUTABLE_NAME DIM INITIAL_DATA)
+  add_spectre_parallel_executable(
+    "Evolve${EXECUTABLE_NAME}${DIM}D"
+    EvolveScalarWave
+    Evolution/Executables/ScalarWave
+    "EvolutionMetavars<${DIM},${INITIAL_DATA}>"
+    "${LIBS_TO_LINK}"
+    )
+endfunction(add_scalar_wave_executable)
+
+function(add_plane_wave_executable DIM)
+  add_scalar_wave_executable(
+    PlaneWave
+    ${DIM}
+    ScalarWave::Solutions::PlaneWave<${DIM}>
+    )
+endfunction(add_plane_wave_executable)
+
+add_plane_wave_executable(1)
+add_plane_wave_executable(2)
+add_plane_wave_executable(3)
+
+add_scalar_wave_executable(
+  RegularSphericalWave
+  3
+  ScalarWave::Solutions::RegularSphericalWave
+  )

@@ -1,8 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarWave1D
+# Executable: EvolvePlaneWave1D
 # Check: parse
+# ExpectedOutput:
+#   ObserveExample1DPlaneWavePeriodicReductions.h5
+#   ObserveExample1DPlaneWavePeriodicVolume.h5
 
 AnalyticSolution:
   PlaneWave:
@@ -61,5 +64,5 @@ EventsAndTriggers:
   : - Completion
 
 Observers:
-  VolumeFileName: "ScalarWave1DPeriodicVolume"
-  ReductionFileName: "ScalarWave1DPeriodicReductions"
+  VolumeFileName: "ObserveExample1DPlaneWavePeriodicVolume"
+  ReductionFileName: "ObserveExample1DPlaneWavePeriodicReductions"

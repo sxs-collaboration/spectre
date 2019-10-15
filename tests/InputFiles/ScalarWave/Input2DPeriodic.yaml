@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarWave2D
+# Executable: EvolvePlaneWave2D
 # Check: parse;execute
 
 AnalyticSolution:
@@ -52,5 +52,5 @@ EventsAndTriggers:
   : - Completion
 
 Observers:
-  VolumeFileName: "ScalarWave2DPeriodicVolume"
-  ReductionFileName: "ScalarWave2DPeriodicReductions"
+  VolumeFileName: "PlaneWave2DPeriodicVolume"
+  ReductionFileName: "PlaneWave2DPeriodicReductions"

@@ -1,7 +1,7 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: EvolveScalarWave3D
+# Executable: EvolvePlaneWave3D
 # Check: parse;execute
 
 AnalyticSolution:
@@ -52,5 +52,5 @@ EventsAndTriggers:
   : - Completion
 
 Observers:
-  VolumeFileName: "ScalarWave3DPeriodicVolume"
-  ReductionFileName: "ScalarWave3DPeriodicReductions"
+  VolumeFileName: "PlaneWave3DPeriodicVolume"
+  ReductionFileName: "PlaneWave3DPeriodicReductions"
