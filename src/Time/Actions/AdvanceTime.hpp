@@ -9,6 +9,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -23,10 +24,6 @@ class ConstGlobalCache;
 namespace Tags {
 template <typename Tag>
 struct Next;
-struct Time;
-struct TimeStepId;
-struct TimeStep;
-struct TimeStepperBase;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -40,7 +37,7 @@ namespace Actions {
 /// - DataBox:
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepId
-///   - Tags::TimeStepperBase
+///   - Tags::TimeStepper<>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -72,7 +69,7 @@ struct AdvanceTime {
           *next_time_id = time_stepper.next_time_id(*next_time_id, *time_step);
           *time = time_id->substep_time().value();
         },
-        db::get<Tags::TimeStepperBase>(box));
+        db::get<Tags::TimeStepper<>>(box));
 
     return std::forward_as_tuple(std::move(box));
   }

@@ -170,14 +170,18 @@ struct InitialSlabSize {
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Base tag for simple tag Tags::TimeStepper
-struct TimeStepperBase : db::BaseTag {};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup TimeGroup
 /// \brief Tag for a ::TimeStepper of type `StepperType`.
+///
+/// Leaving the template parameter unspecified gives a base tag.
+template <typename StepperType = void>
+struct TimeStepper;
+
+/// \cond
+template <>
+struct TimeStepper<> : db::BaseTag {};
+
 template <typename StepperType>
-struct TimeStepper : TimeStepperBase, db::SimpleTag {
+struct TimeStepper : TimeStepper<>, db::SimpleTag {
   using type = std::unique_ptr<StepperType>;
   using option_tags = tmpl::list<::OptionTags::TimeStepper<StepperType>>;
 
@@ -187,6 +191,7 @@ struct TimeStepper : TimeStepperBase, db::SimpleTag {
     return deserialize<type>(serialize<type>(time_stepper).data());
   }
 };
+/// \endcond
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup

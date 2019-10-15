@@ -38,7 +38,7 @@ namespace Actions {
 ///   - Tags::HistoryEvolvedVariables
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepId
-///   - Tags::TimeStepperBase
+///   - Tags::TimeStepper<>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -61,7 +61,7 @@ struct ChangeStepSize {
     static_assert(Metavariables::local_time_stepping,
                   "ChangeStepSize can only be used with local time-stepping.");
 
-    const LtsTimeStepper& time_stepper = db::get<Tags::TimeStepperBase>(box);
+    const LtsTimeStepper& time_stepper = db::get<Tags::TimeStepper<>>(box);
     const auto& step_choosers = Parallel::get<step_choosers_tag>(cache);
     const auto& step_controller = Parallel::get<Tags::StepController>(cache);
 

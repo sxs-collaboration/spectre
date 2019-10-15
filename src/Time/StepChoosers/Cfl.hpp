@@ -12,6 +12,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
+#include "Time/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -22,7 +23,6 @@ class ConstGlobalCache;
 namespace Tags {
 template <size_t Dim, typename Frame>
 struct MinimumGridSpacing;
-struct TimeStepperBase;
 }  // namespace Tags
 // IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
@@ -67,12 +67,12 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
       : safety_factor_(safety_factor) {}
 
   using argument_tags = tmpl::list<Tags::MinimumGridSpacing<Dim, Frame>,
-                                   Tags::DataBox, Tags::TimeStepperBase>;
+                                   Tags::DataBox, Tags::TimeStepper<>>;
 
   template <typename Metavariables, typename DbTags>
   double operator()(
       const double minimum_grid_spacing, const db::DataBox<DbTags>& box,
-      const db::const_item_type<Tags::TimeStepperBase, DbTags>& time_stepper,
+      const db::const_item_type<Tags::TimeStepper<>, DbTags>& time_stepper,
       const double /*last_step_magnitude*/,
       const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) const
       noexcept {

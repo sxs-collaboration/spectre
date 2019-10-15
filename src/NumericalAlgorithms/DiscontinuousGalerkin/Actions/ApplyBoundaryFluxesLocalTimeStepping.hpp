@@ -45,7 +45,7 @@ namespace Actions {
 ///   - Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>
 ///   - Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>
 ///   - Tags::TimeStep
-///   - Tags::TimeStepperBase
+///   - Tags::TimeStepper<>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -133,7 +133,7 @@ struct ApplyBoundaryFluxesLocalTimeStepping {
         db::get<Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>(box),
         db::get<Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>(
             box),
-        db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepperBase>(box));
+        db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepper<>>(box));
 
     return std::forward_as_tuple(std::move(box));
   }

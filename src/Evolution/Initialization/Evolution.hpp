@@ -117,7 +117,7 @@ struct TimeAndTimeStep {
     // The slab number is increased in the self-start phase each
     // time one order of accuracy is obtained, and the evolution
     // proper starts with slab 0.
-    const auto& time_stepper = db::get<::Tags::TimeStepperBase>(box);
+    const auto& time_stepper = db::get<::Tags::TimeStepper<>>(box);
 
     const TimeStepId time_id(
         time_runs_forward,

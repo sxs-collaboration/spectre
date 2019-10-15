@@ -134,7 +134,7 @@ struct ChangeSlabSize {
         *alg::min_element(new_slab_size_inbox.begin()->second);
     new_slab_size_inbox.erase(new_slab_size_inbox.begin());
 
-    const TimeStepper& time_stepper = db::get<Tags::TimeStepperBase>(box);
+    const TimeStepper& time_stepper = db::get<Tags::TimeStepper<>>(box);
 
     // Sometimes time steppers need to run with a fixed step size.
     // This is generally at the start of an evolution when the history
