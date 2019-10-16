@@ -11,6 +11,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
+#include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
 #include "Evolution/DiscontinuousGalerkin/Filtering.hpp"  // IWYU pragma: keep
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
@@ -43,6 +44,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"  // IWYU pragma: keep
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/WaveEquation/PlaneWave.hpp"  // IWYU pragma: keep
@@ -89,12 +91,14 @@ struct EvolutionMetavars {
       Tags::NumericalFlux<ScalarWave::UpwindFlux<Dim>>;
 
   // public for use by the Charm++ registration code
-  using events = tmpl::list<
-      dg::Events::Registrars::ObserveFields<
-          Dim, db::get_variables_tags_list<typename system::variables_tag>,
-          db::get_variables_tags_list<typename system::variables_tag>>,
-      dg::Events::Registrars::ObserveErrorNorms<
-          Dim, db::get_variables_tags_list<typename system::variables_tag>>>;
+  using observe_fields =
+      db::get_variables_tags_list<typename system::variables_tag>;
+  using analytic_solution_fields = observe_fields;
+  using events =
+      tmpl::list<dg::Events::Registrars::ObserveFields<
+                     Dim, Tags::Time, observe_fields, analytic_solution_fields>,
+                 dg::Events::Registrars::ObserveErrorNorms<
+                     Tags::Time, analytic_solution_fields>>;
   using triggers = Triggers::time_triggers;
 
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
@@ -158,6 +162,9 @@ struct EvolutionMetavars {
               typename system::variables_tag>,
           dg::Initialization::slice_tags_to_exterior<>>,
       Initialization::Actions::Evolution<EvolutionMetavars>,
+      Initialization::Actions::AddComputeTags<
+          tmpl::list<evolution::Tags::AnalyticCompute<
+              Dim, initial_data_tag, analytic_solution_fields>>>,
       dg::Actions::InitializeMortars<EvolutionMetavars>,
       Initialization::Actions::DiscontinuousGalerkin<EvolutionMetavars>,
       Initialization::Actions::RemoveOptionsAndTerminatePhase>;
@@ -179,7 +186,7 @@ struct EvolutionMetavars {
                   Phase, Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
                                  observers::RegisterObservers<
-                                     element_observation_type>>,
+                                     Tags::Time, element_observation_type>>,
                              Parallel::Actions::TerminatePhase>>,
 
               Parallel::PhaseActions<

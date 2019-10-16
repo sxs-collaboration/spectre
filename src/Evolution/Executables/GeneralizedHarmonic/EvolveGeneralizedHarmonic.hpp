@@ -11,6 +11,7 @@
 #include "ErrorHandling/Error.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"
+#include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
@@ -45,6 +46,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/EventsAndTriggers.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
+#include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
@@ -93,23 +95,22 @@ struct EvolutionMetavars {
   using boundary_condition_tag = initial_data_tag;
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<GeneralizedHarmonic::UpwindFlux<volume_dim>>;
+  using analytic_solution_fields =
+      db::get_variables_tags_list<typename system::variables_tag>;
+  using observe_fields = tmpl::append<
+      analytic_solution_fields,
+      tmpl::list<
+          ::Tags::PointwiseL2Norm<
+              GeneralizedHarmonic::Tags::GaugeConstraint<volume_dim, frame>>,
+          ::Tags::PointwiseL2Norm<GeneralizedHarmonic::Tags::
+                                      ThreeIndexConstraint<volume_dim, frame>>,
+          ::Tags::PointwiseL2Norm<GeneralizedHarmonic::Tags::
+                                      FourIndexConstraint<volume_dim, frame>>>>;
   using events = tmpl::list<
-      dg::Events::Registrars::ObserveErrorNorms<
-          volume_dim, typename system::variables_tag::tags_list>,
+      dg::Events::Registrars::ObserveErrorNorms<Tags::Time,
+                                                analytic_solution_fields>,
       dg::Events::Registrars::ObserveFields<
-          volume_dim,
-          tmpl::append<
-              typename system::variables_tag::tags_list,
-              tmpl::list<::Tags::PointwiseL2Norm<
-                             GeneralizedHarmonic::Tags::GaugeConstraint<
-                                 volume_dim, frame>>,
-                         ::Tags::PointwiseL2Norm<
-                             GeneralizedHarmonic::Tags::ThreeIndexConstraint<
-                                 volume_dim, frame>>,
-                         ::Tags::PointwiseL2Norm<
-                             GeneralizedHarmonic::Tags::FourIndexConstraint<
-                                 volume_dim, frame>>>>,
-          typename system::variables_tag::tags_list>>;
+          volume_dim, Tags::Time, observe_fields, analytic_solution_fields>>;
   using triggers = Triggers::time_triggers;
 
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
@@ -195,6 +196,9 @@ struct EvolutionMetavars {
               GeneralizedHarmonic::CharacteristicSpeedsCompute<volume_dim,
                                                                frame>>>,
       Initialization::Actions::Evolution<EvolutionMetavars>,
+      Initialization::Actions::AddComputeTags<
+          tmpl::list<evolution::Tags::AnalyticCompute<
+              volume_dim, initial_data_tag, analytic_solution_fields>>>,
       GeneralizedHarmonic::Actions::InitializeGauge<volume_dim>,
       GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
       dg::Actions::InitializeMortars<EvolutionMetavars, true>,
@@ -217,7 +221,7 @@ struct EvolutionMetavars {
                   Phase, Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
                                  observers::RegisterObservers<
-                                     element_observation_type>>,
+                                     Tags::Time, element_observation_type>>,
                              Parallel::Actions::TerminatePhase>>,
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,

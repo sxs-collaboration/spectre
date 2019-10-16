@@ -32,7 +32,6 @@
 #include "ParallelAlgorithms/Events/ObserveFields.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"  // IWYU pragma: keep
-#include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/Algorithm.hpp"
 #include "Utilities/GetOutput.hpp"
 #include "Utilities/Gsl.hpp"
@@ -66,6 +65,11 @@ struct ContributeVolumeData;
 }  // namespace observers
 
 namespace {
+
+struct ObservationTimeTag : db::SimpleTag {
+  using type = double;
+  static std::string name() { return "ObservationTimeTag"; };
+};
 
 struct MockContributeVolumeData {
   struct Results {
@@ -175,7 +179,8 @@ struct ScalarSystem {
   };
 
   using ObserveEvent =
-      dg::Events::ObserveFields<volume_dim, all_vars_for_test,
+      dg::Events::ObserveFields<volume_dim, ObservationTimeTag,
+                                all_vars_for_test,
                                 solution_for_test::vars_for_test>;
   static constexpr auto creation_string_for_test = "  ObserveFields";
   static ObserveEvent make_test_object() noexcept { return ObserveEvent{}; }
@@ -265,7 +270,8 @@ struct ComplicatedSystem {
   };
 
   using ObserveEvent =
-      dg::Events::ObserveFields<volume_dim, all_vars_for_test,
+      dg::Events::ObserveFields<volume_dim, ObservationTimeTag,
+                                all_vars_for_test,
                                 solution_for_test::vars_for_test>;
   static constexpr auto creation_string_for_test =
       "  ObserveFields:\n"
@@ -300,10 +306,11 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
 
   const typename System::solution_for_test analytic_solution{};
   using solution_variables = typename System::solution_for_test::vars_for_test;
+  const Variables<db::wrap_tags_in<Tags::Analytic, solution_variables>>
+      solutions{variables_from_tagged_tuple(analytic_solution.variables(
+          get<coordinates_tag>(vars), observation_time, solution_variables{}))};
   const Variables<solution_variables> errors =
-      vars.template extract_subset<solution_variables>() -
-      variables_from_tagged_tuple(analytic_solution.variables(
-          get<coordinates_tag>(vars), observation_time, solution_variables{}));
+      vars.template extract_subset<solution_variables>() - solutions;
 
   using MockRuntimeSystem =
       ActionTesting::MockRuntimeSystem<Metavariables<System>>;
@@ -315,10 +322,11 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
                                                       element_id);
   ActionTesting::emplace_component<observer_component>(&runner, 0);
 
-  const auto box = db::create<
-      db::AddSimpleTags<Tags::Time, Tags::Mesh<volume_dim>,
-                        Tags::Variables<typename decltype(vars)::tags_list>>>(
-      observation_time, mesh, vars);
+  const auto box = db::create<db::AddSimpleTags<
+      ObservationTimeTag, Tags::Mesh<volume_dim>,
+      Tags::Variables<typename decltype(vars)::tags_list>,
+      db::add_tag_prefix<Tags::Analytic, Tags::Variables<solution_variables>>>>(
+      observation_time, mesh, vars, solutions);
 
   observe->run(box, runner.cache(), array_index,
                std::add_pointer_t<element_component>{});
@@ -383,7 +391,8 @@ void test_system() noexcept {
 
   INFO("create/serialize");
   using EventType = Event<tmpl::list<dg::Events::Registrars::ObserveFields<
-      System::volume_dim, typename System::all_vars_for_test,
+      System::volume_dim, ObservationTimeTag,
+      typename System::all_vars_for_test,
       typename System::solution_for_test::vars_for_test>>>;
   Parallel::register_derived_classes_with_charm<EventType>();
   const auto factory_event =
