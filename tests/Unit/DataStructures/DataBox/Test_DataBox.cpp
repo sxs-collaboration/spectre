@@ -1267,8 +1267,15 @@ struct TestDataboxMutateApply {
     get<2>(*vector) *= 5.0;
     CHECK(tag2 == "My Sample String"s);
   }
+
+  // clang-tidy: no non-const references
+  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
 };
 /// [mutate_apply_struct_definition_example]
+template <typename Invokable>
+struct InvokableTag : db::SimpleTag {
+  using type = Invokable;
+};
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
@@ -1279,7 +1286,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
           test_databox_tags::Tag2,
           Tags::Variables<tmpl::list<test_databox_tags::ScalarTag,
                                      test_databox_tags::VectorTag>>,
-          test_databox_tags::Pointer>,
+          test_databox_tags::Pointer, InvokableTag<TestDataboxMutateApply>>,
       db::AddComputeTags<test_databox_tags::ComputeTag0,
                          test_databox_tags::ComputeTag1,
                          test_databox_tags::MultiplyScalarByTwo,
@@ -1288,7 +1295,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
       3.14, std::vector<double>{8.7, 93.2, 84.7}, "My Sample String"s,
       Variables<tmpl::list<test_databox_tags::ScalarTag,
                            test_databox_tags::VectorTag>>(2, 3.),
-      std::make_unique<int>(3));
+      std::make_unique<int>(3), TestDataboxMutateApply{});
   CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
   CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
         Scalar<DataVector>(DataVector(2, 3.)));
@@ -1391,6 +1398,22 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutate_apply",
     /// [mutate_apply_struct_example_stateless]
     db::mutate_apply<TestDataboxMutateApply>(make_not_null(&box));
     /// [mutate_apply_struct_example_stateless]
+    CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
+    CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
+          Scalar<DataVector>(DataVector(2, 6.)));
+    CHECK(db::get<test_databox_tags::VectorTag>(box) ==
+          (tnsr::I<DataVector, 3>{
+              {{DataVector(2, 9.), DataVector(2, 12.), DataVector(2, 15.)}}}));
+    CHECK(db::get<test_databox_tags::ScalarTag2>(box) ==
+          Scalar<DataVector>(DataVector(2, 12.)));
+    CHECK(db::get<test_databox_tags::VectorTag2>(box) ==
+          (tnsr::I<DataVector, 3>(DataVector(2, 2.))));
+  }
+
+  SECTION("Invokable tag") {
+    /// [mutate_apply_struct_example_tag]
+    db::mutate_apply<InvokableTag<TestDataboxMutateApply>>(make_not_null(&box));
+    /// [mutate_apply_struct_example_tag]
     CHECK(approx(db::get<test_databox_tags::ComputeTag0>(box)) == 3.14 * 2.0);
     CHECK(db::get<test_databox_tags::ScalarTag>(box) ==
           Scalar<DataVector>(DataVector(2, 6.)));

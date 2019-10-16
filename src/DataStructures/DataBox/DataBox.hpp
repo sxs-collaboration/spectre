@@ -1888,35 +1888,76 @@ SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
 
 /*!
  * \ingroup DataBoxGroup
- * \brief Apply the stateless function `F::apply` mutating the `F::return_tags`
- * and taking as additional arguments the `F::argument_tags` and `args`.
+ * \brief Apply the stateless function `Invokable::apply` mutating the
+ * `Invokable::return_tags` and taking as additional arguments the
+ * `Invokable::argument_tags` and `args`.
  *
  * \details
- * `F` must have `tmpl::list` type aliases `return_tags` and `argument_tags`, as
- * well as a static `apply` function. The `apply` function must take the types
- * of the `return_tags` as `gsl::not_null` pointers, followed by the types of
- * the `argument_tags` as constant references. It can also take the `Args` as
- * additional arguments.
+ * `Invokable` must have `tmpl::list` type aliases `return_tags` and
+ * `argument_tags`, as well as a static `apply` function. The `apply` function
+ * must take the types of the `return_tags` as `gsl::not_null` pointers,
+ * followed by the types of the `argument_tags` as constant references. It can
+ * also take the `Args` as additional arguments.
  *
  * \example
  * \snippet Test_DataBox.cpp mutate_apply_struct_definition_example
  * This is how to use `mutate_apply` with the above class:
  * \snippet Test_DataBox.cpp mutate_apply_struct_example_stateless
  *
- * \tparam F The function to apply
- * \param box The DataBox out of which to retrieve the Tags to pass to `F`
- * \param args The arguments to pass to the function that are not in the
- * DataBox, `box`
+ * \tparam Invokable The function to apply
+ * \param box The DataBox out of which to retrieve the Tags to pass to
+ * `Invokable`
+ * \param args The arguments to pass to the function that are not in
+ * the DataBox, `box`
  */
-template <typename F, typename BoxTags, typename... Args>
+template <typename Invokable, typename BoxTags, typename... Args,
+          Requires<not db::is_tag_v<Invokable>> = nullptr>
 SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
     const gsl::not_null<DataBox<BoxTags>*> box, Args&&... args) noexcept {
   static_assert(
-      DataBox_detail::has_return_tags_and_argument_tags_v<F>,
-      "The stateless mutator does not specify both 'argument_tags' and "
-      "'return_tags'. Did you forget to add these tag lists to the mutator "
+      DataBox_detail::has_return_tags_and_argument_tags_v<Invokable>,
+      "The stateless invokable does not specify both 'argument_tags' and "
+      "'return_tags'. Did you forget to add these tag lists to the invokable "
       "class? The class is listed as the first template parameter below.");
-  mutate_apply(F{}, box, std::forward<Args>(args)...);
+  mutate_apply(Invokable{}, box, std::forward<Args>(args)...);
+}
+
+/*!
+ * \ingroup DataBoxGroup
+ * \brief Apply the invokable retrieved from the `InvokableTag` mutating the
+ * `InvokableTag::type::return_tags` and taking as additional arguments the
+ * `InvokableTag::type::argument_tags` and `args`.
+ *
+ * \details
+ * `InvokableTag::type` must have `tmpl::list` type aliases `return_tags` and
+ * `argument_tags` and must either have a call operator or a static `apply`
+ * function that takes the types of the `return_tags` as `gsl::not_null`
+ * pointers, followed by the types of the `argument_tags` as constant
+ * references. It can also take the `Args` as additional arguments.
+ *
+ * \example
+ * \snippet Test_DataBox.cpp mutate_apply_struct_definition_example
+ * This is how to use `mutate_apply` with the above class:
+ * \snippet Test_DataBox.cpp mutate_apply_struct_example_tag
+ *
+ * \tparam InvokableTag The tag that holds the invokable to apply
+ * \param box The DataBox out of which to retrieve the Tags to pass to
+ * `InvokableTag::type`
+ * \param args The arguments to pass to the function that are not in
+ * the DataBox, `box`
+ */
+template <typename InvokableTag, typename BoxTags, typename... Args,
+          Requires<db::is_tag_v<InvokableTag>> = nullptr>
+SPECTRE_ALWAYS_INLINE constexpr auto mutate_apply(
+    const gsl::not_null<DataBox<BoxTags>*> box, Args&&... args) noexcept {
+  static_assert(
+      DataBox_detail::has_return_tags_and_argument_tags_v<
+          db::const_item_type<InvokableTag, BoxTags>>,
+      "The 'type' of the invokable tag does not specify both 'argument_tags' "
+      "and 'return_tags'. Did you forget to add these tag lists to the "
+      "invokable class? The tag is listed as the first template parameter "
+      "below.");
+  mutate_apply(get<InvokableTag>(*box), box, std::forward<Args>(args)...);
 }
 
 /*!
