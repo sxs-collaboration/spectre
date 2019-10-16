@@ -37,7 +37,7 @@ namespace Actions {
 ///   - variables_tag (either the provided `VariablesTag` or the
 ///   `system::variables_tag` if none is provided)
 ///   - dt_variables_tag
-///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
+///   - Tags::HistoryEvolvedVariables<variables_tag>
 ///   - Tags::TimeStepId
 ///
 /// DataBox changes:
@@ -45,7 +45,7 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies:
 ///   - dt_variables_tag,
-///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
+///   - Tags::HistoryEvolvedVariables<variables_tag>
 template <typename VariablesTag = NoSuchType>
 struct RecordTimeStepperData {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -61,8 +61,7 @@ struct RecordTimeStepperData {
                             typename Metavariables::system::variables_tag,
                             VariablesTag>;
     using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
-    using history_tag =
-        Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
+    using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
 
     db::mutate<dt_variables_tag, history_tag>(
         make_not_null(&box),

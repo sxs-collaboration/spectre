@@ -180,19 +180,13 @@ SPECTRE_TEST_CASE(
   const auto& coordinates_history = ActionTesting::get_databox_tag<
       component,
       ::Tags::HistoryEvolvedVariables<
-          typename metavariables::evolved_coordinates_variables_tag,
-          db::add_tag_prefix<
-              ::Tags::dt,
-              typename metavariables::evolved_coordinates_variables_tag>>>(
-      runner, 0);
+          typename metavariables::evolved_coordinates_variables_tag>>(runner,
+                                                                      0);
   CHECK(coordinates_history.size() == 0);
   const auto& evolved_swsh_history = ActionTesting::get_databox_tag<
-      component, ::Tags::HistoryEvolvedVariables<
-                     ::Tags::Variables<
-                         tmpl::list<typename metavariables::evolved_swsh_tag>>,
-                     ::Tags::Variables<tmpl::list<
-                         typename metavariables::evolved_swsh_dt_tag>>>>(runner,
-                                                                         0);
+      component, ::Tags::HistoryEvolvedVariables<::Tags::Variables<
+                     tmpl::list<typename metavariables::evolved_swsh_tag>>>>(
+      runner, 0);
   CHECK(evolved_swsh_history.size() == 0);
 
   // the tensor storage variables inserted during the `CharacteristicTags` step

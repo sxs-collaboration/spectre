@@ -96,7 +96,7 @@ struct System<true> : SystemBase<true> {
   };
 };
 
-using history_tag = Tags::HistoryEvolvedVariables<Var, Tags::dt<Var>>;
+using history_tag = Tags::HistoryEvolvedVariables<Var>;
 
 template <typename Metavariables>
 struct Component;  // IWYU pragma: keep

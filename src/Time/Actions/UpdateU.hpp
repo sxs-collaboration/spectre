@@ -32,13 +32,11 @@ namespace Actions {
 /// \ingroup TimeGroup
 /// \brief Perform variable updates for one substep
 ///
-/// With `dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>`:
-///
 /// Uses:
 /// - DataBox:
 ///   - variables_tag (either the provided `VariablesTag` or the
 ///   `system::variables_tag` if none is provided)
-///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
+///   - Tags::HistoryEvolvedVariables<variables_tag>
 ///   - Tags::TimeStep
 ///   - Tags::TimeStepper<>
 ///
@@ -47,7 +45,7 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies:
 ///   - variables_tag
-///   - Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>
+///   - Tags::HistoryEvolvedVariables<variables_tag>
 template <typename VariablesTag = NoSuchType>
 struct UpdateU {
   template <typename DbTags, typename... InboxTags, typename Metavariables,
@@ -62,9 +60,7 @@ struct UpdateU {
         tmpl::conditional_t<cpp17::is_same_v<VariablesTag, NoSuchType>,
                             typename Metavariables::system::variables_tag,
                             VariablesTag>;
-    using dt_variables_tag = db::add_tag_prefix<Tags::dt, variables_tag>;
-    using history_tag =
-        Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
+    using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
 
     db::mutate<variables_tag, history_tag>(
         make_not_null(&box),

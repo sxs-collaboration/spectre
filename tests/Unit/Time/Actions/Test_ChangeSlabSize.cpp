@@ -58,7 +58,7 @@ struct Component {
 
   using simple_tags =
       tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-                 Tags::HistoryEvolvedVariables<Var, Tags::dt<Var>>>;
+                 Tags::HistoryEvolvedVariables<Var>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,

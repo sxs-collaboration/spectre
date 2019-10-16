@@ -83,7 +83,7 @@ void check_case(const Frac& expected_frac,
     struct Tag : db::SimpleTag {
       using type = std::nullptr_t;
     };
-    using history_tag = Tags::HistoryEvolvedVariables<Tag, Tag>;
+    using history_tag = Tags::HistoryEvolvedVariables<Tag>;
     db::item_type<history_tag> lts_history{};
     db::item_type<history_tag> gts_history{};
 

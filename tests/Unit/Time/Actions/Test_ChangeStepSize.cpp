@@ -40,7 +40,7 @@ struct Var : db::SimpleTag {
   using type = double;
 };
 
-using history_tag = Tags::HistoryEvolvedVariables<Var, Tags::dt<Var>>;
+using history_tag = Tags::HistoryEvolvedVariables<Var>;
 
 struct System {
   using variables_tag = Var;

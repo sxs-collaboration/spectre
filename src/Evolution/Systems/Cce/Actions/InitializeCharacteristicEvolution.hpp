@@ -95,13 +95,10 @@ struct InitializeCharacteristicEvolution {
         db::add_tag_prefix<::Tags::dt, coordinate_variables_tag>;
     using evolution_simple_tags = db::AddSimpleTags<
         ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-        ::Tags::HistoryEvolvedVariables<coordinate_variables_tag,
-                                        dt_coordinate_variables_tag>,
+        ::Tags::HistoryEvolvedVariables<coordinate_variables_tag>,
         ::Tags::HistoryEvolvedVariables<
             ::Tags::Variables<
-                tmpl::list<typename Metavariables::evolved_swsh_tag>>,
-            ::Tags::Variables<
-                tmpl::list<typename Metavariables::evolved_swsh_dt_tag>>>>;
+                tmpl::list<typename Metavariables::evolved_swsh_tag>>>>;
     using evolution_compute_tags =
         db::AddComputeTags<::Tags::SubstepTimeCompute>;
 
@@ -123,15 +120,12 @@ struct InitializeCharacteristicEvolution {
       TimeStepId second_time_id =
           time_stepper.next_time_id(initial_time_id, fixed_time_step);
 
-      db::item_type<::Tags::HistoryEvolvedVariables<
-          coordinate_variables_tag, dt_coordinate_variables_tag>>
+      db::item_type<::Tags::HistoryEvolvedVariables<coordinate_variables_tag>>
           coordinate_history;
 
       db::item_type<::Tags::HistoryEvolvedVariables<
           ::Tags::Variables<
-              tmpl::list<typename Metavariables::evolved_swsh_tag>>,
-          ::Tags::Variables<
-              tmpl::list<typename Metavariables::evolved_swsh_dt_tag>>>>
+              tmpl::list<typename Metavariables::evolved_swsh_tag>>>>
           swsh_history;
 
       return Initialization::merge_into_databox<
