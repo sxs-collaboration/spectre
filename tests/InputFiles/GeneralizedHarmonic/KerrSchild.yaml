@@ -11,20 +11,25 @@
 Evolution:
   InitialTime: 0.0
   InitialTimeStep: 0.01
-  TimeStepper: RungeKutta3
+  TimeStepper:
+    AdamsBashforthN:
+      Order: 1
 
 DomainCreator:
-    Brick:
-      LowerBound: [4.0, -0.5, -0.5]
-      UpperBound: [5.0, 0.5, 0.5]
-      InitialRefinement: [1, 1, 1]
-      InitialGridPoints: [5, 5, 5]
-      IsPeriodicIn: [false, false, false]
+    Shell:
+      InnerRadius: 1.9
+      OuterRadius: 2.3
+      InitialRefinement: 0
+      InitialGridPoints: [5, 5]
+      UseEquiangularMap: true
+      AspectRatio: 1.0
+      UseLogarithmicMap: true
+      RadialBlockLayers: 1
 
 AnalyticSolution:
   KerrSchild:
     Mass: 1.0
-    Spin: [0.0, 0.0, 0.4]
+    Spin: [0.0, 0.0, 0.0]
     Center: [0.0, 0.0, 0.0]
 
 EvolutionSystem:
@@ -46,9 +51,24 @@ EventsAndTriggers:
       N: 5
       Offset: 0
   : - ObserveFields
-  ? PastTime: 0.03
+  ? EveryNSlabs:
+      N: 5
+      Offset: 2
+  : - Interpolate
+  ? SpecifiedSlabs:
+      Slabs: [3]
   : - Completion
 
 Observers:
   VolumeFileName: "GhKerrSchildVolumeData"
   ReductionFileName: "GhKerrSchildReductionData"
+
+ApparentHorizons:
+  Horizon:
+    InitialGuess:
+      Lmax: 4
+      Radius: 2.2
+      Center: [0.0, 0.0, 0.0]
+    FastFlow:
+      Flow: Fast
+    Verbosity: Verbose

@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 set(LIBS_TO_LINK
+    ApparentHorizons
     CoordinateMaps
     DiscontinuousGalerkin
     Domain
@@ -12,6 +13,7 @@ set(LIBS_TO_LINK
     GeneralizedHarmonicGaugeSourceFunctions
     IO
     Informer
+    Interpolation
     LinearOperators
     MathFunctions
     Time
