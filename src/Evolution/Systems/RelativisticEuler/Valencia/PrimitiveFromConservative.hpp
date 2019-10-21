@@ -6,7 +6,11 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
@@ -56,18 +60,37 @@ namespace Valencia {
  * see the paper for details.
  */
 template <size_t ThermodynamicDim, size_t Dim>
-void primitive_from_conservative(
-    gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-    gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-    gsl::not_null<Scalar<DataVector>*> lorentz_factor,
-    gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
-    gsl::not_null<Scalar<DataVector>*> pressure,
-    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> spatial_velocity,
-    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
-    const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
-        equation_of_state) noexcept;
+struct PrimitiveFromConservative {
+  using return_tags = tmpl::list<
+      hydro::Tags::RestMassDensity<DataVector>,
+      hydro::Tags::SpecificInternalEnergy<DataVector>,
+      hydro::Tags::LorentzFactor<DataVector>,
+      hydro::Tags::SpecificEnthalpy<DataVector>,
+      hydro::Tags::Pressure<DataVector>,
+      hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>>;
+
+  using argument_tags =
+      tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,
+                 RelativisticEuler::Valencia::Tags::TildeTau,
+                 RelativisticEuler::Valencia::Tags::TildeS<Dim>,
+                 gr::Tags::InverseSpatialMetric<Dim>,
+                 gr::Tags::SqrtDetSpatialMetric<>,
+                 hydro::Tags::EquationOfStateBase>;
+
+  static void apply(
+      gsl::not_null<Scalar<DataVector>*> rest_mass_density,
+      gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
+      gsl::not_null<Scalar<DataVector>*> lorentz_factor,
+      gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
+      gsl::not_null<Scalar<DataVector>*> pressure,
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          spatial_velocity,
+      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
+      const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+          equation_of_state) noexcept;
+};
 }  // namespace Valencia
 }  // namespace RelativisticEuler
