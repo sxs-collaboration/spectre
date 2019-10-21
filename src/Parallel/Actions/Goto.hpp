@@ -7,6 +7,7 @@
 #include <tuple>
 #include <type_traits>
 
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -81,4 +82,54 @@ struct Goto {
                                                            false, index);
   }
 };
+
+namespace Goto_detail {
+
+template <typename ConditionTag>
+struct RepeatEnd;
+
+template <typename ConditionTag>
+struct RepeatStart {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
+      db::DataBox<DbTagsList>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {std::move(box), false,
+            db::get<ConditionTag>(box)
+                ? tmpl::index_of<ActionList, RepeatEnd<ConditionTag>>::value + 1
+                : tmpl::index_of<ActionList, RepeatStart>::value + 1};
+  }
+};
+
+template <typename ConditionTag>
+struct RepeatEnd {
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static std::tuple<db::DataBox<DbTagsList>&&, bool, size_t> apply(
+      db::DataBox<DbTagsList>& box,
+      tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    return {
+        std::move(box), false,
+        db::get<ConditionTag>(box)
+            ? tmpl::index_of<ActionList, RepeatEnd>::value + 1
+            : tmpl::index_of<ActionList, RepeatStart<ConditionTag>>::value + 1};
+  }
+};
+
+}  // namespace Goto_detail
+
+/// Repeats the `ActionList` until `ConditionTag` is `True`.
+template <typename ConditionTag, typename ActionList>
+using RepeatUntil =
+    tmpl::flatten<tmpl::list<Goto_detail::RepeatStart<ConditionTag>, ActionList,
+                             Goto_detail::RepeatEnd<ConditionTag>>>;
 }  // namespace Actions

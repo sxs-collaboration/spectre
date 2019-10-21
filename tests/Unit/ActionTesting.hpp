@@ -428,7 +428,11 @@ class MockDistributedObject {
         std::forward<Options>(opts)...);
   }
 
-  void set_phase(PhaseType phase) noexcept { phase_ = phase; }
+  void set_phase(PhaseType phase) noexcept {
+    phase_ = phase;
+    algorithm_step_ = 0;
+    terminate_ = number_of_actions_in_phase(phase) == 0;
+  }
   PhaseType get_phase() const noexcept { return phase_; }
 
   void set_terminate(bool t) noexcept { terminate_ = t; }
@@ -437,6 +441,18 @@ class MockDistributedObject {
   // Actions may call this, but since tests step through actions manually it has
   // no effect.
   void perform_algorithm() noexcept {}
+
+  size_t number_of_actions_in_phase(const PhaseType phase) const noexcept {
+    size_t number_of_actions = 0;
+    tmpl::for_each<phase_dependent_action_lists>(
+        [&number_of_actions, phase](auto pdal_v) {
+          const auto pdal = tmpl::type_from<decltype(pdal_v)>{};
+          if (pdal.phase == phase) {
+            number_of_actions = pdal.number_of_actions;
+          }
+        });
+    return number_of_actions;
+  }
 
   // @{
   /// Returns the DataBox with the tags set from the ConstGlobalCache and the
