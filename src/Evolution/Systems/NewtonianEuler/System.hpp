@@ -12,6 +12,7 @@
 #include "Evolution/Systems/NewtonianEuler/ConservativeFromPrimitive.hpp"
 #include "Evolution/Systems/NewtonianEuler/Fluxes.hpp"
 #include "Evolution/Systems/NewtonianEuler/PrimitiveFromConservative.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
@@ -27,7 +28,7 @@ class Variables;
 /// \brief Items related to evolving the Newtonian Euler system
 namespace NewtonianEuler {
 
-template <size_t Dim, typename EquationOfStateType>
+template <size_t Dim, typename EquationOfStateType, typename InitialDataType>
 struct System {
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = true;
@@ -59,10 +60,12 @@ struct System {
 
   using volume_fluxes = ComputeFluxes<Dim>;
 
+  using volume_sources = ComputeSources<InitialDataType>;
+
   using compute_time_derivative = ConservativeDuDt<System>;
 
-  // The sources for this system vanish.
-  using sourced_variables = tmpl::list<>;
+  using sourced_variables =
+      typename InitialDataType::source_term_type::sourced_variables;
 };
 
 }  // namespace NewtonianEuler
