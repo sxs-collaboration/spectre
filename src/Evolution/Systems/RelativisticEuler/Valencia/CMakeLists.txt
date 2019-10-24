@@ -6,6 +6,7 @@ set(LIBRARY Valencia)
 set(LIBRARY_SOURCES
   Characteristics.cpp
   ConservativeFromPrimitive.cpp
+  FixConservatives.cpp
   Fluxes.cpp
   PrimitiveFromConservative.cpp
   Sources.cpp
