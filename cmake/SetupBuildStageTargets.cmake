@@ -42,7 +42,6 @@ add_dependencies(test-libs-elliptic
 add_dependencies(test-libs-evolution
   Test_EvolutionActions
   Test_EvolutionConservative
-  Test_EvolutionDiscontinuousGalerkin
   Test_Limiters
   Test_EventsAndTriggers
   Test_Burgers

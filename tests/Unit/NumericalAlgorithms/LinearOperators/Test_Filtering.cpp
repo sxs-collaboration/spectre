@@ -17,8 +17,9 @@
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/Filtering.hpp"
 #include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
+#include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
+#include "NumericalAlgorithms/LinearOperators/FilterAction.hpp"
 #include "NumericalAlgorithms/Spectral/Filtering.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Parallel/ParallelComponentHelpers.hpp"
@@ -73,12 +74,13 @@ struct Component {
           typename Metavariables::Phase, Metavariables::Phase::Testing,
           tmpl::conditional_t<
               metavariables::filter_individually,
-              tmpl::list<dg::Actions::ExponentialFilter<
-                             0, tmpl::list<Tags::ScalarVar>>,
-                         dg::Actions::ExponentialFilter<
-                             1, tmpl::list<Tags::VectorVar<dim>>>>,
-              tmpl::list<dg::Actions::ExponentialFilter<
-                  0, tmpl::list<Tags::VectorVar<dim>, Tags::ScalarVar>>>>>>;
+              tmpl::list<dg::Actions::Filter<Filters::Exponential<0>,
+                                             tmpl::list<Tags::ScalarVar>>,
+                         dg::Actions::Filter<Filters::Exponential<1>,
+                                             tmpl::list<Tags::VectorVar<dim>>>>,
+              tmpl::list<dg::Actions::Filter<
+                  Filters::Exponential<0>,
+                  tmpl::list<Tags::VectorVar<dim>, Tags::ScalarVar>>>>>>;
   /// [action_list_example]
 };
 
@@ -98,10 +100,9 @@ typename ActionTesting::MockRuntimeSystem<Metavariables>::CacheTuple
 create_cache_tuple(const double alpha, const unsigned half_power,
                    const bool disable_for_debugging) noexcept {
   constexpr size_t dim = Metavariables::system::volume_dim;
-  return {dg::Actions::ExponentialFilter<0, tmpl::list<Tags::ScalarVar>>{
-              alpha, half_power, disable_for_debugging},
-          dg::Actions::ExponentialFilter<1, tmpl::list<Tags::VectorVar<dim>>>{
-              2.0 * alpha, 2 * half_power, disable_for_debugging}};
+  return {Filters::Exponential<0>{alpha, half_power, disable_for_debugging},
+          Filters::Exponential<1>{2.0 * alpha, 2 * half_power,
+                                  disable_for_debugging}};
 }
 
 template <typename Metavariables,
@@ -110,9 +111,7 @@ typename ActionTesting::MockRuntimeSystem<Metavariables>::CacheTuple
 create_cache_tuple(const double alpha, const unsigned half_power,
                    const bool disable_for_debugging) noexcept {
   constexpr size_t dim = Metavariables::system::volume_dim;
-  return {dg::Actions::ExponentialFilter<
-      0, tmpl::list<Tags::VectorVar<dim>, Tags::ScalarVar>>{
-      alpha, half_power, disable_for_debugging}};
+  return {Filters::Exponential<0>{alpha, half_power, disable_for_debugging}};
 }
 
 template <size_t Dim, Spectral::Basis BasisType,
@@ -127,9 +126,11 @@ void test_exponential_filter_action(const double alpha,
   using metavariables = Metavariables<Dim, FilterIndividually>;
   using component = Component<metavariables>;
 
+  // Division by Dim to reduce time of test
   for (size_t num_pts =
            Spectral::minimum_number_of_points<BasisType, QuadratureType>;
-       num_pts < Spectral::maximum_number_of_points<BasisType>; ++num_pts) {
+       num_pts < Spectral::maximum_number_of_points<BasisType> / Dim;
+       ++num_pts) {
     CAPTURE(num_pts);
     const Mesh<Dim> mesh(num_pts, BasisType, QuadratureType);
 
@@ -197,19 +198,19 @@ template <size_t Dim, bool FilterIndividually>
 void invoke_test_exponential_filter_action(
     const double alpha, const unsigned half_power,
     const bool disable_for_debugging) noexcept {
-  test_exponential_filter_action<1, Spectral::Basis::Legendre,
+  test_exponential_filter_action<Dim, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::GaussLobatto,
                                  FilterIndividually>(alpha, half_power,
                                                      disable_for_debugging);
-  test_exponential_filter_action<1, Spectral::Basis::Legendre,
+  test_exponential_filter_action<Dim, Spectral::Basis::Legendre,
                                  Spectral::Quadrature::Gauss,
                                  FilterIndividually>(alpha, half_power,
                                                      disable_for_debugging);
-  test_exponential_filter_action<1, Spectral::Basis::Chebyshev,
+  test_exponential_filter_action<Dim, Spectral::Basis::Chebyshev,
                                  Spectral::Quadrature::GaussLobatto,
                                  FilterIndividually>(alpha, half_power,
                                                      disable_for_debugging);
-  test_exponential_filter_action<1, Spectral::Basis::Chebyshev,
+  test_exponential_filter_action<Dim, Spectral::Basis::Chebyshev,
                                  Spectral::Quadrature::Gauss,
                                  FilterIndividually>(alpha, half_power,
                                                      disable_for_debugging);
@@ -217,8 +218,7 @@ void invoke_test_exponential_filter_action(
 
 template <size_t Dim>
 void test_exponential_filter_creation() noexcept {
-  using Filter = dg::Actions::ExponentialFilter<
-      0, tmpl::list<Tags::ScalarVar, Tags::VectorVar<Dim>>>;
+  using Filter = Filters::Exponential<0>;
 
   const Filter filter = test_creation<Filter>(
       "  Alpha: 36\n"
@@ -236,7 +236,8 @@ void test_exponential_filter_creation() noexcept {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.dG.ExponentialFilter", "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Filter",
+                  "[NumericalAlgorithms][LinearOperators][Unit]") {
   // Can't do a loop over different alpha and half_power values because matrices
   // are cached in the action.
   const double alpha = 10.0;

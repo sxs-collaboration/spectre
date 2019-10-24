@@ -13,7 +13,6 @@
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/ComputeTags.hpp"
 #include "Evolution/DiscontinuousGalerkin/DgElementArray.hpp"  // IWYU pragma: keep
-#include "Evolution/DiscontinuousGalerkin/Filtering.hpp"  // IWYU pragma: keep
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/NonconservativeSystem.hpp"
@@ -29,6 +28,8 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ImposeBoundaryConditions.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "NumericalAlgorithms/LinearOperators/ExponentialFilter.hpp"
+#include "NumericalAlgorithms/LinearOperators/FilterAction.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/InitializationFunctions.hpp"
@@ -121,6 +122,12 @@ struct EvolutionMetavars {
                  StepChoosers::Registrars::Constant,
                  StepChoosers::Registrars::Increase>;
 
+  // The scalar wave system generally does not require filtering, except
+  // possibly on certain deformed domains.  Here a filter is added in 2D for
+  // testing purposes.  When performing numerical experiments with the scalar
+  // wave system, the user should determine whether this filter can be removed.
+  static constexpr bool use_filtering = (2 == volume_dim);
+
   using step_actions = tmpl::flatten<tmpl::list<
       dg::Actions::ComputeNonconservativeBoundaryFluxes<
           Tags::InternalDirections<Dim>>,
@@ -136,14 +143,13 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      Actions::UpdateU
-      // To add filtering to the executable add the action:
-      //
-      // dg::Actions::ExponentialFilter<0,
-      //     tmpl::list<ScalarWave::Pi, ScalarWave::Psi, ScalarWave::Phi<Dim>>>
-      //
-      // here.
-      >>;
+      Actions::UpdateU,
+      tmpl::conditional_t<
+          use_filtering,
+          dg::Actions::Filter<Filters::Exponential<0>,
+                              tmpl::list<ScalarWave::Pi, ScalarWave::Psi,
+                                         ScalarWave::Phi<Dim>>>,
+          tmpl::list<>>>>;
 
   enum class Phase {
     Initialization,

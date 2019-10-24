@@ -841,7 +841,7 @@ void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
       element, mesh, element_size, neighbor_vars);
 
   // The 3D Simple WENO solution has slightly larger numerical error
-  Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
+  Approx custom_approx = Approx::custom().epsilon(1.e-11).scale(1.0);
   test_weno_work<3>(Limiters::WenoType::SimpleWeno, element, mesh, element_size,
                     local_vars, neighbor_data, neighbor_modified_vars,
                     custom_approx);
