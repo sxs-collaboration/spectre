@@ -23,6 +23,7 @@
 #include "Evolution/Initialization/Evolution.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/NewtonianEuler/SoundSpeedSquared.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
 #include "Evolution/Systems/NewtonianEuler/System.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "IO/Observer/Actions.hpp"
@@ -88,18 +89,26 @@ struct EvolutionMetavars {
 
   using equation_of_state_type = typename initial_data::equation_of_state_type;
 
-  using system = NewtonianEuler::System<Dim, equation_of_state_type>;
+  using source_term_type = typename initial_data::source_term_type;
+
+  using system =
+      NewtonianEuler::System<Dim, equation_of_state_type, initial_data>;
 
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
 
   using initial_data_tag = Tags::AnalyticSolution<initial_data>;
+
   using boundary_condition_tag = initial_data_tag;
   using analytic_variables_tags =
       typename system::primitive_variables_tag::tags_list;
 
   using equation_of_state_tag =
       hydro::Tags::EquationOfState<equation_of_state_type>;
+
+  using source_term_tag = NewtonianEuler::Tags::SourceTerm<initial_data>;
+  static constexpr bool has_source_terms =
+      not cpp17::is_same_v<source_term_type, NewtonianEuler::Sources::NoSource>;
 
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<dg::NumericalFluxes::Hll<system>>;
@@ -136,6 +145,8 @@ struct EvolutionMetavars {
   using step_actions = tmpl::flatten<tmpl::list<
       Actions::ComputeVolumeFluxes,
       dg::Actions::SendDataForFluxes<EvolutionMetavars>,
+      tmpl::conditional_t<has_source_terms, Actions::ComputeVolumeSources,
+                          tmpl::list<>>,
       Actions::ComputeTimeDerivative,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
@@ -218,11 +229,12 @@ struct EvolutionMetavars {
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
                       step_actions, Actions::AdvanceTime>>>>>>;
 
-  using const_global_cache_tags =
-      tmpl::list<initial_data_tag,
-                 Tags::TimeStepper<tmpl::conditional_t<
-                     local_time_stepping, LtsTimeStepper, TimeStepper>>,
-                 Tags::EventsAndTriggers<events, triggers>>;
+  using const_global_cache_tags = tmpl::list<
+      initial_data_tag,
+      tmpl::conditional_t<has_source_terms, source_term_tag, tmpl::list<>>,
+      Tags::TimeStepper<tmpl::conditional_t<local_time_stepping, LtsTimeStepper,
+                                            TimeStepper>>,
+      Tags::EventsAndTriggers<events, triggers>>;
 
   static constexpr OptionString help{
       "Evolve the Newtonian Euler system in conservative form.\n\n"};

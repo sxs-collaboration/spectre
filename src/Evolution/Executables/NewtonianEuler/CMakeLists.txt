@@ -13,6 +13,7 @@ set(LIBS_TO_LINK
   MathFunctions
   NewtonianEuler
   NewtonianEulerSolutions
+  NewtonianEulerSources
   Time
   Utilities
   )

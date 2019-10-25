@@ -9,6 +9,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/VortexPerturbation.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
@@ -74,7 +75,7 @@ namespace Solutions {
  * but a function of the \f$z\f$ coordinate, the resulting modified isentropic
  * vortex is still a solution to the Newtonian Euler system, but with source
  * terms that are proportional to \f$dv_z/dz\f$. (See
- * NewtonianEuler::Sources::IsentropicVortexSource.) For testing purposes,
+ * NewtonianEuler::Sources::VortexPerturbation.) For testing purposes,
  * we choose to write the velocity as a uniform field plus a periodic
  * perturbation,
  *
@@ -93,6 +94,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
 
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<false>;
+  using source_term_type = Sources::VortexPerturbation<Dim>;
 
   /// The adiabatic index of the fluid.
   struct AdiabaticIndex {
@@ -118,6 +120,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
     using type = double;
     static constexpr OptionString help = {
         "The amplitude of the perturbation producing sources."};
+    static constexpr type default_value() noexcept { return 0.0; }
   };
 
   /// The strength of the vortex.
@@ -127,8 +130,12 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
     static type lower_bound() noexcept { return 0.0; }
   };
 
-  using options = tmpl::list<AdiabaticIndex, Center, MeanVelocity,
-                             PerturbAmplitude, Strength>;
+  using options = tmpl::conditional_t<
+      Dim == 3,
+      tmpl::list<AdiabaticIndex, Center, MeanVelocity, Strength,
+                 PerturbAmplitude>,
+      tmpl::list<AdiabaticIndex, Center, MeanVelocity, Strength>>;
+
   static constexpr OptionString help = {
       "Newtonian Isentropic Vortex. Works in 2 and 3 dimensions."};
 
@@ -142,7 +149,9 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   IsentropicVortex(double adiabatic_index,
                    const std::array<double, Dim>& center,
                    const std::array<double, Dim>& mean_velocity,
-                   double perturbation_amplitude, double strength);
+                   double strength,
+                   double perturbation_amplitude =
+                       PerturbAmplitude::default_value()) noexcept;
 
   /// Retrieve a collection of hydrodynamic variables at position x and time t
   template <typename DataType, typename... Tags>
@@ -154,13 +163,30 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
     IntermediateVariables<DataType> vars(x, t, center_, mean_velocity_,
-                                         perturbation_amplitude_, strength_);
+                                         strength_);
     return {tuples::get<Tags>(variables(tmpl::list<Tags>{}, vars))...};
+  }
+
+  /// Function of `z` coordinate to compute the perturbation generating
+  /// a source term. Public so the corresponding source class can also use it.
+  template <typename DataType>
+  DataType perturbation_profile(const DataType& z) const noexcept;
+
+  template <typename DataType>
+  DataType deriv_of_perturbation_profile(const DataType& z) const noexcept;
+
+  // To be used by VortexPerturbation source term
+  double perturbation_amplitude() const noexcept {
+    return perturbation_amplitude_;
   }
 
   const EquationsOfState::PolytropicFluid<false>& equation_of_state() const
       noexcept {
     return equation_of_state_;
+  }
+
+  const Sources::VortexPerturbation<Dim>& source_term() const noexcept {
+    return source_term_;
   }
 
   // clang-tidy: no runtime references
@@ -197,13 +223,12 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
     IntermediateVariables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
                           double t, const std::array<double, Dim>& center,
                           const std::array<double, Dim>& mean_velocity,
-                          double perturbation_amplitude,
                           double strength) noexcept;
     DataType x_tilde{};
     DataType y_tilde{};
     DataType profile{};
-    // (3D only) Extra term in the velocity along z that generates sources.
-    DataType perturbation{};
+    // (3D only) z-coordinate to compute perturbation term
+    DataType z_coord{};
   };
 
   template <size_t SpatialDim>
@@ -217,13 +242,20 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
       make_array<Dim>(std::numeric_limits<double>::signaling_NaN());
   std::array<double, Dim> mean_velocity_ =
       make_array<Dim>(std::numeric_limits<double>::signaling_NaN());
-  double perturbation_amplitude_ = std::numeric_limits<double>::signaling_NaN();
+  double perturbation_amplitude_ = 0.0;
   double strength_ = std::numeric_limits<double>::signaling_NaN();
 
   // This is an ideal gas undergoing an isentropic process,
   // so the relation between the pressure and the mass density is polytropic,
   // where the polytropic exponent corresponds to the adiabatic index.
   EquationsOfState::PolytropicFluid<false> equation_of_state_{};
+
+  // In 2-D the source terms vanish. Since we can't have this member typed for
+  // Dim = 3 only (?) we opt to have it in 2-D as well. This member will then be
+  // initialized in 2 and 3-D, but the 2-D class won't introduce any source
+  // terms, and its apply function won't modify anything
+  // (see Sources::VortexPerturbation implementation for details.)
+  Sources::VortexPerturbation<Dim> source_term_{};
 };
 
 template <size_t Dim>

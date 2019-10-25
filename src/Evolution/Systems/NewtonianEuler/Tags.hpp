@@ -9,6 +9,9 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/NewtonianEuler/TagsDeclarations.hpp"
+#include "Evolution/TypeTraits.hpp"
+#include "PointwiseFunctions/AnalyticData/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 
 namespace NewtonianEuler {
 /// %Tags for the conservative formulation of the Newtonian Euler system
@@ -87,5 +90,24 @@ struct SoundSpeedSquared : db::SimpleTag {
   using type = Scalar<DataType>;
   static std::string name() noexcept { return "SoundSpeedSquared"; }
 };
+
+/// Base tag for the source term
+struct SourceTermBase {};
+
+/// The source term in the evolution equations
+template <typename InitialDataType>
+struct SourceTerm : SourceTermBase, db::SimpleTag {
+  using type = typename InitialDataType::source_term_type;
+  using option_tags = tmpl::list<
+      tmpl::conditional_t<evolution::is_analytic_solution_v<InitialDataType>,
+                          ::OptionTags::AnalyticSolution<InitialDataType>,
+                          ::OptionTags::AnalyticData<InitialDataType>>>;
+  static std::string name() noexcept { return "SourceTerm"; }
+  static type create_from_options(
+      const InitialDataType& initial_data) noexcept {
+    return initial_data.source_term();
+  }
+};
+
 }  // namespace Tags
 }  // namespace NewtonianEuler

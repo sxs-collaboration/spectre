@@ -10,6 +10,10 @@
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 
 class DataVector;
+struct SomeSourceType {};
+struct SomeInitialDataType {
+  using source_term_type = SomeSourceType;
+};
 
 namespace {
 template <size_t Dim>
@@ -36,6 +40,8 @@ void test_tags() noexcept {
   CHECK(NewtonianEuler::Tags::SoundSpeed<DataVector>::name() == "SoundSpeed");
   CHECK(NewtonianEuler::Tags::SoundSpeedSquared<DataVector>::name() ==
         "SoundSpeedSquared");
+  CHECK(NewtonianEuler::Tags::SourceTerm<SomeInitialDataType>::name() ==
+        "SourceTerm");
 }
 }  // namespace
 

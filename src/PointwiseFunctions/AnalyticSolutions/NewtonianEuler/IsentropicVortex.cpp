@@ -5,11 +5,13 @@
 
 #include <cmath>
 #include <cstddef>
+#include <limits>
 #include <pup.h>  // IWYU pragma: keep
 
 #include "DataStructures/DataVector.hpp"                   // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/VortexPerturbation.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "Utilities/ConstantExpressions.hpp"
@@ -26,8 +28,8 @@ namespace Solutions {
 template <size_t Dim>
 IsentropicVortex<Dim>::IsentropicVortex(
     const double adiabatic_index, const std::array<double, Dim>& center,
-    const std::array<double, Dim>& mean_velocity,
-    const double perturbation_amplitude, const double strength)
+    const std::array<double, Dim>& mean_velocity, const double strength,
+    const double perturbation_amplitude) noexcept
     : adiabatic_index_(adiabatic_index),
       center_(center),
       mean_velocity_(mean_velocity),
@@ -35,6 +37,14 @@ IsentropicVortex<Dim>::IsentropicVortex(
       strength_(strength),
       // Polytropic constant is set equal to 1.0
       equation_of_state_(1.0, adiabatic_index) {
+  if (Dim == 2) {
+    ASSERT(
+        abs(perturbation_amplitude_) < std::numeric_limits<double>::epsilon(),
+        "A nonzero perturbation amplitude only makes sense in 3 dimensions. "
+        "The value given was "
+            << perturbation_amplitude);
+  }
+
   ASSERT(strength_ >= 0.0,
          "The strength must be non-negative. The value given "
          "was "
@@ -49,6 +59,22 @@ void IsentropicVortex<Dim>::pup(PUP::er& p) noexcept {
   p | perturbation_amplitude_;
   p | strength_;
   p | equation_of_state_;
+  p | source_term_;
+}
+
+// Can be any smooth function of z. For testing purposes, we choose sin(z).
+template <size_t Dim>
+template <typename DataType>
+DataType IsentropicVortex<Dim>::perturbation_profile(const DataType& z) const
+    noexcept {
+  return sin(z);
+}
+
+template <size_t Dim>
+template <typename DataType>
+DataType IsentropicVortex<Dim>::deriv_of_perturbation_profile(
+    const DataType& z) const noexcept {
+  return cos(z);
 }
 
 template <size_t Dim>
@@ -57,14 +83,13 @@ IsentropicVortex<Dim>::IntermediateVariables<DataType>::IntermediateVariables(
     const tnsr::I<DataType, Dim, Frame::Inertial>& x, const double t,
     const std::array<double, Dim>& center,
     const std::array<double, Dim>& mean_velocity,
-    const double perturbation_amplitude, const double strength) noexcept {
+    const double strength) noexcept {
   x_tilde = get<0>(x) - center[0] - t * mean_velocity[0];
   y_tilde = get<1>(x) - center[1] - t * mean_velocity[1];
   profile = 0.5 * strength *
             exp(0.5 - 0.5 * (square(x_tilde) + square(y_tilde))) / M_PI;
   if (Dim == 3) {
-    // Can be any smooth function of z. For testing purpose, we choose sin(z).
-    perturbation = perturbation_amplitude * sin(get<Dim - 1>(x));
+    z_coord = get<Dim - 1>(x);
   }
 }
 
@@ -94,7 +119,8 @@ IsentropicVortex<Dim>::variables(
   get<0>(velocity) -= vars.y_tilde * vars.profile;
   get<1>(velocity) += vars.x_tilde * vars.profile;
   if (Dim == 3) {
-    get<Dim - 1>(velocity) += vars.perturbation;
+    get<Dim - 1>(velocity) +=
+        perturbation_amplitude_ * perturbation_profile(vars.z_coord);
   }
   return velocity;
 }
@@ -123,8 +149,8 @@ tuples::TaggedTuple<Tags::Pressure<DataType>> IsentropicVortex<Dim>::variables(
 template <size_t Dim>
 bool operator==(const IsentropicVortex<Dim>& lhs,
                 const IsentropicVortex<Dim>& rhs) noexcept {
-  // No comparison for equation_of_state_. Comparing adiabatic_index_ should
-  // suffice.
+  // No comparison for equation_of_state_ or source_term_. Comparing individual
+  // members should suffice.
   return lhs.adiabatic_index_ == rhs.adiabatic_index_ and
          lhs.center_ == rhs.center_ and
          lhs.mean_velocity_ == rhs.mean_velocity_ and
@@ -144,15 +170,24 @@ bool operator!=(const IsentropicVortex<Dim>& lhs,
 
 #define INSTANTIATE_CLASS(_, data)                                            \
   template class IsentropicVortex<DIM(data)>;                                 \
-  template struct IsentropicVortex<DIM(data)>::IntermediateVariables<double>; \
-  template struct IsentropicVortex<DIM(                                       \
-      data)>::IntermediateVariables<DataVector>;                              \
   template bool operator==(const IsentropicVortex<DIM(data)>&,                \
                            const IsentropicVortex<DIM(data)>&) noexcept;      \
   template bool operator!=(const IsentropicVortex<DIM(data)>&,                \
                            const IsentropicVortex<DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (2, 3))
+
+#define INSTANTIATE_MEMBERS(_, data)                                           \
+  template struct IsentropicVortex<DIM(data)>::IntermediateVariables<DTYPE(    \
+      data)>;                                                                  \
+  template DTYPE(data)                                                         \
+      IsentropicVortex<DIM(data)>::perturbation_profile(const DTYPE(data) & z) \
+          const noexcept;                                                      \
+  template DTYPE(data)                                                         \
+      IsentropicVortex<DIM(data)>::deriv_of_perturbation_profile(              \
+          const DTYPE(data) & z) const noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_MEMBERS, (2, 3), (double, DataVector))
 
 #define INSTANTIATE_SCALARS(_, data)                     \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data)>> \
