@@ -19,8 +19,9 @@
 namespace Limiters {
 namespace Minmod_detail {
 
-MinmodResult minmod_tvbm(const double a, const double b, const double c,
-                         const double tvbm_scale) noexcept {
+MinmodResult tvb_corrected_minmod(const double a, const double b,
+                                  const double c,
+                                  const double tvbm_scale) noexcept {
   if (fabs(a) <= tvbm_scale) {
     return {a, false};
   }

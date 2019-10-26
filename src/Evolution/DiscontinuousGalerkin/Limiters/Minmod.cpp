@@ -107,8 +107,8 @@ bool minmod_limited_slopes(
     const double lower_slope = 0.5 * difference_to_neighbor(d, Side::Lower);
 
     const MinmodResult result =
-        minmod_tvbm(local_slope, max_slope_factor * upper_slope,
-                    max_slope_factor * lower_slope, tvbm_scale);
+        tvb_corrected_minmod(local_slope, max_slope_factor * upper_slope,
+                             max_slope_factor * lower_slope, tvbm_scale);
     gsl::at(*u_limited_slopes, d) = result.value;
     if (result.activated) {
       slopes_need_reducing = true;

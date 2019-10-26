@@ -57,12 +57,15 @@ bool troubled_cell_indicator(
     const double diff_upper = difference_to_neighbor(d, Side::Upper);
 
     // Results from SpECTRE paper (https://arxiv.org/abs/1609.00098) used
-    // minmod_tvbm(..., 0.0), rather than minmod_tvbm(..., tvbm_scale)
+    // tvb_corrected_minmod(..., 0.0), rather than
+    // tvb_corrected_minmod(..., tvbm_scale)
     const bool activated_lower =
-        minmod_tvbm(u_mean - u_lower, diff_lower, diff_upper, tvbm_scale)
+        tvb_corrected_minmod(u_mean - u_lower, diff_lower, diff_upper,
+                             tvbm_scale)
             .activated;
     const bool activated_upper =
-        minmod_tvbm(u_upper - u_mean, diff_lower, diff_upper, tvbm_scale)
+        tvb_corrected_minmod(u_upper - u_mean, diff_lower, diff_upper,
+                             tvbm_scale)
             .activated;
     if (activated_lower or activated_upper) {
       return true;
