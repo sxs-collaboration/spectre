@@ -35,7 +35,6 @@ add_dependencies(test-libs-elliptic
   Test_EllipticDG
   Test_Elasticity
   Test_Poisson
-  Test_PoissonActions
   Test_Xcts
   )
 

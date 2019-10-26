@@ -7,19 +7,21 @@
 
 #include "Domain/Creators/RegisterDerivedWithCharm.hpp"
 #include "Domain/Tags.hpp"
+#include "Elliptic/Actions/InitializeAnalyticSolution.hpp"
 #include "Elliptic/Actions/InitializeSystem.hpp"
 #include "Elliptic/DiscontinuousGalerkin/DgElementArray.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeInhomogeneousBoundaryConditionsOnSource.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeFluxes.hpp"
 #include "Elliptic/FirstOrderOperator.hpp"
-#include "Elliptic/Systems/Poisson/Actions/Observe.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Tags.hpp"
+#include "Elliptic/Triggers/EveryNIterations.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "IO/Observer/Actions.hpp"
 #include "IO/Observer/Helpers.hpp"
 #include "IO/Observer/ObserverComponent.hpp"
+#include "IO/Observer/RegisterObservers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ApplyFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/ComputeNonconservativeBoundaryFluxes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Actions/FluxCommunication.hpp"
@@ -35,6 +37,9 @@
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeInterfaces.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeMortars.hpp"
+#include "ParallelAlgorithms/Events/ObserveErrorNorms.hpp"
+#include "ParallelAlgorithms/Events/ObserveFields.hpp"
+#include "ParallelAlgorithms/EventsAndTriggers/Actions/RunEventsAndTriggers.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
 #include "ParallelAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
@@ -76,20 +81,39 @@ struct Metavariables {
   using normal_dot_numerical_flux =
       Tags::NumericalFlux<Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
 
+  // Collect events and triggers
+  // (public for use by the Charm++ registration code)
+  using observe_fields =
+      db::get_variables_tags_list<typename system::fields_tag>;
+  using analytic_solution_fields = observe_fields;
+  using events = tmpl::list<
+      dg::Events::Registrars::ObserveFields<
+          Dim, LinearSolver::Tags::IterationId, observe_fields,
+          analytic_solution_fields>,
+      dg::Events::Registrars::ObserveErrorNorms<LinearSolver::Tags::IterationId,
+                                                analytic_solution_fields>>;
+  using triggers = tmpl::list<elliptic::Triggers::Registrars::EveryNIterations<
+      LinearSolver::Tags::IterationId>>;
+
   // Collect all items to store in the cache.
   using const_global_cache_tags =
       tmpl::list<analytic_solution_tag,
-                 elliptic::Tags::FluxesComputer<typename system::fluxes>>;
+                 elliptic::Tags::FluxesComputer<typename system::fluxes>,
+                 Tags::EventsAndTriggers<events, triggers>>;
 
   // Collect all reduction tags for observers
-  using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::list<Poisson::Actions::Observe, linear_solver>>;
+  struct element_observation_type {};
+  using observed_reduction_data_tags =
+      observers::collect_reduction_data_tags<tmpl::flatten<tmpl::list<
+          typename Event<events>::creatable_classes, linear_solver>>>;
 
   // Specify all global synchronization points.
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
 
   using initialization_actions = tmpl::list<
       dg::Actions::InitializeDomain<Dim>, elliptic::Actions::InitializeSystem,
+      elliptic::Actions::InitializeAnalyticSolution<analytic_solution_tag,
+                                                    analytic_solution_fields>,
       dg::Actions::InitializeInterfaces<
           system,
           dg::Initialization::slice_tags_to_face<
@@ -116,12 +140,14 @@ struct Metavariables {
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
-                                 Poisson::Actions::Observe>,
+                                 observers::RegisterObservers<
+                                     LinearSolver::Tags::IterationId,
+                                     element_observation_type>>,
                              Parallel::Actions::TerminatePhase>>,
 
               Parallel::PhaseActions<
                   Phase, Phase::Solve,
-                  tmpl::list<Poisson::Actions::Observe,
+                  tmpl::list<Actions::RunEventsAndTriggers,
                              LinearSolver::Actions::TerminateIfConverged,
                              dg::Actions::SendDataForFluxes<Metavariables>,
                              Actions::MutateApply<elliptic::FirstOrderOperator<
@@ -163,7 +189,11 @@ struct Metavariables {
 };
 
 static const std::vector<void (*)()> charm_init_node_funcs{
-    &setup_error_handling, &domain::creators::register_derived_with_charm};
+    &setup_error_handling, &domain::creators::register_derived_with_charm,
+    &Parallel::register_derived_classes_with_charm<
+        Event<metavariables::events>>,
+    &Parallel::register_derived_classes_with_charm<
+        Trigger<metavariables::triggers>>};
 static const std::vector<void (*)()> charm_init_proc_funcs{
     &enable_floating_point_exceptions};
 /// \endcond

@@ -72,10 +72,8 @@ struct ContributeReductionDataToWriter;
  *
  * \snippet ObserverHelpers.hpp make_reduction_data_tags
  *
- * Then, in the `Metavariables` collect them from all observing Actions like
- * this:
- *
- * \snippet tests/Unit/Elliptic/Systems/Poisson/Actions/Test_Observe.cpp collect_reduction_data_tags
+ * Then, in the `Metavariables` collect them from all observing Actions using
+ * the `observers::collect_reduction_data_tags` metafunction.
  */
 struct ContributeReductionData {
   template <
