@@ -6,6 +6,7 @@ set(LIBRARY "Test_NewtonianEulerLimiters")
 set(LIBRARY_SOURCES
   Test_CharacteristicHelpers.cpp
   Test_Flattener.cpp
+  Test_KxrcfTci.cpp
   )
 
 add_test_library(
