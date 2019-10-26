@@ -37,5 +37,6 @@ target_link_libraries(
   INTERFACE Hydro
   )
 
+add_subdirectory(Limiters)
 add_subdirectory(NumericalFluxes)
 add_subdirectory(Sources)
