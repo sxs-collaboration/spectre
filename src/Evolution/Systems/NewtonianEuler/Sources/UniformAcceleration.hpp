@@ -14,6 +14,10 @@
 /// \cond
 class DataVector;
 
+namespace PUP {
+class er;
+}  // namespace PUP
+
 namespace gsl {
 template <typename>
 struct not_null;
