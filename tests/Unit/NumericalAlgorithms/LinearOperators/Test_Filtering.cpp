@@ -99,7 +99,6 @@ template <typename Metavariables,
 typename ActionTesting::MockRuntimeSystem<Metavariables>::CacheTuple
 create_cache_tuple(const double alpha, const unsigned half_power,
                    const bool disable_for_debugging) noexcept {
-  constexpr size_t dim = Metavariables::system::volume_dim;
   return {Filters::Exponential<0>{alpha, half_power, disable_for_debugging},
           Filters::Exponential<1>{2.0 * alpha, 2 * half_power,
                                   disable_for_debugging}};
@@ -110,7 +109,6 @@ template <typename Metavariables,
 typename ActionTesting::MockRuntimeSystem<Metavariables>::CacheTuple
 create_cache_tuple(const double alpha, const unsigned half_power,
                    const bool disable_for_debugging) noexcept {
-  constexpr size_t dim = Metavariables::system::volume_dim;
   return {Filters::Exponential<0>{alpha, half_power, disable_for_debugging}};
 }
 
