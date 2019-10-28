@@ -27,23 +27,22 @@ void characteristic_speeds(
     const tnsr::i<DataVector, Dim>& normal) noexcept {
   const size_t num_grid_points = get<0>(shift).size();
   // Allocating a single large buffer is much faster than many small buffers
-  Variables<
-      tmpl::list<Tags::TempScalar<0>, Tags::TempScalar<1>, Tags::TempScalar<2>,
-                 Tags::TempScalar<3>, Tags::TempScalar<4>>>
+  Variables<tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
+                       ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
+                       ::Tags::TempScalar<4>>>
       temp_tensors{num_grid_points};
 
   // Because we don't require char_speeds to be of the correct size we use a
   // temp buffer for the dot product, then multiply by -1 assigning the result
   // to char_speeds.
   {
-    Scalar<DataVector>& normal_shift =
-        get<Tags::TempScalar<0>>(temp_tensors);
+    Scalar<DataVector>& normal_shift = get<::Tags::TempScalar<0>>(temp_tensors);
     dot_product(make_not_null(&normal_shift), normal, shift);
     (*char_speeds)[0] = -1.0 * get(normal_shift);
   }
   // Dim-fold degenerate eigenvalue, reuse normal_shift allocation
   Scalar<DataVector>& normal_velocity =
-      get<Tags::TempScalar<0>>(temp_tensors);
+      get<::Tags::TempScalar<0>>(temp_tensors);
   dot_product(make_not_null(&normal_velocity), normal, spatial_velocity);
   (*char_speeds)[1] = (*char_speeds)[0] + get(lapse) * get(normal_velocity);
   for (size_t i = 2; i < Dim + 1; ++i) {
@@ -51,17 +50,17 @@ void characteristic_speeds(
   }
 
   Scalar<DataVector>& one_minus_v_sqrd_cs_sqrd =
-      get<Tags::TempScalar<1>>(temp_tensors);
+      get<::Tags::TempScalar<1>>(temp_tensors);
   get(one_minus_v_sqrd_cs_sqrd) =
       1.0 - get(spatial_velocity_squared) * get(sound_speed_squared);
   Scalar<DataVector>& vn_times_one_minus_cs_sqrd =
-      get<Tags::TempScalar<2>>(temp_tensors);
+      get<::Tags::TempScalar<2>>(temp_tensors);
   get(vn_times_one_minus_cs_sqrd) =
       get(normal_velocity) * (1.0 - get(sound_speed_squared));
 
-  Scalar<DataVector>& first_term = get<Tags::TempScalar<3>>(temp_tensors);
+  Scalar<DataVector>& first_term = get<::Tags::TempScalar<3>>(temp_tensors);
   get(first_term) = get(lapse) / get(one_minus_v_sqrd_cs_sqrd);
-  Scalar<DataVector>& second_term = get<Tags::TempScalar<4>>(temp_tensors);
+  Scalar<DataVector>& second_term = get<::Tags::TempScalar<4>>(temp_tensors);
   get(second_term) =
       get(first_term) * sqrt(get(sound_speed_squared)) *
       sqrt((1.0 - get(spatial_velocity_squared)) *

@@ -6,14 +6,21 @@
 #include <array>
 #include <cstddef>
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Domain/FaceNormal.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "Utilities/Gsl.hpp"
+#include "Utilities/TMPL.hpp"
 
 /// \cond
 class DataVector;
-namespace gsl {
-template <class>
-class not_null;
-}  // namespace gsl
+namespace Tags {
+template <typename Tag>
+struct Normalized;
+}  // namespace Tags
 /// \endcond
 
 // IWYU pragma: no_forward_declare Tensor
@@ -21,6 +28,7 @@ class not_null;
 namespace RelativisticEuler {
 namespace Valencia {
 
+// @{
 /*!
  * \brief Compute the characteristic speeds for the Valencia formulation
  * of the relativistic Euler system.
@@ -64,6 +72,39 @@ std::array<DataVector, Dim + 2> characteristic_speeds(
     const Scalar<DataVector>& spatial_velocity_squared,
     const Scalar<DataVector>& sound_speed_squared,
     const tnsr::i<DataVector, Dim>& normal) noexcept;
+// @}
+
+namespace Tags {
+
+template <size_t Dim>
+struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
+                                     db::ComputeTag {
+  using argument_tags =
+      tmpl::list<gr::Tags::Lapse<>, gr::Tags::Shift<Dim>,
+                 gr::Tags::SpatialMetric<Dim>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 hydro::Tags::SoundSpeedSquared<DataVector>,
+                 ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
+
+  using volume_tags = tmpl::list<>;
+
+  using return_type = std::array<DataVector, Dim + 2>;
+
+  static constexpr void function(
+      const gsl::not_null<return_type*> result, const Scalar<DataVector>& lapse,
+      const tnsr::I<DataVector, Dim>& shift,
+      const tnsr::ii<DataVector, Dim>& spatial_metric,
+      const tnsr::I<DataVector, Dim>& spatial_velocity,
+      const Scalar<DataVector>& sound_speed_squared,
+      const tnsr::i<DataVector, Dim>& unit_normal) noexcept {
+    characteristic_speeds(
+        result, lapse, shift, spatial_velocity,
+        dot_product(spatial_velocity, spatial_velocity, spatial_metric),
+        sound_speed_squared, unit_normal);
+  }
+};
+
+}  // namespace Tags
 
 }  // namespace Valencia
 }  // namespace RelativisticEuler
