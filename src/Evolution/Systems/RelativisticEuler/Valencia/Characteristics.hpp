@@ -106,5 +106,10 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
 
 }  // namespace Tags
 
+struct ComputeLargestCharacteristicSpeed {
+  using argument_tags = tmpl::list<>;
+  static double apply() noexcept { return 1.0; }
+};
+
 }  // namespace Valencia
 }  // namespace RelativisticEuler
