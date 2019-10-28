@@ -18,6 +18,12 @@ namespace RelativisticEuler {
 namespace Valencia {
 /// %Tags for the Valencia formulation of the relativistic Euler system.
 namespace Tags {
+/// The characteristic speeds
+template <size_t Dim>
+struct CharacteristicSpeeds : db::SimpleTag {
+  using type = std::array<DataVector, Dim + 2>;
+  static std::string name() noexcept { return "CharacteristicSpeeds"; }
+};
 
 /// The densitized rest-mass density \f${\tilde D}\f$
 struct TildeD : db::SimpleTag {
