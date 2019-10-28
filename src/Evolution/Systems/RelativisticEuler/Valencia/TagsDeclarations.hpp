@@ -13,6 +13,8 @@ class DataVector;
 namespace RelativisticEuler {
 namespace Valencia {
 namespace Tags {
+template <size_t Dim>
+struct CharacteristicSpeeds;
 struct TildeD;
 struct TildeTau;
 template <size_t Dim, typename Fr = Frame::Inertial>
