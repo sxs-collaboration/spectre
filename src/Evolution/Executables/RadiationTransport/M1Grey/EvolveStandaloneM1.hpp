@@ -19,6 +19,7 @@
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
+#include "Evolution/Initialization/GrTagsForHydro.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/Initialize.hpp"
 #include "Evolution/Systems/RadiationTransport/M1Grey/System.hpp"
@@ -164,8 +165,7 @@ struct EvolutionMetavars {
   };
 
   using initialization_actions = tmpl::list<
-      dg::Actions::InitializeDomain<3>,
-      RadiationTransport::M1Grey::Actions::InitializeGrTags,
+      dg::Actions::InitializeDomain<3>, Initialization::Actions::GrTagsForHydro,
       Initialization::Actions::ConservativeSystem,
       RadiationTransport::M1Grey::Actions::InitializeM1Tags,
       Actions::UpdateM1Closure,

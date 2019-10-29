@@ -21,9 +21,9 @@
 #include "Evolution/Initialization/ConservativeSystem.hpp"
 #include "Evolution/Initialization/DiscontinuousGalerkin.hpp"
 #include "Evolution/Initialization/Evolution.hpp"
+#include "Evolution/Initialization/GrTagsForHydro.hpp"
 #include "Evolution/Initialization/Limiter.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/FixConservatives.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Initialize.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/NewmanHamlin.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/PalenzuelaEtAl.hpp"
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/System.hpp"
@@ -190,8 +190,7 @@ struct EvolutionMetavars {
   };
 
   using initialization_actions = tmpl::list<
-      dg::Actions::InitializeDomain<3>,
-      grmhd::ValenciaDivClean::Actions::InitializeGrTags,
+      dg::Actions::InitializeDomain<3>, Initialization::Actions::GrTagsForHydro,
       Initialization::Actions::ConservativeSystem,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
