@@ -1,0 +1,62 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# Executable: EvolveValenciaSmoothFlow2D
+# Check: parse;execute
+
+Evolution:
+  InitialTime: 0.0
+  InitialTimeStep: 0.001
+  TimeStepper:
+    RungeKutta3
+
+DomainCreator:
+  Rectangle:
+    LowerBound: [0.0, 0.0]
+    UpperBound: [0.1, 0.1]
+    IsPeriodicIn: [false, false]
+    InitialRefinement: [0, 0]
+    InitialGridPoints: [4, 4]
+
+AnalyticSolution:
+  SmoothFlow:
+    MeanVelocity: [0.1, 0.25]
+    WaveVector: [2.1, 4.8]
+    Pressure: 1.0
+    AdiabaticIndex: 1.4
+    PerturbationSize: 0.7
+
+NumericalFlux:
+  LocalLaxFriedrichs:
+
+Limiter:
+  Minmod:
+    # Uncomment line below to turn off the limiter:
+    # DisableForDebugging: True
+    Type: LambdaPiN
+    # Recommended value from minmod papers:
+    TvbmConstant: 100.0
+
+VariableFixing:
+  FixConservatives:
+    MinimumValueOfD: 1.e-12
+    CutoffD: 1.2e-12
+    SafetyFactorForS: 1.e-12
+  FixToAtmosphere:
+    DensityOfAtmosphere: 1.e-12
+    DensityCutoff: 1.2e-12
+
+EventsAndTriggers:
+  # ? EveryNSlabs:
+  #     N: 100
+  #     Offset: 0
+  # : - ObserveFields:
+  #       VariablesToObserve: [RestMassDensity]
+  # ? PastTime: 1.001
+  ? SpecifiedSlabs:
+      Slabs: [10]
+  : - Completion
+
+Observers:
+  VolumeFileName: "./ValenciaSmoothFlowVolume2D"
+  ReductionFileName: "./ValenciaSmoothFlowReductions2D"
