@@ -9,9 +9,9 @@
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/RootFinding/QuadraticEquation.hpp"
 
-// [[OutputRegex, Assumes that there are two real roots]]
+// [[OutputRegex, There are only 0 real roots]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.RealRoots.TwoRealRoots",
+    "Unit.Numerical.RootFinding.real_roots.no_real_roots",
     "[NumericalAlgorithms][RootFinding][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -20,9 +20,9 @@
 #endif
 }
 
-// [[OutputRegex, Assumes that there are two real roots]]
+// [[OutputRegex, There are only 0 real roots]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.PositiveRoot.TwoRealRoots",
+    "Unit.Numerical.RootFinding.positive_root.no_real_roots",
     "[NumericalAlgorithms][RootFinding][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -31,9 +31,9 @@
 #endif
 }
 
-// [[OutputRegex, Ensures violated: x0 <= 0.0 and x1 >= 0.0]]
+// [[OutputRegex, There are two positive roots]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.PositiveRoot.TwoPosRoots",
+    "Unit.Numerical.RootFinding.positive_root.two_positive_roots",
     "[NumericalAlgorithms][RootFinding][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
@@ -42,27 +42,23 @@
 #endif
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.OnePositiveRoot",
+SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.positive_root",
                   "[NumericalAlgorithms][RootFinding][Unit]") {
   CHECK(approx(6.31662479035539985) == positive_root(1.0, -6.0, -2.0));
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.RealRoots",
+SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.real_roots",
                   "[NumericalAlgorithms][RootFinding][Unit]") {
-  auto roots = real_roots(2.0, -11.0, 5.0);
+  const auto roots = real_roots(2.0, -11.0, 5.0);
   CHECK(approx(0.5) == roots[0]);
   CHECK(approx(5.0) == roots[1]);
-}
 
-SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.Accuracy",
-                  "[NumericalAlgorithms][RootFinding][Unit]") {
-  auto small_positive = real_roots(1e-8, 1.0 - 1e-16, -1e-8);
-  std::sort(small_positive.begin(), small_positive.end());
+  // Check accuracy with small roots
+  const auto small_positive = real_roots(1e-8, 1.0 - 1e-16, -1e-8);
   CHECK(approx(-1e8) == small_positive[0]);
   CHECK(approx(1e-8) == small_positive[1]);
 
-  auto small_negative = real_roots(1e-8, -(1.0 - 1e-16), -1e-8);
-  std::sort(small_negative.begin(), small_negative.end());
+  const auto small_negative = real_roots(1e-8, -(1.0 - 1e-16), -1e-8);
   CHECK(approx(-1e-8) == small_negative[0]);
   CHECK(approx(1e8) == small_negative[1]);
 }
