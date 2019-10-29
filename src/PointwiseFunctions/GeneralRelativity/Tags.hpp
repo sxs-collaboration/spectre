@@ -189,6 +189,21 @@ struct WeylElectric : db::SimpleTag {
 };
 }  // namespace Tags
 
+/// GR Tags commonly needed for the evolution of hydro systems
+template <size_t Dim, typename DataType>
+using tags_for_hydro = tmpl::list<
+    gr::Tags::Lapse<DataType>, gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
+    gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>,
+    gr::Tags::SqrtDetSpatialMetric<DataType>,
+    ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
+                  Frame::Inertial>,
+    ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial>,
+    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
+                  tmpl::size_t<Dim>, Frame::Inertial>,
+    gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>>;
+
 /// The tags for the variables returned by GR analytic solutions.
 template <size_t Dim, typename DataType>
 using analytic_solution_tags = tmpl::list<
