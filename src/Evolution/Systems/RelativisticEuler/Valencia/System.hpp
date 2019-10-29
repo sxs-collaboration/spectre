@@ -5,7 +5,17 @@
 
 #include <cstddef>
 
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
+#include "DataStructures/Variables.hpp"
+#include "Evolution/Conservative/ConservativeDuDt.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/Characteristics.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/ConservativeFromPrimitive.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/Fluxes.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/PrimitiveFromConservative.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/Sources.hpp"
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Tags {
@@ -21,14 +31,45 @@ namespace RelativisticEuler {
 /// Zanotti or http://iopscience.iop.org/article/10.1086/303604
 namespace Valencia {
 
-template <size_t Dim>
+template <size_t Dim, typename EquationOfStateType>
 struct System {
   static constexpr bool is_in_flux_conservative_form = true;
   static constexpr bool has_primitive_and_conservative_vars = true;
   static constexpr size_t volume_dim = Dim;
+  static constexpr size_t thermodynamic_dim =
+      EquationOfStateType::thermodynamic_dim;
 
-  using variables_tag =
-      Tags::Variables<tmpl::list<TildeD, TildeTau, TildeS<Dim>>>;
+  using primitive_variables_tag = ::Tags::Variables<
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim>>>;
+  using variables_tag = ::Tags::Variables<
+      tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Dim>>>;
+
+  using spacetime_variables_tag =
+      ::Tags::Variables<gr::tags_for_hydro<Dim, DataVector>>;
+
+  using conservative_from_primitive = ConservativeFromPrimitive<Dim>;
+  using primitive_from_conservative =
+      PrimitiveFromConservative<thermodynamic_dim, Dim>;
+
+  template <typename Tag>
+  using magnitude_tag = ::Tags::NonEuclideanMagnitude<
+      Tag, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
+
+  using char_speeds_tag = Tags::CharacteristicSpeedsCompute<Dim>;
+
+  using volume_fluxes = ComputeFluxes<Dim>;
+
+  using volume_sources = ComputeSources<Dim>;
+
+  using compute_time_derivative = ConservativeDuDt<System>;
+
+  // source for TildeD is zero.
+  using sourced_variables = tmpl::list<Tags::TildeTau, Tags::TildeS<Dim>>;
 };
 
 }  // namespace Valencia
