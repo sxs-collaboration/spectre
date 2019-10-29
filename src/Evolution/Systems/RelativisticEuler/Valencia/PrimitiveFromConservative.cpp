@@ -3,6 +3,7 @@
 
 #include "Evolution/Systems/RelativisticEuler/Valencia/PrimitiveFromConservative.hpp"
 
+#include <boost/none.hpp>
 #include <cmath>
 #include <limits>
 
@@ -110,11 +111,16 @@ void PrimitiveFromConservative<ThermodynamicDim, Dim>::apply(
       FunctionOfZ<ThermodynamicDim>{tilde_d, tilde_tau, tilde_s_magnitude,
                                     sqrt_det_spatial_metric, equation_of_state};
 
-  const auto z =
-      // NOLINTNEXTLINE(clang-analyzer-core)
-      RootFinder::toms748(f_of_z, lower_bound, upper_bound,
-                          10.0 * std::numeric_limits<double>::epsilon(),
-                          10.0 * std::numeric_limits<double>::epsilon(), 100);
+  DataVector z;
+  try {
+    // NOLINTNEXTLINE(clang-analyzer-core)
+    z = RootFinder::toms748(f_of_z, lower_bound, upper_bound,
+                            10.0 * std::numeric_limits<double>::epsilon(),
+                            10.0 * std::numeric_limits<double>::epsilon(), 100);
+  } catch (std::exception& exception) {
+    ERROR("Failed to find z with TOMS748 root finder. Got exception message:\n"
+          << exception.what());
+  }
   get(*lorentz_factor) = sqrt(1.0 + square(z));
   get(*rest_mass_density) =
       get(tilde_d) / (get(*lorentz_factor) * get(sqrt_det_spatial_metric));
