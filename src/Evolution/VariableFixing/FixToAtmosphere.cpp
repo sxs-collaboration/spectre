@@ -8,6 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/Overloader.hpp"
 
 // IWYU pragma: no_include <array>
 
@@ -16,8 +17,8 @@
 
 namespace VariableFixing {
 
-template <size_t ThermodynamicDim>
-FixToAtmosphere<ThermodynamicDim>::FixToAtmosphere(
+template <size_t Dim, size_t ThermodynamicDim>
+FixToAtmosphere<Dim, ThermodynamicDim>::FixToAtmosphere(
     const double density_of_atmosphere, const double density_cutoff,
     const OptionContext& context)
     : density_of_atmosphere_(density_of_atmosphere),
@@ -32,100 +33,96 @@ FixToAtmosphere<ThermodynamicDim>::FixToAtmosphere(
 }
 
 // clang-tidy: google-runtime-references
-template <size_t ThermodynamicDim>
-void FixToAtmosphere<ThermodynamicDim>::pup(PUP::er& p) noexcept {  // NOLINT
+template <size_t Dim, size_t ThermodynamicDim>
+void FixToAtmosphere<Dim, ThermodynamicDim>::pup(
+    PUP::er& p) noexcept {  // NOLINT
   p | density_of_atmosphere_;
   p | density_cutoff_;
 }
 
-template <>
-void FixToAtmosphere<1>::operator()(
+template <size_t Dim, size_t ThermodynamicDim>
+void FixToAtmosphere<Dim, ThermodynamicDim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
         spatial_velocity,
     const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
     const gsl::not_null<Scalar<DataVector>*> pressure,
     const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
-    const EquationsOfState::EquationOfState<true, 1>& equation_of_state) const
-    noexcept {
+    const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
+        equation_of_state) const noexcept {
   for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
     if (UNLIKELY(rest_mass_density->get()[i] < density_cutoff_)) {
       rest_mass_density->get()[i] = density_of_atmosphere_;
-      for (size_t d = 0; d < 3; ++d) {
+      for (size_t d = 0; d < Dim; ++d) {
         spatial_velocity->get(d)[i] = 0.0;
       }
       lorentz_factor->get()[i] = 1.0;
       Scalar<double> atmosphere_density{density_of_atmosphere_};
-      pressure->get()[i] =
-          get(equation_of_state.pressure_from_density(atmosphere_density));
-      specific_internal_energy->get()[i] =
-          get(equation_of_state.specific_internal_energy_from_density(
-              atmosphere_density));
-      specific_enthalpy->get()[i] = get(
-          equation_of_state.specific_enthalpy_from_density(atmosphere_density));
+      make_overloader(
+          [
+            &atmosphere_density, &pressure, &specific_internal_energy,
+            &specific_enthalpy, &i
+          ](const EquationsOfState::EquationOfState<true, 1>&
+                the_equation_of_state) noexcept {
+            pressure->get()[i] =
+                get(the_equation_of_state.pressure_from_density(
+                    atmosphere_density));
+            specific_internal_energy->get()[i] =
+                get(the_equation_of_state.specific_internal_energy_from_density(
+                    atmosphere_density));
+            specific_enthalpy->get()[i] =
+                get(the_equation_of_state.specific_enthalpy_from_density(
+                    atmosphere_density));
+          },
+          [
+            &atmosphere_density, &pressure, &specific_internal_energy,
+            &specific_enthalpy, &i
+          ](const EquationsOfState::EquationOfState<true, 2>&
+                the_equation_of_state) noexcept {
+            Scalar<double> atmosphere_energy{0.0};
+            pressure->get()[i] =
+                get(the_equation_of_state.pressure_from_density_and_energy(
+                    atmosphere_density, atmosphere_energy));
+            specific_internal_energy->get()[i] = get(atmosphere_energy);
+            specific_enthalpy->get()[i] = get(
+                the_equation_of_state.specific_enthalpy_from_density_and_energy(
+                    atmosphere_density, atmosphere_energy));
+          })(equation_of_state);
     }
   }
 }
 
-template <>
-void FixToAtmosphere<2>::operator()(
-    const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
-    const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-        spatial_velocity,
-    const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
-    const gsl::not_null<Scalar<DataVector>*> pressure,
-    const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
-    const EquationsOfState::EquationOfState<true, 2>& equation_of_state) const
-    noexcept {
-  for (size_t i = 0; i < rest_mass_density->get().size(); i++) {
-    if (UNLIKELY(rest_mass_density->get()[i] < density_cutoff_)) {
-      rest_mass_density->get()[i] = density_of_atmosphere_;
-      specific_internal_energy->get()[i] = 0.0;
-      for (size_t d = 0; d < 3; ++d) {
-        spatial_velocity->get(d)[i] = 0.0;
-      }
-      lorentz_factor->get()[i] = 1.0;
-      Scalar<double> atmosphere_density{density_of_atmosphere_};
-      Scalar<double> atmosphere_energy{0.0};
-      pressure->get()[i] =
-          get(equation_of_state.pressure_from_density_and_energy(
-              atmosphere_density, atmosphere_energy));
-      specific_enthalpy->get()[i] =
-          get(equation_of_state.specific_enthalpy_from_density_and_energy(
-              atmosphere_density, atmosphere_energy));
-    }
-  }
-}
-
-template <size_t LocalThermodynamicDim>
-bool operator==(const FixToAtmosphere<LocalThermodynamicDim>& lhs,
-                const FixToAtmosphere<LocalThermodynamicDim>& rhs) noexcept {
+template <size_t Dim, size_t LocalThermodynamicDim>
+bool operator==(
+    const FixToAtmosphere<Dim, LocalThermodynamicDim>& lhs,
+    const FixToAtmosphere<Dim, LocalThermodynamicDim>& rhs) noexcept {
   return lhs.density_of_atmosphere_ == rhs.density_of_atmosphere_ and
          lhs.density_cutoff_ == rhs.density_cutoff_;
 }
 
-template <size_t ThermodynamicDim>
-bool operator!=(const FixToAtmosphere<ThermodynamicDim>& lhs,
-                const FixToAtmosphere<ThermodynamicDim>& rhs) noexcept {
+template <size_t Dim, size_t ThermodynamicDim>
+bool operator!=(const FixToAtmosphere<Dim, ThermodynamicDim>& lhs,
+                const FixToAtmosphere<Dim, ThermodynamicDim>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
-#define GET_DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
+#define THERMO_DIM(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATION(r, data)                             \
-  template class FixToAtmosphere<GET_DIM(data)>;           \
-  template bool operator==(                                \
-      const FixToAtmosphere<GET_DIM(data)>& lhs,           \
-      const FixToAtmosphere<GET_DIM(data)>& rhs) noexcept; \
-  template bool operator!=(                                \
-      const FixToAtmosphere<GET_DIM(data)>& lhs,           \
-      const FixToAtmosphere<GET_DIM(data)>& rhs) noexcept;
+#define INSTANTIATION(r, data)                                           \
+  template class FixToAtmosphere<DIM(data), THERMO_DIM(data)>;           \
+  template bool operator==(                                              \
+      const FixToAtmosphere<DIM(data), THERMO_DIM(data)>& lhs,           \
+      const FixToAtmosphere<DIM(data), THERMO_DIM(data)>& rhs) noexcept; \
+  template bool operator!=(                                              \
+      const FixToAtmosphere<DIM(data), THERMO_DIM(data)>& lhs,           \
+      const FixToAtmosphere<DIM(data), THERMO_DIM(data)>& rhs) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2))
+GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3), (1, 2))
 
-#undef GET_DIM
+#undef DIM
+#undef THERMO_DIM
 #undef INSTANTIATION
 
 }  // namespace VariableFixing

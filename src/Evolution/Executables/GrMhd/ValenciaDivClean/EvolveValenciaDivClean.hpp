@@ -194,7 +194,7 @@ struct EvolutionMetavars {
       grmhd::ValenciaDivClean::Actions::InitializeGrTags,
       Initialization::Actions::ConservativeSystem,
       VariableFixing::Actions::FixVariables<
-          VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
+          VariableFixing::FixToAtmosphere<volume_dim, thermodynamic_dim>>,
       Actions::UpdateConservatives,
       dg::Actions::InitializeInterfaces<
           system,
@@ -241,7 +241,8 @@ struct EvolutionMetavars {
                   Phase, Phase::Evolve,
                   tmpl::list<
                       VariableFixing::Actions::FixVariables<
-                          VariableFixing::FixToAtmosphere<thermodynamic_dim>>,
+                          VariableFixing::FixToAtmosphere<volume_dim,
+                                                          thermodynamic_dim>>,
                       Actions::UpdateConservatives,
                       Actions::RunEventsAndTriggers,
                       tmpl::conditional_t<
