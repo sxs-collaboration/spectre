@@ -104,12 +104,12 @@ bool troubled_cell_indicator(
               element, tensor_storage_index, neighbor_data);
 
       const DataVector& u = tensor[tensor_storage_index];
-      const bool tci_triggered = troubled_cell_indicator(
+      const bool component_needs_limiting = troubled_cell_indicator(
           make_not_null(&boundary_buffer), tvbm_constant, u, element, mesh,
           element_size, effective_neighbor_means, effective_neighbor_sizes,
           volume_and_slice_indices);
 
-      if (tci_triggered) {
+      if (component_needs_limiting) {
         some_component_needs_limiting = true;
         // Skip remaining components of this tensor
         return '0';

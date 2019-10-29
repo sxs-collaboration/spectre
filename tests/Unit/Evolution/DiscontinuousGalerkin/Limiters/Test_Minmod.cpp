@@ -181,7 +181,7 @@ void test_package_data_3d() noexcept {
 // Helper function to wrap the allocation of the optimization buffers for the
 // troubled cell indicator function.
 template <size_t VolumeDim>
-bool wrap_allocations_and_tci(
+bool wrap_minmod_limited_slopes(
     const gsl::not_null<double*> u_mean,
     const gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     const Limiters::MinmodType& minmod_type, const double tvbm_constant,
@@ -203,7 +203,7 @@ bool wrap_allocations_and_tci(
   const auto& volume_and_slice_indices =
       volume_and_slice_buffer_and_indices.second;
 
-  return Limiters::Minmod_detail::minmod_tci_wrapper(
+  return Limiters::Minmod_detail::minmod_limited_slopes(
       u_mean, u_limited_slopes, make_not_null(&u_lin_buffer),
       make_not_null(&boundary_buffer), minmod_type, tvbm_constant, u, element,
       mesh, element_size, effective_neighbor_means, effective_neighbor_sizes,
@@ -240,7 +240,7 @@ auto make_six_neighbors(const std::array<double, 6>& values) noexcept {
 // Test that TCI detects a troubled cell when expected, and returns the correct
 // mean and reduced slopes.
 template <size_t VolumeDim>
-void test_minmod_tci_activates(
+void test_minmod_activates(
     const Limiters::MinmodType& minmod_type, const double tvbm_constant,
     const DataVector& input, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
@@ -250,18 +250,18 @@ void test_minmod_tci_activates(
     const std::array<double, VolumeDim>& expected_slopes) noexcept {
   double u_mean{};
   std::array<double, VolumeDim> u_limited_slopes{};
-  const bool tci_activated = wrap_allocations_and_tci(
+  const bool reduce_slopes = wrap_minmod_limited_slopes(
       make_not_null(&u_mean), make_not_null(&u_limited_slopes), minmod_type,
       tvbm_constant, input, element, mesh, element_size,
       effective_neighbor_means, effective_neighbor_sizes);
-  CHECK(tci_activated);
+  CHECK(reduce_slopes);
   CHECK(u_mean == approx(mean_value(input, mesh)));
   CHECK_ITERABLE_APPROX(u_limited_slopes, expected_slopes);
 }
 
 // Test that TCI does not detect a troubled cell.
 template <size_t VolumeDim>
-void test_minmod_tci_does_not_activate(
+void test_minmod_does_not_activate(
     const Limiters::MinmodType& minmod_type, const double tvbm_constant,
     const DataVector& input, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
@@ -271,18 +271,18 @@ void test_minmod_tci_does_not_activate(
     const std::array<double, VolumeDim>& original_slopes) noexcept {
   double u_mean{};
   std::array<double, VolumeDim> u_limited_slopes{};
-  const bool tci_activated = wrap_allocations_and_tci(
+  const bool reduce_slopes = wrap_minmod_limited_slopes(
       make_not_null(&u_mean), make_not_null(&u_limited_slopes), minmod_type,
       tvbm_constant, input, element, mesh, element_size,
       effective_neighbor_means, effective_neighbor_sizes);
-  CHECK_FALSE(tci_activated);
+  CHECK_FALSE(reduce_slopes);
   if (minmod_type != Limiters::MinmodType::LambdaPiN) {
     CHECK(u_mean == approx(mean_value(input, mesh)));
     CHECK_ITERABLE_APPROX(u_limited_slopes, original_slopes);
   }
 }
 
-void test_tci_on_linear_function(
+void test_minmod_slopes_on_linear_function(
     const size_t number_of_grid_points,
     const Limiters::MinmodType& minmod_type) noexcept {
   INFO("Testing linear function...");
@@ -299,17 +299,16 @@ void test_tci_on_linear_function(
           const DataVector& local_input, const double left, const double right,
           const double expected_slope) noexcept {
     const auto expected_slopes = make_array<1>(expected_slope);
-    test_minmod_tci_activates(minmod_type, tvbm_constant, local_input, element,
-                              mesh, element_size,
-                              make_two_neighbors(left, right),
-                              make_two_neighbors(2.0, 2.0), expected_slopes);
+    test_minmod_activates(minmod_type, tvbm_constant, local_input, element,
+                          mesh, element_size, make_two_neighbors(left, right),
+                          make_two_neighbors(2.0, 2.0), expected_slopes);
   };
   const auto test_does_not_activate =
       [&minmod_type, &tvbm_constant, &element, &mesh, &element_size ](
           const DataVector& local_input, const double left, const double right,
           const double original_slope) noexcept {
     const auto original_slopes = make_array<1>(original_slope);
-    test_minmod_tci_does_not_activate(
+    test_minmod_does_not_activate(
         minmod_type, tvbm_constant, local_input, element, mesh, element_size,
         make_two_neighbors(left, right), make_two_neighbors(2.0, 2.0),
         original_slopes);
@@ -375,7 +374,7 @@ void test_tci_on_linear_function(
   }
 }
 
-void test_tci_on_quadratic_function(
+void test_minmod_slopes_on_quadratic_function(
     const size_t number_of_grid_points,
     const Limiters::MinmodType& minmod_type) noexcept {
   INFO("Testing quadratic function...");
@@ -392,17 +391,16 @@ void test_tci_on_quadratic_function(
           const DataVector& local_input, const double left, const double right,
           const double expected_slope) noexcept {
     const auto expected_slopes = make_array<1>(expected_slope);
-    test_minmod_tci_activates(minmod_type, tvbm_constant, local_input, element,
-                              mesh, element_size,
-                              make_two_neighbors(left, right),
-                              make_two_neighbors(2.0, 2.0), expected_slopes);
+    test_minmod_activates(minmod_type, tvbm_constant, local_input, element,
+                          mesh, element_size, make_two_neighbors(left, right),
+                          make_two_neighbors(2.0, 2.0), expected_slopes);
   };
   const auto test_does_not_activate =
       [&minmod_type, &tvbm_constant, &element, &mesh, &element_size ](
           const DataVector& local_input, const double left, const double right,
           const double original_slope) noexcept {
     const auto original_slopes = make_array<1>(original_slope);
-    test_minmod_tci_does_not_activate(
+    test_minmod_does_not_activate(
         minmod_type, tvbm_constant, local_input, element, mesh, element_size,
         make_two_neighbors(left, right), make_two_neighbors(2.0, 2.0),
         original_slopes);
@@ -439,7 +437,7 @@ void test_tci_on_quadratic_function(
   test_activates(input, 14.0, 2.3, 0.0);
 }
 
-void test_tci_with_tvbm_correction(
+void test_minmod_slopes_with_tvbm_correction(
     const size_t number_of_grid_points,
     const Limiters::MinmodType& minmod_type) noexcept {
   INFO("Testing TVBM correction...");
@@ -455,10 +453,9 @@ void test_tci_with_tvbm_correction(
       const double left, const double right,
       const double expected_slope) noexcept {
     const auto expected_slopes = make_array<1>(expected_slope);
-    test_minmod_tci_activates(minmod_type, tvbm_constant, local_input, element,
-                              mesh, element_size,
-                              make_two_neighbors(left, right),
-                              make_two_neighbors(2.0, 2.0), expected_slopes);
+    test_minmod_activates(minmod_type, tvbm_constant, local_input, element,
+                          mesh, element_size, make_two_neighbors(left, right),
+                          make_two_neighbors(2.0, 2.0), expected_slopes);
   };
   const auto test_does_not_activate =
       [&minmod_type, &element, &mesh, &
@@ -466,7 +463,7 @@ void test_tci_with_tvbm_correction(
                       const double left, const double right,
                       const double original_slope) noexcept {
     const auto original_slopes = make_array<1>(original_slope);
-    test_minmod_tci_does_not_activate(
+    test_minmod_does_not_activate(
         minmod_type, tvbm_constant, local_input, element, mesh, element_size,
         make_two_neighbors(left, right), make_two_neighbors(2.0, 2.0),
         original_slopes);
@@ -511,10 +508,10 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
       const double left, const double right,
       const double expected_slope) noexcept {
     const auto expected_slopes = make_array<1>(expected_slope);
-    test_minmod_tci_activates(Limiters::MinmodType::LambdaPiN, tvbm_constant,
-                              local_input, element, mesh, element_size,
-                              make_two_neighbors(left, right),
-                              make_two_neighbors(2.0, 2.0), expected_slopes);
+    test_minmod_activates(Limiters::MinmodType::LambdaPiN, tvbm_constant,
+                          local_input, element, mesh, element_size,
+                          make_two_neighbors(left, right),
+                          make_two_neighbors(2.0, 2.0), expected_slopes);
   };
   const auto test_does_not_activate = [&element, &mesh, &element_size ](
       const double tvbm_constant, const DataVector& local_input,
@@ -523,7 +520,7 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
     // no comparison is made. So set these to NaN
     const auto original_slopes =
         make_array<1>(std::numeric_limits<double>::signaling_NaN());
-    test_minmod_tci_does_not_activate(
+    test_minmod_does_not_activate(
         Limiters::MinmodType::LambdaPiN, tvbm_constant, local_input, element,
         mesh, element_size, make_two_neighbors(left, right),
         make_two_neighbors(2.0, 2.0), original_slopes);
@@ -565,8 +562,9 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
   test_does_not_activate(m2, input, 0.0, 9.99);
 }
 
-void test_tci_at_boundary(const size_t number_of_grid_points,
-                          const Limiters::MinmodType& minmod_type) noexcept {
+void test_minmod_slopes_at_boundary(
+    const size_t number_of_grid_points,
+    const Limiters::MinmodType& minmod_type) noexcept {
   INFO("Testing limiter at boundary...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
@@ -587,7 +585,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points,
   const auto element_at_lower_xi_boundary =
       TestHelpers::Limiters::make_element<1>({{Direction<1>::lower_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
-    test_minmod_tci_activates(
+    test_minmod_activates(
         minmod_type, tvbm_constant, input, element_at_lower_xi_boundary, mesh,
         element_size, {{std::make_pair(Direction<1>::upper_xi(), neighbor)}},
         {{std::make_pair(Direction<1>::upper_xi(), element_size[0])}},
@@ -598,7 +596,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points,
   const auto element_at_upper_xi_boundary =
       TestHelpers::Limiters::make_element<1>({{Direction<1>::upper_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
-    test_minmod_tci_activates(
+    test_minmod_activates(
         minmod_type, tvbm_constant, input, element_at_upper_xi_boundary, mesh,
         element_size, {{std::make_pair(Direction<1>::lower_xi(), neighbor)}},
         {{std::make_pair(Direction<1>::lower_xi(), element_size[0])}},
@@ -606,7 +604,7 @@ void test_tci_at_boundary(const size_t number_of_grid_points,
   }
 }
 
-void test_tci_with_different_size_neighbor(
+void test_minmod_slopes_with_different_size_neighbor(
     const size_t number_of_grid_points,
     const Limiters::MinmodType& minmod_type) noexcept {
   INFO("Testing limiter with neighboring elements of different size...");
@@ -625,10 +623,10 @@ void test_tci_with_different_size_neighbor(
           const double left_size, const double right_size,
           const double expected_slope) noexcept {
     const auto expected_slopes = make_array<1>(expected_slope);
-    test_minmod_tci_activates(
-        minmod_type, tvbm_constant, local_input, element, mesh, element_size,
-        make_two_neighbors(left, right),
-        make_two_neighbors(left_size, right_size), expected_slopes);
+    test_minmod_activates(minmod_type, tvbm_constant, local_input, element,
+                          mesh, element_size, make_two_neighbors(left, right),
+                          make_two_neighbors(left_size, right_size),
+                          expected_slopes);
   };
   const auto test_does_not_activate =
       [&minmod_type, &tvbm_constant, &element, &mesh, &element_size ](
@@ -636,7 +634,7 @@ void test_tci_with_different_size_neighbor(
           const double left_size, const double right_size,
           const double original_slope) noexcept {
     const auto original_slopes = make_array<1>(original_slope);
-    test_minmod_tci_does_not_activate(
+    test_minmod_does_not_activate(
         minmod_type, tvbm_constant, local_input, element, mesh, element_size,
         make_two_neighbors(left, right),
         make_two_neighbors(left_size, right_size), original_slopes);
@@ -684,19 +682,21 @@ void test_tci_with_different_size_neighbor(
 
 // In 1D, test combinations of MinmodType, TVBM constant, polynomial order, etc.
 // Check that each combination has the expected TCI behavior.
-void test_minmod_tci_wrapper_1d() noexcept {
-  INFO("Testing Minmod minmod_tci_wrapper in 1D");
+void test_minmod_limited_slopes_1d() noexcept {
+  INFO("Testing Minmod minmod_limited_slopes in 1D");
   for (const auto& minmod_type :
        {Limiters::MinmodType::LambdaPi1, Limiters::MinmodType::LambdaPiN,
         Limiters::MinmodType::Muscl}) {
     for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
-      test_tci_on_linear_function(num_grid_points, minmod_type);
-      test_tci_with_tvbm_correction(num_grid_points, minmod_type);
-      test_tci_at_boundary(num_grid_points, minmod_type);
-      test_tci_with_different_size_neighbor(num_grid_points, minmod_type);
+      test_minmod_slopes_on_linear_function(num_grid_points, minmod_type);
+      test_minmod_slopes_with_tvbm_correction(num_grid_points, minmod_type);
+      test_minmod_slopes_at_boundary(num_grid_points, minmod_type);
+      test_minmod_slopes_with_different_size_neighbor(num_grid_points,
+                                                      minmod_type);
     }
     // This test only makes sense with more than 2 grid points
-    test_tci_on_quadratic_function(4, minmod_type);
+    test_minmod_slopes_on_quadratic_function(3, minmod_type);
+    test_minmod_slopes_on_quadratic_function(4, minmod_type);
   }
   // This test only makes sense with LambdaPiN and more than 2 grid points
   test_lambda_pin_troubled_cell_tvbm_correction(4);
@@ -704,8 +704,8 @@ void test_minmod_tci_wrapper_1d() noexcept {
 
 // In 2D, test that the dimension-by-dimension application of the TCI works as
 // expected.
-void test_minmod_tci_wrapper_2d() noexcept {
-  INFO("Testing Minmod minmod_tci_wrapper in 2D");
+void test_minmod_limited_slopes_2d() noexcept {
+  INFO("Testing Minmod minmod_limited_slopes in 2D");
   const auto minmod_type = Limiters::MinmodType::LambdaPi1;
   const double tvbm_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<2>();
@@ -718,7 +718,7 @@ void test_minmod_tci_wrapper_2d() noexcept {
        element_size ](const DataVector& local_input,
                       const std::array<double, 4>& neighbor_means,
                       const std::array<double, 2>& expected_slopes) noexcept {
-    test_minmod_tci_activates(
+    test_minmod_activates(
         minmod_type, tvbm_constant, local_input, element, mesh, element_size,
         make_four_neighbors(neighbor_means),
         make_four_neighbors(make_array<4>(2.0)), expected_slopes);
@@ -728,7 +728,7 @@ void test_minmod_tci_wrapper_2d() noexcept {
        element_size ](const DataVector& local_input,
                       const std::array<double, 4>& neighbor_means,
                       const std::array<double, 2>& original_slopes) noexcept {
-    test_minmod_tci_does_not_activate(
+    test_minmod_does_not_activate(
         minmod_type, tvbm_constant, local_input, element, mesh, element_size,
         make_four_neighbors(neighbor_means),
         make_four_neighbors(make_array<4>(2.0)), original_slopes);
@@ -760,8 +760,8 @@ void test_minmod_tci_wrapper_2d() noexcept {
 
 // In 3D, test that the dimension-by-dimension application of the TCI works as
 // expected.
-void test_minmod_tci_wrapper_3d() noexcept {
-  INFO("Testing Minmod minmod_tci_wrapper in 3D");
+void test_minmod_limited_slopes_3d() noexcept {
+  INFO("Testing Minmod minmod_limited_slopes in 3D");
   const auto minmod_type = Limiters::MinmodType::LambdaPi1;
   const double tvbm_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<3>();
@@ -774,7 +774,7 @@ void test_minmod_tci_wrapper_3d() noexcept {
        element_size ](const DataVector& local_input,
                       const std::array<double, 6>& neighbor_means,
                       const std::array<double, 3>& expected_slopes) noexcept {
-    test_minmod_tci_activates(
+    test_minmod_activates(
         minmod_type, tvbm_constant, local_input, element, mesh, element_size,
         make_six_neighbors(neighbor_means),
         make_six_neighbors(make_array<6>(2.0)), expected_slopes);
@@ -784,7 +784,7 @@ void test_minmod_tci_wrapper_3d() noexcept {
        element_size ](const DataVector& local_input,
                       const std::array<double, 6>& neighbor_means,
                       const std::array<double, 3>& original_slopes) noexcept {
-    test_minmod_tci_does_not_activate(
+    test_minmod_does_not_activate(
         minmod_type, tvbm_constant, local_input, element, mesh, element_size,
         make_six_neighbors(neighbor_means),
         make_six_neighbors(make_array<6>(2.0)), original_slopes);
@@ -823,7 +823,7 @@ void test_minmod_tci_wrapper_3d() noexcept {
 
 // Helper function for testing Minmod::op()
 template <size_t VolumeDim>
-void test_work(
+void test_limiter_work(
     const Scalar<DataVector>& input_scalar,
     const tnsr::I<DataVector, VolumeDim>& input_vector,
     const std::unordered_map<
@@ -938,8 +938,9 @@ void test_minmod_limiter_1d() noexcept {
   get<Tags::Mean<VectorTag<1>>>(neighbor_data[dir_keys[1]].means) =
       tnsr::I<double, 1>(mean + 2.0 * true_slope[0]);
 
-  test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
-            element_size, target_scalar_slope, target_vector_slope);
+  test_limiter_work(input_scalar, input_vector, neighbor_data, mesh,
+                    logical_coords, element_size, target_scalar_slope,
+                    target_vector_slope);
 }
 
 void test_minmod_limiter_2d() noexcept {
@@ -1027,8 +1028,9 @@ void test_minmod_limiter_2d() noexcept {
   get<Tags::Mean<VectorTag<2>>>(neighbor_data[dir_keys[3]].means) =
       neighbor_vector_func(1, 1);
 
-  test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
-            element_size, target_scalar_slope, target_vector_slope);
+  test_limiter_work(input_scalar, input_vector, neighbor_data, mesh,
+                    logical_coords, element_size, target_scalar_slope,
+                    target_vector_slope);
 }
 
 void test_minmod_limiter_3d() noexcept {
@@ -1153,8 +1155,9 @@ void test_minmod_limiter_3d() noexcept {
   get<Tags::Mean<VectorTag<3>>>(neighbor_data[dir_keys[5]].means) =
       neighbor_vector_func(2, 1);
 
-  test_work(input_scalar, input_vector, neighbor_data, mesh, logical_coords,
-            element_size, target_scalar_slope, target_vector_slope);
+  test_limiter_work(input_scalar, input_vector, neighbor_data, mesh,
+                    logical_coords, element_size, target_scalar_slope,
+                    target_vector_slope);
 }
 
 // Test that the limiter activates in the x-direction only. Domain quantities
@@ -1340,9 +1343,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.Minmod", "[Limiters][Unit]") {
   // These functions test
   // - the TCI for the limiter, i.e., when the limiter activates
   // - the reduced slopes requested in the event of an activation
-  test_minmod_tci_wrapper_1d();
-  test_minmod_tci_wrapper_2d();
-  test_minmod_tci_wrapper_3d();
+  test_minmod_limited_slopes_1d();
+  test_minmod_limited_slopes_2d();
+  test_minmod_limited_slopes_3d();
 
   // These functions test the correctness of the limited solution
   test_minmod_limiter_1d();

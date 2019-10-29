@@ -74,7 +74,7 @@ namespace Minmod_detail {
 // Note: This function is only made available in this header file to facilitate
 // testing.
 template <size_t VolumeDim>
-bool minmod_tci_wrapper(
+bool minmod_limited_slopes(
     gsl::not_null<double*> u_mean,
     gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     gsl::not_null<DataVector*> u_lin_buffer,
