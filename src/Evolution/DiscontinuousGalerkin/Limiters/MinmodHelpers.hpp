@@ -23,6 +23,7 @@ template <size_t VolumeDim>
 class ElementId;
 template <size_t VolumeDim>
 class Mesh;
+enum class Side;
 
 namespace boost {
 template <class T>
@@ -33,8 +34,27 @@ struct hash;
 namespace Limiters {
 namespace Minmod_detail {
 
+// Encodes the return status of the minmod_tvbm function.
+struct MinmodResult {
+  const double value;
+  const bool activated;
+};
+
+// The TVBM-corrected minmod function, see e.g. Cockburn reference Eq. 2.26.
+MinmodResult minmod_tvbm(double a, double b, double c,
+                         double tvbm_scale) noexcept;
+
+// Allocate the buffer `boundary_buffer` to the correct sizes expected by
+// `troubled_cell_indicator` for its arguments
+template <size_t VolumeDim>
+void allocate_buffers(
+    gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>
+        contiguous_buffer,
+    gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
+    const Mesh<VolumeDim>& mesh) noexcept;
+
 // Allocate the buffers `u_lin_buffer` and `boundary_buffer` to the correct
-// sizes expected by `troubled_cell_indicator` for its arguments
+// sizes expected by the Minmod limiter.
 template <size_t VolumeDim>
 void allocate_buffers(
     gsl::not_null<std::unique_ptr<double[], decltype(&free)>*>
@@ -115,6 +135,25 @@ DirectionMap<VolumeDim, double> compute_effective_neighbor_means(
   }
   return result;
 }
+
+// Compute an effective element-center-to-neighbor-center distance that accounts
+// for the possibility of different refinement levels or discontinuous maps
+// (e.g., at Block boundaries). Treated naively, these domain features can make
+// a smooth solution appear to be non-smooth in the logical coordinates, which
+// could potentially lead to the limiter triggering erroneously. This effective
+// distance is used to scale the difference in the means, so that a linear
+// function at a refinement or Block boundary will still appear smooth to the
+// limiter. The factor is normalized to be 1.0 on a uniform grid.
+//
+// Note that this is not "by the book" Minmod, but an attempt to
+// generalize Minmod to work on non-uniform grids.
+template <size_t VolumeDim>
+double effective_difference_to_neighbor(
+    double u_mean, const Element<VolumeDim>& element,
+    const std::array<double, VolumeDim>& element_size,
+    const DirectionMap<VolumeDim, double>& effective_neighbor_means,
+    const DirectionMap<VolumeDim, double>& effective_neighbor_sizes, size_t dim,
+    const Side& side) noexcept;
 
 }  // namespace Minmod_detail
 }  // namespace Limiters

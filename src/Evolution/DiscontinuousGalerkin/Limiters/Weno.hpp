@@ -283,12 +283,11 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
 
   // Troubled-cell detection for WENO flags the element for limiting if any
   // component of any tensor needs limiting.
-  const auto minmod_tci_type = MinmodType::LambdaPiN;
   const double minmod_tci_tvbm_constant = 0.0;
   const bool cell_is_troubled =
       Minmod_detail::troubled_cell_indicator<VolumeDim, PackagedData, Tags...>(
-          (*tensors)..., neighbor_data, minmod_tci_type,
-          minmod_tci_tvbm_constant, element, mesh, element_size);
+          (*tensors)..., neighbor_data, minmod_tci_tvbm_constant, element, mesh,
+          element_size);
 
   if (not cell_is_troubled) {
     // No limiting is needed
