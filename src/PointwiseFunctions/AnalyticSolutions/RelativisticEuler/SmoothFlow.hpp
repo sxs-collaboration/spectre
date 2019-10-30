@@ -51,7 +51,7 @@ namespace Solutions {
  * where the pressure is held constant.
  */
 template <size_t Dim>
-class SmoothFlow : public MarkAsAnalyticSolution {
+class SmoothFlow : virtual public MarkAsAnalyticSolution {
  public:
   using equation_of_state_type = EquationsOfState::IdealFluid<true>;
 
