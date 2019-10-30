@@ -5,6 +5,7 @@ set(LIBRARY "Test_RelativisticEulerSolutions")
 
 set(LIBRARY_SOURCES
   Test_FishboneMoncriefDisk.cpp
+  Test_SmoothFlow.cpp
   Test_TovStar.cpp
   )
 
