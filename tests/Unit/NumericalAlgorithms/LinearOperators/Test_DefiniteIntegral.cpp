@@ -16,6 +16,12 @@
 #include "Utilities/Literals.hpp"
 
 namespace {
+void test_definite_integral_0d() {
+  const double value = 1.234;
+  const DataVector data(1, value);
+  CHECK(value == approx(definite_integral(data, Mesh<0>{})));
+}
+
 void test_definite_integral_1d(const Mesh<1>& mesh) {
   const DataVector& x = Spectral::collocation_points(mesh);
   DataVector integrand(mesh.number_of_grid_points());
@@ -78,6 +84,8 @@ void test_definite_integral_3d(const Mesh<3>& mesh) {
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.DefiniteIntegral",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
+  test_definite_integral_0d();
+
   constexpr size_t min_extents =
       Spectral::minimum_number_of_points<Spectral::Basis::Legendre,
                                          Spectral::Quadrature::GaussLobatto>;

@@ -24,6 +24,17 @@
 // Note: The inner loop is over x because the memory layout used by SpECTRE is
 //       x-varies-fastest.
 
+// This specialization enables dim-independent integrals on boundaries:
+// a 0-dimensional mesh arises at the boundary of a 1-dimensional element.
+template <>
+double definite_integral<0>(const DataVector& integrand,
+                            const Mesh<0>& /*mesh*/) noexcept {
+  ASSERT(integrand.size() == 1,
+         "A 0-dimensional mesh has one point, but integrand has "
+             << integrand.size() << " points");
+  return integrand[0];
+}
+
 template <>
 double definite_integral<1>(const DataVector& integrand,
                             const Mesh<1>& mesh) noexcept {
