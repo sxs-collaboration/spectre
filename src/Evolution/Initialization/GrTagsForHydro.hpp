@@ -16,25 +16,32 @@
 #include "Domain/Mesh.hpp"
 #include "Domain/Tags.hpp"
 #include "Evolution/Initialization/Tags.hpp"
-#include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
 #include "Evolution/TypeTraits.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "PointwiseFunctions/AnalyticData/Tags.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
-#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
-#include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
 
-namespace grmhd {
-namespace ValenciaDivClean {
+namespace Initialization {
 namespace Actions {
-
-struct InitializeGrTags {
+/// \ingroup InitializationGroup
+/// \brief Allocate and set general relativity quantities needed for evolution
+/// of some hydro systems
+///
+/// Uses:
+/// - DataBox:
+///   * `Tags::Mesh<Dim>`
+///
+/// DataBox changes:
+/// - Adds:
+///   * system::spacetime_variables_tag
+///
+/// - Removes: nothing
+/// - Modifies: nothing
+struct GrTagsForHydro {
   using initialization_tags = tmpl::list<Initialization::Tags::InitialTime>;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
@@ -62,10 +69,10 @@ struct InitializeGrTags {
     // Set initial data from analytic solution
     GrVars gr_vars{num_grid_points};
     make_overloader(
-        [ initial_time, &
-          inertial_coords ](std::true_type /*is_analytic_solution*/,
-                            const gsl::not_null<GrVars*> local_gr_vars,
-                            const auto& local_cache) noexcept {
+        [ initial_time, &inertial_coords ](
+            std::true_type /*is_analytic_solution*/,
+            const gsl::not_null<GrVars*> local_gr_vars,
+            const auto& local_cache) noexcept {
           using solution_tag = ::Tags::AnalyticSolutionBase;
           local_gr_vars->assign_subset(
               Parallel::get<solution_tag>(local_cache)
@@ -84,11 +91,10 @@ struct InitializeGrTags {
         make_not_null(&gr_vars), cache);
 
     return std::make_tuple(
-        Initialization::merge_into_databox<InitializeGrTags, simple_tags,
+        Initialization::merge_into_databox<GrTagsForHydro, simple_tags,
                                            compute_tags>(std::move(box),
                                                          std::move(gr_vars)));
   }
 };
 }  // namespace Actions
-}  // namespace ValenciaDivClean
-}  // namespace grmhd
+}  // namespace Initialization
