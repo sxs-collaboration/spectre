@@ -64,17 +64,15 @@ struct SizeOfElement;
 namespace Limiters {
 
 namespace Minmod_detail {
-// Implements the troubled-cell indicator for the Minmod limiter.
-//
-// Because the Minmod limiter uses the same algorithm to detect troubled cells
-// and to correct the data on these cells, we optimize by having the TCI return
-// (by reference) some additional data that are used by the limiter in the case
-// where the TCI returns true (i.e., the case where limiting is needed).
+// This function combines the evaluation of the troubled-cell indicator with the
+// computation of the post-limiter reduced slopes. The returned bool indicates
+// whether the slopes are to be reduced. The slopes themselves are returned by
+// pointer.
 //
 // Note: This function is only made available in this header file to facilitate
 // testing.
 template <size_t VolumeDim>
-bool minmod_tci_wrapper(
+bool minmod_limited_slopes(
     gsl::not_null<double*> u_mean,
     gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     gsl::not_null<DataVector*> u_lin_buffer,

@@ -83,13 +83,13 @@ bool limit_one_tensor(
     DataVector& u = (*tensor)[i];
     double u_mean;
     std::array<double, VolumeDim> u_limited_slopes{};
-    const bool reduce_slope = minmod_tci_wrapper(
+    const bool reduce_slopes = minmod_limited_slopes(
         make_not_null(&u_mean), make_not_null(&u_limited_slopes), u_lin_buffer,
         boundary_buffer, minmod_type, tvbm_constant, u, element, mesh,
         element_size, effective_neighbor_means, effective_neighbor_sizes,
         volume_and_slice_indices);
 
-    if (reduce_slope or using_linear_limiter_on_non_linear_mesh) {
+    if (reduce_slopes or using_linear_limiter_on_non_linear_mesh) {
       u = u_mean;
       for (size_t d = 0; d < VolumeDim; ++d) {
         u += logical_coords.get(d) * gsl::at(u_limited_slopes, d);
@@ -162,7 +162,7 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
     return false;
   }
 
-  // Optimization: allocate temporary buffer to be used in `limit_one_tensor`
+  // Optimization: allocate a single buffer to avoid multiple allocations
   std::unique_ptr<double[], decltype(&free)> contiguous_buffer(nullptr, &free);
   DataVector u_lin_buffer{};
   std::array<DataVector, VolumeDim> boundary_buffer{};

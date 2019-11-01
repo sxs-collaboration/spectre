@@ -23,7 +23,7 @@ namespace Limiters {
 namespace Minmod_detail {
 
 template <size_t VolumeDim>
-bool minmod_tci_wrapper(
+bool minmod_limited_slopes(
     const gsl::not_null<double*> u_mean,
     const gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     const gsl::not_null<DataVector*> u_lin_buffer,
@@ -61,10 +61,10 @@ bool minmod_tci_wrapper(
         effective_neighbor_sizes, dim, side);
   };
 
-  // The LambdaPiN limiter allows high-order solutions to escape limiting if
-  // the boundary values are not too different from the mean value:
+  // The LambdaPiN limiter calls a simple troubled-cell indicator to avoid
+  // limiting solutions that appear smooth:
   if (minmod_type == Limiters::MinmodType::LambdaPiN) {
-    bool u_needs_limiting = troubled_cell_indicator(
+    const bool u_needs_limiting = troubled_cell_indicator(
         boundary_buffer, tvbm_constant, u, element, mesh, element_size,
         effective_neighbor_means, effective_neighbor_sizes,
         volume_and_slice_indices);
@@ -106,7 +106,7 @@ bool minmod_tci_wrapper(
     const double upper_slope = 0.5 * difference_to_neighbor(d, Side::Upper);
     const double lower_slope = 0.5 * difference_to_neighbor(d, Side::Lower);
 
-    const MinmodResult& result =
+    const MinmodResult result =
         minmod_tvbm(local_slope, max_slope_factor * upper_slope,
                     max_slope_factor * lower_slope, tvbm_scale);
     gsl::at(*u_limited_slopes, d) = result.value;
@@ -133,7 +133,7 @@ bool minmod_tci_wrapper(
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                            \
-  template bool minmod_tci_wrapper<DIM(data)>(                          \
+  template bool minmod_limited_slopes<DIM(data)>(                       \
       const gsl::not_null<double*>,                                     \
       const gsl::not_null<std::array<double, DIM(data)>*>,              \
       const gsl::not_null<DataVector*>,                                 \
