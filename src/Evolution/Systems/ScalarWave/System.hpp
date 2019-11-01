@@ -30,7 +30,7 @@ struct System {
   static constexpr bool has_primitive_and_conservative_vars = false;
   static constexpr size_t volume_dim = Dim;
 
-  using variables_tag = Tags::Variables<tmpl::list<Pi, Phi<Dim>, Psi>>;
+  using variables_tag = ::Tags::Variables<tmpl::list<Pi, Phi<Dim>, Psi>>;
   // Typelist of which subset of the variables to take the gradient of.
   using gradients_tags = tmpl::list<Pi, Phi<Dim>>;
 
@@ -40,6 +40,6 @@ struct System {
       ComputeLargestCharacteristicSpeed;
 
   template <typename Tag>
-  using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
+  using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;
 };
 }  // namespace ScalarWave

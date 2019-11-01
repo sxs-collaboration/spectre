@@ -11,6 +11,7 @@
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/ScalarWave/TagsDeclarations.hpp"
 
 class DataVector;
 
@@ -30,4 +31,27 @@ struct Phi : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
   static std::string name() noexcept { return "Phi"; }
 };
+
+namespace Tags {
+/*!
+ * \brief Tag for the one-index constraint of the ScalarWave system
+ *
+ * For details on how this is defined and computed, see
+ * `OneIndexConstraintCompute`.
+ */
+template <size_t Dim>
+struct OneIndexConstraint : db::SimpleTag {
+  using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
+};
+/*!
+ * \brief Tag for the two-index constraint of the ScalarWave system
+ *
+ * For details on how this is defined and computed, see
+ * `TwoIndexConstraintCompute`.
+ */
+template <size_t Dim>
+struct TwoIndexConstraint : db::SimpleTag {
+  using type = tnsr::ij<DataVector, Dim, Frame::Inertial>;
+};
+}  // namespace Tags
 }  // namespace ScalarWave

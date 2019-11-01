@@ -1,0 +1,21 @@
+// Distributed under the MIT License.
+// See LICENSE.txt for details.
+
+#pragma once
+
+#include <cstddef>
+
+namespace ScalarWave {
+struct Psi;
+struct Pi;
+template <size_t Dim>
+struct Phi;
+
+/// \brief Tags for the ScalarWave evolution system
+namespace Tags {
+template <size_t Dim>
+struct OneIndexConstraint;
+template <size_t Dim>
+struct TwoIndexConstraint;
+}  // namespace Tags
+}  // namespace ScalarWave

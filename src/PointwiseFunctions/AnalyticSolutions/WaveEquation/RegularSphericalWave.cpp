@@ -66,12 +66,12 @@ RegularSphericalWave::variables(
   return variables;
 }
 
-tuples::TaggedTuple<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<3>>,
-                    Tags::dt<ScalarWave::Psi>>
+tuples::TaggedTuple<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<3>>,
+                    ::Tags::dt<ScalarWave::Psi>>
 RegularSphericalWave::variables(
     const tnsr::I<DataVector, 3>& x, double t,
-    const tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<3>>,
-                     Tags::dt<ScalarWave::Psi>> /*meta*/) const noexcept {
+    const tmpl::list<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<3>>,
+                     ::Tags::dt<ScalarWave::Psi>> /*meta*/) const noexcept {
   const DataVector r = get(magnitude(x));
   // See class documentation for choice of cutoff
   const double r_cutoff = cbrt(std::numeric_limits<double>::epsilon());
@@ -100,17 +100,16 @@ RegularSphericalWave::variables(
       }
     }
   }
-  tuples::TaggedTuple<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<3>>,
-                      Tags::dt<ScalarWave::Psi>>
+  tuples::TaggedTuple<::Tags::dt<ScalarWave::Pi>,
+                      ::Tags::dt<ScalarWave::Phi<3>>,
+                      ::Tags::dt<ScalarWave::Psi>>
       dt_variables{std::move(d2psi_dt2), std::move(d2psi_dtdx),
                    std::move(dpsi_dt)};
-  get<Tags::dt<ScalarWave::Pi>>(dt_variables).get() *= -1.0;
+  get<::Tags::dt<ScalarWave::Pi>>(dt_variables).get() *= -1.0;
   return dt_variables;
 }
 
-void RegularSphericalWave::pup(PUP::er& p) noexcept {
-  p | profile_;
-}
+void RegularSphericalWave::pup(PUP::er& p) noexcept { p | profile_; }
 
 }  // namespace Solutions
 }  // namespace ScalarWave

@@ -122,11 +122,13 @@ class PlaneWave : public MarkAsAnalyticSolution {
   ///
   /// \note This function's expected use case is setting the past time
   /// derivative values for Adams-Bashforth-like steppers.
-  tuples::TaggedTuple<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
-                      Tags::dt<ScalarWave::Psi>>
-  variables(const tnsr::I<DataVector, Dim>& x, double t,
-            tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
-                       Tags::dt<ScalarWave::Psi>> /*meta*/) const noexcept;
+  tuples::TaggedTuple<::Tags::dt<ScalarWave::Pi>,
+                      ::Tags::dt<ScalarWave::Phi<Dim>>,
+                      ::Tags::dt<ScalarWave::Psi>>
+  variables(
+      const tnsr::I<DataVector, Dim>& x, double t,
+      tmpl::list<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<Dim>>,
+                 ::Tags::dt<ScalarWave::Psi>> /*meta*/) const noexcept;
 
   // clang-tidy: no pass by reference
   void pup(PUP::er& p) noexcept;  // NOLINT

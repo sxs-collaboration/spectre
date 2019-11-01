@@ -92,11 +92,13 @@ class RegularSphericalWave : public MarkAsAnalyticSolution {
             tmpl::list<ScalarWave::Pi, ScalarWave::Phi<3>,
                        ScalarWave::Psi> /*meta*/) const noexcept;
 
-  tuples::TaggedTuple<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<3>>,
-                      Tags::dt<ScalarWave::Psi>>
-  variables(const tnsr::I<DataVector, 3>& x, double t,
-            tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<3>>,
-                       Tags::dt<ScalarWave::Psi>> /*meta*/) const noexcept;
+  tuples::TaggedTuple<::Tags::dt<ScalarWave::Pi>,
+                      ::Tags::dt<ScalarWave::Phi<3>>,
+                      ::Tags::dt<ScalarWave::Psi>>
+  variables(
+      const tnsr::I<DataVector, 3>& x, double t,
+      tmpl::list<::Tags::dt<ScalarWave::Pi>, ::Tags::dt<ScalarWave::Phi<3>>,
+                 ::Tags::dt<ScalarWave::Psi>> /*meta*/) const noexcept;
 
   // clang-tidy: no pass by reference
   void pup(PUP::er& p) noexcept;  // NOLINT
