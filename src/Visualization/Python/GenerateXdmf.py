@@ -16,6 +16,9 @@ def generate_xdmf(file_prefix, output_filename, start_time, stop_time, stride):
     h5files = [(h5py.File(filename, 'r'), filename)
                for filename in glob.glob(file_prefix + "*.h5")]
 
+    assert len(h5files) > 0, "No H5 files with prefix '{}' found.".format(
+        file_prefix)
+
     element_data = h5files[0][0].get('element_data.vol')
     temporal_ids_and_values = [(x,
                                 element_data.get(x).attrs['observation_value'])
