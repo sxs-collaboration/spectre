@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_KerrSchildCoords.cpp
   Test_Ricci.cpp
   Test_Tags.cpp
+  Test_WeylElectric.cpp
   )
 
 add_test_library(
