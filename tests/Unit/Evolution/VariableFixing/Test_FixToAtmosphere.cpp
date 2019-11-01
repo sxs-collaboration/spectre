@@ -19,8 +19,9 @@
 
 namespace {
 
+template <size_t Dim>
 void test_variable_fixer(
-    const VariableFixing::FixToAtmosphere<1>& variable_fixer) {
+    const VariableFixing::FixToAtmosphere<Dim, 1>& variable_fixer) {
   EquationsOfState::PolytropicFluid<true> polytrope{1.0, 2.0};
 
   Scalar<DataVector> density{DataVector{2.e-12, 2.e-11}};
@@ -31,7 +32,7 @@ void test_variable_fixer(
 
   Scalar<DataVector> lorentz_factor{DataVector{5.0 / 3.0, 1.25}};
   auto spatial_velocity =
-      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(density, 0.0);
+      make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
   spatial_velocity.get(0) = DataVector{0.8, 0.6};
   variable_fixer(&density, &specific_internal_energy, &spatial_velocity,
                  &lorentz_factor, &pressure, &specific_enthalpy, polytrope);
@@ -44,7 +45,7 @@ void test_variable_fixer(
       polytrope.specific_internal_energy_from_density(expected_density);
   Scalar<DataVector> expected_lorentz_factor{DataVector{1.0, 1.25}};
   auto expected_spatial_velocity =
-      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(density, 0.0);
+      make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
   expected_spatial_velocity.get(0)[1] = 0.6;
 
   CHECK_ITERABLE_APPROX(density, expected_density);
@@ -56,8 +57,9 @@ void test_variable_fixer(
   CHECK_ITERABLE_APPROX(spatial_velocity, expected_spatial_velocity);
 }
 
+template <size_t Dim>
 void test_variable_fixer(
-    const VariableFixing::FixToAtmosphere<2>& variable_fixer) {
+    const VariableFixing::FixToAtmosphere<Dim, 2>& variable_fixer) {
   EquationsOfState::IdealFluid<true> ideal_fluid{5.0 / 3.0};
 
   Scalar<DataVector> density{DataVector{2.e-12, 2.e-11}};
@@ -70,7 +72,7 @@ void test_variable_fixer(
 
   Scalar<DataVector> lorentz_factor{DataVector{5.0 / 3.0, 1.25}};
   auto spatial_velocity =
-      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(density, 0.0);
+      make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
   spatial_velocity.get(0) = DataVector{0.8, 0.6};
   variable_fixer(&density, &specific_internal_energy, &spatial_velocity,
                  &lorentz_factor, &pressure, &specific_enthalpy, ideal_fluid);
@@ -84,7 +86,7 @@ void test_variable_fixer(
           expected_density, expected_specific_internal_energy);
   Scalar<DataVector> expected_lorentz_factor{DataVector{1.0, 1.25}};
   auto expected_spatial_velocity =
-      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(density, 0.0);
+      make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
   expected_spatial_velocity.get(0)[1] = 0.6;
 
   CHECK_ITERABLE_APPROX(density, expected_density);
@@ -95,27 +97,36 @@ void test_variable_fixer(
   CHECK_ITERABLE_APPROX(lorentz_factor, expected_lorentz_factor);
   CHECK_ITERABLE_APPROX(spatial_velocity, expected_spatial_velocity);
 }
+
+template <size_t Dim>
+void test_variable_fixer() noexcept {
+  // Test for representative 1-d equation of state
+  VariableFixing::FixToAtmosphere<Dim, 1> variable_fixer_1d{1.e-12, 1.e-11};
+  test_variable_fixer<Dim>(variable_fixer_1d);
+  test_serialization(variable_fixer_1d);
+
+  const auto fixer_from_options_1d =
+      test_creation<VariableFixing::FixToAtmosphere<Dim, 1>>(
+          "  DensityOfAtmosphere: 1.0e-12\n"
+          "  DensityCutoff: 1.0e-11\n");
+  test_variable_fixer<Dim>(fixer_from_options_1d);
+
+  // Test for representative 2-d equation of state
+  VariableFixing::FixToAtmosphere<Dim, 2> variable_fixer_2d{1.e-12, 1.e-11};
+  test_variable_fixer<Dim>(variable_fixer_2d);
+  test_serialization(variable_fixer_2d);
+
+  const auto fixer_from_options_2d =
+      test_creation<VariableFixing::FixToAtmosphere<Dim, 2>>(
+          "  DensityOfAtmosphere: 1.0e-12\n"
+          "  DensityCutoff: 1.0e-11\n");
+  test_variable_fixer<Dim>(fixer_from_options_2d);
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.FixToAtmosphere",
                   "[VariableFixing][Unit]") {
-  VariableFixing::FixToAtmosphere<1> variable_fixer_1d{1.e-12, 1.e-11};
-  test_variable_fixer(variable_fixer_1d);
-  test_serialization(variable_fixer_1d);
-
-  const auto fixer_from_options_1d =
-      test_creation<VariableFixing::FixToAtmosphere<1>>(
-          "  DensityOfAtmosphere: 1.0e-12\n"
-          "  DensityCutoff: 1.0e-11\n");
-  test_variable_fixer(fixer_from_options_1d);
-
-  VariableFixing::FixToAtmosphere<2> variable_fixer_2d{1.e-12, 1.e-11};
-  test_variable_fixer(variable_fixer_2d);
-  test_serialization(variable_fixer_2d);
-
-  const auto fixer_from_options_2d =
-      test_creation<VariableFixing::FixToAtmosphere<2>>(
-          "  DensityOfAtmosphere: 1.0e-12\n"
-          "  DensityCutoff: 1.0e-11\n");
-  test_variable_fixer(fixer_from_options_2d);
+  test_variable_fixer<1>();
+  test_variable_fixer<2>();
+  test_variable_fixer<3>();
 }
