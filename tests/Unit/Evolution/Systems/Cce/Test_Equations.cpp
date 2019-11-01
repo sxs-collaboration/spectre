@@ -77,9 +77,9 @@ void forward_to_pypp_with(std::index_sequence<ScalarIndices...> /*meta*/,
                             NumberOfGridPoints,
                             ForwardIgnoreIndex<DataType, ScalarIndices>...>;
 
-  pypp::check_with_random_values<1>(&(Evaluatable::evaluate), "Equations",
-                                    python_function, {{{-10.0, 10.0}}},
-                                    DataType{NumberOfGridPoints});
+  pypp::check_with_random_values<1>(
+      &(Evaluatable::evaluate), "Equations", python_function, {{{-2.0, 2.0}}},
+      DataType{NumberOfGridPoints});
 }
 
 template <typename Tag>
