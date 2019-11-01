@@ -47,19 +47,27 @@ struct EthbarEthbar {};
 /// no derivative is taken.
 struct NoDerivative {};
 
+namespace detail {
+template <typename DerivativeKind>
+inline constexpr int derivative_spin_weight_impl() noexcept {
+  if (cpp17::is_same_v<DerivativeKind, Eth>) {
+    return 1;
+  } else if (cpp17::is_same_v<DerivativeKind, Ethbar>) {
+    return -1;
+  } else if (cpp17::is_same_v<DerivativeKind, EthEth>) {
+    return 2;
+  } else if (cpp17::is_same_v<DerivativeKind, EthbarEthbar>) {
+    return -2;
+  }
+  return 0;
+}
+}  // namespace detail
+
 // utility function for determining the change of spin after a spin-weighted
 // derivative has been applied.
 template <typename DerivativeKind>
-constexpr int derivative_spin_weight = 0;
-
-template <>
-constexpr int derivative_spin_weight<Eth> = 1;
-template <>
-constexpr int derivative_spin_weight<Ethbar> = -1;
-template <>
-constexpr int derivative_spin_weight<EthEth> = 2;
-template <>
-constexpr int derivative_spin_weight<EthbarEthbar> = -2;
+constexpr int derivative_spin_weight =
+    detail::derivative_spin_weight_impl<DerivativeKind>();
 
 namespace detail {
 // The below tags are used to find the new type represented by the spin-weighted
