@@ -34,32 +34,32 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.LorentzFactor",
   pypp::SetupLocalPythonEnvironment local_python_env(
       "PointwiseFunctions/Hydro/");
   const DataVector dv(5);
-  test_lorentz_factor<1, Frame::Inertial>(dv);
+  test_lorentz_factor<1, Frame::Physical>(dv);
   test_lorentz_factor<1, Frame::Grid>(dv);
-  test_lorentz_factor<2, Frame::Inertial>(dv);
+  test_lorentz_factor<2, Frame::Physical>(dv);
   test_lorentz_factor<2, Frame::Grid>(dv);
-  test_lorentz_factor<3, Frame::Inertial>(dv);
+  test_lorentz_factor<3, Frame::Physical>(dv);
   test_lorentz_factor<3, Frame::Grid>(dv);
 
-  test_lorentz_factor<1, Frame::Inertial>(0.0);
+  test_lorentz_factor<1, Frame::Physical>(0.0);
   test_lorentz_factor<1, Frame::Grid>(0.0);
-  test_lorentz_factor<2, Frame::Inertial>(0.0);
+  test_lorentz_factor<2, Frame::Physical>(0.0);
   test_lorentz_factor<2, Frame::Grid>(0.0);
-  test_lorentz_factor<3, Frame::Inertial>(0.0);
+  test_lorentz_factor<3, Frame::Physical>(0.0);
   test_lorentz_factor<3, Frame::Grid>(0.0);
 
   // Check compute item works correctly in DataBox
-  CHECK(Tags::LorentzFactorCompute<DataVector, 2, Frame::Inertial>::name() ==
+  CHECK(Tags::LorentzFactorCompute<DataVector, 2, Frame::Physical>::name() ==
         "LorentzFactor");
   tnsr::i<DataVector, 2> velocity_one_form{
       {{DataVector{5, 0.2}, DataVector{5, 0.3}}}};
   tnsr::I<DataVector, 2> velocity{{{DataVector{5, 0.25}, DataVector{5, 0.35}}}};
   const auto box = db::create<
       db::AddSimpleTags<
-          Tags::SpatialVelocity<DataVector, 2, Frame::Inertial>,
-          Tags::SpatialVelocityOneForm<DataVector, 2, Frame::Inertial>>,
+          Tags::SpatialVelocity<DataVector, 2, Frame::Physical>,
+          Tags::SpatialVelocityOneForm<DataVector, 2, Frame::Physical>>,
       db::AddComputeTags<
-          Tags::LorentzFactorCompute<DataVector, 2, Frame::Inertial>>>(
+          Tags::LorentzFactorCompute<DataVector, 2, Frame::Physical>>>(
       velocity, velocity_one_form);
   CHECK(db::get<Tags::LorentzFactor<DataVector>>(box) ==
         lorentz_factor(velocity, velocity_one_form));

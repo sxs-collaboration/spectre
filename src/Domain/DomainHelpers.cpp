@@ -1118,7 +1118,7 @@ template std::array<size_t, 8> discrete_rotation(
     const OrientationMap<3>& orientation,
     const std::array<size_t, 8>& corners_of_aligned) noexcept;
 template std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+    domain::CoordinateMapBase<Frame::Logical, Frame::Physical, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double inner_sphericity,
                       const double outer_sphericity,
@@ -1140,7 +1140,7 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const ShellWedges which_wedges,
                       const size_t number_of_layers) noexcept;
 template std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+    domain::CoordinateMapBase<Frame::Logical, Frame::Physical, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
@@ -1178,7 +1178,7 @@ frustum_coordinate_maps(const double length_inner_cube,
       const std::vector<PairOfFaces>& identifications,                      \
       const bool use_equiangular_map) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Physical))
 
 #undef DIM
 #undef DTYPE

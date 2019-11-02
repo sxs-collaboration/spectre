@@ -61,12 +61,12 @@ tnsr::Ij<DataType, 3, Frame::NoFrame> KerrSchildCoords::jacobian_matrix(
 }
 
 template <typename DataType>
-tnsr::I<DataType, 3, Frame::Inertial>
+tnsr::I<DataType, 3, Frame::Physical>
 KerrSchildCoords::cartesian_from_spherical_ks(
     const tnsr::I<DataType, 3, Frame::NoFrame>& spatial_vector,
-    const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const
+    const tnsr::I<DataType, 3, Frame::Physical>& cartesian_coords) const
     noexcept {
-  auto result = make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(
+  auto result = make_with_value<tnsr::I<DataType, 3, Frame::Physical>>(
       cartesian_coords, 0.0);
 
   for (size_t s = 0; s < get_size(get<0>(cartesian_coords)); ++s) {
@@ -110,7 +110,7 @@ KerrSchildCoords::cartesian_from_spherical_ks(
 
 template <typename DataType>
 Scalar<DataType> KerrSchildCoords::r_coord_squared(
-    const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const
+    const tnsr::I<DataType, 3, Frame::Physical>& cartesian_coords) const
     noexcept {
   const double a_squared = square(spin_a_);
   const DataType temp =
@@ -133,12 +133,12 @@ bool operator!=(const KerrSchildCoords& lhs,
 
 #define INSTANTIATE(_, data)                                            \
   template Scalar<DTYPE(data)> KerrSchildCoords::r_coord_squared(       \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>& cartesian_coords) \
+      const tnsr::I<DTYPE(data), 3, Frame::Physical>& cartesian_coords) \
       const noexcept;                                                   \
-  template tnsr::I<DTYPE(data), 3, Frame::Inertial>                     \
+  template tnsr::I<DTYPE(data), 3, Frame::Physical>                     \
   KerrSchildCoords::cartesian_from_spherical_ks(                        \
       const tnsr::I<DTYPE(data), 3, Frame::NoFrame>& spatial_vector,    \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>& cartesian_coords) \
+      const tnsr::I<DTYPE(data), 3, Frame::Physical>& cartesian_coords) \
       const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

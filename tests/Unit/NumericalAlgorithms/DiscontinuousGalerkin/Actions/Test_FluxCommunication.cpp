@@ -99,7 +99,7 @@ class NumericalFlux {
   void package_data(const gsl::not_null<Variables<package_tags>*> packaged_data,
                     const Scalar<DataVector>& var_flux,
                     const Scalar<DataVector>& other_data,
-                    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+                    const tnsr::i<DataVector, Dim, Frame::Physical>&
                         interface_unit_normal) const noexcept {
     get(get<Var>(*packaged_data)) = 10. * get(var_flux);
     get<0>(get<ExtraData>(*packaged_data)) =
@@ -252,10 +252,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   const Affine eta_map{-1., 1., 7., 3.};
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
+      domain::CoordinateMap<Frame::Logical, Frame::Physical, Affine2D>));
 
   const auto coordmap =
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Affine2D(xi_map, eta_map));
 
   const auto neighbor_directions = {Direction<2>::lower_xi(),
@@ -293,7 +293,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
                   {Direction<2>::upper_xi(), {{east_id}, {}}},
                   {Direction<2>::upper_eta(), {{south_id}, {}}}});
 
-    auto map = ElementMap<2, Frame::Inertial>(self_id, coordmap->get_clone());
+    auto map = ElementMap<2, Frame::Physical>(self_id, coordmap->get_clone());
 
     db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>
         normal_dot_fluxes;
@@ -335,7 +335,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
       const Scalar<DataVector>& normal_dot_fluxes,
       const Scalar<DataVector>& other_data) noexcept {
     const Element<2> element(id, {{direction, {{self_id}, orientation}}});
-    auto map = ElementMap<2, Frame::Inertial>(id, coordmap->get_clone());
+    auto map = ElementMap<2, Frame::Physical>(id, coordmap->get_clone());
 
     db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>
         normal_dot_fluxes_map{};
@@ -505,10 +505,10 @@ SPECTRE_TEST_CASE(
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
-  auto map = ElementMap<2, Frame::Inertial>(
+      domain::CoordinateMap<Frame::Logical, Frame::Physical, Affine2D>));
+  auto map = ElementMap<2, Frame::Physical>(
       self_id,
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Affine2D({-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<2>{}}};
@@ -562,11 +562,11 @@ SPECTRE_TEST_CASE(
                         Direction<3>::lower_eta()}}}}}});
 
   PUPable_reg(
-      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Physical,
                                        domain::CoordinateMaps::Identity<3>>));
-  ElementMap<3, Frame::Inertial> map(
+  ElementMap<3, Frame::Physical> map(
       self_id,
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           domain::CoordinateMaps::Identity<3>{}));
 
   const Mesh<3> mesh({{2, 3, 4}}, Spectral::Basis::Legendre,
@@ -586,7 +586,7 @@ SPECTRE_TEST_CASE(
   };
   const auto packaged_data = [](const Scalar<DataVector>& var_flux) noexcept {
     PackagedData<flux_comm_types<3>> packaged(get(var_flux).size());
-    const tnsr::i<DataVector, 3, Frame::Inertial> normal(get(var_flux).size(),
+    const tnsr::i<DataVector, 3, Frame::Physical> normal(get(var_flux).size(),
                                                          1.);
     NumericalFlux<3>{}.package_data(&packaged, var_flux, var_flux, normal);
     return packaged;
@@ -618,7 +618,7 @@ SPECTRE_TEST_CASE(
             {{Spectral::MortarSize::Full, Spectral::MortarSize::Full}}}}});
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, neighbor_id,
-      {0, 1, mesh, element, ElementMap<3, Frame::Inertial>{},
+      {0, 1, mesh, element, ElementMap<3, Frame::Physical>{},
        db::item_type<normal_dot_fluxes_tag<3, flux_comm_types<3>>>{},
        db::item_type<other_data_tag<3>>{},
        db::item_type<mortar_data_tag<flux_comm_types<3>>>{{mortar_id, {}}},
@@ -698,10 +698,10 @@ SPECTRE_TEST_CASE(
     using Affine = domain::CoordinateMaps::Affine;
     using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
     PUPable_reg(SINGLE_ARG(
-        domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
-    ElementMap<2, Frame::Inertial> map(
+        domain::CoordinateMap<Frame::Logical, Frame::Physical, Affine2D>));
+    ElementMap<2, Frame::Physical> map(
         self_id,
-        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             Affine2D({-1., 1., -1., 1.}, {-1., 1., -1., 1.})));
 
     const Mesh<2> mesh(2, Spectral::Basis::Legendre,
@@ -711,7 +711,7 @@ SPECTRE_TEST_CASE(
     const auto packaged_data = [](const DataVector& var_flux) noexcept {
       const Scalar<DataVector> scalar_flux(var_flux);
       PackagedData<flux_comm_types<2>> packaged(var_flux.size());
-      const tnsr::i<DataVector, 2, Frame::Inertial> normal(var_flux.size(), 1.);
+      const tnsr::i<DataVector, 2, Frame::Physical> normal(var_flux.size(), 1.);
       NumericalFlux<2>{}.package_data(&packaged, scalar_flux, scalar_flux,
                                       normal);
       return packaged;
@@ -741,7 +741,7 @@ SPECTRE_TEST_CASE(
          db::item_type<mortar_sizes_tag<2>>{{mortar_id, {{test.first}}}}});
     ActionTesting::emplace_component_and_initialize<my_component>(
         &runner, neighbor_id,
-        {0, 1, mesh, element, ElementMap<2, Frame::Inertial>{},
+        {0, 1, mesh, element, ElementMap<2, Frame::Physical>{},
          db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
          db::item_type<other_data_tag<2>>{},
          db::item_type<mortar_data_tag<flux_comm_types<2>>>{{mortar_id, {}}},

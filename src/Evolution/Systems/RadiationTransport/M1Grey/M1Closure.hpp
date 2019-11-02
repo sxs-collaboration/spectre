@@ -28,17 +28,17 @@ namespace M1Grey {
 namespace detail {
 void compute_closure_impl(
     gsl::not_null<Scalar<DataVector>*> closure_factor,
-    gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*> pressure_tensor,
+    gsl::not_null<tnsr::II<DataVector, 3, Frame::Physical>*> pressure_tensor,
     gsl::not_null<Scalar<DataVector>*> comoving_energy_density,
     gsl::not_null<Scalar<DataVector>*> comoving_momentum_density_normal,
-    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+    gsl::not_null<tnsr::i<DataVector, 3, Frame::Physical>*>
         comoving_momentum_density_spatial,
     const Scalar<DataVector>& energy_density,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& momentum_density,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& fluid_velocity,
+    const tnsr::i<DataVector, 3, Frame::Physical>& momentum_density,
+    const tnsr::I<DataVector, 3, Frame::Physical>& fluid_velocity,
     const Scalar<DataVector>& fluid_lorentz_factor,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>&
+    const tnsr::ii<DataVector, 3, Frame::Physical>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Physical>&
         inv_spatial_metric) noexcept;
 }  // namespace detail
 
@@ -46,12 +46,12 @@ template <typename NeutrinoSpeciesList>
 struct ComputeM1Closure;
 /*!
  * Compute the 2nd moment of the neutrino distribution function
- * in the inertial frame (pressure tensor) from the 0th (energy density)
+ * in the physical frame (pressure tensor) from the 0th (energy density)
  * and 1st (momentum density) moments. The M1 closure sets
  * \f{align}{
  * P_{ij} = d_{\rm thin} P_{ij,\rm thin} + d_{\rm thick} P_{ij,\rm thick}
  * \f}
- * with \f$P_{ij}\f$ the pressure tensor in the inertial frame, and
+ * with \f$P_{ij}\f$ the pressure tensor in the physical frame, and
  * \f$P_{ij,thin/thick}\f$ its value assuming an optically thick / optically
  * thin medium.
  *
@@ -77,7 +77,7 @@ struct ComputeM1Closure;
  * P^{ij,\rm thin} = \frac{S^i S^j}{S^k S_k} E
  * \f}
  * with \f$ E \f$, \f$ S^{i}
- * \f$ the 0th and 1st moments in the inertial frame (see paper for the
+ * \f$ the 0th and 1st moments in the physical frame (see paper for the
  * computation of \f$P_{ij,thick}\f$ from the other moments).
  *
  * The main step of this function is to solve the equation
@@ -86,7 +86,7 @@ struct ComputeM1Closure;
  * \f}
  * for \f$\xi\f$, with \f$J\f$ and \f$H^a\f$ being functions
  * of \f$\xi\f$ and of the input variables (the 0th and 1st moments
- * in the inertial frame). This is done by separating \f$H^a\f$ as
+ * in the physical frame). This is done by separating \f$H^a\f$ as
  * \f{align}{
  * H_a = - H_t t_a - H_v v_a - H_f F_a
  * \f}
@@ -117,15 +117,15 @@ template <typename... NeutrinoSpecies>
 struct ComputeM1Closure<tmpl::list<NeutrinoSpecies...>> {
   using return_tags =
       tmpl::list<Tags::ClosureFactor<NeutrinoSpecies>...,
-                 Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
+                 Tags::TildeP<Frame::Physical, NeutrinoSpecies>...,
                  Tags::TildeJ<NeutrinoSpecies>...,
                  Tags::TildeHNormal<NeutrinoSpecies>...,
-                 Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>...>;
+                 Tags::TildeHSpatial<Frame::Physical, NeutrinoSpecies>...>;
 
   using argument_tags =
-      tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
-                 Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...,
-                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+      tmpl::list<Tags::TildeE<Frame::Physical, NeutrinoSpecies>...,
+                 Tags::TildeS<Frame::Physical, NeutrinoSpecies>...,
+                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Physical>,
                  hydro::Tags::LorentzFactor<DataVector>,
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
 
@@ -133,19 +133,19 @@ struct ComputeM1Closure<tmpl::list<NeutrinoSpecies...>> {
       const gsl::not_null<db::item_type<
           Tags::ClosureFactor<NeutrinoSpecies>>*>... closure_factor,
       const gsl::not_null<db::item_type<
-          Tags::TildeP<Frame::Inertial, NeutrinoSpecies>>*>... tilde_p,
+          Tags::TildeP<Frame::Physical, NeutrinoSpecies>>*>... tilde_p,
       const gsl::not_null<
           db::item_type<Tags::TildeJ<NeutrinoSpecies>>*>... tilde_j,
       const gsl::not_null<
           db::item_type<Tags::TildeHNormal<NeutrinoSpecies>>*>... tilde_hn,
       const gsl::not_null<db::item_type<
-          Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>>*>... tilde_hi,
+          Tags::TildeHSpatial<Frame::Physical, NeutrinoSpecies>>*>... tilde_hi,
       const db::const_item_type<
-          Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
+          Tags::TildeE<Frame::Physical, NeutrinoSpecies>>&... tilde_e,
       const db::const_item_type<
-          Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>&... tilde_s,
+          Tags::TildeS<Frame::Physical, NeutrinoSpecies>>&... tilde_s,
       const db::const_item_type<
-          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>&
+          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Physical>>&
           spatial_velocity,
       const db::const_item_type<hydro::Tags::LorentzFactor<DataVector>>&
           lorentz_factor,

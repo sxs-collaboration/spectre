@@ -30,14 +30,14 @@ struct FirstOrderFluxesCompute<
     Dim, System, VarsTag, FluxesComputer, tmpl::list<PrimalVars...>,
     tmpl::list<AuxiliaryVars...>, tmpl::list<FluxesArgs...>>
     : db::add_tag_prefix<::Tags::Flux, VarsTag, tmpl::size_t<Dim>,
-                         Frame::Inertial>,
+                         Frame::Physical>,
       db::ComputeTag {
  private:
   using fluxes_computer_tag = elliptic::Tags::FluxesComputer<FluxesComputer>;
 
  public:
   using base = db::add_tag_prefix<::Tags::Flux, VarsTag, tmpl::size_t<Dim>,
-                                  Frame::Inertial>;
+                                  Frame::Physical>;
   using argument_tags = tmpl::list<VarsTag, fluxes_computer_tag, FluxesArgs...>;
   using volume_tags = tmpl::list<fluxes_computer_tag>;
   static constexpr auto function(
@@ -48,13 +48,13 @@ struct FirstOrderFluxesCompute<
     // Compute fluxes for primal fields
     fluxes_computer.apply(
         make_not_null(
-            &get<::Tags::Flux<PrimalVars, tmpl::size_t<Dim>, Frame::Inertial>>(
+            &get<::Tags::Flux<PrimalVars, tmpl::size_t<Dim>, Frame::Physical>>(
                 fluxes))...,
         fluxes_args..., get<AuxiliaryVars>(vars)...);
     // Compute fluxes for auxiliary fields
     fluxes_computer.apply(
         make_not_null(&get<::Tags::Flux<AuxiliaryVars, tmpl::size_t<Dim>,
-                                        Frame::Inertial>>(fluxes))...,
+                                        Frame::Physical>>(fluxes))...,
         fluxes_args..., get<PrimalVars>(vars)...);
     return fluxes;
   }

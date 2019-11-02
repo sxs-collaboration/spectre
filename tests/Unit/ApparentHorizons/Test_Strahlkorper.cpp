@@ -23,7 +23,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 /// \endcond
 
@@ -48,10 +48,10 @@ void test_invert_spec_phys_transform() {
   CAPTURE_PRECISE(radius);
 
   // Initialize a strahlkorper of l_max=l_grid
-  const Strahlkorper<Frame::Inertial> sk(l_grid, l_grid, radius, center);
+  const Strahlkorper<Frame::Physical> sk(l_grid, l_grid, radius, center);
 
   // Put that Strahlkorper onto a larger grid
-  const Strahlkorper<Frame::Inertial> sk_high_res(l_grid_high_res,
+  const Strahlkorper<Frame::Physical> sk_high_res(l_grid_high_res,
                                                   l_grid_high_res, sk);
 
   // Compare coefficients
@@ -78,12 +78,12 @@ void test_invert_spec_phys_transform() {
 void test_average_radius() {
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const double r = 3.0;
-  Strahlkorper<Frame::Inertial> s(4, 4, r, center);
+  Strahlkorper<Frame::Physical> s(4, 4, r, center);
   CHECK(s.average_radius() == approx(r));
 }
 
 void test_copy_and_move() {
-  Strahlkorper<Frame::Inertial> s(4, 4, 3.0, {{0.1, 0.2, 0.3}});
+  Strahlkorper<Frame::Physical> s(4, 4, 3.0, {{0.1, 0.2, 0.3}});
 
   test_copy_semantics(s);
   auto s_copy = s;
@@ -96,7 +96,7 @@ void test_physical_center() {
   const double radius = 5.0;
   const int l_max = 9;
 
-  Strahlkorper<Frame::Inertial> sk(l_max, l_max, radius, expansion_center);
+  Strahlkorper<Frame::Physical> sk(l_max, l_max, radius, expansion_center);
   DataVector r(sk.ylm_spherepack().physical_size(), 0.);
 
   for (size_t s = 0; s < r.size(); ++s) {
@@ -118,7 +118,7 @@ void test_physical_center() {
   // above, centered at expansion_center, so that
   // sk_test.physical_center() should recover the physical center of
   // this surface.
-  Strahlkorper<Frame::Inertial> sk_test(l_max, l_max, r, expansion_center);
+  Strahlkorper<Frame::Physical> sk_test(l_max, l_max, r, expansion_center);
   for (size_t i = 0; i < 3; ++i) {
     CHECK(approx(gsl::at(physical_center, i)) ==
           gsl::at(sk_test.physical_center(), i));
@@ -129,7 +129,7 @@ void test_point_is_contained() {
   // Construct a spherical Strahlkorper
   const double radius = 2.;
   const std::array<double, 3> center = {{-1.2, 3., 4.}};
-  const Strahlkorper<Frame::Inertial> sphere(3, 2, radius, center);
+  const Strahlkorper<Frame::Physical> sphere(3, 2, radius, center);
 
   // Check whether two known points are contained.
   const std::array<double, 3> point_inside = {{-1.2, 1.01, 4.}};
@@ -143,8 +143,8 @@ void test_constructor_with_different_coefs(Func function) {
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const double r = 3.0;
   const double add_to_r = 1.34;
-  Strahlkorper<Frame::Inertial> strahlkorper(4, 4, r, center);
-  const Strahlkorper<Frame::Inertial> strahlkorper_test1(4, 4, r + add_to_r,
+  Strahlkorper<Frame::Physical> strahlkorper(4, 4, r, center);
+  const Strahlkorper<Frame::Physical> strahlkorper_test1(4, 4, r + add_to_r,
                                                          center);
 
   // Modify the 0,0 coefficient to add a constant to the radius.
@@ -155,14 +155,14 @@ void test_constructor_with_different_coefs(Func function) {
 }
 
 void test_construct_from_options() {
-  Options<tmpl::list<OptionTags::Strahlkorper<Frame::Inertial>>> opts("");
+  Options<tmpl::list<OptionTags::Strahlkorper<Frame::Physical>>> opts("");
   opts.parse(
       "Strahlkorper:\n"
       " Lmax : 6\n"
       " Center: [1.,2.,3.]\n"
       " Radius: 4.5\n");
-  CHECK(opts.get<OptionTags::Strahlkorper<Frame::Inertial>>() ==
-        Strahlkorper<Frame::Inertial>(6, 6, 4.5, {{1., 2., 3.}}));
+  CHECK(opts.get<OptionTags::Strahlkorper<Frame::Physical>>() ==
+        Strahlkorper<Frame::Physical>(6, 6, 4.5, {{1., 2., 3.}}));
 }
 
 }  // namespace
@@ -174,29 +174,29 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.Strahlkorper",
   test_average_radius();
   test_physical_center();
   test_point_is_contained();
-  test_constructor_with_different_coefs([](Strahlkorper<Frame::Inertial> & sk,
-                                           double add_to_r) noexcept {
-    auto coefs = sk.coefficients();  // make a copy
-    coefs[0] += sqrt(8.0) * add_to_r;
-    return Strahlkorper<Frame::Inertial>(coefs, std::move(sk));
-  });
-  test_constructor_with_different_coefs([](
-      const Strahlkorper<Frame::Inertial>& sk, double add_to_r) noexcept {
-    auto coefs = sk.coefficients();  // make a copy
-    coefs[0] += sqrt(8.0) * add_to_r;
-    return Strahlkorper<Frame::Inertial>(coefs, sk);
-  });
-  test_constructor_with_different_coefs([](Strahlkorper<Frame::Inertial> & sk,
-                                           double add_to_r) noexcept {
-    auto& coefs = sk.coefficients();  // no copy
-    coefs[0] += sqrt(8.0) * add_to_r;
-    return Strahlkorper<Frame::Inertial>(std::move(sk));
-  });
+  test_constructor_with_different_coefs(
+      [](Strahlkorper<Frame::Physical>& sk, double add_to_r) noexcept {
+        auto coefs = sk.coefficients();  // make a copy
+        coefs[0] += sqrt(8.0) * add_to_r;
+        return Strahlkorper<Frame::Physical>(coefs, std::move(sk));
+      });
+  test_constructor_with_different_coefs(
+      [](const Strahlkorper<Frame::Physical>& sk, double add_to_r) noexcept {
+        auto coefs = sk.coefficients();  // make a copy
+        coefs[0] += sqrt(8.0) * add_to_r;
+        return Strahlkorper<Frame::Physical>(coefs, sk);
+      });
+  test_constructor_with_different_coefs(
+      [](Strahlkorper<Frame::Physical>& sk, double add_to_r) noexcept {
+        auto& coefs = sk.coefficients();  // no copy
+        coefs[0] += sqrt(8.0) * add_to_r;
+        return Strahlkorper<Frame::Physical>(std::move(sk));
+      });
   test_construct_from_options();
 }
 
 SPECTRE_TEST_CASE("Unit.ApparentHorizons.Strahlkorper.Serialization",
                   "[ApparentHorizons][Unit]") {
-  Strahlkorper<Frame::Inertial> s(4, 4, 2.0, {{1.0, 2.0, 3.0}});
+  Strahlkorper<Frame::Physical> s(4, 4, 2.0, {{1.0, 2.0, 3.0}});
   test_serialization(s);
 }

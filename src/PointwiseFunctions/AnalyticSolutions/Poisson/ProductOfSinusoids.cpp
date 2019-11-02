@@ -37,13 +37,13 @@ tuples::TaggedTuple<Tags::Field> ProductOfSinusoids<Dim>::variables(
 
 template <size_t Dim>
 tuples::TaggedTuple<
-    ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>
+    ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Physical>>
 ProductOfSinusoids<Dim>::variables(
     const tnsr::I<DataVector, Dim>& x,
     tmpl::list<::Tags::deriv<Tags::Field, tmpl::size_t<Dim>,
-                             Frame::Inertial>> /*meta*/) const noexcept {
+                             Frame::Physical>> /*meta*/) const noexcept {
   auto field_gradient =
-      make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(x, 1.);
+      make_with_value<tnsr::i<DataVector, Dim, Frame::Physical>>(x, 1.);
   for (size_t d = 0; d < Dim; d++) {
     field_gradient.get(d) *=
         gsl::at(wave_numbers_, d) * cos(gsl::at(wave_numbers_, d) * x.get(d));

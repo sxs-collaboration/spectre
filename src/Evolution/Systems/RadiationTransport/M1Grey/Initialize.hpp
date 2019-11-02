@@ -62,29 +62,29 @@ struct InitializeM1Tags {
     const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
     const size_t num_grid_points =
         db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
-    const auto& inertial_coords =
-        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+    const auto& physical_coords =
+        db::get<::Tags::Coordinates<dim, Frame::Physical>>(box);
 
     db::mutate<evolved_variables_tag>(
         make_not_null(&box),
         make_overloader(
-            [ initial_time, &inertial_coords ](
+            [initial_time, &physical_coords](
                 const gsl::not_null<EvolvedVars*> evolved_vars,
                 std::true_type /*is_analytic_solution*/,
                 const auto& local_cache) noexcept {
               using solution_tag = ::Tags::AnalyticSolutionBase;
               evolved_vars->assign_subset(
                   Parallel::get<solution_tag>(local_cache)
-                      .variables(inertial_coords, initial_time,
+                      .variables(physical_coords, initial_time,
                                  typename evolved_variables_tag::tags_list{}));
             },
-            [&inertial_coords](const gsl::not_null<EvolvedVars*> evolved_vars,
+            [&physical_coords](const gsl::not_null<EvolvedVars*> evolved_vars,
                                std::false_type /*is_analytic_solution*/,
                                const auto& local_cache) noexcept {
               using analytic_data_tag = ::Tags::AnalyticDataBase;
               evolved_vars->assign_subset(
                   Parallel::get<analytic_data_tag>(local_cache)
-                      .variables(inertial_coords,
+                      .variables(physical_coords,
                                  typename evolved_variables_tag::tags_list{}));
             }),
         evolution::is_analytic_solution<typename Metavariables::initial_data>{},
@@ -93,23 +93,23 @@ struct InitializeM1Tags {
     // Get hydro variables
     HydroVars hydro_variables{num_grid_points};
     make_overloader(
-        [ initial_time, &inertial_coords ](
+        [initial_time, &physical_coords](
             std::true_type /*is_analytic_solution*/,
             const gsl::not_null<HydroVars*> hydro_vars,
             const auto& local_cache) noexcept {
           using solution_tag = ::Tags::AnalyticSolutionBase;
           hydro_vars->assign_subset(
               Parallel::get<solution_tag>(local_cache)
-                  .variables(inertial_coords, initial_time,
+                  .variables(physical_coords, initial_time,
                              typename hydro_variables_tag::tags_list{}));
         },
-        [&inertial_coords](std::false_type /*is_analytic_solution*/,
+        [&physical_coords](std::false_type /*is_analytic_solution*/,
                            const gsl::not_null<HydroVars*> hydro_vars,
                            const auto& local_cache) noexcept {
           using analytic_data_tag = ::Tags::AnalyticDataBase;
           hydro_vars->assign_subset(
               Parallel::get<analytic_data_tag>(local_cache)
-                  .variables(inertial_coords,
+                  .variables(physical_coords,
                              typename hydro_variables_tag::tags_list{}));
         })(
         evolution::is_analytic_solution<typename Metavariables::initial_data>{},

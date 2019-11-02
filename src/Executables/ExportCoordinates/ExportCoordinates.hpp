@@ -58,8 +58,8 @@ struct ExportCoordinates {
       const ArrayIndex& array_index, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) {
     const auto& mesh = get<Tags::Mesh<Dim>>(box);
-    const auto& inertial_coordinates =
-        db::get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
+    const auto& physical_coordinates =
+        db::get<::Tags::Coordinates<Dim, Frame::Physical>>(box);
     const std::string element_name = MakeString{} << ElementId<Dim>(array_index)
                                                   << '/';
     // Collect volume data
@@ -67,10 +67,10 @@ struct ExportCoordinates {
     std::vector<TensorComponent> components;
     components.reserve(Dim);
     for (size_t d = 0; d < Dim; d++) {
-      components.emplace_back(element_name + "InertialCoordinates_" +
-                                  inertial_coordinates.component_name(
-                                      inertial_coordinates.get_tensor_index(d)),
-                              inertial_coordinates.get(d));
+      components.emplace_back(element_name + "PhysicalCoordinates_" +
+                                  physical_coordinates.component_name(
+                                      physical_coordinates.get_tensor_index(d)),
+                              physical_coordinates.get(d));
     }
     // Send data to volume observer
     auto& local_observer =
@@ -94,7 +94,7 @@ struct Metavariables {
   static constexpr size_t volume_dim = Dim;
 
   static constexpr OptionString help{
-      "Export the inertial coordinates of the Domain specified in the input "
+      "Export the physical coordinates of the Domain specified in the input "
       "file. The output can be used to compute initial data externally, for "
       "instance."};
 

@@ -26,7 +26,7 @@ namespace Burgers {
 struct Fluxes {
   using argument_tags = tmpl::list<Tags::U>;
   using return_tags =
-      tmpl::list<::Tags::Flux<Tags::U, tmpl::size_t<1>, Frame::Inertial>>;
+      tmpl::list<::Tags::Flux<Tags::U, tmpl::size_t<1>, Frame::Physical>>;
   static void apply(gsl::not_null<tnsr::I<DataVector, 1>*> flux,
                     const Scalar<DataVector>& u) noexcept;
 };

@@ -33,7 +33,7 @@ class ElementId;
 /// \endcond
 
 // Test that the Blocks in the Domain are constructed correctly.
-template <size_t VolumeDim, typename Fr = Frame::Inertial>
+template <size_t VolumeDim, typename Fr = Frame::Physical>
 void test_domain_construction(
     const Domain<VolumeDim, Fr>& domain,
     const std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>&
@@ -45,7 +45,7 @@ void test_domain_construction(
         expected_maps) noexcept;
 
 // Test that two neighboring Blocks abut each other.
-template <size_t VolumeDim, typename Fr = Frame::Inertial>
+template <size_t VolumeDim, typename Fr = Frame::Physical>
 void test_physical_separation(
     const std::vector<Block<VolumeDim, Fr>>& blocks) noexcept;
 
@@ -58,13 +58,13 @@ boost::rational<size_t> fraction_of_block_volume(
 // Test that the Elements of the initial domain are connected and cover the
 // computational domain, as well as that neighboring Elements  are at the same
 // refinement level.
-template <size_t VolumeDim, typename Fr = Frame::Inertial>
+template <size_t VolumeDim, typename Fr = Frame::Physical>
 void test_initial_domain(const Domain<VolumeDim, Fr>& domain,
                          const std::vector<std::array<size_t, VolumeDim>>&
                              initial_refinement_levels) noexcept;
 
 // Euclidean basis vector along the given `Direction` and in the given `Frame`.
-template <size_t SpatialDim, typename Fr = Frame::Inertial>
+template <size_t SpatialDim, typename Fr = Frame::Physical>
 tnsr::i<DataVector, SpatialDim, Fr> euclidean_basis_vector(
     const Direction<SpatialDim>& direction,
     const DataVector& used_for_size) noexcept;

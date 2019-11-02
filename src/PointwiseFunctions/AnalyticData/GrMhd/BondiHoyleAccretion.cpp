@@ -113,7 +113,7 @@ BondiHoyleAccretion::magnetic_field(const DataType& r_squared,
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 BondiHoyleAccretion::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
     noexcept {
   return {
@@ -124,7 +124,7 @@ BondiHoyleAccretion::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 BondiHoyleAccretion::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
     noexcept {
   const DataType r_squared = get(kerr_schild_coords_.r_coord_squared(x));
@@ -138,7 +138,7 @@ BondiHoyleAccretion::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 BondiHoyleAccretion::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
     noexcept {
   return equation_of_state_.specific_internal_energy_from_density(
@@ -149,7 +149,7 @@ BondiHoyleAccretion::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>
 BondiHoyleAccretion::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
   return equation_of_state_.pressure_from_density(
       get<hydro::Tags::RestMassDensity<DataType>>(
@@ -159,7 +159,7 @@ BondiHoyleAccretion::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 BondiHoyleAccretion::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
     noexcept {
   const DataType r_squared = get(kerr_schild_coords_.r_coord_squared(x));
@@ -173,7 +173,7 @@ BondiHoyleAccretion::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 BondiHoyleAccretion::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
     noexcept {
   return {make_with_value<
@@ -183,7 +183,7 @@ BondiHoyleAccretion::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
 BondiHoyleAccretion::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
   return {make_with_value<db::item_type<hydro::Tags::LorentzFactor<DataType>>>(
       x, 1.0 / sqrt(1.0 - square(flow_speed_)))};
@@ -192,7 +192,7 @@ BondiHoyleAccretion::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 BondiHoyleAccretion::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
     noexcept {
   return equation_of_state_.specific_enthalpy_from_density(
@@ -225,7 +225,7 @@ bool operator!=(const BondiHoyleAccretion& lhs,
 #define INSTANTIATE_SCALARS(_, data)                         \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>     \
       BondiHoyleAccretion::variables(                        \
-          const tnsr::I<DTYPE(data), 3, Frame::Inertial>& x, \
+          const tnsr::I<DTYPE(data), 3, Frame::Physical>& x, \
           tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) const noexcept;
 
 GENERATE_INSTANTIATIONS(
@@ -237,8 +237,8 @@ GENERATE_INSTANTIATIONS(
 #define INSTANTIATE_VECTORS(_, data)                                         \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>                  \
       BondiHoyleAccretion::variables(                                        \
-          const tnsr::I<DTYPE(data), 3, Frame::Inertial>& x,                 \
-          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Inertial>> /*meta*/) \
+          const tnsr::I<DTYPE(data), 3, Frame::Physical>& x,                 \
+          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Physical>> /*meta*/) \
           const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),

@@ -180,16 +180,16 @@ class AlfvenWave : public MarkAsAnalyticSolution {
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
                  tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+                     DataType, 3, Frame::Physical>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Physical>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
                  tmpl::list<hydro::Tags::MagneticField<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+                     DataType, 3, Frame::Physical>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+          hydro::Tags::MagneticField<DataType, 3, Frame::Physical>>;
 
   template <typename DataType>
   auto variables(
@@ -255,11 +255,11 @@ class AlfvenWave : public MarkAsAnalyticSolution {
   WaveMagneticField::type wave_magnetic_field_{
       {std::numeric_limits<double>::signaling_NaN()}};
   EquationsOfState::IdealFluid<true> equation_of_state_{};
-  tnsr::I<double, 3, Frame::Inertial>
+  tnsr::I<double, 3, Frame::Physical>
       initial_unit_vector_along_background_magnetic_field_{};
-  tnsr::I<double, 3, Frame::Inertial>
+  tnsr::I<double, 3, Frame::Physical>
       initial_unit_vector_along_wave_magnetic_field_{};
-  tnsr::I<double, 3, Frame::Inertial>
+  tnsr::I<double, 3, Frame::Physical>
       initial_unit_vector_along_wave_electric_field_{};
   double magnitude_B0_ = std::numeric_limits<double>::signaling_NaN();
   double magnitude_B1_ = std::numeric_limits<double>::signaling_NaN();

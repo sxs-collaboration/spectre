@@ -13,7 +13,7 @@
 #include "Utilities/StdArrayHelpers.hpp"
 /// \cond
 namespace Frame {
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 /// \endcond
 
@@ -143,4 +143,4 @@ bool Strahlkorper<Frame>::point_is_contained(
   return magnitude(xmc) < radius(theta, phi);
 }
 
-template class Strahlkorper<Frame::Inertial>;
+template class Strahlkorper<Frame::Physical>;

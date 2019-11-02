@@ -21,7 +21,7 @@
 /// \cond
 namespace Frame {
 struct Grid;
-struct Inertial;
+struct Physical;
 struct Logical;
 }  // namespace Frame
 /// \endcond
@@ -119,6 +119,6 @@ Disk<TargetFrame>::initial_refinement_levels() const noexcept {
 }
 
 template class Disk<Frame::Grid>;
-template class Disk<Frame::Inertial>;
+template class Disk<Frame::Physical>;
 }  // namespace creators
 }  // namespace domain

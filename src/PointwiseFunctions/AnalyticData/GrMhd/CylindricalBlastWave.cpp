@@ -19,7 +19,7 @@
 namespace {
 template <typename DataType>
 Scalar<DataType> compute_piecewise(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x, const double& inner_radius,
+    const tnsr::I<DataType, 3, Frame::Physical>& x, const double& inner_radius,
     const double& outer_radius, const double& inner_value,
     const double& outer_value) noexcept {
   const DataType cylindrical_radius =
@@ -93,7 +93,7 @@ void CylindricalBlastWave::pup(PUP::er& p) noexcept {
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 CylindricalBlastWave::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
     noexcept {
   return compute_piecewise(x, inner_radius_, outer_radius_, inner_density_,
@@ -103,17 +103,17 @@ CylindricalBlastWave::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 CylindricalBlastWave::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
     noexcept {
   return {make_with_value<db::item_type<
-      hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(x, 0.0)};
+      hydro::Tags::SpatialVelocity<DataType, 3, Frame::Physical>>>(x, 0.0)};
 }
 
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 CylindricalBlastWave::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
     noexcept {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
@@ -126,7 +126,7 @@ CylindricalBlastWave::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>
 CylindricalBlastWave::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
   return compute_piecewise(x, inner_radius_, outer_radius_, inner_pressure_,
                            outer_pressure_);
@@ -136,7 +136,7 @@ CylindricalBlastWave::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 CylindricalBlastWave::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
     noexcept {
   auto magnetic_field =
@@ -151,7 +151,7 @@ CylindricalBlastWave::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 CylindricalBlastWave::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
     noexcept {
   return {make_with_value<
@@ -161,7 +161,7 @@ CylindricalBlastWave::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
 CylindricalBlastWave::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
   return {make_with_value<
       db::item_type<hydro::Tags::LorentzFactor<DataType>>>(x, 1.0)};
@@ -170,7 +170,7 @@ CylindricalBlastWave::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 CylindricalBlastWave::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
     noexcept {
   return equation_of_state_.specific_enthalpy_from_density_and_energy(
@@ -203,7 +203,7 @@ bool operator!=(const CylindricalBlastWave& lhs,
 #define INSTANTIATE_SCALARS(_, data)                         \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>     \
       CylindricalBlastWave::variables(                       \
-          const tnsr::I<DTYPE(data), 3, Frame::Inertial>& x, \
+          const tnsr::I<DTYPE(data), 3, Frame::Physical>& x, \
           tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) const noexcept;
 
 GENERATE_INSTANTIATIONS(
@@ -215,8 +215,8 @@ GENERATE_INSTANTIATIONS(
 #define INSTANTIATE_VECTORS(_, data)                                         \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>                  \
       CylindricalBlastWave::variables(                                       \
-          const tnsr::I<DTYPE(data), 3, Frame::Inertial>& x,                 \
-          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Inertial>> /*meta*/) \
+          const tnsr::I<DTYPE(data), 3, Frame::Physical>& x,                 \
+          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Physical>> /*meta*/) \
           const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),

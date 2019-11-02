@@ -58,9 +58,9 @@ struct ComputeDuDt {
   using argument_tags = tmpl::list<
       gr::Tags::SpacetimeMetric<Dim>, Tags::Pi<Dim>, Tags::Phi<Dim>,
       ::Tags::deriv<gr::Tags::SpacetimeMetric<Dim>, tmpl::size_t<Dim>,
-                    Frame::Inertial>,
-      ::Tags::deriv<Tags::Pi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
-      ::Tags::deriv<Tags::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
+                    Frame::Physical>,
+      ::Tags::deriv<Tags::Pi<Dim>, tmpl::size_t<Dim>, Frame::Physical>,
+      ::Tags::deriv<Tags::Phi<Dim>, tmpl::size_t<Dim>, Frame::Physical>,
       Tags::ConstraintGamma0, Tags::ConstraintGamma1, Tags::ConstraintGamma2,
       Tags::GaugeH<Dim>, Tags::SpacetimeDerivGaugeH<Dim>, gr::Tags::Lapse<>,
       gr::Tags::Shift<Dim>, gr::Tags::InverseSpatialMetric<Dim>,
@@ -127,7 +127,7 @@ struct ComputeNormalDotFluxes {
       gr::Tags::SpacetimeMetric<Dim>, Tags::Pi<Dim>, Tags::Phi<Dim>,
       Tags::ConstraintGamma1, Tags::ConstraintGamma2, gr::Tags::Lapse<>,
       gr::Tags::Shift<Dim>, gr::Tags::InverseSpatialMetric<Dim>,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>;
+      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Physical>>>;
 
   static void apply(
       gsl::not_null<tnsr::aa<DataVector, Dim>*>
@@ -214,24 +214,24 @@ struct UpwindFlux {
   // Variables. Local and remote values of this data are then combined in the
   // `()` operator.
   using package_tags = tmpl::list<
-      gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
-      Tags::Pi<Dim, Frame::Inertial>, Tags::Phi<Dim, Frame::Inertial>,
+      gr::Tags::SpacetimeMetric<Dim, Frame::Physical, DataVector>,
+      Tags::Pi<Dim, Frame::Physical>, Tags::Phi<Dim, Frame::Physical>,
       gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::Shift<Dim, Frame::Physical, DataVector>,
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Physical, DataVector>,
       Tags::ConstraintGamma1, Tags::ConstraintGamma2,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>;
+      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Physical>>>;
 
   // These tags on the interface of the element are passed to
   // `package_data` to provide the data needed to compute the numerical fluxes.
   using argument_tags = tmpl::list<
-      gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
-      Tags::Pi<Dim, Frame::Inertial>, Tags::Phi<Dim, Frame::Inertial>,
+      gr::Tags::SpacetimeMetric<Dim, Frame::Physical, DataVector>,
+      Tags::Pi<Dim, Frame::Physical>, Tags::Phi<Dim, Frame::Physical>,
       gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::Shift<Dim, Frame::Physical, DataVector>,
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Physical, DataVector>,
       Tags::ConstraintGamma1, Tags::ConstraintGamma2,
-      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Inertial>>>;
+      ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim, Frame::Physical>>>;
 
   // pseudo-interface: used internally by Algorithm infrastructure, not
   // user-level code
@@ -239,14 +239,14 @@ struct UpwindFlux {
   // arguments the databox types of the `argument_tags`.
   void package_data(
       gsl::not_null<Variables<package_tags>*> packaged_data,
-      const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric,
-      const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi,
-      const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi,
+      const tnsr::aa<DataVector, Dim, Frame::Physical>& spacetime_metric,
+      const tnsr::aa<DataVector, Dim, Frame::Physical>& pi,
+      const tnsr::iaa<DataVector, Dim, Frame::Physical>& phi,
       const Scalar<DataVector>& lapse,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
-      const tnsr::II<DataVector, Dim, Frame::Inertial>& inverse_spatial_metric,
+      const tnsr::I<DataVector, Dim, Frame::Physical>& shift,
+      const tnsr::II<DataVector, Dim, Frame::Physical>& inverse_spatial_metric,
       const Scalar<DataVector>& gamma1, const Scalar<DataVector>& gamma2,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
+      const tnsr::i<DataVector, Dim, Frame::Physical>& interface_unit_normal)
       const noexcept;
 
   // pseudo-interface: used internally by Algorithm infrastructure, not
@@ -256,33 +256,33 @@ struct UpwindFlux {
   // into, then the package_tags on the interior side of the mortar followed by
   // the package_tags on the exterior side.
   void operator()(
-      gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Physical>*>
           psi_normal_dot_numerical_flux,
-      gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::aa<DataVector, Dim, Frame::Physical>*>
           pi_normal_dot_numerical_flux,
-      gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::iaa<DataVector, Dim, Frame::Physical>*>
           phi_normal_dot_numerical_flux,
-      const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric_int,
-      const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi_int,
-      const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi_int,
+      const tnsr::aa<DataVector, Dim, Frame::Physical>& spacetime_metric_int,
+      const tnsr::aa<DataVector, Dim, Frame::Physical>& pi_int,
+      const tnsr::iaa<DataVector, Dim, Frame::Physical>& phi_int,
       const Scalar<DataVector>& lapse_int,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& shift_int,
-      const tnsr::II<DataVector, Dim, Frame::Inertial>&
+      const tnsr::I<DataVector, Dim, Frame::Physical>& shift_int,
+      const tnsr::II<DataVector, Dim, Frame::Physical>&
           inverse_spatial_metric_int,
       const Scalar<DataVector>& gamma1_int,
       const Scalar<DataVector>& gamma2_int,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      const tnsr::i<DataVector, Dim, Frame::Physical>&
           interface_unit_normal_int,
-      const tnsr::aa<DataVector, Dim, Frame::Inertial>& spacetime_metric_ext,
-      const tnsr::aa<DataVector, Dim, Frame::Inertial>& pi_ext,
-      const tnsr::iaa<DataVector, Dim, Frame::Inertial>& phi_ext,
+      const tnsr::aa<DataVector, Dim, Frame::Physical>& spacetime_metric_ext,
+      const tnsr::aa<DataVector, Dim, Frame::Physical>& pi_ext,
+      const tnsr::iaa<DataVector, Dim, Frame::Physical>& phi_ext,
       const Scalar<DataVector>& lapse_ext,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& shift_ext,
-      const tnsr::II<DataVector, Dim, Frame::Inertial>&
+      const tnsr::I<DataVector, Dim, Frame::Physical>& shift_ext,
+      const tnsr::II<DataVector, Dim, Frame::Physical>&
           inverse_spatial_metric_ext,
       const Scalar<DataVector>& gamma1_ext,
       const Scalar<DataVector>& gamma2_ext,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      const tnsr::i<DataVector, Dim, Frame::Physical>&
           interface_unit_normal_ext) const noexcept;
 };
 }  // namespace GeneralizedHarmonic

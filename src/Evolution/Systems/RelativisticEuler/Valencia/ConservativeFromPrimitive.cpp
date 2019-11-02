@@ -17,10 +17,10 @@ template <typename DataType, size_t Dim>
 void conservative_from_primitive(
     const gsl::not_null<Scalar<DataType>*> tilde_d,
     const gsl::not_null<Scalar<DataType>*> tilde_tau,
-    const gsl::not_null<tnsr::i<DataType, Dim, Frame::Inertial>*> tilde_s,
+    const gsl::not_null<tnsr::i<DataType, Dim, Frame::Physical>*> tilde_s,
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
-    const tnsr::i<DataType, Dim, Frame::Inertial>& spatial_velocity_oneform,
+    const tnsr::i<DataType, Dim, Frame::Physical>& spatial_velocity_oneform,
     const Scalar<DataType>& spatial_velocity_squared,
     const Scalar<DataType>& lorentz_factor,
     const Scalar<DataType>& specific_enthalpy, const Scalar<DataType>& pressure,
@@ -51,11 +51,11 @@ void conservative_from_primitive(
   template void RelativisticEuler::Valencia::conservative_from_primitive(    \
       const gsl::not_null<Scalar<DTYPE(data)>*> tilde_d,                     \
       const gsl::not_null<Scalar<DTYPE(data)>*> tilde_tau,                   \
-      const gsl::not_null<tnsr::i<DTYPE(data), DIM(data), Frame::Inertial>*> \
+      const gsl::not_null<tnsr::i<DTYPE(data), DIM(data), Frame::Physical>*> \
           tilde_s,                                                           \
       const Scalar<DTYPE(data)>& rest_mass_density,                          \
       const Scalar<DTYPE(data)>& specific_internal_energy,                   \
-      const tnsr::i<DTYPE(data), DIM(data), Frame::Inertial>&                \
+      const tnsr::i<DTYPE(data), DIM(data), Frame::Physical>&                \
           spatial_velocity_oneform,                                          \
       const Scalar<DTYPE(data)>& spatial_velocity_squared,                   \
       const Scalar<DTYPE(data)>& lorentz_factor,                             \

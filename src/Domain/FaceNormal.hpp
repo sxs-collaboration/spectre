@@ -65,15 +65,16 @@ namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The unnormalized face normal one form
-template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+template <size_t VolumeDim, typename Frame = ::Frame::Physical>
 struct UnnormalizedFaceNormal : db::SimpleTag {
   static std::string name() noexcept { return "UnnormalizedFaceNormal"; }
   using type = tnsr::i<DataVector, VolumeDim, Frame>;
 };
 
-template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+template <size_t VolumeDim, typename Frame = ::Frame::Physical>
 struct UnnormalizedFaceNormalCompute
-    : db::ComputeTag, UnnormalizedFaceNormal<VolumeDim, Frame> {
+    : db::ComputeTag,
+      UnnormalizedFaceNormal<VolumeDim, Frame> {
   using base = UnnormalizedFaceNormal<VolumeDim, Frame>;
   static constexpr tnsr::i<DataVector, VolumeDim, Frame> (*function)(
       const ::Mesh<VolumeDim - 1>&, const ::ElementMap<VolumeDim, Frame>&,

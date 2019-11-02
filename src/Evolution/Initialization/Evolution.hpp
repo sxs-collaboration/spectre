@@ -28,7 +28,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 /// \endcond
 
@@ -104,7 +104,7 @@ struct Evolution {
         ::Tags::SubstepTimeCompute,
         ::Tags::DivCompute<
             db::add_tag_prefix<::Tags::Flux, variables_tag, tmpl::size_t<dim>,
-                               Frame::Inertial>,
+                               Frame::Physical>,
             ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
                                     ::Tags::Coordinates<dim, Frame::Logical>>>>;
   };

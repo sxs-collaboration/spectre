@@ -55,11 +55,11 @@ template <size_t Dim>
 struct ComputeFluxes {
   using return_tags =
       tmpl::list<::Tags::Flux<Tags::MassDensityCons<DataVector>,
-                              tmpl::size_t<Dim>, Frame::Inertial>,
+                              tmpl::size_t<Dim>, Frame::Physical>,
                  ::Tags::Flux<Tags::MomentumDensity<DataVector, Dim>,
-                              tmpl::size_t<Dim>, Frame::Inertial>,
+                              tmpl::size_t<Dim>, Frame::Physical>,
                  ::Tags::Flux<Tags::EnergyDensity<DataVector>,
-                              tmpl::size_t<Dim>, Frame::Inertial>>;
+                              tmpl::size_t<Dim>, Frame::Physical>>;
 
   using argument_tags =
       tmpl::list<Tags::MomentumDensity<DataVector, Dim>,

@@ -15,7 +15,7 @@ namespace Tags {
 
 template <typename DataType>
 struct AlfvenSpeedSquared;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr = Frame::Physical>
 struct ComovingMagneticField;
 template <typename DataType>
 struct ComovingMagneticFieldSquared;
@@ -30,11 +30,11 @@ template <typename DataType, size_t Dim, typename Fr>
 struct LorentzFactorCompute;
 template <typename DataType>
 struct LorentzFactorSquared;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr = Frame::Physical>
 struct MagneticField;
 template <typename DataType>
 struct MagneticFieldDotSpatialVelocity;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr = Frame::Physical>
 struct MagneticFieldOneForm;
 template <typename DataType>
 struct MagneticFieldSquared;
@@ -46,9 +46,9 @@ template <typename DataType>
 struct RestMassDensity;
 template <typename DataType>
 struct SoundSpeedSquared;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr = Frame::Physical>
 struct SpatialVelocity;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr = Frame::Physical>
 struct SpatialVelocityOneForm;
 template <typename DataType>
 struct SpatialVelocitySquared;
@@ -58,7 +58,7 @@ template <typename DataType>
 struct SpecificEnthalpyCompute;
 template <typename DataType>
 struct SpecificInternalEnergy;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr = Frame::Physical>
 struct MassFlux;
 }  // namespace Tags
 }  // namespace hydro

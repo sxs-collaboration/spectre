@@ -15,14 +15,14 @@
 // IWYU pragma: no_include <vector>
 
 namespace Frame {
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 
 namespace domain {
 namespace {
 template <size_t VolumeDim>
 void test_aligned_blocks(
-    const creators::AlignedLattice<VolumeDim, Frame::Inertial>&
+    const creators::AlignedLattice<VolumeDim, Frame::Physical>&
         aligned_blocks) noexcept {
   const auto domain = aligned_blocks.create_domain();
   test_initial_domain(domain, aligned_blocks.initial_refinement_levels());
@@ -31,43 +31,43 @@ void test_aligned_blocks(
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
   const auto domain_creator_1d =
-      test_factory_creation<DomainCreator<1, Frame::Inertial>>(
+      test_factory_creation<DomainCreator<1, Frame::Physical>>(
           "  AlignedLattice:\n"
           "    BlockBounds: [[0.1, 2.6, 5.1, 5.2, 7.2]]\n"
           "    IsPeriodicIn: [false]\n"
           "    InitialGridPoints: [3]\n"
           "    InitialRefinement: [2]\n");
   const auto* aligned_blocks_creator_1d =
-      dynamic_cast<const creators::AlignedLattice<1, Frame::Inertial>*>(
+      dynamic_cast<const creators::AlignedLattice<1, Frame::Physical>*>(
           domain_creator_1d.get());
   test_aligned_blocks(*aligned_blocks_creator_1d);
 
   const auto domain_creator_2d =
-      test_factory_creation<DomainCreator<2, Frame::Inertial>>(
+      test_factory_creation<DomainCreator<2, Frame::Physical>>(
           "  AlignedLattice:\n"
           "    BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2, 8.9]]\n"
           "    IsPeriodicIn: [false, true]\n"
           "    InitialGridPoints: [3, 4]\n"
           "    InitialRefinement: [2, 1]\n");
   const auto* aligned_blocks_creator_2d =
-      dynamic_cast<const creators::AlignedLattice<2, Frame::Inertial>*>(
+      dynamic_cast<const creators::AlignedLattice<2, Frame::Physical>*>(
           domain_creator_2d.get());
   test_aligned_blocks(*aligned_blocks_creator_2d);
 
   const auto domain_creator_3d =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      test_factory_creation<DomainCreator<3, Frame::Physical>>(
           "  AlignedLattice:\n"
           "    BlockBounds: [[0.1, 2.6, 5.1], [-0.4, 3.2, 6.2], [-0.2, 3.2]]\n"
           "    IsPeriodicIn: [false, true, false]\n"
           "    InitialGridPoints: [3, 4, 5]\n"
           "    InitialRefinement: [2, 1, 0]\n");
   const auto* aligned_blocks_creator_3d =
-      dynamic_cast<const creators::AlignedLattice<3, Frame::Inertial>*>(
+      dynamic_cast<const creators::AlignedLattice<3, Frame::Physical>*>(
           domain_creator_3d.get());
   test_aligned_blocks(*aligned_blocks_creator_3d);
 
   const auto cubical_shell_domain =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      test_factory_creation<DomainCreator<3, Frame::Physical>>(
           "  AlignedLattice:\n"
           "    BlockBounds: [[0.1, 2.6, 5.1, 6.0], [-0.4, 3.2, 6.2, 7.0], "
           "[-0.2, 3.2, 4.0, 5.2]]\n"
@@ -76,12 +76,12 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "    InitialRefinement: [2, 1, 0]\n"
           "    BlocksToExclude: [[1, 1, 1]]");
   const auto* cubical_shell_creator_3d =
-      dynamic_cast<const creators::AlignedLattice<3, Frame::Inertial>*>(
+      dynamic_cast<const creators::AlignedLattice<3, Frame::Physical>*>(
           cubical_shell_domain.get());
   test_aligned_blocks(*cubical_shell_creator_3d);
 
   const auto unit_cubical_shell_domain =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      test_factory_creation<DomainCreator<3, Frame::Physical>>(
           "  AlignedLattice:\n"
           "    BlockBounds: [[-1.5, -0.5, 0.5, 1.5], [-1.5, -0.5, 0.5, 1.5], "
           "[-1.5, -0.5, 0.5, 1.5]]\n"
@@ -90,7 +90,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice", "[Domain][Unit]") {
           "    InitialRefinement: [1, 1, 1]\n"
           "    BlocksToExclude: [[1, 1, 1]]");
   const auto* unit_cubical_shell_creator_3d =
-      dynamic_cast<const creators::AlignedLattice<3, Frame::Inertial>*>(
+      dynamic_cast<const creators::AlignedLattice<3, Frame::Physical>*>(
           unit_cubical_shell_domain.get());
   test_aligned_blocks(*unit_cubical_shell_creator_3d);
 }
@@ -101,7 +101,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.AlignedLattice.Error",
                   "[Unit][ErrorHandling]") {
   ERROR_TEST();
   const auto failed_cubical_shell_domain =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      test_factory_creation<DomainCreator<3, Frame::Physical>>(
           "  AlignedLattice:\n"
           "    BlockBounds: [[-1.5, -0.5, 0.5, 1.5], [-1.5, -0.5, 0.5, 1.5], "
           "[-1.5, -0.5, 0.5, 1.5]]\n"

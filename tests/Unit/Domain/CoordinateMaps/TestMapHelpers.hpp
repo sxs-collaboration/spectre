@@ -34,7 +34,7 @@
 template <typename Map>
 bool are_maps_equal(
     const Map& map,
-    const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, Map::dim>&
+    const domain::CoordinateMapBase<Frame::Logical, Frame::Physical, Map::dim>&
         map_base) {
   const auto* map_derived = dynamic_cast<const Map*>(&map_base);
   return map_derived == nullptr ? false : (*map_derived == map);
@@ -73,8 +73,8 @@ template <typename Map>
 void check_if_map_is_identity(const Map& map) {
   using IdentityMap = domain::CoordinateMaps::Identity<Map::dim>;
   check_if_maps_are_equal(
-      domain::make_coordinate_map<Frame::Inertial, Frame::Grid>(IdentityMap{}),
-      domain::make_coordinate_map<Frame::Inertial, Frame::Grid>(map));
+      domain::make_coordinate_map<Frame::Physical, Frame::Grid>(IdentityMap{}),
+      domain::make_coordinate_map<Frame::Physical, Frame::Grid>(map));
   CHECK(map.is_identity());
 }
 

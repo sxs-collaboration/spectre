@@ -32,7 +32,7 @@
 namespace domain {
 namespace {
 void test_sphere_construction(
-    const creators::Sphere<Frame::Inertial>& sphere, const double inner_radius,
+    const creators::Sphere<Frame::Physical>& sphere, const double inner_radius,
     const double outer_radius, const bool use_equiangular_map,
     const std::array<size_t, 2>& expected_sphere_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level) {
@@ -137,7 +137,7 @@ void test_sphere_construction(
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
 
   auto coord_maps =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 0.0, 1.0,
                      use_equiangular_map},
           Wedge3DMap{inner_radius, outer_radius,
@@ -167,7 +167,7 @@ void test_sphere_construction(
                      0.0, 1.0, use_equiangular_map});
   if (use_equiangular_map) {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(Equiangular3D{
+        make_coordinate_map_base<Frame::Logical, Frame::Physical>(Equiangular3D{
             Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
                         inner_radius / sqrt(3.0)),
             Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
@@ -176,7 +176,7 @@ void test_sphere_construction(
                         inner_radius / sqrt(3.0))}));
   } else {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
                             inner_radius / sqrt(3.0)),
                      Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
@@ -195,7 +195,7 @@ void test_sphere_boundaries_equiangular() {
   const size_t refinement = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
-  const creators::Sphere<Frame::Inertial> sphere{
+  const creators::Sphere<Frame::Physical> sphere{
       inner_radius, outer_radius, refinement, grid_points_r_angular, true};
   test_physical_separation(sphere.create_domain().blocks());
 
@@ -206,7 +206,7 @@ void test_sphere_boundaries_equiangular() {
 
 void test_sphere_factory_equiangular() {
   INFO("Sphere factory equiangular");
-  const auto sphere = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto sphere = test_factory_creation<DomainCreator<3, Frame::Physical>>(
       "  Sphere:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -217,7 +217,7 @@ void test_sphere_factory_equiangular() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_sphere_construction(
-      dynamic_cast<const creators::Sphere<Frame::Inertial>&>(*sphere),
+      dynamic_cast<const creators::Sphere<Frame::Physical>&>(*sphere),
       inner_radius, outer_radius, true, grid_points_r_angular,
       {7, make_array<3>(refinement_level)});
 }
@@ -228,7 +228,7 @@ void test_sphere_boundaries_equidistant() {
   const size_t refinement = 2;
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
-  const creators::Sphere<Frame::Inertial> sphere{
+  const creators::Sphere<Frame::Physical> sphere{
       inner_radius, outer_radius, refinement, grid_points_r_angular, false};
   test_physical_separation(sphere.create_domain().blocks());
 
@@ -239,7 +239,7 @@ void test_sphere_boundaries_equidistant() {
 
 void test_sphere_factory_equidistant() {
   INFO("Sphere factory equidistant");
-  const auto sphere = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto sphere = test_factory_creation<DomainCreator<3, Frame::Physical>>(
       "  Sphere:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -250,7 +250,7 @@ void test_sphere_factory_equidistant() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_sphere_construction(
-      dynamic_cast<const creators::Sphere<Frame::Inertial>&>(*sphere),
+      dynamic_cast<const creators::Sphere<Frame::Physical>&>(*sphere),
       inner_radius, outer_radius, false, grid_points_r_angular,
       {7, make_array<3>(refinement_level)});
 }

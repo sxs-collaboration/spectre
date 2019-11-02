@@ -39,7 +39,7 @@ struct Var1 : db::SimpleTag {
 
 struct Var2 : db::SimpleTag {
   static std::string name() noexcept { return "Var2"; }
-  using type = tnsr::I<DataVector, dim, Frame::Inertial>;
+  using type = tnsr::I<DataVector, dim, Frame::Physical>;
 };
 
 struct Var3 : db::SimpleTag {
@@ -53,7 +53,7 @@ struct ComputeSources {
   using argument_tags = tmpl::list<Var1, Var3>;
   using return_tags = tmpl::list<source_tag>;
   static void apply(
-      const gsl::not_null<tnsr::I<DataVector, dim, Frame::Inertial>*> source2,
+      const gsl::not_null<tnsr::I<DataVector, dim, Frame::Physical>*> source2,
       const Scalar<DataVector>& var1, const Scalar<DataVector>& var3) noexcept {
     get<0>(*source2) = get(var1);
     get<1>(*source2) = get(var3);

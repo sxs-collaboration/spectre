@@ -82,7 +82,7 @@ struct NumericalFlux {
       const gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
       const Scalar<DataVector>& field,
       const tnsr::i<DataVector, Dim,
-                    Frame::Inertial>& /*interface_unit_normal*/) const
+                    Frame::Physical>& /*interface_unit_normal*/) const
       noexcept {
     numerical_flux_for_field->get() = 2. * get(field);
   }
@@ -100,7 +100,7 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
-                         ::Tags::Domain<Dim, Frame::Inertial>,
+                         ::Tags::Domain<Dim, Frame::Physical>,
                          ::Tags::InitialExtents<Dim>,
                          db::add_tag_prefix<
                              ::Tags::FixedSource,
@@ -174,7 +174,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InhomogeneousBoundaryConditions",
     //    ^       ^
     // -0.5       1.5
     const ElementId<1> element_id{0, {{SegmentId{2, 0}}}};
-    const domain::creators::Interval<Frame::Inertial> domain_creator{
+    const domain::creators::Interval<Frame::Physical> domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
 
     // Expected boundary contribution to source in element X:
@@ -198,7 +198,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InhomogeneousBoundaryConditions",
     //       ^   ^
     //    -0.5   1.5
     const ElementId<2> element_id{0, {{SegmentId{1, 0}, SegmentId{1, 1}}}};
-    const domain::creators::Rectangle<Frame::Inertial> domain_creator{
+    const domain::creators::Rectangle<Frame::Physical> domain_creator{
         {{-0.5, 0.}}, {{1.5, 1.}}, {{false, false}}, {{1, 1}}, {{3, 3}}};
 
     // Expected boundary contribution to source in element X:
@@ -218,7 +218,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InhomogeneousBoundaryConditions",
     INFO("3D");
     const ElementId<3> element_id{
         0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{1, 0}}}};
-    const domain::creators::Brick<Frame::Inertial> domain_creator{
+    const domain::creators::Brick<Frame::Physical> domain_creator{
         {{-0.5, 0., -1.}},
         {{1.5, 1., 3.}},
         {{false, false, false}},

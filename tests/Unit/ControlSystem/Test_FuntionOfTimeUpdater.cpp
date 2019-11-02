@@ -32,23 +32,23 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionOfTimeUpdater.Translation",
   constexpr size_t deriv_order = 2;
 
   // This translation test is a simple 2-D test with time-dependent
-  // `inertial` coordinates. We want to test that the f_of_t (denoted \lambda(t)
+  // `physical` coordinates. We want to test that the f_of_t (denoted \lambda(t)
   // here) updates properly and continually maps the grid_coords to match the
-  // inertial_coords: grid_coords -> grid_coords + \lambda(t)
+  // physical_coords: grid_coords -> grid_coords + \lambda(t)
   // The target map parameter is
-  // \lambda_target(t) = inertial_coords(t) - grid_coords
+  // \lambda_target(t) = physical_coords(t) - grid_coords
   // The error in the mapping is defined as Q = \lambda_target - \lambda.
   // This is implemented in FoTUpdater_Helper, wehere we define the error as:
-  // Q = inertial_coords(t) - grid_coords - f_of_t
+  // Q = physical_coords(t) - grid_coords - f_of_t
   // where f_of_t is the current map parameter \lambda(t)
   DataVector grid_coords{{0.2, 0.4}};
-  // Here we set up the inertial coords to have a sinusoidal time
+  // Here we set up the physical coords to have a sinusoidal time
   // dependence, which agrees with the grid_coords at t=0
   const double amp1 = 0.7;
   const double omega1 = 4.0 * M_PI;
   const double amp2 = 0.3;
   const double omega2 = 6.0 * M_PI;
-  DataVector inertial_coords{grid_coords};
+  DataVector physical_coords{grid_coords};
 
   // initialize our FunctionOfTime to agree at t=0
   const std::array<DataVector, deriv_order + 1> init_func{
@@ -79,18 +79,18 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionOfTimeUpdater.Translation",
 
   while (t < final_time) {
     // make the error measurement
-    trans_error(&updater, f_of_t, t, inertial_coords);
+    trans_error(&updater, f_of_t, t, physical_coords);
     // update the FunctionOfTime
     updater.modify(&f_of_t, t);
     // check that Q is within the specified tolerance
-    CHECK(fabs(inertial_coords[0] - grid_coords[0] - f_of_t.func(t)[0][0]) <=
+    CHECK(fabs(physical_coords[0] - grid_coords[0] - f_of_t.func(t)[0][0]) <=
           decrease_timescale_threshold);
-    CHECK(fabs(inertial_coords[1] - grid_coords[1] - f_of_t.func(t)[0][1]) <=
+    CHECK(fabs(physical_coords[1] - grid_coords[1] - f_of_t.func(t)[0][1]) <=
           decrease_timescale_threshold);
 
-    // increase time and get inertial_coords(t)
+    // increase time and get physical_coords(t)
     t += dt;
-    inertial_coords[0] = grid_coords[0] + amp1 * sin(omega1 * t);
-    inertial_coords[1] = grid_coords[1] + amp2 * sin(omega2 * t);
+    physical_coords[0] = grid_coords[0] + amp1 * sin(omega1 * t);
+    physical_coords[1] = grid_coords[1] + amp2 * sin(omega2 * t);
   }
 }

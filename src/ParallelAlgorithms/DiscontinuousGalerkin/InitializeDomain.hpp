@@ -31,7 +31,7 @@
 template <size_t VolumeDim>
 class ElementIndex;
 namespace Frame {
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 /// \endcond
 
@@ -43,19 +43,19 @@ namespace Actions {
  *
  * ConstGlobalCache:
  * - Uses:
- *   - `Tags::Domain<Dim, Frame::Inertial>`
+ *   - `Tags::Domain<Dim, Frame::Physical>`
  * DataBox:
  * - Uses:
  *   - `Tags::InitialExtents<Dim>`
  * - Adds:
  *   - `Tags::Mesh<Dim>`
  *   - `Tags::Element<Dim>`
- *   - `Tags::ElementMap<Dim, Frame::Inertial>`
+ *   - `Tags::ElementMap<Dim, Frame::Physical>`
  *   - `Tags::Coordinates<Dim, Frame::Logical>`
- *   - `Tags::Coordinates<Dim, Frame::Inertial>`
+ *   - `Tags::Coordinates<Dim, Frame::Physical>`
  *   - `Tags::InverseJacobian<
  *   Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>`
- *   - `Tags::MinimumGridSpacing<Dim, Frame::Inertial>>`
+ *   - `Tags::MinimumGridSpacing<Dim, Frame::Physical>>`
  * - Removes: nothing
  * - Modifies: nothing
  */
@@ -82,10 +82,10 @@ struct InitializeDomain {
                                   ::Tags::Coordinates<Dim, Frame::Logical>>,
         ::Tags::InverseJacobian<::Tags::ElementMap<Dim>,
                                 ::Tags::Coordinates<Dim, Frame::Logical>>,
-        ::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>>;
+        ::Tags::MinimumGridSpacing<Dim, Frame::Physical>>>;
 
     const auto& initial_extents = db::get<::Tags::InitialExtents<Dim>>(box);
-    const auto& domain = db::get<::Tags::Domain<Dim, Frame::Inertial>>(box);
+    const auto& domain = db::get<::Tags::Domain<Dim, Frame::Physical>>(box);
 
     const ElementId<Dim> element_id{array_index};
     const auto& my_block = domain.blocks()[element_id.block_id()];
@@ -93,7 +93,7 @@ struct InitializeDomain {
         initial_extents, element_id);
     Element<Dim> element =
         domain::Initialization::create_initial_element(element_id, my_block);
-    ElementMap<Dim, Frame::Inertial> element_map{
+    ElementMap<Dim, Frame::Physical> element_map{
         element_id, my_block.coordinate_map().get_clone()};
 
     return std::make_tuple(

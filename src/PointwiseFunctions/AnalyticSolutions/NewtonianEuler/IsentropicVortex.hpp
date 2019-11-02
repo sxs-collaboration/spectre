@@ -156,7 +156,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   /// Retrieve a collection of hydrodynamic variables at position x and time t
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, Dim, Frame::Inertial>& x,
+      const tnsr::I<DataType, Dim, Frame::Physical>& x,
       const double t,  // NOLINT
       tmpl::list<Tags...> /*meta*/) const noexcept {
     static_assert(sizeof...(Tags) > 1,
@@ -202,9 +202,9 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
 
   template <typename DataType>
   auto variables(
-      tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/,
+      tmpl::list<Tags::Velocity<DataType, Dim, Frame::Physical>> /*meta*/,
       const IntermediateVariables<DataType>& vars) const noexcept
-      -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>;
+      -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Physical>>;
 
   template <typename DataType>
   auto variables(tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
@@ -220,7 +220,7 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
   // Intermediate variables needed to compute the primitives
   template <typename DataType>
   struct IntermediateVariables {
-    IntermediateVariables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
+    IntermediateVariables(const tnsr::I<DataType, Dim, Frame::Physical>& x,
                           double t, const std::array<double, Dim>& center,
                           const std::array<double, Dim>& mean_velocity,
                           double strength) noexcept;

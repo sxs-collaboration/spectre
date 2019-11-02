@@ -16,11 +16,11 @@ template <typename DataType>
 struct MassDensity;
 template <typename DataType>
 struct MassDensityCons;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr = Frame::Physical>
 struct MomentumDensity;
 template <typename DataType>
 struct EnergyDensity;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
+template <typename DataType, size_t Dim, typename Fr = Frame::Physical>
 struct Velocity;
 template <typename DataType>
 struct SpecificInternalEnergy;

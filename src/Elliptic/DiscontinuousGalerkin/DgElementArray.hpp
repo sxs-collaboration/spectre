@@ -42,7 +42,7 @@ struct DgElementArray {
   using array_index = ElementIndex<volume_dim>;
 
   using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<volume_dim, Frame::Inertial>>;
+      tmpl::list<::Tags::Domain<volume_dim, Frame::Physical>>;
 
   using array_allocation_tags =
       tmpl::list<::Tags::InitialRefinementLevels<volume_dim>>;
@@ -74,7 +74,7 @@ void DgElementArray<Metavariables, PhaseDepActionList>::allocate_array(
   auto& dg_element_array =
       Parallel::get_parallel_component<DgElementArray>(local_cache);
   const auto& domain =
-      Parallel::get<::Tags::Domain<volume_dim, Frame::Inertial>>(local_cache);
+      Parallel::get<::Tags::Domain<volume_dim, Frame::Physical>>(local_cache);
   const auto& initial_refinement_levels =
       get<::Tags::InitialRefinementLevels<volume_dim>>(initialization_items);
   for (const auto& block : domain.blocks()) {

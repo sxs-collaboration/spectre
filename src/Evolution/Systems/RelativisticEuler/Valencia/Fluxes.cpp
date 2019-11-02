@@ -17,20 +17,20 @@ namespace RelativisticEuler {
 namespace Valencia {
 
 template <size_t Dim>
-void fluxes(const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+void fluxes(const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Physical>*>
                 tilde_d_flux,
-            const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+            const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Physical>*>
                 tilde_tau_flux,
-            const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
+            const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Physical>*>
                 tilde_s_flux,
             const Scalar<DataVector>& tilde_d,
             const Scalar<DataVector>& tilde_tau,
-            const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
+            const tnsr::i<DataVector, Dim, Frame::Physical>& tilde_s,
             const Scalar<DataVector>& lapse,
-            const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
+            const tnsr::I<DataVector, Dim, Frame::Physical>& shift,
             const Scalar<DataVector>& sqrt_det_spatial_metric,
             const Scalar<DataVector>& pressure,
-            const tnsr::I<DataVector, Dim, Frame::Inertial>&
+            const tnsr::I<DataVector, Dim, Frame::Physical>&
                 spatial_velocity) noexcept {
   const DataVector p_alpha_sqrt_det_g =
       get(sqrt_det_spatial_metric) * get(lapse) * get(pressure);
@@ -54,19 +54,19 @@ void fluxes(const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
 
 #define INSTANTIATION(_, data)                                                \
   template void RelativisticEuler::Valencia::fluxes(                          \
-      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>   \
+      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Physical>*>   \
           tilde_d_flux,                                                       \
-      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>   \
+      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Physical>*>   \
           tilde_tau_flux,                                                     \
-      const gsl::not_null<tnsr::Ij<DataVector, DIM(data), Frame::Inertial>*>  \
+      const gsl::not_null<tnsr::Ij<DataVector, DIM(data), Frame::Physical>*>  \
           tilde_s_flux,                                                       \
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau, \
-      const tnsr::i<DataVector, DIM(data), Frame::Inertial>& tilde_s,         \
+      const tnsr::i<DataVector, DIM(data), Frame::Physical>& tilde_s,         \
       const Scalar<DataVector>& lapse,                                        \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift,           \
+      const tnsr::I<DataVector, DIM(data), Frame::Physical>& shift,           \
       const Scalar<DataVector>& sqrt_det_spatial_metric,                      \
       const Scalar<DataVector>& pressure,                                     \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                  \
+      const tnsr::I<DataVector, DIM(data), Frame::Physical>&                  \
           spatial_velocity) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))

@@ -37,9 +37,9 @@ struct KerrSchild {
 };
 
 template <typename DataType>
-tnsr::I<DataType, 3, Frame::Inertial> spatial_coords(
+tnsr::I<DataType, 3, Frame::Physical> spatial_coords(
     const DataType& used_for_size) noexcept {
-  auto x = make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(used_for_size,
+  auto x = make_with_value<tnsr::I<DataType, 3, Frame::Physical>>(used_for_size,
                                                                   0.0);
   get<0>(x) = 1.32;
   get<1>(x) = 0.82;
@@ -77,15 +77,15 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataType>>>(vars);
   const auto& d_lapse =
       get<gr::Solutions::KerrSchild::DerivLapse<DataType>>(vars);
-  const auto& shift = get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(vars);
+  const auto& shift = get<gr::Tags::Shift<3, Frame::Physical, DataType>>(vars);
   const auto& d_shift =
       get<gr::Solutions::KerrSchild::DerivShift<DataType>>(vars);
   const auto& dt_shift =
-      get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataType>>>(vars);
+      get<Tags::dt<gr::Tags::Shift<3, Frame::Physical, DataType>>>(vars);
   const auto& g =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(vars);
+      get<gr::Tags::SpatialMetric<3, Frame::Physical, DataType>>(vars);
   const auto& dt_g =
-      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>>(
+      get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Physical, DataType>>>(
           vars);
   const auto& d_g =
       get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataType>>(vars);
@@ -109,7 +109,7 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   CHECK_ITERABLE_APPROX(lapse, expected_lapse);
 
   auto expected_d_lapse =
-      make_with_value<tnsr::i<DataType, 3, Frame::Inertial>>(x, 0.0);
+      make_with_value<tnsr::i<DataType, 3, Frame::Physical>>(x, 0.0);
   for (size_t i = 0; i < 3; ++i) {
     expected_d_lapse.get(i) =
         mass * x.get(i) * one_over_r_cubed * cube(get(lapse));
@@ -117,7 +117,7 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   CHECK_ITERABLE_APPROX(d_lapse, expected_d_lapse);
 
   auto expected_shift =
-      make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.0);
+      make_with_value<tnsr::I<DataType, 3, Frame::Physical>>(x, 0.0);
   for (size_t i = 0; i < 3; ++i) {
     expected_shift.get(i) =
         2.0 * mass * x.get(i) * one_over_r_squared * square(get(lapse));
@@ -125,7 +125,7 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   CHECK_ITERABLE_APPROX(shift, expected_shift);
 
   auto expected_d_shift =
-      make_with_value<tnsr::iJ<DataType, 3, Frame::Inertial>>(x, 0.0);
+      make_with_value<tnsr::iJ<DataType, 3, Frame::Physical>>(x, 0.0);
   for (size_t j = 0; j < 3; ++j) {
     expected_d_shift.get(j, j) =
         2.0 * mass * one_over_r_squared * square(get(lapse));
@@ -138,7 +138,7 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   CHECK_ITERABLE_APPROX(d_shift, expected_d_shift);
 
   auto expected_g =
-      make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(x, 0.0);
+      make_with_value<tnsr::ii<DataType, 3, Frame::Physical>>(x, 0.0);
   for (size_t i = 0; i < 3; ++i) {
     for (size_t j = i; j < 3; ++j) {
       expected_g.get(i, j) =
@@ -149,7 +149,7 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   CHECK_ITERABLE_APPROX(g, expected_g);
 
   auto expected_d_g =
-      make_with_value<tnsr::ijj<DataType, 3, Frame::Inertial>>(x, 0.0);
+      make_with_value<tnsr::ijj<DataType, 3, Frame::Physical>>(x, 0.0);
   for (size_t k = 0; k < 3; ++k) {
     for (size_t i = 0; i < 3; ++i) {
       for (size_t j = i; j < 3; ++j) {  // Symmetry

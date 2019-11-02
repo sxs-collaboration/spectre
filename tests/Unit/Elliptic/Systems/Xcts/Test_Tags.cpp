@@ -9,12 +9,12 @@
 
 struct DataVector;
 namespace Frame {
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Xcts.Tags", "[Unit][Elliptic]") {
   CHECK(Xcts::Tags::ConformalFactor<DataVector>::name() == "ConformalFactor");
-  CHECK(Xcts::Tags::ConformalFactorGradient<3, Frame::Inertial,
+  CHECK(Xcts::Tags::ConformalFactorGradient<3, Frame::Physical,
                                             DataVector>::name() ==
         "ConformalFactorGradient");
 }

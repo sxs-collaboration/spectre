@@ -84,7 +84,7 @@ struct FirstOrderSystem {
  private:
   using field = Tags::Field;
   using field_gradient =
-      ::Tags::deriv<field, tmpl::size_t<Dim>, Frame::Inertial>;
+      ::Tags::deriv<field, tmpl::size_t<Dim>, Frame::Physical>;
 
  public:
   static constexpr size_t volume_dim = Dim;

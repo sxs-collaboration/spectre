@@ -18,7 +18,7 @@
 
 namespace Frame {
 struct Grid;
-struct Inertial;
+struct Physical;
 struct Logical;
 }  // namespace Frame
 
@@ -42,8 +42,8 @@ void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) noexcept {
 
   /// [coordinates_name]
   CHECK(Tags::Coordinates<Dim, Frame::Logical>::name() == "LogicalCoordinates");
-  CHECK(Tags::Coordinates<Dim, Frame::Inertial>::name() ==
-        "InertialCoordinates");
+  CHECK(Tags::Coordinates<Dim, Frame::Physical>::name() ==
+        "PhysicalCoordinates");
   /// [coordinates_name]
 }
 }  // namespace

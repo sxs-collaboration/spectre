@@ -38,13 +38,13 @@ void SmoothFlow::pup(PUP::er& p) noexcept {
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Physical>>
 SmoothFlow::variables(const tnsr::I<DataType, 3>& x, double /*t*/,
                       tmpl::list<hydro::Tags::MagneticField<
-                          DataType, 3, Frame::Inertial>> /*meta*/) const
+                          DataType, 3, Frame::Physical>> /*meta*/) const
     noexcept {
   return {make_with_value<
-      db::item_type<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
+      db::item_type<hydro::Tags::MagneticField<DataType, 3, Frame::Physical>>>(
       x, 0.0)};
 }
 
@@ -81,10 +81,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (double, DataVector),
                         (hydro::Tags::DivergenceCleaningField))
 
 #define INSTANTIATE_VECTORS(_, data)                                         \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3, Frame::Inertial>> \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3, Frame::Physical>> \
       SmoothFlow::variables(                                                 \
           const tnsr::I<DTYPE(data), 3>& x, double t,                        \
-          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Inertial>> /*meta*/) \
+          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Physical>> /*meta*/) \
           const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),

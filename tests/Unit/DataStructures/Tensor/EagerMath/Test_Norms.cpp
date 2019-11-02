@@ -260,5 +260,5 @@ void test_l2_norm_tag() {
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Norms",
                   "[DataStructures][Unit]") {
   test_l2_norm_tag<Frame::Grid>();
-  test_l2_norm_tag<Frame::Inertial>();
+  test_l2_norm_tag<Frame::Physical>();
 }

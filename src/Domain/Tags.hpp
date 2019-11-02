@@ -74,10 +74,10 @@ struct InitialExtents : db::SimpleTag {
   static std::string name() noexcept { return "InitialExtents"; }
   using type = std::vector<std::array<size_t, Dim>>;
   using option_tags =
-      tmpl::list<::OptionTags::DomainCreator<Dim, Frame::Inertial>>;
+      tmpl::list<::OptionTags::DomainCreator<Dim, Frame::Physical>>;
 
   static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim, Frame::Inertial>>&
+      const std::unique_ptr<::DomainCreator<Dim, Frame::Physical>>&
           domain_creator) noexcept {
     return domain_creator->initial_extents();
   }
@@ -92,10 +92,10 @@ struct InitialRefinementLevels : db::SimpleTag {
   static std::string name() noexcept { return "InitialRefinementLevels"; }
   using type = std::vector<std::array<size_t, Dim>>;
   using option_tags =
-      tmpl::list<::OptionTags::DomainCreator<Dim, Frame::Inertial>>;
+      tmpl::list<::OptionTags::DomainCreator<Dim, Frame::Physical>>;
 
   static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim, Frame::Inertial>>&
+      const std::unique_ptr<::DomainCreator<Dim, Frame::Physical>>&
           domain_creator) noexcept {
     return domain_creator->initial_refinement_levels();
   }
@@ -124,7 +124,7 @@ struct Mesh : db::SimpleTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The coordinate map from logical to grid coordinate
-template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+template <size_t VolumeDim, typename Frame = ::Frame::Physical>
 struct ElementMap : db::SimpleTag {
   static std::string name() noexcept { return "ElementMap"; }
   using type = ::ElementMap<VolumeDim, Frame>;

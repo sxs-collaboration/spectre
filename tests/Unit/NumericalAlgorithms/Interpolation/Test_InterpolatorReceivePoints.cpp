@@ -110,7 +110,7 @@ struct mock_interpolation_target {
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>;
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Physical>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -168,7 +168,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
                                 typename metavars::InterpolationTargetA>;
   using interp_component = mock_interpolator<metavars>;
   const auto domain_creator =
-      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{7, 7}}, false);
+      domain::creators::Shell<Frame::Physical>(0.9, 4.9, 1, {{7, 7}}, false);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {domain_creator.create_domain()}};
@@ -187,7 +187,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   const auto domain = domain_creator.create_domain();
   const auto block_logical_coords = [&domain]() noexcept {
     const size_t n_pts = 15;
-    tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
+    tnsr::I<DataVector, 3, Frame::Physical> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
       for (size_t i = 0; i < n_pts; ++i) {
         points.get(d)[i] = 1.0 + (0.1 + 0.02 * d) * i;  // Chosen by hand.

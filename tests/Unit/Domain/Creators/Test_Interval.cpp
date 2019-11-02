@@ -31,7 +31,7 @@
 namespace domain {
 namespace {
 void test_interval_construction(
-    const creators::Interval<Frame::Inertial>& interval,
+    const creators::Interval<Frame::Physical>& interval,
     const std::array<double, 1>& lower_bound,
     const std::array<double, 1>& upper_bound,
     const std::vector<std::array<size_t, 1>>& expected_extents,
@@ -47,7 +47,7 @@ void test_interval_construction(
 
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
-      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           CoordinateMaps::Affine{-1., 1., lower_bound[0], upper_bound[0]})));
   test_initial_domain(domain, interval.initial_refinement_levels());
 }
@@ -60,7 +60,7 @@ void test_interval() {
   // default Orientation is aligned
   const OrientationMap<1> aligned_orientation{};
 
-  const creators::Interval<Frame::Inertial> interval{
+  const creators::Interval<Frame::Physical> interval{
       lower_bound, upper_bound, std::array<bool, 1>{{false}},
       refinement_level[0], grid_points[0]};
   test_interval_construction(
@@ -69,7 +69,7 @@ void test_interval() {
       std::vector<std::unordered_set<Direction<1>>>{
           {{Direction<1>::lower_xi()}, {Direction<1>::upper_xi()}}});
 
-  const creators::Interval<Frame::Inertial> periodic_interval{
+  const creators::Interval<Frame::Physical> periodic_interval{
       lower_bound, upper_bound, std::array<bool, 1>{{true}},
       refinement_level[0], grid_points[0]};
   test_interval_construction(
@@ -84,13 +84,13 @@ void test_interval() {
   creators::register_derived_with_charm();
 
   const auto base_map =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           CoordinateMaps::Affine{-1., 1., lower_bound[0], upper_bound[0]});
   const auto base_map_deserialized = serialize_and_deserialize(base_map);
-  using MapType = const CoordinateMap<Frame::Logical, Frame::Inertial,
+  using MapType = const CoordinateMap<Frame::Logical, Frame::Physical,
                                       CoordinateMaps::Affine>*;
   REQUIRE(dynamic_cast<MapType>(base_map.get()) != nullptr);
-  const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Physical>(
       CoordinateMaps::Affine{-1., 1., lower_bound[0], upper_bound[0]});
   CHECK(*dynamic_cast<MapType>(base_map.get()) == coord_map);
 }
@@ -98,7 +98,7 @@ void test_interval() {
 void test_interval_factory() {
   INFO("Interval factory");
   const auto domain_creator =
-      test_factory_creation<DomainCreator<1, Frame::Inertial>>(
+      test_factory_creation<DomainCreator<1, Frame::Physical>>(
           "  Interval:\n"
           "    LowerBound: [0]\n"
           "    UpperBound: [1]\n"
@@ -106,7 +106,7 @@ void test_interval_factory() {
           "    InitialGridPoints: [3]\n"
           "    InitialRefinement: [2]\n");
   const auto* interval_creator =
-      dynamic_cast<const creators::Interval<Frame::Inertial>*>(
+      dynamic_cast<const creators::Interval<Frame::Physical>*>(
           domain_creator.get());
   test_interval_construction(*interval_creator, {{0.}}, {{1.}}, {{{3}}},
                              {{{2}}},

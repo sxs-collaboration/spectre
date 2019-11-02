@@ -17,22 +17,22 @@
 template <size_t VolumeDim>
 std::array<double, VolumeDim> size_of_element(
     const Mesh<VolumeDim>& mesh,
-    const tnsr::I<DataVector, VolumeDim>& inertial_coords) noexcept {
+    const tnsr::I<DataVector, VolumeDim>& physical_coords) noexcept {
   ASSERT(mesh.quadrature() ==
              make_array<VolumeDim>(Spectral::Quadrature::GaussLobatto),
          "Implementation assumes that grid points extend to the faces of the\n"
          "element, but not sure if this is true for quadrature: "
              << mesh.quadrature());
   auto result = make_array<VolumeDim>(0.0);
-  // inertial-coord vector between lower face center and upper face center
+  // physical-coord vector between lower face center and upper face center
   auto center_to_center = make_array<VolumeDim>(0.0);
   for (size_t logical_dim = 0; logical_dim < VolumeDim; ++logical_dim) {
-    for (size_t inertial_dim = 0; inertial_dim < VolumeDim; ++inertial_dim) {
+    for (size_t physical_dim = 0; physical_dim < VolumeDim; ++physical_dim) {
       const double center_upper = mean_value_on_boundary(
-          inertial_coords.get(inertial_dim), mesh, logical_dim, Side::Upper);
+          physical_coords.get(physical_dim), mesh, logical_dim, Side::Upper);
       const double center_lower = mean_value_on_boundary(
-          inertial_coords.get(inertial_dim), mesh, logical_dim, Side::Lower);
-      center_to_center.at(inertial_dim) = center_upper - center_lower;
+          physical_coords.get(physical_dim), mesh, logical_dim, Side::Lower);
+      center_to_center.at(physical_dim) = center_upper - center_lower;
     }
     result.at(logical_dim) = magnitude(center_to_center);
   }

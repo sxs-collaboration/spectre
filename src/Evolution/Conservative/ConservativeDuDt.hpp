@@ -57,7 +57,7 @@ struct ConservativeDuDt {
 
  public:
   static constexpr size_t volume_dim = System::volume_dim;
-  using frame = Frame::Inertial;
+  using frame = Frame::Physical;
 
   using argument_tags = tmpl::append<
       db::split_tag<db::add_tag_prefix<

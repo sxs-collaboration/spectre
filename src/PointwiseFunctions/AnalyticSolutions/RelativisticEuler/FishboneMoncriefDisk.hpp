@@ -94,7 +94,7 @@ namespace Solutions {
  * rise to an orbiting thick disk. For \f$W > 0\f$, all equipotentials are open,
  * whereas for \f$W < 0\f$, some of them will be closed. Should a disk exist,
  * the pressure reaches a maximum value on the equator at a coordinate radius
- * \f$r_\text{max}\f$ that is related to the angular momentum per unit inertial
+ * \f$r_\text{max}\f$ that is related to the angular momentum per unit physical
  * mass via
  *
  * \f{align*}
@@ -353,11 +353,11 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
+          hydro::Tags::MagneticField<DataType, 3, Frame::Physical>> /*meta*/,
       const IntermediateVariables<DataType, NeedSpacetime>& vars,
       size_t index) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+          hydro::Tags::MagneticField<DataType, 3, Frame::Physical>>;
 
   template <typename DataType, bool NeedSpacetime>
   auto variables(

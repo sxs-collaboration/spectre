@@ -11,7 +11,7 @@
 
 namespace Frame {
 struct Grid;
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 
 namespace domain {
@@ -74,7 +74,7 @@ RotatedRectangles<TargetFrame>::initial_refinement_levels() const noexcept {
   return {{{x_0, y_0}}, {{x_0, y_0}}, {{y_0, x_0}}, {{y_0, x_0}}};
 }
 
-template class RotatedRectangles<Frame::Inertial>;
+template class RotatedRectangles<Frame::Physical>;
 template class RotatedRectangles<Frame::Grid>;
 }  // namespace creators
 }  // namespace domain

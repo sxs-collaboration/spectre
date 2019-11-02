@@ -135,14 +135,14 @@ tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> AlfvenWave::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Physical>>
 AlfvenWave::variables(const tnsr::I<DataType, 3>& x, double t,
                       tmpl::list<hydro::Tags::SpatialVelocity<
-                          DataType, 3, Frame::Inertial>> /*meta*/) const
+                          DataType, 3, Frame::Physical>> /*meta*/) const
     noexcept {
   const DataType phase = k_dot_x_minus_vt(x, t);
   auto result = make_with_value<db::item_type<
-      hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(x, 0.0);
+      hydro::Tags::SpatialVelocity<DataType, 3, Frame::Physical>>>(x, 0.0);
   for (size_t d = 0; d < 3; d++) {
     result.get(d) =
         fluid_speed_ *
@@ -153,14 +153,14 @@ AlfvenWave::variables(const tnsr::I<DataType, 3>& x, double t,
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Physical>>
 AlfvenWave::variables(const tnsr::I<DataType, 3>& x, double t,
                       tmpl::list<hydro::Tags::MagneticField<
-                          DataType, 3, Frame::Inertial>> /*meta*/) const
+                          DataType, 3, Frame::Physical>> /*meta*/) const
     noexcept {
   const DataType phase = k_dot_x_minus_vt(x, t);
   auto result = make_with_value<
-      db::item_type<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
+      db::item_type<hydro::Tags::MagneticField<DataType, 3, Frame::Physical>>>(
       x, 0.0);
   for (size_t d = 0; d < 3; d++) {
     result.get(d) =
@@ -247,10 +247,10 @@ GENERATE_INSTANTIATIONS(
      hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
 #define INSTANTIATE_VECTORS(_, data)                                         \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3, Frame::Inertial>> \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3, Frame::Physical>> \
       AlfvenWave::variables(                                                 \
           const tnsr::I<DTYPE(data), 3>& x, double t,                        \
-          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Inertial>> /*meta*/) \
+          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Physical>> /*meta*/) \
           const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),

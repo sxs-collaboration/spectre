@@ -18,7 +18,7 @@
 /// \cond
 namespace Frame {
 struct Grid;
-struct Inertial;
+struct Physical;
 struct Logical;
 }  // namespace Frame
 namespace domain {
@@ -80,7 +80,7 @@ FrustalCloak<TargetFrame>::initial_refinement_levels() const noexcept {
   return {10, make_array<3>(initial_refinement_level_)};
 }
 
-template class FrustalCloak<Frame::Inertial>;
+template class FrustalCloak<Frame::Physical>;
 template class FrustalCloak<Frame::Grid>;
 }  // namespace creators
 }  // namespace domain

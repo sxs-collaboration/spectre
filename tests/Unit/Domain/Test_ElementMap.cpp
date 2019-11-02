@@ -36,15 +36,15 @@ void test_element_impl(
     const T& first_map, const U& second_map,
     const tnsr::I<double, Dim, Frame::Logical>& logical_point_double,
     const tnsr::I<DV, Dim, Frame::Logical>& logical_point_dv) {
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial, T, U>));
+  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Physical, T, U>));
   const auto composed_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::Logical, Frame::Physical>(
           affine_map, first_map, second_map);
 
-  ElementMap<Dim, Frame::Inertial> element_map{
-      element_id, make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  ElementMap<Dim, Frame::Physical> element_map{
+      element_id, make_coordinate_map_base<Frame::Logical, Frame::Physical>(
                       first_map, second_map)};
-  ElementMap<Dim, Frame::Inertial> element_map_deserialized =
+  ElementMap<Dim, Frame::Physical> element_map_deserialized =
       serialize_and_deserialize(element_map);
 
   CHECK(element_map(logical_point_dv) == composed_map(logical_point_dv));
@@ -55,16 +55,16 @@ void test_element_impl(
   CHECK(element_map_deserialized(logical_point_double) ==
         composed_map(logical_point_double));
 
-  const tnsr::I<double, Dim, Frame::Inertial> inertial_point_double =
+  const tnsr::I<double, Dim, Frame::Physical> physical_point_double =
       composed_map(logical_point_double);
-  const tnsr::I<DV, Dim, Frame::Inertial> inertial_point_dv =
+  const tnsr::I<DV, Dim, Frame::Physical> physical_point_dv =
       composed_map(logical_point_dv);
 
   if (test_inverse) {
-    CHECK(element_map.inverse(inertial_point_double) ==
-          composed_map.inverse(inertial_point_double).get());
-    CHECK(element_map_deserialized.inverse(inertial_point_double) ==
-          composed_map.inverse(inertial_point_double).get());
+    CHECK(element_map.inverse(physical_point_double) ==
+          composed_map.inverse(physical_point_double).get());
+    CHECK(element_map_deserialized.inverse(physical_point_double) ==
+          composed_map.inverse(physical_point_double).get());
   }
 
   CHECK_ITERABLE_APPROX(element_map.inv_jacobian(logical_point_dv),
@@ -87,7 +87,7 @@ void test_element_impl(
                         composed_map.jacobian(logical_point_double));
 
   CHECK(element_map.block_map() ==
-        *(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        *(make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             first_map, second_map)));
 }
 

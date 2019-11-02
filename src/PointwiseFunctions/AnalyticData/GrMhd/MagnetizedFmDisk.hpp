@@ -181,15 +181,15 @@ class MagnetizedFmDisk
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
+          hydro::Tags::MagneticField<DataType, 3, Frame::Physical>> /*meta*/,
       const IntermediateVariables<DataType, NeedSpacetime>& vars,
       size_t index) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+          hydro::Tags::MagneticField<DataType, 3, Frame::Physical>>;
 
   template <typename DataType>
-  tnsr::I<DataType, 3, Frame::Inertial> unnormalized_magnetic_field(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x) const noexcept;
+  tnsr::I<DataType, 3, Frame::Physical> unnormalized_magnetic_field(
+      const tnsr::I<DataType, 3, Frame::Physical>& x) const noexcept;
 
   friend bool operator==(const MagnetizedFmDisk& lhs,
                          const MagnetizedFmDisk& rhs) noexcept;

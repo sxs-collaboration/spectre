@@ -305,7 +305,7 @@ void test_damped_harmonic_h_function_term_1_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -323,15 +323,15 @@ void test_damped_harmonic_h_function_term_1_of_4(
   const auto lapse = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   get<0, 0>(spatial_metric) = get<1, 1>(spatial_metric) =
       get<2, 2>(spatial_metric) = 1.;
   std::uniform_real_distribution<> dist2(0., 0.12);
   const auto dspatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -351,7 +351,7 @@ void test_damped_harmonic_h_function_term_1_of_4(
 
   // Initialize initial gauge function and its roll-off function
   const auto gauge_h_init = make_with_random_values<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       make_not_null(&generator), make_not_null(&rdist), x);
   const double roll_on_HI =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::roll_on_function(
@@ -359,16 +359,16 @@ void test_damped_harmonic_h_function_term_1_of_4(
 
   // local H_a
   auto gauge_h_expected = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     gauge_h_expected.get(a) = (1. - roll_on_HI) * gauge_h_init.get(a);
   }
 
   // Check that locally computed H_a matches the returned one
-  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
+  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Physical>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, 0., 0., 0., 0, 0,
       0,  // exponents
@@ -394,7 +394,7 @@ void test_damped_harmonic_h_function_term_2_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -412,15 +412,15 @@ void test_damped_harmonic_h_function_term_2_of_4(
   const auto lapse = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   get<0, 0>(spatial_metric) = get<1, 1>(spatial_metric) =
       get<2, 2>(spatial_metric) = 1.;
   std::uniform_real_distribution<> dist2(0., 0.12);
   const auto dspatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -432,7 +432,7 @@ void test_damped_harmonic_h_function_term_2_of_4(
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse);
   const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
@@ -451,25 +451,25 @@ void test_damped_harmonic_h_function_term_2_of_4(
           t, t_start_L1, sigma_t_L1);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
 
   const auto h_prefac1 = amp_coef_L1 * roll_on_L1 * get(weight) *
                          pow(log_fac_1, exp_L1) * log_fac_1;
 
   // local H_a
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
   auto gauge_h_expected = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>>(x, 0.);
+      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     gauge_h_expected.get(a) = h_prefac1 * spacetime_unit_normal_one_form.get(a);
   }
 
   // Check that locally computed H_a matches the returned one
-  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
+  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Physical>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, amp_coef_L1, 0., 0.,
       exp_L1, 0, 0,  // exponents
@@ -495,7 +495,7 @@ void test_damped_harmonic_h_function_term_3_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -513,15 +513,15 @@ void test_damped_harmonic_h_function_term_3_of_4(
   const auto lapse = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   get<0, 0>(spatial_metric) = get<1, 1>(spatial_metric) =
       get<2, 2>(spatial_metric) = 1.;
   std::uniform_real_distribution<> dist2(0., 0.12);
   const auto dspatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -533,7 +533,7 @@ void test_damped_harmonic_h_function_term_3_of_4(
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse);
   const auto det_spatial_metric = determinant_and_inverse(spatial_metric).first;
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
@@ -550,7 +550,7 @@ void test_damped_harmonic_h_function_term_3_of_4(
           t, t_start_L2, sigma_t_L2);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
 
   const auto log_fac_2 = log(1. / get(lapse));
   const auto h_prefac1 = amp_coef_L2 * roll_on_L2 * get(weight) *
@@ -558,18 +558,18 @@ void test_damped_harmonic_h_function_term_3_of_4(
 
   // local H_a
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
   auto gauge_h_expected = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>>(x, 0.);
+      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     gauge_h_expected.get(a) = h_prefac1 * spacetime_unit_normal_one_form.get(a);
   }
 
   // Check that locally computed H_a matches the returned one
-  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
+  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Physical>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, 0., amp_coef_L2, 0., 0,
       exp_L2, 0,  // exponents
@@ -595,7 +595,7 @@ void test_damped_harmonic_h_function_term_4_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -613,15 +613,15 @@ void test_damped_harmonic_h_function_term_4_of_4(
   const auto lapse = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   get<0, 0>(spatial_metric) = get<1, 1>(spatial_metric) =
       get<2, 2>(spatial_metric) = 1.;
   std::uniform_real_distribution<> dist2(0., 0.12);
   const auto dspatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -648,7 +648,7 @@ void test_damped_harmonic_h_function_term_4_of_4(
           t, t_start_S, sigma_t_S);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
 
   const auto log_fac_1 = log(get(sqrt_det_spatial_metric) * one_over_lapse);
   const auto h_prefac2 = -amp_coef_S * roll_on_S * get(weight) *
@@ -656,10 +656,10 @@ void test_damped_harmonic_h_function_term_4_of_4(
 
   // local H_a
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
   auto gauge_h_expected = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>>(x, 0.);
+      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t i = 0; i < SpatialDim; ++i) {
       gauge_h_expected.get(a) +=
@@ -668,9 +668,9 @@ void test_damped_harmonic_h_function_term_4_of_4(
   }
 
   // Check that locally computed H_a match returned one
-  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
+  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Physical>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, 0., 0., amp_coef_S, 0, 0,
       exp_S,  // exponents
@@ -700,7 +700,7 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -737,14 +737,14 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
           t, t_start_L1, sigma_t_L1);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
 
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
-  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
+  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Physical>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, amp_coef_L1, 0., 0.,
       exp_L1, 0, 0,  // exponents
@@ -772,7 +772,7 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   const Scalar<DataVector> lapse_ab_initio{sqrt(1. / (1. + H2))};
   // 4) compute 3-metric
   auto spatial_metric_ab_initio =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
       spatial_metric_ab_initio.get(i, j) =
@@ -783,7 +783,7 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
     }
   }
   const auto spacetime_unit_normal_one_form_ab_initio =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse_ab_initio);
   const auto det_spatial_metric_ab_initio =
       determinant_and_inverse(spatial_metric_ab_initio).first;
@@ -799,7 +799,7 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
 
   // local H_a
   auto gauge_h_expected = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>>(x, 0.);
+      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     gauge_h_expected.get(a) =
         h_prefac1 * spacetime_unit_normal_one_form_ab_initio.get(a);
@@ -825,7 +825,7 @@ void test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -861,14 +861,14 @@ void test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
           t, t_start_L2, sigma_t_L2);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
 
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
-  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
+  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Physical>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, 0., amp_coef_L2, 0., 0,
       exp_L2, 0,  // exponents
@@ -896,7 +896,7 @@ void test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   const Scalar<DataVector> lapse_ab_initio{sqrt(1. / (1. + H2))};
 
   const auto spacetime_unit_normal_one_form_ab_initio =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse_ab_initio);
 
   // compute GR dependent terms
@@ -908,7 +908,7 @@ void test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
 
   // local H_a
   auto gauge_h_expected = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>>(x, 0.);
+      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     gauge_h_expected.get(a) =
         h_prefac1 * spacetime_unit_normal_one_form_ab_initio.get(a);
@@ -934,7 +934,7 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -970,14 +970,14 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
           t, t_start_S, sigma_t_S);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
 
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
-  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>
+  db::item_type<GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>
       gauge_h{};
-  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Inertial>(
+  GeneralizedHarmonic::damped_harmonic_h<SpatialDim, Frame::Physical>(
       make_not_null(&gauge_h), gauge_h_init, lapse, shift,
       sqrt_det_spatial_metric, spacetime_metric, t, x, 0., 0., amp_coef_S, 0, 0,
       exp_S,  // exponents
@@ -1005,13 +1005,13 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   const Scalar<DataVector> lapse_ab_initio{sqrt(1. / (1. + H2))};
   // 4) compute shift
   auto shift_ab_initio =
-      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     shift_ab_initio.get(i) = (H2 / (1. + H2)) * x_minus_center.get(i) / r_;
   }
   // 5) compute 3-metric
   auto spatial_metric_ab_initio =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
       spatial_metric_ab_initio.get(i, j) =
@@ -1037,7 +1037,7 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
 
   // local H_a
   auto gauge_h_expected = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Inertial>>>(x, 0.);
+      GeneralizedHarmonic::Tags::GaugeH<SpatialDim, Frame::Physical>>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t i = 0; i < SpatialDim; ++i) {
       gauge_h_expected.get(a) += h_prefac2 *
@@ -1129,7 +1129,7 @@ void test_deriv_damped_harmonic_h_function_term_1_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -1151,24 +1151,24 @@ void test_deriv_damped_harmonic_h_function_term_1_of_4(
   const auto dt_lapse = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto d_lapse =
-      make_with_random_values<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::i<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto dt_shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto d_shift = make_with_random_values<
-      tnsr::iJ<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::iJ<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   get<0, 0>(spatial_metric) = get<1, 1>(spatial_metric) =
       get<2, 2>(spatial_metric) = 1.;
   std::uniform_real_distribution<> dist2(0., 0.12);
   const auto dspatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -1176,17 +1176,17 @@ void test_deriv_damped_harmonic_h_function_term_1_of_4(
     }
   }
   const auto dt_spatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   const auto d_spatial_metric = make_with_random_values<
-      tnsr::ijj<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ijj<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
 
   // Get ingredients
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse);
   const auto det_and_inv = determinant_and_inverse(spatial_metric);
   const auto& det_spatial_metric = det_and_inv.first;
@@ -1211,16 +1211,16 @@ void test_deriv_damped_harmonic_h_function_term_1_of_4(
 
   // Initialize initial gauge function and its roll-off function
   const auto gauge_h_init = make_with_random_values<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       make_not_null(&generator), make_not_null(&rdist), x);
   const auto d4_gauge_h_init = make_with_random_values<
       db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-          SpatialDim, Frame::Inertial>>>(make_not_null(&generator),
+          SpatialDim, Frame::Physical>>>(make_not_null(&generator),
                                          make_not_null(&rdist), x);
 
   // Calc \f$ \partial_a T1 \f$
   auto dT1 =
-      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t b = 0; b < SpatialDim + 1; ++b) {
     dT1.get(0, b) -= gauge_h_init.get(b) * d0_roll_on_HI;
     for (size_t a = 0; a < SpatialDim + 1; ++a) {
@@ -1233,10 +1233,10 @@ void test_deriv_damped_harmonic_h_function_term_1_of_4(
 
   // Check that locally computed \f$\partial_a H_b\f$ matches returned one
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
-      SpatialDim, Frame::Inertial>>
+      SpatialDim, Frame::Physical>>
       d4_gauge_h{};
   GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+                                                         Frame::Physical>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, 0., 0., 0., 0, 0,
@@ -1263,7 +1263,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -1285,24 +1285,24 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
   const auto dt_lapse = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto d_lapse =
-      make_with_random_values<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::i<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto dt_shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto d_shift = make_with_random_values<
-      tnsr::iJ<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::iJ<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   get<0, 0>(spatial_metric) = get<1, 1>(spatial_metric) =
       get<2, 2>(spatial_metric) = 1.;
   std::uniform_real_distribution<> dist2(0., 0.12);
   const auto dspatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -1310,26 +1310,26 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
     }
   }
   const auto dt_spatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   const auto d_spatial_metric = make_with_random_values<
-      tnsr::ijj<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ijj<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
 
   // Get ingredients
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
-      gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_vector<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift);
   const auto det_and_inv = determinant_and_inverse(spatial_metric);
   const auto& det_spatial_metric = det_and_inv.first;
   const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
-      gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
+      gr::inverse_spacetime_metric<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift, inverse_spatial_metric);
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
@@ -1358,9 +1358,9 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
       time_deriv_of_roll_on_function(t, t_start_L1, sigma_t_L1);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
+      spacetime_deriv_of_weight_function<SpatialDim, Frame::Physical,
                                          DataVector>(x, r_max);
 
   // coeffs that enter gauge source function
@@ -1379,13 +1379,13 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
 
   // Calc derivs of \f$ \mu_1 \f$
   auto d4_mu1 =
-      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse), 0.);
   {
     const auto d4_log_fac_mu1 =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
-                SpatialDim, Frame::Inertial, DataVector>(
+                SpatialDim, Frame::Physical, DataVector>(
                 lapse, shift, spacetime_unit_normal, inverse_spatial_metric,
                 sqrt_det_spatial_metric, dt_spatial_metric, pi, phi, exp_fac_1,
                 exp_L1 + 1);
@@ -1398,7 +1398,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
   }
 
   // Calc \f$ \partial_a N = {\partial_0 N, \partial_i N} \f$
-  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
       get(lapse), 0.);
   d4_N.get(0) = get(dt_lapse);
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -1407,7 +1407,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
 
   // Calc \f$ \partial_a n_b = {-\partial_a N, 0, 0, 0} \f$
   auto d4_normal_one_form =
-      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse), 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     d4_normal_one_form.get(a, 0) -= d4_N.get(a);
@@ -1415,7 +1415,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
 
   // Calc \f$ \partial_a T2 \f$
   auto dT2 =
-      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       dT2.get(a, b) += mu1 * d4_normal_one_form.get(a, b) +
@@ -1425,21 +1425,21 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
 
   // Initialize initial gauge function and its roll-off function
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
   const auto d4_gauge_h_init = make_with_value<
       db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-          SpatialDim, Frame::Inertial>>>(x, 0.);
+          SpatialDim, Frame::Physical>>>(x, 0.);
 
   // Calc \f$ \partial_a H_b = dT2_{ab} \f$
   const auto& d4_gauge_h_expected = dT2;
 
   // Check that locally computed \f$\partial_a H_b\f$ matches returned one
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
-      SpatialDim, Frame::Inertial>>
+      SpatialDim, Frame::Physical>>
       d4_gauge_h{};
   GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+                                                         Frame::Physical>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, amp_coef_L1, 0.,
@@ -1466,7 +1466,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -1488,24 +1488,24 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
   const auto dt_lapse = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto d_lapse =
-      make_with_random_values<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::i<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto dt_shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto d_shift = make_with_random_values<
-      tnsr::iJ<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::iJ<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   get<0, 0>(spatial_metric) = get<1, 1>(spatial_metric) =
       get<2, 2>(spatial_metric) = 1.;
   std::uniform_real_distribution<> dist2(0., 0.12);
   const auto dspatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -1513,26 +1513,26 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
     }
   }
   const auto dt_spatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   const auto d_spatial_metric = make_with_random_values<
-      tnsr::ijj<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ijj<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
 
   // Get ingredients
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
-      gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_vector<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift);
   const auto det_and_inv = determinant_and_inverse(spatial_metric);
   const auto& det_spatial_metric = det_and_inv.first;
   const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
-      gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
+      gr::inverse_spacetime_metric<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift, inverse_spatial_metric);
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
@@ -1562,9 +1562,9 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
       time_deriv_of_roll_on_function(t, t_start_L2, sigma_t_L2);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
+      spacetime_deriv_of_weight_function<SpatialDim, Frame::Physical,
                                          DataVector>(x, r_max);
 
   // coeffs that enter gauge source function
@@ -1583,13 +1583,13 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
 
   // Calc derivs of \f$ \mu_2 \f$
   auto d4_mu2 =
-      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse), 0.);
   {
     const auto d4_log_fac_mu2 =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
-                SpatialDim, Frame::Inertial, DataVector>(
+                SpatialDim, Frame::Physical, DataVector>(
                 lapse, shift, spacetime_unit_normal, inverse_spatial_metric,
                 sqrt_det_spatial_metric, dt_spatial_metric, pi, phi, exp_fac_2,
                 exp_L2 + 1);
@@ -1602,7 +1602,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
   }
 
   // Calc \f$ \partial_a N = {\partial_0 N, \partial_i N} \f$
-  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
       get(lapse), 0.);
   d4_N.get(0) = get(dt_lapse);
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -1611,7 +1611,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
 
   // Calc \f$ \partial_a n_b = {-\partial_a N, 0, 0, 0} \f$
   auto d4_normal_one_form =
-      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse), 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     d4_normal_one_form.get(a, 0) -= d4_N.get(a);
@@ -1619,7 +1619,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
 
   // Calc \f$ \partial_a T2 \f$
   auto dT2 =
-      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       dT2.get(a, b) += mu2 * d4_normal_one_form.get(a, b) +
@@ -1629,21 +1629,21 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
 
   // Initialize initial gauge function and its roll-off function
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
   const auto d4_gauge_h_init = make_with_value<
       db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-          SpatialDim, Frame::Inertial>>>(x, 0.);
+          SpatialDim, Frame::Physical>>>(x, 0.);
 
   // Calc \f$ \partial_a H_b = dT2_{ab} \f$
   const auto& d4_gauge_h_expected = dT2;
 
   // Check that locally computed \f$\partial_a H_b\f$ matches returned one
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
-      SpatialDim, Frame::Inertial>>
+      SpatialDim, Frame::Physical>>
       d4_gauge_h{};
   GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+                                                         Frame::Physical>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, 0., amp_coef_L2,
@@ -1670,7 +1670,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -1692,24 +1692,24 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
   const auto dt_lapse = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto d_lapse =
-      make_with_random_values<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::i<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto dt_shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto d_shift = make_with_random_values<
-      tnsr::iJ<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::iJ<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   get<0, 0>(spatial_metric) = get<1, 1>(spatial_metric) =
       get<2, 2>(spatial_metric) = 1.;
   std::uniform_real_distribution<> dist2(0., 0.12);
   const auto dspatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -1717,26 +1717,26 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
     }
   }
   const auto dt_spatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   const auto d_spatial_metric = make_with_random_values<
-      tnsr::ijj<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ijj<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
 
   // Get ingredients
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
-      gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_vector<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift);
   const auto det_and_inv = determinant_and_inverse(spatial_metric);
   const auto& det_spatial_metric = det_and_inv.first;
   const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
-      gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
+      gr::inverse_spacetime_metric<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift, inverse_spatial_metric);
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
@@ -1769,9 +1769,9 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
       time_deriv_of_roll_on_function(t, t_start_S, sigma_t_S);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
+      spacetime_deriv_of_weight_function<SpatialDim, Frame::Physical,
                                          DataVector>(x, r_max);
 
   // coeffs that enter gauge source function
@@ -1788,13 +1788,13 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
 
   // Calc derivs of \f$ \mu_S \f$
   auto d4_mu_S =
-      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse), 0.);
   {
     const auto d4_log_fac_muS =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
-                SpatialDim, Frame::Inertial, DataVector>(
+                SpatialDim, Frame::Physical, DataVector>(
                 lapse, shift, spacetime_unit_normal, inverse_spatial_metric,
                 sqrt_det_spatial_metric, dt_spatial_metric, pi, phi, exp_fac_1,
                 exp_S);
@@ -1807,7 +1807,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
   }
 
   // Calc \f$ \partial_a N = {\partial_0 N, \partial_i N} \f$
-  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
       get(lapse), 0.);
   d4_N.get(0) = get(dt_lapse);
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -1816,7 +1816,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
 
   // Calc \f$ \partial_a N^i = {\partial_0 N^i, \partial_j N^i} \f$
   auto d4_shift =
-      make_with_value<tnsr::aB<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::aB<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse), 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     d4_shift.get(0, 1 + i) = dt_shift.get(i);
@@ -1829,7 +1829,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
   //         - (\mu_{S}/N^2) \partial_a N
   // \f]
   auto d4_muS_over_N =
-      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse), 0.);
   {
     auto prefac = -mu_S * one_over_lapse * one_over_lapse;
@@ -1841,7 +1841,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
 
   // Calc \f$ \partial_a T3 \f$ (note minus sign)
   auto dT3 =
-      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t i = 0; i < SpatialDim; ++i) {
@@ -1857,21 +1857,21 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
 
   // Initialize initial gauge function and its roll-off function
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
   const auto d4_gauge_h_init = make_with_value<
       db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-          SpatialDim, Frame::Inertial>>>(x, 0.);
+          SpatialDim, Frame::Physical>>>(x, 0.);
 
   // Calc \f$ \partial_a H_b = dT3_{ab} \f$
   const auto& d4_gauge_h_expected = dT3;
 
   // Check that locally computed \f$\partial_a H_b\f$ matches returned one
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
-      SpatialDim, Frame::Inertial>>
+      SpatialDim, Frame::Physical>>
       d4_gauge_h{};
   GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+                                                         Frame::Physical>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, 0., 0.,
@@ -1902,7 +1902,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -1935,16 +1935,16 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
-      gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_vector<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift);
   const auto det_and_inv = determinant_and_inverse(spatial_metric);
   const auto& det_spatial_metric = det_and_inv.first;
   const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
-      gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
+      gr::inverse_spacetime_metric<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift, inverse_spatial_metric);
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
@@ -1961,18 +1961,18 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
 
   // Initialize initial gauge function and its roll-off function
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
   const auto d4_gauge_h_init = make_with_value<
       db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-          SpatialDim, Frame::Inertial>>>(x, 0.);
+          SpatialDim, Frame::Physical>>>(x, 0.);
 
   // compute d4H using function being tested
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
-      SpatialDim, Frame::Inertial>>
+      SpatialDim, Frame::Physical>>
       d4_gauge_h{};
   GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+                                                         Frame::Physical>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, amp_coef_L1, 0.,
@@ -1989,9 +1989,9 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
       time_deriv_of_roll_on_function(t, t_start_L1, sigma_t_L1);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
+      spacetime_deriv_of_weight_function<SpatialDim, Frame::Physical,
                                          DataVector>(x, r_max);
 
   // Evaluate analytic solution for Schwarzschild, ab initio.
@@ -2011,12 +2011,12 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   const DataVector H = mass * (1. / r_);
   const DataVector H2 = H * 2.;
   // 3) compute 3D null_one_form and its derivatives
-  tnsr::i<DataVector, SpatialDim, Frame::Inertial> null_one_form{};
+  tnsr::i<DataVector, SpatialDim, Frame::Physical> null_one_form{};
   for (size_t i = 0; i < SpatialDim; ++i) {
     null_one_form.get(i) = x_minus_center.get(i) / r_;
   }
   auto null_vec = null_one_form;
-  tnsr::ij<DataVector, SpatialDim, Frame::Inertial> deriv_null_one_form{};
+  tnsr::ij<DataVector, SpatialDim, Frame::Physical> deriv_null_one_form{};
   const DataVector denom = 1. / r_squared;
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -2028,7 +2028,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
     }
   }
   // 4) compute deriv of H
-  tnsr::i<DataVector, SpatialDim, Frame::Inertial> deriv_H{};
+  tnsr::i<DataVector, SpatialDim, Frame::Physical> deriv_H{};
   for (size_t i = 0; i < SpatialDim; ++i) {
     deriv_H.get(i) = -(H / r_squared) * x_minus_center.get(i);
   }
@@ -2036,20 +2036,20 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   const Scalar<DataVector> lapse_ab_initio{sqrt(1. / (1. + H2))};
   const auto dt_lapse_ab_initio = make_with_value<Scalar<DataVector>>(x, 0.);
   auto d_lapse_ab_initio =
-      make_with_value<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::i<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     d_lapse_ab_initio.get(i) -= (pow<3>(get(lapse_ab_initio)) * deriv_H.get(i));
   }
   // 6) compute shift & its derivatives
   auto shift_ab_initio =
-      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     shift_ab_initio.get(i) = (H2 / (1. + H2)) * null_vec.get(i);
   }
   const auto dt_shift_ab_initio =
-      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   auto d_shift_ab_initio =
-      make_with_value<tnsr::iJ<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::iJ<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
       d_shift_ab_initio.get(i, j) =
@@ -2059,7 +2059,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   }
   // 7) compute 3-metric & its derivatives
   auto spatial_metric_ab_initio =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
       spatial_metric_ab_initio.get(i, j) =
@@ -2070,9 +2070,9 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
     }
   }
   auto dt_spatial_metric_ab_initio =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   auto d_spatial_metric_ab_initio =
-      make_with_value<tnsr::ijj<DataVector, SpatialDim, Frame::Inertial>>(x,
+      make_with_value<tnsr::ijj<DataVector, SpatialDim, Frame::Physical>>(x,
                                                                           0.);
   for (size_t k = 0; k < SpatialDim; ++k) {
     for (size_t i = 0; i < SpatialDim; ++i) {
@@ -2086,17 +2086,17 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   }
 
   const auto spacetime_unit_normal_one_form_ab_initio =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse_ab_initio);
   const auto spacetime_unit_normal_ab_initio =
-      gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_vector<SpatialDim, Frame::Physical, DataVector>(
           lapse_ab_initio, shift_ab_initio);
   const auto det_and_inv_ab_initio =
       determinant_and_inverse(spatial_metric_ab_initio);
   const auto& det_spatial_metric_ab_initio = det_and_inv_ab_initio.first;
   const auto& inverse_spatial_metric_ab_initio = det_and_inv_ab_initio.second;
   const auto inverse_spacetime_metric_ab_initio =
-      gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
+      gr::inverse_spacetime_metric<SpatialDim, Frame::Physical, DataVector>(
           lapse_ab_initio, shift_ab_initio, inverse_spatial_metric_ab_initio);
   Scalar<DataVector> sqrt_det_spatial_metric_ab_initio(
       sqrt(get(det_spatial_metric_ab_initio)));
@@ -2131,13 +2131,13 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
 
   // Calc derivs of \f$ \mu_1 \f$
   auto d4_mu1 =
-      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse), 0.);
   {
     const auto d4_log_fac_mu1 =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
-                SpatialDim, Frame::Inertial, DataVector>(
+                SpatialDim, Frame::Physical, DataVector>(
                 lapse_ab_initio, shift_ab_initio,
                 spacetime_unit_normal_ab_initio,
                 inverse_spatial_metric_ab_initio,
@@ -2152,7 +2152,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
   }
 
   // Calc \f$ \partial_a N = {\partial_0 N, \partial_i N} \f$
-  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
       get(lapse_ab_initio), 0.);
   d4_N.get(0) = get(dt_lapse_ab_initio);
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -2161,7 +2161,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
 
   // Calc \f$ \partial_a n_b = {-\partial_a N, 0, 0, 0} \f$
   auto d4_normal_one_form =
-      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse_ab_initio), 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     d4_normal_one_form.get(a, 0) -= d4_N.get(a);
@@ -2169,7 +2169,7 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
 
   // Calc \f$ \partial_a T2 \f$
   auto dT2 =
-      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       dT2.get(a, b) +=
@@ -2201,7 +2201,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -2234,16 +2234,16 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
-      gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_vector<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift);
   const auto det_and_inv = determinant_and_inverse(spatial_metric);
   const auto& det_spatial_metric = det_and_inv.first;
   const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
-      gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
+      gr::inverse_spacetime_metric<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift, inverse_spatial_metric);
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
@@ -2261,18 +2261,18 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
 
   // Initialize initial gauge function and its roll-off function
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
   const auto d4_gauge_h_init = make_with_value<
       db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-          SpatialDim, Frame::Inertial>>>(x, 0.);
+          SpatialDim, Frame::Physical>>>(x, 0.);
 
   // compute d4H using function being tested
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
-      SpatialDim, Frame::Inertial>>
+      SpatialDim, Frame::Physical>>
       d4_gauge_h{};
   GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+                                                         Frame::Physical>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, 0., amp_coef_L2,
@@ -2289,9 +2289,9 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
       time_deriv_of_roll_on_function(t, t_start_L2, sigma_t_L2);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
+      spacetime_deriv_of_weight_function<SpatialDim, Frame::Physical,
                                          DataVector>(x, r_max);
 
   // Evaluate analytic solution for Schwarzschild, ab initio.
@@ -2311,12 +2311,12 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   const DataVector H = mass * (1. / r_);
   const DataVector H2 = H * 2.;
   // 3) compute 3D null_one_form and its derivatives
-  tnsr::i<DataVector, SpatialDim, Frame::Inertial> null_one_form{};
+  tnsr::i<DataVector, SpatialDim, Frame::Physical> null_one_form{};
   for (size_t i = 0; i < SpatialDim; ++i) {
     null_one_form.get(i) = x_minus_center.get(i) / r_;
   }
   auto null_vec = null_one_form;
-  tnsr::ij<DataVector, SpatialDim, Frame::Inertial> deriv_null_one_form{};
+  tnsr::ij<DataVector, SpatialDim, Frame::Physical> deriv_null_one_form{};
   const DataVector denom = 1. / r_squared;
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -2328,7 +2328,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
     }
   }
   // 4) compute deriv of H
-  tnsr::i<DataVector, SpatialDim, Frame::Inertial> deriv_H{};
+  tnsr::i<DataVector, SpatialDim, Frame::Physical> deriv_H{};
   for (size_t i = 0; i < SpatialDim; ++i) {
     deriv_H.get(i) = -(H / r_squared) * x_minus_center.get(i);
   }
@@ -2336,20 +2336,20 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   const Scalar<DataVector> lapse_ab_initio{sqrt(1. / (1. + H2))};
   const auto dt_lapse_ab_initio = make_with_value<Scalar<DataVector>>(x, 0.);
   auto d_lapse_ab_initio =
-      make_with_value<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::i<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     d_lapse_ab_initio.get(i) -= (pow<3>(get(lapse_ab_initio)) * deriv_H.get(i));
   }
   // 6) compute shift & its derivatives
   auto shift_ab_initio =
-      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     shift_ab_initio.get(i) = (H2 / (1. + H2)) * null_vec.get(i);
   }
   const auto dt_shift_ab_initio =
-      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   auto d_shift_ab_initio =
-      make_with_value<tnsr::iJ<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::iJ<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
       d_shift_ab_initio.get(i, j) =
@@ -2359,7 +2359,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   }
   // 7) compute 3-metric & its derivatives
   auto spatial_metric_ab_initio =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
       spatial_metric_ab_initio.get(i, j) =
@@ -2370,9 +2370,9 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
     }
   }
   auto dt_spatial_metric_ab_initio =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   auto d_spatial_metric_ab_initio =
-      make_with_value<tnsr::ijj<DataVector, SpatialDim, Frame::Inertial>>(x,
+      make_with_value<tnsr::ijj<DataVector, SpatialDim, Frame::Physical>>(x,
                                                                           0.);
   for (size_t k = 0; k < SpatialDim; ++k) {
     for (size_t i = 0; i < SpatialDim; ++i) {
@@ -2386,17 +2386,17 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   }
 
   const auto spacetime_unit_normal_one_form_ab_initio =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse_ab_initio);
   const auto spacetime_unit_normal_ab_initio =
-      gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_vector<SpatialDim, Frame::Physical, DataVector>(
           lapse_ab_initio, shift_ab_initio);
   const auto det_and_inv_ab_initio =
       determinant_and_inverse(spatial_metric_ab_initio);
   const auto& det_spatial_metric_ab_initio = det_and_inv_ab_initio.first;
   const auto& inverse_spatial_metric_ab_initio = det_and_inv_ab_initio.second;
   const auto inverse_spacetime_metric_ab_initio =
-      gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
+      gr::inverse_spacetime_metric<SpatialDim, Frame::Physical, DataVector>(
           lapse_ab_initio, shift_ab_initio, inverse_spatial_metric_ab_initio);
   Scalar<DataVector> sqrt_det_spatial_metric_ab_initio(
       sqrt(get(det_spatial_metric_ab_initio)));
@@ -2430,13 +2430,13 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
 
   // Calc derivs of \f$ \mu_2 \f$
   auto d4_mu2 =
-      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse_ab_initio), 0.);
   {
     const auto d4_log_fac_mu2 =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
-                SpatialDim, Frame::Inertial, DataVector>(
+                SpatialDim, Frame::Physical, DataVector>(
                 lapse_ab_initio, shift_ab_initio,
                 spacetime_unit_normal_ab_initio,
                 inverse_spatial_metric_ab_initio,
@@ -2451,7 +2451,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
   }
 
   // Calc \f$ \partial_a N = {\partial_0 N, \partial_i N} \f$
-  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
       get(lapse_ab_initio), 0.);
   d4_N.get(0) = get(dt_lapse);
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -2460,7 +2460,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
 
   // Calc \f$ \partial_a n_b = {-\partial_a N, 0, 0, 0} \f$
   auto d4_normal_one_form =
-      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse_ab_initio), 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     d4_normal_one_form.get(a, 0) -= d4_N.get(a);
@@ -2468,7 +2468,7 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
 
   // Calc \f$ \partial_a T2 \f$
   auto dT2 =
-      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       dT2.get(a, b) +=
@@ -2500,7 +2500,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -2533,16 +2533,16 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
-      gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_vector<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift);
   const auto det_and_inv = determinant_and_inverse(spatial_metric);
   const auto& det_spatial_metric = det_and_inv.first;
   const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
-      gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
+      gr::inverse_spacetime_metric<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift, inverse_spatial_metric);
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
@@ -2562,18 +2562,18 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
 
   // Initialize initial gauge function and its roll-off function
   const auto gauge_h_init = make_with_value<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       x, 0.);
   const auto d4_gauge_h_init = make_with_value<
       db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-          SpatialDim, Frame::Inertial>>>(x, 0.);
+          SpatialDim, Frame::Physical>>>(x, 0.);
 
   // compute d4H using function being tested
   db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<
-      SpatialDim, Frame::Inertial>>
+      SpatialDim, Frame::Physical>>
       d4_gauge_h{};
   GeneralizedHarmonic::spacetime_deriv_damped_harmonic_h<SpatialDim,
-                                                         Frame::Inertial>(
+                                                         Frame::Physical>(
       make_not_null(&d4_gauge_h), gauge_h_init, d4_gauge_h_init, lapse, shift,
       spacetime_unit_normal_one_form, sqrt_det_spatial_metric,
       inverse_spatial_metric, spacetime_metric, pi, phi, t, x, 0., 0.,
@@ -2590,9 +2590,9 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
       time_deriv_of_roll_on_function(t, t_start_S, sigma_t_S);
   const auto weight =
       GeneralizedHarmonic::DampedHarmonicGauge_detail::weight_function<
-          SpatialDim, Frame::Inertial, DataVector>(x, r_max);
+          SpatialDim, Frame::Physical, DataVector>(x, r_max);
   auto d4_weight = GeneralizedHarmonic::DampedHarmonicGauge_detail::
-      spacetime_deriv_of_weight_function<SpatialDim, Frame::Inertial,
+      spacetime_deriv_of_weight_function<SpatialDim, Frame::Physical,
                                          DataVector>(x, r_max);
 
   // Evaluate analytic solution for Schwarzschild, ab initio.
@@ -2612,12 +2612,12 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   const DataVector H = mass * (1. / r_);
   const DataVector H2 = H * 2.;
   // 3) compute 3D null_one_form and its derivatives
-  tnsr::i<DataVector, SpatialDim, Frame::Inertial> null_one_form{};
+  tnsr::i<DataVector, SpatialDim, Frame::Physical> null_one_form{};
   for (size_t i = 0; i < SpatialDim; ++i) {
     null_one_form.get(i) = x_minus_center.get(i) / r_;
   }
   auto null_vec = null_one_form;
-  tnsr::ij<DataVector, SpatialDim, Frame::Inertial> deriv_null_one_form{};
+  tnsr::ij<DataVector, SpatialDim, Frame::Physical> deriv_null_one_form{};
   const DataVector denom = 1. / r_squared;
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -2629,7 +2629,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
     }
   }
   // 4) compute deriv of H
-  tnsr::i<DataVector, SpatialDim, Frame::Inertial> deriv_H{};
+  tnsr::i<DataVector, SpatialDim, Frame::Physical> deriv_H{};
   for (size_t i = 0; i < SpatialDim; ++i) {
     deriv_H.get(i) = -(H / r_squared) * x_minus_center.get(i);
   }
@@ -2637,20 +2637,20 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   const Scalar<DataVector> lapse_ab_initio{sqrt(1. / (1. + H2))};
   const auto dt_lapse_ab_initio = make_with_value<Scalar<DataVector>>(x, 0.);
   auto d_lapse_ab_initio =
-      make_with_value<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::i<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     d_lapse_ab_initio.get(i) -= (pow<3>(get(lapse_ab_initio)) * deriv_H.get(i));
   }
   // 6) compute shift & its derivatives
   auto shift_ab_initio =
-      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     shift_ab_initio.get(i) = (H2 / (1. + H2)) * null_vec.get(i);
   }
   const auto dt_shift_ab_initio =
-      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   auto d_shift_ab_initio =
-      make_with_value<tnsr::iJ<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::iJ<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
       d_shift_ab_initio.get(i, j) =
@@ -2660,7 +2660,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   }
   // 7) compute 3-metric & its derivatives
   auto spatial_metric_ab_initio =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
       spatial_metric_ab_initio.get(i, j) =
@@ -2671,9 +2671,9 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
     }
   }
   auto dt_spatial_metric_ab_initio =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   auto d_spatial_metric_ab_initio =
-      make_with_value<tnsr::ijj<DataVector, SpatialDim, Frame::Inertial>>(x,
+      make_with_value<tnsr::ijj<DataVector, SpatialDim, Frame::Physical>>(x,
                                                                           0.);
   for (size_t k = 0; k < SpatialDim; ++k) {
     for (size_t i = 0; i < SpatialDim; ++i) {
@@ -2689,14 +2689,14 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   const auto spacetime_metric_ab_initio = gr::spacetime_metric(
       lapse_ab_initio, shift_ab_initio, spatial_metric_ab_initio);
   const auto spacetime_unit_normal_ab_initio =
-      gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_vector<SpatialDim, Frame::Physical, DataVector>(
           lapse_ab_initio, shift_ab_initio);
   const auto det_and_inv_ab_initio =
       determinant_and_inverse(spatial_metric_ab_initio);
   const auto& det_spatial_metric_ab_initio = det_and_inv_ab_initio.first;
   const auto& inverse_spatial_metric_ab_initio = det_and_inv_ab_initio.second;
   const auto inverse_spacetime_metric_ab_initio =
-      gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
+      gr::inverse_spacetime_metric<SpatialDim, Frame::Physical, DataVector>(
           lapse_ab_initio, shift_ab_initio, inverse_spatial_metric_ab_initio);
   Scalar<DataVector> sqrt_det_spatial_metric_ab_initio(
       sqrt(get(det_spatial_metric_ab_initio)));
@@ -2729,13 +2729,13 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
 
   // Calc derivs of \f$ \mu_S \f$
   auto d4_mu_S =
-      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse_ab_initio), 0.);
   {
     const auto d4_log_fac_muS =
         GeneralizedHarmonic::DampedHarmonicGauge_detail ::
             spacetime_deriv_of_power_log_factor_metric_lapse<
-                SpatialDim, Frame::Inertial, DataVector>(
+                SpatialDim, Frame::Physical, DataVector>(
                 lapse_ab_initio, shift_ab_initio,
                 spacetime_unit_normal_ab_initio,
                 inverse_spatial_metric_ab_initio,
@@ -2750,7 +2750,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   }
 
   // Calc \f$ \partial_a N = {\partial_0 N, \partial_i N} \f$
-  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+  auto d4_N = make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
       get(lapse_ab_initio), 0.);
   d4_N.get(0) = get(dt_lapse_ab_initio);
   for (size_t i = 0; i < SpatialDim; ++i) {
@@ -2759,7 +2759,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
 
   // Calc \f$ \partial_a N^i = {\partial_0 N^i, \partial_j N^i} \f$
   auto d4_shift =
-      make_with_value<tnsr::aB<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::aB<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse_ab_initio), 0.);
   for (size_t i = 0; i < SpatialDim; ++i) {
     d4_shift.get(0, 1 + i) = dt_shift_ab_initio.get(i);
@@ -2772,7 +2772,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
   //         - (\mu_{S}/N^2) \partial_a N
   // \f]
   auto d4_muS_over_N =
-      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_value<tnsr::a<DataVector, SpatialDim, Frame::Physical>>(
           get(lapse_ab_initio), 0.);
   {
     auto prefac = -mu_S * one_over_lapse * one_over_lapse;
@@ -2784,7 +2784,7 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
 
   // Calc \f$ \partial_a T3 \f$ (note minus sign)
   auto dT3 =
-      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ab<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   for (size_t a = 0; a < SpatialDim + 1; ++a) {
     for (size_t b = 0; b < SpatialDim + 1; ++b) {
       for (size_t i = 0; i < SpatialDim; ++i) {
@@ -2824,7 +2824,7 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -2846,24 +2846,24 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
   const auto dt_lapse = make_with_random_values<Scalar<DataVector>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto d_lapse =
-      make_with_random_values<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::i<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto dt_shift =
-      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Inertial>>(
+      make_with_random_values<tnsr::I<DataVector, SpatialDim, Frame::Physical>>(
           make_not_null(&generator), make_not_null(&dist), used_for_size);
   const auto d_shift = make_with_random_values<
-      tnsr::iJ<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::iJ<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist), used_for_size);
   auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(x, 0.);
   get<0, 0>(spatial_metric) = get<1, 1>(spatial_metric) =
       get<2, 2>(spatial_metric) = 1.;
   std::uniform_real_distribution<> dist2(0., 0.12);
   const auto dspatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = 0; j < SpatialDim; ++j) {
@@ -2871,26 +2871,26 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
     }
   }
   const auto dt_spatial_metric = make_with_random_values<
-      tnsr::ii<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ii<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
   const auto d_spatial_metric = make_with_random_values<
-      tnsr::ijj<DataVector, SpatialDim, Frame::Inertial>>(
+      tnsr::ijj<DataVector, SpatialDim, Frame::Physical>>(
       make_not_null(&generator), make_not_null(&dist2), used_for_size);
 
   // Get ingredients
   const auto spacetime_metric =
       gr::spacetime_metric(lapse, shift, spatial_metric);
   const auto spacetime_unit_normal_one_form =
-      gr::spacetime_normal_one_form<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_one_form<SpatialDim, Frame::Physical, DataVector>(
           lapse);
   const auto spacetime_unit_normal =
-      gr::spacetime_normal_vector<SpatialDim, Frame::Inertial, DataVector>(
+      gr::spacetime_normal_vector<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift);
   const auto det_and_inv = determinant_and_inverse(spatial_metric);
   const auto& det_spatial_metric = det_and_inv.first;
   const auto& inverse_spatial_metric = det_and_inv.second;
   const auto inverse_spacetime_metric =
-      gr::inverse_spacetime_metric<SpatialDim, Frame::Inertial, DataVector>(
+      gr::inverse_spacetime_metric<SpatialDim, Frame::Physical, DataVector>(
           lapse, shift, inverse_spatial_metric);
   Scalar<DataVector> sqrt_det_spatial_metric(sqrt(get(det_spatial_metric)));
   const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
@@ -2908,11 +2908,11 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
 
   // initial H_a and D4(H_a)
   const auto gauge_h_init = make_with_random_values<db::item_type<
-      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Inertial>>>(
+      GeneralizedHarmonic::Tags::InitialGaugeH<SpatialDim, Frame::Physical>>>(
       make_not_null(&generator), make_not_null(&pdist), x);
   const auto d4_gauge_h_init = make_with_random_values<
       db::item_type<GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-          SpatialDim, Frame::Inertial>>>(make_not_null(&generator),
+          SpatialDim, Frame::Physical>>>(make_not_null(&generator),
                                          make_not_null(&pdist), x);
   // local H_a
   const auto gauge_h_expected = wrap_DampedHarmonicHCompute(
@@ -2930,33 +2930,33 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
   //
   // First, check that the names are correct
   CHECK(
-      GeneralizedHarmonic::DampedHarmonicHCompute<3, Frame::Inertial>::name() ==
+      GeneralizedHarmonic::DampedHarmonicHCompute<3, Frame::Physical>::name() ==
       "GaugeH");
   CHECK(GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<
-            3, Frame::Inertial>::name() == "SpacetimeDerivGaugeH");
+            3, Frame::Physical>::name() == "SpacetimeDerivGaugeH");
 
   const auto box = db::create<
       db::AddSimpleTags<
-          GeneralizedHarmonic::Tags::InitialGaugeH<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::InitialGaugeH<3, Frame::Physical>,
           GeneralizedHarmonic::Tags::SpacetimeDerivInitialGaugeH<
-              3, Frame::Inertial>,
+              3, Frame::Physical>,
           gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-          gr::Tags::SpacetimeNormalOneForm<3, Frame::Inertial, DataVector>,
+          gr::Tags::Shift<3, Frame::Physical, DataVector>,
+          gr::Tags::SpacetimeNormalOneForm<3, Frame::Physical, DataVector>,
           gr::Tags::SqrtDetSpatialMetric<DataVector>,
-          gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
-          gr::Tags::SpacetimeMetric<3, Frame::Inertial, DataVector>,
-          GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>, ::Tags::Time,
-          ::Tags::Coordinates<3, Frame::Inertial>,
+          gr::Tags::InverseSpatialMetric<3, Frame::Physical, DataVector>,
+          gr::Tags::SpacetimeMetric<3, Frame::Physical, DataVector>,
+          GeneralizedHarmonic::Tags::Pi<3, Frame::Physical>,
+          GeneralizedHarmonic::Tags::Phi<3, Frame::Physical>, ::Tags::Time,
+          ::Tags::Coordinates<3, Frame::Physical>,
           GeneralizedHarmonic::Tags::GaugeHRollOnStartTime,
           GeneralizedHarmonic::Tags::GaugeHRollOnTimeWindow,
           GeneralizedHarmonic::Tags::GaugeHSpatialWeightDecayWidth<
-              Frame::Inertial>>,
+              Frame::Physical>>,
       db::AddComputeTags<
-          GeneralizedHarmonic::DampedHarmonicHCompute<3, Frame::Inertial>,
+          GeneralizedHarmonic::DampedHarmonicHCompute<3, Frame::Physical>,
           GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<
-              3, Frame::Inertial>>>(gauge_h_init, d4_gauge_h_init, lapse, shift,
+              3, Frame::Physical>>>(gauge_h_init, d4_gauge_h_init, lapse, shift,
                                     spacetime_unit_normal_one_form,
                                     sqrt_det_spatial_metric,
                                     inverse_spatial_metric, spacetime_metric,
@@ -2964,11 +2964,11 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
 
   // Verify that locally computed H_a matches the same obtained through its
   // ComputeTag from databox
-  CHECK(db::get<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>>(box) ==
+  CHECK(db::get<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Physical>>(box) ==
         gauge_h_expected);
   CHECK(
       db::get<
-          GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3, Frame::Inertial>>(
+          GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3, Frame::Physical>>(
           box) == d4_gauge_h_expected);
 }
 }  // namespace
@@ -2979,15 +2979,15 @@ SPECTRE_TEST_CASE(
   pypp::SetupLocalPythonEnvironment local_python_env{""};
   const DataVector used_for_size(4);
 
-  test_options<Frame::Inertial>();
+  test_options<Frame::Physical>();
 
-  test_detail_functions<1, Frame::Inertial>(used_for_size);
-  test_detail_functions<2, Frame::Inertial>(used_for_size);
-  test_detail_functions<3, Frame::Inertial>(used_for_size);
+  test_detail_functions<1, Frame::Physical>(used_for_size);
+  test_detail_functions<2, Frame::Physical>(used_for_size);
+  test_detail_functions<3, Frame::Physical>(used_for_size);
 
-  test_detail_functions<1, Frame::Inertial>(1.);
-  test_detail_functions<2, Frame::Inertial>(1.);
-  test_detail_functions<3, Frame::Inertial>(1.);
+  test_detail_functions<1, Frame::Physical>(1.);
+  test_detail_functions<2, Frame::Physical>(1.);
+  test_detail_functions<3, Frame::Physical>(1.);
 }
 
 SPECTRE_TEST_CASE(
@@ -2997,9 +2997,9 @@ SPECTRE_TEST_CASE(
   const DataVector used_for_size(4);
 
   // Compare with Python implementation
-  test_damped_harmonic_h_function<1, Frame::Inertial>(used_for_size);
-  test_damped_harmonic_h_function<2, Frame::Inertial>(used_for_size);
-  test_damped_harmonic_h_function<3, Frame::Inertial>(used_for_size);
+  test_damped_harmonic_h_function<1, Frame::Physical>(used_for_size);
+  test_damped_harmonic_h_function<2, Frame::Physical>(used_for_size);
+  test_damped_harmonic_h_function<3, Frame::Physical>(used_for_size);
 
   // Piece-wise tests with random tensors
   const size_t grid_size = 8;
@@ -3024,9 +3024,9 @@ SPECTRE_TEST_CASE(
   const DataVector used_for_size(4);
 
   // Compare with Python implementation
-  test_deriv_damped_harmonic_h_function<1, Frame::Inertial>(used_for_size);
-  test_deriv_damped_harmonic_h_function<2, Frame::Inertial>(used_for_size);
-  test_deriv_damped_harmonic_h_function<3, Frame::Inertial>(used_for_size);
+  test_deriv_damped_harmonic_h_function<1, Frame::Physical>(used_for_size);
+  test_deriv_damped_harmonic_h_function<2, Frame::Physical>(used_for_size);
+  test_deriv_damped_harmonic_h_function<3, Frame::Physical>(used_for_size);
 
   // Piece-wise tests with random tensors
   const size_t grid_size = 8;

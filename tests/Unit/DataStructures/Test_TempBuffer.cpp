@@ -17,11 +17,11 @@
 namespace {
 template <typename DataType>
 void test_temp_buffer(const DataType& x) {
-  TempBuffer<tmpl::list<::Tags::TempI<0, 3, Frame::Inertial, DataType>,
+  TempBuffer<tmpl::list<::Tags::TempI<0, 3, Frame::Physical, DataType>,
                         ::Tags::TempScalar<1, DataType>>>
       buffer(get_size(x));
 
-  auto& vec = get<::Tags::TempI<0, 3, Frame::Inertial, DataType>>(buffer);
+  auto& vec = get<::Tags::TempI<0, 3, Frame::Physical, DataType>>(buffer);
   auto& scalar = get<::Tags::TempScalar<1, DataType>>(buffer);
 
   // Do a few operations on the vector and scalar.

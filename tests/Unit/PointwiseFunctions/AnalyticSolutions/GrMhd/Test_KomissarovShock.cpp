@@ -53,14 +53,14 @@ struct KomissarovShockProxy : grmhd::Solutions::KomissarovShock {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
-  hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
+  hydro_variables(const tnsr::I<DataType, 3, Frame::Physical>& x,
                   const double t) const noexcept {
     return variables(x, t, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
-  grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
+  grmhd_variables(const tnsr::I<DataType, 3, Frame::Physical>& x,
                   const double t) const noexcept {
     return variables(x, t, grmhd_variables_tags<DataType>{});
   }
@@ -124,9 +124,9 @@ void test_left_and_right_variables() noexcept {
 
   // Test that the fluid variables are set somewhere to the right and to the
   // left of the shock interface
-  tnsr::I<double, 3, Frame::Inertial> left_x{0.};
+  tnsr::I<double, 3, Frame::Physical> left_x{0.};
   get<0>(left_x) = -1.;
-  tnsr::I<double, 3, Frame::Inertial> right_x{0.};
+  tnsr::I<double, 3, Frame::Physical> right_x{0.};
   get<0>(right_x) = 1.;
   CHECK(
       get(get<hydro::Tags::RestMassDensity<double>>(komissarov_shock.variables(
@@ -141,15 +141,15 @@ void test_left_and_right_variables() noexcept {
   CHECK(get(get<hydro::Tags::Pressure<double>>(komissarov_shock.variables(
             right_x, 0., tmpl::list<hydro::Tags::Pressure<double>>{}))) ==
         55.36);
-  CHECK(get<0>(get<hydro::Tags::SpatialVelocity<double, 3, Frame::Inertial>>(
+  CHECK(get<0>(get<hydro::Tags::SpatialVelocity<double, 3, Frame::Physical>>(
             komissarov_shock.variables(left_x, 0.,
                                        tmpl::list<hydro::Tags::SpatialVelocity<
-                                           double, 3, Frame::Inertial>>{}))) ==
+                                           double, 3, Frame::Physical>>{}))) ==
         0.8370659816473115);
-  CHECK(get<0>(get<hydro::Tags::SpatialVelocity<double, 3, Frame::Inertial>>(
+  CHECK(get<0>(get<hydro::Tags::SpatialVelocity<double, 3, Frame::Physical>>(
             komissarov_shock.variables(right_x, 0.,
                                        tmpl::list<hydro::Tags::SpatialVelocity<
-                                           double, 3, Frame::Inertial>>{}))) ==
+                                           double, 3, Frame::Physical>>{}))) ==
         0.6202085442748952);
   CHECK(get(get<hydro::Tags::LorentzFactor<double>>(komissarov_shock.variables(
             left_x, 0., tmpl::list<hydro::Tags::LorentzFactor<double>>{}))) ==
@@ -201,7 +201,7 @@ void test_solution() noexcept {
   const std::array<double, 3> x{{1.0, 2.3, -0.4}};
   const std::array<double, 3> dx{{1.e-1, 1.e-1, 1.e-1}};
 
-  domain::creators::Brick<Frame::Inertial> brick(
+  domain::creators::Brick<Frame::Physical> brick(
       x - dx, x + dx, {{false, false, false}}, {{0, 0, 0}}, {{6, 6, 6}});
   Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};

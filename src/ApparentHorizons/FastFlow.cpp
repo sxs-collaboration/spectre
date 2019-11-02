@@ -356,12 +356,12 @@ FastFlow::FlowType create_from_yaml<FastFlow::FlowType>::create<void>(
 }
 
 template size_t FastFlow::current_l_mesh(
-    const Strahlkorper<Frame::Inertial>& strahlkorper) const noexcept;
+    const Strahlkorper<Frame::Physical>& strahlkorper) const noexcept;
 
 template std::pair<FastFlow::Status, FastFlow::IterInfo>
-FastFlow::iterate_horizon_finder<Frame::Inertial>(
-    const gsl::not_null<Strahlkorper<Frame::Inertial>*> current_strahlkorper,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& upper_spatial_metric,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    const tnsr::Ijj<DataVector, 3, Frame::Inertial>&
+FastFlow::iterate_horizon_finder<Frame::Physical>(
+    const gsl::not_null<Strahlkorper<Frame::Physical>*> current_strahlkorper,
+    const tnsr::II<DataVector, 3, Frame::Physical>& upper_spatial_metric,
+    const tnsr::ii<DataVector, 3, Frame::Physical>& extrinsic_curvature,
+    const tnsr::Ijj<DataVector, 3, Frame::Physical>&
         christoffel_2nd_kind) noexcept;

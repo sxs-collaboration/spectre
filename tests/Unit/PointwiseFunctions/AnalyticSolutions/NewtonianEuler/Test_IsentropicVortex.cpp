@@ -37,13 +37,13 @@ struct IsentropicVortexProxy
   template <typename DataType>
   using variables_tags =
       tmpl::list<NewtonianEuler::Tags::MassDensity<DataType>,
-                 NewtonianEuler::Tags::Velocity<DataType, Dim, Frame::Inertial>,
+                 NewtonianEuler::Tags::Velocity<DataType, Dim, Frame::Physical>,
                  NewtonianEuler::Tags::SpecificInternalEnergy<DataType>,
                  NewtonianEuler::Tags::Pressure<DataType>>;
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
+  primitive_variables(const tnsr::I<DataType, Dim, Frame::Physical>& x,
                       double t) const noexcept {
     return this->variables(x, t, variables_tags<DataType>{});
   }

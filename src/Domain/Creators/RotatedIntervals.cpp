@@ -15,7 +15,7 @@
 /// \cond
 namespace Frame {
 struct Grid;
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 /// \endcond
 
@@ -63,7 +63,7 @@ RotatedIntervals<TargetFrame>::initial_refinement_levels() const noexcept {
           {{initial_refinement_level_x_[0]}}};
 }
 
-template class RotatedIntervals<Frame::Inertial>;
+template class RotatedIntervals<Frame::Physical>;
 template class RotatedIntervals<Frame::Grid>;
 }  // namespace creators
 }  // namespace domain

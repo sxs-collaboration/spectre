@@ -16,7 +16,7 @@
 
 namespace Frame {
 struct Grid;
-struct Inertial;
+struct Physical;
 struct Logical;
 }  // namespace Frame
 
@@ -89,7 +89,7 @@ void Domain<VolumeDim, TargetFrame>::pup(PUP::er& p) noexcept {
   template std::ostream& operator<<(std::ostream& os,      \
                                     const Domain<DIM(data), FRAME(data)>& d);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Physical))
 
 #undef DIM
 #undef FRAME

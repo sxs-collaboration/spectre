@@ -77,24 +77,24 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
       std::inner_product(spin_a.begin(), spin_a.end(), spin_a.begin(), 0.);
 
   TempBuffer<tmpl::list<
-      ::Tags::TempI<0, 3, Frame::Inertial, DataType>,
+      ::Tags::TempI<0, 3, Frame::Physical, DataType>,
       ::Tags::TempScalar<1, DataType>, ::Tags::TempScalar<2, DataType>,
       ::Tags::TempScalar<3, DataType>, ::Tags::TempScalar<4, DataType>,
       ::Tags::TempScalar<5, DataType>, ::Tags::TempScalar<6, DataType>,
-      ::Tags::Tempi<7, 3, Frame::Inertial, DataType>,
+      ::Tags::Tempi<7, 3, Frame::Physical, DataType>,
       ::Tags::TempScalar<8, DataType>, ::Tags::TempScalar<9, DataType>,
       ::Tags::TempScalar<10, DataType>, ::Tags::TempScalar<11, DataType>,
-      ::Tags::Tempi<12, 3, Frame::Inertial, DataType>,
+      ::Tags::Tempi<12, 3, Frame::Physical, DataType>,
       ::Tags::TempScalar<13, DataType>, ::Tags::TempScalar<14, DataType>,
-      ::Tags::Tempi<15, 3, Frame::Inertial, DataType>,
-      ::Tags::Tempi<16, 3, Frame::Inertial, DataType>,
-      ::Tags::Tempij<17, 3, Frame::Inertial, DataType>,
+      ::Tags::Tempi<15, 3, Frame::Physical, DataType>,
+      ::Tags::Tempi<16, 3, Frame::Physical, DataType>,
+      ::Tags::Tempij<17, 3, Frame::Physical, DataType>,
       ::Tags::TempScalar<18, DataType>>>
       buffer(get_size(get<0>(x)));
 
   // Assign understandable names to parts of the buffer.
   auto& x_minus_center =
-      get<::Tags::TempI<0, 3, Frame::Inertial, DataType>>(buffer);
+      get<::Tags::TempI<0, 3, Frame::Physical, DataType>>(buffer);
   auto& a_dot_x =
       get(get<::Tags::TempScalar<1, DataType>>(buffer));
   auto& a_dot_x_squared =
@@ -108,7 +108,7 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
   auto& deriv_log_r_denom =
       get(get<::Tags::TempScalar<6, DataType>>(buffer));
   auto& deriv_log_r =
-      get<::Tags::Tempi<7, 3, Frame::Inertial, DataType>>(buffer);
+      get<::Tags::Tempi<7, 3, Frame::Physical, DataType>>(buffer);
   auto& H = get(get<::Tags::TempScalar<9, DataType>>(buffer));
   auto& H_denom =
       get(get<::Tags::TempScalar<8, DataType>>(buffer));
@@ -117,15 +117,15 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
   auto& temp2 =
       get(get<::Tags::TempScalar<11, DataType>>(buffer));
   auto& a_cross_x =
-      get<::Tags::Tempi<12, 3, Frame::Inertial, DataType>>(buffer);
+      get<::Tags::Tempi<12, 3, Frame::Physical, DataType>>(buffer);
   auto& denom =
       get(get<::Tags::TempScalar<13, DataType>>(buffer));
   auto& r = get(get<::Tags::TempScalar<14, DataType>>(buffer));
-  auto& deriv_H = get<::Tags::Tempi<15, 3, Frame::Inertial, DataType>>(buffer);
+  auto& deriv_H = get<::Tags::Tempi<15, 3, Frame::Physical, DataType>>(buffer);
   auto& null_form =
-      get<::Tags::Tempi<16, 3, Frame::Inertial, DataType>>(buffer);
+      get<::Tags::Tempi<16, 3, Frame::Physical, DataType>>(buffer);
   auto& deriv_null_form =
-      get<::Tags::Tempij<17, 3, Frame::Inertial, DataType>>(buffer);
+      get<::Tags::Tempij<17, 3, Frame::Physical, DataType>>(buffer);
   auto& lapse_squared =
       get(get<::Tags::TempScalar<18, DataType>>(buffer));
 
@@ -246,7 +246,7 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
     temp1 =
         -2.0 * H * null_vector_0 * lapse_squared;
     for (size_t i = 0; i < 3; ++i) {
-      get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(result).get(i) =
+      get<gr::Tags::Shift<3, Frame::Physical, DataType>>(result).get(i) =
           temp1 * null_form.get(i);
     }
   }
@@ -264,12 +264,11 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
   }
 
   for (size_t i = 0; i < 3; ++i) {
-    get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(result).get(
+    get<gr::Tags::SpatialMetric<3, Frame::Physical, DataType>>(result).get(
         i, i) = 1.;
     for (size_t j = i; j < 3; ++j) {  // Symmetry
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(result).get(
-          i, j) +=
-          2.0 * H * null_form.get(i) * null_form.get(j);
+      get<gr::Tags::SpatialMetric<3, Frame::Physical, DataType>>(result).get(
+          i, j) += 2.0 * H * null_form.get(i) * null_form.get(j);
     }
   }
 
@@ -287,22 +286,22 @@ KerrSchild::variables(const tnsr::I<DataType, 3>& x, const double /*t*/,
   }
 
   auto det_and_inverse = determinant_and_inverse(
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(result));
+      get<gr::Tags::SpatialMetric<3, Frame::Physical, DataType>>(result));
 
   get(get<gr::Tags::SqrtDetSpatialMetric<DataType>>(result)) =
       sqrt(get(det_and_inverse.first));
 
-  get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>>(result) =
+  get<gr::Tags::InverseSpatialMetric<3, Frame::Physical, DataType>>(result) =
       det_and_inverse.second;
 
-  get<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>>(result) =
+  get<gr::Tags::ExtrinsicCurvature<3, Frame::Physical, DataType>>(result) =
       gr::extrinsic_curvature(
           get<gr::Tags::Lapse<DataType>>(result),
-          get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(result),
+          get<gr::Tags::Shift<3, Frame::Physical, DataType>>(result),
           get<DerivShift<DataType>>(result),
-          get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(result),
+          get<gr::Tags::SpatialMetric<3, Frame::Physical, DataType>>(result),
           get<::Tags::dt<
-              gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>>(result),
+              gr::Tags::SpatialMetric<3, Frame::Physical, DataType>>>(result),
           get<DerivSpatialMetric<DataType>>(result));
 
   return result;

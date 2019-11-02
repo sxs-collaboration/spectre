@@ -164,15 +164,15 @@ class KerrSchildCoords {
   /// on the z-axis, the vector to transform must have a vanishing
   /// \f$v^\vartheta\f$ in order for the transformation to be single-valued.
   template <typename DataType>
-  tnsr::I<DataType, 3, Frame::Inertial> cartesian_from_spherical_ks(
+  tnsr::I<DataType, 3, Frame::Physical> cartesian_from_spherical_ks(
       const tnsr::I<DataType, 3, Frame::NoFrame>& spatial_vector,
-      const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const
+      const tnsr::I<DataType, 3, Frame::Physical>& cartesian_coords) const
       noexcept;
 
   /// Kerr-Schild \f$r^2\f$ in terms of the Cartesian coordinates.
   template <typename DataType>
   Scalar<DataType> r_coord_squared(
-      const tnsr::I<DataType, 3, Frame::Inertial>& cartesian_coords) const
+      const tnsr::I<DataType, 3, Frame::Physical>& cartesian_coords) const
       noexcept;
 
   // clang-tidy: google-runtime-references

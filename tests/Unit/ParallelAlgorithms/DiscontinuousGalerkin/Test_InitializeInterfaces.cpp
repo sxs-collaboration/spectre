@@ -64,7 +64,7 @@ struct ElementArray {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<Dim, Frame::Inertial>>;
+      tmpl::list<::Tags::Domain<Dim, Frame::Physical>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -107,7 +107,7 @@ void check_compute_items(
   CHECK(tag_is_retrievable(::Tags::BoundaryDirectionsExterior<Dim>{}));
   CHECK(tag_is_retrievable(
       ::Tags::Interface<::Tags::BoundaryDirectionsExterior<Dim>,
-                        ::Tags::Coordinates<Dim, Frame::Inertial>>{}));
+                        ::Tags::Coordinates<Dim, Frame::Physical>>{}));
   CHECK(tag_is_retrievable(
       ::Tags::Interface<::Tags::InternalDirections<Dim>, vars_tag>{}));
   CHECK(tag_is_retrievable(
@@ -145,11 +145,11 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
     // Reference element:
     // [ |X| | ]-> xi
     const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
-    const domain::creators::Interval<Frame::Inertial> domain_creator{
+    const domain::creators::Interval<Frame::Physical> domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Physical,
                                          domain::CoordinateMaps::Affine>));
 
     db::item_type<vars_tag> vars{4, 0.};
@@ -178,11 +178,11 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
     // | |X| | |
     // +-+-+-+-+
     const ElementId<2> element_id{0, {{SegmentId{2, 1}, SegmentId{0, 0}}}};
-    const domain::creators::Rectangle<Frame::Inertial> domain_creator{
+    const domain::creators::Rectangle<Frame::Physical> domain_creator{
         {{-0.5, 0.}}, {{1.5, 2.}}, {{false, false}}, {{2, 0}}, {{4, 3}}};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Physical,
                                          domain::CoordinateMaps::ProductOf2Maps<
                                              domain::CoordinateMaps::Affine,
                                              domain::CoordinateMaps::Affine>>));
@@ -209,7 +209,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
     INFO("3D");
     const ElementId<3> element_id{
         0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 1}}}};
-    const domain::creators::Brick<Frame::Inertial> domain_creator{
+    const domain::creators::Brick<Frame::Physical> domain_creator{
         {{-0.5, 0., -1.}},
         {{1.5, 2., 3.}},
         {{false, false, false}},
@@ -218,7 +218,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
     // Register the coordinate map for serialization
     PUPable_reg(SINGLE_ARG(
         domain::CoordinateMap<
-            Frame::Logical, Frame::Inertial,
+            Frame::Logical, Frame::Physical,
             domain::CoordinateMaps::ProductOf3Maps<
                 domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
                 domain::CoordinateMaps::Affine>>));

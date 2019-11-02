@@ -40,7 +40,7 @@ tnsr::I<DataType, Dim, Frame> mass_flux(
       const Scalar<DTYPE(data)>& sqrt_det_spatial_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Inertial))
+                        (Frame::Grid, Frame::Physical))
 
 #undef DIM
 #undef DTYPE

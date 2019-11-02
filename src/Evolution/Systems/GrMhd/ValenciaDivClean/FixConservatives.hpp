@@ -120,10 +120,10 @@ class FixConservatives {
   void operator()(
       gsl::not_null<Scalar<DataVector>*> tilde_d,
       gsl::not_null<Scalar<DataVector>*> tilde_tau,
-      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::Physical>*> tilde_s,
+      const tnsr::I<DataVector, 3, Frame::Physical>& tilde_b,
+      const tnsr::ii<DataVector, 3, Frame::Physical>& spatial_metric,
+      const tnsr::II<DataVector, 3, Frame::Physical>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric) const noexcept;
 
  private:

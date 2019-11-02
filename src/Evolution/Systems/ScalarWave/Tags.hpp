@@ -27,7 +27,7 @@ struct Pi : db::SimpleTag {
 
 template <size_t Dim>
 struct Phi : db::SimpleTag {
-  using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
+  using type = tnsr::i<DataVector, Dim, Frame::Physical>;
   static std::string name() noexcept { return "Phi"; }
 };
 }  // namespace ScalarWave

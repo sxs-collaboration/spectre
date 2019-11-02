@@ -70,7 +70,7 @@
 /// \cond
 namespace Frame {
 // IWYU pragma: no_forward_declare MathFunction
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>
@@ -118,7 +118,7 @@ struct EvolutionMetavars {
 
   using step_choosers =
       tmpl::list<StepChoosers::Registrars::ByBlock<Dim>,
-                 StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
+                 StepChoosers::Registrars::Cfl<Dim, Frame::Physical>,
                  StepChoosers::Registrars::Constant,
                  StepChoosers::Registrars::Increase>;
 

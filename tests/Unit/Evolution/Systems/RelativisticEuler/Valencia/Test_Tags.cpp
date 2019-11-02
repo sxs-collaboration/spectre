@@ -11,7 +11,7 @@
 SPECTRE_TEST_CASE("Unit.RelativisticEuler.Valencia.Tags", "[Unit][Evolution]") {
   CHECK(RelativisticEuler::Valencia::Tags::TildeD::name() == "TildeD");
   CHECK(RelativisticEuler::Valencia::Tags::TildeTau::name() == "TildeTau");
-  CHECK(RelativisticEuler::Valencia::Tags::TildeS<3, Frame::Inertial>::name() ==
+  CHECK(RelativisticEuler::Valencia::Tags::TildeS<3, Frame::Physical>::name() ==
         "TildeS");
   CHECK(RelativisticEuler::Valencia::Tags::TildeS<3, Frame::Logical>::name() ==
         "Logical_TildeS");

@@ -315,7 +315,7 @@ double dimensionful_spin_magnitude(
  * \brief Spin vector of a 2D `Strahlkorper`.
  *
  * \details Computes the spin vector of a `Strahlkorper` in a `Frame`, such as
- * `Frame::Inertial`. The result is a `std::array<double, 3>` containing the
+ * `Frame::Physical`. The result is a `std::array<double, 3>` containing the
  * Cartesian components of the spin vector, whose magnitude is
  * `spin_magnitude`. This function will return the dimensionless spin
  * components if `spin_magnitude` is the dimensionless spin magnitude, and

@@ -80,7 +80,7 @@ DataType IsentropicVortex<Dim>::deriv_of_perturbation_profile(
 template <size_t Dim>
 template <typename DataType>
 IsentropicVortex<Dim>::IntermediateVariables<DataType>::IntermediateVariables(
-    const tnsr::I<DataType, Dim, Frame::Inertial>& x, const double t,
+    const tnsr::I<DataType, Dim, Frame::Physical>& x, const double t,
     const std::array<double, Dim>& center,
     const std::array<double, Dim>& mean_velocity,
     const double strength) noexcept {
@@ -107,11 +107,11 @@ IsentropicVortex<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>
+tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Physical>>
 IsentropicVortex<Dim>::variables(
-    tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/,
+    tmpl::list<Tags::Velocity<DataType, Dim, Frame::Physical>> /*meta*/,
     const IntermediateVariables<DataType>& vars) const noexcept {
-  auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(
+  auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Physical>>(
       vars.y_tilde, 0.0);
   for (size_t i = 0; i < Dim; ++i) {
     velocity.get(i) = gsl::at(mean_velocity_, i);
@@ -201,9 +201,9 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (2, 3), (double, DataVector),
 
 #define INSTANTIATE_VELOCITY(_, data)                                       \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),          \
-                               Frame::Inertial>>                            \
+                               Frame::Physical>>                            \
       IsentropicVortex<DIM(data)>::variables(                               \
-          tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Inertial>>, \
+          tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Physical>>, \
           const IntermediateVariables<DTYPE(data)>&) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (2, 3), (double, DataVector),

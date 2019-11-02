@@ -110,7 +110,7 @@ struct ElementArray {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<Dim, Frame::Inertial>>;
+      tmpl::list<::Tags::Domain<Dim, Frame::Physical>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -148,17 +148,17 @@ void check_compute_items(
   };
   CHECK(tag_is_retrievable(
       ::Tags::Flux<LinearSolver::Tags::Operand<ScalarFieldTag>,
-                   tmpl::size_t<Dim>, Frame::Inertial>{}));
+                   tmpl::size_t<Dim>, Frame::Physical>{}));
   CHECK(tag_is_retrievable(
       ::Tags::Flux<LinearSolver::Tags::Operand<AuxiliaryFieldTag<Dim>>,
-                   tmpl::size_t<Dim>, Frame::Inertial>{}));
+                   tmpl::size_t<Dim>, Frame::Physical>{}));
   CHECK(tag_is_retrievable(
       ::Tags::div<::Tags::Flux<LinearSolver::Tags::Operand<ScalarFieldTag>,
-                               tmpl::size_t<Dim>, Frame::Inertial>>{}));
+                               tmpl::size_t<Dim>, Frame::Physical>>{}));
   CHECK(tag_is_retrievable(
       ::Tags::div<
           ::Tags::Flux<LinearSolver::Tags::Operand<AuxiliaryFieldTag<Dim>>,
-                       tmpl::size_t<Dim>, Frame::Inertial>>{}));
+                       tmpl::size_t<Dim>, Frame::Physical>>{}));
   CHECK(tag_is_retrievable(
       ::Tags::Source<LinearSolver::Tags::Operand<ScalarFieldTag>>{}));
   CHECK(tag_is_retrievable(
@@ -173,11 +173,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     INFO("1D");
     // Which element we work with does not matter for this test
     const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
-    const domain::creators::Interval<Frame::Inertial> domain_creator{
+    const domain::creators::Interval<Frame::Physical> domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Physical,
                                          domain::CoordinateMaps::Affine>));
 
     using metavariables = Metavariables<1>;
@@ -204,12 +204,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     CHECK(get_tag(LinearSolver::Tags::OperatorAppliedTo<ScalarFieldTag>{}) ==
           Scalar<DataVector>{{{{4, 0.}}}});
     // Test the analytic source
-    const auto& inertial_coords =
-        get_tag(Tags::Coordinates<1, Frame::Inertial>{});
+    const auto& physical_coords =
+        get_tag(Tags::Coordinates<1, Frame::Physical>{});
     CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
-          get<0>(inertial_coords));
+          get<0>(physical_coords));
     // Test the linear solver quantities are initialized, but value is undefined
     CHECK(get(get_tag(LinearSolver::Tags::Operand<ScalarFieldTag>{})).size() ==
           4);
@@ -221,11 +221,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     INFO("2D");
     // Which element we work with does not matter for this test
     const ElementId<2> element_id{0, {{SegmentId{2, 1}, SegmentId{0, 0}}}};
-    const domain::creators::Rectangle<Frame::Inertial> domain_creator{
+    const domain::creators::Rectangle<Frame::Physical> domain_creator{
         {{-0.5, 0.}}, {{1.5, 2.}}, {{false, false}}, {{2, 0}}, {{4, 3}}};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Physical,
                                          domain::CoordinateMaps::ProductOf2Maps<
                                              domain::CoordinateMaps::Affine,
                                              domain::CoordinateMaps::Affine>>));
@@ -254,12 +254,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     CHECK(get_tag(LinearSolver::Tags::OperatorAppliedTo<ScalarFieldTag>{}) ==
           Scalar<DataVector>{{{{12, 0.}}}});
     // Test the analytic source
-    const auto& inertial_coords =
-        get_tag(Tags::Coordinates<2, Frame::Inertial>{});
+    const auto& physical_coords =
+        get_tag(Tags::Coordinates<2, Frame::Physical>{});
     CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
-          get<0>(inertial_coords) + get<1>(inertial_coords));
+          get<0>(physical_coords) + get<1>(physical_coords));
     CHECK(get(get_tag(LinearSolver::Tags::Operand<ScalarFieldTag>{})).size() ==
           12);
     CHECK(get(get_tag(LinearSolver::Tags::OperatorAppliedTo<
@@ -271,7 +271,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     // Which element we work with does not matter for this test
     const ElementId<3> element_id{
         0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 1}}}};
-    const domain::creators::Brick<Frame::Inertial> domain_creator{
+    const domain::creators::Brick<Frame::Physical> domain_creator{
         {{-0.5, 0., -1.}},
         {{1.5, 2., 3.}},
         {{false, false, false}},
@@ -280,7 +280,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     // Register the coordinate map for serialization
     PUPable_reg(SINGLE_ARG(
         domain::CoordinateMap<
-            Frame::Logical, Frame::Inertial,
+            Frame::Logical, Frame::Physical,
             domain::CoordinateMaps::ProductOf3Maps<
                 domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
                 domain::CoordinateMaps::Affine>>));
@@ -309,13 +309,13 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     CHECK(get_tag(LinearSolver::Tags::OperatorAppliedTo<ScalarFieldTag>{}) ==
           Scalar<DataVector>{{{{24, 0.}}}});
     // Test the analytic source
-    const auto& inertial_coords =
-        get_tag(Tags::Coordinates<3, Frame::Inertial>{});
+    const auto& physical_coords =
+        get_tag(Tags::Coordinates<3, Frame::Physical>{});
     CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
-          get<0>(inertial_coords) + get<1>(inertial_coords) +
-              get<2>(inertial_coords));
+          get<0>(physical_coords) + get<1>(physical_coords) +
+              get<2>(physical_coords));
     // Test the linear solver quantities are initialized, but value is undefined
     CHECK(get(get_tag(LinearSolver::Tags::Operand<ScalarFieldTag>{})).size() ==
           24);

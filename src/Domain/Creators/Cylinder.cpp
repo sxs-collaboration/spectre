@@ -19,7 +19,7 @@
 
 namespace Frame {
 struct Grid;
-struct Inertial;
+struct Physical;
 struct Logical;
 }  // namespace Frame
 
@@ -140,6 +140,6 @@ Cylinder<TargetFrame>::initial_refinement_levels() const noexcept {
 }
 
 template class Cylinder<Frame::Grid>;
-template class Cylinder<Frame::Inertial>;
+template class Cylinder<Frame::Physical>;
 }  // namespace creators
 }  // namespace domain

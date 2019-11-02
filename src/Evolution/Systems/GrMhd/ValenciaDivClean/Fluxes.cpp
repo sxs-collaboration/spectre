@@ -24,40 +24,40 @@
 namespace grmhd {
 namespace ValenciaDivClean {
 void ComputeFluxes::apply(
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Physical>*> tilde_d_flux,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Physical>*>
         tilde_tau_flux,
-    const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
-    const gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_b_flux,
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+    const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Physical>*> tilde_s_flux,
+    const gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Physical>*> tilde_b_flux,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Physical>*>
         tilde_phi_flux,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+    const tnsr::i<DataVector, 3, Frame::Physical>& tilde_s,
+    const tnsr::I<DataVector, 3, Frame::Physical>& tilde_b,
     const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
+    const tnsr::I<DataVector, 3, Frame::Physical>& shift,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::ii<DataVector, 3, Frame::Physical>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Physical>& inv_spatial_metric,
     const Scalar<DataVector>& pressure,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const tnsr::I<DataVector, 3, Frame::Physical>& spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field) noexcept {
+    const tnsr::I<DataVector, 3, Frame::Physical>& magnetic_field) noexcept {
   Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>,
+      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Physical>,
+      hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Physical>,
       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
       hydro::Tags::MagneticFieldSquared<DataVector>, ::Tags::TempScalar<0>,
       ::Tags::TempScalar<1>, ::Tags::TempScalar<2>>>
       temp_tensors{get<0>(shift).size()};
 
   auto& spatial_velocity_one_form =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Physical>>(
           temp_tensors);
   raise_or_lower_index(make_not_null(&spatial_velocity_one_form),
                        spatial_velocity, spatial_metric);
   auto& magnetic_field_one_form =
-      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>>(
+      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Physical>>(
           temp_tensors);
   raise_or_lower_index(make_not_null(&magnetic_field_one_form), magnetic_field,
                        spatial_metric);
@@ -83,8 +83,8 @@ void ComputeFluxes::apply(
        0.5 * get(magnetic_field_squared) * one_over_w_squared);
 
   // lapse b_i / W = lapse (B_i / W^2 + v_i (B^m v_m)
-  tnsr::i<DataVector, 3, Frame::Inertial>& lapse_b_over_w =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+  tnsr::i<DataVector, 3, Frame::Physical>& lapse_b_over_w =
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Physical>>(
           temp_tensors);
   for (size_t i = 0; i < 3; ++i) {
     lapse_b_over_w.get(i) *= get(magnetic_field_dot_spatial_velocity);

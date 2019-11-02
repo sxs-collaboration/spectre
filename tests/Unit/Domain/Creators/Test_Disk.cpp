@@ -32,7 +32,7 @@
 namespace domain {
 namespace {
 void test_disk_construction(
-    const creators::Disk<Frame::Inertial>& disk, const double inner_radius,
+    const creators::Disk<Frame::Physical>& disk, const double inner_radius,
     const double outer_radius,
     const std::array<size_t, 2>& expected_wedge_extents,
     const std::vector<std::array<size_t, 2>>& expected_refinement_level,
@@ -78,7 +78,7 @@ void test_disk_construction(
 
   CHECK(disk.initial_extents() == expected_extents);
   CHECK(disk.initial_refinement_levels() == expected_refinement_level);
-  using TargetFrame = Frame::Inertial;
+  using TargetFrame = Frame::Physical;
   using Wedge2DMap = CoordinateMaps::Wedge2D;
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
@@ -132,7 +132,7 @@ void test_disk_boundaries_equiangular() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{4, 4}};
 
-  const creators::Disk<Frame::Inertial> disk{
+  const creators::Disk<Frame::Physical> disk{
       inner_radius, outer_radius, refinement_level, grid_points, true};
   test_physical_separation(disk.create_domain().blocks());
   test_disk_construction(disk, inner_radius, outer_radius, grid_points,
@@ -141,7 +141,7 @@ void test_disk_boundaries_equiangular() {
 
 void test_disk_factory_equiangular() {
   INFO("Disk factory equiangular");
-  const auto disk = test_factory_creation<DomainCreator<2, Frame::Inertial>>(
+  const auto disk = test_factory_creation<DomainCreator<2, Frame::Physical>>(
       "  Disk:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -153,7 +153,7 @@ void test_disk_factory_equiangular() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{2, 3}};
   test_disk_construction(
-      dynamic_cast<const creators::Disk<Frame::Inertial>&>(*disk), inner_radius,
+      dynamic_cast<const creators::Disk<Frame::Physical>&>(*disk), inner_radius,
       outer_radius, grid_points, {5, make_array<2>(refinement_level)}, true);
 }
 
@@ -163,7 +163,7 @@ void test_disk_boundaries_equidistant() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{4, 4}};
 
-  const creators::Disk<Frame::Inertial> disk{
+  const creators::Disk<Frame::Physical> disk{
       inner_radius, outer_radius, refinement_level, grid_points, false};
   test_physical_separation(disk.create_domain().blocks());
   test_disk_construction(disk, inner_radius, outer_radius, grid_points,
@@ -172,7 +172,7 @@ void test_disk_boundaries_equidistant() {
 
 void test_disk_factory_equidistant() {
   INFO("Disk factory equidistant");
-  const auto disk = test_factory_creation<DomainCreator<2, Frame::Inertial>>(
+  const auto disk = test_factory_creation<DomainCreator<2, Frame::Physical>>(
       "  Disk:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -184,7 +184,7 @@ void test_disk_factory_equidistant() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points{{2, 3}};
   test_disk_construction(
-      dynamic_cast<const creators::Disk<Frame::Inertial>&>(*disk), inner_radius,
+      dynamic_cast<const creators::Disk<Frame::Physical>&>(*disk), inner_radius,
       outer_radius, grid_points, {5, make_array<2>(refinement_level)}, false);
 }
 }  // namespace

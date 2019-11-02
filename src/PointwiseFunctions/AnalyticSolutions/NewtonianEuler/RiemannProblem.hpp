@@ -257,14 +257,14 @@ class RiemannProblem : public MarkAsAnalyticSolution {
   /// and time `t`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, Dim, Frame::Inertial>& x, double t,
+      const tnsr::I<DataType, Dim, Frame::Physical>& x, double t,
       tmpl::list<Tags...> /*meta*/) const noexcept {
     Wave left(left_initial_data_, pressure_star_, velocity_star_,
               adiabatic_index_, Side::Left);
     Wave right(right_initial_data_, pressure_star_, velocity_star_,
                adiabatic_index_, Side::Right);
 
-    tnsr::I<DataType, Dim, Frame::Inertial> x_shifted(x);
+    tnsr::I<DataType, Dim, Frame::Physical> x_shifted(x);
     x_shifted.get(propagation_axis_) -= initial_position_;
 
     return {tuples::get<Tags>(
@@ -289,26 +289,26 @@ class RiemannProblem : public MarkAsAnalyticSolution {
   // @{
   /// Retrieve hydro variable at `(x, t)`
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
+  auto variables(const tnsr::I<DataType, Dim, Frame::Physical>& x_shifted,
                  double t, tmpl::list<Tags::MassDensity<DataType>> /*meta*/,
                  const Wave& left, const Wave& right) const noexcept
       -> tuples::TaggedTuple<Tags::MassDensity<DataType>>;
 
   template <typename DataType>
   auto variables(
-      const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, double t,
-      tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/,
+      const tnsr::I<DataType, Dim, Frame::Physical>& x_shifted, double t,
+      tmpl::list<Tags::Velocity<DataType, Dim, Frame::Physical>> /*meta*/,
       const Wave& left, const Wave& right) const noexcept
-      -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>;
+      -> tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Physical>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
+  auto variables(const tnsr::I<DataType, Dim, Frame::Physical>& x_shifted,
                  double t, tmpl::list<Tags::Pressure<DataType>> /*meta*/,
                  const Wave& left, const Wave& right) const noexcept
       -> tuples::TaggedTuple<Tags::Pressure<DataType>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted,
+  auto variables(const tnsr::I<DataType, Dim, Frame::Physical>& x_shifted,
                  double t,
                  tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
                  const Wave& left, const Wave& right) const noexcept

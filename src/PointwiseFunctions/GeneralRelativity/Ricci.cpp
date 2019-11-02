@@ -52,7 +52,7 @@ tnsr::aa<DataType, SpatialDim, Frame, Index> ricci_tensor(
           d_christoffel_2nd_kind) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Inertial),
+                        (Frame::Grid, Frame::Physical),
                         (IndexType::Spatial, IndexType::Spacetime))
 
 #undef DIM

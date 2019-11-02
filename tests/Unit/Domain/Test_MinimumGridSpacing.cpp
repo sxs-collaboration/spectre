@@ -96,5 +96,5 @@ void check_frame() noexcept {
 
 SPECTRE_TEST_CASE("Unit.Domain.MinimumGridSpacing", "[Domain][Unit]") {
   check_frame<Frame::Grid>();
-  check_frame<Frame::Inertial>();
+  check_frame<Frame::Physical>();
 }

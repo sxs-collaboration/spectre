@@ -304,19 +304,19 @@ class BondiMichel : public MarkAsAnalyticSolution {
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>> /*meta*/,
+          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Physical>> /*meta*/,
       const IntermediateVars<DataType>& vars) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Physical>>;
 
   template <typename DataType>
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
+          hydro::Tags::MagneticField<DataType, 3, Frame::Physical>> /*meta*/,
       const IntermediateVars<DataType>& vars) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+          hydro::Tags::MagneticField<DataType, 3, Frame::Physical>>;
 
   template <typename DataType>
   auto variables(

@@ -32,7 +32,7 @@ void test_variable_fixer(
 
   Scalar<DataVector> lorentz_factor{DataVector{5.0 / 3.0, 1.25}};
   auto spatial_velocity =
-      make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
+      make_with_value<tnsr::I<DataVector, Dim, Frame::Physical>>(density, 0.0);
   spatial_velocity.get(0) = DataVector{0.8, 0.6};
   variable_fixer(&density, &specific_internal_energy, &spatial_velocity,
                  &lorentz_factor, &pressure, &specific_enthalpy, polytrope);
@@ -45,7 +45,7 @@ void test_variable_fixer(
       polytrope.specific_internal_energy_from_density(expected_density);
   Scalar<DataVector> expected_lorentz_factor{DataVector{1.0, 1.25}};
   auto expected_spatial_velocity =
-      make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
+      make_with_value<tnsr::I<DataVector, Dim, Frame::Physical>>(density, 0.0);
   expected_spatial_velocity.get(0)[1] = 0.6;
 
   CHECK_ITERABLE_APPROX(density, expected_density);
@@ -72,7 +72,7 @@ void test_variable_fixer(
 
   Scalar<DataVector> lorentz_factor{DataVector{5.0 / 3.0, 1.25}};
   auto spatial_velocity =
-      make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
+      make_with_value<tnsr::I<DataVector, Dim, Frame::Physical>>(density, 0.0);
   spatial_velocity.get(0) = DataVector{0.8, 0.6};
   variable_fixer(&density, &specific_internal_energy, &spatial_velocity,
                  &lorentz_factor, &pressure, &specific_enthalpy, ideal_fluid);
@@ -86,7 +86,7 @@ void test_variable_fixer(
           expected_density, expected_specific_internal_energy);
   Scalar<DataVector> expected_lorentz_factor{DataVector{1.0, 1.25}};
   auto expected_spatial_velocity =
-      make_with_value<tnsr::I<DataVector, Dim, Frame::Inertial>>(density, 0.0);
+      make_with_value<tnsr::I<DataVector, Dim, Frame::Physical>>(density, 0.0);
   expected_spatial_velocity.get(0)[1] = 0.6;
 
   CHECK_ITERABLE_APPROX(density, expected_density);

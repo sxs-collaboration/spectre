@@ -28,7 +28,7 @@
 namespace domain {
 namespace {
 void test_rotated_rectangles_construction(
-    const creators::RotatedRectangles<Frame::Inertial>& rotated_rectangles,
+    const creators::RotatedRectangles<Frame::Physical>& rotated_rectangles,
     const std::array<double, 2>& lower_bound,
     const std::array<double, 2>& midpoint,
     const std::array<double, 2>& upper_bound,
@@ -55,23 +55,23 @@ void test_rotated_rectangles_construction(
   const Affine lower_y_map(-1.0, 1.0, lower_bound[1], midpoint[1]);
   const Affine upper_y_map(-1.0, 1.0, midpoint[1], upper_bound[1]);
   std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 2>>>
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 2>>>
       coord_maps;
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Affine2D(lower_x_map, lower_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}}},
           Affine2D(upper_x_map, lower_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}},
           Affine2D(lower_x_map, upper_y_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           DiscreteRotation2D{OrientationMap<2>{std::array<Direction<2>, 2>{
               {Direction<2>::upper_eta(), Direction<2>::lower_xi()}}}},
           Affine2D(upper_x_map, upper_y_map)));
@@ -94,7 +94,7 @@ void test_rotated_rectangles() {
   const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
 
-  const creators::RotatedRectangles<Frame::Inertial> rotated_rectangles{
+  const creators::RotatedRectangles<Frame::Physical> rotated_rectangles{
       lower_bound,
       midpoint,
       upper_bound,
@@ -121,7 +121,7 @@ void test_rotated_rectangles() {
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
   test_physical_separation(rotated_rectangles.create_domain().blocks());
 
-  const creators::RotatedRectangles<Frame::Inertial>
+  const creators::RotatedRectangles<Frame::Physical>
       rotated_periodic_rectangles{
           lower_bound,
           midpoint,
@@ -163,7 +163,7 @@ void test_rotated_rectangles_factory() {
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
 
   const auto domain_creator =
-      test_factory_creation<DomainCreator<2, Frame::Inertial>>(
+      test_factory_creation<DomainCreator<2, Frame::Physical>>(
           "  RotatedRectangles:\n"
           "    LowerBound: [0.1, -0.4]\n"
           "    Midpoint:   [2.6, 3.2]\n"
@@ -172,7 +172,7 @@ void test_rotated_rectangles_factory() {
           "    InitialGridPoints: [[3,2],[1,4]]\n"
           "    InitialRefinement: [2,1]\n");
   const auto* rotated_rectangles_creator =
-      dynamic_cast<const creators::RotatedRectangles<Frame::Inertial>*>(
+      dynamic_cast<const creators::RotatedRectangles<Frame::Physical>*>(
           domain_creator.get());
   test_rotated_rectangles_construction(
       *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},

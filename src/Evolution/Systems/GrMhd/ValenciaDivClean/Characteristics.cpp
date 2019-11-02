@@ -92,11 +92,11 @@ void characteristic_speeds(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const tnsr::I<DataVector, 3, Frame::Physical>& spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
+    const tnsr::I<DataVector, 3, Frame::Physical>& magnetic_field,
     const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::ii<DataVector, 3, Frame::Physical>& spatial_metric,
     const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) noexcept {
@@ -107,9 +107,9 @@ void characteristic_speeds(
   // - Pass temp pointer to Rel Euler: 1 allocation
   // - Return a DataVectorArray (not yet implemented): 9 allocations
   Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
+      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Physical>,
       hydro::Tags::SpatialVelocitySquared<DataVector>,
-      hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>,
+      hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Physical>,
       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
       hydro::Tags::MagneticFieldSquared<DataVector>,
       hydro::Tags::ComovingMagneticFieldSquared<DataVector>,
@@ -117,18 +117,18 @@ void characteristic_speeds(
       temp_tensors{get<0>(shift).size()};
 
   const auto& spatial_velocity_one_form =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Physical>>(
           temp_tensors);
   raise_or_lower_index(
       make_not_null(&get<hydro::Tags::SpatialVelocityOneForm<
-                        DataVector, 3, Frame::Inertial>>(temp_tensors)),
+                        DataVector, 3, Frame::Physical>>(temp_tensors)),
       spatial_velocity, spatial_metric);
   const auto& magnetic_field_one_form =
-      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>>(
+      get<hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Physical>>(
           temp_tensors);
   raise_or_lower_index(
       make_not_null(&get<hydro::Tags::MagneticFieldOneForm<
-                        DataVector, 3, Frame::Inertial>>(temp_tensors)),
+                        DataVector, 3, Frame::Physical>>(temp_tensors)),
       magnetic_field, spatial_metric);
   const auto& magnetic_field_dot_spatial_velocity =
       get<hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>>(
@@ -199,11 +199,11 @@ std::array<DataVector, 9> characteristic_speeds(
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+    const tnsr::I<DataVector, 3, Frame::Physical>& spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
+    const tnsr::I<DataVector, 3, Frame::Physical>& magnetic_field,
     const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::ii<DataVector, 3, Frame::Physical>& spatial_metric,
     const tnsr::i<DataVector, 3>& unit_normal,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) noexcept {
@@ -222,11 +222,11 @@ std::array<DataVector, 9> characteristic_speeds(
       const Scalar<DataVector>& rest_mass_density,                          \
       const Scalar<DataVector>& specific_internal_energy,                   \
       const Scalar<DataVector>& specific_enthalpy,                          \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
+      const tnsr::I<DataVector, 3, Frame::Physical>& spatial_velocity,      \
       const Scalar<DataVector>& lorentz_factor,                             \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,        \
+      const tnsr::I<DataVector, 3, Frame::Physical>& magnetic_field,        \
       const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift, \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
+      const tnsr::ii<DataVector, 3, Frame::Physical>& spatial_metric,       \
       const tnsr::i<DataVector, 3>& unit_normal,                            \
       const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
           equation_of_state) noexcept;                                      \
@@ -235,11 +235,11 @@ std::array<DataVector, 9> characteristic_speeds(
       const Scalar<DataVector>& rest_mass_density,                          \
       const Scalar<DataVector>& specific_internal_energy,                   \
       const Scalar<DataVector>& specific_enthalpy,                          \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,      \
+      const tnsr::I<DataVector, 3, Frame::Physical>& spatial_velocity,      \
       const Scalar<DataVector>& lorentz_factor,                             \
-      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,        \
+      const tnsr::I<DataVector, 3, Frame::Physical>& magnetic_field,        \
       const Scalar<DataVector>& lapse, const tnsr::I<DataVector, 3>& shift, \
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,       \
+      const tnsr::ii<DataVector, 3, Frame::Physical>& spatial_metric,       \
       const tnsr::i<DataVector, 3>& unit_normal,                            \
       const EquationsOfState::EquationOfState<true, GET_DIM(data)>&         \
           equation_of_state) noexcept;

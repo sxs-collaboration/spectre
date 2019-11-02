@@ -128,7 +128,7 @@ void test_face_normal_element_map() {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ElementMap", "[Unit][Domain]") {
-  test_face_normal_element_map<Frame::Inertial>();
+  test_face_normal_element_map<Frame::Physical>();
   test_face_normal_element_map<Frame::Grid>();
 }
 
@@ -158,9 +158,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
       std::unordered_set<Direction<2>>{Direction<2>::upper_xi(),
                                        Direction<2>::lower_eta()},
       Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
-      ElementMap<2, Frame::Inertial>(
+      ElementMap<2, Frame::Physical>(
           ElementId<2>(0),
-          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          make_coordinate_map_base<Frame::Logical, Frame::Physical>(
               CoordinateMaps::Rotation<2>(atan2(4., 3.)))));
 
   CHECK((Tags::InterfaceCompute<
@@ -214,9 +214,9 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
                                  Tags::UnnormalizedFaceNormalCompute<2>>>>(
       Element<2>(ElementId<2>(0), {}),
       Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
-      ElementMap<2, Frame::Inertial>(
+      ElementMap<2, Frame::Physical>(
           ElementId<2>(0),
-          make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+          make_coordinate_map_base<Frame::Logical, Frame::Physical>(
               CoordinateMaps::Wedge2D(1., 2., 0., 1., OrientationMap<2>{},
                                       false))));
 

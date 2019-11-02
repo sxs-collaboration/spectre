@@ -20,7 +20,7 @@
 
 namespace Frame {
 struct Grid;      // IWYU pragma: keep
-struct Inertial;  // IWYU pragma: keep
+struct Physical;  // IWYU pragma: keep
 }  // namespace Frame
 
 namespace domain {
@@ -105,7 +105,7 @@ Element<VolumeDim> create_initial_element(
       const ElementId<DIM(data)>&,                                        \
       const Block<DIM(data), FRAME(data)>&) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Physical))
 
 #undef DIM
 #undef FRAME

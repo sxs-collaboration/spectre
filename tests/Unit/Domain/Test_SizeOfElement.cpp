@@ -27,10 +27,10 @@
 #include "Utilities/TMPL.hpp"
 
 namespace {
-tnsr::I<DataVector, 2> make_inertial_coords_2d(const Mesh<2>& mesh) noexcept {
+tnsr::I<DataVector, 2> make_physical_coords_2d(const Mesh<2>& mesh) noexcept {
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  const auto map = domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  const auto map = domain::make_coordinate_map<Frame::Logical, Frame::Physical>(
       Affine2D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.2)},
       domain::CoordinateMaps::DiscreteRotation<2>(
           OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -45,7 +45,7 @@ SPECTRE_TEST_CASE("Unit.Domain.SizeOfElement", "[Domain][Unit]") {
                               Spectral::Quadrature::GaussLobatto);
     const auto coords = [&mesh]() {
       const auto map =
-          domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          domain::make_coordinate_map<Frame::Logical, Frame::Physical>(
               domain::CoordinateMaps::Affine(-1.0, 1.0, 0.3, 1.2));
       return map(logical_coordinates(mesh));
     }();
@@ -57,7 +57,7 @@ SPECTRE_TEST_CASE("Unit.Domain.SizeOfElement", "[Domain][Unit]") {
   SECTION("2D") {
     const auto mesh = Mesh<2>({{4, 5}}, Spectral::Basis::Legendre,
                               Spectral::Quadrature::GaussLobatto);
-    const auto coords = make_inertial_coords_2d(mesh);
+    const auto coords = make_physical_coords_2d(mesh);
     const auto size = size_of_element(mesh, coords);
     const auto size_expected = make_array(0.1, 1.7);
     CHECK_ITERABLE_APPROX(size, size_expected);
@@ -71,7 +71,7 @@ SPECTRE_TEST_CASE("Unit.Domain.SizeOfElement", "[Domain][Unit]") {
       using Affine3D =
           domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
       const auto map =
-          domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          domain::make_coordinate_map<Frame::Logical, Frame::Physical>(
               Affine3D{Affine(-1.0, 1.0, 0.3, 0.4),
                        Affine(-1.0, 1.0, -0.5, 1.2),
                        Affine(-1.0, 1.0, 12.0, 12.5)},
@@ -86,9 +86,9 @@ SPECTRE_TEST_CASE("Unit.Domain.SizeOfElement", "[Domain][Unit]") {
   SECTION("ComputeTag") {
     auto mesh = Mesh<2>({{4, 5}}, Spectral::Basis::Legendre,
                         Spectral::Quadrature::GaussLobatto);
-    auto coords = make_inertial_coords_2d(mesh);
+    auto coords = make_physical_coords_2d(mesh);
     const auto box = db::create<
-        db::AddSimpleTags<Tags::Mesh<2>, Tags::Coordinates<2, Frame::Inertial>>,
+        db::AddSimpleTags<Tags::Mesh<2>, Tags::Coordinates<2, Frame::Physical>>,
         db::AddComputeTags<Tags::SizeOfElement<2>>>(mesh, std::move(coords));
 
     const auto size_compute_item = db::get<Tags::SizeOfElement<2>>(box);

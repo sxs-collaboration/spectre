@@ -40,15 +40,15 @@ namespace Valencia {
  */
 template <size_t Dim>
 void fluxes(
-    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_d_flux,
-    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_tau_flux,
-    gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*> tilde_s_flux,
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Physical>*> tilde_d_flux,
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Physical>*> tilde_tau_flux,
+    gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Physical>*> tilde_s_flux,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
+    const tnsr::i<DataVector, Dim, Frame::Physical>& tilde_s,
     const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
+    const tnsr::I<DataVector, Dim, Frame::Physical>& shift,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const Scalar<DataVector>& pressure,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity) noexcept;
+    const tnsr::I<DataVector, Dim, Frame::Physical>& spatial_velocity) noexcept;
 }  // namespace Valencia
 }  // namespace RelativisticEuler

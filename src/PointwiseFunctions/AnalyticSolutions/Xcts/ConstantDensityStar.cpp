@@ -96,7 +96,7 @@ void ConstantDensityStar::pup(PUP::er& p) noexcept {
 template <typename DataType>
 tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DataType>>
 ConstantDensityStar::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<Xcts::Tags::ConformalFactor<DataType>> /*meta*/) const noexcept {
   const DataType r = get(magnitude(x));
   const double inner_prefactor =
@@ -119,7 +119,7 @@ ConstantDensityStar::variables(
 template <typename DataType>
 tuples::TaggedTuple<::Tags::Initial<Xcts::Tags::ConformalFactor<DataType>>>
 ConstantDensityStar::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactor<DataType>>> /*meta*/)
     const noexcept {
   return {make_with_value<Scalar<DataType>>(x, 1.)};
@@ -127,18 +127,18 @@ ConstantDensityStar::variables(
 
 template <typename DataType>
 tuples::TaggedTuple<::Tags::Initial<
-    Xcts::Tags::ConformalFactorGradient<3, Frame::Inertial, DataType>>>
+    Xcts::Tags::ConformalFactorGradient<3, Frame::Physical, DataType>>>
 ConstantDensityStar::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactorGradient<
-        3, Frame::Inertial, DataType>>> /*meta*/) const noexcept {
-  return {make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.)};
+        3, Frame::Physical, DataType>>> /*meta*/) const noexcept {
+  return {make_with_value<tnsr::I<DataType, 3, Frame::Physical>>(x, 0.)};
 }
 
 template <typename DataType>
 tuples::TaggedTuple<::Tags::FixedSource<Xcts::Tags::ConformalFactor<DataType>>>
 ConstantDensityStar::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<
         ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DataType>>> /*meta*/)
     const noexcept {
@@ -148,7 +148,7 @@ ConstantDensityStar::variables(
 template <typename DataType>
 tuples::TaggedTuple<gr::Tags::EnergyDensity<DataType>>
 ConstantDensityStar::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<gr::Tags::EnergyDensity<DataType>> /*meta*/) const noexcept {
   return {compute_piecewise(magnitude(x), radius_, density_, 0.)};
 }
@@ -168,30 +168,30 @@ bool operator!=(const ConstantDensityStar& lhs,
 #define INSTANTIATE(_, data)                                                 \
   template tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DTYPE(data)>>     \
   ConstantDensityStar::variables(                                            \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                       \
+      const tnsr::I<DTYPE(data), 3, Frame::Physical>&,                       \
       tmpl::list<Xcts::Tags::ConformalFactor<DTYPE(data)>>) const noexcept;  \
   template tuples::TaggedTuple<                                              \
       ::Tags::Initial<Xcts::Tags::ConformalFactor<DTYPE(data)>>>             \
   ConstantDensityStar::variables(                                            \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                       \
+      const tnsr::I<DTYPE(data), 3, Frame::Physical>&,                       \
       tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactor<DTYPE(data)>>>) \
       const noexcept;                                                        \
   template tuples::TaggedTuple<::Tags::Initial<                              \
-      Xcts::Tags::ConformalFactorGradient<3, Frame::Inertial, DTYPE(data)>>> \
+      Xcts::Tags::ConformalFactorGradient<3, Frame::Physical, DTYPE(data)>>> \
   ConstantDensityStar::variables(                                            \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                       \
+      const tnsr::I<DTYPE(data), 3, Frame::Physical>&,                       \
       tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactorGradient<        \
-          3, Frame::Inertial, DTYPE(data)>>>) const noexcept;                \
+          3, Frame::Physical, DTYPE(data)>>>) const noexcept;                \
   template tuples::TaggedTuple<                                              \
       ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>         \
   ConstantDensityStar::variables(                                            \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                       \
+      const tnsr::I<DTYPE(data), 3, Frame::Physical>&,                       \
       tmpl::list<                                                            \
           ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DTYPE(data)>>>)    \
       const noexcept;                                                        \
   template tuples::TaggedTuple<gr::Tags::EnergyDensity<DTYPE(data)>>         \
   ConstantDensityStar::variables(                                            \
-      const tnsr::I<DTYPE(data), 3, Frame::Inertial>&,                       \
+      const tnsr::I<DTYPE(data), 3, Frame::Physical>&,                       \
       tmpl::list<gr::Tags::EnergyDensity<DTYPE(data)>>) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

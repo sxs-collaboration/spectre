@@ -389,7 +389,7 @@ double RiemannProblem<Dim>::Rarefaction::pressure(
 template <size_t Dim>
 template <typename DataType>
 tuples::TaggedTuple<Tags::MassDensity<DataType>> RiemannProblem<Dim>::variables(
-    const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
+    const tnsr::I<DataType, Dim, Frame::Physical>& x_shifted, const double t,
     tmpl::list<Tags::MassDensity<DataType>> /*meta*/, const Wave& left,
     const Wave& right) const noexcept {
   auto mass_density = make_with_value<Scalar<DataType>>(x_shifted, 0.0);
@@ -405,12 +405,12 @@ tuples::TaggedTuple<Tags::MassDensity<DataType>> RiemannProblem<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Inertial>>
+tuples::TaggedTuple<Tags::Velocity<DataType, Dim, Frame::Physical>>
 RiemannProblem<Dim>::variables(
-    const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
-    tmpl::list<Tags::Velocity<DataType, Dim, Frame::Inertial>> /*meta*/,
+    const tnsr::I<DataType, Dim, Frame::Physical>& x_shifted, const double t,
+    tmpl::list<Tags::Velocity<DataType, Dim, Frame::Physical>> /*meta*/,
     const Wave& left, const Wave& right) const noexcept {
-  auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Inertial>>(
+  auto velocity = make_with_value<tnsr::I<DataType, Dim, Frame::Physical>>(
       get<0>(x_shifted), 0.0);
 
   const double u_star_times_t = velocity_star_ * t;
@@ -445,7 +445,7 @@ RiemannProblem<Dim>::variables(
 template <size_t Dim>
 template <typename DataType>
 tuples::TaggedTuple<Tags::Pressure<DataType>> RiemannProblem<Dim>::variables(
-    const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
+    const tnsr::I<DataType, Dim, Frame::Physical>& x_shifted, const double t,
     tmpl::list<Tags::Pressure<DataType>> /*meta*/, const Wave& left,
     const Wave& right) const noexcept {
   auto pressure = make_with_value<Scalar<DataType>>(x_shifted, 0.0);
@@ -464,7 +464,7 @@ template <size_t Dim>
 template <typename DataType>
 tuples::TaggedTuple<Tags::SpecificInternalEnergy<DataType>>
 RiemannProblem<Dim>::variables(
-    const tnsr::I<DataType, Dim, Frame::Inertial>& x_shifted, const double t,
+    const tnsr::I<DataType, Dim, Frame::Physical>& x_shifted, const double t,
     tmpl::list<Tags::SpecificInternalEnergy<DataType>> /*meta*/,
     const Wave& left, const Wave& right) const noexcept {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
@@ -509,7 +509,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3))
 #define INSTANTIATE_SCALARS(_, data)                                         \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>                     \
       RiemannProblem<DIM(data)>::variables(                                  \
-          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
+          const tnsr::I<DTYPE(data), DIM(data), Frame::Physical>& x_shifted, \
           const double t, tmpl::list<TAG(data) < DTYPE(data)>>,              \
           const Wave& left, const Wave& right) const noexcept;
 
@@ -519,11 +519,11 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (double, DataVector),
 
 #define INSTANTIATE_VELOCITY(_, data)                                        \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), DIM(data),           \
-                               Frame::Inertial>>                             \
+                               Frame::Physical>>                             \
       RiemannProblem<DIM(data)>::variables(                                  \
-          const tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>& x_shifted, \
+          const tnsr::I<DTYPE(data), DIM(data), Frame::Physical>& x_shifted, \
           const double t,                                                    \
-          tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Inertial>>,  \
+          tmpl::list<TAG(data) < DTYPE(data), DIM(data), Frame::Physical>>,  \
           const Wave& left, const Wave& right) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VELOCITY, (1, 2, 3), (double, DataVector),

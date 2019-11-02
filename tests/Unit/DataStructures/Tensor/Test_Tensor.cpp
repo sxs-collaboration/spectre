@@ -39,7 +39,7 @@ static_assert(not Frame::is_frame_physical_v<Frame::Distorted>,
               "Failed testing Frame::is_frame_physical");
 static_assert(not Frame::is_frame_physical_v<Frame::Grid>,
               "Failed testing Frame::is_frame_physical");
-static_assert(Frame::is_frame_physical_v<Frame::Inertial>,
+static_assert(Frame::is_frame_physical_v<Frame::Physical>,
               "Failed testing Frame::is_frame_physical");
 /// [is_frame_physical]
 
@@ -106,87 +106,87 @@ static_assert(TensorMetafunctions::check_index_symmetry_v<
                   Symmetry<1>, SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>,
               "Failed testing check_index_symmetry");
 static_assert(TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1>, SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
+                  Symmetry<1>, SpatialIndex<3, UpLo::Up, Frame::Physical>>,
               "Failed testing check_index_symmetry");
 static_assert(TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
+                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::Physical>,
+                  SpatialIndex<3, UpLo::Up, Frame::Physical>>,
               "Failed testing check_index_symmetry");
 static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                  SpatialIndex<3, UpLo::Lo, Frame::Inertial>>,
+                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::Physical>,
+                  SpatialIndex<3, UpLo::Lo, Frame::Physical>>,
               "Failed testing check_index_symmetry");
 static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 1>, SpatialIndex<2, UpLo::Up, Frame::Inertial>,
-                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
+                  Symmetry<1, 1>, SpatialIndex<2, UpLo::Up, Frame::Physical>,
+                  SpatialIndex<3, UpLo::Up, Frame::Physical>>,
               "Failed testing check_index_symmetry");
 static_assert(not TensorMetafunctions::check_index_symmetry_v<
                   Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::Grid>,
-                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
+                  SpatialIndex<3, UpLo::Up, Frame::Physical>>,
               "Failed testing check_index_symmetry");
 static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
+                  Symmetry<1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
+                  SpatialIndex<3, UpLo::Up, Frame::Physical>>,
               "Failed testing check_index_symmetry");
 static_assert(
     TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
+        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>>,
     "Failed testing check_index_symmetry");
 static_assert(
     not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<2, UpLo::Up, Frame::Inertial>>,
+        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<2, UpLo::Up, Frame::Physical>>,
     "Failed testing check_index_symmetry");
 static_assert(
     not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Lo, Frame::Inertial>>,
+        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Lo, Frame::Physical>>,
     "Failed testing check_index_symmetry");
 static_assert(
     not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>,
         SpatialIndex<3, UpLo::Up, Frame::Distorted>>,
     "Failed testing check_index_symmetry");
 static_assert(
     not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>,
+        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>,
+        SpacetimeIndex<3, UpLo::Up, Frame::Physical>>,
     "Failed testing check_index_symmetry");
 static_assert(
     TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>,
+        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>,
+        SpacetimeIndex<3, UpLo::Up, Frame::Physical>>,
     "Failed testing check_index_symmetry");
 static_assert(
     not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpacetimeIndex<2, UpLo::Up, Frame::Inertial>>,
+        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>,
+        SpacetimeIndex<2, UpLo::Up, Frame::Physical>>,
     "Failed testing check_index_symmetry");
 static_assert(
     not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>,
+        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>,
+        SpacetimeIndex<3, UpLo::Lo, Frame::Physical>>,
     "Failed testing check_index_symmetry");
 static_assert(
     not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
+        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>,
         SpacetimeIndex<3, UpLo::Up, Frame::Logical>>,
     "Failed testing check_index_symmetry");
 static_assert(
     not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
+        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>,
+        SpatialIndex<3, UpLo::Up, Frame::Physical>>,
     "Failed testing check_index_symmetry");
 
 // Test swap_type
@@ -203,7 +203,7 @@ static_assert(
     "Tensor construction failed to be SFINAE friendly");
 
 namespace {
-template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::Physical,
           IndexType Index = IndexType::Spacetime>
 using abcd = Tensor<
     DataType, tmpl::integral_list<std::int32_t, 4, 3, 2, 1>,
@@ -505,9 +505,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
   {
     /// [index_dim]
     using T = Tensor<double, Symmetry<1, 2, 3>,
-                     index_list<SpacetimeIndex<2, UpLo::Up, Frame::Inertial>,
-                                SpatialIndex<1, UpLo::Up, Frame::Inertial>,
-                                SpatialIndex<2, UpLo::Up, Frame::Inertial>>>;
+                     index_list<SpacetimeIndex<2, UpLo::Up, Frame::Physical>,
+                                SpatialIndex<1, UpLo::Up, Frame::Physical>,
+                                SpatialIndex<2, UpLo::Up, Frame::Physical>>>;
     const T t{};
     CHECK(index_dim<0>(t) == 3);
     CHECK(index_dim<1>(t) == 1);
@@ -1200,7 +1200,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamData",
       "T(2,2,2)=17";
 
   CHECK(get_output([]() {
-          tnsr::abb<double, 2, Frame::Inertial> tensor{};
+          tnsr::abb<double, 2, Frame::Physical> tensor{};
           std::iota(tensor.begin(), tensor.end(), 0);
           return tensor;
         }()) == compare_out);
@@ -1217,11 +1217,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamStructure",
     CHECK(get_output(tensor.index_frames()) == "()");
   }
   {
-    using structure = Tensor_detail::Structure<Symmetry<1, 1, 3, 2>,
-                             SpatialIndex<2, UpLo::Lo, Frame::Inertial>,
-                             SpatialIndex<2, UpLo::Lo, Frame::Inertial>,
-                             SpacetimeIndex<3, UpLo::Lo, Frame::Logical>,
-                             SpacetimeIndex<2, UpLo::Up, Frame::Distorted>>;
+    using structure =
+        Tensor_detail::Structure<Symmetry<1, 1, 3, 2>,
+                                 SpatialIndex<2, UpLo::Lo, Frame::Physical>,
+                                 SpatialIndex<2, UpLo::Lo, Frame::Physical>,
+                                 SpacetimeIndex<3, UpLo::Lo, Frame::Logical>,
+                                 SpacetimeIndex<2, UpLo::Up, Frame::Distorted>>;
 
     CHECK(get_output(structure::symmetries()) == "(3,3,2,1)");
     CHECK(get_output(structure::index_types()) ==
@@ -1229,7 +1230,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamStructure",
     CHECK(get_output(structure::dims()) == "(2,2,4,3)");
     CHECK(get_output(structure::index_valences()) == "(Lo,Lo,Lo,Up)");
     CHECK(get_output(structure::index_frames()) ==
-          "(Inertial,Inertial,Logical,Distorted)");
+          "(Physical,Physical,Logical,Distorted)");
   }
 }
 
@@ -1320,7 +1321,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexType",
   CHECK(get_output(Frame::Logical{}) == "Logical");
   CHECK(get_output(Frame::Grid{}) == "Grid");
   CHECK(get_output(Frame::Distorted{}) == "Distorted");
-  CHECK(get_output(Frame::Inertial{}) == "Inertial");
+  CHECK(get_output(Frame::Physical{}) == "Physical");
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
@@ -1356,7 +1357,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
                   "[Unit][DataStructures]") {
   CHECK("Logical" == get_output(Frame::Logical{}));
   CHECK("Grid" == get_output(Frame::Grid{}));
-  CHECK("Inertial" == get_output(Frame::Inertial{}));
+  CHECK("Physical" == get_output(Frame::Physical{}));
   CHECK("Distorted" == get_output(Frame::Distorted{}));
   CHECK("NoFrame" == get_output(Frame::NoFrame{}));
 }

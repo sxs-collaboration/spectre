@@ -132,9 +132,9 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
                  tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataType, Dim, Frame::Inertial>> /*meta*/) const noexcept
+                     DataType, Dim, Frame::Physical>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>;
+          hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Physical>>;
 
   template <typename DataType>
   auto variables(

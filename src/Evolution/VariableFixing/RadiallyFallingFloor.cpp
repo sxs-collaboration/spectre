@@ -43,7 +43,7 @@ template <size_t Dim>
 void RadiallyFallingFloor<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> density,
     const gsl::not_null<Scalar<DataVector>*> pressure,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& coords) const noexcept {
+    const tnsr::I<DataVector, Dim, Frame::Physical>& coords) const noexcept {
   const auto radii = magnitude(coords);
 
   for (size_t i = 0; i < density->get().size(); i++) {

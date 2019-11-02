@@ -194,16 +194,16 @@ template <size_t Dim, typename DataType>
 using analytic_solution_tags = tmpl::list<
     gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
     ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
-                  Frame::Inertial>,
-    gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-    ::Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>,
-    ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>,
-    gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-    ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>,
-    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>,
+                  Frame::Physical>,
+    gr::Tags::Shift<Dim, Frame::Physical, DataType>,
+    ::Tags::dt<gr::Tags::Shift<Dim, Frame::Physical, DataType>>,
+    ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Physical, DataType>,
+                  tmpl::size_t<Dim>, Frame::Physical>,
+    gr::Tags::SpatialMetric<Dim, Frame::Physical, DataType>,
+    ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Physical, DataType>>,
+    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Physical, DataType>,
+                  tmpl::size_t<Dim>, Frame::Physical>,
     gr::Tags::SqrtDetSpatialMetric<DataType>,
-    gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>,
-    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>;
+    gr::Tags::ExtrinsicCurvature<Dim, Frame::Physical, DataType>,
+    gr::Tags::InverseSpatialMetric<Dim, Frame::Physical, DataType>>;
 }  // namespace gr

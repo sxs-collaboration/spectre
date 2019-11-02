@@ -67,7 +67,7 @@ void MagneticFieldLoop::pup(PUP::er& p) noexcept {
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 MagneticFieldLoop::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
     noexcept {
   return {make_with_value<Scalar<DataType>>(x, rest_mass_density_)};
@@ -76,10 +76,10 @@ MagneticFieldLoop::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 MagneticFieldLoop::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
     noexcept {
-  auto result = make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.0);
+  auto result = make_with_value<tnsr::I<DataType, 3, Frame::Physical>>(x, 0.0);
   get<0>(result) = advection_velocity_[0];
   get<1>(result) = advection_velocity_[1];
   get<2>(result) = advection_velocity_[2];
@@ -89,7 +89,7 @@ MagneticFieldLoop::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 MagneticFieldLoop::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
     noexcept {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
@@ -102,7 +102,7 @@ MagneticFieldLoop::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>>
 MagneticFieldLoop::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
   return {make_with_value<Scalar<DataType>>(x, pressure_)};
 }
@@ -110,10 +110,10 @@ MagneticFieldLoop::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 MagneticFieldLoop::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
     noexcept {
-  auto result = make_with_value<tnsr::I<DataType, 3, Frame::Inertial>>(x, 0.0);
+  auto result = make_with_value<tnsr::I<DataType, 3, Frame::Physical>>(x, 0.0);
   const DataType cylindrical_radius =
       sqrt(square(get<0>(x)) + square(get<1>(x)));
   for (size_t s = 0; s < get_size(cylindrical_radius); ++s) {
@@ -141,7 +141,7 @@ MagneticFieldLoop::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 MagneticFieldLoop::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
     noexcept {
   return {make_with_value<Scalar<DataType>>(x, 0.0)};
@@ -150,7 +150,7 @@ MagneticFieldLoop::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
 MagneticFieldLoop::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
   using velocity_tag = hydro::Tags::SpatialVelocity<DataType, 3>;
   const auto velocity =
@@ -161,7 +161,7 @@ MagneticFieldLoop::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 MagneticFieldLoop::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x,
+    const tnsr::I<DataType, 3, Frame::Physical>& x,
     tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
     noexcept {
   return equation_of_state_.specific_enthalpy_from_density_and_energy(
@@ -196,7 +196,7 @@ bool operator!=(const MagneticFieldLoop& lhs,
 #define INSTANTIATE_SCALARS(_, data)                         \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>     \
       MagneticFieldLoop::variables(                          \
-          const tnsr::I<DTYPE(data), 3, Frame::Inertial>& x, \
+          const tnsr::I<DTYPE(data), 3, Frame::Physical>& x, \
           tmpl::list<TAG(data) < DTYPE(data)>> /*meta*/) const noexcept;
 
 GENERATE_INSTANTIATIONS(
@@ -208,8 +208,8 @@ GENERATE_INSTANTIATIONS(
 #define INSTANTIATE_VECTORS(_, data)                                         \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>                  \
       MagneticFieldLoop::variables(                                          \
-          const tnsr::I<DTYPE(data), 3, Frame::Inertial>& x,                 \
-          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Inertial>> /*meta*/) \
+          const tnsr::I<DTYPE(data), 3, Frame::Physical>& x,                 \
+          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Physical>> /*meta*/) \
           const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),

@@ -38,7 +38,7 @@ struct ElementArray {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<Dim, Frame::Inertial>>;
+      tmpl::list<::Tags::Domain<Dim, Frame::Physical>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Initialization,
@@ -75,11 +75,11 @@ void check_compute_items(
         ElementArray<Dim, Metavariables<Dim>>, tag>(runner, element_id);
   };
   CHECK(tag_is_retrievable(::Tags::Coordinates<Dim, Frame::Logical>{}));
-  CHECK(tag_is_retrievable(::Tags::Coordinates<Dim, Frame::Inertial>{}));
+  CHECK(tag_is_retrievable(::Tags::Coordinates<Dim, Frame::Physical>{}));
   CHECK(tag_is_retrievable(
       ::Tags::InverseJacobian<::Tags::ElementMap<Dim>,
                               ::Tags::Coordinates<Dim, Frame::Logical>>{}));
-  CHECK(tag_is_retrievable(::Tags::MinimumGridSpacing<Dim, Frame::Inertial>{}));
+  CHECK(tag_is_retrievable(::Tags::MinimumGridSpacing<Dim, Frame::Physical>{}));
 }
 
 }  // namespace
@@ -90,11 +90,11 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     // Reference element:
     // [ |X| | ]-> xi
     const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
-    const domain::creators::Interval<Frame::Inertial> domain_creator{
+    const domain::creators::Interval<Frame::Physical> domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Physical,
                                          domain::CoordinateMaps::Affine>));
 
     using metavariables = Metavariables<1>;
@@ -126,20 +126,20 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     const auto& element_map = get_tag(Tags::ElementMap<1>{});
     const tnsr::I<DataVector, 1, Frame::Logical> logical_coords_for_element_map{
         {{{-1., -0.5, 0., 0.1, 1.}}}};
-    const auto inertial_coords_from_element_map =
+    const auto physical_coords_from_element_map =
         element_map(logical_coords_for_element_map);
-    const tnsr::I<DataVector, 1, Frame::Logical> expected_inertial_coords{
+    const tnsr::I<DataVector, 1, Frame::Logical> expected_physical_coords{
         {{{0., 0.125, 0.25, 0.275, 0.5}}}};
-    CHECK_ITERABLE_APPROX(get<0>(inertial_coords_from_element_map),
-                          get<0>(expected_inertial_coords));
+    CHECK_ITERABLE_APPROX(get<0>(physical_coords_from_element_map),
+                          get<0>(expected_physical_coords));
     const auto& logical_coords =
         get_tag(Tags::Coordinates<1, Frame::Logical>{});
     CHECK(get<0>(logical_coords) ==
           Spectral::collocation_points<Spectral::Basis::Legendre,
                                        Spectral::Quadrature::GaussLobatto>(4));
-    const auto& inertial_coords =
-        get_tag(Tags::Coordinates<1, Frame::Inertial>{});
-    CHECK(inertial_coords == element_map(logical_coords));
+    const auto& physical_coords =
+        get_tag(Tags::Coordinates<1, Frame::Physical>{});
+    CHECK(physical_coords == element_map(logical_coords));
     CHECK(get_tag(
               Tags::InverseJacobian<Tags::ElementMap<1>,
                                     Tags::Coordinates<1, Frame::Logical>>{}) ==
@@ -153,11 +153,11 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     // | |X| | |
     // +-+-+-+-+
     const ElementId<2> element_id{0, {{SegmentId{2, 1}, SegmentId{0, 0}}}};
-    const domain::creators::Rectangle<Frame::Inertial> domain_creator{
+    const domain::creators::Rectangle<Frame::Physical> domain_creator{
         {{-0.5, 0.}}, {{1.5, 2.}}, {{false, false}}, {{2, 0}}, {{4, 3}}};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Physical,
                                          domain::CoordinateMaps::ProductOf2Maps<
                                              domain::CoordinateMaps::Affine,
                                              domain::CoordinateMaps::Affine>>));
@@ -195,19 +195,19 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     const auto& element_map = get_tag(Tags::ElementMap<2>{});
     const tnsr::I<DataVector, 2, Frame::Logical> logical_coords_for_element_map{
         {{{-1., -0.5, 0., 0.1, 1.}, {-1., -0.5, 0., 0.1, 1.}}}};
-    const auto inertial_coords_from_element_map =
+    const auto physical_coords_from_element_map =
         element_map(logical_coords_for_element_map);
-    const tnsr::I<DataVector, 2, Frame::Logical> expected_inertial_coords{
+    const tnsr::I<DataVector, 2, Frame::Logical> expected_physical_coords{
         {{{0., 0.125, 0.25, 0.275, 0.5}, {0., 0.5, 1., 1.1, 2.}}}};
-    CHECK_ITERABLE_APPROX(get<0>(inertial_coords_from_element_map),
-                          get<0>(expected_inertial_coords));
-    CHECK_ITERABLE_APPROX(get<1>(inertial_coords_from_element_map),
-                          get<1>(expected_inertial_coords));
+    CHECK_ITERABLE_APPROX(get<0>(physical_coords_from_element_map),
+                          get<0>(expected_physical_coords));
+    CHECK_ITERABLE_APPROX(get<1>(physical_coords_from_element_map),
+                          get<1>(expected_physical_coords));
     const auto& logical_coords =
         get_tag(Tags::Coordinates<2, Frame::Logical>{});
-    const auto& inertial_coords =
-        get_tag(Tags::Coordinates<2, Frame::Inertial>{});
-    CHECK(inertial_coords == element_map(logical_coords));
+    const auto& physical_coords =
+        get_tag(Tags::Coordinates<2, Frame::Physical>{});
+    CHECK(physical_coords == element_map(logical_coords));
     CHECK(get_tag(
               Tags::InverseJacobian<Tags::ElementMap<2>,
                                     Tags::Coordinates<2, Frame::Logical>>{}) ==
@@ -217,7 +217,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     INFO("3D");
     const ElementId<3> element_id{
         0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 1}}}};
-    const domain::creators::Brick<Frame::Inertial> domain_creator{
+    const domain::creators::Brick<Frame::Physical> domain_creator{
         {{-0.5, 0., -1.}},
         {{1.5, 2., 3.}},
         {{false, false, false}},
@@ -226,7 +226,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     // Register the coordinate map for serialization
     PUPable_reg(SINGLE_ARG(
         domain::CoordinateMap<
-            Frame::Logical, Frame::Inertial,
+            Frame::Logical, Frame::Physical,
             domain::CoordinateMaps::ProductOf3Maps<
                 domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
                 domain::CoordinateMaps::Affine>>));
@@ -273,23 +273,23 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
         {{{-1., -0.5, 0., 0.1, 1.},
           {-1., -0.5, 0., 0.1, 1.},
           {-1., -0.5, 0., 0.1, 1.}}}};
-    const auto inertial_coords_from_element_map =
+    const auto physical_coords_from_element_map =
         element_map(logical_coords_for_element_map);
-    const tnsr::I<DataVector, 3, Frame::Logical> expected_inertial_coords{
+    const tnsr::I<DataVector, 3, Frame::Logical> expected_physical_coords{
         {{{0., 0.125, 0.25, 0.275, 0.5},
           {0., 0.5, 1., 1.1, 2.},
           {1., 1.5, 2., 2.1, 3.}}}};
-    CHECK_ITERABLE_APPROX(get<0>(inertial_coords_from_element_map),
-                          get<0>(expected_inertial_coords));
-    CHECK_ITERABLE_APPROX(get<1>(inertial_coords_from_element_map),
-                          get<1>(expected_inertial_coords));
-    CHECK_ITERABLE_APPROX(get<2>(inertial_coords_from_element_map),
-                          get<2>(expected_inertial_coords));
+    CHECK_ITERABLE_APPROX(get<0>(physical_coords_from_element_map),
+                          get<0>(expected_physical_coords));
+    CHECK_ITERABLE_APPROX(get<1>(physical_coords_from_element_map),
+                          get<1>(expected_physical_coords));
+    CHECK_ITERABLE_APPROX(get<2>(physical_coords_from_element_map),
+                          get<2>(expected_physical_coords));
     const auto& logical_coords =
         get_tag(Tags::Coordinates<3, Frame::Logical>{});
-    const auto& inertial_coords =
-        get_tag(Tags::Coordinates<3, Frame::Inertial>{});
-    CHECK(inertial_coords == element_map(logical_coords));
+    const auto& physical_coords =
+        get_tag(Tags::Coordinates<3, Frame::Physical>{});
+    CHECK(physical_coords == element_map(logical_coords));
     CHECK(get_tag(
               Tags::InverseJacobian<Tags::ElementMap<3>,
                                     Tags::Coordinates<3, Frame::Logical>>{}) ==

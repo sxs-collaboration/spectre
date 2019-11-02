@@ -89,11 +89,11 @@ void primitive_from_conservative(
     const gsl::not_null<Scalar<DataType>*> lorentz_factor,
     const gsl::not_null<Scalar<DataType>*> specific_enthalpy,
     const gsl::not_null<Scalar<DataType>*> pressure,
-    const gsl::not_null<tnsr::I<DataType, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::I<DataType, Dim, Frame::Physical>*>
         spatial_velocity,
     const Scalar<DataType>& tilde_d, const Scalar<DataType>& tilde_tau,
-    const tnsr::i<DataType, Dim, Frame::Inertial>& tilde_s,
-    const tnsr::II<DataType, Dim, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataType, Dim, Frame::Physical>& tilde_s,
+    const tnsr::II<DataType, Dim, Frame::Physical>& inv_spatial_metric,
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) noexcept {
@@ -161,12 +161,12 @@ void primitive_from_conservative(
       const gsl::not_null<Scalar<DTYPE(data)>*> lorentz_factor,              \
       const gsl::not_null<Scalar<DTYPE(data)>*> specific_enthalpy,           \
       const gsl::not_null<Scalar<DTYPE(data)>*> pressure,                    \
-      const gsl::not_null<tnsr::I<DTYPE(data), DIM(data), Frame::Inertial>*> \
+      const gsl::not_null<tnsr::I<DTYPE(data), DIM(data), Frame::Physical>*> \
           spatial_velocity,                                                  \
       const Scalar<DTYPE(data)>& tilde_d,                                    \
       const Scalar<DTYPE(data)>& tilde_tau,                                  \
-      const tnsr::i<DTYPE(data), DIM(data), Frame::Inertial>& tilde_s,       \
-      const tnsr::II<DTYPE(data), DIM(data), Frame::Inertial>&               \
+      const tnsr::i<DTYPE(data), DIM(data), Frame::Physical>& tilde_s,       \
+      const tnsr::II<DTYPE(data), DIM(data), Frame::Physical>&               \
           inv_spatial_metric,                                                \
       const Scalar<DTYPE(data)>& sqrt_det_spatial_metric,                    \
       const EquationsOfState::EquationOfState<true, THERMODIM(data)>&        \

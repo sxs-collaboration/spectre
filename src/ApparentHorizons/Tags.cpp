@@ -237,21 +237,21 @@ aliases::Jacobian<Frame> Tangents<Frame>::function(
 }  // namespace StrahlkorperTags
 
 namespace StrahlkorperTags {
-template struct ThetaPhi<Frame::Inertial>;
-template struct Rhat<Frame::Inertial>;
-template struct Jacobian<Frame::Inertial>;
-template struct InvJacobian<Frame::Inertial>;
-template struct InvHessian<Frame::Inertial>;
-template struct CartesianCoords<Frame::Inertial>;
-template struct DxRadius<Frame::Inertial>;
-template struct D2xRadius<Frame::Inertial>;
-template struct LaplacianRadius<Frame::Inertial>;
-template struct NormalOneForm<Frame::Inertial>;
-template struct Tangents<Frame::Inertial>;
+template struct ThetaPhi<Frame::Physical>;
+template struct Rhat<Frame::Physical>;
+template struct Jacobian<Frame::Physical>;
+template struct InvJacobian<Frame::Physical>;
+template struct InvHessian<Frame::Physical>;
+template struct CartesianCoords<Frame::Physical>;
+template struct DxRadius<Frame::Physical>;
+template struct D2xRadius<Frame::Physical>;
+template struct LaplacianRadius<Frame::Physical>;
+template struct NormalOneForm<Frame::Physical>;
+template struct Tangents<Frame::Physical>;
 }  // namespace StrahlkorperTags
 
 namespace StrahlkorperGr {
 namespace Tags {
-template struct AreaElement<Frame::Inertial>;
+template struct AreaElement<Frame::Physical>;
 }  // namespace Tags
 }  // namespace StrahlkorperGr

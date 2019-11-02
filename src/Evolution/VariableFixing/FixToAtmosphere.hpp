@@ -96,7 +96,7 @@ class FixToAtmosphere {
   void operator()(
       gsl::not_null<Scalar<DataVector>*> rest_mass_density,
       gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Physical>*>
           spatial_velocity,
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       gsl::not_null<Scalar<DataVector>*> pressure,

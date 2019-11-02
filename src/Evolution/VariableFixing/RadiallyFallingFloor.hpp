@@ -119,11 +119,11 @@ class RadiallyFallingFloor {
 
   using return_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                                  hydro::Tags::Pressure<DataVector>>;
-  using argument_tags = tmpl::list<::Tags::Coordinates<Dim, Frame::Inertial>>;
+  using argument_tags = tmpl::list<::Tags::Coordinates<Dim, Frame::Physical>>;
 
   void operator()(gsl::not_null<Scalar<DataVector>*> density,
                   gsl::not_null<Scalar<DataVector>*> pressure,
-                  const tnsr::I<DataVector, Dim, Frame::Inertial>& coords) const
+                  const tnsr::I<DataVector, Dim, Frame::Physical>& coords) const
       noexcept;
 
  private:

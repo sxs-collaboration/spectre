@@ -96,15 +96,15 @@ void test_first_order_compute_tags() {
 
   // Check computed fluxes
   for (size_t d = 0; d < Dim; d++) {
-    CHECK(get<::Tags::Flux<FieldTag, tmpl::size_t<Dim>, Frame::Inertial>>(box)
+    CHECK(get<::Tags::Flux<FieldTag, tmpl::size_t<Dim>, Frame::Physical>>(box)
               .get(d) == DataVector{num_points, 3. * (d + 1.)});
     CHECK(get<::Tags::Flux<AuxiliaryFieldTag<Dim>, tmpl::size_t<Dim>,
-                           Frame::Inertial>>(box)
+                           Frame::Physical>>(box)
               .get(d, d) == DataVector{num_points, 6.});
     for (size_t i0 = 0; i0 < Dim; i0++) {
       if (i0 != d) {
         CHECK(get<::Tags::Flux<AuxiliaryFieldTag<Dim>, tmpl::size_t<Dim>,
-                               Frame::Inertial>>(box)
+                               Frame::Physical>>(box)
                   .get(d, i0) == DataVector{num_points, 0.});
       }
     }

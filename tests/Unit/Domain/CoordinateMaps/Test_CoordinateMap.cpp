@@ -626,7 +626,7 @@ void test_make_vector_coordinate_map_base() {
                      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                  true};
   const auto vector_of_wedges =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -648,53 +648,53 @@ void test_make_vector_coordinate_map_base() {
                   {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
               true});
 
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_xi_wedge) ==
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(upper_xi_wedge) ==
         *(vector_of_wedges[0]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_eta_wedge) ==
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(upper_eta_wedge) ==
         *(vector_of_wedges[1]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_xi_wedge) ==
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(lower_xi_wedge) ==
         *(vector_of_wedges[2]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_eta_wedge) ==
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(lower_eta_wedge) ==
         *(vector_of_wedges[3]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             upper_xi_wedge) == *(vector_of_wedges[0]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             upper_eta_wedge) == *(vector_of_wedges[1]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             lower_xi_wedge) == *(vector_of_wedges[2]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             lower_eta_wedge) == *(vector_of_wedges[3]));
 
   const auto wedges = std::vector<Wedge2DMap>{upper_xi_wedge, upper_eta_wedge,
                                               lower_xi_wedge, lower_eta_wedge};
   const auto vector_of_wedges2 =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial, 2>(
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical, 2>(
           wedges);
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_xi_wedge) ==
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(upper_xi_wedge) ==
         *(vector_of_wedges2[0]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(upper_eta_wedge) ==
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(upper_eta_wedge) ==
         *(vector_of_wedges2[1]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_xi_wedge) ==
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(lower_xi_wedge) ==
         *(vector_of_wedges2[2]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Inertial>(lower_eta_wedge) ==
+  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(lower_eta_wedge) ==
         *(vector_of_wedges2[3]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             upper_xi_wedge) == *(vector_of_wedges2[0]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             upper_eta_wedge) == *(vector_of_wedges2[1]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             lower_xi_wedge) == *(vector_of_wedges2[2]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             lower_eta_wedge) == *(vector_of_wedges2[3]));
 
   const auto translation =
       Affine2D{Affine{-1.0, 1.0, -1.0, 1.0}, Affine{-1.0, 1.0, 0.0, 2.0}};
   const auto vector_of_translated_wedges =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial, 2>(
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical, 2>(
           wedges, translation);
 
   const auto translated_upper_xi_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::Logical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -702,7 +702,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_upper_eta_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::Logical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -710,7 +710,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_xi_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::Logical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -718,7 +718,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_eta_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::Logical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -726,7 +726,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_upper_xi_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -734,7 +734,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_upper_eta_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -742,7 +742,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_xi_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -750,7 +750,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_eta_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -771,7 +771,7 @@ void test_make_vector_coordinate_map_base() {
 void test_coordinate_maps_are_identity() {
   INFO("Coordinate maps are identity");
   const auto giant_identity_map =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::Logical, Frame::Physical>(
           CoordinateMaps::Identity<3>{},
           CoordinateMaps::BulgedCube{sqrt(3.0), 0.0, false},
           CoordinateMaps::DiscreteRotation<3>{OrientationMap<3>{}},
@@ -790,10 +790,10 @@ void test_coordinate_maps_are_identity() {
           CoordinateMaps::SpecialMobius{0.0});
   test_serialization(giant_identity_map);
 
-  const auto wedge = make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  const auto wedge = make_coordinate_map<Frame::Logical, Frame::Physical>(
       CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0, true));
   const auto wedge_composed_with_giant_identity =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map<Frame::Logical, Frame::Physical>(
           CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0,
                                   true),
           CoordinateMaps::Identity<3>{},
@@ -816,7 +816,7 @@ void test_coordinate_maps_are_identity() {
   for (size_t i = 1; i < 11; ++i) {
     const auto source_point = tnsr::I<double, 3, Frame::Logical>{
         {{-1.0 + 2.0 / i, -1.0 + 2.0 / i, -1.0 + 2.0 / i}}};
-    const auto mapped_point = tnsr::I<double, 3, Frame::Inertial>{
+    const auto mapped_point = tnsr::I<double, 3, Frame::Physical>{
         {{-1.0 + 2.0 / i, -1.0 + 2.0 / i, -1.0 + 2.0 / i}}};
     CHECK(get<0>(mapped_point) == get<0>(giant_identity_map(source_point)));
     CHECK(get<1>(mapped_point) == get<1>(giant_identity_map(source_point)));
@@ -915,46 +915,46 @@ void test_time_dependent_map() {
   domain::CoordinateMaps::Affine affine_map{-1., 1., 4., 7.};
 
   const auto time_dependent_map_first =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(trans_map,
+      make_coordinate_map<Frame::Logical, Frame::Physical>(trans_map,
                                                            affine_map);
   const auto time_dependent_map_second =
-      make_coordinate_map<Frame::Logical, Frame::Inertial>(affine_map,
+      make_coordinate_map<Frame::Logical, Frame::Physical>(affine_map,
                                                            trans_map);
 
   const tnsr::I<double, 1, Frame::Logical> tnsr_double_logical{{{3.2}}};
   const tnsr::I<DataVector, 1, Frame::Logical> tnsr_datavector_logical{
       DataVector{{-4.3, 10.1, -3.5}}};
 
-  const tnsr::I<double, 1, Frame::Inertial> tnsr_double_inertial_1{{{39.34}}};
-  const tnsr::I<double, 1, Frame::Inertial> tnsr_double_inertial_2{{{29.66}}};
+  const tnsr::I<double, 1, Frame::Physical> tnsr_double_physical_1{{{39.34}}};
+  const tnsr::I<double, 1, Frame::Physical> tnsr_double_physical_2{{{29.66}}};
 
-  const tnsr::I<DataVector, 1, Frame::Inertial> tnsr_datavector_inertial_1{
+  const tnsr::I<DataVector, 1, Frame::Physical> tnsr_datavector_physical_1{
       DataVector{28.09, 49.69, 29.29}};
-  const tnsr::I<DataVector, 1, Frame::Inertial> tnsr_datavector_inertial_2{
+  const tnsr::I<DataVector, 1, Frame::Physical> tnsr_datavector_physical_2{
       DataVector{18.41, 40.01, 19.61}};
 
   CHECK_ITERABLE_APPROX(time_dependent_map_first(tnsr_double_logical,
                                                  final_time, functions_of_time),
-                        tnsr_double_inertial_1);
+                        tnsr_double_physical_1);
 
   CHECK_ITERABLE_APPROX(time_dependent_map_second(
                             tnsr_double_logical, final_time, functions_of_time),
-                        tnsr_double_inertial_2);
+                        tnsr_double_physical_2);
 
   CHECK_ITERABLE_APPROX(time_dependent_map_first(tnsr_datavector_logical,
                                                  final_time, functions_of_time),
-                        tnsr_datavector_inertial_1);
+                        tnsr_datavector_physical_1);
   CHECK_ITERABLE_APPROX(
       time_dependent_map_second(tnsr_datavector_logical, final_time,
                                 functions_of_time),
-      tnsr_datavector_inertial_2);
+      tnsr_datavector_physical_2);
 
   CHECK_ITERABLE_APPROX(
-      *(time_dependent_map_first.inverse(tnsr_double_inertial_1, final_time,
+      *(time_dependent_map_first.inverse(tnsr_double_physical_1, final_time,
                                          functions_of_time)),
       tnsr_double_logical);
   CHECK_ITERABLE_APPROX(
-      *(time_dependent_map_second.inverse(tnsr_double_inertial_2, final_time,
+      *(time_dependent_map_second.inverse(tnsr_double_physical_2, final_time,
                                           functions_of_time)),
       tnsr_double_logical);
 
@@ -982,14 +982,14 @@ void test_time_dependent_map() {
 
   CHECK_ITERABLE_APPROX(
       serialized_map(tnsr_double_logical, final_time, functions_of_time),
-      tnsr_double_inertial_1);
+      tnsr_double_physical_1);
 
   CHECK_ITERABLE_APPROX(
       serialized_map(tnsr_datavector_logical, final_time, functions_of_time),
-      tnsr_datavector_inertial_1);
+      tnsr_datavector_physical_1);
 
   CHECK_ITERABLE_APPROX(
-      *(serialized_map.inverse(tnsr_double_inertial_1, final_time,
+      *(serialized_map.inverse(tnsr_double_physical_1, final_time,
                                functions_of_time)),
       tnsr_double_logical);
 

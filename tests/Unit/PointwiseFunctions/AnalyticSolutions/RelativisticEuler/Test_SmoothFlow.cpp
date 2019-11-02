@@ -36,7 +36,7 @@ struct SmoothFlowProxy : RelativisticEuler::Solutions::SmoothFlow<Dim> {
   template <typename DataType>
   using variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Physical>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
@@ -85,22 +85,22 @@ void test_solution(const DataType& used_for_size,
       get<gr::Tags::Lapse<DataType>>(solution.variables(
           coords, dummy_time, tmpl::list<gr::Tags::Lapse<DataType>>{})));
   CHECK_ITERABLE_APPROX(
-      (get<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>(minkowski.variables(
+      (get<gr::Tags::Shift<Dim, Frame::Physical, DataType>>(minkowski.variables(
           coords, dummy_time,
-          tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>{}))),
-      (get<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>(solution.variables(
+          tmpl::list<gr::Tags::Shift<Dim, Frame::Physical, DataType>>{}))),
+      (get<gr::Tags::Shift<Dim, Frame::Physical, DataType>>(solution.variables(
           coords, dummy_time,
-          tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>{}))));
+          tmpl::list<gr::Tags::Shift<Dim, Frame::Physical, DataType>>{}))));
   CHECK_ITERABLE_APPROX(
-      (get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(
+      (get<gr::Tags::SpatialMetric<Dim, Frame::Physical, DataType>>(
           minkowski.variables(
               coords, dummy_time,
               tmpl::list<
-                  gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>{}))),
-      (get<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>(
+                  gr::Tags::SpatialMetric<Dim, Frame::Physical, DataType>>{}))),
+      (get<gr::Tags::SpatialMetric<Dim, Frame::Physical, DataType>>(
           solution.variables(coords, dummy_time,
                              tmpl::list<gr::Tags::SpatialMetric<
-                                 Dim, Frame::Inertial, DataType>>{}))));
+                                 Dim, Frame::Physical, DataType>>{}))));
 
   const auto solution_from_options =
       test_creation<RelativisticEuler::Solutions::SmoothFlow<Dim>>(

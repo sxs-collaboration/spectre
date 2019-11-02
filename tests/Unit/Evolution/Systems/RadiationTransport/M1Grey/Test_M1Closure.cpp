@@ -29,16 +29,16 @@ SPECTRE_TEST_CASE("Evolution.Systems.RadiationTransport.M1Grey.M1Closure",
   // Create variables
   // Input
   Scalar<DataVector> energy_density(used_for_size);
-  tnsr::i<DataVector, 3, Frame::Inertial> momentum_density(used_for_size);
-  tnsr::I<DataVector, 3, Frame::Inertial> fluid_velocity(used_for_size);
+  tnsr::i<DataVector, 3, Frame::Physical> momentum_density(used_for_size);
+  tnsr::I<DataVector, 3, Frame::Physical> fluid_velocity(used_for_size);
   Scalar<DataVector> fluid_lorentz_factor(used_for_size);
-  tnsr::ii<DataVector, 3, Frame::Inertial> spatial_metric(used_for_size);
+  tnsr::ii<DataVector, 3, Frame::Physical> spatial_metric(used_for_size);
   // Output
   Scalar<DataVector> closure_factor(used_for_size);
-  tnsr::II<DataVector, 3, Frame::Inertial> pressure_tensor(used_for_size);
+  tnsr::II<DataVector, 3, Frame::Physical> pressure_tensor(used_for_size);
   Scalar<DataVector> comoving_energy_density(used_for_size);
   Scalar<DataVector> comoving_momentum_density_normal(used_for_size);
-  tnsr::i<DataVector, 3, Frame::Inertial> comoving_momentum_density_spatial(
+  tnsr::i<DataVector, 3, Frame::Physical> comoving_momentum_density_spatial(
       used_for_size);
 
   // Accuracy required for closure factor

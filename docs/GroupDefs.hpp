@@ -68,7 +68,7 @@
  * \brief Contains control system elements
  *
  * The control system manages the time-dependent mapping between frames, such as
- * the fixed computational frame (grid frame) and the inertial frame. The
+ * the fixed computational frame (grid frame) and the physical frame. The
  * time-dependent parameters of the mapping are adjusted by a feedback control
  * system in order to follow the dynamical evolution of objects such as horizons
  * of black holes or surfaces of neutron stars. For example, in binary black

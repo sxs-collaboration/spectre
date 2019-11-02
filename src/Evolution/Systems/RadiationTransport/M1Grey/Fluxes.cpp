@@ -18,16 +18,16 @@ namespace M1Grey {
 
 namespace detail {
 void compute_fluxes_impl(
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_e_flux,
-    const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_s_M,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Physical>*> tilde_e_flux,
+    const gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Physical>*> tilde_s_flux,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Physical>*> tilde_s_M,
     const Scalar<DataVector>& tilde_e,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& tilde_p,
+    const tnsr::i<DataVector, 3, Frame::Physical>& tilde_s,
+    const tnsr::II<DataVector, 3, Frame::Physical>& tilde_p,
     const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>&
+    const tnsr::I<DataVector, 3, Frame::Physical>& shift,
+    const tnsr::ii<DataVector, 3, Frame::Physical>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Physical>&
         inv_spatial_metric) noexcept {
   constexpr size_t spatial_dim = 3;
 

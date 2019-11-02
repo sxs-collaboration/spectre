@@ -34,7 +34,7 @@ namespace {
 using Affine = CoordinateMaps::Affine;
 using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 void test_rectangle_construction(
-    const creators::Rectangle<Frame::Inertial>& rectangle,
+    const creators::Rectangle<Frame::Physical>& rectangle,
     const std::array<double, 2>& lower_bound,
     const std::array<double, 2>& upper_bound,
     const std::vector<std::array<size_t, 2>>& expected_extents,
@@ -50,7 +50,7 @@ void test_rectangle_construction(
 
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
-      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Affine2D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                    Affine{-1., 1., lower_bound[1], upper_bound[1]}})));
   test_initial_domain(domain, rectangle.initial_refinement_levels());
@@ -64,7 +64,7 @@ void test_rectangle() {
   // default OrientationMap is aligned
   const OrientationMap<2> aligned_orientation{};
 
-  const creators::Rectangle<Frame::Inertial> rectangle{
+  const creators::Rectangle<Frame::Physical> rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{false, false}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -76,7 +76,7 @@ void test_rectangle() {
            {Direction<2>::lower_eta()},
            {Direction<2>::upper_eta()}}});
 
-  const creators::Rectangle<Frame::Inertial> periodic_x_rectangle{
+  const creators::Rectangle<Frame::Physical> periodic_x_rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{true, false}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -88,7 +88,7 @@ void test_rectangle() {
       std::vector<std::unordered_set<Direction<2>>>{
           {{Direction<2>::lower_eta()}, {Direction<2>::upper_eta()}}});
 
-  const creators::Rectangle<Frame::Inertial> periodic_y_rectangle{
+  const creators::Rectangle<Frame::Physical> periodic_y_rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{false, true}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -100,7 +100,7 @@ void test_rectangle() {
       std::vector<std::unordered_set<Direction<2>>>{
           {{Direction<2>::lower_xi()}, {Direction<2>::upper_xi()}}});
 
-  const creators::Rectangle<Frame::Inertial> periodic_xy_rectangle{
+  const creators::Rectangle<Frame::Physical> periodic_xy_rectangle{
       lower_bound, upper_bound, std::array<bool, 2>{{true, true}},
       refinement_level[0], grid_points[0]};
   test_rectangle_construction(
@@ -117,14 +117,14 @@ void test_rectangle() {
   creators::register_derived_with_charm();
 
   const auto base_map =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Affine2D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                    Affine{-1., 1., lower_bound[1], upper_bound[1]}});
   const auto base_map_deserialized = serialize_and_deserialize(base_map);
   using MapType =
-      const CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>*;
+      const CoordinateMap<Frame::Logical, Frame::Physical, Affine2D>*;
   REQUIRE(dynamic_cast<MapType>(base_map.get()) != nullptr);
-  const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  const auto coord_map = make_coordinate_map<Frame::Logical, Frame::Physical>(
       Affine2D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                Affine{-1., 1., lower_bound[1], upper_bound[1]}});
   CHECK(*dynamic_cast<MapType>(base_map.get()) == coord_map);
@@ -133,7 +133,7 @@ void test_rectangle() {
 void test_rectangle_factory() {
   INFO("Rectangle factory");
   const auto domain_creator =
-      test_factory_creation<DomainCreator<2, Frame::Inertial>>(
+      test_factory_creation<DomainCreator<2, Frame::Physical>>(
           "  Rectangle:\n"
           "    LowerBound: [0,0]\n"
           "    UpperBound: [1,2]\n"
@@ -141,7 +141,7 @@ void test_rectangle_factory() {
           "    InitialGridPoints: [3,4]\n"
           "    InitialRefinement: [2,3]\n");
   const auto* rectangle_creator =
-      dynamic_cast<const creators::Rectangle<Frame::Inertial>*>(
+      dynamic_cast<const creators::Rectangle<Frame::Physical>*>(
           domain_creator.get());
   test_rectangle_construction(
       *rectangle_creator, {{0., 0.}}, {{1., 2.}}, {{{3, 4}}}, {{{2, 3}}},

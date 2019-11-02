@@ -56,8 +56,8 @@ namespace Poisson {
  */
 template <size_t Dim>
 void euclidean_fluxes(
-    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> flux_for_field,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept;
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Physical>*> flux_for_field,
+    const tnsr::i<DataVector, Dim, Frame::Physical>& field_gradient) noexcept;
 
 /*!
  * \brief Compute the fluxes \f$F^i=\sqrt{\gamma}\gamma^{ij}\partial_j u(x)\f$
@@ -65,10 +65,10 @@ void euclidean_fluxes(
  */
 template <size_t Dim>
 void noneuclidean_fluxes(
-    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> flux_for_field,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+    gsl::not_null<tnsr::I<DataVector, Dim, Frame::Physical>*> flux_for_field,
+    const tnsr::II<DataVector, Dim, Frame::Physical>& inv_spatial_metric,
     const Scalar<DataVector>& det_spatial_metric,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& field_gradient) noexcept;
+    const tnsr::i<DataVector, Dim, Frame::Physical>& field_gradient) noexcept;
 
 /*!
  * \brief Compute the fluxes \f$F^i_j=\delta^i_j u(x)\f$ for the auxiliary
@@ -77,7 +77,7 @@ void noneuclidean_fluxes(
  * \see Poisson::FirstOrderSystem
  */
 template <size_t Dim>
-void auxiliary_fluxes(gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
+void auxiliary_fluxes(gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Physical>*>
                           flux_for_gradient,
                       const Scalar<DataVector>& field) noexcept;
 
@@ -91,14 +91,14 @@ template <size_t Dim>
 struct EuclideanFluxes {
   using argument_tags = tmpl::list<>;
   static void apply(
-      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Physical>*>
           flux_for_field,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      const tnsr::i<DataVector, Dim, Frame::Physical>&
           field_gradient) noexcept {
     euclidean_fluxes(flux_for_field, field_gradient);
   }
   static void apply(
-      const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
+      const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Physical>*>
           flux_for_gradient,
       const Scalar<DataVector>& field) noexcept {
     auxiliary_fluxes(flux_for_gradient, field);
@@ -132,7 +132,7 @@ struct Sources {
  * linear operator to be solved. It can be chosen as
  * \f$\sigma=C\frac{N_\mathrm{points}^2}{h}\f$ where \f$N_\mathrm{points}\f$ is
  * the number of collocation points (i.e. the polynomial degree plus 1),
- * \f$h\f$ is a measure of the element size in inertial coordinates and \f$C\leq
+ * \f$h\f$ is a measure of the element size in physical coordinates and \f$C\leq
  * 1\f$ is a free parameter (see e.g. \cite HesthavenWarburton, section 7.2).
  */
 template <size_t Dim>
@@ -160,7 +160,7 @@ struct FirstOrderInternalPenaltyFlux {
   void pup(PUP::er& p) noexcept { p | penalty_parameter_; }  // NOLINT
 
   struct NormalTimesFieldFlux : db::SimpleTag {
-    using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
+    using type = tnsr::i<DataVector, Dim, Frame::Physical>;
     static std::string name() noexcept { return "NormalTimesFieldFlux"; }
   };
 
@@ -175,8 +175,8 @@ struct FirstOrderInternalPenaltyFlux {
       tmpl::list<LinearSolver::Tags::Operand<Tags::Field>,
                  ::Tags::div<::Tags::Flux<
                      LinearSolver::Tags::Operand<::Tags::deriv<
-                         Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>,
-                     tmpl::size_t<Dim>, Frame::Inertial>>,
+                         Tags::Field, tmpl::size_t<Dim>, Frame::Physical>>,
+                     tmpl::size_t<Dim>, Frame::Physical>>,
                  ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   // This is the data needed to compute the numerical flux.
@@ -190,8 +190,8 @@ struct FirstOrderInternalPenaltyFlux {
   // types in `argument_tags`.
   void package_data(gsl::not_null<Variables<package_tags>*> packaged_data,
                     const Scalar<DataVector>& field,
-                    const tnsr::i<DataVector, Dim, Frame::Inertial>& grad_field,
-                    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+                    const tnsr::i<DataVector, Dim, Frame::Physical>& grad_field,
+                    const tnsr::i<DataVector, Dim, Frame::Physical>&
                         interface_unit_normal) const noexcept;
 
   // This function combines local and remote data to the numerical fluxes.
@@ -200,14 +200,14 @@ struct FirstOrderInternalPenaltyFlux {
   // the packaged types for the exterior side.
   void operator()(
       gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Physical>*>
           numerical_flux_for_auxiliary_field,
       const Scalar<DataVector>& field_interior,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      const tnsr::i<DataVector, Dim, Frame::Physical>&
           normal_times_field_interior,
       const Scalar<DataVector>& normal_dot_grad_field_interior,
       const Scalar<DataVector>& field_exterior,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      const tnsr::i<DataVector, Dim, Frame::Physical>&
           minus_normal_times_field_exterior,
       const Scalar<DataVector>& minus_normal_dot_grad_field_exterior) const
       noexcept;
@@ -227,10 +227,10 @@ struct FirstOrderInternalPenaltyFlux {
   // normalized unit covector to the element face.
   void compute_dirichlet_boundary(
       gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Physical>*>
           numerical_flux_for_auxiliary_field,
       const Scalar<DataVector>& dirichlet_field,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
+      const tnsr::i<DataVector, Dim, Frame::Physical>& interface_unit_normal)
       const noexcept;
 
  private:

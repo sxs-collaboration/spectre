@@ -47,18 +47,18 @@ class WrappedGr : public SolutionType {
   static std::string name() noexcept { return option_name<SolutionType>(); }
 
   using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataVector>,
-                                   tmpl::size_t<volume_dim>, Frame::Inertial>;
+                                   tmpl::size_t<volume_dim>, Frame::Physical>;
   using DerivShift =
-      ::Tags::deriv<gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>,
-                    tmpl::size_t<volume_dim>, Frame::Inertial>;
+      ::Tags::deriv<gr::Tags::Shift<volume_dim, Frame::Physical, DataVector>,
+                    tmpl::size_t<volume_dim>, Frame::Physical>;
   using DerivSpatialMetric = ::Tags::deriv<
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>,
-      tmpl::size_t<volume_dim>, Frame::Inertial>;
+      gr::Tags::SpatialMetric<volume_dim, Frame::Physical, DataVector>,
+      tmpl::size_t<volume_dim>, Frame::Physical>;
   using TimeDerivLapse = ::Tags::dt<gr::Tags::Lapse<DataVector>>;
   using TimeDerivShift =
-      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>>;
+      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Physical, DataVector>>;
   using TimeDerivSpatialMetric = ::Tags::dt<
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>>;
+      gr::Tags::SpatialMetric<volume_dim, Frame::Physical, DataVector>>;
 
   using IntermediateVars = tuples::tagged_tuple_from_typelist<
       typename SolutionType::template tags<DataVector>>;
@@ -93,13 +93,13 @@ class WrappedGr : public SolutionType {
   // tags other than the three the wrapper adds (i.e., other than
   // gr::Tags::SpacetimeMetric, GeneralizedHarmonic::Tags::Pi, and
   // GeneralizedHarmonic:Tags::Phi)
-  using TagShift = gr::Tags::Shift<volume_dim, Frame::Inertial, DataVector>;
+  using TagShift = gr::Tags::Shift<volume_dim, Frame::Physical, DataVector>;
   using TagSpatialMetric =
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataVector>;
+      gr::Tags::SpatialMetric<volume_dim, Frame::Physical, DataVector>;
   using TagInverseSpatialMetric =
-      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataVector>;
+      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Physical, DataVector>;
   using TagExCurvature =
-      gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataVector>;
+      gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Physical, DataVector>;
 
 #define FUNC_DECL(r, data, elem)                                            \
   tuples::TaggedTuple<elem> variables(                                      \
@@ -119,25 +119,25 @@ class WrappedGr : public SolutionType {
 #undef FUNC_DECL
 
   tuples::TaggedTuple<
-      gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial, DataVector>>
+      gr::Tags::SpacetimeMetric<volume_dim, Frame::Physical, DataVector>>
   variables(const tnsr::I<DataVector, volume_dim>& /*x*/, double /*t*/,
-            tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, Frame::Inertial,
+            tmpl::list<gr::Tags::SpacetimeMetric<volume_dim, Frame::Physical,
                                                  DataVector>> /*meta*/,
             const IntermediateVars& intermediate_vars) const noexcept;
 
   tuples::TaggedTuple<
-      GeneralizedHarmonic::Tags::Pi<volume_dim, Frame::Inertial>>
+      GeneralizedHarmonic::Tags::Pi<volume_dim, Frame::Physical>>
   variables(const tnsr::I<DataVector, volume_dim>& /*x*/, double /*t*/,
             tmpl::list<GeneralizedHarmonic::Tags::Pi<volume_dim,
-                                                     Frame::Inertial>> /*meta*/,
+                                                     Frame::Physical>> /*meta*/,
             const IntermediateVars& intermediate_vars) const noexcept;
 
   tuples::TaggedTuple<
-      GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>>
+      GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Physical>>
   variables(
       const tnsr::I<DataVector, volume_dim>& /*x*/, double /*t*/,
       tmpl::list<
-          GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Inertial>> /*meta*/,
+          GeneralizedHarmonic::Tags::Phi<volume_dim, Frame::Physical>> /*meta*/,
       const IntermediateVars& intermediate_vars) const noexcept;
 };
 

@@ -416,9 +416,9 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
   const DataVector boundary_vars_xi{10., 11., 12.};
   const DataVector boundary_vars_eta{20., 21., 22., 23.};
 
-  ElementMap<2, Frame::Inertial> element_map(
+  ElementMap<2, Frame::Physical> element_map(
       ElementId<2>(0),
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           domain::CoordinateMaps::Rotation<2>(atan2(4., 3.))));
 
   const std::unordered_map<Direction<dim>, Mesh<dim - 1>>
@@ -461,7 +461,7 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceItems.Slice", "[Unit][Domain]") {
         make_interface_variables<0>(boundary_vars_xi, boundary_vars_eta));
   CHECK((db::get<Tags::Interface<Dirs, Tags::Mesh<dim - 1>>>(box)) ==
         expected_interface_mesh);
-  CHECK(db::get<Tags::Interface<Dirs, Tags::Coordinates<dim, Frame::Inertial>>>(
+  CHECK(db::get<Tags::Interface<Dirs, Tags::Coordinates<dim, Frame::Physical>>>(
             box) == expected_boundary_coords);
   CHECK((db::get<Tags::Interface<Dirs, compute_item_tag>>(box)) ==
         (make_interface_variables<1, 10>({1., 1., 1.}, {5., 5., 5.},

@@ -11,7 +11,7 @@
 
 namespace Frame {
 struct Grid;
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 
 namespace domain {
@@ -97,7 +97,7 @@ RotatedBricks<TargetFrame>::initial_refinement_levels() const noexcept {
           {{y_0, z_0, x_0}}, {{x_0, y_0, z_0}}};
 }
 
-template class RotatedBricks<Frame::Inertial>;
+template class RotatedBricks<Frame::Physical>;
 template class RotatedBricks<Frame::Grid>;
 }  // namespace creators
 }  // namespace domain

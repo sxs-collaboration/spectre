@@ -48,14 +48,14 @@ struct CylindricalBlastWaveProxy : grmhd::AnalyticData::CylindricalBlastWave {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
-  hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
+  hydro_variables(const tnsr::I<DataType, 3, Frame::Physical>& x) const
       noexcept {
     return variables(x, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
-  grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
+  grmhd_variables(const tnsr::I<DataType, 3, Frame::Physical>& x) const
       noexcept {
     return variables(x, grmhd_variables_tags<DataType>{});
   }
@@ -157,7 +157,7 @@ void test_density_on_and_near_boundaries() {
   const double epsilon = 1.e-10;
   Approx approx = Approx::custom().epsilon(epsilon * 100.0);
   auto x =
-      make_with_value<tnsr::I<double, 3, Frame::Inertial>>(inner_radius, 0.0);
+      make_with_value<tnsr::I<double, 3, Frame::Physical>>(inner_radius, 0.0);
 
   get<0>(x) = inner_radius;
   CHECK(inner_density == get(get<hydro::Tags::RestMassDensity<double>>(

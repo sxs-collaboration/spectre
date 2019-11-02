@@ -18,7 +18,7 @@
 /// \cond
 namespace Frame {
 struct Grid;
-struct Inertial;
+struct Physical;
 struct Logical;
 }  // namespace Frame
 /// \endcond
@@ -93,6 +93,6 @@ Shell<TargetFrame>::initial_refinement_levels() const noexcept {
 }
 
 template class Shell<Frame::Grid>;
-template class Shell<Frame::Inertial>;
+template class Shell<Frame::Physical>;
 }  // namespace creators
 }  // namespace domain

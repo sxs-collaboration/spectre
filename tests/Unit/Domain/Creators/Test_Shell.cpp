@@ -47,7 +47,7 @@
 namespace domain {
 namespace {
 void test_shell_construction(
-    const creators::Shell<Frame::Inertial>& shell, const double inner_radius,
+    const creators::Shell<Frame::Physical>& shell, const double inner_radius,
     const double outer_radius, const bool use_equiangular_map,
     const std::array<size_t, 2>& expected_shell_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
@@ -149,7 +149,7 @@ void test_shell_construction(
   using Halves = Wedge3DMap::WedgeHalves;
   if (aspect_ratio == 1.0) {
     auto vector_of_maps = make_vector_coordinate_map_base<Frame::Logical,
-                                                          Frame::Inertial>(
+                                                          Frame::Physical>(
         Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 1.0, 1.0,
                    use_equiangular_map, Halves::Both, use_logarithmic_map},
         Wedge3DMap{inner_radius, outer_radius,
@@ -193,12 +193,12 @@ void test_shell_construction(
     const auto compression =
         CoordinateMaps::EquatorialCompression{aspect_ratio};
     auto vector_of_maps = make_vector(
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 1.0,
                        1.0, use_equiangular_map, Halves::Both,
                        use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             Wedge3DMap{inner_radius, outer_radius,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
@@ -206,7 +206,7 @@ void test_shell_construction(
                        1.0, 1.0, use_equiangular_map, Halves::Both,
                        use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -215,7 +215,7 @@ void test_shell_construction(
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -224,7 +224,7 @@ void test_shell_construction(
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -233,7 +233,7 @@ void test_shell_construction(
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -261,7 +261,7 @@ void test_shell_boundaries() {
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
   for (const auto& use_equiangular_map : {true, false}) {
-    const creators::Shell<Frame::Inertial> shell{
+    const creators::Shell<Frame::Physical> shell{
         inner_radius, outer_radius, refinement_level, grid_points_r_angular,
         use_equiangular_map};
     test_physical_separation(shell.create_domain().blocks());
@@ -273,7 +273,7 @@ void test_shell_boundaries() {
 
 void test_shell_factory_equiangular() {
   INFO("Shell factory equiangular");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3, Frame::Physical>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -283,14 +283,14 @@ void test_shell_factory_equiangular() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
+      dynamic_cast<const creators::Shell<Frame::Physical>&>(*shell),
       inner_radius, outer_radius, true, grid_points_r_angular,
       {6, make_array<3>(refinement_level)});
 }
 
 void test_shell_factory_equidistant() {
   INFO("Shell factory equidistant");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3, Frame::Physical>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -301,7 +301,7 @@ void test_shell_factory_equidistant() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
+      dynamic_cast<const creators::Shell<Frame::Physical>&>(*shell),
       inner_radius, outer_radius, false, grid_points_r_angular,
       {6, make_array<3>(refinement_level)});
 }
@@ -313,7 +313,7 @@ void test_shell_boundaries_aspect_ratio() {
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
   const double aspect_ratio = 1.3;
 
-  const creators::Shell<Frame::Inertial> shell{
+  const creators::Shell<Frame::Physical> shell{
       inner_radius,          outer_radius, refinement_level,
       grid_points_r_angular, false,        aspect_ratio};
   test_physical_separation(shell.create_domain().blocks());
@@ -324,7 +324,7 @@ void test_shell_boundaries_aspect_ratio() {
 
 void test_shell_factory_aspect_ratio() {
   INFO("Shell factory aspect ratio");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3, Frame::Physical>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -337,7 +337,7 @@ void test_shell_factory_aspect_ratio() {
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   const double aspect_ratio = 2.0;
   test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
+      dynamic_cast<const creators::Shell<Frame::Physical>&>(*shell),
       inner_radius, outer_radius, false, grid_points_r_angular,
       {6, make_array<3>(refinement_level)}, aspect_ratio);
 }
@@ -350,7 +350,7 @@ void test_shell_boundaries_logarithmic_map() {
   const double aspect_ratio = 1.0;
   const bool use_logarithmic_map = true;
 
-  const creators::Shell<Frame::Inertial> shell{
+  const creators::Shell<Frame::Physical> shell{
       inner_radius, outer_radius, refinement_level,   grid_points_r_angular,
       false,        aspect_ratio, use_logarithmic_map};
   test_physical_separation(shell.create_domain().blocks());
@@ -361,7 +361,7 @@ void test_shell_boundaries_logarithmic_map() {
 
 void test_shell_factory_logarithmic_map() {
   INFO("Shell factory logarithmic map");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3, Frame::Physical>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -376,14 +376,14 @@ void test_shell_factory_logarithmic_map() {
   const double aspect_ratio = 2.0;
   const bool use_logarithmic_map = true;
   test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
+      dynamic_cast<const creators::Shell<Frame::Physical>&>(*shell),
       inner_radius, outer_radius, false, grid_points_r_angular,
       {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map);
 }
 
 void test_shell_factory_wedges_four_on_equator() {
   INFO("Shell factory wedges four on equator");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3, Frame::Physical>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -400,7 +400,7 @@ void test_shell_factory_wedges_four_on_equator() {
   const bool use_logarithmic_map = true;
   const ShellWedges which_wedges = ShellWedges::FourOnEquator;
   test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
+      dynamic_cast<const creators::Shell<Frame::Physical>&>(*shell),
       inner_radius, outer_radius, false, grid_points_r_angular,
       {4, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
       which_wedges);
@@ -408,7 +408,7 @@ void test_shell_factory_wedges_four_on_equator() {
 
 void test_shell_factory_wedges_one_along_minus_x() {
   INFO("Shell factory wedges one along minus x");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3, Frame::Physical>>(
       "  Shell:\n"
       "    InnerRadius: 2\n"
       "    OuterRadius: 3\n"
@@ -425,7 +425,7 @@ void test_shell_factory_wedges_one_along_minus_x() {
   const bool use_logarithmic_map = false;
   const ShellWedges which_wedges = ShellWedges::OneAlongMinusX;
   test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
+      dynamic_cast<const creators::Shell<Frame::Physical>&>(*shell),
       inner_radius, outer_radius, true, grid_points_r_angular,
       {1, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
       which_wedges);
@@ -476,15 +476,15 @@ void test_radial_block_layers(const double inner_radius,
   x_on_element_boundary[number_of_divisions] = outer_radius;
 
   const auto zero = make_with_value<DataVector>(x_in_block_interior, 0.0);
-  tnsr::I<DataVector, 3, Frame::Inertial> interior_inertial_coords{
+  tnsr::I<DataVector, 3, Frame::Physical> interior_physical_coords{
       {{-x_in_block_interior, zero, zero}}};
-  const creators::Shell<Frame::Inertial> shell{
+  const creators::Shell<Frame::Physical> shell{
       inner_radius,          outer_radius,        refinement_level,
       grid_points_r_angular, use_equiangular_map, aspect_ratio,
       use_logarithmic_map,   which_wedges,        radial_block_layers};
   auto domain = shell.create_domain();
   const auto blogical_coords =
-      block_logical_coordinates(domain, interior_inertial_coords);
+      block_logical_coordinates(domain, interior_physical_coords);
   for (size_t s = 0; s < expected_block_ids.size(); ++s) {
     CHECK(blogical_coords[s].get().id.get_index() == expected_block_ids[s]);
   }
@@ -503,7 +503,7 @@ void test_radial_block_layers(const double inner_radius,
       if (element_id.segment_ids()[0] == SegmentId{refinement_level, 0} and
           element_id.segment_ids()[1] == SegmentId{refinement_level, 0}) {
         element_count++;
-        const auto map = ElementMap<3, Frame::Inertial>{
+        const auto map = ElementMap<3, Frame::Physical>{
             element_id, block.coordinate_map().get_clone()};
         const tnsr::I<double, 3, Frame::Logical> logical_point(
             std::array<double, 3>{{0.0, 0.0, 1.0}});
@@ -529,7 +529,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell", "[Domain][Unit]") {
   {
     INFO("shell factory logarithmic block layers");
     const auto log_shell =
-        test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+        test_factory_creation<DomainCreator<3, Frame::Physical>>(
             "  Shell:\n"
             "    InnerRadius: 1\n"
             "    OuterRadius: 3\n"

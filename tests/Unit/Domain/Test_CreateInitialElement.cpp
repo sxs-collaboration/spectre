@@ -24,7 +24,7 @@
 
 namespace {
 void test_create_initial_element(
-    const ElementId<2>& element_id, const Block<2, Frame::Inertial>& block,
+    const ElementId<2>& element_id, const Block<2, Frame::Physical>& block,
     const DirectionMap<2, Neighbors<2>>& expected_neighbors) noexcept {
   const auto created_element =
       domain::Initialization::create_initial_element(element_id, block);
@@ -41,8 +41,8 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
   OrientationMap<2> inverse_of_unaligned(
       {{Direction<2>::lower_eta(), Direction<2>::upper_xi()}},
       {{Direction<2>::upper_xi(), Direction<2>::upper_eta()}});
-  Block<2, Frame::Inertial> test_block(
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  Block<2, Frame::Physical> test_block(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           domain::CoordinateMaps::Identity<2>{}),
       0,
       {{Direction<2>::upper_xi(), BlockNeighbor<2>{1, aligned}},

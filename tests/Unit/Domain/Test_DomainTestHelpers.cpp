@@ -35,9 +35,9 @@ void test_euclidean_basis_vectors(const DataVector& used_for_size) noexcept {
 SPECTRE_TEST_CASE("Unit.Domain.TestHelpers.BasisVector", "[Unit][Domain]") {
   const DataVector dv(5);
 
-  test_euclidean_basis_vectors<1, Frame::Inertial>(dv);
-  test_euclidean_basis_vectors<2, Frame::Inertial>(dv);
-  test_euclidean_basis_vectors<3, Frame::Inertial>(dv);
+  test_euclidean_basis_vectors<1, Frame::Physical>(dv);
+  test_euclidean_basis_vectors<2, Frame::Physical>(dv);
+  test_euclidean_basis_vectors<3, Frame::Physical>(dv);
 
   test_euclidean_basis_vectors<1, Frame::Grid>(dv);
   test_euclidean_basis_vectors<2, Frame::Grid>(dv);

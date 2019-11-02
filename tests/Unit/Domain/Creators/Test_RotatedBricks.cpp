@@ -28,7 +28,7 @@
 namespace domain {
 namespace {
 void test_rotated_bricks_construction(
-    const creators::RotatedBricks<Frame::Inertial>& rotated_bricks,
+    const creators::RotatedBricks<Frame::Physical>& rotated_bricks,
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& midpoint,
     const std::array<double, 3>& upper_bound,
@@ -58,49 +58,49 @@ void test_rotated_bricks_construction(
   const Affine upper_z_map(-1.0, 1.0, midpoint[2], upper_bound[2]);
 
   std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 3>>>
       coord_maps;
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Affine3D(lower_x_map, lower_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
                Direction<3>::lower_xi()}}}},
           Affine3D(upper_x_map, lower_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                Direction<3>::lower_eta()}}}},
           Affine3D(lower_x_map, upper_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
                Direction<3>::lower_eta()}}}},
           Affine3D(upper_x_map, upper_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
                Direction<3>::upper_zeta()}}}},
           Affine3D(lower_x_map, lower_y_map, upper_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
                Direction<3>::lower_xi()}}}},
           Affine3D(upper_x_map, lower_y_map, upper_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
                Direction<3>::lower_eta()}}}},
           Affine3D(lower_x_map, upper_y_map, upper_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Affine3D(upper_x_map, upper_y_map, upper_z_map)));
 
   test_domain_construction(domain, expected_block_neighbors,
@@ -133,7 +133,7 @@ void test_rotated_bricks() {
   const OrientationMap<3> rotation_F_then_U{std::array<Direction<3>, 3>{
       {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
        Direction<3>::lower_eta()}}};
-  const creators::RotatedBricks<Frame::Inertial> rotated_bricks{
+  const creators::RotatedBricks<Frame::Physical> rotated_bricks{
       lower_bound,
       midpoint,
       upper_bound,
@@ -190,7 +190,7 @@ void test_rotated_bricks() {
            Direction<3>::upper_zeta()}});
   test_physical_separation(rotated_bricks.create_domain().blocks());
 
-  const creators::RotatedBricks<Frame::Inertial> rotated_periodic_bricks{
+  const creators::RotatedBricks<Frame::Physical> rotated_periodic_bricks{
       lower_bound,
       midpoint,
       upper_bound,
@@ -275,7 +275,7 @@ void test_rotated_bricks_factory() {
       {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
        Direction<3>::lower_eta()}}};
   const auto domain_creator =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+      test_factory_creation<DomainCreator<3, Frame::Physical>>(
           "  RotatedBricks:\n"
           "    LowerBound: [0.1, -0.4, -0.2]\n"
           "    Midpoint:   [2.6, 3.2, 1.7]\n"
@@ -284,7 +284,7 @@ void test_rotated_bricks_factory() {
           "    InitialGridPoints: [[3,2],[1,4],[5,6]]\n"
           "    InitialRefinement: [2,1,0]\n");
   const auto* rotated_bricks_creator =
-      dynamic_cast<const creators::RotatedBricks<Frame::Inertial>*>(
+      dynamic_cast<const creators::RotatedBricks<Frame::Physical>*>(
           domain_creator.get());
   test_rotated_bricks_construction(
       *rotated_bricks_creator, {{0.1, -0.4, -0.2}}, {{2.6, 3.2, 1.7}},

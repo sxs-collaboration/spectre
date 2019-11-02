@@ -87,7 +87,7 @@ void test_characteristic_speeds_analytic(
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -112,7 +112,7 @@ void test_characteristic_speeds_analytic(
       determinant_and_inverse(spatial_metric).second;
   // Outward 3-normal to the surface on which characteristic fields are needed
   auto unit_normal_one_form =
-      make_with_value<tnsr::i<DataVector, spatial_dim, Frame::Inertial>>(x, 1.);
+      make_with_value<tnsr::i<DataVector, spatial_dim, Frame::Physical>>(x, 1.);
   const auto norm_of_one_form =
       magnitude(unit_normal_one_form, inverse_spatial_metric);
   for (size_t i = 0; i < spatial_dim; ++i) {
@@ -129,7 +129,7 @@ void test_characteristic_speeds_analytic(
   // Check that locally computed fields match returned ones
   const auto char_speeds_from_func =
       GeneralizedHarmonic::CharacteristicSpeedsCompute<
-          spatial_dim, Frame::Inertial>::function(gamma_1, lapse, shift,
+          spatial_dim, Frame::Physical>::function(gamma_1, lapse, shift,
                                                   unit_normal_one_form);
   const auto& upsi_speed_from_func = char_speeds_from_func[0];
   const auto& uzero_speed_from_func = char_speeds_from_func[1];
@@ -206,7 +206,7 @@ void test_characteristic_fields_analytic(
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -247,11 +247,11 @@ void test_characteristic_fields_analytic(
   const auto pi = GeneralizedHarmonic::pi(
       lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<spatial_dim, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<spatial_dim, Frame::Physical>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
   // Outward 3-normal to the surface on which characteristic fields are needed
   auto unit_normal_one_form =
-      make_with_value<tnsr::i<DataVector, spatial_dim, Frame::Inertial>>(x, 1.);
+      make_with_value<tnsr::i<DataVector, spatial_dim, Frame::Physical>>(x, 1.);
   const auto norm_of_one_form =
       magnitude(unit_normal_one_form, inverse_spatial_metric);
   for (size_t i = 0; i < spatial_dim; ++i) {
@@ -261,7 +261,7 @@ void test_characteristic_fields_analytic(
       raise_or_lower_index(unit_normal_one_form, inverse_spatial_metric);
 
   // Compute characteristic fields locally
-  tnsr::aa<DataVector, spatial_dim, Frame::Inertial> phi_dot_normal{
+  tnsr::aa<DataVector, spatial_dim, Frame::Physical> phi_dot_normal{
       DataVector(n_pts, 0.)};
   // Compute phi_dot_normal_{ab} = n^i \Phi_{iab}
   for (size_t mu = 0; mu < spatial_dim + 1; ++mu) {
@@ -271,7 +271,7 @@ void test_characteristic_fields_analytic(
       }
     }
   }
-  tnsr::iaa<DataVector, spatial_dim, Frame::Inertial> phi_dot_projection_tensor{
+  tnsr::iaa<DataVector, spatial_dim, Frame::Physical> phi_dot_projection_tensor{
       DataVector(n_pts, 0.)};
   // Compute phi_dot_projection_tensor_{kab} = projection_tensor^i_k \Phi_{kab}
   for (size_t i = 0; i < spatial_dim; ++i) {
@@ -286,9 +286,9 @@ void test_characteristic_fields_analytic(
   // Eq.(32)-(34) of Lindblom+ (2005)
   const auto& upsi = spacetime_metric;
   const auto& uzero = phi_dot_projection_tensor;
-  tnsr::aa<DataVector, spatial_dim, Frame::Inertial> uplus{
+  tnsr::aa<DataVector, spatial_dim, Frame::Physical> uplus{
       DataVector(n_pts, 0.)};
-  tnsr::aa<DataVector, spatial_dim, Frame::Inertial> uminus{
+  tnsr::aa<DataVector, spatial_dim, Frame::Physical> uminus{
       DataVector(n_pts, 0.)};
   for (size_t mu = 0; mu < spatial_dim + 1; ++mu) {
     for (size_t nu = 0; nu < mu + 1; ++nu) {
@@ -301,20 +301,20 @@ void test_characteristic_fields_analytic(
 
   // Check that locally computed fields match returned ones
   const auto uvars = GeneralizedHarmonic::CharacteristicFieldsCompute<
-      spatial_dim, Frame::Inertial>::function(gamma_2, inverse_spatial_metric,
+      spatial_dim, Frame::Physical>::function(gamma_2, inverse_spatial_metric,
                                               spacetime_metric, pi, phi,
                                               unit_normal_one_form);
 
   const auto& upsi_from_func =
-      get<GeneralizedHarmonic::Tags::UPsi<spatial_dim, Frame::Inertial>>(uvars);
+      get<GeneralizedHarmonic::Tags::UPsi<spatial_dim, Frame::Physical>>(uvars);
   const auto& uzero_from_func =
-      get<GeneralizedHarmonic::Tags::UZero<spatial_dim, Frame::Inertial>>(
+      get<GeneralizedHarmonic::Tags::UZero<spatial_dim, Frame::Physical>>(
           uvars);
   const auto& uplus_from_func =
-      get<GeneralizedHarmonic::Tags::UPlus<spatial_dim, Frame::Inertial>>(
+      get<GeneralizedHarmonic::Tags::UPlus<spatial_dim, Frame::Physical>>(
           uvars);
   const auto& uminus_from_func =
-      get<GeneralizedHarmonic::Tags::UMinus<spatial_dim, Frame::Inertial>>(
+      get<GeneralizedHarmonic::Tags::UMinus<spatial_dim, Frame::Physical>>(
           uvars);
 
   CHECK_ITERABLE_APPROX(upsi, upsi_from_func);
@@ -373,7 +373,7 @@ void test_evolved_from_characteristic_fields_analytic(
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
+      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
           Affine{-1., 1., lower_bound[0], upper_bound[0]},
           Affine{-1., 1., lower_bound[1], upper_bound[1]},
           Affine{-1., 1., lower_bound[2], upper_bound[2]},
@@ -414,11 +414,11 @@ void test_evolved_from_characteristic_fields_analytic(
   const auto pi = GeneralizedHarmonic::pi(
       lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<spatial_dim, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<spatial_dim, Frame::Physical>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
   // Outward 3-normal to the surface on which characteristic fields are needed
   auto unit_normal_one_form =
-      make_with_value<tnsr::i<DataVector, spatial_dim, Frame::Inertial>>(x, 1.);
+      make_with_value<tnsr::i<DataVector, spatial_dim, Frame::Physical>>(x, 1.);
   const auto norm_of_one_form =
       magnitude(unit_normal_one_form, inverse_spatial_metric);
   for (size_t i = 0; i < spatial_dim; ++i) {
@@ -429,7 +429,7 @@ void test_evolved_from_characteristic_fields_analytic(
 
   // Fundamental fields (psi, pi, phi) have already been computed locally.
   // Now, check that these locally computed fields match returned ones
-  tnsr::aa<DataVector, spatial_dim, Frame::Inertial> phi_dot_normal{
+  tnsr::aa<DataVector, spatial_dim, Frame::Physical> phi_dot_normal{
       DataVector(n_pts, 0.)};
   // Compute phi_dot_normal_{ab} = n^i \Phi_{iab}
   for (size_t mu = 0; mu < spatial_dim + 1; ++mu) {
@@ -439,7 +439,7 @@ void test_evolved_from_characteristic_fields_analytic(
       }
     }
   }
-  tnsr::iaa<DataVector, spatial_dim, Frame::Inertial> phi_dot_projection_tensor{
+  tnsr::iaa<DataVector, spatial_dim, Frame::Physical> phi_dot_projection_tensor{
       DataVector(n_pts, 0.)};
   // Compute phi_dot_projection_tensor_{kab} = projection_tensor^i_k \Phi_{kab}
   for (size_t i = 0; i < spatial_dim; ++i) {
@@ -454,9 +454,9 @@ void test_evolved_from_characteristic_fields_analytic(
   // Eq.(32)-(34) of Lindblom+ (2005)
   const auto& upsi = spacetime_metric;
   const auto& uzero = phi_dot_projection_tensor;
-  tnsr::aa<DataVector, spatial_dim, Frame::Inertial> uplus{
+  tnsr::aa<DataVector, spatial_dim, Frame::Physical> uplus{
       DataVector(n_pts, 0.)};
-  tnsr::aa<DataVector, spatial_dim, Frame::Inertial> uminus{
+  tnsr::aa<DataVector, spatial_dim, Frame::Physical> uminus{
       DataVector(n_pts, 0.)};
   for (size_t mu = 0; mu < spatial_dim + 1; ++mu) {
     for (size_t nu = 0; nu < mu + 1; ++nu) {
@@ -468,14 +468,14 @@ void test_evolved_from_characteristic_fields_analytic(
   }
   const auto ffields =
       GeneralizedHarmonic::EvolvedFieldsFromCharacteristicFieldsCompute<
-          spatial_dim, Frame::Inertial>::function(gamma_2, upsi, uzero, uplus,
+          spatial_dim, Frame::Physical>::function(gamma_2, upsi, uzero, uplus,
                                                   uminus, unit_normal_one_form);
   const auto& psi_from_func =
-      get<gr::Tags::SpacetimeMetric<spatial_dim, Frame::Inertial>>(ffields);
+      get<gr::Tags::SpacetimeMetric<spatial_dim, Frame::Physical>>(ffields);
   const auto& pi_from_func =
-      get<GeneralizedHarmonic::Tags::Pi<spatial_dim, Frame::Inertial>>(ffields);
+      get<GeneralizedHarmonic::Tags::Pi<spatial_dim, Frame::Physical>>(ffields);
   const auto& phi_from_func =
-      get<GeneralizedHarmonic::Tags::Phi<spatial_dim, Frame::Inertial>>(
+      get<GeneralizedHarmonic::Tags::Phi<spatial_dim, Frame::Physical>>(
           ffields);
 
   CHECK_ITERABLE_APPROX(spacetime_metric, psi_from_func);
@@ -492,9 +492,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
   test_characteristic_speeds<1, Frame::Grid>();
   test_characteristic_speeds<2, Frame::Grid>();
   test_characteristic_speeds<3, Frame::Grid>();
-  test_characteristic_speeds<1, Frame::Inertial>();
-  test_characteristic_speeds<2, Frame::Inertial>();
-  test_characteristic_speeds<3, Frame::Inertial>();
+  test_characteristic_speeds<1, Frame::Physical>();
+  test_characteristic_speeds<2, Frame::Physical>();
+  test_characteristic_speeds<3, Frame::Physical>();
 
   // Test GH characteristic speeds against Kerr Schild
   const double mass = 2.;
@@ -512,16 +512,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
   test_characteristic_fields<1, Frame::Grid>();
   test_characteristic_fields<2, Frame::Grid>();
   test_characteristic_fields<3, Frame::Grid>();
-  test_characteristic_fields<1, Frame::Inertial>();
-  test_characteristic_fields<2, Frame::Inertial>();
-  test_characteristic_fields<3, Frame::Inertial>();
+  test_characteristic_fields<1, Frame::Physical>();
+  test_characteristic_fields<2, Frame::Physical>();
+  test_characteristic_fields<3, Frame::Physical>();
 
   test_evolved_from_characteristic_fields<1, Frame::Grid>();
   test_evolved_from_characteristic_fields<2, Frame::Grid>();
   test_evolved_from_characteristic_fields<3, Frame::Grid>();
-  test_evolved_from_characteristic_fields<1, Frame::Inertial>();
-  test_evolved_from_characteristic_fields<2, Frame::Inertial>();
-  test_evolved_from_characteristic_fields<3, Frame::Inertial>();
+  test_evolved_from_characteristic_fields<1, Frame::Physical>();
+  test_evolved_from_characteristic_fields<2, Frame::Physical>();
+  test_evolved_from_characteristic_fields<3, Frame::Physical>();
 
   // Test GH characteristic fields against Kerr Schild
   test_characteristic_fields_analytic(solution, grid_size, lower_bound,
@@ -543,13 +543,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.MaxCharSpeed",
                                      DataVector{1., 7., 3., -11., 5.},
                                      DataVector{7., 3., 4., 2., 1.}}}) == 11.);
   CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            1, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
+            1, Frame::Physical>::apply({{DataVector{1., 4., 3., 2., 5.},
                                          DataVector{2., 8., 10., 6., 4.},
                                          DataVector{1., 7., 3., 2., 5.},
                                          DataVector{7., 3., 4., 2., 1.}}}) ==
         10.);
   CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            1, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
+            1, Frame::Physical>::apply({{DataVector{1., 4., 3., 2., 5.},
                                          DataVector{2., 8., 10., 6., 4.},
                                          DataVector{1., 7., 3., -11., 5.},
                                          DataVector{7., 3., 4., 2., 1.}}}) ==
@@ -567,13 +567,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.MaxCharSpeed",
                                      DataVector{7., 3., 4., 2., -11.}}}) ==
         11.);
   CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            2, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
+            2, Frame::Physical>::apply({{DataVector{1., 4., 3., 2., 5.},
                                          DataVector{2., 8., 7., 6., 4.},
                                          DataVector{1., 10., 3., 2., 5.},
                                          DataVector{7., 3., 4., 2., 1.}}}) ==
         10.);
   CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            2, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
+            2, Frame::Physical>::apply({{DataVector{1., 4., 3., 2., 5.},
                                          DataVector{2., 8., 10., 6., 4.},
                                          DataVector{1., 7., 3., 1., 5.},
                                          DataVector{7., 3., 4., 2., -11.}}}) ==
@@ -591,13 +591,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.MaxCharSpeed",
                                      DataVector{7., 3., 4., -11., 1.}}}) ==
         11.);
   CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            3, Frame::Inertial>::apply({{DataVector{1., 4., 10., 2., 5.},
+            3, Frame::Physical>::apply({{DataVector{1., 4., 10., 2., 5.},
                                          DataVector{2., 8., 3., 6., 4.},
                                          DataVector{1., 7., 3., 2., 5.},
                                          DataVector{7., 3., 4., 2., 1.}}}) ==
         10.);
   CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            3, Frame::Inertial>::apply({{DataVector{1., 4., 3., 2., 5.},
+            3, Frame::Physical>::apply({{DataVector{1., 4., 3., 2., 5.},
                                          DataVector{2., 8., 10., 6., 4.},
                                          DataVector{1., 7., 3., 2., 5.},
                                          DataVector{7., 3., 4., -11., 1.}}}) ==

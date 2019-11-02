@@ -27,16 +27,16 @@ namespace M1Grey {
 // Implementation of the M1 fluxes for individual neutrino species
 namespace detail {
 void compute_fluxes_impl(
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_e_flux,
-    gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
-    gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_s_M,
+    gsl::not_null<tnsr::I<DataVector, 3, Frame::Physical>*> tilde_e_flux,
+    gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Physical>*> tilde_s_flux,
+    gsl::not_null<tnsr::I<DataVector, 3, Frame::Physical>*> tilde_s_M,
     const Scalar<DataVector>& tilde_e,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& tilde_p,
+    const tnsr::i<DataVector, 3, Frame::Physical>& tilde_s,
+    const tnsr::II<DataVector, 3, Frame::Physical>& tilde_p,
     const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>&
+    const tnsr::I<DataVector, 3, Frame::Physical>& shift,
+    const tnsr::ii<DataVector, 3, Frame::Physical>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Physical>&
         inv_spatial_metric) noexcept;
 }  // namespace detail
 
@@ -60,38 +60,38 @@ void compute_fluxes_impl(
 template <typename... NeutrinoSpecies>
 struct ComputeFluxes {
   using return_tags =
-      tmpl::list<::Tags::Flux<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>,
-                              tmpl::size_t<3>, Frame::Inertial>...,
-                 ::Tags::Flux<Tags::TildeS<Frame::Inertial, NeutrinoSpecies>,
-                              tmpl::size_t<3>, Frame::Inertial>...>;
+      tmpl::list<::Tags::Flux<Tags::TildeE<Frame::Physical, NeutrinoSpecies>,
+                              tmpl::size_t<3>, Frame::Physical>...,
+                 ::Tags::Flux<Tags::TildeS<Frame::Physical, NeutrinoSpecies>,
+                              tmpl::size_t<3>, Frame::Physical>...>;
 
   using argument_tags =
-      tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
-                 Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...,
-                 Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
+      tmpl::list<Tags::TildeE<Frame::Physical, NeutrinoSpecies>...,
+                 Tags::TildeS<Frame::Physical, NeutrinoSpecies>...,
+                 Tags::TildeP<Frame::Physical, NeutrinoSpecies>...,
                  gr::Tags::Lapse<>, gr::Tags::Shift<3>,
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
 
   static void apply(
       const gsl::not_null<db::item_type<
-          ::Tags::Flux<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>,
-                       tmpl::size_t<3>, Frame::Inertial>>*>... tilde_e_flux,
+          ::Tags::Flux<Tags::TildeE<Frame::Physical, NeutrinoSpecies>,
+                       tmpl::size_t<3>, Frame::Physical>>*>... tilde_e_flux,
       const gsl::not_null<db::item_type<
-          ::Tags::Flux<Tags::TildeS<Frame::Inertial, NeutrinoSpecies>,
-                       tmpl::size_t<3>, Frame::Inertial>>*>... tilde_s_flux,
+          ::Tags::Flux<Tags::TildeS<Frame::Physical, NeutrinoSpecies>,
+                       tmpl::size_t<3>, Frame::Physical>>*>... tilde_s_flux,
       const db::const_item_type<
-          Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
+          Tags::TildeE<Frame::Physical, NeutrinoSpecies>>&... tilde_e,
       const db::const_item_type<
-          Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>&... tilde_s,
+          Tags::TildeS<Frame::Physical, NeutrinoSpecies>>&... tilde_s,
       const db::const_item_type<
-          Tags::TildeP<Frame::Inertial, NeutrinoSpecies>>&... tilde_p,
+          Tags::TildeP<Frame::Physical, NeutrinoSpecies>>&... tilde_p,
       const Scalar<DataVector>& lapse,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-      const tnsr::II<DataVector, 3, Frame::Inertial>&
+      const tnsr::I<DataVector, 3, Frame::Physical>& shift,
+      const tnsr::ii<DataVector, 3, Frame::Physical>& spatial_metric,
+      const tnsr::II<DataVector, 3, Frame::Physical>&
           inv_spatial_metric) noexcept {
     // Allocate memory for tildeS^i
-    tnsr::I<DataVector, 3, Frame::Inertial> tilde_s_M(get(lapse).size());
+    tnsr::I<DataVector, 3, Frame::Physical> tilde_s_M(get(lapse).size());
     EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_fluxes_impl(
         tilde_e_flux, tilde_s_flux, &tilde_s_M, tilde_e, tilde_s, tilde_p,
         lapse, shift, spatial_metric, inv_spatial_metric));

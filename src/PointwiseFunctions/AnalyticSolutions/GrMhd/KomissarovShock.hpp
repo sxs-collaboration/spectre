@@ -158,16 +158,16 @@ class KomissarovShock : public MarkAsAnalyticSolution {
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double t,
                  tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+                     DataType, 3, Frame::Physical>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Physical>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double t,
                  tmpl::list<hydro::Tags::MagneticField<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+                     DataType, 3, Frame::Physical>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+          hydro::Tags::MagneticField<DataType, 3, Frame::Physical>>;
 
   template <typename DataType>
   auto variables(
@@ -192,7 +192,7 @@ class KomissarovShock : public MarkAsAnalyticSolution {
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x, double t,
+      const tnsr::I<DataType, 3, Frame::Physical>& x, double t,
       tmpl::list<Tags...> /*meta*/) const noexcept {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "

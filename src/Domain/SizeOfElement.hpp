@@ -25,10 +25,10 @@ struct Mesh;
 
 /*!
  * \ingroup ComputationalDomainGroup
- * \brief Compute the inertial-coordinate size of an element along each of its
+ * \brief Compute the physical-coordinate size of an element along each of its
  * logical directions.
  *
- * For each logical direction, compute the mean position (in inertial
+ * For each logical direction, compute the mean position (in physical
  * coordinates) of the element's lower and upper faces in that direction.
  * This is done by simply averaging the coordinates of the face grid points.
  * The size of the element along this logical direction is then the distance
@@ -42,19 +42,19 @@ struct Mesh;
 template <size_t VolumeDim>
 std::array<double, VolumeDim> size_of_element(
     const Mesh<VolumeDim>& mesh,
-    const tnsr::I<DataVector, VolumeDim>& inertial_coords) noexcept;
+    const tnsr::I<DataVector, VolumeDim>& physical_coords) noexcept;
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
-/// The inertial-coordinate size of an element along each of its logical
+/// The physical-coordinate size of an element along each of its logical
 /// directions.
 template <size_t VolumeDim>
 struct SizeOfElement : db::ComputeTag {
   static std::string name() noexcept { return "SizeOfElement"; }
   using argument_tags =
       tmpl::list<Tags::Mesh<VolumeDim>,
-                 Tags::Coordinates<VolumeDim, Frame::Inertial>>;
+                 Tags::Coordinates<VolumeDim, Frame::Physical>>;
   static constexpr auto function = size_of_element<VolumeDim>;
 };
 }  // namespace Tags

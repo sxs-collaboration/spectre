@@ -45,22 +45,22 @@ BOOST_PP_LIST_FOR_EACH(FUNC_DEF, _, MY_LIST)
 template <typename SolutionType>
 tuples::TaggedTuple<gr::Tags::SpacetimeMetric<
     GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-    Frame::Inertial, DataVector>>
+    Frame::Physical, DataVector>>
 WrappedGr<SolutionType>::variables(
     const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<
                                   SolutionType>::volume_dim>& /*x*/,
     double /*t*/,
     tmpl::list<gr::Tags::SpacetimeMetric<
         GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-        Frame::Inertial, DataVector>> /*meta*/,
+        Frame::Physical, DataVector>> /*meta*/,
     const IntermediateVars& intermediate_vars) const noexcept {
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(intermediate_vars);
   const auto& shift = get<gr::Tags::Shift<
       GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+      Frame::Physical, DataVector>>(intermediate_vars);
   const auto& spatial_metric = get<gr::Tags::SpatialMetric<
       GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+      Frame::Physical, DataVector>>(intermediate_vars);
 
   return {gr::spacetime_metric(lapse, shift, spatial_metric)};
 }
@@ -68,14 +68,14 @@ WrappedGr<SolutionType>::variables(
 template <typename SolutionType>
 tuples::TaggedTuple<GeneralizedHarmonic::Tags::Phi<
     GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-    Frame::Inertial>>
+    Frame::Physical>>
 WrappedGr<SolutionType>::variables(
     const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<
                                   SolutionType>::volume_dim>& /*x*/,
     double /*t*/,
     tmpl::list<GeneralizedHarmonic::Tags::Phi<
         GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-        Frame::Inertial>> /*meta*/,
+        Frame::Physical>> /*meta*/,
     const IntermediateVars& intermediate_vars) const noexcept {
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(intermediate_vars);
   const auto& deriv_lapse =
@@ -83,13 +83,13 @@ WrappedGr<SolutionType>::variables(
 
   const auto& shift = get<gr::Tags::Shift<
       GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+      Frame::Physical, DataVector>>(intermediate_vars);
   const auto& deriv_shift =
       get<typename WrappedGr<SolutionType>::DerivShift>(intermediate_vars);
 
   const auto& spatial_metric = get<gr::Tags::SpatialMetric<
       GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+      Frame::Physical, DataVector>>(intermediate_vars);
   const auto& deriv_spatial_metric =
       get<typename WrappedGr<SolutionType>::DerivSpatialMetric>(
           intermediate_vars);
@@ -101,14 +101,14 @@ WrappedGr<SolutionType>::variables(
 template <typename SolutionType>
 tuples::TaggedTuple<GeneralizedHarmonic::Tags::Pi<
     GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-    Frame::Inertial>>
+    Frame::Physical>>
 WrappedGr<SolutionType>::variables(
     const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<
                                   SolutionType>::volume_dim>& /*x*/,
     double /*t*/,
     tmpl::list<GeneralizedHarmonic::Tags::Pi<
         GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-        Frame::Inertial>> /*meta*/,
+        Frame::Physical>> /*meta*/,
     const IntermediateVars& intermediate_vars) const noexcept {
   const auto& lapse = get<gr::Tags::Lapse<DataVector>>(intermediate_vars);
   const auto& dt_lapse =
@@ -118,7 +118,7 @@ WrappedGr<SolutionType>::variables(
 
   const auto& shift = get<gr::Tags::Shift<
       GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+      Frame::Physical, DataVector>>(intermediate_vars);
   const auto& dt_shift =
       get<typename WrappedGr<SolutionType>::TimeDerivShift>(intermediate_vars);
   const auto& deriv_shift =
@@ -126,7 +126,7 @@ WrappedGr<SolutionType>::variables(
 
   const auto& spatial_metric = get<gr::Tags::SpatialMetric<
       GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>::volume_dim,
-      Frame::Inertial, DataVector>>(intermediate_vars);
+      Frame::Physical, DataVector>>(intermediate_vars);
   const auto& dt_spatial_metric =
       get<typename WrappedGr<SolutionType>::TimeDerivSpatialMetric>(
           intermediate_vars);
@@ -173,14 +173,14 @@ WrappedGr<SolutionType>::variables(
       const IntermediateVars& intermediate_vars) const noexcept;               \
   template tuples::TaggedTuple<gr::Tags::Shift<                                \
       GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,      \
-      Frame::Inertial, DataVector>>                                            \
+      Frame::Physical, DataVector>>                                            \
   GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::variables(           \
       const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<     \
                                     STYPE(data)>::volume_dim>& /*x*/,          \
       double /*t*/,                                                            \
       tmpl::list<gr::Tags::Shift<                                              \
           GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,  \
-          Frame::Inertial, DataVector>> /*meta*/,                              \
+          Frame::Physical, DataVector>> /*meta*/,                              \
       const IntermediateVars& intermediate_vars) const noexcept;               \
   template tuples::TaggedTuple<typename GeneralizedHarmonic::Solutions::       \
                                    WrappedGr<STYPE(data)>::TimeDerivShift>     \
@@ -202,14 +202,14 @@ WrappedGr<SolutionType>::variables(
       const IntermediateVars& intermediate_vars) const noexcept;               \
   template tuples::TaggedTuple<gr::Tags::SpatialMetric<                        \
       GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,      \
-      Frame::Inertial, DataVector>>                                            \
+      Frame::Physical, DataVector>>                                            \
   GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::variables(           \
       const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<     \
                                     STYPE(data)>::volume_dim>& /*x*/,          \
       double /*t*/,                                                            \
       tmpl::list<gr::Tags::SpatialMetric<                                      \
           GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,  \
-          Frame::Inertial, DataVector>> /*meta*/,                              \
+          Frame::Physical, DataVector>> /*meta*/,                              \
       const IntermediateVars& intermediate_vars) const noexcept;               \
   template tuples::TaggedTuple<                                                \
       typename GeneralizedHarmonic::Solutions::WrappedGr<STYPE(                \
@@ -232,25 +232,25 @@ WrappedGr<SolutionType>::variables(
       const IntermediateVars& intermediate_vars) const noexcept;               \
   template tuples::TaggedTuple<gr::Tags::InverseSpatialMetric<                 \
       GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,      \
-      Frame::Inertial, DataVector>>                                            \
+      Frame::Physical, DataVector>>                                            \
   GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::variables(           \
       const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<     \
                                     STYPE(data)>::volume_dim>& /*x*/,          \
       double /*t*/,                                                            \
       tmpl::list<gr::Tags::InverseSpatialMetric<                               \
           GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,  \
-          Frame::Inertial, DataVector>> /*meta*/,                              \
+          Frame::Physical, DataVector>> /*meta*/,                              \
       const IntermediateVars& intermediate_vars) const noexcept;               \
   template tuples::TaggedTuple<gr::Tags::ExtrinsicCurvature<                   \
       GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,      \
-      Frame::Inertial, DataVector>>                                            \
+      Frame::Physical, DataVector>>                                            \
   GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::variables(           \
       const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<     \
                                     STYPE(data)>::volume_dim>& /*x*/,          \
       double /*t*/,                                                            \
       tmpl::list<gr::Tags::ExtrinsicCurvature<                                 \
           GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,  \
-          Frame::Inertial, DataVector>> /*meta*/,                              \
+          Frame::Physical, DataVector>> /*meta*/,                              \
       const IntermediateVars& intermediate_vars) const noexcept;               \
   template tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DataVector>>     \
   GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::variables(           \
@@ -261,36 +261,36 @@ WrappedGr<SolutionType>::variables(
       const IntermediateVars& intermediate_vars) const noexcept;               \
   template tuples::TaggedTuple<gr::Tags::SpacetimeMetric<                      \
       GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,      \
-      Frame::Inertial, DataVector>>                                            \
+      Frame::Physical, DataVector>>                                            \
   GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::variables(           \
       const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<     \
                                     STYPE(data)>::volume_dim>& /*x*/,          \
       double /*t*/,                                                            \
       tmpl::list<gr::Tags::SpacetimeMetric<                                    \
           GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,  \
-          Frame::Inertial, DataVector>> /*meta*/,                              \
+          Frame::Physical, DataVector>> /*meta*/,                              \
       const IntermediateVars& intermediate_vars) const noexcept;               \
   template tuples::TaggedTuple<GeneralizedHarmonic::Tags::Pi<                  \
       GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,      \
-      Frame::Inertial>>                                                        \
+      Frame::Physical>>                                                        \
   GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::variables(           \
       const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<     \
                                     STYPE(data)>::volume_dim>& /*x*/,          \
       double /*t*/,                                                            \
       tmpl::list<GeneralizedHarmonic::Tags::Pi<                                \
           GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,  \
-          Frame::Inertial>> /*meta*/,                                          \
+          Frame::Physical>> /*meta*/,                                          \
       const IntermediateVars& intermediate_vars) const noexcept;               \
   template tuples::TaggedTuple<GeneralizedHarmonic::Tags::Phi<                 \
       GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,      \
-      Frame::Inertial>>                                                        \
+      Frame::Physical>>                                                        \
   GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::variables(           \
       const tnsr::I<DataVector, GeneralizedHarmonic::Solutions::WrappedGr<     \
                                     STYPE(data)>::volume_dim>& /*x*/,          \
       double /*t*/,                                                            \
       tmpl::list<GeneralizedHarmonic::Tags::Phi<                               \
           GeneralizedHarmonic::Solutions::WrappedGr<STYPE(data)>::volume_dim,  \
-          Frame::Inertial>> /*meta*/,                                          \
+          Frame::Physical>> /*meta*/,                                          \
       const IntermediateVars& intermediate_vars) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::Minkowski<1>,

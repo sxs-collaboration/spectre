@@ -36,21 +36,21 @@ namespace {
 void test_1d_domains() {
   {
     CHECK(Tags::Domain<1, Frame::Logical>::name() == "Domain");
-    CHECK(Tags::Domain<1, Frame::Inertial>::name() == "Domain");
-    PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
+    CHECK(Tags::Domain<1, Frame::Physical>::name() == "Domain");
+    PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Physical,
                                          CoordinateMaps::Affine>));
 
     // Test construction of two intervals which have anti-aligned logical axes.
-    const Domain<1, Frame::Inertial> domain(
+    const Domain<1, Frame::Physical> domain(
         make_vector<std::unique_ptr<
-            CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
-            std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+            CoordinateMapBase<Frame::Logical, Frame::Physical, 1>>>(
+            std::make_unique<CoordinateMap<Frame::Logical, Frame::Physical,
                                            CoordinateMaps::Affine>>(
-                make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                make_coordinate_map<Frame::Logical, Frame::Physical>(
                     CoordinateMaps::Affine{-1., 1., -2., 0.})),
-            std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+            std::make_unique<CoordinateMap<Frame::Logical, Frame::Physical,
                                            CoordinateMaps::Affine>>(
-                make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                make_coordinate_map<Frame::Logical, Frame::Physical>(
                     CoordinateMaps::Affine{-1., 1., 0., 2.}))),
         std::vector<std::array<size_t, 2>>{{{1, 2}}, {{3, 2}}});
 
@@ -67,9 +67,9 @@ void test_1d_domains() {
         {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}};
 
     const auto expected_maps =
-        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Physical>(
                         CoordinateMaps::Affine{-1., 1., -2., 0.}),
-                    make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+                    make_coordinate_map_base<Frame::Logical, Frame::Physical>(
                         CoordinateMaps::Affine{-1., 1., 0., 2.}));
 
     test_domain_construction(domain, expected_neighbors, expected_boundaries,
@@ -80,24 +80,24 @@ void test_1d_domains() {
                              expected_maps);
 
     auto vector_of_blocks = [&expected_neighbors]() {
-      std::vector<Block<1, Frame::Inertial>> vec;
-      vec.emplace_back(Block<1, Frame::Inertial>{
-          std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+      std::vector<Block<1, Frame::Physical>> vec;
+      vec.emplace_back(Block<1, Frame::Physical>{
+          std::make_unique<CoordinateMap<Frame::Logical, Frame::Physical,
                                          CoordinateMaps::Affine>>(
-              make_coordinate_map<Frame::Logical, Frame::Inertial>(
+              make_coordinate_map<Frame::Logical, Frame::Physical>(
                   CoordinateMaps::Affine{-1., 1., -2., 0.})),
           0, expected_neighbors[0]});
-      vec.emplace_back(Block<1, Frame::Inertial>{
-          std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+      vec.emplace_back(Block<1, Frame::Physical>{
+          std::make_unique<CoordinateMap<Frame::Logical, Frame::Physical,
                                          CoordinateMaps::Affine>>(
-              make_coordinate_map<Frame::Logical, Frame::Inertial>(
+              make_coordinate_map<Frame::Logical, Frame::Physical>(
                   CoordinateMaps::Affine{-1., 1., 0., 2.})),
           1, expected_neighbors[1]});
       return vec;
     }();
 
     test_domain_construction(
-        Domain<1, Frame::Inertial>{std::move(vector_of_blocks)},
+        Domain<1, Frame::Physical>{std::move(vector_of_blocks)},
         expected_neighbors, expected_boundaries, expected_maps);
 
     CHECK(get_output(domain) == "Domain with 2 blocks:\n" +
@@ -108,15 +108,15 @@ void test_1d_domains() {
   {
     // Test construction of a periodic domain
     const auto expected_maps =
-        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Physical>(
             CoordinateMaps::Affine{-1., 1., -2., 2.}));
 
-    const Domain<1, Frame::Inertial> domain{
+    const Domain<1, Frame::Physical> domain{
         make_vector<std::unique_ptr<
-            CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
-            std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
+            CoordinateMapBase<Frame::Logical, Frame::Physical, 1>>>(
+            std::make_unique<CoordinateMap<Frame::Logical, Frame::Physical,
                                            CoordinateMaps::Affine>>(
-                make_coordinate_map<Frame::Logical, Frame::Inertial>(
+                make_coordinate_map<Frame::Logical, Frame::Physical>(
                     CoordinateMaps::Affine{-1., 1., -2., 2.}))),
         std::vector<std::array<size_t, 2>>{{{1, 2}}},
         std::vector<PairOfFaces>{{{1}, {2}}}};
@@ -139,7 +139,7 @@ void test_1d_domains() {
 SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") { test_1d_domains(); }
 SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
   SECTION("Aligned domain.") {
-    const auto domain = rectilinear_domain<1, Frame::Inertial>(
+    const auto domain = rectilinear_domain<1, Frame::Physical>(
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
         {}, {}, {{false}}, {}, true);
     const OrientationMap<1> aligned{};
@@ -165,7 +165,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
     const OrientationMap<1> aligned{};
     const OrientationMap<1> antialigned{
         std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
-    const auto domain = rectilinear_domain<1, Frame::Inertial>(
+    const auto domain = rectilinear_domain<1, Frame::Physical>(
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
         {}, std::vector<OrientationMap<1>>{aligned, antialigned, aligned},
         {{false}}, {}, true);
@@ -190,7 +190,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear2D", "[Domain][Unit]") {
-  CHECK(Tags::Domain<2, Frame::Inertial>::name() == "Domain");
+  CHECK(Tags::Domain<2, Frame::Physical>::name() == "Domain");
   const OrientationMap<2> half_turn{std::array<Direction<2>, 2>{
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
   const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
@@ -203,7 +203,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear2D", "[Domain][Unit]") {
   orientations_of_all_blocks[2] = quarter_turn_cw;
   orientations_of_all_blocks[3] = quarter_turn_ccw;
 
-  const auto domain = rectilinear_domain<2, Frame::Inertial>(
+  const auto domain = rectilinear_domain<2, Frame::Physical>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
       {}, orientations_of_all_blocks);
@@ -234,7 +234,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear2D", "[Domain][Unit]") {
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear3D", "[Domain][Unit]") {
-  CHECK(Tags::Domain<3, Frame::Inertial>::name() == "Domain");
+  CHECK(Tags::Domain<3, Frame::Physical>::name() == "Domain");
   const OrientationMap<3> aligned{};
   const OrientationMap<3> quarter_turn_cw_xi{std::array<Direction<3>, 3>{
       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
@@ -242,7 +242,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear3D", "[Domain][Unit]") {
   auto orientations_of_all_blocks =
       std::vector<OrientationMap<3>>{aligned, quarter_turn_cw_xi};
 
-  const auto domain = rectilinear_domain<3, Frame::Inertial>(
+  const auto domain = rectilinear_domain<3, Frame::Physical>(
       Index<3>{2, 1, 1},
       std::array<std::vector<double>, 3>{
           {{0.0, 1.0, 2.0}, {0.0, 1.0}, {0.0, 1.0}}},
@@ -274,10 +274,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear3D", "[Domain][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   // NOLINTNEXTLINE(misc-unused-raii)
-  Domain<1, Frame::Inertial>(
-      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+  Domain<1, Frame::Physical>(
+      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Physical>(
                       CoordinateMaps::Affine{-1., 1., -1., 1.}),
-                  make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+                  make_coordinate_map_base<Frame::Logical, Frame::Physical>(
                       CoordinateMaps::Affine{-1., 1., -1., 1.})),
       std::vector<std::array<size_t, 2>>{{{1, 2}}});
   ERROR("Failed to trigger ASSERT in an assertion test");

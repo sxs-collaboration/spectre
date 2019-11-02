@@ -161,7 +161,7 @@ struct TestKerrHorizonIntegral {
                         type& /*temporal_id*/) noexcept {
     const auto& interpolation_result = get<Tags::Square>(box);
     const auto& strahlkorper =
-        get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
+        get<StrahlkorperTags::Strahlkorper<Frame::Physical>>(box);
     const double integral = strahlkorper.ylm_spherepack().definite_integral(
         make_not_null(get(interpolation_result).data()));
     const double expected_integral = 608.0 * M_PI / 3.0;  // by hand
@@ -180,7 +180,7 @@ struct mock_interpolation_target {
   using const_global_cache_tags = tmpl::flatten<tmpl::append<
       Parallel::get_const_global_cache_tags_from_actions<
           tmpl::list<typename InterpolationTargetTag::compute_target_points>>,
-      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>>>;
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Physical>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -236,7 +236,7 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareComputeItem>;
     using compute_target_points =
-        intrp::Actions::KerrHorizon<InterpolationTargetC, ::Frame::Inertial>;
+        intrp::Actions::KerrHorizon<InterpolationTargetC, ::Frame::Physical>;
     using post_interpolation_callback = TestKerrHorizonIntegral;
   };
 
@@ -275,15 +275,15 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
                                                         1.0, {{0.0, 0.0, 0.0}});
   const auto domain_creator =
-      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+      domain::creators::Shell<Frame::Physical>(0.9, 4.9, 1, {{5, 5}}, false);
   tuples::TaggedTuple<
       intrp::Tags::LineSegment<metavars::InterpolationTargetA, 3>,
-      ::Tags::Domain<3, Frame::Inertial>,
+      ::Tags::Domain<3, Frame::Physical>,
       intrp::Tags::LineSegment<metavars::InterpolationTargetB, 3>,
       intrp::Tags::KerrHorizon<metavars::InterpolationTargetC>>
-      tuple_of_opts(
-          std::move(line_segment_opts_A), domain_creator.create_domain(),
-          std::move(line_segment_opts_B), kerr_horizon_opts_C);
+      tuple_of_opts(std::move(line_segment_opts_A),
+                    domain_creator.create_domain(),
+                    std::move(line_segment_opts_B), kerr_horizon_opts_C);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   runner.set_phase(metavars::Phase::Initialization);
@@ -339,18 +339,18 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
     ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
                    Spectral::Basis::Legendre,
                    Spectral::Quadrature::GaussLobatto};
-    ElementMap<3, Frame::Inertial> map{element_id,
+    ElementMap<3, Frame::Physical> map{element_id,
                                        block.coordinate_map().get_clone()};
-    const auto inertial_coords = map(logical_coordinates(mesh));
+    const auto physical_coords = map(logical_coordinates(mesh));
     db::item_type<
         ::Tags::Variables<typename metavars::interpolator_source_vars>>
         output_vars(mesh.number_of_grid_points());
     auto& test_solution = get<Tags::TestSolution>(output_vars);
 
     // Fill test_solution with some analytic solution.
-    get(test_solution) = 2.0 * get<0>(inertial_coords) +
-                         3.0 * get<1>(inertial_coords) +
-                         5.0 * get<2>(inertial_coords);
+    get(test_solution) = 2.0 * get<0>(physical_coords) +
+                         3.0 * get<1>(physical_coords) +
+                         5.0 * get<2>(physical_coords);
 
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,

@@ -25,7 +25,7 @@
 namespace {
 /// \cond
 struct MomentumUp {
-  using type = tnsr::I<DataVector, 3, Frame::Inertial>;
+  using type = tnsr::I<DataVector, 3, Frame::Physical>;
 };
 struct MomentumSquared {
   using type = Scalar<DataVector>;
@@ -48,23 +48,23 @@ namespace M1Grey {
 namespace detail {
 void compute_closure_impl(
     const gsl::not_null<Scalar<DataVector>*> closure_factor,
-    const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*>
+    const gsl::not_null<tnsr::II<DataVector, 3, Frame::Physical>*>
         pressure_tensor,
     const gsl::not_null<Scalar<DataVector>*> comoving_energy_density,
     const gsl::not_null<Scalar<DataVector>*> comoving_momentum_density_normal,
-    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Physical>*>
         comoving_momentum_density_spatial,
     const Scalar<DataVector>& energy_density,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& momentum_density,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& fluid_velocity,
+    const tnsr::i<DataVector, 3, Frame::Physical>& momentum_density,
+    const tnsr::I<DataVector, 3, Frame::Physical>& fluid_velocity,
     const Scalar<DataVector>& fluid_lorentz_factor,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>&
+    const tnsr::ii<DataVector, 3, Frame::Physical>& spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::Physical>&
         inv_spatial_metric) noexcept {
   // Small number used to avoid divisions by zero
   static constexpr double avoid_divisions_by_zero = 1.e-150;
   // Below small_velocity, we use the v=0 closure,
-  // and we do not differentiate between fluid/inertial frames
+  // and we do not differentiate between fluid/physical frames
   static constexpr double small_velocity = 1.e-15;
   // Dimension of spatial tensors
   constexpr size_t spatial_dim = 3;
@@ -75,7 +75,7 @@ void compute_closure_impl(
   Variables<tmpl::list<
       hydro::Tags::LorentzFactorSquared<DataVector>, MomentumSquared,
       MomentumUp,
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
+      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Physical>,
       hydro::Tags::SpatialVelocitySquared<DataVector>>>
       temp_closure_tensors(get(energy_density).size());
 
@@ -84,7 +84,7 @@ void compute_closure_impl(
   // and H^a the fluid-frame momentum density (0th and 1st moments).
 
   // We first compute various fluid quantities and contractions
-  // with inertial moments needed even if v^2 is small
+  // with physical moments needed even if v^2 is small
   auto& w_sqr =
       get<hydro::Tags::LorentzFactorSquared<DataVector>>(temp_closure_tensors);
   get(w_sqr) = square(get(fluid_lorentz_factor));
@@ -100,12 +100,12 @@ void compute_closure_impl(
   dot_product(make_not_null(&s_sqr), s_M, momentum_density);
   // v_i, the spatial velocity one-form of the fluid
   auto& v_m =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Physical>>(
           temp_closure_tensors);
   raise_or_lower_index(make_not_null(&v_m), fluid_velocity, spatial_metric);
 
   // Allocate memory for H^i
-  tnsr::I<double, 3, Frame::Inertial> H_M(0.);
+  tnsr::I<double, 3, Frame::Physical> H_M(0.);
   // Loop over points
   for (size_t s = 0; s < get(v_sqr).size(); ++s) {
     const double& v_sqr_pt = get(v_sqr)[s];
@@ -128,7 +128,7 @@ void compute_closure_impl(
       for (size_t i = 0; i < spatial_dim; i++) {
         comoving_momentum_density_spatial->get(i)[s] =
             momentum_density.get(i)[s];
-        // Closure assuming that fluid-frame = inertial frame
+        // Closure assuming that fluid-frame = physical frame
         for (size_t j = i; j < spatial_dim; j++) {
           pressure_tensor->get(i, j)[s] =
               d_thick_e_pt_over_3 * inv_spatial_metric.get(i, j)[s] +
@@ -159,7 +159,7 @@ void compute_closure_impl(
       //  - ( h0V + d_thick hThickV + d_thin hThinV) v_a
       //  - ( h0F + d_thick hThickF + d_thin hThinF) F_a
       // with t_a the unit normal, v_a the 3-velocity, and F_a the
-      // inertial frame momentum density. This is a decomposition of
+      // physical frame momentum density. This is a decomposition of
       // convenience, which is not unique: F_a and v_a are not
       // orthogonal vectors, but both are normal to t_a.
       const double& w_pt = get(fluid_lorentz_factor)[s];

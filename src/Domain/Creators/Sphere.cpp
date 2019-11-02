@@ -20,7 +20,7 @@
 /// \cond
 namespace Frame {
 struct Grid;      // IWYU pragma: keep
-struct Inertial;  // IWYU pragma: keep
+struct Physical;  // IWYU pragma: keep
 struct Logical;   // IWYU pragma: keep
 }  // namespace Frame
 /// \endcond
@@ -99,6 +99,6 @@ Sphere<TargetFrame>::initial_refinement_levels() const noexcept {
 }
 
 template class Sphere<Frame::Grid>;
-template class Sphere<Frame::Inertial>;
+template class Sphere<Frame::Physical>;
 }  // namespace creators
 }  // namespace domain

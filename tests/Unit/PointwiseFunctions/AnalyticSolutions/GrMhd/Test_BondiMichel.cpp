@@ -38,7 +38,7 @@ struct BondiMichelProxy : grmhd::Solutions::BondiMichel {
   template <typename DataType>
   using hydro_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Physical>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
@@ -47,7 +47,7 @@ struct BondiMichelProxy : grmhd::Solutions::BondiMichel {
   template <typename DataType>
   using grmhd_variables_tags =
       tmpl::push_back<hydro_variables_tags<DataType>,
-                      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                      hydro::Tags::MagneticField<DataType, 3, Frame::Physical>,
                       hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
@@ -127,7 +127,7 @@ void test_solution() noexcept {
   const std::array<double, 3> x{{4.0, 4.0, 4.0}};
   const std::array<double, 3> dx{{1.e-3, 1.e-3, 1.e-3}};
 
-  domain::creators::Brick<Frame::Inertial> brick(
+  domain::creators::Brick<Frame::Physical> brick(
       x - dx, x + dx, {{false, false, false}}, {{0, 0, 0}}, {{4, 4, 4}});
   Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};

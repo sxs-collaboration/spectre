@@ -85,17 +85,17 @@ def generate_xdmf(file_prefix, output_filename, start_time, stop_time, stride):
             # Write geometry/coordinates
             xdmf_output += "      <Geometry Type=\"X_Y_Z\">\n"
             xdmf_output += data_item + Grid_path + \
-                            "/InertialCoordinates_x\n        </DataItem>\n"
+                            "/PhysicalCoordinates_x\n        </DataItem>\n"
             xdmf_output += data_item + Grid_path + \
-                           "/InertialCoordinates_y\n        </DataItem>\n"
+                           "/PhysicalCoordinates_y\n        </DataItem>\n"
             xdmf_output += data_item + Grid_path + \
-                           "/InertialCoordinates_z\n        </DataItem>\n"
+                           "/PhysicalCoordinates_z\n        </DataItem>\n"
             xdmf_output += "      </Geometry>\n"
             # Everything that isn't a coordinate is a "component"
             components = list(h5temporal.keys())
-            components.remove('InertialCoordinates_x')
-            components.remove('InertialCoordinates_y')
-            components.remove('InertialCoordinates_z')
+            components.remove('PhysicalCoordinates_x')
+            components.remove('PhysicalCoordinates_y')
+            components.remove('PhysicalCoordinates_z')
             components.remove('connectivity')
             components.remove('total_extents')
             components.remove('grid_names')

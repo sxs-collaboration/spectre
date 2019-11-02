@@ -23,11 +23,11 @@ namespace ScalarWave {
 template <size_t Dim>
 void ComputeDuDt<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> dt_pi,
-    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Physical>*> dt_phi,
     const gsl::not_null<Scalar<DataVector>*> dt_psi,
     const Scalar<DataVector>& pi,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
-    const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) noexcept {
+    const tnsr::i<DataVector, Dim, Frame::Physical>& d_pi,
+    const tnsr::ij<DataVector, Dim, Frame::Physical>& d_phi) noexcept {
   get(*dt_psi) = -get(pi);
   get(*dt_pi) = -get<0, 0>(d_phi);
   for (size_t d = 1; d < Dim; ++d) {
@@ -41,12 +41,12 @@ void ComputeDuDt<Dim>::apply(
 template <size_t Dim>
 void ComputeNormalDotFluxes<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
-    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Physical>*>
         phi_normal_dot_flux,
     const gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
     const Scalar<DataVector>& pi,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+    const tnsr::i<DataVector, Dim, Frame::Physical>& phi,
+    const tnsr::i<DataVector, Dim, Frame::Physical>&
         interface_unit_normal) noexcept {
   // We assume that all values of psi_normal_dot_flux are the same. The reason
   // is that std::fill is actually surprisingly/disappointingly slow.
@@ -69,9 +69,9 @@ template <size_t Dim>
 void UpwindFlux<Dim>::package_data(
     const gsl::not_null<Variables<package_tags>*> packaged_data,
     const Scalar<DataVector>& normal_dot_flux_pi,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_dot_flux_phi,
+    const tnsr::i<DataVector, Dim, Frame::Physical>& normal_dot_flux_phi,
     const Scalar<DataVector>& pi,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
+    const tnsr::i<DataVector, Dim, Frame::Physical>& interface_unit_normal)
     const noexcept {
   // Computes the contribution to the numerical flux from one side of the
   // interface.
@@ -99,20 +99,20 @@ void UpwindFlux<Dim>::package_data(
 template <size_t Dim>
 void UpwindFlux<Dim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> pi_normal_dot_numerical_flux,
-    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Physical>*>
         phi_normal_dot_numerical_flux,
     const gsl::not_null<Scalar<DataVector>*> psi_normal_dot_numerical_flux,
     const Scalar<DataVector>& normal_dot_flux_pi_interior,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+    const tnsr::i<DataVector, Dim, Frame::Physical>&
         normal_dot_flux_phi_interior,
     const Scalar<DataVector>& pi_interior,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+    const tnsr::i<DataVector, Dim, Frame::Physical>&
         normal_times_flux_pi_interior,
     const Scalar<DataVector>& minus_normal_dot_flux_pi_exterior,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+    const tnsr::i<DataVector, Dim, Frame::Physical>&
         minus_normal_dot_flux_phi_exterior,
     const Scalar<DataVector>& pi_exterior,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+    const tnsr::i<DataVector, Dim, Frame::Physical>&
         normal_times_flux_pi_exterior) const noexcept {
   std::fill(psi_normal_dot_numerical_flux->get().begin(),
             psi_normal_dot_numerical_flux->get().end(), 0.);
@@ -143,7 +143,7 @@ template <size_t Dim>
 using variables_tags =
     typename ScalarWave::System<Dim>::variables_tag::tags_list;
 
-using derivative_frame = Frame::Inertial;
+using derivative_frame = Frame::Physical;
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

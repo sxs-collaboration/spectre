@@ -60,10 +60,10 @@ void primitive_from_conservative(
     gsl::not_null<Scalar<DataType>*> lorentz_factor,
     gsl::not_null<Scalar<DataType>*> specific_enthalpy,
     gsl::not_null<Scalar<DataType>*> pressure,
-    gsl::not_null<tnsr::I<DataType, Dim, Frame::Inertial>*> spatial_velocity,
+    gsl::not_null<tnsr::I<DataType, Dim, Frame::Physical>*> spatial_velocity,
     const Scalar<DataType>& tilde_d, const Scalar<DataType>& tilde_tau,
-    const tnsr::i<DataType, Dim, Frame::Inertial>& tilde_s,
-    const tnsr::II<DataType, Dim, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataType, Dim, Frame::Physical>& tilde_s,
+    const tnsr::II<DataType, Dim, Frame::Physical>& inv_spatial_metric,
     const Scalar<DataType>& sqrt_det_spatial_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) noexcept;

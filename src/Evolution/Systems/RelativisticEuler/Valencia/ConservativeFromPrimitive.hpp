@@ -42,10 +42,10 @@ template <typename DataType, size_t Dim>
 void conservative_from_primitive(
     gsl::not_null<Scalar<DataType>*> tilde_d,
     gsl::not_null<Scalar<DataType>*> tilde_tau,
-    gsl::not_null<tnsr::i<DataType, Dim, Frame::Inertial>*> tilde_s,
+    gsl::not_null<tnsr::i<DataType, Dim, Frame::Physical>*> tilde_s,
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
-    const tnsr::i<DataType, Dim, Frame::Inertial>& spatial_velocity_oneform,
+    const tnsr::i<DataType, Dim, Frame::Physical>& spatial_velocity_oneform,
     const Scalar<DataType>& spatial_velocity_squared,
     const Scalar<DataType>& lorentz_factor,
     const Scalar<DataType>& specific_enthalpy, const Scalar<DataType>& pressure,

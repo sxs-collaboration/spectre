@@ -35,7 +35,7 @@ SPECTRE_TEST_CASE("Unit.Burgers.Fluxes", "[Unit][Burgers]") {
                      Spectral::Quadrature::GaussLobatto);
   const auto coords = get<0>(logical_coordinates(mesh));
   const auto identity = make_with_value<
-      InverseJacobian<DataVector, 1, Frame::Logical, Frame::Inertial>>(coords,
+      InverseJacobian<DataVector, 1, Frame::Logical, Frame::Physical>>(coords,
                                                                        1.);
 
   Variables<tmpl::list<Burgers::Tags::U>> vars(num_points);
@@ -48,11 +48,11 @@ SPECTRE_TEST_CASE("Unit.Burgers.Fluxes", "[Unit][Burgers]") {
   const Scalar<DataVector> dudt_expected{
       -get(get<Burgers::Tags::U>(vars)) *
       get<0>(
-          get<Tags::deriv<Burgers::Tags::U, tmpl::size_t<1>, Frame::Inertial>>(
+          get<Tags::deriv<Burgers::Tags::U, tmpl::size_t<1>, Frame::Physical>>(
               deriv_vars))};
 
   using flux_tag =
-      Tags::Flux<Burgers::Tags::U, tmpl::size_t<1>, Frame::Inertial>;
+      Tags::Flux<Burgers::Tags::U, tmpl::size_t<1>, Frame::Physical>;
   Variables<tmpl::list<flux_tag>> flux(num_points);
   Burgers::Fluxes::apply(&get<flux_tag>(flux), get<Burgers::Tags::U>(vars));
   const auto div_flux = divergence(flux, mesh, identity);

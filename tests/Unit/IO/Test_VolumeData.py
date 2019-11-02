@@ -84,9 +84,9 @@ class TestIOH5VolumeData(unittest.TestCase):
         obs_id = vol_file.list_observation_ids()[0]
         tensor_comps = vol_file.list_tensor_components(obs_id)
         expected_tensor_comps = ['Psi', 'Error(Psi)',
-                                 'InertialCoordinates_x',
-                                 'InertialCoordinates_y',
-                                 'InertialCoordinates_z']
+                                 'PhysicalCoordinates_x',
+                                 'PhysicalCoordinates_y',
+                                 'PhysicalCoordinates_z']
         self.assertItemsEqual(tensor_comps, expected_tensor_comps)
         expected_Psi_tensor_data = np.array([-0.0173205080756888,
                                              -0.0173205080756888,
@@ -135,15 +135,15 @@ class TestIOH5VolumeData(unittest.TestCase):
         npt.assert_array_almost_equal(Error_tensor_data,
                                       expected_Error_tensor_data)
         xcoord_tensor_data = np.asarray(vol_file.get_tensor_component(
-                obs_id, 'InertialCoordinates_x'))
+                obs_id, 'PhysicalCoordinates_x'))
         npt.assert_array_almost_equal(xcoord_tensor_data,
                                       expected_xcoord_tensor_data)
         ycoord_tensor_data = np.asarray(vol_file.get_tensor_component(
-                obs_id, 'InertialCoordinates_y'))
+                obs_id, 'PhysicalCoordinates_y'))
         npt.assert_array_almost_equal(ycoord_tensor_data,
                                       expected_ycoord_tensor_data)
         zcoord_tensor_data = np.asarray(vol_file.get_tensor_component(
-                obs_id, 'InertialCoordinates_z'))
+                obs_id, 'PhysicalCoordinates_z'))
         npt.assert_array_almost_equal(zcoord_tensor_data,
                                       expected_zcoord_tensor_data)
         h5_file.close()

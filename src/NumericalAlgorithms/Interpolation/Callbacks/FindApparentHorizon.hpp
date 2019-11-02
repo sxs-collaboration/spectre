@@ -96,24 +96,24 @@ struct FindApparentHorizon {
 
     const auto& verbosity = db::get<::Tags::Verbosity>(*box);
     const auto& inv_g =
-        db::get<::gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(*box);
+        db::get<::gr::Tags::InverseSpatialMetric<3, Frame::Physical>>(*box);
     const auto& ex_curv =
-        db::get<::gr::Tags::ExtrinsicCurvature<3, Frame::Inertial>>(*box);
+        db::get<::gr::Tags::ExtrinsicCurvature<3, Frame::Physical>>(*box);
     const auto& christoffel =
-        db::get<::gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial>>(
+        db::get<::gr::Tags::SpatialChristoffelSecondKind<3, Frame::Physical>>(
             *box);
 
     std::pair<FastFlow::Status, FastFlow::IterInfo> status_and_info;
 
     // Do a FastFlow iteration.
     db::mutate<::ah::Tags::FastFlow,
-               StrahlkorperTags::Strahlkorper<Frame::Inertial>>(
-        box, [&inv_g, &ex_curv, &christoffel, &status_and_info ](
+               StrahlkorperTags::Strahlkorper<Frame::Physical>>(
+        box, [&inv_g, &ex_curv, &christoffel, &status_and_info](
                  const gsl::not_null<::FastFlow*> fast_flow,
-                 const gsl::not_null<::Strahlkorper<Frame::Inertial>*>
+                 const gsl::not_null<::Strahlkorper<Frame::Physical>*>
                      strahlkorper) noexcept {
           status_and_info =
-              fast_flow->template iterate_horizon_finder<Frame::Inertial>(
+              fast_flow->template iterate_horizon_finder<Frame::Physical>(
                   strahlkorper, inv_g, ex_curv, christoffel);
         });
 
@@ -197,17 +197,17 @@ struct FindApparentHorizon {
     using vars_tags =
         typename InterpolationTargetTag::vars_to_interpolate_to_target;
     db::mutate_apply<tmpl::list<::Tags::Variables<vars_tags>>,
-                     tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Inertial>,
+                     tmpl::list<StrahlkorperTags::Strahlkorper<Frame::Physical>,
                                 ::ah::Tags::FastFlow>>(
-        [
-        ](const gsl::not_null<db::item_type<::Tags::Variables<vars_tags>>*>
-              vars,
-          const db::const_item_type<
-              StrahlkorperTags::Strahlkorper<Frame::Inertial>>& strahlkorper,
-          const db::const_item_type<::ah::Tags::FastFlow>& fast_flow) noexcept {
+        [](const gsl::not_null<db::item_type<::Tags::Variables<vars_tags>>*>
+               vars,
+           const db::const_item_type<
+               StrahlkorperTags::Strahlkorper<Frame::Physical>>& strahlkorper,
+           const db::const_item_type<::ah::Tags::FastFlow>&
+               fast_flow) noexcept {
           const size_t L_mesh = fast_flow.current_l_mesh(strahlkorper);
           const auto prolonged_strahlkorper =
-              Strahlkorper<Frame::Inertial>(L_mesh, L_mesh, strahlkorper);
+              Strahlkorper<Frame::Physical>(L_mesh, L_mesh, strahlkorper);
           auto new_vars = db::item_type<::Tags::Variables<vars_tags>>(
               strahlkorper.ylm_spherepack().physical_size());
 

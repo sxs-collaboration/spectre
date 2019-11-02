@@ -122,33 +122,33 @@ class ConstantDensityStar {
   /// Retrieve variable at coordinates `x`
   template <typename DataType>
   auto variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
+      const tnsr::I<DataType, 3, Frame::Physical>& x,
       tmpl::list<Xcts::Tags::ConformalFactor<DataType>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<Xcts::Tags::ConformalFactor<DataType>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
+  auto variables(const tnsr::I<DataType, 3, Frame::Physical>& x,
                  tmpl::list<::Tags::Initial<
                      Xcts::Tags::ConformalFactor<DataType>>> /*meta*/) const
       noexcept -> tuples::TaggedTuple<
           ::Tags::Initial<Xcts::Tags::ConformalFactor<DataType>>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
+  auto variables(const tnsr::I<DataType, 3, Frame::Physical>& x,
                  tmpl::list<::Tags::Initial<Xcts::Tags::ConformalFactorGradient<
-                     3, Frame::Inertial, DataType>>> /*meta*/) const noexcept
+                     3, Frame::Physical, DataType>>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<::Tags::Initial<
-          Xcts::Tags::ConformalFactorGradient<3, Frame::Inertial, DataType>>>;
+          Xcts::Tags::ConformalFactorGradient<3, Frame::Physical, DataType>>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
+  auto variables(const tnsr::I<DataType, 3, Frame::Physical>& x,
                  tmpl::list<::Tags::FixedSource<
                      Xcts::Tags::ConformalFactor<DataType>>> /*meta*/) const
       noexcept -> tuples::TaggedTuple<
           ::Tags::FixedSource<Xcts::Tags::ConformalFactor<DataType>>>;
 
   template <typename DataType>
-  auto variables(const tnsr::I<DataType, 3, Frame::Inertial>& x,
+  auto variables(const tnsr::I<DataType, 3, Frame::Physical>& x,
                  tmpl::list<gr::Tags::EnergyDensity<DataType>> /*meta*/) const
       noexcept -> tuples::TaggedTuple<gr::Tags::EnergyDensity<DataType>>;
   // @}
@@ -156,7 +156,7 @@ class ConstantDensityStar {
   /// Retrieve a collection of variables at coordinates `x`
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
+      const tnsr::I<DataType, 3, Frame::Physical>& x,
       tmpl::list<Tags...> /*meta*/) const noexcept {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "

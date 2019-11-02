@@ -51,7 +51,7 @@ using vars_tag =
     Tags::Variables<tmpl::list<ScalarFieldTag, AuxiliaryFieldTag<Dim>>>;
 template <size_t Dim>
 using fluxes_tag = db::add_tag_prefix<::Tags::Flux, vars_tag<Dim>,
-                                      tmpl::size_t<Dim>, Frame::Inertial>;
+                                      tmpl::size_t<Dim>, Frame::Physical>;
 template <size_t Dim>
 using div_fluxes_tag = db::add_tag_prefix<::Tags::div, fluxes_tag<Dim>>;
 template <size_t Dim>
@@ -86,7 +86,7 @@ struct ElementArray {
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<Dim, Frame::Inertial>>;
+      tmpl::list<::Tags::Domain<Dim, Frame::Physical>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -144,7 +144,7 @@ void check_compute_items(
         ElementArray<Dim, Metavariables<Dim>>, tag>(runner, element_id);
   };
   CHECK(tag_is_retrievable(
-      ::Tags::Flux<ScalarFieldTag, tmpl::size_t<Dim>, Frame::Inertial>{}));
+      ::Tags::Flux<ScalarFieldTag, tmpl::size_t<Dim>, Frame::Physical>{}));
 }
 
 template <size_t Dim, typename DomainFrame>
@@ -183,7 +183,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InitializeFluxes",
     // Reference element:
     // [X| | | ]-> xi
     const ElementId<1> element_id{0, {{{2, 0}}}};
-    const domain::creators::Interval<Frame::Inertial> domain_creator{
+    const domain::creators::Interval<Frame::Physical> domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
 
     test_initialize_fluxes(domain_creator, element_id);
@@ -198,7 +198,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InitializeFluxes",
     // | | |
     // +-+-+
     const ElementId<2> element_id{0, {{{1, 0}, {1, 1}}}};
-    const domain::creators::Rectangle<Frame::Inertial> domain_creator{
+    const domain::creators::Rectangle<Frame::Physical> domain_creator{
         {{-0.5, 0.}}, {{1.5, 1.}}, {{false, false}}, {{1, 1}}, {{3, 2}}};
 
     test_initialize_fluxes(domain_creator, element_id);
@@ -207,7 +207,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InitializeFluxes",
     INFO("3D");
     const ElementId<3> element_id{
         0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{1, 0}}}};
-    const domain::creators::Brick<Frame::Inertial> domain_creator{
+    const domain::creators::Brick<Frame::Physical> domain_creator{
         {{-0.5, 0., -1.}},
         {{1.5, 1., 3.}},
         {{false, false, false}},

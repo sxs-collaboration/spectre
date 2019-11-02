@@ -29,21 +29,21 @@
 
 namespace {
 
-inline tnsr::I<double, 1, Frame::Inertial> extract_point_from_coords(
+inline tnsr::I<double, 1, Frame::Physical> extract_point_from_coords(
     const size_t offset, const tnsr::I<DataVector, 1>& x) {
-  return tnsr::I<double, 1, Frame::Inertial>{
+  return tnsr::I<double, 1, Frame::Physical>{
       std::array<double, 1>{{x.get(0)[offset]}}};
 }
 
-inline tnsr::I<double, 2, Frame::Inertial> extract_point_from_coords(
+inline tnsr::I<double, 2, Frame::Physical> extract_point_from_coords(
     const size_t offset, const tnsr::I<DataVector, 2>& x) {
-  return tnsr::I<double, 2, Frame::Inertial>{
+  return tnsr::I<double, 2, Frame::Physical>{
       std::array<double, 2>{{x.get(0)[offset], x.get(1)[offset]}}};
 }
 
-inline tnsr::I<double, 3, Frame::Inertial> extract_point_from_coords(
+inline tnsr::I<double, 3, Frame::Physical> extract_point_from_coords(
     const size_t offset, const tnsr::I<DataVector, 3>& x) {
-  return tnsr::I<double, 3, Frame::Inertial>{std::array<double, 3>{
+  return tnsr::I<double, 3, Frame::Physical>{std::array<double, 3>{
       {x.get(0)[offset], x.get(1)[offset], x.get(2)[offset]}}};
 }
 

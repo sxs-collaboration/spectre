@@ -75,16 +75,16 @@ class ConstantM1 : public MarkAsAnalyticSolution {
   template <typename NeutrinoSpecies>
   auto variables(const tnsr::I<DataVector, 3>& x, double t,
                  tmpl::list<RadiationTransport::M1Grey::Tags::TildeE<
-                     Frame::Inertial, NeutrinoSpecies>> /*meta*/) const noexcept
+                     Frame::Physical, NeutrinoSpecies>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::TildeE<
-          Frame::Inertial, NeutrinoSpecies>>;
+          Frame::Physical, NeutrinoSpecies>>;
 
   template <typename NeutrinoSpecies>
   auto variables(const tnsr::I<DataVector, 3>& x, double t,
                  tmpl::list<RadiationTransport::M1Grey::Tags::TildeS<
-                     Frame::Inertial, NeutrinoSpecies>> /*meta*/) const noexcept
+                     Frame::Physical, NeutrinoSpecies>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::TildeS<
-          Frame::Inertial, NeutrinoSpecies>>;
+          Frame::Physical, NeutrinoSpecies>>;
   // @}
 
   // @{
@@ -96,9 +96,9 @@ class ConstantM1 : public MarkAsAnalyticSolution {
 
   auto variables(const tnsr::I<DataVector, 3>& x, double t,
                  tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataVector, 3, Frame::Inertial>> /*meta*/) const noexcept
+                     DataVector, 3, Frame::Physical>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>;
+          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Physical>>;
   // @}
 
   /// Retrieve a collection of hydro and/or M1 variables at `(x, t)`

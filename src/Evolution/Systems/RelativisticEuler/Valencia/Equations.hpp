@@ -61,17 +61,17 @@ template <size_t Dim>
 void compute_source_terms_of_u(
     gsl::not_null<Scalar<DataVector>*> source_tilde_d,
     gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
-    gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> source_tilde_s,
+    gsl::not_null<tnsr::i<DataVector, Dim, Frame::Physical>*> source_tilde_s,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
+    const tnsr::i<DataVector, Dim, Frame::Physical>& tilde_s,
+    const tnsr::I<DataVector, Dim, Frame::Physical>& spatial_velocity,
     const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& d_lapse,
-    const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_shift,
-    const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, Dim, Frame::Physical>& d_lapse,
+    const tnsr::iJ<DataVector, Dim, Frame::Physical>& d_shift,
+    const tnsr::ijj<DataVector, Dim, Frame::Physical>& d_spatial_metric,
+    const tnsr::II<DataVector, Dim, Frame::Physical>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>&
+    const tnsr::ii<DataVector, Dim, Frame::Physical>&
         extrinsic_curvature) noexcept;
 }  // namespace Valencia
 }  // namespace RelativisticEuler

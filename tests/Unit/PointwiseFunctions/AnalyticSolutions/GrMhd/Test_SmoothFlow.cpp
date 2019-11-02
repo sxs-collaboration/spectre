@@ -42,7 +42,7 @@ struct SmoothFlowProxy : grmhd::Solutions::SmoothFlow {
   template <typename DataType>
   using hydro_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Physical>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
@@ -51,7 +51,7 @@ struct SmoothFlowProxy : grmhd::Solutions::SmoothFlow {
   template <typename DataType>
   using grmhd_variables_tags =
       tmpl::push_back<hydro_variables_tags<DataType>,
-                      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                      hydro::Tags::MagneticField<DataType, 3, Frame::Physical>,
                       hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
@@ -145,15 +145,15 @@ void test_variables(const DataType& used_for_size) {
           coords, 0.0,
           tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>>{})));
   auto expected_spatial_metric =
-      make_with_value<tnsr::ii<DataType, 3, Frame::Inertial>>(used_for_size,
+      make_with_value<tnsr::ii<DataType, 3, Frame::Physical>>(used_for_size,
                                                               0.0);
   for (size_t i = 0; i < 3; ++i) {
     expected_spatial_metric.get(i, i) = 1.0;
   }
   const auto spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(soln.variables(
+      get<gr::Tags::SpatialMetric<3, Frame::Physical, DataType>>(soln.variables(
           coords, 0.0,
-          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{}));
+          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Physical, DataType>>{}));
   CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 }
 
@@ -163,7 +163,7 @@ void test_solution() noexcept {
   const std::array<double, 3> x{{4.0, 4.0, 4.0}};
   const std::array<double, 3> dx{{1.e-3, 1.e-3, 1.e-3}};
 
-  domain::creators::Brick<Frame::Inertial> brick(
+  domain::creators::Brick<Frame::Physical> brick(
       x - dx, x + dx, {{false, false, false}}, {{0, 0, 0}}, {{4, 4, 4}});
   Mesh<3> mesh{brick.initial_extents()[0], Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto};

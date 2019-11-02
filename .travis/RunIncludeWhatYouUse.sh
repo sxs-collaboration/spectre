@@ -139,7 +139,7 @@ sometimes. Known problematic cases are:\n\
 - Class template declarations with default template parameters are not\n\
   handled correctly. See issue #530 on IWYU GitHub. Specifically, say you\n\
   have a header TagsDeclarations.hpp that declares\n\
-  'template <size_t Dim, class Frame = Frame::Inertial> MyTag;' and another\n\
+  'template <size_t Dim, class Frame = Frame::Physical> MyTag;' and another\n\
   header file Tags.hpp that defines the class. Then it suffices and is\n\
   optimal to include TagsDeclarations.hpp in other header files that do not\n\
   need the definition of the Tags. However, IWYU will tell you to provide the\n\

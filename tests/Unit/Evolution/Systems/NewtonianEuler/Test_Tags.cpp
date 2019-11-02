@@ -22,7 +22,7 @@ void test_tags() noexcept {
         "CharacteristicSpeeds");
   CHECK(NewtonianEuler::Tags::MassDensity<DataVector>::name() == "MassDensity");
   CHECK(NewtonianEuler::Tags::MomentumDensity<DataVector, Dim,
-                                              Frame::Inertial>::name() ==
+                                              Frame::Physical>::name() ==
         "MomentumDensity");
   CHECK(NewtonianEuler::Tags::MomentumDensity<DataVector, Dim,
                                               Frame::Grid>::name() ==
@@ -30,7 +30,7 @@ void test_tags() noexcept {
   CHECK(NewtonianEuler::Tags::EnergyDensity<DataVector>::name() ==
         "EnergyDensity");
   CHECK(NewtonianEuler::Tags::Velocity<DataVector, Dim,
-                                       Frame::Inertial>::name() == "Velocity");
+                                       Frame::Physical>::name() == "Velocity");
   CHECK(
       NewtonianEuler::Tags::Velocity<DataVector, Dim, Frame::Logical>::name() ==
       "Logical_Velocity");

@@ -68,11 +68,11 @@ template <size_t Dim>
 void test_computers(const DataVector& used_for_size) {
   using field_tag = Poisson::Tags::Field;
   using auxiliary_field_tag =
-      ::Tags::deriv<field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
+      ::Tags::deriv<field_tag, tmpl::size_t<Dim>, Frame::Physical>;
   using field_flux_tag =
-      ::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
+      ::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Physical>;
   using auxiliary_flux_tag =
-      ::Tags::Flux<auxiliary_field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
+      ::Tags::Flux<auxiliary_field_tag, tmpl::size_t<Dim>, Frame::Physical>;
   using field_source_tag = ::Tags::Source<field_tag>;
 
   const size_t num_points = used_for_size.size();
@@ -148,26 +148,26 @@ void test_first_order_internal_penalty_flux(
     const db::DataBox<DbTagsList>& domain_box) {
   using field_tag = Poisson::Tags::Field;
   using auxiliary_field_tag =
-      ::Tags::deriv<field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
+      ::Tags::deriv<field_tag, tmpl::size_t<Dim>, Frame::Physical>;
 
   const auto num_points =
       get<Tags::Mesh<Dim>>(domain_box).number_of_grid_points();
 
-  const auto& inertial_coords =
-      get<Tags::Coordinates<Dim, Frame::Inertial>>(domain_box);
+  const auto& physical_coords =
+      get<Tags::Coordinates<Dim, Frame::Physical>>(domain_box);
 
   const Poisson::Solutions::ProductOfSinusoids<Dim> solution(
       make_array<Dim>(1.));
   const auto field_variables = solution.variables(
-      inertial_coords, tmpl::list<field_tag, auxiliary_field_tag>{});
+      physical_coords, tmpl::list<field_tag, auxiliary_field_tag>{});
 
   // Any numbers are fine, doesn't have anything to do with unit normal
-  tnsr::i<DataVector, Dim, Frame::Inertial> unit_normal(num_points, 0.0);
-  tnsr::i<DataVector, Dim, Frame::Inertial> opposite_unit_normal(num_points,
+  tnsr::i<DataVector, Dim, Frame::Physical> unit_normal(num_points, 0.0);
+  tnsr::i<DataVector, Dim, Frame::Physical> opposite_unit_normal(num_points,
                                                                  0.0);
   for (size_t d = 0; d < Dim; ++d) {
-    unit_normal.get(d) = inertial_coords.get(d);
-    opposite_unit_normal.get(d) = -inertial_coords.get(d);
+    unit_normal.get(d) = physical_coords.get(d);
+    opposite_unit_normal.get(d) = -physical_coords.get(d);
   }
 
   Variables<typename Poisson::FirstOrderInternalPenaltyFlux<Dim>::package_tags>
@@ -179,10 +179,10 @@ void test_first_order_internal_penalty_flux(
 
   Poisson::FirstOrderInternalPenaltyFlux<Dim> flux_computer(10.);
   Scalar<DataVector> normal_dot_numerical_flux_for_field(num_points, 0.0);
-  tnsr::i<DataVector, Dim, Frame::Inertial>
+  tnsr::i<DataVector, Dim, Frame::Physical>
       normal_dot_numerical_flux_for_aux_field(num_points, 0.0);
 
-  tnsr::i<DataVector, Dim, Frame::Inertial> normal_times_field(num_points, 0.0);
+  tnsr::i<DataVector, Dim, Frame::Physical> normal_times_field(num_points, 0.0);
   Scalar<DataVector> normal_dot_aux_field(num_points, 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     normal_times_field.get(d) =
@@ -214,11 +214,11 @@ void test_first_order_internal_penalty_flux(
 
   // Manufacture different data for the exterior
   Scalar<DataVector> ext_field(num_points, 0.0);
-  get(ext_field) += get<0>(inertial_coords);
-  tnsr::i<DataVector, Dim, Frame::Inertial> ext_grad_field(num_points, 0.0);
+  get(ext_field) += get<0>(physical_coords);
+  tnsr::i<DataVector, Dim, Frame::Physical> ext_grad_field(num_points, 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     ext_grad_field.get(d) = get<auxiliary_field_tag>(field_variables).get(d) +
-                            inertial_coords.get(d);
+                            physical_coords.get(d);
   }
 
   // Conservation: u^* is single-valued (same on both sides of the interface)
@@ -235,7 +235,7 @@ void test_first_order_internal_penalty_flux(
 
     Scalar<DataVector> reversed_normal_dot_numerical_flux_for_field(num_points,
                                                                     0.0);
-    tnsr::i<DataVector, Dim, Frame::Inertial>
+    tnsr::i<DataVector, Dim, Frame::Physical>
         reversed_normal_dot_numerical_flux_for_aux_field(num_points, 0.0);
     apply_numerical_flux(
         flux_computer, packaged_data_ext, packaged_data_int,
@@ -265,7 +265,7 @@ void test_first_order_internal_penalty_flux(
 
     Scalar<DataVector> expected_normal_dot_numerical_flux_for_field(num_points,
                                                                     0.0);
-    tnsr::i<DataVector, Dim, Frame::Inertial>
+    tnsr::i<DataVector, Dim, Frame::Physical>
         expected_normal_dot_numerical_flux_for_aux_field(num_points, 0.0);
     get(expected_normal_dot_numerical_flux_for_field) =
         -10. * (get(get<field_tag>(field_variables)) - get(ext_field));
@@ -304,26 +304,26 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.FirstOrderInternalPenalty",
   using Affine = domain::CoordinateMaps::Affine;
   Mesh<1> mesh_1d{5, Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto};
-  ElementMap<1, Frame::Inertial> element_map_1d{
+  ElementMap<1, Frame::Physical> element_map_1d{
       ElementId<1>{0, make_array<1>(SegmentId{0, 0})},
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           Affine{-1., 1., 0., M_PI})};
   auto domain_box_1d = db::create<simple_tags<1>, compute_tags<1>>(
       mesh_1d, std::move(element_map_1d));
   Mesh<2> mesh_2d{5, Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto};
-  ElementMap<2, Frame::Inertial> element_map_2d{
+  ElementMap<2, Frame::Physical> element_map_2d{
       ElementId<2>{0, make_array<2>(SegmentId{0, 0})},
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(
               Affine{-1., 1., 0., M_PI}, Affine{-1., 1., 0., M_PI}))};
   auto domain_box_2d = db::create<simple_tags<2>, compute_tags<2>>(
       mesh_2d, std::move(element_map_2d));
   Mesh<3> mesh_3d{5, Spectral::Basis::Legendre,
                   Spectral::Quadrature::GaussLobatto};
-  ElementMap<3, Frame::Inertial> element_map_3d{
+  ElementMap<3, Frame::Physical> element_map_3d{
       ElementId<3>{0, make_array<3>(SegmentId{0, 0})},
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
           domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>(
               Affine{-1., 1., 0., M_PI}, Affine{-1., 1., 0., M_PI},
               Affine{-1., 1., 0., M_PI}))};

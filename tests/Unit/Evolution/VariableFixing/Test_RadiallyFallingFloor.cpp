@@ -31,7 +31,7 @@ void test_variable_fixer(
   const DataVector x{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector y{-2.0, -1.0, 0.0, 1.0, 2.0};
   const DataVector z{-2.0, -1.0, 0.0, 1.0, 2.0};
-  tnsr::I<DataVector, 3, Frame::Inertial> coords{{{x, y, z}}};
+  tnsr::I<DataVector, 3, Frame::Physical> coords{{{x, y, z}}};
   variable_fixer(&density, &pressure, coords);
   CHECK_ITERABLE_APPROX(pressure.get(), expected_pressure);
   CHECK_ITERABLE_APPROX(density.get(), expected_density);

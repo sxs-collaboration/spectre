@@ -18,7 +18,7 @@
 /// \cond
 namespace Frame {
 struct Grid;
-struct Inertial;
+struct Physical;
 struct Logical;
 }  // namespace Frame
 /// \endcond
@@ -78,7 +78,7 @@ Brick<TargetFrame>::initial_refinement_levels() const noexcept {
   return {initial_refinement_level_xyz_};
 }
 
-template class Brick<Frame::Inertial>;
+template class Brick<Frame::Physical>;
 template class Brick<Frame::Grid>;
 }  // namespace creators
 }  // namespace domain

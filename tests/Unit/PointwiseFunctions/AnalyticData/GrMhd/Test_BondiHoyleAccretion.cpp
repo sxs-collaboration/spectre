@@ -44,14 +44,14 @@ struct BondiHoyleAccretionProxy : grmhd::AnalyticData::BondiHoyleAccretion {
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<hydro_variables_tags<DataType>>
-  hydro_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
+  hydro_variables(const tnsr::I<DataType, 3, Frame::Physical>& x) const
       noexcept {
     return variables(x, hydro_variables_tags<DataType>{});
   }
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<grmhd_variables_tags<DataType>>
-  grmhd_variables(const tnsr::I<DataType, 3, Frame::Inertial>& x) const
+  grmhd_variables(const tnsr::I<DataType, 3, Frame::Physical>& x) const
       noexcept {
     return variables(x, grmhd_variables_tags<DataType>{});
   }

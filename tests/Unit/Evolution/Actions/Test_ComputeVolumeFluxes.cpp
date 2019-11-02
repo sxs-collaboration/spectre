@@ -34,17 +34,17 @@ struct Var1 : db::SimpleTag {
 
 struct Var2 : db::SimpleTag {
   static std::string name() noexcept { return "Var2"; }
-  using type = tnsr::I<double, dim, Frame::Inertial>;
+  using type = tnsr::I<double, dim, Frame::Physical>;
 };
 
-using flux_tag = Tags::Flux<Var1, tmpl::size_t<dim>, Frame::Inertial>;
+using flux_tag = Tags::Flux<Var1, tmpl::size_t<dim>, Frame::Physical>;
 
 struct ComputeFluxes {
   using argument_tags = tmpl::list<Var2, Var1>;
   using return_tags = tmpl::list<flux_tag>;
   static void apply(
-      const gsl::not_null<tnsr::I<double, dim, Frame::Inertial>*> flux1,
-      const tnsr::I<double, dim, Frame::Inertial>& var2,
+      const gsl::not_null<tnsr::I<double, dim, Frame::Physical>*> flux1,
+      const tnsr::I<double, dim, Frame::Physical>& var2,
       const Scalar<double>& var1) noexcept {
     get<0>(*flux1) = get(var1) * (get<0>(var2) - get<1>(var2));
     get<1>(*flux1) = get(var1) * (get<0>(var2) + get<1>(var2));

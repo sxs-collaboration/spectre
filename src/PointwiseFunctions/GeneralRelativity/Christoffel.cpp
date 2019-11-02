@@ -60,8 +60,8 @@ tnsr::abb<DataType, SpatialDim, Frame, Index> christoffel_first_kind(
           d_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Inertial,
-                         Frame::Spherical<Frame::Inertial>),
+                        (Frame::Grid, Frame::Physical,
+                         Frame::Spherical<Frame::Physical>),
                         (IndexType::Spatial, IndexType::Spacetime))
 
 #undef DIM

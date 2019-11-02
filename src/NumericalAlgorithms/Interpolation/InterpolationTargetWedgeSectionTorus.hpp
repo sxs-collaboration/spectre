@@ -57,7 +57,7 @@ namespace OptionHolders {
 /// then \f$\theta\f$, and finally \f$\phi\f$ varying slowest.
 ///
 /// \note Input coordinates (radii, angles) are interpreted in the
-/// `Frame::Inertial`
+/// `Frame::Physical`
 struct WedgeSectionTorus {
   struct MinRadius {
     using type = double;
@@ -290,7 +290,7 @@ struct WedgeSectionTorus {
 
     // Compute x/y/z coordinates
     // Note: theta measured from +z axis, phi measured from +x axis
-    tnsr::I<DataVector, 3, Frame::Inertial> target_points(num_total);
+    tnsr::I<DataVector, 3, Frame::Physical> target_points(num_total);
     get<0>(target_points) = radii * sin(thetas) * cos(phis);
     get<1>(target_points) = radii * sin(thetas) * sin(phis);
     get<2>(target_points) = radii * cos(thetas);

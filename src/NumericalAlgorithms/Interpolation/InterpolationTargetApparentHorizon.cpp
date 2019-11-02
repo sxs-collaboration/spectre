@@ -7,7 +7,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 /// \endcond
 
@@ -45,11 +45,11 @@ bool operator!=(const ApparentHorizon<Frame>& lhs,
 // So far instantiate for only one frame. But once we
 // have control systems working, we will need this for at
 // least two frames.
-template struct ApparentHorizon<Frame::Inertial>;
-template bool operator==(const ApparentHorizon<Frame::Inertial>& lhs,
-                         const ApparentHorizon<Frame::Inertial>& rhs) noexcept;
-template bool operator!=(const ApparentHorizon<Frame::Inertial>& lhs,
-                         const ApparentHorizon<Frame::Inertial>& rhs) noexcept;
+template struct ApparentHorizon<Frame::Physical>;
+template bool operator==(const ApparentHorizon<Frame::Physical>& lhs,
+                         const ApparentHorizon<Frame::Physical>& rhs) noexcept;
+template bool operator!=(const ApparentHorizon<Frame::Physical>& lhs,
+                         const ApparentHorizon<Frame::Physical>& rhs) noexcept;
 
 }  // namespace OptionHolders
 }  // namespace intrp

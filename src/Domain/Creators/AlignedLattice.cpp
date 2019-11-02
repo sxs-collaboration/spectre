@@ -11,7 +11,7 @@
 
 namespace Frame {
 struct Grid;
-struct Inertial;
+struct Physical;
 }  // namespace Frame
 
 namespace domain {
@@ -73,11 +73,11 @@ AlignedLattice<VolumeDim, TargetFrame>::initial_refinement_levels() const
           initial_refinement_levels_};
 }
 
-template class AlignedLattice<1, Frame::Inertial>;
+template class AlignedLattice<1, Frame::Physical>;
 template class AlignedLattice<1, Frame::Grid>;
-template class AlignedLattice<2, Frame::Inertial>;
+template class AlignedLattice<2, Frame::Physical>;
 template class AlignedLattice<2, Frame::Grid>;
-template class AlignedLattice<3, Frame::Inertial>;
+template class AlignedLattice<3, Frame::Physical>;
 template class AlignedLattice<3, Frame::Grid>;
 }  // namespace creators
 }  // namespace domain

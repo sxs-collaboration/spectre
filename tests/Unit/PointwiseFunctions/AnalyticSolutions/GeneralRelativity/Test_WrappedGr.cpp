@@ -53,7 +53,7 @@ void test_generalized_harmonic_solution(const Args&... args) noexcept {
       wrapped_solution{args...};
 
   const DataVector data_vector{5.0, 4.0};
-  const tnsr::I<DataVector, SolutionType::volume_dim, Frame::Inertial> x{
+  const tnsr::I<DataVector, SolutionType::volume_dim, Frame::Physical> x{
       data_vector};
   const double t = std::numeric_limits<double>::signaling_NaN();
 
@@ -75,27 +75,27 @@ void test_generalized_harmonic_solution(const Args&... args) noexcept {
   const auto& dt_lapse = get<Tags::dt<gr::Tags::Lapse<DataVector>>>(vars);
   const auto& d_lapse =
       get<Tags::deriv<gr::Tags::Lapse<DataVector>,
-                      tmpl::size_t<SolutionType::volume_dim>, Frame::Inertial>>(
+                      tmpl::size_t<SolutionType::volume_dim>, Frame::Physical>>(
           vars);
   const auto& shift = get<
-      gr::Tags::Shift<SolutionType::volume_dim, Frame::Inertial, DataVector>>(
+      gr::Tags::Shift<SolutionType::volume_dim, Frame::Physical, DataVector>>(
       vars);
   const auto& dt_shift = get<Tags::dt<
-      gr::Tags::Shift<SolutionType::volume_dim, Frame::Inertial, DataVector>>>(
+      gr::Tags::Shift<SolutionType::volume_dim, Frame::Physical, DataVector>>>(
       vars);
   const auto& d_shift = get<Tags::deriv<
-      gr::Tags::Shift<SolutionType::volume_dim, Frame::Inertial, DataVector>,
-      tmpl::size_t<SolutionType::volume_dim>, Frame::Inertial>>(vars);
+      gr::Tags::Shift<SolutionType::volume_dim, Frame::Physical, DataVector>,
+      tmpl::size_t<SolutionType::volume_dim>, Frame::Physical>>(vars);
   const auto& g =
-      get<gr::Tags::SpatialMetric<SolutionType::volume_dim, Frame::Inertial,
+      get<gr::Tags::SpatialMetric<SolutionType::volume_dim, Frame::Physical,
                                   DataVector>>(vars);
   const auto& dt_g =
       get<Tags::dt<gr::Tags::SpatialMetric<SolutionType::volume_dim,
-                                           Frame::Inertial, DataVector>>>(vars);
+                                           Frame::Physical, DataVector>>>(vars);
   const auto& d_g =
       get<Tags::deriv<gr::Tags::SpatialMetric<SolutionType::volume_dim,
-                                              Frame::Inertial, DataVector>,
-                      tmpl::size_t<SolutionType::volume_dim>, Frame::Inertial>>(
+                                              Frame::Physical, DataVector>,
+                      tmpl::size_t<SolutionType::volume_dim>, Frame::Physical>>(
           vars);
   const auto psi = gr::spacetime_metric(lapse, shift, g);
   const auto phi =
@@ -106,20 +106,20 @@ void test_generalized_harmonic_solution(const Args&... args) noexcept {
   const auto wrapped_gh_vars = wrapped_solution.variables(
       x, t,
       tmpl::list<gr::Tags::SpacetimeMetric<SolutionType::volume_dim,
-                                           Frame::Inertial, DataVector>,
+                                           Frame::Physical, DataVector>,
                  GeneralizedHarmonic::Tags::Pi<SolutionType::volume_dim,
-                                               Frame::Inertial>,
+                                               Frame::Physical>,
                  GeneralizedHarmonic::Tags::Phi<SolutionType::volume_dim,
-                                                Frame::Inertial>>{});
+                                                Frame::Physical>>{});
   CHECK(psi ==
-        get<gr::Tags::SpacetimeMetric<SolutionType::volume_dim, Frame::Inertial,
+        get<gr::Tags::SpacetimeMetric<SolutionType::volume_dim, Frame::Physical,
                                       DataVector>>(wrapped_gh_vars));
   CHECK(pi ==
         get<GeneralizedHarmonic::Tags::Pi<SolutionType::volume_dim,
-                                          Frame::Inertial>>(wrapped_gh_vars));
+                                          Frame::Physical>>(wrapped_gh_vars));
   CHECK(phi ==
         get<GeneralizedHarmonic::Tags::Phi<SolutionType::volume_dim,
-                                           Frame::Inertial>>(wrapped_gh_vars));
+                                           Frame::Physical>>(wrapped_gh_vars));
 
   // Weak test of operators == and !=
   CHECK(wrapped_solution == wrapped_solution);
