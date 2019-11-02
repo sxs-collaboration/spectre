@@ -1334,14 +1334,6 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 #endif
 }
 
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexType",
-                  "[Unit][DataStructures]") {
-  CHECK(get_output(Frame::ElementLogical{}) == "ElementLogical");
-  CHECK(get_output(Frame::LastTimeIndependent{}) == "LastTimeIndependent");
-  CHECK(get_output(Frame::Distorted{}) == "Distorted");
-  CHECK(get_output(Frame::Physical{}) == "Physical");
-}
-
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
                   "[Unit][DataStructures]") {
   // NOTE: This test depends on the implementation of serialize and Tensor,
@@ -1374,6 +1366,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
 /// [example_spectre_test_case]
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
                   "[Unit][DataStructures]") {
+  CHECK("BlockLogical" == get_output(Frame::BlockLogical{}));
   CHECK("ElementLogical" == get_output(Frame::ElementLogical{}));
   CHECK("GlobalTimeIndependent" == get_output(Frame::GlobalTimeIndependent{}));
   CHECK("Physical" == get_output(Frame::Physical{}));
