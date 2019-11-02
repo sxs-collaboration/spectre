@@ -15,7 +15,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace Frame {
-struct Grid;
+struct LastTimeIndependent;
 struct Physical;
 struct Logical;
 }  // namespace Frame
@@ -89,7 +89,8 @@ void Domain<VolumeDim, TargetFrame>::pup(PUP::er& p) noexcept {
   template std::ostream& operator<<(std::ostream& os,      \
                                     const Domain<DIM(data), FRAME(data)>& d);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Physical))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        (Frame::LastTimeIndependent, Frame::Physical))
 
 #undef DIM
 #undef FRAME

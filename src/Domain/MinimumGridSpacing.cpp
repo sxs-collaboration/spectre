@@ -74,7 +74,8 @@ double minimum_grid_spacing(
       const Index<DIM(data)>& extents,  \
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& coords) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Physical))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        (Frame::LastTimeIndependent, Frame::Physical))
 
 #undef DIM
 #undef FRAME

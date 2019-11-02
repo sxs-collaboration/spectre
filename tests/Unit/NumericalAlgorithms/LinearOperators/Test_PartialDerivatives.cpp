@@ -39,7 +39,7 @@ using Affine = domain::CoordinateMaps::Affine;
 using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
-template <size_t Dim, class Frame = ::Frame::Grid>
+template <size_t Dim, class Frame = ::Frame::LastTimeIndependent>
 struct Var1 : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim, Frame>;
   static std::string name() noexcept { return "Var1"; }
@@ -250,14 +250,16 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   const Affine x_map{-1.0, 1.0, -0.3, 0.7};
   const auto map_1d =
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(Affine{x_map});
+      domain::make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+          Affine{x_map});
   const auto x = map_1d(logical_coordinates(mesh));
-  const InverseJacobian<DataVector, 1, Frame::Logical, Frame::Grid>
+  const InverseJacobian<DataVector, 1, Frame::Logical,
+                        Frame::LastTimeIndependent>
       inverse_jacobian(number_of_grid_points, 2.0);
 
   Variables<VariableTags> u(number_of_grid_points);
   Variables<db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<1>,
-                             Frame::Grid>>
+                             Frame::LastTimeIndependent>>
       expected_du(number_of_grid_points);
   for (size_t a = 0; a < mesh.extents(0); ++a) {
     tmpl::for_each<VariableTags>([&a, &x, &u ](auto tag) noexcept {
@@ -266,7 +268,8 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
     });
     tmpl::for_each<GradientTags>([&a, &x, &expected_du ](auto tag) noexcept {
       using Tag = typename decltype(tag)::type;
-      using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<1>, Frame::Grid>;
+      using DerivativeTag =
+          Tags::deriv<Tag, tmpl::size_t<1>, Frame::LastTimeIndependent>;
       get<DerivativeTag>(expected_du) = Tag::df({{a}}, x);
     });
 
@@ -296,17 +299,17 @@ template <typename VariableTags, typename GradientTags = VariableTags>
 void test_partial_derivatives_2d(const Mesh<2>& mesh) {
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   const auto prod_map2d =
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(
+      domain::make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
           Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
   const auto x = prod_map2d(logical_coordinates(mesh));
-  InverseJacobian<DataVector, 2, Frame::Logical, Frame::Grid> inverse_jacobian(
-      number_of_grid_points, 0.0);
+  InverseJacobian<DataVector, 2, Frame::Logical, Frame::LastTimeIndependent>
+      inverse_jacobian(number_of_grid_points, 0.0);
   inverse_jacobian.get(0, 0) = 2.0;
   inverse_jacobian.get(1, 1) = 8.0;
 
   Variables<VariableTags> u(number_of_grid_points);
   Variables<db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<2>,
-                             Frame::Grid>>
+                             Frame::LastTimeIndependent>>
       expected_du(number_of_grid_points);
   for (size_t a = 0; a < mesh.extents(0); ++a) {
     for (size_t b = 0; b < mesh.extents(1); ++b) {
@@ -317,7 +320,8 @@ void test_partial_derivatives_2d(const Mesh<2>& mesh) {
       tmpl::for_each<GradientTags>([&a, &b, &x,
                                     &expected_du ](auto tag) noexcept {
         using Tag = typename decltype(tag)::type;
-        using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<2>, Frame::Grid>;
+        using DerivativeTag =
+            Tags::deriv<Tag, tmpl::size_t<2>, Frame::LastTimeIndependent>;
         get<DerivativeTag>(expected_du) = Tag::df({{a, b}}, x);
       });
 
@@ -349,19 +353,19 @@ template <typename VariableTags, typename GradientTags = VariableTags>
 void test_partial_derivatives_3d(const Mesh<3>& mesh) {
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   const auto prod_map3d =
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(
+      domain::make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
           Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                    Affine{-1.0, 1.0, 2.3, 2.8}});
   const auto x = prod_map3d(logical_coordinates(mesh));
-  InverseJacobian<DataVector, 3, Frame::Logical, Frame::Grid> inverse_jacobian(
-      number_of_grid_points, 0.0);
+  InverseJacobian<DataVector, 3, Frame::Logical, Frame::LastTimeIndependent>
+      inverse_jacobian(number_of_grid_points, 0.0);
   inverse_jacobian.get(0, 0) = 2.0;
   inverse_jacobian.get(1, 1) = 8.0;
   inverse_jacobian.get(2, 2) = 4.0;
 
   Variables<VariableTags> u(number_of_grid_points);
   Variables<db::wrap_tags_in<Tags::deriv, GradientTags, tmpl::size_t<3>,
-                             Frame::Grid>>
+                             Frame::LastTimeIndependent>>
       expected_du(number_of_grid_points);
   for (size_t a = 0; a < mesh.extents(0) / 2; ++a) {
     for (size_t b = 0; b < mesh.extents(1) / 2; ++b) {
@@ -374,7 +378,7 @@ void test_partial_derivatives_3d(const Mesh<3>& mesh) {
                                       &expected_du ](auto tag) noexcept {
           using Tag = typename decltype(tag)::type;
           using DerivativeTag =
-              Tags::deriv<Tag, tmpl::size_t<3>, Frame::Grid>;
+              Tags::deriv<Tag, tmpl::size_t<3>, Frame::LastTimeIndependent>;
           get<DerivativeTag>(expected_du) = Tag::df({{a, b, c}}, x);
         });
 
@@ -457,10 +461,11 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
   test_partial_derivatives_3d<two_vars<3>>(mesh_3d);
   test_partial_derivatives_3d<two_vars<3>, one_var<3>>(mesh_3d);
 
-  CHECK(Tags::deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>::name() ==
+  CHECK(Tags::deriv<Var1<3>, tmpl::size_t<3>,
+                    Frame::LastTimeIndependent>::name() ==
         "deriv(" + Var1<3>::name() + ")");
   CHECK(Tags::deriv<Tags::Variables<tmpl::list<Var1<3>>>, tmpl::size_t<3>,
-                    Frame::Grid>::name() ==
+                    Frame::LastTimeIndependent>::name() ==
         "deriv(" + Tags::Variables<tmpl::list<Var1<3>>>::name() + ")");
 }
 
@@ -500,8 +505,8 @@ void test_partial_derivatives_compute_item(
                        Spectral::Quadrature::GaussLobatto};
   const size_t num_grid_points = mesh.number_of_grid_points();
   Variables<vars_tags> u(num_grid_points);
-  Variables<
-      db::wrap_tags_in<Tags::deriv, vars_tags, tmpl::size_t<Dim>, Frame::Grid>>
+  Variables<db::wrap_tags_in<Tags::deriv, vars_tags, tmpl::size_t<Dim>,
+                             Frame::LastTimeIndependent>>
       expected_du(num_grid_points);
   const auto x_logical = logical_coordinates(mesh);
   const auto x = map(logical_coordinates(mesh));
@@ -515,7 +520,8 @@ void test_partial_derivatives_compute_item(
   tmpl::for_each<vars_tags>(
       [&array_to_functions, &x, &expected_du ](auto tag) noexcept {
         using Tag = typename decltype(tag)::type;
-        using DerivativeTag = Tags::deriv<Tag, tmpl::size_t<Dim>, Frame::Grid>;
+        using DerivativeTag =
+            Tags::deriv<Tag, tmpl::size_t<Dim>, Frame::LastTimeIndependent>;
         get<DerivativeTag>(expected_du) = Tag::df(array_to_functions, x);
       });
 
@@ -538,12 +544,13 @@ void test_partial_derivatives_compute_item(
   const auto& du_prefixed_vars = get<db::add_tag_prefix<
       Tags::deriv,
       db::add_tag_prefix<SomePrefix, Tags::Variables<tmpl::list<Var1<Dim>>>>,
-      tmpl::size_t<Dim>, Frame::Grid>>(box);
+      tmpl::size_t<Dim>, Frame::LastTimeIndependent>>(box);
   const auto& du_prefixed =
-      get<Tags::deriv<SomePrefix<Var1<Dim>>, tmpl::size_t<Dim>, Frame::Grid>>(
-          du_prefixed_vars);
-  const auto& expected_du_prefixed =
-      get<Tags::deriv<Var1<Dim>, tmpl::size_t<Dim>, Frame::Grid>>(expected_du);
+      get<Tags::deriv<SomePrefix<Var1<Dim>>, tmpl::size_t<Dim>,
+                      Frame::LastTimeIndependent>>(du_prefixed_vars);
+  const auto& expected_du_prefixed = get<
+      Tags::deriv<Var1<Dim>, tmpl::size_t<Dim>, Frame::LastTimeIndependent>>(
+      expected_du);
   CHECK_ITERABLE_APPROX(du_prefixed, expected_du_prefixed);
 }
 }  // namespace
@@ -556,19 +563,21 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
   for (size_t a = 1; a < max_extents[0]; ++a) {
     test_partial_derivatives_compute_item(
         std::array<size_t, 1>{{a + 1}},
-        domain::make_coordinate_map<Frame::Logical, Frame::Grid>(
+        domain::make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
             Affine{-1.0, 1.0, -0.3, 0.7}));
     for (size_t b = 1; b < max_extents[1]; ++b) {
       test_partial_derivatives_compute_item(
           std::array<size_t, 2>{{a + 1, b + 1}},
-          domain::make_coordinate_map<Frame::Logical, Frame::Grid>(Affine2D{
+          domain::make_coordinate_map<Frame::Logical,
+                                      Frame::LastTimeIndependent>(Affine2D{
               Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}}));
       for (size_t c = 1; a < max_extents[0] / 2 and b < max_extents[1] / 2 and
                          c < max_extents[2];
            ++c) {
         test_partial_derivatives_compute_item(
             std::array<size_t, 3>{{a + 1, b + 1, c + 1}},
-            domain::make_coordinate_map<Frame::Logical, Frame::Grid>(Affine3D{
+            domain::make_coordinate_map<Frame::Logical,
+                                        Frame::LastTimeIndependent>(Affine3D{
                 Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                 Affine{-1.0, 1.0, 2.3, 2.8}}));
       }

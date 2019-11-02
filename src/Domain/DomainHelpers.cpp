@@ -1128,8 +1128,8 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const bool use_logarithmic_map,
                       const ShellWedges which_wedges,
                       const size_t number_of_layers) noexcept;
-template std::vector<
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
+template std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Logical, Frame::LastTimeIndependent, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double inner_sphericity,
                       const double outer_sphericity,
@@ -1146,8 +1146,8 @@ frustum_coordinate_maps(const double length_inner_cube,
                         const bool use_equiangular_map,
                         const std::array<double, 3>& origin_preimage,
                         const double projective_scale_factor) noexcept;
-template std::vector<
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Grid, 3>>>
+template std::vector<std::unique_ptr<
+    domain::CoordinateMapBase<Frame::Logical, Frame::LastTimeIndependent, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
@@ -1178,7 +1178,8 @@ frustum_coordinate_maps(const double length_inner_cube,
       const std::vector<PairOfFaces>& identifications,                      \
       const bool use_equiangular_map) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Physical))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
+                        (Frame::LastTimeIndependent, Frame::Physical))
 
 #undef DIM
 #undef DTYPE

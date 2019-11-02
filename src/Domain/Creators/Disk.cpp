@@ -20,7 +20,7 @@
 
 /// \cond
 namespace Frame {
-struct Grid;
+struct LastTimeIndependent;
 struct Physical;
 struct Logical;
 }  // namespace Frame
@@ -118,7 +118,7 @@ Disk<TargetFrame>::initial_refinement_levels() const noexcept {
   return {5, make_array<2>(initial_refinement_)};
 }
 
-template class Disk<Frame::Grid>;
+template class Disk<Frame::LastTimeIndependent>;
 template class Disk<Frame::Physical>;
 }  // namespace creators
 }  // namespace domain

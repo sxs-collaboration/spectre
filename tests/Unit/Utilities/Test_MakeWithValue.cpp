@@ -21,7 +21,7 @@
 namespace {
 template <size_t Dim>
 struct Var1 {
-  using type = tnsr::i<DataVector, Dim, Frame::Grid>;
+  using type = tnsr::i<DataVector, Dim, Frame::LastTimeIndependent>;
 };
 
 struct Var2 {
@@ -50,16 +50,17 @@ void test_make_tagged_tuple() {
         tuples::TaggedTuple<Var2>(Scalar<DataVector>(n_pts, -5.7)),
         tnsr::ab<DataVector, 2, Frame::Physical>(n_pts, 0.0), -5.7);
 
-    check_make_with_value(tuples::TaggedTuple<Var1<3>, Var2>(
-                              tnsr::i<DataVector, 3, Frame::Grid>(n_pts, 3.8),
-                              Scalar<DataVector>(n_pts, 3.8)),
-                          DataVector(n_pts, 0.0), 3.8);
+    check_make_with_value(
+        tuples::TaggedTuple<Var1<3>, Var2>(
+            tnsr::i<DataVector, 3, Frame::LastTimeIndependent>(n_pts, 3.8),
+            Scalar<DataVector>(n_pts, 3.8)),
+        DataVector(n_pts, 0.0), 3.8);
 
-    check_make_with_value(tuples::TaggedTuple<Var1<3>, Var2>(
-                              tnsr::i<DataVector, 3, Frame::Grid>(n_pts, 3.8),
-                              Scalar<DataVector>(n_pts, 3.8)),
-                          tnsr::ab<DataVector, 2, Frame::Physical>(n_pts, 0.0),
-                          3.8);
+    check_make_with_value(
+        tuples::TaggedTuple<Var1<3>, Var2>(
+            tnsr::i<DataVector, 3, Frame::LastTimeIndependent>(n_pts, 3.8),
+            Scalar<DataVector>(n_pts, 3.8)),
+        tnsr::ab<DataVector, 2, Frame::Physical>(n_pts, 0.0), 3.8);
   }
 }
 
@@ -89,12 +90,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
       std::complex<double>(8.3, 2.5));
 
   check_make_with_value(Scalar<double>(8.3), 1.3, 8.3);
-  check_make_with_value(tnsr::I<double, 3, Frame::Grid>(8.3), 1.3, 8.3);
-  check_make_with_value(8.3, tnsr::I<double, 3, Frame::Grid>(1.3), 8.3);
+  check_make_with_value(tnsr::I<double, 3, Frame::LastTimeIndependent>(8.3),
+                        1.3, 8.3);
+  check_make_with_value(
+      8.3, tnsr::I<double, 3, Frame::LastTimeIndependent>(1.3), 8.3);
   check_make_with_value(std::complex<double>(8.3, 2.5),
-                        tnsr::I<double, 3, Frame::Grid>(1.3),
+                        tnsr::I<double, 3, Frame::LastTimeIndependent>(1.3),
                         std::complex<double>(8.3, 2.5));
-  check_make_with_value(tnsr::Ij<double, 3, Frame::Grid>(8.3),
+  check_make_with_value(tnsr::Ij<double, 3, Frame::LastTimeIndependent>(8.3),
                         tnsr::aB<double, 1, Frame::Physical>(1.3), 8.3);
   check_make_with_value(make_array<4>(8.3), 1.3, 8.3);
 
@@ -115,7 +118,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
                           -2.3);
     check_make_with_value(
         tnsr::ijj<DataVector, 2, Frame::Physical>(n_pts, -2.3),
-        tnsr::ab<DataVector, 3, Frame::Grid>(n_pts, 4.5), -2.3);
+        tnsr::ab<DataVector, 3, Frame::LastTimeIndependent>(n_pts, 4.5), -2.3);
     check_make_with_value(
         tnsr::ijj<DataVector, 2, Frame::Physical>(n_pts, -2.3),
         Scalar<DataVector>(n_pts, 4.5), -2.3);
@@ -126,9 +129,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
                           DataVector(n_pts, 4.5), -2.3);
     check_make_with_value(Variables<one_var<3>>(n_pts, -2.3),
                           DataVector(n_pts, 4.5), -2.3);
-    check_make_with_value(Variables<two_vars<3>>(n_pts, -2.3),
-                          tnsr::ab<DataVector, 3, Frame::Grid>(n_pts, 4.5),
-                          -2.3);
+    check_make_with_value(
+        Variables<two_vars<3>>(n_pts, -2.3),
+        tnsr::ab<DataVector, 3, Frame::LastTimeIndependent>(n_pts, 4.5), -2.3);
     check_make_with_value(Variables<one_var<3>>(n_pts, -2.3),
                           Scalar<DataVector>(n_pts, 4.5), -2.3);
     check_make_with_value(Variables<one_var<3>>(n_pts, -2.3),

@@ -9,7 +9,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace Frame {
-struct Grid;
+struct LastTimeIndependent;
 struct Physical;
 struct Logical;
 }  // namespace Frame
@@ -76,7 +76,7 @@ bool operator!=(const Block<VolumeDim, TargetFrame>& lhs,
       const Block<GET_DIM(data), GET_FRAME(data)>& rhs) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
-                        (Frame::Grid, Frame::Physical))
+                        (Frame::LastTimeIndependent, Frame::Physical))
 
 #undef GET_DIM
 #undef GET_FRAME

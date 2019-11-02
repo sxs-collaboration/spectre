@@ -342,10 +342,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.NormalDotFluxCompute", "[Unit][Evolution]") {
   {
     INFO("Compute item");
     check_compute_item<1, Frame::Physical>();
-    check_compute_item<1, Frame::Grid>();
+    check_compute_item<1, Frame::LastTimeIndependent>();
     check_compute_item<2, Frame::Physical>();
-    check_compute_item<2, Frame::Grid>();
+    check_compute_item<2, Frame::LastTimeIndependent>();
     check_compute_item<3, Frame::Physical>();
-    check_compute_item<3, Frame::Grid>();
+    check_compute_item<3, Frame::LastTimeIndependent>();
   }
 }

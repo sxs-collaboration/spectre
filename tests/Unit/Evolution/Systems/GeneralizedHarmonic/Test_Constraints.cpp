@@ -952,29 +952,29 @@ SPECTRE_TEST_CASE(
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GeneralizedHarmonic/"};
 
-  test_three_index_constraint<1, Frame::Grid, DataVector>(
+  test_three_index_constraint<1, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_three_index_constraint<1, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<1, Frame::Grid, double>(
+  test_three_index_constraint<1, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_three_index_constraint<1, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_three_index_constraint<2, Frame::Grid, DataVector>(
+  test_three_index_constraint<2, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_three_index_constraint<2, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<2, Frame::Grid, double>(
+  test_three_index_constraint<2, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_three_index_constraint<2, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_three_index_constraint<3, Frame::Grid, DataVector>(
+  test_three_index_constraint<3, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_three_index_constraint<3, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<3, Frame::Grid, double>(
+  test_three_index_constraint<3, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_three_index_constraint<3, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
@@ -998,29 +998,29 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.GaugeConstraint",
   test_gauge_constraint_analytic(solution, grid_size, lower_bound, upper_bound);
 
   // Test the gauge constraint with random numbers
-  test_gauge_constraint_random<1, Frame::Grid, DataVector>(
+  test_gauge_constraint_random<1, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_gauge_constraint_random<1, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_gauge_constraint_random<1, Frame::Grid, double>(
+  test_gauge_constraint_random<1, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_gauge_constraint_random<1, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_gauge_constraint_random<2, Frame::Grid, DataVector>(
+  test_gauge_constraint_random<2, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_gauge_constraint_random<2, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_gauge_constraint_random<2, Frame::Grid, double>(
+  test_gauge_constraint_random<2, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_gauge_constraint_random<2, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_gauge_constraint_random<3, Frame::Grid, DataVector>(
+  test_gauge_constraint_random<3, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_gauge_constraint_random<3, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_gauge_constraint_random<3, Frame::Grid, double>(
+  test_gauge_constraint_random<3, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_gauge_constraint_random<3, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
@@ -1049,29 +1049,29 @@ SPECTRE_TEST_CASE(
       std::numeric_limits<double>::epsilon() * 1.e6);
 
   // Test the two-index constraint with random numbers
-  test_two_index_constraint_random<1, Frame::Grid, DataVector>(
+  test_two_index_constraint_random<1, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_two_index_constraint_random<1, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_two_index_constraint_random<1, Frame::Grid, double>(
+  test_two_index_constraint_random<1, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_two_index_constraint_random<1, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_two_index_constraint_random<2, Frame::Grid, DataVector>(
+  test_two_index_constraint_random<2, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_two_index_constraint_random<2, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_two_index_constraint_random<2, Frame::Grid, double>(
+  test_two_index_constraint_random<2, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_two_index_constraint_random<2, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_two_index_constraint_random<3, Frame::Grid, DataVector>(
+  test_two_index_constraint_random<3, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_two_index_constraint_random<3, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_two_index_constraint_random<3, Frame::Grid, double>(
+  test_two_index_constraint_random<3, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_two_index_constraint_random<3, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
@@ -1100,11 +1100,11 @@ SPECTRE_TEST_CASE(
       std::numeric_limits<double>::epsilon() * 1.e6);
 
   // Test the four-index constraint with random numbers
-  test_four_index_constraint_random<3, Frame::Grid, DataVector>(
+  test_four_index_constraint_random<3, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_four_index_constraint_random<3, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_four_index_constraint_random<3, Frame::Grid, double>(
+  test_four_index_constraint_random<3, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_four_index_constraint_random<3, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
@@ -1130,29 +1130,29 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.FConstraint",
                              std::numeric_limits<double>::epsilon() * 1.e6);
 
   // Test the F constraint with random numbers
-  test_f_constraint_random<1, Frame::Grid, DataVector>(
+  test_f_constraint_random<1, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_f_constraint_random<1, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_f_constraint_random<1, Frame::Grid, double>(
+  test_f_constraint_random<1, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_f_constraint_random<1, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_f_constraint_random<2, Frame::Grid, DataVector>(
+  test_f_constraint_random<2, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_f_constraint_random<2, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_f_constraint_random<2, Frame::Grid, double>(
+  test_f_constraint_random<2, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_f_constraint_random<2, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_f_constraint_random<3, Frame::Grid, DataVector>(
+  test_f_constraint_random<3, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_f_constraint_random<3, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_f_constraint_random<3, Frame::Grid, double>(
+  test_f_constraint_random<3, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_f_constraint_random<3, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
@@ -1177,29 +1177,29 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintEnergy",
       std::numeric_limits<double>::epsilon() * 1.e6);
 
   // Test the constraint energy with random numbers
-  test_constraint_energy_random<1, Frame::Grid, DataVector>(
+  test_constraint_energy_random<1, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_constraint_energy_random<1, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_constraint_energy_random<1, Frame::Grid, double>(
+  test_constraint_energy_random<1, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_constraint_energy_random<1, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_constraint_energy_random<2, Frame::Grid, DataVector>(
+  test_constraint_energy_random<2, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_constraint_energy_random<2, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_constraint_energy_random<2, Frame::Grid, double>(
+  test_constraint_energy_random<2, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_constraint_energy_random<2, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());
 
-  test_constraint_energy_random<3, Frame::Grid, DataVector>(
+  test_constraint_energy_random<3, Frame::LastTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_constraint_energy_random<3, Frame::Physical, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_constraint_energy_random<3, Frame::Grid, double>(
+  test_constraint_energy_random<3, Frame::LastTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
   test_constraint_energy_random<3, Frame::Physical, double>(
       std::numeric_limits<double>::signaling_NaN());

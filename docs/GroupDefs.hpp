@@ -68,21 +68,21 @@
  * \brief Contains control system elements
  *
  * The control system manages the time-dependent mapping between frames, such as
- * the fixed computational frame (grid frame) and the physical frame. The
- * time-dependent parameters of the mapping are adjusted by a feedback control
- * system in order to follow the dynamical evolution of objects such as horizons
- * of black holes or surfaces of neutron stars. For example, in binary black
- * hole simulations the map is typically a composition of maps that include
- * translation, rotation, scaling, shape, etc.
- * Each map under the governance of the control system has an associated
- * time-dependent map parameter \f$\lambda(t)\f$ that is a piecewise Nth order
- * polynomial. At discrete times (called reset times), the control system resets
- * the Nth time derivative of \f$\lambda(t)\f$ to a new constant value, in order
- * to minimize an error function \f$Q(t)\f$ that is specific to each map. At
- * each reset time, the Nth derivative of \f$\lambda(t)\f$ is set to a function
- * \f$U(t)\f$, called the control signal, that is determined by \f$Q(t)\f$ and
- * its time derivatives and time integral. Note that \f$\lambda(t)\f$,
- * \f$U(t)\f$, and \f$Q(t)\f$ can be vectors.
+ * the fixed computational frame (LastTimeIndependent frame) and the physical
+ * frame. The time-dependent parameters of the mapping are adjusted by a
+ * feedback control system in order to follow the dynamical evolution of objects
+ * such as horizons of black holes or surfaces of neutron stars. For example, in
+ * binary black hole simulations the map is typically a composition of maps that
+ * include translation, rotation, scaling, shape, etc. Each map under the
+ * governance of the control system has an associated time-dependent map
+ * parameter \f$\lambda(t)\f$ that is a piecewise Nth order polynomial. At
+ * discrete times (called reset times), the control system resets the Nth time
+ * derivative of \f$\lambda(t)\f$ to a new constant value, in order to minimize
+ * an error function \f$Q(t)\f$ that is specific to each map. At each reset
+ * time, the Nth derivative of \f$\lambda(t)\f$ is set to a function \f$U(t)\f$,
+ * called the control signal, that is determined by \f$Q(t)\f$ and its time
+ * derivatives and time integral. Note that \f$\lambda(t)\f$, \f$U(t)\f$, and
+ * \f$Q(t)\f$ can be vectors.
  *
  * The key components of the control system are:
  * - FunctionsOfTime: each map has an associated FunctionOfTime that represents

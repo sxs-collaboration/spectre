@@ -251,7 +251,7 @@ double ComputeLargestCharacteristicSpeed<Dim, Frame>::apply(
       DIM(data), FRAME(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
-                        (Frame::Physical, Frame::Grid))
+                        (Frame::Physical, Frame::LastTimeIndependent))
 
 #undef INSTANTIATION
 #undef DIM

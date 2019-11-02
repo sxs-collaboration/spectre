@@ -39,7 +39,7 @@ SPECTRE_TEST_CASE("Unit.Domain.TestHelpers.BasisVector", "[Unit][Domain]") {
   test_euclidean_basis_vectors<2, Frame::Physical>(dv);
   test_euclidean_basis_vectors<3, Frame::Physical>(dv);
 
-  test_euclidean_basis_vectors<1, Frame::Grid>(dv);
-  test_euclidean_basis_vectors<2, Frame::Grid>(dv);
-  test_euclidean_basis_vectors<3, Frame::Grid>(dv);
+  test_euclidean_basis_vectors<1, Frame::LastTimeIndependent>(dv);
+  test_euclidean_basis_vectors<2, Frame::LastTimeIndependent>(dv);
+  test_euclidean_basis_vectors<3, Frame::LastTimeIndependent>(dv);
 }

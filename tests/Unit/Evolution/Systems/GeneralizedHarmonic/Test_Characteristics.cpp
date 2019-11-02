@@ -489,9 +489,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/GeneralizedHarmonic/"};
 
-  test_characteristic_speeds<1, Frame::Grid>();
-  test_characteristic_speeds<2, Frame::Grid>();
-  test_characteristic_speeds<3, Frame::Grid>();
+  test_characteristic_speeds<1, Frame::LastTimeIndependent>();
+  test_characteristic_speeds<2, Frame::LastTimeIndependent>();
+  test_characteristic_speeds<3, Frame::LastTimeIndependent>();
   test_characteristic_speeds<1, Frame::Physical>();
   test_characteristic_speeds<2, Frame::Physical>();
   test_characteristic_speeds<3, Frame::Physical>();
@@ -509,16 +509,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
   test_characteristic_speeds_analytic(solution, grid_size, lower_bound,
                                       upper_bound);
 
-  test_characteristic_fields<1, Frame::Grid>();
-  test_characteristic_fields<2, Frame::Grid>();
-  test_characteristic_fields<3, Frame::Grid>();
+  test_characteristic_fields<1, Frame::LastTimeIndependent>();
+  test_characteristic_fields<2, Frame::LastTimeIndependent>();
+  test_characteristic_fields<3, Frame::LastTimeIndependent>();
   test_characteristic_fields<1, Frame::Physical>();
   test_characteristic_fields<2, Frame::Physical>();
   test_characteristic_fields<3, Frame::Physical>();
 
-  test_evolved_from_characteristic_fields<1, Frame::Grid>();
-  test_evolved_from_characteristic_fields<2, Frame::Grid>();
-  test_evolved_from_characteristic_fields<3, Frame::Grid>();
+  test_evolved_from_characteristic_fields<1, Frame::LastTimeIndependent>();
+  test_evolved_from_characteristic_fields<2, Frame::LastTimeIndependent>();
+  test_evolved_from_characteristic_fields<3, Frame::LastTimeIndependent>();
   test_evolved_from_characteristic_fields<1, Frame::Physical>();
   test_evolved_from_characteristic_fields<2, Frame::Physical>();
   test_evolved_from_characteristic_fields<3, Frame::Physical>();
@@ -532,16 +532,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.Characteristics",
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.MaxCharSpeed",
                   "[Unit][Evolution]") {
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            1, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                     DataVector{2., 8., 10., 6., 4.},
-                                     DataVector{1., 7., 3., 2., 5.},
-                                     DataVector{7., 3., 4., 2., 1.}}}) == 10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            1, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                     DataVector{2., 8., 10., 6., 4.},
-                                     DataVector{1., 7., 3., -11., 5.},
-                                     DataVector{7., 3., 4., 2., 1.}}}) == 11.);
+  CHECK(
+      GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+          1,
+          Frame::LastTimeIndependent>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                               DataVector{2., 8., 10., 6., 4.},
+                                               DataVector{1., 7., 3., 2., 5.},
+                                               DataVector{7., 3., 4., 2.,
+                                                          1.}}}) == 10.);
+  CHECK(
+      GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+          1,
+          Frame::LastTimeIndependent>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                               DataVector{2., 8., 10., 6., 4.},
+                                               DataVector{1., 7., 3., -11., 5.},
+                                               DataVector{7., 3., 4., 2.,
+                                                          1.}}}) == 11.);
   CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
             1, Frame::Physical>::apply({{DataVector{1., 4., 3., 2., 5.},
                                          DataVector{2., 8., 10., 6., 4.},
@@ -555,17 +561,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.MaxCharSpeed",
                                          DataVector{7., 3., 4., 2., 1.}}}) ==
         11.);
 
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            2, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                     DataVector{2., 8., 7., 6., 4.},
-                                     DataVector{1., 10., 3., 2., 5.},
-                                     DataVector{7., 3., 4., 2., 1.}}}) == 10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            2, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                     DataVector{2., 8., 10., 6., 4.},
-                                     DataVector{1., 7., 3., 1., 5.},
-                                     DataVector{7., 3., 4., 2., -11.}}}) ==
-        11.);
+  CHECK(
+      GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+          2,
+          Frame::LastTimeIndependent>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                               DataVector{2., 8., 7., 6., 4.},
+                                               DataVector{1., 10., 3., 2., 5.},
+                                               DataVector{7., 3., 4., 2.,
+                                                          1.}}}) == 10.);
+  CHECK(
+      GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+          2,
+          Frame::LastTimeIndependent>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                               DataVector{2., 8., 10., 6., 4.},
+                                               DataVector{1., 7., 3., 1., 5.},
+                                               DataVector{7., 3., 4., 2.,
+                                                          -11.}}}) == 11.);
   CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
             2, Frame::Physical>::apply({{DataVector{1., 4., 3., 2., 5.},
                                          DataVector{2., 8., 7., 6., 4.},
@@ -579,17 +590,22 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.MaxCharSpeed",
                                          DataVector{7., 3., 4., 2., -11.}}}) ==
         11.);
 
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            3, Frame::Grid>::apply({{DataVector{1., 4., 10., 2., 5.},
-                                     DataVector{2., 8., 3., 6., 4.},
-                                     DataVector{1., 7., 3., 2., 5.},
-                                     DataVector{7., 3., 4., 2., 1.}}}) == 10.);
-  CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
-            3, Frame::Grid>::apply({{DataVector{1., 4., 3., 2., 5.},
-                                     DataVector{2., 8., 10., 6., 4.},
-                                     DataVector{1., 7., 3., 2., 5.},
-                                     DataVector{7., 3., 4., -11., 1.}}}) ==
-        11.);
+  CHECK(
+      GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+          3,
+          Frame::LastTimeIndependent>::apply({{DataVector{1., 4., 10., 2., 5.},
+                                               DataVector{2., 8., 3., 6., 4.},
+                                               DataVector{1., 7., 3., 2., 5.},
+                                               DataVector{7., 3., 4., 2.,
+                                                          1.}}}) == 10.);
+  CHECK(
+      GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
+          3,
+          Frame::LastTimeIndependent>::apply({{DataVector{1., 4., 3., 2., 5.},
+                                               DataVector{2., 8., 10., 6., 4.},
+                                               DataVector{1., 7., 3., 2., 5.},
+                                               DataVector{7., 3., 4., -11.,
+                                                          1.}}}) == 11.);
   CHECK(GeneralizedHarmonic::ComputeLargestCharacteristicSpeed<
             3, Frame::Physical>::apply({{DataVector{1., 4., 10., 2., 5.},
                                          DataVector{2., 8., 3., 6., 4.},

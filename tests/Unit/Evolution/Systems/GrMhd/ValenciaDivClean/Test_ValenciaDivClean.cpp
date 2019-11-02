@@ -14,11 +14,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.ValenciaDivClean.Tags",
   CHECK(grmhd::ValenciaDivClean::Tags::TildeTau::name() == "TildeTau");
   CHECK(grmhd::ValenciaDivClean::Tags::TildeS<Frame::Physical>::name() ==
         "TildeS");
-  CHECK(grmhd::ValenciaDivClean::Tags::TildeS<Frame::Grid>::name() ==
-        "Grid_TildeS");
+  CHECK(grmhd::ValenciaDivClean::Tags::TildeS<
+            Frame::LastTimeIndependent>::name() ==
+        "LastTimeIndependent_TildeS");
   CHECK(grmhd::ValenciaDivClean::Tags::TildeB<Frame::Physical>::name() ==
         "TildeB");
-  CHECK(grmhd::ValenciaDivClean::Tags::TildeB<Frame::Grid>::name() ==
-        "Grid_TildeB");
+  CHECK(grmhd::ValenciaDivClean::Tags::TildeB<
+            Frame::LastTimeIndependent>::name() ==
+        "LastTimeIndependent_TildeB");
   CHECK(grmhd::ValenciaDivClean::Tags::TildePhi::name() == "TildePhi");
 }

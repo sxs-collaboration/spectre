@@ -18,7 +18,7 @@
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
-struct Grid;
+struct LastTimeIndependent;
 struct Physical;
 struct Logical;
 }  // namespace Frame
@@ -139,7 +139,7 @@ Cylinder<TargetFrame>::initial_refinement_levels() const noexcept {
   return {5, make_array<3>(initial_refinement_)};
 }
 
-template class Cylinder<Frame::Grid>;
+template class Cylinder<Frame::LastTimeIndependent>;
 template class Cylinder<Frame::Physical>;
 }  // namespace creators
 }  // namespace domain

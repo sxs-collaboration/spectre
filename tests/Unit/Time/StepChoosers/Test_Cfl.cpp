@@ -33,7 +33,7 @@ class TimeStepper;
 
 namespace {
 constexpr size_t dim = 1;
-using frame = Frame::Grid;
+using frame = Frame::LastTimeIndependent;
 using StepChooserType =
     StepChooser<tmpl::list<StepChoosers::Registrars::Cfl<dim, frame>>>;
 using Cfl = StepChoosers::Cfl<dim, frame>;

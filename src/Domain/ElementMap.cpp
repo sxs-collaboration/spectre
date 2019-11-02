@@ -72,7 +72,7 @@ void ElementMap<Dim, TargetFrame>::pup(PUP::er& p) noexcept {
   template class ElementMap<GET_DIM(data), GET_FRAME(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
-                        (Frame::Physical, Frame::Grid))
+                        (Frame::Physical, Frame::LastTimeIndependent))
 
 #undef GET_DIM
 #undef GET_FRAME

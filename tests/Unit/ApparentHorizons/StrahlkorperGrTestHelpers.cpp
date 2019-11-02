@@ -210,7 +210,7 @@ Scalar<DataType> horizon_ricci_scalar(
       const tnsr::I<DTYPE(data), DIM(data), FRAME(data)>& x) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (3), (double, DataVector),
-                        (Frame::Grid, Frame::Physical))
+                        (Frame::LastTimeIndependent, Frame::Physical))
 
 #undef DIM
 #undef DTYPE

@@ -17,7 +17,7 @@
 
 /// \cond
 namespace Frame {
-struct Grid;
+struct LastTimeIndependent;
 struct Physical;
 struct Logical;
 }  // namespace Frame
@@ -74,6 +74,6 @@ Rectangle<TargetFrame>::initial_refinement_levels() const noexcept {
 }
 
 template class Rectangle<Frame::Physical>;
-template class Rectangle<Frame::Grid>;
+template class Rectangle<Frame::LastTimeIndependent>;
 }  // namespace creators
 }  // namespace domain

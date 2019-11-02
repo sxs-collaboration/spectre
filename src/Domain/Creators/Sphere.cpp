@@ -19,7 +19,7 @@
 
 /// \cond
 namespace Frame {
-struct Grid;      // IWYU pragma: keep
+struct LastTimeIndependent;  // IWYU pragma: keep
 struct Physical;  // IWYU pragma: keep
 struct Logical;   // IWYU pragma: keep
 }  // namespace Frame
@@ -98,7 +98,7 @@ Sphere<TargetFrame>::initial_refinement_levels() const noexcept {
   return {7, make_array<3>(initial_refinement_)};
 }
 
-template class Sphere<Frame::Grid>;
+template class Sphere<Frame::LastTimeIndependent>;
 template class Sphere<Frame::Physical>;
 }  // namespace creators
 }  // namespace domain

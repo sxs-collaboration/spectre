@@ -16,7 +16,7 @@
 
 /// \cond
 namespace Frame {
-struct Grid;
+struct LastTimeIndependent;
 struct Physical;
 struct Logical;
 }  // namespace Frame
@@ -64,6 +64,6 @@ Interval<TargetFrame>::initial_refinement_levels() const noexcept {
 }
 
 template class Interval<Frame::Physical>;
-template class Interval<Frame::Grid>;
+template class Interval<Frame::LastTimeIndependent>;
 }  // namespace creators
 }  // namespace domain

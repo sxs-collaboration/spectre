@@ -30,40 +30,42 @@ void test_euclidean_magnitude() {
     const DataVector minus_five(npts, -5.0);
     const DataVector twelve(npts, 12.0);
 
-    const tnsr::i<DataVector, 1, Frame::Grid> one_d_covector{{{two}}};
+    const tnsr::i<DataVector, 1, Frame::LastTimeIndependent> one_d_covector{
+        {{two}}};
     CHECK_ITERABLE_APPROX(get(magnitude(one_d_covector)), two);
 
-    const tnsr::i<DataVector, 1, Frame::Grid> negative_one_d_covector{
-        {{minus_three}}};
+    const tnsr::i<DataVector, 1, Frame::LastTimeIndependent>
+        negative_one_d_covector{{{minus_three}}};
     CHECK_ITERABLE_APPROX(get(magnitude(negative_one_d_covector)),
                           (DataVector{npts, 3.0}));
 
-    const tnsr::A<DataVector, 1, Frame::Grid> one_d_vector{
+    const tnsr::A<DataVector, 1, Frame::LastTimeIndependent> one_d_vector{
         {{minus_three, four}}};
     CHECK_ITERABLE_APPROX(get(magnitude(one_d_vector)),
                           (DataVector{npts, 5.0}));
 
-    const tnsr::I<DataVector, 2, Frame::Grid> two_d_vector{
+    const tnsr::I<DataVector, 2, Frame::LastTimeIndependent> two_d_vector{
         {{minus_five, twelve}}};
     CHECK_ITERABLE_APPROX(get(magnitude(two_d_vector)),
                           (DataVector{npts, 13.0}));
 
-    const tnsr::i<DataVector, 3, Frame::Grid> three_d_covector{
+    const tnsr::i<DataVector, 3, Frame::LastTimeIndependent> three_d_covector{
         {{minus_three, twelve, four}}};
     CHECK_ITERABLE_APPROX(get(magnitude(three_d_covector)),
                           (DataVector{npts, 13.0}));
 
-    const tnsr::a<DataVector, 4, Frame::Grid> five_d_covector{
+    const tnsr::a<DataVector, 4, Frame::LastTimeIndependent> five_d_covector{
         {{two, twelve, four, one, two}}};
     CHECK_ITERABLE_APPROX(get(magnitude(five_d_covector)),
                           (DataVector{npts, 13.0}));
   }
   // Check case for doubles
   {
-    const tnsr::i<double, 1, Frame::Grid> one_d_covector_double{{{2.}}};
+    const tnsr::i<double, 1, Frame::LastTimeIndependent> one_d_covector_double{
+        {{2.}}};
     CHECK(get(magnitude(one_d_covector_double)) == 2.);
 
-    const tnsr::a<double, 4, Frame::Grid> five_d_covector_double{
+    const tnsr::a<double, 4, Frame::LastTimeIndependent> five_d_covector_double{
         {{2, 12, 4, 1, 2}}};
     CHECK(get(magnitude(five_d_covector_double)) == 13.);
   }
@@ -81,20 +83,22 @@ void test_magnitude() {
     const DataVector twelve(npts, 12.0);
     const DataVector thirteen(npts, 13.0);
 
-    const tnsr::i<DataVector, 1, Frame::Grid> one_d_covector{{{two}}};
-    const tnsr::II<DataVector, 1, Frame::Grid> inv_h = [&four]() {
-      tnsr::II<DataVector, 1, Frame::Grid> tensor;
-      get<0, 0>(tensor) = four;
-      return tensor;
-    }();
+    const tnsr::i<DataVector, 1, Frame::LastTimeIndependent> one_d_covector{
+        {{two}}};
+    const tnsr::II<DataVector, 1, Frame::LastTimeIndependent> inv_h =
+        [&four]() {
+          tnsr::II<DataVector, 1, Frame::LastTimeIndependent> tensor;
+          get<0, 0>(tensor) = four;
+          return tensor;
+        }();
 
     CHECK_ITERABLE_APPROX(get(magnitude(one_d_covector, inv_h)),
                           (DataVector{npts, 4.0}));
-    const tnsr::i<DataVector, 3, Frame::Grid> three_d_covector{
+    const tnsr::i<DataVector, 3, Frame::LastTimeIndependent> three_d_covector{
         {{minus_three, twelve, four}}};
-    const tnsr::II<DataVector, 3, Frame::Grid> inv_g =
+    const tnsr::II<DataVector, 3, Frame::LastTimeIndependent> inv_g =
         [&two, &minus_three, &four, &minus_five, &twelve, &thirteen]() {
-          tnsr::II<DataVector, 3, Frame::Grid> tensor;
+          tnsr::II<DataVector, 3, Frame::LastTimeIndependent> tensor;
           get<0, 0>(tensor) = two;
           get<0, 1>(tensor) = minus_three;
           get<0, 2>(tensor) = four;
@@ -109,18 +113,19 @@ void test_magnitude() {
 
   {
     // Check for doubles
-    const tnsr::i<double, 1, Frame::Grid> one_d_covector{2.0};
-    const tnsr::II<double, 1, Frame::Grid> inv_h = []() {
-      tnsr::II<double, 1, Frame::Grid> tensor{};
+    const tnsr::i<double, 1, Frame::LastTimeIndependent> one_d_covector{2.0};
+    const tnsr::II<double, 1, Frame::LastTimeIndependent> inv_h = []() {
+      tnsr::II<double, 1, Frame::LastTimeIndependent> tensor{};
       get<0, 0>(tensor) = 4.0;
       return tensor;
     }();
 
     CHECK(get(magnitude(one_d_covector, inv_h)) == 4.0);
 
-    const tnsr::i<double, 3, Frame::Grid> three_d_covector{{{-3.0, 12.0, 4.0}}};
-    const tnsr::II<double, 3, Frame::Grid> inv_g = []() {
-      tnsr::II<double, 3, Frame::Grid> tensor{};
+    const tnsr::i<double, 3, Frame::LastTimeIndependent> three_d_covector{
+        {{-3.0, 12.0, 4.0}}};
+    const tnsr::II<double, 3, Frame::LastTimeIndependent> inv_g = []() {
+      tnsr::II<double, 3, Frame::LastTimeIndependent> tensor{};
       get<0, 0>(tensor) = 2.0;
       get<0, 1>(tensor) = -3.0;
       get<0, 2>(tensor) = 4.0;
@@ -135,20 +140,20 @@ void test_magnitude() {
 
 struct Vector : db::SimpleTag {
   static std::string name() noexcept { return "Vector"; }
-  using type = tnsr::I<DataVector, 3, Frame::Grid>;
+  using type = tnsr::I<DataVector, 3, Frame::LastTimeIndependent>;
 };
 template <size_t Dim>
 struct Covector : db::SimpleTag {
   static std::string name() noexcept { return "Covector"; }
-  using type = tnsr::i<DataVector, Dim, Frame::Grid>;
+  using type = tnsr::i<DataVector, Dim, Frame::LastTimeIndependent>;
 };
 struct Metric : db::SimpleTag {
   static std::string name() noexcept { return "Metric"; }
-  using type = tnsr::ii<DataVector, 3, Frame::Grid>;
+  using type = tnsr::ii<DataVector, 3, Frame::LastTimeIndependent>;
 };
 struct InverseMetric : db::SimpleTag {
   static std::string name() noexcept { return "InverseMetric"; }
-  using type = tnsr::II<DataVector, 3, Frame::Grid>;
+  using type = tnsr::II<DataVector, 3, Frame::LastTimeIndependent>;
 };
 void test_magnitude_tags() {
   const auto box =
@@ -182,37 +187,39 @@ void test_magnitude_tags() {
 
 void test_general_magnitude_tags() {
   constexpr size_t npts = 5;
-  const tnsr::i<DataVector, 3, Frame::Grid> covector{
+  const tnsr::i<DataVector, 3, Frame::LastTimeIndependent> covector{
       {{DataVector{npts, -3.0}, DataVector{npts, 12.0},
         DataVector{npts, 4.0}}}};
-  const tnsr::II<DataVector, 3, Frame::Grid> inv_metric = []() noexcept {
-    auto tensor = make_with_value<tnsr::II<DataVector, 3, Frame::Grid>>(
-        DataVector{npts}, 0.0);
-    get<0, 0>(tensor) = 2.0;
-    get<0, 1>(tensor) = -3.0;
-    get<0, 2>(tensor) = 4.0;
-    get<1, 1>(tensor) = -5.0;
-    get<1, 2>(tensor) = 12.0;
-    get<2, 2>(tensor) = 13.0;
-    return tensor;
-  }
-  ();
+  const tnsr::II<DataVector, 3, Frame::LastTimeIndependent> inv_metric =
+      []() noexcept {
+        auto tensor = make_with_value<
+            tnsr::II<DataVector, 3, Frame::LastTimeIndependent>>(
+            DataVector{npts}, 0.0);
+        get<0, 0>(tensor) = 2.0;
+        get<0, 1>(tensor) = -3.0;
+        get<0, 2>(tensor) = 4.0;
+        get<1, 1>(tensor) = -5.0;
+        get<1, 2>(tensor) = 12.0;
+        get<2, 2>(tensor) = 13.0;
+        return tensor;
+      }();
 
-  const tnsr::I<DataVector, 3, Frame::Grid> vector{
+  const tnsr::I<DataVector, 3, Frame::LastTimeIndependent> vector{
       {{DataVector{npts, -3.0}, DataVector{npts, 12.0},
         DataVector{npts, 4.0}}}};
-  const tnsr::ii<DataVector, 3, Frame::Grid> metric = []() noexcept {
-    auto tensor = make_with_value<tnsr::ii<DataVector, 3, Frame::Grid>>(
-        DataVector{npts}, 0.0);
-    get<0, 0>(tensor) = 2.0;
-    get<0, 1>(tensor) = -3.0;
-    get<0, 2>(tensor) = 4.0;
-    get<1, 1>(tensor) = -5.0;
-    get<1, 2>(tensor) = 12.0;
-    get<2, 2>(tensor) = 13.0;
-    return tensor;
-  }
-  ();
+  const tnsr::ii<DataVector, 3, Frame::LastTimeIndependent> metric =
+      []() noexcept {
+        auto tensor = make_with_value<
+            tnsr::ii<DataVector, 3, Frame::LastTimeIndependent>>(
+            DataVector{npts}, 0.0);
+        get<0, 0>(tensor) = 2.0;
+        get<0, 1>(tensor) = -3.0;
+        get<0, 2>(tensor) = 4.0;
+        get<1, 1>(tensor) = -5.0;
+        get<1, 2>(tensor) = 12.0;
+        get<2, 2>(tensor) = 13.0;
+        return tensor;
+      }();
 
   const auto box =
       db::create<db::AddSimpleTags<Vector, Covector<3>, Metric, InverseMetric>,

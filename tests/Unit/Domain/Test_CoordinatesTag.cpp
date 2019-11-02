@@ -17,7 +17,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace Frame {
-struct Grid;
+struct LastTimeIndependent;
 struct Physical;
 struct Logical;
 }  // namespace Frame
@@ -26,18 +26,20 @@ namespace domain {
 namespace {
 template <size_t Dim, typename T>
 void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) noexcept {
-  using map_tag = Tags::ElementMap<Dim, Frame::Grid>;
+  using map_tag = Tags::ElementMap<Dim, Frame::LastTimeIndependent>;
   const auto box = db::create<
       db::AddSimpleTags<Tags::Mesh<Dim>, map_tag>,
       db::AddComputeTags<
           Tags::LogicalCoordinates<Dim>,
           Tags::MappedCoordinates<map_tag, Tags::LogicalCoordinates<Dim>>>>(
-      mesh, ElementMap<Dim, Frame::Grid>(
-                ElementId<Dim>(0),
-                make_coordinate_map_base<Frame::Logical, Frame::Grid>(map)));
+      mesh,
+      ElementMap<Dim, Frame::LastTimeIndependent>(
+          ElementId<Dim>(0),
+          make_coordinate_map_base<Frame::Logical, Frame::LastTimeIndependent>(
+              map)));
   CHECK_ITERABLE_APPROX(
-      (db::get<Tags::Coordinates<Dim, Frame::Grid>>(box)),
-      (make_coordinate_map<Frame::Logical, Frame::Grid>(map)(
+      (db::get<Tags::Coordinates<Dim, Frame::LastTimeIndependent>>(box)),
+      (make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(map)(
           db::get<Tags::Coordinates<Dim, Frame::Logical>>(box))));
 
   /// [coordinates_name]

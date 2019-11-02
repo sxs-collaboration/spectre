@@ -307,7 +307,7 @@ tnsr::ii<DataType, SpatialDim, Frame> extrinsic_curvature(
           deriv_spatial_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Physical))
+                        (Frame::LastTimeIndependent, Frame::Physical))
 
 #undef DIM
 #undef DTYPE

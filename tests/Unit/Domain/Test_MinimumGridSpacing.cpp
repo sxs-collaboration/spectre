@@ -95,6 +95,6 @@ void check_frame() noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.MinimumGridSpacing", "[Domain][Unit]") {
-  check_frame<Frame::Grid>();
+  check_frame<Frame::LastTimeIndependent>();
   check_frame<Frame::Physical>();
 }
