@@ -167,7 +167,7 @@ using fluxes_tags_list = db::get_variables_tags_list<db::add_tag_prefix<
   template Variables<db::wrap_tags_in<Tags::div, fluxes_tags_list<DIM(data)>>> \
   divergence<fluxes_tags_list<DIM(data)>, DIM(data), Frame::Physical>(         \
       const Variables<fluxes_tags_list<DIM(data)>>&, const Mesh<DIM(data)>&,   \
-      const InverseJacobian<DataVector, DIM(data), Frame::Logical,             \
+      const InverseJacobian<DataVector, DIM(data), Frame::ElementLogical,      \
                             Frame::Physical>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DERIVS, (1, 2, 3))

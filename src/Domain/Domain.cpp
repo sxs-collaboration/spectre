@@ -17,7 +17,7 @@
 namespace Frame {
 struct LastTimeIndependent;
 struct Physical;
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 
 template <size_t VolumeDim, typename TargetFrame>
@@ -27,8 +27,8 @@ Domain<VolumeDim, TargetFrame>::Domain(
 
 template <size_t VolumeDim, typename TargetFrame>
 Domain<VolumeDim, TargetFrame>::Domain(
-    std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
+    std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::ElementLogical, TargetFrame, VolumeDim>>>
         maps,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,

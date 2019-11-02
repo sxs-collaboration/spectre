@@ -265,10 +265,10 @@ void run_test() {
   const Affine eta_map{-1., 1., 7., 3.};
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Physical, Affine2D>));
+      domain::CoordinateMap<Frame::ElementLogical, Frame::Physical, Affine2D>));
 
   const auto coordmap =
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Affine2D(xi_map, eta_map));
 
   const auto external_directions = {Direction<2>::lower_eta(),

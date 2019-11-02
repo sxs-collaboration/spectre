@@ -56,8 +56,8 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
 template <size_t VolumeDim, typename TargetFrame>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
-    const domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
-        map,
+    const domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame,
+                                    VolumeDim>& map,
     const Direction<VolumeDim>& direction) noexcept;
 // @}
 

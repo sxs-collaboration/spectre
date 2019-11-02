@@ -92,8 +92,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.Periodic.DifferentBlocks",
 }
 
 namespace {
-std::vector<
-    std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 3>>>
+std::vector<std::unique_ptr<
+    CoordinateMapBase<Frame::ElementLogical, Frame::Physical, 3>>>
 test_wedge_map_generation(double inner_radius, double outer_radius,
                           double inner_sphericity, double outer_sphericity,
                           bool use_equiangular_map,
@@ -112,17 +112,17 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
   if (use_half_wedges) {
     using Halves = Wedge3DMap::WedgeHalves;
     return make_vector(
-        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
                        inner_sphericity, outer_sphericity, use_equiangular_map,
                        Halves::LowerOnly},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
                        inner_sphericity, outer_sphericity, use_equiangular_map,
                        Halves::UpperOnly},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             Wedge3DMap{inner_radius, outer_radius,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
@@ -130,7 +130,7 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
                        inner_sphericity, outer_sphericity, use_equiangular_map,
                        Halves::LowerOnly},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             Wedge3DMap{inner_radius, outer_radius,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
@@ -138,7 +138,7 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
                        inner_sphericity, outer_sphericity, use_equiangular_map,
                        Halves::UpperOnly},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -147,7 +147,7 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
                 inner_sphericity, outer_sphericity, use_equiangular_map,
                 Halves::LowerOnly},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -156,7 +156,7 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
                 inner_sphericity, outer_sphericity, use_equiangular_map,
                 Halves::UpperOnly},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -165,7 +165,7 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
                 inner_sphericity, outer_sphericity, use_equiangular_map,
                 Halves::LowerOnly},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -174,7 +174,7 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
                 inner_sphericity, outer_sphericity, use_equiangular_map,
                 Halves::UpperOnly},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -182,7 +182,7 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
                      Direction<3>::upper_eta()}}},
                 inner_sphericity, outer_sphericity, use_equiangular_map},
             compression, translation),
-        make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -193,39 +193,39 @@ test_wedge_map_generation(double inner_radius, double outer_radius,
   }
 
   return make_vector(
-      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{},
                      inner_sphericity, outer_sphericity, use_equiangular_map},
           compression, translation),
-      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Wedge3DMap{inner_radius, outer_radius,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
                           Direction<3>::lower_zeta()}}},
                      inner_sphericity, outer_sphericity, use_equiangular_map},
           compression, translation),
-      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Wedge3DMap{inner_radius, outer_radius,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                           Direction<3>::lower_eta()}}},
                      inner_sphericity, outer_sphericity, use_equiangular_map},
           compression, translation),
-      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Wedge3DMap{inner_radius, outer_radius,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_xi(), Direction<3>::lower_zeta(),
                           Direction<3>::upper_eta()}}},
                      inner_sphericity, outer_sphericity, use_equiangular_map},
           compression, translation),
-      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Wedge3DMap{inner_radius, outer_radius,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::upper_zeta(), Direction<3>::upper_xi(),
                           Direction<3>::upper_eta()}}},
                      inner_sphericity, outer_sphericity, use_equiangular_map},
           compression, translation),
-      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Wedge3DMap{inner_radius, outer_radius,
                      OrientationMap<3>{std::array<Direction<3>, 3>{
                          {Direction<3>::lower_zeta(), Direction<3>::lower_xi(),
@@ -561,7 +561,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.AllFrustumDirections",
   const double projective_scale_factor = 0.3;
   for (const bool use_equiangular_map : {true, false}) {
     const auto expected_coord_maps =
-        make_vector_coordinate_map_base<Frame::Logical, Frame::Physical>(
+        make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             FrustumMap{{{{{-2.0 * lower - displacement1[0],
                            -lower - displacement1[1]}},
                          {{-displacement1[0], lower - displacement1[1]}},
@@ -1340,41 +1340,41 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
   using Equiangular3D =
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 1>>>
+  const std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::ElementLogical, Frame::Physical, 1>>>
       affine_maps_1d = maps_for_rectilinear_domains<Frame::Physical>(
           Index<1>{3},
           std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.7, 2.0}}},
           {Index<1>{0}}, {}, false);
   const auto expected_affine_maps_1d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Affine{-1., 1., 0.5, 1.7}, Affine{-1., 1., 1.7, 2.0});
   for (size_t i = 0; i < affine_maps_1d.size(); i++) {
     CHECK(*affine_maps_1d[i] == *expected_affine_maps_1d[i]);
   }
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 1>>>
+  const std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::ElementLogical, Frame::Physical, 1>>>
       equiangular_maps_1d = maps_for_rectilinear_domains<Frame::Physical>(
           Index<1>{3},
           std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.7, 2.0}}},
           {Index<1>{1}}, {}, true);
   const auto expected_equiangular_maps_1d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Equiangular{-1., 1., 0.0, 0.5}, Equiangular{-1., 1., 1.7, 2.0});
   for (size_t i = 0; i < equiangular_maps_1d.size(); i++) {
     CHECK(*equiangular_maps_1d[i] == *expected_equiangular_maps_1d[i]);
   }
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 2>>>
+  const std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::ElementLogical, Frame::Physical, 2>>>
       affine_maps_2d = maps_for_rectilinear_domains<Frame::Physical>(
           Index<2>{3, 2},
           std::array<std::vector<double>, 2>{
               {{0.0, 0.5, 1.7, 2.0}, {0.0, 1.0, 2.0}}},
           {Index<2>{}}, {}, false);
   const auto expected_affine_maps_2d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Affine2D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 0.0, 1.0}},
           Affine2D{Affine{-1., 1., 0.5, 1.7}, Affine{-1., 1., 0.0, 1.0}},
           Affine2D{Affine{-1., 1., 1.7, 2.0}, Affine{-1., 1., 0.0, 1.0}},
@@ -1385,15 +1385,15 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
     CHECK(*affine_maps_2d[i] == *expected_affine_maps_2d[i]);
   }
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 2>>>
+  const std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::ElementLogical, Frame::Physical, 2>>>
       equiangular_maps_2d = maps_for_rectilinear_domains<Frame::Physical>(
           Index<2>{3, 2},
           std::array<std::vector<double>, 2>{
               {{0.0, 0.5, 1.7, 2.0}, {0.0, 1.0, 2.0}}},
           {Index<2>{2, 1}}, {}, true);
   const auto expected_equiangular_maps_2d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Equiangular2D{Equiangular{-1., 1., 0.0, 0.5},
                         Equiangular{-1., 1., 0.0, 1.0}},
           Equiangular2D{Equiangular{-1., 1., 0.5, 1.7},
@@ -1408,15 +1408,15 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
     CHECK(*equiangular_maps_2d[i] == *expected_equiangular_maps_2d[i]);
   }
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 3>>>
+  const std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::ElementLogical, Frame::Physical, 3>>>
       affine_maps_3d = maps_for_rectilinear_domains<Frame::Physical>(
           Index<3>{2, 2, 1},
           std::array<std::vector<double>, 3>{
               {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
           {Index<3>{}}, {}, false);
   const auto expected_affine_maps_3d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Affine3D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 0.0, 1.0},
                    Affine{-1., 1., -0.4, 0.3}},
           Affine3D{Affine{-1., 1., 0.5, 2.0}, Affine{-1., 1., 0.0, 1.0},
@@ -1429,15 +1429,15 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
     CHECK(*affine_maps_3d[i] == *expected_affine_maps_3d[i]);
   }
 
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 3>>>
+  const std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::ElementLogical, Frame::Physical, 3>>>
       equiangular_maps_3d = maps_for_rectilinear_domains<Frame::Physical>(
           Index<3>{2, 2, 1},
           std::array<std::vector<double>, 3>{
               {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
           {Index<3>{0, 0, 0}}, {}, true);
   const auto expected_equiangular_maps_3d =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Equiangular3D{Equiangular{-1., 1., 0.5, 2.0},
                         Equiangular{-1., 1., 0.0, 1.0},
                         Equiangular{-1., 1., -0.4, 0.3}},
@@ -1501,8 +1501,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries1",
   // of `OrientationMaps`. In this case no indexing is done, so if an incorrect
   // map is created via incorrect indexing, the maps created by the two
   // function calls will differ.
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 3>>>
+  const std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::ElementLogical, Frame::Physical, 3>>>
       expected_coordinate_maps = maps_for_rectilinear_domains<Frame::Physical>(
           Index<3>{3, 3, 3},
           std::array<std::vector<double>, 3>{{{0.0, 1.0, 2.0, 3.0},
@@ -1536,8 +1536,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries2",
                                    {{Direction<2>::lower_eta()}},
                                    {{Direction<2>::upper_eta()}},
                                    {{Direction<2>::upper_eta()}}};
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 2>>>
+  const std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::ElementLogical, Frame::Physical, 2>>>
       expected_coordinate_maps = maps_for_rectilinear_domains<Frame::Physical>(
           Index<2>{2, 2},
           std::array<std::vector<double>, 2>{
@@ -1590,8 +1590,8 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries3",
        {Direction<2>::lower_eta(), {2, flipped}}}};
   std::vector<std::unordered_set<Direction<2>>> expected_external_boundaries{
       {}, {}, {}, {}};
-  const std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Physical, 2>>>
+  const std::vector<std::unique_ptr<
+      CoordinateMapBase<Frame::ElementLogical, Frame::Physical, 2>>>
       expected_coordinate_maps = maps_for_rectilinear_domains<Frame::Physical>(
           Index<2>{2, 2},
           std::array<std::vector<double>, 2>{

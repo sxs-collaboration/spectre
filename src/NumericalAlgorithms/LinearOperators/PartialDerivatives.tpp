@@ -21,7 +21,7 @@
 
 namespace partial_derivatives_detail {
 template <size_t Dim, typename VariableTags, typename DerivativeTags>
-struct LogicalImpl;
+struct ElementLogicalImpl;
 
 // This routine has been optimized to perform really well. The following
 // describes what optimizations were made.
@@ -57,8 +57,8 @@ void partial_derivatives_impl(
         Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
         du,
     const std::array<const double*, Dim>& logical_partial_derivatives_of_u,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   constexpr size_t number_of_independent_components =
       Variables<DerivativeTags>::number_of_independent_components;
   double* pdu = du->data();
@@ -69,7 +69,7 @@ void partial_derivatives_impl(
   for (size_t deriv_index = 0; deriv_index < Dim; ++deriv_index) {
     for (size_t d = 0; d < Dim; ++d) {
       gsl::at(gsl::at(indices, d), deriv_index) =
-          InverseJacobian<DataVector, Dim, Frame::Logical,
+          InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                           DerivativeFrame>::get_storage_index(d, deriv_index);
     }
   }
@@ -126,12 +126,13 @@ void logical_partial_derivatives(
   }
   if (Dim == 1) {
     Variables<DerivativeTags>* temp = nullptr;
-    partial_derivatives_detail::LogicalImpl<Dim, VariableTags, DerivativeTags>::
-        apply(make_not_null(&deriv_pointers), temp, u, mesh);
+    partial_derivatives_detail::
+        ElementLogicalImpl<Dim, VariableTags, DerivativeTags>::apply(
+            make_not_null(&deriv_pointers), temp, u, mesh);
     return;
   }
   Variables<DerivativeTags> temp(u.number_of_grid_points());
-  partial_derivatives_detail::LogicalImpl<
+  partial_derivatives_detail::ElementLogicalImpl<
       Dim, VariableTags, DerivativeTags>::apply(make_not_null(&deriv_pointers),
                                                 &temp, u, mesh);
 }
@@ -153,8 +154,8 @@ void partial_derivatives(
         du,
     const std::array<Variables<DerivativeTags>, Dim>&
         logical_partial_derivatives_of_u,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   auto& partial_derivatives_of_u = *du;
   // For mutating compute items we must set the size.
   if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
@@ -180,8 +181,8 @@ void partial_derivatives(
         Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
         du,
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   auto& partial_derivatives_of_u = *du;
   // For mutating compute items we must set the size.
   if (UNLIKELY(partial_derivatives_of_u.number_of_grid_points() !=
@@ -205,7 +206,7 @@ void partial_derivatives(
               [i * u.number_of_grid_points() *
                Variables<DerivativeTags>::number_of_independent_components]);
   }
-  partial_derivatives_detail::LogicalImpl<
+  partial_derivatives_detail::ElementLogicalImpl<
       Dim, VariableTags, DerivativeTags>::apply(make_not_null(&logical_derivs),
                                                 &partial_derivatives_of_u, u,
                                                 mesh);
@@ -225,8 +226,8 @@ Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
                            DerivativeFrame>>
 partial_derivatives(
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept {
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept {
   Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags, tmpl::size_t<Dim>,
                              DerivativeFrame>>
       partial_derivatives_of_u(u.number_of_grid_points());
@@ -237,7 +238,7 @@ partial_derivatives(
 
 namespace partial_derivatives_detail {
 template <typename VariableTags, typename DerivativeTags>
-struct LogicalImpl<1, VariableTags, DerivativeTags> {
+struct ElementLogicalImpl<1, VariableTags, DerivativeTags> {
   static constexpr const size_t Dim = 1;
   template <typename T>
   static void apply(const gsl::not_null<std::array<double*, Dim>*> logical_du,
@@ -258,7 +259,7 @@ struct LogicalImpl<1, VariableTags, DerivativeTags> {
 };
 
 template <typename VariableTags, typename DerivativeTags>
-struct LogicalImpl<2, VariableTags, DerivativeTags> {
+struct ElementLogicalImpl<2, VariableTags, DerivativeTags> {
   static constexpr size_t Dim = 2;
   template <typename T>
   static void apply(const gsl::not_null<std::array<double*, Dim>*> logical_du,
@@ -298,7 +299,7 @@ struct LogicalImpl<2, VariableTags, DerivativeTags> {
 };
 
 template <typename VariableTags, typename DerivativeTags>
-struct LogicalImpl<3, VariableTags, DerivativeTags> {
+struct ElementLogicalImpl<3, VariableTags, DerivativeTags> {
   static constexpr size_t Dim = 3;
   template <class T>
   static void apply(const gsl::not_null<std::array<double*, Dim>*> logical_du,

@@ -250,10 +250,10 @@ void test_partial_derivatives_1d(const Mesh<1>& mesh) {
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   const Affine x_map{-1.0, 1.0, -0.3, 0.7};
   const auto map_1d =
-      domain::make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
-          Affine{x_map});
+      domain::make_coordinate_map<Frame::ElementLogical,
+                                  Frame::LastTimeIndependent>(Affine{x_map});
   const auto x = map_1d(logical_coordinates(mesh));
-  const InverseJacobian<DataVector, 1, Frame::Logical,
+  const InverseJacobian<DataVector, 1, Frame::ElementLogical,
                         Frame::LastTimeIndependent>
       inverse_jacobian(number_of_grid_points, 2.0);
 
@@ -299,10 +299,12 @@ template <typename VariableTags, typename GradientTags = VariableTags>
 void test_partial_derivatives_2d(const Mesh<2>& mesh) {
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   const auto prod_map2d =
-      domain::make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      domain::make_coordinate_map<Frame::ElementLogical,
+                                  Frame::LastTimeIndependent>(
           Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
   const auto x = prod_map2d(logical_coordinates(mesh));
-  InverseJacobian<DataVector, 2, Frame::Logical, Frame::LastTimeIndependent>
+  InverseJacobian<DataVector, 2, Frame::ElementLogical,
+                  Frame::LastTimeIndependent>
       inverse_jacobian(number_of_grid_points, 0.0);
   inverse_jacobian.get(0, 0) = 2.0;
   inverse_jacobian.get(1, 1) = 8.0;
@@ -353,11 +355,13 @@ template <typename VariableTags, typename GradientTags = VariableTags>
 void test_partial_derivatives_3d(const Mesh<3>& mesh) {
   const size_t number_of_grid_points = mesh.number_of_grid_points();
   const auto prod_map3d =
-      domain::make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      domain::make_coordinate_map<Frame::ElementLogical,
+                                  Frame::LastTimeIndependent>(
           Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                    Affine{-1.0, 1.0, 2.3, 2.8}});
   const auto x = prod_map3d(logical_coordinates(mesh));
-  InverseJacobian<DataVector, 3, Frame::Logical, Frame::LastTimeIndependent>
+  InverseJacobian<DataVector, 3, Frame::ElementLogical,
+                  Frame::LastTimeIndependent>
       inverse_jacobian(number_of_grid_points, 0.0);
   inverse_jacobian.get(0, 0) = 2.0;
   inverse_jacobian.get(1, 1) = 8.0;
@@ -563,12 +567,13 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
   for (size_t a = 1; a < max_extents[0]; ++a) {
     test_partial_derivatives_compute_item(
         std::array<size_t, 1>{{a + 1}},
-        domain::make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+        domain::make_coordinate_map<Frame::ElementLogical,
+                                    Frame::LastTimeIndependent>(
             Affine{-1.0, 1.0, -0.3, 0.7}));
     for (size_t b = 1; b < max_extents[1]; ++b) {
       test_partial_derivatives_compute_item(
           std::array<size_t, 2>{{a + 1, b + 1}},
-          domain::make_coordinate_map<Frame::Logical,
+          domain::make_coordinate_map<Frame::ElementLogical,
                                       Frame::LastTimeIndependent>(Affine2D{
               Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}}));
       for (size_t c = 1; a < max_extents[0] / 2 and b < max_extents[1] / 2 and
@@ -576,7 +581,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs.ComputeItems",
            ++c) {
         test_partial_derivatives_compute_item(
             std::array<size_t, 3>{{a + 1, b + 1, c + 1}},
-            domain::make_coordinate_map<Frame::Logical,
+            domain::make_coordinate_map<Frame::ElementLogical,
                                         Frame::LastTimeIndependent>(Affine3D{
                 Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                 Affine{-1.0, 1.0, 2.3, 2.8}}));

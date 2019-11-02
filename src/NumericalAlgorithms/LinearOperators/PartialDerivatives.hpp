@@ -108,8 +108,8 @@ void partial_derivatives(
         du,
     const std::array<Variables<DerivativeTags>, Dim>&
         logical_partial_derivatives_of_u,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept;
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept;
 
 template <typename DerivativeTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
@@ -118,15 +118,15 @@ void partial_derivatives(
         Tags::deriv, DerivativeTags, tmpl::size_t<Dim>, DerivativeFrame>>*>
         du,
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept;
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept;
 
 template <typename DerivativeTags, typename VariableTags, size_t Dim,
           typename DerivativeFrame>
 auto partial_derivatives(
     const Variables<VariableTags>& u, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept
     -> Variables<db::wrap_tags_in<Tags::deriv, DerivativeTags,
                                   tmpl::size_t<Dim>, DerivativeFrame>>;
 // @}
@@ -168,7 +168,8 @@ struct DerivCompute
       Tags::deriv, DerivTags, tmpl::size_t<Dim>, deriv_frame>> (*function)(
       const ::Variables<typename db::const_item_type<VariablesTag>::tags_list>&,
       const ::Mesh<Dim>&,
-      const ::InverseJacobian<DataVector, Dim, Frame::Logical, deriv_frame>&) =
+      const ::InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                              deriv_frame>&) =
       partial_derivatives<DerivTags,
                           typename db::const_item_type<VariablesTag>::tags_list,
                           Dim, deriv_frame>;

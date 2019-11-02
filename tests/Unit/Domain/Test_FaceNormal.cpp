@@ -70,7 +70,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.CoordMap", "[Unit][Domain]") {
   /// [face_normal_example]
   const Mesh<0> mesh_0d;
   const auto map_1d =
-      make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
           CoordinateMaps::Affine(-1.0, 1.0, -3.0, 7.0));
   const auto normal_1d_lower =
       unnormalized_face_normal(mesh_0d, map_1d, Direction<1>::lower_xi());
@@ -83,11 +83,11 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.CoordMap", "[Unit][Domain]") {
 
   CHECK(normal_1d_upper.get(0) == DataVector(1, 0.2));
 
-  check(make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+  check(make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
             CoordinateMaps::Rotation<2>(atan2(4., 3.))),
         {{{{0.6, 0.8}}, {{-0.8, 0.6}}}});
 
-  check(make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+  check(make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
             CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                            CoordinateMaps::Rotation<2>>(
                 {-1., 1., 2., 7.}, CoordinateMaps::Rotation<2>(atan2(4., 3.)))),
@@ -99,8 +99,9 @@ template <typename TargetFrame>
 void test_face_normal_element_map() {
   const Mesh<0> mesh_0d;
   const auto map_1d = ElementMap<1, TargetFrame>(
-      ElementId<1>{0}, make_coordinate_map_base<Frame::Logical, TargetFrame>(
-                           CoordinateMaps::Affine(-1.0, 1.0, -3.0, 7.0)));
+      ElementId<1>{0},
+      make_coordinate_map_base<Frame::ElementLogical, TargetFrame>(
+          CoordinateMaps::Affine(-1.0, 1.0, -3.0, 7.0)));
   const auto normal_1d_lower =
       unnormalized_face_normal(mesh_0d, map_1d, Direction<1>::lower_xi());
 
@@ -113,13 +114,13 @@ void test_face_normal_element_map() {
 
   check(ElementMap<2, TargetFrame>(
             ElementId<2>(0),
-            make_coordinate_map_base<Frame::Logical, TargetFrame>(
+            make_coordinate_map_base<Frame::ElementLogical, TargetFrame>(
                 CoordinateMaps::Rotation<2>(atan2(4., 3.)))),
         {{{{0.6, 0.8}}, {{-0.8, 0.6}}}});
 
   check(ElementMap<3, TargetFrame>(
             ElementId<3>(0),
-            make_coordinate_map_base<Frame::Logical, TargetFrame>(
+            make_coordinate_map_base<Frame::ElementLogical, TargetFrame>(
                 CoordinateMaps::ProductOf2Maps<CoordinateMaps::Affine,
                                                CoordinateMaps::Rotation<2>>(
                     {-1., 1., 2., 7.},
@@ -161,7 +162,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
       Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
       ElementMap<2, Frame::Physical>(
           ElementId<2>(0),
-          make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+          make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
               CoordinateMaps::Rotation<2>(atan2(4., 3.)))));
 
   CHECK((Tags::InterfaceCompute<
@@ -217,7 +218,7 @@ SPECTRE_TEST_CASE("Unit.Domain.FaceNormal.ComputeItem", "[Unit][Domain]") {
       Mesh<2>{2, Spectral::Basis::Legendre, Spectral::Quadrature::GaussLobatto},
       ElementMap<2, Frame::Physical>(
           ElementId<2>(0),
-          make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+          make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
               CoordinateMaps::Wedge2D(1., 2., 0., 1., OrientationMap<2>{},
                                       false))));
 

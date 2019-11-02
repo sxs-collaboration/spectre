@@ -19,7 +19,7 @@
 namespace Frame {
 struct LastTimeIndependent;
 struct Physical;
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 /// \endcond
 
@@ -55,7 +55,7 @@ Domain<2, TargetFrame> Rectangle<TargetFrame>::create_domain() const noexcept {
   }
 
   return Domain<2, TargetFrame>{
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, TargetFrame>(
           Affine2D{Affine{-1., 1., lower_xy_[0], upper_xy_[0]},
                    Affine{-1., 1., lower_xy_[1], upper_xy_[1]}}),
       std::vector<std::array<size_t, 4>>{{{0, 1, 2, 3}}}, identifications};

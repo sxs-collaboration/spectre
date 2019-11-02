@@ -126,11 +126,12 @@ bool minmod_limited_slopes(
 /// linearize) on elements where the slope is less than \f$m h^2\f$, where
 /// \f$m\f$ is the TVBM constant and \f$h\f$ is the size of the DG element.
 ///
-/// The limiter acts in the `Frame::Logical` coordinates, because in these
-/// coordinates it is straightforward to formulate the algorithm. This means the
-/// limiter can operate on generic deformed grids. However, if the grid is too
-/// strongly deformed, some things can start to break down:
-/// 1. When an element is deformed so that the Jacobian (from `Frame::Logical`
+/// The limiter acts in the `Frame::ElementLogical` coordinates, because in
+/// these coordinates it is straightforward to formulate the algorithm. This
+/// means the limiter can operate on generic deformed grids. However, if the
+/// grid is too strongly deformed, some things can start to break down:
+/// 1. When an element is deformed so that the Jacobian (from
+/// `Frame::ElementLogical`
 ///    to `Frame::Physical`) varies across the element, then the limiter fails
 ///    to be conservative. In other words, the integral of a tensor `u` over the
 ///    element will change after the limiter activates on `u`. This error is
@@ -138,9 +139,9 @@ bool minmod_limited_slopes(
 /// 2. When there is a sudden change in the size of the elements (perhaps at an
 ///    h-refinement boundary, or at the boundary between two blocks with very
 ///    different mappings), a smooth solution in `Frame::Physical` can appear
-///    to have a kink in `Frame::Logical`. The Minmod implementation includes
-///    some (untested) tweaks that try to reduce spurious limiter activations
-///    near these fake kinks.
+///    to have a kink in `Frame::ElementLogical`. The Minmod implementation
+///    includes some (untested) tweaks that try to reduce spurious limiter
+///    activations near these fake kinks.
 ///
 /// When an element has multiple neighbors in any direction, an effective mean
 /// and neighbor size in this direction are computed by averaging over the
@@ -251,7 +252,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   using limit_tags = tmpl::list<Tags...>;
   using limit_argument_tags =
       tmpl::list<::Tags::Element<VolumeDim>, ::Tags::Mesh<VolumeDim>,
-                 ::Tags::Coordinates<VolumeDim, Frame::Logical>,
+                 ::Tags::Coordinates<VolumeDim, Frame::ElementLogical>,
                  ::Tags::SizeOfElement<VolumeDim>>;
 
   /// \brief Limits the solution on the element.
@@ -282,7 +283,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   bool operator()(
       const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
       const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
-      const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+      const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>&
+          logical_coords,
       const std::array<double, VolumeDim>& element_size,
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,

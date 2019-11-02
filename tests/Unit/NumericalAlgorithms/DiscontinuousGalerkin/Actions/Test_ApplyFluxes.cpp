@@ -105,7 +105,8 @@ struct component {
   using array_index = ElementIndex<Dim>;
   using const_global_cache_tags = tmpl::list<NumericalFluxTag<Flux>>;
   using simple_tags =
-      db::AddSimpleTags<Tags::Mesh<Dim>, Tags::Coordinates<Dim, Frame::Logical>,
+      db::AddSimpleTags<Tags::Mesh<Dim>,
+                        Tags::Coordinates<Dim, Frame::ElementLogical>,
                         Tags::Mortars<Tags::Mesh<Dim - 1>, Dim>,
                         Tags::Mortars<Tags::MortarSize<Dim - 1>, Dim>,
                         Tags::dt<Tags::Variables<tmpl::list<Tags::dt<Var>>>>,
@@ -242,32 +243,32 @@ class RefinementNumericalFlux {
 };
 
 Scalar<DataVector> flux1(
-    const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
+    const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords) noexcept {
   return Scalar<DataVector>(exp(get<0>(coords)));
 }
 Scalar<DataVector> flux2(
-    const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
+    const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords) noexcept {
   return Scalar<DataVector>(log(get<1>(coords) + 2.));
 }
 
 // Map is
 // (xi, eta, zeta) -> ((2. + sin(square(eta) * zeta)) * (xi - 1), eta, zeta)
 Scalar<DataVector> determinant_of_jacobian1(
-    const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
+    const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords) noexcept {
   return Scalar<DataVector>(
       1. / (2. + sin(square(get<1>(coords)) * get<2>(coords))));
 }
 Scalar<DataVector> magnitude_of_face_normal1(
-    const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
+    const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords) noexcept {
   return Scalar<DataVector>(2. + sin(square(get<0>(coords)) * get<1>(coords)));
 }
 // Map is the identity
 Scalar<DataVector> determinant_of_jacobian2(
-    const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
+    const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords) noexcept {
   return make_with_value<Scalar<DataVector>>(coords, 1.);
 }
 Scalar<DataVector> magnitude_of_face_normal2(
-    const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
+    const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords) noexcept {
   return make_with_value<Scalar<DataVector>>(coords, 1.);
 }
 }  // namespace
@@ -285,10 +286,9 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyFluxes.p-refinement",
   using dt_variables_tag =
       db::add_tag_prefix<Tags::dt, typename System<3>::variables_tag>;
 
-  using simple_tags =
-      db::AddSimpleTags<Tags::Mesh<3>, Tags::Coordinates<3, Frame::Logical>,
-                        mortar_meshes_tag, mortar_sizes_tag, dt_variables_tag,
-                        mortar_data_tag>;
+  using simple_tags = db::AddSimpleTags<
+      Tags::Mesh<3>, Tags::Coordinates<3, Frame::ElementLogical>,
+      mortar_meshes_tag, mortar_sizes_tag, dt_variables_tag, mortar_data_tag>;
 
   const ElementId<3> id_0(0);
   const ElementId<3> id_1(1);
@@ -569,7 +569,8 @@ SPECTRE_TEST_CASE(
                                   const auto& det_jacobian) noexcept {
     return definite_integral(
         get(get<Tags::dt<Var>>(box)) *
-            get(det_jacobian(get<Tags::Coordinates<3, Frame::Logical>>(box))),
+            get(det_jacobian(
+                get<Tags::Coordinates<3, Frame::ElementLogical>>(box))),
         mesh);
   };
   const double self_average_dt =

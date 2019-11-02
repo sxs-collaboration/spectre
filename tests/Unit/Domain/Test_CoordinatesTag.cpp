@@ -19,7 +19,7 @@
 namespace Frame {
 struct LastTimeIndependent;
 struct Physical;
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 
 namespace domain {
@@ -32,18 +32,18 @@ void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) noexcept {
       db::AddComputeTags<
           Tags::LogicalCoordinates<Dim>,
           Tags::MappedCoordinates<map_tag, Tags::LogicalCoordinates<Dim>>>>(
-      mesh,
-      ElementMap<Dim, Frame::LastTimeIndependent>(
-          ElementId<Dim>(0),
-          make_coordinate_map_base<Frame::Logical, Frame::LastTimeIndependent>(
-              map)));
+      mesh, ElementMap<Dim, Frame::LastTimeIndependent>(
+                ElementId<Dim>(0),
+                make_coordinate_map_base<Frame::ElementLogical,
+                                         Frame::LastTimeIndependent>(map)));
   CHECK_ITERABLE_APPROX(
       (db::get<Tags::Coordinates<Dim, Frame::LastTimeIndependent>>(box)),
-      (make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(map)(
-          db::get<Tags::Coordinates<Dim, Frame::Logical>>(box))));
+      (make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+          map)(db::get<Tags::Coordinates<Dim, Frame::ElementLogical>>(box))));
 
   /// [coordinates_name]
-  CHECK(Tags::Coordinates<Dim, Frame::Logical>::name() == "LogicalCoordinates");
+  CHECK(Tags::Coordinates<Dim, Frame::ElementLogical>::name() ==
+        "ElementLogicalCoordinates");
   CHECK(Tags::Coordinates<Dim, Frame::Physical>::name() ==
         "PhysicalCoordinates");
   /// [coordinates_name]

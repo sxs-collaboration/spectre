@@ -26,12 +26,12 @@ namespace domain {
 namespace {
 template <size_t Dim>
 void test_block() {
-  PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::LastTimeIndependent,
-                               CoordinateMaps::Identity<Dim>>));
+  PUPable_reg(SINGLE_ARG(
+      CoordinateMap<Frame::ElementLogical, Frame::LastTimeIndependent,
+                    CoordinateMaps::Identity<Dim>>));
 
   using coordinate_map =
-      CoordinateMap<Frame::Logical, Frame::LastTimeIndependent,
+      CoordinateMap<Frame::ElementLogical, Frame::LastTimeIndependent,
                     CoordinateMaps::Identity<Dim>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<Dim>{}};
   Block<Dim, Frame::LastTimeIndependent> block(identity_map.get_clone(), 7, {});
@@ -47,7 +47,7 @@ void test_block() {
 
   // Test that the block's coordinate_map is Identity:
   const auto& map = block.coordinate_map();
-  const tnsr::I<double, Dim, Frame::Logical> xi(1.0);
+  const tnsr::I<double, Dim, Frame::ElementLogical> xi(1.0);
   const tnsr::I<double, Dim, Frame::LastTimeIndependent> x(1.0);
   CHECK(map(xi) == x);
   CHECK(map.inverse(x).get() == xi);
@@ -79,7 +79,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
       {Direction<2>::upper_xi(), block_neighbor1},
       {Direction<2>::lower_eta(), block_neighbor2}};
   using coordinate_map =
-      CoordinateMap<Frame::Logical, Frame::LastTimeIndependent,
+      CoordinateMap<Frame::ElementLogical, Frame::LastTimeIndependent,
                     CoordinateMaps::Identity<2>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<2>{}};
   const Block<2, Frame::LastTimeIndependent> block(identity_map.get_clone(), 3,

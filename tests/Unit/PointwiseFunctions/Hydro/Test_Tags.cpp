@@ -19,8 +19,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
                                            Frame::Physical>::name() ==
         "ComovingMagneticField");
   CHECK(hydro::Tags::ComovingMagneticField<DataVector, 3,
-                                           Frame::Logical>::name() ==
-        "Logical_ComovingMagneticField");
+                                           Frame::ElementLogical>::name() ==
+        "ElementLogical_ComovingMagneticField");
   CHECK(hydro::Tags::ComovingMagneticFieldSquared<DataVector>::name() ==
         "ComovingMagneticFieldSquared");
   CHECK(hydro::Tags::DivergenceCleaningField<DataVector>::name() ==
@@ -57,8 +57,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
                                             Frame::Physical>::name() ==
         "SpatialVelocityOneForm");
   CHECK(hydro::Tags::SpatialVelocityOneForm<DataVector, 3,
-                                            Frame::Logical>::name() ==
-        "Logical_SpatialVelocityOneForm");
+                                            Frame::ElementLogical>::name() ==
+        "ElementLogical_SpatialVelocityOneForm");
   /// [prefix_example]
   CHECK(hydro::Tags::SpatialVelocitySquared<double>::name() ==
         "SpatialVelocitySquared");

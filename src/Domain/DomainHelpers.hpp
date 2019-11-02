@@ -127,7 +127,7 @@ auto wedge_coordinate_maps(double inner_radius, double outer_radius,
                            ShellWedges which_wedges = ShellWedges::All,
                            size_t number_of_layers = 1) noexcept
     -> std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
+        domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame, 3>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// These are the ten Frustums used in the DomainCreators for binary compact
@@ -147,7 +147,7 @@ auto frustum_coordinate_maps(
     const std::array<double, 3>& origin_preimage = {{0.0, 0.0, 0.0}},
     double projective_scale_factor = 1.0) noexcept
     -> std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>;
+        domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame, 3>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief The corners for a domain with radial layers.
@@ -211,8 +211,8 @@ auto maps_for_rectilinear_domains(
     const std::vector<OrientationMap<VolumeDim>>& orientations_of_all_blocks =
         {},
     bool use_equiangular_map = false) noexcept
-    -> std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>;
+    -> std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::ElementLogical, TargetFrame, VolumeDim>>>;
 
 /// \ingroup ComputationalDomainGroup
 /// \brief Create a rectilinear Domain of multicubes.
@@ -352,11 +352,12 @@ class FaceCornerIterator {
     return face_index_ < two_to_the(VolumeDim - 1);
   }
 
-  tnsr::I<double, VolumeDim, Frame::Logical> operator()() const noexcept {
+  tnsr::I<double, VolumeDim, Frame::ElementLogical> operator()() const
+      noexcept {
     return corner_;
   }
 
-  tnsr::I<double, VolumeDim, Frame::Logical> operator*() const noexcept {
+  tnsr::I<double, VolumeDim, Frame::ElementLogical> operator*() const noexcept {
     return corner_;
   }
 
@@ -370,7 +371,7 @@ class FaceCornerIterator {
   const Direction<VolumeDim> direction_;
   size_t index_;
   size_t face_index_ = 0;
-  tnsr::I<double, VolumeDim, Frame::Logical> corner_;
+  tnsr::I<double, VolumeDim, Frame::ElementLogical> corner_;
 };
 
 template <size_t VolumeDim>

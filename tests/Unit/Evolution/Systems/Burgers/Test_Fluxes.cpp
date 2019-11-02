@@ -35,8 +35,8 @@ SPECTRE_TEST_CASE("Unit.Burgers.Fluxes", "[Unit][Burgers]") {
                      Spectral::Quadrature::GaussLobatto);
   const auto coords = get<0>(logical_coordinates(mesh));
   const auto identity = make_with_value<
-      InverseJacobian<DataVector, 1, Frame::Logical, Frame::Physical>>(coords,
-                                                                       1.);
+      InverseJacobian<DataVector, 1, Frame::ElementLogical, Frame::Physical>>(
+      coords, 1.);
 
   Variables<tmpl::list<Burgers::Tags::U>> vars(num_points);
   // Arbitrary polynomial whose square is exactly representable.

@@ -72,8 +72,8 @@ struct ReceivePoints {
       const ArrayIndex& /*array_index*/,
       const typename Metavariables::temporal_id::type& temporal_id,
       std::vector<boost::optional<
-          IdPair<domain::BlockId,
-                 tnsr::I<double, VolumeDim, typename ::Frame::Logical>>>>&&
+          IdPair<domain::BlockId, tnsr::I<double, VolumeDim,
+                                          typename ::Frame::ElementLogical>>>>&&
           block_logical_coords) noexcept {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         make_not_null(&box),

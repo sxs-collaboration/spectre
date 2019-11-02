@@ -294,9 +294,9 @@ template <size_t Dim>
 using compute_tags = db::AddComputeTags<
     Tags::LogicalCoordinates<Dim>,
     Tags::MappedCoordinates<Tags::ElementMap<Dim>,
-                            Tags::Coordinates<Dim, Frame::Logical>>,
+                            Tags::Coordinates<Dim, Frame::ElementLogical>>,
     Tags::InverseJacobian<Tags::ElementMap<Dim>,
-                          Tags::Coordinates<Dim, Frame::Logical>>>;
+                          Tags::Coordinates<Dim, Frame::ElementLogical>>>;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.FirstOrderInternalPenalty",
@@ -306,7 +306,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.FirstOrderInternalPenalty",
                   Spectral::Quadrature::GaussLobatto};
   ElementMap<1, Frame::Physical> element_map_1d{
       ElementId<1>{0, make_array<1>(SegmentId{0, 0})},
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Affine{-1., 1., 0., M_PI})};
   auto domain_box_1d = db::create<simple_tags<1>, compute_tags<1>>(
       mesh_1d, std::move(element_map_1d));
@@ -314,7 +314,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.FirstOrderInternalPenalty",
                   Spectral::Quadrature::GaussLobatto};
   ElementMap<2, Frame::Physical> element_map_2d{
       ElementId<2>{0, make_array<2>(SegmentId{0, 0})},
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(
               Affine{-1., 1., 0., M_PI}, Affine{-1., 1., 0., M_PI}))};
   auto domain_box_2d = db::create<simple_tags<2>, compute_tags<2>>(
@@ -323,7 +323,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.FirstOrderInternalPenalty",
                   Spectral::Quadrature::GaussLobatto};
   ElementMap<3, Frame::Physical> element_map_3d{
       ElementId<3>{0, make_array<3>(SegmentId{0, 0})},
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>(
               Affine{-1., 1., 0., M_PI}, Affine{-1., 1., 0., M_PI},
               Affine{-1., 1., 0., M_PI}))};

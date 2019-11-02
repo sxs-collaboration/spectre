@@ -18,7 +18,7 @@
 
 /// \cond
 namespace Frame {
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 namespace PUP {
 class er;
@@ -45,8 +45,8 @@ class Block {
   /// \param id a unique ID.
   /// \param neighbors info about the Blocks that share a codimension 1
   /// boundary with this Block.
-  Block(std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame,
-                                                  VolumeDim>>&& map,
+  Block(std::unique_ptr<domain::CoordinateMapBase<
+            Frame::ElementLogical, TargetFrame, VolumeDim>>&& map,
         size_t id,
         DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors) noexcept;
 
@@ -57,7 +57,8 @@ class Block {
   Block& operator=(const Block&) = delete;
   Block& operator=(Block&&) = default;
 
-  const domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
+  const domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame,
+                                  VolumeDim>&
   coordinate_map() const noexcept {
     return *map_;
   }
@@ -84,7 +85,7 @@ class Block {
 
  private:
   std::unique_ptr<
-      domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>
+      domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame, VolumeDim>>
       map_;
   size_t id_{0};
   DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;

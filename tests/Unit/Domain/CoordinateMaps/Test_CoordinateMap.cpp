@@ -47,9 +47,9 @@ auto compose_jacobians(const Map1& map1, const Map2& map2,
   const auto jac1 = map1.jacobian(point);
   const auto jac2 = map2.jacobian(map1(point));
 
-  auto result = make_with_value<
-      Jacobian<DataType, Dim, Frame::Logical, Frame::LastTimeIndependent>>(
-      point[0], 0.);
+  auto result =
+      make_with_value<Jacobian<DataType, Dim, Frame::ElementLogical,
+                               Frame::LastTimeIndependent>>(point[0], 0.);
   for (size_t target = 0; target < Dim; ++target) {
     for (size_t source = 0; source < Dim; ++source) {
       for (size_t dummy = 0; dummy < Dim; ++dummy) {
@@ -67,9 +67,10 @@ auto compose_inv_jacobians(const Map1& map1, const Map2& map2,
   const auto inv_jac1 = map1.inv_jacobian(point);
   const auto inv_jac2 = map2.inv_jacobian(map1(point));
 
-  auto result = make_with_value<InverseJacobian<DataType, Dim, Frame::Logical,
-                                                Frame::LastTimeIndependent>>(
-      point[0], 0.);
+  auto result =
+      make_with_value<InverseJacobian<DataType, Dim, Frame::ElementLogical,
+                                      Frame::LastTimeIndependent>>(point[0],
+                                                                   0.);
   for (size_t target = 0; target < Dim; ++target) {
     for (size_t source = 0; source < Dim; ++source) {
       for (size_t dummy = 0; dummy < Dim; ++dummy) {
@@ -86,10 +87,11 @@ void test_single_coordinate_map() {
   using affine_map1d = CoordinateMaps::Affine;
 
   const auto affine1d =
-      make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
           affine_map1d{-1.0, 1.0, 2.0, 8.0});
   const auto affine1d_base =
-      make_coordinate_map_base<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map_base<Frame::ElementLogical,
+                               Frame::LastTimeIndependent>(
           affine_map1d{-1.0, 1.0, 2.0, 8.0});
   const auto first_affine1d = affine_map1d{-1.0, 1.0, 2.0, 8.0};
 
@@ -101,7 +103,7 @@ void test_single_coordinate_map() {
 
   for (const auto& coord : coords1d) {
     CHECK((make_array<double, 1>((*affine1d_base)(
-              tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}}))) ==
+              tnsr::I<double, 1, Frame::ElementLogical>{{{coord[0]}}}))) ==
           first_affine1d(coord));
     CHECK((make_array<double, 1>(
               affine1d_base
@@ -109,27 +111,30 @@ void test_single_coordinate_map() {
                       {{coord[0]}}})
                   .get())) == first_affine1d.inverse(coord).get());
 
-    CHECK((make_array<double, 1>(affine1d(tnsr::I<double, 1, Frame::Logical>{
-              {{coord[0]}}}))) == first_affine1d(coord));
+    CHECK((make_array<double, 1>(affine1d(
+              tnsr::I<double, 1, Frame::ElementLogical>{{{coord[0]}}}))) ==
+          first_affine1d(coord));
     CHECK((make_array<double, 1>(
               affine1d
                   .inverse(tnsr::I<double, 1, Frame::LastTimeIndependent>{
                       {{coord[0]}}})
                   .get())) == first_affine1d.inverse(coord).get());
 
-    const auto jac =
-        affine1d.jacobian(tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}});
+    const auto jac = affine1d.jacobian(
+        tnsr::I<double, 1, Frame::ElementLogical>{{{coord[0]}}});
     const auto expected_jac = first_affine1d.jacobian(coord);
-    CHECK(affine1d_base
-              ->jacobian(tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}})
-              .get(0, 0) == expected_jac.get(0, 0));
+    CHECK(
+        affine1d_base
+            ->jacobian(tnsr::I<double, 1, Frame::ElementLogical>{{{coord[0]}}})
+            .get(0, 0) == expected_jac.get(0, 0));
     CHECK(jac.get(0, 0) == expected_jac.get(0, 0));
 
-    const auto inv_jac =
-        affine1d.inv_jacobian(tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}});
+    const auto inv_jac = affine1d.inv_jacobian(
+        tnsr::I<double, 1, Frame::ElementLogical>{{{coord[0]}}});
     const auto expected_inv_jac = first_affine1d.inv_jacobian(coord);
     CHECK(affine1d_base
-              ->inv_jacobian(tnsr::I<double, 1, Frame::Logical>{{{coord[0]}}})
+              ->inv_jacobian(
+                  tnsr::I<double, 1, Frame::ElementLogical>{{{coord[0]}}})
               .get(0, 0) == expected_inv_jac.get(0, 0));
     CHECK(inv_jac.get(0, 0) == expected_inv_jac.get(0, 0));
   }
@@ -138,11 +143,11 @@ void test_single_coordinate_map() {
 
   const auto first_rotated2d = rotate2d{M_PI_4};
   const auto rotated2d =
-      make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
           first_rotated2d);
   const auto rotated2d_base =
-      make_coordinate_map_base<Frame::Logical, Frame::LastTimeIndependent>(
-          first_rotated2d);
+      make_coordinate_map_base<Frame::ElementLogical,
+                               Frame::LastTimeIndependent>(first_rotated2d);
 
   CHECK(rotated2d == *rotated2d_base);
   CHECK(*rotated2d_base == rotated2d);
@@ -151,17 +156,18 @@ void test_single_coordinate_map() {
       {{{0.1, 2.8}}, {{-8.2, 2.8}}, {{5.7, -4.9}}, {{2.9, 3.4}}}};
 
   for (const auto& coord : coords2d) {
-    CHECK((make_array<double, 2>((*rotated2d_base)(
-              tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}}))) ==
-          first_rotated2d(coord));
+    CHECK((make_array<double, 2>(
+              (*rotated2d_base)(tnsr::I<double, 2, Frame::ElementLogical>{
+                  {{coord[0], coord[1]}}}))) == first_rotated2d(coord));
     CHECK((make_array<double, 2>(
               rotated2d_base
                   ->inverse(tnsr::I<double, 2, Frame::LastTimeIndependent>{
                       {{coord[0], coord[1]}}})
                   .get())) == first_rotated2d.inverse(coord).get());
 
-    CHECK((make_array<double, 2>(rotated2d(tnsr::I<double, 2, Frame::Logical>{
-              {{coord[0], coord[1]}}}))) == first_rotated2d(coord));
+    CHECK((make_array<double, 2>(
+              rotated2d(tnsr::I<double, 2, Frame::ElementLogical>{
+                  {{coord[0], coord[1]}}}))) == first_rotated2d(coord));
     CHECK((make_array<double, 2>(
               rotated2d
                   .inverse(tnsr::I<double, 2, Frame::LastTimeIndependent>{
@@ -169,9 +175,9 @@ void test_single_coordinate_map() {
                   .get())) == first_rotated2d.inverse(coord).get());
 
     const auto jac = rotated2d.jacobian(
-        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
+        tnsr::I<double, 2, Frame::ElementLogical>{{{coord[0], coord[1]}}});
     const auto jac2 = rotated2d_base->jacobian(
-        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
+        tnsr::I<double, 2, Frame::ElementLogical>{{{coord[0], coord[1]}}});
     const auto expected_jac = first_rotated2d.jacobian(coord);
     for (size_t j = 0; j < 2; ++j) {
       for (size_t k = 0; k < 2; ++k) {
@@ -181,9 +187,9 @@ void test_single_coordinate_map() {
     }
 
     const auto inv_jac = rotated2d.inv_jacobian(
-        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
+        tnsr::I<double, 2, Frame::ElementLogical>{{{coord[0], coord[1]}}});
     const auto inv_jac2 = rotated2d_base->inv_jacobian(
-        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
+        tnsr::I<double, 2, Frame::ElementLogical>{{{coord[0], coord[1]}}});
     const auto expected_inv_jac = first_rotated2d.inv_jacobian(coord);
     for (size_t j = 0; j < 2; ++j) {
       for (size_t k = 0; k < 2; ++k) {
@@ -197,11 +203,11 @@ void test_single_coordinate_map() {
 
   const auto first_rotated3d = rotate3d{M_PI_4, M_PI_4, M_PI_2};
   const auto rotated3d =
-      make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
           first_rotated3d);
   const auto rotated3d_base =
-      make_coordinate_map_base<Frame::Logical, Frame::LastTimeIndependent>(
-          first_rotated3d);
+      make_coordinate_map_base<Frame::ElementLogical,
+                               Frame::LastTimeIndependent>(first_rotated3d);
 
   CHECK(rotated3d == *rotated3d_base);
   CHECK(*rotated3d_base == rotated3d);
@@ -213,7 +219,7 @@ void test_single_coordinate_map() {
 
   for (const auto& coord : coords3d) {
     CHECK((make_array<double, 3>((
-              *rotated3d_base)(tnsr::I<double, 3, Frame::Logical>{
+              *rotated3d_base)(tnsr::I<double, 3, Frame::ElementLogical>{
               {{coord[0], coord[1], coord[2]}}}))) == first_rotated3d(coord));
     CHECK((make_array<double, 3>(
               rotated3d_base
@@ -221,18 +227,22 @@ void test_single_coordinate_map() {
                       {{coord[0], coord[1], coord[2]}}})
                   .get())) == first_rotated3d.inverse(coord).get());
 
-    CHECK((make_array<double, 3>(rotated3d(tnsr::I<double, 3, Frame::Logical>{
-              {{coord[0], coord[1], coord[2]}}}))) == first_rotated3d(coord));
+    CHECK((make_array<double, 3>(
+              rotated3d(tnsr::I<double, 3, Frame::ElementLogical>{
+                  {{coord[0], coord[1], coord[2]}}}))) ==
+          first_rotated3d(coord));
     CHECK((make_array<double, 3>(
               rotated3d
                   .inverse(tnsr::I<double, 3, Frame::LastTimeIndependent>{
                       {{coord[0], coord[1], coord[2]}}})
                   .get())) == first_rotated3d.inverse(coord).get());
 
-    const auto jac = rotated3d.jacobian(
-        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
-    const auto jac2 = rotated3d_base->jacobian(
-        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
+    const auto jac =
+        rotated3d.jacobian(tnsr::I<double, 3, Frame::ElementLogical>{
+            {{coord[0], coord[1], coord[2]}}});
+    const auto jac2 =
+        rotated3d_base->jacobian(tnsr::I<double, 3, Frame::ElementLogical>{
+            {{coord[0], coord[1], coord[2]}}});
     const auto expected_jac = first_rotated3d.jacobian(coord);
     for (size_t j = 0; j < 3; ++j) {
       for (size_t k = 0; k < 3; ++k) {
@@ -241,10 +251,12 @@ void test_single_coordinate_map() {
       }
     }
 
-    const auto inv_jac = rotated3d.inv_jacobian(
-        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
-    const auto inv_jac2 = rotated3d_base->inv_jacobian(
-        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
+    const auto inv_jac =
+        rotated3d.inv_jacobian(tnsr::I<double, 3, Frame::ElementLogical>{
+            {{coord[0], coord[1], coord[2]}}});
+    const auto inv_jac2 =
+        rotated3d_base->inv_jacobian(tnsr::I<double, 3, Frame::ElementLogical>{
+            {{coord[0], coord[1], coord[2]}}});
     const auto expected_inv_jac = first_rotated3d.inv_jacobian(coord);
     for (size_t j = 0; j < 3; ++j) {
       for (size_t k = 0; k < 3; ++k) {
@@ -266,34 +278,36 @@ void test_coordinate_map_with_affine_map() {
 
   // Test 1D
   const auto map =
-      make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
           affine_map{-1.0, 1.0, 0.0, 2.3}, affine_map{0.0, 2.3, -0.5, 0.5});
   for (size_t i = 1; i < number_of_points_checked + 1; ++i) {
     CHECK((tnsr::I<double, 1, Frame::LastTimeIndependent>(1.0 / i + -0.5))[0] ==
-          approx(map(tnsr::I<double, 1, Frame::Logical>{2.0 / i + -1.0})[0]));
-    CHECK((tnsr::I<double, 1, Frame::Logical>(2.0 / i + -1.0))[0] ==
+          approx(map(
+              tnsr::I<double, 1, Frame::ElementLogical>{2.0 / i + -1.0})[0]));
+    CHECK((tnsr::I<double, 1, Frame::ElementLogical>(2.0 / i + -1.0))[0] ==
           approx(map.inverse(tnsr::I<double, 1, Frame::LastTimeIndependent>{
                                  1.0 / i + -0.5})
                      .get()[0]));
 
-    CHECK(approx(map.inv_jacobian(
-                        tnsr::I<double, 1, Frame::Logical>{2.0 / i + -1.0})
+    CHECK(approx(map.inv_jacobian(tnsr::I<double, 1, Frame::ElementLogical>{
+                                      2.0 / i + -1.0})
                      .get(0, 0)) == 2.0);
-    CHECK(
-        approx(map.jacobian(tnsr::I<double, 1, Frame::Logical>{2.0 / i + -1.0})
-                   .get(0, 0)) == 0.5);
+    CHECK(approx(map.jacobian(tnsr::I<double, 1, Frame::ElementLogical>{
+                                  2.0 / i + -1.0})
+                     .get(0, 0)) == 0.5);
   }
 
   // Test 2D
   const auto prod_map2d =
-      make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
           affine_map_2d{affine_map{-1.0, 1.0, 0.0, 2.0},
                         affine_map{0.0, 2.0, -0.5, 0.5}},
           affine_map_2d{affine_map{0.0, 2.0, 2.0, 6.0},
                         affine_map{-0.5, 0.5, 0.0, 8.0}});
   for (size_t i = 1; i < number_of_points_checked + 1; ++i) {
-    const auto mapped_point = prod_map2d(
-        tnsr::I<double, 2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
+    const auto mapped_point =
+        prod_map2d(tnsr::I<double, 2, Frame::ElementLogical>{
+            {{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
     const auto expected_mapped_point =
         tnsr::I<double, 2, Frame::LastTimeIndependent>{
             {{4.0 / i + 2.0, 8.0 / i + 0.0}}};
@@ -313,15 +327,17 @@ void test_coordinate_map_with_affine_map() {
     CHECK(get<1>(expected_inv_mapped_point) ==
           approx(get<1>(inv_mapped_point)));
 
-    const auto inv_jac = prod_map2d.inv_jacobian(
-        tnsr::I<double, 2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
+    const auto inv_jac =
+        prod_map2d.inv_jacobian(tnsr::I<double, 2, Frame::ElementLogical>{
+            {{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
     CHECK(0.5 == approx(get<0, 0>(inv_jac)));
     CHECK(0.0 == approx(get<1, 0>(inv_jac)));
     CHECK(0.0 == approx(get<0, 1>(inv_jac)));
     CHECK(0.25 == approx(get<1, 1>(inv_jac)));
 
-    const auto jac = prod_map2d.jacobian(
-        tnsr::I<double, 2, Frame::Logical>{{{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
+    const auto jac =
+        prod_map2d.jacobian(tnsr::I<double, 2, Frame::ElementLogical>{
+            {{-1.0 + 2.0 / i, 0.0 + 2.0 / i}}});
     CHECK(2.0 == approx(get<0, 0>(jac)));
     CHECK(0.0 == approx(get<1, 0>(jac)));
     CHECK(0.0 == approx(get<0, 1>(jac)));
@@ -330,7 +346,7 @@ void test_coordinate_map_with_affine_map() {
 
   // Test 3D
   const auto prod_map3d =
-      make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
           affine_map_3d{affine_map{-1.0, 1.0, 0.0, 2.0},
                         affine_map{0.0, 2.0, -0.5, 0.5},
                         affine_map{5.0, 7.0, -7.0, 7.0}},
@@ -339,8 +355,9 @@ void test_coordinate_map_with_affine_map() {
                         affine_map{-7.0, 7.0, 3.0, 23.0}});
 
   for (size_t i = 1; i < number_of_points_checked + 1; ++i) {
-    const auto mapped_point = prod_map3d(tnsr::I<double, 3, Frame::Logical>{
-        {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
+    const auto mapped_point =
+        prod_map3d(tnsr::I<double, 3, Frame::ElementLogical>{
+            {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
     const auto expected_mapped_point =
         tnsr::I<double, 3, Frame::LastTimeIndependent>{
             {{4.0 / i + 2.0, 8.0 / i + 0.0, 3.0 + 20.0 / i}}};
@@ -364,7 +381,7 @@ void test_coordinate_map_with_affine_map() {
           approx(get<2>(inv_mapped_point)));
 
     const auto inv_jac =
-        prod_map3d.inv_jacobian(tnsr::I<double, 3, Frame::Logical>{
+        prod_map3d.inv_jacobian(tnsr::I<double, 3, Frame::ElementLogical>{
             {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
     CHECK(0.5 == approx(get<0, 0>(inv_jac)));
     CHECK(0.0 == approx(get<1, 0>(inv_jac)));
@@ -376,8 +393,9 @@ void test_coordinate_map_with_affine_map() {
     CHECK(0.0 == approx(get<2, 1>(inv_jac)));
     CHECK(0.1 == approx(get<2, 2>(inv_jac)));
 
-    const auto jac = prod_map3d.jacobian(tnsr::I<double, 3, Frame::Logical>{
-        {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
+    const auto jac =
+        prod_map3d.jacobian(tnsr::I<double, 3, Frame::ElementLogical>{
+            {{-1.0 + 2.0 / i, 0.0 + 2.0 / i, 5.0 + 2.0 / i}}});
     CHECK(2.0 == approx(get<0, 0>(jac)));
     CHECK(0.0 == approx(get<1, 0>(jac)));
     CHECK(0.0 == approx(get<0, 1>(jac)));
@@ -399,7 +417,7 @@ void test_coordinate_map_with_rotation_map() {
 
   // Test 2D
   const auto double_rotated2d =
-      make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
           rotate2d{M_PI_4}, rotate2d{M_PI_2});
   const auto first_rotated2d = rotate2d{M_PI_4};
   const auto second_rotated2d = rotate2d{M_PI_2};
@@ -410,8 +428,9 @@ void test_coordinate_map_with_rotation_map() {
   for (size_t i = 0; i < coords2d.size(); ++i) {
     INFO(i);
     const auto coord = gsl::at(coords2d, i);
-    CHECK((make_array<double, 2>(double_rotated2d(
-              tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}}))) ==
+    CHECK((make_array<double, 2>(
+              double_rotated2d(tnsr::I<double, 2, Frame::ElementLogical>{
+                  {{coord[0], coord[1]}}}))) ==
           second_rotated2d(first_rotated2d(coord)));
     CHECK((make_array<double, 2>(
               double_rotated2d
@@ -421,13 +440,13 @@ void test_coordinate_map_with_rotation_map() {
           first_rotated2d.inverse(second_rotated2d.inverse(coord).get()).get());
 
     const auto jac = double_rotated2d.jacobian(
-        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
+        tnsr::I<double, 2, Frame::ElementLogical>{{{coord[0], coord[1]}}});
     const auto expected_jac = compose_jacobians(
         first_rotated2d, second_rotated2d, gsl::at(coords2d, i));
     CHECK_ITERABLE_APPROX(jac, expected_jac);
 
     const auto inv_jac = double_rotated2d.inv_jacobian(
-        tnsr::I<double, 2, Frame::Logical>{{{coord[0], coord[1]}}});
+        tnsr::I<double, 2, Frame::ElementLogical>{{{coord[0], coord[1]}}});
     const auto expected_inv_jac = compose_inv_jacobians(
         first_rotated2d, second_rotated2d, gsl::at(coords2d, i));
     CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
@@ -435,7 +454,7 @@ void test_coordinate_map_with_rotation_map() {
 
   // Test 3D
   const auto double_rotated3d =
-      make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
           rotate3d{M_PI_4, M_PI_4, M_PI_2}, rotate3d{M_PI_2, M_PI_4, M_PI_4});
   const auto first_rotated3d = rotate3d{M_PI_4, M_PI_4, M_PI_2};
   const auto second_rotated3d = rotate3d{M_PI_2, M_PI_4, M_PI_4};
@@ -449,7 +468,7 @@ void test_coordinate_map_with_rotation_map() {
     INFO(i);
     const auto coord = gsl::at(coords3d, i);
     CHECK((make_array<double, 3>(
-              double_rotated3d(tnsr::I<double, 3, Frame::Logical>{
+              double_rotated3d(tnsr::I<double, 3, Frame::ElementLogical>{
                   {{coord[0], coord[1], coord[2]}}}))) ==
           second_rotated3d(first_rotated3d(coord)));
     CHECK((make_array<double, 3>(
@@ -459,14 +478,16 @@ void test_coordinate_map_with_rotation_map() {
                   .get())) ==
           first_rotated3d.inverse(second_rotated3d.inverse(coord).get()).get());
 
-    const auto jac = double_rotated3d.jacobian(
-        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
+    const auto jac =
+        double_rotated3d.jacobian(tnsr::I<double, 3, Frame::ElementLogical>{
+            {{coord[0], coord[1], coord[2]}}});
     const auto expected_jac = compose_jacobians(
         first_rotated3d, second_rotated3d, gsl::at(coords3d, i));
     CHECK_ITERABLE_APPROX(jac, expected_jac);
 
-    const auto inv_jac = double_rotated3d.inv_jacobian(
-        tnsr::I<double, 3, Frame::Logical>{{{coord[0], coord[1], coord[2]}}});
+    const auto inv_jac =
+        double_rotated3d.inv_jacobian(tnsr::I<double, 3, Frame::ElementLogical>{
+            {{coord[0], coord[1], coord[2]}}});
     const auto expected_inv_jac = compose_inv_jacobians(
         first_rotated3d, second_rotated3d, gsl::at(coords3d, i));
     CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
@@ -487,12 +508,12 @@ void test_coordinate_map_with_rotation_map_datavector() {
   // Test 2D
   {
     const auto double_rotated2d =
-        make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+        make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
             rotate2d{M_PI_4}, rotate2d{M_PI_2});
     const auto first_rotated2d = rotate2d{M_PI_4};
     const auto second_rotated2d = rotate2d{M_PI_2};
 
-    const tnsr::I<DataVector, 2, Frame::Logical> coords2d{
+    const tnsr::I<DataVector, 2, Frame::ElementLogical> coords2d{
         {{DataVector{0.1, -8.2, 5.7, 2.9}, DataVector{2.8, 2.8, -4.9, 3.4}}}};
     const tnsr::I<DataVector, 2, Frame::LastTimeIndependent> coords2d_grid{
         {{DataVector{0.1, -8.2, 5.7, 2.9}, DataVector{2.8, 2.8, -4.9, 3.4}}}};
@@ -517,22 +538,24 @@ void test_coordinate_map_with_rotation_map_datavector() {
     const auto first_rotated3d = rotate3d{M_PI_4, M_PI_4, M_PI_2};
     const auto second_rotated3d = rotate3d{M_PI_2, M_PI_4, M_PI_4};
     const auto double_rotated3d_full =
-        make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+        make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
             first_rotated3d, second_rotated3d);
     const auto double_rotated3d_base =
-        make_coordinate_map_base<Frame::Logical, Frame::LastTimeIndependent>(
-            first_rotated3d, second_rotated3d);
+        make_coordinate_map_base<Frame::ElementLogical,
+                                 Frame::LastTimeIndependent>(first_rotated3d,
+                                                             second_rotated3d);
     const auto& double_rotated3d = *double_rotated3d_base;
 
     CHECK(double_rotated3d_full == double_rotated3d);
 
     const auto different_rotated3d_base =
-        make_coordinate_map_base<Frame::Logical, Frame::LastTimeIndependent>(
-            second_rotated3d, first_rotated3d);
+        make_coordinate_map_base<Frame::ElementLogical,
+                                 Frame::LastTimeIndependent>(second_rotated3d,
+                                                             first_rotated3d);
     CHECK(*different_rotated3d_base == *different_rotated3d_base);
     CHECK(*different_rotated3d_base != double_rotated3d);
 
-    const tnsr::I<DataVector, 3, Frame::Logical> coords3d{
+    const tnsr::I<DataVector, 3, Frame::ElementLogical> coords3d{
         {{DataVector{0.1, -8.2, 5.7, 2.9}, DataVector{2.8, 2.8, -4.9, 3.4},
           DataVector{9.3, -9.7, 8.1, -7.8}}}};
     const tnsr::I<DataVector, 3, Frame::LastTimeIndependent> coords3d_grid{
@@ -572,11 +595,12 @@ void test_coordinate_map_with_rotation_wedge() {
               false);
 
   const auto composed_map =
-      make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
           first_map, second_map);
 
   const std::array<double, 2> test_point_array{{0.1, 0.8}};
-  const tnsr::I<double, 2, Frame::Logical> test_point_vector(test_point_array);
+  const tnsr::I<double, 2, Frame::ElementLogical> test_point_vector(
+      test_point_array);
 
   const auto mapped_point_array = second_map(first_map(test_point_array));
   const auto mapped_point_vector = composed_map(test_point_vector);
@@ -599,13 +623,16 @@ void test_make_vector_coordinate_map_base() {
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 
   const auto affine1d =
-      make_coordinate_map<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
           Affine{-1.0, 1.0, 2.0, 8.0});
   const auto affine1d_base =
-      make_coordinate_map_base<Frame::Logical, Frame::LastTimeIndependent>(
+      make_coordinate_map_base<Frame::ElementLogical,
+                               Frame::LastTimeIndependent>(
           Affine{-1.0, 1.0, 2.0, 8.0});
-  const auto vector_of_affine1d = make_vector_coordinate_map_base<
-      Frame::Logical, Frame::LastTimeIndependent>(Affine{-1.0, 1.0, 2.0, 8.0});
+  const auto vector_of_affine1d =
+      make_vector_coordinate_map_base<Frame::ElementLogical,
+                                      Frame::LastTimeIndependent>(
+          Affine{-1.0, 1.0, 2.0, 8.0});
 
   CHECK(affine1d == *affine1d_base);
   CHECK(*affine1d_base == affine1d);
@@ -646,7 +673,7 @@ void test_make_vector_coordinate_map_base() {
                      {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
                  true};
   const auto vector_of_wedges =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -668,53 +695,53 @@ void test_make_vector_coordinate_map_base() {
                   {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}},
               true});
 
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(upper_xi_wedge) ==
-        *(vector_of_wedges[0]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(upper_eta_wedge) ==
-        *(vector_of_wedges[1]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(lower_xi_wedge) ==
-        *(vector_of_wedges[2]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(lower_eta_wedge) ==
-        *(vector_of_wedges[3]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+  CHECK(make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
             upper_xi_wedge) == *(vector_of_wedges[0]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+  CHECK(make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
             upper_eta_wedge) == *(vector_of_wedges[1]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+  CHECK(make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
             lower_xi_wedge) == *(vector_of_wedges[2]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+  CHECK(make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
+            lower_eta_wedge) == *(vector_of_wedges[3]));
+  CHECK(*make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
+            upper_xi_wedge) == *(vector_of_wedges[0]));
+  CHECK(*make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
+            upper_eta_wedge) == *(vector_of_wedges[1]));
+  CHECK(*make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
+            lower_xi_wedge) == *(vector_of_wedges[2]));
+  CHECK(*make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             lower_eta_wedge) == *(vector_of_wedges[3]));
 
   const auto wedges = std::vector<Wedge2DMap>{upper_xi_wedge, upper_eta_wedge,
                                               lower_xi_wedge, lower_eta_wedge};
   const auto vector_of_wedges2 =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical, 2>(
-          wedges);
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(upper_xi_wedge) ==
-        *(vector_of_wedges2[0]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(upper_eta_wedge) ==
-        *(vector_of_wedges2[1]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(lower_xi_wedge) ==
-        *(vector_of_wedges2[2]));
-  CHECK(make_coordinate_map<Frame::Logical, Frame::Physical>(lower_eta_wedge) ==
-        *(vector_of_wedges2[3]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Physical,
+                                      2>(wedges);
+  CHECK(make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
             upper_xi_wedge) == *(vector_of_wedges2[0]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+  CHECK(make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
             upper_eta_wedge) == *(vector_of_wedges2[1]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+  CHECK(make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
             lower_xi_wedge) == *(vector_of_wedges2[2]));
-  CHECK(*make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+  CHECK(make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
+            lower_eta_wedge) == *(vector_of_wedges2[3]));
+  CHECK(*make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
+            upper_xi_wedge) == *(vector_of_wedges2[0]));
+  CHECK(*make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
+            upper_eta_wedge) == *(vector_of_wedges2[1]));
+  CHECK(*make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
+            lower_xi_wedge) == *(vector_of_wedges2[2]));
+  CHECK(*make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
             lower_eta_wedge) == *(vector_of_wedges2[3]));
 
   const auto translation =
       Affine2D{Affine{-1.0, 1.0, -1.0, 1.0}, Affine{-1.0, 1.0, 0.0, 2.0}};
   const auto vector_of_translated_wedges =
-      make_vector_coordinate_map_base<Frame::Logical, Frame::Physical, 2>(
-          wedges, translation);
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Physical,
+                                      2>(wedges, translation);
 
   const auto translated_upper_xi_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Physical>(
+      make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -722,7 +749,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_upper_eta_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Physical>(
+      make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -730,7 +757,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_xi_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Physical>(
+      make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -738,7 +765,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_eta_wedge =
-      make_coordinate_map<Frame::Logical, Frame::Physical>(
+      make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -746,7 +773,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_upper_xi_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -754,7 +781,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_upper_eta_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -762,7 +789,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_xi_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -770,7 +797,7 @@ void test_make_vector_coordinate_map_base() {
               true},
           translation);
   const auto translated_lower_eta_wedge_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Wedge2DMap{
               1.0, 2.0, 0.0, 1.0,
               OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -791,7 +818,7 @@ void test_make_vector_coordinate_map_base() {
 void test_coordinate_maps_are_identity() {
   INFO("Coordinate maps are identity");
   const auto giant_identity_map =
-      make_coordinate_map<Frame::Logical, Frame::Physical>(
+      make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
           CoordinateMaps::Identity<3>{},
           CoordinateMaps::BulgedCube{sqrt(3.0), 0.0, false},
           CoordinateMaps::DiscreteRotation<3>{OrientationMap<3>{}},
@@ -810,10 +837,12 @@ void test_coordinate_maps_are_identity() {
           CoordinateMaps::SpecialMobius{0.0});
   test_serialization(giant_identity_map);
 
-  const auto wedge = make_coordinate_map<Frame::Logical, Frame::Physical>(
-      CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0, true));
+  const auto wedge =
+      make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
+          CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0,
+                                  true));
   const auto wedge_composed_with_giant_identity =
-      make_coordinate_map<Frame::Logical, Frame::Physical>(
+      make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
           CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0,
                                   true),
           CoordinateMaps::Identity<3>{},
@@ -834,7 +863,7 @@ void test_coordinate_maps_are_identity() {
           CoordinateMaps::SpecialMobius{0.0});
 
   for (size_t i = 1; i < 11; ++i) {
-    const auto source_point = tnsr::I<double, 3, Frame::Logical>{
+    const auto source_point = tnsr::I<double, 3, Frame::ElementLogical>{
         {{-1.0 + 2.0 / i, -1.0 + 2.0 / i, -1.0 + 2.0 / i}}};
     const auto mapped_point = tnsr::I<double, 3, Frame::Physical>{
         {{-1.0 + 2.0 / i, -1.0 + 2.0 / i, -1.0 + 2.0 / i}}};
@@ -935,14 +964,14 @@ void test_time_dependent_map() {
   domain::CoordinateMaps::Affine affine_map{-1., 1., 4., 7.};
 
   const auto time_dependent_map_first =
-      make_coordinate_map<Frame::Logical, Frame::Physical>(trans_map,
-                                                           affine_map);
+      make_coordinate_map<Frame::ElementLogical, Frame::Physical>(trans_map,
+                                                                  affine_map);
   const auto time_dependent_map_second =
-      make_coordinate_map<Frame::Logical, Frame::Physical>(affine_map,
-                                                           trans_map);
+      make_coordinate_map<Frame::ElementLogical, Frame::Physical>(affine_map,
+                                                                  trans_map);
 
-  const tnsr::I<double, 1, Frame::Logical> tnsr_double_logical{{{3.2}}};
-  const tnsr::I<DataVector, 1, Frame::Logical> tnsr_datavector_logical{
+  const tnsr::I<double, 1, Frame::ElementLogical> tnsr_double_logical{{{3.2}}};
+  const tnsr::I<DataVector, 1, Frame::ElementLogical> tnsr_datavector_logical{
       DataVector{{-4.3, 10.1, -3.5}}};
 
   const tnsr::I<double, 1, Frame::Physical> tnsr_double_physical_1{{{39.34}}};

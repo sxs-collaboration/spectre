@@ -19,7 +19,7 @@
 namespace Frame {
 struct LastTimeIndependent;
 struct Physical;
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 /// \endcond
 
@@ -53,7 +53,7 @@ Shell<TargetFrame>::Shell(
 template <typename TargetFrame>
 Domain<3, TargetFrame> Shell<TargetFrame>::create_domain() const noexcept {
   std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+      std::unique_ptr<CoordinateMapBase<Frame::ElementLogical, TargetFrame, 3>>>
       coord_maps = wedge_coordinate_maps<TargetFrame>(
           inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, 0.0,
           false, aspect_ratio_, use_logarithmic_map_, which_wedges_,

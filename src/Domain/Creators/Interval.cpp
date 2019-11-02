@@ -18,7 +18,7 @@
 namespace Frame {
 struct LastTimeIndependent;
 struct Physical;
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 /// \endcond
 
@@ -44,7 +44,7 @@ Interval<TargetFrame>::Interval(
 template <typename TargetFrame>
 Domain<1, TargetFrame> Interval<TargetFrame>::create_domain() const noexcept {
   return Domain<1, TargetFrame>{
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, TargetFrame>(
           CoordinateMaps::Affine{-1., 1., lower_x_[0], upper_x_[0]}),
       std::vector<std::array<size_t, 2>>{{{1, 2}}},
       is_periodic_in_x_[0] ? std::vector<PairOfFaces>{{{1}, {2}}}

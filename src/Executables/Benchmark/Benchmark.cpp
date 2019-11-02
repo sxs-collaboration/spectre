@@ -90,11 +90,11 @@ void bench_all_gradient(benchmark::State& state) {  // NOLINT
   using Map3d = CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
                                                CoordinateMaps::Affine,
                                                CoordinateMaps::Affine>;
-  CoordinateMap<Frame::Logical, Frame::LastTimeIndependent, Map3d> map(
+  CoordinateMap<Frame::ElementLogical, Frame::LastTimeIndependent, Map3d> map(
       Map3d{map1d, map1d, map1d});
 
   using VarTags = tmpl::list<Kappa<Dim>, Psi<Dim>>;
-  const InverseJacobian<DataVector, Dim, Frame::Logical,
+  const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
                         Frame::LastTimeIndependent>
       inv_jac = map.inv_jacobian(logical_coordinates(mesh));
   const auto grid_coords = map(logical_coordinates(mesh));

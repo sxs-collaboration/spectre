@@ -42,7 +42,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CreateInitialElement", "[Domain][Unit]") {
       {{Direction<2>::lower_eta(), Direction<2>::upper_xi()}},
       {{Direction<2>::upper_xi(), Direction<2>::upper_eta()}});
   Block<2, Frame::Physical> test_block(
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           domain::CoordinateMaps::Identity<2>{}),
       0,
       {{Direction<2>::upper_xi(), BlockNeighbor<2>{1, aligned}},

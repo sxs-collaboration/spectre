@@ -38,5 +38,6 @@ template <size_t Dim, typename Frame>
 auto block_logical_coordinates(
     const Domain<Dim, Frame>& domain,
     const tnsr::I<DataVector, Dim, Frame>& x) noexcept
-    -> std::vector<boost::optional<IdPair<
-        domain::BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>>>;
+    -> std::vector<boost::optional<
+        IdPair<domain::BlockId,
+               tnsr::I<double, Dim, typename ::Frame::ElementLogical>>>>;

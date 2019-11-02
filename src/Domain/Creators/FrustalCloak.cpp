@@ -19,7 +19,7 @@
 namespace Frame {
 struct LastTimeIndependent;
 struct Physical;
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 namespace domain {
 template <typename, typename, size_t>
@@ -55,7 +55,7 @@ template <typename TargetFrame>
 Domain<3, TargetFrame> FrustalCloak<TargetFrame>::create_domain() const
     noexcept {
   std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
+      std::unique_ptr<CoordinateMapBase<Frame::ElementLogical, TargetFrame, 3>>>
       coord_maps = frustum_coordinate_maps<TargetFrame>(
           length_inner_cube_, length_outer_cube_, use_equiangular_map_,
           origin_preimage_, projection_factor_);

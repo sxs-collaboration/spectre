@@ -138,7 +138,7 @@ void test_cylinder_construction(
   using Wedge3DPrism = CoordinateMaps::ProductOf2Maps<Wedge2D, Affine>;
 
   auto coord_maps =
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, TargetFrame>(
           Wedge3DPrism{Wedge2D{inner_radius, outer_radius, 0.0, 1.0,
                                OrientationMap<2>{std::array<Direction<2>, 2>{
                                    {Direction<2>::upper_xi(),
@@ -166,7 +166,7 @@ void test_cylinder_construction(
 
   if (use_equiangular_map) {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::ElementLogical, TargetFrame>(
             Equiangular3DPrism{
                 Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
                             inner_radius / sqrt(2.0)),
@@ -175,7 +175,7 @@ void test_cylinder_construction(
                 Affine{-1.0, 1.0, lower_bound, upper_bound}}));
   } else {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::ElementLogical, TargetFrame>(
             Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),
                             inner_radius / sqrt(2.0)),
                      Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(2.0),

@@ -35,7 +35,7 @@ static_assert(
 /// [change_up_lo]
 
 /// [is_frame_physical]
-static_assert(not Frame::is_frame_physical_v<Frame::Logical>,
+static_assert(not Frame::is_frame_physical_v<Frame::ElementLogical>,
               "Failed testing Frame::is_frame_physical");
 static_assert(not Frame::is_frame_physical_v<Frame::Distorted>,
               "Failed testing Frame::is_frame_physical");
@@ -193,7 +193,7 @@ static_assert(
     not TensorMetafunctions::check_index_symmetry_v<
         Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Physical>,
         SpatialIndex<3, UpLo::Up, Frame::Physical>,
-        SpacetimeIndex<3, UpLo::Up, Frame::Logical>>,
+        SpacetimeIndex<3, UpLo::Up, Frame::ElementLogical>>,
     "Failed testing check_index_symmetry");
 static_assert(
     not TensorMetafunctions::check_index_symmetry_v<
@@ -1233,12 +1233,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamStructure",
     CHECK(get_output(tensor.index_frames()) == "()");
   }
   {
-    using structure =
-        Tensor_detail::Structure<Symmetry<1, 1, 3, 2>,
-                                 SpatialIndex<2, UpLo::Lo, Frame::Physical>,
-                                 SpatialIndex<2, UpLo::Lo, Frame::Physical>,
-                                 SpacetimeIndex<3, UpLo::Lo, Frame::Logical>,
-                                 SpacetimeIndex<2, UpLo::Up, Frame::Distorted>>;
+    using structure = Tensor_detail::Structure<
+        Symmetry<1, 1, 3, 2>, SpatialIndex<2, UpLo::Lo, Frame::Physical>,
+        SpatialIndex<2, UpLo::Lo, Frame::Physical>,
+        SpacetimeIndex<3, UpLo::Lo, Frame::ElementLogical>,
+        SpacetimeIndex<2, UpLo::Up, Frame::Distorted>>;
 
     CHECK(get_output(structure::symmetries()) == "(3,3,2,1)");
     CHECK(get_output(structure::index_types()) ==
@@ -1246,7 +1245,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamStructure",
     CHECK(get_output(structure::dims()) == "(2,2,4,3)");
     CHECK(get_output(structure::index_valences()) == "(Lo,Lo,Lo,Up)");
     CHECK(get_output(structure::index_frames()) ==
-          "(Physical,Physical,Logical,Distorted)");
+          "(Physical,Physical,ElementLogical,Distorted)");
   }
 }
 
@@ -1335,7 +1334,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexType",
                   "[Unit][DataStructures]") {
-  CHECK(get_output(Frame::Logical{}) == "Logical");
+  CHECK(get_output(Frame::ElementLogical{}) == "ElementLogical");
   CHECK(get_output(Frame::LastTimeIndependent{}) == "LastTimeIndependent");
   CHECK(get_output(Frame::Distorted{}) == "Distorted");
   CHECK(get_output(Frame::Physical{}) == "Physical");
@@ -1373,7 +1372,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
 /// [example_spectre_test_case]
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
                   "[Unit][DataStructures]") {
-  CHECK("Logical" == get_output(Frame::Logical{}));
+  CHECK("ElementLogical" == get_output(Frame::ElementLogical{}));
   CHECK("LastTimeIndependent" == get_output(Frame::LastTimeIndependent{}));
   CHECK("Physical" == get_output(Frame::Physical{}));
   CHECK("Distorted" == get_output(Frame::Distorted{}));

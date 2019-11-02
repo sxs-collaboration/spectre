@@ -41,7 +41,7 @@ void test_domain_construction(
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
     const std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, Fr, VolumeDim>>>&
+        domain::CoordinateMapBase<Frame::ElementLogical, Fr, VolumeDim>>>&
         expected_maps) noexcept;
 
 // Test that two neighboring Blocks abut each other.

@@ -39,7 +39,7 @@ class Direction;
  * \snippet Test_LogicalCoordinates.cpp logical_coordinates_example
  */
 template <size_t VolumeDim>
-tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
+tnsr::I<DataVector, VolumeDim, Frame::ElementLogical> logical_coordinates(
     const Mesh<VolumeDim>& mesh) noexcept;
 
 /*!
@@ -52,16 +52,16 @@ tnsr::I<DataVector, VolumeDim, Frame::Logical> logical_coordinates(
  * \snippet Test_LogicalCoordinates.cpp interface_logical_coordinates_example
  */
 template <size_t VolumeDim>
-tnsr::I<DataVector, VolumeDim, Frame::Logical> interface_logical_coordinates(
-    const Mesh<VolumeDim - 1>& mesh,
-    const Direction<VolumeDim>& direction) noexcept;
+tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>
+interface_logical_coordinates(const Mesh<VolumeDim - 1>& mesh,
+                              const Direction<VolumeDim>& direction) noexcept;
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The logical coordinates in the Element
 template <size_t VolumeDim>
-struct LogicalCoordinates : Coordinates<VolumeDim, Frame::Logical>,
+struct LogicalCoordinates : Coordinates<VolumeDim, Frame::ElementLogical>,
                             db::ComputeTag {
   using argument_tags = tmpl::list<Tags::Mesh<VolumeDim>>;
   static constexpr auto function = logical_coordinates<VolumeDim>;

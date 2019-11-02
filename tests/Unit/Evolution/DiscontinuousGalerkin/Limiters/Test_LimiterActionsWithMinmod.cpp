@@ -69,7 +69,7 @@ struct component {
   using simple_tags =
       db::AddSimpleTags<TemporalId, Tags::Mesh<Dim>, Tags::Element<Dim>,
                         Tags::ElementMap<Dim>,
-                        Tags::Coordinates<Dim, Frame::Logical>,
+                        Tags::Coordinates<Dim, Frame::ElementLogical>,
                         Tags::Coordinates<Dim, Frame::Physical>, Var>;
   using compute_tags = db::AddComputeTags<Tags::SizeOfElement<Dim>>;
   using phase_dependent_action_list = tmpl::list<
@@ -112,12 +112,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Physical, Affine2D>));
+      domain::CoordinateMap<Frame::ElementLogical, Frame::Physical, Affine2D>));
   const Affine xi_map{-1., 1., 3., 7.};
   const Affine eta_map{-1., 1., 7., 3.};
   auto map = ElementMap<2, Frame::Physical>(
       self_id,
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Physical>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Physical>(
           Affine2D(xi_map, eta_map)));
 
   auto logical_coords = logical_coordinates(mesh);

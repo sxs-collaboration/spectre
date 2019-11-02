@@ -87,11 +87,12 @@ void test_characteristic_speeds_analytic(
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Set up coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -206,11 +207,12 @@ void test_characteristic_fields_analytic(
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Set up coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -373,11 +375,12 @@ void test_evolved_from_characteristic_fields_analytic(
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Set up coordinates
   const auto x_logical = logical_coordinates(mesh);

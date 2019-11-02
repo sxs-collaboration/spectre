@@ -11,13 +11,13 @@
 namespace Frame {
 struct LastTimeIndependent;
 struct Physical;
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 
 template <size_t VolumeDim, typename TargetFrame>
 Block<VolumeDim, TargetFrame>::Block(
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame,
-                                              VolumeDim>>&& map,
+    std::unique_ptr<domain::CoordinateMapBase<Frame::ElementLogical,
+                                              TargetFrame, VolumeDim>>&& map,
     const size_t id,
     DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors) noexcept
     : map_(std::move(map)), id_(id), neighbors_(std::move(neighbors)) {

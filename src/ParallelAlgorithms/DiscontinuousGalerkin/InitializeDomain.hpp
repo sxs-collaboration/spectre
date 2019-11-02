@@ -51,10 +51,10 @@ namespace Actions {
  *   - `Tags::Mesh<Dim>`
  *   - `Tags::Element<Dim>`
  *   - `Tags::ElementMap<Dim, Frame::Physical>`
- *   - `Tags::Coordinates<Dim, Frame::Logical>`
+ *   - `Tags::Coordinates<Dim, Frame::ElementLogical>`
  *   - `Tags::Coordinates<Dim, Frame::Physical>`
  *   - `Tags::InverseJacobian<
- *   Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>`
+ *   Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::ElementLogical>>`
  *   - `Tags::MinimumGridSpacing<Dim, Frame::Physical>>`
  * - Removes: nothing
  * - Modifies: nothing
@@ -76,13 +76,15 @@ struct InitializeDomain {
     using simple_tags =
         db::AddSimpleTags<::Tags::Mesh<Dim>, ::Tags::Element<Dim>,
                           ::Tags::ElementMap<Dim>>;
-    using compute_tags = tmpl::append<db::AddComputeTags<
-        ::Tags::LogicalCoordinates<Dim>,
-        ::Tags::MappedCoordinates<::Tags::ElementMap<Dim>,
-                                  ::Tags::Coordinates<Dim, Frame::Logical>>,
-        ::Tags::InverseJacobian<::Tags::ElementMap<Dim>,
-                                ::Tags::Coordinates<Dim, Frame::Logical>>,
-        ::Tags::MinimumGridSpacing<Dim, Frame::Physical>>>;
+    using compute_tags = tmpl::append<
+        db::AddComputeTags<::Tags::LogicalCoordinates<Dim>,
+                           ::Tags::MappedCoordinates<
+                               ::Tags::ElementMap<Dim>,
+                               ::Tags::Coordinates<Dim, Frame::ElementLogical>>,
+                           ::Tags::InverseJacobian<
+                               ::Tags::ElementMap<Dim>,
+                               ::Tags::Coordinates<Dim, Frame::ElementLogical>>,
+                           ::Tags::MinimumGridSpacing<Dim, Frame::Physical>>>;
 
     const auto& initial_extents = db::get<::Tags::InitialExtents<Dim>>(box);
     const auto& domain = db::get<::Tags::Domain<Dim, Frame::Physical>>(box);

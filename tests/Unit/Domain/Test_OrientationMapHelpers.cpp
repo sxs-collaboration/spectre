@@ -102,9 +102,10 @@ void test_2d_with_orientation(
   const auto affine =
       Affine2D{Affine(-1.0, 1.0, 2.3, 4.5), Affine(-1.0, 1.0, 0.8, 3.1)};
   const auto map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(affine);
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
+          affine);
   const auto map_oriented =
-      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
           domain::CoordinateMaps::DiscreteRotation<2>{orientation_map}, affine);
 
   Variables<tmpl::list<ScalarTensor, Coords<2>>> vars(extents.product());
@@ -180,9 +181,10 @@ void test_3d_with_orientation(
       Affine3D{Affine(-1.0, 1.0, 2.3, 4.5), Affine(-1.0, 1.0, 0.8, 3.1),
                Affine(-1.0, 1.0, -4.8, -3.9)};
   const auto map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(affine);
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
+          affine);
   const auto map_oriented =
-      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
           domain::CoordinateMaps::DiscreteRotation<3>{orientation_map}, affine);
 
   Variables<tmpl::list<ScalarTensor, Coords<3>>> vars(extents.product());
@@ -248,7 +250,8 @@ void test_1d_slice_with_orientation(
               Spectral::Quadrature::GaussLobatto);
   const auto affine = Affine(-1.0, 1.0, 2.3, 4.5);
   const auto map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(affine);
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
+          affine);
 
   for (const size_t sliced_dim : {0_st, 1_st}) {
     CAPTURE(sliced_dim);
@@ -261,7 +264,7 @@ void test_1d_slice_with_orientation(
             0, orientation_map(Direction<2>(remaining_dim, Side::Upper))
                    .side())}}));
     const auto map_oriented =
-        domain::make_coordinate_map<Frame::Logical, Frame::Physical>(
+        domain::make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
             domain::CoordinateMaps::DiscreteRotation<1>{slice_orientation_map},
             affine);
 
@@ -313,7 +316,8 @@ void test_2d_slice_with_orientation(
   const auto affine =
       Affine2D{Affine(-1.0, 1.0, 2.3, 4.5), Affine(-1.0, 1.0, 0.8, 3.1)};
   const auto map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Physical>(affine);
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
+          affine);
 
   for (const size_t sliced_dim : {0_st, 1_st, 2_st}) {
     CAPTURE(sliced_dim);
@@ -347,7 +351,7 @@ void test_2d_slice_with_orientation(
     ();
 
     const auto map_oriented =
-        domain::make_coordinate_map<Frame::Logical, Frame::Physical>(
+        domain::make_coordinate_map<Frame::ElementLogical, Frame::Physical>(
             domain::CoordinateMaps::DiscreteRotation<2>{slice_orientation_map},
             affine);
 

@@ -20,7 +20,7 @@
 namespace Frame {
 struct LastTimeIndependent;
 struct Physical;
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 
 namespace domain {
@@ -66,7 +66,7 @@ Domain<3, TargetFrame> Cylinder<TargetFrame>::create_domain() const noexcept {
       {{0, 1, 2, 3, 8, 9, 10, 11}}};   // Center square prism
 
   auto coord_maps =
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, TargetFrame>(
           Wedge3DPrism{Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
                                OrientationMap<2>{std::array<Direction<2>, 2>{
                                    {Direction<2>::upper_xi(),
@@ -94,7 +94,7 @@ Domain<3, TargetFrame> Cylinder<TargetFrame>::create_domain() const noexcept {
 
   if (use_equiangular_map_) {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::ElementLogical, TargetFrame>(
             Equiangular3DPrism{
                 Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
                             inner_radius_ / sqrt(2.0)),
@@ -103,7 +103,7 @@ Domain<3, TargetFrame> Cylinder<TargetFrame>::create_domain() const noexcept {
                 Affine{-1.0, 1.0, lower_bound_, upper_bound_}}));
   } else {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::ElementLogical, TargetFrame>(
             Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
                             inner_radius_ / sqrt(2.0)),
                      Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),

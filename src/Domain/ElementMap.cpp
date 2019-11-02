@@ -12,7 +12,8 @@
 template <size_t Dim, typename TargetFrame>
 ElementMap<Dim, TargetFrame>::ElementMap(
     ElementId<Dim> element_id,
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, Dim>>
+    std::unique_ptr<
+        domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame, Dim>>
         block_map) noexcept
     : block_map_(std::move(block_map)),
       element_id_(std::move(element_id)),
