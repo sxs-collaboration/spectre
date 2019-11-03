@@ -38,7 +38,6 @@ using PreventRapidIncrease = StepChoosers::PreventRapidIncrease<>;
 
 struct Metavariables {
   using component_list = tmpl::list<>;
-  using const_global_cache_tag_list = tmpl::list<>;
 };
 
 void check_case(const Frac& expected_frac,
