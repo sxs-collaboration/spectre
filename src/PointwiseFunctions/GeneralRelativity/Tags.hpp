@@ -161,6 +161,16 @@ template <size_t Dim, typename Frame, typename DataType>
 struct WeylElectric : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
 };
+
+/*!
+ * \brief Computes the scalar \f$E_{ij} E^{ij}\f$ from the electric part of the
+ * Weyl tensor \f$E_{ij}\f$ and the inverse spatial metric \f$\gamma^{ij}\f$,
+ * i.e. \f$E_{ij} E^{ij} = \gamma^{ik}\gamma^{jl}E_{ij}E_{kl}\f$.
+ */
+template <typename DataType>
+struct WeylElectricScalar : db::SimpleTag {
+  using type = Scalar<DataType>;
+};
 }  // namespace Tags
 
 /// GR Tags commonly needed for the evolution of hydro systems
