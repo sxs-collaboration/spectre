@@ -1,17 +1,15 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-set(LIBRARY "Test_Cce")
+set(LIBRARY "Test_LinearSolver")
 
 set(LIBRARY_SOURCES
-  CceComputationTestHelpers.cpp
-  Test_Equations.cpp
-  Test_LinearSolve.cpp
+  Test_Lapack.cpp
   )
 
 add_test_library(
   ${LIBRARY}
-  "Evolution/Systems/Cce/"
+  "NumericalAlgorithms/LinearSolver/"
   "${LIBRARY_SOURCES}"
-  "Cce"
+  "Convergence;DataStructures;LinearSolver"
   )
