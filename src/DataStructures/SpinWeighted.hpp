@@ -441,7 +441,7 @@ operator/(const get_vector_element_type_t<T>& lhs,
 
 template <typename T, int Spin>
 SPECTRE_ALWAYS_INLINE SpinWeighted<decltype(conj(std::declval<T>())), -Spin>
-conj(const SpinWeighted<T, Spin> value) noexcept {
+conj(const SpinWeighted<T, Spin>& value) noexcept {
   return {conj(value.data())};
 }
 
