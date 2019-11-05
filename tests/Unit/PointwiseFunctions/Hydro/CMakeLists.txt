@@ -1,12 +1,11 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(EquationsOfState)
+
 set(LIBRARY "Test_Hydro")
 
 set(LIBRARY_SOURCES
-  EquationsOfState/Test_DarkEnergyFluid.cpp
-  EquationsOfState/Test_IdealFluid.cpp
-  EquationsOfState/Test_PolytropicFluid.cpp
   Test_LorentzFactor.cpp
   Test_MassFlux.cpp
   Test_SpecificEnthalpy.cpp

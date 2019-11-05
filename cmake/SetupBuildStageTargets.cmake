@@ -83,6 +83,7 @@ add_dependencies(test-libs-pointwise-functions
   Test_GrMhdAnalyticData
   Test_BurgersSolutions
   Test_ElasticitySolutions
+  Test_EquationsOfState
   Test_GeneralRelativitySolutions
   Test_GrMhdSolutions
   Test_NewtonianEulerSolutions
