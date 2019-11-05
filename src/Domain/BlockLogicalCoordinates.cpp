@@ -75,7 +75,7 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
       const tnsr::I<DataVector, DIM(data), FRAME(data)>& x) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
-                        (Frame::Distorted, Frame::LastTimeIndependent,
+                        (Frame::Distorted, Frame::GlobalTimeIndependent,
                          Frame::Physical))
 
 #undef DIM

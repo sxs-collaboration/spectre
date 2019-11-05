@@ -24,7 +24,7 @@
 namespace {
 template <size_t Dim>
 struct Var1 {
-  using type = tnsr::i<DataVector, Dim, Frame::LastTimeIndependent>;
+  using type = tnsr::i<DataVector, Dim, Frame::GlobalTimeIndependent>;
 };
 
 struct Var2 {

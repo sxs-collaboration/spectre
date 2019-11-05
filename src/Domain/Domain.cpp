@@ -15,7 +15,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace Frame {
-struct LastTimeIndependent;
+struct GlobalTimeIndependent;
 struct Physical;
 struct ElementLogical;
 }  // namespace Frame
@@ -90,7 +90,7 @@ void Domain<VolumeDim, TargetFrame>::pup(PUP::er& p) noexcept {
                                     const Domain<DIM(data), FRAME(data)>& d);
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
-                        (Frame::LastTimeIndependent, Frame::Physical))
+                        (Frame::GlobalTimeIndependent, Frame::Physical))
 
 #undef DIM
 #undef FRAME

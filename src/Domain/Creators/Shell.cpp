@@ -17,7 +17,7 @@
 
 /// \cond
 namespace Frame {
-struct LastTimeIndependent;
+struct GlobalTimeIndependent;
 struct Physical;
 struct ElementLogical;
 }  // namespace Frame
@@ -92,7 +92,7 @@ Shell<TargetFrame>::initial_refinement_levels() const noexcept {
   return {num_wedges, make_array<3>(initial_refinement_)};
 }
 
-template class Shell<Frame::LastTimeIndependent>;
+template class Shell<Frame::GlobalTimeIndependent>;
 template class Shell<Frame::Physical>;
 }  // namespace creators
 }  // namespace domain

@@ -10,7 +10,7 @@
 #include "Domain/OrientationMap.hpp"
 
 namespace Frame {
-struct LastTimeIndependent;
+struct GlobalTimeIndependent;
 struct Physical;
 }  // namespace Frame
 
@@ -75,6 +75,6 @@ RotatedRectangles<TargetFrame>::initial_refinement_levels() const noexcept {
 }
 
 template class RotatedRectangles<Frame::Physical>;
-template class RotatedRectangles<Frame::LastTimeIndependent>;
+template class RotatedRectangles<Frame::GlobalTimeIndependent>;
 }  // namespace creators
 }  // namespace domain

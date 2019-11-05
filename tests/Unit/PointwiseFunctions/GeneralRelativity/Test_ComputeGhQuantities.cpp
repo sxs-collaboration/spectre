@@ -554,31 +554,31 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
       test_compute_extrinsic_curvature_and_deriv_metric, (1, 2, 3));
 
   const DataVector used_for_size(20);
-  test_lapse_deriv_functions<DataVector, 1, Frame::LastTimeIndependent>(
+  test_lapse_deriv_functions<DataVector, 1, Frame::GlobalTimeIndependent>(
       used_for_size);
-  test_lapse_deriv_functions<DataVector, 2, Frame::LastTimeIndependent>(
+  test_lapse_deriv_functions<DataVector, 2, Frame::GlobalTimeIndependent>(
       used_for_size);
-  test_lapse_deriv_functions<DataVector, 3, Frame::LastTimeIndependent>(
+  test_lapse_deriv_functions<DataVector, 3, Frame::GlobalTimeIndependent>(
       used_for_size);
   test_lapse_deriv_functions<DataVector, 1, Frame::Physical>(used_for_size);
   test_lapse_deriv_functions<DataVector, 2, Frame::Physical>(used_for_size);
   test_lapse_deriv_functions<DataVector, 3, Frame::Physical>(used_for_size);
 
-  test_gij_deriv_functions<DataVector, 1, Frame::LastTimeIndependent>(
+  test_gij_deriv_functions<DataVector, 1, Frame::GlobalTimeIndependent>(
       used_for_size);
-  test_gij_deriv_functions<DataVector, 2, Frame::LastTimeIndependent>(
+  test_gij_deriv_functions<DataVector, 2, Frame::GlobalTimeIndependent>(
       used_for_size);
-  test_gij_deriv_functions<DataVector, 3, Frame::LastTimeIndependent>(
+  test_gij_deriv_functions<DataVector, 3, Frame::GlobalTimeIndependent>(
       used_for_size);
   test_gij_deriv_functions<DataVector, 1, Frame::Physical>(used_for_size);
   test_gij_deriv_functions<DataVector, 2, Frame::Physical>(used_for_size);
   test_gij_deriv_functions<DataVector, 3, Frame::Physical>(used_for_size);
 
-  test_shift_deriv_functions<DataVector, 1, Frame::LastTimeIndependent>(
+  test_shift_deriv_functions<DataVector, 1, Frame::GlobalTimeIndependent>(
       used_for_size);
-  test_shift_deriv_functions<DataVector, 2, Frame::LastTimeIndependent>(
+  test_shift_deriv_functions<DataVector, 2, Frame::GlobalTimeIndependent>(
       used_for_size);
-  test_shift_deriv_functions<DataVector, 3, Frame::LastTimeIndependent>(
+  test_shift_deriv_functions<DataVector, 3, Frame::GlobalTimeIndependent>(
       used_for_size);
   test_shift_deriv_functions<DataVector, 1, Frame::Physical>(used_for_size);
   test_shift_deriv_functions<DataVector, 2, Frame::Physical>(used_for_size);

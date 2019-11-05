@@ -73,7 +73,7 @@ constexpr bool check_index_symmetry_v =
  * \tparam Fr the ::Frame of the tensor index to prepend
  */
 template <typename Tensor, std::size_t VolumeDim, UpLo Ul,
-          typename Fr = Frame::LastTimeIndependent>
+          typename Fr = Frame::GlobalTimeIndependent>
 using prepend_spatial_index = ::Tensor<
     typename Tensor::type,
     tmpl::push_front<
@@ -93,7 +93,7 @@ using prepend_spatial_index = ::Tensor<
  * \tparam Fr the ::Frame of the tensor index to prepend
  */
 template <typename Tensor, std::size_t VolumeDim, UpLo Ul,
-          typename Fr = Frame::LastTimeIndependent>
+          typename Fr = Frame::GlobalTimeIndependent>
 using prepend_spacetime_index = ::Tensor<
     typename Tensor::type,
     tmpl::push_front<

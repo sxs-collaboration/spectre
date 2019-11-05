@@ -17,7 +17,7 @@
 
 /// \cond
 namespace Frame {
-struct LastTimeIndependent;
+struct GlobalTimeIndependent;
 struct Physical;
 struct ElementLogical;
 }  // namespace Frame
@@ -81,6 +81,6 @@ FrustalCloak<TargetFrame>::initial_refinement_levels() const noexcept {
 }
 
 template class FrustalCloak<Frame::Physical>;
-template class FrustalCloak<Frame::LastTimeIndependent>;
+template class FrustalCloak<Frame::GlobalTimeIndependent>;
 }  // namespace creators
 }  // namespace domain

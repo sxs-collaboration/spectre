@@ -41,7 +41,7 @@ namespace VariablesTestTags_detail {
 template <typename VectorType>
 struct tensor : db::SimpleTag {
   static std::string name() noexcept { return "tensor name"; }
-  using type = tnsr::I<VectorType, 3, Frame::LastTimeIndependent>;
+  using type = tnsr::I<VectorType, 3, Frame::GlobalTimeIndependent>;
 };
 /// [simple_variables_tag]
 template <typename VectorType>
@@ -150,7 +150,7 @@ void test_variables_construction_and_access() noexcept {
       make_with_random_values<value_type>(make_not_null(&gen),
                                           make_not_null(&dist));
 
-  tnsr::I<VectorType, 3, Frame::LastTimeIndependent>
+  tnsr::I<VectorType, 3, Frame::GlobalTimeIndependent>
       tensor_for_reference_assignment{number_of_grid_points,
                                       value_for_reference_assignment};
   tensor_in_filled_variables = tensor_for_reference_assignment;
@@ -171,7 +171,7 @@ void test_variables_construction_and_access() noexcept {
       make_not_null(&gen), make_not_null(&dist));
 
   tensor_in_filled_variables =
-      tnsr::I<VectorType, 3, Frame::LastTimeIndependent>{
+      tnsr::I<VectorType, 3, Frame::GlobalTimeIndependent>{
           number_of_grid_points, value_for_tensor_constructor};
 
   // clang-tidy: do not use pointer arithmetic
@@ -1097,7 +1097,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
   auto& tensor_in_vars =
       get<VariablesTestTags_detail::tensor<DataVector>>(vars);
   tensor_in_vars =
-      tnsr::I<DataVector, 3, Frame::LastTimeIndependent>{10_st, -4.0};
+      tnsr::I<DataVector, 3, Frame::GlobalTimeIndependent>{10_st, -4.0};
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

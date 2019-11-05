@@ -394,7 +394,7 @@ tnsr::i<DataVector, SpatialDim, Fr> euclidean_basis_vector(
 
 GENERATE_INSTANTIATIONS(INSTANTIATE1, (1, 2, 3))
 GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3),
-                        (Frame::LastTimeIndependent, Frame::Physical))
+                        (Frame::GlobalTimeIndependent, Frame::Physical))
 
 #undef DIM
 #undef FRAME

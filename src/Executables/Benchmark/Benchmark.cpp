@@ -71,12 +71,12 @@ namespace {
 
 template <size_t Dim>
 struct Kappa : db::SimpleTag {
-  using type = tnsr::abb<DataVector, Dim, Frame::LastTimeIndependent>;
+  using type = tnsr::abb<DataVector, Dim, Frame::GlobalTimeIndependent>;
   static std::string name() noexcept { return "Kappa"; }
 };
 template <size_t Dim>
 struct Psi : db::SimpleTag {
-  using type = tnsr::aa<DataVector, Dim, Frame::LastTimeIndependent>;
+  using type = tnsr::aa<DataVector, Dim, Frame::GlobalTimeIndependent>;
   static std::string name() noexcept { return "Psi"; }
 };
 
@@ -90,12 +90,12 @@ void bench_all_gradient(benchmark::State& state) {  // NOLINT
   using Map3d = CoordinateMaps::ProductOf3Maps<CoordinateMaps::Affine,
                                                CoordinateMaps::Affine,
                                                CoordinateMaps::Affine>;
-  CoordinateMap<Frame::ElementLogical, Frame::LastTimeIndependent, Map3d> map(
+  CoordinateMap<Frame::ElementLogical, Frame::GlobalTimeIndependent, Map3d> map(
       Map3d{map1d, map1d, map1d});
 
   using VarTags = tmpl::list<Kappa<Dim>, Psi<Dim>>;
   const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
-                        Frame::LastTimeIndependent>
+                        Frame::GlobalTimeIndependent>
       inv_jac = map.inv_jacobian(logical_coordinates(mesh));
   const auto grid_coords = map(logical_coordinates(mesh));
   Variables<VarTags> vars(mesh.number_of_grid_points(), 0.0);

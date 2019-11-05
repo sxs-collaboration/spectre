@@ -38,25 +38,25 @@ void check_cross_product(const DataType& used_for_size) noexcept {
   const auto sixty_four = make_with_value<DataType>(used_for_size, 64.0);
 
   // Test Euclidean cross product for a known generic case
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> vector_a{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> vector_a{
       {{minus_three, twelve, four}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> vector_b{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> vector_b{
       {{four, minus_five, two}}};
-  const tnsr::i<DataType, 3, Frame::LastTimeIndependent> covector_b{
+  const tnsr::i<DataType, 3, Frame::GlobalTimeIndependent> covector_b{
       {{four, minus_five, two}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> vector_expected{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> vector_expected{
       {{forty_four, twenty_two, minus_thirty_three}}};
-  const tnsr::i<DataType, 3, Frame::LastTimeIndependent> covector_expected{
+  const tnsr::i<DataType, 3, Frame::GlobalTimeIndependent> covector_expected{
       {{forty_four, twenty_two, minus_thirty_three}}};
   CHECK_ITERABLE_APPROX(cross_product(vector_a, vector_b), vector_expected);
   CHECK_ITERABLE_APPROX(cross_product(vector_a, covector_b), covector_expected);
 
   // Test curved-space cross product for a known generic case
-  const tnsr::II<DataType, 3, Frame::LastTimeIndependent> inverse_metric =
+  const tnsr::II<DataType, 3, Frame::GlobalTimeIndependent> inverse_metric =
       [&used_for_size]() {
-        auto tensor =
-            make_with_value<tnsr::II<DataType, 3, Frame::LastTimeIndependent>>(
-                used_for_size, 0.0);
+        auto tensor = make_with_value<
+            tnsr::II<DataType, 3, Frame::GlobalTimeIndependent>>(used_for_size,
+                                                                 0.0);
         get<0, 0>(tensor) = 2.0;
         get<0, 1>(tensor) = -3.0;
         get<0, 2>(tensor) = 4.0;
@@ -70,12 +70,12 @@ void check_cross_product(const DataType& used_for_size) noexcept {
 
   // The known case for curved-space happens to involve the same vector_a
   // but different vector_b as for the Euclidean cross product test
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> curved_vector_b{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> curved_vector_b{
       {{minus_five, four, two}}};
-  const tnsr::i<DataType, 3, Frame::LastTimeIndependent> curved_covector_b =
+  const tnsr::i<DataType, 3, Frame::GlobalTimeIndependent> curved_covector_b =
       [&used_for_size]() {
         auto tensor =
-            make_with_value<tnsr::i<DataType, 3, Frame::LastTimeIndependent>>(
+            make_with_value<tnsr::i<DataType, 3, Frame::GlobalTimeIndependent>>(
                 used_for_size, 0.0);
         get<0>(tensor) = 53.0 / 109.0;
         get<1>(tensor) = 97.0 / 109.0;
@@ -83,20 +83,20 @@ void check_cross_product(const DataType& used_for_size) noexcept {
         return tensor;
       }();
 
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent>
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent>
       curved_vector_expected = [&det_metric]() {
         auto tensor =
-            make_with_value<tnsr::I<DataType, 3, Frame::LastTimeIndependent>>(
+            make_with_value<tnsr::I<DataType, 3, Frame::GlobalTimeIndependent>>(
                 get(det_metric), 0.0);
         get<0>(tensor) = 250.0 * sqrt(get(det_metric));
         get<1>(tensor) = -530.0 * sqrt(get(det_metric));
         get<2>(tensor) = -424.0 * sqrt(get(det_metric));
         return tensor;
       }();
-  const tnsr::i<DataType, 3, Frame::LastTimeIndependent>
+  const tnsr::i<DataType, 3, Frame::GlobalTimeIndependent>
       curved_covector_expected = [&det_metric]() {
         auto tensor =
-            make_with_value<tnsr::i<DataType, 3, Frame::LastTimeIndependent>>(
+            make_with_value<tnsr::i<DataType, 3, Frame::GlobalTimeIndependent>>(
                 get(det_metric), 0.0);
         get<0>(tensor) = 8.0 * sqrt(get(det_metric));
         get<1>(tensor) = -14.0 * sqrt(get(det_metric));
@@ -112,21 +112,21 @@ void check_cross_product(const DataType& used_for_size) noexcept {
       curved_covector_expected);
 
   // Test Euclidean cross product for orthogonal unit vectors
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> vector_x_hat{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> vector_x_hat{
       {{one, zero, zero}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> covector_x_hat{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> covector_x_hat{
       {{one, zero, zero}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> vector_y_hat{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> vector_y_hat{
       {{zero, one, zero}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> covector_y_hat{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> covector_y_hat{
       {{zero, one, zero}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> vector_z_hat{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> vector_z_hat{
       {{zero, zero, one}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> covector_z_hat{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> covector_z_hat{
       {{zero, zero, one}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> vector_minus_z_hat{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> vector_minus_z_hat{
       {{zero, zero, minus_one}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> covector_minus_z_hat{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> covector_minus_z_hat{
       {{zero, zero, minus_one}}};
   CHECK_ITERABLE_APPROX(cross_product(vector_x_hat, vector_y_hat),
                         vector_z_hat);
@@ -138,28 +138,28 @@ void check_cross_product(const DataType& used_for_size) noexcept {
                         covector_minus_z_hat);
 
   // Test curved-space cross product for orthogonal unit vectors
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> curved_vector_x_hat{
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> curved_vector_x_hat{
       {{one_half, zero, zero}}};
-  const tnsr::i<DataType, 3, Frame::LastTimeIndependent> curved_covector_x_hat{
-      {{two, zero, zero}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> curved_vector_y_hat{
+  const tnsr::i<DataType, 3, Frame::GlobalTimeIndependent>
+      curved_covector_x_hat{{{two, zero, zero}}};
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> curved_vector_y_hat{
       {{zero, one_half, zero}}};
-  const tnsr::i<DataType, 3, Frame::LastTimeIndependent> curved_covector_y_hat{
-      {{zero, two, zero}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent> curved_vector_z_hat{
+  const tnsr::i<DataType, 3, Frame::GlobalTimeIndependent>
+      curved_covector_y_hat{{{zero, two, zero}}};
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> curved_vector_z_hat{
       {{zero, zero, one_half}}};
-  const tnsr::i<DataType, 3, Frame::LastTimeIndependent> curved_covector_z_hat{
-      {{zero, zero, two}}};
-  const tnsr::I<DataType, 3, Frame::LastTimeIndependent>
+  const tnsr::i<DataType, 3, Frame::GlobalTimeIndependent>
+      curved_covector_z_hat{{{zero, zero, two}}};
+  const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent>
       curved_vector_minus_z_hat{{{zero, zero, minus_one_half}}};
-  const tnsr::i<DataType, 3, Frame::LastTimeIndependent>
+  const tnsr::i<DataType, 3, Frame::GlobalTimeIndependent>
       curved_covector_minus_z_hat{{{zero, zero, minus_two}}};
 
-  const tnsr::II<DataType, 3, Frame::LastTimeIndependent>
+  const tnsr::II<DataType, 3, Frame::GlobalTimeIndependent>
       inverse_metric_simple = [&used_for_size]() {
-        auto tensor =
-            make_with_value<tnsr::II<DataType, 3, Frame::LastTimeIndependent>>(
-                used_for_size, 0.0);
+        auto tensor = make_with_value<
+            tnsr::II<DataType, 3, Frame::GlobalTimeIndependent>>(used_for_size,
+                                                                 0.0);
         get<0, 0>(tensor) = 0.25;
         get<1, 1>(tensor) = 0.25;
         get<2, 2>(tensor) = 0.25;
@@ -184,37 +184,37 @@ void check_cross_product(const DataType& used_for_size) noexcept {
 
   // Test c++ vs. python using random values
   pypp::check_with_random_values<1>(
-      static_cast<tnsr::I<DataType, 3, Frame::LastTimeIndependent> (*)(
-          const tnsr::I<DataType, 3, Frame::LastTimeIndependent>&,
-          const tnsr::I<DataType, 3, Frame::LastTimeIndependent>&)>(
-          &cross_product<
-              DataType, SpatialIndex<3, UpLo::Up, Frame::LastTimeIndependent>>),
+      static_cast<tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> (*)(
+          const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent>&,
+          const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent>&)>(
+          &cross_product<DataType, SpatialIndex<3, UpLo::Up,
+                                                Frame::GlobalTimeIndependent>>),
       "numpy", "cross", {{{-10.0, 10.0}}}, vector_x_hat);
   pypp::check_with_random_values<1>(
-      static_cast<tnsr::i<DataType, 3, Frame::LastTimeIndependent> (*)(
-          const tnsr::I<DataType, 3, Frame::LastTimeIndependent>&,
-          const tnsr::i<DataType, 3, Frame::LastTimeIndependent>&)>(
-          &cross_product<
-              DataType, SpatialIndex<3, UpLo::Up, Frame::LastTimeIndependent>>),
+      static_cast<tnsr::i<DataType, 3, Frame::GlobalTimeIndependent> (*)(
+          const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent>&,
+          const tnsr::i<DataType, 3, Frame::GlobalTimeIndependent>&)>(
+          &cross_product<DataType, SpatialIndex<3, UpLo::Up,
+                                                Frame::GlobalTimeIndependent>>),
       "numpy", "cross", {{{-10.0, 10.0}}}, vector_x_hat);
   pypp::check_with_random_values<1>(
-      static_cast<tnsr::I<DataType, 3, Frame::LastTimeIndependent> (*)(
-          const tnsr::I<DataType, 3, Frame::LastTimeIndependent>&,
-          const tnsr::I<DataType, 3, Frame::LastTimeIndependent>&,
-          const tnsr::II<DataType, 3, Frame::LastTimeIndependent>&,
+      static_cast<tnsr::I<DataType, 3, Frame::GlobalTimeIndependent> (*)(
+          const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent>&,
+          const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent>&,
+          const tnsr::II<DataType, 3, Frame::GlobalTimeIndependent>&,
           const Scalar<DataType>&)>(
-          &cross_product<
-              DataType, SpatialIndex<3, UpLo::Up, Frame::LastTimeIndependent>>),
+          &cross_product<DataType, SpatialIndex<3, UpLo::Up,
+                                                Frame::GlobalTimeIndependent>>),
       "TestFunctions", "cross_product_up", {{{1.0, 10.0}}},
       curved_vector_x_hat);
   pypp::check_with_random_values<1>(
-      static_cast<tnsr::i<DataType, 3, Frame::LastTimeIndependent> (*)(
-          const tnsr::I<DataType, 3, Frame::LastTimeIndependent>&,
-          const tnsr::i<DataType, 3, Frame::LastTimeIndependent>&,
-          const tnsr::II<DataType, 3, Frame::LastTimeIndependent>&,
+      static_cast<tnsr::i<DataType, 3, Frame::GlobalTimeIndependent> (*)(
+          const tnsr::I<DataType, 3, Frame::GlobalTimeIndependent>&,
+          const tnsr::i<DataType, 3, Frame::GlobalTimeIndependent>&,
+          const tnsr::II<DataType, 3, Frame::GlobalTimeIndependent>&,
           const Scalar<DataType>&)>(
-          &cross_product<
-              DataType, SpatialIndex<3, UpLo::Up, Frame::LastTimeIndependent>>),
+          &cross_product<DataType, SpatialIndex<3, UpLo::Up,
+                                                Frame::GlobalTimeIndependent>>),
       "TestFunctions", "cross_product_lo", {{{1.0, 10.0}}},
       curved_vector_x_hat);
 }

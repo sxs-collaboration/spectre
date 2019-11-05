@@ -51,8 +51,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
   CHECK(hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Physical>::name() ==
         "SpatialVelocity");
   CHECK(hydro::Tags::SpatialVelocity<DataVector, 3,
-                                     Frame::LastTimeIndependent>::name() ==
-        "LastTimeIndependent_SpatialVelocity");
+                                     Frame::GlobalTimeIndependent>::name() ==
+        "GlobalTimeIndependent_SpatialVelocity");
   CHECK(hydro::Tags::SpatialVelocityOneForm<DataVector, 3,
                                             Frame::Physical>::name() ==
         "SpatialVelocityOneForm");

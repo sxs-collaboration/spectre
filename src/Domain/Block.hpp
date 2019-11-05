@@ -37,7 +37,8 @@ class er;
 /// dimension.  The global coordinates are obtained from the logical
 /// coordinates from the Coordinatemap:  CoordinateMap::operator() takes
 /// Points in the Logical Frame (i.e., logical coordinates) and
-/// returns Points in the LastTimeIndependent Frame (i.e., global coordinates).
+/// returns Points in the GlobalTimeIndependent Frame (i.e., global
+/// coordinates).
 template <size_t VolumeDim, typename TargetFrame>
 class Block {
  public:

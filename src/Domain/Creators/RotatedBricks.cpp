@@ -10,7 +10,7 @@
 #include "Domain/OrientationMap.hpp"
 
 namespace Frame {
-struct LastTimeIndependent;
+struct GlobalTimeIndependent;
 struct Physical;
 }  // namespace Frame
 
@@ -98,6 +98,6 @@ RotatedBricks<TargetFrame>::initial_refinement_levels() const noexcept {
 }
 
 template class RotatedBricks<Frame::Physical>;
-template class RotatedBricks<Frame::LastTimeIndependent>;
+template class RotatedBricks<Frame::GlobalTimeIndependent>;
 }  // namespace creators
 }  // namespace domain

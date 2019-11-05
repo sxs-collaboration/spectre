@@ -16,13 +16,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Determinant",
   // * use Tensor<double, ...>, i.e. data at single spatial point.
   SECTION("Test general Tensor<double,...> matrices") {
     {
-      const tnsr::ij<double, 1, Frame::LastTimeIndependent> matrix(1.3);
+      const tnsr::ij<double, 1, Frame::GlobalTimeIndependent> matrix(1.3);
       const auto det = determinant(matrix);
       CHECK(1.3 == approx(det.get()));
     }
 
     {
-      tnsr::ij<double, 2, Frame::LastTimeIndependent> matrix{};
+      tnsr::ij<double, 2, Frame::GlobalTimeIndependent> matrix{};
       get<0, 0>(matrix) = 2.1;
       get<0, 1>(matrix) = 4.5;
       get<1, 0>(matrix) = -18.3;
@@ -32,7 +32,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Determinant",
     }
 
     {
-      tnsr::ij<double, 3, Frame::LastTimeIndependent> matrix{};
+      tnsr::ij<double, 3, Frame::GlobalTimeIndependent> matrix{};
       get<0, 0>(matrix) = 1.1;
       get<0, 1>(matrix) = -10.4;
       get<0, 2>(matrix) = -4.5;
@@ -47,7 +47,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Determinant",
     }
 
     {
-      tnsr::ij<double, 4, Frame::LastTimeIndependent> matrix{};
+      tnsr::ij<double, 4, Frame::GlobalTimeIndependent> matrix{};
       get<0, 0>(matrix) = 1.1;
       get<0, 1>(matrix) = -10.4;
       get<0, 2>(matrix) = -4.5;
@@ -74,7 +74,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Determinant",
   // * use Tensor<double, ...>, i.e. data at single spatial point.
   SECTION("Test symmetric Tensor<double,...> matrices") {
     {
-      tnsr::ii<double, 2, Frame::LastTimeIndependent> matrix{};
+      tnsr::ii<double, 2, Frame::GlobalTimeIndependent> matrix{};
       get<0, 0>(matrix) = 2.1;
       get<0, 1>(matrix) = 4.5;
       get<1, 1>(matrix) = -10.9;
@@ -83,7 +83,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Determinant",
     }
 
     {
-      tnsr::ii<double, 3, Frame::LastTimeIndependent> matrix{};
+      tnsr::ii<double, 3, Frame::GlobalTimeIndependent> matrix{};
       get<0, 0>(matrix) = 1.1;
       get<0, 1>(matrix) = -10.4;
       get<0, 2>(matrix) = -4.5;
@@ -95,7 +95,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Determinant",
     }
 
     {
-      tnsr::ii<double, 4, Frame::LastTimeIndependent> matrix{};
+      tnsr::ii<double, 4, Frame::GlobalTimeIndependent> matrix{};
       get<0, 0>(matrix) = 1.1;
       get<0, 1>(matrix) = -10.4;
       get<0, 2>(matrix) = -4.5;
@@ -112,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.Determinant",
   }
 
   SECTION("Test Tensors of DataVector") {
-    tnsr::ij<DataVector, 2, Frame::LastTimeIndependent> matrix{};
+    tnsr::ij<DataVector, 2, Frame::GlobalTimeIndependent> matrix{};
     get<0, 0>(matrix) = DataVector({6.0, 5.9, 9.8, 6.4});
     get<0, 1>(matrix) = DataVector({6.1, 0.3, 2.4, 5.7});
     get<1, 0>(matrix) = DataVector({4.2, 7.1, 1.1, 6.5});

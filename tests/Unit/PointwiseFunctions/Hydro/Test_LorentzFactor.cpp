@@ -35,18 +35,18 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.LorentzFactor",
       "PointwiseFunctions/Hydro/");
   const DataVector dv(5);
   test_lorentz_factor<1, Frame::Physical>(dv);
-  test_lorentz_factor<1, Frame::LastTimeIndependent>(dv);
+  test_lorentz_factor<1, Frame::GlobalTimeIndependent>(dv);
   test_lorentz_factor<2, Frame::Physical>(dv);
-  test_lorentz_factor<2, Frame::LastTimeIndependent>(dv);
+  test_lorentz_factor<2, Frame::GlobalTimeIndependent>(dv);
   test_lorentz_factor<3, Frame::Physical>(dv);
-  test_lorentz_factor<3, Frame::LastTimeIndependent>(dv);
+  test_lorentz_factor<3, Frame::GlobalTimeIndependent>(dv);
 
   test_lorentz_factor<1, Frame::Physical>(0.0);
-  test_lorentz_factor<1, Frame::LastTimeIndependent>(0.0);
+  test_lorentz_factor<1, Frame::GlobalTimeIndependent>(0.0);
   test_lorentz_factor<2, Frame::Physical>(0.0);
-  test_lorentz_factor<2, Frame::LastTimeIndependent>(0.0);
+  test_lorentz_factor<2, Frame::GlobalTimeIndependent>(0.0);
   test_lorentz_factor<3, Frame::Physical>(0.0);
-  test_lorentz_factor<3, Frame::LastTimeIndependent>(0.0);
+  test_lorentz_factor<3, Frame::GlobalTimeIndependent>(0.0);
 
   // Check compute item works correctly in DataBox
   CHECK(Tags::LorentzFactorCompute<DataVector, 2, Frame::Physical>::name() ==

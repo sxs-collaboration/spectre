@@ -517,17 +517,17 @@ void test_block_and_element_logical_coordinates3() noexcept {
 
 SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
                   "[Domain][Unit]") {
-  test_block_and_element_logical_coordinates1<Frame::LastTimeIndependent>();
-  test_block_and_element_logical_coordinates3<Frame::LastTimeIndependent>();
-  fuzzy_test_block_and_element_logical_coordinates3<Frame::LastTimeIndependent>(
-      20);
-  fuzzy_test_block_and_element_logical_coordinates2<Frame::LastTimeIndependent>(
-      20);
-  fuzzy_test_block_and_element_logical_coordinates1<Frame::LastTimeIndependent>(
-      20);
-  fuzzy_test_block_and_element_logical_coordinates1<Frame::LastTimeIndependent>(
-      0);
+  test_block_and_element_logical_coordinates1<Frame::GlobalTimeIndependent>();
+  test_block_and_element_logical_coordinates3<Frame::GlobalTimeIndependent>();
+  fuzzy_test_block_and_element_logical_coordinates3<
+      Frame::GlobalTimeIndependent>(20);
+  fuzzy_test_block_and_element_logical_coordinates2<
+      Frame::GlobalTimeIndependent>(20);
+  fuzzy_test_block_and_element_logical_coordinates1<
+      Frame::GlobalTimeIndependent>(20);
+  fuzzy_test_block_and_element_logical_coordinates1<
+      Frame::GlobalTimeIndependent>(0);
   fuzzy_test_block_and_element_logical_coordinates_shell<
-      Frame::LastTimeIndependent>(20);
-  test_block_logical_coordinates1fail<Frame::LastTimeIndependent>();
+      Frame::GlobalTimeIndependent>(20);
+  test_block_logical_coordinates1fail<Frame::GlobalTimeIndependent>();
 }

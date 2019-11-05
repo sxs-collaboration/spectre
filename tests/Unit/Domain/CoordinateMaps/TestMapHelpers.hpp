@@ -73,10 +73,10 @@ template <typename Map>
 void check_if_map_is_identity(const Map& map) {
   using IdentityMap = domain::CoordinateMaps::Identity<Map::dim>;
   check_if_maps_are_equal(
-      domain::make_coordinate_map<Frame::Physical, Frame::LastTimeIndependent>(
-          IdentityMap{}),
-      domain::make_coordinate_map<Frame::Physical, Frame::LastTimeIndependent>(
-          map));
+      domain::make_coordinate_map<Frame::Physical,
+                                  Frame::GlobalTimeIndependent>(IdentityMap{}),
+      domain::make_coordinate_map<Frame::Physical,
+                                  Frame::GlobalTimeIndependent>(map));
   CHECK(map.is_identity());
 }
 
@@ -143,7 +143,7 @@ template <typename Map, typename... Args>
 void test_coordinate_map_implementation(const Map& map) {
   const auto coord_map =
       domain::make_coordinate_map<Frame::ElementLogical,
-                                  Frame::LastTimeIndependent>(map);
+                                  Frame::GlobalTimeIndependent>(map);
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
 
@@ -341,9 +341,9 @@ void test_suite_for_map_on_unit_cube(const Map& map) {
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(
       domain::make_coordinate_map<Frame::ElementLogical,
-                                  Frame::LastTimeIndependent>(map),
+                                  Frame::GlobalTimeIndependent>(map),
       domain::make_coordinate_map<Frame::ElementLogical,
-                                  Frame::LastTimeIndependent>(map2));
+                                  Frame::GlobalTimeIndependent>(map2));
   test_helper(map2);
 }
 
@@ -424,9 +424,9 @@ void test_suite_for_map_on_sphere(const Map& map,
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(
       domain::make_coordinate_map<Frame::ElementLogical,
-                                  Frame::LastTimeIndependent>(map),
+                                  Frame::GlobalTimeIndependent>(map),
       domain::make_coordinate_map<Frame::ElementLogical,
-                                  Frame::LastTimeIndependent>(map2));
+                                  Frame::GlobalTimeIndependent>(map2));
   test_helper(map2);
 }
 

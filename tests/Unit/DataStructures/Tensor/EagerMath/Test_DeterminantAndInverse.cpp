@@ -193,14 +193,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DeterminantAndInverse",
     static_assert(
         cpp17::is_same_v<
             Tensor<double, tmpl::integral_list<int32_t, 2, 1>,
-                   index_list<
-                       SpatialIndex<2, UpLo::Up, Frame::Physical>,
-                       SpatialIndex<2, UpLo::Lo, Frame::LastTimeIndependent>>>,
+                   index_list<SpatialIndex<2, UpLo::Up, Frame::Physical>,
+                              SpatialIndex<2, UpLo::Lo,
+                                           Frame::GlobalTimeIndependent>>>,
             decltype(determinant_and_inverse(
                 std::declval<Tensor<
                     double, tmpl::integral_list<int32_t, 2, 1>,
                     index_list<
-                        SpatialIndex<2, UpLo::Up, Frame::LastTimeIndependent>,
+                        SpatialIndex<2, UpLo::Up, Frame::GlobalTimeIndependent>,
                         SpatialIndex<2, UpLo::Lo, Frame::Physical>>>>()))::
                 second_type>,
         "Inverse tensor has incorrect index structure.");
@@ -209,51 +209,51 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DeterminantAndInverse",
   // Check paired determinant and inverse for 1x1 through 4x4 tensors, both
   // generic and symmetric, with both spatial and spacetime indices.
   {
-    verify_det_and_inv_1d<tnsr::ii<double, 1, Frame::LastTimeIndependent>>();
-    verify_det_and_inv_1d<tnsr::ij<double, 1, Frame::LastTimeIndependent>>();
+    verify_det_and_inv_1d<tnsr::ii<double, 1, Frame::GlobalTimeIndependent>>();
+    verify_det_and_inv_1d<tnsr::ij<double, 1, Frame::GlobalTimeIndependent>>();
     verify_det_and_inv_1d<
-        tnsr_iJ<double, 1, Frame::LastTimeIndependent, Frame::Physical>>();
+        tnsr_iJ<double, 1, Frame::GlobalTimeIndependent, Frame::Physical>>();
 
     verify_det_and_inv_symmetric_2d<
-        tnsr::ii<double, 2, Frame::LastTimeIndependent>>();
+        tnsr::ii<double, 2, Frame::GlobalTimeIndependent>>();
     verify_det_and_inv_generic_2d<
-        tnsr::ij<double, 2, Frame::LastTimeIndependent>>();
+        tnsr::ij<double, 2, Frame::GlobalTimeIndependent>>();
     verify_det_and_inv_generic_2d<
-        tnsr_iJ<double, 2, Frame::LastTimeIndependent, Frame::Physical>>();
+        tnsr_iJ<double, 2, Frame::GlobalTimeIndependent, Frame::Physical>>();
 
     verify_det_and_inv_symmetric_3d<
-        tnsr::ii<double, 3, Frame::LastTimeIndependent>>();
+        tnsr::ii<double, 3, Frame::GlobalTimeIndependent>>();
     verify_det_and_inv_generic_3d<
-        tnsr::ij<double, 3, Frame::LastTimeIndependent>>();
+        tnsr::ij<double, 3, Frame::GlobalTimeIndependent>>();
     verify_det_and_inv_generic_3d<
-        tnsr_iJ<double, 3, Frame::LastTimeIndependent, Frame::Physical>>();
+        tnsr_iJ<double, 3, Frame::GlobalTimeIndependent, Frame::Physical>>();
 
     verify_det_and_inv_symmetric_4d<
-        tnsr::ii<double, 4, Frame::LastTimeIndependent>>();
+        tnsr::ii<double, 4, Frame::GlobalTimeIndependent>>();
     verify_det_and_inv_generic_4d<
-        tnsr::ij<double, 4, Frame::LastTimeIndependent>>();
+        tnsr::ij<double, 4, Frame::GlobalTimeIndependent>>();
     verify_det_and_inv_generic_4d<
-        tnsr_iJ<double, 4, Frame::LastTimeIndependent, Frame::Physical>>();
+        tnsr_iJ<double, 4, Frame::GlobalTimeIndependent, Frame::Physical>>();
 
     verify_det_and_inv_symmetric_2d<
-        tnsr::aa<double, 1, Frame::LastTimeIndependent>>();
+        tnsr::aa<double, 1, Frame::GlobalTimeIndependent>>();
     verify_det_and_inv_generic_2d<
-        tnsr::ab<double, 1, Frame::LastTimeIndependent>>();
+        tnsr::ab<double, 1, Frame::GlobalTimeIndependent>>();
 
     verify_det_and_inv_symmetric_3d<
-        tnsr::aa<double, 2, Frame::LastTimeIndependent>>();
+        tnsr::aa<double, 2, Frame::GlobalTimeIndependent>>();
     verify_det_and_inv_generic_3d<
-        tnsr::ab<double, 2, Frame::LastTimeIndependent>>();
+        tnsr::ab<double, 2, Frame::GlobalTimeIndependent>>();
 
     verify_det_and_inv_symmetric_4d<
-        tnsr::aa<double, 3, Frame::LastTimeIndependent>>();
+        tnsr::aa<double, 3, Frame::GlobalTimeIndependent>>();
     verify_det_and_inv_generic_4d<
-        tnsr::ab<double, 3, Frame::LastTimeIndependent>>();
+        tnsr::ab<double, 3, Frame::GlobalTimeIndependent>>();
   }
 
   // Check paired determinant and inverse for a Tensor<DataVector>.
   {
-    tnsr::ij<DataVector, 2, Frame::LastTimeIndependent> t{};
+    tnsr::ij<DataVector, 2, Frame::GlobalTimeIndependent> t{};
     get<0, 0>(t) = DataVector({2.0, 3.0, 5.0, 1.0});
     get<0, 1>(t) = DataVector({3.0, 5.0, 4.0, -1.0});
     get<1, 0>(t) = DataVector({4.0, 2.0, 2.0, 1.0});
@@ -270,9 +270,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DeterminantAndInverse",
   {
     {
       // 2D
-      using my_tnsr_type = tnsr::ij<DataVector, 2, Frame::LastTimeIndependent>;
+      using my_tnsr_type =
+          tnsr::ij<DataVector, 2, Frame::GlobalTimeIndependent>;
       using my_tnsr_inv_type =
-          tnsr::IJ<DataVector, 2, Frame::LastTimeIndependent>;
+          tnsr::IJ<DataVector, 2, Frame::GlobalTimeIndependent>;
       using my_tnsr_det_type = Scalar<DataVector>;
 
       struct MyDetTag : db::SimpleTag {
@@ -302,9 +303,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.EagerMath.DeterminantAndInverse",
     }
     {
       // 4D
-      using my_tnsr_type = tnsr::ij<DataVector, 4, Frame::LastTimeIndependent>;
+      using my_tnsr_type =
+          tnsr::ij<DataVector, 4, Frame::GlobalTimeIndependent>;
       using my_tnsr_inv_type =
-          tnsr::IJ<DataVector, 4, Frame::LastTimeIndependent>;
+          tnsr::IJ<DataVector, 4, Frame::GlobalTimeIndependent>;
       using my_tnsr_det_type = Scalar<DataVector>;
 
       struct MyDetTag : db::SimpleTag {

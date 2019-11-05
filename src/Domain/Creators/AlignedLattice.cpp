@@ -10,7 +10,7 @@
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace Frame {
-struct LastTimeIndependent;
+struct GlobalTimeIndependent;
 struct Physical;
 }  // namespace Frame
 
@@ -74,10 +74,10 @@ AlignedLattice<VolumeDim, TargetFrame>::initial_refinement_levels() const
 }
 
 template class AlignedLattice<1, Frame::Physical>;
-template class AlignedLattice<1, Frame::LastTimeIndependent>;
+template class AlignedLattice<1, Frame::GlobalTimeIndependent>;
 template class AlignedLattice<2, Frame::Physical>;
-template class AlignedLattice<2, Frame::LastTimeIndependent>;
+template class AlignedLattice<2, Frame::GlobalTimeIndependent>;
 template class AlignedLattice<3, Frame::Physical>;
-template class AlignedLattice<3, Frame::LastTimeIndependent>;
+template class AlignedLattice<3, Frame::GlobalTimeIndependent>;
 }  // namespace creators
 }  // namespace domain

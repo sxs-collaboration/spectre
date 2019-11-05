@@ -14,7 +14,7 @@
 
 /// \cond
 namespace Frame {
-struct LastTimeIndependent;
+struct GlobalTimeIndependent;
 struct Physical;
 }  // namespace Frame
 /// \endcond
@@ -64,6 +64,6 @@ RotatedIntervals<TargetFrame>::initial_refinement_levels() const noexcept {
 }
 
 template class RotatedIntervals<Frame::Physical>;
-template class RotatedIntervals<Frame::LastTimeIndependent>;
+template class RotatedIntervals<Frame::GlobalTimeIndependent>;
 }  // namespace creators
 }  // namespace domain

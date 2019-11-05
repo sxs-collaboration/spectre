@@ -40,7 +40,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.LiftFlux",
   const Affine xi_map(-1., 1., -5., 7.);
   const Affine eta_map(-1., 1., 2., 5.);
   const auto coordinate_map = domain::make_coordinate_map<
-      Frame::ElementLogical, Frame::LastTimeIndependent>(
+      Frame::ElementLogical, Frame::GlobalTimeIndependent>(
       domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>(xi_map, eta_map));
   const double element_length = (eta_map(std::array<double, 1>{{1.}}) -
                                  eta_map(std::array<double, 1>{{-1.}}))[0];

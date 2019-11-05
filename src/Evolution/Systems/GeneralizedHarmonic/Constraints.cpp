@@ -1460,9 +1460,9 @@ void constraint_energy(
       const tnsr::ijaa<DTYPE(data), DIM(data), FRAME(data)>& d_phi) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::LastTimeIndependent, Frame::Physical))
+                        (Frame::GlobalTimeIndependent, Frame::Physical))
 GENERATE_INSTANTIATIONS(INSTANTIATE_ONLY_3D, (3), (double, DataVector),
-                        (Frame::LastTimeIndependent, Frame::Physical))
+                        (Frame::GlobalTimeIndependent, Frame::Physical))
 #undef DIM
 #undef DTYPE
 #undef FRAME

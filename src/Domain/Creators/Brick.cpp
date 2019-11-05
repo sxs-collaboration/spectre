@@ -17,7 +17,7 @@
 
 /// \cond
 namespace Frame {
-struct LastTimeIndependent;
+struct GlobalTimeIndependent;
 struct Physical;
 struct ElementLogical;
 }  // namespace Frame
@@ -79,6 +79,6 @@ Brick<TargetFrame>::initial_refinement_levels() const noexcept {
 }
 
 template class Brick<Frame::Physical>;
-template class Brick<Frame::LastTimeIndependent>;
+template class Brick<Frame::GlobalTimeIndependent>;
 }  // namespace creators
 }  // namespace domain

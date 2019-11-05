@@ -28,14 +28,14 @@ void test_1d() {
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}}};
 
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           CoordinateMaps::Identity<1>{}),
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           identity_map1d));
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           CoordinateMaps::Affine{-1.0, 1.0, 1.0, -1.0}),
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           rotation_nx));
 
   const std::array<double, 1> point_px{{0.5}};
@@ -51,14 +51,14 @@ void test_2d() {
           {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}};
 
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           CoordinateMaps::Identity<2>{}),
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           identity_map2d));
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           CoordinateMaps::Rotation<2>{M_PI_2}),
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           rotation_ny_px));
 
   const std::array<double, 2> point_px_py{{0.2, 0.5}};
@@ -82,14 +82,14 @@ void test_3d() {
   const Identity3D id3d{id1d, id2d};
 
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           id3d),
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           identity_map3d));
   check_if_maps_are_equal(
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           CoordinateMaps::Rotation<3>{M_PI_2, -M_PI_2, 0.0}),
-      make_coordinate_map<Frame::ElementLogical, Frame::LastTimeIndependent>(
+      make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
           rotation_ny_nz_px));
 
   const std::array<double, 3> point_px_py_pz{{0.2, 0.5, 0.3}};

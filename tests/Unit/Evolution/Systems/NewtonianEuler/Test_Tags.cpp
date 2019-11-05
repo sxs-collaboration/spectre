@@ -25,8 +25,8 @@ void test_tags() noexcept {
                                               Frame::Physical>::name() ==
         "MomentumDensity");
   CHECK(NewtonianEuler::Tags::MomentumDensity<
-            DataVector, Dim, Frame::LastTimeIndependent>::name() ==
-        "LastTimeIndependent_MomentumDensity");
+            DataVector, Dim, Frame::GlobalTimeIndependent>::name() ==
+        "GlobalTimeIndependent_MomentumDensity");
   CHECK(NewtonianEuler::Tags::EnergyDensity<DataVector>::name() ==
         "EnergyDensity");
   CHECK(NewtonianEuler::Tags::Velocity<DataVector, Dim,

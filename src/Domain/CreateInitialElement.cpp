@@ -19,7 +19,7 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Frame {
-struct LastTimeIndependent;  // IWYU pragma: keep
+struct GlobalTimeIndependent;  // IWYU pragma: keep
 struct Physical;  // IWYU pragma: keep
 }  // namespace Frame
 
@@ -106,7 +106,7 @@ Element<VolumeDim> create_initial_element(
       const Block<DIM(data), FRAME(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3),
-                        (Frame::LastTimeIndependent, Frame::Physical))
+                        (Frame::GlobalTimeIndependent, Frame::Physical))
 
 #undef DIM
 #undef FRAME
