@@ -13,7 +13,7 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "Informer;Utilities"
   )
-spectre_add_python_test(
+spectre_add_python_bindings_test(
   "Unit.Informer.Python"
   "Test_InfoAtCompile.py"
   "Unit;Informer;Python")

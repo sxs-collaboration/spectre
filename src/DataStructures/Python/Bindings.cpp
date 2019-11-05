@@ -27,7 +27,7 @@ void bind_datavector();
 void bind_matrix();
 }  // namespace py_bindings
 
-BOOST_PYTHON_MODULE(_DataStructures) {
+BOOST_PYTHON_MODULE(_PyDataStructures) {
   Py_Initialize();
   import_array();
   py_bindings::bind_datavector();

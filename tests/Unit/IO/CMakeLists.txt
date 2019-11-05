@@ -29,12 +29,12 @@ add_dependencies(
   module_ConstGlobalCache
   )
 
-spectre_add_python_test(
+spectre_add_python_bindings_test(
   "Unit.IO.H5.Python"
   "Test_H5.py"
   "unit;IO;H5;python")
 
-spectre_add_python_test(
+spectre_add_python_bindings_test(
   "Unit.IO.H5.VolumeData.Python"
   "Test_VolumeData.py"
   "unit;IO;H5;Python"

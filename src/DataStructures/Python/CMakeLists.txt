@@ -5,14 +5,14 @@ set(LIBRARY "PyDataStructures")
 
 spectre_python_add_module(
   DataStructures
+  LIBRARY_NAME ${LIBRARY}
   SOURCES
   Bindings.cpp
   DataVector.cpp
   Matrix.cpp
   )
 
-target_link_libraries(
+spectre_python_link_libraries(
   ${LIBRARY}
   PUBLIC DataStructures
-  ${SPECTRE_LINK_PYBINDINGS}
   )
