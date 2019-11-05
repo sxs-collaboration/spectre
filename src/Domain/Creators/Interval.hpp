@@ -10,22 +10,16 @@
 #include <cstddef>
 #include <vector>
 
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-template <size_t Dim, typename Frame>
-class DomainCreator;  // IWYU pragma: keep
-/// \endcond
-
 namespace domain {
 namespace creators {
-
 /// Create a 1D Domain consisting of a single Block.
-template <typename TargetFrame>
-class Interval : public DomainCreator<1, TargetFrame> {
+class Interval : public DomainCreator<1> {
  public:
   struct LowerBound {
     using type = std::array<double, 1>;
@@ -69,7 +63,7 @@ class Interval : public DomainCreator<1, TargetFrame> {
   Interval& operator=(Interval&&) noexcept = default;
   ~Interval() override = default;
 
-  Domain<1, TargetFrame> create_domain() const noexcept override;
+  Domain<1> create_domain() const noexcept override;
 
   std::vector<std::array<size_t, 1>> initial_extents() const noexcept override;
 

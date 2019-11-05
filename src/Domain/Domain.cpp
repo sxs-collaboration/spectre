@@ -15,20 +15,18 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace Frame {
-struct Grid;
 struct Inertial;
 struct Logical;
 }  // namespace Frame
 
-template <size_t VolumeDim, typename TargetFrame>
-Domain<VolumeDim, TargetFrame>::Domain(
-    std::vector<Block<VolumeDim, TargetFrame>> blocks) noexcept
+template <size_t VolumeDim>
+Domain<VolumeDim>::Domain(std::vector<Block<VolumeDim>> blocks) noexcept
     : blocks_(std::move(blocks)) {}
 
-template <size_t VolumeDim, typename TargetFrame>
-Domain<VolumeDim, TargetFrame>::Domain(
+template <size_t VolumeDim>
+Domain<VolumeDim>::Domain(
     std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
+        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>
         maps,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,
@@ -47,21 +45,21 @@ Domain<VolumeDim, TargetFrame>::Domain(
   }
 }
 
-template <size_t VolumeDim, typename TargetFrame>
-bool operator==(const Domain<VolumeDim, TargetFrame>& lhs,
-                const Domain<VolumeDim, TargetFrame>& rhs) noexcept {
+template <size_t VolumeDim>
+bool operator==(const Domain<VolumeDim>& lhs,
+                const Domain<VolumeDim>& rhs) noexcept {
   return lhs.blocks() == rhs.blocks();
 }
 
-template <size_t VolumeDim, typename TargetFrame>
-bool operator!=(const Domain<VolumeDim, TargetFrame>& lhs,
-                const Domain<VolumeDim, TargetFrame>& rhs) noexcept {
+template <size_t VolumeDim>
+bool operator!=(const Domain<VolumeDim>& lhs,
+                const Domain<VolumeDim>& rhs) noexcept {
   return not(lhs == rhs);
 }
 
-template <size_t VolumeDim, typename TargetFrame>
+template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
-                         const Domain<VolumeDim, TargetFrame>& d) noexcept {
+                         const Domain<VolumeDim>& d) noexcept {
   const auto& blocks = d.blocks();
   os << "Domain with " << blocks.size() << " blocks:\n";
   for (const auto& block : blocks) {
@@ -70,26 +68,24 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-template <size_t VolumeDim, typename TargetFrame>
-void Domain<VolumeDim, TargetFrame>::pup(PUP::er& p) noexcept {
+template <size_t VolumeDim>
+void Domain<VolumeDim>::pup(PUP::er& p) noexcept {
   p | blocks_;
 }
 
 /// \cond HIDDEN_SYMBOLS
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
-#define INSTANTIATE(_, data)                               \
-  template class Domain<DIM(data), FRAME(data)>;           \
-  template bool operator==(                                \
-      const Domain<DIM(data), FRAME(data)>& lhs,           \
-      const Domain<DIM(data), FRAME(data)>& rhs) noexcept; \
-  template bool operator!=(                                \
-      const Domain<DIM(data), FRAME(data)>& lhs,           \
-      const Domain<DIM(data), FRAME(data)>& rhs) noexcept; \
-  template std::ostream& operator<<(std::ostream& os,      \
-                                    const Domain<DIM(data), FRAME(data)>& d);
+#define INSTANTIATE(_, data)                                       \
+  template class Domain<DIM(data)>;                                \
+  template bool operator==(const Domain<DIM(data)>& lhs,           \
+                           const Domain<DIM(data)>& rhs) noexcept; \
+  template bool operator!=(const Domain<DIM(data)>& lhs,           \
+                           const Domain<DIM(data)>& rhs) noexcept; \
+  template std::ostream& operator<<(std::ostream& os,              \
+                                    const Domain<DIM(data)>& d);
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef FRAME

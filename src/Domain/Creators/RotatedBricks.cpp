@@ -9,16 +9,9 @@
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
 
-namespace Frame {
-struct Grid;
-struct Inertial;
-}  // namespace Frame
-
 namespace domain {
 namespace creators {
-
-template <typename TargetFrame>
-RotatedBricks<TargetFrame>::RotatedBricks(
+RotatedBricks::RotatedBricks(
     const typename LowerBound::type lower_xyz,
     const typename Midpoint::type midpoint_xyz,
     const typename UpperBound::type upper_xyz,
@@ -36,10 +29,8 @@ RotatedBricks<TargetFrame>::RotatedBricks(
       initial_number_of_grid_points_in_xyz_(                   // NOLINT
           std::move(initial_number_of_grid_points_in_xyz)) {}  // NOLINT
 
-template <typename TargetFrame>
-Domain<3, TargetFrame> RotatedBricks<TargetFrame>::create_domain() const
-    noexcept {
-  return rectilinear_domain<3, TargetFrame>(
+Domain<3> RotatedBricks::create_domain() const noexcept {
+  return rectilinear_domain<3>(
       Index<3>{2, 2, 2},
       std::array<std::vector<double>, 3>{
           {{lower_xyz_[0], midpoint_xyz_[0], upper_xyz_[0]},
@@ -72,9 +63,8 @@ Domain<3, TargetFrame> RotatedBricks<TargetFrame>::create_domain() const
       is_periodic_in_);
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 3>> RotatedBricks<TargetFrame>::initial_extents()
-    const noexcept {
+std::vector<std::array<size_t, 3>> RotatedBricks::initial_extents() const
+    noexcept {
   const size_t& x_0 = initial_number_of_grid_points_in_xyz_[0][0];
   const size_t& x_1 = initial_number_of_grid_points_in_xyz_[0][1];
   const size_t& y_0 = initial_number_of_grid_points_in_xyz_[1][0];
@@ -86,9 +76,8 @@ std::vector<std::array<size_t, 3>> RotatedBricks<TargetFrame>::initial_extents()
           {{y_1, z_1, x_0}}, {{x_1, y_1, z_1}}};
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 3>>
-RotatedBricks<TargetFrame>::initial_refinement_levels() const noexcept {
+std::vector<std::array<size_t, 3>> RotatedBricks::initial_refinement_levels()
+    const noexcept {
   const size_t& x_0 = initial_refinement_level_xyz_[0];
   const size_t& y_0 = initial_refinement_level_xyz_[1];
   const size_t& z_0 = initial_refinement_level_xyz_[2];
@@ -96,8 +85,5 @@ RotatedBricks<TargetFrame>::initial_refinement_levels() const noexcept {
           {{y_0, z_0, x_0}}, {{y_0, x_0, z_0}}, {{z_0, x_0, y_0}},
           {{y_0, z_0, x_0}}, {{x_0, y_0, z_0}}};
 }
-
-template class RotatedBricks<Frame::Inertial>;
-template class RotatedBricks<Frame::Grid>;
 }  // namespace creators
 }  // namespace domain

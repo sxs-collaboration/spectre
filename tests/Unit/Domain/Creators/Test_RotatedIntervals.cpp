@@ -29,7 +29,7 @@
 namespace domain {
 namespace {
 void test_rotated_intervals_construction(
-    const creators::RotatedIntervals<Frame::Inertial>& rotated_intervals,
+    const creators::RotatedIntervals& rotated_intervals,
     const std::array<double, 1>& lower_bound,
     const std::array<double, 1>& midpoint,
     const std::array<double, 1>& upper_bound,
@@ -68,7 +68,7 @@ void test_rotated_intervals() {
   const OrientationMap<1> flipped{
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
 
-  const creators::RotatedIntervals<Frame::Inertial> rotated_intervals{
+  const creators::RotatedIntervals rotated_intervals{
       lower_bound,         midpoint,
       upper_bound,         std::array<bool, 1>{{false}},
       refinement_level[0], {{{{grid_points[0][0], grid_points[1][0]}}}}};
@@ -82,7 +82,7 @@ void test_rotated_intervals() {
           {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}});
   test_physical_separation(rotated_intervals.create_domain().blocks());
 
-  const creators::RotatedIntervals<Frame::Inertial> periodic_rotated_intervals{
+  const creators::RotatedIntervals periodic_rotated_intervals{
       lower_bound,         midpoint,
       upper_bound,         std::array<bool, 1>{{true}},
       refinement_level[0], {{{{grid_points[0][0], grid_points[1][0]}}}}};
@@ -101,18 +101,16 @@ void test_rotated_intervals_factory() {
   INFO("Rotated intervals factory");
   const OrientationMap<1> flipped{
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
-  const auto domain_creator =
-      test_factory_creation<DomainCreator<1, Frame::Inertial>>(
-          "  RotatedIntervals:\n"
-          "    LowerBound: [0.0]\n"
-          "    Midpoint:   [0.5]\n"
-          "    UpperBound: [1.0]\n"
-          "    IsPeriodicIn: [True]\n"
-          "    InitialGridPoints: [[3,2]]\n"
-          "    InitialRefinement: [2]\n");
+  const auto domain_creator = test_factory_creation<DomainCreator<1>>(
+      "  RotatedIntervals:\n"
+      "    LowerBound: [0.0]\n"
+      "    Midpoint:   [0.5]\n"
+      "    UpperBound: [1.0]\n"
+      "    IsPeriodicIn: [True]\n"
+      "    InitialGridPoints: [[3,2]]\n"
+      "    InitialRefinement: [2]\n");
   const auto* rotated_intervals_creator =
-      dynamic_cast<const creators::RotatedIntervals<Frame::Inertial>*>(
-          domain_creator.get());
+      dynamic_cast<const creators::RotatedIntervals*>(domain_creator.get());
   test_rotated_intervals_construction(
       *rotated_intervals_creator, {{0.0}}, {{0.5}}, {{1.0}}, {{{3}}, {{2}}},
       {{{2}}, {{2}}},

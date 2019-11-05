@@ -17,7 +17,6 @@
 
 /// \cond
 namespace Frame {
-struct Grid;
 struct Inertial;
 struct Logical;
 }  // namespace Frame
@@ -25,9 +24,7 @@ struct Logical;
 
 namespace domain {
 namespace creators {
-
-template <typename TargetFrame>
-Rectangle<TargetFrame>::Rectangle(
+Rectangle::Rectangle(
     typename LowerBound::type lower_xy, typename UpperBound::type upper_xy,
     typename IsPeriodicIn::type is_periodic_in_xy,
     typename InitialRefinement::type initial_refinement_level_xy,
@@ -42,8 +39,7 @@ Rectangle<TargetFrame>::Rectangle(
       initial_number_of_grid_points_in_xy_(                   // NOLINT
           std::move(initial_number_of_grid_points_in_xy)) {}  // NOLINT
 
-template <typename TargetFrame>
-Domain<2, TargetFrame> Rectangle<TargetFrame>::create_domain() const noexcept {
+Domain<2> Rectangle::create_domain() const noexcept {
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   std::vector<PairOfFaces> identifications{};
@@ -54,26 +50,20 @@ Domain<2, TargetFrame> Rectangle<TargetFrame>::create_domain() const noexcept {
     identifications.push_back({{0, 1}, {2, 3}});
   }
 
-  return Domain<2, TargetFrame>{
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+  return Domain<2>{
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine2D{Affine{-1., 1., lower_xy_[0], upper_xy_[0]},
                    Affine{-1., 1., lower_xy_[1], upper_xy_[1]}}),
       std::vector<std::array<size_t, 4>>{{{0, 1, 2, 3}}}, identifications};
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 2>> Rectangle<TargetFrame>::initial_extents()
-    const noexcept {
+std::vector<std::array<size_t, 2>> Rectangle::initial_extents() const noexcept {
   return {initial_number_of_grid_points_in_xy_};
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 2>>
-Rectangle<TargetFrame>::initial_refinement_levels() const noexcept {
+std::vector<std::array<size_t, 2>> Rectangle::initial_refinement_levels() const
+    noexcept {
   return {initial_refinement_level_xy_};
 }
-
-template class Rectangle<Frame::Inertial>;
-template class Rectangle<Frame::Grid>;
 }  // namespace creators
 }  // namespace domain

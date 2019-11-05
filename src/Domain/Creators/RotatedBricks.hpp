@@ -15,7 +15,6 @@
 
 namespace domain {
 namespace creators {
-
 /// Create a 3D Domain consisting of eight rotated Blocks.
 ///
 /// \image html eightcubes_rotated_exploded.png
@@ -71,8 +70,7 @@ namespace creators {
 ///
 /// This DomainCreator is useful for testing code that deals with
 /// unaligned blocks.
-template <typename TargetFrame>
-class RotatedBricks : public DomainCreator<3, TargetFrame> {
+class RotatedBricks : public DomainCreator<3> {
  public:
   struct LowerBound {
     using type = std::array<double, 3>;
@@ -136,7 +134,7 @@ class RotatedBricks : public DomainCreator<3, TargetFrame> {
   RotatedBricks& operator=(RotatedBricks&&) noexcept = default;
   ~RotatedBricks() override = default;
 
-  Domain<3, TargetFrame> create_domain() const noexcept override;
+  Domain<3> create_domain() const noexcept override;
 
   std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
 

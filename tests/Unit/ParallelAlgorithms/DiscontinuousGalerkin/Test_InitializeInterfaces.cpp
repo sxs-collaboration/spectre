@@ -63,8 +63,7 @@ struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<Dim, Frame::Inertial>>;
+  using const_global_cache_tags = tmpl::list<::Tags::Domain<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -145,7 +144,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
     // Reference element:
     // [ |X| | ]-> xi
     const ElementId<1> element_id{0, {{SegmentId{2, 1}}}};
-    const domain::creators::Interval<Frame::Inertial> domain_creator{
+    const domain::creators::Interval domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
     // Register the coordinate map for serialization
     PUPable_reg(
@@ -178,7 +177,7 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
     // | |X| | |
     // +-+-+-+-+
     const ElementId<2> element_id{0, {{SegmentId{2, 1}, SegmentId{0, 0}}}};
-    const domain::creators::Rectangle<Frame::Inertial> domain_creator{
+    const domain::creators::Rectangle domain_creator{
         {{-0.5, 0.}}, {{1.5, 2.}}, {{false, false}}, {{2, 0}}, {{4, 3}}};
     // Register the coordinate map for serialization
     PUPable_reg(
@@ -209,12 +208,11 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeInterfaces", "[Unit][Actions]") {
     INFO("3D");
     const ElementId<3> element_id{
         0, {{SegmentId{2, 1}, SegmentId{0, 0}, SegmentId{1, 1}}}};
-    const domain::creators::Brick<Frame::Inertial> domain_creator{
-        {{-0.5, 0., -1.}},
-        {{1.5, 2., 3.}},
-        {{false, false, false}},
-        {{2, 0, 1}},
-        {{4, 3, 2}}};
+    const domain::creators::Brick domain_creator{{{-0.5, 0., -1.}},
+                                                 {{1.5, 2., 3.}},
+                                                 {{false, false, false}},
+                                                 {{2, 0, 1}},
+                                                 {{4, 3, 2}}};
     // Register the coordinate map for serialization
     PUPable_reg(SINGLE_ARG(
         domain::CoordinateMap<

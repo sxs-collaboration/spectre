@@ -41,9 +41,9 @@ namespace OptionTags {
 /// \ingroup OptionTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The input file tag for the DomainCreator to use
-template <size_t Dim, typename TargetFrame>
+template <size_t Dim>
 struct DomainCreator {
-  using type = std::unique_ptr<::DomainCreator<Dim, TargetFrame>>;
+  using type = std::unique_ptr<::DomainCreator<Dim>>;
   static constexpr OptionString help = {"The domain to create initially"};
 };
 }  // namespace OptionTags
@@ -52,15 +52,15 @@ namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The ::Domain.
-template <size_t VolumeDim, typename Frame>
+template <size_t VolumeDim>
 struct Domain : db::SimpleTag {
   static std::string name() noexcept { return "Domain"; }
-  using type = ::Domain<VolumeDim, Frame>;
-  using option_tags = tmpl::list<::OptionTags::DomainCreator<VolumeDim, Frame>>;
+  using type = ::Domain<VolumeDim>;
+  using option_tags = tmpl::list<::OptionTags::DomainCreator<VolumeDim>>;
 
   template <typename Metavariables>
-  static ::Domain<VolumeDim, Frame> create_from_options(
-      const std::unique_ptr<::DomainCreator<VolumeDim, Frame>>&
+  static ::Domain<VolumeDim> create_from_options(
+      const std::unique_ptr<::DomainCreator<VolumeDim>>&
           domain_creator) noexcept {
     return domain_creator->create_domain();
   }
@@ -74,13 +74,11 @@ template <size_t Dim>
 struct InitialExtents : db::SimpleTag {
   static std::string name() noexcept { return "InitialExtents"; }
   using type = std::vector<std::array<size_t, Dim>>;
-  using option_tags =
-      tmpl::list<::OptionTags::DomainCreator<Dim, Frame::Inertial>>;
+  using option_tags = tmpl::list<::OptionTags::DomainCreator<Dim>>;
 
   template <typename Metavariables>
   static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim, Frame::Inertial>>&
-          domain_creator) noexcept {
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept {
     return domain_creator->initial_extents();
   }
 };
@@ -93,13 +91,11 @@ template <size_t Dim>
 struct InitialRefinementLevels : db::SimpleTag {
   static std::string name() noexcept { return "InitialRefinementLevels"; }
   using type = std::vector<std::array<size_t, Dim>>;
-  using option_tags =
-      tmpl::list<::OptionTags::DomainCreator<Dim, Frame::Inertial>>;
+  using option_tags = tmpl::list<::OptionTags::DomainCreator<Dim>>;
 
   template <typename Metavariables>
   static std::vector<std::array<size_t, Dim>> create_from_options(
-      const std::unique_ptr<::DomainCreator<Dim, Frame::Inertial>>&
-          domain_creator) noexcept {
+      const std::unique_ptr<::DomainCreator<Dim>>& domain_creator) noexcept {
     return domain_creator->initial_refinement_levels();
   }
 };

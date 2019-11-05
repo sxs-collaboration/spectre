@@ -35,8 +35,7 @@ namespace {
 using Affine = CoordinateMaps::Affine;
 using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 void test_brick_construction(
-    const creators::Brick<Frame::Inertial>& brick,
-    const std::array<double, 3>& lower_bound,
+    const creators::Brick& brick, const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& upper_bound,
     const std::vector<std::array<size_t, 3>>& expected_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
@@ -68,9 +67,9 @@ void test_brick() {
   // Default OrientationMap is aligned.
   const OrientationMap<3> aligned_orientation{};
 
-  const creators::Brick<Frame::Inertial> brick{
-      lower_bound, upper_bound, std::array<bool, 3>{{false, false, false}},
-      refinement_level[0], grid_points[0]};
+  const creators::Brick brick{lower_bound, upper_bound,
+                              std::array<bool, 3>{{false, false, false}},
+                              refinement_level[0], grid_points[0]};
   test_brick_construction(brick, lower_bound, upper_bound, grid_points,
                           refinement_level,
                           std::vector<DirectionMap<3, BlockNeighbor<3>>>{{}},
@@ -82,7 +81,7 @@ void test_brick() {
                                {Direction<3>::lower_zeta()},
                                {Direction<3>::upper_zeta()}}});
 
-  const creators::Brick<Frame::Inertial> periodic_x_brick{
+  const creators::Brick periodic_x_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, false, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -96,7 +95,7 @@ void test_brick() {
            {Direction<3>::lower_zeta()},
            {Direction<3>::upper_zeta()}}});
 
-  const creators::Brick<Frame::Inertial> periodic_y_brick{
+  const creators::Brick periodic_y_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, true, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -110,7 +109,7 @@ void test_brick() {
            {Direction<3>::lower_zeta()},
            {Direction<3>::upper_zeta()}}});
 
-  const creators::Brick<Frame::Inertial> periodic_z_brick{
+  const creators::Brick periodic_z_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, false, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -124,7 +123,7 @@ void test_brick() {
            {Direction<3>::lower_eta()},
            {Direction<3>::upper_eta()}}});
 
-  const creators::Brick<Frame::Inertial> periodic_xy_brick{
+  const creators::Brick periodic_xy_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, true, false}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -138,7 +137,7 @@ void test_brick() {
       std::vector<std::unordered_set<Direction<3>>>{
           {{Direction<3>::lower_zeta()}, {Direction<3>::upper_zeta()}}});
 
-  const creators::Brick<Frame::Inertial> periodic_yz_brick{
+  const creators::Brick periodic_yz_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{false, true, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -154,7 +153,7 @@ void test_brick() {
           {Direction<3>::upper_xi()},
       }});
 
-  const creators::Brick<Frame::Inertial> periodic_xz_brick{
+  const creators::Brick periodic_xz_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, false, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -168,7 +167,7 @@ void test_brick() {
       std::vector<std::unordered_set<Direction<3>>>{
           {{Direction<3>::lower_eta()}, {Direction<3>::upper_eta()}}});
 
-  const creators::Brick<Frame::Inertial> periodic_xyz_brick{
+  const creators::Brick periodic_xyz_brick{
       lower_bound, upper_bound, std::array<bool, 3>{{true, true, true}},
       refinement_level[0], grid_points[0]};
   test_brick_construction(
@@ -200,17 +199,15 @@ void test_brick() {
 
 void test_brick_factory() {
   INFO("Brick factory");
-  const auto domain_creator =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
-          "  Brick:\n"
-          "    LowerBound: [0,0,0]\n"
-          "    UpperBound: [1,2,3]\n"
-          "    IsPeriodicIn: [True,False,True]\n"
-          "    InitialGridPoints: [3,4,3]\n"
-          "    InitialRefinement: [2,3,2]\n");
+  const auto domain_creator = test_factory_creation<DomainCreator<3>>(
+      "  Brick:\n"
+      "    LowerBound: [0,0,0]\n"
+      "    UpperBound: [1,2,3]\n"
+      "    IsPeriodicIn: [True,False,True]\n"
+      "    InitialGridPoints: [3,4,3]\n"
+      "    InitialRefinement: [2,3,2]\n");
   const auto* brick_creator =
-      dynamic_cast<const creators::Brick<Frame::Inertial>*>(
-          domain_creator.get());
+      dynamic_cast<const creators::Brick*>(domain_creator.get());
   test_brick_construction(
       *brick_creator, {{0., 0., 0.}}, {{1., 2., 3.}}, {{{3, 4, 3}}},
       {{{2, 3, 2}}},

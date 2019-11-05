@@ -180,7 +180,7 @@ struct mock_interpolation_target {
   using const_global_cache_tags = tmpl::flatten<tmpl::append<
       Parallel::get_const_global_cache_tags_from_actions<
           tmpl::list<typename InterpolationTargetTag::compute_target_points>>,
-      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>>>;
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -275,15 +275,15 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
                                                         1.0, {{0.0, 0.0, 0.0}});
   const auto domain_creator =
-      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
   tuples::TaggedTuple<
       intrp::Tags::LineSegment<metavars::InterpolationTargetA, 3>,
-      ::Tags::Domain<3, Frame::Inertial>,
+      ::Tags::Domain<3>,
       intrp::Tags::LineSegment<metavars::InterpolationTargetB, 3>,
       intrp::Tags::KerrHorizon<metavars::InterpolationTargetC>>
-      tuple_of_opts(
-          std::move(line_segment_opts_A), domain_creator.create_domain(),
-          std::move(line_segment_opts_B), kerr_horizon_opts_C);
+      tuple_of_opts(std::move(line_segment_opts_A),
+                    domain_creator.create_domain(),
+                    std::move(line_segment_opts_B), kerr_horizon_opts_C);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
   runner.set_phase(metavars::Phase::Initialization);

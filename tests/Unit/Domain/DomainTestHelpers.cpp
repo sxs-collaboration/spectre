@@ -65,9 +65,9 @@ bool is_a_neighbor_of_my_neighbor_me(
   return 1 == number_of_matches;
 }
 
-template <size_t VolumeDim, typename Fr>
+template <size_t VolumeDim>
 void test_domain_connectivity(
-    const Domain<VolumeDim, Fr>& domain,
+    const Domain<VolumeDim>& domain,
     const std::unordered_map<ElementId<VolumeDim>, Element<VolumeDim>>&
         elements_in_domain) noexcept {
   boost::rational<size_t> volume_of_elements{0};
@@ -171,10 +171,9 @@ void test_refinement_levels_of_neighbors(
   }
 }
 
-template <size_t VolumeDim, typename TargetFrame>
-bool blocks_are_neighbors(
-    const Block<VolumeDim, TargetFrame>& host_block,
-    const Block<VolumeDim, TargetFrame>& neighbor_block) noexcept {
+template <size_t VolumeDim>
+bool blocks_are_neighbors(const Block<VolumeDim>& host_block,
+                          const Block<VolumeDim>& neighbor_block) noexcept {
   for (const auto& neighbor : host_block.neighbors()) {
     if (neighbor.second.id() == neighbor_block.id()) {
       return true;
@@ -184,10 +183,10 @@ bool blocks_are_neighbors(
 }
 
 // Finds the OrientationMap of a neighboring Block relative to a host Block.
-template <size_t VolumeDim, typename TargetFrame>
+template <size_t VolumeDim>
 OrientationMap<VolumeDim> find_neighbor_orientation(
-    const Block<VolumeDim, TargetFrame>& host_block,
-    const Block<VolumeDim, TargetFrame>& neighbor_block) noexcept {
+    const Block<VolumeDim>& host_block,
+    const Block<VolumeDim>& neighbor_block) noexcept {
   for (const auto& neighbor : host_block.neighbors()) {
     if (neighbor.second.id() == neighbor_block.id()) {
       return neighbor.second.orientation();
@@ -197,10 +196,10 @@ OrientationMap<VolumeDim> find_neighbor_orientation(
 }
 
 // Finds the Direction to the neighboring Block relative to a host Block.
-template <size_t VolumeDim, typename TargetFrame>
+template <size_t VolumeDim>
 Direction<VolumeDim> find_direction_to_neighbor(
-    const Block<VolumeDim, TargetFrame>& host_block,
-    const Block<VolumeDim, TargetFrame>& neighbor_block) noexcept {
+    const Block<VolumeDim>& host_block,
+    const Block<VolumeDim>& neighbor_block) noexcept {
   for (const auto& neighbor : host_block.neighbors()) {
     if (neighbor.second.id() == neighbor_block.id()) {
       return neighbor.first;
@@ -247,12 +246,11 @@ tnsr::I<double, VolumeDim, Frame::Logical> point_in_neighbor_frame(
 }
 
 // Given two Blocks which are neighbors, computes the max separation between
-// the abutting faces of the Blocks in the TargetFrame using the CoordinateMaps
-// of each block.
-template <size_t VolumeDim, typename TargetFrame>
-double physical_separation(
-    const Block<VolumeDim, TargetFrame>& block1,
-    const Block<VolumeDim, TargetFrame>& block2) noexcept {
+// the abutting faces of the Blocks in the Frame::Inertial frame using the
+// CoordinateMaps of each block.
+template <size_t VolumeDim>
+double physical_separation(const Block<VolumeDim>& block1,
+                           const Block<VolumeDim>& block2) noexcept {
   double max_separation = 0;
   const auto direction = find_direction_to_neighbor(block1, block2);
   const auto orientation = find_neighbor_orientation(block1, block2);
@@ -283,15 +281,15 @@ double physical_separation(
 }  // namespace
 }  // namespace domain
 
-template <size_t VolumeDim, typename Fr>
+template <size_t VolumeDim>
 void test_domain_construction(
-    const Domain<VolumeDim, Fr>& domain,
+    const Domain<VolumeDim>& domain,
     const std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
     const std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, Fr, VolumeDim>>>&
+        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
         expected_maps) noexcept {
   const auto& blocks = domain.blocks();
   CHECK(blocks.size() == expected_external_boundaries.size());
@@ -310,9 +308,9 @@ void test_domain_construction(
   CHECK_FALSE(domain != domain);
 }
 
-template <size_t VolumeDim, typename TargetFrame>
+template <size_t VolumeDim>
 void test_physical_separation(
-    const std::vector<Block<VolumeDim, TargetFrame>>& blocks) noexcept {
+    const std::vector<Block<VolumeDim>>& blocks) noexcept {
   double tolerance = 1e-10;
   for (size_t i = 0; i < blocks.size() - 1; i++) {
     for (size_t j = i + 1; j < blocks.size(); j++) {
@@ -334,8 +332,8 @@ boost::rational<size_t> fraction_of_block_volume(
   return {1, two_to_the(sum_of_refinement_levels)};
 }
 
-template <size_t VolumeDim, typename Frame>
-void test_initial_domain(const Domain<VolumeDim, Frame>& domain,
+template <size_t VolumeDim>
+void test_initial_domain(const Domain<VolumeDim>& domain,
                          const std::vector<std::array<size_t, VolumeDim>>&
                              initial_refinement_levels) noexcept {
   const auto element_ids = initial_element_ids(initial_refinement_levels);
@@ -351,12 +349,13 @@ void test_initial_domain(const Domain<VolumeDim, Frame>& domain,
   domain::test_refinement_levels_of_neighbors<0>(elements);
 }
 
-template <size_t SpatialDim, typename Fr>
-tnsr::i<DataVector, SpatialDim, Fr> euclidean_basis_vector(
+template <size_t SpatialDim>
+tnsr::i<DataVector, SpatialDim, Frame::Inertial> euclidean_basis_vector(
     const Direction<SpatialDim>& direction,
     const DataVector& used_for_size) noexcept {
   auto basis_vector =
-      make_with_value<tnsr::i<DataVector, SpatialDim, Fr>>(used_for_size, 0.0);
+      make_with_value<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(
+          used_for_size, 0.0);
 
   basis_vector.get(direction.axis()) =
       make_with_value<DataVector>(used_for_size, direction.sign());
@@ -366,37 +365,31 @@ tnsr::i<DataVector, SpatialDim, Fr> euclidean_basis_vector(
 
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
-#define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE1(_, data)                                \
-  template boost::rational<size_t> fraction_of_block_volume( \
-      const ElementId<DIM(data)>& element_id) noexcept;
+#define INSTANTIATE(_, data)                                                \
+  template boost::rational<size_t> fraction_of_block_volume(                \
+      const ElementId<DIM(data)>& element_id) noexcept;                     \
+  template void test_domain_construction<DIM(data)>(                        \
+      const Domain<DIM(data)>& domain,                                      \
+      const std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>& \
+          expected_block_neighbors,                                         \
+      const std::vector<std::unordered_set<Direction<DIM(data)>>>&          \
+          expected_external_boundaries,                                     \
+      const std::vector<std::unique_ptr<domain::CoordinateMapBase<          \
+          Frame::Logical, Frame::Inertial, DIM(data)>>>&                    \
+          expected_maps) noexcept;                                          \
+  template void test_initial_domain(                                        \
+      const Domain<DIM(data)>& domain,                                      \
+      const std::vector<std::array<size_t, DIM(data)>>&                     \
+          initial_refinement_levels) noexcept;                              \
+  template void test_physical_separation(                                   \
+      const std::vector<Block<DIM(data)>>& blocks) noexcept;                \
+  template tnsr::i<DataVector, DIM(data), Frame::Inertial>                  \
+  euclidean_basis_vector(const Direction<DIM(data)>& direction,             \
+                         const DataVector& used_for_size) noexcept;
 
-#define INSTANTIATE2(_, data)                                                  \
-  template void test_domain_construction<DIM(data)>(                           \
-      const Domain<DIM(data), FRAME(data)>& domain,                            \
-      const std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>&    \
-          expected_block_neighbors,                                            \
-      const std::vector<std::unordered_set<Direction<DIM(data)>>>&             \
-          expected_external_boundaries,                                        \
-      const std::vector<std::unique_ptr<                                       \
-          domain::CoordinateMapBase<Frame::Logical, FRAME(data), DIM(data)>>>& \
-          expected_maps) noexcept;                                             \
-  template void test_initial_domain(                                           \
-      const Domain<DIM(data), FRAME(data)>& domain,                            \
-      const std::vector<std::array<size_t, DIM(data)>>&                        \
-          initial_refinement_levels) noexcept;                                 \
-  template void test_physical_separation(                                      \
-      const std::vector<Block<DIM(data), FRAME(data)>>& blocks) noexcept;      \
-  template tnsr::i<DataVector, DIM(data), FRAME(data)> euclidean_basis_vector( \
-      const Direction<DIM(data)>& direction,                                   \
-      const DataVector& used_for_size) noexcept;
-
-GENERATE_INSTANTIATIONS(INSTANTIATE1, (1, 2, 3))
-GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (Frame::Grid, Frame::Inertial))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
-#undef FRAME
-#undef INSTANTIATE1
-#undef INSTANTIATE2
+#undef INSTANTIATE
 /// \endcond

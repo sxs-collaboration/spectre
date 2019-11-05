@@ -15,7 +15,6 @@
 
 namespace domain {
 namespace creators {
-
 /// Create a 2D Domain consisting of four rotated Blocks.
 /// - The lower left block has its logical \f$\xi\f$-axis aligned with
 /// the grid x-axis.
@@ -31,8 +30,7 @@ namespace creators {
 ///
 /// This DomainCreator is useful for testing code that deals with
 /// unaligned blocks.
-template <typename TargetFrame>
-class RotatedRectangles : public DomainCreator<2, TargetFrame> {
+class RotatedRectangles : public DomainCreator<2> {
  public:
   struct LowerBound {
     using type = std::array<double, 2>;
@@ -96,7 +94,7 @@ class RotatedRectangles : public DomainCreator<2, TargetFrame> {
   RotatedRectangles& operator=(RotatedRectangles&&) noexcept = default;
   ~RotatedRectangles() override = default;
 
-  Domain<2, TargetFrame> create_domain() const noexcept override;
+  Domain<2> create_domain() const noexcept override;
 
   std::vector<std::array<size_t, 2>> initial_extents() const noexcept override;
 

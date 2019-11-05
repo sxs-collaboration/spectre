@@ -19,6 +19,7 @@
 /// \cond
 namespace Frame {
 struct Logical;
+struct Inertial;
 }  // namespace Frame
 namespace PUP {
 class er;
@@ -37,16 +38,16 @@ class er;
 /// dimension.  The global coordinates are obtained from the logical
 /// coordinates from the Coordinatemap:  CoordinateMap::operator() takes
 /// Points in the Logical Frame (i.e., logical coordinates) and
-/// returns Points in the Grid Frame (i.e., global coordinates).
-template <size_t VolumeDim, typename TargetFrame>
+/// returns Points in the Inertial Frame (i.e., global coordinates).
+template <size_t VolumeDim>
 class Block {
  public:
   /// \param map the CoordinateMap.
   /// \param id a unique ID.
   /// \param neighbors info about the Blocks that share a codimension 1
   /// boundary with this Block.
-  Block(std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame,
-                                                  VolumeDim>>&& map,
+  Block(std::unique_ptr<domain::CoordinateMapBase<
+            Frame::Logical, Frame::Inertial, VolumeDim>>&& map,
         size_t id,
         DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors) noexcept;
 
@@ -57,7 +58,7 @@ class Block {
   Block& operator=(const Block&) = delete;
   Block& operator=(Block&&) = default;
 
-  const domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
+  const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>&
   coordinate_map() const noexcept {
     return *map_;
   }
@@ -84,21 +85,21 @@ class Block {
 
  private:
   std::unique_ptr<
-      domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>
       map_;
   size_t id_{0};
   DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;
   std::unordered_set<Direction<VolumeDim>> external_boundaries_;
 };
 
-template <size_t VolumeDim, typename TargetFrame>
+template <size_t VolumeDim>
 std::ostream& operator<<(std::ostream& os,
-                         const Block<VolumeDim, TargetFrame>& block) noexcept;
+                         const Block<VolumeDim>& block) noexcept;
 
-template <size_t VolumeDim, typename TargetFrame>
-bool operator==(const Block<VolumeDim, TargetFrame>& lhs,
-                const Block<VolumeDim, TargetFrame>& rhs) noexcept;
+template <size_t VolumeDim>
+bool operator==(const Block<VolumeDim>& lhs,
+                const Block<VolumeDim>& rhs) noexcept;
 
-template <size_t VolumeDim, typename TargetFrame>
-bool operator!=(const Block<VolumeDim, TargetFrame>& lhs,
-                const Block<VolumeDim, TargetFrame>& rhs) noexcept;
+template <size_t VolumeDim>
+bool operator!=(const Block<VolumeDim>& lhs,
+                const Block<VolumeDim>& rhs) noexcept;

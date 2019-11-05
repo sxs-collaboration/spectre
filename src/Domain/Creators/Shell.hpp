@@ -7,19 +7,14 @@
 #include <cstddef>
 #include <vector>
 
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-template <size_t, class>
-class DomainCreator;  // IWYU pragma: keep
-/// \endcond
-
 namespace domain {
 namespace creators {
-
 /*!
  * \brief Creates a 3D Domain in the shape of a hollow spherical shell
  * consisting of six wedges.
@@ -27,8 +22,7 @@ namespace creators {
  * \image html WedgeOrientations.png "The orientation of each wedge in Shell."
  */
 
-template <typename TargetFrame>
-class Shell : public DomainCreator<3, TargetFrame> {
+class Shell : public DomainCreator<3> {
  public:
   struct InnerRadius {
     using type = double;
@@ -122,7 +116,7 @@ class Shell : public DomainCreator<3, TargetFrame> {
   Shell& operator=(Shell&&) noexcept = default;
   ~Shell() noexcept override = default;
 
-  Domain<3, TargetFrame> create_domain() const noexcept override;
+  Domain<3> create_domain() const noexcept override;
 
   std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
 

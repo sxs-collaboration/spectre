@@ -116,8 +116,7 @@ Variables<valencia_tags> numerical_dt(
 /// sixth-order derivative in time for the given `delta_time`. The maximum
 /// residual of the GRMHD equations must be zero within `error_tolerance`
 template <typename Solution>
-void verify_grmhd_solution(const Solution& solution,
-                           const Block<3, Frame::Inertial>& block,
+void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
                            const Mesh<3>& mesh, const double error_tolerance,
                            const double time,
                            const double delta_time) noexcept {

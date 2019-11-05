@@ -17,7 +17,6 @@
 
 /// \cond
 namespace Frame {
-struct Grid;
 struct Inertial;
 struct Logical;
 }  // namespace Frame
@@ -25,18 +24,15 @@ struct Logical;
 
 namespace domain {
 namespace creators {
-
-template <typename TargetFrame>
-Shell<TargetFrame>::Shell(
-    typename InnerRadius::type inner_radius,
-    typename OuterRadius::type outer_radius,
-    typename InitialRefinement::type initial_refinement,
-    typename InitialGridPoints::type initial_number_of_grid_points,
-    typename UseEquiangularMap::type use_equiangular_map,
-    typename AspectRatio::type aspect_ratio,
-    typename UseLogarithmicMap::type use_logarithmic_map,
-    typename WhichWedges::type which_wedges,
-    typename RadialBlockLayers::type number_of_layers) noexcept
+Shell::Shell(typename InnerRadius::type inner_radius,
+             typename OuterRadius::type outer_radius,
+             typename InitialRefinement::type initial_refinement,
+             typename InitialGridPoints::type initial_number_of_grid_points,
+             typename UseEquiangularMap::type use_equiangular_map,
+             typename AspectRatio::type aspect_ratio,
+             typename UseLogarithmicMap::type use_logarithmic_map,
+             typename WhichWedges::type which_wedges,
+             typename RadialBlockLayers::type number_of_layers) noexcept
     // clang-tidy: trivially copyable
     : inner_radius_(std::move(inner_radius)),                // NOLINT
       outer_radius_(std::move(outer_radius)),                // NOLINT
@@ -50,23 +46,20 @@ Shell<TargetFrame>::Shell(
       which_wedges_(std::move(which_wedges)),                // NOLINT
       number_of_layers_(std::move(number_of_layers)) {}      // NOLINT
 
-template <typename TargetFrame>
-Domain<3, TargetFrame> Shell<TargetFrame>::create_domain() const noexcept {
+Domain<3> Shell::create_domain() const noexcept {
   std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
-      coord_maps = wedge_coordinate_maps<TargetFrame>(
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+      coord_maps = wedge_coordinate_maps<Frame::Inertial>(
           inner_radius_, outer_radius_, 1.0, 1.0, use_equiangular_map_, 0.0,
           false, aspect_ratio_, use_logarithmic_map_, which_wedges_,
           number_of_layers_);
-  return Domain<3, TargetFrame>{
+  return Domain<3>{
       std::move(coord_maps),
       corners_for_radially_layered_domains(
           number_of_layers_, false, {{1, 2, 3, 4, 5, 6, 7, 8}}, which_wedges_)};
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 3>> Shell<TargetFrame>::initial_extents() const
-    noexcept {
+std::vector<std::array<size_t, 3>> Shell::initial_extents() const noexcept {
   std::vector<std::array<size_t, 3>>::size_type num_wedges =
       6 * number_of_layers_;
   if (UNLIKELY(which_wedges_ == ShellWedges::FourOnEquator)) {
@@ -79,9 +72,9 @@ std::vector<std::array<size_t, 3>> Shell<TargetFrame>::initial_extents() const
       {{initial_number_of_grid_points_[1], initial_number_of_grid_points_[1],
         initial_number_of_grid_points_[0]}}};
 }
-template <typename TargetFrame>
-std::vector<std::array<size_t, 3>>
-Shell<TargetFrame>::initial_refinement_levels() const noexcept {
+
+std::vector<std::array<size_t, 3>> Shell::initial_refinement_levels() const
+    noexcept {
   std::vector<std::array<size_t, 3>>::size_type num_wedges =
       6 * number_of_layers_;
   if (UNLIKELY(which_wedges_ == ShellWedges::FourOnEquator)) {
@@ -91,8 +84,5 @@ Shell<TargetFrame>::initial_refinement_levels() const noexcept {
   }
   return {num_wedges, make_array<3>(initial_refinement_)};
 }
-
-template class Shell<Frame::Grid>;
-template class Shell<Frame::Inertial>;
 }  // namespace creators
 }  // namespace domain

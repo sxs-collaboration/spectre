@@ -189,7 +189,7 @@ namespace Actions {
 ///
 /// Uses:
 /// - DataBox:
-///   - `::Tags::Domain<3, Frame>`
+///   - `::Tags::Domain<3>`
 ///   - `::Tags::Variables<typename
 ///                   InterpolationTargetTag::vars_to_interpolate_to_target>`
 ///

@@ -28,7 +28,7 @@
 namespace domain {
 namespace {
 void test_rotated_bricks_construction(
-    const creators::RotatedBricks<Frame::Inertial>& rotated_bricks,
+    const creators::RotatedBricks& rotated_bricks,
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& midpoint,
     const std::array<double, 3>& upper_bound,
@@ -133,7 +133,7 @@ void test_rotated_bricks() {
   const OrientationMap<3> rotation_F_then_U{std::array<Direction<3>, 3>{
       {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
        Direction<3>::lower_eta()}}};
-  const creators::RotatedBricks<Frame::Inertial> rotated_bricks{
+  const creators::RotatedBricks rotated_bricks{
       lower_bound,
       midpoint,
       upper_bound,
@@ -190,7 +190,7 @@ void test_rotated_bricks() {
            Direction<3>::upper_zeta()}});
   test_physical_separation(rotated_bricks.create_domain().blocks());
 
-  const creators::RotatedBricks<Frame::Inertial> rotated_periodic_bricks{
+  const creators::RotatedBricks rotated_periodic_bricks{
       lower_bound,
       midpoint,
       upper_bound,
@@ -274,18 +274,16 @@ void test_rotated_bricks_factory() {
   const OrientationMap<3> rotation_F_then_U{std::array<Direction<3>, 3>{
       {Direction<3>::lower_zeta(), Direction<3>::upper_xi(),
        Direction<3>::lower_eta()}}};
-  const auto domain_creator =
-      test_factory_creation<DomainCreator<3, Frame::Inertial>>(
-          "  RotatedBricks:\n"
-          "    LowerBound: [0.1, -0.4, -0.2]\n"
-          "    Midpoint:   [2.6, 3.2, 1.7]\n"
-          "    UpperBound: [5.1, 6.2, 3.2]\n"
-          "    IsPeriodicIn: [false, false, false]\n"
-          "    InitialGridPoints: [[3,2],[1,4],[5,6]]\n"
-          "    InitialRefinement: [2,1,0]\n");
+  const auto domain_creator = test_factory_creation<DomainCreator<3>>(
+      "  RotatedBricks:\n"
+      "    LowerBound: [0.1, -0.4, -0.2]\n"
+      "    Midpoint:   [2.6, 3.2, 1.7]\n"
+      "    UpperBound: [5.1, 6.2, 3.2]\n"
+      "    IsPeriodicIn: [false, false, false]\n"
+      "    InitialGridPoints: [[3,2],[1,4],[5,6]]\n"
+      "    InitialRefinement: [2,1,0]\n");
   const auto* rotated_bricks_creator =
-      dynamic_cast<const creators::RotatedBricks<Frame::Inertial>*>(
-          domain_creator.get());
+      dynamic_cast<const creators::RotatedBricks*>(domain_creator.get());
   test_rotated_bricks_construction(
       *rotated_bricks_creator, {{0.1, -0.4, -0.2}}, {{2.6, 3.2, 1.7}},
       {{5.1, 6.2, 3.2}},

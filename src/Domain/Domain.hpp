@@ -34,10 +34,10 @@ class CoordinateMapBase;
  *  \brief A wrapper around a vector of Blocks that represent the computational
  * domain.
  */
-template <size_t VolumeDim, typename TargetFrame>
+template <size_t VolumeDim>
 class Domain {
  public:
-  explicit Domain(std::vector<Block<VolumeDim, TargetFrame>> blocks) noexcept;
+  explicit Domain(std::vector<Block<VolumeDim>> blocks) noexcept;
 
   /*!
    * Create a Domain using a corner numbering scheme to encode the Orientations,
@@ -56,8 +56,8 @@ class Domain {
    * \requires `maps.size() == corners_of_all_blocks.size()`, and
    * `identifications.size()` is even.
    */
-  Domain(std::vector<std::unique_ptr<
-             domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
+  Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
+             Frame::Logical, Frame::Inertial, VolumeDim>>>
              maps,
          const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
              corners_of_all_blocks,
@@ -67,12 +67,10 @@ class Domain {
   ~Domain() = default;
   Domain(const Domain&) = delete;
   Domain(Domain&&) = default;
-  Domain<VolumeDim, TargetFrame>& operator=(
-      const Domain<VolumeDim, TargetFrame>&) = delete;
-  Domain<VolumeDim, TargetFrame>& operator=(Domain<VolumeDim, TargetFrame>&&) =
-      default;
+  Domain<VolumeDim>& operator=(const Domain<VolumeDim>&) = delete;
+  Domain<VolumeDim>& operator=(Domain<VolumeDim>&&) = default;
 
-  const std::vector<Block<VolumeDim, TargetFrame>>& blocks() const noexcept {
+  const std::vector<Block<VolumeDim>>& blocks() const noexcept {
     return blocks_;
   }
 
@@ -80,17 +78,16 @@ class Domain {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
-  std::vector<Block<VolumeDim, TargetFrame>> blocks_{};
+  std::vector<Block<VolumeDim>> blocks_{};
 };
 
-template <size_t VolumeDim, typename TargetFrame>
-bool operator==(const Domain<VolumeDim, TargetFrame>& lhs,
-                const Domain<VolumeDim, TargetFrame>& rhs) noexcept;
+template <size_t VolumeDim>
+bool operator==(const Domain<VolumeDim>& lhs,
+                const Domain<VolumeDim>& rhs) noexcept;
 
-template <size_t VolumeDim, typename TargetFrame>
-bool operator!=(const Domain<VolumeDim, TargetFrame>& lhs,
-                const Domain<VolumeDim, TargetFrame>& rhs) noexcept;
+template <size_t VolumeDim>
+bool operator!=(const Domain<VolumeDim>& lhs,
+                const Domain<VolumeDim>& rhs) noexcept;
 
-template <size_t VolumeDim, typename TargetFrame>
-std::ostream& operator<<(std::ostream& os,
-                         const Domain<VolumeDim, TargetFrame>& d) noexcept;
+template <size_t VolumeDim>
+std::ostream& operator<<(std::ostream& os, const Domain<VolumeDim>& d) noexcept;
