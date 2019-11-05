@@ -5,6 +5,7 @@ set(LIBRARY CurvedScalarWave)
 
 set(LIBRARY_SOURCES
   Characteristics.cpp
+  Constraints.cpp
   Equations.cpp
   )
 

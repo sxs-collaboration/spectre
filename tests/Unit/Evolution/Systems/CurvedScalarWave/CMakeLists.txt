@@ -4,6 +4,7 @@
 set(LIBRARY "Test_CurvedScalarWave")
 
 set(LIBRARY_SOURCES
+  Test_Constraints.cpp
   TestHelpers.cpp
   Test_Characteristics.cpp
   Test_DuDt.cpp
