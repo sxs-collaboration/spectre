@@ -240,6 +240,24 @@ function (spectre_python_add_dependencies LIBRARY_NAME)
     )
 endfunction()
 
+add_custom_target(python-executables)
+
+# Register a Python file as an executable. It will be symlinked to bin/.
+# - EXECUTABLE_NAME   The name of the executable in bin/
+#
+# - EXECUTABLE_PATH   Path to the Python file within the Python package,
+#                     e.g. "Visualization/GenerateXdmf.py"
+#                     Note this is the path within the Python package that was
+#                     configured by calling `spectre_python_add_module`, _not_
+#                     the path to the Python file in `src/`.
+function (spectre_python_add_executable EXECUTABLE_NAME EXECUTABLE_PATH)
+  add_custom_target(${EXECUTABLE_NAME} ALL
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+    "${SPECTRE_PYTHON_PREFIX}/${EXECUTABLE_PATH}"
+    "${CMAKE_BINARY_DIR}/bin/${EXECUTABLE_NAME}")
+  add_dependencies(python-executables ${EXECUTABLE_NAME})
+endfunction()
+
 # Register a python test file with ctest.
 # - TEST_NAME    The name of the test,
 #                e.g. "Unit.DataStructures.Python.DataVector"
