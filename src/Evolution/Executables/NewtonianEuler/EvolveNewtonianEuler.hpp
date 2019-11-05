@@ -53,6 +53,7 @@
 #include "ParallelAlgorithms/EventsAndTriggers/Tags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/AddComputeTags.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/IsentropicVortex.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/RiemannProblem.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
@@ -82,10 +83,14 @@ class CProxy_ConstGlobalCache;
 }  // namespace Parallel
 /// \endcond
 
-template <size_t Dim>
+template <size_t Dim, typename InitialData>
 struct EvolutionMetavars {
   static constexpr size_t volume_dim = Dim;
-  using initial_data = NewtonianEuler::Solutions::RiemannProblem<Dim>;
+  using initial_data = InitialData;
+  static_assert(
+      evolution::is_analytic_data_v<initial_data> xor
+          evolution::is_analytic_solution_v<initial_data>,
+      "initial_data must be either an analytic_data or an analytic_solution");
 
   using equation_of_state_type = typename initial_data::equation_of_state_type;
 
@@ -97,7 +102,10 @@ struct EvolutionMetavars {
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
 
-  using initial_data_tag = Tags::AnalyticSolution<initial_data>;
+  using initial_data_tag =
+      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+                          Tags::AnalyticSolution<initial_data>,
+                          Tags::AnalyticData<initial_data>>;
 
   using boundary_condition_tag = initial_data_tag;
   using analytic_variables_tags =
@@ -119,16 +127,19 @@ struct EvolutionMetavars {
                                                             Frame::Inertial>,
                       NewtonianEuler::Tags::EnergyDensity<DataVector>>>>;
 
-  using events = tmpl::list<
-      dg::Events::Registrars::ObserveErrorNorms<Tags::Time,
-                                                analytic_variables_tags>,
+  using events = tmpl::flatten<tmpl::list<
+      tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+                          dg::Events::Registrars::ObserveErrorNorms<
+                              Tags::Time, analytic_variables_tags>,
+                          tmpl::list<>>,
       dg::Events::Registrars::ObserveFields<
           Dim, Tags::Time,
           tmpl::append<
               db::get_variables_tags_list<typename system::variables_tag>,
               db::get_variables_tags_list<
                   typename system::primitive_variables_tag>>,
-          analytic_variables_tags>>;
+          tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
+                              analytic_variables_tags, tmpl::list<>>>>>;
   using triggers = Triggers::time_triggers;
 
   using step_choosers =
@@ -148,7 +159,10 @@ struct EvolutionMetavars {
       tmpl::conditional_t<has_source_terms, Actions::ComputeVolumeSources,
                           tmpl::list<>>,
       Actions::ComputeTimeDerivative,
-      dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
+      tmpl::conditional_t<
+          evolution::is_analytic_solution_v<initial_data>,
+          dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
+          tmpl::list<>>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           dg::Actions::ApplyFluxes>,
