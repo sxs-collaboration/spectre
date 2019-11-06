@@ -87,6 +87,8 @@ struct ConstraintDampingParameter : db::SimpleTag {
   static std::string name() noexcept { return "ConstraintDampingParameter"; }
   using type = double;
   using option_tags = tmpl::list<OptionTags::DampingParameter>;
+
+  template <typename Metavariables>
   static double create_from_options(
       const double constraint_damping_parameter) noexcept {
     return constraint_damping_parameter;

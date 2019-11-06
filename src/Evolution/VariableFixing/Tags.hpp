@@ -42,6 +42,8 @@ struct VariableFixer : db::SimpleTag {
   using type = VariableFixerType;
   using option_tags =
       tmpl::list<::OptionTags::VariableFixer<VariableFixerType>>;
+
+  template <typename Metavariables>
   static VariableFixerType create_from_options(
       const VariableFixerType& variable_fixer) noexcept {
     return variable_fixer;

@@ -111,6 +111,8 @@ struct ApparentHorizon : db::SimpleTag {
   using type = OptionHolders::ApparentHorizon<Frame>;
   using option_tags =
       tmpl::list<OptionTags::ApparentHorizon<InterpolationTargetTag, Frame>>;
+
+  template <typename Metavariables>
   static type create_from_options(const type& option) noexcept {
     return option;
   }

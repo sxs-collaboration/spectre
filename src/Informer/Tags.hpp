@@ -28,6 +28,8 @@ struct Verbosity : db::SimpleTag {
   static std::string name() noexcept { return "Verbosity"; }
   using type = ::Verbosity;
   using option_tags = tmpl::list<OptionTags::Verbosity>;
+
+  template <typename Metavariables>
   static ::Verbosity create_from_options(
       const ::Verbosity& verbosity) noexcept {
     return verbosity;

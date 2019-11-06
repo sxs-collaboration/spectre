@@ -58,6 +58,7 @@ struct Domain : db::SimpleTag {
   using type = ::Domain<VolumeDim, Frame>;
   using option_tags = tmpl::list<::OptionTags::DomainCreator<VolumeDim, Frame>>;
 
+  template <typename Metavariables>
   static ::Domain<VolumeDim, Frame> create_from_options(
       const std::unique_ptr<::DomainCreator<VolumeDim, Frame>>&
           domain_creator) noexcept {
@@ -76,6 +77,7 @@ struct InitialExtents : db::SimpleTag {
   using option_tags =
       tmpl::list<::OptionTags::DomainCreator<Dim, Frame::Inertial>>;
 
+  template <typename Metavariables>
   static std::vector<std::array<size_t, Dim>> create_from_options(
       const std::unique_ptr<::DomainCreator<Dim, Frame::Inertial>>&
           domain_creator) noexcept {
@@ -94,6 +96,7 @@ struct InitialRefinementLevels : db::SimpleTag {
   using option_tags =
       tmpl::list<::OptionTags::DomainCreator<Dim, Frame::Inertial>>;
 
+  template <typename Metavariables>
   static std::vector<std::array<size_t, Dim>> create_from_options(
       const std::unique_ptr<::DomainCreator<Dim, Frame::Inertial>>&
           domain_creator) noexcept {

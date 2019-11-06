@@ -103,6 +103,8 @@ struct SourceTerm : SourceTermBase, db::SimpleTag {
                           ::OptionTags::AnalyticSolution<InitialDataType>,
                           ::OptionTags::AnalyticData<InitialDataType>>>;
   static std::string name() noexcept { return "SourceTerm"; }
+
+  template <typename Metavariables>
   static type create_from_options(
       const InitialDataType& initial_data) noexcept {
     return initial_data.source_term();
