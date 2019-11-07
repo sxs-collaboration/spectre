@@ -39,10 +39,46 @@ namespace Frame {
 /// evaluate an analytic solution in that frame.
 struct FrameIsPhysical {};
 
+/// \ingroup TensorGroup
+/// \ingroup ComputationalDomainGroup
+/// \brief The frame of the logical coordinates of the blocks of the domain.
 struct BlockLogical {};
+
+/// \ingroup TensorGroup
+/// \ingroup ComputationalDomainGroup
+/// \brief The frame of the logical coordinates of the elements of the domain.
 struct ElementLogical {};
+
+/// \ingroup TensorGroup
+/// \ingroup ComputationalDomainGroup
+/// \brief The frame after all time-independent coordinate maps are applied to
+/// the element logical frame.
+///
+/// The coordinates cover the entire computational domain, which means they can
+/// be used for mapping logical coordinates between blocks. The frame is mostly
+/// used for caching Jacobians and coordinates to avoid recomputing maps.
 struct GlobalTimeIndependent {};
+
+/*!
+ * \ingroup TensorGroup
+ * \ingroup ComputationalDomainGroup
+ * \brief The frame in which the partial differential equations of the system
+ * are written.
+ *
+ * For example, in an evolution problem it is the frame corresponding to the
+ * spatial indices in the general equation:
+ *
+ * \f{align*}{
+ * \partial_t u_\alpha + \partial_i F^i_\alpha(u_\alpha) +
+ *  B^i_{\alpha\beta}(u_\alpha) \partial_i u_\beta = S_\alpha(u_\alpha)
+ * \f}
+ *
+ * where \f$u_\alpha\f$ denotes the evolved variables, \f$F^i_\alpha\f$ the
+ * fluxes, \f$B^i_{\alpha\beta}\f$ the nonconservative products, and
+ * \f$S_\alpha\f$ the source terms.
+ */
 struct System : FrameIsPhysical {};
+
 struct Distorted {};
 /// Represents an index that is not in a known frame, e.g. some internal
 /// intermediate frame that is irrelevant to the interface.
