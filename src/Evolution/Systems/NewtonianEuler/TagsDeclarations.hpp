@@ -35,7 +35,7 @@ struct SoundSpeedSquared;
 template <typename DataType>
 struct SoundSpeedSquaredCompute;
 struct SourceTermBase;
-template <typename SourceTermType>
+template <typename InitialDataType>
 struct SourceTerm;
 }  // namespace Tags
 }  // namespace NewtonianEuler
