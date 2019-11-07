@@ -18,26 +18,35 @@ set(LIBS_TO_LINK
   Utilities
   )
 
-add_spectre_parallel_executable(
-  EvolveNewtonianEuler1D
-  EvolveNewtonianEuler
-  Evolution/Executables/NewtonianEuler
-  EvolutionMetavars<1>
-  "${LIBS_TO_LINK}"
-  )
+function(add_newtonian_euler_executable EXECUTABLE_NAME DIM INITIAL_DATA)
+  add_spectre_parallel_executable(
+    "Evolve${EXECUTABLE_NAME}${DIM}D"
+    EvolveNewtonianEuler
+    Evolution/Executables/NewtonianEuler
+    "EvolutionMetavars<${DIM},${INITIAL_DATA}>"
+    "${LIBS_TO_LINK}"
+    )
+endfunction(add_newtonian_euler_executable)
 
-add_spectre_parallel_executable(
-  EvolveNewtonianEuler2D
-  EvolveNewtonianEuler
-  Evolution/Executables/NewtonianEuler
-  EvolutionMetavars<2>
-  "${LIBS_TO_LINK}"
-  )
+function(add_riemann_problem_executable DIM)
+  add_newtonian_euler_executable(
+    RiemannProblem
+    ${DIM}
+    NewtonianEuler::Solutions::RiemannProblem<${DIM}>
+    )
+endfunction(add_riemann_problem_executable)
 
-add_spectre_parallel_executable(
-  EvolveNewtonianEuler3D
-  EvolveNewtonianEuler
-  Evolution/Executables/NewtonianEuler
-  EvolutionMetavars<3>
-  "${LIBS_TO_LINK}"
-  )
+add_riemann_problem_executable(1)
+add_riemann_problem_executable(2)
+add_riemann_problem_executable(3)
+
+function(add_isentropic_vortex_executable DIM)
+  add_newtonian_euler_executable(
+    IsentropicVortex
+    ${DIM}
+    NewtonianEuler::Solutions::IsentropicVortex<${DIM}>
+    )
+endfunction(add_isentropic_vortex_executable)
+
+add_isentropic_vortex_executable(2)
+add_isentropic_vortex_executable(3)
