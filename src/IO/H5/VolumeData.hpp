@@ -6,11 +6,13 @@
 #include <cstddef>
 #include <cstdint>
 #include <hdf5.h>
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <unordered_map>
 #include <vector>
 
+#include "ErrorHandling/Error.hpp"
 #include "IO/H5/Object.hpp"
 #include "IO/H5/OpenGroup.hpp"
 
@@ -104,6 +106,17 @@ class VolumeData : public h5::Object {
   /// Get the observation value at the the integral observation id in the
   /// subfile
   double get_observation_value(size_t observation_id) const noexcept;
+
+  /// Find the observation ID that matches the `observation_value`
+  size_t find_observation_id(const double observation_value) const noexcept {
+    for (auto& observation_id : list_observation_ids()) {
+      if (get_observation_value(observation_id) == observation_value) {
+        return observation_id;
+      }
+    }
+    ERROR("No observation with value " << observation_value
+                                       << " found in volume file.");
+  }
 
   /// List all the tensor components at observation id `observation_id`
   std::vector<std::string> list_tensor_components(size_t observation_id) const
