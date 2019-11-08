@@ -5,10 +5,13 @@
 
 #include <array>
 #include <cstddef>
+#include <limits>
+#include <pup.h>
 #include <vector>
 
 #include "ControlSystem/FunctionOfTime.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "Parallel/CharmPupable.hpp"
 
 /// \ingroup ControlSystemGroup
 /// Contains functions of time to support the dual frame system.
@@ -18,6 +21,7 @@ namespace FunctionsOfTime {
 template <size_t MaxDeriv>
 class PiecewisePolynomial : public FunctionOfTime {
  public:
+  PiecewisePolynomial() = default;
   PiecewisePolynomial(
       double t,
       std::array<DataVector, MaxDeriv + 1> initial_func_and_derivs) noexcept;
@@ -27,6 +31,11 @@ class PiecewisePolynomial : public FunctionOfTime {
   PiecewisePolynomial& operator=(PiecewisePolynomial&&) noexcept = default;
   PiecewisePolynomial(const PiecewisePolynomial&) = delete;
   PiecewisePolynomial& operator=(const PiecewisePolynomial&) = delete;
+
+  explicit PiecewisePolynomial(CkMigrateMessage* /*unused*/) {}
+
+  // NOLINTNEXTLINE(google-runtime-references)
+  WRAPPED_PUPable_decl_template(PiecewisePolynomial<MaxDeriv>);
 
   /// Returns the function at an arbitrary time `t`.
   std::array<DataVector, 1> func(double t) const noexcept override {
@@ -52,6 +61,9 @@ class PiecewisePolynomial : public FunctionOfTime {
              deriv_info_at_update_times_.back().time}};
   }
 
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override;
+
  private:
   /// Returns the function and `MaxDerivReturned` derivatives at
   /// an arbitrary time `t`.
@@ -67,13 +79,18 @@ class PiecewisePolynomial : public FunctionOfTime {
   // Holds information at single time at which the `MaxDeriv`th
   // derivative has been updated.
   struct DerivInfo {
-    double time;
+    double time{std::numeric_limits<double>::signaling_NaN()};
     value_type derivs_coefs;
+
+    DerivInfo() noexcept = default;
 
     // Constructor is needed for use of emplace_back of a vector
     // (additionally, the constructor converts the supplied derivs to
     // coefficients for simplified polynomial evaluation.)
     DerivInfo(double t, value_type deriv) noexcept;
+
+    // NOLINTNEXTLINE(google-runtime-references)
+    void pup(PUP::er& p) noexcept;
   };
 
   /// Returns a DerivInfo corresponding to the closest element in the range of
@@ -85,4 +102,9 @@ class PiecewisePolynomial : public FunctionOfTime {
 
   std::vector<DerivInfo> deriv_info_at_update_times_;
 };
+
+/// \cond
+template <size_t MaxDeriv>
+PUP::able::PUP_ID PiecewisePolynomial<MaxDeriv>::my_PUP_ID = 0;  // NOLINT
+/// \endcond
 }  // namespace FunctionsOfTime

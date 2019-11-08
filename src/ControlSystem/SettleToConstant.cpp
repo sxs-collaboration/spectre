@@ -5,14 +5,15 @@
 
 #include <cmath>
 
+#include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
-FunctionsOfTime::SettleToConstant::SettleToConstant(
+namespace FunctionsOfTime {
+SettleToConstant::SettleToConstant(
     const std::array<DataVector, 3>& initial_func_and_derivs,
     const double match_time, const double decay_time) noexcept
-    : match_time_(match_time),
-      inv_decay_time_(1.0 / decay_time) {
+    : match_time_(match_time), inv_decay_time_(1.0 / decay_time) {
   // F = f(t0)
   // the constants are then computed from F and its derivs:
   // C = -dtF-dt2F*decay_time;
@@ -25,9 +26,8 @@ FunctionsOfTime::SettleToConstant::SettleToConstant(
 }
 
 template <size_t MaxDerivReturned>
-std::array<DataVector, MaxDerivReturned + 1>
-FunctionsOfTime::SettleToConstant::func_and_derivs(const double t) const
-    noexcept {
+std::array<DataVector, MaxDerivReturned + 1> SettleToConstant::func_and_derivs(
+    const double t) const noexcept {
   static_assert(MaxDerivReturned < 3, "The maximum available derivative is 2.");
 
   // initialize result for the number of derivs requested
@@ -51,14 +51,27 @@ FunctionsOfTime::SettleToConstant::func_and_derivs(const double t) const
   return result;
 }
 
+void SettleToConstant::pup(PUP::er& p) {
+  FunctionOfTime::pup(p);
+  p | coef_a_;
+  p | coef_b_;
+  p | coef_c_;
+  p | match_time_;
+  p | inv_decay_time_;
+}
+
 /// \cond
-template std::array<DataVector, 1>
-FunctionsOfTime::SettleToConstant::func_and_derivs<0>(const double) const
-    noexcept;
-template std::array<DataVector, 2>
-FunctionsOfTime::SettleToConstant::func_and_derivs<1>(const double) const
-    noexcept;
-template std::array<DataVector, 3>
-FunctionsOfTime::SettleToConstant::func_and_derivs<2>(const double) const
-    noexcept;
+PUP::able::PUP_ID SettleToConstant::my_PUP_ID = 0;  // NOLINT
+
+#define DERIV(data) BOOST_PP_TUPLE_ELEM(0, data)
+
+#define INSTANTIATE(_, data)                       \
+  template std::array<DataVector, DERIV(data) + 1> \
+  SettleToConstant::func_and_derivs<DERIV(data)>(const double) const noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2))
+
+#undef DERIV
+#undef INSTANTIATE
 /// \endcond
+}  // namespace FunctionsOfTime

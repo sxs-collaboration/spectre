@@ -6,9 +6,11 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <pup.h>
 
 #include "ControlSystem/FunctionOfTime.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Parallel/CharmPupable.hpp"
 
 namespace FunctionsOfTime {
 /// \ingroup ControlSystemGroup
@@ -20,9 +22,9 @@ namespace FunctionsOfTime {
 /// of \f$\tau\f$. The resultant
 /// function is \f[ g(t) = A + (B+C(t-t_0)) e^{-(t-t_0)/\tau} \f]
 /// where \f$\tau\f$=`decay_time` and \f$t_0\f$=`match_time`.
-
 class SettleToConstant : public FunctionOfTime {
  public:
+  SettleToConstant() = default;
   SettleToConstant(const std::array<DataVector, 3>& initial_func_and_derivs,
                    double match_time, double decay_time) noexcept;
 
@@ -32,17 +34,23 @@ class SettleToConstant : public FunctionOfTime {
   SettleToConstant(const SettleToConstant&) = delete;
   SettleToConstant& operator=(const SettleToConstant&) = delete;
 
+  // NOLINTNEXTLINE(google-runtime-references)
+  WRAPPED_PUPable_decl_template(SettleToConstant);
+
+  explicit SettleToConstant(CkMigrateMessage* /*unused*/) {}
+
   /// Returns the function at an arbitrary time `t`.
-  std::array<DataVector, 1> func(double t) const noexcept override {
+  std::array<DataVector, 1> func(const double t) const noexcept override {
     return func_and_derivs<0>(t);
   }
   /// Returns the function and its first derivative at an arbitrary time `t`.
-  std::array<DataVector, 2> func_and_deriv(double t) const noexcept override {
+  std::array<DataVector, 2> func_and_deriv(const double t) const
+      noexcept override {
     return func_and_derivs<1>(t);
   }
   /// Returns the function and the first two derivatives at an arbitrary time
   /// `t`.
-  std::array<DataVector, 3> func_and_2_derivs(double t) const
+  std::array<DataVector, 3> func_and_2_derivs(const double t) const
       noexcept override {
     return func_and_derivs<2>(t);
   }
@@ -52,13 +60,16 @@ class SettleToConstant : public FunctionOfTime {
     return {{match_time_, std::numeric_limits<double>::max()}};
   }
 
+  // NOLINTNEXTLINE(google-runtime-references)
+  void pup(PUP::er& p) override;
+
  private:
   template <size_t MaxDerivReturned = 2>
   std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(double t) const
       noexcept;
 
   DataVector coef_a_, coef_b_, coef_c_;
-  double match_time_;
-  double inv_decay_time_;
+  double match_time_{std::numeric_limits<double>::signaling_NaN()};
+  double inv_decay_time_{std::numeric_limits<double>::signaling_NaN()};
 };
 }  // namespace FunctionsOfTime

@@ -16,16 +16,16 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 
+namespace FunctionsOfTime {
 template <size_t MaxDeriv>
-FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
+PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
     const double t, value_type initial_func_and_derivs) noexcept
     : deriv_info_at_update_times_{{t, std::move(initial_func_and_derivs)}} {}
 
 template <size_t MaxDeriv>
 template <size_t MaxDerivReturned>
 std::array<DataVector, MaxDerivReturned + 1>
-FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::func_and_derivs(
-    const double t) const noexcept {
+PiecewisePolynomial<MaxDeriv>::func_and_derivs(const double t) const noexcept {
   const auto& deriv_info_at_t = deriv_info_from_upper_bound(t);
   const double dt = t - deriv_info_at_t.time;
   const value_type& coefs = deriv_info_at_t.derivs_coefs;
@@ -54,7 +54,7 @@ FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::func_and_derivs(
 }
 
 template <size_t MaxDeriv>
-void FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::update(
+void PiecewisePolynomial<MaxDeriv>::update(
     const double time_of_update, DataVector updated_max_deriv) noexcept {
   if (time_of_update <= deriv_info_at_update_times_.back().time) {
     ERROR("t must be increasing from call to call. "
@@ -78,8 +78,8 @@ void FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::update(
 }
 
 template <size_t MaxDeriv>
-FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::DerivInfo::DerivInfo(
-    const double t, value_type deriv) noexcept
+PiecewisePolynomial<MaxDeriv>::DerivInfo::DerivInfo(const double t,
+                                                    value_type deriv) noexcept
     : time(t), derivs_coefs(std::move(deriv)) {
   // convert derivs to coefficients for polynomial evaluation.
   // the coefficient of x^N is the Nth deriv rescaled by 1/factorial(N)
@@ -91,9 +91,15 @@ FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::DerivInfo::DerivInfo(
 }
 
 template <size_t MaxDeriv>
-const typename FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::DerivInfo&
-FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::deriv_info_from_upper_bound(
-    const double t) const noexcept {
+void PiecewisePolynomial<MaxDeriv>::DerivInfo::pup(PUP::er& p) noexcept {
+  p | time;
+  p | derivs_coefs;
+}
+
+template <size_t MaxDeriv>
+const typename PiecewisePolynomial<MaxDeriv>::DerivInfo&
+PiecewisePolynomial<MaxDeriv>::deriv_info_from_upper_bound(const double t) const
+    noexcept {
   // this function assumes that the times in deriv_info_at_update_times is
   // sorted, which is enforced by the update function.
 
@@ -119,20 +125,26 @@ FunctionsOfTime::PiecewisePolynomial<MaxDeriv>::deriv_info_from_upper_bound(
   return *std::prev(upper_bound_deriv_info, 1);
 }
 
+template <size_t MaxDeriv>
+void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
+  FunctionOfTime::pup(p);
+  p | deriv_info_at_update_times_;
+}
+
 // do explicit instantiation of MaxDeriv = {2,3,4}
 // along with all combinations of MaxDerivReturned = {0,...,MaxDeriv}
 /// \cond
-template class FunctionsOfTime::PiecewisePolynomial<2_st>;
-template class FunctionsOfTime::PiecewisePolynomial<3_st>;
-template class FunctionsOfTime::PiecewisePolynomial<4_st>;
+template class PiecewisePolynomial<2_st>;
+template class PiecewisePolynomial<3_st>;
+template class PiecewisePolynomial<4_st>;
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIMRETURNED(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                             \
-  template std::array<DataVector, DIMRETURNED(data) + 1> \
-  FunctionsOfTime::PiecewisePolynomial<DIM(              \
-      data)>::func_and_derivs<DIMRETURNED(data)>(const double) const noexcept;
+#define INSTANTIATE(_, data)                                          \
+  template std::array<DataVector, DIMRETURNED(data) + 1>              \
+  PiecewisePolynomial<DIM(data)>::func_and_derivs<DIMRETURNED(data)>( \
+      const double) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (2), (0, 1, 2))
 GENERATE_INSTANTIATIONS(INSTANTIATE, (3), (0, 1, 2, 3))
@@ -142,3 +154,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (4), (0, 1, 2, 3, 4))
 #undef DIMRETURNED
 #undef INSTANTIATE
 /// \endcond
+}  // namespace FunctionsOfTime
