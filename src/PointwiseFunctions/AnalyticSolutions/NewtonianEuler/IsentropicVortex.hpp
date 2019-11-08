@@ -89,6 +89,9 @@ namespace Solutions {
  */
 template <size_t Dim>
 class IsentropicVortex : public MarkAsAnalyticSolution {
+  static_assert(Dim == 2 or Dim == 3,
+                "IsentropicVortex solution works in 2 and 3 dimensions");
+
   template <typename DataType>
   struct IntermediateVariables;
 

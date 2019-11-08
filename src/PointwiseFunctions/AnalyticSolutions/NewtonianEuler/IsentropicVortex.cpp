@@ -8,7 +8,7 @@
 #include <limits>
 #include <pup.h>  // IWYU pragma: keep
 
-#include "DataStructures/DataVector.hpp"                   // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Evolution/Systems/NewtonianEuler/Sources/VortexPerturbation.hpp"
@@ -168,11 +168,11 @@ bool operator!=(const IsentropicVortex<Dim>& lhs,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(2, data)
 
-#define INSTANTIATE_CLASS(_, data)                                            \
-  template class IsentropicVortex<DIM(data)>;                                 \
-  template bool operator==(const IsentropicVortex<DIM(data)>&,                \
-                           const IsentropicVortex<DIM(data)>&) noexcept;      \
-  template bool operator!=(const IsentropicVortex<DIM(data)>&,                \
+#define INSTANTIATE_CLASS(_, data)                                       \
+  template class IsentropicVortex<DIM(data)>;                            \
+  template bool operator==(const IsentropicVortex<DIM(data)>&,           \
+                           const IsentropicVortex<DIM(data)>&) noexcept; \
+  template bool operator!=(const IsentropicVortex<DIM(data)>&,           \
                            const IsentropicVortex<DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (2, 3))
