@@ -10,7 +10,6 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/ScalarWave/System.hpp"
-#include "Evolution/Systems/ScalarWave/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"   // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"  // IWYU pragma: keep
@@ -62,6 +61,76 @@ void ComputeNormalDotFluxes<Dim>::apply(
 
   for (size_t i = 0; i < Dim; ++i) {
     phi_normal_dot_flux->get(i) = interface_unit_normal.get(i) * get(pi);
+  }
+}
+
+template <size_t Dim>
+void PenaltyFlux<Dim>::package_data(
+    const gsl::not_null<Variables<package_tags>*> packaged_data,
+    const Scalar<DataVector>& normal_dot_flux_pi,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_dot_flux_phi,
+    const Scalar<DataVector>& v_plus, const Scalar<DataVector>& v_minus,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
+    const noexcept {
+  // Computes the contribution to the numerical flux from one side of the
+  // interface.
+  //
+  // Note: when PenaltyFlux::operator() is called, an Element passes in its own
+  // packaged data to fill the interior fields, and its neighbor's packaged data
+  // to fill the exterior fields. This introduces a sign flip for each normal
+  // used in computing the exterior fields.
+  get<::Tags::NormalDotFlux<Pi>>(*packaged_data) = normal_dot_flux_pi;
+  get<::Tags::NormalDotFlux<Phi<Dim>>>(*packaged_data) = normal_dot_flux_phi;
+  get<Tags::VPlus>(*packaged_data) = v_plus;
+  get<Tags::VMinus>(*packaged_data) = v_minus;
+  auto& normal_times_v_plus = get<NormalTimesVPlus>(*packaged_data);
+  auto& normal_times_v_minus = get<NormalTimesVMinus>(*packaged_data);
+  for (size_t d = 0; d < Dim; ++d) {
+    normal_times_v_plus.get(d) = get(v_plus) * interface_unit_normal.get(d);
+    normal_times_v_minus.get(d) = get(v_minus) * interface_unit_normal.get(d);
+  }
+}
+
+template <size_t Dim>
+void PenaltyFlux<Dim>::operator()(
+    const gsl::not_null<Scalar<DataVector>*> pi_normal_dot_numerical_flux,
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+        phi_normal_dot_numerical_flux,
+    const gsl::not_null<Scalar<DataVector>*> psi_normal_dot_numerical_flux,
+    const Scalar<DataVector>& normal_dot_flux_pi_interior,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+        normal_dot_flux_phi_interior,
+    const Scalar<DataVector>& /* v_plus_interior */,
+    const Scalar<DataVector>& v_minus_interior,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+    /* normal_times_v_plus_interior */,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+        normal_times_v_minus_interior,
+    const Scalar<DataVector>& /* minus_normal_dot_flux_pi_exterior */,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+    /* minus_normal_dot_flux_phi_exterior */,
+    const Scalar<DataVector>& v_plus_exterior,
+    const Scalar<DataVector>& /* v_minus_exterior */,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+        minus_normal_times_v_plus_exterior,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+    /* minus_normal_times_v_minus_exterior */) const noexcept {
+  constexpr double penalty_factor = 1.;
+
+  // NormalDotNumericalFlux<Psi>
+  std::fill(psi_normal_dot_numerical_flux->get().begin(),
+            psi_normal_dot_numerical_flux->get().end(), 0.);
+  // NormalDotNumericalFlux<Pi>
+  get(*pi_normal_dot_numerical_flux) =
+      get(normal_dot_flux_pi_interior) +
+      0.5 * penalty_factor * (get(v_minus_interior) - get(v_plus_exterior));
+  // NormalDotNumericalFlux<Phi>
+  for (size_t d = 0; d < Dim; ++d) {
+    phi_normal_dot_numerical_flux->get(d) =
+        normal_dot_flux_phi_interior.get(d) -
+        0.5 * penalty_factor *
+            (normal_times_v_minus_interior.get(d) +
+             minus_normal_times_v_plus_exterior.get(d));
   }
 }
 
@@ -151,6 +220,7 @@ using derivative_frame = Frame::Inertial;
   template class ScalarWave::ComputeDuDt<DIM(data)>;                         \
   template class ScalarWave::ComputeNormalDotFluxes<DIM(data)>;              \
   template class ScalarWave::UpwindFlux<DIM(data)>;                          \
+  template class ScalarWave::PenaltyFlux<DIM(data)>;                         \
   template Variables<                                                        \
       db::wrap_tags_in<::Tags::deriv, derivative_tags<DIM(data)>,            \
                        tmpl::size_t<DIM(data)>, derivative_frame>>           \
