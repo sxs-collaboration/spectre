@@ -45,9 +45,52 @@ class History;
 
 namespace TimeSteppers {
 
-/// \ingroup TimeSteppersGroup
-///
-/// An Nth Adams-Bashforth time stepper.
+/*!
+ * \ingroup TimeSteppersGroup
+ *
+ * An Nth order Adams-Bashforth time stepper.
+ *
+ * The stable step size factors for different orders are given by:
+ *
+ * <table class="doxtable">
+ *  <tr>
+ *    <th> %Order </th>
+ *    <th> CFL Factor </th>
+ *  </tr>
+ *  <tr>
+ *    <td> 1 </td>
+ *    <td> 1 </td>
+ *  </tr>
+ *  <tr>
+ *    <td> 2 </td>
+ *    <td> 1 / 2 </td>
+ *  </tr>
+ *  <tr>
+ *    <td> 3 </td>
+ *    <td> 3 / 11 </td>
+ *  </tr>
+ *  <tr>
+ *    <td> 4 </td>
+ *    <td> 3 / 20 </td>
+ *  </tr>
+ *  <tr>
+ *    <td> 5 </td>
+ *    <td> 45 / 551 </td>
+ *  </tr>
+ *  <tr>
+ *    <td> 6 </td>
+ *    <td> 5 / 114 </td>
+ *  </tr>
+ *  <tr>
+ *    <td> 7 </td>
+ *    <td> 945 / 40663 </td>
+ *  </tr>
+ *  <tr>
+ *    <td> 8 </td>
+ *    <td> 945 / 77432 </td>
+ *  </tr>
+ * </table>
+ */
 class AdamsBashforthN : public LtsTimeStepper::Inherit {
  public:
   static constexpr const size_t maximum_order = 8;
