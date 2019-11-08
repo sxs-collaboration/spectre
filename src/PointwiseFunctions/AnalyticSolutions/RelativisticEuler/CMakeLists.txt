@@ -5,6 +5,7 @@ set(LIBRARY RelativisticEulerSolutions)
 
 set(LIBRARY_SOURCES
   FishboneMoncriefDisk.cpp
+  SmoothFlow.cpp
   TovStar.cpp
   )
 
