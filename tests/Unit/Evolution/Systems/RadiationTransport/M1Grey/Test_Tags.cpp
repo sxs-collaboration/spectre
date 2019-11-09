@@ -26,6 +26,7 @@ SPECTRE_TEST_CASE("Evolution.Systems.RadiationTransport.M1Grey.Tags",
             Frame::Inertial, neutrinos::ElectronNeutrinos<1> >::name() ==
         "TildeE_ElectronNeutrinos1");
   CHECK(RadiationTransport::M1Grey::Tags::TildeS<
-            Frame::Grid, neutrinos::ElectronAntiNeutrinos<2> >::name() ==
-        "Grid_TildeS_ElectronAntiNeutrinos2");
+            Frame::GlobalTimeIndependent,
+            neutrinos::ElectronAntiNeutrinos<2> >::name() ==
+        "GlobalTimeIndependent_TildeS_ElectronAntiNeutrinos2");
 }

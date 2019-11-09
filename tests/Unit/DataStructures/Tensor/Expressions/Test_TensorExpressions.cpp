@@ -16,13 +16,13 @@
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
                   "[DataStructures][Unit]") {
   Tensor<double, Symmetry<1, 1>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       All{};
   std::iota(All.begin(), All.end(), 0.0);
   Tensor<double, Symmetry<2, 1>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       Hll{}, HHll{};
   std::iota(Hll.begin(), Hll.end(), 0.0);
   std::iota(HHll.rbegin(), HHll.rend(), -Hll.size());
@@ -43,15 +43,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Expression.AddSubtract",
   }
   // Test 3 indices add subtract
   Tensor<double, Symmetry<1, 1, 2>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       Alll{};
   std::iota(Alll.begin(), Alll.end(), 0.0);
   Tensor<double, Symmetry<1, 2, 3>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       Hlll{}, HHlll{};
   std::iota(Hlll.begin(), Hlll.end(), 0.0);
   std::iota(HHlll.rbegin(), HHlll.rend(), -Hlll.size());

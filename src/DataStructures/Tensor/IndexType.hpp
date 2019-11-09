@@ -40,7 +40,7 @@ namespace Frame {
 struct FrameIsPhysical {};
 
 struct ElementLogical {};
-struct Grid {};
+struct GlobalTimeIndependent {};
 struct Inertial : FrameIsPhysical {};
 struct Distorted {};
 /// Represents an index that is not in a known frame, e.g. some internal
@@ -76,9 +76,9 @@ inline std::ostream& operator<<(
     std::ostream& os, const Frame::ElementLogical& /*meta*/) noexcept {
   return os << "ElementLogical";
 }
-inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::Grid& /*meta*/) noexcept {
-  return os << "Grid";
+inline std::ostream& operator<<(
+    std::ostream& os, const Frame::GlobalTimeIndependent& /*meta*/) noexcept {
+  return os << "GlobalTimeIndependent";
 }
 inline std::ostream& operator<<(std::ostream& os,
                                 const Frame::Inertial& /*meta*/) noexcept {
@@ -112,8 +112,8 @@ inline std::string prefix<Frame::ElementLogical>() noexcept {
 }
 
 template <>
-inline std::string prefix<Frame::Grid>() noexcept {
-  return "Grid_";
+inline std::string prefix<Frame::GlobalTimeIndependent>() noexcept {
+  return "GlobalTimeIndependent_";
 }
 
 template <>

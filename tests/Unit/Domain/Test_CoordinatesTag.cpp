@@ -17,7 +17,7 @@
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 
 namespace Frame {
-struct Grid;
+struct GlobalTimeIndependent;
 struct Inertial;
 struct ElementLogical;
 }  // namespace Frame
@@ -26,20 +26,20 @@ namespace domain {
 namespace {
 template <size_t Dim, typename T>
 void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) noexcept {
-  using map_tag = Tags::ElementMap<Dim, Frame::Grid>;
+  using map_tag = Tags::ElementMap<Dim, Frame::GlobalTimeIndependent>;
   const auto box = db::create<
       db::AddSimpleTags<Tags::Mesh<Dim>, map_tag>,
       db::AddComputeTags<
           Tags::LogicalCoordinates<Dim>,
           Tags::MappedCoordinates<map_tag, Tags::LogicalCoordinates<Dim>>>>(
-      mesh,
-      ElementMap<Dim, Frame::Grid>(
-          ElementId<Dim>(0),
-          make_coordinate_map_base<Frame::ElementLogical, Frame::Grid>(map)));
+      mesh, ElementMap<Dim, Frame::GlobalTimeIndependent>(
+                ElementId<Dim>(0),
+                make_coordinate_map_base<Frame::ElementLogical,
+                                         Frame::GlobalTimeIndependent>(map)));
   CHECK_ITERABLE_APPROX(
-      (db::get<Tags::Coordinates<Dim, Frame::Grid>>(box)),
-      (make_coordinate_map<Frame::ElementLogical, Frame::Grid>(map)(
-          db::get<Tags::Coordinates<Dim, Frame::ElementLogical>>(box))));
+      (db::get<Tags::Coordinates<Dim, Frame::GlobalTimeIndependent>>(box)),
+      (make_coordinate_map<Frame::ElementLogical, Frame::GlobalTimeIndependent>(
+          map)(db::get<Tags::Coordinates<Dim, Frame::ElementLogical>>(box))));
 
   /// [coordinates_name]
   CHECK(Tags::Coordinates<Dim, Frame::ElementLogical>::name() ==

@@ -10,7 +10,7 @@
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace Frame {
-struct Grid;
+struct GlobalTimeIndependent;
 struct Inertial;
 }  // namespace Frame
 

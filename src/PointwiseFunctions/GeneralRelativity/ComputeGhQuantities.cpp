@@ -934,7 +934,7 @@ tnsr::a<DataType, SpatialDim, Frame> spacetime_deriv_of_norm_of_shift(
           trace_christoffel_last_indices) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Inertial))
+                        (Frame::GlobalTimeIndependent, Frame::Inertial))
 
 #undef DIM
 #undef DTYPE

@@ -554,23 +554,32 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
       test_compute_extrinsic_curvature_and_deriv_metric, (1, 2, 3));
 
   const DataVector used_for_size(20);
-  test_lapse_deriv_functions<DataVector, 1, Frame::Grid>(used_for_size);
-  test_lapse_deriv_functions<DataVector, 2, Frame::Grid>(used_for_size);
-  test_lapse_deriv_functions<DataVector, 3, Frame::Grid>(used_for_size);
+  test_lapse_deriv_functions<DataVector, 1, Frame::GlobalTimeIndependent>(
+      used_for_size);
+  test_lapse_deriv_functions<DataVector, 2, Frame::GlobalTimeIndependent>(
+      used_for_size);
+  test_lapse_deriv_functions<DataVector, 3, Frame::GlobalTimeIndependent>(
+      used_for_size);
   test_lapse_deriv_functions<DataVector, 1, Frame::Inertial>(used_for_size);
   test_lapse_deriv_functions<DataVector, 2, Frame::Inertial>(used_for_size);
   test_lapse_deriv_functions<DataVector, 3, Frame::Inertial>(used_for_size);
 
-  test_gij_deriv_functions<DataVector, 1, Frame::Grid>(used_for_size);
-  test_gij_deriv_functions<DataVector, 2, Frame::Grid>(used_for_size);
-  test_gij_deriv_functions<DataVector, 3, Frame::Grid>(used_for_size);
+  test_gij_deriv_functions<DataVector, 1, Frame::GlobalTimeIndependent>(
+      used_for_size);
+  test_gij_deriv_functions<DataVector, 2, Frame::GlobalTimeIndependent>(
+      used_for_size);
+  test_gij_deriv_functions<DataVector, 3, Frame::GlobalTimeIndependent>(
+      used_for_size);
   test_gij_deriv_functions<DataVector, 1, Frame::Inertial>(used_for_size);
   test_gij_deriv_functions<DataVector, 2, Frame::Inertial>(used_for_size);
   test_gij_deriv_functions<DataVector, 3, Frame::Inertial>(used_for_size);
 
-  test_shift_deriv_functions<DataVector, 1, Frame::Grid>(used_for_size);
-  test_shift_deriv_functions<DataVector, 2, Frame::Grid>(used_for_size);
-  test_shift_deriv_functions<DataVector, 3, Frame::Grid>(used_for_size);
+  test_shift_deriv_functions<DataVector, 1, Frame::GlobalTimeIndependent>(
+      used_for_size);
+  test_shift_deriv_functions<DataVector, 2, Frame::GlobalTimeIndependent>(
+      used_for_size);
+  test_shift_deriv_functions<DataVector, 3, Frame::GlobalTimeIndependent>(
+      used_for_size);
   test_shift_deriv_functions<DataVector, 1, Frame::Inertial>(used_for_size);
   test_shift_deriv_functions<DataVector, 2, Frame::Inertial>(used_for_size);
   test_shift_deriv_functions<DataVector, 3, Frame::Inertial>(used_for_size);

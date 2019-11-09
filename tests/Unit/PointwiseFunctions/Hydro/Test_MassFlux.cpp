@@ -32,18 +32,18 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.MassFlux",
       "PointwiseFunctions/Hydro/");
   const DataVector dv(5);
   test_mass_flux<1, Frame::Inertial>(dv);
-  test_mass_flux<1, Frame::Grid>(dv);
+  test_mass_flux<1, Frame::GlobalTimeIndependent>(dv);
   test_mass_flux<2, Frame::Inertial>(dv);
-  test_mass_flux<2, Frame::Grid>(dv);
+  test_mass_flux<2, Frame::GlobalTimeIndependent>(dv);
   test_mass_flux<3, Frame::Inertial>(dv);
-  test_mass_flux<3, Frame::Grid>(dv);
+  test_mass_flux<3, Frame::GlobalTimeIndependent>(dv);
 
   test_mass_flux<1, Frame::Inertial>(0.0);
-  test_mass_flux<1, Frame::Grid>(0.0);
+  test_mass_flux<1, Frame::GlobalTimeIndependent>(0.0);
   test_mass_flux<2, Frame::Inertial>(0.0);
-  test_mass_flux<2, Frame::Grid>(0.0);
+  test_mass_flux<2, Frame::GlobalTimeIndependent>(0.0);
   test_mass_flux<3, Frame::Inertial>(0.0);
-  test_mass_flux<3, Frame::Grid>(0.0);
+  test_mass_flux<3, Frame::GlobalTimeIndependent>(0.0);
 
   // Check compute item works correctly in DataBox
   CHECK(Tags::MassFluxCompute<DataVector, 2, Frame::Inertial>::name() ==

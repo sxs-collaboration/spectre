@@ -41,7 +41,7 @@ namespace VariablesTestTags_detail {
 template <typename VectorType>
 struct tensor : db::SimpleTag {
   static std::string name() noexcept { return "tensor name"; }
-  using type = tnsr::I<VectorType, 3, Frame::Grid>;
+  using type = tnsr::I<VectorType, 3, Frame::GlobalTimeIndependent>;
 };
 /// [simple_variables_tag]
 template <typename VectorType>
@@ -151,8 +151,9 @@ void test_variables_construction_and_access() noexcept {
       make_with_random_values<value_type>(make_not_null(&gen),
                                           make_not_null(&dist));
 
-  tnsr::I<VectorType, 3, Frame::Grid> tensor_for_reference_assignment{
-      number_of_grid_points, value_for_reference_assignment};
+  tnsr::I<VectorType, 3, Frame::GlobalTimeIndependent>
+      tensor_for_reference_assignment{number_of_grid_points,
+                                      value_for_reference_assignment};
   tensor_in_filled_variables = tensor_for_reference_assignment;
 
   // clang-tidy: do not use pointer arithmetic
@@ -170,8 +171,9 @@ void test_variables_construction_and_access() noexcept {
   const auto value_for_tensor_constructor = make_with_random_values<value_type>(
       make_not_null(&gen), make_not_null(&dist));
 
-  tensor_in_filled_variables = tnsr::I<VectorType, 3, Frame::Grid>{
-      number_of_grid_points, value_for_tensor_constructor};
+  tensor_in_filled_variables =
+      tnsr::I<VectorType, 3, Frame::GlobalTimeIndependent>{
+          number_of_grid_points, value_for_tensor_constructor};
 
   // clang-tidy: do not use pointer arithmetic
   for (size_t i = 0; i < number_of_grid_points * 3; ++i) {
@@ -1095,7 +1097,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Variables", "[DataStructures][Unit]") {
       vars(1, -3.0);
   auto& tensor_in_vars =
       get<VariablesTestTags_detail::tensor<DataVector>>(vars);
-  tensor_in_vars = tnsr::I<DataVector, 3, Frame::Grid>{10_st, -4.0};
+  tensor_in_vars =
+      tnsr::I<DataVector, 3, Frame::GlobalTimeIndependent>{10_st, -4.0};
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }

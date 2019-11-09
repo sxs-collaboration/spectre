@@ -81,7 +81,7 @@ class Rotation<2> {
                          const Rotation<2>& rhs) noexcept;
 
   double rotation_angle_{std::numeric_limits<double>::signaling_NaN()};
-  tnsr::ij<double, 2, Frame::Grid> rotation_matrix_{
+  tnsr::ij<double, 2, Frame::GlobalTimeIndependent> rotation_matrix_{
       std::numeric_limits<double>::signaling_NaN()};
   bool is_identity_{false};
 };
@@ -159,7 +159,7 @@ class Rotation<3> {
       std::numeric_limits<double>::signaling_NaN()};
   double rotation_about_rotated_z_{
       std::numeric_limits<double>::signaling_NaN()};
-  tnsr::ij<double, 3, Frame::Grid> rotation_matrix_{
+  tnsr::ij<double, 3, Frame::GlobalTimeIndependent> rotation_matrix_{
       std::numeric_limits<double>::signaling_NaN()};
   bool is_identity_{false};
 };

@@ -97,12 +97,13 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.IndexManipulation",
                                     (UpLo::Lo, UpLo::Up),
                                     (IndexType::Spatial, IndexType::Spacetime));
 
-  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_trace_last_indices, (1, 2, 3),
-                                    (UpLo::Lo, UpLo::Up), (UpLo::Lo, UpLo::Up),
-                                    (Frame::Grid, Frame::Inertial),
-                                    (IndexType::Spatial, IndexType::Spacetime));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(
+      test_trace_last_indices, (1, 2, 3), (UpLo::Lo, UpLo::Up),
+      (UpLo::Lo, UpLo::Up), (Frame::GlobalTimeIndependent, Frame::Inertial),
+      (IndexType::Spatial, IndexType::Spacetime));
 
-  CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_trace, (1, 2, 3), (UpLo::Lo, UpLo::Up),
-                                    (Frame::Grid, Frame::Inertial),
-                                    (IndexType::Spatial, IndexType::Spacetime));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(
+      test_trace, (1, 2, 3), (UpLo::Lo, UpLo::Up),
+      (Frame::GlobalTimeIndependent, Frame::Inertial),
+      (IndexType::Spatial, IndexType::Spacetime));
 }

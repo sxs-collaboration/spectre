@@ -45,7 +45,9 @@ std::string append_word(const std::string& text, const double& value) {
   return text + ss.str();
 }
 
-auto get_tensor() { return tnsr::A<double, 3, Frame::Grid>{{{7.82, 8, 3, 9}}}; }
+auto get_tensor() {
+  return tnsr::A<double, 3, Frame::GlobalTimeIndependent>{{{7.82, 8, 3, 9}}};
+}
 }  // namespace
 
 namespace test_databox_tags {
@@ -761,16 +763,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Helpers",
   CHECK(tag_tensor.second[1] == 8.0);
   CHECK(tag_tensor.second[2] == 3.0);
   CHECK(tag_tensor.second[3] == 9.0);
-  //  auto grid_coords_norm = get_tensor_norm_from_box(
-  //      original_box, std::make_pair("GridCoordinates"s, TypeOfNorm::Max));
-  //  CHECK(grid_coords_norm == decltype(grid_coords_norm){std::make_pair(
-  //                                "x"s, std::make_pair(0.5, 3_st))});
 }
 
 // Test the tags
 namespace {
 
-auto get_vector() { return tnsr::I<DataVector, 3, Frame::Grid>(5_st, 2.0); }
+auto get_vector() {
+  return tnsr::I<DataVector, 3, Frame::GlobalTimeIndependent>(5_st, 2.0);
+}
 
 struct Var1 : db::ComputeTag {
   static std::string name() noexcept { return "Var1"; }
@@ -800,29 +800,29 @@ using scalar_only = tmpl::list<Var2>;
 static_assert(
     cpp17::is_same_v<
         tmpl::back<db::wrap_tags_in<PrefixTag0, scalar_only, tmpl::size_t<2>,
-                                    Frame::Grid>>::type,
-        tnsr::i<DataVector, 2, Frame::Grid>>,
+                                    Frame::GlobalTimeIndependent>>::type,
+        tnsr::i<DataVector, 2, Frame::GlobalTimeIndependent>>,
     "Failed db::wrap_tags_in scalar_only");
 
 static_assert(
     cpp17::is_same_v<
         tmpl::back<db::wrap_tags_in<PrefixTag0, vector_only, tmpl::size_t<3>,
-                                    Frame::Grid>>::type,
-        tnsr::iJ<DataVector, 3, Frame::Grid>>,
+                                    Frame::GlobalTimeIndependent>>::type,
+        tnsr::iJ<DataVector, 3, Frame::GlobalTimeIndependent>>,
     "Failed db::wrap_tags_in vector_only");
 
 static_assert(
     cpp17::is_same_v<
         tmpl::back<db::wrap_tags_in<PrefixTag0, two_vars, tmpl::size_t<2>,
-                                    Frame::Grid>>::type,
-        tnsr::i<DataVector, 2, Frame::Grid>>,
+                                    Frame::GlobalTimeIndependent>>::type,
+        tnsr::i<DataVector, 2, Frame::GlobalTimeIndependent>>,
     "Failed db::wrap_tags_in two_vars scalar");
 
 static_assert(
     cpp17::is_same_v<
         tmpl::front<db::wrap_tags_in<PrefixTag0, two_vars, tmpl::size_t<3>,
-                                     Frame::Grid>>::type,
-        tnsr::iJ<DataVector, 3, Frame::Grid>>,
+                                     Frame::GlobalTimeIndependent>>::type,
+        tnsr::iJ<DataVector, 3, Frame::GlobalTimeIndependent>>,
     "Failed db::wrap_tags_in two_vars vector");
 }  // namespace
 
@@ -1667,7 +1667,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutating_compute_item",
 
 namespace DataBoxTest_detail {
 struct vector : db::SimpleTag {
-  using type = tnsr::I<DataVector, 3, Frame::Grid>;
+  using type = tnsr::I<DataVector, 3, Frame::GlobalTimeIndependent>;
   static std::string name() noexcept { return "vector"; }
 };
 
@@ -1677,7 +1677,7 @@ struct scalar : db::SimpleTag {
 };
 
 struct vector2 : db::SimpleTag {
-  using type = tnsr::I<DataVector, 3, Frame::Grid>;
+  using type = tnsr::I<DataVector, 3, Frame::GlobalTimeIndependent>;
   static std::string name() noexcept { return "vector2"; }
 };
 }  // namespace DataBoxTest_detail

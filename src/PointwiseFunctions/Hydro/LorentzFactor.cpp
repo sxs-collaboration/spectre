@@ -36,7 +36,7 @@ Scalar<DataType> lorentz_factor(
           spatial_velocity_form) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Grid, Frame::Inertial))
+                        (Frame::GlobalTimeIndependent, Frame::Inertial))
 
 template Scalar<DataVector> lorentz_factor(
     const Scalar<DataVector>& spatial_velocity_squared) noexcept;
