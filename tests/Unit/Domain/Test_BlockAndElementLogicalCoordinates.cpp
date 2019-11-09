@@ -61,7 +61,7 @@ void fuzzy_test_block_and_element_logical_coordinates(
     // Assumes logical coords go from -1 to 1.
     std::uniform_real_distribution<double> ran(-1.0, 1.0);
     MAKE_GENERATOR(gen);
-    std::vector<tnsr::I<double, Dim, Frame::Logical>> coords(n_pts);
+    std::vector<tnsr::I<double, Dim, Frame::ElementLogical>> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       for (size_t d = 0; d < Dim; ++d) {
         coords[s].get(d) = ran(gen);
@@ -104,7 +104,7 @@ void fuzzy_test_block_and_element_logical_coordinates(
     std::unordered_map<ElementId<Dim>, ElementLogicalCoordHolder<Dim>> holders;
     for (const auto& coord_holder : coords_plus_offsets) {
       const size_t num_grid_pts = coord_holder.second.offsets.size();
-      tnsr::I<DataVector, Dim, Frame::Logical> coords(num_grid_pts);
+      tnsr::I<DataVector, Dim, Frame::ElementLogical> coords(num_grid_pts);
       for (size_t s = 0; s < num_grid_pts; ++s) {
         for (size_t d = 0; d < Dim; ++d) {
           coords.get(d)[s] = gsl::at(coord_holder.second.coords[s], d);
@@ -191,7 +191,7 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
     // Assumes logical coords go from -1 to 1.
     std::uniform_real_distribution<double> ran(-1.0, 1.0);
     MAKE_GENERATOR(gen);
-    std::vector<tnsr::I<double, Dim, Frame::Logical>> coords(n_pts);
+    std::vector<tnsr::I<double, Dim, Frame::ElementLogical>> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       for (size_t d = 0; d < Dim; ++d) {
         coords[s].get(d) = ran(gen);
@@ -293,8 +293,8 @@ void test_block_and_element_logical_coordinates(
     const std::vector<std::vector<std::array<double, Dim>>>&
         expected_element_logical) noexcept {
   tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords(x_inertial.size());
-  std::vector<tnsr::I<double, Dim, Frame::Logical>> expected_logical_coords(
-      x_inertial.size());
+  std::vector<tnsr::I<double, Dim, Frame::ElementLogical>>
+      expected_logical_coords(x_inertial.size());
   for (size_t s = 0; s < x_inertial.size(); ++s) {
     for (size_t d = 0; d < Dim; ++d) {
       inertial_coords.get(d)[s] = gsl::at(x_inertial[s], d);
@@ -316,9 +316,10 @@ void test_block_and_element_logical_coordinates(
   const auto element_logical_result =
       element_logical_coordinates(element_ids, block_logical_result);
 
-  std::vector<tnsr::I<DataVector, Dim, Frame::Logical>> expected_elem_logical;
+  std::vector<tnsr::I<DataVector, Dim, Frame::ElementLogical>>
+      expected_elem_logical;
   for (const auto& coord : expected_element_logical) {
-    tnsr::I<DataVector, Dim, Frame::Logical> dum(coord.size());
+    tnsr::I<DataVector, Dim, Frame::ElementLogical> dum(coord.size());
     for (size_t s = 0; s < coord.size(); ++s) {
       for (size_t d = 0; d < Dim; ++d) {
         dum.get(d)[s] = gsl::at(coord[s], d);

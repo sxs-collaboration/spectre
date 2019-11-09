@@ -21,7 +21,7 @@
 /// \cond
 namespace Frame {
 struct Inertial;
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 /// \endcond
 
@@ -59,7 +59,7 @@ Domain<2> Disk::create_domain() const noexcept {
                                              block2_corners, block3_corners,
                                              block4_corners};
 
-  auto coord_maps = make_vector_coordinate_map_base<Frame::Logical,
+  auto coord_maps = make_vector_coordinate_map_base<Frame::ElementLogical,
                                                     Frame::Inertial>(
       Wedge2DMap{inner_radius_, outer_radius_, 0.0, 1.0,
                  OrientationMap<2>{std::array<Direction<2>, 2>{
@@ -80,14 +80,15 @@ Domain<2> Disk::create_domain() const noexcept {
 
   if (use_equiangular_map_) {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(Equiangular2D{
-            Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
-                        inner_radius_ / sqrt(2.0)),
-            Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
-                        inner_radius_ / sqrt(2.0))}));
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+            Equiangular2D{
+                Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
+                            inner_radius_ / sqrt(2.0)),
+                Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
+                            inner_radius_ / sqrt(2.0))}));
   } else {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
             Affine2D{Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
                             inner_radius_ / sqrt(2.0)),
                      Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),

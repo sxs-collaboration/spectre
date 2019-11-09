@@ -211,7 +211,7 @@ Direction<VolumeDim> find_direction_to_neighbor(
 // Convert Point to Directions, for use with OrientationMap
 template <size_t VolumeDim>
 std::array<Direction<VolumeDim>, VolumeDim> get_orthant(
-    const tnsr::I<double, VolumeDim, Frame::Logical>& point) noexcept {
+    const tnsr::I<double, VolumeDim, Frame::ElementLogical>& point) noexcept {
   std::array<Direction<VolumeDim>, VolumeDim> result;
   for (size_t i = 0; i < VolumeDim; i++) {
     gsl::at(result, i) =
@@ -222,9 +222,9 @@ std::array<Direction<VolumeDim>, VolumeDim> get_orthant(
 
 // Convert Directions to Point, for use with CoordinateMap
 template <size_t VolumeDim>
-tnsr::I<double, VolumeDim, Frame::Logical> get_corner_of_orthant(
+tnsr::I<double, VolumeDim, Frame::ElementLogical> get_corner_of_orthant(
     const std::array<Direction<VolumeDim>, VolumeDim>& directions) noexcept {
-  tnsr::I<double, VolumeDim, Frame::Logical> result{};
+  tnsr::I<double, VolumeDim, Frame::ElementLogical> result{};
   for (size_t i = 0; i < VolumeDim; i++) {
     result[gsl::at(directions, i).dimension()] =
         gsl::at(directions, i).side() == Side::Upper ? 1.0 : -1.0;
@@ -235,9 +235,9 @@ tnsr::I<double, VolumeDim, Frame::Logical> get_corner_of_orthant(
 // The relative OrientationMap between Blocks induces a map that takes
 // Points in the host Block to Points in the neighbor Block.
 template <size_t VolumeDim>
-tnsr::I<double, VolumeDim, Frame::Logical> point_in_neighbor_frame(
+tnsr::I<double, VolumeDim, Frame::ElementLogical> point_in_neighbor_frame(
     const OrientationMap<VolumeDim>& orientation,
-    const tnsr::I<double, VolumeDim, Frame::Logical>& point) noexcept {
+    const tnsr::I<double, VolumeDim, Frame::ElementLogical>& point) noexcept {
   auto point_get_orthant = get_orthant(point);
   std::for_each(
       point_get_orthant.begin(), point_get_orthant.end(),
@@ -254,10 +254,10 @@ double physical_separation(const Block<VolumeDim>& block1,
   double max_separation = 0;
   const auto direction = find_direction_to_neighbor(block1, block2);
   const auto orientation = find_neighbor_orientation(block1, block2);
-  std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
+  std::array<tnsr::I<double, VolumeDim, Frame::ElementLogical>,
              two_to_the(VolumeDim - 1)>
       shared_points1{};
-  std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
+  std::array<tnsr::I<double, VolumeDim, Frame::ElementLogical>,
              two_to_the(VolumeDim - 1)>
       shared_points2{};
   for (FaceCornerIterator<VolumeDim> fci(direction); fci; ++fci) {
@@ -288,8 +288,8 @@ void test_domain_construction(
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
-    const std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
+    const std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::ElementLogical, Frame::Inertial, VolumeDim>>>&
         expected_maps) noexcept {
   const auto& blocks = domain.blocks();
   CHECK(blocks.size() == expected_external_boundaries.size());
@@ -376,7 +376,7 @@ tnsr::i<DataVector, SpatialDim, Frame::Inertial> euclidean_basis_vector(
       const std::vector<std::unordered_set<Direction<DIM(data)>>>&          \
           expected_external_boundaries,                                     \
       const std::vector<std::unique_ptr<domain::CoordinateMapBase<          \
-          Frame::Logical, Frame::Inertial, DIM(data)>>>&                    \
+          Frame::ElementLogical, Frame::Inertial, DIM(data)>>>&             \
           expected_maps) noexcept;                                          \
   template void test_initial_domain(                                        \
       const Domain<DIM(data)>& domain,                                      \

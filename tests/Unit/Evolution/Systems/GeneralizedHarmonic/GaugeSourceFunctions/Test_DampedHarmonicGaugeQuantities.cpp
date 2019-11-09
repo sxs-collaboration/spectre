@@ -305,11 +305,12 @@ void test_damped_harmonic_h_function_term_1_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -394,11 +395,12 @@ void test_damped_harmonic_h_function_term_2_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -495,11 +497,12 @@ void test_damped_harmonic_h_function_term_3_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -595,11 +598,12 @@ void test_damped_harmonic_h_function_term_4_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -700,11 +704,12 @@ void test_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -825,11 +830,12 @@ void test_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -934,11 +940,12 @@ void test_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -1129,11 +1136,12 @@ void test_deriv_damped_harmonic_h_function_term_1_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -1263,11 +1271,12 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -1466,11 +1475,12 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -1670,11 +1680,12 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -1902,11 +1913,12 @@ void test_deriv_damped_harmonic_h_function_term_2_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -2201,11 +2213,12 @@ void test_deriv_damped_harmonic_h_function_term_3_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -2500,11 +2513,12 @@ void test_deriv_damped_harmonic_h_function_term_4_of_4_analytic_schwarzschild(
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);
@@ -2824,11 +2838,12 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
                         Spectral::Quadrature::GaussLobatto};
 
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(Affine3D{
-          Affine{-1., 1., lower_bound[0], upper_bound[0]},
-          Affine{-1., 1., lower_bound[1], upper_bound[1]},
-          Affine{-1., 1., lower_bound[2], upper_bound[2]},
-      });
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine3D{
+              Affine{-1., 1., lower_bound[0], upper_bound[0]},
+              Affine{-1., 1., lower_bound[1], upper_bound[1]},
+              Affine{-1., 1., lower_bound[2], upper_bound[2]},
+          });
 
   // Setup coordinates
   const auto x_logical = logical_coordinates(mesh);

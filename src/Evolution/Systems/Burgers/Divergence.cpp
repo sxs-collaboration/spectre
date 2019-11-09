@@ -12,5 +12,5 @@ divergence(
     const Variables<tmpl::list<
         Tags::Flux<Burgers::Tags::U, tmpl::size_t<1>, Frame::Inertial>>>& F,
     const Mesh<1>& mesh,
-    const InverseJacobian<DataVector, 1, Frame::Logical,
+    const InverseJacobian<DataVector, 1, Frame::ElementLogical,
                           Frame::Inertial>& inverse_jacobian) noexcept;

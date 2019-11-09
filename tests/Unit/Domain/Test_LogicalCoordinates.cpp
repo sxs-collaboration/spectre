@@ -40,16 +40,16 @@ SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
   const CoordinateMaps::Affine y_map{-1.0, 1.0, -13.0, 47.0};
   const CoordinateMaps::Affine z_map{-1.0, 1.0, -32.0, 74.0};
 
-  const auto map_3d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+  const auto map_3d = make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
       Affine3d{x_map, y_map, z_map});
 
   const auto x_3d = map_3d(logical_coordinates(mesh_3d));
   /// [logical_coordinates_example]
 
-  const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+  const auto map_1d = make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
       CoordinateMaps::Affine{x_map});
-  const auto map_2d =
-      make_coordinate_map<Frame::Logical, Frame::Grid>(Affine2d{x_map, y_map});
+  const auto map_2d = make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+      Affine2d{x_map, y_map});
   const auto x_1d = map_1d(logical_coordinates(mesh_1d));
   const auto x_2d = map_2d(logical_coordinates(mesh_2d));
 
@@ -75,9 +75,9 @@ SPECTRE_TEST_CASE("Unit.Domain.LogicalCoordinates", "[Domain][Unit]") {
   CHECK(x_3d[2][0] == -32.0);
   CHECK(x_3d[2][15] == 74.0);
 
-  CHECK(Tags::LogicalCoordinates<1>::name() == "LogicalCoordinates");
-  CHECK(Tags::LogicalCoordinates<2>::name() == "LogicalCoordinates");
-  CHECK(Tags::LogicalCoordinates<3>::name() == "LogicalCoordinates");
+  CHECK(Tags::LogicalCoordinates<1>::name() == "ElementLogicalCoordinates");
+  CHECK(Tags::LogicalCoordinates<2>::name() == "ElementLogicalCoordinates");
+  CHECK(Tags::LogicalCoordinates<3>::name() == "ElementLogicalCoordinates");
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
@@ -90,11 +90,11 @@ SPECTRE_TEST_CASE("Unit.Domain.InterfaceLogicalCoordinates", "[Domain][Unit]") {
   const CoordinateMaps::Affine y_map{-1.0, 1.0, -13.0, 47.0};
   const CoordinateMaps::Affine z_map{-1.0, 1.0, -32.0, 74.0};
 
-  const auto map_1d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+  const auto map_1d = make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
       CoordinateMaps::Affine{x_map});
-  const auto map_2d =
-      make_coordinate_map<Frame::Logical, Frame::Grid>(Affine2d{x_map, y_map});
-  const auto map_3d = make_coordinate_map<Frame::Logical, Frame::Grid>(
+  const auto map_2d = make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
+      Affine2d{x_map, y_map});
+  const auto map_3d = make_coordinate_map<Frame::ElementLogical, Frame::Grid>(
       Affine3d{x_map, y_map, z_map});
 
   const Mesh<0> mesh_1d_xbdry;

@@ -50,20 +50,20 @@ auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine2D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
       Affine3D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
                Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
@@ -122,7 +122,7 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
   const auto coordinate_map = make_affine_map<Dim>();
   const auto target_x = [&target_x_inertial, &coordinate_map,
                          &number_of_points]() {
-    tnsr::I<DataVector, Dim, Frame::Logical> result(number_of_points);
+    tnsr::I<DataVector, Dim, Frame::ElementLogical> result(number_of_points);
     for (size_t s = 0; s < number_of_points; ++s) {
       tnsr::I<double, Dim> x_inertial_local{};
       for (size_t d = 0; d < Dim; ++d) {

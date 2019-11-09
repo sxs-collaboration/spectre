@@ -17,7 +17,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 
 namespace Frame {
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 namespace PUP {
 class er;
@@ -57,7 +57,7 @@ class Domain {
    * `identifications.size()` is even.
    */
   Domain(std::vector<std::unique_ptr<domain::CoordinateMapBase<
-             Frame::Logical, Frame::Inertial, VolumeDim>>>
+             Frame::ElementLogical, Frame::Inertial, VolumeDim>>>
              maps,
          const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
              corners_of_all_blocks,

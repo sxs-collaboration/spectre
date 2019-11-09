@@ -39,4 +39,4 @@ auto block_logical_coordinates(
     const Domain<Dim>& domain,
     const tnsr::I<DataVector, Dim, Frame::Inertial>& x) noexcept
     -> std::vector<boost::optional<
-        IdPair<domain::BlockId, tnsr::I<double, Dim, Frame::Logical>>>>;
+        IdPair<domain::BlockId, tnsr::I<double, Dim, Frame::ElementLogical>>>>;

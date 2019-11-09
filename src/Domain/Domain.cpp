@@ -16,7 +16,7 @@
 
 namespace Frame {
 struct Inertial;
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 
 template <size_t VolumeDim>
@@ -25,8 +25,8 @@ Domain<VolumeDim>::Domain(std::vector<Block<VolumeDim>> blocks) noexcept
 
 template <size_t VolumeDim>
 Domain<VolumeDim>::Domain(
-    std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>
+    std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::ElementLogical, Frame::Inertial, VolumeDim>>>
         maps,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,

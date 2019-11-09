@@ -10,13 +10,13 @@
 
 namespace Frame {
 struct Inertial;
-struct Logical;
+struct ElementLogical;
 }  // namespace Frame
 
 template <size_t VolumeDim>
 Block<VolumeDim>::Block(
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, Frame::Inertial,
-                                              VolumeDim>>&& map,
+    std::unique_ptr<domain::CoordinateMapBase<
+        Frame::ElementLogical, Frame::Inertial, VolumeDim>>&& map,
     const size_t id,
     DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors) noexcept
     : map_(std::move(map)), id_(id), neighbors_(std::move(neighbors)) {

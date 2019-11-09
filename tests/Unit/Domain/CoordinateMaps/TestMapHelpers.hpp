@@ -34,8 +34,8 @@
 template <typename Map>
 bool are_maps_equal(
     const Map& map,
-    const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, Map::dim>&
-        map_base) {
+    const domain::CoordinateMapBase<Frame::ElementLogical, Frame::Inertial,
+                                    Map::dim>& map_base) {
   const auto* map_derived = dynamic_cast<const Map*>(&map_base);
   return map_derived == nullptr ? false : (*map_derived == map);
 }
@@ -140,7 +140,7 @@ void test_inv_jacobian(const Map& map,
 template <typename Map, typename... Args>
 void test_coordinate_map_implementation(const Map& map) {
   const auto coord_map =
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map);
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(map);
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
 
@@ -157,7 +157,7 @@ void test_coordinate_map_implementation(const Map& map) {
   }
 
   const auto test_point_tensor = [&test_point]() {
-    tnsr::I<double, Map::dim, Frame::Logical> point_as_tensor{};
+    tnsr::I<double, Map::dim, Frame::ElementLogical> point_as_tensor{};
     for (size_t i = 0; i < Map::dim; ++i) {
       point_as_tensor.get(i) = gsl::at(test_point, i);
     }
@@ -337,8 +337,8 @@ void test_suite_for_map_on_unit_cube(const Map& map) {
   test_helper(map);
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(map),
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(map2));
   test_helper(map2);
 }
 
@@ -418,8 +418,8 @@ void test_suite_for_map_on_sphere(const Map& map,
   test_helper(map);
   const auto map2 = serialize_and_deserialize(map);
   check_if_maps_are_equal(
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map),
-      domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map2));
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(map),
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Grid>(map2));
   test_helper(map2);
 }
 

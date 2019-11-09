@@ -148,7 +148,7 @@ void test_shell_construction(
   using Wedge3DMap = CoordinateMaps::Wedge3D;
   using Halves = Wedge3DMap::WedgeHalves;
   if (aspect_ratio == 1.0) {
-    auto vector_of_maps = make_vector_coordinate_map_base<Frame::Logical,
+    auto vector_of_maps = make_vector_coordinate_map_base<Frame::ElementLogical,
                                                           Frame::Inertial>(
         Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 1.0, 1.0,
                    use_equiangular_map, Halves::Both, use_logarithmic_map},
@@ -193,12 +193,12 @@ void test_shell_construction(
     const auto compression =
         CoordinateMaps::EquatorialCompression{aspect_ratio};
     auto vector_of_maps = make_vector(
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
             Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 1.0,
                        1.0, use_equiangular_map, Halves::Both,
                        use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
             Wedge3DMap{inner_radius, outer_radius,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
@@ -206,7 +206,7 @@ void test_shell_construction(
                        1.0, 1.0, use_equiangular_map, Halves::Both,
                        use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -215,7 +215,7 @@ void test_shell_construction(
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -224,7 +224,7 @@ void test_shell_construction(
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -233,7 +233,7 @@ void test_shell_construction(
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -500,7 +500,7 @@ void test_radial_block_layers(const double inner_radius,
         element_count++;
         const auto map = ElementMap<3, Frame::Inertial>{
             element_id, block.coordinate_map().get_clone()};
-        const tnsr::I<double, 3, Frame::Logical> logical_point(
+        const tnsr::I<double, 3, Frame::ElementLogical> logical_point(
             std::array<double, 3>{{0.0, 0.0, 1.0}});
         CHECK(magnitude(map(logical_point)).get() ==
               approx(x_on_element_boundary[element_count]));

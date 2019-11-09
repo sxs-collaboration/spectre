@@ -30,11 +30,12 @@ namespace {
 tnsr::I<DataVector, 2> make_inertial_coords_2d(const Mesh<2>& mesh) noexcept {
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-  const auto map = domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
-      Affine2D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.2)},
-      domain::CoordinateMaps::DiscreteRotation<2>(
-          OrientationMap<2>{std::array<Direction<2>, 2>{
-              {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}));
+  const auto map =
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+          Affine2D{Affine(-1.0, 1.0, 0.3, 0.4), Affine(-1.0, 1.0, -0.5, 1.2)},
+          domain::CoordinateMaps::DiscreteRotation<2>(
+              OrientationMap<2>{std::array<Direction<2>, 2>{
+                  {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}}));
   return map(logical_coordinates(mesh));
 }
 }  // namespace
@@ -45,7 +46,7 @@ SPECTRE_TEST_CASE("Unit.Domain.SizeOfElement", "[Domain][Unit]") {
                               Spectral::Quadrature::GaussLobatto);
     const auto coords = [&mesh]() {
       const auto map =
-          domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
               domain::CoordinateMaps::Affine(-1.0, 1.0, 0.3, 1.2));
       return map(logical_coordinates(mesh));
     }();
@@ -71,7 +72,7 @@ SPECTRE_TEST_CASE("Unit.Domain.SizeOfElement", "[Domain][Unit]") {
       using Affine3D =
           domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
       const auto map =
-          domain::make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
               Affine3D{Affine(-1.0, 1.0, 0.3, 0.4),
                        Affine(-1.0, 1.0, -0.5, 1.2),
                        Affine(-1.0, 1.0, 12.0, 12.5)},

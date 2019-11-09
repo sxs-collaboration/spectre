@@ -149,11 +149,11 @@ auto run_action(
   const Affine eta_map{-1., 1., -2., 4.};
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
+      domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial, Affine2D>));
 
   auto element_map = ElementMap<2, Frame::Inertial>(
       element.id(),
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
           Affine2D(xi_map, eta_map)));
 
   n_dot_f_tag::type n_dot_f_storage{};

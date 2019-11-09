@@ -57,7 +57,7 @@ using div_fluxes_tag = db::add_tag_prefix<::Tags::div, fluxes_tag<Dim>>;
 template <size_t Dim>
 using inv_jacobian_tag =
     Tags::InverseJacobian<::Tags::ElementMap<Dim>,
-                          ::Tags::Coordinates<Dim, Frame::Logical>>;
+                          ::Tags::Coordinates<Dim, Frame::ElementLogical>>;
 
 template <size_t Dim>
 struct Fluxes {

@@ -252,10 +252,10 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
   const Affine eta_map{-1., 1., 7., 3.};
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
+      domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial, Affine2D>));
 
   const auto coordmap =
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
           Affine2D(xi_map, eta_map));
 
   const auto neighbor_directions = {Direction<2>::lower_xi(),
@@ -505,10 +505,10 @@ SPECTRE_TEST_CASE(
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
+      domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial, Affine2D>));
   auto map = ElementMap<2, Frame::Inertial>(
       self_id,
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
           Affine2D({-1., 1., 3., 7.}, {-1., 1., -2., 4.})));
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<2>{}}};
@@ -562,11 +562,11 @@ SPECTRE_TEST_CASE(
                         Direction<3>::lower_eta()}}}}}});
 
   PUPable_reg(
-      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      SINGLE_ARG(domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
                                        domain::CoordinateMaps::Identity<3>>));
   ElementMap<3, Frame::Inertial> map(
       self_id,
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
           domain::CoordinateMaps::Identity<3>{}));
 
   const Mesh<3> mesh({{2, 3, 4}}, Spectral::Basis::Legendre,
@@ -697,12 +697,12 @@ SPECTRE_TEST_CASE(
 
     using Affine = domain::CoordinateMaps::Affine;
     using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
-    PUPable_reg(SINGLE_ARG(
-        domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
+    PUPable_reg(SINGLE_ARG(domain::CoordinateMap<Frame::ElementLogical,
+                                                 Frame::Inertial, Affine2D>));
     ElementMap<2, Frame::Inertial> map(
-        self_id,
-        domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-            Affine2D({-1., 1., -1., 1.}, {-1., 1., -1., 1.})));
+        self_id, domain::make_coordinate_map_base<Frame::ElementLogical,
+                                                  Frame::Inertial>(
+                     Affine2D({-1., 1., -1., 1.}, {-1., 1., -1., 1.})));
 
     const Mesh<2> mesh(2, Spectral::Basis::Legendre,
                        Spectral::Quadrature::GaussLobatto);

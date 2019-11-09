@@ -31,9 +31,9 @@ void test_tags() noexcept {
         "EnergyDensity");
   CHECK(NewtonianEuler::Tags::Velocity<DataVector, Dim,
                                        Frame::Inertial>::name() == "Velocity");
-  CHECK(
-      NewtonianEuler::Tags::Velocity<DataVector, Dim, Frame::Logical>::name() ==
-      "Logical_Velocity");
+  CHECK(NewtonianEuler::Tags::Velocity<DataVector, Dim,
+                                       Frame::ElementLogical>::name() ==
+        "ElementLogical_Velocity");
   CHECK(NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>::name() ==
         "SpecificInternalEnergy");
   CHECK(NewtonianEuler::Tags::Pressure<DataVector>::name() == "Pressure");

@@ -237,7 +237,7 @@ void insert_neighbor(
 
   ElementMap<2, Frame::Inertial> map(
       element.id(),
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
           domain::CoordinateMaps::Identity<2>{}));
 
   db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>> fluxes;
@@ -321,7 +321,7 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
   ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<2>{}}};
 
   PUPable_reg(
-      SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+      SINGLE_ARG(domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
                                        domain::CoordinateMaps::Identity<2>>));
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
@@ -330,9 +330,9 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
                Spectral::Quadrature::GaussLobatto},
        Element<2>{},
        ElementMap<2, Frame::Inertial>{
-           self_id,
-           domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-               domain::CoordinateMaps::Identity<2>{})},
+           self_id, domain::make_coordinate_map_base<Frame::ElementLogical,
+                                                     Frame::Inertial>(
+                        domain::CoordinateMaps::Identity<2>{})},
        db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
        db::item_type<other_data_tag<2>>{},
        db::item_type<mortar_meshes_tag<2>>{},

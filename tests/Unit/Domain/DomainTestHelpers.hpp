@@ -40,8 +40,8 @@ void test_domain_construction(
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
-    const std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
+    const std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::ElementLogical, Frame::Inertial, VolumeDim>>>&
         expected_maps) noexcept;
 
 // Test that two neighboring Blocks abut each other.

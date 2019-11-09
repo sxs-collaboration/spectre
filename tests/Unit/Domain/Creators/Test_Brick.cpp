@@ -50,10 +50,11 @@ void test_brick_construction(
 
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
-      make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
-          Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
-                   Affine{-1., 1., lower_bound[1], upper_bound[1]},
-                   Affine{-1., 1., lower_bound[2], upper_bound[2]}})));
+      make_vector(
+          make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+              Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
+                       Affine{-1., 1., lower_bound[1], upper_bound[1]},
+                       Affine{-1., 1., lower_bound[2], upper_bound[2]}})));
 
   test_initial_domain(domain, brick.initial_refinement_levels());
 }
@@ -186,11 +187,11 @@ void test_brick() {
   creators::register_derived_with_charm();
 
   const auto base_map =
-      make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
           Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                    Affine{-1., 1., lower_bound[1], upper_bound[1]},
                    Affine{-1., 1., lower_bound[2], upper_bound[2]}});
-  are_maps_equal(make_coordinate_map<Frame::Logical, Frame::Inertial>(
+  are_maps_equal(make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
                      Affine3D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                               Affine{-1., 1., lower_bound[1], upper_bound[1]},
                               Affine{-1., 1., lower_bound[2], upper_bound[2]}}),

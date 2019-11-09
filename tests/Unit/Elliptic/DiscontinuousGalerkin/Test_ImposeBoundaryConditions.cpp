@@ -267,10 +267,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.BoundaryConditions",
 
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
           Affine2D(xi_map, eta_map));
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::Logical, Frame::Inertial, Affine2D>));
+      domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial, Affine2D>));
 
   const auto external_directions = {Direction<2>::lower_eta(),
                                     Direction<2>::upper_xi()};

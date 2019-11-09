@@ -176,7 +176,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
                                          domain::CoordinateMaps::Affine>));
 
     using metavariables = Metavariables<1>;
@@ -224,7 +224,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         {{-0.5, 0.}}, {{1.5, 2.}}, {{false, false}}, {{2, 0}}, {{4, 3}}};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::Logical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
                                          domain::CoordinateMaps::ProductOf2Maps<
                                              domain::CoordinateMaps::Affine,
                                              domain::CoordinateMaps::Affine>>));
@@ -278,7 +278,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     // Register the coordinate map for serialization
     PUPable_reg(SINGLE_ARG(
         domain::CoordinateMap<
-            Frame::Logical, Frame::Inertial,
+            Frame::ElementLogical, Frame::Inertial,
             domain::CoordinateMaps::ProductOf3Maps<
                 domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
                 domain::CoordinateMaps::Affine>>));

@@ -39,7 +39,7 @@ namespace Frame {
 /// evaluate an analytic solution in that frame.
 struct FrameIsPhysical {};
 
-struct Logical {};
+struct ElementLogical {};
 struct Grid {};
 struct Inertial : FrameIsPhysical {};
 struct Distorted {};
@@ -72,9 +72,9 @@ template <typename CheckFrame>
 constexpr bool is_frame_physical_v = is_frame_physical<CheckFrame>::value;
 
 /// \cond HIDDEN_SYMBOLS
-inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::Logical& /*meta*/) noexcept {
-  return os << "Logical";
+inline std::ostream& operator<<(
+    std::ostream& os, const Frame::ElementLogical& /*meta*/) noexcept {
+  return os << "ElementLogical";
 }
 inline std::ostream& operator<<(std::ostream& os,
                                 const Frame::Grid& /*meta*/) noexcept {
@@ -107,8 +107,8 @@ inline std::string prefix() noexcept;
 
 /// \cond HIDDEN_SYMBOLS
 template <>
-inline std::string prefix<Frame::Logical>() noexcept {
-  return "Logical_";
+inline std::string prefix<Frame::ElementLogical>() noexcept {
+  return "ElementLogical_";
 }
 
 template <>
