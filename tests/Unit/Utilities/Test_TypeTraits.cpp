@@ -395,14 +395,20 @@ namespace  {
 CREATE_IS_CALLABLE(foo)
 CREATE_IS_CALLABLE(foobar)
 struct bar {
-  void foo(int /*unused*/, double /*unused*/) {}
+  size_t foo(int /*unused*/, double /*unused*/) { return size_t{0}; }
 };
 
 static_assert(is_foo_callable_v<bar, int, double>,
               "Failed testing CREATE_IS_CALLABLE");
+static_assert(is_foo_callable_r_v<size_t, bar, int, double>,
+              "Failed testing CREATE_IS_CALLABLE");
 static_assert(not is_foo_callable_v<bar, int>,
               "Failed testing CREATE_IS_CALLABLE");
 static_assert(not is_foo_callable_v<bar>,
+              "Failed testing CREATE_IS_CALLABLE");
+static_assert(not is_foobar_callable_r_v<size_t, bar, int, double>,
+              "Failed testing CREATE_IS_CALLABLE");
+static_assert(not is_foo_callable_r_v<int, bar, int, double>,
               "Failed testing CREATE_IS_CALLABLE");
 static_assert(not is_foobar_callable_v<bar, int, double>,
               "Failed testing CREATE_IS_CALLABLE");
