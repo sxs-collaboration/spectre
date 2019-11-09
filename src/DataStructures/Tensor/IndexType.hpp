@@ -79,6 +79,14 @@ struct GlobalTimeIndependent {};
  */
 struct System : FrameIsPhysical {};
 
+/// \cond
+// Deprecated frame names with aliases to their replacements
+using Logical[[deprecated("Use `Frame::ElementLogical`")]] = ElementLogical;
+using Grid[[deprecated("Use `Frame::GlobalTimeIndependent`")]] =
+    GlobalTimeIndependent;
+using Inertial[[deprecated("Use `Frame::System`")]] = System;
+/// \cond
+
 struct Distorted {};
 /// Represents an index that is not in a known frame, e.g. some internal
 /// intermediate frame that is irrelevant to the interface.
