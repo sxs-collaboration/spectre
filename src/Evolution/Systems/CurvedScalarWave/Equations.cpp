@@ -20,7 +20,7 @@ namespace CurvedScalarWave {
 template <size_t Dim>
 void ComputeDuDt<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> dt_pi,
-    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::System>*> dt_phi,
     const gsl::not_null<Scalar<DataVector>*> dt_psi,
     const Scalar<DataVector>& pi, const tnsr::i<DataVector, Dim>& phi,
     const tnsr::i<DataVector, Dim>& d_psi, const tnsr::i<DataVector, Dim>& d_pi,
@@ -80,7 +80,7 @@ template <size_t Dim>
 using variables_tags =
     typename CurvedScalarWave::System<Dim>::variables_tag::tags_list;
 
-using derivative_frame = Frame::Inertial;
+using derivative_frame = Frame::System;
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 

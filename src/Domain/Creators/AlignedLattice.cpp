@@ -11,7 +11,7 @@
 
 namespace Frame {
 struct GlobalTimeIndependent;
-struct Inertial;
+struct System;
 }  // namespace Frame
 
 namespace domain {

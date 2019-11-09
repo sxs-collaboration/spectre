@@ -86,7 +86,7 @@ namespace GeneralizedHarmonic {
  * This weight function can be written with multiple constant factors in the
  * exponent in literature \cite Deppe2018uye, but we absorb them all into
  * \f$ \sigma_r\f$ here. The coordinate \f$ r\f$ is the Euclidean radius
- * in Inertial coordinates.
+ * in system coordinates.
  *
  * Note:
  *   - Amplitude factors \f$ A_{X} \f$ are input as amp\_coef\_X

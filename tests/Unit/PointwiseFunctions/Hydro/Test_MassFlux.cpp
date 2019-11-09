@@ -31,23 +31,23 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.MassFlux",
   pypp::SetupLocalPythonEnvironment local_python_env(
       "PointwiseFunctions/Hydro/");
   const DataVector dv(5);
-  test_mass_flux<1, Frame::Inertial>(dv);
+  test_mass_flux<1, Frame::System>(dv);
   test_mass_flux<1, Frame::GlobalTimeIndependent>(dv);
-  test_mass_flux<2, Frame::Inertial>(dv);
+  test_mass_flux<2, Frame::System>(dv);
   test_mass_flux<2, Frame::GlobalTimeIndependent>(dv);
-  test_mass_flux<3, Frame::Inertial>(dv);
+  test_mass_flux<3, Frame::System>(dv);
   test_mass_flux<3, Frame::GlobalTimeIndependent>(dv);
 
-  test_mass_flux<1, Frame::Inertial>(0.0);
+  test_mass_flux<1, Frame::System>(0.0);
   test_mass_flux<1, Frame::GlobalTimeIndependent>(0.0);
-  test_mass_flux<2, Frame::Inertial>(0.0);
+  test_mass_flux<2, Frame::System>(0.0);
   test_mass_flux<2, Frame::GlobalTimeIndependent>(0.0);
-  test_mass_flux<3, Frame::Inertial>(0.0);
+  test_mass_flux<3, Frame::System>(0.0);
   test_mass_flux<3, Frame::GlobalTimeIndependent>(0.0);
 
   // Check compute item works correctly in DataBox
-  CHECK(Tags::MassFluxCompute<DataVector, 2, Frame::Inertial>::name() ==
-        "MassFlux");
+  CHECK(Tags::MassFluxCompute<DataVector, 2, Frame::System>::name() ==
+        "System_MassFlux");
   Scalar<DataVector> rho{{{DataVector{5, 1.0}}}};
   tnsr::I<DataVector, 3> velocity{
       {{DataVector{5, 0.25}, DataVector{5, 0.1}, DataVector{5, 0.35}}}};
@@ -58,15 +58,14 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.MassFlux",
   Scalar<DataVector> sqrt_det_g{{{DataVector{5, 0.25}}}};
   const auto box = db::create<
       db::AddSimpleTags<Tags::RestMassDensity<DataVector>,
-                        Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+                        Tags::SpatialVelocity<DataVector, 3, Frame::System>,
                         Tags::LorentzFactor<DataVector>,
                         ::gr::Tags::Lapse<DataVector>,
-                        ::gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+                        ::gr::Tags::Shift<3, Frame::System, DataVector>,
                         ::gr::Tags::SqrtDetSpatialMetric<DataVector>>,
-      db::AddComputeTags<
-          Tags::MassFluxCompute<DataVector, 3, Frame::Inertial>>>(
+      db::AddComputeTags<Tags::MassFluxCompute<DataVector, 3, Frame::System>>>(
       rho, velocity, lorentz, lapse, shift, sqrt_det_g);
-  CHECK(db::get<Tags::MassFlux<DataVector, 3, Frame::Inertial>>(box) ==
+  CHECK(db::get<Tags::MassFlux<DataVector, 3, Frame::System>>(box) ==
         mass_flux(rho, velocity, lorentz, lapse, shift, sqrt_det_g));
 }
 }  // namespace hydro

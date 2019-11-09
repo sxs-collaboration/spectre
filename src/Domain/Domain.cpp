@@ -15,7 +15,7 @@
 #include "Utilities/GenerateInstantiations.hpp"
 
 namespace Frame {
-struct Inertial;
+struct System;
 struct ElementLogical;
 }  // namespace Frame
 
@@ -26,7 +26,7 @@ Domain<VolumeDim>::Domain(std::vector<Block<VolumeDim>> blocks) noexcept
 template <size_t VolumeDim>
 Domain<VolumeDim>::Domain(
     std::vector<std::unique_ptr<domain::CoordinateMapBase<
-        Frame::ElementLogical, Frame::Inertial, VolumeDim>>>
+        Frame::ElementLogical, Frame::System, VolumeDim>>>
         maps,
     const std::vector<std::array<size_t, two_to_the(VolumeDim)>>&
         corners_of_all_blocks,

@@ -31,7 +31,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>
@@ -150,23 +150,23 @@ struct DiscontinuousGalerkin {
         ::Tags::Slice<::Tags::InternalDirections<dim>,
                       db::add_tag_prefix<::Tags::Flux,
                                          typename LocalSystem::variables_tag,
-                                         tmpl::size_t<dim>, Frame::Inertial>>,
+                                         tmpl::size_t<dim>, Frame::System>>,
         interface_compute_tag<::Tags::NormalDotFluxCompute<
-            typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
+            typename LocalSystem::variables_tag, dim, Frame::System>>,
         interface_compute_tag<char_speed_tag>,
         ::Tags::Slice<::Tags::BoundaryDirectionsInterior<dim>,
                       db::add_tag_prefix<::Tags::Flux,
                                          typename LocalSystem::variables_tag,
-                                         tmpl::size_t<dim>, Frame::Inertial>>,
+                                         tmpl::size_t<dim>, Frame::System>>,
         boundary_interior_compute_tag<::Tags::NormalDotFluxCompute<
-            typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
+            typename LocalSystem::variables_tag, dim, Frame::System>>,
         boundary_interior_compute_tag<char_speed_tag>,
         ::Tags::Slice<::Tags::BoundaryDirectionsExterior<dim>,
                       db::add_tag_prefix<::Tags::Flux,
                                          typename LocalSystem::variables_tag,
-                                         tmpl::size_t<dim>, Frame::Inertial>>,
+                                         tmpl::size_t<dim>, Frame::System>>,
         boundary_exterior_compute_tag<::Tags::NormalDotFluxCompute<
-            typename LocalSystem::variables_tag, dim, Frame::Inertial>>,
+            typename LocalSystem::variables_tag, dim, Frame::System>>,
         boundary_exterior_compute_tag<char_speed_tag>>;
 
     template <typename TagsList>

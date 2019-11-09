@@ -41,14 +41,14 @@ struct FrameIsPhysical {};
 
 struct ElementLogical {};
 struct GlobalTimeIndependent {};
-struct Inertial : FrameIsPhysical {};
+struct System : FrameIsPhysical {};
 struct Distorted {};
 /// Represents an index that is not in a known frame, e.g. some internal
 /// intermediate frame that is irrelevant to the interface.
 struct NoFrame {};
 
 /// Represents a spherical-coordinate frame that is associated with a
-/// Cartesian frame, e.g. \f$(r,\theta,\phi)\f$ associated with the Inertial
+/// Cartesian frame, e.g. \f$(r,\theta,\phi)\f$ associated with the system
 /// frame, as used on an apparent horizon or a wave-extraction surface.
 template <typename CartesianFrame>
 struct Spherical {};
@@ -81,8 +81,8 @@ inline std::ostream& operator<<(
   return os << "GlobalTimeIndependent";
 }
 inline std::ostream& operator<<(std::ostream& os,
-                                const Frame::Inertial& /*meta*/) noexcept {
-  return os << "Inertial";
+                                const Frame::System& /*meta*/) noexcept {
+  return os << "System";
 }
 inline std::ostream& operator<<(std::ostream& os,
                                 const Frame::Distorted& /*meta*/) noexcept {
@@ -98,7 +98,7 @@ inline std::ostream& operator<<(std::ostream& os,
 /// The frame-dependent prefix used when constructing the string returned by the
 /// name function of a tag.
 ///
-/// For Frame::Inertial it is the empty string, otherwise, it is the name of
+/// For Frame::System it is the empty string, otherwise, it is the name of
 /// the Frame followed by an underscore (as the name will be used in I/O).
 /// \example
 /// \snippet Hydro/Test_Tags.cpp prefix_example
@@ -117,8 +117,8 @@ inline std::string prefix<Frame::GlobalTimeIndependent>() noexcept {
 }
 
 template <>
-inline std::string prefix<Frame::Inertial>() noexcept {
-  return "";
+inline std::string prefix<Frame::System>() noexcept {
+  return "System_";
 }
 
 template <>

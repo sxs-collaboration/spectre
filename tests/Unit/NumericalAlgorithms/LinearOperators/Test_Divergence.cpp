@@ -45,19 +45,19 @@ auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
       Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
       Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                Affine{-1.0, 1.0, 2.3, 2.8}});
 }
@@ -119,7 +119,7 @@ struct Flux2 : db::SimpleTag {
 template <size_t Dim, typename Frame>
 using two_fluxes = tmpl::list<Flux1<Dim, Frame>, Flux2<Dim, Frame>>;
 
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <size_t Dim, typename Frame = Frame::System>
 void test_divergence(
     const Mesh<Dim>& mesh,
     std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {
@@ -155,7 +155,7 @@ void test_divergence(
 
 SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.Divergence",
                   "[NumericalAlgorithms][LinearOperators][Unit]") {
-  using TensorTag = Flux1<1, Frame::Inertial>;
+  using TensorTag = Flux1<1, Frame::System>;
   using VariablesTag = Tags::Variables<tmpl::list<TensorTag>>;
   /// [divergence_name]
   CHECK(Tags::div<TensorTag>::name() == "div(" + TensorTag::name() + ")");
@@ -203,7 +203,7 @@ struct MapTag : db::SimpleTag {
   static std::string name() noexcept { return "MapTag"; }
 };
 
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <size_t Dim, typename Frame = Frame::System>
 void test_divergence_compute_item(
     const Mesh<Dim>& mesh,
     std::array<std::unique_ptr<MathFunction<1>>, Dim> functions) noexcept {

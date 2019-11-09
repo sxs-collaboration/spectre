@@ -76,7 +76,7 @@
 /// \cond
 namespace Frame {
 // IWYU pragma: no_forward_declare MathFunction
-struct Inertial;
+struct System;
 }  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>
@@ -86,7 +86,7 @@ class CProxy_ConstGlobalCache;
 
 struct EvolutionMetavars {
   static constexpr int volume_dim = 3;
-  using frame = Frame::Inertial;
+  using frame = Frame::System;
   using system = GeneralizedHarmonic::System<volume_dim>;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;

@@ -15,7 +15,7 @@
 // IWYU pragma: no_include <vector>
 
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 
 namespace domain {

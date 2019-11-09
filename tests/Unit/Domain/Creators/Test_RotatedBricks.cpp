@@ -58,49 +58,49 @@ void test_rotated_bricks_construction(
   const Affine upper_z_map(-1.0, 1.0, midpoint[2], upper_bound[2]);
 
   std::vector<std::unique_ptr<
-      CoordinateMapBase<Frame::ElementLogical, Frame::Inertial, 3>>>
+      CoordinateMapBase<Frame::ElementLogical, Frame::System, 3>>>
       coord_maps;
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           Affine3D(lower_x_map, lower_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_zeta(), Direction<3>::upper_eta(),
                Direction<3>::lower_xi()}}}},
           Affine3D(upper_x_map, lower_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
                Direction<3>::lower_eta()}}}},
           Affine3D(lower_x_map, upper_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
                Direction<3>::lower_eta()}}}},
           Affine3D(upper_x_map, upper_y_map, lower_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_eta(), Direction<3>::lower_xi(),
                Direction<3>::upper_zeta()}}}},
           Affine3D(lower_x_map, lower_y_map, upper_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_eta(), Direction<3>::lower_zeta(),
                Direction<3>::lower_xi()}}}},
           Affine3D(upper_x_map, lower_y_map, upper_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           DiscreteRotation3D{OrientationMap<3>{std::array<Direction<3>, 3>{
               {Direction<3>::upper_zeta(), Direction<3>::lower_xi(),
                Direction<3>::lower_eta()}}}},
           Affine3D(lower_x_map, upper_y_map, upper_z_map)));
   coord_maps.emplace_back(
-      make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           Affine3D(upper_x_map, upper_y_map, upper_z_map)));
 
   test_domain_construction(domain, expected_block_neighbors,

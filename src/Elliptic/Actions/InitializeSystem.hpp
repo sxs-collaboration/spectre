@@ -35,7 +35,7 @@ namespace Actions {
  * - `linear_operand_tag` = `db::add_tag_prefix<LinearSolver::Tags::Operand,
  * fields_tag>`
  * - `fluxes_tag` = `db::add_tag_prefix<Tags::Flux, linear_operand_tag,
- * tmpl::size_t<Dim>, Frame::Inertial>`
+ * tmpl::size_t<Dim>, Frame::System>`
  * - `sources_tag` = `db::add_tag_prefix<Tags::Source, linear_operand_tag>`
  *
  * Uses:
@@ -50,7 +50,7 @@ namespace Actions {
  *   - `sources`
  * - DataBox:
  *   - `Tags::Mesh<Dim>`
- *   - `Tags::Coordinates<Dim, Frame::Inertial>`
+ *   - `Tags::Coordinates<Dim, Frame::System>`
  *   - All items required by the added compute tags
  *
  * DataBox:
@@ -88,7 +88,7 @@ struct InitializeSystem {
         db::add_tag_prefix<LinearSolver::Tags::OperatorAppliedTo,
                            linear_operand_tag>;
     using fluxes_tag = db::add_tag_prefix<::Tags::Flux, linear_operand_tag,
-                                          tmpl::size_t<Dim>, Frame::Inertial>;
+                                          tmpl::size_t<Dim>, Frame::System>;
     using inv_jacobian_tag = ::Tags::InverseJacobian<
         ::Tags::ElementMap<Dim>,
         ::Tags::Coordinates<Dim, Frame::ElementLogical>>;
@@ -108,8 +108,8 @@ struct InitializeSystem {
 
     const auto& mesh = db::get<::Tags::Mesh<Dim>>(box);
     const size_t num_grid_points = mesh.number_of_grid_points();
-    const auto& inertial_coords =
-        get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
+    const auto& system_coords =
+        get<::Tags::Coordinates<Dim, Frame::System>>(box);
 
     // Set initial data to zero. Non-zero initial data would require us to also
     // compute the linear operator applied to the the initial data.
@@ -124,7 +124,7 @@ struct InitializeSystem {
     db::item_type<fixed_sources_tag> fixed_sources{num_grid_points, 0.};
     fixed_sources.assign_subset(
         Parallel::get<typename Metavariables::analytic_solution_tag>(cache)
-            .variables(inertial_coords,
+            .variables(system_coords,
                        db::wrap_tags_in<::Tags::FixedSource,
                                         typename system::primal_fields>{}));
 

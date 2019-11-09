@@ -739,7 +739,7 @@ void check_with_random_values(
  * argument is a macro-tuple containing the parameters passed to each instance,
  * e.g. `(x, y)`. The remaining arguments are macro-tuples of the values for
  * each template parameter one wants to loop over, e.g.
- * `(1, 2, 3), (Frame::Inertial, Frame::GlobalTimeIndependent)`. For example, a
+ * `(1, 2, 3), (Frame::System, Frame::GlobalTimeIndependent)`. For example, a
  * function template
  *
  * \code

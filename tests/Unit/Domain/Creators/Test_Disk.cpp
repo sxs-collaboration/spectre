@@ -78,7 +78,7 @@ void test_disk_construction(
 
   CHECK(disk.initial_extents() == expected_extents);
   CHECK(disk.initial_refinement_levels() == expected_refinement_level);
-  using TargetFrame = Frame::Inertial;
+  using TargetFrame = Frame::System;
   using Wedge2DMap = CoordinateMaps::Wedge2D;
   using Affine = CoordinateMaps::Affine;
   using Affine2D = CoordinateMaps::ProductOf2Maps<Affine, Affine>;

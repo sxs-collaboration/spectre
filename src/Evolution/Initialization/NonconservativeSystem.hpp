@@ -21,7 +21,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 /// \endcond
 
@@ -64,14 +64,14 @@ struct NonconservativeSystem {
     const size_t num_grid_points =
         db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
     const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
-    const auto& inertial_coords =
-        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+    const auto& system_coords =
+        db::get<::Tags::Coordinates<dim, Frame::System>>(box);
 
     // Set initial data from analytic solution
     using solution_tag = ::Tags::AnalyticSolutionBase;
     Vars vars{num_grid_points};
     vars.assign_subset(Parallel::get<solution_tag>(cache).variables(
-        inertial_coords, initial_time, typename Vars::tags_list{}));
+        system_coords, initial_time, typename Vars::tags_list{}));
 
     return std::make_tuple(
         merge_into_databox<NonconservativeSystem, simple_tags, compute_tags>(

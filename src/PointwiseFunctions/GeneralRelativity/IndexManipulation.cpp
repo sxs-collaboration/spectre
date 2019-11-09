@@ -139,8 +139,8 @@ void trace(
           metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::GlobalTimeIndependent, Frame::Inertial,
-                         Frame::Spherical<Frame::Inertial>),
+                        (Frame::GlobalTimeIndependent, Frame::System,
+                         Frame::Spherical<Frame::System>),
                         (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up),
                         (UpLo::Lo, UpLo::Up))
 
@@ -172,7 +172,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
           metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE2, (1, 2, 3), (double, DataVector),
-                        (Frame::GlobalTimeIndependent, Frame::Inertial),
+                        (Frame::GlobalTimeIndependent, Frame::System),
                         (SpatialIndex, SpacetimeIndex), (UpLo::Lo, UpLo::Up))
 
 #undef DIM

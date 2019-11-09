@@ -22,9 +22,9 @@ namespace {
 template <size_t Dim, UpLo UpOrLo, IndexType Index, typename DataType>
 void test_raise_or_lower_first_index(const DataType& used_for_size) {
   using Index0 =
-      Tensor_detail::TensorIndexType<Dim, UpOrLo, Frame::Inertial, Index>;
+      Tensor_detail::TensorIndexType<Dim, UpOrLo, Frame::System, Index>;
   using Index1 =
-      Tensor_detail::TensorIndexType<Dim, UpLo::Lo, Frame::Inertial, Index>;
+      Tensor_detail::TensorIndexType<Dim, UpLo::Lo, Frame::System, Index>;
   Tensor<DataType, Symmetry<2, 1, 1>,
          index_list<change_index_up_lo<Index0>, Index1, Index1>> (*f)(
       const Tensor<DataType, Symmetry<2, 1, 1>,
@@ -41,7 +41,7 @@ void test_raise_or_lower_first_index(const DataType& used_for_size) {
 template <size_t Dim, UpLo UpOrLo, IndexType Index, typename DataType>
 void test_raise_or_lower(const DataType& used_for_size) {
   using Index0 =
-      Tensor_detail::TensorIndexType<Dim, UpOrLo, Frame::Inertial, Index>;
+      Tensor_detail::TensorIndexType<Dim, UpOrLo, Frame::System, Index>;
   Tensor<DataType, Symmetry<1>, index_list<change_index_up_lo<Index0>>> (*f)(
       const Tensor<DataType, Symmetry<1>, index_list<Index0>>&,
       const Tensor<DataType, Symmetry<1, 1>,
@@ -99,11 +99,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.IndexManipulation",
 
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(
       test_trace_last_indices, (1, 2, 3), (UpLo::Lo, UpLo::Up),
-      (UpLo::Lo, UpLo::Up), (Frame::GlobalTimeIndependent, Frame::Inertial),
+      (UpLo::Lo, UpLo::Up), (Frame::GlobalTimeIndependent, Frame::System),
       (IndexType::Spatial, IndexType::Spacetime));
 
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(
       test_trace, (1, 2, 3), (UpLo::Lo, UpLo::Up),
-      (Frame::GlobalTimeIndependent, Frame::Inertial),
+      (Frame::GlobalTimeIndependent, Frame::System),
       (IndexType::Spatial, IndexType::Spacetime));
 }

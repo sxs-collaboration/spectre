@@ -218,7 +218,7 @@ struct InterfaceMesh : db::ComputeTag, Tags::Mesh<VolumeDim - 1> {
 /// Computes the coordinates in the frame `Frame` on the faces defined by
 /// `Direction`. Intended to be prefixed by a `Tags::InterfaceCompute` to
 /// define the directions on which to compute the coordinates.
-template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+template <size_t VolumeDim, typename Frame = ::Frame::System>
 struct BoundaryCoordinates : db::ComputeTag,
                              Tags::Coordinates<VolumeDim, Frame> {
   static constexpr auto function(

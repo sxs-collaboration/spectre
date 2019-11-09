@@ -16,10 +16,10 @@
 /// \cond
 namespace {
 template <size_t Dim>
-tnsr::II<DataVector, Dim, Frame::Inertial> densitized_stress(
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& tilde_s_vector,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+tnsr::II<DataVector, Dim> densitized_stress(
+    const tnsr::I<DataVector, Dim>& tilde_s_vector,
+    const tnsr::I<DataVector, Dim>& spatial_velocity,
+    const tnsr::II<DataVector, Dim>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const Scalar<DataVector>& pressure) noexcept {
   auto result = inv_spatial_metric;
@@ -41,18 +41,18 @@ namespace Valencia {
 template <size_t Dim>
 void ComputeSources<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
-    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::System>*>
         source_tilde_s,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
+    const tnsr::i<DataVector, Dim, Frame::System>& tilde_s,
+    const tnsr::I<DataVector, Dim, Frame::System>& spatial_velocity,
     const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& d_lapse,
-    const tnsr::iJ<DataVector, Dim, Frame::Inertial>& d_shift,
-    const tnsr::ijj<DataVector, Dim, Frame::Inertial>& d_spatial_metric,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, Dim, Frame::System>& d_lapse,
+    const tnsr::iJ<DataVector, Dim, Frame::System>& d_shift,
+    const tnsr::ijj<DataVector, Dim, Frame::System>& d_spatial_metric,
+    const tnsr::II<DataVector, Dim, Frame::System>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>&
+    const tnsr::ii<DataVector, Dim, Frame::System>&
         extrinsic_curvature) noexcept {
   const auto tilde_s_M = raise_or_lower_index(tilde_s, inv_spatial_metric);
   const auto tilde_s_MN =

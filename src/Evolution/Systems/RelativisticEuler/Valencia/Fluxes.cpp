@@ -20,20 +20,15 @@ namespace Valencia {
 
 template <size_t Dim>
 void ComputeFluxes<Dim>::apply(
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-        tilde_d_flux,
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-        tilde_tau_flux,
-    const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
-        tilde_s_flux,
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> tilde_d_flux,
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> tilde_tau_flux,
+    const gsl::not_null<tnsr::Ij<DataVector, Dim>*> tilde_s_flux,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
-    const Scalar<DataVector>& lapse,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
+    const tnsr::i<DataVector, Dim>& tilde_s, const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim>& shift,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const Scalar<DataVector>& pressure,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>&
-        spatial_velocity) noexcept {
+    const tnsr::I<DataVector, Dim>& spatial_velocity) noexcept {
   const DataVector p_alpha_sqrt_det_g =
       get(sqrt_det_spatial_metric) * get(lapse) * get(pressure);
   // Outside the loop to save allocations

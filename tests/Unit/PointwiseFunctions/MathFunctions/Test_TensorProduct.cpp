@@ -46,19 +46,19 @@ auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
       Affine{-1.0, 1.0, -0.3, 0.7});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
       Affine2D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
       Affine3D{Affine{-1.0, 1.0, -0.3, 0.7}, Affine{-1.0, 1.0, 0.3, 0.55},
                Affine{-1.0, 1.0, 2.3, 2.8}});
 }
@@ -160,7 +160,7 @@ struct Var1 : db::SimpleTag {
 
 template <size_t VolumeDim>
 struct Var2 : db::SimpleTag {
-  using type = tnsr::i<DataVector, VolumeDim, Frame::Inertial>;
+  using type = tnsr::i<DataVector, VolumeDim, Frame::System>;
   static std::string name() noexcept { return "Var2"; }
 };
 
@@ -183,12 +183,12 @@ void test_with_numerical_derivatives(
   const auto du =
       partial_derivatives<TwoVars<VolumeDim>>(u, mesh, inv_jacobian);
   const auto& dVar1 =
-      get<Tags::deriv<Var1, tmpl::size_t<VolumeDim>, Frame::Inertial>>(du);
+      get<Tags::deriv<Var1, tmpl::size_t<VolumeDim>, Frame::System>>(du);
   Approx custom_approx = Approx::custom().epsilon(1.e-6);
   CHECK_ITERABLE_CUSTOM_APPROX(f.first_derivatives(x), dVar1, custom_approx);
-  const auto& dVar2 = get<
-      Tags::deriv<Var2<VolumeDim>, tmpl::size_t<VolumeDim>, Frame::Inertial>>(
-      du);
+  const auto& dVar2 =
+      get<Tags::deriv<Var2<VolumeDim>, tmpl::size_t<VolumeDim>, Frame::System>>(
+          du);
   const auto d2f = f.second_derivatives(x);
   for (size_t i = 0; i < VolumeDim; ++i) {
     for (size_t j = 0; j < VolumeDim; ++j) {

@@ -41,31 +41,31 @@ using Affine = domain::CoordinateMaps::Affine;
 using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
-constexpr double inertial_coord_min = -0.3;
-constexpr double inertial_coord_max = 0.7;
+constexpr double system_coord_min = -0.3;
+constexpr double system_coord_max = 0.7;
 
 template <size_t Dim>
 auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
-      Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max});
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
+      Affine{-1.0, 1.0, system_coord_min, system_coord_max});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
-      Affine2D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
-               Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
+      Affine2D{Affine{-1.0, 1.0, system_coord_min, system_coord_max},
+               Affine{-1.0, 1.0, system_coord_min, system_coord_max}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
-      Affine3D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
-               Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
-               Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
+      Affine3D{Affine{-1.0, 1.0, system_coord_min, system_coord_max},
+               Affine{-1.0, 1.0, system_coord_min, system_coord_max},
+               Affine{-1.0, 1.0, system_coord_min, system_coord_max}});
 }
 
 namespace TestTags {

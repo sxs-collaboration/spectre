@@ -51,7 +51,7 @@ using vars_tag =
     Tags::Variables<tmpl::list<ScalarFieldTag, AuxiliaryFieldTag<Dim>>>;
 template <size_t Dim>
 using fluxes_tag = db::add_tag_prefix<::Tags::Flux, vars_tag<Dim>,
-                                      tmpl::size_t<Dim>, Frame::Inertial>;
+                                      tmpl::size_t<Dim>, Frame::System>;
 template <size_t Dim>
 using div_fluxes_tag = db::add_tag_prefix<::Tags::div, fluxes_tag<Dim>>;
 template <size_t Dim>
@@ -143,7 +143,7 @@ void check_compute_items(
         ElementArray<Dim, Metavariables<Dim>>, tag>(runner, element_id);
   };
   CHECK(tag_is_retrievable(
-      ::Tags::Flux<ScalarFieldTag, tmpl::size_t<Dim>, Frame::Inertial>{}));
+      ::Tags::Flux<ScalarFieldTag, tmpl::size_t<Dim>, Frame::System>{}));
 }
 
 template <size_t Dim>

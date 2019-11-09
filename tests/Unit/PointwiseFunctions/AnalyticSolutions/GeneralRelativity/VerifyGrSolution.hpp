@@ -57,10 +57,10 @@ void verify_time_independent_einstein_solution(
   static_assert(evolution::is_analytic_solution_v<Solution>,
                 "Solution was not derived from AnalyticSolution");
   // Shorter names for tags.
-  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
-  using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>;
-  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>;
-  using GaugeH = ::GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>;
+  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::System>;
+  using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::System>;
+  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::System>;
+  using GaugeH = ::GeneralizedHarmonic::Tags::GaugeH<3, Frame::System>;
   using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi, GaugeH>;
 
   // Set up grid
@@ -72,7 +72,7 @@ void verify_time_independent_einstein_solution(
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
           Affine3D{
               Affine{-1., 1., lower_bound[0], upper_bound[0]},
               Affine{-1., 1., lower_bound[1], upper_bound[1]},
@@ -135,17 +135,17 @@ void verify_time_independent_einstein_solution(
   // plugging into the RHS of the generalized harmonic equations, but
   // here this is just a test.
   const auto gh_derivs =
-      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::Inertial>(
+      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::System>(
           gh_vars, mesh, coord_map.inv_jacobian(x_logical));
   const auto& d_psi =
-      get<Tags::deriv<SpacetimeMetric, tmpl::size_t<3>, Frame::Inertial>>(
+      get<Tags::deriv<SpacetimeMetric, tmpl::size_t<3>, Frame::System>>(
           gh_derivs);
   const auto& d_pi =
-      get<Tags::deriv<Pi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<Pi, tmpl::size_t<3>, Frame::System>>(gh_derivs);
   const auto& d_phi =
-      get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::System>>(gh_derivs);
   const auto& d_H =
-      get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::System>>(gh_derivs);
 
   Approx numerical_approx =
       Approx::custom().epsilon(error_tolerance).scale(1.0);
@@ -184,7 +184,7 @@ void verify_time_independent_einstein_solution(
   const auto trace_christoffel_first_kind =
       trace_last_indices(christoffel_first_kind, upper_psi);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<3, Frame::System>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Test ADM evolution equation gives zero
@@ -220,12 +220,10 @@ void verify_time_independent_einstein_solution(
   const auto gamma2 = make_with_value<Scalar<DataVector>>(x, 1.0);
 
   // Compute RHS of generalized harmonic Einstein equations.
-  auto dt_psi =
-      make_with_value<tnsr::aa<DataVector, 3, Frame::Inertial>>(x, 0.0);
-  auto dt_pi =
-      make_with_value<tnsr::aa<DataVector, 3, Frame::Inertial>>(x, 0.0);
+  auto dt_psi = make_with_value<tnsr::aa<DataVector, 3, Frame::System>>(x, 0.0);
+  auto dt_pi = make_with_value<tnsr::aa<DataVector, 3, Frame::System>>(x, 0.0);
   auto dt_phi =
-      make_with_value<tnsr::iaa<DataVector, 3, Frame::Inertial>>(x, 0.0);
+      make_with_value<tnsr::iaa<DataVector, 3, Frame::System>>(x, 0.0);
   GeneralizedHarmonic::ComputeDuDt<3>::apply(
       make_not_null(&dt_psi), make_not_null(&dt_pi), make_not_null(&dt_phi),
       psi, pi, phi, d_psi, d_pi, d_phi, gamma0, gamma1, gamma2, gauge_function,

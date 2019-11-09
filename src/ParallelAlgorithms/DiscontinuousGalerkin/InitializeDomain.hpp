@@ -31,7 +31,7 @@
 template <size_t VolumeDim>
 class ElementIndex;
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 /// \endcond
 
@@ -43,19 +43,19 @@ namespace Actions {
  *
  * ConstGlobalCache:
  * - Uses:
- *   - `Tags::Domain<Dim, Frame::Inertial>`
+ *   - `Tags::Domain<Dim, Frame::System>`
  * DataBox:
  * - Uses:
  *   - `Tags::InitialExtents<Dim>`
  * - Adds:
  *   - `Tags::Mesh<Dim>`
  *   - `Tags::Element<Dim>`
- *   - `Tags::ElementMap<Dim, Frame::Inertial>`
+ *   - `Tags::ElementMap<Dim, Frame::System>`
  *   - `Tags::Coordinates<Dim, Frame::ElementLogical>`
- *   - `Tags::Coordinates<Dim, Frame::Inertial>`
+ *   - `Tags::Coordinates<Dim, Frame::System>`
  *   - `Tags::InverseJacobian<
  *   Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::ElementLogical>>`
- *   - `Tags::MinimumGridSpacing<Dim, Frame::Inertial>>`
+ *   - `Tags::MinimumGridSpacing<Dim, Frame::System>>`
  * - Removes: nothing
  * - Modifies: nothing
  */
@@ -84,7 +84,7 @@ struct InitializeDomain {
                            ::Tags::InverseJacobian<
                                ::Tags::ElementMap<Dim>,
                                ::Tags::Coordinates<Dim, Frame::ElementLogical>>,
-                           ::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>>;
+                           ::Tags::MinimumGridSpacing<Dim, Frame::System>>>;
 
     const auto& initial_extents = db::get<::Tags::InitialExtents<Dim>>(box);
     const auto& domain = db::get<::Tags::Domain<Dim>>(box);
@@ -95,7 +95,7 @@ struct InitializeDomain {
         initial_extents, element_id);
     Element<Dim> element =
         domain::Initialization::create_initial_element(element_id, my_block);
-    ElementMap<Dim, Frame::Inertial> element_map{
+    ElementMap<Dim, Frame::System> element_map{
         element_id, my_block.coordinate_map().get_clone()};
 
     return std::make_tuple(

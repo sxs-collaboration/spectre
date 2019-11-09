@@ -40,7 +40,7 @@
 template <size_t Dim>
 class Mesh;
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 namespace Tags {
 struct Time;
@@ -78,7 +78,7 @@ class ObserveFields;  // IWYU pragma: keep
  * \brief %Observe volume tensor fields.
  *
  * Writes volume quantities:
- * - `InertialCoordinates`
+ * - `SystemCoordinates`
  * - Tensors listed in `Tensors` template parameter
  * - `Error(*)` = errors in `AnalyticSolutionTensors` =
  *   \f$\text{value} - \text{analytic solution}\f$
@@ -101,7 +101,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                                 tmpl::list<Tensors...>>,
           tmpl::list<>>,
       "All AnalyticSolutionTensors must be listed in Tensors.");
-  using coordinates_tag = ::Tags::Coordinates<VolumeDim, Frame::Inertial>;
+  using coordinates_tag = ::Tags::Coordinates<VolumeDim, Frame::System>;
 
   template <typename T>
   static std::string component_suffix(const T& tensor,
@@ -131,7 +131,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       "Observe volume tensor fields.\n"
       "\n"
       "Writes volume quantities:\n"
-      " * InertialCoordinates\n"
+      " * SystemCoordinates\n"
       " * Tensors listed in Tensors template parameter\n"
       " * Error(*) = errors in AnalyticSolutionTensors\n"
       "            = value - analytic solution\n"
@@ -169,8 +169,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   void operator()(
       const db::const_item_type<ObservationValueTag>& observation_value,
       const Mesh<VolumeDim>& mesh,
-      const tnsr::I<DataVector, VolumeDim, Frame::Inertial>&
-          inertial_coordinates,
+      const tnsr::I<DataVector, VolumeDim, Frame::System>& system_coordinates,
       const db::const_item_type<
           AnalyticSolutionTensors>&... analytic_solution_tensors,
       const db::const_item_type<
@@ -189,7 +188,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     // size is nontrivial.
     components.reserve(alg::accumulate(
         std::initializer_list<size_t>{
-            inertial_coordinates.size(),
+            system_coordinates.size(),
             2 * db::const_item_type<AnalyticSolutionTensors>::size()...,
             db::const_item_type<NonSolutionTensors>::size()...},
         0_st));
@@ -206,7 +205,7 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
       }
     };
     record_tensor_components(tmpl::type_<coordinates_tag>{},
-                             inertial_coordinates);
+                             system_coordinates);
     EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(
         tmpl::type_<AnalyticSolutionTensors>{}, analytic_solution_tensors));
     EXPAND_PACK_LEFT_TO_RIGHT(record_tensor_components(

@@ -38,7 +38,7 @@ namespace elliptic {
  * With:
  * - `operator_tag` = `db::add_tag_prefix<OperatorTag, VarsTag>`
  * - `fluxes_tag` = `db::add_tag_prefix<::Tags::Flux, VarsTag,
- * tmpl::size_t<Dim>, Frame::Inertial>`
+ * tmpl::size_t<Dim>, Frame::System>`
  * - `div_fluxes_tag` = `db::add_tag_prefix<Tags::div, fluxes_tag>`
  * - `sources_tag` = `db::add_tag_prefix<::Tags::Source, VarsTag>`
  *
@@ -56,7 +56,7 @@ struct FirstOrderOperator {
  private:
   using operator_tag = db::add_tag_prefix<OperatorTag, VarsTag>;
   using fluxes_tag = db::add_tag_prefix<::Tags::Flux, VarsTag,
-                                        tmpl::size_t<Dim>, Frame::Inertial>;
+                                        tmpl::size_t<Dim>, Frame::System>;
   using div_fluxes_tag = db::add_tag_prefix<::Tags::div, fluxes_tag>;
   using sources_tag = db::add_tag_prefix<::Tags::Source, VarsTag>;
 

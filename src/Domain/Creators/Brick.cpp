@@ -18,7 +18,7 @@
 /// \cond
 namespace Frame {
 struct ElementLogical;
-struct Inertial;
+struct System;
 }  // namespace Frame
 /// \endcond
 
@@ -54,7 +54,7 @@ Domain<3> Brick::create_domain() const noexcept {
   }
 
   return Domain<3>{
-      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           Affine3D{Affine{-1., 1., lower_xyz_[0], upper_xyz_[0]},
                    Affine{-1., 1., lower_xyz_[1], upper_xyz_[1]},
                    Affine{-1., 1., lower_xyz_[2], upper_xyz_[2]}}),

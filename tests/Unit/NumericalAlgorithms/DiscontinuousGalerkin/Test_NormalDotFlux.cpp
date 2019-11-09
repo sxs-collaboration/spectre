@@ -341,11 +341,11 @@ SPECTRE_TEST_CASE("Unit.Evolution.NormalDotFluxCompute", "[Unit][Evolution]") {
   }
   {
     INFO("Compute item");
-    check_compute_item<1, Frame::Inertial>();
+    check_compute_item<1, Frame::System>();
     check_compute_item<1, Frame::GlobalTimeIndependent>();
-    check_compute_item<2, Frame::Inertial>();
+    check_compute_item<2, Frame::System>();
     check_compute_item<2, Frame::GlobalTimeIndependent>();
-    check_compute_item<3, Frame::Inertial>();
+    check_compute_item<3, Frame::System>();
     check_compute_item<3, Frame::GlobalTimeIndependent>();
   }
 }

@@ -100,7 +100,7 @@ class NumericalFlux {
   void package_data(const gsl::not_null<Variables<package_tags>*> packaged_data,
                     const Scalar<DataVector>& scalar_field_flux,
                     const Scalar<DataVector>& other_data,
-                    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+                    const tnsr::i<DataVector, Dim, Frame::System>&
                         interface_unit_normal) const noexcept {
     get(get<field_tag>(*packaged_data)) = 10. * get(scalar_field_flux);
     get<0>(get<ExtraData>(*packaged_data)) =
@@ -267,10 +267,10 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.BoundaryConditions",
 
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           Affine2D(xi_map, eta_map));
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial, Affine2D>));
+      domain::CoordinateMap<Frame::ElementLogical, Frame::System, Affine2D>));
 
   const auto external_directions = {Direction<2>::lower_eta(),
                                     Direction<2>::upper_xi()};
@@ -310,7 +310,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.BoundaryConditions",
                               {Direction<2>::upper_eta(), {{south_id}, {}}}});
 
     auto element_map =
-        ElementMap<2, Frame::Inertial>(self_id, coord_map->get_clone());
+        ElementMap<2, Frame::System>(self_id, coord_map->get_clone());
 
     db::item_type<bdry_vars_tag> bdry_vars;
     for (const auto& direction : external_directions) {

@@ -19,7 +19,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;  // IWYU pragma: keep
+struct System;          // IWYU pragma: keep
 struct ElementLogical;  // IWYU pragma: keep
 }  // namespace Frame
 /// \endcond
@@ -50,12 +50,12 @@ Domain<3> Sphere::create_domain() const noexcept {
       corners_for_radially_layered_domains(1, true);
 
   std::vector<std::unique_ptr<
-      CoordinateMapBase<Frame::ElementLogical, Frame::Inertial, 3>>>
-      coord_maps = wedge_coordinate_maps<Frame::Inertial>(
+      CoordinateMapBase<Frame::ElementLogical, Frame::System, 3>>>
+      coord_maps = wedge_coordinate_maps<Frame::System>(
           inner_radius_, outer_radius_, 0.0, 1.0, use_equiangular_map_);
   if (use_equiangular_map_) {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
             Equiangular3D{
                 Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
                             inner_radius_ / sqrt(3.0)),
@@ -65,7 +65,7 @@ Domain<3> Sphere::create_domain() const noexcept {
                             inner_radius_ / sqrt(3.0))}));
   } else {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
             Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),
                             inner_radius_ / sqrt(3.0)),
                      Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(3.0),

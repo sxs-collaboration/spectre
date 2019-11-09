@@ -11,9 +11,9 @@ namespace GeneralizedHarmonic {
 
 /// \brief Tags for the generalized harmonic formulation of Einstein equations
 namespace Tags {
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <size_t Dim, typename Frame = Frame::System>
 struct Pi;
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <size_t Dim, typename Frame = Frame::System>
 struct Phi;
 
 struct ConstraintGamma0;
@@ -23,13 +23,13 @@ struct GaugeHRollOnStartTime;
 struct GaugeHRollOnTimeWindow;
 template <typename Frame>
 struct GaugeHSpatialWeightDecayWidth;
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <size_t Dim, typename Frame = Frame::System>
 struct InitialGaugeH;
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <size_t Dim, typename Frame = Frame::System>
 struct SpacetimeDerivInitialGaugeH;
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <size_t Dim, typename Frame = Frame::System>
 struct GaugeH;
-template <size_t Dim, typename Frame = Frame::Inertial>
+template <size_t Dim, typename Frame = Frame::System>
 struct SpacetimeDerivGaugeH;
 
 template <size_t Dim, typename Frame>

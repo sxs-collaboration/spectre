@@ -51,7 +51,7 @@ void test_rectangle_construction(
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
       make_vector(
-          make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+          make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
               Affine2D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                        Affine{-1., 1., lower_bound[1], upper_bound[1]}})));
   test_initial_domain(domain, rectangle.initial_refinement_levels());
@@ -118,15 +118,15 @@ void test_rectangle() {
   creators::register_derived_with_charm();
 
   const auto base_map =
-      make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           Affine2D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                    Affine{-1., 1., lower_bound[1], upper_bound[1]}});
   const auto base_map_deserialized = serialize_and_deserialize(base_map);
   using MapType =
-      const CoordinateMap<Frame::ElementLogical, Frame::Inertial, Affine2D>*;
+      const CoordinateMap<Frame::ElementLogical, Frame::System, Affine2D>*;
   REQUIRE(dynamic_cast<MapType>(base_map.get()) != nullptr);
   const auto coord_map =
-      make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+      make_coordinate_map<Frame::ElementLogical, Frame::System>(
           Affine2D{Affine{-1., 1., lower_bound[0], upper_bound[0]},
                    Affine{-1., 1., lower_bound[1], upper_bound[1]}});
   CHECK(*dynamic_cast<MapType>(base_map.get()) == coord_map);

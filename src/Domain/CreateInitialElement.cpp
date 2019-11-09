@@ -20,7 +20,7 @@
 
 namespace Frame {
 struct GlobalTimeIndependent;  // IWYU pragma: keep
-struct Inertial;  // IWYU pragma: keep
+struct System;                 // IWYU pragma: keep
 }  // namespace Frame
 
 namespace domain {

@@ -17,7 +17,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 struct ElementLogical;
 }  // namespace Frame
 namespace domain {
@@ -50,8 +50,8 @@ FrustalCloak::FrustalCloak(
 
 Domain<3> FrustalCloak::create_domain() const noexcept {
   std::vector<std::unique_ptr<
-      CoordinateMapBase<Frame::ElementLogical, Frame::Inertial, 3>>>
-      coord_maps = frustum_coordinate_maps<Frame::Inertial>(
+      CoordinateMapBase<Frame::ElementLogical, Frame::System, 3>>>
+      coord_maps = frustum_coordinate_maps<Frame::System>(
           length_inner_cube_, length_outer_cube_, use_equiangular_map_,
           origin_preimage_, projection_factor_);
   return Domain<3>{std::move(coord_maps),

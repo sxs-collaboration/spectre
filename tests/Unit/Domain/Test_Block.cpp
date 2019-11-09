@@ -26,10 +26,10 @@ namespace domain {
 namespace {
 template <size_t Dim>
 void test_block() {
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::System,
                                        CoordinateMaps::Identity<Dim>>));
 
-  using coordinate_map = CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+  using coordinate_map = CoordinateMap<Frame::ElementLogical, Frame::System,
                                        CoordinateMaps::Identity<Dim>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<Dim>{}};
   Block<Dim> block(identity_map.get_clone(), 7, {});
@@ -46,7 +46,7 @@ void test_block() {
   // Test that the block's coordinate_map is Identity:
   const auto& map = block.coordinate_map();
   const tnsr::I<double, Dim, Frame::ElementLogical> xi(1.0);
-  const tnsr::I<double, Dim, Frame::Inertial> x(1.0);
+  const tnsr::I<double, Dim, Frame::System> x(1.0);
   CHECK(map(xi) == x);
   CHECK(map.inverse(x).get() == xi);
 
@@ -75,7 +75,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
   DirectionMap<2, BlockNeighbor<2>> neighbors = {
       {Direction<2>::upper_xi(), block_neighbor1},
       {Direction<2>::lower_eta(), block_neighbor2}};
-  using coordinate_map = CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+  using coordinate_map = CoordinateMap<Frame::ElementLogical, Frame::System,
                                        CoordinateMaps::Identity<2>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<2>{}};
   const Block<2> block(identity_map.get_clone(), 3, std::move(neighbors));

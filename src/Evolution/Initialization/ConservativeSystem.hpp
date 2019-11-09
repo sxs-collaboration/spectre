@@ -27,7 +27,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 /// \endcond
 
@@ -69,7 +69,7 @@ struct ConservativeSystem {
     static constexpr size_t dim = system::volume_dim;
     using variables_tag = typename system::variables_tag;
     using fluxes_tag = db::add_tag_prefix<::Tags::Flux, variables_tag,
-                                          tmpl::size_t<dim>, Frame::Inertial>;
+                                          tmpl::size_t<dim>, Frame::System>;
     using sources_tag = db::add_tag_prefix<::Tags::Source, variables_tag>;
     using simple_tags =
         db::AddSimpleTags<variables_tag, fluxes_tag, sources_tag>;
@@ -127,32 +127,32 @@ struct ConservativeSystem {
     const size_t num_grid_points =
         db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
 
-    const auto& inertial_coords =
-        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+    const auto& system_coords =
+        db::get<::Tags::Coordinates<dim, Frame::System>>(box);
 
     // Set initial data from analytic solution
     PrimitiveVars primitive_vars{num_grid_points};
     auto equation_of_state = make_overloader(
-        [ initial_time, &
-          inertial_coords ](std::true_type /*is_analytic_solution*/,
-                            const gsl::not_null<PrimitiveVars*> prim_vars,
-                            const auto& local_cache) noexcept {
+        [initial_time, &system_coords](
+            std::true_type /*is_analytic_solution*/,
+            const gsl::not_null<PrimitiveVars*> prim_vars,
+            const auto& local_cache) noexcept {
           using solution_tag = ::Tags::AnalyticSolutionBase;
           prim_vars->assign_subset(
               Parallel::get<solution_tag>(local_cache)
                   .variables(
-                      inertial_coords, initial_time,
+                      system_coords, initial_time,
                       typename Metavariables::analytic_variables_tags{}));
           return Parallel::get<solution_tag>(local_cache).equation_of_state();
         },
-        [&inertial_coords](std::false_type /*is_analytic_solution*/,
-                           const gsl::not_null<PrimitiveVars*> prim_vars,
-                           const auto& local_cache) noexcept {
+        [&system_coords](std::false_type /*is_analytic_solution*/,
+                         const gsl::not_null<PrimitiveVars*> prim_vars,
+                         const auto& local_cache) noexcept {
           using analytic_data_tag = ::Tags::AnalyticDataBase;
           prim_vars->assign_subset(
               Parallel::get<analytic_data_tag>(local_cache)
                   .variables(
-                      inertial_coords,
+                      system_coords,
                       typename Metavariables::analytic_variables_tags{}));
           return Parallel::get<analytic_data_tag>(local_cache)
               .equation_of_state();
@@ -178,17 +178,17 @@ struct ConservativeSystem {
 
      const double initial_time =
          db::get<Initialization::Tags::InitialTime>(box);
-     const auto& inertial_coords =
-         db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+     const auto& system_coords =
+         db::get<::Tags::Coordinates<dim, Frame::System>>(box);
 
      // Set initial data from analytic solution
      using Vars = typename variables_tag::type;
      using solution_tag = ::Tags::AnalyticSolutionBase;
      db::mutate<variables_tag>(
-         make_not_null(&box), [&cache, &inertial_coords, initial_time ](
+         make_not_null(&box), [&cache, &system_coords, initial_time](
                                   const gsl::not_null<Vars*> vars) noexcept {
            vars->assign_subset(Parallel::get<solution_tag>(cache).variables(
-               inertial_coords, initial_time, typename Vars::tags_list{}));
+               system_coords, initial_time, typename Vars::tags_list{}));
          });
 
      return std::move(box);

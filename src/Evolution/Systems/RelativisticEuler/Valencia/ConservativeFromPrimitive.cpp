@@ -21,22 +21,22 @@ template <size_t Dim>
 void ConservativeFromPrimitive<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> tilde_d,
     const gsl::not_null<Scalar<DataVector>*> tilde_tau,
-    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> tilde_s,
+    const gsl::not_null<tnsr::i<DataVector, Dim>*> tilde_s,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_internal_energy,
     const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& pressure,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
+    const tnsr::I<DataVector, Dim>& spatial_velocity,
     const Scalar<DataVector>& lorentz_factor,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) noexcept {
+    const tnsr::ii<DataVector, Dim>& spatial_metric) noexcept {
   Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, Dim, Frame::Inertial>,
+      hydro::Tags::SpatialVelocityOneForm<DataVector, Dim, Frame::System>,
       hydro::Tags::SpatialVelocitySquared<DataVector>>>
       temp_tensors{get(rest_mass_density).size()};
-  auto& spatial_velocity_oneform = get<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, Dim, Frame::Inertial>>(
-      temp_tensors);
+  auto& spatial_velocity_oneform =
+      get<hydro::Tags::SpatialVelocityOneForm<DataVector, Dim, Frame::System>>(
+          temp_tensors);
   raise_or_lower_index(make_not_null(&spatial_velocity_oneform),
                        spatial_velocity, spatial_metric);
   auto& spatial_velocity_squared =

@@ -67,7 +67,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>
@@ -111,7 +111,7 @@ struct EvolutionMetavars {
       observers::collect_reduction_data_tags<Event<events>::creatable_classes>;
 
   using step_choosers =
-      tmpl::list<StepChoosers::Registrars::Cfl<1, Frame::Inertial>,
+      tmpl::list<StepChoosers::Registrars::Cfl<1, Frame::System>,
                  StepChoosers::Registrars::Constant,
                  StepChoosers::Registrars::Increase>;
 

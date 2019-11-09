@@ -88,7 +88,7 @@ void test_gauge_constraint_analytic(
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
           Affine3D{
               Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
               Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
@@ -135,13 +135,13 @@ void test_gauge_constraint_analytic(
   const auto pi = GeneralizedHarmonic::pi(
       lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<3, Frame::System>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Get the constraint, and check that it vanishes
   auto constraint =
-      make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(x, 0.0);
-  const gsl::not_null<tnsr::a<DataVector, 3, Frame::Inertial>*>
+      make_with_value<tnsr::a<DataVector, 3, Frame::System>>(x, 0.0);
+  const gsl::not_null<tnsr::a<DataVector, 3, Frame::System>*>
       constraint_pointer = &(constraint);
   GeneralizedHarmonic::gauge_constraint(
       constraint_pointer, gauge_function, normal_one_form, normal_vector,
@@ -184,10 +184,10 @@ void test_two_index_constraint_analytic(
     const std::array<double, 3>& upper_bound,
     const double error_tolerance) noexcept {
   // Shorter names for tags.
-  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
-  using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>;
-  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>;
-  using GaugeH = ::GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>;
+  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::System>;
+  using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::System>;
+  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::System>;
+  using GaugeH = ::GeneralizedHarmonic::Tags::GaugeH<3, Frame::System>;
   using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi, GaugeH>;
 
   // Check vs. time-independent analytic solution
@@ -200,7 +200,7 @@ void test_two_index_constraint_analytic(
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
           Affine3D{
               Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
               Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
@@ -236,7 +236,7 @@ void test_two_index_constraint_analytic(
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<3, Frame::System>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Arbitrary choice for gamma2
@@ -263,17 +263,17 @@ void test_two_index_constraint_analytic(
 
   // Compute numerical derivatives of psi,pi,phi,H
   const auto gh_derivs =
-      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::Inertial>(
+      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::System>(
           gh_vars, mesh, coord_map.inv_jacobian(x_logical));
   const auto& d_spacetime_metric =
-      get<Tags::deriv<SpacetimeMetric, tmpl::size_t<3>, Frame::Inertial>>(
+      get<Tags::deriv<SpacetimeMetric, tmpl::size_t<3>, Frame::System>>(
           gh_derivs);
   const auto& d_pi =
-      get<Tags::deriv<Pi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<Pi, tmpl::size_t<3>, Frame::System>>(gh_derivs);
   const auto& d_phi =
-      get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::System>>(gh_derivs);
   const auto& d_gauge_function =
-      get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::System>>(gh_derivs);
 
   // Compute the three-index constraint
   const auto three_index_constraint =
@@ -281,7 +281,7 @@ void test_two_index_constraint_analytic(
 
   // Get the constraint, and check that it vanishes to error_tolerance
   auto two_index_constraint =
-      make_with_value<tnsr::ia<DataVector, 3, Frame::Inertial>>(
+      make_with_value<tnsr::ia<DataVector, 3, Frame::System>>(
           x, std::numeric_limits<double>::signaling_NaN());
   GeneralizedHarmonic::two_index_constraint(
       make_not_null(&two_index_constraint), d_gauge_function, normal_one_form,
@@ -317,7 +317,7 @@ void test_four_index_constraint_analytic(
     const std::array<double, 3>& upper_bound,
     const double error_tolerance) noexcept {
   // Shorter names for tags.
-  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>;
+  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::System>;
   using VariablesTags = tmpl::list<Phi>;
 
   // Check vs. time-independent analytic solution
@@ -330,7 +330,7 @@ void test_four_index_constraint_analytic(
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
           Affine3D{
               Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
               Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
@@ -363,14 +363,14 @@ void test_four_index_constraint_analytic(
 
   // Compute numerical derivatives of phi
   const auto gh_derivs =
-      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::Inertial>(
+      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::System>(
           gh_vars, mesh, coord_map.inv_jacobian(x_logical));
   const auto& d_phi =
-      get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::System>>(gh_derivs);
 
   // Get the constraint, and check that it vanishes to error_tolerance
   auto four_index_constraint =
-      make_with_value<tnsr::iaa<DataVector, 3, Frame::Inertial>>(
+      make_with_value<tnsr::iaa<DataVector, 3, Frame::System>>(
           x, std::numeric_limits<double>::signaling_NaN());
   GeneralizedHarmonic::four_index_constraint(
       make_not_null(&four_index_constraint), d_phi);
@@ -415,10 +415,10 @@ void test_f_constraint_analytic(const Solution& solution,
                                 const std::array<double, 3>& upper_bound,
                                 const double error_tolerance) noexcept {
   // Shorter names for tags.
-  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
-  using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>;
-  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>;
-  using GaugeH = ::GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>;
+  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::System>;
+  using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::System>;
+  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::System>;
+  using GaugeH = ::GeneralizedHarmonic::Tags::GaugeH<3, Frame::System>;
   using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi, GaugeH>;
 
   // Check vs. time-independent analytic solution
@@ -431,7 +431,7 @@ void test_f_constraint_analytic(const Solution& solution,
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
           Affine3D{
               Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
               Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
@@ -467,7 +467,7 @@ void test_f_constraint_analytic(const Solution& solution,
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<3, Frame::System>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Arbitrary choice for gamma2
@@ -494,24 +494,24 @@ void test_f_constraint_analytic(const Solution& solution,
 
   // Compute numerical derivatives of psi,pi,phi,H
   const auto gh_derivs =
-      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::Inertial>(
+      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::System>(
           gh_vars, mesh, coord_map.inv_jacobian(x_logical));
   const auto& d_spacetime_metric =
-      get<Tags::deriv<SpacetimeMetric, tmpl::size_t<3>, Frame::Inertial>>(
+      get<Tags::deriv<SpacetimeMetric, tmpl::size_t<3>, Frame::System>>(
           gh_derivs);
   const auto& d_pi =
-      get<Tags::deriv<Pi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<Pi, tmpl::size_t<3>, Frame::System>>(gh_derivs);
   const auto& d_phi =
-      get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::System>>(gh_derivs);
   const auto& d_gauge_function =
-      get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::System>>(gh_derivs);
 
   // Compute the three-index constraint
   const auto three_index_constraint =
       GeneralizedHarmonic::three_index_constraint(d_spacetime_metric, phi);
 
   // Get the constraint, and check that it vanishes to error_tolerance
-  auto f_constraint = make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(
+  auto f_constraint = make_with_value<tnsr::a<DataVector, 3, Frame::System>>(
       x, std::numeric_limits<double>::signaling_NaN());
   GeneralizedHarmonic::f_constraint(
       make_not_null(&f_constraint), gauge_function, d_gauge_function,
@@ -555,10 +555,10 @@ void test_constraint_energy_analytic(const Solution& solution,
                                      const std::array<double, 3>& upper_bound,
                                      const double error_tolerance) noexcept {
   // Shorter names for tags.
-  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::Inertial>;
-  using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>;
-  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>;
-  using GaugeH = ::GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>;
+  using SpacetimeMetric = gr::Tags::SpacetimeMetric<3, Frame::System>;
+  using Pi = ::GeneralizedHarmonic::Tags::Pi<3, Frame::System>;
+  using Phi = ::GeneralizedHarmonic::Tags::Phi<3, Frame::System>;
+  using GaugeH = ::GeneralizedHarmonic::Tags::GaugeH<3, Frame::System>;
   using VariablesTags = tmpl::list<SpacetimeMetric, Pi, Phi, GaugeH>;
 
   // Check vs. time-independent analytic solution
@@ -571,7 +571,7 @@ void test_constraint_energy_analytic(const Solution& solution,
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
           Affine3D{
               Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
               Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
@@ -610,7 +610,7 @@ void test_constraint_energy_analytic(const Solution& solution,
   const auto inverse_spacetime_metric =
       gr::inverse_spacetime_metric(lapse, shift, inverse_spatial_metric);
   const auto normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial>(lapse);
+      gr::spacetime_normal_one_form<3, Frame::System>(lapse);
   const auto normal_vector = gr::spacetime_normal_vector(lapse, shift);
 
   // Compute derivative d_phi numerically
@@ -634,17 +634,17 @@ void test_constraint_energy_analytic(const Solution& solution,
 
   // Compute numerical derivatives of psi,pi,phi,H
   const auto gh_derivs =
-      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::Inertial>(
+      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::System>(
           gh_vars, mesh, coord_map.inv_jacobian(x_logical));
   const auto& d_spacetime_metric =
-      get<Tags::deriv<SpacetimeMetric, tmpl::size_t<3>, Frame::Inertial>>(
+      get<Tags::deriv<SpacetimeMetric, tmpl::size_t<3>, Frame::System>>(
           gh_derivs);
   const auto& d_pi =
-      get<Tags::deriv<Pi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<Pi, tmpl::size_t<3>, Frame::System>>(gh_derivs);
   const auto& d_phi =
-      get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<Phi, tmpl::size_t<3>, Frame::System>>(gh_derivs);
   const auto& d_gauge_function =
-      get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<GaugeH, tmpl::size_t<3>, Frame::System>>(gh_derivs);
 
   // Arbitrary choice for gamma2
   const auto gamma2 = make_with_value<Scalar<DataVector>>(x, 4.0);
@@ -689,27 +689,28 @@ void test_constraint_compute_items(
     const std::array<double, 3>& upper_bound) noexcept {
   // Check that compute items are named correctly
   CHECK(GeneralizedHarmonic::Tags::ConstraintGamma0Compute<
-            3, Frame::Inertial>::name() == "ConstraintGamma0");
+            3, Frame::System>::name() == "ConstraintGamma0");
   CHECK(GeneralizedHarmonic::Tags::ConstraintGamma1Compute<
-            3, Frame::Inertial>::name() == "ConstraintGamma1");
+            3, Frame::System>::name() == "ConstraintGamma1");
   CHECK(GeneralizedHarmonic::Tags::ConstraintGamma2Compute<
-            3, Frame::Inertial>::name() == "ConstraintGamma2");
+            3, Frame::System>::name() == "ConstraintGamma2");
   CHECK(GeneralizedHarmonic::Tags::GaugeHImplicitFrom3p1QuantitiesCompute<
-            3, Frame::Inertial>::name() == "GaugeH");
+            3, Frame::System>::name() == "GaugeH");
   CHECK(GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
-            3, Frame::Inertial>::name() == "SpacetimeDerivGaugeH");
+            3, Frame::System>::name() == "SpacetimeDerivGaugeH");
   CHECK(GeneralizedHarmonic::Tags::GaugeConstraintCompute<
-            3, Frame::Inertial>::name() == "GaugeConstraint");
-  CHECK(GeneralizedHarmonic::Tags::FConstraintCompute<
-            3, Frame::Inertial>::name() == "FConstraint");
+            3, Frame::System>::name() == "GaugeConstraint");
+  CHECK(
+      GeneralizedHarmonic::Tags::FConstraintCompute<3, Frame::System>::name() ==
+      "FConstraint");
   CHECK(GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<
-            3, Frame::Inertial>::name() == "TwoIndexConstraint");
+            3, Frame::System>::name() == "TwoIndexConstraint");
   CHECK(GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<
-            3, Frame::Inertial>::name() == "ThreeIndexConstraint");
+            3, Frame::System>::name() == "ThreeIndexConstraint");
   CHECK(GeneralizedHarmonic::Tags::FourIndexConstraintCompute<
-            3, Frame::Inertial>::name() == "FourIndexConstraint");
+            3, Frame::System>::name() == "FourIndexConstraint");
   CHECK(GeneralizedHarmonic::Tags::ConstraintEnergyCompute<
-            3, Frame::Inertial>::name() == "ConstraintEnergy");
+            3, Frame::System>::name() == "ConstraintEnergy");
 
   // Check vs. time-independent analytic solution
   // Set up grid
@@ -720,7 +721,7 @@ void test_constraint_compute_items(
   using Affine3D =
       domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   const auto coord_map =
-      domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
+      domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
           Affine3D{Affine{-1.0, 1.0, lower_bound[0], upper_bound[0]},
                    Affine{-1.0, 1.0, lower_bound[1], upper_bound[1]},
                    Affine{-1.0, 1.0, lower_bound[2], upper_bound[2]}});
@@ -752,7 +753,7 @@ void test_constraint_compute_items(
   const auto spacetime_normal_vector =
       gr::spacetime_normal_vector(lapse, shift);
   const auto spacetime_normal_one_form =
-      gr::spacetime_normal_one_form<3, Frame::Inertial, DataVector>(lapse);
+      gr::spacetime_normal_one_form<3, Frame::System, DataVector>(lapse);
   const auto det_and_inv = determinant_and_inverse(spatial_metric);
   const auto& det_spatial_metric = det_and_inv.first;
   const auto& inverse_spatial_metric = det_and_inv.second;
@@ -767,15 +768,15 @@ void test_constraint_compute_items(
   // Compute derivatives d_phi, d_pi, and d_gauge_function numerically
   // First, prepare
   using VariablesTags =
-      tmpl::list<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>>;
+      tmpl::list<GeneralizedHarmonic::Tags::Pi<3, Frame::System>,
+                 GeneralizedHarmonic::Tags::Phi<3, Frame::System>,
+                 GeneralizedHarmonic::Tags::GaugeH<3, Frame::System>>;
 
   Variables<VariablesTags> gh_vars(data_size);
-  auto& pi = get<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(gh_vars);
-  auto& phi = get<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(gh_vars);
+  auto& pi = get<GeneralizedHarmonic::Tags::Pi<3, Frame::System>>(gh_vars);
+  auto& phi = get<GeneralizedHarmonic::Tags::Phi<3, Frame::System>>(gh_vars);
   auto& gauge_source =
-      get<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>>(gh_vars);
+      get<GeneralizedHarmonic::Tags::GaugeH<3, Frame::System>>(gh_vars);
   phi = GeneralizedHarmonic::phi(lapse, deriv_lapse, shift, deriv_shift,
                                  spatial_metric, deriv_spatial_metric);
   pi = GeneralizedHarmonic::pi(lapse, time_deriv_lapse, shift, time_deriv_shift,
@@ -790,17 +791,17 @@ void test_constraint_compute_items(
       trace_christoffel_first_kind);
   // Second, compute derivatives
   const auto gh_derivs =
-      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::Inertial>(
+      partial_derivatives<VariablesTags, VariablesTags, 3, Frame::System>(
           gh_vars, mesh, coord_map.inv_jacobian(x_logical));
   const auto& deriv_pi =
-      get<Tags::deriv<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                      tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<GeneralizedHarmonic::Tags::Pi<3, Frame::System>,
+                      tmpl::size_t<3>, Frame::System>>(gh_derivs);
   const auto& deriv_phi =
-      get<Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                      tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::System>,
+                      tmpl::size_t<3>, Frame::System>>(gh_derivs);
   const auto& deriv_gauge_source =
-      get<Tags::deriv<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>,
-                      tmpl::size_t<3>, Frame::Inertial>>(gh_derivs);
+      get<Tags::deriv<GeneralizedHarmonic::Tags::GaugeH<3, Frame::System>,
+                      tmpl::size_t<3>, Frame::System>>(gh_derivs);
 
   // Compute other derivatives
   const auto derivatives_of_spacetime_metric =
@@ -809,11 +810,11 @@ void test_constraint_compute_items(
           deriv_shift, spatial_metric, time_deriv_spatial_metric,
           deriv_spatial_metric);
   const auto deriv_spacetime_metric =
-      gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>::function(
+      gr::Tags::DerivSpacetimeMetricCompute<3, Frame::System>::function(
           derivatives_of_spacetime_metric);
 
   auto time_deriv_gauge_source =
-      make_with_value<tnsr::a<DataVector, 3, Frame::Inertial>>(x, 0.);
+      make_with_value<tnsr::a<DataVector, 3, Frame::System>>(x, 0.);
   get<0>(time_deriv_gauge_source) = 0.05;
   get<1>(time_deriv_gauge_source) = 0.06;
   get<2>(time_deriv_gauge_source) = 0.07;
@@ -821,73 +822,67 @@ void test_constraint_compute_items(
 
   const auto derivatives_of_gauge_source =
       GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
-          3, Frame::Inertial>::function(time_deriv_gauge_source,
-                                        deriv_gauge_source);
+          3, Frame::System>::function(time_deriv_gauge_source,
+                                      deriv_gauge_source);
 
   // Insert into databox
   const auto box = db::create<
       db::AddSimpleTags<
-          ::Tags::Coordinates<3, Frame::Inertial>,
-          gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+          ::Tags::Coordinates<3, Frame::System>,
+          gr::Tags::SpatialMetric<3, Frame::System, DataVector>,
           gr::Tags::Lapse<DataVector>,
-          gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-          ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>,
+          gr::Tags::Shift<3, Frame::System, DataVector>,
+          ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::System, DataVector>,
+                        tmpl::size_t<3>, Frame::System>,
           ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
-                        Frame::Inertial>,
-          ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                        tmpl::size_t<3>, Frame::Inertial>,
-          ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>,
+                        Frame::System>,
+          ::Tags::deriv<gr::Tags::Shift<3, Frame::System, DataVector>,
+                        tmpl::size_t<3>, Frame::System>,
+          ::Tags::dt<gr::Tags::SpatialMetric<3, Frame::System, DataVector>>,
           ::Tags::dt<gr::Tags::Lapse<DataVector>>,
-          ::Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>,
-          ::Tags::deriv<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>,
-                        tmpl::size_t<3>, Frame::Inertial>,
-          ::Tags::dt<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>>,
-          ::Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>,
-                        tmpl::size_t<3>, Frame::Inertial>,
-          ::Tags::deriv<GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                        tmpl::size_t<3>, Frame::Inertial>>,
+          ::Tags::dt<gr::Tags::Shift<3, Frame::System, DataVector>>,
+          ::Tags::deriv<GeneralizedHarmonic::Tags::GaugeH<3, Frame::System>,
+                        tmpl::size_t<3>, Frame::System>,
+          ::Tags::dt<GeneralizedHarmonic::Tags::GaugeH<3, Frame::System>>,
+          ::Tags::deriv<GeneralizedHarmonic::Tags::Phi<3, Frame::System>,
+                        tmpl::size_t<3>, Frame::System>,
+          ::Tags::deriv<GeneralizedHarmonic::Tags::Pi<3, Frame::System>,
+                        tmpl::size_t<3>, Frame::System>>,
       db::AddComputeTags<
-          GeneralizedHarmonic::Tags::ConstraintGamma0Compute<3,
-                                                             Frame::Inertial>,
-          GeneralizedHarmonic::Tags::ConstraintGamma1Compute<3,
-                                                             Frame::Inertial>,
-          GeneralizedHarmonic::Tags::ConstraintGamma2Compute<3,
-                                                             Frame::Inertial>,
-          gr::Tags::SpacetimeNormalOneFormCompute<3, Frame::Inertial,
-                                                  DataVector>,
-          gr::Tags::SpacetimeNormalVectorCompute<3,
-                                                 Frame::Inertial, DataVector>,
-          gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::Inertial,
+          GeneralizedHarmonic::Tags::ConstraintGamma0Compute<3, Frame::System>,
+          GeneralizedHarmonic::Tags::ConstraintGamma1Compute<3, Frame::System>,
+          GeneralizedHarmonic::Tags::ConstraintGamma2Compute<3, Frame::System>,
+          gr::Tags::SpacetimeNormalOneFormCompute<3, Frame::System, DataVector>,
+          gr::Tags::SpacetimeNormalVectorCompute<3, Frame::System, DataVector>,
+          gr::Tags::DetAndInverseSpatialMetricCompute<3, Frame::System,
                                                       DataVector>,
-          gr::Tags::InverseSpacetimeMetricCompute<3, Frame::Inertial,
-                                                  DataVector>,
-          gr::Tags::SpatialChristoffelFirstKindCompute<3, Frame::Inertial,
+          gr::Tags::InverseSpacetimeMetricCompute<3, Frame::System, DataVector>,
+          gr::Tags::SpatialChristoffelFirstKindCompute<3, Frame::System,
                                                        DataVector>,
-          gr::Tags::TraceSpatialChristoffelFirstKindCompute<3, Frame::Inertial,
+          gr::Tags::TraceSpatialChristoffelFirstKindCompute<3, Frame::System,
                                                             DataVector>,
-          GeneralizedHarmonic::Tags::PhiCompute<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::PiCompute<3, Frame::Inertial>,
+          GeneralizedHarmonic::Tags::PhiCompute<3, Frame::System>,
+          GeneralizedHarmonic::Tags::PiCompute<3, Frame::System>,
           GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<3,
-                                                               Frame::Inertial>,
+                                                               Frame::System>,
           GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<
-              3, Frame::Inertial>,
+              3, Frame::System>,
           GeneralizedHarmonic::Tags::GaugeHImplicitFrom3p1QuantitiesCompute<
-              3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
-              3, Frame::Inertial>,
-          gr::Tags::DerivativesOfSpacetimeMetricCompute<3, Frame::Inertial>,
-          gr::Tags::DerivSpacetimeMetricCompute<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::FourIndexConstraintCompute<
-              3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<
-              3, Frame::Inertial>,
+              3, Frame::System>,
+          GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<3,
+                                                                 Frame::System>,
+          gr::Tags::DerivativesOfSpacetimeMetricCompute<3, Frame::System>,
+          gr::Tags::DerivSpacetimeMetricCompute<3, Frame::System>,
+          GeneralizedHarmonic::Tags::FourIndexConstraintCompute<3,
+                                                                Frame::System>,
+          GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<3,
+                                                                 Frame::System>,
           GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<3,
-                                                               Frame::Inertial>,
-          GeneralizedHarmonic::Tags::GaugeConstraintCompute<3, Frame::Inertial>,
-          GeneralizedHarmonic::Tags::FConstraintCompute<3, Frame::Inertial>,
+                                                               Frame::System>,
+          GeneralizedHarmonic::Tags::GaugeConstraintCompute<3, Frame::System>,
+          GeneralizedHarmonic::Tags::FConstraintCompute<3, Frame::System>,
           GeneralizedHarmonic::Tags::ConstraintEnergyCompute<3,
-                                                             Frame::Inertial>>>(
+                                                             Frame::System>>>(
       x, spatial_metric, lapse, shift, deriv_spatial_metric, deriv_lapse,
       deriv_shift, time_deriv_spatial_metric, time_deriv_lapse,
       time_deriv_shift, deriv_gauge_source, time_deriv_gauge_source, deriv_phi,
@@ -895,11 +890,11 @@ void test_constraint_compute_items(
 
   // Compute tested quantities locally
   const auto gamma0 = GeneralizedHarmonic::Tags::ConstraintGamma0Compute<
-      3, Frame::Inertial>::function(x);
+      3, Frame::System>::function(x);
   const auto gamma1 = GeneralizedHarmonic::Tags::ConstraintGamma1Compute<
-      3, Frame::Inertial>::function(x);
+      3, Frame::System>::function(x);
   const auto gamma2 = GeneralizedHarmonic::Tags::ConstraintGamma2Compute<
-      3, Frame::Inertial>::function(x);
+      3, Frame::System>::function(x);
 
   const auto four_index_constraint =
       GeneralizedHarmonic::four_index_constraint(deriv_phi);
@@ -925,29 +920,26 @@ void test_constraint_compute_items(
   CHECK(db::get<GeneralizedHarmonic::Tags::ConstraintGamma0>(box) == gamma0);
   CHECK(db::get<GeneralizedHarmonic::Tags::ConstraintGamma1>(box) == gamma1);
   CHECK(db::get<GeneralizedHarmonic::Tags::ConstraintGamma2>(box) == gamma2);
-  CHECK(db::get<GeneralizedHarmonic::Tags::GaugeH<3, Frame::Inertial>>(box) ==
+  CHECK(db::get<GeneralizedHarmonic::Tags::GaugeH<3, Frame::System>>(box) ==
         gauge_source);
-  CHECK(
-      db::get<
-          GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3, Frame::Inertial>>(
-          box) == derivatives_of_gauge_source);
   CHECK(db::get<
-            GeneralizedHarmonic::Tags::FourIndexConstraint<3, Frame::Inertial>>(
-            box) == four_index_constraint);
+            GeneralizedHarmonic::Tags::SpacetimeDerivGaugeH<3, Frame::System>>(
+            box) == derivatives_of_gauge_source);
   CHECK(
-      db::get<
-          GeneralizedHarmonic::Tags::ThreeIndexConstraint<3, Frame::Inertial>>(
-          box) == three_index_constraint);
+      db::get<GeneralizedHarmonic::Tags::FourIndexConstraint<3, Frame::System>>(
+          box) == four_index_constraint);
   CHECK(db::get<
-            GeneralizedHarmonic::Tags::TwoIndexConstraint<3, Frame::Inertial>>(
-            box) == two_index_constraint);
-  CHECK(db::get<GeneralizedHarmonic::Tags::GaugeConstraint<3, Frame::Inertial>>(
+            GeneralizedHarmonic::Tags::ThreeIndexConstraint<3, Frame::System>>(
+            box) == three_index_constraint);
+  CHECK(
+      db::get<GeneralizedHarmonic::Tags::TwoIndexConstraint<3, Frame::System>>(
+          box) == two_index_constraint);
+  CHECK(db::get<GeneralizedHarmonic::Tags::GaugeConstraint<3, Frame::System>>(
             box) == gauge_constraint);
-  CHECK(db::get<GeneralizedHarmonic::Tags::FConstraint<3, Frame::Inertial>>(
+  CHECK(db::get<GeneralizedHarmonic::Tags::FConstraint<3, Frame::System>>(
             box) == f_constraint);
-  CHECK(
-      db::get<GeneralizedHarmonic::Tags::ConstraintEnergy<3, Frame::Inertial>>(
-          box) == constraint_energy);
+  CHECK(db::get<GeneralizedHarmonic::Tags::ConstraintEnergy<3, Frame::System>>(
+            box) == constraint_energy);
 }
 }  // namespace
 
@@ -959,29 +951,29 @@ SPECTRE_TEST_CASE(
 
   test_three_index_constraint<1, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<1, Frame::Inertial, DataVector>(
+  test_three_index_constraint<1, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_three_index_constraint<1, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_three_index_constraint<1, Frame::Inertial, double>(
+  test_three_index_constraint<1, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 
   test_three_index_constraint<2, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<2, Frame::Inertial, DataVector>(
+  test_three_index_constraint<2, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_three_index_constraint<2, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_three_index_constraint<2, Frame::Inertial, double>(
+  test_three_index_constraint<2, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 
   test_three_index_constraint<3, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_three_index_constraint<3, Frame::Inertial, DataVector>(
+  test_three_index_constraint<3, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_three_index_constraint<3, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_three_index_constraint<3, Frame::Inertial, double>(
+  test_three_index_constraint<3, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 }
 
@@ -1005,29 +997,29 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.GaugeConstraint",
   // Test the gauge constraint with random numbers
   test_gauge_constraint_random<1, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_gauge_constraint_random<1, Frame::Inertial, DataVector>(
+  test_gauge_constraint_random<1, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_gauge_constraint_random<1, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_gauge_constraint_random<1, Frame::Inertial, double>(
+  test_gauge_constraint_random<1, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 
   test_gauge_constraint_random<2, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_gauge_constraint_random<2, Frame::Inertial, DataVector>(
+  test_gauge_constraint_random<2, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_gauge_constraint_random<2, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_gauge_constraint_random<2, Frame::Inertial, double>(
+  test_gauge_constraint_random<2, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 
   test_gauge_constraint_random<3, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_gauge_constraint_random<3, Frame::Inertial, DataVector>(
+  test_gauge_constraint_random<3, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_gauge_constraint_random<3, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_gauge_constraint_random<3, Frame::Inertial, double>(
+  test_gauge_constraint_random<3, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 }
 
@@ -1056,29 +1048,29 @@ SPECTRE_TEST_CASE(
   // Test the two-index constraint with random numbers
   test_two_index_constraint_random<1, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_two_index_constraint_random<1, Frame::Inertial, DataVector>(
+  test_two_index_constraint_random<1, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_two_index_constraint_random<1, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_two_index_constraint_random<1, Frame::Inertial, double>(
+  test_two_index_constraint_random<1, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 
   test_two_index_constraint_random<2, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_two_index_constraint_random<2, Frame::Inertial, DataVector>(
+  test_two_index_constraint_random<2, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_two_index_constraint_random<2, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_two_index_constraint_random<2, Frame::Inertial, double>(
+  test_two_index_constraint_random<2, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 
   test_two_index_constraint_random<3, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_two_index_constraint_random<3, Frame::Inertial, DataVector>(
+  test_two_index_constraint_random<3, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_two_index_constraint_random<3, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_two_index_constraint_random<3, Frame::Inertial, double>(
+  test_two_index_constraint_random<3, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 }
 
@@ -1108,11 +1100,11 @@ SPECTRE_TEST_CASE(
   test_four_index_constraint_random<3, Frame::GlobalTimeIndependent,
                                     DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_four_index_constraint_random<3, Frame::Inertial, DataVector>(
+  test_four_index_constraint_random<3, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_four_index_constraint_random<3, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_four_index_constraint_random<3, Frame::Inertial, double>(
+  test_four_index_constraint_random<3, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 }
 
@@ -1138,29 +1130,29 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.FConstraint",
   // Test the F constraint with random numbers
   test_f_constraint_random<1, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_f_constraint_random<1, Frame::Inertial, DataVector>(
+  test_f_constraint_random<1, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_f_constraint_random<1, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_f_constraint_random<1, Frame::Inertial, double>(
+  test_f_constraint_random<1, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 
   test_f_constraint_random<2, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_f_constraint_random<2, Frame::Inertial, DataVector>(
+  test_f_constraint_random<2, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_f_constraint_random<2, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_f_constraint_random<2, Frame::Inertial, double>(
+  test_f_constraint_random<2, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 
   test_f_constraint_random<3, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_f_constraint_random<3, Frame::Inertial, DataVector>(
+  test_f_constraint_random<3, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_f_constraint_random<3, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_f_constraint_random<3, Frame::Inertial, double>(
+  test_f_constraint_random<3, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 }
 
@@ -1185,29 +1177,29 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GeneralizedHarmonic.ConstraintEnergy",
   // Test the constraint energy with random numbers
   test_constraint_energy_random<1, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_constraint_energy_random<1, Frame::Inertial, DataVector>(
+  test_constraint_energy_random<1, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_constraint_energy_random<1, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_constraint_energy_random<1, Frame::Inertial, double>(
+  test_constraint_energy_random<1, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 
   test_constraint_energy_random<2, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_constraint_energy_random<2, Frame::Inertial, DataVector>(
+  test_constraint_energy_random<2, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_constraint_energy_random<2, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_constraint_energy_random<2, Frame::Inertial, double>(
+  test_constraint_energy_random<2, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 
   test_constraint_energy_random<3, Frame::GlobalTimeIndependent, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
-  test_constraint_energy_random<3, Frame::Inertial, DataVector>(
+  test_constraint_energy_random<3, Frame::System, DataVector>(
       DataVector(4, std::numeric_limits<double>::signaling_NaN()));
   test_constraint_energy_random<3, Frame::GlobalTimeIndependent, double>(
       std::numeric_limits<double>::signaling_NaN());
-  test_constraint_energy_random<3, Frame::Inertial, double>(
+  test_constraint_energy_random<3, Frame::System, double>(
       std::numeric_limits<double>::signaling_NaN());
 }
 

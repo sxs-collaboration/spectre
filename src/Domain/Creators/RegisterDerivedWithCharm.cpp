@@ -41,48 +41,48 @@ void register_with_charm();
 
 template <>
 void register_with_charm<1>() {
-  PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::ElementLogical, Frame::Inertial, Affine>));
   PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+      SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::System, Affine>));
+  PUPable_reg(
+      SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::System,
                                CoordinateMaps::DiscreteRotation<1>, Affine>));
 }
 
 template <>
 void register_with_charm<2>() {
   PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::ElementLogical, Frame::Inertial, Affine2D>));
+      CoordinateMap<Frame::ElementLogical, Frame::System, Affine2D>));
   PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+      SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::System,
                                CoordinateMaps::DiscreteRotation<2>, Affine2D>));
   PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::ElementLogical, Frame::Inertial, Equiangular2D>));
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+      CoordinateMap<Frame::ElementLogical, Frame::System, Equiangular2D>));
+  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::System,
                                        CoordinateMaps::Identity<2>>));
-  PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::ElementLogical, Frame::Inertial, Wedge2D>));
+  PUPable_reg(
+      SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::System, Wedge2D>));
 }
 template <>
 void register_with_charm<3>() {
   PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::ElementLogical, Frame::Inertial, Affine3D>));
+      CoordinateMap<Frame::ElementLogical, Frame::System, Affine3D>));
   PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+      SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::System,
                                CoordinateMaps::DiscreteRotation<3>, Affine3D>));
   PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::ElementLogical, Frame::Inertial, Equiangular3D>));
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::Inertial,
-                                       Equiangular3DPrism>));
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::Inertial,
-                                       CoordinateMaps::Frustum>));
+      CoordinateMap<Frame::ElementLogical, Frame::System, Equiangular3D>));
   PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::ElementLogical, Frame::Inertial, Wedge3D>));
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+      CoordinateMap<Frame::ElementLogical, Frame::System, Equiangular3DPrism>));
+  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::System,
+                                       CoordinateMaps::Frustum>));
+  PUPable_reg(
+      SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::System, Wedge3D>));
+  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::System,
                                        Wedge3D, EquatorialCompression>));
   PUPable_reg(SINGLE_ARG(
-      CoordinateMap<Frame::ElementLogical, Frame::Inertial, Wedge3DPrism>));
+      CoordinateMap<Frame::ElementLogical, Frame::System, Wedge3DPrism>));
   PUPable_reg(
-      SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::Inertial, Wedge3D,
+      SINGLE_ARG(CoordinateMap<Frame::ElementLogical, Frame::System, Wedge3D,
                                EquatorialCompression, Translation3D>));
 }
 }  // namespace DomainCreators_detail

@@ -193,17 +193,16 @@ struct WeylElectric : db::SimpleTag {
 template <size_t Dim, typename DataType>
 using analytic_solution_tags = tmpl::list<
     gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
-    ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
-                  Frame::Inertial>,
-    gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-    ::Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>,
-    ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>,
-    gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-    ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>,
-    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>,
+    ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>, Frame::System>,
+    gr::Tags::Shift<Dim, Frame::System, DataType>,
+    ::Tags::dt<gr::Tags::Shift<Dim, Frame::System, DataType>>,
+    ::Tags::deriv<gr::Tags::Shift<Dim, Frame::System, DataType>,
+                  tmpl::size_t<Dim>, Frame::System>,
+    gr::Tags::SpatialMetric<Dim, Frame::System, DataType>,
+    ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::System, DataType>>,
+    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::System, DataType>,
+                  tmpl::size_t<Dim>, Frame::System>,
     gr::Tags::SqrtDetSpatialMetric<DataType>,
-    gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>,
-    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>;
+    gr::Tags::ExtrinsicCurvature<Dim, Frame::System, DataType>,
+    gr::Tags::InverseSpatialMetric<Dim, Frame::System, DataType>>;
 }  // namespace gr

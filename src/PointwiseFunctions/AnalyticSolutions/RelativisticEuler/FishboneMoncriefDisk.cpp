@@ -244,7 +244,7 @@ FishboneMoncriefDisk::variables(
     for (size_t i = 0; i < 3; ++i) {
       get_element(spatial_velocity.get(i), s) =
           (gsl::at(transport_velocity, i) +
-           get_element(get<gr::Tags::Shift<3, Frame::Inertial, DataType>>(
+           get_element(get<gr::Tags::Shift<3, Frame::System, DataType>>(
                            vars.kerr_schild_soln)
                            .get(i),
                        s)) /
@@ -269,21 +269,20 @@ FishboneMoncriefDisk::variables(
       1.0 /
       sqrt(1.0 - get(dot_product(
                      spatial_velocity, spatial_velocity,
-                     get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(
+                     get<gr::Tags::SpatialMetric<3, Frame::System, DataType>>(
                          vars.kerr_schild_soln))))};
   return {std::move(lorentz_factor)};
 }
 
 template <typename DataType, bool NeedSpacetime>
-tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::System>>
 FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<
-        hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
+    tmpl::list<hydro::Tags::MagneticField<DataType, 3, Frame::System>> /*meta*/,
     const IntermediateVariables<DataType, NeedSpacetime>& /*vars*/,
     const size_t /*index*/) const noexcept {
   return {make_with_value<
-      db::item_type<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>>(
+      db::item_type<hydro::Tags::MagneticField<DataType, 3, Frame::System>>>(
       x, 0.0)};
 }
 
@@ -341,54 +340,54 @@ bool operator!=(const FishboneMoncriefDisk& lhs,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define NEED_SPACETIME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template class FishboneMoncriefDisk::IntermediateVariables<                 \
-      DTYPE(data), NEED_SPACETIME(data)>;                                     \
-  template tuples::TaggedTuple<hydro::Tags::RestMassDensity<DTYPE(data)>>     \
-  FishboneMoncriefDisk::variables(                                            \
-      const tnsr::I<DTYPE(data), 3>& x,                                       \
-      tmpl::list<hydro::Tags::RestMassDensity<DTYPE(data)>> /*meta*/,         \
-      const FishboneMoncriefDisk::IntermediateVariables<                      \
-          DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
-      const size_t) const noexcept;                                           \
-  template tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DTYPE(data)>>    \
-  FishboneMoncriefDisk::variables(                                            \
-      const tnsr::I<DTYPE(data), 3>& x,                                       \
-      tmpl::list<hydro::Tags::SpecificEnthalpy<DTYPE(data)>> /*meta*/,        \
-      const FishboneMoncriefDisk::IntermediateVariables<                      \
-          DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
-      const size_t) const noexcept;                                           \
-  template tuples::TaggedTuple<hydro::Tags::Pressure<DTYPE(data)>>            \
-  FishboneMoncriefDisk::variables(                                            \
-      const tnsr::I<DTYPE(data), 3>& x,                                       \
-      tmpl::list<hydro::Tags::Pressure<DTYPE(data)>> /*meta*/,                \
-      const FishboneMoncriefDisk::IntermediateVariables<                      \
-          DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
-      const size_t) const noexcept;                                           \
-  template tuples::TaggedTuple<                                               \
-      hydro::Tags::SpecificInternalEnergy<DTYPE(data)>>                       \
-  FishboneMoncriefDisk::variables(                                            \
-      const tnsr::I<DTYPE(data), 3>& x,                                       \
-      tmpl::list<hydro::Tags::SpecificInternalEnergy<DTYPE(data)>> /*meta*/,  \
-      const FishboneMoncriefDisk::IntermediateVariables<                      \
-          DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
-      const size_t) const noexcept;                                           \
-  template tuples::TaggedTuple<                                               \
-      hydro::Tags::MagneticField<DTYPE(data), 3, Frame::Inertial>>            \
-  FishboneMoncriefDisk::variables(                                            \
-      const tnsr::I<DTYPE(data), 3>& x,                                       \
-      tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3,                   \
-                                            Frame::Inertial>> /*meta*/,       \
-      const FishboneMoncriefDisk::IntermediateVariables<                      \
-          DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
-      const size_t) const noexcept;                                           \
-  template tuples::TaggedTuple<                                               \
-      hydro::Tags::DivergenceCleaningField<DTYPE(data)>>                      \
-  FishboneMoncriefDisk::variables(                                            \
-      const tnsr::I<DTYPE(data), 3>& x,                                       \
-      tmpl::list<hydro::Tags::DivergenceCleaningField<DTYPE(data)>> /*meta*/, \
-      const FishboneMoncriefDisk::IntermediateVariables<                      \
-          DTYPE(data), NEED_SPACETIME(data)>& vars,                           \
+#define INSTANTIATE(_, data)                                                   \
+  template class FishboneMoncriefDisk::IntermediateVariables<                  \
+      DTYPE(data), NEED_SPACETIME(data)>;                                      \
+  template tuples::TaggedTuple<hydro::Tags::RestMassDensity<DTYPE(data)>>      \
+  FishboneMoncriefDisk::variables(                                             \
+      const tnsr::I<DTYPE(data), 3>& x,                                        \
+      tmpl::list<hydro::Tags::RestMassDensity<DTYPE(data)>> /*meta*/,          \
+      const FishboneMoncriefDisk::IntermediateVariables<                       \
+          DTYPE(data), NEED_SPACETIME(data)>& vars,                            \
+      const size_t) const noexcept;                                            \
+  template tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DTYPE(data)>>     \
+  FishboneMoncriefDisk::variables(                                             \
+      const tnsr::I<DTYPE(data), 3>& x,                                        \
+      tmpl::list<hydro::Tags::SpecificEnthalpy<DTYPE(data)>> /*meta*/,         \
+      const FishboneMoncriefDisk::IntermediateVariables<                       \
+          DTYPE(data), NEED_SPACETIME(data)>& vars,                            \
+      const size_t) const noexcept;                                            \
+  template tuples::TaggedTuple<hydro::Tags::Pressure<DTYPE(data)>>             \
+  FishboneMoncriefDisk::variables(                                             \
+      const tnsr::I<DTYPE(data), 3>& x,                                        \
+      tmpl::list<hydro::Tags::Pressure<DTYPE(data)>> /*meta*/,                 \
+      const FishboneMoncriefDisk::IntermediateVariables<                       \
+          DTYPE(data), NEED_SPACETIME(data)>& vars,                            \
+      const size_t) const noexcept;                                            \
+  template tuples::TaggedTuple<                                                \
+      hydro::Tags::SpecificInternalEnergy<DTYPE(data)>>                        \
+  FishboneMoncriefDisk::variables(                                             \
+      const tnsr::I<DTYPE(data), 3>& x,                                        \
+      tmpl::list<hydro::Tags::SpecificInternalEnergy<DTYPE(data)>> /*meta*/,   \
+      const FishboneMoncriefDisk::IntermediateVariables<                       \
+          DTYPE(data), NEED_SPACETIME(data)>& vars,                            \
+      const size_t) const noexcept;                                            \
+  template tuples::TaggedTuple<                                                \
+      hydro::Tags::MagneticField<DTYPE(data), 3, Frame::System>>               \
+  FishboneMoncriefDisk::variables(                                             \
+      const tnsr::I<DTYPE(data), 3>& x,                                        \
+      tmpl::list<                                                              \
+          hydro::Tags::MagneticField<DTYPE(data), 3, Frame::System>> /*meta*/, \
+      const FishboneMoncriefDisk::IntermediateVariables<                       \
+          DTYPE(data), NEED_SPACETIME(data)>& vars,                            \
+      const size_t) const noexcept;                                            \
+  template tuples::TaggedTuple<                                                \
+      hydro::Tags::DivergenceCleaningField<DTYPE(data)>>                       \
+  FishboneMoncriefDisk::variables(                                             \
+      const tnsr::I<DTYPE(data), 3>& x,                                        \
+      tmpl::list<hydro::Tags::DivergenceCleaningField<DTYPE(data)>> /*meta*/,  \
+      const FishboneMoncriefDisk::IntermediateVariables<                       \
+          DTYPE(data), NEED_SPACETIME(data)>& vars,                            \
       const size_t) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (true, false))

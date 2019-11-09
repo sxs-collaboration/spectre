@@ -120,7 +120,7 @@ struct InitExteriorVarsImpl<true, Metavariables> {
 ///   * `Directions`
 ///   * `Tags::Interface<Directions, Tags::Directions<Dim>>`
 ///   * `Tags::Interface<Directions, Tags::Mesh<Dim - 1>>`
-///   * `Tags::Interface<Directions, Tags::Coordinates<Dim, Frame::Inertial>>`
+///   * `Tags::Interface<Directions, Tags::Coordinates<Dim, Frame::System>>`
 ///   (only on exterior faces)
 ///   * `Tags::Interface<Directions, Tags::UnnormalizedFaceNormal<Dim>>`
 ///   * `Tags::Interface<Directions, Tags::Magnitude<
@@ -178,9 +178,8 @@ struct InitializeInterfaces {
           SliceTagsToExterior,
           make_slice_tag<tmpl::_1,
                          tmpl::pin<::Tags::BoundaryDirectionsExterior<dim>>>>,
-      ::Tags::InterfaceCompute<
-          ::Tags::BoundaryDirectionsExterior<dim>,
-          ::Tags::BoundaryCoordinates<dim, Frame::Inertial>>,
+      ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>,
+                               ::Tags::BoundaryCoordinates<dim, Frame::System>>,
       ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>,
                                ::Tags::UnnormalizedFaceNormalCompute<dim>>,
       ::Tags::InterfaceCompute<::Tags::BoundaryDirectionsExterior<dim>,

@@ -202,54 +202,54 @@ struct MockMetavariables {
     using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
-                   gr::Tags::SpatialMetric<3, Frame::Inertial>>;
+                   gr::Tags::SpatialMetric<3, Frame::System>>;
     using compute_items_on_target = tmpl::list<
         Tags::SquareComputeItem,
-        StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
-        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, ::Frame::Inertial>>;
+        StrahlkorperGr::Tags::AreaElement<Frame::System>,
+        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, ::Frame::System>>;
     using compute_target_points =
-        intrp::Actions::KerrHorizon<SurfaceA, ::Frame::Inertial>;
+        intrp::Actions::KerrHorizon<SurfaceA, ::Frame::System>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
-                Tags::Square, ::Frame::Inertial>>,
+            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square,
+                                                             ::Frame::System>>,
             SurfaceA, SurfaceA>;
   };
   struct SurfaceB {
     using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
-                   gr::Tags::SpatialMetric<3, Frame::Inertial>>;
+                   gr::Tags::SpatialMetric<3, Frame::System>>;
     using compute_items_on_target = tmpl::list<
         Tags::SquareComputeItem, Tags::NegateComputeItem,
-        StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
-        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, Frame::Inertial>,
-        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, Frame::Inertial>>;
+        StrahlkorperGr::Tags::AreaElement<Frame::System>,
+        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, Frame::System>,
+        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, Frame::System>>;
     using compute_target_points =
-        intrp::Actions::KerrHorizon<SurfaceB, ::Frame::Inertial>;
+        intrp::Actions::KerrHorizon<SurfaceB, ::Frame::System>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
             tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square,
-                                                             ::Frame::Inertial>,
-                       StrahlkorperGr::Tags::SurfaceIntegral<
-                           Tags::Negate, ::Frame::Inertial>>,
+                                                             ::Frame::System>,
+                       StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate,
+                                                             ::Frame::System>>,
             SurfaceB, SurfaceB>;
   };
   struct SurfaceC {
     using compute_items_on_source = tmpl::list<>;
     using vars_to_interpolate_to_target =
         tmpl::list<Tags::TestSolution,
-                   gr::Tags::SpatialMetric<3, Frame::Inertial>>;
+                   gr::Tags::SpatialMetric<3, Frame::System>>;
     using compute_items_on_target = tmpl::list<
         Tags::SquareComputeItem, Tags::NegateComputeItem,
-        StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
-        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, ::Frame::Inertial>>;
+        StrahlkorperGr::Tags::AreaElement<Frame::System>,
+        StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, ::Frame::System>>;
     using compute_target_points =
-        intrp::Actions::KerrHorizon<SurfaceC, ::Frame::Inertial>;
+        intrp::Actions::KerrHorizon<SurfaceC, ::Frame::System>;
     using post_interpolation_callback =
         intrp::callbacks::ObserveTimeSeriesOnSurface<
-            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<
-                Tags::Negate, ::Frame::Inertial>>,
+            tmpl::list<StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate,
+                                                             ::Frame::System>>,
             SurfaceC, SurfaceC>;
   };
 
@@ -259,8 +259,7 @@ struct MockMetavariables {
                  typename SurfaceC::post_interpolation_callback>>;
 
   using interpolator_source_vars =
-      tmpl::list<Tags::TestSolution,
-                 gr::Tags::SpatialMetric<3, Frame::Inertial>>;
+      tmpl::list<Tags::TestSolution, gr::Tags::SpatialMetric<3, Frame::System>>;
   using interpolation_target_tags = tmpl::list<SurfaceA, SurfaceB, SurfaceC>;
   using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
@@ -381,18 +380,18 @@ SPECTRE_TEST_CASE(
     ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
                    Spectral::Basis::Legendre,
                    Spectral::Quadrature::GaussLobatto};
-    ElementMap<3, Frame::Inertial> map{element_id,
-                                       block.coordinate_map().get_clone()};
-    const auto inertial_coords = map(logical_coordinates(mesh));
+    ElementMap<3, Frame::System> map{element_id,
+                                     block.coordinate_map().get_clone()};
+    const auto system_coords = map(logical_coordinates(mesh));
     db::item_type<
         ::Tags::Variables<typename metavars::interpolator_source_vars>>
         output_vars(mesh.number_of_grid_points());
     auto& test_solution = get<Tags::TestSolution>(output_vars);
 
     // Fill test_solution with some analytic solution.
-    get(test_solution) = 2.0 * get<0>(inertial_coords) +
-                         3.0 * get<1>(inertial_coords) +
-                         5.0 * get<2>(inertial_coords);
+    get(test_solution) = 2.0 * get<0>(system_coords) +
+                         3.0 * get<1>(system_coords) +
+                         5.0 * get<2>(system_coords);
 
     // Fill the metric with Minkowski for simplicity.  The
     // InterpolationTarget is called "KerrHorizon" merely because the
@@ -400,10 +399,10 @@ SPECTRE_TEST_CASE(
     // spacetime in Kerr-Schild coordinates; this in no way requires
     // that there is an actual horizon or that the metric is Kerr.
     gr::Solutions::Minkowski<3> solution;
-    get<gr::Tags::SpatialMetric<3, Frame::Inertial>>(output_vars) =
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial>>(solution.variables(
-            inertial_coords, 0.0,
-            tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial>>{}));
+    get<gr::Tags::SpatialMetric<3, Frame::System>>(output_vars) =
+        get<gr::Tags::SpatialMetric<3, Frame::System>>(solution.variables(
+            system_coords, 0.0,
+            tmpl::list<gr::Tags::SpatialMetric<3, Frame::System>>{}));
 
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,

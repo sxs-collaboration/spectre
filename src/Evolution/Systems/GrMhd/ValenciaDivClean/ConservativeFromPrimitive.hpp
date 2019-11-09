@@ -79,18 +79,18 @@ struct ConservativeFromPrimitive {
   static void apply(
       gsl::not_null<Scalar<DataVector>*> tilde_d,
       gsl::not_null<Scalar<DataVector>*> tilde_tau,
-      gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> tilde_s,
-      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_b,
+      gsl::not_null<tnsr::i<DataVector, 3, Frame::System>*> tilde_s,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::System>*> tilde_b,
       gsl::not_null<Scalar<DataVector>*> tilde_phi,
       const Scalar<DataVector>& rest_mass_density,
       const Scalar<DataVector>& specific_internal_energy,
       const Scalar<DataVector>& specific_enthalpy,
       const Scalar<DataVector>& pressure,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+      const tnsr::I<DataVector, 3, Frame::System>& spatial_velocity,
       const Scalar<DataVector>& lorentz_factor,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
+      const tnsr::I<DataVector, 3, Frame::System>& magnetic_field,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+      const tnsr::ii<DataVector, 3, Frame::System>& spatial_metric,
       const Scalar<DataVector>& divergence_cleaning_field) noexcept;
 };
 }  // namespace ValenciaDivClean

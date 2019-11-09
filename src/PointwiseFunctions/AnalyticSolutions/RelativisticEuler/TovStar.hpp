@@ -181,39 +181,37 @@ class TovStar : public MarkAsAnalyticSolution {
 
   template <typename DataType>
   using SpatialVelocity =
-      hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>;
+      hydro::Tags::SpatialVelocity<DataType, 3, Frame::System>;
 
   template <typename DataType>
-  using MagneticField =
-      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>;
+  using MagneticField = hydro::Tags::MagneticField<DataType, 3, Frame::System>;
 
   template <typename DataType>
-  using DerivLapse = ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>,
-                                   Frame::Inertial>;
+  using DerivLapse =
+      ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<3>, Frame::System>;
 
   template <typename DataType>
-  using Shift = gr::Tags::Shift<3, Frame::Inertial, DataType>;
+  using Shift = gr::Tags::Shift<3, Frame::System, DataType>;
 
   template <typename DataType>
-  using DerivShift =
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataType>,
-                    tmpl::size_t<3>, Frame::Inertial>;
+  using DerivShift = ::Tags::deriv<gr::Tags::Shift<3, Frame::System, DataType>,
+                                   tmpl::size_t<3>, Frame::System>;
 
   template <typename DataType>
-  using SpatialMetric = gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>;
+  using SpatialMetric = gr::Tags::SpatialMetric<3, Frame::System, DataType>;
 
   template <typename DataType>
   using DerivSpatialMetric =
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>,
-                    tmpl::size_t<3>, Frame::Inertial>;
+      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::System, DataType>,
+                    tmpl::size_t<3>, Frame::System>;
 
   template <typename DataType>
   using InverseSpatialMetric =
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>;
+      gr::Tags::InverseSpatialMetric<3, Frame::System, DataType>;
 
   template <typename DataType>
   using ExtrinsicCurvature =
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>;
+      gr::Tags::ExtrinsicCurvature<3, Frame::System, DataType>;
 
 #define FUNC_DECL(r, data, elem)                                \
   template <typename DataType>                                  \

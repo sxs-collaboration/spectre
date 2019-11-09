@@ -47,11 +47,11 @@ template <size_t Dim>
 struct ComputeFluxes {
   using return_tags =
       tmpl::list<::Tags::Flux<RelativisticEuler::Valencia::Tags::TildeD,
-                              tmpl::size_t<Dim>, Frame::Inertial>,
+                              tmpl::size_t<Dim>, Frame::System>,
                  ::Tags::Flux<RelativisticEuler::Valencia::Tags::TildeTau,
-                              tmpl::size_t<Dim>, Frame::Inertial>,
+                              tmpl::size_t<Dim>, Frame::System>,
                  ::Tags::Flux<RelativisticEuler::Valencia::Tags::TildeS<Dim>,
-                              tmpl::size_t<Dim>, Frame::Inertial>>;
+                              tmpl::size_t<Dim>, Frame::System>>;
 
   using argument_tags =
       tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,
@@ -62,18 +62,17 @@ struct ComputeFluxes {
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpatialVelocity<DataVector, Dim>>;
 
-  static void apply(
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_d_flux,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_tau_flux,
-      gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*> tilde_s_flux,
-      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
-      const Scalar<DataVector>& lapse,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
-      const Scalar<DataVector>& sqrt_det_spatial_metric,
-      const Scalar<DataVector>& pressure,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>&
-          spatial_velocity) noexcept;
+  static void apply(gsl::not_null<tnsr::I<DataVector, Dim>*> tilde_d_flux,
+                    gsl::not_null<tnsr::I<DataVector, Dim>*> tilde_tau_flux,
+                    gsl::not_null<tnsr::Ij<DataVector, Dim>*> tilde_s_flux,
+                    const Scalar<DataVector>& tilde_d,
+                    const Scalar<DataVector>& tilde_tau,
+                    const tnsr::i<DataVector, Dim>& tilde_s,
+                    const Scalar<DataVector>& lapse,
+                    const tnsr::I<DataVector, Dim>& shift,
+                    const Scalar<DataVector>& sqrt_det_spatial_metric,
+                    const Scalar<DataVector>& pressure,
+                    const tnsr::I<DataVector, Dim>& spatial_velocity) noexcept;
 };
 }  // namespace Valencia
 }  // namespace RelativisticEuler

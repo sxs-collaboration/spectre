@@ -61,13 +61,13 @@ namespace Valencia {
  */
 template <size_t ThermodynamicDim, size_t Dim>
 struct PrimitiveFromConservative {
-  using return_tags = tmpl::list<
-      hydro::Tags::RestMassDensity<DataVector>,
-      hydro::Tags::SpecificInternalEnergy<DataVector>,
-      hydro::Tags::LorentzFactor<DataVector>,
-      hydro::Tags::SpecificEnthalpy<DataVector>,
-      hydro::Tags::Pressure<DataVector>,
-      hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>>;
+  using return_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::System>>;
 
   using argument_tags =
       tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,
@@ -83,11 +83,10 @@ struct PrimitiveFromConservative {
       gsl::not_null<Scalar<DataVector>*> lorentz_factor,
       gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
       gsl::not_null<Scalar<DataVector>*> pressure,
-      gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-          spatial_velocity,
+      gsl::not_null<tnsr::I<DataVector, Dim>*> spatial_velocity,
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
-      const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+      const tnsr::i<DataVector, Dim>& tilde_s,
+      const tnsr::II<DataVector, Dim>& inv_spatial_metric,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
       const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
           equation_of_state) noexcept;

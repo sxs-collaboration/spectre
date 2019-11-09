@@ -36,12 +36,11 @@ tuples::TaggedTuple<Tags::Field> Moustache<Dim>::variables(
 }
 
 template <>
-tuples::TaggedTuple<
-    ::Tags::deriv<Tags::Field, tmpl::size_t<1>, Frame::Inertial>>
-Moustache<1>::variables(
-    const tnsr::I<DataVector, 1>& x,
-    tmpl::list<::Tags::deriv<Tags::Field, tmpl::size_t<1>,
-                             Frame::Inertial>> /*meta*/) const noexcept {
+tuples::TaggedTuple<::Tags::deriv<Tags::Field, tmpl::size_t<1>, Frame::System>>
+Moustache<1>::variables(const tnsr::I<DataVector, 1>& x,
+                        tmpl::list<::Tags::deriv<Tags::Field, tmpl::size_t<1>,
+                                                 Frame::System>> /*meta*/) const
+    noexcept {
   const auto& x_d = get<0>(x);
   tnsr::i<DataVector, 1> field_gradient{
       abs(x_d - 0.5) * evaluate_polynomial<double>({0.25, -3., 7.5, -5.}, x_d)};
@@ -49,12 +48,11 @@ Moustache<1>::variables(
 }
 
 template <>
-tuples::TaggedTuple<
-    ::Tags::deriv<Tags::Field, tmpl::size_t<2>, Frame::Inertial>>
-Moustache<2>::variables(
-    const tnsr::I<DataVector, 2>& x,
-    tmpl::list<::Tags::deriv<Tags::Field, tmpl::size_t<2>,
-                             Frame::Inertial>> /*meta*/) const noexcept {
+tuples::TaggedTuple<::Tags::deriv<Tags::Field, tmpl::size_t<2>, Frame::System>>
+Moustache<2>::variables(const tnsr::I<DataVector, 2>& x,
+                        tmpl::list<::Tags::deriv<Tags::Field, tmpl::size_t<2>,
+                                                 Frame::System>> /*meta*/) const
+    noexcept {
   auto field_gradient = make_with_value<tnsr::i<DataVector, 2>>(x, 0.);
   auto norm_square = square(get<0>(x) - 0.5) + square(get<1>(x) - 0.5);
   for (size_t d = 0; d < 2; d++) {

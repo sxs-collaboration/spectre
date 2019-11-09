@@ -42,31 +42,31 @@ using Affine = domain::CoordinateMaps::Affine;
 using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
 using Affine3D = domain::CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
 
-const double inertial_coord_min = -0.3;
-const double inertial_coord_max = 0.7;
+const double system_coord_min = -0.3;
+const double system_coord_max = 0.7;
 
 template <size_t VolumeDim>
 auto make_affine_map() noexcept;
 
 template <>
 auto make_affine_map<1>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
-      Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max});
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
+      Affine{-1.0, 1.0, system_coord_min, system_coord_max});
 }
 
 template <>
 auto make_affine_map<2>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
-      Affine2D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
-               Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
+      Affine2D{Affine{-1.0, 1.0, system_coord_min, system_coord_max},
+               Affine{-1.0, 1.0, system_coord_min, system_coord_max}});
 }
 
 template <>
 auto make_affine_map<3>() noexcept {
-  return domain::make_coordinate_map<Frame::ElementLogical, Frame::Inertial>(
-      Affine3D{Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
-               Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max},
-               Affine{-1.0, 1.0, inertial_coord_min, inertial_coord_max}});
+  return domain::make_coordinate_map<Frame::ElementLogical, Frame::System>(
+      Affine3D{Affine{-1.0, 1.0, system_coord_min, system_coord_max},
+               Affine{-1.0, 1.0, system_coord_min, system_coord_max},
+               Affine{-1.0, 1.0, system_coord_min, system_coord_max}});
 }
 
 namespace TestTags {
@@ -109,26 +109,26 @@ template <size_t Dim>
 void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
   // Fill target interpolation coordinates with random values
   MAKE_GENERATOR(generator);
-  std::uniform_real_distribution<> dist(inertial_coord_min, inertial_coord_max);
+  std::uniform_real_distribution<> dist(system_coord_min, system_coord_max);
 
   const auto nn_generator = make_not_null(&generator);
   const auto nn_dist = make_not_null(&dist);
 
   const size_t number_of_points = 6;
-  const auto target_x_inertial =
+  const auto target_x_system =
       make_with_random_values<tnsr::I<DataVector, Dim>>(
           nn_generator, nn_dist, DataVector(number_of_points));
 
   const auto coordinate_map = make_affine_map<Dim>();
-  const auto target_x = [&target_x_inertial, &coordinate_map,
+  const auto target_x = [&target_x_system, &coordinate_map,
                          &number_of_points]() {
     tnsr::I<DataVector, Dim, Frame::ElementLogical> result(number_of_points);
     for (size_t s = 0; s < number_of_points; ++s) {
-      tnsr::I<double, Dim> x_inertial_local{};
+      tnsr::I<double, Dim> x_system_local{};
       for (size_t d = 0; d < Dim; ++d) {
-        x_inertial_local.get(d) = target_x_inertial.get(d)[s];
+        x_system_local.get(d) = target_x_system.get(d)[s];
       }
-      const auto x_local = coordinate_map.inverse(x_inertial_local).get();
+      const auto x_local = coordinate_map.inverse(x_system_local).get();
       for (size_t d = 0; d < Dim; ++d) {
         result.get(d)[s] = x_local.get(d);
       }
@@ -172,12 +172,11 @@ void test_interpolate_to_points(const Mesh<Dim>& mesh) noexcept {
     MathFunctions::TensorProduct<Dim> f(1.0, std::move(functions));
 
     // Fill source and expected destination Variables with analytic solution.
-    tmpl::for_each<tags>([
-      &f, &src_x, &target_x_inertial, &src_vars, &expected_dest_vars
-    ](auto tag) noexcept {
+    tmpl::for_each<tags>([&f, &src_x, &target_x_system, &src_vars,
+                          &expected_dest_vars](auto tag) noexcept {
       using Tag = tmpl::type_from<decltype(tag)>;
       get<Tag>(src_vars) = Tag::fill_values(f, src_x);
-      get<Tag>(expected_dest_vars) = Tag::fill_values(f, target_x_inertial);
+      get<Tag>(expected_dest_vars) = Tag::fill_values(f, target_x_system);
     });
 
     // Interpolate

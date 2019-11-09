@@ -16,7 +16,7 @@
 
 namespace {
 struct AlphaTildeP {
-  using type = tnsr::II<DataVector, 3, Frame::Inertial>;
+  using type = tnsr::II<DataVector, 3, Frame::System>;
 };
 }  //  namespace
 
@@ -26,24 +26,23 @@ namespace M1Grey {
 namespace detail {
 void compute_sources_impl(
     const gsl::not_null<Scalar<DataVector>*> source_tilde_e,
-    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
-        source_tilde_s,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::System>*> source_tilde_s,
     const Scalar<DataVector>& tilde_e,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& tilde_p,
+    const tnsr::i<DataVector, 3, Frame::System>& tilde_s,
+    const tnsr::II<DataVector, 3, Frame::System>& tilde_p,
     const Scalar<DataVector>& lapse,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
-    const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
-    const tnsr::ijj<DataVector, 3, Frame::Inertial>& d_spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>&
+    const tnsr::i<DataVector, 3, Frame::System>& d_lapse,
+    const tnsr::iJ<DataVector, 3, Frame::System>& d_shift,
+    const tnsr::ijj<DataVector, 3, Frame::System>& d_spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::System>& inv_spatial_metric,
+    const tnsr::ii<DataVector, 3, Frame::System>&
         extrinsic_curvature) noexcept {
-  Variables<tmpl::list<Tags::TildeSVector<Frame::Inertial>, AlphaTildeP>>
+  Variables<tmpl::list<Tags::TildeSVector<Frame::System>, AlphaTildeP>>
       temp_tensors(get(tilde_e).size());
 
   constexpr size_t spatial_dim = 3;
 
-  auto& tilde_s_M = get<Tags::TildeSVector<Frame::Inertial>>(temp_tensors);
+  auto& tilde_s_M = get<Tags::TildeSVector<Frame::System>>(temp_tensors);
   raise_or_lower_index(make_not_null(&tilde_s_M), tilde_s, inv_spatial_metric);
   auto& alpha_tilde_p = get<AlphaTildeP>(temp_tensors);
   for (size_t i = 0; i < spatial_dim; ++i) {

@@ -29,22 +29,21 @@ auto create_strahlkorper_y11(const double y11_amplitude, const double radius,
                              const std::array<double, 3>& center) {
   const size_t l_max = 4, m_max = 4;
 
-  Strahlkorper<Frame::Inertial> strahlkorper_sphere(l_max, m_max, radius,
-                                                    center);
+  Strahlkorper<Frame::System> strahlkorper_sphere(l_max, m_max, radius, center);
 
   auto coefs = strahlkorper_sphere.coefficients();
   SpherepackIterator it(l_max, m_max);
   // Conversion between SPHEREPACK b_lm and real valued harmonic coefficients:
   // b_lm = (-1)^{m+1} sqrt(1/2pi) d_lm
   coefs[it.set(1, -1)()] = y11_amplitude * sqrt(0.5 / M_PI);
-  return Strahlkorper<Frame::Inertial>(coefs, strahlkorper_sphere);
+  return Strahlkorper<Frame::System>(coefs, strahlkorper_sphere);
 }
 
 void test_average_radius() {
   // Create spherical Strahlkorper
   const std::array<double, 3> center = {{0.1, 0.2, 0.3}};
   const double r = 3.0;
-  Strahlkorper<Frame::Inertial> s(4, 4, r, center);
+  Strahlkorper<Frame::System> s(4, 4, r, center);
   CHECK(s.average_radius() == approx(r));
 }
 
@@ -70,17 +69,17 @@ void test_radius_and_derivs() {
 
   // Create DataBox
   auto box = db::create<
-      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-      db::AddComputeTags<
-          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::System>>,
+      db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame::System>>>(
+      strahlkorper);
 
   // Test radius
   const auto& strahlkorper_radius =
-      db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+      db::get<StrahlkorperTags::Radius<Frame::System>>(box);
   CHECK_ITERABLE_APPROX(strahlkorper_radius, expected_radius);
 
   // Test derivative of radius
-  db::const_item_type<StrahlkorperTags::DxRadius<Frame::Inertial>>
+  db::const_item_type<StrahlkorperTags::DxRadius<Frame::System>>
       expected_dx_radius(n_pts);
   for (size_t s = 0; s < n_pts; ++s) {
     // Analytic solution Mark Scheel computed in Mathematica
@@ -103,11 +102,11 @@ void test_radius_and_derivs() {
     }
   }
   const auto& strahlkorper_dx_radius =
-      db::get<StrahlkorperTags::DxRadius<Frame::Inertial>>(box);
+      db::get<StrahlkorperTags::DxRadius<Frame::System>>(box);
   CHECK_ITERABLE_APPROX(strahlkorper_dx_radius, expected_dx_radius);
 
   // Test second derivatives.
-  db::const_item_type<StrahlkorperTags::D2xRadius<Frame::Inertial>>
+  db::const_item_type<StrahlkorperTags::D2xRadius<Frame::System>>
       expected_d2x_radius(n_pts);
   for (size_t s = 0; s < n_pts; ++s) {
     // Messy analytic solution Mark Scheel computed in Mathematica
@@ -146,7 +145,7 @@ void test_radius_and_derivs() {
     }
   }
   const auto& strahlkorper_d2x_radius =
-      db::get<StrahlkorperTags::D2xRadius<Frame::Inertial>>(box);
+      db::get<StrahlkorperTags::D2xRadius<Frame::System>>(box);
   CHECK_ITERABLE_APPROX(expected_d2x_radius, strahlkorper_d2x_radius);
 
   // Test nabla squared
@@ -157,7 +156,7 @@ void test_radius_and_derivs() {
     expected_laplacian[s] *= y11_amplitude;
   }
   const auto& strahlkorper_laplacian =
-      db::get<StrahlkorperTags::LaplacianRadius<Frame::Inertial>>(box);
+      db::get<StrahlkorperTags::LaplacianRadius<Frame::System>>(box);
   CHECK_ITERABLE_APPROX(strahlkorper_laplacian, expected_laplacian);
 }
 
@@ -173,7 +172,7 @@ void test_normals() {
 
   // Test surface_tangents
 
-  db::const_item_type<StrahlkorperTags::Tangents<Frame::Inertial>>
+  db::const_item_type<StrahlkorperTags::Tangents<Frame::System>>
       expected_surface_tangents(n_pts);
   const double amp = -sqrt(3.0 / 8.0 / M_PI) * y11_amplitude;
 
@@ -199,16 +198,16 @@ void test_normals() {
 
   // Create DataBox
   auto box = db::create<
-      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
-      db::AddComputeTags<
-          StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(strahlkorper);
+      db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::System>>,
+      db::AddComputeTags<StrahlkorperTags::compute_items_tags<Frame::System>>>(
+      strahlkorper);
 
   const auto& surface_tangents =
-      db::get<StrahlkorperTags::Tangents<Frame::Inertial>>(box);
+      db::get<StrahlkorperTags::Tangents<Frame::System>>(box);
   CHECK_ITERABLE_APPROX(surface_tangents, expected_surface_tangents);
 
   // Test surface_cartesian_coordinates
-  db::const_item_type<StrahlkorperTags::CartesianCoords<Frame::Inertial>>
+  db::const_item_type<StrahlkorperTags::CartesianCoords<Frame::System>>
       expected_cart_coords(n_pts);
 
   {
@@ -218,14 +217,14 @@ void test_normals() {
     expected_cart_coords.get(2) = cos_theta * temp + center[2];
   }
   const auto& cart_coords =
-      db::get<StrahlkorperTags::CartesianCoords<Frame::Inertial>>(box);
+      db::get<StrahlkorperTags::CartesianCoords<Frame::System>>(box);
   CHECK_ITERABLE_APPROX(expected_cart_coords, cart_coords);
 
   // Test surface_normal_one_form
-  db::const_item_type<StrahlkorperTags::NormalOneForm<Frame::Inertial>>
+  db::const_item_type<StrahlkorperTags::NormalOneForm<Frame::System>>
       expected_normal_one_form(n_pts);
   {
-    const auto& r = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+    const auto& r = db::get<StrahlkorperTags::Radius<Frame::System>>(box);
     const DataVector one_over_r = 1.0 / r;
     const DataVector temp = 1.0 + one_over_r * amp * sin_phi * sin_theta;
     expected_normal_one_form.get(0) = cos_phi * sin_theta * temp;
@@ -234,11 +233,11 @@ void test_normals() {
     expected_normal_one_form.get(2) = cos_theta * temp;
   }
   const auto& normal_one_form =
-      db::get<StrahlkorperTags::NormalOneForm<Frame::Inertial>>(box);
+      db::get<StrahlkorperTags::NormalOneForm<Frame::System>>(box);
   CHECK_ITERABLE_APPROX(expected_normal_one_form, normal_one_form);
 
   // Test surface_normal_magnitude.
-  tnsr::II<DataVector, 3, Frame::Inertial> invg(n_pts);
+  tnsr::II<DataVector, 3, Frame::System> invg(n_pts);
   invg.get(0, 0) = 1.0;
   invg.get(1, 0) = 0.1;
   invg.get(2, 0) = 0.2;
@@ -247,7 +246,7 @@ void test_normals() {
   invg.get(2, 2) = 3.0;
 
   const auto expected_normal_mag = [&]() -> DataVector {
-    const auto& r = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+    const auto& r = db::get<StrahlkorperTags::Radius<Frame::System>>(box);
 
     // Nasty expression Mark Scheel computed in Mathematica.
     const DataVector normsquared =

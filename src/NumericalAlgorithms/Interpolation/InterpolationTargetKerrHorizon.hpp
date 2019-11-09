@@ -184,11 +184,11 @@ struct KerrHorizon {
       const typename Metavariables::temporal_id::type& temporal_id) noexcept {
     // In the future, when we add support for multiple Frames,
     // the code that transforms coordinates from the Strahlkorper Frame
-    // to Frame::Inertial will go here.  That transformation
+    // to Frame::System will go here.  That transformation
     // may depend on `temporal_id`.
     send_points_to_interpolator<InterpolationTargetTag>(
         box, cache,
-        db::get<StrahlkorperTags::CartesianCoords<::Frame::Inertial>>(box),
+        db::get<StrahlkorperTags::CartesianCoords<::Frame::System>>(box),
         temporal_id);
   }
 };

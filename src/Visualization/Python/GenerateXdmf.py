@@ -83,19 +83,24 @@ def generate_xdmf(file_prefix, output_filename, start_time, stop_time, stride):
             xdmf_output += Grid_path  + "/connectivity\n" \
                            "        </DataItem>\n      </Topology>\n"
             # Write geometry/coordinates
+            coords_label = 'SystemCoordinates'
+            # Fallback to old coordinate name to support files written before
+            # the name changed
+            if 'InertialCoordinates_x' in h5temporal.keys():
+                coords_label = 'InertialCoordinates'
             xdmf_output += "      <Geometry Type=\"X_Y_Z\">\n"
             xdmf_output += data_item + Grid_path + \
-                            "/InertialCoordinates_x\n        </DataItem>\n"
+                           "/" + coords_label + "_x\n        </DataItem>\n"
             xdmf_output += data_item + Grid_path + \
-                           "/InertialCoordinates_y\n        </DataItem>\n"
+                           "/" + coords_label + "_y\n        </DataItem>\n"
             xdmf_output += data_item + Grid_path + \
-                           "/InertialCoordinates_z\n        </DataItem>\n"
+                           "/" + coords_label + "_z\n        </DataItem>\n"
             xdmf_output += "      </Geometry>\n"
             # Everything that isn't a coordinate is a "component"
             components = list(h5temporal.keys())
-            components.remove('InertialCoordinates_x')
-            components.remove('InertialCoordinates_y')
-            components.remove('InertialCoordinates_z')
+            components.remove(coords_label + '_x')
+            components.remove(coords_label + '_y')
+            components.remove(coords_label + '_z')
             components.remove('connectivity')
             components.remove('total_extents')
             components.remove('grid_names')

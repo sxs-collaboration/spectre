@@ -147,17 +147,17 @@ void check_compute_items(
   };
   CHECK(tag_is_retrievable(
       ::Tags::Flux<LinearSolver::Tags::Operand<ScalarFieldTag>,
-                   tmpl::size_t<Dim>, Frame::Inertial>{}));
+                   tmpl::size_t<Dim>, Frame::System>{}));
   CHECK(tag_is_retrievable(
       ::Tags::Flux<LinearSolver::Tags::Operand<AuxiliaryFieldTag<Dim>>,
-                   tmpl::size_t<Dim>, Frame::Inertial>{}));
+                   tmpl::size_t<Dim>, Frame::System>{}));
   CHECK(tag_is_retrievable(
       ::Tags::div<::Tags::Flux<LinearSolver::Tags::Operand<ScalarFieldTag>,
-                               tmpl::size_t<Dim>, Frame::Inertial>>{}));
+                               tmpl::size_t<Dim>, Frame::System>>{}));
   CHECK(tag_is_retrievable(
       ::Tags::div<
           ::Tags::Flux<LinearSolver::Tags::Operand<AuxiliaryFieldTag<Dim>>,
-                       tmpl::size_t<Dim>, Frame::Inertial>>{}));
+                       tmpl::size_t<Dim>, Frame::System>>{}));
   CHECK(tag_is_retrievable(
       ::Tags::Source<LinearSolver::Tags::Operand<ScalarFieldTag>>{}));
   CHECK(tag_is_retrievable(
@@ -176,7 +176,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::ElementLogical, Frame::System,
                                          domain::CoordinateMaps::Affine>));
 
     using metavariables = Metavariables<1>;
@@ -203,12 +203,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     CHECK(get_tag(LinearSolver::Tags::OperatorAppliedTo<ScalarFieldTag>{}) ==
           Scalar<DataVector>{{{{4, 0.}}}});
     // Test the analytic source
-    const auto& inertial_coords =
-        get_tag(Tags::Coordinates<1, Frame::Inertial>{});
+    const auto& system_coords = get_tag(Tags::Coordinates<1, Frame::System>{});
     CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
-          get<0>(inertial_coords));
+          get<0>(system_coords));
     // Test the linear solver quantities are initialized, but value is undefined
     CHECK(get(get_tag(LinearSolver::Tags::Operand<ScalarFieldTag>{})).size() ==
           4);
@@ -224,7 +223,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         {{-0.5, 0.}}, {{1.5, 2.}}, {{false, false}}, {{2, 0}}, {{4, 3}}};
     // Register the coordinate map for serialization
     PUPable_reg(
-        SINGLE_ARG(domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+        SINGLE_ARG(domain::CoordinateMap<Frame::ElementLogical, Frame::System,
                                          domain::CoordinateMaps::ProductOf2Maps<
                                              domain::CoordinateMaps::Affine,
                                              domain::CoordinateMaps::Affine>>));
@@ -253,12 +252,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     CHECK(get_tag(LinearSolver::Tags::OperatorAppliedTo<ScalarFieldTag>{}) ==
           Scalar<DataVector>{{{{12, 0.}}}});
     // Test the analytic source
-    const auto& inertial_coords =
-        get_tag(Tags::Coordinates<2, Frame::Inertial>{});
+    const auto& system_coords = get_tag(Tags::Coordinates<2, Frame::System>{});
     CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
-          get<0>(inertial_coords) + get<1>(inertial_coords));
+          get<0>(system_coords) + get<1>(system_coords));
     CHECK(get(get_tag(LinearSolver::Tags::Operand<ScalarFieldTag>{})).size() ==
           12);
     CHECK(get(get_tag(LinearSolver::Tags::OperatorAppliedTo<
@@ -278,7 +276,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     // Register the coordinate map for serialization
     PUPable_reg(SINGLE_ARG(
         domain::CoordinateMap<
-            Frame::ElementLogical, Frame::Inertial,
+            Frame::ElementLogical, Frame::System,
             domain::CoordinateMaps::ProductOf3Maps<
                 domain::CoordinateMaps::Affine, domain::CoordinateMaps::Affine,
                 domain::CoordinateMaps::Affine>>));
@@ -307,13 +305,12 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
     CHECK(get_tag(LinearSolver::Tags::OperatorAppliedTo<ScalarFieldTag>{}) ==
           Scalar<DataVector>{{{{24, 0.}}}});
     // Test the analytic source
-    const auto& inertial_coords =
-        get_tag(Tags::Coordinates<3, Frame::Inertial>{});
+    const auto& system_coords = get_tag(Tags::Coordinates<3, Frame::System>{});
     CHECK(get(get_tag(Tags::FixedSource<ScalarFieldTag>{})) ==
           // This check is against the source computed by the
           // analytic solution above
-          get<0>(inertial_coords) + get<1>(inertial_coords) +
-              get<2>(inertial_coords));
+          get<0>(system_coords) + get<1>(system_coords) +
+              get<2>(system_coords));
     // Test the linear solver quantities are initialized, but value is undefined
     CHECK(get(get_tag(LinearSolver::Tags::Operand<ScalarFieldTag>{})).size() ==
           24);

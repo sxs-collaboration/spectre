@@ -246,7 +246,7 @@ tnsr::I<double, VolumeDim, Frame::ElementLogical> point_in_neighbor_frame(
 }
 
 // Given two Blocks which are neighbors, computes the max separation between
-// the abutting faces of the Blocks in the Frame::Inertial frame using the
+// the abutting faces of the Blocks in the Frame::System frame using the
 // CoordinateMaps of each block.
 template <size_t VolumeDim>
 double physical_separation(const Block<VolumeDim>& block1,
@@ -289,7 +289,7 @@ void test_domain_construction(
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
-        Frame::ElementLogical, Frame::Inertial, VolumeDim>>>&
+        Frame::ElementLogical, Frame::System, VolumeDim>>>&
         expected_maps) noexcept {
   const auto& blocks = domain.blocks();
   CHECK(blocks.size() == expected_external_boundaries.size());
@@ -350,12 +350,11 @@ void test_initial_domain(const Domain<VolumeDim>& domain,
 }
 
 template <size_t SpatialDim>
-tnsr::i<DataVector, SpatialDim, Frame::Inertial> euclidean_basis_vector(
+tnsr::i<DataVector, SpatialDim> euclidean_basis_vector(
     const Direction<SpatialDim>& direction,
     const DataVector& used_for_size) noexcept {
   auto basis_vector =
-      make_with_value<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(
-          used_for_size, 0.0);
+      make_with_value<tnsr::i<DataVector, SpatialDim>>(used_for_size, 0.0);
 
   basis_vector.get(direction.axis()) =
       make_with_value<DataVector>(used_for_size, direction.sign());
@@ -376,7 +375,7 @@ tnsr::i<DataVector, SpatialDim, Frame::Inertial> euclidean_basis_vector(
       const std::vector<std::unordered_set<Direction<DIM(data)>>>&          \
           expected_external_boundaries,                                     \
       const std::vector<std::unique_ptr<domain::CoordinateMapBase<          \
-          Frame::ElementLogical, Frame::Inertial, DIM(data)>>>&             \
+          Frame::ElementLogical, Frame::System, DIM(data)>>>&               \
           expected_maps) noexcept;                                          \
   template void test_initial_domain(                                        \
       const Domain<DIM(data)>& domain,                                      \
@@ -384,9 +383,9 @@ tnsr::i<DataVector, SpatialDim, Frame::Inertial> euclidean_basis_vector(
           initial_refinement_levels) noexcept;                              \
   template void test_physical_separation(                                   \
       const std::vector<Block<DIM(data)>>& blocks) noexcept;                \
-  template tnsr::i<DataVector, DIM(data), Frame::Inertial>                  \
-  euclidean_basis_vector(const Direction<DIM(data)>& direction,             \
-                         const DataVector& used_for_size) noexcept;
+  template tnsr::i<DataVector, DIM(data)> euclidean_basis_vector(           \
+      const Direction<DIM(data)>& direction,                                \
+      const DataVector& used_for_size) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 

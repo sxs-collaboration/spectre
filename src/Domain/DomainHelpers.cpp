@@ -1023,7 +1023,7 @@ Domain<VolumeDim> rectilinear_domain(
     rotations_of_all_blocks = std::vector<OrientationMap<VolumeDim>>{
         corners_of_all_blocks.size(), OrientationMap<VolumeDim>{}};
   }
-  auto maps = maps_for_rectilinear_domains<Frame::Inertial>(
+  auto maps = maps_for_rectilinear_domains<Frame::System>(
       domain_extents, block_demarcations, block_indices_to_exclude,
       rotations_of_all_blocks, use_equiangular_map);
   for (size_t i = 0; i < corners_of_all_blocks.size(); i++) {
@@ -1123,7 +1123,7 @@ template std::array<size_t, 8> discrete_rotation(
     const OrientationMap<3>& orientation,
     const std::array<size_t, 8>& corners_of_aligned) noexcept;
 template std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::ElementLogical, Frame::Inertial, 3>>>
+    domain::CoordinateMapBase<Frame::ElementLogical, Frame::System, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const double inner_sphericity,
                       const double outer_sphericity,
@@ -1145,7 +1145,7 @@ wedge_coordinate_maps(const double inner_radius, const double outer_radius,
                       const ShellWedges which_wedges,
                       const size_t number_of_layers) noexcept;
 template std::vector<std::unique_ptr<
-    domain::CoordinateMapBase<Frame::ElementLogical, Frame::Inertial, 3>>>
+    domain::CoordinateMapBase<Frame::ElementLogical, Frame::System, 3>>>
 frustum_coordinate_maps(const double length_inner_cube,
                         const double length_outer_cube,
                         const bool use_equiangular_map,
@@ -1165,7 +1165,7 @@ frustum_coordinate_maps(const double length_inner_cube,
 
 #define INSTANTIATE(_, data)                                                \
   template std::vector<std::unique_ptr<domain::CoordinateMapBase<           \
-      Frame::ElementLogical, Frame::Inertial, DIM(data)>>>                  \
+      Frame::ElementLogical, Frame::System, DIM(data)>>>                    \
   maps_for_rectilinear_domains(                                             \
       const Index<DIM(data)>& domain_extents,                               \
       const std::array<std::vector<double>, DIM(data)>& block_demarcations, \

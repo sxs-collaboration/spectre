@@ -92,7 +92,7 @@ class NumericalFlux {
   void package_data(const gsl::not_null<Variables<package_tags>*> packaged_data,
                     const Scalar<DataVector>& var_flux,
                     const Scalar<DataVector>& other_data,
-                    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+                    const tnsr::i<DataVector, Dim, Frame::System>&
                         interface_unit_normal) const noexcept {
     get(get<Var>(*packaged_data)) = 10. * get(var_flux);
     get<0>(get<ExtraData>(*packaged_data)) =
@@ -265,10 +265,10 @@ void run_test() {
   const Affine eta_map{-1., 1., 7., 3.};
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial, Affine2D>));
+      domain::CoordinateMap<Frame::ElementLogical, Frame::System, Affine2D>));
 
   const auto coordmap =
-      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           Affine2D(xi_map, eta_map));
 
   const auto external_directions = {Direction<2>::lower_eta(),
@@ -305,7 +305,7 @@ void run_test() {
                              {{Direction<2>::lower_xi(), {{west_id}, {}}},
                               {Direction<2>::upper_eta(), {{south_id}, {}}}});
 
-    auto map = ElementMap<2, Frame::Inertial>(self_id, coordmap->get_clone());
+    auto map = ElementMap<2, Frame::System>(self_id, coordmap->get_clone());
 
     db::item_type<bdry_normal_dot_fluxes_tag<flux_comm_types>>
         bdry_normal_dot_fluxes;

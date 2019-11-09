@@ -19,8 +19,7 @@ template <size_t SpatialDim>
 void test_euclidean_basis_vectors(const DataVector& used_for_size) noexcept {
   for (const auto& direction : Direction<SpatialDim>::all_directions()) {
     auto expected =
-        make_with_value<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(
-            used_for_size, 0.0);
+        make_with_value<tnsr::i<DataVector, SpatialDim>>(used_for_size, 0.0);
     expected.get(direction.axis()) =
         make_with_value<DataVector>(used_for_size, direction.sign());
 

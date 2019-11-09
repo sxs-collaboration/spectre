@@ -149,7 +149,7 @@ void test_shell_construction(
   using Halves = Wedge3DMap::WedgeHalves;
   if (aspect_ratio == 1.0) {
     auto vector_of_maps = make_vector_coordinate_map_base<Frame::ElementLogical,
-                                                          Frame::Inertial>(
+                                                          Frame::System>(
         Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 1.0, 1.0,
                    use_equiangular_map, Halves::Both, use_logarithmic_map},
         Wedge3DMap{inner_radius, outer_radius,
@@ -193,12 +193,12 @@ void test_shell_construction(
     const auto compression =
         CoordinateMaps::EquatorialCompression{aspect_ratio};
     auto vector_of_maps = make_vector(
-        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
             Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 1.0,
                        1.0, use_equiangular_map, Halves::Both,
                        use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
             Wedge3DMap{inner_radius, outer_radius,
                        OrientationMap<3>{std::array<Direction<3>, 3>{
                            {Direction<3>::upper_xi(), Direction<3>::lower_eta(),
@@ -206,7 +206,7 @@ void test_shell_construction(
                        1.0, 1.0, use_equiangular_map, Halves::Both,
                        use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -215,7 +215,7 @@ void test_shell_construction(
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -224,7 +224,7 @@ void test_shell_construction(
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -233,7 +233,7 @@ void test_shell_construction(
                 1.0, 1.0, use_equiangular_map, Halves::Both,
                 use_logarithmic_map},
             compression),
-        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
             Wedge3DMap{
                 inner_radius, outer_radius,
                 OrientationMap<3>{std::array<Direction<3>, 3>{
@@ -471,7 +471,7 @@ void test_radial_block_layers(const double inner_radius,
   x_on_element_boundary[number_of_divisions] = outer_radius;
 
   const auto zero = make_with_value<DataVector>(x_in_block_interior, 0.0);
-  tnsr::I<DataVector, 3, Frame::Inertial> interior_inertial_coords{
+  tnsr::I<DataVector, 3, Frame::System> interior_system_coords{
       {{-x_in_block_interior, zero, zero}}};
   const creators::Shell shell{
       inner_radius,          outer_radius,        refinement_level,
@@ -479,7 +479,7 @@ void test_radial_block_layers(const double inner_radius,
       use_logarithmic_map,   which_wedges,        radial_block_layers};
   auto domain = shell.create_domain();
   const auto blogical_coords =
-      block_logical_coordinates(domain, interior_inertial_coords);
+      block_logical_coordinates(domain, interior_system_coords);
   for (size_t s = 0; s < expected_block_ids.size(); ++s) {
     CHECK(blogical_coords[s].get().id.get_index() == expected_block_ids[s]);
   }
@@ -498,7 +498,7 @@ void test_radial_block_layers(const double inner_radius,
       if (element_id.segment_ids()[0] == SegmentId{refinement_level, 0} and
           element_id.segment_ids()[1] == SegmentId{refinement_level, 0}) {
         element_count++;
-        const auto map = ElementMap<3, Frame::Inertial>{
+        const auto map = ElementMap<3, Frame::System>{
             element_id, block.coordinate_map().get_clone()};
         const tnsr::I<double, 3, Frame::ElementLogical> logical_point(
             std::array<double, 3>{{0.0, 0.0, 1.0}});

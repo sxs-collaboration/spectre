@@ -123,7 +123,7 @@ struct Mesh : db::SimpleTag {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The coordinate map from logical to grid coordinate
-template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+template <size_t VolumeDim, typename Frame = ::Frame::System>
 struct ElementMap : db::SimpleTag {
   static std::string name() noexcept { return "ElementMap"; }
   using type = ::ElementMap<VolumeDim, Frame>;

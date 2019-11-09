@@ -33,13 +33,13 @@ struct RiemannProblemProxy : NewtonianEuler::Solutions::RiemannProblem<Dim> {
   template <typename DataType>
   using variables_tags =
       tmpl::list<NewtonianEuler::Tags::MassDensity<DataType>,
-                 NewtonianEuler::Tags::Velocity<DataType, Dim, Frame::Inertial>,
+                 NewtonianEuler::Tags::Velocity<DataType, Dim, Frame::System>,
                  NewtonianEuler::Tags::Pressure<DataType>,
                  NewtonianEuler::Tags::SpecificInternalEnergy<DataType>>;
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<variables_tags<DataType>>
-  primitive_variables(const tnsr::I<DataType, Dim, Frame::Inertial>& x,
+  primitive_variables(const tnsr::I<DataType, Dim, Frame::System>& x,
                       double t) const noexcept {
     return this->variables(x, t, variables_tags<DataType>{});
   }

@@ -23,12 +23,11 @@ using block_logical_coord_holder = boost::optional<IdPair<
 
 template <size_t Dim>
 std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
-    const Domain<Dim>& domain,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& x) noexcept {
+    const Domain<Dim>& domain, const tnsr::I<DataVector, Dim>& x) noexcept {
   const size_t num_pts = get<0>(x).size();
   std::vector<block_logical_coord_holder<Dim>> block_coord_holders(num_pts);
   for (size_t s = 0; s < num_pts; ++s) {
-    tnsr::I<double, Dim, Frame::Inertial> x_frame(0.0);
+    tnsr::I<double, Dim> x_frame(0.0);
     for (size_t d = 0; d < Dim; ++d) {
       x_frame.get(d) = x.get(d)[s];
     }

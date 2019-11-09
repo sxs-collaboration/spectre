@@ -42,11 +42,11 @@ template <size_t Dim>
 void test_computers(const DataVector& used_for_size) {
   using field_tag = Poisson::Tags::Field;
   using auxiliary_field_tag =
-      ::Tags::deriv<field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
+      ::Tags::deriv<field_tag, tmpl::size_t<Dim>, Frame::System>;
   using field_flux_tag =
-      ::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
+      ::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::System>;
   using auxiliary_flux_tag =
-      ::Tags::Flux<auxiliary_field_tag, tmpl::size_t<Dim>, Frame::Inertial>;
+      ::Tags::Flux<auxiliary_field_tag, tmpl::size_t<Dim>, Frame::System>;
   using field_source_tag = ::Tags::Source<field_tag>;
 
   const size_t num_points = used_for_size.size();

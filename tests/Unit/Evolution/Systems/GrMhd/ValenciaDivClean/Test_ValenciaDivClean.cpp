@@ -12,13 +12,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.GrMhd.ValenciaDivClean.Tags",
                   "[Unit][GrMhd]") {
   CHECK(grmhd::ValenciaDivClean::Tags::TildeD::name() == "TildeD");
   CHECK(grmhd::ValenciaDivClean::Tags::TildeTau::name() == "TildeTau");
-  CHECK(grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>::name() ==
-        "TildeS");
+  CHECK(grmhd::ValenciaDivClean::Tags::TildeS<Frame::System>::name() ==
+        "System_TildeS");
   CHECK(grmhd::ValenciaDivClean::Tags::TildeS<
             Frame::GlobalTimeIndependent>::name() ==
         "GlobalTimeIndependent_TildeS");
-  CHECK(grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>::name() ==
-        "TildeB");
+  CHECK(grmhd::ValenciaDivClean::Tags::TildeB<Frame::System>::name() ==
+        "System_TildeB");
   CHECK(grmhd::ValenciaDivClean::Tags::TildeB<
             Frame::GlobalTimeIndependent>::name() ==
         "GlobalTimeIndependent_TildeB");

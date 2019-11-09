@@ -7,10 +7,10 @@
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"  // IWYU pragma: keep
 
 template Variables<tmpl::list<
-    Tags::div<Tags::Flux<Burgers::Tags::U, tmpl::size_t<1>, Frame::Inertial>>>>
+    Tags::div<Tags::Flux<Burgers::Tags::U, tmpl::size_t<1>, Frame::System>>>>
 divergence(
     const Variables<tmpl::list<
-        Tags::Flux<Burgers::Tags::U, tmpl::size_t<1>, Frame::Inertial>>>& F,
+        Tags::Flux<Burgers::Tags::U, tmpl::size_t<1>, Frame::System>>>& F,
     const Mesh<1>& mesh,
-    const InverseJacobian<DataVector, 1, Frame::ElementLogical,
-                          Frame::Inertial>& inverse_jacobian) noexcept;
+    const InverseJacobian<DataVector, 1, Frame::ElementLogical, Frame::System>&
+        inverse_jacobian) noexcept;

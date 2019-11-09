@@ -35,7 +35,7 @@ struct mock_component {
       typename Metavariables::neutrino_species>;
   using simple_tags = db::AddSimpleTags<tmpl::flatten<
       tmpl::list<typename Closure::return_tags, typename Closure::argument_tags,
-                 Tags::Coordinates<3, Frame::Inertial>>>>;
+                 Tags::Coordinates<3, Frame::System>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -101,14 +101,14 @@ SPECTRE_TEST_CASE("Unit.RadiationTransport.M1Grey.Actions", "[Unit][M1Grey]") {
       {Scalar<DataVector>{xi}, Scalar<DataVector>{xi}, tildeP, tildeP,
        Scalar<DataVector>{J}, Scalar<DataVector>{J}, Scalar<DataVector>{Hn},
        Scalar<DataVector>{Hn},
-       tnsr::i<DataVector, 3, Frame::Inertial>{{{Hx, Hy, Hz}}},
-       tnsr::i<DataVector, 3, Frame::Inertial>{{{Hx, Hy, Hz}}},
+       tnsr::i<DataVector, 3, Frame::System>{{{Hx, Hy, Hz}}},
+       tnsr::i<DataVector, 3, Frame::System>{{{Hx, Hy, Hz}}},
        Scalar<DataVector>{E0}, Scalar<DataVector>{E1},
-       tnsr::i<DataVector, 3, Frame::Inertial>{{{Sx0, Sy0, Sz0}}},
-       tnsr::i<DataVector, 3, Frame::Inertial>{{{Sx1, Sy1, Sz1}}},
-       tnsr::I<DataVector, 3, Frame::Inertial>{{{vx, vy, vz}}},
+       tnsr::i<DataVector, 3, Frame::System>{{{Sx0, Sy0, Sz0}}},
+       tnsr::i<DataVector, 3, Frame::System>{{{Sx1, Sy1, Sz1}}},
+       tnsr::I<DataVector, 3, Frame::System>{{{vx, vy, vz}}},
        Scalar<DataVector>{W}, metric, inverse_metric,
-       tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}}});
+       tnsr::I<DataVector, 3, Frame::System>{{{x, y, z}}}});
   runner.set_phase(Metavariables::Phase::Testing);
 
   runner.next_action<component>(0);

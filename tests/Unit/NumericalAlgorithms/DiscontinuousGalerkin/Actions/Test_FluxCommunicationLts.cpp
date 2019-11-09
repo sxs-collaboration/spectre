@@ -92,7 +92,7 @@ class NumericalFlux {
   void package_data(const gsl::not_null<Variables<package_tags>*> packaged_data,
                     const Scalar<DataVector>& var_flux,
                     const Scalar<DataVector>& other_data,
-                    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+                    const tnsr::i<DataVector, Dim, Frame::System>&
                         interface_unit_normal) const noexcept {
     get(get<Var>(*packaged_data)) = 10. * get(var_flux);
     get<0>(get<ExtraData>(*packaged_data)) =
@@ -235,9 +235,9 @@ void insert_neighbor(
   const Mesh<2> mesh{2, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto};
 
-  ElementMap<2, Frame::Inertial> map(
+  ElementMap<2, Frame::System> map(
       element.id(),
-      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           domain::CoordinateMaps::Identity<2>{}));
 
   db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>> fluxes;
@@ -321,7 +321,7 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
   ActionTesting::MockRuntimeSystem<metavariables> runner{{NumericalFlux<2>{}}};
 
   PUPable_reg(
-      SINGLE_ARG(domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial,
+      SINGLE_ARG(domain::CoordinateMap<Frame::ElementLogical, Frame::System,
                                        domain::CoordinateMaps::Identity<2>>));
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
@@ -329,9 +329,9 @@ void run_lts_case(const int self_step_end, const std::vector<int>& left_steps,
        Mesh<2>{2, Spectral::Basis::Legendre,
                Spectral::Quadrature::GaussLobatto},
        Element<2>{},
-       ElementMap<2, Frame::Inertial>{
+       ElementMap<2, Frame::System>{
            self_id, domain::make_coordinate_map_base<Frame::ElementLogical,
-                                                     Frame::Inertial>(
+                                                     Frame::System>(
                         domain::CoordinateMaps::Identity<2>{})},
        db::item_type<normal_dot_fluxes_tag<2, flux_comm_types<2>>>{},
        db::item_type<other_data_tag<2>>{},

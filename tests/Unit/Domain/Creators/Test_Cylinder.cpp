@@ -127,7 +127,7 @@ void test_cylinder_construction(
 
   CHECK(cylinder.initial_extents() == expected_extents);
   CHECK(cylinder.initial_refinement_levels() == expected_refinement_level);
-  using TargetFrame = Frame::Inertial;
+  using TargetFrame = Frame::System;
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;

@@ -28,12 +28,12 @@ struct LorentzianProxy : Poisson::Solutions::Lorentzian<Dim> {
   using source_tags = tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, Dim, Frame::System>& x) const noexcept {
     return Poisson::Solutions::Lorentzian<Dim>::variables(x, field_tags{});
   }
 
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, Dim, Frame::System>& x) const noexcept {
     return Poisson::Solutions::Lorentzian<Dim>::variables(x, source_tags{});
   }
 };

@@ -48,7 +48,7 @@ void test_make_tagged_tuple() {
         DataVector(n_pts, 0.0), -5.7);
     check_make_with_value(
         tuples::TaggedTuple<Var2>(Scalar<DataVector>(n_pts, -5.7)),
-        tnsr::ab<DataVector, 2, Frame::Inertial>(n_pts, 0.0), -5.7);
+        tnsr::ab<DataVector, 2, Frame::System>(n_pts, 0.0), -5.7);
 
     check_make_with_value(
         tuples::TaggedTuple<Var1<3>, Var2>(
@@ -60,7 +60,7 @@ void test_make_tagged_tuple() {
         tuples::TaggedTuple<Var1<3>, Var2>(
             tnsr::i<DataVector, 3, Frame::GlobalTimeIndependent>(n_pts, 3.8),
             Scalar<DataVector>(n_pts, 3.8)),
-        tnsr::ab<DataVector, 2, Frame::Inertial>(n_pts, 0.0), 3.8);
+        tnsr::ab<DataVector, 2, Frame::System>(n_pts, 0.0), 3.8);
   }
 }
 
@@ -98,7 +98,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
                         tnsr::I<double, 3, Frame::GlobalTimeIndependent>(1.3),
                         std::complex<double>(8.3, 2.5));
   check_make_with_value(tnsr::Ij<double, 3, Frame::GlobalTimeIndependent>(8.3),
-                        tnsr::aB<double, 1, Frame::Inertial>(1.3), 8.3);
+                        tnsr::aB<double, 1, Frame::System>(1.3), 8.3);
   check_make_with_value(make_array<4>(8.3), 1.3, 8.3);
 
   for (size_t n_pts = 1; n_pts < 4; ++n_pts) {
@@ -109,22 +109,21 @@ SPECTRE_TEST_CASE("Unit.DataStructures.MakeWithValue",
                           -2.3);
     check_make_with_value(Scalar<DataVector>(n_pts, -2.3),
                           DataVector(n_pts, 4.5), -2.3);
-    check_make_with_value(tnsr::ab<DataVector, 2, Frame::Inertial>(n_pts, -2.3),
+    check_make_with_value(tnsr::ab<DataVector, 2, Frame::System>(n_pts, -2.3),
                           DataVector(n_pts, 4.5), -2.3);
     check_make_with_value(DataVector(n_pts, -2.3),
                           Scalar<DataVector>(n_pts, 4.5), -2.3);
     check_make_with_value(DataVector(n_pts, -2.3),
-                          tnsr::ab<DataVector, 2, Frame::Inertial>(n_pts, 4.5),
+                          tnsr::ab<DataVector, 2, Frame::System>(n_pts, 4.5),
                           -2.3);
     check_make_with_value(
-        tnsr::ijj<DataVector, 2, Frame::Inertial>(n_pts, -2.3),
+        tnsr::ijj<DataVector, 2, Frame::System>(n_pts, -2.3),
         tnsr::ab<DataVector, 3, Frame::GlobalTimeIndependent>(n_pts, 4.5),
         -2.3);
-    check_make_with_value(
-        tnsr::ijj<DataVector, 2, Frame::Inertial>(n_pts, -2.3),
-        Scalar<DataVector>(n_pts, 4.5), -2.3);
+    check_make_with_value(tnsr::ijj<DataVector, 2, Frame::System>(n_pts, -2.3),
+                          Scalar<DataVector>(n_pts, 4.5), -2.3);
     check_make_with_value(Scalar<DataVector>(n_pts, -2.3),
-                          tnsr::abc<DataVector, 3, Frame::Inertial>(n_pts, 4.5),
+                          tnsr::abc<DataVector, 3, Frame::System>(n_pts, 4.5),
                           -2.3);
     check_make_with_value(Variables<two_vars<3>>(n_pts, -2.3),
                           DataVector(n_pts, 4.5), -2.3);

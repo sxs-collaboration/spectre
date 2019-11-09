@@ -187,7 +187,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceivePoints",
   const auto domain = domain_creator.create_domain();
   const auto block_logical_coords = [&domain]() noexcept {
     const size_t n_pts = 15;
-    tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
+    tnsr::I<DataVector, 3, Frame::System> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
       for (size_t i = 0; i < n_pts; ++i) {
         points.get(d)[i] = 1.0 + (0.1 + 0.02 * d) * i;  // Chosen by hand.

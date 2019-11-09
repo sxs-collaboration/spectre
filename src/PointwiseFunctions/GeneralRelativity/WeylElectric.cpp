@@ -74,7 +74,7 @@ void weyl_electric(
           inverse_spatial_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::GlobalTimeIndependent, Frame::Inertial))
+                        (Frame::GlobalTimeIndependent, Frame::System))
 #undef DIM
 #undef DTYPE
 #undef FRAME

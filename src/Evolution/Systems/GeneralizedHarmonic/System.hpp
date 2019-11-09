@@ -29,22 +29,21 @@ struct System {
   static constexpr size_t volume_dim = Dim;
   static constexpr bool is_euclidean = false;
 
-  using variables_tag = ::Tags::Variables<tmpl::list<
-      gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
-      Tags::Pi<Dim, Frame::Inertial>, Tags::Phi<Dim, Frame::Inertial>>>;
+  using variables_tag = ::Tags::Variables<
+      tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame::System, DataVector>,
+                 Tags::Pi<Dim, Frame::System>, Tags::Phi<Dim, Frame::System>>>;
   using gradients_tags =
-      tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame::Inertial, DataVector>,
-                 Tags::Pi<Dim, Frame::Inertial>,
-                 Tags::Phi<Dim, Frame::Inertial>>;
+      tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame::System, DataVector>,
+                 Tags::Pi<Dim, Frame::System>, Tags::Phi<Dim, Frame::System>>;
 
   using compute_time_derivative = ComputeDuDt<Dim>;
   using normal_dot_fluxes = ComputeNormalDotFluxes<Dim>;
-  using char_speeds_tag = CharacteristicSpeedsCompute<Dim, Frame::Inertial>;
+  using char_speeds_tag = CharacteristicSpeedsCompute<Dim, Frame::System>;
   using compute_largest_characteristic_speed =
-      ComputeLargestCharacteristicSpeed<Dim, Frame::Inertial>;
+      ComputeLargestCharacteristicSpeed<Dim, Frame::System>;
 
   template <typename Tag>
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
-      Tag, gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>;
+      Tag, gr::Tags::InverseSpatialMetric<Dim, Frame::System, DataVector>>;
 };
 }  // namespace GeneralizedHarmonic

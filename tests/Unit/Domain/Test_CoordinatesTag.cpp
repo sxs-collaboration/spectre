@@ -18,7 +18,7 @@
 
 namespace Frame {
 struct GlobalTimeIndependent;
-struct Inertial;
+struct System;
 struct ElementLogical;
 }  // namespace Frame
 
@@ -44,8 +44,7 @@ void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) noexcept {
   /// [coordinates_name]
   CHECK(Tags::Coordinates<Dim, Frame::ElementLogical>::name() ==
         "ElementLogicalCoordinates");
-  CHECK(Tags::Coordinates<Dim, Frame::Inertial>::name() ==
-        "InertialCoordinates");
+  CHECK(Tags::Coordinates<Dim, Frame::System>::name() == "SystemCoordinates");
   /// [coordinates_name]
 }
 }  // namespace

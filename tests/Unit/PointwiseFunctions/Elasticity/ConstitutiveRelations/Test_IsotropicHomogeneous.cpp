@@ -77,12 +77,12 @@ void test_implementation_suite() {
 
 template <size_t Dim>
 void test_identity(const tnsr::ii<DataVector, Dim>& random_strain,
-                   const tnsr::I<DataVector, Dim>& random_inertial_coords) {
+                   const tnsr::I<DataVector, Dim>& random_system_coords) {
   INFO("Identity");
   // This relation should be the negative identity
   const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim> relation{
       1. / 3., 1. / 2.};
-  const auto stress = relation.stress(random_strain, random_inertial_coords);
+  const auto stress = relation.stress(random_strain, random_system_coords);
   for (size_t i = 0; i < Dim; i++) {
     for (size_t j = 0; j < Dim; j++) {
       CHECK_ITERABLE_APPROX(stress.get(i, j), -random_strain.get(i, j));
@@ -92,17 +92,17 @@ void test_identity(const tnsr::ii<DataVector, Dim>& random_strain,
 
 template <size_t Dim>
 void test_trace(const tnsr::ii<DataVector, Dim>& random_strain,
-                const tnsr::I<DataVector, Dim>& random_inertial_coords);
+                const tnsr::I<DataVector, Dim>& random_system_coords);
 
 template <>
 void test_trace<3>(const tnsr::ii<DataVector, 3>& random_strain,
-                   const tnsr::I<DataVector, 3>& random_inertial_coords) {
+                   const tnsr::I<DataVector, 3>& random_system_coords) {
   INFO("Trace");
   // This relation should result in a stress trace that is equal the negative
   // trace of the strain. The shear modulus should be irrelevant here.
   const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<3> relation{
       1. / 3., 10.};
-  const auto stress = relation.stress(random_strain, random_inertial_coords);
+  const auto stress = relation.stress(random_strain, random_system_coords);
   auto strain_trace = make_with_value<DataVector>(random_strain, 0.);
   auto stress_trace = make_with_value<DataVector>(random_strain, 0.);
   for (size_t i = 0; i < 3; i++) {
@@ -114,11 +114,11 @@ void test_trace<3>(const tnsr::ii<DataVector, 3>& random_strain,
 
 template <>
 void test_trace<2>(const tnsr::ii<DataVector, 2>& random_strain,
-                   const tnsr::I<DataVector, 2>& random_inertial_coords) {
+                   const tnsr::I<DataVector, 2>& random_system_coords) {
   INFO("Trace");
   const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<2> relation{
       1. / 3., 2.};
-  const auto stress = relation.stress(random_strain, random_inertial_coords);
+  const auto stress = relation.stress(random_strain, random_system_coords);
   auto strain_trace = make_with_value<DataVector>(random_strain, 0.);
   auto stress_trace = make_with_value<DataVector>(random_strain, 0.);
   for (size_t i = 0; i < 2; i++) {
@@ -131,13 +131,13 @@ void test_trace<2>(const tnsr::ii<DataVector, 2>& random_strain,
 
 template <size_t Dim>
 void test_traceless(const tnsr::ii<DataVector, Dim>& random_strain,
-                    const tnsr::I<DataVector, Dim>& random_inertial_coords) {
+                    const tnsr::I<DataVector, Dim>& random_system_coords) {
   INFO("Traceless");
   // This relation should result in a traceless stress.
   // The shear modulus should be irrelevant here.
   const Elasticity::ConstitutiveRelations::IsotropicHomogeneous<Dim> relation{
       0., 10.};
-  const auto stress = relation.stress(random_strain, random_inertial_coords);
+  const auto stress = relation.stress(random_strain, random_system_coords);
   auto trace = make_with_value<DataVector>(random_strain, 0.);
   for (size_t i = 0; i < Dim; i++) {
     trace += stress.get(i, i);
@@ -160,13 +160,13 @@ void test_analytically() {
   for (size_t i = 0; i < Dim; i++) {
     random_strain_trace += random_strain.get(i, i);
   }
-  const auto random_inertial_coords =
+  const auto random_system_coords =
       make_with_random_values<tnsr::I<DataVector, Dim>>(nn_generator, nn_dist,
                                                         used_for_size);
 
-  test_identity<Dim>(random_strain, random_inertial_coords);
-  test_trace<Dim>(random_strain, random_inertial_coords);
-  test_traceless<Dim>(random_strain, random_inertial_coords);
+  test_identity<Dim>(random_strain, random_system_coords);
+  test_trace<Dim>(random_strain, random_system_coords);
+  test_traceless<Dim>(random_strain, random_system_coords);
 }
 
 }  // namespace

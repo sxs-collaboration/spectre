@@ -50,9 +50,9 @@ void test_rotated_intervals_construction(
   test_domain_construction(
       domain, expected_block_neighbors, expected_external_boundaries,
       make_vector(
-          make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+          make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
               CoordinateMaps::Affine{-1., 1., lower_bound[0], midpoint[0]}),
-          make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+          make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
               CoordinateMaps::DiscreteRotation<1>{OrientationMap<1>{
                   std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}}},
               CoordinateMaps::Affine{-1., 1., midpoint[0], upper_bound[0]})));

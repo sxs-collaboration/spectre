@@ -22,7 +22,7 @@
 // IWYU pragma: no_forward_declare Tags::div
 
 namespace {
-using frame = Frame::Inertial;
+using frame = Frame::System;
 constexpr size_t volume_dim = 2;
 
 struct Var1 : db::SimpleTag {

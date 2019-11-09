@@ -16,7 +16,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 struct ElementLogical;
 }  // namespace Frame
 /// \endcond
@@ -40,7 +40,7 @@ Interval::Interval(typename LowerBound::type lower_x,
 
 Domain<1> Interval::create_domain() const noexcept {
   return Domain<1>{
-      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           CoordinateMaps::Affine{-1., 1., lower_x_[0], upper_x_[0]}),
       std::vector<std::array<size_t, 2>>{{{1, 2}}},
       is_periodic_in_x_[0] ? std::vector<PairOfFaces>{{{1}, {2}}}

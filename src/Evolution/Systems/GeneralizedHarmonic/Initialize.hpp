@@ -43,7 +43,7 @@ namespace GeneralizedHarmonic {
 namespace Actions {
 template <size_t Dim>
 struct InitializeConstraints {
-  using frame = Frame::Inertial;
+  using frame = Frame::System;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -74,7 +74,7 @@ struct InitializeConstraints {
 
 template <size_t Dim>
 struct InitializeGhAnd3Plus1Variables {
-  using frame = Frame::Inertial;
+  using frame = Frame::System;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,
@@ -126,7 +126,7 @@ struct InitializeGhAnd3Plus1Variables {
 
 template <size_t Dim>
 struct InitializeGauge {
-  using frame = Frame::Inertial;
+  using frame = Frame::System;
 
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

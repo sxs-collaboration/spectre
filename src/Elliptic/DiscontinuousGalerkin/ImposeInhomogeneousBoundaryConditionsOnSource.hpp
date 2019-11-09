@@ -22,7 +22,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 /// \endcond
 
@@ -53,10 +53,10 @@ namespace Actions {
  *   - `primal_fields`
  * - DataBox:
  *   - `Tags::Mesh<volume_dim>`
- *   - `Tags::Coordinates<volume_dim, Frame::Inertial>`
+ *   - `Tags::Coordinates<volume_dim, Frame::System>`
  *   - `Tags::BoundaryDirectionsInterior<volume_dim>`
  *   - `Tags::Interface<Tags::BoundaryDirectionsExterior<volume_dim>,
- *   Tags::Coordinates<volume_dim, Frame::Inertial>>`
+ *   Tags::Coordinates<volume_dim, Frame::System>>`
  *   - `Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
  *   Tags::Normalized<Tags::UnnormalizedFaceNormal<volume_dim>>>`
  *   - `Tags::Interface<Tags::BoundaryDirectionsInterior<volume_dim>,
@@ -90,7 +90,7 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
       const Variables<tmpl::list<BoundaryDataTags...>>& boundary_data,
       const db::item_type<fluxes_computer_tag>& fluxes_computer,
       const db::item_type<FluxesArgs>&... fluxes_args,
-      const tnsr::i<DataVector, system::volume_dim, Frame::Inertial>&
+      const tnsr::i<DataVector, system::volume_dim>&
           normalized_face_normal) noexcept {
     normal_dot_numerical_flux_computer.compute_dirichlet_boundary(
         make_not_null(&get<NumericalFluxTags>(*numerical_fluxes))...,
@@ -115,28 +115,28 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
 
     db::mutate<fixed_sources_tag>(
         make_not_null(&box),
-        [
-          &analytic_solution, &normal_dot_numerical_flux_computer
-        ](const gsl::not_null<db::item_type<fixed_sources_tag>*> fixed_sources,
-          const Mesh<volume_dim>& mesh,
-          const db::const_item_type<::Tags::BoundaryDirectionsInterior<
-              volume_dim>>& boundary_directions,
-          const db::const_item_type<::Tags::Interface<
-              ::Tags::BoundaryDirectionsExterior<volume_dim>,
-              ::Tags::Coordinates<volume_dim, Frame::Inertial>>>&
-              boundary_coordinates,
-          const db::const_item_type<fluxes_computer_tag>& fluxes_computer,
-          const db::const_item_type<
-              ::Tags::Interface<::Tags::BoundaryDirectionsExterior<volume_dim>,
-                                FluxesArgs>>&... fluxes_args,
-          const db::const_item_type<::Tags::Interface<
-              ::Tags::BoundaryDirectionsInterior<volume_dim>,
-              ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<volume_dim>>>>&
-              normalized_face_normals,
-          const db::const_item_type<::Tags::Interface<
-              ::Tags::BoundaryDirectionsInterior<volume_dim>,
-              ::Tags::Magnitude<::Tags::UnnormalizedFaceNormal<volume_dim>>>>&
-              magnitude_of_face_normals) noexcept {
+        [&analytic_solution, &normal_dot_numerical_flux_computer](
+            const gsl::not_null<db::item_type<fixed_sources_tag>*>
+                fixed_sources,
+            const Mesh<volume_dim>& mesh,
+            const db::const_item_type<::Tags::BoundaryDirectionsInterior<
+                volume_dim>>& boundary_directions,
+            const db::const_item_type<::Tags::Interface<
+                ::Tags::BoundaryDirectionsExterior<volume_dim>,
+                ::Tags::Coordinates<volume_dim, Frame::System>>>&
+                boundary_coordinates,
+            const db::const_item_type<fluxes_computer_tag>& fluxes_computer,
+            const db::const_item_type<::Tags::Interface<
+                ::Tags::BoundaryDirectionsExterior<volume_dim>,
+                FluxesArgs>>&... fluxes_args,
+            const db::const_item_type<::Tags::Interface<
+                ::Tags::BoundaryDirectionsInterior<volume_dim>,
+                ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<
+                    volume_dim>>>>& normalized_face_normals,
+            const db::const_item_type<::Tags::Interface<
+                ::Tags::BoundaryDirectionsInterior<volume_dim>,
+                ::Tags::Magnitude<::Tags::UnnormalizedFaceNormal<volume_dim>>>>&
+                magnitude_of_face_normals) noexcept {
           // Impose Dirichlet boundary conditions as contributions to the source
           for (const auto& direction : boundary_directions) {
             const size_t dimension = direction.dimension();
@@ -172,9 +172,9 @@ struct ImposeInhomogeneousBoundaryConditionsOnSource<
         },
         get<::Tags::Mesh<volume_dim>>(box),
         get<::Tags::BoundaryDirectionsInterior<volume_dim>>(box),
-        get<::Tags::Interface<
-            ::Tags::BoundaryDirectionsExterior<volume_dim>,
-            ::Tags::Coordinates<volume_dim, Frame::Inertial>>>(box),
+        get<::Tags::Interface<::Tags::BoundaryDirectionsExterior<volume_dim>,
+                              ::Tags::Coordinates<volume_dim, Frame::System>>>(
+            box),
         get<fluxes_computer_tag>(box),
         get<::Tags::Interface<::Tags::BoundaryDirectionsExterior<volume_dim>,
                               FluxesArgs>>(box)...,

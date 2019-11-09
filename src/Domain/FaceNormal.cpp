@@ -71,7 +71,7 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
       const Direction<GET_DIM(data)>&) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
-                        (Frame::Inertial, Frame::GlobalTimeIndependent))
+                        (Frame::System, Frame::GlobalTimeIndependent))
 
 #undef GET_DIM
 #undef GET_FRAME

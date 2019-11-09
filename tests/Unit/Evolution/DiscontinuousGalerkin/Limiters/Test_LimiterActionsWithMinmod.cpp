@@ -70,7 +70,7 @@ struct component {
       db::AddSimpleTags<TemporalId, Tags::Mesh<Dim>, Tags::Element<Dim>,
                         Tags::ElementMap<Dim>,
                         Tags::Coordinates<Dim, Frame::ElementLogical>,
-                        Tags::Coordinates<Dim, Frame::Inertial>, Var>;
+                        Tags::Coordinates<Dim, Frame::System>, Var>;
   using compute_tags = db::AddComputeTags<Tags::SizeOfElement<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -112,16 +112,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
   using Affine = domain::CoordinateMaps::Affine;
   using Affine2D = domain::CoordinateMaps::ProductOf2Maps<Affine, Affine>;
   PUPable_reg(SINGLE_ARG(
-      domain::CoordinateMap<Frame::ElementLogical, Frame::Inertial, Affine2D>));
+      domain::CoordinateMap<Frame::ElementLogical, Frame::System, Affine2D>));
   const Affine xi_map{-1., 1., 3., 7.};
   const Affine eta_map{-1., 1., 7., 3.};
-  auto map = ElementMap<2, Frame::Inertial>(
+  auto map = ElementMap<2, Frame::System>(
       self_id,
-      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      domain::make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           Affine2D(xi_map, eta_map)));
 
   auto logical_coords = logical_coordinates(mesh);
-  auto inertial_coords = map(logical_coords);
+  auto system_coords = map(logical_coords);
   auto var = Scalar<DataVector>(mesh.number_of_grid_points(), 1234.);
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
@@ -129,7 +129,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Minmod",
   ActionTesting::emplace_component_and_initialize<my_component>(
       &runner, self_id,
       {0, mesh, element, std::move(map), std::move(logical_coords),
-       std::move(inertial_coords), std::move(var)});
+       std::move(system_coords), std::move(var)});
   runner.set_phase(metavariables::Phase::Testing);
 
   // SendData

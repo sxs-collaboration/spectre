@@ -23,7 +23,7 @@ class IdPair;
 /// \ingroup ComputationalDomainGroup
 ///
 /// Computes the block logical coordinates and the containing `BlockId`
-/// of a set of points, given coordinates in the `Frame::Inertial` frame.
+/// of a set of points, given coordinates in the `Frame::System` frame.
 ///
 /// \details Returns a std::vector<boost::optional<IdPair<BlockId,coords>>>,
 /// where the vector runs over the points and is indexed in the same order as
@@ -35,8 +35,7 @@ class IdPair;
 /// returned only once, and is considered to belong to the `Block`
 /// with the smaller `BlockId`.
 template <size_t Dim>
-auto block_logical_coordinates(
-    const Domain<Dim>& domain,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& x) noexcept
+auto block_logical_coordinates(const Domain<Dim>& domain,
+                               const tnsr::I<DataVector, Dim>& x) noexcept
     -> std::vector<boost::optional<
         IdPair<domain::BlockId, tnsr::I<double, Dim, Frame::ElementLogical>>>>;

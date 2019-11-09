@@ -137,7 +137,7 @@ void test_sphere_construction(
       CoordinateMaps::ProductOf3Maps<Equiangular, Equiangular, Equiangular>;
 
   auto coord_maps =
-      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+      make_vector_coordinate_map_base<Frame::ElementLogical, Frame::System>(
           Wedge3DMap{inner_radius, outer_radius, OrientationMap<3>{}, 0.0, 1.0,
                      use_equiangular_map},
           Wedge3DMap{inner_radius, outer_radius,
@@ -167,7 +167,7 @@ void test_sphere_construction(
                      0.0, 1.0, use_equiangular_map});
   if (use_equiangular_map) {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
             Equiangular3D{
                 Equiangular(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
                             inner_radius / sqrt(3.0)),
@@ -177,7 +177,7 @@ void test_sphere_construction(
                             inner_radius / sqrt(3.0))}));
   } else {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::ElementLogical, Frame::Inertial>(
+        make_coordinate_map_base<Frame::ElementLogical, Frame::System>(
             Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),
                             inner_radius / sqrt(3.0)),
                      Affine(-1.0, 1.0, -1.0 * inner_radius / sqrt(3.0),

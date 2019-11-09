@@ -33,9 +33,9 @@ void test_variable_fixer(
   Scalar<DataVector> tilde_d{DataVector{2.e-12, 1.0, 1.0, 1.0}};
   Scalar<DataVector> tilde_tau{DataVector{4.5, 1.5, 4.5, 4.5}};
   auto tilde_s =
-      make_with_value<tnsr::i<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+      make_with_value<tnsr::i<DataVector, 3, Frame::System>>(tilde_d, 0.0);
   auto tilde_b =
-      make_with_value<tnsr::I<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+      make_with_value<tnsr::I<DataVector, 3, Frame::System>>(tilde_d, 0.0);
   for (size_t d = 0; d < 3; ++d) {
     tilde_s.get(0) = DataVector{3.0, 0.0, 6.0, 5.0};
     tilde_b.get(1) = DataVector{2.0, 2.0, 2.0, 2.0};
@@ -49,9 +49,9 @@ void test_variable_fixer(
   expected_tilde_s.get(0)[2] = sqrt(27.0);
 
   auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+      make_with_value<tnsr::ii<DataVector, 3, Frame::System>>(tilde_d, 0.0);
   auto inv_spatial_metric =
-      make_with_value<tnsr::II<DataVector, 3, Frame::Inertial>>(tilde_d, 0.0);
+      make_with_value<tnsr::II<DataVector, 3, Frame::System>>(tilde_d, 0.0);
   auto sqrt_det_spatial_metric =
       make_with_value<Scalar<DataVector>>(tilde_d, 1.0);
   for (size_t d = 0; d < 3; ++d) {

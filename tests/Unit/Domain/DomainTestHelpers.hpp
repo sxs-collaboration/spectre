@@ -41,7 +41,7 @@ void test_domain_construction(
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
     const std::vector<std::unique_ptr<domain::CoordinateMapBase<
-        Frame::ElementLogical, Frame::Inertial, VolumeDim>>>&
+        Frame::ElementLogical, Frame::System, VolumeDim>>>&
         expected_maps) noexcept;
 
 // Test that two neighboring Blocks abut each other.
@@ -64,8 +64,8 @@ void test_initial_domain(const Domain<VolumeDim>& domain,
                              initial_refinement_levels) noexcept;
 
 // Euclidean basis vector along the given `Direction` and in the given
-// `Frame::Inertial` frame.
+// `Frame::System` frame.
 template <size_t SpatialDim>
-tnsr::i<DataVector, SpatialDim, Frame::Inertial> euclidean_basis_vector(
+tnsr::i<DataVector, SpatialDim> euclidean_basis_vector(
     const Direction<SpatialDim>& direction,
     const DataVector& used_for_size) noexcept;

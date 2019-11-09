@@ -132,13 +132,13 @@ bool minmod_limited_slopes(
 /// grid is too strongly deformed, some things can start to break down:
 /// 1. When an element is deformed so that the Jacobian (from
 /// `Frame::ElementLogical`
-///    to `Frame::Inertial`) varies across the element, then the limiter fails
+///    to `Frame::System`) varies across the element, then the limiter fails
 ///    to be conservative. In other words, the integral of a tensor `u` over the
 ///    element will change after the limiter activates on `u`. This error is
 ///    typically small.
 /// 2. When there is a sudden change in the size of the elements (perhaps at an
 ///    h-refinement boundary, or at the boundary between two blocks with very
-///    different mappings), a smooth solution in `Frame::Inertial` can appear
+///    different mappings), a smooth solution in `Frame::System` can appear
 ///    to have a kink in `Frame::ElementLogical`. The Minmod implementation
 ///    includes some (untested) tweaks that try to reduce spurious limiter
 ///    activations near these fake kinks.
@@ -239,7 +239,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \param packaged_data The data package to fill with this element's values.
   /// \param tensors The tensors to be averaged and packaged.
   /// \param mesh The mesh on which the tensor values are measured.
-  /// \param element_size The size of the element in inertial coordinates, along
+  /// \param element_size The size of the element in system coordinates, along
   ///        each dimension of logical coordinates.
   /// \param orientation_map The orientation of the neighbor
   void package_data(gsl::not_null<PackagedData*> packaged_data,
@@ -265,7 +265,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \param element The element on which the tensors to limit live.
   /// \param mesh The mesh on which the tensor values are measured.
   /// \param logical_coords The logical coordinates of the mesh gridpoints.
-  /// \param element_size The size of the element, in the inertial coordinates.
+  /// \param element_size The size of the element, in the system coordinates.
   /// \param neighbor_data The data from each neighbor.
   ///
   /// \return whether the limiter modified the solution or not.

@@ -75,7 +75,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>
@@ -124,7 +124,7 @@ struct EvolutionMetavars {
   using limiter = Tags::Limiter<Limiters::Minmod<
       Dim, tmpl::list<NewtonianEuler::Tags::MassDensityCons<DataVector>,
                       NewtonianEuler::Tags::MomentumDensity<DataVector, Dim,
-                                                            Frame::Inertial>,
+                                                            Frame::System>,
                       NewtonianEuler::Tags::EnergyDensity<DataVector>>>>;
 
   using events = tmpl::flatten<tmpl::list<
@@ -143,7 +143,7 @@ struct EvolutionMetavars {
   using triggers = Triggers::time_triggers;
 
   using step_choosers =
-      tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
+      tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::System>,
                  StepChoosers::Registrars::Constant,
                  StepChoosers::Registrars::Increase>;
 
