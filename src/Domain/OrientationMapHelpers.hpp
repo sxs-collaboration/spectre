@@ -76,10 +76,10 @@ std::vector<size_t> oriented_offset_on_slice(
 
 }  // namespace OrientationMapHelpers_detail
 
+// @{
 /// \ingroup ComputationalDomainGroup
 /// Orient variables to the data-storage order of a neighbor element with
 /// the given orientation.
-/// @{
 template <size_t VolumeDim, typename TagsList>
 Variables<TagsList> orient_variables(
     const Variables<TagsList>& variables, const Index<VolumeDim>& extents,
@@ -133,4 +133,4 @@ Variables<TagsList> orient_variables_on_slice(
 
   return oriented_variables;
 }
-/// }@
+// }@
