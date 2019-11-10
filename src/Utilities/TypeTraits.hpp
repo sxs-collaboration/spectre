@@ -906,6 +906,38 @@ using is_callable_t = typename is_callable<T, Args...>::type;
   using is_##METHOD_NAME##_callable_t =                                        \
       is_##METHOD_NAME##_callable_r_t<AnyReturnType##METHOD_NAME, T, Args...>;
 
+/*!
+ * \ingroup TypeTraitsGroup
+ * \brief Generate a type trait to check if a class has a `static constexpr`
+ * variable, optionally also checking its type.
+ *
+ * \example
+ * \snippet Utilities/Test_TypeTraits.cpp CREATE_HAS_EXAMPLE
+ *
+ * \see `CREATE_IS_CALLABLE`
+ */
+// Use `NoSuchType*****` to represent any `VariableType`, i.e. not checking the
+// variable type at all. If someone has that many pointers to a thing that isn't
+// useful, it's their fault...
+#define CREATE_HAS_STATIC_MEMBER_VARIABLE(CONSTEXPR_NAME)                    \
+  template <typename CheckingType, typename VariableType = NoSuchType*****,  \
+            typename = cpp17::void_t<>>                                      \
+  struct has_##CONSTEXPR_NAME : std::false_type {};                          \
+                                                                             \
+  template <typename CheckingType, typename VariableType>                    \
+  struct has_##CONSTEXPR_NAME<CheckingType, VariableType,                    \
+                              cpp17::void_t<std::remove_const_t<decltype(    \
+                                  CheckingType::CONSTEXPR_NAME)>>>           \
+      : cpp17::bool_constant<                                                \
+            cpp17::is_same_v<VariableType, NoSuchType*****> or               \
+            cpp17::is_same_v<                                                \
+                std::remove_const_t<decltype(CheckingType::CONSTEXPR_NAME)>, \
+                VariableType>> {};                                           \
+                                                                             \
+  template <typename CheckingType, typename VariableType = NoSuchType*****>  \
+  static constexpr const bool has_##CONSTEXPR_NAME##_v =                     \
+      has_##CONSTEXPR_NAME<CheckingType, VariableType>::value;
+
 // @{
 /// \ingroup TypeTraitsGroup
 /// \brief Check if std::hash and std::equal_to are defined for type T
