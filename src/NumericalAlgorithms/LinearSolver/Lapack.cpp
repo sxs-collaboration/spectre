@@ -96,7 +96,8 @@ int general_matrix_linear_solve(const gsl::not_null<DataVector*> solution,
          "LAPACK linear solve is too small for the operation. Vector size is: "
              << rhs.size()
              << " and should be: " << number_of_rhs * rhs_vector_size << ".");
-  std::copy(rhs.begin(), rhs.end(), solution->begin());
+  std::copy(rhs.begin(), rhs.begin() + number_of_rhs * rhs_vector_size,
+            solution->begin());
   return general_matrix_linear_solve(solution, pivots, matrix_operator,
                                      number_of_rhs);
 }
