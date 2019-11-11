@@ -1399,7 +1399,7 @@ using get_fundamental_type_t = typename get_fundamental_type<T>::type;
 /// \brief Determines if a type `T` is a `std::complex` of a fundamental type,
 /// is a `std::true_type` if so, and otherwise is a `std::false_type`
 ///
-/// \snippet Test_TypeTraits.cpp is_complex_of_fundamental
+/// \snippet Utilities/Test_TypeTraits.cpp is_complex_of_fundamental
 template <typename T, typename = cpp17::bool_constant<true>>
 struct is_complex_of_fundamental : std::false_type {};
 /// \cond
@@ -1512,7 +1512,7 @@ using function_info = tt_detail::function_info_impl<F>;
  * \brief Given a type `T` and possibly a `size_t` evaluates to `T`. Useful for
  * turning a `std::index_sequence` into a pack expansion of types.
  *
- * \snippet Test_TypeTraits.cpp example_identity_t
+ * \snippet Utilities/Test_TypeTraits.cpp example_identity_t
  */
 template <typename T, size_t = 0>
 using identity_t = T;

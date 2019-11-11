@@ -33,7 +33,7 @@ struct Mesh;
 /// Prefix indicating the divergence of a Tensor or that a Variables
 /// contains divergences of Tensors.
 ///
-/// \snippet Test_Divergence.cpp divergence_name
+/// \snippet LinearOperators/Test_Divergence.cpp divergence_name
 ///
 /// \see Tags::DivCompute
 template <typename Tag, typename = std::nullptr_t>
