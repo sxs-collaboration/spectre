@@ -72,10 +72,10 @@ auto make_affine_map<3>() noexcept {
 
 namespace TestTags {
 
-template <size_t Dim>
 struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() noexcept { return "Scalar"; }
+  template <size_t Dim>
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
                           const tnsr::I<DataVector, Dim>& x) noexcept {
     return Scalar<DataVector>{{{get(f(x))}}};
@@ -110,7 +110,7 @@ void test_regular_interpolation(const Mesh<Dim>& source_mesh,
   const auto target_coords = map(logical_coordinates(target_mesh));
 
   // Set up variables
-  using tags = tmpl::list<TestTags::ScalarTag<Dim>, TestTags::Vector<Dim>>;
+  using tags = tmpl::list<TestTags::ScalarTag, TestTags::Vector<Dim>>;
   Variables<tags> source_vars(source_mesh.number_of_grid_points());
   Variables<tags> expected_result(target_mesh.number_of_grid_points());
 
@@ -195,7 +195,7 @@ void test_regular_interpolation_override(
     const auto target_coords = map(target_logical_coords);
 
     // Set up variables
-    using tags = tmpl::list<TestTags::ScalarTag<Dim>, TestTags::Vector<Dim>>;
+    using tags = tmpl::list<TestTags::ScalarTag, TestTags::Vector<Dim>>;
     Variables<tags> source_vars(source_mesh.number_of_grid_points());
     Variables<tags> expected_result(get<0>(target_coords).size());
 
