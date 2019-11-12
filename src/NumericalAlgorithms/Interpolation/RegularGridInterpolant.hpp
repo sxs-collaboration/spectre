@@ -27,7 +27,7 @@ class er;
 namespace intrp {
 
 /// \ingroup NumericalAlgorithmsGroup
-/// \brief Interpolate a Variables from a Mesh onto a regular grid of points.
+/// \brief Interpolate data from a Mesh onto a regular grid of points.
 ///
 /// The target points must lie on a tensor-product grid that is aligned with the
 /// source Mesh. In any direction where the source and target points share an
@@ -64,14 +64,26 @@ class RegularGrid {
   // clang-tidy: no runtime references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
-  /// \brief Interpolate Variables onto new mesh.
   //@{
+  /// \brief Interpolate a Variables onto the target points.
   template <typename TagsList>
   void interpolate(gsl::not_null<Variables<TagsList>*> result,
                    const Variables<TagsList>& vars) const noexcept;
   template <typename TagsList>
   Variables<TagsList> interpolate(const Variables<TagsList>& vars) const
       noexcept;
+  //@}
+
+  //@{
+  /// \brief Interpolate a DataVector onto the target points.
+  ///
+  /// \note When interpolating multiple tensors, the Variables interface is more
+  /// efficient. However, this DataVector interface is useful for applications
+  /// where only some components of a Tensor or Variables need to be
+  /// interpolated.
+  void interpolate(gsl::not_null<DataVector*> result,
+                   const DataVector& input) const noexcept;
+  DataVector interpolate(const DataVector& input) const noexcept;
   //@}
 
   /// \brief Return the internally-stored matrices that interpolate from the
