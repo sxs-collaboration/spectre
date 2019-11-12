@@ -19,5 +19,4 @@ target_link_libraries(
   INTERFACE ErrorHandling
   INTERFACE GeneralRelativity
   INTERFACE Interpolation
-  INTERFACE RelativisticEulerSolutions
   )
