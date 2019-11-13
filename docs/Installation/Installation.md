@@ -85,16 +85,25 @@ To build with the docker image:
    docker run -v SPECTRE_ROOT:SPECTRE_ROOT --name CONTAINER_NAME \
               -i -t sxscollaboration/spectrebuildenv:latest /bin/bash
    ```
-   (The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a name
+   - The `--name CONTAINER_NAME` is optional, where CONTAINER_NAME is a name
    of your choice. If you don't name your container, docker will generate an
-   arbitrary name.)
-   You will end up in a shell in a docker container,
+   arbitrary name.
+   - On macOS you can significantly increase the performance of file system
+   operations by appending the flag `:delegated` to `-v`, e.g.
+   `-v SPECTRE_ROOT:SPECTRE_ROOT:delegated` (see
+   https://docs.docker.com/docker-for-mac/osxfs-caching/).
+   - It can be useful to expose a port to the host so you can run servers such
+   as [Jupyter](https://jupyter.org/index.html) for accessing the Python
+   bindings (see \ref spectre_using_python) or a Python web server to view the
+   documentation. To do so, append the `-p` option, e.g. `-p 8000:8000`.
+
+   You will end up in a shell in the docker container,
    as root (you need to be root).
-   Within the container, SPECTRE_ROOT is available and
-   CHARM_DIR is /work/charm. For the following steps, stay inside the docker
-   container as root.
+   Within the container, the files in SPECTRE_ROOT are available and
+   Charm++ is installed in `/work/charm`. For the following steps, stay inside
+   the docker container as root.
 4. Make a build directory somewhere inside the container, e.g.
-   /work/spectre-build-gcc, and cd into it.
+   `/work/spectre-build-gcc`, and cd into it.
 5. Build SpECTRE with
 ```
    cmake -D CMAKE_Fortran_COMPILER=gfortran-8 \
@@ -144,6 +153,12 @@ Notes:
           -D CMAKE_Fortran_COMPILER=gfortran-8 \
           -D CHARM_ROOT=/work/charm/multicore-linux64-clang SPECTRE_ROOT
 ```
+  * To compile the Python bindings, add the option
+    `-D BUILD_PYTHON_BINDINGS=ON` to the `cmake` command (see
+    \ref spectre_writing_python_bindings).
+  * When the Docker container gets updated, you can stop it with
+    `docker stop CONTAINER_NAME`, remove it with `docker rm CONTAINER_NAME`
+    and then start at step 2 above to run it again.
 
 ## Using Singularity to obtain a SpECTRE environment
 
