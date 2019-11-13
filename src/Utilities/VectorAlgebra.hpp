@@ -40,7 +40,9 @@ ResultVectorType outer_product(const LhsVectorType& lhs,
 
 // @{
 /// \ingroup UtilitiesGroup
-/// \brief Repeats a vector `times_to_repeat` times.
+/// \brief Creates or fills a vector with data from `to_repeat` copied
+/// `times_to_repeat`  times in sequence.
+///
 /// \details This can be useful for generating data that consists of the same
 /// block of values duplicated a number of times. For instance, this can be used
 /// to create a vector representing three-dimensional volume data from a
@@ -49,21 +51,23 @@ ResultVectorType outer_product(const LhsVectorType& lhs,
 /// three-dimensional representation. The result would then be uniform in the
 /// slowest-varying direction of the three dimensional grid.
 template <typename VectorType>
-void repeat(const gsl::not_null<VectorType*> result,
-            const VectorType& to_repeat,
-            const size_t times_to_repeat) noexcept {
-  result->destructive_resize(to_repeat.size() * times_to_repeat);
-  for (size_t i = 0; i < times_to_repeat; ++i) {
-    VectorType view{result->data() + i * to_repeat.size(), to_repeat.size()};
-    view = to_repeat;
+void fill_with_n_copies(const gsl::not_null<VectorType*> result,
+                        const VectorType& to_copy,
+                        const size_t times_to_copy) noexcept {
+  result->destructive_resize(to_copy.size() * times_to_copy);
+  for (size_t i = 0; i < times_to_copy; ++i) {
+    VectorType view{result->data() + i * to_copy.size(), to_copy.size()};
+    view = to_copy;
   }
 }
 
+// clang-tidy incorrectly believes this to be a forward-declaration
 template <typename VectorType>
-VectorType repeat(const VectorType& to_repeat,
-                  const size_t times_to_repeat) noexcept {
-  auto result = VectorType{to_repeat.size() * times_to_repeat};
-  repeat(make_not_null(&result), to_repeat, times_to_repeat);
+VectorType create_vector_of_n_copies(
+    const VectorType& to_copy,
+    const size_t times_to_copy) noexcept {  // NOLINT
+  auto result = VectorType{to_copy.size() * times_to_copy};
+  fill_with_n_copies(make_not_null(&result), to_copy, times_to_copy);
   return result;
 }
 // @}

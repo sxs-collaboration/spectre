@@ -175,7 +175,8 @@ struct GenerateStartingData {
     }
     ComplexDataVector one_divided_by_r =
         (1.0 - y) /
-        (2.0 * repeat(get(*boundary_r).data(), number_of_radial_grid_points));
+        (2.0 * create_vector_of_n_copies(get(*boundary_r).data(),
+                                         number_of_radial_grid_points));
     TestHelpers::generate_volume_data_from_separated_values(
         make_not_null(&get(*j).data()), make_not_null(&one_divided_by_r),
         get(*angular_collocations_for_j).data(), get(*radial_polynomials_for_j),

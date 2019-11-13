@@ -284,7 +284,8 @@ void generate_separable_expected(
   UniformCustomDistribution<double> dist(0.1, 1.0);
 
   ComplexDataVector one_divided_by_r =
-      (1.0 - y) / (2.0 * repeat(boundary_r.data(), number_of_radial_points));
+      (1.0 - y) / (2.0 * create_vector_of_n_copies(boundary_r.data(),
+                                                   number_of_radial_points));
 
   // the generation step for the 'input' tags
   tmpl::for_each<InputTagList>([
