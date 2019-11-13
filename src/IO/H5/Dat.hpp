@@ -25,16 +25,17 @@ namespace h5 {
  * \ingroup HDF5Group
  * \brief Represents a multicolumn dat file inside an HDF5 file
  *
- * A Dat object represents a dat file inside an H5File. A dat file is a
+ * A Dat object represents a dat file inside an `h5::File`. A dat file is a
  * multicolumn text file with a header describing what each column represents.
  * Typically dat files are space or tab delimited, and often represent time
  * series data. One common use for them is writing out error norms over the
- * computational domain as a function of time. Inside the H5File they are stored
- * as a string header, and a matrix of doubles holding the data. One problem
- * encountered with dat files is that they quickly increase the file count
- * causing users to run into number of file limitations on HPC systems. Since
- * multiple Dat objects can be stored inside a single H5File the problem of many
- * different dat files being stored as individual files is solved.
+ * computational domain as a function of time. Inside the `h5::File` they are
+ * stored as a string header, and a matrix of doubles holding the data. One
+ * problem encountered with dat files is that they quickly increase the file
+ * count causing users to run into number of file limitations on HPC systems.
+ * Since multiple Dat objects can be stored inside a single `h5::File` the
+ * problem of many different dat files being stored as individual files is
+ * solved.
  *
  * \note This class does not do any caching of data so all data is written as
  * soon as append() is called.

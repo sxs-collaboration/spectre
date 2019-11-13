@@ -19,7 +19,7 @@ namespace h5 {
  *
  * A Header object is used to store the ::info_from_build() result in the HDF5
  * files. The Header is automatically added to every single file by the
- * constructor of H5File.
+ * constructor of `h5::File`.
  *
  * \example
  * You can read the header info out of an H5 file as shown in the example:

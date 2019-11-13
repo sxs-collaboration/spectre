@@ -228,7 +228,7 @@ struct WriteVolumeData {
     {
       // Scoping is for closing HDF5 file before we release the lock.
       const auto& file_prefix = Parallel::get<Tags::VolumeFileName>(cache);
-      h5::H5File<h5::AccessType::ReadWrite> h5file(
+      h5::File<h5::AccessType::ReadWrite> h5file(
           file_prefix + std::to_string(Parallel::my_node()) + ".h5", true);
       constexpr size_t version_number = 0;
       auto& volume_file =

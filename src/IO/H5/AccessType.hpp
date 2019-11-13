@@ -18,7 +18,7 @@
 namespace h5 {
 /*!
  * \ingroup HDF5Group
- * \brief Set the access type to the H5File
+ * \brief Set the access type to the `h5::File`
  */
 enum class AccessType {
   /// Allow read-write access to the file

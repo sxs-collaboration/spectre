@@ -1,9 +1,6 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-/// \file
-/// Defines class h5::H5File
-
 #pragma once
 
 #include <algorithm>
@@ -36,12 +33,12 @@ namespace h5 {
  * template parameter `Access_t`. In ReadWrite mode h5::Object's can be inserted
  * into the file, and objects can be retrieved to have their data manipulated.
  * Example objects are dat files, text files, and volume data files. A single
- * H5File can contain many different objects so that the number of files stored
+ * File can contain many different objects so that the number of files stored
  * during a simulation is reduced.
  *
- * When an h5::object inside an H5File is opened or created the H5File object
+ * When an h5::object inside an File is opened or created the File object
  * holds a copy of the h5::object. Only one object can be open at a time, which
- * means if a reference to the object is kept around after the H5File's current
+ * means if a reference to the object is kept around after the File's current
  * object is closed there is a dangling reference.
  *
  * \example
@@ -57,7 +54,7 @@ namespace h5 {
  * @tparam Access_t either h5::AccessType::ReadWrite or h5::AccessType::ReadOnly
  */
 template <AccessType Access_t>
-class H5File {
+class File {
  public:
   /*!
    * \requires `file_name` is a valid path and ends in `.h5`.
@@ -67,10 +64,10 @@ class H5File {
    * @param append_to_file if true allow appending to the file, otherwise abort
    * the simulation if the file exists
    */
-  explicit H5File(std::string file_name, bool append_to_file = false);
+  explicit File(std::string file_name, bool append_to_file = false);
 
   /// \cond HIDDEN_SYMBOLS
-  ~H5File();
+  ~File();
   /// \endcond
 
   // @{
@@ -78,13 +75,13 @@ class H5File {
    * \brief It does not make sense to copy an object referring to a file, only
    * to move it.
    */
-  H5File(const H5File& /*rhs*/) = delete;
-  H5File& operator=(const H5File& /*rhs*/) = delete;
+  File(const File& /*rhs*/) = delete;
+  File& operator=(const File& /*rhs*/) = delete;
   // @}
 
   /// \cond HIDDEN_SYMBOLS
-  H5File(H5File&& rhs) noexcept;             // NOLINT
-  H5File& operator=(H5File&& rhs) noexcept;  // NOLINT
+  File(File&& rhs) noexcept;             // NOLINT
+  File& operator=(File&& rhs) noexcept;  // NOLINT
   /// \endcond
 
   /// Get name of the H5 file
@@ -172,26 +169,26 @@ class H5File {
 };
 
 // ======================================================================
-// H5File Definitions
+// File Definitions
 // ======================================================================
 
 template <AccessType Access_t>
 template <typename ObjectType, typename... Args,
           typename std::enable_if_t<((void)sizeof(ObjectType),
                                      Access_t == AccessType::ReadWrite)>*>
-ObjectType& H5File<Access_t>::get(const std::string& path, Args&&... args) {
+ObjectType& File<Access_t>::get(const std::string& path, Args&&... args) {
   // Ensure we call the const version of the get function to avoid infinite
   // recursion. The reason this is implemented in this manner is to avoid code
   // duplication.
   // clang-tidy: do not use const_cast
   return const_cast<ObjectType&>(  // NOLINT
-      static_cast<H5File<Access_t> const*>(this)->get<ObjectType>(
+      static_cast<File<Access_t> const*>(this)->get<ObjectType>(
           path, std::forward<Args>(args)...));
 }
 
 template <AccessType Access_t>
 template <typename ObjectType, typename... Args>
-const ObjectType& H5File<Access_t>::get(const std::string& path,
+const ObjectType& File<Access_t>::get(const std::string& path,
                                         Args&&... args) const {
   try {
     current_object_ = nullptr;
@@ -229,7 +226,7 @@ const ObjectType& H5File<Access_t>::get(const std::string& path,
 
 template <AccessType Access_t>
 template <typename ObjectType, typename... Args>
-ObjectType& H5File<Access_t>::insert(const std::string& path, Args&&... args) {
+ObjectType& File<Access_t>::insert(const std::string& path, Args&&... args) {
   static_assert(AccessType::ReadWrite == Access_t,
                 "Can only insert into ReadWrite access H5 files.");
   current_object_ = nullptr;
@@ -256,7 +253,7 @@ ObjectType& H5File<Access_t>::insert(const std::string& path, Args&&... args) {
 
 template <AccessType Access_t>
 template <typename ObjectType, typename... Args>
-ObjectType& H5File<Access_t>::try_insert(const std::string& path,
+ObjectType& File<Access_t>::try_insert(const std::string& path,
                                          Args&&... args) noexcept {
   static_assert(AccessType::ReadWrite == Access_t,
                 "Can only insert into ReadWrite access H5 files.");
@@ -277,7 +274,7 @@ template <AccessType Access_t>
 template <typename ObjectType,
           typename std::enable_if_t<((void)sizeof(ObjectType),
                                      Access_t == AccessType::ReadWrite)>*>
-ObjectType& H5File<Access_t>::convert_to_derived(
+ObjectType& File<Access_t>::convert_to_derived(
     std::unique_ptr<h5::Object>& current_object) {
   if (nullptr == current_object) {
     ERROR("No object to convert.");  // LCOV_EXCL_LINE
@@ -292,7 +289,7 @@ ObjectType& H5File<Access_t>::convert_to_derived(
 }
 template <AccessType Access_t>
 template <typename ObjectType>
-const ObjectType& H5File<Access_t>::convert_to_derived(
+const ObjectType& File<Access_t>::convert_to_derived(
     const std::unique_ptr<h5::Object>& current_object) const {
   if (nullptr == current_object) {
     ERROR("No object to convert.");
@@ -307,7 +304,7 @@ const ObjectType& H5File<Access_t>::convert_to_derived(
 template <AccessType Access_t>
 template <typename ObjectType>
 std::tuple<bool, detail::OpenGroup, std::string>
-H5File<Access_t>::check_if_object_exists(const std::string& path) const {
+File<Access_t>::check_if_object_exists(const std::string& path) const {
   std::string name_only = "/";
   if (path != "/") {
     name_only = file_system::get_file_name(path);
@@ -326,13 +323,13 @@ H5File<Access_t>::check_if_object_exists(const std::string& path) const {
 }
 
 template <>
-inline void H5File<AccessType::ReadWrite>::insert_header() {
+inline void File<AccessType::ReadWrite>::insert_header() {
   insert<h5::Header>("/header");
 }
 // Not tested because it is only required to get code to compile, if statement
 // in constructor prevents call.
 template <>
-inline void H5File<AccessType::ReadOnly>::insert_header() {}  // LCOV_EXCL_LINE
+inline void File<AccessType::ReadOnly>::insert_header() {}  // LCOV_EXCL_LINE
 
 /// \endcond
 }  // namespace h5

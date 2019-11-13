@@ -30,7 +30,7 @@ namespace {
 // they are random numbers in the range [-10.0, 10.0]
 void test_tabulated(const std::string& file_path,
                     const std::string& subgroup_path) noexcept {
-  h5::H5File<h5::AccessType::ReadOnly> sample_file(file_path);
+  h5::File<h5::AccessType::ReadOnly> sample_file(file_path);
   const auto& sample_data =
       sample_file.get<h5::StellarCollapseEos>(subgroup_path);
 

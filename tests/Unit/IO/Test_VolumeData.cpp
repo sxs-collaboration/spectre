@@ -28,7 +28,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
     file_system::rm(h5_file_name, true);
   }
 
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+  h5::File<h5::AccessType::ReadWrite> my_file(h5_file_name);
   const std::vector<DataVector> tensor_components_and_coords{
       {8.9, 7.6, 3.9, 2.1, 18.9, 17.6, 13.9, 12.1},
       {0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0},
@@ -241,7 +241,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+  h5::File<h5::AccessType::ReadWrite> my_file(h5_file_name);
   auto& volume_file =
       my_file.insert<h5::VolumeData>("/element_data", version_number);
   volume_file.write_volume_data(100, 10.0,
@@ -265,7 +265,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.ComponentFormat1",
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+  h5::File<h5::AccessType::ReadWrite> my_file(h5_file_name);
   auto& volume_file =
       my_file.insert<h5::VolumeData>("/element_data", version_number);
   volume_file.write_volume_data(
@@ -291,7 +291,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.ComponentFormat1",
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
   }
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+  h5::File<h5::AccessType::ReadWrite> my_file(h5_file_name);
   auto& volume_file =
       my_file.insert<h5::VolumeData>("/element_data", version_number);
   volume_file.write_volume_data(100, 10.0,

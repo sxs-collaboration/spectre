@@ -174,7 +174,7 @@ struct WriteReductionData {
     std::vector<double> data_to_append{
         static_cast<double>(std::get<Is>(data))...};
 
-    h5::H5File<h5::AccessType::ReadWrite> h5file(file_prefix + ".h5", true);
+    h5::File<h5::AccessType::ReadWrite> h5file(file_prefix + ".h5", true);
     constexpr size_t version_number = 0;
     auto& time_series_file = h5file.try_insert<h5::Dat>(
         subfile_name, std::move(legend), version_number);

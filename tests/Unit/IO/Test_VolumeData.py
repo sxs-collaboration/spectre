@@ -32,7 +32,7 @@ class TestIOH5VolumeData(unittest.TestCase):
 
     # Testing the VolumeData Insert Function
     def test_insert_vol(self):
-        h5_file = spectre_h5.H5File(self.file_name_w, 1)
+        h5_file = spectre_h5.File(self.file_name_w, 1)
         h5_file.insert_vol("/element_data", 0)
         vol_file = h5_file.get_vol("/element_data")
         self.assertEqual(vol_file.get_version(), 0)
@@ -40,7 +40,7 @@ class TestIOH5VolumeData(unittest.TestCase):
 
     # Test the header was generated correctly
     def test_vol_get_header(self):
-        h5_file = spectre_h5.H5File(self.file_name_w, 1)
+        h5_file = spectre_h5.File(self.file_name_w, 1)
         h5_file.insert_vol("/element_data", 0)
         vol_file = h5_file.get_vol("/element_data")
         self.assertEqual(vol_file.get_header()[0:20], "#\n# File created on ")
@@ -50,7 +50,7 @@ class TestIOH5VolumeData(unittest.TestCase):
     # `VolTestData.h5` which contains spectre output data (see above).
     # Test the observation ids and values are correctly retrived
     def test_observation_id(self):
-        h5_file = spectre_h5.H5File(self.file_name_r, 1)
+        h5_file = spectre_h5.File(self.file_name_r, 1)
         vol_file = h5_file.get_vol("/element_data")
         obs_ids = vol_file.list_observation_ids()
         expected_obs_ids = [16436106908031328247,
@@ -65,7 +65,7 @@ class TestIOH5VolumeData(unittest.TestCase):
 
     # Test to make sure information about the computation elements was found
     def test_grids(self):
-        h5_file = spectre_h5.H5File(self.file_name_r, 1)
+        h5_file = spectre_h5.File(self.file_name_r, 1)
         vol_file = h5_file.get_vol("/element_data")
         obs_id = vol_file.list_observation_ids()[0]
         grid_names =  vol_file.get_grid_names(obs_id)
@@ -79,7 +79,7 @@ class TestIOH5VolumeData(unittest.TestCase):
 
     # Test that the tensor components, and tensor data  are retrieved correctly
     def test_tensor_components(self):
-        h5_file = spectre_h5.H5File(self.file_name_r, 1)
+        h5_file = spectre_h5.File(self.file_name_r, 1)
         vol_file = h5_file.get_vol("/element_data")
         obs_id = vol_file.list_observation_ids()[0]
         tensor_comps = vol_file.list_tensor_components(obs_id)

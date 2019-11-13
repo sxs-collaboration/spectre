@@ -150,7 +150,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.VolumeObserver", "[Unit][Observers]") {
 
   REQUIRE(file_system::check_if_file_exists(h5_file_name));
   // Check that the H5 file was written correctly.
-  h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
+  h5::File<h5::AccessType::ReadOnly> my_file(h5_file_name);
   auto& volume_file = my_file.get<h5::VolumeData>("/element_data");
 
   const auto temporal_id =

@@ -122,7 +122,7 @@ SPECTRE_TEST_CASE("Unit.IO.Observers.ReductionObserver", "[Unit][Observers]") {
   REQUIRE(file_system::check_if_file_exists(h5_file_name));
   // Check that the H5 file was written correctly.
   {
-    const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);
+    const auto file = h5::File<h5::AccessType::ReadOnly>(h5_file_name);
     const auto& dat_file = file.get<h5::Dat>("/element_data");
     const Matrix written_data = dat_file.get_data();
     const auto& written_legend = dat_file.get_legend();

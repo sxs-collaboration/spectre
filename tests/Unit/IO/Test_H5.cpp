@@ -55,7 +55,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
     file_system::rm(h5_file_name, true);
   }
   /// [h5file_readwrite_get_header]
-  h5::H5File<h5::AccessType::ReadWrite> my_file0(h5_file_name);
+  h5::File<h5::AccessType::ReadWrite> my_file0(h5_file_name);
   // Check that the header was written correctly
   const std::string header = my_file0.get<h5::Header>("/header").get_header();
   /// [h5file_readwrite_get_header]
@@ -85,7 +85,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
           formaline::get_library_versions());
   };
   check_header(my_file0);
-  check_header(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
+  check_header(h5::File<h5::AccessType::ReadOnly>(h5_file_name));
 
   const auto check_source_archive = [](const auto& my_file) noexcept {
     const std::vector<char> archive =
@@ -93,7 +93,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.File", "[Unit][IO][H5]") {
     CHECK(archive == formaline::get_archive());
   };
   check_source_archive(my_file0);
-  check_source_archive(h5::H5File<h5::AccessType::ReadOnly>(h5_file_name));
+  check_source_archive(h5::File<h5::AccessType::ReadOnly>(h5_file_name));
 
   if (file_system::check_if_file_exists(h5_file_name)) {
     file_system::rm(h5_file_name, true);
@@ -113,14 +113,14 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileMove", "[Unit][IO][H5]") {
   }
 
   auto my_file =
-      std::make_unique<h5::H5File<h5::AccessType::ReadWrite>>(h5_file_name);
+      std::make_unique<h5::File<h5::AccessType::ReadWrite>>(h5_file_name);
 
-  auto my_file2 = std::make_unique<h5::H5File<h5::AccessType::ReadWrite>>(
+  auto my_file2 = std::make_unique<h5::File<h5::AccessType::ReadWrite>>(
       std::move(*my_file));
   my_file.reset();
   CHECK(my_file == nullptr);
 
-  h5::H5File<h5::AccessType::ReadWrite> my_file3(h5_file_name2);
+  h5::File<h5::AccessType::ReadWrite> my_file3(h5_file_name2);
   my_file3 = std::move(*my_file2);
   my_file2.reset();
 
@@ -140,7 +140,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorObjectNotExist", "[Unit][IO][H5]") {
   if (file_system::check_if_file_exists(file_name)) {
     file_system::rm(file_name, true);
   }
-  h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+  h5::File<h5::AccessType::ReadWrite> my_file(file_name);
   my_file.get<h5::Header>("/Dummy").get_header();
 }
 
@@ -152,7 +152,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorNotH5", "[Unit][IO][H5]") {
   if (file_system::check_if_file_exists(file_name)) {
     file_system::rm(file_name, true);
   }
-  h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+  h5::File<h5::AccessType::ReadWrite> my_file(file_name);
 }
 
 // [[OutputRegex, Cannot create a file in ReadOnly mode,
@@ -163,7 +163,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorFileNotExist", "[Unit][IO][H5]") {
   if (file_system::check_if_file_exists(file_name)) {
     file_system::rm(file_name, true);
   }
-  h5::H5File<h5::AccessType::ReadOnly> my_file(file_name);
+  h5::File<h5::AccessType::ReadOnly> my_file(file_name);
 }
 
 // [[OutputRegex, Cannot append to a file opened in read-only mode. File name
@@ -176,8 +176,8 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorCannotAppendReadOnly",
   if (file_system::check_if_file_exists(file_name)) {
     file_system::rm(file_name, true);
   }
-  { h5::H5File<h5::AccessType::ReadWrite> my_file(file_name); }
-  h5::H5File<h5::AccessType::ReadOnly> my_file(file_name, true);
+  { h5::File<h5::AccessType::ReadWrite> my_file(file_name); }
+  h5::File<h5::AccessType::ReadOnly> my_file(file_name, true);
 }
 
 /// [willfail_example_for_dev_doc]
@@ -197,10 +197,10 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorExists", "[Unit][IO][H5]") {
   // terminate called recursively
   {
     /// [h5file_readwrite_file]
-    h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+    h5::File<h5::AccessType::ReadWrite> my_file(file_name);
     /// [h5file_readwrite_file]
   }
-  h5::H5File<h5::AccessType::ReadWrite> my_file_2(file_name);
+  h5::File<h5::AccessType::ReadWrite> my_file_2(file_name);
 }
 
 // [[OutputRegex, Cannot open the object '/Dummy.hdr' because it does not
@@ -211,7 +211,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorObjectNotExistConst", "[Unit][IO][H5]") {
   if (file_system::check_if_file_exists(file_name)) {
     file_system::rm(file_name, true);
   }
-  const h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
+  const h5::File<h5::AccessType::ReadWrite> my_file(file_name);
   my_file.get<h5::Header>("/Dummy").get_header();
 }
 
@@ -225,7 +225,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorObjectAlreadyExists", "[Unit][IO][H5]") {
     file_system::rm(h5_file_name, true);
   }
   std::vector<std::string> legend{"Time", "Error L2", "Error L1", "Error"};
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+  h5::File<h5::AccessType::ReadWrite> my_file(h5_file_name);
   {
     auto& error_file =
         my_file.insert<h5::Dat>("/L2_errors///", legend, version_number);
@@ -242,12 +242,12 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Version", "[Unit][IO][H5]") {
   }
   {
     /// [h5file_write_version]
-    h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+    h5::File<h5::AccessType::ReadWrite> my_file(h5_file_name);
     my_file.insert<h5::Version>("/the_version", version_number);
     /// [h5file_write_version]
   }
 
-  h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
+  h5::File<h5::AccessType::ReadOnly> my_file(h5_file_name);
   /// [h5file_read_version]
   const auto& const_version = my_file.get<h5::Version>("/the_version");
   /// [h5file_read_version]
@@ -267,7 +267,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.Dat", "[Unit][IO][H5]") {
   }
   std::vector<std::string> legend{"Time", "Error L2", "Error L1", "Error"};
 
-  h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+  h5::File<h5::AccessType::ReadWrite> my_file(h5_file_name);
   my_file.insert<h5::Dat>("/L2_errors", legend, version_number);
 
   // Check that the Dat file is found to be a subgroup of the file
@@ -394,7 +394,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.DatRead", "[Unit][IO][H5]") {
   }
   std::vector<std::string> legend{"Time", "Error L2", "Error L1", "Error"};
   {
-    h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+    h5::File<h5::AccessType::ReadWrite> my_file(h5_file_name);
     auto& error_file =
         my_file.insert<h5::Dat>("/L2_errors", legend, version_number);
 
@@ -417,7 +417,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.DatRead", "[Unit][IO][H5]") {
     error_file.append(Matrix(0, 0, 0.0));
     error_file.append(std::vector<double>{0.33, 0.66, 0.77, 0.90});
   }
-  h5::H5File<h5::AccessType::ReadOnly> my_file(h5_file_name);
+  h5::File<h5::AccessType::ReadOnly> my_file(h5_file_name);
   const auto& error_file = my_file.get<h5::Dat>("/L2_errors");
 
   // Check version info is correctly retrieved from Dat file
@@ -604,12 +604,12 @@ SPECTRE_TEST_CASE("Unit.IO.H5.check_if_object_exists", "[Unit][IO][H5]") {
     file_system::rm(h5_file_name, true);
   }
   {
-    h5::H5File<h5::AccessType::ReadWrite> my_file(h5_file_name);
+    h5::File<h5::AccessType::ReadWrite> my_file(h5_file_name);
     my_file.insert<h5::Header>("/");
   }
 
   // Reopen the file to check that the subfile '/' can be opened
-  h5::H5File<h5::AccessType::ReadWrite> reopened_file(h5_file_name, true);
+  h5::File<h5::AccessType::ReadWrite> reopened_file(h5_file_name, true);
   reopened_file.get<h5::Header>("/");
   CHECK(file_system::check_if_file_exists(h5_file_name) == true);
   if (file_system::check_if_file_exists(h5_file_name)) {

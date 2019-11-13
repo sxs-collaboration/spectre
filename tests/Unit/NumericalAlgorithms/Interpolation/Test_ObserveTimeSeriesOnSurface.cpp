@@ -457,7 +457,7 @@ SPECTRE_TEST_CASE(
                                                    "SurfaceIntegralNegate"};
 
   // Check that the H5 file was written correctly.
-  const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);
+  const auto file = h5::File<h5::AccessType::ReadOnly>(h5_file_name);
   auto check_file_contents = [&file](
       const std::vector<double>& expected_integral,
       const std::vector<std::string>& expected_legend,

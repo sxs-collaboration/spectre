@@ -18,7 +18,7 @@
 
 namespace h5 {
 template <AccessType Access_t>
-H5File<Access_t>::H5File(std::string file_name, bool append_to_file)
+File<Access_t>::File(std::string file_name, bool append_to_file)
     : file_name_(std::move(file_name)) {
   if (file_name_.size() - 3 != file_name_.find(".h5")) {
     ERROR("All HDF5 file names must end in '.h5'. The path and file name '"
@@ -60,7 +60,7 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file)
 
 /// \cond
 template <AccessType Access_t>
-H5File<Access_t>::H5File(H5File&& rhs) noexcept {
+File<Access_t>::File(File&& rhs) noexcept {
   file_name_ = std::move(rhs.file_name_);
   file_id_ = std::move(rhs.file_id_);
   current_object_ = std::move(rhs.current_object_);
@@ -69,7 +69,7 @@ H5File<Access_t>::H5File(H5File&& rhs) noexcept {
 }
 
 template <AccessType Access_t>
-H5File<Access_t>& H5File<Access_t>::operator=(H5File&& rhs) noexcept {
+File<Access_t>& File<Access_t>::operator=(File&& rhs) noexcept {
   if (file_id_ != -1) {
     CHECK_H5(H5Fclose(file_id_),
              "Failed to close file: '" << file_name_ << "'");
@@ -84,7 +84,7 @@ H5File<Access_t>& H5File<Access_t>::operator=(H5File&& rhs) noexcept {
 }
 
 template <AccessType Access_t>
-H5File<Access_t>::~H5File() {
+File<Access_t>::~File() {
   if (file_id_ != -1) {
     CHECK_H5(H5Fclose(file_id_),
              "Failed to close file: '" << file_name_ << "'");
@@ -92,13 +92,13 @@ H5File<Access_t>::~H5File() {
 }
 
 template <>
-void H5File<AccessType::ReadWrite>::insert_source_archive() noexcept {
+void File<AccessType::ReadWrite>::insert_source_archive() noexcept {
   insert<h5::SourceArchive>("/src");
 }
 template <>
-void H5File<AccessType::ReadOnly>::insert_source_archive() noexcept {}
+void File<AccessType::ReadOnly>::insert_source_archive() noexcept {}
 /// \endcond
 }  // namespace h5
 
-template class h5::H5File<h5::AccessType::ReadOnly>;
-template class h5::H5File<h5::AccessType::ReadWrite>;
+template class h5::File<h5::AccessType::ReadOnly>;
+template class h5::File<h5::AccessType::ReadWrite>;
