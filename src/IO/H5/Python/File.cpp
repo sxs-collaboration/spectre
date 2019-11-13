@@ -26,7 +26,8 @@ namespace py_bindings {
 void bind_h5file() {
   // Wrapper for basic H5File operations
   bp::class_<h5::H5File<h5::AccessType::ReadWrite>, boost::noncopyable>(
-      "H5File", bp::init<std::string, bool>())
+      "H5File", bp::init<std::string, bool>(
+                    (bp::arg("file_name"), bp::arg("append_to_file"))))
       .def("name",
            +[](const h5::H5File<h5::AccessType::ReadWrite>& f) {
              return f.name();
@@ -38,14 +39,16 @@ void bind_h5file() {
                  f.get<h5::Dat>(bp::extract<std::string>(path));
              return dat_file;
            },
-           bp::return_value_policy<bp::reference_existing_object>())
+           bp::return_value_policy<bp::reference_existing_object>(),
+           (bp::arg("path")))
       .def("insert_dat",
            +[](h5::H5File<h5::AccessType::ReadWrite>& f, const bp::str& path,
                const bp::list& legend, uint32_t version) {
              f.insert<h5::Dat>(bp::extract<std::string>(path),
                                py_list_to_std_vector<std::string>(legend),
                                version);
-           })
+           },
+           (bp::arg("path"), bp::arg("legend"), bp::arg("version")))
       .def("close",
            +[](const h5::H5File<h5::AccessType::ReadWrite>& f) {
              f.close_current_object();
@@ -61,11 +64,14 @@ void bind_h5file() {
              const auto& vol_file = f.get<h5::VolumeData>(path);
              return &vol_file;
            },
-           bp::return_value_policy<bp::reference_existing_object>())
+           bp::return_value_policy<bp::reference_existing_object>(),
+           (bp::arg("path")))
 
-      .def("insert_vol", +[](h5::H5File<h5::AccessType::ReadWrite>& f,
-                             const std::string& path, const uint32_t version) {
-        f.insert<h5::VolumeData>(path, version);
-      });
+      .def("insert_vol",
+           +[](h5::H5File<h5::AccessType::ReadWrite>& f,
+               const std::string& path, const uint32_t version) {
+             f.insert<h5::VolumeData>(path, version);
+           },
+           (bp::arg("path"), bp::arg("version")));
 }
 }  // namespace py_bindings

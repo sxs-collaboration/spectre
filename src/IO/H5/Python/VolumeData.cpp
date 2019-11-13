@@ -48,23 +48,27 @@ void bind_h5vol() {
       .def("get_observation_value",
            +[](const h5::VolumeData& volume_file, const size_t observation_id) {
              return volume_file.get_observation_value(observation_id);
-           })
+           },
+           (bp::arg("observation_id")))
       .def("get_grid_names",
            +[](const h5::VolumeData& volume_file, const size_t observation_id) {
              return std_vector_to_py_list<std::string>(
                  volume_file.get_grid_names(observation_id));
-           })
+           },
+           (bp::arg("observation_id")))
       .def("list_tensor_components",
            +[](const h5::VolumeData& volume_file, const size_t observation_id) {
              return std_vector_to_py_list<std::string>(
                  volume_file.list_tensor_components(observation_id));
-           })
+           },
+           (bp::arg("observation_id")))
       .def("get_tensor_component",
            +[](const h5::VolumeData& volume_file, const size_t observation_id,
                const std::string& tensor_component) {
              return volume_file.get_tensor_component(observation_id,
                                                      tensor_component);
-           })
+           },
+           (bp::arg("observation_id"), bp::arg("tensor_component")))
       .def("get_extents", +[](const h5::VolumeData& volume_file,
                               const size_t observation_id) {
         bp::list total_extents;
@@ -72,6 +76,7 @@ void bind_h5vol() {
           total_extents.append(std_vector_to_py_list<size_t>(extents));
         }
         return total_extents;
-      });
+      },
+      (bp::arg("observation_id")));
 }
 }  // namespace py_bindings
