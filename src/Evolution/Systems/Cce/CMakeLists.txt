@@ -4,6 +4,7 @@
 set(LIBRARY Cce)
 
 set(LIBRARY_SOURCES
+  BoundaryData.cpp
   Equations.cpp
   InitializeCce.cpp
   LinearOperators.cpp

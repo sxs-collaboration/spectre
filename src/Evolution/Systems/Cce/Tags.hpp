@@ -100,6 +100,13 @@ struct Dr : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept { return "Dr(" + Tag::name() + ")"; }
 };
 
+/// The derivative with respect to Bondi retarded time \f$u\f$
+template <typename Tag>
+struct Du : db::PrefixTag, db::SimpleTag {
+    using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
+    using tag = Tag;
+};
+
 // prefix tags associated with the integrands which are used as input to solvers
 // for the CCE equations
 
