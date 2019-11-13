@@ -46,6 +46,7 @@ struct tensor : db::SimpleTag {
 /// [simple_variables_tag]
 template <typename VectorType>
 struct scalar : db::SimpleTag {
+  static std::string name() noexcept { return "scalar name"; }
   using type = Scalar<VectorType>;
 };
 template <typename VectorType>
@@ -229,7 +230,7 @@ void test_variables_construction_and_access() noexcept {
       "T(2)=(" +
       expected_output_tensor +
       ")\n\n"
-      "scalar:\n"
+      "scalar name:\n"
       "T()=(" +
       expected_output_initial +
       ")\n\n"
@@ -254,7 +255,7 @@ void test_variables_construction_and_access() noexcept {
           tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
                      VariablesTestTags_detail::scalar<VectorType>,
                      VariablesTestTags_detail::scalar2<VectorType>>>::name() ==
-      "Variables(tensor name,scalar,scalar2 name)");
+      "Variables(tensor name,scalar name,scalar2 name)");
 }
 
 template <typename VectorType>
