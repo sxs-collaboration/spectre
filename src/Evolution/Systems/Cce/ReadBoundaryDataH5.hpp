@@ -7,6 +7,7 @@
 #include <boost/iterator/zip_iterator.hpp>
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
+#include <memory>
 #include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
@@ -16,6 +17,7 @@
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Parallel/CharmPupable.hpp"
 
 namespace Cce {
@@ -217,5 +219,263 @@ class SpecWorldtubeH5BufferUpdater : public WorldtubeBufferUpdater {
 
   // stores all the times in the input file
   DataVector time_buffer_;
+};
+
+/*!
+ * \brief Manages the cached buffer data associated with a CCE worldtube and
+ * interpolates to requested time points to provide worldtube boundary data to
+ * the main evolution routines.
+ *
+ * \details The maintained buffer will be maintained at a length that is set by
+ * the `Interpolator` and the `buffer_depth` also passed to the constructor. A
+ * longer depth will ensure that the buffer updater is called less frequently,
+ * which is useful for slow updaters (e.g. those that perform file access).
+ * The main functionality is provided by the
+ * `WorldtubeDataManager::populate_hypersurface_boundary_data()` member
+ * function that handles buffer updating and boundary computation.
+ */
+class WorldtubeDataManager {
+ public:
+  // charm needs an empty constructor.
+  WorldtubeDataManager() noexcept = default;
+
+  WorldtubeDataManager(
+      std::unique_ptr<WorldtubeBufferUpdater> buffer_updater,
+      const size_t l_max, const size_t buffer_depth,
+      std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
+      : buffer_updater_{std::move(buffer_updater)},
+        l_max_{l_max},
+        interpolated_coefficients_{
+            Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)},
+        buffer_depth_{buffer_depth},
+        interpolator_{std::move(interpolator)} {
+    if (UNLIKELY(
+            buffer_updater_->get_time_buffer().size() <
+            2 * interpolator_->required_number_of_points_before_and_after() +
+                buffer_depth)) {
+      ERROR(
+          "The specified buffer updater doesn't have enough time points to "
+          "supply the requested interpolation buffer. This almost certainly "
+          "indicates that the corresponding file hasn't been created properly, "
+          "but might indicate that the `buffer_depth` template parameter is "
+          "too large or the specified Interpolator requests too many points");
+    }
+
+    const size_t size_of_buffer =
+        square(l_max + 1) *
+        (buffer_depth +
+         2 * interpolator_->required_number_of_points_before_and_after());
+    coefficients_buffers_ = Variables<detail::cce_input_tags>{size_of_buffer};
+  }
+
+  /*!
+   * \brief Update the `boundary_data_box` entries for all tags in
+   * `Tags::characteristic_worldtube_boundary_tags` to the boundary data at
+   * `time`.
+   *
+   * \details First, if the stored buffer requires updating, it will be updated
+   * via the `buffer_updater_` supplied in the constructor. Then, each of the
+   * spatial metric, shift, lapse, and each of their radial and time derivatives
+   * are interpolated across buffer points to the requested time value (via the
+   * `Interpolator` provided in the constructor). Finally, that data is supplied
+   * to the `create_bondi_boundary_data()`, which updates the
+   * `boundary_data_box` with the Bondi spin-weighted scalars determined from
+   * the interpolated Cartesian data.
+   *
+   * Returns `true` if the time can be supplied from the `buffer_updater_`, and
+   * `false` otherwise. No tags are updated if `false` is returned.
+   */
+  template <typename TagList>
+  bool populate_hypersurface_boundary_data(
+      const gsl::not_null<db::DataBox<TagList>*> boundary_data_box,
+      const double time) noexcept {
+    if (buffer_updater_->time_is_outside_range(time)) {
+      return false;
+    }
+    buffer_updater_->update_buffers_for_time(
+        make_not_null(&coefficients_buffers_), make_not_null(&time_span_start_),
+        make_not_null(&time_span_end_), time,
+        interpolator_->required_number_of_points_before_and_after(),
+        buffer_depth_);
+    const auto interpolation_time_span = detail::create_span_for_time_value(
+        time, 0, interpolator_->required_number_of_points_before_and_after(),
+        time_span_start_, time_span_end_, buffer_updater_->get_time_buffer());
+
+    // search through and find the two interpolation points the time point is
+    // between. If we can, put the range for the interpolation centered on the
+    // desired point. If that can't be done (near the start or the end of the
+    // simulation), make the range terminated at the start or end of the cached
+    // data and extending for the desired range in the other direction.
+    const size_t buffer_span_size = time_span_end_ - time_span_start_;
+    const size_t interpolation_span_size =
+        interpolation_time_span.second - interpolation_time_span.first;
+
+    const DataVector time_points{buffer_updater_->get_time_buffer().data() +
+                                     interpolation_time_span.first,
+                                 interpolation_span_size};
+
+    auto interpolate_from_column = [
+      &time, &time_points, &buffer_span_size, &interpolation_time_span,
+      &interpolation_span_size,
+      this
+    ](auto data, const size_t column) noexcept {
+      auto interp_val = interpolator_->interpolate(
+          gsl::span<const double>(time_points.data(), time_points.size()),
+          gsl::span<const std::complex<double>>(
+              data + column * (buffer_span_size) +
+                  (interpolation_time_span.first - time_span_start_),
+              interpolation_span_size),
+          time);
+      return interp_val;
+    };
+
+    // the ComplexModalVectors should be provided from the buffer_updater_ in
+    // 'Goldberg' format, so we iterate over modes and convert to libsharp
+    // format.
+
+    // we'll just use this buffer to reference into the actual data to satisfy
+    // the swsh interface requirement that the spin-weight be labelled with
+    // `SpinWeighted`
+    SpinWeighted<ComplexModalVector, 0> spin_weighted_buffer;
+    for (const auto& libsharp_mode :
+         Spectral::Swsh::cached_coefficients_metadata(l_max_)) {
+      for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
+          tmpl::for_each<
+              tmpl::list<Tags::detail::SpatialMetric,
+                         Tags::detail::Dr<Tags::detail::SpatialMetric>,
+                         ::Tags::dt<Tags::detail::SpatialMetric>>>([
+            this, &i, &j, &libsharp_mode, &interpolate_from_column, &
+            spin_weighted_buffer
+          ](auto tag_v) noexcept {
+            using tag = typename decltype(tag_v)::type;
+            spin_weighted_buffer.set_data_ref(
+                get<tag>(interpolated_coefficients_).get(i, j).data(),
+                Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_));
+            Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
+                libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
+                interpolate_from_column(
+                    get<tag>(coefficients_buffers_).get(i, j).data(),
+                    Spectral::Swsh::goldberg_mode_index(
+                        l_max_, libsharp_mode.l,
+                        static_cast<int>(libsharp_mode.m))),
+                interpolate_from_column(
+                    get<tag>(coefficients_buffers_).get(i, j).data(),
+                    Spectral::Swsh::goldberg_mode_index(
+                        l_max_, libsharp_mode.l,
+                        -static_cast<int>(libsharp_mode.m))));
+          });
+        }
+        tmpl::for_each<tmpl::list<Tags::detail::Shift,
+                                  Tags::detail::Dr<Tags::detail::Shift>,
+                                  ::Tags::dt<Tags::detail::Shift>>>([
+          this, &i, &libsharp_mode, &interpolate_from_column, &
+          spin_weighted_buffer
+        ](auto tag_v) noexcept {
+          using tag = typename decltype(tag_v)::type;
+          spin_weighted_buffer.set_data_ref(
+              get<tag>(interpolated_coefficients_).get(i).data(),
+              Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_));
+          Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
+              libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
+              interpolate_from_column(
+                  get<tag>(coefficients_buffers_).get(i).data(),
+                  Spectral::Swsh::goldberg_mode_index(
+                      l_max_, libsharp_mode.l,
+                      static_cast<int>(libsharp_mode.m))),
+              interpolate_from_column(
+                  get<tag>(coefficients_buffers_).get(i).data(),
+                  Spectral::Swsh::goldberg_mode_index(
+                      l_max_, libsharp_mode.l,
+                      -static_cast<int>(libsharp_mode.m))));
+        });
+      }
+      tmpl::for_each<
+          tmpl::list<Tags::detail::Lapse, Tags::detail::Dr<Tags::detail::Lapse>,
+                     ::Tags::dt<Tags::detail::Lapse>>>([
+        this, &libsharp_mode, &interpolate_from_column, &spin_weighted_buffer
+      ](auto tag_v) noexcept {
+        using tag = typename decltype(tag_v)::type;
+        spin_weighted_buffer.set_data_ref(
+            get(get<tag>(interpolated_coefficients_)).data(),
+            Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_));
+        Spectral::Swsh::goldberg_modes_to_libsharp_modes_single_pair(
+            libsharp_mode, make_not_null(&spin_weighted_buffer), 0,
+            interpolate_from_column(get(get<tag>(coefficients_buffers_)).data(),
+                                    Spectral::Swsh::goldberg_mode_index(
+                                        l_max_, libsharp_mode.l,
+                                        static_cast<int>(libsharp_mode.m))),
+            interpolate_from_column(get(get<tag>(coefficients_buffers_)).data(),
+                                    Spectral::Swsh::goldberg_mode_index(
+                                        l_max_, libsharp_mode.l,
+                                        -static_cast<int>(libsharp_mode.m))));
+      });
+    }
+
+    // At this point, we have a collection of 9 tensors of libsharp
+    // coefficients. This is what the boundary data calculation utility takes
+    // as an input, so we now hand off the control flow to the boundary and
+    // gauge transform utility
+    create_bondi_boundary_data(
+        boundary_data_box,
+        get<Tags::detail::SpatialMetric>(interpolated_coefficients_),
+        get<::Tags::dt<Tags::detail::SpatialMetric>>(
+            interpolated_coefficients_),
+        get<Tags::detail::Dr<Tags::detail::SpatialMetric>>(
+            interpolated_coefficients_),
+        get<Tags::detail::Shift>(interpolated_coefficients_),
+        get<::Tags::dt<Tags::detail::Shift>>(interpolated_coefficients_),
+        get<Tags::detail::Dr<Tags::detail::Shift>>(interpolated_coefficients_),
+        get<Tags::detail::Lapse>(interpolated_coefficients_),
+        get<::Tags::dt<Tags::detail::Lapse>>(interpolated_coefficients_),
+        get<Tags::detail::Dr<Tags::detail::Lapse>>(interpolated_coefficients_),
+        buffer_updater_->get_extraction_radius(), l_max_);
+    return true;
+  }
+
+  /// retrieves the l_max that will be supplied to the \ref DataBoxGroup in
+  /// `populate_hypersurface_boundary_data()`
+  size_t get_l_max() const noexcept { return l_max_; }
+
+  /// retrieves the current time span associated with the `buffer_updater_` for
+  /// diagnostics
+  std::pair<size_t, size_t> get_time_span() const noexcept {
+    return std::make_pair(time_span_start_, time_span_end_);
+  }
+
+  /// Serialization for Charm++.
+  void pup(PUP::er& p) noexcept {  // NOLINT
+    p | time_span_start_;
+    p | time_span_end_;
+    p | l_max_;
+    p | buffer_depth_;
+    p | interpolator_;
+    if (p.isUnpacking()) {
+      const size_t size_of_buffer =
+          square(l_max_ + 1) *
+          (buffer_depth_ +
+           2 * interpolator_->required_number_of_points_before_and_after());
+      coefficients_buffers_ = Variables<detail::cce_input_tags>{size_of_buffer};
+      interpolated_coefficients_ = Variables<detail::cce_input_tags>{
+          Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_)};
+    }
+  }
+
+ private:
+  std::unique_ptr<WorldtubeBufferUpdater> buffer_updater_;
+  size_t time_span_start_ = 0;
+  size_t time_span_end_ = 0;
+  size_t l_max_ = 0;
+
+  // These buffers are just kept around to avoid allocations; they're
+  // updated every time a time is requested
+  Variables<detail::cce_input_tags> interpolated_coefficients_;
+
+  // note: buffers store data in a 'time-varies-fastest' manner
+  Variables<detail::cce_input_tags> coefficients_buffers_;
+
+  size_t buffer_depth_ = 0;
+
+  std::unique_ptr<intrp::SpanInterpolator> interpolator_;
 };
 }  // namespace Cce

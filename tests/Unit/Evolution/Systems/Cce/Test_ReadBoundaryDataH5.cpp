@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
+#include "NumericalAlgorithms/Interpolation/BarycentricRationalSpanInterpolator.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
@@ -311,6 +312,104 @@ PUP::able::PUP_ID
     Cce::DummyBufferUpdater<gr::Solutions::KerrSchild>::my_PUP_ID = 0;
 
 template <typename Generator>
+void test_data_manager_with_dummy_buffer_updater(
+    const gsl::not_null<Generator*> gen) noexcept {
+  UniformCustomDistribution<double> value_dist{0.1, 0.5};
+  // first prepare the input for the modal version
+  const double mass = value_dist(*gen);
+  const std::array<double, 3> spin{
+      {value_dist(*gen), value_dist(*gen), value_dist(*gen)}};
+  const std::array<double, 3> center{
+      {value_dist(*gen), value_dist(*gen), value_dist(*gen)}};
+  gr::Solutions::KerrSchild solution{mass, spin, center};
+
+  const double extraction_radius = 100.0;
+
+  // acceptable parameters for the fake sinusoid variation in the input
+  // parameters
+  const double frequency = 0.1 * value_dist(*gen);
+  const double amplitude = 0.1 * value_dist(*gen);
+  const double target_time = 50.0 * value_dist(*gen);
+
+  const size_t buffer_size = 8;
+  const size_t interpolator_length = 3;
+  const size_t l_max = 8;
+
+  DataVector time_buffer{30};
+  for (size_t i = 0; i < time_buffer.size(); ++i) {
+    time_buffer[i] = target_time - 1.55 + 0.1 * i;
+  }
+
+  WorldtubeDataManager boundary_data_manager{
+      std::make_unique<DummyBufferUpdater<gr::Solutions::KerrSchild>>(
+          time_buffer, solution, extraction_radius, amplitude, frequency,
+          l_max),
+      l_max, buffer_size,
+      std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u)};
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+
+  // populate the test box using the boundary data manager that performs
+  using boundary_variables_tag =
+      ::Tags::Variables<Tags::characteristic_worldtube_boundary_tags>;
+
+  auto expected_boundary_box =
+      db::create<db::AddSimpleTags<boundary_variables_tag>>(
+          db::item_type<boundary_variables_tag>{number_of_angular_points});
+  auto interpolated_boundary_box =
+      db::create<db::AddSimpleTags<boundary_variables_tag>>(
+          db::item_type<boundary_variables_tag>{number_of_angular_points});
+
+  boundary_data_manager.populate_hypersurface_boundary_data(
+      make_not_null(&interpolated_boundary_box), target_time);
+
+  // populate the expected box with the result from the analytic modes passed to
+  // the boundary data computation.
+  const size_t libsharp_size =
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
+  tnsr::ii<ComplexModalVector, 3> spatial_metric_coefficients{libsharp_size};
+  tnsr::ii<ComplexModalVector, 3> dt_spatial_metric_coefficients{libsharp_size};
+  tnsr::ii<ComplexModalVector, 3> dr_spatial_metric_coefficients{libsharp_size};
+  tnsr::I<ComplexModalVector, 3> shift_coefficients{libsharp_size};
+  tnsr::I<ComplexModalVector, 3> dt_shift_coefficients{libsharp_size};
+  tnsr::I<ComplexModalVector, 3> dr_shift_coefficients{libsharp_size};
+  Scalar<ComplexModalVector> lapse_coefficients{libsharp_size};
+  Scalar<ComplexModalVector> dt_lapse_coefficients{libsharp_size};
+  Scalar<ComplexModalVector> dr_lapse_coefficients{libsharp_size};
+  create_fake_time_varying_modal_data(
+      make_not_null(&spatial_metric_coefficients),
+      make_not_null(&dt_spatial_metric_coefficients),
+      make_not_null(&dr_spatial_metric_coefficients),
+      make_not_null(&shift_coefficients), make_not_null(&dt_shift_coefficients),
+      make_not_null(&dr_shift_coefficients), make_not_null(&lapse_coefficients),
+      make_not_null(&dt_lapse_coefficients),
+      make_not_null(&dr_lapse_coefficients), solution, extraction_radius,
+      amplitude, frequency, target_time, l_max, false);
+
+  create_bondi_boundary_data(
+      make_not_null(&expected_boundary_box), spatial_metric_coefficients,
+      dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
+      shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
+      lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
+      extraction_radius, l_max);
+  Approx angular_derivative_approx =
+      Approx::custom()
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
+          .scale(1.0);
+
+  tmpl::for_each<Tags::characteristic_worldtube_boundary_tags>(
+      [&expected_boundary_box, &interpolated_boundary_box,
+       &angular_derivative_approx](auto tag_v) {
+        using tag = typename decltype(tag_v)::type;
+        INFO(tag::name());
+        const auto& test_lhs = db::get<tag>(expected_boundary_box);
+        const auto& test_rhs = db::get<tag>(interpolated_boundary_box);
+        CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
+                                     angular_derivative_approx);
+      });
+}
+
+template <typename Generator>
 void test_spec_worldtube_buffer_updater(
     const gsl::not_null<Generator*> gen) noexcept {
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
@@ -445,5 +544,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
                   "[Unit][Evolution]") {
   MAKE_GENERATOR(gen);
   test_spec_worldtube_buffer_updater(make_not_null(&gen));
+  test_data_manager_with_dummy_buffer_updater(make_not_null(&gen));
 }
 }  // namespace Cce
