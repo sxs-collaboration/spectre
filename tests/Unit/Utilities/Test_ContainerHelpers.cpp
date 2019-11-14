@@ -8,7 +8,10 @@
 #include <cstddef>
 #include <vector>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 
 /// [get_element_example_indexing_callable]
@@ -115,5 +118,22 @@ SPECTRE_TEST_CASE("Unit.Utilities.ContainerHelpers", "[Unit][Utilities]") {
     CHECK(get_element(spectre_vector, i) == 4.0);
     CHECK(get_element(array_of_arrays, i, ArrayOfArraysIndexFunctor{}) ==
           static_cast<double>(i));
+  }
+
+  // Check the destructive resize function applied to tensors
+  tnsr::i<DataVector, 3> rank_one{static_cast<size_t>(4)};
+  Scalar<ComplexDataVector> complex_scalar{static_cast<size_t>(10)};
+  Scalar<DataVector> right_sized{static_cast<size_t>(5), 2.0};
+
+  destructive_resize_components(make_not_null(&rank_one), 5);
+  destructive_resize_components(make_not_null(&complex_scalar), 5);
+  destructive_resize_components(make_not_null(&right_sized), 5);
+  for (const auto& vector : rank_one) {
+    CHECK(vector.size() == 5);
+  }
+  CHECK(get(complex_scalar).size() == 5);
+  CHECK(get(right_sized).size() == 5);
+  for (const auto& element : get(right_sized)) {
+    CHECK(element == 2.0);
   }
 }
