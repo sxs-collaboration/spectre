@@ -34,12 +34,17 @@ namespace ConstitutiveRelations {
  * \details A constitutive relation, in the context of elasticity, relates the
  * Stress \f$T^{ij}\f$ and Strain \f$S_{ij}=\nabla_{(i}u_{j)}\f$ within an
  * elastic material (see \ref Elasticity). For small stresses it is approximated
- * by the linear relation \f[ T^{ij} = -Y^{ijkl}S_{kl} \f] (Eq. 11.17 in
- * \cite ThorneBlandford2017) that is referred to as _Hooke's law_. The
- * constitutive relation in this linear approximation is determined by the
- * elasticity (or _Young's_) tensor \f$Y^{ijkl}=Y^{(ij)(kl)}=Y^{klij}\f$ that
- * generalizes a simple proportionality to a three-dimensional and (possibly)
- * anisotropic material.
+ * by the linear relation
+ *
+ * \f[
+ * T^{ij} = -Y^{ijkl}S_{kl}
+ * \f]
+ *
+ * (Eq. 11.17 in \cite ThorneBlandford2017) that is referred to as _Hooke's
+ * law_. The constitutive relation in this linear approximation is determined by
+ * the elasticity (or _Young's_) tensor \f$Y^{ijkl}=Y^{(ij)(kl)}=Y^{klij}\f$
+ * that generalizes a simple proportionality to a three-dimensional and
+ * (possibly) anisotropic material.
  *
  * \note We assume a Euclidean metric in Cartesian coordinates here (for now).
  */
