@@ -21,7 +21,6 @@
 #include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/LinearOperators/ApplyMatrices.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
-#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
@@ -208,7 +207,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.ApplyMatrices",
   // make_array contains a workaround.
   const std::array<std::reference_wrapper<const Matrix>, 0> ref_matrices =
       make_array<0, std::reference_wrapper<const Matrix>>(
-          cpp17::as_const(Matrix{}));
+          std::add_const_t<Matrix>{});
 
   CHECK(apply_matrices(matrices, data, extents) == data);
   CHECK(apply_matrices(ref_matrices, data, extents) == data);
