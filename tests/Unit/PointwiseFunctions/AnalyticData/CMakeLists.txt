@@ -15,4 +15,5 @@ add_test_library(
   )
 
 add_subdirectory(Burgers)
+add_subdirectory(CurvedWaveEquation)
 add_subdirectory(GrMhd)
