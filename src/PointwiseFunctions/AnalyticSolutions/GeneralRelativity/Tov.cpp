@@ -75,11 +75,11 @@ class Observer {
   void operator()(const std::array<double, 2>& vars,
                   const double current_log_enthalpy) noexcept {
     radius.push_back(std::sqrt(vars[0]));
-    mass.push_back(std::sqrt(vars[0]) * vars[1]);
+    mass_over_radius.push_back(vars[1]);
     log_enthalpy.push_back(current_log_enthalpy);
   }
   std::vector<double> radius;
-  std::vector<double> mass;
+  std::vector<double> mass_over_radius;
   std::vector<double> log_enthalpy;
 };
 
@@ -88,7 +88,7 @@ RelativisticEuler::Solutions::TovStar<
     gr::Solutions::TovSolution>::RadialVariables<DataType>
 interior_solution(
     const EquationsOfState::EquationOfState<true, 1>& equation_of_state,
-    const DataType& radius, const DataType& mass_inside_radius,
+    const DataType& radius, const DataType& mass_over_radius,
     const DataType& log_specific_enthalpy,
     const double log_lapse_at_outer_radius) noexcept {
   RelativisticEuler::Solutions::TovStar<
@@ -105,16 +105,15 @@ interior_solution(
   result.metric_time_potential =
       log_lapse_at_outer_radius - log_specific_enthalpy;
   result.dr_metric_time_potential =
-      (mass_inside_radius + 4.0 * M_PI * get(result.pressure) * cube(radius)) /
-      (radius * (radius - 2.0 * mass_inside_radius));
-  result.metric_radial_potential =
-      -0.5 * log(1.0 - 2.0 * mass_inside_radius / radius);
+      (mass_over_radius / radius + 4.0 * M_PI * get(result.pressure) * radius) /
+      (1.0 - 2.0 * mass_over_radius);
+  result.metric_radial_potential = -0.5 * log(1.0 - 2.0 * mass_over_radius);
   result.dr_metric_radial_potential =
       (4.0 * M_PI * radius *
            (get(result.specific_enthalpy) * get(result.rest_mass_density) -
             get(result.pressure)) -
-       mass_inside_radius / square(radius)) /
-      (1.0 - 2.0 * mass_inside_radius / radius);
+       mass_over_radius / radius) /
+      (1.0 - 2.0 * mass_over_radius);
   result.metric_angular_potential = make_with_value<DataType>(radius, 0.0);
   result.dr_metric_angular_potential = make_with_value<DataType>(radius, 0.0);
   return result;
@@ -180,11 +179,11 @@ TovSolution::TovSolution(
       u_and_v, central_log_enthalpy, log_enthalpy_at_outer_radius, initial_step,
       std::ref(observer));
   outer_radius_ = observer.radius.back();
-  total_mass_ = observer.mass.back();
-  log_lapse_at_outer_radius_ =
-      0.5 * log(1.0 - 2.0 * total_mass_ / outer_radius_);
-  mass_interpolant_ =
-      intrp::BarycentricRational(observer.radius, observer.mass, 5);
+  const double total_mass_over_radius = observer.mass_over_radius.back();
+  total_mass_ = total_mass_over_radius * outer_radius_;
+  log_lapse_at_outer_radius_ = 0.5 * log(1.0 - 2.0 * total_mass_over_radius);
+  mass_over_radius_interpolant_ =
+      intrp::BarycentricRational(observer.radius, observer.mass_over_radius, 5);
   // log_enthalpy(radius) is almost linear so an interpolant of order 3
   // maximizes precision
   log_enthalpy_interpolant_ =
@@ -193,10 +192,14 @@ TovSolution::TovSolution(
 
 double TovSolution::outer_radius() const noexcept { return outer_radius_; }
 
-double TovSolution::mass(const double r) const noexcept {
+double TovSolution::mass_over_radius(const double r) const noexcept {
   ASSERT(r >= 0.0 and r <= outer_radius_,
          "Invalid radius: " << r << " not in [0.0, " << outer_radius_ << "]\n");
-  return mass_interpolant_(r);
+  return mass_over_radius_interpolant_(r);
+}
+
+double TovSolution::mass(const double r) const noexcept {
+  return mass_over_radius(r) * r;
 }
 
 double TovSolution::log_specific_enthalpy(const double r) const noexcept {
@@ -215,7 +218,7 @@ TovSolution::radial_variables(
   if (radius >= outer_radius_) {
     return vacuum_solution(radius, total_mass_);
   }
-  return interior_solution(equation_of_state, radius, mass(radius),
+  return interior_solution(equation_of_state, radius, mass_over_radius(radius),
                            log_specific_enthalpy(radius),
                            log_lapse_at_outer_radius_);
 }
@@ -231,14 +234,14 @@ TovSolution::radial_variables(
     return vacuum_solution(radius, total_mass_);
   }
   if (max(radius) <= outer_radius_) {
-    DataVector mass_inside_radius(radius.size());
+    DataVector mass_over_radius_data(radius.size());
     DataVector log_of_specific_enthalpy(radius.size());
     for (size_t i = 0; i < get_size(radius); i++) {
       const double r = get_element(radius, i);
-      get_element(mass_inside_radius, i) = mass(r);
+      get_element(mass_over_radius_data, i) = mass_over_radius(r);
       get_element(log_of_specific_enthalpy, i) = log_specific_enthalpy(r);
     }
-    return interior_solution(equation_of_state, radius, mass_inside_radius,
+    return interior_solution(equation_of_state, radius, mass_over_radius_data,
                              log_of_specific_enthalpy,
                              log_lapse_at_outer_radius_);
   }
@@ -248,10 +251,11 @@ TovSolution::radial_variables(
   for (size_t i = 0; i < radius.size(); i++) {
     const double r = radius[i];
     auto radial_vars_at_r =
-        (r <= outer_radius_ ? interior_solution(equation_of_state, r, mass(r),
-                                                log_specific_enthalpy(r),
-                                                log_lapse_at_outer_radius_)
-                            : vacuum_solution(r, total_mass_));
+        (r <= outer_radius_
+             ? interior_solution(equation_of_state, r, mass_over_radius(r),
+                                 log_specific_enthalpy(r),
+                                 log_lapse_at_outer_radius_)
+             : vacuum_solution(r, total_mass_));
     get(result.rest_mass_density)[i] = get(radial_vars_at_r.rest_mass_density);
     get(result.pressure)[i] = get(radial_vars_at_r.pressure);
     get(result.specific_internal_energy)[i] =
@@ -274,7 +278,7 @@ void TovSolution::pup(PUP::er& p) noexcept {  // NOLINT
   p | outer_radius_;
   p | total_mass_;
   p | log_lapse_at_outer_radius_;
-  p | mass_interpolant_;
+  p | mass_over_radius_interpolant_;
   p | log_enthalpy_interpolant_;
 }
 
