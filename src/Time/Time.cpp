@@ -221,17 +221,17 @@ TimeDelta operator-(const Time& a, const Time& b) noexcept {
       return {b.slab(), -b.fraction()};
     } else {
       ASSERT(b.is_at_slab_start(),
-             "Can't subtract times from different slabs");
+             "Can't subtract times from different slabs: " << a << " - " << b);
       return {a.slab(), a.fraction() - 1};
     }
   } else {
     ASSERT(a.slab().is_preceeded_by(b.slab()),
-           "Can't subtract times from different slabs");
+           "Can't subtract times from different slabs: " << a << " - " << b);
     if (a.is_at_slab_start()) {
       return {b.slab(), 1 - b.fraction()};
     } else {
       ASSERT(b.is_at_slab_end(),
-             "Can't subtract times from different slabs");
+             "Can't subtract times from different slabs: " << a << " - " << b);
       return {a.slab(), a.fraction()};
     }
   }
