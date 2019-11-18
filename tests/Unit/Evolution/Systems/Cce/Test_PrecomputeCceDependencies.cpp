@@ -69,11 +69,12 @@ void generate_boundary_values_and_expected(
         // prevent aliasing; some terms are nonlinear in R
         Spectral::Swsh::filter_swsh_boundary_quantity(
             make_not_null(&get(*boundary_r)), l_max, l_max - 3);
-        repeat(make_not_null(&get(*r).data()), get(*boundary_r).data(),
-               number_of_radial_grid_points);
-        repeat(make_not_null(&get(*du_r_divided_by_r).data()),
-               get(*boundary_du_r_divided_by_r).data(),
-               number_of_radial_grid_points);
+        fill_with_n_copies(make_not_null(&get(*r).data()),
+                           get(*boundary_r).data(),
+                           number_of_radial_grid_points);
+        fill_with_n_copies(make_not_null(&get(*du_r_divided_by_r).data()),
+                           get(*boundary_du_r_divided_by_r).data(),
+                           number_of_radial_grid_points);
         get(*one_minus_y).data() = 1.0 - y;
         get(*j).data() = make_with_random_values<ComplexDataVector>(
             generator, make_not_null(&dist),

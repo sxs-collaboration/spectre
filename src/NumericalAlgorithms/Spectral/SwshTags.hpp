@@ -103,6 +103,11 @@ std::string compose_spin_weighted_derivative_name(
 
 }  // namespace detail
 
+/// Convenience metafunction for accessing the tag from which a `Derivative` was
+/// derived.
+template <typename Tag>
+using derived_from = typename Tag::derived_from;
+
 /// \ingroup SwshGroup
 /// \brief Prefix tag representing the spin-weighted derivative of a
 /// spin-weighted scalar.

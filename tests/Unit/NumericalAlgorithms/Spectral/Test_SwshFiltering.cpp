@@ -56,8 +56,8 @@ void test_angular_filtering() noexcept {
   }
   auto pre_filter_angular_data =
       inverse_swsh_transform(l_max, 1, generated_modes);
-  SpinWeighted<ComplexDataVector, Spin> to_filter{
-      repeat(pre_filter_angular_data.data(), number_of_radial_points)};
+  SpinWeighted<ComplexDataVector, Spin> to_filter{create_vector_of_n_copies(
+      pre_filter_angular_data.data(), number_of_radial_points)};
 
   // remove the top few modes, emulating the filter process
   for (const auto& mode : cached_coefficients_metadata(l_max)) {
@@ -68,8 +68,9 @@ void test_angular_filtering() noexcept {
   }
   const auto expected_post_filter_angular_data =
       inverse_swsh_transform(l_max, 1, generated_modes);
-  const SpinWeighted<ComplexDataVector, Spin> expected_post_filter{repeat(
-      expected_post_filter_angular_data.data(), number_of_radial_points)};
+  const SpinWeighted<ComplexDataVector, Spin> expected_post_filter{
+      create_vector_of_n_copies(expected_post_filter_angular_data.data(),
+                                number_of_radial_points)};
 
   filter_swsh_volume_quantity(make_not_null(&to_filter), l_max, l_max - 3, 5.0,
                               2);

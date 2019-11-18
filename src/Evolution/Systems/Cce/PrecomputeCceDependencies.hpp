@@ -106,8 +106,8 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::BondiR> {
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> r,
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
       const size_t number_of_radial_points) noexcept {
-    repeat(make_not_null(&get(*r).data()), get(boundary_r).data(),
-           number_of_radial_points);
+    fill_with_n_copies(make_not_null(&get(*r).data()), get(boundary_r).data(),
+                       number_of_radial_points);
   }
 };
 
@@ -130,8 +130,9 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::DuRDividedByR> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>&
           boundary_du_r_divided_by_r,
       const size_t number_of_radial_points) noexcept {
-    repeat(make_not_null(&get(*du_r_divided_by_r).data()),
-           get(boundary_du_r_divided_by_r).data(), number_of_radial_points);
+    fill_with_n_copies(make_not_null(&get(*du_r_divided_by_r).data()),
+                       get(boundary_du_r_divided_by_r).data(),
+                       number_of_radial_points);
   }
 };
 

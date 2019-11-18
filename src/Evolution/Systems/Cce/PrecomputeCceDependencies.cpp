@@ -41,8 +41,9 @@ void angular_derivative_of_r_divided_by_r_impl(
   ComplexDataVector d_r_divided_by_r_tail_shells{
       d_r_divided_by_r->data().data() + number_of_angular_points,
       (number_of_radial_points - 1) * number_of_angular_points};
-  repeat(make_not_null(&d_r_divided_by_r_tail_shells),
-         d_r_divided_by_r_boundary.data(), number_of_radial_points - 1);
+  fill_with_n_copies(make_not_null(&d_r_divided_by_r_tail_shells),
+                     d_r_divided_by_r_boundary.data(),
+                     number_of_radial_points - 1);
 }
 }  // namespace detail
 
