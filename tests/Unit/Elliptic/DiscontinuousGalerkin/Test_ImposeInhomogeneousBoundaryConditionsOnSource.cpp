@@ -30,6 +30,7 @@
 #include "Domain/SegmentId.hpp"
 #include "Domain/Tags.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeInhomogeneousBoundaryConditionsOnSource.hpp"
+#include "Elliptic/Tags.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"
 #include "ParallelAlgorithms/DiscontinuousGalerkin/InitializeDomain.hpp"
@@ -53,10 +54,18 @@ struct ScalarFieldTag : db::SimpleTag {
 };
 
 template <size_t Dim>
+struct Fluxes {
+  using argument_tags = tmpl::list<>;
+  // clang-tidy: no runtime references
+  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+};
+
+template <size_t Dim>
 struct System {
   static constexpr size_t volume_dim = Dim;
   using fields_tag = Tags::Variables<tmpl::list<ScalarFieldTag>>;
   using primal_fields = tmpl::list<ScalarFieldTag>;
+  using fluxes = Fluxes<Dim>;
   template <typename Tag>
   using magnitude_tag = Tags::EuclideanMagnitude<Tag>;
 };
@@ -80,7 +89,7 @@ template <size_t Dim>
 struct NumericalFlux {
   void compute_dirichlet_boundary(
       const gsl::not_null<Scalar<DataVector>*> numerical_flux_for_field,
-      const Scalar<DataVector>& field,
+      const Scalar<DataVector>& field, const Fluxes<Dim>& /*flux_computer*/,
       const tnsr::i<DataVector, Dim,
                     Frame::Inertial>& /*interface_unit_normal*/) const
       noexcept {
@@ -127,7 +136,8 @@ struct Metavariables {
   using normal_dot_numerical_flux = Tags::NumericalFlux<NumericalFlux<Dim>>;
   using component_list = tmpl::list<ElementArray<Dim, Metavariables>>;
   using const_global_cache_tags =
-      tmpl::list<analytic_solution_tag, normal_dot_numerical_flux>;
+      tmpl::list<elliptic::Tags::FluxesComputer<Fluxes<Dim>>,
+                 analytic_solution_tag, normal_dot_numerical_flux>;
   enum class Phase { Initialization, Testing, Exit };
 };
 
@@ -144,7 +154,7 @@ void test_impose_inhomogeneous_boundary_conditions_on_source(
       source_vars{source_expected.size(), 0.};
 
   ActionTesting::MockRuntimeSystem<metavariables> runner{
-      {AnalyticSolution<Dim>{}, NumericalFlux<Dim>{}}};
+      {Fluxes<Dim>{}, AnalyticSolution<Dim>{}, NumericalFlux<Dim>{}}};
   ActionTesting::emplace_component_and_initialize<element_array>(
       &runner, element_id,
       {domain_creator.create_domain(), domain_creator.initial_extents(),

@@ -12,5 +12,5 @@ add_test_library(
   ${LIBRARY}
   "Elliptic/Systems/Poisson/"
   "${LIBRARY_SOURCES}"
-  "CoordinateMaps;DataStructures;Domain;Poisson;PoissonSolutions;Utilities"
+  "DataStructures;Poisson;Utilities"
   )

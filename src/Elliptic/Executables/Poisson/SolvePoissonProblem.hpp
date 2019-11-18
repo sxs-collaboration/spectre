@@ -13,6 +13,7 @@
 #include "Elliptic/DiscontinuousGalerkin/ImposeBoundaryConditions.hpp"
 #include "Elliptic/DiscontinuousGalerkin/ImposeInhomogeneousBoundaryConditionsOnSource.hpp"
 #include "Elliptic/DiscontinuousGalerkin/InitializeFluxes.hpp"
+#include "Elliptic/DiscontinuousGalerkin/NumericalFluxes/FirstOrderInternalPenalty.hpp"
 #include "Elliptic/FirstOrderOperator.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
 #include "Elliptic/Tags.hpp"
@@ -62,6 +63,8 @@ struct Metavariables {
 
   // The system provides all equations specific to the problem.
   using system = Poisson::FirstOrderSystem<Dim>;
+  using fluxes_computer_tag =
+      elliptic::Tags::FluxesComputer<typename system::fluxes>;
 
   // The analytic solution and corresponding source to solve the Poisson
   // equation for
@@ -78,8 +81,10 @@ struct Metavariables {
   static constexpr bool local_time_stepping = false;
 
   // Parse numerical flux parameters from the input file to store in the cache.
-  using normal_dot_numerical_flux =
-      Tags::NumericalFlux<Poisson::FirstOrderInternalPenaltyFlux<Dim>>;
+  using normal_dot_numerical_flux = Tags::NumericalFlux<
+      elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty<
+          Dim, fluxes_computer_tag, typename system::primal_variables,
+          typename system::auxiliary_variables>>;
 
   // Collect events and triggers
   // (public for use by the Charm++ registration code)
@@ -97,8 +102,7 @@ struct Metavariables {
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
-      tmpl::list<analytic_solution_tag,
-                 elliptic::Tags::FluxesComputer<typename system::fluxes>,
+      tmpl::list<analytic_solution_tag, fluxes_computer_tag,
                  Tags::EventsAndTriggers<events, triggers>>;
 
   // Collect all reduction tags for observers

@@ -122,17 +122,18 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
             // handled as contributions to the source in InitializeElement.
             // Imposing them here would not work because we are working with the
             // linear solver operand.
-            tmpl::for_each<dirichlet_tags>([
-              &interior_vars, &exterior_vars, &direction
-            ](auto dirichlet_tag_val) noexcept {
+            tmpl::for_each<dirichlet_tags>([&exterior_vars](
+                auto dirichlet_tag_val) noexcept {
               using dirichlet_tag =
                   tmpl::type_from<decltype(dirichlet_tag_val)>;
               using dirichlet_operand_tag =
                   LinearSolver::Tags::Operand<dirichlet_tag>;
-              // Use mirror principle. This only works for scalars right now.
-              get(get<dirichlet_operand_tag>(exterior_vars)) =
-                  -1. *
-                  get<dirichlet_operand_tag>(interior_vars.at(direction)).get();
+              // Use mirror principle
+              auto& exterior_dirichlet_field =
+                  get<dirichlet_operand_tag>(exterior_vars);
+              for (size_t i = 0; i < exterior_dirichlet_field.size(); i++) {
+                exterior_dirichlet_field[i] *= -1.;
+              }
             });
           }
         },
