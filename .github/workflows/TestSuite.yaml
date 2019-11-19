@@ -1,13 +1,13 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-name: Run test suite
+name: Test suite
 
 on: [push, pull_request]
 
 jobs:
   check_commits:
-    name: Check commits
+    name: Commits
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
@@ -30,7 +30,7 @@ jobs:
           ./tools/CheckCommits.sh
 
   check_files:
-    name: Check files
+    name: Files
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
@@ -42,7 +42,7 @@ jobs:
           ./tools/CheckFiles.sh
 
   clang_tidy:
-    name: Check clang-tidy
+    name: Clang-tidy
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     container:
@@ -86,7 +86,7 @@ jobs:
           make clang-tidy-hash HASH=upstream/${{ github.base_ref }}
 
   doc_check:
-    name: Check documentation
+    name: Documentation
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     container:
@@ -114,7 +114,7 @@ jobs:
           PATH=$PATH:/work/texlive/bin/x86_64-linux make doc-check
 
   unit_tests:
-    name: Run unit tests
+    name: Unit tests
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     strategy:
