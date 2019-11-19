@@ -137,17 +137,15 @@ jobs:
           $GITHUB_WORKSPACE
       - name: Check documentation
         working-directory: /work/build
-        # Append `texlive` to the `PATH` so bibliography generation works.
-        # Can be removed once this is done in the container.
         run: |
-          PATH=$PATH:/work/texlive/bin/x86_64-linux make doc-check
+          make doc-check
       # Re-build with coverage information on pushes to develop for deployment
       # to gh-pages.
       - name: Build documentation with coverage
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
         working-directory: /work/build
         run: |
-          PATH=$PATH:/work/texlive/bin/x86_64-linux make doc-coverage
+          make doc-coverage
       # The `upload-artifact` action doesn't run in the container, so we move
       # the data to the shared workspace.
       # Relevant issue: https://github.com/actions/upload-artifact/issues/13

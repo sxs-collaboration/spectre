@@ -3,8 +3,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-export PATH=$PATH:/work/texlive/bin/x86_64-linux
-
 ccache -z
 
 BUILD_PYTHON_BINDINGS=ON
