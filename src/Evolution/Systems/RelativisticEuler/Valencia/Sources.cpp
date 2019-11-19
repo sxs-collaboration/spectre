@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/Systems/RelativisticEuler/Valencia/Equations.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/Sources.hpp"
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
@@ -39,8 +39,7 @@ namespace RelativisticEuler {
 namespace Valencia {
 
 template <size_t Dim>
-void compute_source_terms_of_u(
-    const gsl::not_null<Scalar<DataVector>*> source_tilde_d,
+void ComputeSources<Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
     const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
         source_tilde_s,
@@ -55,8 +54,6 @@ void compute_source_terms_of_u(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, Dim, Frame::Inertial>&
         extrinsic_curvature) noexcept {
-  get(*source_tilde_d) = 0.0;
-
   const auto tilde_s_M = raise_or_lower_index(tilde_s, inv_spatial_metric);
   const auto tilde_s_MN =
       densitized_stress(tilde_s_M, spatial_velocity, inv_spatial_metric,
@@ -90,33 +87,16 @@ void compute_source_terms_of_u(
     }
   }
 }
-}  // namespace Valencia
-}  // namespace RelativisticEuler
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(_, data)                                                 \
-  template void RelativisticEuler::Valencia::compute_source_terms_of_u(        \
-      const gsl::not_null<Scalar<DataVector>*> source_tilde_d,                 \
-      const gsl::not_null<Scalar<DataVector>*> source_tilde_tau,               \
-      const gsl::not_null<tnsr::i<DataVector, DIM(data), Frame::Inertial>*>    \
-          source_tilde_s,                                                      \
-      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,  \
-      const tnsr::i<DataVector, DIM(data), Frame::Inertial>& tilde_s,          \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& spatial_velocity, \
-      const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,     \
-      const tnsr::i<DataVector, DIM(data), Frame::Inertial>& d_lapse,          \
-      const tnsr::iJ<DataVector, DIM(data), Frame::Inertial>& d_shift,         \
-      const tnsr::ijj<DataVector, DIM(data), Frame::Inertial>&                 \
-          d_spatial_metric,                                                    \
-      const tnsr::II<DataVector, DIM(data), Frame::Inertial>&                  \
-          inv_spatial_metric,                                                  \
-      const Scalar<DataVector>& sqrt_det_spatial_metric,                       \
-      const tnsr::ii<DataVector, DIM(data), Frame::Inertial>&                  \
-          extrinsic_curvature) noexcept;
+#define INSTANTIATION(_, data) template class ComputeSources<DIM(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
+
+}  // namespace Valencia
+}  // namespace RelativisticEuler
 /// \endcond

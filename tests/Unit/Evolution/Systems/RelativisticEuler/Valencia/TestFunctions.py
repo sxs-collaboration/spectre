@@ -53,14 +53,7 @@ def tilde_s(rest_mass_density, specific_internal_energy,
 # End functions for testing ConservativeFromPrimitive.cpp
 
 
-# Functions for testing Equations.cpp
-def source_tilde_d(tilde_d, tilde_tau, tilde_s, spatial_velocity, pressure,
-                   lapse, d_lapse, d_shift, d_spatial_metric,
-                   inv_spatial_metric, sqrt_det_spatial_metric,
-                   extrinsic_curvature):
-    return 0.0
-
-
+# Functions for testing Sources.cpp
 def source_tilde_tau(tilde_d, tilde_tau, tilde_s, spatial_velocity, pressure,
                      lapse, d_lapse, d_shift, d_spatial_metric,
                      inv_spatial_metric, sqrt_det_spatial_metric,
@@ -89,7 +82,7 @@ def source_tilde_s(tilde_d, tilde_tau, tilde_s, spatial_velocity, pressure,
                                       d_spatial_metric))
 
 
-# End functions for testing Equations.cpp
+# End functions for testing Sources.cpp
 
 
 # Functions for testing Fluxes.cpp

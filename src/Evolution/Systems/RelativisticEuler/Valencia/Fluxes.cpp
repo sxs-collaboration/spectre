@@ -3,6 +3,8 @@
 
 #include "Evolution/Systems/RelativisticEuler/Valencia/Fluxes.hpp"
 
+#include <cstddef>
+
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -17,21 +19,21 @@ namespace RelativisticEuler {
 namespace Valencia {
 
 template <size_t Dim>
-void fluxes(const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-                tilde_d_flux,
-            const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-                tilde_tau_flux,
-            const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
-                tilde_s_flux,
-            const Scalar<DataVector>& tilde_d,
-            const Scalar<DataVector>& tilde_tau,
-            const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
-            const Scalar<DataVector>& lapse,
-            const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
-            const Scalar<DataVector>& sqrt_det_spatial_metric,
-            const Scalar<DataVector>& pressure,
-            const tnsr::I<DataVector, Dim, Frame::Inertial>&
-                spatial_velocity) noexcept {
+void ComputeFluxes<Dim>::apply(
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+        tilde_d_flux,
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+        tilde_tau_flux,
+    const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
+        tilde_s_flux,
+    const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
+    const Scalar<DataVector>& lapse,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>& shift,
+    const Scalar<DataVector>& sqrt_det_spatial_metric,
+    const Scalar<DataVector>& pressure,
+    const tnsr::I<DataVector, Dim, Frame::Inertial>&
+        spatial_velocity) noexcept {
   const DataVector p_alpha_sqrt_det_g =
       get(sqrt_det_spatial_metric) * get(lapse) * get(pressure);
   // Outside the loop to save allocations
@@ -47,30 +49,16 @@ void fluxes(const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
     tilde_s_flux->get(i, i) += p_alpha_sqrt_det_g;
   }
 }
-}  // namespace Valencia
-}  // namespace RelativisticEuler
 
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATION(_, data)                                                \
-  template void RelativisticEuler::Valencia::fluxes(                          \
-      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>   \
-          tilde_d_flux,                                                       \
-      const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>   \
-          tilde_tau_flux,                                                     \
-      const gsl::not_null<tnsr::Ij<DataVector, DIM(data), Frame::Inertial>*>  \
-          tilde_s_flux,                                                       \
-      const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau, \
-      const tnsr::i<DataVector, DIM(data), Frame::Inertial>& tilde_s,         \
-      const Scalar<DataVector>& lapse,                                        \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>& shift,           \
-      const Scalar<DataVector>& sqrt_det_spatial_metric,                      \
-      const Scalar<DataVector>& pressure,                                     \
-      const tnsr::I<DataVector, DIM(data), Frame::Inertial>&                  \
-          spatial_velocity) noexcept;
+#define INSTANTIATION(_, data) template class ComputeFluxes<DIM(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3))
 
 #undef INSTANTIATION
 #undef DIM
+
+}  // namespace Valencia
+}  // namespace RelativisticEuler
 /// \endcond
