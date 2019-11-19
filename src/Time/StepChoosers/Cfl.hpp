@@ -3,23 +3,25 @@
 
 #pragma once
 
+#include <cstddef>
 #include <limits>
 #include <pup.h>
 
-#include "Domain/MinimumGridSpacing.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
-#include "Time/Tags.hpp"
-#include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-namespace Parallel {
-template <typename Metavariables>
-class ConstGlobalCache;
-}  // namespace Parallel
+namespace Tags {
+struct DataBox;
+struct TimeStepperBase;
+template <size_t Dim, typename Frame>
+struct MinimumGridSpacing;
+}  // namespace Tags
+// IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
 namespace StepChoosers {
@@ -67,6 +69,7 @@ class Cfl : public StepChooser<StepChooserRegistrars> {
   template <typename Metavariables, typename DbTags>
   double operator()(
       const double minimum_grid_spacing, const db::DataBox<DbTags>& box,
+      const double /*last_step_magnitude*/,
       const Parallel::ConstGlobalCache<Metavariables>& cache) const noexcept {
     using compute_largest_characteristic_speed =
         typename Metavariables::system::compute_largest_characteristic_speed;

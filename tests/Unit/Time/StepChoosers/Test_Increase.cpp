@@ -12,7 +12,6 @@
 #include "Time/Slab.hpp"
 #include "Time/StepChoosers/Increase.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
-#include "Time/Tags.hpp"
 #include "Time/Time.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestCreation.hpp"
@@ -36,20 +35,22 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Increase", "[Unit][Time]") {
   Parallel::register_derived_classes_with_charm<StepChooserType>();
 
   const Parallel::ConstGlobalCache<Metavariables> cache{{}};
-  for (const auto& sign : {1, -1}) {
-    const auto step = sign * Slab(0., 1.).duration() / 4;
-    const auto box = db::create<db::AddSimpleTags<Tags::TimeStep>>(step);
-
+  const auto box = db::create<db::AddSimpleTags<>>();
+  const auto check =
+      [&box, &cache](const double step, const double expected) noexcept {
     const Increase increase{5.};
     const std::unique_ptr<StepChooserType> increase_base =
         std::make_unique<Increase>(increase);
 
-    CHECK(increase(step, cache) == 1.25);
-    CHECK(increase_base->desired_step(box, cache) == 1.25);
-    CHECK(serialize_and_deserialize(increase)(step, cache) == 1.25);
-    CHECK(serialize_and_deserialize(increase_base)->desired_step(box, cache) ==
-          1.25);
-  }
+    CHECK(increase(step, cache) == expected);
+    CHECK(increase_base->desired_step(step, box, cache) == expected);
+    CHECK(serialize_and_deserialize(increase)(step, cache) == expected);
+    CHECK(serialize_and_deserialize(increase_base)
+              ->desired_step(step, box, cache) == expected);
+  };
+  check(0.25, 1.25);
+  check(std::numeric_limits<double>::infinity(),
+        std::numeric_limits<double>::infinity());
 
   TestHelpers::test_factory_creation<StepChooserType>(
       "Increase:\n"

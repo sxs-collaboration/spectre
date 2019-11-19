@@ -19,9 +19,6 @@ namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
 }  // namespace Parallel
-namespace Tags {
-struct TimeStep;
-}  // namespace Tags
 /// \endcond
 
 namespace StepChoosers {
@@ -54,13 +51,13 @@ class Increase : public StepChooser<StepChooserRegistrars> {
 
   explicit Increase(const double factor) noexcept : factor_(factor) {}
 
-  using argument_tags = tmpl::list<Tags::TimeStep>;
+  using argument_tags = tmpl::list<>;
 
   template <typename Metavariables>
-  double operator()(const TimeDelta& current_step,
+  double operator()(const double last_step_magnitude,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/)
       const noexcept {
-    return std::abs(current_step.value()) * factor_;
+    return last_step_magnitude * factor_;
   }
 
   // NOLINTNEXTLINE(google-runtime-references)

@@ -11,6 +11,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
+#include "Utilities/EqualWithinRoundoff.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -56,25 +57,23 @@ class PreventRapidIncrease : public StepChooser<StepChooserRegistrars> {
       "instabilities."};
   using options = tmpl::list<>;
 
-  using argument_tags =
-      tmpl::list<Tags::SubstepTime, Tags::HistoryEvolvedVariables<>>;
+  using argument_tags = tmpl::list<Tags::HistoryEvolvedVariables<>>;
 
   template <typename Metavariables, typename History>
-  double operator()(const Time& time, const History& history,
+  double operator()(const History& history, const double last_step_magnitude,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/)
       const noexcept {
     if (history.size() < 2) {
       return std::numeric_limits<double>::infinity();
     }
 
-    const auto last_step = time - history[history.size() - 1];
-
-    // Slab boundaries are complicated, so we'll just ignore the slab
-    // information and assume slab sizes don't change too frequently.
-    // An occasional double increase should not be harmful.
     for (auto step = history.begin(); step != history.end() - 1; ++step) {
-      if ((*(step + 1) - *step).fraction() != last_step.fraction()) {
-        return abs(last_step.value());
+      // Potential roundoff error comes from the inability to make
+      // slabs exactly the same length.
+      if (not equal_within_roundoff(
+              abs(*(step + 1) - *step).value(), last_step_magnitude,
+              4.0 * std::numeric_limits<double>::epsilon(), 0.0)) {
+        return last_step_magnitude;
       }
     }
     // Request that the step size be at most infinity.  This imposes
