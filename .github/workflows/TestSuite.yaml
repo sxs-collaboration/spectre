@@ -166,6 +166,7 @@ jobs:
           $GITHUB_WORKSPACE
 
           ccache -pz
+        shell: bash
       - name: Build tests
         working-directory: /work/build
         run: |
