@@ -112,3 +112,72 @@ jobs:
         working-directory: /work/build
         run: |
           PATH=$PATH:/work/texlive/bin/x86_64-linux make doc-check
+
+  unit_tests:
+    name: Run unit tests
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build_type: [Debug, Release]
+        compiler: [gcc-6, gcc-7, gcc-8, gcc-9, clang-4, clang-5, clang-8]
+    container:
+      image: sxscollaboration/spectrebuildenv:latest
+      env:
+        CCACHE_DIR: /work/ccache
+        CCACHE_COMPILERCHECK: content
+        CCACHE_MAXSIZE: 400M
+        CCACHE_COMPRESS: 1
+        CCACHE_COMPRESSLEVEL: 6
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v1
+      - name: Restore ccache
+        uses: actions/cache@v1
+        with:
+          path: /work/ccache
+          key: ccache-${{ matrix.compiler }}-${{ matrix.build_type }}
+      - name: Configure with cmake
+        working-directory: /work
+        run: >
+          mkdir build && cd build
+
+          if [[ ${{ matrix.compiler }} =~ (gcc|clang)-([0-9\.]+) ]]; then
+            CC=${BASH_REMATCH[1]}-${BASH_REMATCH[2]};
+            CHARM_CC=${BASH_REMATCH[1]};
+            if [[ ${BASH_REMATCH[1]} = gcc ]]; then
+              CXX=g++-${BASH_REMATCH[2]};
+              FC=gfortran-${BASH_REMATCH[2]};
+            else
+              CXX=clang++-${BASH_REMATCH[2]};
+              FC=gfortran-8;
+            fi
+          fi
+
+          cmake
+          -D CMAKE_C_COMPILER=${CC}
+          -D CMAKE_CXX_COMPILER=${CXX}
+          -D CMAKE_Fortran_COMPILER=${FC}
+          -D CHARM_ROOT=/work/charm/multicore-linux64-${CHARM_CC}
+          -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -D DEBUG_SYMBOLS=OFF
+          -D USE_CCACHE=ON
+          -D BUILD_PYTHON_BINDINGS=ON
+          $GITHUB_WORKSPACE
+
+          ccache -pz
+      - name: Build tests
+        working-directory: /work/build
+        run: |
+          make -j2 RunTests
+      - name: Build executables
+        working-directory: /work/build
+        run: |
+          make test-executables
+      - name: Diagnose ccache
+        run: |
+          ccache -s
+      - name: Run unit tests
+        working-directory: /work/build
+        run: |
+          ctest -j2 --output-on-failure
