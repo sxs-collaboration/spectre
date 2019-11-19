@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        compiler: [gcc-6, gcc-7, gcc-8, gcc-9, clang-4, clang-5, clang-8]
+        compiler: [gcc-6, gcc-7, gcc-8, gcc-9, clang-4.0, clang-5.0, clang-8]
         build_type: [Debug, Release]
     container:
       image: sxscollaboration/spectrebuildenv:latest
