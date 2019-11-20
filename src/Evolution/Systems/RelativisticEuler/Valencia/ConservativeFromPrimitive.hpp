@@ -6,11 +6,19 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/TypeAliases.hpp"
+#include "Evolution/Systems/RelativisticEuler/Valencia/TagsDeclarations.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
+#include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "Utilities/TMPL.hpp"
+
+/// \cond
+class DataVector;
 
 namespace gsl {
 template <typename T>
 class not_null;
 }  // namespace gsl
+/// \endcond
 
 namespace RelativisticEuler {
 namespace Valencia {
@@ -38,17 +46,36 @@ namespace Valencia {
  * {\tilde \tau} = \sqrt{\gamma} W^2 \left[ \rho \left( \epsilon + v^2
  * \frac{W}{W + 1} \right) + p v^2 \right] .\f]
  */
-template <typename DataType, size_t Dim>
-void conservative_from_primitive(
-    gsl::not_null<Scalar<DataType>*> tilde_d,
-    gsl::not_null<Scalar<DataType>*> tilde_tau,
-    gsl::not_null<tnsr::i<DataType, Dim, Frame::Inertial>*> tilde_s,
-    const Scalar<DataType>& rest_mass_density,
-    const Scalar<DataType>& specific_internal_energy,
-    const tnsr::i<DataType, Dim, Frame::Inertial>& spatial_velocity_oneform,
-    const Scalar<DataType>& spatial_velocity_squared,
-    const Scalar<DataType>& lorentz_factor,
-    const Scalar<DataType>& specific_enthalpy, const Scalar<DataType>& pressure,
-    const Scalar<DataType>& sqrt_det_spatial_metric) noexcept;
+template <size_t Dim>
+struct ConservativeFromPrimitive {
+  using return_tags =
+      tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,
+                 RelativisticEuler::Valencia::Tags::TildeTau,
+                 RelativisticEuler::Valencia::Tags::TildeS<Dim>>;
+
+  using argument_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>,
+                 hydro::Tags::LorentzFactor<DataVector>,
+                 gr::Tags::SqrtDetSpatialMetric<>,
+                 gr::Tags::SpatialMetric<Dim>>;
+
+  static void apply(
+      gsl::not_null<Scalar<DataVector>*> tilde_d,
+      gsl::not_null<Scalar<DataVector>*> tilde_tau,
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> tilde_s,
+      const Scalar<DataVector>& rest_mass_density,
+      const Scalar<DataVector>& specific_internal_energy,
+      const Scalar<DataVector>& specific_enthalpy,
+      const Scalar<DataVector>& pressure,
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& spatial_velocity,
+      const Scalar<DataVector>& lorentz_factor,
+      const Scalar<DataVector>& sqrt_det_spatial_metric,
+      const tnsr::ii<DataVector, Dim, Frame::Inertial>&
+          spatial_metric) noexcept;
+};
 }  // namespace Valencia
 }  // namespace RelativisticEuler
