@@ -284,9 +284,9 @@ TovStar<RadialSolution>::variables(
   return make_with_value<tnsr::ii<DataType, 3>>(x, 0.0);
 }
 
-template <typename RadialSolution>
-bool operator==(const TovStar<RadialSolution>& lhs,
-                const TovStar<RadialSolution>& rhs) noexcept {
+template <typename LocalRadialSolution>
+bool operator==(const TovStar<LocalRadialSolution>& lhs,
+                const TovStar<LocalRadialSolution>& rhs) noexcept {
   // there is no comparison operator for the EoS, but should be okay as
   // the `polytropic_exponent`s and `polytropic_constant`s are compared
   return lhs.central_rest_mass_density_ == rhs.central_rest_mass_density_ and
@@ -408,9 +408,11 @@ bool operator!=(const TovStar<RadialSolution>& lhs,
                                               DTYPE(data)>> /*meta*/,          \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;
 
-#define INSTANTIATE(_, data)                                \
-  template class TovStar<STYPE(data)>;                      \
-  template bool operator!=(const TovStar<STYPE(data)>& lhs, \
+#define INSTANTIATE(_, data)                                          \
+  template class TovStar<STYPE(data)>;                                \
+  template bool operator==(const TovStar<STYPE(data)>& lhs,           \
+                           const TovStar<STYPE(data)>& rhs) noexcept; \
+  template bool operator!=(const TovStar<STYPE(data)>& lhs,           \
                            const TovStar<STYPE(data)>& rhs) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VARS, (gr::Solutions::TovSolution),
