@@ -420,7 +420,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::TovSolution))
 #undef DTYPE
 #undef STYPE
 #undef INSTANTIATE
-#undef INSTANTIATE_OPS
+#undef INSTANTIATE_VARS
 }  // namespace Solutions
 }  // namespace RelativisticEuler
 /// \endcond
