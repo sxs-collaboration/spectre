@@ -467,6 +467,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                                   std::make_index_sequence<Arg::pack_size()>{});
   performing_action_ = false;
   unlock(&node_lock_);
+  perform_algorithm();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
@@ -488,6 +489,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
                                   std::make_index_sequence<sizeof...(Args)>{});
   performing_action_ = false;
   unlock(&node_lock_);
+  perform_algorithm();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
@@ -510,6 +512,7 @@ void AlgorithmImpl<ParallelComponent, tmpl::list<PhaseDepActionListsPack...>>::
       static_cast<const array_index&>(array_index_));
   performing_action_ = false;
   unlock(&node_lock_);
+  perform_algorithm();
 }
 
 template <typename ParallelComponent, typename... PhaseDepActionListsPack>
