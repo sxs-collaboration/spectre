@@ -11,8 +11,6 @@
 #include <iosfwd>
 #include <limits>
 
-#include "ErrorHandling/Assert.hpp"
-
 class Time;
 class TimeDelta;
 
@@ -29,26 +27,18 @@ class er;
 class Slab {
  public:
   /// Default constructor gives an invalid Slab.
-  Slab() noexcept
-      : start_(std::numeric_limits<double>::signaling_NaN()),
-        end_(std::numeric_limits<double>::signaling_NaN()) {}
+  Slab() noexcept = default;
 
   /// Construct a slab running between two times (exactly).
-  Slab(double start, double end) noexcept : start_(start), end_(end) {
-    ASSERT(start_ < end_, "Backwards Slab");
-  }
+  Slab(double start, double end) noexcept;
 
   /// Construct a slab with a given start time and duration.  The
   /// actual duration may differ by roundoff from the supplied value.
-  static Slab with_duration_from_start(double start, double duration) noexcept {
-    return {start, start + duration};
-  }
+  static Slab with_duration_from_start(double start, double duration) noexcept;
 
   /// Construct a slab with a given end time and duration.  The
   /// actual duration may differ by roundoff from the supplied value.
-  static Slab with_duration_to_end(double end, double duration) noexcept {
-    return {end - duration, end};
-  }
+  static Slab with_duration_to_end(double end, double duration) noexcept;
 
   Time start() const noexcept;
   Time end() const noexcept;
@@ -56,11 +46,11 @@ class Slab {
 
   /// Create a new slab immediately following this one with the same
   /// (up to roundoff) duration.
-  Slab advance() const noexcept { return {end_, end_ + (end_ - start_)}; }
+  Slab advance() const noexcept;
 
   /// Create a new slab immediately preceeding this one with the same
   /// (up to roundoff) duration.
-  Slab retreat() const noexcept { return {start_ - (end_ - start_), start_}; }
+  Slab retreat() const noexcept;
 
   /// Create a slab adjacent to this one in the direction indicated by
   /// the argument, as with advance() or retreat().
@@ -68,32 +58,24 @@ class Slab {
 
   /// Create a new slab with the same start time as this one with the
   /// given duration (up to roundoff).
-  Slab with_duration_from_start(double duration) const noexcept {
-    return {start_, start_ + duration};
-  }
+  Slab with_duration_from_start(double duration) const noexcept;
 
   /// Create a new slab with the same end time as this one with the
   /// given duration (up to roundoff).
-  Slab with_duration_to_end(double duration) const noexcept {
-    return {end_ - duration, end_};
-  }
+  Slab with_duration_to_end(double duration) const noexcept;
 
   /// Check if this slab is immediately followed by the other slab.
-  bool is_followed_by(const Slab& other) const noexcept {
-    return end_ == other.start_;
-  }
+  bool is_followed_by(const Slab& other) const noexcept;
 
   /// Check if this slab is immediately preceeded by the other slab.
-  bool is_preceeded_by(const Slab& other) const noexcept {
-    return other.is_followed_by(*this);
-  }
+  bool is_preceeded_by(const Slab& other) const noexcept;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
-  double start_;
-  double end_;
+  double start_ = std::numeric_limits<double>::signaling_NaN();
+  double end_ = std::numeric_limits<double>::signaling_NaN();
 
   friend class Time;
   friend class TimeDelta;
@@ -103,31 +85,17 @@ class Slab {
   friend bool operator==(const Time& a, const Time& b) noexcept;
 };
 
-inline bool operator==(const Slab& a, const Slab& b) noexcept {
-  return a.start_ == b.start_ and a.end_ == b.end_;
-}
-inline bool operator!=(const Slab& a, const Slab& b) noexcept {
-  return not(a == b);
-}
+bool operator!=(const Slab& a, const Slab& b) noexcept;
 
 /// Slab comparison operators give the time ordering.  Overlapping
 /// unequal slabs should not be compared (and will trigger an
 /// assertion).
 //@{
-inline bool operator<(const Slab& a, const Slab& b) noexcept {
-  ASSERT(a == b or a.end_ <= b.start_ or a.start_ >= b.end_,
-         "Cannot compare overlapping slabs");
-  return a.end_ <= b.start_;
-}
-inline bool operator>(const Slab& a, const Slab& b) noexcept {
-  return b < a;
-}
-inline bool operator<=(const Slab& a, const Slab& b) noexcept {
-  return not(a > b);
-}
-inline bool operator>=(const Slab& a, const Slab& b) noexcept {
-  return not(a < b);
-}
+// NOLINTNEXTLINE(readability-redundant-declaration) redeclared for docs
+bool operator<(const Slab& a, const Slab& b) noexcept;
+bool operator>(const Slab& a, const Slab& b) noexcept;
+bool operator<=(const Slab& a, const Slab& b) noexcept;
+bool operator>=(const Slab& a, const Slab& b) noexcept;
 //@}
 
 std::ostream& operator<<(std::ostream& os, const Slab& s) noexcept;
