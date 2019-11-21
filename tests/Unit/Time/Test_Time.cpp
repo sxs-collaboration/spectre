@@ -162,9 +162,7 @@ SPECTRE_TEST_CASE("Unit.Time.Time_slab_comparison", "[Unit][Time]") {
       CHECK(t1 <= t2);
       CHECK(t1 >= t2);
     }
-  }
 
-  for (const auto& t1 : {a, c}) {
     for (const auto& t2 : {b.slab().start(), d.slab().start()}) {
       CHECK_FALSE(t1 == t2);
       CHECK_FALSE(t2 == t1);
@@ -179,8 +177,7 @@ SPECTRE_TEST_CASE("Unit.Time.Time_slab_comparison", "[Unit][Time]") {
       CHECK(t1 >= t2);
       CHECK(t2 <= t1);
     }
-  }
-  for (const auto& t1 : {b, d}) {
+
     for (const auto& t2 : {a.slab().end(), c.slab().end()}) {
       CHECK_FALSE(t1 == t2);
       CHECK_FALSE(t2 == t1);
@@ -387,7 +384,7 @@ SPECTRE_TEST_CASE("Unit.Time.TimeDelta.serialization",
 #endif
 }
 
-// [[OutputRegex, Cannot compare overlapping slabs]]
+// [[OutputRegex, Can't move .* to slab]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Time.Time.overlap", "[Unit][Time]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG

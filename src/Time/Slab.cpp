@@ -59,6 +59,10 @@ bool Slab::is_preceeded_by(const Slab& other) const noexcept {
   return other.is_followed_by(*this);
 }
 
+bool Slab::overlaps(const Slab& other) const noexcept {
+  return not(end_ <= other.start_ or start_ >= other.end_);
+}
+
 void Slab::pup(PUP::er& p) noexcept {
   p | start_;
   p | end_;
