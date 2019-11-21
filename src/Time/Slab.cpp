@@ -12,7 +12,7 @@
 
 Slab::Slab(const double start, const double end) noexcept
     : start_(start), end_(end) {
-  ASSERT(start_ < end_, "Backwards Slab");
+  ASSERT(start_ < end_, "Backwards Slab: " << start_ << " >= " << end_);
 }
 
 Slab Slab::with_duration_from_start(const double start,
@@ -72,7 +72,7 @@ bool operator!=(const Slab& a, const Slab& b) noexcept { return not(a == b); }
 
 bool operator<(const Slab& a, const Slab& b) noexcept {
   ASSERT(a == b or a.end_ <= b.start_ or a.start_ >= b.end_,
-         "Cannot compare overlapping slabs");
+         "Cannot compare overlapping slabs " << a << " and " << b);
   return a.end_ <= b.start_;
 }
 
