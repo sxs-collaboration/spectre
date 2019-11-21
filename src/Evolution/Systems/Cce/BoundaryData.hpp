@@ -5,10 +5,18 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/SpinWeighted.hpp"
+#include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/BoundaryDataTags.hpp"
+#include "Evolution/Systems/Cce/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "NumericalAlgorithms/Spectral/SwshDerivatives.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
+#include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 
 /// \cond
 class DataVector;
@@ -16,17 +24,6 @@ class ComplexDataVector;
 /// \endcond
 
 namespace Cce {
-// tensor aliases for brevity
-using jacobian_tensor = Tensor<
-    DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-    index_list<SpatialIndex<3, UpLo::Lo, ::Frame::Spherical<::Frame::Inertial>>,
-               SpatialIndex<3, UpLo::Up, ::Frame::Inertial>>>;
-
-using inverse_jacobian_tensor =
-    Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-           index_list<SpatialIndex<3, UpLo::Lo, ::Frame::Inertial>,
-                      SpatialIndex<3, UpLo::Up,
-                                   ::Frame::Spherical<::Frame::Inertial>>>>;
 
 /*!
  * \brief Constructs the collocation values for \f$\cos(\phi)\f$,
@@ -70,12 +67,91 @@ void trigonometric_functions_on_swsh_collocation(
  */
 void cartesian_to_spherical_coordinates_and_jacobians(
     gsl::not_null<tnsr::I<DataVector, 3>*> unit_cartesian_coords,
-    gsl::not_null<jacobian_tensor*> cartesian_to_spherical_jacobian,
-    gsl::not_null<inverse_jacobian_tensor*>
+    gsl::not_null<SphericaliCartesianJ*> cartesian_to_spherical_jacobian,
+    gsl::not_null<CartesianiSphericalJ*>
         inverse_cartesian_to_spherical_jacobian,
     const Scalar<DataVector>& cos_phi, const Scalar<DataVector>& cos_theta,
     const Scalar<DataVector>& sin_phi, const Scalar<DataVector>& sin_theta,
     double extraction_radius) noexcept;
+
+/*
+ * \brief Compute \f$g_{i j}\f$, \f$g^{i j}\f$, \f$\partial_i g_{j k}\f$, and
+ * \f$\partial_t g_{i j}\f$ from input libsharp-compatible modal spatial
+ * metric quantities.
+ *
+ * \details This function interpolates the modes of
+ * input \f$g_{ij}\f$, \f$\partial_r g_{i j}\f$, and \f$\partial_r g_{i j}\f$ to
+ * the libsharp-compatible grid. This function then applies the necessary
+ * jacobian factors and angular derivatives to determine the full \f$\partial_i
+ * g_{j k}\f$.
+ */
+void cartesian_spatial_metric_and_derivatives_from_modes(
+    gsl::not_null<tnsr::ii<DataVector, 3>*> cartesian_spatial_metric,
+    gsl::not_null<tnsr::II<DataVector, 3>*> inverse_cartesian_spatial_metric,
+    gsl::not_null<tnsr::ijj<DataVector, 3>*> d_cartesian_spatial_metric,
+    gsl::not_null<tnsr::ii<DataVector, 3>*> dt_cartesian_spatial_metric,
+    gsl::not_null<Scalar<SpinWeighted<ComplexModalVector, 0>>*>
+        interpolation_modal_buffer,
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+        interpolation_buffer,
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> eth_buffer,
+    const tnsr::ii<ComplexModalVector, 3>& spatial_metric_coefficients,
+    const tnsr::ii<ComplexModalVector, 3>& dr_spatial_metric_coefficients,
+    const tnsr::ii<ComplexModalVector, 3>& dt_spatial_metric_coefficients,
+    const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
+    size_t l_max) noexcept;
+
+/*!
+ * \brief Compute \f$\beta^{i}\f$, \f$\partial_i \beta^{j}\f$, and
+ * \f$\partial_t \beta^i\f$ from input libsharp-compatible modal spatial
+ * metric quantities.
+ *
+ * \details This function interpolates the modes of
+ * input \f$\beta^i\f$, \f$\partial_r \beta^i\f$, and \f$\partial_r \beta^i\f$
+ * to the libsharp-compatible grid. This function then applies the necessary
+ * jacobian factors and angular derivatives to determine the full \f$\partial_i
+ * \beta^i\f$.
+ */
+void cartesian_shift_and_derivatives_from_modes(
+    gsl::not_null<tnsr::I<DataVector, 3>*> cartesian_shift,
+    gsl::not_null<tnsr::iJ<DataVector, 3>*> d_cartesian_shift,
+    gsl::not_null<tnsr::I<DataVector, 3>*> dt_cartesian_shift,
+    gsl::not_null<Scalar<SpinWeighted<ComplexModalVector, 0>>*>
+        interpolation_modal_buffer,
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+        interpolation_buffer,
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> eth_buffer,
+    const tnsr::I<ComplexModalVector, 3>& shift_coefficients,
+    const tnsr::I<ComplexModalVector, 3>& dr_shift_coefficients,
+    const tnsr::I<ComplexModalVector, 3>& dt_shift_coefficients,
+    const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
+    size_t l_max) noexcept;
+
+/*!
+ * \brief Compute \f$\alpha\f$, \f$\partial_i \alpha\f$, and
+ * \f$\partial_t \beta^i\f$ from input libsharp-compatible modal spatial
+ * metric quantities.
+ *
+ * \details This function interpolates the modes of input \f$\alpha\f$,
+ * \f$\partial_r \alpha\f$, and \f$\partial_r \alpha\f$ to the
+ * libsharp-compatible grid. This function then applies the necessary jacobian
+ * factors and angular derivatives to determine the full \f$\partial_i
+ * \alpha\f$.
+ */
+void cartesian_lapse_and_derivatives_from_modes(
+    gsl::not_null<Scalar<DataVector>*> cartesian_lapse,
+    gsl::not_null<tnsr::i<DataVector, 3>*> d_cartesian_lapse,
+    gsl::not_null<Scalar<DataVector>*> dt_cartesian_lapse,
+    gsl::not_null<Scalar<SpinWeighted<ComplexModalVector, 0>>*>
+        interpolation_modal_buffer,
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+        interpolation_buffer,
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> eth_buffer,
+    const Scalar<ComplexModalVector>& lapse_coefficients,
+    const Scalar<ComplexModalVector>& dr_lapse_coefficients,
+    const Scalar<ComplexModalVector>& dt_lapse_coefficients,
+    const CartesianiSphericalJ& inverse_cartesian_to_spherical_jacobian,
+    size_t l_max) noexcept;
 
 /*!
  * \brief Computes the spacetime metric and its first derivative in the
@@ -106,7 +182,7 @@ void cartesian_to_spherical_coordinates_and_jacobians(
 void null_metric_and_derivative(
     gsl::not_null<tnsr::aa<DataVector, 3, Frame::RadialNull>*> du_null_metric,
     gsl::not_null<tnsr::aa<DataVector, 3, Frame::RadialNull>*> null_metric,
-    const jacobian_tensor& cartesian_to_spherical_jacobian,
+    const SphericaliCartesianJ& cartesian_to_spherical_jacobian,
     const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
     const tnsr::aa<DataVector, 3>& spacetime_metric) noexcept;
 
@@ -167,14 +243,32 @@ void dlambda_null_metric_and_inverse(
         dlambda_null_metric,
     gsl::not_null<tnsr::AA<DataVector, 3, Frame::RadialNull>*>
         dlambda_inverse_null_metric,
-    const tnsr::iA<DataVector, 3>& angular_d_null_l,
-    const jacobian_tensor& cartesian_to_spherical_jacobian,
+    const AngulariCartesianA& angular_d_null_l,
+    const SphericaliCartesianJ& cartesian_to_spherical_jacobian,
     const tnsr::iaa<DataVector, 3>& phi,
     const tnsr::aa<DataVector, 3>& dt_spacetime_metric,
     const tnsr::A<DataVector, 3>& du_null_l,
-    const tnsr::AA<DataVector, 3>& inverse_null_metric,
+    const tnsr::AA<DataVector, 3, Frame::RadialNull>& inverse_null_metric,
     const tnsr::A<DataVector, 3>& null_l,
     const tnsr::aa<DataVector, 3>& spacetime_metric) noexcept;
+
+/*!
+ * \brief Computes the Bondi radius of the worldtube.
+ *
+ * \details Note that unlike the Cauchy coordinate radius, the Bondi radius is
+ * not constant over the worldtube. Instead, it is obtained by the determinant
+ * of the angular part of the metric in the intermediate null coordinates (see
+ * \cite Barkett2019uae).
+ *
+ * \f[
+ *  r = \left(\frac{\det g_{A B}}{ q_{A B}}\right)^{1/4},
+ * \f]
+ *
+ * where \f$q_{A B}\f$ is the unit sphere metric.
+ */
+void bondi_r(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> bondi_r,
+    const tnsr::aa<DataVector, 3, Frame::RadialNull>& null_metric) noexcept;
 
 /*!
  * \brief Computes the full 4-dimensional partial of the Bondi radius with
@@ -221,4 +315,221 @@ void dyads(
     gsl::not_null<tnsr::I<ComplexDataVector, 2, Frame::RadialNull>*>
         up_dyad) noexcept;
 
+/*!
+ * \brief Compute the \f$\beta\f$ (lapse) function for the CCE Bondi-like
+ * metric.
+ *
+ * \details The Bondi-like metric has \f$g^{u r} = - e^{2 \beta}\f$, and the
+ * value of \f$\beta\f$ is obtained from the intermediate null metric by (see
+ * equation (51) of \cite Barkett2019uae) using:
+ *
+ * \f[
+ * \beta = -\frac{1}{2} \ln \partial_{\lambda} r
+ * \f]
+ */
+void beta_worldtube_data(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> beta,
+    const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r) noexcept;
+
+/*!
+ * \brief Compute the \f$U\f$ (shift) function for the CCE Bondi-like metric.
+ *
+ * \details The Bondi-like metric has \f$g^{r A} = -e^{-2 \beta} U^A\f$, and the
+ * spin-weighted vector \f$U = U^A q_A\f$. The value of \f$U^A\f$ can be
+ * computed from the intermediate null metric quantities (see equation (54) of
+ * \cite Barkett2019uae) using:
+ *
+ * \f[
+ * U = -(\partial_\lambda r g^{\lambda A} + \partial_B r g^{A B}) q_A
+ * / \partial_\lambda r \f]
+ *
+ */
+void bondi_u_worldtube_data(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> bondi_u,
+    const tnsr::i<ComplexDataVector, 2, Frame::RadialNull>& dyad,
+    const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
+    const tnsr::AA<DataVector, 3, Frame::RadialNull>&
+        inverse_null_metric) noexcept;
+
+/*!
+ * \brief Compute the \f$W\f$ (mass aspect) function for the CCE Bondi-like
+ * metric.
+ *
+ * \details The Bondi-like metric has \f$g^{rr} = e^{-2 \beta}(1 + r W)\f$. The
+ * value of \f$W\f$ can be computed from the null metric quantities (see
+ * equation (55) of \cite Barkett2019uae) using:
+ *
+ * \f[
+ * W = \frac{1}{r} \left(-1
+ * + \frac{g^{\lambda \lambda} (\partial_\lambda r)^2
+ * + 2 \partial_\lambda r \left(\partial_A r g^{\lambda A}
+ * - \partial_u r\right) + \partial_A r \partial_B r g^{A B}}
+ * {\partial_\lambda r}\right) \f]
+ */
+void bondi_w_worldtube_data(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> bondi_w,
+    const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
+    const tnsr::AA<DataVector, 3, Frame::RadialNull>& inverse_null_metric,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r) noexcept;
+
+/*!
+ * \brief Compute the \f$J\f$ (intuitively similar to the transverse-traceless
+ * part of the angular metric) function for the CCE Bondi-like metric.
+ *
+ * \details The Bondi-like metric has \f$J = \frac{1}{2 r^2} q^A q^B g_{A B}\f$.
+ * This expression holds both for the right-hand side in the Bondi coordinates
+ * and for the right-hand side in the intermediate null coordinates (see
+ * equation (45) of \cite Barkett2019uae).
+ */
+void bondi_j_worldtube_data(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> bondi_j,
+    const tnsr::aa<DataVector, 3, Frame::RadialNull>& null_metric,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) noexcept;
+
+/*!
+ * \brief Compute the radial derivative of the angular metric spin-weighted
+ * scalar \f$\partial_r J\f$ in the CCE Bondi-like metric.
+ *
+ * \details The radial derivative of the angular spin-weighted scalar \f$J\f$
+ * can be computed from the null metric components by (c.f. equation (47) of
+ * \cite Barkett2019uae):
+ *
+ * \f[
+ * \partial_r J = \frac{\partial_\lambda J}{\partial_\lambda r} =
+ *  \frac{q^A q^B \partial_\lambda g_{A B} / (2 r^2)
+ * - 2 \partial_\lambda r J / r}{\partial_\lambda r}
+ * \f]
+ */
+void dr_bondi_j(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> dr_bondi_j,
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+        denominator_buffer,
+    const tnsr::aa<DataVector, 3, Frame::RadialNull>& dlambda_null_metric,
+    const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) noexcept;
+
+/*!
+ * \brief Compute the second derivative of the Bondi radius with respect to the
+ * intermediate null coordinate radius \f$\partial_\lambda^2 r\f$.
+ *
+ * \details To determine this second derivative quantity without resorting to
+ * depending on second-derivative metric inputs, we need to take advantage of
+ * one of the Einstein field equations. Combining equations (53) and (52) of
+ * \cite Barkett2019uae, we have:
+ *
+ * \f[
+ * \partial_\lambda^2 r = \frac{-r}{4} \left(
+ * \partial_\lambda J \partial_\lambda \bar J - (\partial_\lambda K)^2\right)
+ * \f],
+ *
+ * where the first derivative of \f$K\f$ can be obtained from \f$K = \sqrt{1 + J
+ * \bar J}\f$ and the first derivative of \f$J\f$ can be obtained from (47) of
+ * \cite Barkett2019uae
+ */
+void d2lambda_bondi_r(
+    gsl::not_null<Scalar<DataVector>*> d2lambda_bondi_r,
+    const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& dr_bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r) noexcept;
+
+/*!
+ * \brief Compute the Bondi metric contribution \f$Q\f$ (radial derivative of
+ * shift).
+ *
+ * \details The definition of \f$Q\f$ in terms of the Bondi metric components is
+ *
+ * \f[
+ *  Q = q^A e^{-2 \beta} g_{A B} \partial_r U^B.
+ * \f]
+ *
+ * $Q$ can be derived from the intermediate null metric quantities via (see
+ * equations (56) and (57) of \cite Barkett2019uae)
+ *
+ * \f[
+ * \partial_\lambda U = - \left(\partial_\lambda g^{\lambda A}
+ * + \frac{\partial_A \partial_\lambda r}{\partial_\lambda r} g^{A B}
+ * + \frac{\partial_B r}{\partial_\lambda r} \partial_\lambda g^{A B}\right) q_A
+ * + 2 \partial_\lambda \beta (U + g^{\lambda A} q_A)
+ * \f]
+ *
+ * and
+ *
+ * \f[
+ * Q = r^2 (J \partial_\lambda \bar U + K \partial_\lambda U)
+ * \f]
+ *
+ * also provided is \f$\partial_r U\f$, which is separately useful to cache for
+ * other intermediate steps in the CCE computation.
+ */
+void bondi_q_worldtube_data(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> bondi_q,
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> dr_bondi_u,
+    const Scalar<DataVector>& d2lambda_r,
+    const tnsr::AA<DataVector, 3, Frame::RadialNull>&
+        dlambda_inverse_null_metric,
+    const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
+    const tnsr::i<ComplexDataVector, 2, Frame::RadialNull>& dyad,
+    const tnsr::i<DataVector, 2, Frame::RadialNull>& angular_d_dlambda_r,
+    const tnsr::AA<DataVector, 3, Frame::RadialNull>& inverse_null_metric,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 1>>& bondi_u) noexcept;
+
+/*!
+ * \brief Compute the Bondi metric contribution \f$(\partial_u J)_{y} \equiv
+ * H\f$ (the retarded time derivative evaluated at fixed $y$ coordinate) on the
+ * worldtube boundary.
+ *
+ * \details The numerical time derivative (along the worldtube, rather than
+ * along the surface of constant Bondi \f$r\f$) is computed by (see equation
+ * (48) of \cite Barkett2019uae)
+ *
+ * \f[
+ * (\partial_u J)_y = \frac{1}{2 r^2} q^A q^B \partial_u g_{A B}
+ * - \frac{2 \partial_u r}{r} J
+ * \f]
+ *
+ * \note There is the regrettable notation difference with the primary reference
+ * for these formulas \cite Barkett2019uae in that we denote with \f$H\f$ the
+ * time derivative at constant numerical radius, where \cite Barkett2019uae uses
+ * \f$H\f$ to denote the time derivative at constant Bondi radius.
+ */
+void bondi_h_worldtube_data(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> bondi_h,
+    const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const tnsr::aa<DataVector, 3, Frame::RadialNull>& du_null_metric,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) noexcept;
+
+/*!
+ * \brief Compute the Bondi metric contribution \f$(\partial_u J)_r\f$ (the
+ * retarded time derivative at fixed coordinate $r$) on the worldtube boundary.
+ *
+ * \details The numerical time derivative (along the surface of constant r, not
+ * along the worldtube) is computed by (see equation (50) of
+ * \cite Barkett2019uae)
+ *
+ * \f[
+ * \partial_u J = \frac{1}{2 r^2} q^A q^B \left(\partial_u g_{A B}
+ * - \frac{ \partial_u r}{ \partial_\lambda r} \partial_\lambda g_{A B}\right)
+ * \f]
+ *
+ * \note There is the regrettable notation difference with the primary reference
+ * for these formulas \cite Barkett2019uae in that we denote with \f$H\f$ the
+ * time derivative at constant numerical radius, where \cite Barkett2019uae uses
+ * \f$H\f$ to denote the time derivative at constant Bondi radius.
+ */
+void du_j_worldtube_data(
+    gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> du_bondi_j,
+    const tnsr::a<DataVector, 3, Frame::RadialNull>& d_bondi_r,
+    const Scalar<SpinWeighted<ComplexDataVector, 2>>& bondi_j,
+    const tnsr::aa<DataVector, 3, Frame::RadialNull>& du_null_metric,
+    const tnsr::aa<DataVector, 3, Frame::RadialNull>& dlambda_null_metric,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& bondi_r,
+    const tnsr::I<ComplexDataVector, 2, Frame::RadialNull>& dyad) noexcept;
 }  // namespace Cce

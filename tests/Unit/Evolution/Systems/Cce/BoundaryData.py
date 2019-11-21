@@ -189,7 +189,7 @@ def dlambda_null_metric(angular_d_null_l, cartesian_to_angular_jacobian, phi,
     dlambda_null_metric[0, 2:4] += np.einsum(
         "Ak,i,ik", cartesian_to_angular_jacobian[1:3, :], null_l[1:4],
         phi[:, 1:4, 0])
-    dlambda_null_metric[0, 2:4] += np.einsum("Aa,a", angular_d_null_l[1:3, :],
+    dlambda_null_metric[0, 2:4] += np.einsum("Aa,a", angular_d_null_l[0:2, :],
                                              psi[:, 0])
     dlambda_null_metric[2:4, 0] = dlambda_null_metric[0, 2:4]
 
@@ -200,11 +200,11 @@ def dlambda_null_metric(angular_d_null_l, cartesian_to_angular_jacobian, phi,
         "Ak,Bl,i,ikl", cartesian_to_angular_jacobian[1:3, :],
         cartesian_to_angular_jacobian[1:3, :], null_l[1:4], phi[:, 1:4, 1:4])
     dlambda_null_metric[2:4, 2:4] += np.einsum(
-        "Aa,Bl,al", angular_d_null_l[1:3, :],
+        "Aa,Bl,al", angular_d_null_l[0:2, :],
         cartesian_to_angular_jacobian[1:3, :], psi[:, 1:4])
     dlambda_null_metric[2:4, 2:4] += np.einsum(
         "Al,Ba,al", cartesian_to_angular_jacobian[1:3, :],
-        angular_d_null_l[1:3, :], psi[:, 1:4])
+        angular_d_null_l[0:2, :], psi[:, 1:4])
     return dlambda_null_metric
 
 
@@ -237,3 +237,104 @@ def inverse_dlambda_null_metric(angular_d_null_l,
         inverse_null_metric[2:4, 2:4], dlambda_null_metric_value[2:4, 2:4])
 
     return inverse_dlambda_null_metric_value
+
+
+def bondi_beta_worldtube_data(local_d_bondi_r):
+    return np.array(-0.5 * math.log(local_d_bondi_r[1]))
+
+
+def bondi_u_worldtube_data(down_dyad, local_d_bondi_r, inverse_null_metric):
+    u_vector = local_d_bondi_r[1] * inverse_null_metric[1, 2:4] + np.einsum(
+        "b, ab", local_d_bondi_r[2:4], inverse_null_metric[2:4, 2:4])
+    return -np.einsum("a,a", u_vector, down_dyad) / local_d_bondi_r[1]
+
+
+def bondi_w_worldtube_data(local_d_bondi_r, inverse_null_metric,
+                           local_bondi_r):
+    return (-1.0 +
+            (inverse_null_metric[1, 1] * local_d_bondi_r[1]**2 +
+             2.0 * local_d_bondi_r[1] *
+             (np.einsum("a,a", local_d_bondi_r[2:4],
+                        inverse_null_metric[1, 2:4]) - local_d_bondi_r[0]) +
+             np.einsum("a,b,ab", local_d_bondi_r[2:4], local_d_bondi_r[2:4],
+                       inverse_null_metric[2:4, 2:4])) / local_d_bondi_r[1]
+            ) / local_bondi_r
+
+
+def bondi_j_worldtube_data(null_metric, bondi_r, up_dyad):
+    return 0.5 * np.einsum("a,b,ab", up_dyad, up_dyad,
+                           null_metric[2:4, 2:4]) / bondi_r**2
+
+
+def dr_bondi_j_worldtube_data(dlambda_null_metric, local_d_bondi_r, bondi_j,
+                              local_bondi_r, up_dyad):
+    return (0.5 * np.einsum("a,b,ab", up_dyad, up_dyad,
+                            dlambda_null_metric[2:4, 2:4]) / local_bondi_r**2 -
+            2.0 * local_d_bondi_r[1] * bondi_j / local_bondi_r
+            ) / local_d_bondi_r[1]
+
+
+def dr_bondi_j_denominator(dlambda_null_metric, local_d_bondi_r, bondi_j,
+                           local_bondi_r, up_dyad):
+    return 1.0 / (local_bondi_r**2 * local_d_bondi_r[1])
+
+
+def d2lambda_bondi_r(local_d_bondi_r, dr_bondi_j, bondi_j, bondi_r):
+    return np.array(
+        np.real(
+            -0.25 * bondi_r * local_d_bondi_r[1]**2 *
+            (dr_bondi_j * np.conj(dr_bondi_j) - 0.25 * (
+                (dr_bondi_j * np.conj(bondi_j) + bondi_j * np.conj(dr_bondi_j))
+                / np.sqrt(1.0 + bondi_j * np.conj(bondi_j)))**2)))
+
+
+def dlambda_bondi_u(d2lambda_bondi_r, dlambda_inverse_null_metric,
+                    local_d_bondi_r, down_dyad, angular_d_dlambda_r,
+                    inverse_null_metric, bondi_u):
+    dlambda_u_vector_part = -(dlambda_inverse_null_metric[1, 2:4] + np.einsum(
+        "b,ab", angular_d_dlambda_r[0:2] / local_d_bondi_r[1],
+        inverse_null_metric[2:4, 2:4]) + np.einsum(
+            "b, ab", local_d_bondi_r[2:4] / local_d_bondi_r[1],
+            dlambda_inverse_null_metric[2:4, 2:4]))
+    dlambda_beta = -0.5 * d2lambda_bondi_r / local_d_bondi_r[1]
+
+    return np.einsum(
+        "a,a", dlambda_u_vector_part, down_dyad) + 2.0 * dlambda_beta * (
+            bondi_u + np.einsum("a,a", inverse_null_metric[1, 2:4], down_dyad))
+
+
+def bondi_q_worldtube_data(local_d2lambda_bondi_r, dlambda_inverse_null_metric,
+                           local_d_bondi_r, down_dyad, angular_d_dlambda_r,
+                           inverse_null_metric, bondi_j, local_bondi_r,
+                           bondi_u):
+    local_dlambda_bondi_u = dlambda_bondi_u(
+        local_d2lambda_bondi_r, dlambda_inverse_null_metric, local_d_bondi_r,
+        down_dyad, angular_d_dlambda_r, inverse_null_metric, bondi_u)
+    return local_bondi_r**2 * (
+        bondi_j * np.conj(local_dlambda_bondi_u) +
+        np.sqrt(1.0 + bondi_j * np.conj(bondi_j)) * local_dlambda_bondi_u)
+
+
+def dr_bondi_u_worldtube_data(
+        local_d2lambda_bondi_r, dlambda_inverse_null_metric, local_d_bondi_r,
+        down_dyad, angular_d_dlambda_r, inverse_null_metric, bondi_j,
+        local_bondi_r, bondi_u):
+    local_dlambda_bondi_u = dlambda_bondi_u(
+        local_d2lambda_bondi_r, dlambda_inverse_null_metric, local_d_bondi_r,
+        down_dyad, angular_d_dlambda_r, inverse_null_metric, bondi_u)
+    return local_dlambda_bondi_u / local_d_bondi_r[1]
+
+
+def bondi_h_worldtube_data(local_d_bondi_r, bondi_j, du_null_metric,
+                           local_bondi_r, up_dyad):
+    return 0.5 * np.einsum(
+        "a,b,ab", up_dyad, up_dyad, du_null_metric[2:4, 2:4]
+    ) / local_bondi_r**2 - 2.0 * local_d_bondi_r[0] * bondi_j / local_bondi_r
+
+
+def du_j_worldtube_data(local_d_bondi_r, bondi_j, du_null_metric,
+                        dlambda_null_metric, local_bondi_r, up_dyad):
+    return 0.5 * np.einsum(
+        "a,b,ab", up_dyad, up_dyad,
+        du_null_metric[2:4, 2:4] - local_d_bondi_r[0] *
+        dlambda_null_metric[2:4, 2:4] / local_d_bondi_r[1]) / local_bondi_r**2

@@ -12,6 +12,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "Utilities/Gsl.hpp"
@@ -48,6 +49,44 @@ void pypp_test_worldtube_computation_steps() noexcept {
       &dlambda_null_metric_and_inverse, "BoundaryData",
       {"dlambda_null_metric", "inverse_dlambda_null_metric"}, {{{0.1, 10.0}}},
       DataVector{1});
+
+  pypp::check_with_random_values<1>(&beta_worldtube_data, "BoundaryData",
+                                    {"bondi_beta_worldtube_data"},
+                                    {{{0.1, 10.0}}}, DataVector{1});
+
+  pypp::check_with_random_values<1>(&bondi_u_worldtube_data, "BoundaryData",
+                                    {"bondi_u_worldtube_data"}, {{{0.1, 10.0}}},
+                                    DataVector{1});
+
+  pypp::check_with_random_values<1>(&bondi_w_worldtube_data, "BoundaryData",
+                                    {"bondi_w_worldtube_data"}, {{{0.1, 10.0}}},
+                                    DataVector{1});
+
+  pypp::check_with_random_values<1>(&bondi_j_worldtube_data, "BoundaryData",
+                                    {"bondi_j_worldtube_data"}, {{{0.1, 10.0}}},
+                                    DataVector{1});
+
+  pypp::check_with_random_values<1>(
+      &dr_bondi_j, "BoundaryData",
+      {"dr_bondi_j_worldtube_data", "dr_bondi_j_denominator"}, {{{0.1, 10.0}}},
+      DataVector{1});
+
+  pypp::check_with_random_values<1>(&d2lambda_bondi_r, "BoundaryData",
+                                    {"d2lambda_bondi_r"}, {{{0.1, 10.0}}},
+                                    DataVector{1});
+
+  pypp::check_with_random_values<1>(
+      &bondi_q_worldtube_data, "BoundaryData",
+      {"bondi_q_worldtube_data", "dr_bondi_u_worldtube_data"}, {{{0.1, 10.0}}},
+      DataVector{1});
+
+  pypp::check_with_random_values<1>(&bondi_h_worldtube_data, "BoundaryData",
+                                    {"bondi_h_worldtube_data"}, {{{0.1, 10.0}}},
+                                    DataVector{1});
+
+  pypp::check_with_random_values<1>(&du_j_worldtube_data, "BoundaryData",
+                                    {"du_j_worldtube_data"}, {{{0.1, 10.0}}},
+                                    DataVector{1});
 }
 
 template <typename Generator>
@@ -73,8 +112,8 @@ void test_trigonometric_function_identities(
   }
 
   tnsr::I<DataVector, 3> cartesian_coords{number_of_angular_points};
-  jacobian_tensor cartesian_to_angular_jacobian{number_of_angular_points};
-  inverse_jacobian_tensor inverse_cartesian_to_angular_jacobian{
+  SphericaliCartesianJ cartesian_to_angular_jacobian{number_of_angular_points};
+  CartesianiSphericalJ inverse_cartesian_to_angular_jacobian{
       number_of_angular_points};
   UniformCustomDistribution<double> radius_dist{10.0, 100.0};
   const double extraction_radius = radius_dist(*gen);
@@ -106,11 +145,61 @@ void test_trigonometric_function_identities(
 }
 
 template <typename Generator>
+void test_bondi_r(
+    const gsl::not_null<Generator*> gen) noexcept {
+  UniformCustomDistribution<size_t> l_dist(3, 6);
+  const size_t l_max = l_dist(*gen);
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+  UniformCustomDistribution<double> value_dist{0.1, 0.5};
+  tnsr::iaa<DataVector, 3> expected_phi{number_of_angular_points};
+  fill_with_random_values(make_not_null(&expected_phi), gen,
+                          make_not_null(&value_dist));
+  tnsr::aa<DataVector, 3> expected_psi{number_of_angular_points};
+  fill_with_random_values(make_not_null(&expected_psi), gen,
+                          make_not_null(&value_dist));
+  get<0, 0>(expected_psi) -= 1.0;
+  for (size_t a = 1; a < 4; ++a) {
+    expected_psi.get(a, a) += 1.0;
+  }
+  tnsr::aa<DataVector, 3> expected_dt_psi{number_of_angular_points};
+  fill_with_random_values(make_not_null(&expected_dt_psi), gen,
+                          make_not_null(&value_dist));
+
+  // test bondi_r now that we have an appropriate angular metric
+  tnsr::ii<DataVector, 2> angular_psi{number_of_angular_points};
+  for (size_t A = 0; A < 2; ++A) {
+    for (size_t B = A; B < 2; ++B) {
+      angular_psi.get(A, B) = expected_psi.get(A + 2, B + 2);
+    }
+  }
+  tnsr::aa<DataVector, 3, Frame::RadialNull> expected_psi_null_coords{
+      number_of_angular_points};
+  for (size_t a = 0; a < 4; ++a) {
+    for (size_t b = a; b < 4; ++b) {
+      expected_psi_null_coords.get(a, b) = expected_psi.get(a, b);
+    }
+  }
+  Scalar<SpinWeighted<ComplexDataVector, 0>> local_bondi_r{
+      number_of_angular_points};
+  bondi_r(make_not_null(&local_bondi_r), expected_psi_null_coords);
+  Scalar<SpinWeighted<ComplexDataVector, 0>> expected_bondi_r{
+      number_of_angular_points};
+  get(expected_bondi_r).data() =
+      std::complex<double>(1.0, 0.0) *
+      pow(get(determinant_and_inverse(angular_psi).first), 0.25);
+  CHECK_ITERABLE_APPROX(get(local_bondi_r).data(),
+                        get(expected_bondi_r).data());
+}
+
+template <typename Generator>
 void test_d_bondi_r_identities(const gsl::not_null<Generator*> gen) noexcept {
   // more resolution needed because we want high precision on the angular
   // derivative check.
   UniformCustomDistribution<size_t> l_dist(8, 12);
-  UniformCustomDistribution<double> value_dist{0.1, 0.5};
+  // distribution chosen to be not too far from the scale of the diagnonal
+  // elements in the matrix
+  UniformCustomDistribution<double> value_dist{0.1, 0.2};
   const size_t l_max = l_dist(*gen);
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
@@ -186,15 +275,21 @@ void test_d_bondi_r_identities(const gsl::not_null<Generator*> gen) noexcept {
                             dlambda_null_metric.get(A + 2, B + 2);
     }
   }
+  Approx trace_product_approx =
+      Approx::custom()
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e5)
+          .scale(1.0);
+
   expected_dlambda_r *= 0.25 * real(get(bondi_r).data());
-  CHECK_ITERABLE_APPROX(expected_dlambda_r, get<1>(d_bondi_r));
+  CHECK_ITERABLE_CUSTOM_APPROX(expected_dlambda_r, get<1>(d_bondi_r),
+                               trace_product_approx);
 
   // use the trace identity to evaluate the du_r in the contrived case where the
   // du_null metric is proportional to null_metric.
   DataVector expected_du_r{number_of_angular_points, random_scaling * 2.0};
   expected_du_r *= 0.25 * real(get(bondi_r).data());
   CHECK_ITERABLE_CUSTOM_APPROX(expected_du_r, get<0>(d_bondi_r),
-                               angular_derivative_approx);
+                               trace_product_approx);
 }
 
 template <typename Generator>
@@ -232,6 +327,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BoundaryData",
 
   MAKE_GENERATOR(gen);
   test_trigonometric_function_identities(make_not_null(&gen));
+  test_bondi_r(make_not_null(&gen));
   test_d_bondi_r_identities(make_not_null(&gen));
   test_dyad_identities(make_not_null(&gen));
 }
