@@ -159,9 +159,20 @@ jobs:
       matrix:
         compiler: [gcc-6, gcc-7, gcc-8, gcc-9, clang-4.0, clang-5.0, clang-8]
         build_type: [Debug, Release]
+        include:
+          # Prevent random failures of Debug builds.
+          # See issue https://github.com/sxs-collaboration/spectre/issues/1807
+          - build_type: Debug
+            EXTRA_CXX_FLAGS: "-DBLAZE_USE_VECTORIZATION=0"
     container:
       image: sxscollaboration/spectrebuildenv:latest
       env:
+        # We run unit tests with the following compiler flags:
+        # - `-Werror`: Treat warnings as error.
+        # - `-march=x86-64`: Make sure we are building on a consistent
+        #   architecture so caching works. This is necessary because GitHub
+        #   may run the job on different hardware.
+        CXXFLAGS: "-Werror -march=x86-64"
         # We make sure to use a fixed absolute path for the ccache directory
         CCACHE_DIR: /work/ccache
         # GitHub Actions currently limits the size of individual caches
@@ -214,6 +225,7 @@ jobs:
           -D CMAKE_C_COMPILER=${CC}
           -D CMAKE_CXX_COMPILER=${CXX}
           -D CMAKE_Fortran_COMPILER=${FC}
+          -D CMAKE_CXX_FLAGS="${CXXFLAGS} ${{ matrix.EXTRA_CXX_FLAGS }}"
           -D CHARM_ROOT=/work/charm/multicore-linux64-${CHARM_CC}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
