@@ -28,6 +28,7 @@
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/IndexIterator.hpp"
+#include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -512,7 +513,7 @@ T tensor_conversion_impl(PyObject* p) {
   }
   auto t = make_with_value<T>(
       *get_ptr_to_elem<typename T::type>(npy_array, make_array<T::rank()>(0ul)),
-      0.);
+      static_cast<typename T::value_type>(0.0));
   for (IndexIterator<T::rank()> index_it((Index<T::rank()>(T::index_dims())));
        index_it; ++index_it) {
     const auto tensor_idx = (*index_it).indices();
@@ -539,6 +540,25 @@ struct FromPyObject<T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0 and
   static T convert(PyObject* p) { return tensor_conversion_impl<T>(p); }
 };
 
+template <>
+struct FromPyObject<Scalar<std::complex<double>>> {
+  static Scalar<std::complex<double>> convert(PyObject* p) {
+    if (PyComplex_Check(p)) {
+      return Scalar<std::complex<double>>{std::complex<double>(
+          PyComplex_RealAsDouble(p), PyComplex_ImagAsDouble(p))};
+    } else {
+      return tensor_conversion_impl<Scalar<std::complex<double>>>(p);
+    }
+  }
+};
+
+template <typename T>
+struct FromPyObject<
+    T, Requires<tt::is_a_v<Tensor, T> and T::rank() != 0 and
+                cpp17::is_same_v<typename T::type, std::complex<double>>>> {
+  static T convert(PyObject* p) { return tensor_conversion_impl<T>(p); }
+};
+
 template <typename T>
 struct ToPyObject<T, Requires<tt::is_a_v<Tensor, T> and
                               cpp17::is_same_v<typename T::type, double>>> {
@@ -560,6 +580,45 @@ struct ToPyObject<T, Requires<tt::is_a_v<Tensor, T> and
           t.get(tensor_idx);
     }
     return npy_array;
+  }
+};
+
+template <typename T>
+struct ToPyObject<
+    T, Requires<tt::is_a_v<Tensor, T> and
+                cpp17::is_same_v<typename T::type, std::complex<double>>>> {
+  static PyObject* convert(const T& t) {
+    std::array<long, T::rank()> dims =
+        convert_array_of_size_t_to_array_of_long(T::index_dims());
+    // clang-tidy: cstyle casts, pointer arithmetic, implicit decay array to
+    // pointer. (Expanded from macro.)
+    PyObject* npy_array =
+        PyArray_SimpleNew(T::rank(), dims.data(), NPY_COMPLEX128);  // NOLINT
+    if (npy_array == nullptr) {
+      throw std::runtime_error{"Failed to create PyArray."};
+    }
+
+    for (IndexIterator<T::rank()> index_it((Index<T::rank()>(T::index_dims())));
+         index_it; ++index_it) {
+      const auto tensor_idx = (*index_it).indices();
+      *get_ptr_to_elem<std::complex<double>>(npy_array, tensor_idx) =
+          t.get(tensor_idx);
+    }
+    return npy_array;
+  }
+};
+
+template <typename T>
+struct FromPyObject<Scalar<T>, Requires<is_any_spin_weighted_v<T>>> {
+  static Scalar<T> convert(PyObject* p) {
+    return Scalar<T>{T{FromPyObject<typename T::value_type>::convert(p)}};
+  }
+};
+
+template <typename T>
+struct ToPyObject<Scalar<T>, Requires<is_any_spin_weighted_v<T>>> {
+  static PyObject* convert(const Scalar<T>& t) {
+    return ToPyObject<typename T::value_type>::convert(get(t).data());
   }
 };
 

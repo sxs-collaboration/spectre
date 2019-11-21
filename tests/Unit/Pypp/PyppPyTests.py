@@ -240,3 +240,16 @@ def check_solution_scalar(x, t, a, b):
 def check_solution_vector(x, t, a, b):
     # b is passed in as a list so must be explicitly converted to an array
     return a * x - t * np.array(b)
+
+
+# returns a complex scalar
+def mixed_complex_real_function_1(spin_weighted, complex_tensor, real_tensor):
+    return spin_weighted * complex_tensor[0] / real_tensor[1]
+
+
+# returns a real rank one tensor of dimension 2
+def mixed_complex_real_function_2(spin_weighted, complex_tensor, real_tensor):
+    return np.array([
+        np.real(spin_weighted * complex_tensor[0] * real_tensor[1]),
+        np.imag(complex_tensor[1] * real_tensor[0] / spin_weighted)
+    ])
