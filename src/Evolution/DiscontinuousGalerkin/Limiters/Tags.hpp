@@ -38,6 +38,8 @@ struct Limiter : db::SimpleTag {
   static std::string name() noexcept { return "Limiter"; }
   using type = LimiterType;
   using option_tags = tmpl::list<::OptionTags::Limiter<LimiterType>>;
+
+  template <typename Metavariables>
   static LimiterType create_from_options(const LimiterType& limiter) noexcept {
     return limiter;
   }

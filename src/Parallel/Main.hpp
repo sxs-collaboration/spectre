@@ -245,8 +245,8 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
           });
 
   const_global_cache_proxy_ = CProxy_ConstGlobalCache<Metavariables>::ckNew(
-      Parallel::create_from_options(items_from_options,
-                                    const_global_cache_tags{}));
+      Parallel::create_from_options<Metavariables>(items_from_options,
+                                                   const_global_cache_tags{}));
 
   tuples::tagged_tuple_from_typelist<parallel_component_tag_list>
       the_parallel_components;
@@ -272,7 +272,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
     tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
         ParallelComponentProxy::ckNew(
             const_global_cache_proxy_,
-            Parallel::create_from_options(
+            Parallel::create_from_options<Metavariables>(
                 items_from_options,
                 typename parallel_component::initialization_tags{}),
             &const_global_cache_dependency);
@@ -292,7 +292,7 @@ Main<Metavariables>::Main(CkArgMsg* msg) noexcept
     tuples::get<tmpl::type_<ParallelComponentProxy>>(the_parallel_components) =
         ParallelComponentProxy::ckNew(
             const_global_cache_proxy_,
-            Parallel::create_from_options(
+            Parallel::create_from_options<Metavariables>(
                 items_from_options,
                 typename parallel_component::initialization_tags{}));
   });
@@ -365,7 +365,7 @@ void Main<Metavariables>::
     using parallel_component = tmpl::type_from<decltype(parallel_component_v)>;
     parallel_component::allocate_array(
         const_global_cache_proxy_,
-        Parallel::create_from_options(
+        Parallel::create_from_options<Metavariables>(
             items_from_options,
             typename parallel_component::initialization_tags{}));
   });

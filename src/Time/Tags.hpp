@@ -184,6 +184,8 @@ struct TimeStepper : TimeStepperBase, db::SimpleTag {
   static std::string name() noexcept { return "TimeStepper"; }
   using type = std::unique_ptr<StepperType>;
   using option_tags = tmpl::list<::OptionTags::TimeStepper<StepperType>>;
+
+  template <typename Metavariables>
   static std::unique_ptr<StepperType> create_from_options(
       const std::unique_ptr<StepperType>& time_stepper) noexcept {
     return deserialize<type>(serialize<type>(time_stepper).data());
@@ -196,6 +198,8 @@ struct StepChoosers : db::SimpleTag {
   static std::string name() noexcept { return "StepChoosers"; }
   using type = std::vector<std::unique_ptr<::StepChooser<Registrars>>>;
   using option_tags = tmpl::list<::OptionTags::StepChoosers<Registrars>>;
+
+  template <typename Metavariables>
   static type create_from_options(const type& step_choosers) noexcept {
     return deserialize<type>(serialize<type>(step_choosers).data());
   }
@@ -206,6 +210,8 @@ struct StepController : db::SimpleTag {
   static std::string name() noexcept { return "StepController"; }
   using type = std::unique_ptr<::StepController>;
   using option_tags = tmpl::list<::OptionTags::StepController>;
+
+  template <typename Metavariables>
   static std::unique_ptr<::StepController> create_from_options(
       const std::unique_ptr<::StepController>& step_controller) noexcept {
     return deserialize<type>(serialize<type>(step_controller).data());

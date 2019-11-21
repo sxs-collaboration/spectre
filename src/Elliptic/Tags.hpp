@@ -29,6 +29,8 @@ struct FluxesComputer : db::SimpleTag {
     return pretty_type::short_name<FluxesComputerType>();
   }
   using option_tags = tmpl::list<>;
+
+  template <typename Metavariables>
   static FluxesComputerType create_from_options() {
     return FluxesComputerType{};
   }

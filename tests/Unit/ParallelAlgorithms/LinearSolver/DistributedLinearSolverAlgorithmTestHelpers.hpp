@@ -61,6 +61,7 @@ struct NumberOfElements : db::SimpleTag {
   using type = int;
   using option_tags = tmpl::list<OptionTags::NumberOfElements>;
 
+  template <typename Metavariables>
   static int create_from_options(const size_t number_of_elements) noexcept {
     return number_of_elements;
   }
@@ -96,6 +97,7 @@ struct LinearOperator : db::SimpleTag {
   using type = std::vector<DenseMatrix<double, blaze::columnMajor>>;
   using option_tags = tmpl::list<OptionTags::LinearOperator>;
 
+  template <typename Metavariables>
   static std::vector<DenseMatrix<double, blaze::columnMajor>>
   create_from_options(
       const std::vector<DenseMatrix<double, blaze::columnMajor>>&
@@ -109,6 +111,7 @@ struct Source : db::SimpleTag {
   using type = std::vector<DenseVector<double>>;
   using option_tags = tmpl::list<OptionTags::Source>;
 
+  template <typename Metavariables>
   static std::vector<DenseVector<double>> create_from_options(
       const std::vector<DenseVector<double>>& source) noexcept {
     return source;
@@ -120,6 +123,7 @@ struct ExpectedResult : db::SimpleTag {
   using type = std::vector<DenseVector<double>>;
   using option_tags = tmpl::list<OptionTags::ExpectedResult>;
 
+  template <typename Metavariables>
   static std::vector<DenseVector<double>> create_from_options(
       const std::vector<DenseVector<double>>& expected_result) noexcept {
     return expected_result;

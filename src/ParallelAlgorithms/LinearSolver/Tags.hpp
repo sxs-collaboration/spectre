@@ -294,6 +294,8 @@ struct ConvergenceCriteria : db::SimpleTag {
   using type = Convergence::Criteria;
   static std::string name() noexcept { return "ConvergenceCriteria"; }
   using option_tags = tmpl::list<LinearSolver::OptionTags::ConvergenceCriteria>;
+
+  template <typename Metavariables>
   static Convergence::Criteria create_from_options(
       const Convergence::Criteria& convergence_criteria) noexcept {
     return convergence_criteria;
@@ -304,6 +306,8 @@ struct Verbosity : db::SimpleTag {
   static std::string name() noexcept { return "Verbosity"; }
   using type = ::Verbosity;
   using option_tags = tmpl::list<LinearSolver::OptionTags::Verbosity>;
+
+  template <typename Metavariables>
   static ::Verbosity create_from_options(
       const ::Verbosity& verbosity) noexcept {
     return verbosity;

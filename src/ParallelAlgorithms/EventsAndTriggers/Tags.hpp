@@ -51,6 +51,8 @@ struct EventsAndTriggers : EventsAndTriggersBase, db::SimpleTag {
   using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
   using option_tags = tmpl::list<
       ::OptionTags::EventsAndTriggers<EventRegistrars, TriggerRegistrars>>;
+
+  template <typename Metavariables>
   static type create_from_options(const type& events_and_triggers) noexcept {
     return deserialize<type>(serialize<type>(events_and_triggers).data());
   }

@@ -41,6 +41,8 @@ struct Filter : db::SimpleTag {
   static std::string name() noexcept { return "Filter"; }
   using type = FilterType;
   using option_tags = tmpl::list<::OptionTags::Filter<FilterType>>;
+
+  template <typename Metavariables>
   static FilterType create_from_options(const FilterType& filter) noexcept {
     return filter;
   }

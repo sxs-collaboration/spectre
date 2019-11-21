@@ -167,6 +167,8 @@ struct VolumeFileName : db::SimpleTag {
   static std::string name() noexcept { return "VolumeFileName"; }
   using type = std::string;
   using option_tags = tmpl::list<::observers::OptionTags::VolumeFileName>;
+
+  template <typename Metavariables>
   static std::string create_from_options(
       const std::string& volume_file_name) noexcept {
     return volume_file_name;
@@ -177,6 +179,8 @@ struct ReductionFileName : db::SimpleTag {
   static std::string name() noexcept { return "ReductionFileName"; }
   using type = std::string;
   using option_tags = tmpl::list<::observers::OptionTags::ReductionFileName>;
+
+  template <typename Metavariables>
   static std::string create_from_options(
       const std::string& reduction_file_name) noexcept {
     return reduction_file_name;
