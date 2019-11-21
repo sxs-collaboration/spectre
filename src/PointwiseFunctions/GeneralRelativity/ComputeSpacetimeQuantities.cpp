@@ -61,14 +61,23 @@ tnsr::aa<DataType, Dim, Frame> spacetime_metric(
 template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::ii<DataType, SpatialDim, Frame> spatial_metric(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept {
-  auto spatial_metric = make_with_value<tnsr::ii<DataType, SpatialDim, Frame>>(
-      spacetime_metric, 0.);
+  tnsr::ii<DataType, SpatialDim, Frame> local_spatial_metric{
+      get_size(get<0, 0>(spacetime_metric))};
+  spatial_metric(make_not_null(&local_spatial_metric), spacetime_metric);
+  return local_spatial_metric;
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void spatial_metric(
+    const gsl::not_null<tnsr::ii<DataType, SpatialDim, Frame>*> spatial_metric,
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept {
+  destructive_resize_components(spatial_metric,
+                                get_size(get<0, 0>(spacetime_metric)));
   for (size_t i = 0; i < SpatialDim; ++i) {
     for (size_t j = i; j < SpatialDim; ++j) {
-      spatial_metric.get(i, j) = spacetime_metric.get(i + 1, j + 1);
+      spatial_metric->get(i, j) = spacetime_metric.get(i + 1, j + 1);
     }
   }
-  return spatial_metric;
 }
 
 template <size_t Dim, typename Frame, typename DataType>
@@ -102,29 +111,48 @@ tnsr::I<DataType, SpatialDim, Frame> shift(
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
     const tnsr::II<DataType, SpatialDim, Frame>&
         inverse_spatial_metric) noexcept {
-  auto shift = make_with_value<tnsr::I<DataType, SpatialDim, Frame>>(
-      spacetime_metric, 0.);
+  tnsr::I<DataType, SpatialDim, Frame> local_shift{get_size(
+      get<0, 0>(spacetime_metric))};
+  shift(make_not_null(&local_shift), spacetime_metric, inverse_spatial_metric);
+  return local_shift;
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void shift(const gsl::not_null<tnsr::I<DataType, SpatialDim, Frame>*> shift,
+           const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric,
+           const tnsr::II<DataType, SpatialDim, Frame>&
+               inverse_spatial_metric) noexcept {
+  destructive_resize_components(shift, get_size(get<0, 0>(spacetime_metric)));
   for (size_t i = 0; i < SpatialDim; ++i) {
-    for (size_t j = 0; j < SpatialDim; ++j) {
-      shift.get(i) +=
+    shift->get(i) =
+        inverse_spatial_metric.get(i, 0) * get<1, 0>(spacetime_metric);
+    for (size_t j = 1; j < SpatialDim; ++j) {
+      shift->get(i) +=
           inverse_spatial_metric.get(i, j) * spacetime_metric.get(j + 1, 0);
     }
   }
-  return shift;
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
 Scalar<DataType> lapse(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept {
-  auto lapse = make_with_value<Scalar<DataType>>(shift, 0.);
-  get(lapse) = -get<0, 0>(spacetime_metric);
-  for (size_t i = 0; i < SpatialDim; ++i) {
-    get(lapse) += shift.get(i) * spacetime_metric.get(i + 1, 0);
-  }
-  get(lapse) = sqrt(get(lapse));
+  Scalar<DataType> local_lapse{get_size(get<0, 0>(spacetime_metric))};
+  lapse(make_not_null(&local_lapse), shift, spacetime_metric);
+  return local_lapse;
+}
 
-  return lapse;
+template <size_t SpatialDim, typename Frame, typename DataType>
+void lapse(
+    const gsl::not_null<Scalar<DataType>*> lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept {
+  destructive_resize_components(lapse, get_size(get<0, 0>(spacetime_metric)));
+  get(*lapse) = -get<0, 0>(spacetime_metric);
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    get(*lapse) += shift.get(i) * spacetime_metric.get(i + 1, 0);
+  }
+  get(*lapse) = sqrt(get(*lapse));
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
@@ -257,14 +285,25 @@ template <size_t SpatialDim, typename Frame, typename DataType>
 tnsr::A<DataType, SpatialDim, Frame> spacetime_normal_vector(
     const Scalar<DataType>& lapse,
     const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept {
-  auto spacetime_normal_vector =
-      make_with_value<tnsr::A<DataType, SpatialDim, Frame>>(lapse, 0.);
-  get<0>(spacetime_normal_vector) = 1. / get(lapse);
+  tnsr::A<DataType, SpatialDim, Frame> local_spacetime_normal_vector{
+      get_size(get(lapse))};
+  spacetime_normal_vector(make_not_null(&local_spacetime_normal_vector), lapse,
+                          shift);
+  return local_spacetime_normal_vector;
+}
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+void spacetime_normal_vector(
+    const gsl::not_null<tnsr::A<DataType, SpatialDim, Frame>*>
+        spacetime_normal_vector,
+    const Scalar<DataType>& lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift) noexcept {
+  destructive_resize_components(spacetime_normal_vector, get_size(get(lapse)));
+  get<0>(*spacetime_normal_vector) = 1. / get(lapse);
   for (size_t i = 0; i < SpatialDim; i++) {
-    spacetime_normal_vector.get(i + 1) =
-        -shift.get(i) * get<0>(spacetime_normal_vector);
+    spacetime_normal_vector->get(i + 1) =
+        -shift.get(i) * get<0>(*spacetime_normal_vector);
   }
-  return spacetime_normal_vector;
 }
 
 template <size_t SpatialDim, typename Frame, typename DataType>
