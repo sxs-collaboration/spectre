@@ -35,5 +35,69 @@ using SphericaliCartesianjj = Tensor<
                SpatialIndex<3, UpLo::Lo, ::Frame::Inertial>,
                SpatialIndex<3, UpLo::Lo, ::Frame::Inertial>>>;
 
+namespace Tags {
+namespace detail {
+// this provides a set of tags for the purposes of allocating once in the entire
+// Boundary data computation; these tags are currently not used outside
+// intermediate steps of the procedure in `BoundaryData.hpp`
 
+struct CosPhi : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct CosTheta : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct SinPhi : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct SinTheta : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct CartesianCoordinates : db::SimpleTag {
+  using type = tnsr::I<DataVector, 3>;
+};
+
+struct CartesianToSphericalJacobian : db::SimpleTag {
+  using type = SphericaliCartesianJ;
+};
+
+struct InverseCartesianToSphericalJacobian : db::SimpleTag {
+  using type = CartesianiSphericalJ;
+};
+
+struct WorldtubeNormal : db::SimpleTag {
+  using type = tnsr::I<DataVector, 3>;
+};
+
+struct UpDyad : db::SimpleTag {
+  using type = tnsr::I<ComplexDataVector, 2, Frame::RadialNull>;
+};
+
+struct DownDyad : db::SimpleTag {
+  using type = tnsr::i<ComplexDataVector, 2, Frame::RadialNull>;
+};
+
+struct RealBondiR : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+struct AngularDNullL : db::SimpleTag {
+  using type = AngulariCartesianA;
+};
+
+struct NullL : db::SimpleTag {
+  using type = tnsr::A<DataVector, 3>;
+};
+
+template <typename Tag>
+struct DLambda : db::SimpleTag {
+  using type = db::item_type<Tag>;
+};
+
+}  // namespace detail
+}  // namespace Tags
 }  // namespace Cce

@@ -145,8 +145,7 @@ void test_trigonometric_function_identities(
 }
 
 template <typename Generator>
-void test_bondi_r(
-    const gsl::not_null<Generator*> gen) noexcept {
+void test_bondi_r(const gsl::not_null<Generator*> gen) noexcept {
   UniformCustomDistribution<size_t> l_dist(3, 6);
   const size_t l_max = l_dist(*gen);
   const size_t number_of_angular_points =
@@ -319,6 +318,307 @@ void test_dyad_identities(const gsl::not_null<Generator*> gen) noexcept {
   }
   CHECK_ITERABLE_APPROX(dyad_product, two);
 }
+
+template <typename DataBoxTagList, typename AnalyticSolution>
+void dispatch_to_gh_worldtube_computation_from_analytic(
+    const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
+    const AnalyticSolution& solution, const double extraction_radius,
+    const size_t l_max) noexcept {
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+  // create the vector of collocation points that we want to interpolate to
+  tnsr::I<DataVector, 3> collocation_points{number_of_angular_points};
+  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
+      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
+  for (const auto& collocation_point : collocation) {
+    get<0>(collocation_points)[collocation_point.offset] =
+        extraction_radius * sin(collocation_point.theta) *
+        cos(collocation_point.phi);
+    get<1>(collocation_points)[collocation_point.offset] =
+        extraction_radius * sin(collocation_point.theta) *
+        sin(collocation_point.phi);
+    get<2>(collocation_points)[collocation_point.offset] =
+        extraction_radius * cos(collocation_point.theta);
+  }
+
+  const auto kerr_schild_variables = solution.variables(
+      collocation_points, 0.0, gr::Solutions::KerrSchild::tags<DataVector>{});
+
+  // direct collocation quantities for processing into the GH form of the
+  // worldtube function
+  const auto& lapse = get<gr::Tags::Lapse<DataVector>>(kerr_schild_variables);
+  const auto& dt_lapse =
+      get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(kerr_schild_variables);
+  const auto& d_lapse = get<gr::Solutions::KerrSchild::DerivLapse<DataVector>>(
+      kerr_schild_variables);
+
+  const auto& shift = get<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
+      kerr_schild_variables);
+  const auto& dt_shift =
+      get<::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
+          kerr_schild_variables);
+  const auto& d_shift = get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(
+      kerr_schild_variables);
+
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
+          kerr_schild_variables);
+  const auto& dt_spatial_metric = get<
+      ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
+      kerr_schild_variables);
+  const auto& d_spatial_metric =
+      get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
+          kerr_schild_variables);
+
+  const auto phi = GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift,
+                                            spatial_metric, d_spatial_metric);
+  const auto psi = gr::spacetime_metric(lapse, shift, spatial_metric);
+  const auto pi = GeneralizedHarmonic::pi(
+      lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric, phi);
+
+  create_bondi_boundary_data(box, phi, pi, psi, extraction_radius, l_max);
+}
+
+template <typename... Structure>
+Tensor<ComplexModalVector, Structure...> tensor_to_libsharp_coefficients(
+    const Tensor<DataVector, Structure...>& nodal_data,
+    const size_t l_max) noexcept {
+  Tensor<ComplexModalVector, Structure...> libsharp_modal_data{
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
+  SpinWeighted<ComplexDataVector, 0> transform_buffer{
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
+  for (size_t i = 0; i < nodal_data.size(); ++i) {
+    transform_buffer.data() = std::complex<double>(1.0, 0.0) * nodal_data[i];
+    libsharp_modal_data[i] =
+        Spectral::Swsh::swsh_transform(l_max, 1, transform_buffer).data();
+  }
+  return libsharp_modal_data;
+}
+
+template <typename DataBoxTagList, typename AnalyticSolution>
+void dispatch_to_modal_worldtube_computation_from_analytic(
+    const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
+    const AnalyticSolution& solution, const double extraction_radius,
+    const size_t l_max) noexcept {
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+  // create the vector of collocation points that we want to interpolate to
+  tnsr::I<DataVector, 3> collocation_coordinates{number_of_angular_points};
+  for (const auto& collocation_point :
+       Spectral::Swsh::cached_collocation_metadata<
+           Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max)) {
+    get<0>(collocation_coordinates)[collocation_point.offset] =
+        extraction_radius * sin(collocation_point.theta) *
+        cos(collocation_point.phi);
+    get<1>(collocation_coordinates)[collocation_point.offset] =
+        extraction_radius * sin(collocation_point.theta) *
+        sin(collocation_point.phi);
+    get<2>(collocation_coordinates)[collocation_point.offset] =
+        extraction_radius * cos(collocation_point.theta);
+  }
+  const auto kerr_schild_variables =
+      solution.variables(collocation_coordinates, 0.0,
+                         gr::Solutions::KerrSchild::tags<DataVector>{});
+
+  // direct collocation quantities for processing into the GH form of the
+  // worldtube function
+  const Scalar<DataVector>& lapse =
+      get<gr::Tags::Lapse<DataVector>>(kerr_schild_variables);
+  const Scalar<DataVector>& dt_lapse =
+      get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(kerr_schild_variables);
+  const auto& d_lapse = get<gr::Solutions::KerrSchild::DerivLapse<DataVector>>(
+      kerr_schild_variables);
+
+  const auto& shift = get<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
+      kerr_schild_variables);
+  const auto& dt_shift =
+      get<::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
+          kerr_schild_variables);
+  const auto& d_shift = get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(
+      kerr_schild_variables);
+
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
+          kerr_schild_variables);
+  const auto& dt_spatial_metric = get<
+      ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
+      kerr_schild_variables);
+  const auto& d_spatial_metric =
+      get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
+          kerr_schild_variables);
+
+  Scalar<DataVector> dr_lapse{number_of_angular_points};
+  get(dr_lapse) = (get<0>(collocation_coordinates) * get<0>(d_lapse) +
+                   get<1>(collocation_coordinates) * get<1>(d_lapse) +
+                   get<2>(collocation_coordinates) * get<2>(d_lapse)) /
+                  extraction_radius;
+  tnsr::I<DataVector, 3> dr_shift{number_of_angular_points};
+  for (size_t i = 0; i < 3; ++i) {
+    dr_shift.get(i) = (get<0>(collocation_coordinates) * d_shift.get(0, i) +
+                       get<1>(collocation_coordinates) * d_shift.get(1, i) +
+                       get<2>(collocation_coordinates) * d_shift.get(2, i)) /
+                      extraction_radius;
+  }
+  tnsr::ii<DataVector, 3> dr_spatial_metric{number_of_angular_points};
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = i; j < 3; ++j) {
+      dr_spatial_metric.get(i, j) =
+          (get<0>(collocation_coordinates) * d_spatial_metric.get(0, i, j) +
+           get<1>(collocation_coordinates) * d_spatial_metric.get(1, i, j) +
+           get<2>(collocation_coordinates) * d_spatial_metric.get(2, i, j)) /
+          extraction_radius;
+    }
+  }
+
+  const auto lapse_coefficients = tensor_to_libsharp_coefficients(lapse, l_max);
+  const auto dt_lapse_coefficients =
+      tensor_to_libsharp_coefficients(dt_lapse, l_max);
+  const auto dr_lapse_coefficients =
+      tensor_to_libsharp_coefficients(dr_lapse, l_max);
+
+  const auto shift_coefficients = tensor_to_libsharp_coefficients(shift, l_max);
+  const auto dt_shift_coefficients =
+      tensor_to_libsharp_coefficients(dt_shift, l_max);
+  const auto dr_shift_coefficients =
+      tensor_to_libsharp_coefficients(dr_shift, l_max);
+
+  const auto spatial_metric_coefficients =
+      tensor_to_libsharp_coefficients(spatial_metric, l_max);
+  const auto dt_spatial_metric_coefficients =
+      tensor_to_libsharp_coefficients(dt_spatial_metric, l_max);
+  const auto dr_spatial_metric_coefficients =
+      tensor_to_libsharp_coefficients(dr_spatial_metric, l_max);
+
+  create_bondi_boundary_data(
+      box, spatial_metric_coefficients, dt_spatial_metric_coefficients,
+      dr_spatial_metric_coefficients, shift_coefficients, dt_shift_coefficients,
+      dr_shift_coefficients, lapse_coefficients, dt_lapse_coefficients,
+      dr_lapse_coefficients, extraction_radius, l_max);
+}
+
+// this tests that the method using modal construction of metric components
+// and derivatives gives the same answer as the version that just takes the GH
+// quantities.
+template <typename Generator>
+void test_kerr_schild_boundary_consistency(
+    const gsl::not_null<Generator*> gen) noexcept {
+  UniformCustomDistribution<double> value_dist{0.1, 0.5};
+
+  // first prepare the input for the modal version
+  const double mass = value_dist(*gen);
+  const std::array<double, 3> spin{
+      {value_dist(*gen), value_dist(*gen), value_dist(*gen)}};
+  const std::array<double, 3> center{
+      {value_dist(*gen), value_dist(*gen), value_dist(*gen)}};
+  gr::Solutions::KerrSchild solution{mass, spin, center};
+
+  const double extraction_radius = 100.0 * value_dist(*gen);
+
+  UniformCustomDistribution<size_t> l_dist(12, 18);
+  const size_t l_max = l_dist(*gen);
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+
+  using boundary_variables_tag =
+      ::Tags::Variables<Tags::characteristic_worldtube_boundary_tags>;
+
+  auto gh_boundary_box = db::create<db::AddSimpleTags<boundary_variables_tag>>(
+      db::item_type<boundary_variables_tag>{number_of_angular_points});
+  auto modal_boundary_box =
+      db::create<db::AddSimpleTags<boundary_variables_tag>>(
+          db::item_type<boundary_variables_tag>{number_of_angular_points});
+
+  dispatch_to_gh_worldtube_computation_from_analytic(
+      make_not_null(&gh_boundary_box), solution, extraction_radius, l_max);
+  dispatch_to_modal_worldtube_computation_from_analytic(
+      make_not_null(&modal_boundary_box), solution, extraction_radius, l_max);
+
+  // This can be tightened further with higher l_max above.
+  Approx angular_derivative_approx =
+      Approx::custom()
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
+          .scale(1.0);
+
+  tmpl::for_each<Tags::characteristic_worldtube_boundary_tags>(
+      [&gh_boundary_box, &modal_boundary_box,
+       &angular_derivative_approx](auto tag_v) {
+        using tag = typename decltype(tag_v)::type;
+        INFO(tag::name());
+        const auto& test_lhs = db::get<tag>(gh_boundary_box);
+        const auto& test_rhs = db::get<tag>(modal_boundary_box);
+        CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
+                                     angular_derivative_approx);
+      });
+}
+
+// this tests that both execution pathways in Schwarzschild produce the expected
+// Bondi-like scalar quantities.
+template <typename Generator>
+void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) noexcept {
+  UniformCustomDistribution<double> value_dist{0.1, 0.5};
+
+  // first prepare the input for the modal version
+  const double mass = value_dist(*gen);
+  const std::array<double, 3> spin{{0.0, 0.0, 0.0}};
+  const std::array<double, 3> center{{0.0, 0.0, 0.0}};
+  gr::Solutions::KerrSchild solution{mass, spin, center};
+
+  const double extraction_radius = 100.0 * value_dist(*gen);
+
+  UniformCustomDistribution<size_t> l_dist(10, 14);
+  const size_t l_max = l_dist(*gen);
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+
+  using boundary_variables_tag =
+      ::Tags::Variables<Tags::characteristic_worldtube_boundary_tags>;
+
+  auto gh_boundary_box = db::create<db::AddSimpleTags<boundary_variables_tag>>(
+      db::item_type<boundary_variables_tag>{number_of_angular_points});
+  auto modal_boundary_box =
+      db::create<db::AddSimpleTags<boundary_variables_tag>>(
+          db::item_type<boundary_variables_tag>{number_of_angular_points});
+  auto expected_box = db::create<db::AddSimpleTags<boundary_variables_tag>>(
+      db::item_type<boundary_variables_tag>{number_of_angular_points, 0.0});
+
+  dispatch_to_gh_worldtube_computation_from_analytic(
+      make_not_null(&gh_boundary_box), solution, extraction_radius, l_max);
+  dispatch_to_modal_worldtube_computation_from_analytic(
+      make_not_null(&modal_boundary_box), solution, extraction_radius, l_max);
+
+  db::mutate<Tags::BoundaryValue<Tags::BondiW>,
+             Tags::BoundaryValue<Tags::BondiR>>(
+      make_not_null(&expected_box),
+      [&extraction_radius, &
+       mass ](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+                  bondi_w,
+              const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+                  bondi_r) noexcept {
+        get(*bondi_r).data() = extraction_radius;
+        get(*bondi_w).data() = -2.0 * mass / pow<2>(extraction_radius);
+      });
+
+  // This can be tightened further with higher l_max above.
+  Approx angular_derivative_approx =
+      Approx::custom()
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
+          .scale(1.0);
+
+  tmpl::for_each<Tags::characteristic_worldtube_boundary_tags>(
+      [&gh_boundary_box, &modal_boundary_box, &expected_box,
+       &angular_derivative_approx](auto tag_v) {
+        using tag = typename decltype(tag_v)::type;
+        INFO(tag::name());
+        const auto& test_lhs_0 = db::get<tag>(gh_boundary_box);
+        const auto& test_rhs_0 = db::get<tag>(expected_box);
+        CHECK_ITERABLE_CUSTOM_APPROX(test_lhs_0, test_rhs_0,
+                                     angular_derivative_approx);
+        const auto& test_lhs_1 = db::get<tag>(modal_boundary_box);
+        const auto& test_rhs_1 = db::get<tag>(expected_box);
+        CHECK_ITERABLE_CUSTOM_APPROX(test_lhs_1, test_rhs_1,
+                                     angular_derivative_approx);
+      });
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BoundaryData",
@@ -330,5 +630,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BoundaryData",
   test_bondi_r(make_not_null(&gen));
   test_d_bondi_r_identities(make_not_null(&gen));
   test_dyad_identities(make_not_null(&gen));
+  test_kerr_schild_boundary_consistency(make_not_null(&gen));
+  test_schwarzschild_solution(make_not_null(&gen));
 }
 }  // namespace Cce
