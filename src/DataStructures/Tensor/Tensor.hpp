@@ -420,8 +420,14 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   //@}
 
   //@{
-  /// Given a tensor index, get the canonical label associated with the
+  /// \brief Given a tensor index, get the canonical label associated with the
   /// canonical \ref SpacetimeIndex "TensorIndexType"
+  ///
+  /// \param tensor_index The index of the tensor component to label
+  /// \param axis_labels The labels for the indices. Defaults to "t", "x", "y"
+  /// and "z" for spacetime indices and "x", "y" and "z" for spatial indices.
+  /// Note that a tensor can have indices of different types, so we specify
+  /// labels for each index individually.
   template <typename T = int>
   static std::string component_name(
       const std::array<T, rank()>& tensor_index = std::array<T, rank()>{},
@@ -434,10 +440,14 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   /// \brief Suffix to append to the tensor name that indicates the component
   ///
   /// The suffix is empty for scalars, otherwise it is an underscore followed by
-  /// the `Tensor::component_name` of the `tensor_index`.
+  /// the `Tensor::component_name` of the `tensor_index`. Use `axis_labels` to
+  /// overwrite the default labels for each component (see
+  /// `Tensor::component_name`).
   ///
   /// An example use case for the suffix is to label tensor components in
   /// data files.
+  ///
+  /// \see Tensor::component_name
   template <typename IndexType = int>
   static std::string component_suffix(
       const std::array<IndexType, rank()>& tensor_index =
