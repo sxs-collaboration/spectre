@@ -178,7 +178,8 @@ struct EvolutionMetavars {
                           tmpl::list<>>,
       Actions::UpdateU, Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
-      VariableFixing::Actions::FixVariables<VariableFixing::FixConservatives>,
+      VariableFixing::Actions::FixVariables<
+          grmhd::ValenciaDivClean::FixConservatives>,
       Actions::UpdatePrimitives>>;
 
   enum class Phase {
