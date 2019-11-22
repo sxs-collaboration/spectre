@@ -431,6 +431,22 @@ class Tensor<X, Symm, IndexList<Indices...>> {
   }
   //@}
 
+  /// \brief Suffix to append to the tensor name that indicates the component
+  ///
+  /// The suffix is empty for scalars, otherwise it is an underscore followed by
+  /// the `Tensor::component_name` of the `tensor_index`.
+  ///
+  /// An example use case for the suffix is to label tensor components in
+  /// data files.
+  template <typename IndexType = int>
+  static std::string component_suffix(
+      const std::array<IndexType, rank()>& tensor_index =
+          std::array<IndexType, rank()>{},
+      const std::array<std::string, rank()>& axis_labels =
+          make_array<rank()>(std::string(""))) noexcept {
+    return rank() == 0 ? "" : "_" + component_name(tensor_index, axis_labels);
+  }
+
   /// Copy tensor data into an `std::vector<X>` along with the
   /// component names into a `std::vector<std::string>`
   /// \requires `std::is_same<X, DataVector>::%value` is true

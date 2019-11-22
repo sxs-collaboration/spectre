@@ -422,6 +422,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
                                 make_array<3>(std::string("abcd"))) == "cdd");
   CHECK(tensor_5.component_name(std::array<size_t, 3>{{3, 3, 3}},
                                 make_array<3>(std::string("abcd"))) == "ddd");
+
+  // The component_name is tested extensively above, so not checking that again
+  // for component_suffix
+  CHECK(scalar.component_suffix().empty());
+  CHECK(tensor_1.component_suffix(std::array<size_t, 3>{{0, 0, 0}}) == "_txx");
+  CHECK(tensor_5.component_suffix(std::array<size_t, 3>{{0, 2, 1}},
+                                  make_array<3>(std::string("abcd"))) ==
+        "_acb");
 }
 
 // [[OutputRegex, Tensor dim\[0\] must be 1,2,3, or 4 for default axis_labels]]

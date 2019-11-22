@@ -109,6 +109,16 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData", "[Unit][IO][H5]") {
   CHECK(alg::all_of(read_observation_ids, [&observation_ids](const size_t id) {
     return alg::found(observation_ids, id);
   }));
+  {
+    INFO("Test find_observation_id");
+    std::vector<size_t> found_observation_ids(observation_values.size());
+    std::transform(observation_values.begin(), observation_values.end(),
+                   found_observation_ids.begin(),
+                   [&volume_file](const double observation_value) noexcept {
+                     return volume_file.find_observation_id(observation_value);
+                   });
+    CHECK(found_observation_ids == observation_ids);
+  }
   // Check that the volume data is correct
   const auto check_time = [
     &volume_file, &tensor_components_and_coords, &grid_names
@@ -302,4 +312,24 @@ SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.ComponentFormat1",
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
   // clang-format off
+}
+
+// [[OutputRegex, No observation with value]]
+SPECTRE_TEST_CASE("Unit.IO.H5.VolumeData.FindNoObservationId",
+                  "[Unit][IO][H5]") {
+  ERROR_TEST();
+  const std::string h5_file_name(
+      "Unit.IO.H5.VolumeData.FindNoObservationId.h5");
+  const uint32_t version_number = 4;
+  if (file_system::check_if_file_exists(h5_file_name)) {
+    file_system::rm(h5_file_name, true);
+  }
+  h5::H5File<h5::AccessType::ReadWrite> h5_file(h5_file_name);
+  auto& volume_file =
+      h5_file.insert<h5::VolumeData>("/element_data", version_number);
+  volume_file.write_volume_data(
+      100, 10.0,
+      std::vector<ExtentsAndTensorVolumeData>{
+          {{2}, {TensorComponent{"A/S", {1.0, 2.0}}}}});
+  volume_file.find_observation_id(11.0);
 }
