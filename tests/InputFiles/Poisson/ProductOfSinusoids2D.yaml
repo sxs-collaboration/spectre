@@ -1,31 +1,31 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# Executable: SolvePoissonProblem1D
+# Executable: SolvePoissonProductOfSinusoids2D
 # Check: parse;execute
 # ExpectedOutput:
-#   Poisson1DReductions.h5
-#   Poisson1DVolume0.h5
+#   PoissonProductOfSinusoids2DReductions.h5
+#   PoissonProductOfSinusoids2DVolume0.h5
 
 AnalyticSolution:
   ProductOfSinusoids:
-    WaveNumbers: [1]
+    WaveNumbers: [1, 1]
 
 DomainCreator:
-  Interval:
-    LowerBound: [0]
-    UpperBound: [3.141592653589793]
-    IsPeriodicIn: [false]
-    InitialRefinement: [1]
-    InitialGridPoints: [3]
+  Rectangle:
+    LowerBound: [0, 0]
+    UpperBound: [3.141592653589793, 3.141592653589793]
+    IsPeriodicIn: [false, false]
+    InitialRefinement: [1, 1]
+    InitialGridPoints: [3, 3]
 
 NumericalFlux:
   InternalPenalty:
     PenaltyParameter: 5.729577951308232 # p^2 / h
 
 Observers:
-  VolumeFileName: "Poisson1DVolume"
-  ReductionFileName: "Poisson1DReductions"
+  VolumeFileName: "PoissonProductOfSinusoids2DVolume"
+  ReductionFileName: "PoissonProductOfSinusoids2DReductions"
 
 LinearSolver:
   ConvergenceCriteria:
