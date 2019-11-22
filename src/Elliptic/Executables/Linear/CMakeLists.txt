@@ -18,22 +18,22 @@ set(LIBS_TO_LINK
 
 add_spectre_parallel_executable(
   SolvePoissonProblem1D
-  SolvePoissonProblem
-  Elliptic/Executables/Poisson
+  SolveLinearEllipticProblem
+  Elliptic/Executables/Linear
   Metavariables<1>
   "${LIBS_TO_LINK}"
   )
 add_spectre_parallel_executable(
   SolvePoissonProblem2D
-  SolvePoissonProblem
-  Elliptic/Executables/Poisson
+  SolveLinearEllipticProblem
+  Elliptic/Executables/Linear
   Metavariables<2>
   "${LIBS_TO_LINK}"
   )
 add_spectre_parallel_executable(
   SolvePoissonProblem3D
-  SolvePoissonProblem
-  Elliptic/Executables/Poisson
+  SolveLinearEllipticProblem
+  Elliptic/Executables/Linear
   Metavariables<3>
   "${LIBS_TO_LINK}"
   )
