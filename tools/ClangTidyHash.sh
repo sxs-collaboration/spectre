@@ -27,11 +27,17 @@ do
     fi
 done
 
-# Go to build directory and then run clang-tidy, writing output to file
+# Go to build directory and run clang-tidy
 cd ${BUILD_DIR}
 
+printf "\nRunning clang-tidy on:\n"
+printf "%s\n" "${MODIFIED_FILES[@]}"
+
+EXIT_CODE=0
 for FILENAME in ${MODIFIED_FILES[@]}
 do
-    printf "\n\nRunning clang-tidy on file $FILENAME\n"
-    make clang-tidy FILE=$SOURCE_DIR/${FILENAME}
+    printf "\nChecking file $FILENAME...\n"
+    make clang-tidy FILE=$SOURCE_DIR/${FILENAME} || EXIT_CODE=1
 done
+
+exit $EXIT_CODE

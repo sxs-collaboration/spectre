@@ -57,6 +57,8 @@ if (CLANG_TIDY_BIN)
       ${CLANG_TIDY_BIN}
       -header-filter=${CMAKE_SOURCE_DIR}
       -checks=${CLANG_TIDY_IGNORE_CHECKS}
+      # Make the build target fail when any warnings occur
+      -warnings-as-errors=*
       -p ${CMAKE_BINARY_DIR}
       \${FILE}
   )
