@@ -85,7 +85,7 @@ struct InitializeDomain {
         ::Tags::MinimumGridSpacing<Dim, Frame::Inertial>>>;
 
     const auto& initial_extents = db::get<::Tags::InitialExtents<Dim>>(box);
-    const auto& domain = db::get<::Tags::Domain<Dim, Frame::Inertial>>(box);
+    const auto& domain = db::get<::Tags::Domain<Dim>>(box);
 
     const ElementId<Dim> element_id{array_index};
     const auto& my_block = domain.blocks()[element_id.block_id()];

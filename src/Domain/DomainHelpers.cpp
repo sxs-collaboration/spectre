@@ -137,8 +137,8 @@ logical_coords_of_corners(
   std::array<tnsr::I<double, VolumeDim, Frame::Logical>,
              two_to_the(VolumeDim - 1)>
       result{};
-  std::transform(local_ids.begin(), local_ids.end(),
-                 result.begin(), [](const size_t id) noexcept {
+  std::transform(local_ids.begin(), local_ids.end(), result.begin(),
+                 [](const size_t id) noexcept {
                    tnsr::I<double, VolumeDim, Frame::Logical> point{};
                    for (size_t i = 0; i < VolumeDim; i++) {
                      point[i] = 2.0 * get_nth_bit(id, i) - 1.0;
@@ -154,7 +154,7 @@ Direction<VolumeDim> get_direction_normal_to_face(
                      two_to_the(VolumeDim - 1)>& face_pts) noexcept {
   const auto summed_point = alg::accumulate(
       face_pts, tnsr::I<double, VolumeDim, Frame::Logical>(0.0),
-      [](tnsr::I<double, VolumeDim, Frame::Logical> & prior,
+      [](tnsr::I<double, VolumeDim, Frame::Logical>& prior,
          const tnsr::I<double, VolumeDim, Frame::Logical>& point) noexcept {
         for (size_t i = 0; i < prior.size(); i++) {
           prior[i] += point[i];
@@ -1000,8 +1000,8 @@ std::array<size_t, two_to_the(VolumeDim)> discrete_rotation(
   return result;
 }
 
-template <size_t VolumeDim, typename TargetFrame>
-Domain<VolumeDim, TargetFrame> rectilinear_domain(
+template <size_t VolumeDim>
+Domain<VolumeDim> rectilinear_domain(
     const Index<VolumeDim>& domain_extents,
     const std::array<std::vector<double>, VolumeDim>& block_demarcations,
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude,
@@ -1009,7 +1009,7 @@ Domain<VolumeDim, TargetFrame> rectilinear_domain(
     const std::array<bool, VolumeDim>& dimension_is_periodic,
     const std::vector<PairOfFaces>& identifications,
     const bool use_equiangular_map) noexcept {
-  std::vector<Block<VolumeDim, TargetFrame>> blocks{};
+  std::vector<Block<VolumeDim>> blocks{};
   auto corners_of_all_blocks =
       corners_for_rectilinear_domains(domain_extents, block_indices_to_exclude);
   auto rotations_of_all_blocks = orientations_of_all_blocks;
@@ -1018,7 +1018,7 @@ Domain<VolumeDim, TargetFrame> rectilinear_domain(
     rotations_of_all_blocks = std::vector<OrientationMap<VolumeDim>>{
         corners_of_all_blocks.size(), OrientationMap<VolumeDim>{}};
   }
-  auto maps = maps_for_rectilinear_domains<TargetFrame>(
+  auto maps = maps_for_rectilinear_domains<Frame::Inertial>(
       domain_extents, block_demarcations, block_indices_to_exclude,
       rotations_of_all_blocks, use_equiangular_map);
   for (size_t i = 0; i < corners_of_all_blocks.size(); i++) {
@@ -1038,7 +1038,7 @@ Domain<VolumeDim, TargetFrame> rectilinear_domain(
     blocks.emplace_back(std::move(maps[i]), i,
                         std::move(neighbors_of_all_blocks[i]));
   }
-  return Domain<VolumeDim, TargetFrame>(std::move(blocks));
+  return Domain<VolumeDim>(std::move(blocks));
 }
 
 std::ostream& operator<<(std::ostream& os,
@@ -1158,27 +1158,27 @@ frustum_coordinate_maps(const double length_inner_cube,
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                \
-  template std::vector<std::unique_ptr<                                     \
-      domain::CoordinateMapBase<Frame::Logical, FRAME(data), DIM(data)>>>   \
-  maps_for_rectilinear_domains(                                             \
-      const Index<DIM(data)>& domain_extents,                               \
-      const std::array<std::vector<double>, DIM(data)>& block_demarcations, \
-      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,        \
-      const std::vector<OrientationMap<DIM(data)>>&                         \
-          orientations_of_all_blocks,                                       \
-      const bool use_equiangular_map) noexcept;                             \
-  template Domain<DIM(data), FRAME(data)> rectilinear_domain(               \
-      const Index<DIM(data)>& domain_extents,                               \
-      const std::array<std::vector<double>, DIM(data)>& block_demarcations, \
-      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,        \
-      const std::vector<OrientationMap<DIM(data)>>&                         \
-          orientations_of_all_blocks,                                       \
-      const std::array<bool, DIM(data)>& dimension_is_periodic,             \
-      const std::vector<PairOfFaces>& identifications,                      \
+#define INSTANTIATE(_, data)                                                  \
+  template std::vector<std::unique_ptr<                                       \
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, DIM(data)>>> \
+  maps_for_rectilinear_domains(                                               \
+      const Index<DIM(data)>& domain_extents,                                 \
+      const std::array<std::vector<double>, DIM(data)>& block_demarcations,   \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,          \
+      const std::vector<OrientationMap<DIM(data)>>&                           \
+          orientations_of_all_blocks,                                         \
+      const bool use_equiangular_map) noexcept;                               \
+  template Domain<DIM(data)> rectilinear_domain(                              \
+      const Index<DIM(data)>& domain_extents,                                 \
+      const std::array<std::vector<double>, DIM(data)>& block_demarcations,   \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,          \
+      const std::vector<OrientationMap<DIM(data)>>&                           \
+          orientations_of_all_blocks,                                         \
+      const std::array<bool, DIM(data)>& dimension_is_periodic,               \
+      const std::vector<PairOfFaces>& identifications,                        \
       const bool use_equiangular_map) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
 #undef DIM
 #undef DTYPE

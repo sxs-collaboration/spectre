@@ -37,24 +37,23 @@
 
 namespace {
 
-template <size_t Dim, typename TargetFrame>
+template <size_t Dim>
 void fuzzy_test_block_and_element_logical_coordinates(
-    const Domain<Dim, TargetFrame>& domain,
+    const Domain<Dim>& domain,
     const std::vector<std::array<size_t, Dim>>& refinement_levels,
     const size_t n_pts) noexcept {
   const auto all_element_ids = initial_element_ids<Dim>(refinement_levels);
 
   // Random element_id for each point.
-  const auto element_ids = [&all_element_ids, &n_pts ]() noexcept {
-    std::uniform_int_distribution<size_t> ran(0, all_element_ids.size()-1);
+  const auto element_ids = [&all_element_ids, &n_pts]() noexcept {
+    std::uniform_int_distribution<size_t> ran(0, all_element_ids.size() - 1);
     MAKE_GENERATOR(gen);
     std::vector<ElementId<Dim>> ids(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       ids[s] = all_element_ids[ran(gen)];
     }
     return ids;
-  }
-  ();
+  }();
   CAPTURE_PRECISE(element_ids);
 
   // Random element logical coords for each point
@@ -69,16 +68,15 @@ void fuzzy_test_block_and_element_logical_coordinates(
       }
     }
     return coords;
-  }
-  ();
+  }();
   CAPTURE_PRECISE(element_coords);
 
   // Compute expected map of element_ids to ElementLogicalCoordHolders.
   // This is just re-organizing and re-bookkeeping element_ids and
   // element_coords into the same structure that will be returned by
   // the function we are testing.
-  const auto expected_coord_holders =
-      [&element_ids, &element_coords, &n_pts ]() noexcept {
+  const auto expected_coord_holders = [&element_ids, &element_coords,
+                                       &n_pts]() noexcept {
     // This is complicated because we don't know ahead of time
     // how many points are in each element.  So we do a first pass
     // filling a structure that you can easily push_back to.
@@ -117,28 +115,26 @@ void fuzzy_test_block_and_element_logical_coordinates(
           ElementLogicalCoordHolder<Dim>{coords, coord_holder.second.offsets});
     }
     return holders;
-  }
-  ();
+  }();
 
-  // Transform element_coords to frame coords
-  const auto frame_coords =
-      [&n_pts, &domain, &element_ids, &element_coords ]() noexcept {
-    tnsr::I<DataVector, Dim, TargetFrame> coords(n_pts);
+  // Transform element_coords to inertial coords
+  const auto inertial_coords = [&n_pts, &domain, &element_ids,
+                                &element_coords]() noexcept {
+    tnsr::I<DataVector, Dim, Frame::Inertial> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       const auto& my_block = domain.blocks()[element_ids[s].block_id()];
-      ElementMap<Dim, TargetFrame> map{element_ids[s],
-                                       my_block.coordinate_map().get_clone()};
+      ElementMap<Dim, Frame::Inertial> map{
+          element_ids[s], my_block.coordinate_map().get_clone()};
       const auto coord_one_point = map(element_coords[s]);
       for (size_t d = 0; d < Dim; ++d) {
         coords.get(d)[s] = coord_one_point.get(d);
       }
     }
     return coords;
-  }
-  ();
+  }();
 
   const auto block_logical_result =
-      block_logical_coordinates(domain, frame_coords);
+      block_logical_coordinates(domain, inertial_coords);
   test_serialization(block_logical_result);
 
   for (size_t s = 0; s < n_pts; ++s) {
@@ -157,6 +153,7 @@ void fuzzy_test_block_and_element_logical_coordinates(
     CHECK(pos != element_logical_result.end());
     if (pos != element_logical_result.end()) {
       const auto& holder = pos->second;
+      using ::operator<<;
       CHECK(holder.offsets == expected_holder_pair.second.offsets);
       CHECK_ITERABLE_APPROX(holder.element_logical_coords,
                             expected_holder_pair.second.element_logical_coords);
@@ -171,22 +168,21 @@ void fuzzy_test_block_and_element_logical_coordinates(
   }
 }
 
-template <size_t Dim, typename TargetFrame>
+template <size_t Dim>
 void fuzzy_test_block_and_element_logical_coordinates_unrefined(
-    const Domain<Dim, TargetFrame>& domain, const size_t n_pts) noexcept {
+    const Domain<Dim>& domain, const size_t n_pts) noexcept {
   const size_t n_blocks = domain.blocks().size();
 
   // Random block_id for each point.
-  const auto block_ids = [&n_pts, &n_blocks ]() noexcept {
-    std::uniform_int_distribution<size_t> ran(0, n_blocks-1);
+  const auto block_ids = [&n_pts, &n_blocks]() noexcept {
+    std::uniform_int_distribution<size_t> ran(0, n_blocks - 1);
     MAKE_GENERATOR(gen);
     std::vector<size_t> ids(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       ids[s] = ran(gen);
     }
     return ids;
-  }
-  ();
+  }();
   CAPTURE_PRECISE(block_ids);
 
   // Random block logical coords for each point
@@ -202,14 +198,13 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
       }
     }
     return coords;
-  }
-  ();
+  }();
   CAPTURE_PRECISE(block_coords);
 
-  // Map to frame coords
-  const auto frame_coords =
-      [&n_pts, &domain, &block_ids, &block_coords ]() noexcept {
-    tnsr::I<DataVector, Dim, TargetFrame> coords(n_pts);
+  // Map to inertial coords
+  const auto inertial_coords = [&n_pts, &domain, &block_ids,
+                                &block_coords]() noexcept {
+    tnsr::I<DataVector, Dim, Frame::Inertial> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       const auto coord_one_point =
           domain.blocks()[block_ids[s]].coordinate_map()(block_coords[s]);
@@ -218,11 +213,10 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
       }
     }
     return coords;
-  }
-  ();
+  }();
 
   const auto block_logical_result =
-      block_logical_coordinates(domain, frame_coords);
+      block_logical_coordinates(domain, inertial_coords);
   test_serialization(block_logical_result);
 
   for (size_t s = 0; s < n_pts; ++s) {
@@ -231,27 +225,23 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
   }
 }
 
-template <typename TargetFrame>
 void fuzzy_test_block_and_element_logical_coordinates_shell(
     const size_t n_pts) noexcept {
-  const auto shell =
-      domain::creators::Shell<TargetFrame>(1.5, 2.5, 2, {{1, 1}}, true, 1.0);
+  const auto shell = domain::creators::Shell(1.5, 2.5, 2, {{1, 1}}, true, 1.0);
   const auto domain = shell.create_domain();
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(
       domain, shell.initial_refinement_levels(), n_pts);
 }
 
-template <typename TargetFrame>
 void fuzzy_test_block_and_element_logical_coordinates3(
     const size_t n_pts) noexcept {
-  Domain<3, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
-          Index<3>{2, 2, 2},
-          std::array<std::vector<double>, 3>{
-              {{0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}}},
-          {Index<3>{}}),
-      corners_for_rectilinear_domains(Index<3>{2, 2, 2}));
+  Domain<3> domain(maps_for_rectilinear_domains<Frame::Inertial>(
+                       Index<3>{2, 2, 2},
+                       std::array<std::vector<double>, 3>{
+                           {{0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}}},
+                       {Index<3>{}}),
+                   corners_for_rectilinear_domains(Index<3>{2, 2, 2}));
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(domain,
                                                    {{{0, 1, 2}},
@@ -265,27 +255,24 @@ void fuzzy_test_block_and_element_logical_coordinates3(
                                                    n_pts);
 }
 
-template <typename TargetFrame>
 void fuzzy_test_block_and_element_logical_coordinates2(
     const size_t n_pts) noexcept {
-  Domain<2, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
-          Index<2>{2, 3},
-          std::array<std::vector<double>, 2>{
-              {{0.0, 0.5, 1.0}, {0.0, 0.33, 0.66, 1.0}}},
-          {Index<2>{}}),
-      corners_for_rectilinear_domains(Index<2>{2, 3}));
+  Domain<2> domain(maps_for_rectilinear_domains<Frame::Inertial>(
+                       Index<2>{2, 3},
+                       std::array<std::vector<double>, 2>{
+                           {{0.0, 0.5, 1.0}, {0.0, 0.33, 0.66, 1.0}}},
+                       {Index<2>{}}),
+                   corners_for_rectilinear_domains(Index<2>{2, 3}));
   fuzzy_test_block_and_element_logical_coordinates_unrefined(domain, n_pts);
   fuzzy_test_block_and_element_logical_coordinates(
       domain, {{{0, 1}}, {{2, 1}}, {{2, 2}}, {{3, 2}}, {{0, 0}}, {{2, 0}}},
       n_pts);
 }
 
-template <typename TargetFrame>
 void fuzzy_test_block_and_element_logical_coordinates1(
     const size_t n_pts) noexcept {
-  Domain<1, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
+  Domain<1> domain(
+      maps_for_rectilinear_domains<Frame::Inertial>(
           Index<1>{2}, std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.0}}},
           {Index<1>{}}),
       corners_for_rectilinear_domains(Index<1>{2}));
@@ -294,10 +281,10 @@ void fuzzy_test_block_and_element_logical_coordinates1(
                                                    n_pts);
 }
 
-template <size_t Dim, typename TargetFrame>
+template <size_t Dim>
 void test_block_and_element_logical_coordinates(
-    const Domain<Dim, TargetFrame>& domain,
-    const std::vector<std::array<double, Dim>>& x_frame,
+    const Domain<Dim>& domain,
+    const std::vector<std::array<double, Dim>>& x_inertial,
     const std::vector<size_t>& expected_block_ids,
     const std::vector<std::array<double, Dim>>& expected_block_logical,
     const std::vector<ElementId<Dim>>& element_ids,
@@ -305,19 +292,19 @@ void test_block_and_element_logical_coordinates(
     const std::vector<std::vector<size_t>>& expected_offset,
     const std::vector<std::vector<std::array<double, Dim>>>&
         expected_element_logical) noexcept {
-  tnsr::I<DataVector, Dim, TargetFrame> frame_coords(x_frame.size());
+  tnsr::I<DataVector, Dim, Frame::Inertial> inertial_coords(x_inertial.size());
   std::vector<tnsr::I<double, Dim, Frame::Logical>> expected_logical_coords(
-      x_frame.size());
-  for (size_t s = 0; s < x_frame.size(); ++s) {
+      x_inertial.size());
+  for (size_t s = 0; s < x_inertial.size(); ++s) {
     for (size_t d = 0; d < Dim; ++d) {
-      frame_coords.get(d)[s] = gsl::at(x_frame[s], d);
+      inertial_coords.get(d)[s] = gsl::at(x_inertial[s], d);
       expected_logical_coords[s].get(d) = gsl::at(expected_block_logical[s], d);
     }
   }
 
   const auto block_logical_result =
-      block_logical_coordinates(domain, frame_coords);
-  for (size_t s = 0; s < x_frame.size(); ++s) {
+      block_logical_coordinates(domain, inertial_coords);
+  for (size_t s = 0; s < x_inertial.size(); ++s) {
     CHECK(block_logical_result[s].get().id.get_index() ==
           expected_block_ids[s]);
     CHECK_ITERABLE_APPROX(block_logical_result[s].get().data,
@@ -364,15 +351,14 @@ void test_block_and_element_logical_coordinates(
   }
 }
 
-template <typename TargetFrame>
 void test_block_and_element_logical_coordinates1() noexcept {
-  Domain<1, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
+  Domain<1> domain(
+      maps_for_rectilinear_domains<Frame::Inertial>(
           Index<1>{2}, std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.0}}},
           {Index<1>{}}),
       corners_for_rectilinear_domains(Index<1>{2}));
 
-  std::vector<std::array<double, 1>> x_frame{
+  std::vector<std::array<double, 1>> x_inertial{
       {{0.1}},
       {{0.8}},
       {{0.5 + 1000.0 * std::numeric_limits<double>::epsilon()}},
@@ -403,28 +389,27 @@ void test_block_and_element_logical_coordinates1() noexcept {
       std::vector<std::array<double, 1>>{{{1.0}}}};
 
   test_block_and_element_logical_coordinates(
-      domain, x_frame, expected_block_ids, expected_x_logical, element_ids,
+      domain, x_inertial, expected_block_ids, expected_x_logical, element_ids,
       expected_id_indices, expected_offset, expected_elem_log);
 }
 
-template <typename TargetFrame>
 void test_block_logical_coordinates1fail() noexcept {
-  Domain<1, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
+  Domain<1> domain(
+      maps_for_rectilinear_domains<Frame::Inertial>(
           Index<1>{2}, std::array<std::vector<double>, 1>{{{0.0, 0.5, 1.0}}},
           {Index<1>{}}),
       corners_for_rectilinear_domains(Index<1>{2}));
 
-  std::vector<std::array<double, 1>> x_frame{
+  std::vector<std::array<double, 1>> x_inertial{
       {{0.1}}, {{1.1}}, {{-0.2}}, {{0.5}}};
-  tnsr::I<DataVector, 1, TargetFrame> frame_coords(x_frame.size());
-  for (size_t s = 0; s < x_frame.size(); ++s) {
+  tnsr::I<DataVector, 1, Frame::Inertial> inertial_coords(x_inertial.size());
+  for (size_t s = 0; s < x_inertial.size(); ++s) {
     for (size_t d = 0; d < 1; ++d) {
-      frame_coords.get(d)[s] = gsl::at(x_frame[s], d);
+      inertial_coords.get(d)[s] = gsl::at(x_inertial[s], d);
     }
   }
   const auto block_logical_result =
-      block_logical_coordinates(domain, frame_coords);
+      block_logical_coordinates(domain, inertial_coords);
   // points 1.1 and -0.2 are not in any block. They correspond to
   // indices 1 and 2 in the list of points, so they should be cast
   // to 'false'.
@@ -434,17 +419,15 @@ void test_block_logical_coordinates1fail() noexcept {
   CHECK(block_logical_result[3]);
 }
 
-template <typename TargetFrame>
 void test_block_and_element_logical_coordinates3() noexcept {
-  Domain<3, TargetFrame> domain(
-      maps_for_rectilinear_domains<TargetFrame>(
-          Index<3>{2, 2, 2},
-          std::array<std::vector<double>, 3>{
-              {{0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}}},
-          {Index<3>{}}),
-      corners_for_rectilinear_domains(Index<3>{2, 2, 2}));
+  Domain<3> domain(maps_for_rectilinear_domains<Frame::Inertial>(
+                       Index<3>{2, 2, 2},
+                       std::array<std::vector<double>, 3>{
+                           {{0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}, {0.0, 0.5, 1.0}}},
+                       {Index<3>{}}),
+                   corners_for_rectilinear_domains(Index<3>{2, 2, 2}));
 
-  std::vector<std::array<double, 3>> x_frame{
+  std::vector<std::array<double, 3>> x_inertial{
       {{0.1, 0.1, 0.1}},   {{0.05, 0.05, 0.05}}, {{0.24, 0.24, 0.24}},
       {{0.9, 0.24, 0.24}}, {{0.24, 0.8, 0.24}},  {{0.9, 0.8, 0.24}},
       {{0.1, 0.1, 0.7}},   {{0.1, 0.8, 0.7}},    {{0.7, 0.2, 0.7}},
@@ -509,19 +492,19 @@ void test_block_and_element_logical_coordinates3() noexcept {
       std::vector<std::array<double, 3>>{{{1.0, 1.0, 1.0}}}};
 
   test_block_and_element_logical_coordinates(
-      domain, x_frame, expected_block_ids, expected_x_logical, element_ids,
+      domain, x_inertial, expected_block_ids, expected_x_logical, element_ids,
       expected_id_indices, expected_offset, expected_elem_log);
 }
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.BlockAndElementLogicalCoords",
                   "[Domain][Unit]") {
-  test_block_and_element_logical_coordinates1<Frame::Grid>();
-  test_block_and_element_logical_coordinates3<Frame::Grid>();
-  fuzzy_test_block_and_element_logical_coordinates3<Frame::Grid>(20);
-  fuzzy_test_block_and_element_logical_coordinates2<Frame::Grid>(20);
-  fuzzy_test_block_and_element_logical_coordinates1<Frame::Grid>(20);
-  fuzzy_test_block_and_element_logical_coordinates1<Frame::Grid>(0);
-  fuzzy_test_block_and_element_logical_coordinates_shell<Frame::Grid>(20);
-  test_block_logical_coordinates1fail<Frame::Grid>();
+  test_block_and_element_logical_coordinates1();
+  test_block_and_element_logical_coordinates3();
+  fuzzy_test_block_and_element_logical_coordinates3(20);
+  fuzzy_test_block_and_element_logical_coordinates2(20);
+  fuzzy_test_block_and_element_logical_coordinates1(20);
+  fuzzy_test_block_and_element_logical_coordinates1(0);
+  fuzzy_test_block_and_element_logical_coordinates_shell(20);
+  test_block_logical_coordinates1fail();
 }

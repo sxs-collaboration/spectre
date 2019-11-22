@@ -9,16 +9,9 @@
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
 
-namespace Frame {
-struct Grid;
-struct Inertial;
-}  // namespace Frame
-
 namespace domain {
 namespace creators {
-
-template <typename TargetFrame>
-RotatedRectangles<TargetFrame>::RotatedRectangles(
+RotatedRectangles::RotatedRectangles(
     const typename LowerBound::type lower_xy,
     const typename Midpoint::type midpoint_xy,
     const typename UpperBound::type upper_xy,
@@ -36,10 +29,8 @@ RotatedRectangles<TargetFrame>::RotatedRectangles(
       initial_number_of_grid_points_in_xy_(                   // NOLINT
           std::move(initial_number_of_grid_points_in_xy)) {}  // NOLINT
 
-template <typename TargetFrame>
-Domain<2, TargetFrame> RotatedRectangles<TargetFrame>::create_domain() const
-    noexcept {
-  return rectilinear_domain<2, TargetFrame>(
+Domain<2> RotatedRectangles::create_domain() const noexcept {
+  return rectilinear_domain<2>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{
           {{lower_xy_[0], midpoint_xy_[0], upper_xy_[0]},
@@ -56,9 +47,8 @@ Domain<2, TargetFrame> RotatedRectangles<TargetFrame>::create_domain() const
       is_periodic_in_);
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 2>>
-RotatedRectangles<TargetFrame>::initial_extents() const noexcept {
+std::vector<std::array<size_t, 2>> RotatedRectangles::initial_extents() const
+    noexcept {
   const size_t& x_0 = initial_number_of_grid_points_in_xy_[0][0];
   const size_t& x_1 = initial_number_of_grid_points_in_xy_[0][1];
   const size_t& y_0 = initial_number_of_grid_points_in_xy_[1][0];
@@ -66,15 +56,11 @@ RotatedRectangles<TargetFrame>::initial_extents() const noexcept {
   return {{{x_0, y_0}}, {{x_1, y_0}}, {{y_1, x_0}}, {{y_1, x_1}}};
 }
 
-template <typename TargetFrame>
 std::vector<std::array<size_t, 2>>
-RotatedRectangles<TargetFrame>::initial_refinement_levels() const noexcept {
+RotatedRectangles::initial_refinement_levels() const noexcept {
   const size_t& x_0 = initial_refinement_level_xy_[0];
   const size_t& y_0 = initial_refinement_level_xy_[1];
   return {{{x_0, y_0}}, {{x_0, y_0}}, {{y_0, x_0}}, {{y_0, x_0}}};
 }
-
-template class RotatedRectangles<Frame::Inertial>;
-template class RotatedRectangles<Frame::Grid>;
 }  // namespace creators
 }  // namespace domain

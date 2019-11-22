@@ -47,7 +47,7 @@
 namespace domain {
 namespace {
 void test_shell_construction(
-    const creators::Shell<Frame::Inertial>& shell, const double inner_radius,
+    const creators::Shell& shell, const double inner_radius,
     const double outer_radius, const bool use_equiangular_map,
     const std::array<size_t, 2>& expected_shell_extents,
     const std::vector<std::array<size_t, 3>>& expected_refinement_level,
@@ -261,9 +261,8 @@ void test_shell_boundaries() {
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
 
   for (const auto& use_equiangular_map : {true, false}) {
-    const creators::Shell<Frame::Inertial> shell{
-        inner_radius, outer_radius, refinement_level, grid_points_r_angular,
-        use_equiangular_map};
+    const creators::Shell shell{inner_radius, outer_radius, refinement_level,
+                                grid_points_r_angular, use_equiangular_map};
     test_physical_separation(shell.create_domain().blocks());
     test_shell_construction(shell, inner_radius, outer_radius,
                             use_equiangular_map, grid_points_r_angular,
@@ -273,7 +272,7 @@ void test_shell_boundaries() {
 
 void test_shell_factory_equiangular() {
   INFO("Shell factory equiangular");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -283,14 +282,13 @@ void test_shell_factory_equiangular() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
-      inner_radius, outer_radius, true, grid_points_r_angular,
-      {6, make_array<3>(refinement_level)});
+      dynamic_cast<const creators::Shell&>(*shell), inner_radius, outer_radius,
+      true, grid_points_r_angular, {6, make_array<3>(refinement_level)});
 }
 
 void test_shell_factory_equidistant() {
   INFO("Shell factory equidistant");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -301,9 +299,8 @@ void test_shell_factory_equidistant() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
-      inner_radius, outer_radius, false, grid_points_r_angular,
-      {6, make_array<3>(refinement_level)});
+      dynamic_cast<const creators::Shell&>(*shell), inner_radius, outer_radius,
+      false, grid_points_r_angular, {6, make_array<3>(refinement_level)});
 }
 
 void test_shell_boundaries_aspect_ratio() {
@@ -313,7 +310,7 @@ void test_shell_boundaries_aspect_ratio() {
   const std::array<size_t, 2> grid_points_r_angular{{4, 4}};
   const double aspect_ratio = 1.3;
 
-  const creators::Shell<Frame::Inertial> shell{
+  const creators::Shell shell{
       inner_radius,          outer_radius, refinement_level,
       grid_points_r_angular, false,        aspect_ratio};
   test_physical_separation(shell.create_domain().blocks());
@@ -324,7 +321,7 @@ void test_shell_boundaries_aspect_ratio() {
 
 void test_shell_factory_aspect_ratio() {
   INFO("Shell factory aspect ratio");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -336,10 +333,10 @@ void test_shell_factory_aspect_ratio() {
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
   const double aspect_ratio = 2.0;
-  test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
-      inner_radius, outer_radius, false, grid_points_r_angular,
-      {6, make_array<3>(refinement_level)}, aspect_ratio);
+  test_shell_construction(dynamic_cast<const creators::Shell&>(*shell),
+                          inner_radius, outer_radius, false,
+                          grid_points_r_angular,
+                          {6, make_array<3>(refinement_level)}, aspect_ratio);
 }
 
 void test_shell_boundaries_logarithmic_map() {
@@ -350,7 +347,7 @@ void test_shell_boundaries_logarithmic_map() {
   const double aspect_ratio = 1.0;
   const bool use_logarithmic_map = true;
 
-  const creators::Shell<Frame::Inertial> shell{
+  const creators::Shell shell{
       inner_radius, outer_radius, refinement_level,   grid_points_r_angular,
       false,        aspect_ratio, use_logarithmic_map};
   test_physical_separation(shell.create_domain().blocks());
@@ -361,7 +358,7 @@ void test_shell_boundaries_logarithmic_map() {
 
 void test_shell_factory_logarithmic_map() {
   INFO("Shell factory logarithmic map");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -376,14 +373,14 @@ void test_shell_factory_logarithmic_map() {
   const double aspect_ratio = 2.0;
   const bool use_logarithmic_map = true;
   test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
-      inner_radius, outer_radius, false, grid_points_r_angular,
-      {6, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map);
+      dynamic_cast<const creators::Shell&>(*shell), inner_radius, outer_radius,
+      false, grid_points_r_angular, {6, make_array<3>(refinement_level)},
+      aspect_ratio, use_logarithmic_map);
 }
 
 void test_shell_factory_wedges_four_on_equator() {
   INFO("Shell factory wedges four on equator");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3>>(
       "  Shell:\n"
       "    InnerRadius: 1\n"
       "    OuterRadius: 3\n"
@@ -400,15 +397,14 @@ void test_shell_factory_wedges_four_on_equator() {
   const bool use_logarithmic_map = true;
   const ShellWedges which_wedges = ShellWedges::FourOnEquator;
   test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
-      inner_radius, outer_radius, false, grid_points_r_angular,
-      {4, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
-      which_wedges);
+      dynamic_cast<const creators::Shell&>(*shell), inner_radius, outer_radius,
+      false, grid_points_r_angular, {4, make_array<3>(refinement_level)},
+      aspect_ratio, use_logarithmic_map, which_wedges);
 }
 
 void test_shell_factory_wedges_one_along_minus_x() {
   INFO("Shell factory wedges one along minus x");
-  const auto shell = test_factory_creation<DomainCreator<3, Frame::Inertial>>(
+  const auto shell = test_factory_creation<DomainCreator<3>>(
       "  Shell:\n"
       "    InnerRadius: 2\n"
       "    OuterRadius: 3\n"
@@ -425,10 +421,9 @@ void test_shell_factory_wedges_one_along_minus_x() {
   const bool use_logarithmic_map = false;
   const ShellWedges which_wedges = ShellWedges::OneAlongMinusX;
   test_shell_construction(
-      dynamic_cast<const creators::Shell<Frame::Inertial>&>(*shell),
-      inner_radius, outer_radius, true, grid_points_r_angular,
-      {1, make_array<3>(refinement_level)}, aspect_ratio, use_logarithmic_map,
-      which_wedges);
+      dynamic_cast<const creators::Shell&>(*shell), inner_radius, outer_radius,
+      true, grid_points_r_angular, {1, make_array<3>(refinement_level)},
+      aspect_ratio, use_logarithmic_map, which_wedges);
 }
 
 // Tests that the underlying element structure is the same regardless of
@@ -478,7 +473,7 @@ void test_radial_block_layers(const double inner_radius,
   const auto zero = make_with_value<DataVector>(x_in_block_interior, 0.0);
   tnsr::I<DataVector, 3, Frame::Inertial> interior_inertial_coords{
       {{-x_in_block_interior, zero, zero}}};
-  const creators::Shell<Frame::Inertial> shell{
+  const creators::Shell shell{
       inner_radius,          outer_radius,        refinement_level,
       grid_points_r_angular, use_equiangular_map, aspect_ratio,
       use_logarithmic_map,   which_wedges,        radial_block_layers};
@@ -528,17 +523,16 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell", "[Domain][Unit]") {
 
   {
     INFO("shell factory logarithmic block layers");
-    const auto log_shell =
-        test_factory_creation<DomainCreator<3, Frame::Inertial>>(
-            "  Shell:\n"
-            "    InnerRadius: 1\n"
-            "    OuterRadius: 3\n"
-            "    InitialRefinement: 2\n"
-            "    InitialGridPoints: [2,3]\n"
-            "    UseEquiangularMap: false\n"
-            "    AspectRatio: 2.0        \n"
-            "    UseLogarithmicMap: true\n"
-            "    RadialBlockLayers: 6\n");
+    const auto log_shell = test_factory_creation<DomainCreator<3>>(
+        "  Shell:\n"
+        "    InnerRadius: 1\n"
+        "    OuterRadius: 3\n"
+        "    InitialRefinement: 2\n"
+        "    InitialGridPoints: [2,3]\n"
+        "    UseEquiangularMap: false\n"
+        "    AspectRatio: 2.0        \n"
+        "    UseLogarithmicMap: true\n"
+        "    RadialBlockLayers: 6\n");
   }
   {
     INFO("Radial block layers 1");

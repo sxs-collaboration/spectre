@@ -77,7 +77,7 @@ struct mock_interpolation_target {
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>;
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim>>;
   using simple_tags =
       db::get_items<typename intrp::Actions::InitializeInterpolationTarget<
           Metavariables, InterpolationTargetTag>::return_tag_list>;
@@ -271,7 +271,7 @@ void test_interpolation_target_receive_vars() noexcept {
                                 typename metavars::InterpolationTargetA>;
 
   const auto domain_creator =
-      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
   Slab slab(0.0, 1.0);
   const size_t num_points = 10;
 

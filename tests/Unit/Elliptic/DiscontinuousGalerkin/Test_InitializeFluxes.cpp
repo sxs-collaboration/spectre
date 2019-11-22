@@ -85,8 +85,7 @@ struct ElementArray {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = ElementIndex<Dim>;
-  using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<Dim, Frame::Inertial>>;
+  using const_global_cache_tags = tmpl::list<::Tags::Domain<Dim>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -147,10 +146,9 @@ void check_compute_items(
       ::Tags::Flux<ScalarFieldTag, tmpl::size_t<Dim>, Frame::Inertial>{}));
 }
 
-template <size_t Dim, typename DomainFrame>
-void test_initialize_fluxes(
-    const DomainCreator<Dim, DomainFrame>& domain_creator,
-    const ElementId<Dim>& element_id) {
+template <size_t Dim>
+void test_initialize_fluxes(const DomainCreator<Dim>& domain_creator,
+                            const ElementId<Dim>& element_id) {
   using metavariables = Metavariables<Dim>;
   using element_array = typename metavariables::element_array;
 
@@ -183,7 +181,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InitializeFluxes",
     // Reference element:
     // [X| | | ]-> xi
     const ElementId<1> element_id{0, {{{2, 0}}}};
-    const domain::creators::Interval<Frame::Inertial> domain_creator{
+    const domain::creators::Interval domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
 
     test_initialize_fluxes(domain_creator, element_id);
@@ -198,7 +196,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InitializeFluxes",
     // | | |
     // +-+-+
     const ElementId<2> element_id{0, {{{1, 0}, {1, 1}}}};
-    const domain::creators::Rectangle<Frame::Inertial> domain_creator{
+    const domain::creators::Rectangle domain_creator{
         {{-0.5, 0.}}, {{1.5, 1.}}, {{false, false}}, {{1, 1}}, {{3, 2}}};
 
     test_initialize_fluxes(domain_creator, element_id);
@@ -207,12 +205,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InitializeFluxes",
     INFO("3D");
     const ElementId<3> element_id{
         0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{1, 0}}}};
-    const domain::creators::Brick<Frame::Inertial> domain_creator{
-        {{-0.5, 0., -1.}},
-        {{1.5, 1., 3.}},
-        {{false, false, false}},
-        {{1, 1, 1}},
-        {{2, 3, 4}}};
+    const domain::creators::Brick domain_creator{{{-0.5, 0., -1.}},
+                                                 {{1.5, 1., 3.}},
+                                                 {{false, false, false}},
+                                                 {{1, 1, 1}},
+                                                 {{2, 3, 4}}};
 
     test_initialize_fluxes(domain_creator, element_id);
   }

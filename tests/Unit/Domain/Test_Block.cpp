@@ -26,13 +26,13 @@ namespace domain {
 namespace {
 template <size_t Dim>
 void test_block() {
-  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Grid,
+  PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
                                        CoordinateMaps::Identity<Dim>>));
 
-  using coordinate_map =
-      CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Identity<Dim>>;
+  using coordinate_map = CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       CoordinateMaps::Identity<Dim>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<Dim>{}};
-  Block<Dim, Frame::Grid> block(identity_map.get_clone(), 7, {});
+  Block<Dim> block(identity_map.get_clone(), 7, {});
 
   // Test external boundaries:
   CHECK((block.external_boundaries().size()) == 2 * Dim);
@@ -46,7 +46,7 @@ void test_block() {
   // Test that the block's coordinate_map is Identity:
   const auto& map = block.coordinate_map();
   const tnsr::I<double, Dim, Frame::Logical> xi(1.0);
-  const tnsr::I<double, Dim, Frame::Grid> x(1.0);
+  const tnsr::I<double, Dim, Frame::Inertial> x(1.0);
   CHECK(map(xi) == x);
   CHECK(map.inverse(x).get() == xi);
 
@@ -54,7 +54,7 @@ void test_block() {
   test_serialization(block);
 
   // Test move semantics:
-  const Block<Dim, Frame::Grid> block_copy(identity_map.get_clone(), 7, {});
+  const Block<Dim> block_copy(identity_map.get_clone(), 7, {});
   test_move_semantics(std::move(block), block_copy);
 }
 }  // namespace
@@ -75,11 +75,10 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
   DirectionMap<2, BlockNeighbor<2>> neighbors = {
       {Direction<2>::upper_xi(), block_neighbor1},
       {Direction<2>::lower_eta(), block_neighbor2}};
-  using coordinate_map =
-      CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Identity<2>>;
+  using coordinate_map = CoordinateMap<Frame::Logical, Frame::Inertial,
+                                       CoordinateMaps::Identity<2>>;
   const coordinate_map identity_map{CoordinateMaps::Identity<2>{}};
-  const Block<2, Frame::Grid> block(identity_map.get_clone(), 3,
-                                    std::move(neighbors));
+  const Block<2> block(identity_map.get_clone(), 3, std::move(neighbors));
 
   // Test external boundaries:
   CHECK((block.external_boundaries().size()) == 2);
@@ -99,8 +98,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Block", "[Domain][Unit]") {
         "External boundaries: (+1,-0)\n");
 
   // Test comparison:
-  const Block<2, Frame::Grid> neighborless_block(identity_map.get_clone(), 7,
-                                                 {});
+  const Block<2> neighborless_block(identity_map.get_clone(), 7, {});
   CHECK(block == block);
   CHECK(block != neighborless_block);
   CHECK(neighborless_block == neighborless_block);

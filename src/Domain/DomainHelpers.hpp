@@ -30,7 +30,7 @@ class CoordinateMapBase;
 }  // namespace domain
 template <size_t VolumeDim, typename T>
 class DirectionMap;
-template <size_t VolumeDim, typename TargetFrame>
+template <size_t VolumeDim>
 class Domain;
 template <size_t VolumeDim>
 class OrientationMap;
@@ -233,8 +233,8 @@ auto maps_for_rectilinear_domains(
 /// net for a 3D cube to construct a domain with topology S2. Note: If the user
 /// wishes to rotate the blocks as well as manually identify their faces, the
 /// user must provide the PairOfFaces corresponding to the rotated corners.
-template <size_t VolumeDim, typename TargetFrame>
-Domain<VolumeDim, TargetFrame> rectilinear_domain(
+template <size_t VolumeDim>
+Domain<VolumeDim> rectilinear_domain(
     const Index<VolumeDim>& domain_extents,
     const std::array<std::vector<double>, VolumeDim>& block_demarcations,
     const std::vector<Index<VolumeDim>>& block_indices_to_exclude = {},

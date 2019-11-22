@@ -10,22 +10,16 @@
 #include <cstddef>
 #include <vector>
 
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-template <size_t Dim, typename Frame>
-class DomainCreator;  // IWYU pragma: keep
-/// \endcond
-
 namespace domain {
 namespace creators {
-
 /// Create a 2D Domain consisting of a single Block.
-template <typename TargetFrame>
-class Rectangle : public DomainCreator<2, TargetFrame> {
+class Rectangle : public DomainCreator<2> {
  public:
   struct LowerBound {
     using type = std::array<double, 2>;
@@ -74,7 +68,7 @@ class Rectangle : public DomainCreator<2, TargetFrame> {
   Rectangle& operator=(Rectangle&&) noexcept = default;
   ~Rectangle() noexcept override = default;
 
-  Domain<2, TargetFrame> create_domain() const noexcept override;
+  Domain<2> create_domain() const noexcept override;
 
   std::vector<std::array<size_t, 2>> initial_extents() const noexcept override;
 

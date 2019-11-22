@@ -17,7 +17,6 @@
 
 /// \cond
 namespace Frame {
-struct Grid;
 struct Inertial;
 struct Logical;
 }  // namespace Frame
@@ -29,9 +28,7 @@ class CoordinateMapBase;
 
 namespace domain {
 namespace creators {
-
-template <typename TargetFrame>
-FrustalCloak<TargetFrame>::FrustalCloak(
+FrustalCloak::FrustalCloak(
     typename InitialRefinement::type initial_refinement_level,
     typename InitialGridPoints::type initial_number_of_grid_points,
     typename UseEquiangularMap::type use_equiangular_map,
@@ -51,36 +48,28 @@ FrustalCloak<TargetFrame>::FrustalCloak(
       length_outer_cube_(length_outer_cube),          // NOLINT
       origin_preimage_(origin_preimage) {}            // NOLINT
 
-template <typename TargetFrame>
-Domain<3, TargetFrame> FrustalCloak<TargetFrame>::create_domain() const
-    noexcept {
+Domain<3> FrustalCloak::create_domain() const noexcept {
   std::vector<
-      std::unique_ptr<CoordinateMapBase<Frame::Logical, TargetFrame, 3>>>
-      coord_maps = frustum_coordinate_maps<TargetFrame>(
+      std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
+      coord_maps = frustum_coordinate_maps<Frame::Inertial>(
           length_inner_cube_, length_outer_cube_, use_equiangular_map_,
           origin_preimage_, projection_factor_);
-  return Domain<3, TargetFrame>{
-      std::move(coord_maps),
-      corners_for_biradially_layered_domains(0, 1, false, false,
-                                             {{1, 2, 3, 4, 5, 6, 7, 8}})};
+  return Domain<3>{std::move(coord_maps),
+                   corners_for_biradially_layered_domains(
+                       0, 1, false, false, {{1, 2, 3, 4, 5, 6, 7, 8}})};
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 3>> FrustalCloak<TargetFrame>::initial_extents()
-    const noexcept {
+std::vector<std::array<size_t, 3>> FrustalCloak::initial_extents() const
+    noexcept {
   return {
       10,
       {{initial_number_of_grid_points_[1], initial_number_of_grid_points_[1],
         initial_number_of_grid_points_[0]}}};
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 3>>
-FrustalCloak<TargetFrame>::initial_refinement_levels() const noexcept {
+std::vector<std::array<size_t, 3>> FrustalCloak::initial_refinement_levels()
+    const noexcept {
   return {10, make_array<3>(initial_refinement_level_)};
 }
-
-template class FrustalCloak<Frame::Inertial>;
-template class FrustalCloak<Frame::Grid>;
 }  // namespace creators
 }  // namespace domain

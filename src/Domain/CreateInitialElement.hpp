@@ -8,7 +8,7 @@
 #include "Domain/Element.hpp"
 
 /// \cond
-template <size_t Dim, typename TargetFrame>
+template <size_t Dim>
 class Block;
 template <size_t Dim>
 class ElementId;
@@ -27,9 +27,9 @@ namespace Initialization {
  * an external boundary), with each neighbor at the same refinement level as the
  * element.
  */
-template <size_t VolumeDim, typename TargetFrame>
+template <size_t VolumeDim>
 Element<VolumeDim> create_initial_element(
     const ElementId<VolumeDim>& element_id,
-    const Block<VolumeDim, TargetFrame>& block) noexcept;
+    const Block<VolumeDim>& block) noexcept;
 }  // namespace Initialization
 }  // namespace domain

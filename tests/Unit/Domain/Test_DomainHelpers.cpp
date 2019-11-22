@@ -1454,7 +1454,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
 
 SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries1",
                   "[Domain][Unit]") {
-  const auto domain = rectilinear_domain<3, Frame::Inertial>(
+  const auto domain = rectilinear_domain<3>(
       Index<3>{3, 3, 3},
       std::array<std::vector<double>, 3>{
           {{0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}, {0.0, 1.0, 2.0, 3.0}}},
@@ -1525,7 +1525,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries2",
   auto orientations_of_all_blocks =
       std::vector<OrientationMap<2>>{4, OrientationMap<2>{}};
   orientations_of_all_blocks[0] = rotation;
-  const auto domain = rectilinear_domain<2, Frame::Inertial>(
+  const auto domain = rectilinear_domain<2>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
       {}, orientations_of_all_blocks, std::array<bool, 2>{{true, false}}, {},
@@ -1565,7 +1565,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries3",
   orientations_of_all_blocks[1] = flipped;
   orientations_of_all_blocks[2] = quarter_turn_cw;
   orientations_of_all_blocks[3] = quarter_turn_ccw;
-  const auto domain = rectilinear_domain<2, Frame::Inertial>(
+  const auto domain = rectilinear_domain<2>(
       Index<2>{2, 2},
       std::array<std::vector<double>, 2>{{{0.0, 1.0, 2.0}, {0.0, 1.0, 2.0}}},
       {}, orientations_of_all_blocks, std::array<bool, 2>{{true, true}}, {},

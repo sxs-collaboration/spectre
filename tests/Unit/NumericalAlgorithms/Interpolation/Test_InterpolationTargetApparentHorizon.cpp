@@ -78,7 +78,7 @@ SPECTRE_TEST_CASE(
   CHECK(created_opts == apparent_horizon_opts);
 
   const auto domain_creator =
-      domain::creators::Shell<Frame::Inertial>(1.8, 2.2, 1, {{5, 5}}, false);
+      domain::creators::Shell(1.8, 2.2, 1, {{5, 5}}, false);
 
   const auto expected_block_coord_holders =
       [&domain_creator, &center, &radius ]() noexcept {

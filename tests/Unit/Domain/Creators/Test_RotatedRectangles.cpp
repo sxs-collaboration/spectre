@@ -28,7 +28,7 @@
 namespace domain {
 namespace {
 void test_rotated_rectangles_construction(
-    const creators::RotatedRectangles<Frame::Inertial>& rotated_rectangles,
+    const creators::RotatedRectangles& rotated_rectangles,
     const std::array<double, 2>& lower_bound,
     const std::array<double, 2>& midpoint,
     const std::array<double, 2>& upper_bound,
@@ -94,7 +94,7 @@ void test_rotated_rectangles() {
   const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
 
-  const creators::RotatedRectangles<Frame::Inertial> rotated_rectangles{
+  const creators::RotatedRectangles rotated_rectangles{
       lower_bound,
       midpoint,
       upper_bound,
@@ -121,15 +121,14 @@ void test_rotated_rectangles() {
           {Direction<2>::lower_xi(), Direction<2>::upper_eta()}});
   test_physical_separation(rotated_rectangles.create_domain().blocks());
 
-  const creators::RotatedRectangles<Frame::Inertial>
-      rotated_periodic_rectangles{
-          lower_bound,
-          midpoint,
-          upper_bound,
-          {{true, true}},
-          {{refinement_level[0][0], refinement_level[0][1]}},
-          {{{{grid_points[0][0], grid_points[1][0]}},
-            {{grid_points[0][1], grid_points[2][0]}}}}};
+  const creators::RotatedRectangles rotated_periodic_rectangles{
+      lower_bound,
+      midpoint,
+      upper_bound,
+      {{true, true}},
+      {{refinement_level[0][0], refinement_level[0][1]}},
+      {{{{grid_points[0][0], grid_points[1][0]}},
+        {{grid_points[0][1], grid_points[2][0]}}}}};
   test_rotated_rectangles_construction(
       rotated_periodic_rectangles, lower_bound, midpoint, upper_bound,
       grid_points, refinement_level,
@@ -162,18 +161,16 @@ void test_rotated_rectangles_factory() {
   const OrientationMap<2> quarter_turn_ccw{std::array<Direction<2>, 2>{
       {Direction<2>::lower_eta(), Direction<2>::upper_xi()}}};
 
-  const auto domain_creator =
-      test_factory_creation<DomainCreator<2, Frame::Inertial>>(
-          "  RotatedRectangles:\n"
-          "    LowerBound: [0.1, -0.4]\n"
-          "    Midpoint:   [2.6, 3.2]\n"
-          "    UpperBound: [5.1, 6.2]\n"
-          "    IsPeriodicIn: [false, false]\n"
-          "    InitialGridPoints: [[3,2],[1,4]]\n"
-          "    InitialRefinement: [2,1]\n");
+  const auto domain_creator = test_factory_creation<DomainCreator<2>>(
+      "  RotatedRectangles:\n"
+      "    LowerBound: [0.1, -0.4]\n"
+      "    Midpoint:   [2.6, 3.2]\n"
+      "    UpperBound: [5.1, 6.2]\n"
+      "    IsPeriodicIn: [false, false]\n"
+      "    InitialGridPoints: [[3,2],[1,4]]\n"
+      "    InitialRefinement: [2,1]\n");
   const auto* rotated_rectangles_creator =
-      dynamic_cast<const creators::RotatedRectangles<Frame::Inertial>*>(
-          domain_creator.get());
+      dynamic_cast<const creators::RotatedRectangles*>(domain_creator.get());
   test_rotated_rectangles_construction(
       *rotated_rectangles_creator, {{0.1, -0.4}}, {{2.6, 3.2}}, {{5.1, 6.2}},
       {{{3, 1}}, {{2, 1}}, {{4, 3}}, {{4, 2}}},

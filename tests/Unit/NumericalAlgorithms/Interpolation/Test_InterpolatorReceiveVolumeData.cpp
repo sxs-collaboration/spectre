@@ -183,7 +183,7 @@ struct mock_interpolation_target {
   using component_being_mocked =
       intrp::InterpolationTarget<Metavariables, InterpolationTargetTag>;
   using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>;
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim>>;
 
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
@@ -250,7 +250,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
 
   // Make an InterpolatedVarsHolders containing the target points.
   const auto domain_creator =
-      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{7, 7}}, false);
+      domain::creators::Shell(0.9, 4.9, 1, {{7, 7}}, false);
   const auto domain = domain_creator.create_domain();
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));

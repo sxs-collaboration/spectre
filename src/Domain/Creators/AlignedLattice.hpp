@@ -28,8 +28,8 @@ namespace creators {
 /// \note Adaptive mesh refinement can never join Block%s, so use the fewest
 /// number of Block%s that your problem needs.  More initial Element%s can be
 /// created by specifying a larger `InitialRefinement`.
-template <size_t VolumeDim, typename TargetFrame>
-class AlignedLattice : public DomainCreator<VolumeDim, TargetFrame> {
+template <size_t VolumeDim>
+class AlignedLattice : public DomainCreator<VolumeDim> {
  public:
   struct BlockBounds {
     using type = std::array<std::vector<double>, VolumeDim>;
@@ -95,7 +95,7 @@ class AlignedLattice : public DomainCreator<VolumeDim, TargetFrame> {
   AlignedLattice& operator=(AlignedLattice&&) noexcept = default;
   ~AlignedLattice() override = default;
 
-  Domain<VolumeDim, TargetFrame> create_domain() const noexcept override;
+  Domain<VolumeDim> create_domain() const noexcept override;
 
   std::vector<std::array<size_t, VolumeDim>> initial_extents() const
       noexcept override;

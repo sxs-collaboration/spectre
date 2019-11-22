@@ -109,8 +109,7 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<tmpl::list<
-                         ::Tags::Domain<Dim, Frame::Inertial>,
-                         ::Tags::InitialExtents<Dim>,
+                         ::Tags::Domain<Dim>, ::Tags::InitialExtents<Dim>,
                          db::add_tag_prefix<
                              ::Tags::FixedSource,
                              typename Metavariables::system::fields_tag>>>,
@@ -184,7 +183,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InhomogeneousBoundaryConditions",
     //    ^       ^
     // -0.5       1.5
     const ElementId<1> element_id{0, {{SegmentId{2, 0}}}};
-    const domain::creators::Interval<Frame::Inertial> domain_creator{
+    const domain::creators::Interval domain_creator{
         {{-0.5}}, {{1.5}}, {{false}}, {{2}}, {{4}}};
 
     // Expected boundary contribution to source in element X:
@@ -208,7 +207,7 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InhomogeneousBoundaryConditions",
     //       ^   ^
     //    -0.5   1.5
     const ElementId<2> element_id{0, {{SegmentId{1, 0}, SegmentId{1, 1}}}};
-    const domain::creators::Rectangle<Frame::Inertial> domain_creator{
+    const domain::creators::Rectangle domain_creator{
         {{-0.5, 0.}}, {{1.5, 1.}}, {{false, false}}, {{1, 1}}, {{3, 3}}};
 
     // Expected boundary contribution to source in element X:
@@ -228,12 +227,11 @@ SPECTRE_TEST_CASE("Unit.Elliptic.DG.Actions.InhomogeneousBoundaryConditions",
     INFO("3D");
     const ElementId<3> element_id{
         0, {{SegmentId{1, 0}, SegmentId{1, 1}, SegmentId{1, 0}}}};
-    const domain::creators::Brick<Frame::Inertial> domain_creator{
-        {{-0.5, 0., -1.}},
-        {{1.5, 1., 3.}},
-        {{false, false, false}},
-        {{1, 1, 1}},
-        {{2, 2, 2}}};
+    const domain::creators::Brick domain_creator{{{-0.5, 0., -1.}},
+                                                 {{1.5, 1., 3.}},
+                                                 {{false, false, false}},
+                                                 {{1, 1, 1}},
+                                                 {{2, 2, 2}}};
 
     // Expected boundary contribution to source in reference element (0, 1, 0):
     //                   7 eta

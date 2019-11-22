@@ -52,8 +52,7 @@ struct mock_interpolation_target {
   using metavariables = Metavariables;
   using chare_type = ActionTesting::MockArrayChare;
   using array_index = size_t;
-  using const_global_cache_tags =
-      tmpl::list<::Tags::Domain<3, Frame::Inertial>>;
+  using const_global_cache_tags = tmpl::list<::Tags::Domain<3>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -107,7 +106,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.AddTemporalIds",
       mock_interpolation_target<metavars, metavars::InterpolationTargetA>;
 
   const auto domain_creator =
-      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{
       {domain_creator.create_domain()}};

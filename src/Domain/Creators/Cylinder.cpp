@@ -18,16 +18,13 @@
 #include "Utilities/MakeArray.hpp"
 
 namespace Frame {
-struct Grid;
-struct Inertial;
 struct Logical;
+struct Inertial;
 }  // namespace Frame
 
 namespace domain {
 namespace creators {
-
-template <typename TargetFrame>
-Cylinder<TargetFrame>::Cylinder(
+Cylinder::Cylinder(
     typename InnerRadius::type inner_radius,
     typename OuterRadius::type outer_radius,
     typename LowerBound::type lower_bound,
@@ -48,8 +45,7 @@ Cylinder<TargetFrame>::Cylinder(
           std::move(initial_number_of_grid_points)),   // NOLINT
       use_equiangular_map_(use_equiangular_map) {}     // NOLINT
 
-template <typename TargetFrame>
-Domain<3, TargetFrame> Cylinder<TargetFrame>::create_domain() const noexcept {
+Domain<3> Cylinder::create_domain() const noexcept {
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   using Equiangular = CoordinateMaps::Equiangular;
@@ -66,7 +62,7 @@ Domain<3, TargetFrame> Cylinder<TargetFrame>::create_domain() const noexcept {
       {{0, 1, 2, 3, 8, 9, 10, 11}}};   // Center square prism
 
   auto coord_maps =
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Wedge3DPrism{Wedge2D{inner_radius_, outer_radius_, 0.0, 1.0,
                                OrientationMap<2>{std::array<Direction<2>, 2>{
                                    {Direction<2>::upper_xi(),
@@ -94,7 +90,7 @@ Domain<3, TargetFrame> Cylinder<TargetFrame>::create_domain() const noexcept {
 
   if (use_equiangular_map_) {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Equiangular3DPrism{
                 Equiangular(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
                             inner_radius_ / sqrt(2.0)),
@@ -103,14 +99,14 @@ Domain<3, TargetFrame> Cylinder<TargetFrame>::create_domain() const noexcept {
                 Affine{-1.0, 1.0, lower_bound_, upper_bound_}}));
   } else {
     coord_maps.emplace_back(
-        make_coordinate_map_base<Frame::Logical, TargetFrame>(
+        make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
             Affine3D{Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
                             inner_radius_ / sqrt(2.0)),
                      Affine(-1.0, 1.0, -1.0 * inner_radius_ / sqrt(2.0),
                             inner_radius_ / sqrt(2.0)),
                      Affine{-1.0, 1.0, lower_bound_, upper_bound_}}));
   }
-  return Domain<3, TargetFrame>{
+  return Domain<3>{
       std::move(coord_maps), corners,
       is_periodic_in_z_
           ? std::vector<PairOfFaces>{{{0, 1, 2, 3}, {8, 9, 10, 11}},
@@ -121,9 +117,7 @@ Domain<3, TargetFrame> Cylinder<TargetFrame>::create_domain() const noexcept {
           : std::vector<PairOfFaces>{}};
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 3>> Cylinder<TargetFrame>::initial_extents()
-    const noexcept {
+std::vector<std::array<size_t, 3>> Cylinder::initial_extents() const noexcept {
   return {
       initial_number_of_grid_points_,
       initial_number_of_grid_points_,
@@ -133,13 +127,9 @@ std::vector<std::array<size_t, 3>> Cylinder<TargetFrame>::initial_extents()
         initial_number_of_grid_points_[2]}}};
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 3>>
-Cylinder<TargetFrame>::initial_refinement_levels() const noexcept {
+std::vector<std::array<size_t, 3>> Cylinder::initial_refinement_levels() const
+    noexcept {
   return {5, make_array<3>(initial_refinement_)};
 }
-
-template class Cylinder<Frame::Grid>;
-template class Cylinder<Frame::Inertial>;
 }  // namespace creators
 }  // namespace domain

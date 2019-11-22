@@ -165,7 +165,7 @@ struct MockInterpolationTarget {
       Parallel::get_const_global_cache_tags_from_actions<tmpl::list<
           typename InterpolationTargetTag::compute_target_points,
           typename InterpolationTargetTag::post_interpolation_callback>>,
-      tmpl::list<::Tags::Domain<Metavariables::volume_dim, Frame::Inertial>>>>;
+      tmpl::list<::Tags::Domain<Metavariables::volume_dim>>>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -299,15 +299,14 @@ SPECTRE_TEST_CASE(
   intrp::OptionHolders::KerrHorizon kerr_horizon_opts_C(10, {{0.0, 0.0, 0.0}},
                                                         1.5, {{0.0, 0.0, 0.0}});
   const auto domain_creator =
-      domain::creators::Shell<Frame::Inertial>(0.9, 4.9, 1, {{5, 5}}, false);
+      domain::creators::Shell(0.9, 4.9, 1, {{5, 5}}, false);
   tuples::TaggedTuple<observers::Tags::ReductionFileName,
                       ::intrp::Tags::KerrHorizon<metavars::SurfaceA>,
-                      ::Tags::Domain<3, Frame::Inertial>,
+                      ::Tags::Domain<3>,
                       ::intrp::Tags::KerrHorizon<metavars::SurfaceB>,
                       ::intrp::Tags::KerrHorizon<metavars::SurfaceC>>
       tuple_of_opts{h5_file_prefix, kerr_horizon_opts_A,
-                    domain_creator.create_domain(),
-                    kerr_horizon_opts_B,
+                    domain_creator.create_domain(), kerr_horizon_opts_B,
                     kerr_horizon_opts_C};
 
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};

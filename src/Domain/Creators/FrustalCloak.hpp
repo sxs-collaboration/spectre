@@ -10,22 +10,16 @@
 #include <cstddef>
 #include <vector>
 
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-template <size_t Dim, typename Frame>
-class DomainCreator;  // IWYU pragma: keep
-/// \endcond
-
 namespace domain {
 namespace creators {
-
 /// Create a 3D cubical domain with two equal-sized abutting excised cubes in
 /// the center. This is done by combining ten frusta.
-template <typename TargetFrame>
-class FrustalCloak : public DomainCreator<3, TargetFrame> {
+class FrustalCloak : public DomainCreator<3> {
  public:
   struct InitialRefinement {
     using type = size_t;
@@ -107,7 +101,7 @@ class FrustalCloak : public DomainCreator<3, TargetFrame> {
   FrustalCloak& operator=(FrustalCloak&&) noexcept = default;
   ~FrustalCloak() noexcept override = default;
 
-  Domain<3, TargetFrame> create_domain() const noexcept override;
+  Domain<3> create_domain() const noexcept override;
 
   std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
 

@@ -7,24 +7,18 @@
 #include <cstddef>
 #include <vector>
 
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 
-/// \cond
-template <size_t Dim, typename Frame>
-class DomainCreator;  // IWYU pragma: keep
-/// \endcond
-
 namespace domain {
 namespace creators {
-
 /// Create a 3D Domain in the shape of a cylinder where the cross-section
 /// is a square surrounded by four two-dimensional wedges (see Wedge2D).
 ///
 /// \image html Cylinder.png "The Cylinder Domain."
-template <typename TargetFrame>
-class Cylinder : public DomainCreator<3, TargetFrame> {
+class Cylinder : public DomainCreator<3> {
  public:
   struct InnerRadius {
     using type = double;
@@ -107,7 +101,7 @@ class Cylinder : public DomainCreator<3, TargetFrame> {
   Cylinder& operator=(Cylinder&&) noexcept = default;
   ~Cylinder() noexcept override = default;
 
-  Domain<3, TargetFrame> create_domain() const noexcept override;
+  Domain<3> create_domain() const noexcept override;
 
   std::vector<std::array<size_t, 3>> initial_extents() const noexcept override;
 

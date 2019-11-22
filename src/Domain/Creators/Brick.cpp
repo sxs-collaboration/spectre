@@ -17,17 +17,14 @@
 
 /// \cond
 namespace Frame {
-struct Grid;
-struct Inertial;
 struct Logical;
+struct Inertial;
 }  // namespace Frame
 /// \endcond
 
 namespace domain {
 namespace creators {
-
-template <typename TargetFrame>
-Brick<TargetFrame>::Brick(
+Brick::Brick(
     typename LowerBound::type lower_xyz, typename UpperBound::type upper_xyz,
     typename IsPeriodicIn::type is_periodic_in_xyz,
     typename InitialRefinement::type initial_refinement_level_xyz,
@@ -42,8 +39,7 @@ Brick<TargetFrame>::Brick(
       initial_number_of_grid_points_in_xyz_(                   // NOLINT
           std::move(initial_number_of_grid_points_in_xyz)) {}  // NOLINT
 
-template <typename TargetFrame>
-Domain<3, TargetFrame> Brick<TargetFrame>::create_domain() const noexcept {
+Domain<3> Brick::create_domain() const noexcept {
   using Affine = CoordinateMaps::Affine;
   using Affine3D = CoordinateMaps::ProductOf3Maps<Affine, Affine, Affine>;
   std::vector<PairOfFaces> identifications{};
@@ -57,8 +53,8 @@ Domain<3, TargetFrame> Brick<TargetFrame>::create_domain() const noexcept {
     identifications.push_back({{0, 1, 2, 3}, {4, 5, 6, 7}});
   }
 
-  return Domain<3, TargetFrame>{
-      make_vector_coordinate_map_base<Frame::Logical, TargetFrame>(
+  return Domain<3>{
+      make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine3D{Affine{-1., 1., lower_xyz_[0], upper_xyz_[0]},
                    Affine{-1., 1., lower_xyz_[1], upper_xyz_[1]},
                    Affine{-1., 1., lower_xyz_[2], upper_xyz_[2]}}),
@@ -66,19 +62,13 @@ Domain<3, TargetFrame> Brick<TargetFrame>::create_domain() const noexcept {
       identifications};
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 3>> Brick<TargetFrame>::initial_extents() const
-    noexcept {
+std::vector<std::array<size_t, 3>> Brick::initial_extents() const noexcept {
   return {initial_number_of_grid_points_in_xyz_};
 }
 
-template <typename TargetFrame>
-std::vector<std::array<size_t, 3>>
-Brick<TargetFrame>::initial_refinement_levels() const noexcept {
+std::vector<std::array<size_t, 3>> Brick::initial_refinement_levels() const
+    noexcept {
   return {initial_refinement_level_xyz_};
 }
-
-template class Brick<Frame::Inertial>;
-template class Brick<Frame::Grid>;
 }  // namespace creators
 }  // namespace domain
