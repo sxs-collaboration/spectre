@@ -22,7 +22,7 @@
  * \tparam T type to serialize
  */
 template <typename T, typename U>
-std::vector<char> serialize(const U& obj) {
+std::vector<char> serialize(const U& obj) noexcept {
   static_assert(std::is_same<T, U>::value,
                 "Explicit type for serialization differs from deduced type");
   const T& typed_obj = obj;
@@ -47,7 +47,8 @@ std::vector<char> serialize(const U& obj) {
  * \tparam T the type to deserialize to
  */
 template <typename T>
-T deserialize(const void* const data) {
+T deserialize(const void* const data) noexcept {  // NOLINT
+  // clang-tidy: no const in forward decl (this is a definition)
   PUP::fromMem reader(data);
   T result{};
   reader | result;
