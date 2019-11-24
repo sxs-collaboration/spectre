@@ -38,5 +38,9 @@ struct ConformalFactorGradient : db::SimpleTag {
   static std::string name() noexcept { return "ConformalFactorGradient"; }
 };
 
+/// All (primal, i.e. non-auxiliary) XCTS tags
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+using all = tmpl::list<ConformalFactor<DataType>>;
+
 }  // namespace Tags
 }  // namespace Xcts

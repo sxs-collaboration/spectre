@@ -220,13 +220,7 @@ struct MassFlux : db::SimpleTag {
 
 /// The tags for the primitive variables for GRMHD.
 template <typename DataType>
-using grmhd_tags =
-    tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-               hydro::Tags::SpecificInternalEnergy<DataType>,
-               hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
-               hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
-               hydro::Tags::DivergenceCleaningField<DataType>,
-               hydro::Tags::LorentzFactor<DataType>,
-               hydro::Tags::Pressure<DataType>,
-               hydro::Tags::SpecificEnthalpy<DataType>>;
+using grmhd_tags
+    [[deprecated("Use `hydro::Tags::all_mhd_primitive` instead")]] =
+        Tags::all_mhd_primitive<DataType, 3>;
 }  // namespace hydro

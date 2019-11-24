@@ -266,7 +266,8 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
         tmpl2::flat_any_v<(
             cpp17::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
             cpp17::is_same_v<Tags, hydro::Tags::LorentzFactor<DataType>> or
-            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>)...>>
+            not tmpl::list_contains_v<
+                hydro::Tags::all_mhd_primitive<DataType, 3>, Tags>)...>>
         vars(bh_spin_a_, background_spacetime_, x, t,
              index_helper(
                  tmpl::index_of<tmpl::list<Tags...>,
@@ -289,7 +290,8 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
         DataType,
         cpp17::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
             cpp17::is_same_v<Tag, hydro::Tags::LorentzFactor<DataType>> or
-            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>>
+            not tmpl::list_contains_v<
+                hydro::Tags::all_mhd_primitive<DataType, 3>, Tag>>
         intermediate_vars(bh_spin_a_, background_spacetime_, x, t,
                           std::numeric_limits<size_t>::max(),
                           std::numeric_limits<size_t>::max());
@@ -369,8 +371,8 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
 
   // Grab the metric variables
   template <typename DataType, typename Tag,
-            Requires<not tmpl::list_contains_v<hydro::grmhd_tags<DataType>,
-                                               Tag>> = nullptr>
+            Requires<not tmpl::list_contains_v<
+                hydro::Tags::all_mhd_primitive<DataType, 3>, Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(
       const tnsr::I<DataType, 3>& /*x*/, tmpl::list<Tag> /*meta*/,
       IntermediateVariables<DataType, true>& vars, const size_t index) const

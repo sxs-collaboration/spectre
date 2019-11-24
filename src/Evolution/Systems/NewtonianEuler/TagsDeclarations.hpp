@@ -37,6 +37,13 @@ struct SoundSpeedSquaredCompute;
 struct SourceTermBase;
 template <typename InitialDataType>
 struct SourceTerm;
+
+/// All primitive NewtonianEuler tags
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+using all_primitive =
+    tmpl::list<MassDensity<DataType>, SpecificInternalEnergy<DataType>,
+               Velocity<DataType, Dim, Frame>, Pressure<DataType>>;
+
 }  // namespace Tags
 }  // namespace NewtonianEuler
 /// \endcond

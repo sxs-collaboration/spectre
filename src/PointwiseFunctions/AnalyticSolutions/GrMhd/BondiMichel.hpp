@@ -249,8 +249,8 @@ class BondiMichel : public MarkAsAnalyticSolution {
         sonic_radius_,
         sonic_density_,
         x,
-        tmpl2::flat_any_v<
-            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>...>,
+        tmpl2::flat_any_v<not tmpl::list_contains_v<
+            hydro::Tags::all_mhd_primitive<DataType, 3>, Tags>...>,
         background_spacetime_};
     return {get<Tags>(variables(x, tmpl::list<Tags>{}, intermediate_vars))...};
   }
@@ -266,7 +266,8 @@ class BondiMichel : public MarkAsAnalyticSolution {
             mass_, polytropic_constant_, polytropic_exponent_,
             bernoulli_constant_squared_minus_one_, sonic_radius_,
             sonic_density_, x,
-            not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>,
+            not tmpl::list_contains_v<
+                hydro::Tags::all_mhd_primitive<DataType, 3>, Tag>,
             background_spacetime_});
   }
 
@@ -338,8 +339,8 @@ class BondiMichel : public MarkAsAnalyticSolution {
       -> tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>;
 
   template <typename DataType, typename Tag,
-            Requires<not tmpl::list_contains_v<hydro::grmhd_tags<DataType>,
-                                               Tag>> = nullptr>
+            Requires<not tmpl::list_contains_v<
+                hydro::Tags::all_mhd_primitive<DataType, 3>, Tag>> = nullptr>
   tuples::TaggedTuple<Tag> variables(const tnsr::I<DataType, 3>& /*x*/,
                                      tmpl::list<Tag> /*meta*/,
                                      IntermediateVars<DataType>& vars) const

@@ -9,6 +9,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsCollections.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/TMPL.hpp"
@@ -254,19 +255,9 @@ class KerrSchild : public MarkAsAnalyticSolution {
   using DerivSpatialMetric = ::Tags::deriv<
       gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>,
       tmpl::size_t<volume_dim>, Frame::Inertial>;
+
   template <typename DataType>
-  using tags = tmpl::list<
-      gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
-      DerivLapse<DataType>,
-      gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>,
-      ::Tags::dt<gr::Tags::Shift<volume_dim, Frame::Inertial, DataType>>,
-      DerivShift<DataType>,
-      gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>,
-      ::Tags::dt<
-          gr::Tags::SpatialMetric<volume_dim, Frame::Inertial, DataType>>,
-      DerivSpatialMetric<DataType>, gr::Tags::SqrtDetSpatialMetric<DataType>,
-      gr::Tags::ExtrinsicCurvature<volume_dim, Frame::Inertial, DataType>,
-      gr::Tags::InverseSpatialMetric<volume_dim, Frame::Inertial, DataType>>;
+  using tags = gr::Tags::all_spacetime_three_plus_one<DataType, volume_dim>;
 
   template <typename DataType>
   tuples::tagged_tuple_from_typelist<tags<DataType>> variables(

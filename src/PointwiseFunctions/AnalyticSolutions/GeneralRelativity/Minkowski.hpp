@@ -10,6 +10,7 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsCollections.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -60,17 +61,10 @@ class Minkowski : public MarkAsAnalyticSolution {
   using DerivSpatialMetric =
       ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
                     tmpl::size_t<Dim>, Frame::Inertial>;
+
   template <typename DataType>
-  using tags = tmpl::list<
-      gr::Tags::Lapse<DataType>, ::Tags::dt<gr::Tags::Lapse<DataType>>,
-      DerivLapse<DataType>, gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-      ::Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>,
-      DerivShift<DataType>,
-      gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-      ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>,
-      DerivSpatialMetric<DataType>, gr::Tags::SqrtDetSpatialMetric<DataType>,
-      gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>;
+  using tags = gr::Tags::all_spacetime_three_plus_one<DataType, volume_dim>;
+
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataType, Dim>& x,
                                          double t,

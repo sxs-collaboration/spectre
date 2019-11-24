@@ -46,7 +46,7 @@ struct System {
       EquationOfStateType::thermodynamic_dim;
 
   using primitive_variables_tag =
-      ::Tags::Variables<hydro::grmhd_tags<DataVector>>;
+      ::Tags::Variables<hydro::Tags::all_mhd_primitive<DataVector, volume_dim>>;
 
   using variables_tag =
       ::Tags::Variables<tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<>,

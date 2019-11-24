@@ -60,6 +60,21 @@ template <typename DataType>
 struct SpecificInternalEnergy;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct MassFlux;
+
+// All tags for primitive relativistic fluid quantities
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+using all_relativistic_primitive =
+    tmpl::list<RestMassDensity<DataType>, SpecificInternalEnergy<DataType>,
+               SpatialVelocity<DataType, Dim, Frame>, LorentzFactor<DataType>,
+               Pressure<DataType>, SpecificEnthalpy<DataType>>;
+
+// All tags for primitive relativistic magneto-hydrodynamic quantities
+template <typename DataType, size_t Dim, typename Frame = Frame::Inertial>
+using all_mhd_primitive =
+    tmpl::append<all_relativistic_primitive<DataType, Dim, Frame>,
+                 tmpl::list<MagneticField<DataType, Dim, Frame>,
+                            DivergenceCleaningField<DataType>>>;
+
 }  // namespace Tags
 }  // namespace hydro
 /// \endcond
