@@ -867,28 +867,76 @@ using is_callable_t = typename is_callable<T, Args...>::type;
  *
  * \see tt::is_callable
  */
-#define CREATE_IS_CALLABLE(METHOD_NAME)                                     \
-  template <typename TT, typename... TArgs>                                 \
-  class is_##METHOD_NAME##_callable {                                       \
-   private:                                                                 \
-    template <typename T, typename... Args>                                 \
-    static auto test_callable(int) noexcept                                 \
-        -> decltype(std::declval<T>().METHOD_NAME(std::declval<Args>()...), \
-                    std::true_type());                                      \
-    template <typename, typename...>                                        \
-    static auto test_callable(...) noexcept -> std::false_type;             \
-                                                                            \
-   public:                                                                  \
-    static constexpr bool value =                                           \
-        decltype(test_callable<TT, TArgs...>(0))::value;                    \
-    using type = std::integral_constant<bool, value>;                       \
-  };                                                                        \
-  template <typename T, typename... Args>                                   \
-  static constexpr const bool is_##METHOD_NAME##_callable_v =               \
-      is_##METHOD_NAME##_callable<T, Args...>::value;                       \
-  template <typename T, typename... Args>                                   \
-  using is_##METHOD_NAME##_callable_t =                                     \
-      typename is_##METHOD_NAME##_callable<T, Args...>::type;
+#define CREATE_IS_CALLABLE(METHOD_NAME)                                        \
+  struct AnyReturnType##METHOD_NAME {};                                        \
+                                                                               \
+  template <typename ReturnType, typename TT, typename... TArgs>               \
+  class is_##METHOD_NAME##_callable_r {                                        \
+   private:                                                                    \
+    struct NotCallable {};                                                     \
+    template <typename T, typename... Args>                                    \
+    static auto test_callable(int) noexcept                                    \
+        -> decltype(std::declval<T>().METHOD_NAME(std::declval<Args>()...));   \
+    template <typename, typename...>                                           \
+    static auto test_callable(...) noexcept -> NotCallable;                    \
+                                                                               \
+   public:                                                                     \
+    static constexpr bool value =                                              \
+        (cpp17::is_same_v<ReturnType, AnyReturnType##METHOD_NAME> and          \
+         not cpp17::is_same_v<decltype(test_callable<TT, TArgs...>(0)),        \
+                              NotCallable>) or                                 \
+        cpp17::is_same_v<decltype(test_callable<TT, TArgs...>(0)),             \
+                         ReturnType>;                                          \
+    using type = std::integral_constant<bool, value>;                          \
+  };                                                                           \
+                                                                               \
+  template <typename ReturnType, typename T, typename... Args>                 \
+  static constexpr const bool is_##METHOD_NAME##_callable_r_v =                \
+      is_##METHOD_NAME##_callable_r<ReturnType, T, Args...>::value;            \
+                                                                               \
+  template <typename ReturnType, typename T, typename... Args>                 \
+  using is_##METHOD_NAME##_callable_r_t =                                      \
+      typename is_##METHOD_NAME##_callable_r<ReturnType, T, Args...>::type;    \
+                                                                               \
+  template <typename T, typename... Args>                                      \
+  static constexpr const bool is_##METHOD_NAME##_callable_v =                  \
+      is_##METHOD_NAME##_callable_r_v<AnyReturnType##METHOD_NAME, T, Args...>; \
+                                                                               \
+  template <typename T, typename... Args>                                      \
+  using is_##METHOD_NAME##_callable_t =                                        \
+      is_##METHOD_NAME##_callable_r_t<AnyReturnType##METHOD_NAME, T, Args...>;
+
+/*!
+ * \ingroup TypeTraitsGroup
+ * \brief Generate a type trait to check if a class has a `static constexpr`
+ * variable, optionally also checking its type.
+ *
+ * \example
+ * \snippet Utilities/Test_TypeTraits.cpp CREATE_HAS_EXAMPLE
+ *
+ * \see `CREATE_IS_CALLABLE`
+ */
+// Use `NoSuchType*****` to represent any `VariableType`, i.e. not checking the
+// variable type at all. If someone has that many pointers to a thing that isn't
+// useful, it's their fault...
+#define CREATE_HAS_STATIC_MEMBER_VARIABLE(CONSTEXPR_NAME)                    \
+  template <typename CheckingType, typename VariableType = NoSuchType*****,  \
+            typename = cpp17::void_t<>>                                      \
+  struct has_##CONSTEXPR_NAME : std::false_type {};                          \
+                                                                             \
+  template <typename CheckingType, typename VariableType>                    \
+  struct has_##CONSTEXPR_NAME<CheckingType, VariableType,                    \
+                              cpp17::void_t<std::remove_const_t<decltype(    \
+                                  CheckingType::CONSTEXPR_NAME)>>>           \
+      : cpp17::bool_constant<                                                \
+            cpp17::is_same_v<VariableType, NoSuchType*****> or               \
+            cpp17::is_same_v<                                                \
+                std::remove_const_t<decltype(CheckingType::CONSTEXPR_NAME)>, \
+                VariableType>> {};                                           \
+                                                                             \
+  template <typename CheckingType, typename VariableType = NoSuchType*****>  \
+  static constexpr const bool has_##CONSTEXPR_NAME##_v =                     \
+      has_##CONSTEXPR_NAME<CheckingType, VariableType>::value;
 
 // @{
 /// \ingroup TypeTraitsGroup

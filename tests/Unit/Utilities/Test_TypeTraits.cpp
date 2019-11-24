@@ -395,18 +395,44 @@ namespace  {
 CREATE_IS_CALLABLE(foo)
 CREATE_IS_CALLABLE(foobar)
 struct bar {
-  void foo(int /*unused*/, double /*unused*/) {}
+  size_t foo(int /*unused*/, double /*unused*/) { return size_t{0}; }
 };
 
 static_assert(is_foo_callable_v<bar, int, double>,
+              "Failed testing CREATE_IS_CALLABLE");
+static_assert(is_foo_callable_r_v<size_t, bar, int, double>,
               "Failed testing CREATE_IS_CALLABLE");
 static_assert(not is_foo_callable_v<bar, int>,
               "Failed testing CREATE_IS_CALLABLE");
 static_assert(not is_foo_callable_v<bar>,
               "Failed testing CREATE_IS_CALLABLE");
+static_assert(not is_foobar_callable_r_v<size_t, bar, int, double>,
+              "Failed testing CREATE_IS_CALLABLE");
+static_assert(not is_foo_callable_r_v<int, bar, int, double>,
+              "Failed testing CREATE_IS_CALLABLE");
 static_assert(not is_foobar_callable_v<bar, int, double>,
               "Failed testing CREATE_IS_CALLABLE");
 /// [CREATE_IS_CALLABLE_EXAMPLE]
+
+/// [CREATE_HAS_EXAMPLE]
+CREATE_HAS_STATIC_MEMBER_VARIABLE(foo)
+CREATE_HAS_STATIC_MEMBER_VARIABLE(foobar)
+struct testing_create_has_static_member_variable {
+  static constexpr size_t foo = 1;
+};
+
+static_assert(has_foo_v<testing_create_has_static_member_variable>,
+              "Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE");
+static_assert(has_foo_v<testing_create_has_static_member_variable, size_t>,
+              "Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE");
+static_assert(not has_foo_v<testing_create_has_static_member_variable, int>,
+              "Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE");
+static_assert(not has_foobar_v<testing_create_has_static_member_variable>,
+              "Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE");
+static_assert(
+    not has_foobar_v<testing_create_has_static_member_variable, size_t>,
+    "Failed testing CREATE_HAS_STATIC_MEMBER_VARIABLE");
+/// [CREATE_HAS_EXAMPLE]
 }  // namespace
 
 /// [is_hashable_example]
