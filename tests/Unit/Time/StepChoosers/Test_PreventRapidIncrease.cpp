@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cstddef>
+#include <cstdint>
 #include <initializer_list>
 #include <limits>
 #include <memory>
@@ -20,6 +21,7 @@
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestCreation.hpp"
@@ -55,22 +57,24 @@ void check_case(const Frac& expected_frac,
                               ? std::numeric_limits<double>::infinity()
                               : (expected_frac * slab.duration()).value();
 
-  const auto make_time = [&slab](Frac frac) noexcept {
-    Slab time_slab = slab;
-    while (frac > 1) {
-      time_slab = time_slab.advance();
-      frac -= 1;
-    }
-    while (frac < 0) {
-      time_slab = time_slab.retreat();
-      frac += 1;
-    }
-    return Time(time_slab, frac);
-  };
-
   for (const auto& sign : {1, -1}) {
     CAPTURE(sign);
-    const Time current_time = make_time(sign * times[0]);
+    const auto make_time_id = [&sign, &slab, &times](const size_t i) noexcept {
+      Frac frac = sign * times[i];
+      int64_t slab_number = 0;
+      Slab time_slab = slab;
+      while (frac > 1) {
+        time_slab = time_slab.advance();
+        frac -= 1;
+        slab_number += sign;
+      }
+      while (frac < 0) {
+        time_slab = time_slab.retreat();
+        frac += 1;
+        slab_number -= sign;
+      }
+      return TimeStepId(sign > 0, slab_number, Time(time_slab, frac));
+    };
 
     // Silly type.  The step chooser should not care.
     struct Tag : db::SimpleTag {
@@ -79,10 +83,12 @@ void check_case(const Frac& expected_frac,
     using history_tag = Tags::HistoryEvolvedVariables<Tag, Tag>;
     db::item_type<history_tag> history{};
     for (size_t i = 1; i < times.size(); ++i) {
-      history.insert_initial(make_time(sign * times[i]), nullptr, nullptr);
+      history.insert_initial(make_time_id(i), nullptr, nullptr);
     }
-
     CAPTURE(history);
+
+    const Time current_time = make_time_id(0).substep_time();
+
     const auto box =
         db::create<db::AddSimpleTags<Tags::SubstepTime, history_tag>>(
             current_time, std::move(history));

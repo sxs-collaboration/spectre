@@ -40,7 +40,7 @@ void take_step(
        substep < stepper.number_of_substeps();
        ++substep) {
     CHECK(time_id.substep() == substep);
-    history->insert(time_id.substep_time(), *y, rhs(*y));
+    history->insert(time_id, *y, rhs(*y));
     stepper.update_u(y, history, step_size);
     time_id = stepper.next_time_id(time_id, step_size);
   }
@@ -56,6 +56,7 @@ void initialize_history(
     F2&& rhs,
     TimeDelta step_size,
     const size_t number_of_past_steps) noexcept {
+  int64_t slab_number = -1;
   for (size_t j = 0; j < number_of_past_steps; ++j) {
     ASSERT(time.slab() == step_size.slab(), "Slab mismatch");
     if ((step_size.is_positive() and time.is_at_slab_start()) or
@@ -63,10 +64,12 @@ void initialize_history(
       const Slab new_slab = time.slab().advance_towards(-step_size);
       time = time.with_slab(new_slab);
       step_size = step_size.with_slab(new_slab);
+      --slab_number;
     }
     time -= step_size;
-    history->insert_initial(time, analytic(time.value()),
-                            rhs(analytic(time.value())));
+    history->insert_initial(
+        TimeStepId(step_size.is_positive(), slab_number, time),
+        analytic(time.value()), rhs(analytic(time.value())));
   }
 }
 }  // namespace
@@ -84,7 +87,7 @@ void check_substep_properties(const TimeStepper& stepper) noexcept {
   CHECK(stepper.can_change_step_size(id, history));
   id = stepper.next_time_id(id, slab.duration() / 2);
   if (id.substep() != 0) {
-    history.insert(id.substep_time(), 0.0, 0.0);
+    history.insert(id, 0.0, 0.0);
     CHECK(not stepper.can_change_step_size(id, history));
   }
 }
@@ -244,12 +247,12 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
         history_step_size = history_step_size.with_slab(new_slab);
       }
       history_time -= history_step_size;
-      volume_history.insert_initial(history_time,
-                                    analytic(history_time.value()), 0.);
-      boundary_history.local_insert_initial(
-          TimeStepId(forward, 0, history_time), unused_local_deriv);
-      boundary_history.remote_insert_initial(
-          TimeStepId(forward, 0, history_time), driver(history_time.value()));
+      const TimeStepId history_id(forward, 0, history_time);
+      volume_history.insert_initial(history_id, analytic(history_time.value()),
+                                    0.);
+      boundary_history.local_insert_initial(history_id, unused_local_deriv);
+      boundary_history.remote_insert_initial(history_id,
+                                             driver(history_time.value()));
     }
   }
 
@@ -257,7 +260,7 @@ void equal_rate_boundary(const LtsTimeStepper& stepper,
     for (uint64_t substep = 0;
          substep < stepper.number_of_substeps();
          ++substep) {
-      volume_history.insert(time_id.substep_time(), y, 0.);
+      volume_history.insert(time_id, y, 0.);
       boundary_history.local_insert(time_id, unused_local_deriv);
       boundary_history.remote_insert(time_id,
                                      driver(time_id.substep_time().value()));
@@ -318,7 +321,7 @@ void check_dense_output(const TimeStepper& stepper,
     for (;;) {
       // Dense output is done after the last substep
       const auto next_time_id = stepper.next_time_id(time_id, step_size);
-      history.insert(time_id.substep_time(), y, static_cast<double>(y));
+      history.insert(time_id, y, static_cast<double>(y));
       if (next_time_id.substep() == 0 and
           time < next_time_id.step_time().value()) {
         stepper.dense_update_u(make_not_null(&y), history, time);

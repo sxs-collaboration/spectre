@@ -13,10 +13,8 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
-// IWYU pragma: no_include "Time/Time.hpp" // for Time
-
 /// \cond
-// IWYU pragma: no_forward_declare Time
+class TimeStepId;
 namespace Parallel {
 template <typename Metavariables>
 class ConstGlobalCache;
@@ -38,7 +36,7 @@ namespace Actions {
 ///   - variables_tag
 ///   - dt_variables_tag
 ///   - Tags::HistoryEvolvedVariables<system::variables_tag, dt_variables_tag>
-///   - Tags::Time
+///   - Tags::TimeStepId
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -65,10 +63,10 @@ struct RecordTimeStepperData {
         [](const gsl::not_null<db::item_type<dt_variables_tag>*> dt_vars,
            const gsl::not_null<db::item_type<history_tag>*> history,
            const db::const_item_type<variables_tag>& vars,
-           const db::const_item_type<Tags::SubstepTime>& time) noexcept {
-          history->insert(time, vars, std::move(*dt_vars));
+           const db::const_item_type<Tags::TimeStepId>& time_step_id) noexcept {
+          history->insert(time_step_id, vars, std::move(*dt_vars));
         },
-        db::get<variables_tag>(box), db::get<Tags::SubstepTime>(box));
+        db::get<variables_tag>(box), db::get<Tags::TimeStepId>(box));
 
     return std::forward_as_tuple(std::move(box));
   }
