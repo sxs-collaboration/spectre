@@ -57,6 +57,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
+      - name: Test script
+        run: |
+          cd $GITHUB_WORKSPACE
+          ./tools/CheckFiles.sh --test
       - name: Check files
         run: |
           cd $GITHUB_WORKSPACE
