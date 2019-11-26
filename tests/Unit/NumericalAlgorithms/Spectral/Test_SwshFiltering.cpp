@@ -74,12 +74,19 @@ void test_angular_filtering() noexcept {
 
   filter_swsh_volume_quantity(make_not_null(&to_filter), l_max, l_max - 3, 5.0,
                               2);
-  CHECK_ITERABLE_APPROX(to_filter.data(), expected_post_filter.data());
+  Approx angular_approx =
+      Approx::custom()
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
+          .scale(1.0);
+
+  CHECK_ITERABLE_CUSTOM_APPROX(to_filter.data(), expected_post_filter.data(),
+                               angular_approx);
 
   filter_swsh_boundary_quantity(make_not_null(&pre_filter_angular_data), l_max,
                                 l_max - 3);
-  CHECK_ITERABLE_APPROX(pre_filter_angular_data.data(),
-                        expected_post_filter_angular_data.data());
+  CHECK_ITERABLE_CUSTOM_APPROX(pre_filter_angular_data.data(),
+                               expected_post_filter_angular_data.data(),
+                               angular_approx);
 }
 
 template <int Spin>
