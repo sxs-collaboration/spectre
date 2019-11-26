@@ -8,3 +8,8 @@ spectre_python_add_module(
   PYTHON_FILES
   Visualization/Python/GenerateXdmf.py
   )
+
+spectre_python_add_executable(
+  GenerateXdmf
+  Visualization/GenerateXdmf.py
+)

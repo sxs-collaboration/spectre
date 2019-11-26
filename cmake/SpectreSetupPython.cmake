@@ -55,11 +55,14 @@ configure_file(
 # - SOURCES       The C++ source files for bindings. Omit if no bindings
 #                 are being generated.
 #
+# - LIBRARY_NAME  The name of the C++ libray, e.g. PyDataStructures.
+#                 Required if SOURCES are specified. Must begin with "Py".
+#
 # - PYTHON_FILES  List of the python files (relative to
 #                 ${CMAKE_SOURCE_DIR}/src) to add to the module. Omit if
 #                 no python files are to be provided.
 function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
-  set(SINGLE_VALUE_ARGS MODULE_PATH)
+  set(SINGLE_VALUE_ARGS MODULE_PATH LIBRARY_NAME)
   set(MULTI_VALUE_ARGS SOURCES PYTHON_FILES)
   cmake_parse_arguments(
     ARG ""
@@ -81,19 +84,27 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
 
   # Add our python library, if it has sources
   set(SPECTRE_PYTHON_MODULE_IMPORT "")
-  if(NOT "${ARG_SOURCES}" STREQUAL "")
-    add_library("Py${MODULE_NAME}" MODULE ${ARG_SOURCES})
+  if(BUILD_PYTHON_BINDINGS AND NOT "${ARG_SOURCES}" STREQUAL "")
+    if("${ARG_LIBRARY_NAME}" STREQUAL "")
+      message(FATAL_ERROR "Set a LIBRARY_NAME for Python module "
+          "'${MODULE_NAME}' that has sources.")
+    endif()
+    if(NOT "${ARG_LIBRARY_NAME}" MATCHES "^Py")
+      message(FATAL_ERROR "The LIBRARY_NAME for Python module "
+          "'${MODULE_NAME}' must begin with 'Py' but is '${ARG_LIBRARY_NAME}'.")
+    endif()
+    add_library(${ARG_LIBRARY_NAME} MODULE ${ARG_SOURCES})
     # We don't want the 'lib' prefix for python modules, so we set the output name
     SET_TARGET_PROPERTIES(
-      "Py${MODULE_NAME}"
+      ${ARG_LIBRARY_NAME}
       PROPERTIES
       PREFIX ""
-      LIBRARY_OUTPUT_NAME "_${MODULE_NAME}"
+      LIBRARY_OUTPUT_NAME "_${ARG_LIBRARY_NAME}"
       LIBRARY_OUTPUT_DIRECTORY ${MODULE_LOCATION}
       )
-    set(SPECTRE_PYTHON_MODULE_IMPORT "from ._${MODULE_NAME} import *")
-    add_dependencies(test-executables "Py${MODULE_NAME}")
-  endif(NOT "${ARG_SOURCES}" STREQUAL "")
+    set(SPECTRE_PYTHON_MODULE_IMPORT "from ._${ARG_LIBRARY_NAME} import *")
+    add_dependencies(test-executables ${ARG_LIBRARY_NAME})
+  endif(BUILD_PYTHON_BINDINGS AND NOT "${ARG_SOURCES}" STREQUAL "")
 
   # Read the __init__.py file if it exists
   set(INIT_FILE_LOCATION "${MODULE_LOCATION}/__init__.py")
@@ -204,6 +215,49 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
   endwhile(NOT ${CURRENT_MODULE} STREQUAL ${SPECTRE_PYTHON_PREFIX})
 endfunction()
 
+# Link with the LIBRARIES if Python bindings are being built
+function (spectre_python_link_libraries LIBRARY_NAME)
+  if(NOT BUILD_PYTHON_BINDINGS)
+    return()
+  endif()
+  target_link_libraries(
+    ${LIBRARY_NAME}
+    # Forward all remaining arguments
+    ${ARGN}
+    ${SPECTRE_LINK_PYBINDINGS}
+    )
+endfunction()
+
+# Add the DEPENDENCIES if Python bindings are being built
+function (spectre_python_add_dependencies LIBRARY_NAME)
+  if(NOT BUILD_PYTHON_BINDINGS)
+    return()
+  endif()
+  add_dependencies(
+    ${LIBRARY_NAME}
+    # Forward all remaining arguments
+    ${ARGN}
+    )
+endfunction()
+
+add_custom_target(python-executables)
+
+# Register a Python file as an executable. It will be symlinked to bin/.
+# - EXECUTABLE_NAME   The name of the executable in bin/
+#
+# - EXECUTABLE_PATH   Path to the Python file within the Python package,
+#                     e.g. "Visualization/GenerateXdmf.py"
+#                     Note this is the path within the Python package that was
+#                     configured by calling `spectre_python_add_module`, _not_
+#                     the path to the Python file in `src/`.
+function (spectre_python_add_executable EXECUTABLE_NAME EXECUTABLE_PATH)
+  add_custom_target(${EXECUTABLE_NAME} ALL
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+    "${SPECTRE_PYTHON_PREFIX}/${EXECUTABLE_PATH}"
+    "${CMAKE_BINARY_DIR}/bin/${EXECUTABLE_NAME}")
+  add_dependencies(python-executables ${EXECUTABLE_NAME})
+endfunction()
+
 # Register a python test file with ctest.
 # - TEST_NAME    The name of the test,
 #                e.g. "Unit.DataStructures.Python.DataVector"
@@ -211,11 +265,8 @@ endfunction()
 # - FILE         The file to add, e.g. Test_DataVector.py
 #
 # - TAGS         A semicolon separated list of labels for the test,
-#                e.g. "unit;DataStructures;python"
+#                e.g. "Unit;DataStructures;Python"
 function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS)
-  if(NOT BUILD_PYTHON_BINDINGS)
-    return()
-  endif()
   get_filename_component(FILE "${FILE}" ABSOLUTE)
   string(TOLOWER "${TAGS}" TAGS)
 
@@ -236,4 +287,19 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS)
     LABELS "${TAGS}"
     ENVIRONMENT "PYTHONPATH=${SPECTRE_PYTHON_PREFIX_PARENT}:\$PYTHONPATH"
     )
+endfunction()
+
+# Register a python test file that uses bindings with ctest.
+# - TEST_NAME    The name of the test,
+#                e.g. "Unit.DataStructures.Python.DataVector"
+#
+# - FILE         The file to add, e.g. Test_DataVector.py
+#
+# - TAGS         A semicolon separated list of labels for the test,
+#                e.g. "Unit;DataStructures;Python"
+function(SPECTRE_ADD_PYTHON_BINDINGS_TEST TEST_NAME FILE TAGS)
+  if(NOT BUILD_PYTHON_BINDINGS)
+    return()
+  endif()
+  spectre_add_python_test(${TEST_NAME} ${FILE} ${TAGS})
 endfunction()

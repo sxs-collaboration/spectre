@@ -16,6 +16,4 @@ target_link_libraries(
   INTERFACE ErrorHandling
   )
 
-if(BUILD_PYTHON_BINDINGS)
-  add_subdirectory(Python)
-endif()
+add_subdirectory(Python)

@@ -5,6 +5,7 @@ set(LIBRARY "PyH5")
 
 spectre_python_add_module(
   H5
+  LIBRARY_NAME ${LIBRARY}
   SOURCES
   Bindings.cpp
   Dat.cpp
@@ -13,15 +14,14 @@ spectre_python_add_module(
   MODULE_PATH "IO/"
   )
 
-target_link_libraries(
+spectre_python_link_libraries(
   ${LIBRARY}
   PUBLIC IO
   PUBLIC DataStructures
   PUBLIC Informer
-  ${SPECTRE_LINK_PYBINDINGS}
   )
 
-add_dependencies(
+spectre_python_add_dependencies(
   ${LIBRARY}
   PyDataStructures
   )

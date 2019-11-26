@@ -44,11 +44,13 @@ add_test_library(
   "DataStructures;Utilities"
   )
 
-spectre_add_python_test(
+# [example_add_pybindings_test]
+spectre_add_python_bindings_test(
   "Unit.DataStructures.Python.DataVector"
   Test_DataVector.py
-  "unit;datastructures;python")
-spectre_add_python_test(
+  "Unit;DataStructures;Python")
+# [example_add_pybindings_test]
+spectre_add_python_bindings_test(
   "Unit.DataStructures.Python.Matrix"
   Test_Matrix.py
-  "unit;datastructures;python")
+  "Unit;DataStructures;Python")

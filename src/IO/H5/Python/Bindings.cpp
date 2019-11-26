@@ -28,7 +28,7 @@ void bind_h5dat();
 void bind_h5vol();
 }  // namespace py_bindings
 
-BOOST_PYTHON_MODULE(_H5) {
+BOOST_PYTHON_MODULE(_PyH5) {
   Py_Initialize();
   import_array();
   py_bindings::bind_h5file();
