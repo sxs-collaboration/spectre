@@ -127,6 +127,10 @@ void test_d_bondi_r_identities(const gsl::not_null<Generator*> gen) noexcept {
       number_of_angular_points};
   fill_with_random_values(make_not_null(&null_metric), gen,
                           make_not_null(&value_dist));
+  // to make the inverse more well-behaved.
+  for(size_t a = 0; a < 4; ++a) {
+    null_metric.get(a, a) += 1.0;
+  }
   const auto inverse_null_metric = determinant_and_inverse(null_metric).second;
   tnsr::aa<DataVector, 3, Frame::RadialNull> dlambda_null_metric{
       number_of_angular_points};
