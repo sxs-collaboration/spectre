@@ -97,13 +97,14 @@ void test_interval() {
 
 void test_interval_factory() {
   INFO("Interval factory");
-  const auto domain_creator = test_factory_creation<DomainCreator<1>>(
-      "  Interval:\n"
-      "    LowerBound: [0]\n"
-      "    UpperBound: [1]\n"
-      "    IsPeriodicIn: [True]\n"
-      "    InitialGridPoints: [3]\n"
-      "    InitialRefinement: [2]\n");
+  const auto domain_creator =
+      TestHelpers::test_factory_creation<DomainCreator<1>>(
+          "Interval:\n"
+          "  LowerBound: [0]\n"
+          "  UpperBound: [1]\n"
+          "  IsPeriodicIn: [True]\n"
+          "  InitialGridPoints: [3]\n"
+          "  InitialRefinement: [2]\n");
   const auto* interval_creator =
       dynamic_cast<const creators::Interval*>(domain_creator.get());
   test_interval_construction(*interval_creator, {{0.}}, {{1.}}, {{{3}}},

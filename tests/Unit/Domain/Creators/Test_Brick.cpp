@@ -199,13 +199,14 @@ void test_brick() {
 
 void test_brick_factory() {
   INFO("Brick factory");
-  const auto domain_creator = test_factory_creation<DomainCreator<3>>(
-      "  Brick:\n"
-      "    LowerBound: [0,0,0]\n"
-      "    UpperBound: [1,2,3]\n"
-      "    IsPeriodicIn: [True,False,True]\n"
-      "    InitialGridPoints: [3,4,3]\n"
-      "    InitialRefinement: [2,3,2]\n");
+  const auto domain_creator =
+      TestHelpers::test_factory_creation<DomainCreator<3>>(
+          "Brick:\n"
+          "  LowerBound: [0,0,0]\n"
+          "  UpperBound: [1,2,3]\n"
+          "  IsPeriodicIn: [True,False,True]\n"
+          "  InitialGridPoints: [3,4,3]\n"
+          "  InitialRefinement: [2,3,2]\n");
   const auto* brick_creator =
       dynamic_cast<const creators::Brick*>(domain_creator.get());
   test_brick_construction(

@@ -182,7 +182,7 @@ struct ScalarSystem {
       dg::Events::ObserveFields<volume_dim, ObservationTimeTag,
                                 all_vars_for_test,
                                 solution_for_test::vars_for_test>;
-  static constexpr auto creation_string_for_test = "  ObserveFields";
+  static constexpr auto creation_string_for_test = "ObserveFields";
   static ObserveEvent make_test_object() noexcept { return ObserveEvent{}; }
 };
 
@@ -274,8 +274,8 @@ struct ComplicatedSystem {
                                 all_vars_for_test,
                                 solution_for_test::vars_for_test>;
   static constexpr auto creation_string_for_test =
-      "  ObserveFields:\n"
-      "    VariablesToObserve: [Scalar, Vector, Tensor, Tensor2]";
+      "ObserveFields:\n"
+      "  VariablesToObserve: [Scalar, Vector, Tensor, Tensor2]";
   static ObserveEvent make_test_object() noexcept {
     return ObserveEvent({"Scalar", "Vector", "Tensor", "Tensor2"});
   }
@@ -395,8 +395,8 @@ void test_system() noexcept {
       typename System::all_vars_for_test,
       typename System::solution_for_test::vars_for_test>>>;
   Parallel::register_derived_classes_with_charm<EventType>();
-  const auto factory_event =
-      test_factory_creation<EventType>(System::creation_string_for_test);
+  const auto factory_event = TestHelpers::test_factory_creation<EventType>(
+      System::creation_string_for_test);
   auto serialized_event = serialize_and_deserialize(factory_event);
   test_observe<System>(std::move(serialized_event));
 }
@@ -411,13 +411,14 @@ SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields", "[Unit][Evolution]") {
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.bad_field",
                   "[Unit][Evolution]") {
   ERROR_TEST();
-  test_creation<ScalarSystem::ObserveEvent>("  VariablesToObserve: [NotAVar]");
+  TestHelpers::test_creation<ScalarSystem::ObserveEvent>(
+      "VariablesToObserve: [NotAVar]");
 }
 
 // [[OutputRegex, Scalar specified multiple times]]
 SPECTRE_TEST_CASE("Unit.Evolution.dG.ObserveFields.repeated_field",
                   "[Unit][Evolution]") {
   ERROR_TEST();
-  test_creation<ScalarSystem::ObserveEvent>(
-      "  VariablesToObserve: [Scalar, Scalar]");
+  TestHelpers::test_creation<ScalarSystem::ObserveEvent>(
+      "VariablesToObserve: [Scalar, Scalar]");
 }

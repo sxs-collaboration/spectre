@@ -63,15 +63,15 @@ struct CylindricalBlastWaveProxy : grmhd::AnalyticData::CylindricalBlastWave {
 
 void test_create_from_options() noexcept {
   const auto cylindrical_blast_wave =
-      test_creation<grmhd::AnalyticData::CylindricalBlastWave>(
-          "  InnerRadius: 0.8\n"
-          "  OuterRadius: 1.0\n"
-          "  InnerDensity: 1.0e-2\n"
-          "  OuterDensity: 1.0e-4\n"
-          "  InnerPressure: 1.0\n"
-          "  OuterPressure: 5.0e-4\n"
-          "  MagneticField: [0.1, 0.0, 0.0]\n"
-          "  AdiabaticIndex: 1.3333333333333333333");
+      TestHelpers::test_creation<grmhd::AnalyticData::CylindricalBlastWave>(
+          "InnerRadius: 0.8\n"
+          "OuterRadius: 1.0\n"
+          "InnerDensity: 1.0e-2\n"
+          "OuterDensity: 1.0e-4\n"
+          "InnerPressure: 1.0\n"
+          "OuterPressure: 5.0e-4\n"
+          "MagneticField: [0.1, 0.0, 0.0]\n"
+          "AdiabaticIndex: 1.3333333333333333333");
   CHECK(cylindrical_blast_wave == grmhd::AnalyticData::CylindricalBlastWave(
                                       0.8, 1.0, 1.0e-2, 1.0e-4, 1.0, 5.0e-4,
                                       std::array<double, 3>{{0.1, 0.0, 0.0}},

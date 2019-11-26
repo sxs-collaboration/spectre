@@ -47,15 +47,16 @@ SPECTRE_TEST_CASE("Unit.Domain.Creators.FrustalCloak.Connectivity",
 
 SPECTRE_TEST_CASE("Unit.Domain.Creators.FrustalCloak.Factory",
                   "[Domain][Unit]") {
-  const auto frustal_cloak = test_factory_creation<DomainCreator<3>>(
-      "  FrustalCloak:\n"
-      "    InitialRefinement: 3\n"
-      "    InitialGridPoints: [2,3]\n"
-      "    UseEquiangularMap: true\n"
-      "    ProjectionFactor: 0.3\n"
-      "    LengthInnerCube: 15.5\n"
-      "    LengthOuterCube: 42.4\n"
-      "    OriginPreimage: [0.2,0.3,-0.1]");
+  const auto frustal_cloak =
+      TestHelpers::test_factory_creation<DomainCreator<3>>(
+          "FrustalCloak:\n"
+          "  InitialRefinement: 3\n"
+          "  InitialGridPoints: [2,3]\n"
+          "  UseEquiangularMap: true\n"
+          "  ProjectionFactor: 0.3\n"
+          "  LengthInnerCube: 15.5\n"
+          "  LengthOuterCube: 42.4\n"
+          "  OriginPreimage: [0.2,0.3,-0.1]");
   test_frustal_cloak_construction(
       dynamic_cast<const domain::creators::FrustalCloak&>(*frustal_cloak));
 }

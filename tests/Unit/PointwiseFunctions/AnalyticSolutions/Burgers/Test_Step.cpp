@@ -46,10 +46,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Step",
   // solution breaks the tests of check_burgers_solution
   check_burgers_solution(solution, positions, {0., 0.7, 1.2, 10.0});
 
-  const auto created_solution = test_creation<Burgers::Solutions::Step>(
-      "  LeftValue: 2.3\n"
-      "  RightValue: 1.2\n"
-      "  InitialPosition: -0.5");
+  const auto created_solution =
+      TestHelpers::test_creation<Burgers::Solutions::Step>(
+          "LeftValue: 2.3\n"
+          "RightValue: 1.2\n"
+          "InitialPosition: -0.5");
   const auto x = tnsr::I<DataVector, 1>{{{positions}}};
   const double t = 0.0;
   CHECK(created_solution.variables(x, t, tmpl::list<Burgers::Tags::U>{}) ==

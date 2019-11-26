@@ -66,32 +66,36 @@ struct VectorTag : db::SimpleTag {
 void test_minmod_option_parsing() noexcept {
   INFO("Test Minmod option parsing");
   const auto lambda_pi1_default =
-      test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-          "  Type: LambdaPi1");
+      TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
+          "Type: LambdaPi1");
   const auto lambda_pi1_m0 =
-      test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-          "  Type: LambdaPi1\n  TvbmConstant: 0.0");
+      TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
+          "Type: LambdaPi1\n"
+          "TvbmConstant: 0.0");
   const auto lambda_pi1_m1 =
-      test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-          "  Type: LambdaPi1\n  TvbmConstant: 1.0");
+      TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
+          "Type: LambdaPi1\n"
+          "TvbmConstant: 1.0");
   const auto muscl_default =
-      test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-          "  Type: Muscl");
+      TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
+          "Type: Muscl");
 
   // Test default TVBM value, operator==, and operator!=
   CHECK(lambda_pi1_default == lambda_pi1_m0);
   CHECK(lambda_pi1_default != lambda_pi1_m1);
   CHECK(lambda_pi1_default != muscl_default);
 
-  test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
-      "  Type: LambdaPiN");
-  test_creation<Limiters::Minmod<2, tmpl::list<ScalarTag>>>(
-      "  Type: LambdaPiN");
-  test_creation<Limiters::Minmod<3, tmpl::list<ScalarTag, VectorTag<3>>>>(
-      "  Type: LambdaPiN");
+  TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
+      "Type: LambdaPiN");
+  TestHelpers::test_creation<Limiters::Minmod<2, tmpl::list<ScalarTag>>>(
+      "Type: LambdaPiN");
+  TestHelpers::test_creation<
+      Limiters::Minmod<3, tmpl::list<ScalarTag, VectorTag<3>>>>(
+      "Type: LambdaPiN");
 
-  test_creation<Limiters::Minmod<3, tmpl::list<ScalarTag>>>(
-      "  Type: LambdaPiN\n  DisableForDebugging: True");
+  TestHelpers::test_creation<Limiters::Minmod<3, tmpl::list<ScalarTag>>>(
+      "Type: LambdaPiN\n"
+      "DisableForDebugging: True");
 }
 
 void test_minmod_serialization() noexcept {

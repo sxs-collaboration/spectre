@@ -206,15 +206,15 @@ void test_cylinder_boundaries_equiangular() {
 
 void test_cylinder_factory_equiangular() {
   INFO("Cylinder factory equiangular");
-  const auto cylinder = test_factory_creation<DomainCreator<3>>(
-      "  Cylinder:\n"
-      "    InnerRadius: 1.0\n"
-      "    OuterRadius: 3.0\n"
-      "    LowerBound: -1.2\n"
-      "    UpperBound: 3.7\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3,4]\n"
-      "    UseEquiangularMap: true\n");
+  const auto cylinder = TestHelpers::test_factory_creation<DomainCreator<3>>(
+          "Cylinder:\n"
+          "  InnerRadius: 1.0\n"
+          "  OuterRadius: 3.0\n"
+          "  LowerBound: -1.2\n"
+          "  UpperBound: 3.7\n"
+          "  InitialRefinement: 2\n"
+          "  InitialGridPoints: [2,3,4]\n"
+          "  UseEquiangularMap: true\n");
 
   const double inner_radius = 1.0, outer_radius = 3.0;
   const double lower_bound = -1.2, upper_bound = 3.7;
@@ -244,15 +244,15 @@ void test_cylinder_boundaries_equidistant() {
 
 void test_cylinder_factory_equidistant() {
   INFO("Cylinder factory equidistant");
-  const auto cylinder = test_factory_creation<DomainCreator<3>>(
-      "  Cylinder:\n"
-      "    InnerRadius: 1.0\n"
-      "    OuterRadius: 3.0\n"
-      "    LowerBound: -1.2\n"
-      "    UpperBound: 3.7\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3,4]\n"
-      "    UseEquiangularMap: false\n");
+  const auto cylinder = TestHelpers::test_factory_creation<DomainCreator<3>>(
+          "Cylinder:\n"
+          "  InnerRadius: 1.0\n"
+          "  OuterRadius: 3.0\n"
+          "  LowerBound: -1.2\n"
+          "  UpperBound: 3.7\n"
+          "  InitialRefinement: 2\n"
+          "  InitialGridPoints: [2,3,4]\n"
+          "  UseEquiangularMap: false\n");
 
   const double inner_radius = 1.0, outer_radius = 3.0;
   const double lower_bound = -1.2, upper_bound = 3.7;
@@ -282,16 +282,16 @@ void test_cylinder_boundaries_equiangular_not_periodic_in_z() {
 
 void test_cylinder_factory_equiangular_not_periodic_in_z() {
   INFO("Cylinder factory equiangular not periodic in z");
-  const auto cylinder = test_factory_creation<DomainCreator<3>>(
-      "  Cylinder:\n"
-      "    InnerRadius: 1.0\n"
-      "    OuterRadius: 3.0\n"
-      "    LowerBound: -1.2\n"
-      "    UpperBound: 3.7\n"
-      "    IsPeriodicInZ: false\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3,4]\n"
-      "    UseEquiangularMap: true\n");
+  const auto cylinder = TestHelpers::test_factory_creation<DomainCreator<3>>(
+          "Cylinder:\n"
+          "  InnerRadius: 1.0\n"
+          "  OuterRadius: 3.0\n"
+          "  LowerBound: -1.2\n"
+          "  UpperBound: 3.7\n"
+          "  IsPeriodicInZ: false\n"
+          "  InitialRefinement: 2\n"
+          "  InitialGridPoints: [2,3,4]\n"
+          "  UseEquiangularMap: true\n");
 
   const double inner_radius = 1.0, outer_radius = 3.0;
   const double lower_bound = -1.2, upper_bound = 3.7;
@@ -321,16 +321,16 @@ void test_cylinder_boundaries_equidistant_not_periodic_in_z() {
 
 void test_cylinder_factory_equidistant_not_periodic_in_z() {
   INFO("Cylinder factory equidistant not periodic in z");
-  const auto cylinder = test_factory_creation<DomainCreator<3>>(
-      "  Cylinder:\n"
-      "    InnerRadius: 1.0\n"
-      "    OuterRadius: 3.0\n"
-      "    LowerBound: -1.2\n"
-      "    UpperBound: 3.7\n"
-      "    IsPeriodicInZ: false\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3,4]\n"
-      "    UseEquiangularMap: false\n");
+  const auto cylinder = TestHelpers::test_factory_creation<DomainCreator<3>>(
+          "Cylinder:\n"
+          "  InnerRadius: 1.0\n"
+          "  OuterRadius: 3.0\n"
+          "  LowerBound: -1.2\n"
+          "  UpperBound: 3.7\n"
+          "  IsPeriodicInZ: false\n"
+          "  InitialRefinement: 2\n"
+          "  InitialGridPoints: [2,3,4]\n"
+          "  UseEquiangularMap: false\n");
 
   const double inner_radius = 1.0, outer_radius = 3.0;
   const double lower_bound = -1.2, upper_bound = 3.7;

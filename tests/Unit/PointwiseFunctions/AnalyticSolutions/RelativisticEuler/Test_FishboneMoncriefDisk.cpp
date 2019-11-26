@@ -70,14 +70,14 @@ struct FishboneMoncriefDiskProxy
 };
 
 void test_create_from_options() noexcept {
-  const auto disk =
-      test_creation<RelativisticEuler::Solutions::FishboneMoncriefDisk>(
-          "  BhMass: 1.0\n"
-          "  BhDimlessSpin: 0.23\n"
-          "  InnerEdgeRadius: 6.0\n"
-          "  MaxPressureRadius: 12.0\n"
-          "  PolytropicConstant: 0.001\n"
-          "  PolytropicExponent: 1.4");
+  const auto disk = TestHelpers::test_creation<
+      RelativisticEuler::Solutions::FishboneMoncriefDisk>(
+      "BhMass: 1.0\n"
+      "BhDimlessSpin: 0.23\n"
+      "InnerEdgeRadius: 6.0\n"
+      "MaxPressureRadius: 12.0\n"
+      "PolytropicConstant: 0.001\n"
+      "PolytropicExponent: 1.4");
   CHECK(disk == RelativisticEuler::Solutions::FishboneMoncriefDisk(
                     1.0, 0.23, 6.0, 12.0, 0.001, 1.4));
 }

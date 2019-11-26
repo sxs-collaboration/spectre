@@ -76,11 +76,11 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian",
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory",
                   "[PointwiseFunctions][Unit]") {
-  test_factory_creation<MathFunction<1>>(
-      "  Gaussian:\n"
-      "    Amplitude: 3\n"
-      "    Width: 2\n"
-      "    Center: -9");
+  TestHelpers::test_factory_creation<MathFunction<1>>(
+      "Gaussian:\n"
+      "  Amplitude: 3\n"
+      "  Width: 2\n"
+      "  Center: -9");
   // Catch requires us to have at least one CHECK in each test
   // The Unit.PointwiseFunctions.MathFunctions.Gaussian.Factory does not need to
   // check anything

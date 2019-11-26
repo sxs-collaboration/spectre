@@ -90,7 +90,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.Cfl", "[Unit][Time]") {
   CHECK(get_suggestion(1, 1., 2., {0., 2., 3., 5.}) == approx(0.5));
   CHECK(get_suggestion(1, 1., 1., {0., 2., 2.5, 5.}) == approx(0.5));
 
-  test_factory_creation<StepChooserType>(
-      "  Cfl:\n"
-      "    SafetyFactor: 5.0");
+  TestHelpers::test_factory_creation<StepChooserType>(
+      "Cfl:\n"
+      "  SafetyFactor: 5.0");
 }

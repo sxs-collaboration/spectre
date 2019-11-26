@@ -101,14 +101,15 @@ void test_rotated_intervals_factory() {
   INFO("Rotated intervals factory");
   const OrientationMap<1> flipped{
       std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
-  const auto domain_creator = test_factory_creation<DomainCreator<1>>(
-      "  RotatedIntervals:\n"
-      "    LowerBound: [0.0]\n"
-      "    Midpoint:   [0.5]\n"
-      "    UpperBound: [1.0]\n"
-      "    IsPeriodicIn: [True]\n"
-      "    InitialGridPoints: [[3,2]]\n"
-      "    InitialRefinement: [2]\n");
+  const auto domain_creator =
+      TestHelpers::test_factory_creation<DomainCreator<1>>(
+          "RotatedIntervals:\n"
+          "  LowerBound: [0.0]\n"
+          "  Midpoint:   [0.5]\n"
+          "  UpperBound: [1.0]\n"
+          "  IsPeriodicIn: [True]\n"
+          "  InitialGridPoints: [[3,2]]\n"
+          "  InitialRefinement: [2]\n");
   const auto* rotated_intervals_creator =
       dynamic_cast<const creators::RotatedIntervals*>(domain_creator.get());
   test_rotated_intervals_construction(

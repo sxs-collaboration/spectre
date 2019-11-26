@@ -55,7 +55,7 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.ByBlock", "[Unit][Time]") {
           expected);
   }
 
-  test_factory_creation<StepChooserType>(
-      "  ByBlock:\n"
-      "    Sizes: [1.0, 2.0]");
+  TestHelpers::test_factory_creation<StepChooserType>(
+      "ByBlock:\n"
+      "  Sizes: [1.0, 2.0]");
 }

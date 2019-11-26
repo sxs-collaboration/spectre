@@ -59,14 +59,14 @@ struct BondiHoyleAccretionProxy : grmhd::AnalyticData::BondiHoyleAccretion {
 
 void test_create_from_options() noexcept {
   const auto accretion =
-      test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
-          "  BhMass: 1.0\n"
-          "  BhDimlessSpin: 0.23\n"
-          "  RestMassDensity: 2.7\n"
-          "  FlowSpeed: 0.34\n"
-          "  MagFieldStrength: 5.76\n"
-          "  PolytropicConstant: 30.0\n"
-          "  PolytropicExponent: 1.5");
+      TestHelpers::test_creation<grmhd::AnalyticData::BondiHoyleAccretion>(
+          "BhMass: 1.0\n"
+          "BhDimlessSpin: 0.23\n"
+          "RestMassDensity: 2.7\n"
+          "FlowSpeed: 0.34\n"
+          "MagFieldStrength: 5.76\n"
+          "PolytropicConstant: 30.0\n"
+          "PolytropicExponent: 1.5");
   CHECK(accretion == grmhd::AnalyticData::BondiHoyleAccretion(
                          1.0, 0.23, 2.7, 0.34, 5.76, 30.0, 1.5));
 }

@@ -136,15 +136,15 @@ SPECTRE_TEST_CASE(
     "[Unit]") {
   // Check creating the options
   const auto created_torus =
-      test_creation<intrp::OptionHolders::WedgeSectionTorus>(
-          "  MinRadius: 1.8\n"
-          "  MaxRadius: 20.\n"
-          "  MinTheta: 0.785\n"
-          "  MaxTheta: 2.356\n"
-          "  NumberRadialPoints: 20\n"
-          "  NumberThetaPoints: 10\n"
-          "  NumberPhiPoints: 20\n"
-          "  UniformThetaGrid: true\n");
+      TestHelpers::test_creation<intrp::OptionHolders::WedgeSectionTorus>(
+          "MinRadius: 1.8\n"
+          "MaxRadius: 20.\n"
+          "MinTheta: 0.785\n"
+          "MaxTheta: 2.356\n"
+          "NumberRadialPoints: 20\n"
+          "NumberThetaPoints: 10\n"
+          "NumberPhiPoints: 20\n"
+          "UniformThetaGrid: true\n");
   CHECK(created_torus == intrp::OptionHolders::WedgeSectionTorus(
                              1.8, 20., 0.785, 2.356, 20, 10, 20, false, true));
 

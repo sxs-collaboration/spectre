@@ -65,8 +65,8 @@ void test_solution(const std::array<double, Dim>& wave_numbers,
       std::make_tuple(wave_numbers), DataVector(5));
 
   Poisson::Solutions::ProductOfSinusoids<Dim> created_solution =
-      test_creation<Poisson::Solutions::ProductOfSinusoids<Dim>>(
-          "  WaveNumbers: " + options);
+      TestHelpers::test_creation<Poisson::Solutions::ProductOfSinusoids<Dim>>(
+          "WaveNumbers: " + options);
   CHECK(created_solution == solution);
   test_serialization(solution);
 }

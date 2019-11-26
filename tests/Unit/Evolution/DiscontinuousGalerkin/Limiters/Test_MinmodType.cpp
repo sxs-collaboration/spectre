@@ -11,11 +11,11 @@
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.MinmodType", "[Limiters][Unit]") {
   CHECK(Limiters::MinmodType::LambdaPi1 ==
-        test_enum_creation<Limiters::MinmodType>("LambdaPi1"));
+        TestHelpers::test_creation<Limiters::MinmodType>("LambdaPi1"));
   CHECK(Limiters::MinmodType::LambdaPiN ==
-        test_enum_creation<Limiters::MinmodType>("LambdaPiN"));
+        TestHelpers::test_creation<Limiters::MinmodType>("LambdaPiN"));
   CHECK(Limiters::MinmodType::Muscl ==
-        test_enum_creation<Limiters::MinmodType>("Muscl"));
+        TestHelpers::test_creation<Limiters::MinmodType>("Muscl"));
 
   CHECK(get_output(Limiters::MinmodType::LambdaPi1) == "LambdaPi1");
   CHECK(get_output(Limiters::MinmodType::LambdaPiN) == "LambdaPiN");
@@ -26,5 +26,5 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.MinmodType", "[Limiters][Unit]") {
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.MinmodType.OptionParseError",
                   "[Limiters][Unit]") {
   ERROR_TEST();
-  test_enum_creation<Limiters::MinmodType>("BadType");
+  TestHelpers::test_creation<Limiters::MinmodType>("BadType");
 }

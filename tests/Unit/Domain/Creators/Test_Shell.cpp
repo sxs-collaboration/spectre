@@ -272,12 +272,12 @@ void test_shell_boundaries() {
 
 void test_shell_factory_equiangular() {
   INFO("Shell factory equiangular");
-  const auto shell = test_factory_creation<DomainCreator<3>>(
-      "  Shell:\n"
-      "    InnerRadius: 1\n"
-      "    OuterRadius: 3\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3]\n");
+  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+          "Shell:\n"
+          "  InnerRadius: 1\n"
+          "  OuterRadius: 3\n"
+          "  InitialRefinement: 2\n"
+          "  InitialGridPoints: [2,3]\n");
   const double inner_radius = 1.0, outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
@@ -288,13 +288,13 @@ void test_shell_factory_equiangular() {
 
 void test_shell_factory_equidistant() {
   INFO("Shell factory equidistant");
-  const auto shell = test_factory_creation<DomainCreator<3>>(
-      "  Shell:\n"
-      "    InnerRadius: 1\n"
-      "    OuterRadius: 3\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3]\n"
-      "    UseEquiangularMap: false\n");
+  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+      "Shell:\n"
+      "  InnerRadius: 1\n"
+      "  OuterRadius: 3\n"
+      "  InitialRefinement: 2\n"
+      "  InitialGridPoints: [2,3]\n"
+      "  UseEquiangularMap: false\n");
   const double inner_radius = 1.0, outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
@@ -321,14 +321,14 @@ void test_shell_boundaries_aspect_ratio() {
 
 void test_shell_factory_aspect_ratio() {
   INFO("Shell factory aspect ratio");
-  const auto shell = test_factory_creation<DomainCreator<3>>(
-      "  Shell:\n"
-      "    InnerRadius: 1\n"
-      "    OuterRadius: 3\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3]\n"
-      "    UseEquiangularMap: false\n"
-      "    AspectRatio: 2.0        \n");
+  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+      "Shell:\n"
+      "  InnerRadius: 1\n"
+      "  OuterRadius: 3\n"
+      "  InitialRefinement: 2\n"
+      "  InitialGridPoints: [2,3]\n"
+      "  UseEquiangularMap: false\n"
+      "  AspectRatio: 2.0        \n");
   const double inner_radius = 1.0, outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
@@ -358,15 +358,15 @@ void test_shell_boundaries_logarithmic_map() {
 
 void test_shell_factory_logarithmic_map() {
   INFO("Shell factory logarithmic map");
-  const auto shell = test_factory_creation<DomainCreator<3>>(
-      "  Shell:\n"
-      "    InnerRadius: 1\n"
-      "    OuterRadius: 3\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3]\n"
-      "    UseEquiangularMap: false\n"
-      "    AspectRatio: 2.0        \n"
-      "    UseLogarithmicMap: true\n");
+  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+      "Shell:\n"
+      "  InnerRadius: 1\n"
+      "  OuterRadius: 3\n"
+      "  InitialRefinement: 2\n"
+      "  InitialGridPoints: [2,3]\n"
+      "  UseEquiangularMap: false\n"
+      "  AspectRatio: 2.0        \n"
+      "  UseLogarithmicMap: true\n");
   const double inner_radius = 1.0, outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
@@ -380,16 +380,16 @@ void test_shell_factory_logarithmic_map() {
 
 void test_shell_factory_wedges_four_on_equator() {
   INFO("Shell factory wedges four on equator");
-  const auto shell = test_factory_creation<DomainCreator<3>>(
-      "  Shell:\n"
-      "    InnerRadius: 1\n"
-      "    OuterRadius: 3\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3]\n"
-      "    UseEquiangularMap: false\n"
-      "    AspectRatio: 2.0        \n"
-      "    UseLogarithmicMap: true\n"
-      "    WhichWedges: FourOnEquator\n");
+  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+      "Shell:\n"
+      "  InnerRadius: 1\n"
+      "  OuterRadius: 3\n"
+      "  InitialRefinement: 2\n"
+      "  InitialGridPoints: [2,3]\n"
+      "  UseEquiangularMap: false\n"
+      "  AspectRatio: 2.0        \n"
+      "  UseLogarithmicMap: true\n"
+      "  WhichWedges: FourOnEquator\n");
   const double inner_radius = 1.0, outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
@@ -404,16 +404,16 @@ void test_shell_factory_wedges_four_on_equator() {
 
 void test_shell_factory_wedges_one_along_minus_x() {
   INFO("Shell factory wedges one along minus x");
-  const auto shell = test_factory_creation<DomainCreator<3>>(
-      "  Shell:\n"
-      "    InnerRadius: 2\n"
-      "    OuterRadius: 3\n"
-      "    InitialRefinement: 2\n"
-      "    InitialGridPoints: [2,3]\n"
-      "    UseEquiangularMap: true\n"
-      "    AspectRatio: 2.7        \n"
-      "    UseLogarithmicMap: false\n"
-      "    WhichWedges: OneAlongMinusX \n");
+  const auto shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+      "Shell:\n"
+      "  InnerRadius: 2\n"
+      "  OuterRadius: 3\n"
+      "  InitialRefinement: 2\n"
+      "  InitialGridPoints: [2,3]\n"
+      "  UseEquiangularMap: true\n"
+      "  AspectRatio: 2.7        \n"
+      "  UseLogarithmicMap: false\n"
+      "  WhichWedges: OneAlongMinusX \n");
   const double inner_radius = 2.0, outer_radius = 3.0;
   const size_t refinement_level = 2;
   const std::array<size_t, 2> grid_points_r_angular{{2, 3}};
@@ -523,16 +523,16 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainCreators.Shell", "[Domain][Unit]") {
 
   {
     INFO("shell factory logarithmic block layers");
-    const auto log_shell = test_factory_creation<DomainCreator<3>>(
-        "  Shell:\n"
-        "    InnerRadius: 1\n"
-        "    OuterRadius: 3\n"
-        "    InitialRefinement: 2\n"
-        "    InitialGridPoints: [2,3]\n"
-        "    UseEquiangularMap: false\n"
-        "    AspectRatio: 2.0        \n"
-        "    UseLogarithmicMap: true\n"
-        "    RadialBlockLayers: 6\n");
+    const auto log_shell = TestHelpers::test_factory_creation<DomainCreator<3>>(
+        "Shell:\n"
+        "  InnerRadius: 1\n"
+        "  OuterRadius: 3\n"
+        "  InitialRefinement: 2\n"
+        "  InitialGridPoints: [2,3]\n"
+        "  UseEquiangularMap: false\n"
+        "  AspectRatio: 2.0        \n"
+        "  UseLogarithmicMap: true\n"
+        "  RadialBlockLayers: 6\n");
   }
   {
     INFO("Radial block layers 1");

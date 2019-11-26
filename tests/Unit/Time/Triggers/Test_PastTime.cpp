@@ -26,7 +26,8 @@ SPECTRE_TEST_CASE("Unit.Time.Triggers.PastTime", "[Unit][Time]") {
   using TriggerType = Trigger<tmpl::list<Triggers::Registrars::PastTime>>;
   Parallel::register_derived_classes_with_charm<TriggerType>();
 
-  const auto trigger = test_factory_creation<TriggerType>("  PastTime: -7.");
+  const auto trigger =
+      TestHelpers::test_factory_creation<TriggerType>("PastTime: -7.");
 
   const auto sent_trigger = serialize_and_deserialize(trigger);
 

@@ -33,7 +33,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Burgers.Linear",
                         positions / -shock_time);
 
   const auto created_solution =
-      test_creation<Burgers::Solutions::Linear>("  ShockTime: 1.5");
+      TestHelpers::test_creation<Burgers::Solutions::Linear>("ShockTime: 1.5");
   const auto x = tnsr::I<DataVector, 1>{{{positions}}};
   const double t = 0.0;
   CHECK(created_solution.variables(x, t, tmpl::list<Burgers::Tags::U>{}) ==

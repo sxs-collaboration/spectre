@@ -42,5 +42,5 @@ SPECTRE_TEST_CASE("Unit.Time.StepControllers.SimpleTimes", "[Unit][Time]") {
   };
   check(StepControllers::SimpleTimes{});
   check(*serialize_and_deserialize(
-      test_factory_creation<StepController>("  SimpleTimes")));
+      TestHelpers::test_factory_creation<StepController>("SimpleTimes")));
 }

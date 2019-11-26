@@ -103,15 +103,15 @@ void test_solution(const DataType& used_for_size,
                                  Dim, Frame::Inertial, DataType>>{}))));
 
   const auto solution_from_options =
-      test_creation<RelativisticEuler::Solutions::SmoothFlow<Dim>>(
-          "  MeanVelocity: " + mean_velocity_opt +
+      TestHelpers::test_creation<RelativisticEuler::Solutions::SmoothFlow<Dim>>(
+          "MeanVelocity: " + mean_velocity_opt +
           "\n"
-          "  WaveVector: " +
+          "WaveVector: " +
           wave_vector_opt +
           "\n"
-          "  Pressure: 1.23\n"
-          "  AdiabaticIndex: 1.3334\n"
-          "  PerturbationSize: 0.78");
+          "Pressure: 1.23\n"
+          "AdiabaticIndex: 1.3334\n"
+          "PerturbationSize: 0.78");
   CHECK(solution == solution_from_options);
 
   RelativisticEuler::Solutions::SmoothFlow<Dim> solution_to_move(
