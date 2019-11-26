@@ -123,6 +123,44 @@ Scalar<DataType> lapse(
     const tnsr::I<DataType, SpatialDim, Frame>& shift,
     const tnsr::aa<DataType, SpatialDim, Frame>& spacetime_metric) noexcept;
 
+// @{
+/*!
+ * \ingroup GeneralRelativityGroup
+ * \brief Computes the time derivative of the spacetime metric from spatial
+ * metric, lapse, shift, and their time derivatives.
+ *
+ * \details Computes the derivative as:
+ *
+ * \f{align}{
+ * \partial_t g_{tt} &= - 2 \alpha \partial_t \alpha
+ * - 2 \gamma_{i j} \beta^i \partial_t \beta^j
+ * + \beta^i \beta^j \partial_t \gamma_{i j}\\
+ * \partial_t g_{t i} &= \gamma_{j i} \partial_t \beta^j
+ * + \beta^j \partial_t \gamma_{j i}\\
+ * \partial_t g_{i j} &= \partial_t \gamma_{i j},
+ * \f}
+ *
+ * where \f$\alpha, \beta^i, \gamma_{ij}\f$ are the lapse, shift, and spatial
+ * metric respectively.
+ */
+template <size_t SpatialDim, typename Frame, typename DataType>
+void time_derivative_of_spacetime_metric(
+    gsl::not_null<tnsr::aa<DataType, SpatialDim, Frame>*> dt_spacetime_metric,
+    const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric) noexcept;
+
+template <size_t SpatialDim, typename Frame, typename DataType>
+tnsr::aa<DataType, SpatialDim, Frame> time_derivative_of_spacetime_metric(
+    const Scalar<DataType>& lapse, const Scalar<DataType>& dt_lapse,
+    const tnsr::I<DataType, SpatialDim, Frame>& shift,
+    const tnsr::I<DataType, SpatialDim, Frame>& dt_shift,
+    const tnsr::ii<DataType, SpatialDim, Frame>& spatial_metric,
+    const tnsr::ii<DataType, SpatialDim, Frame>& dt_spatial_metric) noexcept;
+//@}
+
 /*!
  * \ingroup GeneralRelativityGroup
  * \brief Computes spacetime derivative of spacetime metric from spatial metric,

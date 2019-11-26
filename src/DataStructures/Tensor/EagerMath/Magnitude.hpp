@@ -9,6 +9,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 
 /*!
@@ -25,6 +26,7 @@ Scalar<DataType> magnitude(
   return Scalar<DataType>{sqrt(get(dot_product(vector, vector)))};
 }
 
+// @{
 /*!
  * \ingroup TensorGroup
  * \brief Compute the magnitude of a rank-1 tensor
@@ -39,8 +41,22 @@ Scalar<DataType> magnitude(
     const Tensor<DataType, Symmetry<1, 1>,
                  index_list<change_index_up_lo<Index>,
                             change_index_up_lo<Index>>>& metric) noexcept {
-  return Scalar<DataType>{sqrt(get(dot_product(vector, vector, metric)))};
+  Scalar<DataType> local_magnitude{get_size(get<0>(vector))};
+  magnitude(make_not_null(&local_magnitude), vector, metric);
+  return local_magnitude;
 }
+
+template <typename DataType, typename Index>
+void magnitude(
+    const gsl::not_null<Scalar<DataType>*> magnitude,
+    const Tensor<DataType, Symmetry<1>, index_list<Index>>& vector,
+    const Tensor<DataType, Symmetry<1, 1>,
+                 index_list<change_index_up_lo<Index>,
+                            change_index_up_lo<Index>>>& metric) noexcept {
+  dot_product(magnitude, vector, vector, metric);
+  get(*magnitude) = sqrt(get(*magnitude));
+}
+// @}
 
 /// \ingroup TensorGroup
 /// \brief Compute square root of the Euclidean magnitude of a rank-0 tensor
@@ -48,8 +64,7 @@ Scalar<DataType> magnitude(
 /// \details
 /// Computes the square root of the absolute value of the scalar.
 template <typename DataType>
-Scalar<DataType> sqrt_magnitude(
-    const Scalar<DataType>& input) noexcept {
+Scalar<DataType> sqrt_magnitude(const Scalar<DataType>& input) noexcept {
   return Scalar<DataType>{sqrt(abs(get(input)))};
 }
 

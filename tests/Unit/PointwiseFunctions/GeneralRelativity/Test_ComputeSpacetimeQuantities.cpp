@@ -54,6 +54,21 @@ void test_compute_inverse_spacetime_metric(const DataType& used_for_size) {
       used_for_size);
 }
 template <size_t Dim, typename DataType>
+void test_compute_time_derivative_of_spacetime_metric(
+    const DataType& used_for_size) {
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::aa<DataType, Dim, Frame::Inertial> (*)(
+          const Scalar<DataType>&, const Scalar<DataType>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::I<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&,
+          const tnsr::ii<DataType, Dim, Frame::Inertial>&)>(
+          &gr::time_derivative_of_spacetime_metric<Dim, Frame::Inertial,
+                                                   DataType>),
+      "ComputeSpacetimeQuantities", "dt_spacetime_metric", {{{-10., 10.}}},
+      used_for_size);
+}
+template <size_t Dim, typename DataType>
 void test_compute_derivatives_of_spacetime_metric(
     const DataType& used_for_size) {
   pypp::check_with_random_values<1>(
@@ -145,6 +160,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.SpacetimeDecomp",
                                     (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(
       test_compute_derivatives_of_spacetime_metric, (1, 2, 3));
+  CHECK_FOR_DOUBLES_AND_DATAVECTORS(
+      test_compute_time_derivative_of_spacetime_metric, (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_spacetime_normal_vector,
                                     (1, 2, 3));
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_compute_spacetime_normal_one_form,

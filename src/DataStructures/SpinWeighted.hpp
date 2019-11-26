@@ -489,6 +489,13 @@ SPECTRE_ALWAYS_INLINE bool operator!=(const T& lhs,
 }
 // @}
 
+/// Stream operator simply forwards
+template <typename T, int Spin>
+std::ostream& operator<<(std::ostream& os,
+                         const SpinWeighted<T, Spin>& d) noexcept {
+  return os << d.data();
+}
+
 namespace MakeWithValueImpls {
 template <int Spin1, int Spin2, typename SpinWeightedType1,
           typename SpinWeightedType2>
