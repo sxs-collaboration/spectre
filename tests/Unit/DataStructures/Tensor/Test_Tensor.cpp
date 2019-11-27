@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <array>
+#include <complex>
 #include <cstddef>
 #include <cstdint>
 #include <iterator>
@@ -13,7 +14,9 @@
 #include <utility>
 #include <vector>
 
+#include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Utilities/GetOutput.hpp"
@@ -1369,3 +1372,40 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
   CHECK("NoFrame" == get_output(Frame::NoFrame{}));
 }
 /// [example_spectre_test_case]
+
+SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.MakeWithValue",
+                  "[Unit][DataStructures]") {
+  auto complex_tensor =
+      make_with_value<tnsr::i<ComplexDataVector, 3>>(DataVector{5}, 2.0);
+  std::complex<double> expected_value{2.0, 0.0};
+  for (size_t i = 0; i < 3; ++i) {
+    for (size_t j = 0; j < 5; ++j) {
+      CHECK(complex_tensor.get(i)[j] == expected_value);
+    }
+  }
+
+  auto complex_tensor_made_with_complex_values =
+      make_with_value<tnsr::i<std::complex<double>, 3>>(
+          std::complex<double>{-1.0, -1.0}, std::complex<double>{3.0, 1.0});
+  expected_value = std::complex<double>{3.0, 1.0};
+  for (size_t i = 0; i < 3; ++i) {
+    CHECK(complex_tensor_made_with_complex_values.get(i) == expected_value);
+  }
+
+  auto spin_weighted_complex =
+      make_with_value<Scalar<SpinWeighted<ComplexDataVector, 2>>>(DataVector{5},
+                                                                  3.0);
+  expected_value = std::complex<double>{3.0, 0.0};
+  for (size_t j = 0; j < 5; ++j) {
+    CHECK(get(spin_weighted_complex).data()[j] == expected_value);
+  }
+
+  auto spin_weighted_complex_from_complex_vector =
+      make_with_value<Scalar<SpinWeighted<ComplexDataVector, 2>>>(
+          ComplexDataVector{5}, 4.0);
+  expected_value = std::complex<double>{4.0, 0.0};
+  for (size_t j = 0; j < 5; ++j) {
+    CHECK(get(spin_weighted_complex_from_complex_vector).data()[j] ==
+          expected_value);
+  }
+}
