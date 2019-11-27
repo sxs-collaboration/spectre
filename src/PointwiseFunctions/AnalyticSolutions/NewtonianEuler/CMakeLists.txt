@@ -5,6 +5,7 @@ set(LIBRARY NewtonianEulerSolutions)
 
 set(LIBRARY_SOURCES
   IsentropicVortex.cpp
+  LaneEmdenStar.cpp
   RiemannProblem.cpp
   )
 
