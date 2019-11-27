@@ -6,7 +6,7 @@
 #include <limits>
 
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "Evolution/Systems/NewtonianEuler/Sources/NoSource.hpp"
+#include "Evolution/Systems/NewtonianEuler/Sources/LaneEmdenGravitationalField.hpp"
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
@@ -47,7 +47,7 @@ namespace Solutions {
 class LaneEmdenStar : public MarkAsAnalyticSolution {
  public:
   using equation_of_state_type = EquationsOfState::PolytropicFluid<false>;
-  using source_term_type = Sources::NoSource;
+  using source_term_type = Sources::LaneEmdenGravitationalField;
 
   /// The central mass density of the star.
   struct CentralMassDensity {
@@ -93,9 +93,22 @@ class LaneEmdenStar : public MarkAsAnalyticSolution {
     return {tuples::get<Tags>(variables(tmpl::list<Tags>{}, mass_density))...};
   }
 
+  /// \brief Compute the gravitational field for the corresponding source term,
+  /// LaneEmdenGravitationalField.
+  ///
+  /// The result is the vector-field giving the acceleration due to gravity
+  /// that is felt by a test particle.
+  template <typename DataType>
+  tnsr::I<DataType, 3> gravitational_field(const tnsr::I<DataType, 3>& x) const
+      noexcept;
+
   const EquationsOfState::PolytropicFluid<false>& equation_of_state() const
       noexcept {
     return equation_of_state_;
+  }
+
+  const Sources::LaneEmdenGravitationalField& source_term() const noexcept {
+    return source_term_;
   }
 
   // clang-tidy: no runtime references
@@ -132,6 +145,7 @@ class LaneEmdenStar : public MarkAsAnalyticSolution {
   double central_mass_density_ = std::numeric_limits<double>::signaling_NaN();
   double polytropic_constant_ = std::numeric_limits<double>::signaling_NaN();
   EquationsOfState::PolytropicFluid<false> equation_of_state_{};
+  Sources::LaneEmdenGravitationalField source_term_{};
 };
 
 bool operator!=(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) noexcept;

@@ -35,6 +35,34 @@ void LaneEmdenStar::pup(PUP::er& p) noexcept {
   p | central_mass_density_;
   p | polytropic_constant_;
   p | equation_of_state_;
+  p | source_term_;
+}
+
+template <typename DataType>
+tnsr::I<DataType, 3> LaneEmdenStar::gravitational_field(
+    const tnsr::I<DataType, 3>& x) const noexcept {
+  // Compute alpha for polytrope n==1, units G==1
+  const double alpha = sqrt(0.5 * polytropic_constant_ / M_PI);
+  const double outer_radius = alpha * M_PI;
+  const double mass_scale = 4.0 * M_PI * cube(alpha) * central_mass_density_;
+  // Add tiny offset to avoid divisons by zero
+  const DataType radius = get(magnitude(x)) + 1.e-30 * outer_radius;
+
+  auto enclosed_mass = make_with_value<DataType>(get_size(radius), mass_scale);
+  for (size_t s = 0; s < get_size(radius); ++s) {
+    if (get_element(radius, s) < outer_radius) {
+      const double xi = get_element(radius, s) / alpha;
+      get_element(enclosed_mass, s) *= sin(xi) - xi * cos(xi);
+    } else {
+      get_element(enclosed_mass, s) *= M_PI;
+    }
+  }
+
+  auto gravitational_field_result = x;
+  for (size_t i = 0; i < 3; ++i) {
+    gravitational_field_result.get(i) *= -enclosed_mass / cube(radius);
+  }
+  return gravitational_field_result;
 }
 
 template <typename DataType>
@@ -91,6 +119,8 @@ LaneEmdenStar::variables(
 bool operator==(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) noexcept {
   // There is no comparison operator for the EoS, but should be okay as
   // the `polytropic_constant`s are compared.
+  // There is no comparison operator for the LaneEmdenGravitationalField source
+  // term, but this should also be okay as it holds no data.
   return lhs.central_mass_density_ == rhs.central_mass_density_ and
          lhs.polytropic_constant_ == rhs.polytropic_constant_;
 }
@@ -102,6 +132,8 @@ bool operator!=(const LaneEmdenStar& lhs, const LaneEmdenStar& rhs) noexcept {
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
 #define INSTANTIATE(_, data)                                                 \
+  template tnsr::I<DTYPE(data), 3> LaneEmdenStar::gravitational_field(       \
+      const tnsr::I<DTYPE(data), 3>& x) const noexcept;                      \
   template Scalar<DTYPE(data)> LaneEmdenStar::precompute_mass_density(       \
       const tnsr::I<DTYPE(data), 3>& x) const noexcept;                      \
   template tuples::TaggedTuple<Tags::MassDensity<DTYPE(data)>>               \
