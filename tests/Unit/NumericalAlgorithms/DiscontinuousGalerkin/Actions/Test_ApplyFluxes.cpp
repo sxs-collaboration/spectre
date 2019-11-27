@@ -27,7 +27,7 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/DefiniteIntegral.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
@@ -165,7 +165,7 @@ SPECTRE_TEST_CASE("Unit.DG.Actions.ApplyFluxes",
       const tnsr::I<DataVector, 1>& remote_extra_data,
       const Scalar<DataVector>& local_flux,
       const Scalar<DataVector>& local_magnitude_face_normal) noexcept {
-    dg::SimpleBoundaryData<size_t, LocalData, PackagedData> data;
+    dg::SimpleMortarData<size_t, LocalData, PackagedData> data;
 
     LocalData local_data{};
     local_data.mortar_data.initialize(3);

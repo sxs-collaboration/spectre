@@ -13,7 +13,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Domain/Direction.hpp"  // IWYU pragma: keep
 #include "Domain/ElementId.hpp"  // IWYU pragma: keep
-#include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "NumericalAlgorithms/Spectral/Projection.hpp"
 #include "Options/Options.hpp"
 
@@ -22,9 +22,8 @@ namespace Tags {
 /// \ingroup DiscontinuousGalerkinGroup
 /// \brief Simple boundary communication data
 template <typename TemporalId, typename LocalData, typename RemoteData>
-struct SimpleBoundaryData : db::SimpleTag {
-  static std::string name() noexcept { return "SimpleBoundaryData"; }
-  using type = dg::SimpleBoundaryData<TemporalId, LocalData, RemoteData>;
+struct SimpleMortarData : db::SimpleTag {
+  using type = dg::SimpleMortarData<TemporalId, LocalData, RemoteData>;
 };
 
 /// \ingroup DataBoxTagsGroup

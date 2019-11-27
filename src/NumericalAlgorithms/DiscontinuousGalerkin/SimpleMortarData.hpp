@@ -20,7 +20,7 @@ namespace dg {
 /// Typically, values are inserted into this container by the flux
 /// communication actions.
 template <typename TemporalId, typename LocalVars, typename RemoteVars>
-class SimpleBoundaryData {
+class SimpleMortarData {
  public:
   /// Add a value.  This function must be called once between calls to
   /// extract.
@@ -42,7 +42,7 @@ class SimpleBoundaryData {
 };
 
 template <typename TemporalId, typename LocalVars, typename RemoteVars>
-void SimpleBoundaryData<TemporalId, LocalVars, RemoteVars>::local_insert(
+void SimpleMortarData<TemporalId, LocalVars, RemoteVars>::local_insert(
     TemporalId temporal_id, LocalVars vars) noexcept {
   ASSERT(not local_data_, "Already received local data.");
   ASSERT(not remote_data_ or temporal_id == temporal_id_,
@@ -53,7 +53,7 @@ void SimpleBoundaryData<TemporalId, LocalVars, RemoteVars>::local_insert(
 }
 
 template <typename TemporalId, typename LocalVars, typename RemoteVars>
-void SimpleBoundaryData<TemporalId, LocalVars, RemoteVars>::remote_insert(
+void SimpleMortarData<TemporalId, LocalVars, RemoteVars>::remote_insert(
     TemporalId temporal_id, RemoteVars vars) noexcept {
   ASSERT(not remote_data_, "Already received remote data.");
   ASSERT(not local_data_ or temporal_id == temporal_id_,
@@ -65,7 +65,7 @@ void SimpleBoundaryData<TemporalId, LocalVars, RemoteVars>::remote_insert(
 
 template <typename TemporalId, typename LocalVars, typename RemoteVars>
 std::pair<LocalVars, RemoteVars>
-SimpleBoundaryData<TemporalId, LocalVars, RemoteVars>::extract() noexcept {
+SimpleMortarData<TemporalId, LocalVars, RemoteVars>::extract() noexcept {
   ASSERT(local_data_ and remote_data_,
          "Tried to extract boundary data, but do not have "
          << (local_data_ ? "remote" : remote_data_ ? "local" : "any")
@@ -78,7 +78,7 @@ SimpleBoundaryData<TemporalId, LocalVars, RemoteVars>::extract() noexcept {
 }
 
 template <typename TemporalId, typename LocalVars, typename RemoteVars>
-void SimpleBoundaryData<TemporalId, LocalVars, RemoteVars>::pup(
+void SimpleMortarData<TemporalId, LocalVars, RemoteVars>::pup(
     PUP::er& p) noexcept {
   p | temporal_id_;
   p | local_data_;

@@ -8,14 +8,14 @@
 #include <utility>
 
 #include "ErrorHandling/Error.hpp"
-#include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 #include "Utilities/Literals.hpp"  // IWYU pragma: keep
 #include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_include <type_traits>  // for __decay_and_strip<>::__type
 
-SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData", "[Unit][Time]") {
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
+SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData", "[Unit][NumericalAlgorithms]") {
+  dg::SimpleMortarData<size_t, std::string, double> data;
   data = serialize_and_deserialize(data);
   data.local_insert(0, "string 1");
   data = serialize_and_deserialize(data);
@@ -30,11 +30,11 @@ SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData", "[Unit][Time]") {
 
 // [[OutputRegex, Received local data at 1, but already have remote
 // data at 0]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData.wrong_time.local",
-                               "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData.wrong_time.local",
+                               "[Unit][NumericalAlgorithms]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
+  dg::SimpleMortarData<size_t, std::string, double> data;
   data.remote_insert(0, 0.);
   data.local_insert(1, "");
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -43,11 +43,11 @@ SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData", "[Unit][Time]") {
 
 // [[OutputRegex, Received remote data at 0, but already have local
 // data at 1]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData.wrong_time.remote",
-                               "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData.wrong_time.remote",
+                                "[Unit][NumericalAlgorithms]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
+  dg::SimpleMortarData<size_t, std::string, double> data;
   data.local_insert(1, "");
   data.remote_insert(0, 0.);
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -55,11 +55,11 @@ SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData", "[Unit][Time]") {
 }
 
 // [[OutputRegex, Already received local data]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Time.SimpleBoundaryData.double_insert.local", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData.double_insert.local",
+                               "[Unit][NumericalAlgorithms]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
+  dg::SimpleMortarData<size_t, std::string, double> data;
   data.local_insert(1, "");
   data.local_insert(1, "");
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -68,10 +68,11 @@ SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData", "[Unit][Time]") {
 
 // [[OutputRegex, Already received remote data]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Time.SimpleBoundaryData.double_insert.remote", "[Unit][Time]") {
+    "Unit.DG.SimpleMortarData.double_insert.remote",
+    "[Unit][NumericalAlgorithms]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
+  dg::SimpleMortarData<size_t, std::string, double> data;
   data.remote_insert(0, 0.);
   data.remote_insert(0, 0.);
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -79,11 +80,11 @@ SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData", "[Unit][Time]") {
 }
 
 // [[OutputRegex, Tried to extract boundary data, but do not have any data]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Time.SimpleBoundaryData.bad_extract.none", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData.bad_extract.none",
+                               "[Unit][NumericalAlgorithms]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
+  dg::SimpleMortarData<size_t, std::string, double> data;
   data.extract();
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -91,10 +92,11 @@ SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData", "[Unit][Time]") {
 
 // [[OutputRegex, Tried to extract boundary data, but do not have remote data]]
 [[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Time.SimpleBoundaryData.bad_extract.no_remote", "[Unit][Time]") {
+    "Unit.DG.SimpleMortarData.bad_extract.no_remote",
+    "[Unit][NumericalAlgorithms]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
+  dg::SimpleMortarData<size_t, std::string, double> data;
   data.local_insert(1, "");
   data.extract();
   ERROR("Failed to trigger ASSERT in an assertion test");
@@ -102,11 +104,11 @@ SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData", "[Unit][Time]") {
 }
 
 // [[OutputRegex, Tried to extract boundary data, but do not have local data]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Time.SimpleBoundaryData.bad_extract.no_local", "[Unit][Time]") {
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData.bad_extract.no_local",
+                               "[Unit][NumericalAlgorithms]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
+  dg::SimpleMortarData<size_t, std::string, double> data;
   data.remote_insert(0, 0.);
   data.extract();
   ERROR("Failed to trigger ASSERT in an assertion test");
