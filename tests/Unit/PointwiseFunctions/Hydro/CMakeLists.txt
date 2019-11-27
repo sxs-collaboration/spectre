@@ -8,6 +8,7 @@ set(LIBRARY "Test_Hydro")
 set(LIBRARY_SOURCES
   Test_LorentzFactor.cpp
   Test_MassFlux.cpp
+  Test_SoundSpeedSquared.cpp
   Test_SpecificEnthalpy.cpp
   Test_Tags.cpp
   )

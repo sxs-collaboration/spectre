@@ -9,6 +9,8 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
 
 SPECTRE_TEST_CASE("Unit.RelativisticEuler.Valencia.Tags", "[Unit][Evolution]") {
+  CHECK(RelativisticEuler::Valencia::Tags::CharacteristicSpeeds<3>::name() ==
+        "CharacteristicSpeeds");
   CHECK(RelativisticEuler::Valencia::Tags::TildeD::name() == "TildeD");
   CHECK(RelativisticEuler::Valencia::Tags::TildeTau::name() == "TildeTau");
   CHECK(RelativisticEuler::Valencia::Tags::TildeS<3, Frame::Inertial>::name() ==
