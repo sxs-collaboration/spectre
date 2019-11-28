@@ -65,11 +65,21 @@ RUN apt-get update -y \
 RUN apt-get install -y ccache doxygen
 
 # Install Python packages
+# We only install packages that are needed by the build system (e.g. to compile
+# Python bindings or build documentation) or used by Python code that is
+# unit-tested. Any other packages can be installed on-demand.
+# - We need `coverxygen`, `beautifulsoup4` and `pybtex` for both Python 2 and
+# Python 3 so that people can build the documentation with either.
+# - We need `yapf` so the CI can check Python formatting. We use a specific
+# version of it in order to avoid formatting differences between versions.
+# `futures` is needed for `yapf` parallelization on Python 2.
 RUN apt-get install -y python-pip python3-pip \
-    && pip3 install numpy scipy \
-    && pip install autopep8 flake8 \
-    && pip install numpy scipy matplotlib pandas h5py jupyterlab \
-    && pip install coverxygen beautifulsoup4 pybtex
+    && pip2 install numpy scipy h5py \
+    && pip3 install numpy scipy h5py \
+    && pip2 install coverxygen beautifulsoup4 pybtex \
+    && pip3 install coverxygen beautifulsoup4 pybtex \
+    && pip2 install yapf==0.29.0 futures \
+    && pip3 install yapf==0.29.0
 
 # Add ruby gems and install coveralls using gem
 RUN apt-get update -y \
