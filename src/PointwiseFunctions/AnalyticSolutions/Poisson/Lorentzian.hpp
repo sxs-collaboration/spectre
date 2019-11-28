@@ -54,12 +54,12 @@ class Lorentzian {
 
   // @{
   /// Retrieve variable at coordinates `x`
-  static auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+  static auto variables(const tnsr::I<DataVector, Dim, Frame::System>& x,
                         tmpl::list<Tags::Field> /*meta*/) noexcept
       -> tuples::TaggedTuple<Tags::Field>;
 
   static auto variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+      const tnsr::I<DataVector, Dim, Frame::System>& x,
       tmpl::list<::Tags::FixedSource<Tags::Field>> /*meta*/) noexcept
       -> tuples::TaggedTuple<::Tags::FixedSource<Tags::Field>>;
   // @}
@@ -67,7 +67,7 @@ class Lorentzian {
   /// Retrieve a collection of variables at coordinates `x`
   template <typename... Tags>
   static tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+      const tnsr::I<DataVector, Dim, Frame::System>& x,
       tmpl::list<Tags...> /*meta*/) noexcept {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "

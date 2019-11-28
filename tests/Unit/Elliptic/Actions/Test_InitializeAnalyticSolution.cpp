@@ -28,7 +28,7 @@ struct ScalarFieldTag : db::SimpleTag {
 template <size_t Dim>
 struct AnalyticSolution {
   tuples::TaggedTuple<ScalarFieldTag> variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+      const tnsr::I<DataVector, Dim, Frame::System>& x,
       tmpl::list<ScalarFieldTag> /*meta*/) const noexcept {
     Scalar<DataVector> solution{2. * get<0>(x)};
     for (size_t d = 1; d < Dim; d++) {
@@ -54,7 +54,7 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
-              tmpl::list<::Tags::Coordinates<Dim, Frame::Inertial>>>>>,
+              tmpl::list<::Tags::Coordinates<Dim, Frame::System>>>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Testing,
@@ -71,7 +71,7 @@ struct Metavariables {
 
 template <size_t Dim>
 void test_initialize_analytic_solution(
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
+    const tnsr::I<DataVector, Dim, Frame::System>& system_coords,
     const Scalar<DataVector>& expected_solution) {
   using metavariables = Metavariables<Dim>;
   using element_array = typename metavariables::element_array;
@@ -79,7 +79,7 @@ void test_initialize_analytic_solution(
   ActionTesting::MockRuntimeSystem<metavariables> runner{
       {AnalyticSolution<Dim>{}}};
   ActionTesting::emplace_component_and_initialize<element_array>(
-      &runner, element_id, {inertial_coords});
+      &runner, element_id, {system_coords});
   runner.set_phase(metavariables::Phase::Testing);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   CHECK_ITERABLE_APPROX(
@@ -94,12 +94,12 @@ void test_initialize_analytic_solution(
 SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeAnalyticSolution",
                   "[Unit][Elliptic][Actions]") {
   test_initialize_analytic_solution(
-      tnsr::I<DataVector, 1, Frame::Inertial>{{{{1., 2., 3., 4.}}}},
+      tnsr::I<DataVector, 1, Frame::System>{{{{1., 2., 3., 4.}}}},
       Scalar<DataVector>{{{{2., 4., 6., 8.}}}});
   test_initialize_analytic_solution(
-      tnsr::I<DataVector, 2, Frame::Inertial>{{{{1., 2.}, {3., 4.}}}},
+      tnsr::I<DataVector, 2, Frame::System>{{{{1., 2.}, {3., 4.}}}},
       Scalar<DataVector>{{{{8., 12.}}}});
   test_initialize_analytic_solution(
-      tnsr::I<DataVector, 3, Frame::Inertial>{{{{1., 2.}, {3., 4.}, {5., 6.}}}},
+      tnsr::I<DataVector, 3, Frame::System>{{{{1., 2.}, {3., 4.}, {5., 6.}}}},
       Scalar<DataVector>{{{{18., 24.}}}});
 }

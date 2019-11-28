@@ -48,7 +48,7 @@ struct InitializeFluxes {
   using vars_tag = typename system::variables_tag;
   using fluxes_tag =
       db::add_tag_prefix<::Tags::Flux, vars_tag, tmpl::size_t<volume_dim>,
-                         Frame::Inertial>;
+                         Frame::System>;
   using div_fluxes_tag = db::add_tag_prefix<::Tags::div, fluxes_tag>;
 
   template <typename Directions>
@@ -59,7 +59,7 @@ struct InitializeFluxes {
                  // interface normal dotted into the fluxes
                  ::Tags::InterfaceCompute<
                      Directions, ::Tags::NormalDotFluxCompute<
-                                     vars_tag, volume_dim, Frame::Inertial>>>;
+                                     vars_tag, volume_dim, Frame::System>>>;
 
   using fluxes_compute_tag =
       elliptic::Tags::FirstOrderFluxesCompute<volume_dim, system>;
@@ -73,7 +73,7 @@ struct InitializeFluxes {
                                fluxes_compute_tag>,
       ::Tags::InterfaceCompute<
           ::Tags::BoundaryDirectionsExterior<volume_dim>,
-          ::Tags::NormalDotFluxCompute<vars_tag, volume_dim, Frame::Inertial>>,
+          ::Tags::NormalDotFluxCompute<vars_tag, volume_dim, Frame::System>>,
       ::Tags::Slice<::Tags::BoundaryDirectionsExterior<volume_dim>,
                     div_fluxes_tag>>;
 

@@ -18,20 +18,21 @@
 
 namespace {
 template <typename DataType>
-Scalar<DataType> compute_piecewise(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x, const double shock_position,
-    const double left_value, const double right_value) noexcept {
+Scalar<DataType> compute_piecewise(const tnsr::I<DataType, 3, Frame::System>& x,
+                                   const double shock_position,
+                                   const double left_value,
+                                   const double right_value) noexcept {
   return Scalar<DataType>(left_value -
                           (left_value - right_value) *
                               step_function(get<0>(x) - shock_position));
 }
 
 template <typename DataType>
-tnsr::I<DataType, 3, Frame::Inertial> compute_piecewise_vector(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x, const double shock_position,
+tnsr::I<DataType, 3, Frame::System> compute_piecewise_vector(
+    const tnsr::I<DataType, 3, Frame::System>& x, const double shock_position,
     const std::array<double, 3>& left_value,
     const std::array<double, 3>& right_value) noexcept {
-  return tnsr::I<DataType, 3, Frame::Inertial>{
+  return tnsr::I<DataType, 3, Frame::System>{
       {{left_value[0] - (left_value[0] - right_value[0]) *
                             step_function(get<0>(x) - shock_position),
         left_value[1] - (left_value[1] - right_value[1]) *
@@ -85,7 +86,7 @@ void KomissarovShock::pup(PUP::er& p) noexcept {
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::RestMassDensity<DataType>>
 KomissarovShock::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x, const double t,
+    const tnsr::I<DataType, 3, Frame::System>& x, const double t,
     tmpl::list<hydro::Tags::RestMassDensity<DataType>> /*meta*/) const
     noexcept {
   return compute_piecewise(x, t * shock_speed_, left_rest_mass_density_,
@@ -95,7 +96,7 @@ KomissarovShock::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
 KomissarovShock::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x, const double t,
+    const tnsr::I<DataType, 3, Frame::System>& x, const double t,
     tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
     noexcept {
   return compute_piecewise_vector(x, t * shock_speed_, left_spatial_velocity_,
@@ -105,7 +106,7 @@ KomissarovShock::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificInternalEnergy<DataType>>
 KomissarovShock::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x, const double t,
+    const tnsr::I<DataType, 3, Frame::System>& x, const double t,
     tmpl::list<hydro::Tags::SpecificInternalEnergy<DataType>> /*meta*/) const
     noexcept {
   return equation_of_state_.specific_internal_energy_from_density_and_pressure(
@@ -117,7 +118,7 @@ KomissarovShock::variables(
 
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> KomissarovShock::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x, const double t,
+    const tnsr::I<DataType, 3, Frame::System>& x, const double t,
     tmpl::list<hydro::Tags::Pressure<DataType>> /*meta*/) const noexcept {
   return compute_piecewise(x, t * shock_speed_, left_pressure_,
                            right_pressure_);
@@ -127,7 +128,7 @@ tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> KomissarovShock::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3>>
 KomissarovShock::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x, const double t,
+    const tnsr::I<DataType, 3, Frame::System>& x, const double t,
     tmpl::list<hydro::Tags::MagneticField<DataType, 3>> /*meta*/) const
     noexcept {
   return compute_piecewise_vector(x, t * shock_speed_, left_magnetic_field_,
@@ -137,7 +138,7 @@ KomissarovShock::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>
 KomissarovShock::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x, const double /*t*/,
+    const tnsr::I<DataType, 3, Frame::System>& x, const double /*t*/,
     tmpl::list<hydro::Tags::DivergenceCleaningField<DataType>> /*meta*/) const
     noexcept {
   return {make_with_value<
@@ -147,7 +148,7 @@ KomissarovShock::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
 KomissarovShock::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x, const double t,
+    const tnsr::I<DataType, 3, Frame::System>& x, const double t,
     tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
   const auto spatial_velocity = get<hydro::Tags::SpatialVelocity<DataType, 3>>(
       variables(x, t, tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>>{}));
@@ -158,7 +159,7 @@ KomissarovShock::variables(
 template <typename DataType>
 tuples::TaggedTuple<hydro::Tags::SpecificEnthalpy<DataType>>
 KomissarovShock::variables(
-    const tnsr::I<DataType, 3, Frame::Inertial>& x, const double t,
+    const tnsr::I<DataType, 3, Frame::System>& x, const double t,
     tmpl::list<hydro::Tags::SpecificEnthalpy<DataType>> /*meta*/) const
     noexcept {
   return equation_of_state_.specific_enthalpy_from_density_and_energy(
@@ -190,10 +191,10 @@ bool operator!=(const KomissarovShock& lhs,
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define TAG(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE_SCALARS(_, data)                               \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>           \
-      KomissarovShock::variables(                                  \
-          const tnsr::I<DTYPE(data), 3, Frame::Inertial>&, double, \
+#define INSTANTIATE_SCALARS(_, data)                             \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data)>>         \
+      KomissarovShock::variables(                                \
+          const tnsr::I<DTYPE(data), 3, Frame::System>&, double, \
           tmpl::list<TAG(data) < DTYPE(data)>>) const noexcept;
 
 GENERATE_INSTANTIATIONS(
@@ -202,11 +203,11 @@ GENERATE_INSTANTIATIONS(
      hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
      hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
-#define INSTANTIATE_VECTORS(_, data)                                \
-  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>         \
-      KomissarovShock::variables(                                   \
-          const tnsr::I<DTYPE(data), 3, Frame::Inertial>&, double,  \
-          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::Inertial>>) \
+#define INSTANTIATE_VECTORS(_, data)                              \
+  template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>       \
+      KomissarovShock::variables(                                 \
+          const tnsr::I<DTYPE(data), 3, Frame::System>&, double,  \
+          tmpl::list<TAG(data) < DTYPE(data), 3, Frame::System>>) \
           const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),

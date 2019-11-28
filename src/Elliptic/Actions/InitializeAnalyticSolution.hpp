@@ -20,7 +20,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 /// \endcond
 
@@ -33,7 +33,7 @@ namespace Actions {
  * Uses:
  * - DataBox:
  *   - `AnalyticSolutionTag`
- *   - `Tags::Coordinates<Dim, Frame::Inertial>`
+ *   - `Tags::Coordinates<Dim, Frame::System>`
  *
  * DataBox:
  * - Adds:
@@ -55,11 +55,11 @@ struct InitializeAnalyticSolution {
         db::add_tag_prefix<::Tags::Analytic,
                            ::Tags::Variables<AnalyticSolutionFields>>;
 
-    const auto& inertial_coords =
-        get<::Tags::Coordinates<Dim, Frame::Inertial>>(box);
+    const auto& system_coords =
+        get<::Tags::Coordinates<Dim, Frame::System>>(box);
     db::item_type<analytic_fields_tag> analytic_fields{
         variables_from_tagged_tuple(get<AnalyticSolutionTag>(cache).variables(
-            inertial_coords, AnalyticSolutionFields{}))};
+            system_coords, AnalyticSolutionFields{}))};
 
     return std::make_tuple(
         ::Initialization::merge_into_databox<

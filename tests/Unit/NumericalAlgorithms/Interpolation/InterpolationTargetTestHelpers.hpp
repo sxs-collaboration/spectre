@@ -93,7 +93,7 @@ struct MockReceivePoints {
       const typename Metavariables::temporal_id::type& temporal_id,
       std::vector<boost::optional<
           IdPair<domain::BlockId,
-                 tnsr::I<double, VolumeDim, typename Frame::Logical>>>>&&
+                 tnsr::I<double, VolumeDim, typename Frame::ElementLogical>>>>&&
           block_coord_holders) noexcept {
     db::mutate<intrp::Tags::InterpolatedVarsHolders<Metavariables>>(
         make_not_null(&box),

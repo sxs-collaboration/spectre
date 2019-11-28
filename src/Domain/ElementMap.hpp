@@ -38,7 +38,7 @@ template <size_t Dim, typename TargetFrame>
 class ElementMap {
  public:
   static constexpr size_t dim = Dim;
-  using source_frame = Frame::Logical;
+  using source_frame = Frame::ElementLogical;
   using target_frame = TargetFrame;
 
   /// \cond HIDDEN_SYMBOLS
@@ -46,12 +46,12 @@ class ElementMap {
   /// \endcond
 
   ElementMap(ElementId<Dim> element_id,
-             std::unique_ptr<
-                 domain::CoordinateMapBase<Frame::Logical, TargetFrame, Dim>>
+             std::unique_ptr<domain::CoordinateMapBase<Frame::ElementLogical,
+                                                       TargetFrame, Dim>>
                  block_map) noexcept;
 
-  const domain::CoordinateMapBase<Frame::Logical, TargetFrame, Dim>& block_map()
-      const noexcept {
+  const domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame, Dim>&
+  block_map() const noexcept {
     return *block_map_;
   }
 
@@ -59,13 +59,13 @@ class ElementMap {
 
   template <typename T>
   tnsr::I<T, Dim, TargetFrame> operator()(
-      tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
+      tnsr::I<T, Dim, Frame::ElementLogical> source_point) const noexcept {
     apply_affine_transformation_to_point(source_point);
     return block_map_->operator()(std::move(source_point));
   }
 
   template <typename T>
-  tnsr::I<T, Dim, Frame::Logical> inverse(
+  tnsr::I<T, Dim, Frame::ElementLogical> inverse(
       tnsr::I<T, Dim, TargetFrame> target_point) const noexcept {
     auto source_point{
         block_map_->inverse(std::move(target_point)).get()};
@@ -79,8 +79,8 @@ class ElementMap {
   }
 
   template <typename T>
-  InverseJacobian<T, Dim, Frame::Logical, TargetFrame> inv_jacobian(
-      tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
+  InverseJacobian<T, Dim, Frame::ElementLogical, TargetFrame> inv_jacobian(
+      tnsr::I<T, Dim, Frame::ElementLogical> source_point) const noexcept {
     apply_affine_transformation_to_point(source_point);
     auto inv_jac = block_map_->inv_jacobian(std::move(source_point));
     for (size_t d = 0; d < Dim; ++d) {
@@ -92,8 +92,8 @@ class ElementMap {
   }
 
   template <typename T>
-  Jacobian<T, Dim, Frame::Logical, TargetFrame> jacobian(
-      tnsr::I<T, Dim, Frame::Logical> source_point) const noexcept {
+  Jacobian<T, Dim, Frame::ElementLogical, TargetFrame> jacobian(
+      tnsr::I<T, Dim, Frame::ElementLogical> source_point) const noexcept {
     apply_affine_transformation_to_point(source_point);
     auto jac = block_map_->jacobian(std::move(source_point));
     for (size_t d = 0; d < Dim; ++d) {
@@ -110,14 +110,15 @@ class ElementMap {
  private:
   template <typename T>
   void apply_affine_transformation_to_point(
-      tnsr::I<T, Dim, Frame::Logical>& source_point) const noexcept {
+      tnsr::I<T, Dim, Frame::ElementLogical>& source_point) const noexcept {
     for (size_t d = 0; d < Dim; ++d) {
       source_point.get(d) = source_point.get(d) * gsl::at(map_slope_, d) +
                             gsl::at(map_offset_, d);
     }
   }
 
-  std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, Dim>>
+  std::unique_ptr<
+      domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame, Dim>>
       block_map_{nullptr};
   ElementId<Dim> element_id_{};
   // map_slope_[i] = 0.5 * (segment_ids[i].endpoint(Side::Upper) -

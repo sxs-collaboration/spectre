@@ -58,7 +58,7 @@ void test_r_theta_lgl() noexcept {
   const size_t num_total = num_radial * num_theta * num_phi;
   const auto expected_block_coord_holders = [&domain_creator,
                                              &num_total]() noexcept {
-    tnsr::I<DataVector, 3, Frame::Inertial> points(num_total);
+    tnsr::I<DataVector, 3> points(num_total);
     for (size_t r = 0; r < num_radial; ++r) {
       const double radius =
           2.6 +
@@ -106,7 +106,7 @@ void test_r_theta_uniform() noexcept {
   const size_t num_total = num_radial * num_theta * num_phi;
   const auto expected_block_coord_holders = [&domain_creator,
                                              &num_total]() noexcept {
-    tnsr::I<DataVector, 3, Frame::Inertial> points(num_total);
+    tnsr::I<DataVector, 3> points(num_total);
     for (size_t r = 0; r < num_radial; ++r) {
       const double radius = 1.8 + 1.8 * r / (num_radial - 1.0);
       for (size_t t = 0; t < num_theta; ++t) {

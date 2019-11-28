@@ -162,16 +162,16 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::SpatialVelocity<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+                     DataType, 3, Frame::System>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+          hydro::Tags::SpatialVelocity<DataType, 3, Frame::System>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
                  tmpl::list<hydro::Tags::MagneticField<
-                     DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
+                     DataType, 3, Frame::System>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>;
+          hydro::Tags::MagneticField<DataType, 3, Frame::System>>;
 
   template <typename DataType>
   auto variables(
@@ -196,7 +196,7 @@ class CylindricalBlastWave : public MarkAsAnalyticData {
   /// Retrieve a collection of hydrodynamic variables at position x
   template <typename DataType, typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataType, 3, Frame::Inertial>& x,
+      const tnsr::I<DataType, 3, Frame::System>& x,
       tmpl::list<Tags...> /*meta*/) const noexcept {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "

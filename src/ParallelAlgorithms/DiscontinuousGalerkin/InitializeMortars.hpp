@@ -29,7 +29,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>

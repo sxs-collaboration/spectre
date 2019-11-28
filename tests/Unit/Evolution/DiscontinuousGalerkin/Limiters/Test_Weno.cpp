@@ -483,31 +483,31 @@ void test_simple_weno_1d(const std::unordered_set<Direction<1>>&
 
   // Functions to produce dummy data on each element
   const auto make_center_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 1.0 - 2.0 * x + square(x);
-    get<0>(get<VectorTag<1>>(vars)) = 0.4 * x - 0.1 * square(x);
-    return vars;
-  };
+      [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords) noexcept {
+        const auto& x = get<0>(coords);
+        Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = 1.0 - 2.0 * x + square(x);
+        get<0>(get<VectorTag<1>>(vars)) = 0.4 * x - 0.1 * square(x);
+        return vars;
+      };
   const auto make_lower_xi_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords,
          const double offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = -2.0 - 10.0 * x - square(x);
-    get<0>(get<VectorTag<1>>(vars)) = -0.1 + 0.3 * x - 0.1 * square(x);
-    return vars;
-  };
+        const auto x = get<0>(coords) + offset;
+        Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = -2.0 - 10.0 * x - square(x);
+        get<0>(get<VectorTag<1>>(vars)) = -0.1 + 0.3 * x - 0.1 * square(x);
+        return vars;
+      };
   const auto make_upper_xi_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords,
          const double offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = -0.3 - x + 0.5 * square(x);
-    get<0>(get<VectorTag<1>>(vars)) = 0.6 * x - 0.3 * square(x);
-    return vars;
-  };
+        const auto x = get<0>(coords) + offset;
+        Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = -0.3 - x + 0.5 * square(x);
+        get<0>(get<VectorTag<1>>(vars)) = 0.6 * x - 0.3 * square(x);
+        return vars;
+      };
 
   const auto local_vars = make_center_vars(logical_coords);
   VariablesMap<1> neighbor_vars{};
@@ -561,61 +561,61 @@ void test_simple_weno_2d(const std::unordered_set<Direction<2>>&
   const auto element_size = make_array<2>(1.2);
 
   const auto make_center_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = x + y - 0.5 * square(x) + 0.5 * square(y);
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) =
-        0.1 + 0.2 * x - 0.4 * y + 0.3 * square(x) * square(y);
-    return vars;
-  };
+      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords) noexcept {
+        const auto& x = get<0>(coords);
+        const auto& y = get<1>(coords);
+        Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = x + y - 0.5 * square(x) + 0.5 * square(y);
+        get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
+        get<1>(get<VectorTag<2>>(vars)) =
+            0.1 + 0.2 * x - 0.4 * y + 0.3 * square(x) * square(y);
+        return vars;
+      };
   const auto make_lower_xi_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
          const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 2.0 * x + 1.2 * y;
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = 3.0 + 0.2 * y;
-    return vars;
-  };
+        const auto x = get<0>(coords) + xi_offset;
+        const auto& y = get<1>(coords);
+        Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = 2.0 * x + 1.2 * y;
+        get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
+        get<1>(get<VectorTag<2>>(vars)) = 3.0 + 0.2 * y;
+        return vars;
+      };
   const auto make_upper_xi_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
          const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = x + y - 0.25 * square(x) - square(y);
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = -2.4 + square(x);
-    return vars;
-  };
+        const auto x = get<0>(coords) + xi_offset;
+        const auto& y = get<1>(coords);
+        Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = x + y - 0.25 * square(x) - square(y);
+        get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
+        get<1>(get<VectorTag<2>>(vars)) = -2.4 + square(x);
+        return vars;
+      };
   const auto make_lower_eta_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
          const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = -1 + 0.5 * x + y;
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = 0.2 - y;
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto y = get<1>(coords) + eta_offset;
+        Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = -1 + 0.5 * x + y;
+        get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
+        get<1>(get<VectorTag<2>>(vars)) = 0.2 - y;
+        return vars;
+      };
   const auto make_upper_eta_vars =
-      [](const tnsr::I<DataVector, 2, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 2, Frame::ElementLogical>& coords,
          const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
-    get(get<ScalarTag>(vars)) =
-        -6.0 + x + 2.0 * y + 0.5 * square(x) + 0.5 * square(y);
-    get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
-    get<1>(get<VectorTag<2>>(vars)) = 0.4 + 0.3 * x * square(y);
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto y = get<1>(coords) + eta_offset;
+        Variables<tmpl::list<ScalarTag, VectorTag<2>>> vars(x.size());
+        get(get<ScalarTag>(vars)) =
+            -6.0 + x + 2.0 * y + 0.5 * square(x) + 0.5 * square(y);
+        get<0>(get<VectorTag<2>>(vars)) = x + 2.5 * y;
+        get<1>(get<VectorTag<2>>(vars)) = 0.4 + 0.3 * x * square(y);
+        return vars;
+      };
 
   const auto local_vars = make_center_vars(logical_coords);
   VariablesMap<2> neighbor_vars{};
@@ -687,95 +687,96 @@ void test_simple_weno_3d(const std::unordered_set<Direction<3>>&
   const auto element_size = make_array<3>(1.2);
 
   const auto make_center_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = x + y - 0.2 * z - y * z + x * y * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = z;
-    get<2>(get<VectorTag<3>>(vars)) = x + square(y) + cube(z);
-    return vars;
-  };
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords) noexcept {
+        const auto& x = get<0>(coords);
+        const auto& y = get<1>(coords);
+        const auto& z = get<2>(coords);
+        Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = x + y - 0.2 * z - y * z + x * y * square(z);
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = z;
+        get<2>(get<VectorTag<3>>(vars)) = x + square(y) + cube(z);
+        return vars;
+      };
   const auto make_lower_xi_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 1.2 * x + y - 0.4 * z + x * y * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = 0.8 * z + 0.3 * x * y;
-    get<2>(get<VectorTag<3>>(vars)) = x + y;
-    return vars;
-  };
+        const auto x = get<0>(coords) + xi_offset;
+        const auto& y = get<1>(coords);
+        const auto& z = get<2>(coords);
+        Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = 1.2 * x + y - 0.4 * z + x * y * square(z);
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = 0.8 * z + 0.3 * x * y;
+        get<2>(get<VectorTag<3>>(vars)) = x + y;
+        return vars;
+      };
   const auto make_upper_xi_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double xi_offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + xi_offset;
-    const auto& y = get<1>(coords);
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 0.8 * x + y - 0.4 * z + 0.5 * x * y * z;
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = z + 0.1 * square(x);
-    get<2>(get<VectorTag<3>>(vars)) = y + square(x) * z;
-    return vars;
-  };
+        const auto x = get<0>(coords) + xi_offset;
+        const auto& y = get<1>(coords);
+        const auto& z = get<2>(coords);
+        Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = 0.8 * x + y - 0.4 * z + 0.5 * x * y * z;
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = z + 0.1 * square(x);
+        get<2>(get<VectorTag<3>>(vars)) = y + square(x) * z;
+        return vars;
+      };
   const auto make_lower_eta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = x + y - y * z + 0.2 * x * y * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = -0.1 * y + z;
-    get<2>(get<VectorTag<3>>(vars)) = -square(z);
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto y = get<1>(coords) + eta_offset;
+        const auto& z = get<2>(coords);
+        Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = x + y - y * z + 0.2 * x * y * square(z);
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = -0.1 * y + z;
+        get<2>(get<VectorTag<3>>(vars)) = -square(z);
+        return vars;
+      };
   const auto make_upper_eta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double eta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto y = get<1>(coords) + eta_offset;
-    const auto& z = get<2>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 1.5 * y - square(y) * z + x * y * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = z + 0.4 * x * cube(z);
-    get<2>(get<VectorTag<3>>(vars)) = y * z + square(y) + cube(z);
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto y = get<1>(coords) + eta_offset;
+        const auto& z = get<2>(coords);
+        Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = 1.5 * y - square(y) * z + x * y * square(z);
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = z + 0.4 * x * cube(z);
+        get<2>(get<VectorTag<3>>(vars)) = y * z + square(y) + cube(z);
+        return vars;
+      };
   const auto make_lower_zeta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double zeta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    const auto z = get<2>(coords) + zeta_offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 2.4 - 0.2 * z + 0.1 * x * square(y) * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = 0.9 * z - 2. * x * z;
-    get<2>(get<VectorTag<3>>(vars)) = y + cube(z);
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto& y = get<1>(coords);
+        const auto z = get<2>(coords) + zeta_offset;
+        Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
+        get(get<ScalarTag>(vars)) =
+            2.4 - 0.2 * z + 0.1 * x * square(y) * square(z);
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = 0.9 * z - 2. * x * z;
+        get<2>(get<VectorTag<3>>(vars)) = y + cube(z);
+        return vars;
+      };
   const auto make_upper_zeta_vars =
-      [](const tnsr::I<DataVector, 3, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 3, Frame::ElementLogical>& coords,
          const double zeta_offset = 0.0) noexcept {
-    const auto& x = get<0>(coords);
-    const auto& y = get<1>(coords);
-    const auto z = get<2>(coords) + zeta_offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = x - 0.4 * x * y * square(z);
-    get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
-    get<1>(get<VectorTag<3>>(vars)) = 1.3 * square(y) * square(z);
-    get<2>(get<VectorTag<3>>(vars)) = -x * y * z + square(y);
-    return vars;
-  };
+        const auto& x = get<0>(coords);
+        const auto& y = get<1>(coords);
+        const auto z = get<2>(coords) + zeta_offset;
+        Variables<tmpl::list<ScalarTag, VectorTag<3>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = x - 0.4 * x * y * square(z);
+        get<0>(get<VectorTag<3>>(vars)) = 0.4 * x * y * z + square(z);
+        get<1>(get<VectorTag<3>>(vars)) = 1.3 * square(y) * square(z);
+        get<2>(get<VectorTag<3>>(vars)) = -x * y * z + square(y);
+        return vars;
+      };
 
   const auto local_vars = make_center_vars(logical_coords);
   VariablesMap<3> neighbor_vars{};
@@ -869,31 +870,31 @@ void test_hweno_1d(const std::unordered_set<Direction<1>>&
 
   // Functions to produce dummy data on each element
   const auto make_center_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords) noexcept {
-    const auto& x = get<0>(coords);
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = 1.0 - 2.0 * x + square(x);
-    get<0>(get<VectorTag<1>>(vars)) = 0.4 * x - 0.1 * square(x);
-    return vars;
-  };
+      [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords) noexcept {
+        const auto& x = get<0>(coords);
+        Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = 1.0 - 2.0 * x + square(x);
+        get<0>(get<VectorTag<1>>(vars)) = 0.4 * x - 0.1 * square(x);
+        return vars;
+      };
   const auto make_lower_xi_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords,
          const double offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = -2.0 - 10.0 * x - square(x);
-    get<0>(get<VectorTag<1>>(vars)) = -0.1 + 0.3 * x - 0.1 * square(x);
-    return vars;
-  };
+        const auto x = get<0>(coords) + offset;
+        Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = -2.0 - 10.0 * x - square(x);
+        get<0>(get<VectorTag<1>>(vars)) = -0.1 + 0.3 * x - 0.1 * square(x);
+        return vars;
+      };
   const auto make_upper_xi_vars =
-      [](const tnsr::I<DataVector, 1, Frame::Logical>& coords,
+      [](const tnsr::I<DataVector, 1, Frame::ElementLogical>& coords,
          const double offset = 0.0) noexcept {
-    const auto x = get<0>(coords) + offset;
-    Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
-    get(get<ScalarTag>(vars)) = -0.3 - x + 0.5 * square(x);
-    get<0>(get<VectorTag<1>>(vars)) = 0.6 * x - 0.3 * square(x);
-    return vars;
-  };
+        const auto x = get<0>(coords) + offset;
+        Variables<tmpl::list<ScalarTag, VectorTag<1>>> vars(x.size());
+        get(get<ScalarTag>(vars)) = -0.3 - x + 0.5 * square(x);
+        get<0>(get<VectorTag<1>>(vars)) = 0.6 * x - 0.3 * square(x);
+        return vars;
+      };
 
   const auto local_vars = make_center_vars(logical_coords);
   VariablesMap<1> neighbor_vars{};

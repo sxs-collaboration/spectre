@@ -10,8 +10,8 @@
 #include "Utilities/StdArrayHelpers.hpp"
 
 namespace Frame {
-struct Grid;
-struct Inertial;
+struct GlobalTimeIndependent;
+struct System;
 }  // namespace Frame
 
 namespace domain {

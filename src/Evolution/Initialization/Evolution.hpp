@@ -28,7 +28,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 /// \endcond
 
@@ -93,8 +93,9 @@ struct Evolution {
         ::Tags::SubstepTimeCompute,
         ::Tags::DerivCompute<
             variables_tag,
-            ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
-                                    ::Tags::Coordinates<dim, Frame::Logical>>,
+            ::Tags::InverseJacobian<
+                ::Tags::ElementMap<dim>,
+                ::Tags::Coordinates<dim, Frame::ElementLogical>>,
             typename System::gradients_tags>>;
   };
 
@@ -104,9 +105,10 @@ struct Evolution {
         ::Tags::SubstepTimeCompute,
         ::Tags::DivCompute<
             db::add_tag_prefix<::Tags::Flux, variables_tag, tmpl::size_t<dim>,
-                               Frame::Inertial>,
-            ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
-                                    ::Tags::Coordinates<dim, Frame::Logical>>>>;
+                               Frame::System>,
+            ::Tags::InverseJacobian<
+                ::Tags::ElementMap<dim>,
+                ::Tags::Coordinates<dim, Frame::ElementLogical>>>>;
   };
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,

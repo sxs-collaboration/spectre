@@ -63,14 +63,14 @@ namespace ScalarWave {
 template <size_t Dim>
 struct ComputeDuDt {
   using argument_tags =
-      tmpl::list<Pi, Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::Inertial>,
-                 Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
+      tmpl::list<Pi, Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::System>,
+                 Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::System>>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> dt_pi,
-      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::System>*> dt_phi,
       gsl::not_null<Scalar<DataVector>*> dt_psi, const Scalar<DataVector>& pi,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
-      const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) noexcept;
+      const tnsr::i<DataVector, Dim, Frame::System>& d_pi,
+      const tnsr::ij<DataVector, Dim, Frame::System>& d_phi) noexcept;
 };
 
 /*!
@@ -88,12 +88,12 @@ struct ComputeNormalDotFluxes {
       tmpl::list<Pi, Phi<Dim>,
                  Tags::Normalized<Tags::UnnormalizedFaceNormal<Dim>>>;
   static void apply(gsl::not_null<Scalar<DataVector>*> pi_normal_dot_flux,
-                    gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+                    gsl::not_null<tnsr::i<DataVector, Dim, Frame::System>*>
                         phi_normal_dot_flux,
                     gsl::not_null<Scalar<DataVector>*> psi_normal_dot_flux,
                     const Scalar<DataVector>& pi,
-                    const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
-                    const tnsr::i<DataVector, Dim, Frame::Inertial>&
+                    const tnsr::i<DataVector, Dim, Frame::System>& phi,
+                    const tnsr::i<DataVector, Dim, Frame::System>&
                         interface_unit_normal) noexcept;
 };
 
@@ -119,7 +119,7 @@ template <size_t Dim>
 struct UpwindFlux {
  private:
   struct NormalTimesFluxPi {
-    using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
+    using type = tnsr::i<DataVector, Dim, Frame::System>;
     static std::string name() noexcept { return "NormalTimesFluxPi"; }
   };
 
@@ -154,9 +154,9 @@ struct UpwindFlux {
   void package_data(
       gsl::not_null<Variables<package_tags>*> packaged_data,
       const Scalar<DataVector>& normal_dot_flux_pi,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_dot_flux_phi,
+      const tnsr::i<DataVector, Dim, Frame::System>& normal_dot_flux_phi,
       const Scalar<DataVector>& pi,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
+      const tnsr::i<DataVector, Dim, Frame::System>& interface_unit_normal)
       const noexcept;
 
   // pseudo-interface: used internally by Algorithm infrastructure, not
@@ -167,20 +167,20 @@ struct UpwindFlux {
   // the package_tags on the exterior side.
   void operator()(
       gsl::not_null<Scalar<DataVector>*> pi_normal_dot_numerical_flux,
-      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::System>*>
           phi_normal_dot_numerical_flux,
       gsl::not_null<Scalar<DataVector>*> psi_normal_dot_numerical_flux,
       const Scalar<DataVector>& normal_dot_flux_pi_interior,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      const tnsr::i<DataVector, Dim, Frame::System>&
           normal_dot_flux_phi_interior,
       const Scalar<DataVector>& pi_interior,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      const tnsr::i<DataVector, Dim, Frame::System>&
           normal_times_flux_pi_interior,
       const Scalar<DataVector>& minus_normal_dot_flux_pi_exterior,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      const tnsr::i<DataVector, Dim, Frame::System>&
           minus_normal_dot_flux_phi_exterior,
       const Scalar<DataVector>& pi_exterior,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+      const tnsr::i<DataVector, Dim, Frame::System>&
           normal_times_flux_pi_exterior) const noexcept;
 };
 

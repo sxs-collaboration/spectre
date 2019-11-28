@@ -12,7 +12,8 @@
 template <size_t Dim, typename TargetFrame>
 ElementMap<Dim, TargetFrame>::ElementMap(
     ElementId<Dim> element_id,
-    std::unique_ptr<domain::CoordinateMapBase<Frame::Logical, TargetFrame, Dim>>
+    std::unique_ptr<
+        domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame, Dim>>
         block_map) noexcept
     : block_map_(std::move(block_map)),
       element_id_(std::move(element_id)),
@@ -72,7 +73,7 @@ void ElementMap<Dim, TargetFrame>::pup(PUP::er& p) noexcept {
   template class ElementMap<GET_DIM(data), GET_FRAME(data)>;
 
 GENERATE_INSTANTIATIONS(INSTANTIATION, (1, 2, 3),
-                        (Frame::Inertial, Frame::Grid))
+                        (Frame::System, Frame::GlobalTimeIndependent))
 
 #undef GET_DIM
 #undef GET_FRAME

@@ -31,7 +31,7 @@ struct MockMetavariables {
         tmpl::list<gr::Tags::Lapse<DataVector>>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        ::intrp::Actions::KerrHorizon<InterpolationTargetA, ::Frame::Inertial>;
+        ::intrp::Actions::KerrHorizon<InterpolationTargetA, ::Frame::System>;
   };
   using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
@@ -112,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.KerrHorizon",
     };
 
     const double two_pi_over_n_phi = 2.0 * M_PI / n_phi;
-    tnsr::I<DataVector, 3, Frame::Inertial> points(n_theta * n_phi);
+    tnsr::I<DataVector, 3, Frame::System> points(n_theta * n_phi);
     size_t s = 0;
     for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
       const double phi = two_pi_over_n_phi * i_phi;

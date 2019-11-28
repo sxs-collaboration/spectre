@@ -17,22 +17,21 @@
 namespace {
 // Define this alias so we don't need to keep typing this monster.
 template <size_t Dim>
-using block_logical_coord_holder = boost::optional<
-    IdPair<domain::BlockId, tnsr::I<double, Dim, typename ::Frame::Logical>>>;
+using block_logical_coord_holder = boost::optional<IdPair<
+    domain::BlockId, tnsr::I<double, Dim, typename ::Frame::ElementLogical>>>;
 }  // namespace
 
 template <size_t Dim>
 std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
-    const Domain<Dim>& domain,
-    const tnsr::I<DataVector, Dim, Frame::Inertial>& x) noexcept {
+    const Domain<Dim>& domain, const tnsr::I<DataVector, Dim>& x) noexcept {
   const size_t num_pts = get<0>(x).size();
   std::vector<block_logical_coord_holder<Dim>> block_coord_holders(num_pts);
   for (size_t s = 0; s < num_pts; ++s) {
-    tnsr::I<double, Dim, Frame::Inertial> x_frame(0.0);
+    tnsr::I<double, Dim> x_frame(0.0);
     for (size_t d = 0; d < Dim; ++d) {
       x_frame.get(d) = x.get(d)[s];
     }
-    tnsr::I<double, Dim, typename ::Frame::Logical> x_logical{};
+    tnsr::I<double, Dim, typename ::Frame::ElementLogical> x_logical{};
     // Check which block this point is in. Each point will be in one
     // and only one block, unless it is on a shared boundary.  In that
     // case, choose the first matching block (and this block will have

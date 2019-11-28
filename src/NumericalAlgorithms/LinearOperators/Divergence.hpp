@@ -64,8 +64,8 @@ struct div<Tag, Requires<tt::is_a_v<::Variables, db::const_item_type<Tag>>>>
 template <typename FluxTags, size_t Dim, typename DerivativeFrame>
 auto divergence(
     const Variables<FluxTags>& F, const Mesh<Dim>& mesh,
-    const InverseJacobian<DataVector, Dim, Frame::Logical, DerivativeFrame>&
-        inverse_jacobian) noexcept
+    const InverseJacobian<DataVector, Dim, Frame::ElementLogical,
+                          DerivativeFrame>& inverse_jacobian) noexcept
     -> Variables<db::wrap_tags_in<Tags::div, FluxTags>>;
 
 namespace Tags {
@@ -84,7 +84,7 @@ struct DivCompute : db::add_tag_prefix<div, Tag>, db::ComputeTag {
       typename db::const_item_type<InverseJacobianTag>::index_list;
   static constexpr auto dim = tmpl::back<inv_jac_indices>::dim;
   static_assert(cpp17::is_same_v<typename tmpl::front<inv_jac_indices>::Frame,
-                                 Frame::Logical>,
+                                 Frame::ElementLogical>,
                 "Must map from the logical frame.");
 
  public:

@@ -17,9 +17,9 @@ struct CharacteristicSpeeds;
 struct ConstraintDampingParameter;
 struct TildeD;
 struct TildeTau;
-template <typename Fr = Frame::Inertial>
+template <typename Fr = Frame::System>
 struct TildeS;
-template <typename Fr = Frame::Inertial>
+template <typename Fr = Frame::System>
 struct TildeB;
 struct TildePhi;
 }  // namespace Tags

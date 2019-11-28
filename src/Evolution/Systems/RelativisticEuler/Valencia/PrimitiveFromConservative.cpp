@@ -90,11 +90,10 @@ void PrimitiveFromConservative<ThermodynamicDim, Dim>::apply(
     const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
     const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
     const gsl::not_null<Scalar<DataVector>*> pressure,
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
-        spatial_velocity,
+    const gsl::not_null<tnsr::I<DataVector, Dim>*> spatial_velocity,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, Dim, Frame::Inertial>& tilde_s,
-    const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, Dim>& tilde_s,
+    const tnsr::II<DataVector, Dim>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
         equation_of_state) noexcept {

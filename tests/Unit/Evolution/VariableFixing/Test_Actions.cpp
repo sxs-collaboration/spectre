@@ -33,7 +33,7 @@ struct mock_component {
   using array_index = size_t;
   using simple_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                                  hydro::Tags::Pressure<DataVector>,
-                                 ::Tags::Coordinates<3, Frame::Inertial>>;
+                                 ::Tags::Coordinates<3, Frame::System>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -65,7 +65,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.VariableFixing.Actions",
       &runner, 0,
       {Scalar<DataVector>{DataVector{2.3, -4.2, 1.e-10, 0.0, -0.1}},
        Scalar<DataVector>{DataVector{0.0, 1.e-8, 2.0, -5.5, 3.2}},
-       tnsr::I<DataVector, 3, Frame::Inertial>{{{x, y, z}}}});
+       tnsr::I<DataVector, 3, Frame::System>{{{x, y, z}}}});
   runner.set_phase(Metavariables::Phase::Testing);
 
   auto& box = ActionTesting::get_databox<component, simple_tags>(runner, 0);

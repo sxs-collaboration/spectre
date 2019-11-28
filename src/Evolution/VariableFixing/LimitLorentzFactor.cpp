@@ -27,7 +27,7 @@ void LimitLorentzFactor::pup(PUP::er& p) noexcept {
 
 void LimitLorentzFactor::operator()(
     const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::System>*>
         spatial_velocity,
     const Scalar<DataVector>& rest_mass_density) const noexcept {
   constexpr size_t dim = 3;

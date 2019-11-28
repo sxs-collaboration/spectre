@@ -19,8 +19,8 @@
 #include "Utilities/Gsl.hpp"
 
 namespace Frame {
-struct Grid;      // IWYU pragma: keep
-struct Inertial;  // IWYU pragma: keep
+struct GlobalTimeIndependent;  // IWYU pragma: keep
+struct System;                 // IWYU pragma: keep
 }  // namespace Frame
 
 namespace domain {

@@ -59,15 +59,15 @@ namespace ValenciaDivClean {
 struct ComputeFluxes {
   using return_tags =
       tmpl::list<::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeD,
-                              tmpl::size_t<3>, Frame::Inertial>,
+                              tmpl::size_t<3>, Frame::System>,
                  ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeTau,
-                              tmpl::size_t<3>, Frame::Inertial>,
+                              tmpl::size_t<3>, Frame::System>,
                  ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeS<>,
-                              tmpl::size_t<3>, Frame::Inertial>,
+                              tmpl::size_t<3>, Frame::System>,
                  ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildeB<>,
-                              tmpl::size_t<3>, Frame::Inertial>,
+                              tmpl::size_t<3>, Frame::System>,
                  ::Tags::Flux<grmhd::ValenciaDivClean::Tags::TildePhi,
-                              tmpl::size_t<3>, Frame::Inertial>>;
+                              tmpl::size_t<3>, Frame::System>>;
 
   using argument_tags =
       tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
@@ -83,23 +83,23 @@ struct ComputeFluxes {
                  hydro::Tags::MagneticField<DataVector, 3>>;
 
   static void apply(
-      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_d_flux,
-      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_tau_flux,
-      gsl::not_null<tnsr::Ij<DataVector, 3, Frame::Inertial>*> tilde_s_flux,
-      gsl::not_null<tnsr::IJ<DataVector, 3, Frame::Inertial>*> tilde_b_flux,
-      gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*> tilde_phi_flux,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::System>*> tilde_d_flux,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::System>*> tilde_tau_flux,
+      gsl::not_null<tnsr::Ij<DataVector, 3, Frame::System>*> tilde_s_flux,
+      gsl::not_null<tnsr::IJ<DataVector, 3, Frame::System>*> tilde_b_flux,
+      gsl::not_null<tnsr::I<DataVector, 3, Frame::System>*> tilde_phi_flux,
       const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-      const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+      const tnsr::i<DataVector, 3, Frame::System>& tilde_s,
+      const tnsr::I<DataVector, 3, Frame::System>& tilde_b,
       const Scalar<DataVector>& tilde_phi, const Scalar<DataVector>& lapse,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& shift,
+      const tnsr::I<DataVector, 3, Frame::System>& shift,
       const Scalar<DataVector>& sqrt_det_spatial_metric,
-      const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+      const tnsr::ii<DataVector, 3, Frame::System>& spatial_metric,
+      const tnsr::II<DataVector, 3, Frame::System>& inv_spatial_metric,
       const Scalar<DataVector>& pressure,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
+      const tnsr::I<DataVector, 3, Frame::System>& spatial_velocity,
       const Scalar<DataVector>& lorentz_factor,
-      const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field) noexcept;
+      const tnsr::I<DataVector, 3, Frame::System>& magnetic_field) noexcept;
 };
 }  // namespace ValenciaDivClean
 }  // namespace grmhd

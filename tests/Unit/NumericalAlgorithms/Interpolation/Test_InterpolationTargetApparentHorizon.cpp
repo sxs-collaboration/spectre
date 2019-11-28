@@ -35,7 +35,7 @@ struct MockMetavariables {
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
         ::intrp::Actions::ApparentHorizon<InterpolationTargetA,
-                                          ::Frame::Inertial>;
+                                          ::Frame::System>;
   };
   using temporal_id = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
@@ -62,13 +62,13 @@ SPECTRE_TEST_CASE(
   const std::array<double, 3> center = {{0.05, 0.06, 0.07}};
 
   // Options for ApparentHorizon
-  intrp::OptionHolders::ApparentHorizon<Frame::Inertial> apparent_horizon_opts(
-      Strahlkorper<Frame::Inertial>{l_max, radius, center}, FastFlow{},
+  intrp::OptionHolders::ApparentHorizon<Frame::System> apparent_horizon_opts(
+      Strahlkorper<Frame::System>{l_max, radius, center}, FastFlow{},
       Verbosity::Verbose);
 
   // Test creation of options
   const auto created_opts = TestHelpers::test_creation<
-      intrp::OptionHolders::ApparentHorizon<Frame::Inertial>>(
+      intrp::OptionHolders::ApparentHorizon<Frame::System>>(
       "FastFlow:\n"
       "Verbosity: Verbose\n"
       "InitialGuess:\n"
@@ -101,7 +101,7 @@ SPECTRE_TEST_CASE(
     ();
 
     const double two_pi_over_n_phi = 2.0 * M_PI / n_phi;
-    tnsr::I<DataVector, 3, Frame::Inertial> points(n_theta * n_phi);
+    tnsr::I<DataVector, 3, Frame::System> points(n_theta * n_phi);
     size_t s = 0;
     for (size_t i_phi = 0; i_phi < n_phi; ++i_phi) {
       const double phi = two_pi_over_n_phi * i_phi;
@@ -120,7 +120,7 @@ SPECTRE_TEST_CASE(
   InterpTargetTestHelpers::test_interpolation_target<
       MockMetavariables,
       intrp::Tags::ApparentHorizon<MockMetavariables::InterpolationTargetA,
-                                   Frame::Inertial>>(
+                                   Frame::System>>(
       domain_creator, std::move(apparent_horizon_opts),
       expected_block_coord_holders);
 }

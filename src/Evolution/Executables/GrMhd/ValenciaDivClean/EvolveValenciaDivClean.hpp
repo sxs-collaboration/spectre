@@ -92,7 +92,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>
@@ -128,8 +128,8 @@ struct EvolutionMetavars {
   using limiter = Tags::Limiter<Limiters::Minmod<
       3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                     grmhd::ValenciaDivClean::Tags::TildeTau,
-                    grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,
-                    grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>>>;
+                    grmhd::ValenciaDivClean::Tags::TildeS<Frame::System>,
+                    grmhd::ValenciaDivClean::Tags::TildeB<Frame::System>>>>;
 
   // public for use by the Charm++ registration code
   using events = tmpl::flatten<tmpl::list<
@@ -148,7 +148,7 @@ struct EvolutionMetavars {
   using triggers = Triggers::time_triggers;
 
   using step_choosers =
-      tmpl::list<StepChoosers::Registrars::Cfl<3, Frame::Inertial>,
+      tmpl::list<StepChoosers::Registrars::Cfl<3, Frame::System>,
                  StepChoosers::Registrars::Constant,
                  StepChoosers::Registrars::Increase>;
   using ordered_list_of_primitive_recovery_schemes = tmpl::list<

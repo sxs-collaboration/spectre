@@ -43,9 +43,9 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
                                ThermodynamicDim>::
     apply(const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
           const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          const gsl::not_null<tnsr::I<DataVector, 3, Frame::System>*>
               spatial_velocity,
-          const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+          const gsl::not_null<tnsr::I<DataVector, 3, Frame::System>*>
               magnetic_field,
           const gsl::not_null<Scalar<DataVector>*> divergence_cleaning_field,
           const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
@@ -53,11 +53,11 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
           const gsl::not_null<Scalar<DataVector>*> specific_enthalpy,
           const Scalar<DataVector>& tilde_d,
           const Scalar<DataVector>& tilde_tau,
-          const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-          const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+          const tnsr::i<DataVector, 3, Frame::System>& tilde_s,
+          const tnsr::I<DataVector, 3, Frame::System>& tilde_b,
           const Scalar<DataVector>& tilde_phi,
-          const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-          const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+          const tnsr::ii<DataVector, 3, Frame::System>& spatial_metric,
+          const tnsr::II<DataVector, 3, Frame::System>& inv_spatial_metric,
           const Scalar<DataVector>& sqrt_det_spatial_metric,
           const EquationsOfState::EquationOfState<true, ThermodynamicDim>&
               equation_of_state) noexcept {
@@ -70,7 +70,7 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
   Variables<
       tmpl::list<::Tags::TempScalar<0>, ::Tags::TempScalar<1>,
                  ::Tags::TempScalar<2>, ::Tags::TempScalar<3>,
-                 ::Tags::TempScalar<4>, ::Tags::TempI<5, 3, Frame::Inertial>>>
+                 ::Tags::TempScalar<4>, ::Tags::TempI<5, 3, Frame::System>>>
       temp_buffer(size);
 
   DataVector& total_energy_density =
@@ -78,8 +78,8 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
   total_energy_density =
       (get(tilde_tau) + get(tilde_d)) / get(sqrt_det_spatial_metric);
 
-  tnsr::I<DataVector, 3, Frame::Inertial>& tilde_s_upper =
-      get<::Tags::TempI<5, 3, Frame::Inertial>>(temp_buffer);
+  tnsr::I<DataVector, 3, Frame::System>& tilde_s_upper =
+      get<::Tags::TempI<5, 3, Frame::System>>(temp_buffer);
   raise_or_lower_index(make_not_null(&tilde_s_upper), tilde_s,
                        inv_spatial_metric);
 

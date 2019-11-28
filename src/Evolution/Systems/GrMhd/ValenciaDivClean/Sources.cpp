@@ -24,18 +24,18 @@
 /// \cond
 namespace {
 void densitized_stress(
-    const gsl::not_null<tnsr::II<DataVector, 3, Frame::Inertial>*> result,
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
+    const gsl::not_null<tnsr::II<DataVector, 3, Frame::System>*> result,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::System>*>
         temp_buffer_for_3_scalars,
-    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::System>*>
         temp_mag_field_one_form_buffer,
     const gsl::not_null<DataVector*> temp_buffer_for_magnetic_field_squared,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& lorentz_factor,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
+    const tnsr::I<DataVector, 3, Frame::System>& spatial_velocity,
+    const tnsr::I<DataVector, 3, Frame::System>& magnetic_field,
+    const tnsr::ii<DataVector, 3, Frame::System>& spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const Scalar<DataVector>& pressure) noexcept {
   raise_or_lower_index(temp_mag_field_one_form_buffer, magnetic_field,
@@ -85,13 +85,13 @@ void densitized_stress(
 }
 
 struct MagneticFieldOneForm {
-  using type = tnsr::i<DataVector, 3, Frame::Inertial>;
+  using type = tnsr::i<DataVector, 3, Frame::System>;
 };
 struct TildeSUp {
-  using type = tnsr::I<DataVector, 3, Frame::Inertial>;
+  using type = tnsr::I<DataVector, 3, Frame::System>;
 };
 struct DensitizedStress {
-  using type = tnsr::II<DataVector, 3, Frame::Inertial>;
+  using type = tnsr::II<DataVector, 3, Frame::System>;
 };
 }  // namespace
 
@@ -100,34 +100,32 @@ namespace ValenciaDivClean {
 
 void ComputeSources::apply(
     const gsl::not_null<Scalar<DataVector>*> source_tilde_tau,
-    const gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*>
-        source_tilde_s,
-    const gsl::not_null<tnsr::I<DataVector, 3, Frame::Inertial>*>
-        source_tilde_b,
+    const gsl::not_null<tnsr::i<DataVector, 3, Frame::System>*> source_tilde_s,
+    const gsl::not_null<tnsr::I<DataVector, 3, Frame::System>*> source_tilde_b,
     const gsl::not_null<Scalar<DataVector>*> source_tilde_phi,
     const Scalar<DataVector>& tilde_d, const Scalar<DataVector>& tilde_tau,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& tilde_b,
+    const tnsr::i<DataVector, 3, Frame::System>& tilde_s,
+    const tnsr::I<DataVector, 3, Frame::System>& tilde_b,
     const Scalar<DataVector>& tilde_phi,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& spatial_velocity,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field,
+    const tnsr::I<DataVector, 3, Frame::System>& spatial_velocity,
+    const tnsr::I<DataVector, 3, Frame::System>& magnetic_field,
     const Scalar<DataVector>& rest_mass_density,
     const Scalar<DataVector>& specific_enthalpy,
     const Scalar<DataVector>& lorentz_factor,
     const Scalar<DataVector>& pressure, const Scalar<DataVector>& lapse,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
-    const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const tnsr::ijj<DataVector, 3, Frame::Inertial>& d_spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
+    const tnsr::i<DataVector, 3, Frame::System>& d_lapse,
+    const tnsr::iJ<DataVector, 3, Frame::System>& d_shift,
+    const tnsr::ii<DataVector, 3, Frame::System>& spatial_metric,
+    const tnsr::ijj<DataVector, 3, Frame::System>& d_spatial_metric,
+    const tnsr::II<DataVector, 3, Frame::System>& inv_spatial_metric,
     const Scalar<DataVector>& sqrt_det_spatial_metric,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
+    const tnsr::ii<DataVector, 3, Frame::System>& extrinsic_curvature,
     const double constraint_damping_parameter) noexcept {
   Variables<tmpl::list<
       TildeSUp, DensitizedStress, MagneticFieldOneForm,
-      gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>,
-      gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
+      gr::Tags::SpatialChristoffelFirstKind<3, Frame::System, DataVector>,
+      gr::Tags::SpatialChristoffelSecondKind<3, Frame::System, DataVector>,
+      gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::System,
                                                   DataVector>>>
       temp_tensors(get<0>(tilde_s).size());
   auto& tilde_s_MN = get<DensitizedStress>(temp_tensors);
@@ -136,7 +134,7 @@ void ComputeSources::apply(
       &tilde_s_MN, &get<TildeSUp>(temp_tensors),
       &get<MagneticFieldOneForm>(temp_tensors),
       &get<0, 0, 0>(
-          get<gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial,
+          get<gr::Tags::SpatialChristoffelFirstKind<3, Frame::System,
                                                     DataVector>>(temp_tensors)),
       rest_mass_density, specific_enthalpy, lorentz_factor, spatial_velocity,
       magnetic_field, spatial_metric, sqrt_det_spatial_metric, pressure);
@@ -172,19 +170,19 @@ void ComputeSources::apply(
     }
   }
 
-  auto& spatial_christoffel_first_kind = get<
-      gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial, DataVector>>(
-      temp_tensors);
+  auto& spatial_christoffel_first_kind =
+      get<gr::Tags::SpatialChristoffelFirstKind<3, Frame::System, DataVector>>(
+          temp_tensors);
   gr::christoffel_first_kind(make_not_null(&spatial_christoffel_first_kind),
                              d_spatial_metric);
-  auto& spatial_christoffel_second_kind = get<
-      gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial, DataVector>>(
-      temp_tensors);
+  auto& spatial_christoffel_second_kind =
+      get<gr::Tags::SpatialChristoffelSecondKind<3, Frame::System, DataVector>>(
+          temp_tensors);
   raise_or_lower_first_index(make_not_null(&spatial_christoffel_second_kind),
                              spatial_christoffel_first_kind,
                              inv_spatial_metric);
   auto& trace_of_christoffel_second_kind =
-      get<gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
+      get<gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::System,
                                                       DataVector>>(
           temp_tensors);
   trace_last_indices(make_not_null(&trace_of_christoffel_second_kind),

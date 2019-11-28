@@ -56,8 +56,8 @@ tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
 template <size_t VolumeDim, typename TargetFrame>
 tnsr::i<DataVector, VolumeDim, TargetFrame> unnormalized_face_normal(
     const Mesh<VolumeDim - 1>& interface_mesh,
-    const domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>&
-        map,
+    const domain::CoordinateMapBase<Frame::ElementLogical, TargetFrame,
+                                    VolumeDim>& map,
     const Direction<VolumeDim>& direction) noexcept;
 // @}
 
@@ -65,15 +65,16 @@ namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The unnormalized face normal one form
-template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+template <size_t VolumeDim, typename Frame = ::Frame::System>
 struct UnnormalizedFaceNormal : db::SimpleTag {
   static std::string name() noexcept { return "UnnormalizedFaceNormal"; }
   using type = tnsr::i<DataVector, VolumeDim, Frame>;
 };
 
-template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
+template <size_t VolumeDim, typename Frame = ::Frame::System>
 struct UnnormalizedFaceNormalCompute
-    : db::ComputeTag, UnnormalizedFaceNormal<VolumeDim, Frame> {
+    : db::ComputeTag,
+      UnnormalizedFaceNormal<VolumeDim, Frame> {
   using base = UnnormalizedFaceNormal<VolumeDim, Frame>;
   static constexpr tnsr::i<DataVector, VolumeDim, Frame> (*function)(
       const ::Mesh<VolumeDim - 1>&, const ::ElementMap<VolumeDim, Frame>&,

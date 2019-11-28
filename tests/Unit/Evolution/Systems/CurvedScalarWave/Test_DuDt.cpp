@@ -25,7 +25,7 @@ Variables<tmpl::list<CurvedScalarWave::Psi, CurvedScalarWave::Pi,
 calculate_du_dt(const DataVector& used_for_size) {
   auto dt_psi = make_with_value<Scalar<DataVector>>(used_for_size, 0.);
   auto dt_pi = make_with_value<Scalar<DataVector>>(used_for_size, 0.);
-  auto dt_phi = make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(
+  auto dt_phi = make_with_value<tnsr::i<DataVector, Dim, Frame::System>>(
       used_for_size, 0.);
   CurvedScalarWave::ComputeDuDt<Dim>::apply(
       make_not_null(&dt_pi), make_not_null(&dt_phi), make_not_null(&dt_psi),

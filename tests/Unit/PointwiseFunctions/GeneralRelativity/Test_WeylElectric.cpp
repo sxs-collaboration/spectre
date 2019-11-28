@@ -18,11 +18,11 @@
 namespace {
 template <size_t SpatialDim, typename DataType>
 void test_weyl_electric(const DataType& used_for_size) {
-  tnsr::ii<DataType, SpatialDim, Frame::Inertial> (*f)(
-      const tnsr::ii<DataType, SpatialDim, Frame::Inertial>&,
-      const tnsr::ii<DataType, SpatialDim, Frame::Inertial>&,
-      const tnsr::II<DataType, SpatialDim, Frame::Inertial>&) =
-      &gr::weyl_electric<SpatialDim, Frame::Inertial, DataType>;
+  tnsr::ii<DataType, SpatialDim, Frame::System> (*f)(
+      const tnsr::ii<DataType, SpatialDim, Frame::System>&,
+      const tnsr::ii<DataType, SpatialDim, Frame::System>&,
+      const tnsr::II<DataType, SpatialDim, Frame::System>&) =
+      &gr::weyl_electric<SpatialDim, Frame::System, DataType>;
   pypp::check_with_random_values<1>(f, "WeylElectric", "weyl_electric_tensor",
                                     {{{-1., 1.}}}, used_for_size);
 }

@@ -63,29 +63,29 @@ struct GrTagsForHydro {
 
     const size_t num_grid_points =
         db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
-    const auto& inertial_coords =
-        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+    const auto& system_coords =
+        db::get<::Tags::Coordinates<dim, Frame::System>>(box);
 
     // Set initial data from analytic solution
     GrVars gr_vars{num_grid_points};
     make_overloader(
-        [ initial_time, &inertial_coords ](
+        [initial_time, &system_coords](
             std::true_type /*is_analytic_solution*/,
             const gsl::not_null<GrVars*> local_gr_vars,
             const auto& local_cache) noexcept {
           using solution_tag = ::Tags::AnalyticSolutionBase;
           local_gr_vars->assign_subset(
               Parallel::get<solution_tag>(local_cache)
-                  .variables(inertial_coords, initial_time,
+                  .variables(system_coords, initial_time,
                              typename GrVars::tags_list{}));
         },
-        [&inertial_coords](std::false_type /*is_analytic_solution*/,
-                           const gsl::not_null<GrVars*> local_gr_vars,
-                           const auto& local_cache) noexcept {
+        [&system_coords](std::false_type /*is_analytic_solution*/,
+                         const gsl::not_null<GrVars*> local_gr_vars,
+                         const auto& local_cache) noexcept {
           using analytic_data_tag = ::Tags::AnalyticDataBase;
           local_gr_vars->assign_subset(
               Parallel::get<analytic_data_tag>(local_cache)
-                  .variables(inertial_coords, typename GrVars::tags_list{}));
+                  .variables(system_coords, typename GrVars::tags_list{}));
         })(
         evolution::is_analytic_solution<typename Metavariables::initial_data>{},
         make_not_null(&gr_vars), cache);

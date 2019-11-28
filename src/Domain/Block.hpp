@@ -18,8 +18,8 @@
 
 /// \cond
 namespace Frame {
-struct Logical;
-struct Inertial;
+struct ElementLogical;
+struct System;
 }  // namespace Frame
 namespace PUP {
 class er;
@@ -38,7 +38,7 @@ class er;
 /// dimension.  The global coordinates are obtained from the logical
 /// coordinates from the Coordinatemap:  CoordinateMap::operator() takes
 /// Points in the Logical Frame (i.e., logical coordinates) and
-/// returns Points in the Inertial Frame (i.e., global coordinates).
+/// returns Points in the `Frame::System` (i.e., global coordinates).
 template <size_t VolumeDim>
 class Block {
  public:
@@ -47,7 +47,7 @@ class Block {
   /// \param neighbors info about the Blocks that share a codimension 1
   /// boundary with this Block.
   Block(std::unique_ptr<domain::CoordinateMapBase<
-            Frame::Logical, Frame::Inertial, VolumeDim>>&& map,
+            Frame::ElementLogical, Frame::System, VolumeDim>>&& map,
         size_t id,
         DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors) noexcept;
 
@@ -58,7 +58,8 @@ class Block {
   Block& operator=(const Block&) = delete;
   Block& operator=(Block&&) = default;
 
-  const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>&
+  const domain::CoordinateMapBase<Frame::ElementLogical, Frame::System,
+                                  VolumeDim>&
   coordinate_map() const noexcept {
     return *map_;
   }
@@ -84,8 +85,8 @@ class Block {
   void pup(PUP::er& p) noexcept;  // NOLINT
 
  private:
-  std::unique_ptr<
-      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>
+  std::unique_ptr<domain::CoordinateMapBase<Frame::ElementLogical,
+                                            Frame::System, VolumeDim>>
       map_;
   size_t id_{0};
   DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>> neighbors_;

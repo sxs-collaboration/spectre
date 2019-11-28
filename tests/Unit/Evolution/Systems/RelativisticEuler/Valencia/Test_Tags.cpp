@@ -13,8 +13,8 @@ SPECTRE_TEST_CASE("Unit.RelativisticEuler.Valencia.Tags", "[Unit][Evolution]") {
         "CharacteristicSpeeds");
   CHECK(RelativisticEuler::Valencia::Tags::TildeD::name() == "TildeD");
   CHECK(RelativisticEuler::Valencia::Tags::TildeTau::name() == "TildeTau");
-  CHECK(RelativisticEuler::Valencia::Tags::TildeS<3, Frame::Inertial>::name() ==
-        "TildeS");
-  CHECK(RelativisticEuler::Valencia::Tags::TildeS<3, Frame::Logical>::name() ==
-        "Logical_TildeS");
+  CHECK(RelativisticEuler::Valencia::Tags::TildeS<3, Frame::System>::name() ==
+        "System_TildeS");
+  CHECK(RelativisticEuler::Valencia::Tags::TildeS<
+            3, Frame::ElementLogical>::name() == "ElementLogical_TildeS");
 }

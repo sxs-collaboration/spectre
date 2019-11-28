@@ -50,23 +50,23 @@ void check_du_dt(const size_t npts, const double time) {
   auto box = db::create<db::AddSimpleTags<
       Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
       Tags::dt<ScalarWave::Psi>, ScalarWave::Pi,
-      Tags::deriv<ScalarWave::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
-      Tags::deriv<ScalarWave::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>(
+      Tags::deriv<ScalarWave::Pi, tmpl::size_t<Dim>, Frame::System>,
+      Tags::deriv<ScalarWave::Phi<Dim>, tmpl::size_t<Dim>, Frame::System>>>(
       Scalar<DataVector>(pow<Dim>(npts), 0.0),
-      tnsr::i<DataVector, Dim, Frame::Inertial>(pow<Dim>(npts), 0.0),
+      tnsr::i<DataVector, Dim, Frame::System>(pow<Dim>(npts), 0.0),
       Scalar<DataVector>(pow<Dim>(npts), 0.0),
       Scalar<DataVector>(-1.0 * solution.dpsi_dt(x, time).get()),
-      [&x, &time, &solution ]() noexcept {
+      [&x, &time, &solution]() noexcept {
         auto dpi_dx = solution.d2psi_dtdx(x, time);
         for (size_t i = 0; i < Dim; ++i) {
           dpi_dx.get(i) *= -1.0;
         }
         return dpi_dx;
       }(),
-      [&npts, &x, &time, &solution ]() noexcept {
-        tnsr::ij<DataVector, Dim, Frame::Inertial> d2psi_dxdx{pow<Dim>(npts),
-                                                              0.0};
-        const tnsr::ii<DataVector, Dim, Frame::Inertial> ddpsi_soln =
+      [&npts, &x, &time, &solution]() noexcept {
+        tnsr::ij<DataVector, Dim, Frame::System> d2psi_dxdx{pow<Dim>(npts),
+                                                            0.0};
+        const tnsr::ii<DataVector, Dim, Frame::System> ddpsi_soln =
             solution.d2psi_dxdx(x, time);
         for (size_t i = 0; i < Dim; ++i) {
           for (size_t j = 0; j < Dim; ++j) {
@@ -123,7 +123,7 @@ void check_normal_dot_fluxes(const size_t npts, const double t) {
 
   // Any numbers are fine, doesn't have anything to do with unit normal
   auto unit_normal =
-      make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(pi, 0.0);
+      make_with_value<tnsr::i<DataVector, Dim, Frame::System>>(pi, 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     unit_normal.get(d) = x.get(d);
   }
@@ -131,7 +131,7 @@ void check_normal_dot_fluxes(const size_t npts, const double t) {
   auto normal_dot_flux_pi = make_with_value<Scalar<DataVector>>(pi, 0.0);
   auto normal_dot_flux_psi = make_with_value<Scalar<DataVector>>(pi, 0.0);
   auto normal_dot_flux_phi =
-      make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(pi, 0.0);
+      make_with_value<tnsr::i<DataVector, Dim, Frame::System>>(pi, 0.0);
 
   ScalarWave::ComputeNormalDotFluxes<Dim>::apply(
       make_not_null(&normal_dot_flux_pi), make_not_null(&normal_dot_flux_phi),
@@ -146,7 +146,7 @@ void check_normal_dot_fluxes(const size_t npts, const double t) {
   CHECK(get(normal_dot_flux_pi) == normal_dot_flux_pi_expected);
 
   auto normal_dot_flux_phi_expected =
-      make_with_value<tnsr::i<DataVector, Dim, Frame::Inertial>>(pi, 0.0);
+      make_with_value<tnsr::i<DataVector, Dim, Frame::System>>(pi, 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     normal_dot_flux_phi_expected.get(d) = unit_normal.get(d) * get(pi);
   }
@@ -190,7 +190,7 @@ void check_upwind_flux(const size_t npts, const double t) {
   }();
 
   // Any numbers are fine, doesn't have anything to do with unit normal
-  tnsr::i<DataVector, Dim, Frame::Inertial> unit_normal(pow<Dim>(npts), 0.0);
+  tnsr::i<DataVector, Dim, Frame::System> unit_normal(pow<Dim>(npts), 0.0);
   for (size_t d = 0; d < Dim; ++d) {
     unit_normal.get(d) = x.get(d);
   }
@@ -212,7 +212,7 @@ void check_upwind_flux(const size_t npts, const double t) {
 
   Scalar<DataVector> normal_dot_numerical_flux_pi(pow<Dim>(npts), 0.0);
   Scalar<DataVector> normal_dot_numerical_flux_psi(pow<Dim>(npts), 0.0);
-  tnsr::i<DataVector, Dim, Frame::Inertial> normal_dot_numerical_flux_phi(
+  tnsr::i<DataVector, Dim, Frame::System> normal_dot_numerical_flux_phi(
       pow<Dim>(npts), 0.0);
   apply_numerical_flux(flux_computer, packaged_data_int, packaged_data_ext,
                        make_not_null(&normal_dot_numerical_flux_pi),

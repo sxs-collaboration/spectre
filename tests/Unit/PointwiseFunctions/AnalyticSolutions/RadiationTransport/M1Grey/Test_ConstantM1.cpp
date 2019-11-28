@@ -37,14 +37,14 @@ struct ConstantM1Proxy : RadiationTransport::M1Grey::Solutions::ConstantM1 {
   using RadiationTransport::M1Grey::Solutions::ConstantM1::ConstantM1;
 
   using hydro_variables_tags =
-      tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+      tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::System>,
                  hydro::Tags::LorentzFactor<DataVector>>;
 
   using m1_variables_tags =
       tmpl::list<RadiationTransport::M1Grey::Tags::TildeE<
-                     Frame::Inertial, neutrinos::ElectronNeutrinos<0>>,
+                     Frame::System, neutrinos::ElectronNeutrinos<0>>,
                  RadiationTransport::M1Grey::Tags::TildeS<
-                     Frame::Inertial, neutrinos::ElectronNeutrinos<0>>>;
+                     Frame::System, neutrinos::ElectronNeutrinos<0>>>;
 
   tuples::tagged_tuple_from_typelist<hydro_variables_tags> hydro_variables(
       const tnsr::I<DataVector, 3>& x, double t) const noexcept {
@@ -115,15 +115,15 @@ void test_variables(const DataVector& used_for_size) {
           coords, 0.0,
           tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataVector>>{})));
   auto expected_spatial_metric =
-      make_with_value<tnsr::ii<DataVector, 3, Frame::Inertial>>(used_for_size,
-                                                                0.0);
+      make_with_value<tnsr::ii<DataVector, 3, Frame::System>>(used_for_size,
+                                                              0.0);
   for (size_t i = 0; i < 3; ++i) {
     expected_spatial_metric.get(i, i) = 1.0;
   }
-  const auto spatial_metric = get<
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(soln.variables(
-      coords, 0.0,
-      tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>{}));
+  const auto spatial_metric =
+      get<gr::Tags::SpatialMetric<3, Frame::System, DataVector>>(soln.variables(
+          coords, 0.0,
+          tmpl::list<gr::Tags::SpatialMetric<3, Frame::System, DataVector>>{}));
   CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 }
 

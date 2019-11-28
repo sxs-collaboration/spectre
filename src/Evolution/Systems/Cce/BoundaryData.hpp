@@ -19,14 +19,13 @@ namespace Cce {
 // tensor aliases for brevity
 using jacobian_tensor = Tensor<
     DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-    index_list<SpatialIndex<3, UpLo::Lo, ::Frame::Spherical<::Frame::Inertial>>,
-               SpatialIndex<3, UpLo::Up, ::Frame::Inertial>>>;
+    index_list<SpatialIndex<3, UpLo::Lo, ::Frame::Spherical<::Frame::System>>,
+               SpatialIndex<3, UpLo::Up, ::Frame::System>>>;
 
-using inverse_jacobian_tensor =
-    Tensor<DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
-           index_list<SpatialIndex<3, UpLo::Lo, ::Frame::Inertial>,
-                      SpatialIndex<3, UpLo::Up,
-                                   ::Frame::Spherical<::Frame::Inertial>>>>;
+using inverse_jacobian_tensor = Tensor<
+    DataVector, tmpl::integral_list<std::int32_t, 2, 1>,
+    index_list<SpatialIndex<3, UpLo::Lo, ::Frame::System>,
+               SpatialIndex<3, UpLo::Up, ::Frame::Spherical<::Frame::System>>>>;
 
 /*!
  * \brief Constructs the collocation values for \f$\cos(\phi)\f$,

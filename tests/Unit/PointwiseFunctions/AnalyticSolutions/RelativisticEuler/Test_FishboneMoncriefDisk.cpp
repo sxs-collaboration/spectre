@@ -44,7 +44,7 @@ struct FishboneMoncriefDiskProxy
   template <typename DataType>
   using hydro_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::System>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
@@ -53,7 +53,7 @@ struct FishboneMoncriefDiskProxy
   template <typename DataType>
   using grmhd_variables_tags =
       tmpl::push_back<hydro_variables_tags<DataType>,
-                      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                      hydro::Tags::MagneticField<DataType, 3, Frame::System>,
                       hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
@@ -146,13 +146,13 @@ void test_variables(const DataType& used_for_size) noexcept {
           coords, 0.0,
           tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>>{})));
   const auto expected_spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(
+      get<gr::Tags::SpatialMetric<3, Frame::System, DataType>>(
           ks_soln.variables(coords, 0.0,
                             gr::Solutions::KerrSchild::tags<DataType>{}));
   const auto spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(disk.variables(
+      get<gr::Tags::SpatialMetric<3, Frame::System, DataType>>(disk.variables(
           coords, 0.0,
-          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{}));
+          tmpl::list<gr::Tags::SpatialMetric<3, Frame::System, DataType>>{}));
   CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 }
 

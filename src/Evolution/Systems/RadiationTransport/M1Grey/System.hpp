@@ -46,35 +46,35 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
   //static constexpr size_t thermodynamic_dim = 3;
 
   using variables_tag = ::Tags::Variables<
-      tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
-                 Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...>>;
+      tmpl::list<Tags::TildeE<Frame::System, NeutrinoSpecies>...,
+                 Tags::TildeS<Frame::System, NeutrinoSpecies>...>>;
 
   using spacetime_variables_tag = ::Tags::Variables<tmpl::list<
       gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+      gr::Tags::Shift<3, Frame::System, DataVector>,
+      gr::Tags::SpatialMetric<3, Frame::System, DataVector>,
+      gr::Tags::InverseSpatialMetric<3, Frame::System, DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
-                    Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
+                    Frame::System>,
+      ::Tags::deriv<gr::Tags::Shift<3, Frame::System, DataVector>,
+                    tmpl::size_t<3>, Frame::System>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::System, DataVector>,
+                    tmpl::size_t<3>, Frame::System>,
+      gr::Tags::ExtrinsicCurvature<3, Frame::System, DataVector>>>;
 
   using hydro_variables_tag = ::Tags::Variables<
       tmpl::list<hydro::Tags::LorentzFactor<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>>;
+                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::System>>>;
 
   using primitive_variables_tag = ::Tags::Variables<tmpl::list<
       Tags::ClosureFactor<NeutrinoSpecies>...,
-      Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
+      Tags::TildeP<Frame::System, NeutrinoSpecies>...,
       Tags::TildeJ<NeutrinoSpecies>..., Tags::TildeHNormal<NeutrinoSpecies>...,
-      Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>...>>;
+      Tags::TildeHSpatial<Frame::System, NeutrinoSpecies>...>>;
 
   template <typename Tag>
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
-      Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
+      Tag, gr::Tags::InverseSpatialMetric<3, Frame::System, DataVector>>;
 
   using char_speeds_tag = Tags::CharacteristicSpeedsCompute;
 
@@ -85,8 +85,8 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
   using compute_time_derivative = ConservativeDuDt<System>;
 
   using sourced_variables =
-      tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
-                 Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...>;
+      tmpl::list<Tags::TildeE<Frame::System, NeutrinoSpecies>...,
+                 Tags::TildeS<Frame::System, NeutrinoSpecies>...>;
 };
 }  // namespace M1Grey
 }  // namespace RadiationTransport

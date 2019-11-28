@@ -62,17 +62,17 @@ class Moustache {
 
   // @{
   /// Retrieve variable at coordinates `x`
-  auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+  auto variables(const tnsr::I<DataVector, Dim, Frame::System>& x,
                  tmpl::list<Tags::Field> /*meta*/) const noexcept
       -> tuples::TaggedTuple<Tags::Field>;
 
-  auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+  auto variables(const tnsr::I<DataVector, Dim, Frame::System>& x,
                  tmpl::list<::Tags::deriv<Tags::Field, tmpl::size_t<Dim>,
-                                          Frame::Inertial>> /*meta*/) const
+                                          Frame::System>> /*meta*/) const
       noexcept -> tuples::TaggedTuple<
-          ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
+          ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::System>>;
 
-  auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+  auto variables(const tnsr::I<DataVector, Dim, Frame::System>& x,
                  tmpl::list<::Tags::FixedSource<Tags::Field>> /*meta*/) const
       noexcept -> tuples::TaggedTuple<::Tags::FixedSource<Tags::Field>>;
   // @}
@@ -80,7 +80,7 @@ class Moustache {
   /// Retrieve a collection of variables at coordinates `x`
   template <typename... Tags>
   tuples::TaggedTuple<Tags...> variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+      const tnsr::I<DataVector, Dim, Frame::System>& x,
       tmpl::list<Tags...> /*meta*/) const noexcept {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "

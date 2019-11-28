@@ -15,7 +15,7 @@
 
 /// \cond
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 namespace Parallel {
 template <typename Metavariables>
@@ -36,7 +36,7 @@ namespace Actions {
 /// - Removes: nothing
 /// - Modifies:
 ///   db::add_tag_prefix<Tags::Flux, variables_tag,
-///                      tmpl::size_t<system::volume_dim>, Frame::Inertial>
+///                      tmpl::size_t<system::volume_dim>, Frame::System>
 struct ComputeVolumeFluxes {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ArrayIndex, typename ActionList,

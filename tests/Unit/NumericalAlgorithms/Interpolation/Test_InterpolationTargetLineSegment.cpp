@@ -61,7 +61,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.LineSegment",
 
   const auto expected_block_coord_holders = [&domain_creator]() noexcept {
     const size_t n_pts = 15;
-    tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
+    tnsr::I<DataVector, 3, Frame::System> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
       for (size_t i = 0; i < n_pts; ++i) {
         points.get(d)[i] = 1.0 + 0.1 * i;  // Worked out by hand.

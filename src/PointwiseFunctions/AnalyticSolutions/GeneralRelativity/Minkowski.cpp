@@ -34,57 +34,55 @@ Minkowski<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
-                                  Frame::Inertial>>
+tuples::TaggedTuple<
+    ::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>, Frame::System>>
 Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
     tmpl::list<::Tags::deriv<gr::Tags::Lapse<DataType>, tmpl::size_t<Dim>,
-                             Frame::Inertial>> /*meta*/) const noexcept {
+                             Frame::System>> /*meta*/) const noexcept {
   return {make_with_value<tnsr::i<DataType, Dim>>(x, 0.)};
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>
+tuples::TaggedTuple<gr::Tags::Shift<Dim, Frame::System, DataType>>
 Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<gr::Tags::Shift<Dim, Frame::Inertial, DataType>> /*meta*/) const
+    tmpl::list<gr::Tags::Shift<Dim, Frame::System, DataType>> /*meta*/) const
     noexcept {
   return {make_with_value<tnsr::I<DataType, Dim>>(x, 0.)};
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<::Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>>
+tuples::TaggedTuple<::Tags::dt<gr::Tags::Shift<Dim, Frame::System, DataType>>>
 Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
     tmpl::list<
-        ::Tags::dt<gr::Tags::Shift<Dim, Frame::Inertial, DataType>>> /*meta*/)
+        ::Tags::dt<gr::Tags::Shift<Dim, Frame::System, DataType>>> /*meta*/)
     const noexcept {
   return {make_with_value<tnsr::I<DataType, Dim>>(x, 0.)};
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>>
+tuples::TaggedTuple<::Tags::deriv<gr::Tags::Shift<Dim, Frame::System, DataType>,
+                                  tmpl::size_t<Dim>, Frame::System>>
 Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataType>,
-                             tmpl::size_t<Dim>, Frame::Inertial>> /*meta*/)
-    const noexcept {
+    tmpl::list<::Tags::deriv<gr::Tags::Shift<Dim, Frame::System, DataType>,
+                             tmpl::size_t<Dim>, Frame::System>> /*meta*/) const
+    noexcept {
   return {make_with_value<tnsr::iJ<DataType, Dim>>(x, 0.)};
 }
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>
+tuples::TaggedTuple<gr::Tags::SpatialMetric<Dim, Frame::System, DataType>>
 Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<
-        gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>> /*meta*/) const
-    noexcept {
+    tmpl::list<gr::Tags::SpatialMetric<Dim, Frame::System, DataType>> /*meta*/)
+    const noexcept {
   tnsr::ii<DataType, Dim> lower_metric(make_with_value<DataType>(x, 0.));
   for (size_t i = 0; i < Dim; ++i) {
     lower_metric.get(i, i) = 1.;
@@ -95,10 +93,11 @@ Minkowski<Dim>::variables(
 template <size_t Dim>
 template <typename DataType>
 tuples::TaggedTuple<
-    ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>>>
-Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                          tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<
-                              Dim, Frame::Inertial, DataType>>> /*meta*/) const
+    ::Tags::dt<gr::Tags::SpatialMetric<Dim, Frame::System, DataType>>>
+Minkowski<Dim>::variables(
+    const tnsr::I<DataType, Dim>& x, double /*t*/,
+    tmpl::list<::Tags::dt<
+        gr::Tags::SpatialMetric<Dim, Frame::System, DataType>>> /*meta*/) const
     noexcept {
   return {make_with_value<tnsr::ii<DataType, Dim>>(x, 0.)};
 }
@@ -106,13 +105,13 @@ Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
 template <size_t Dim>
 template <typename DataType>
 tuples::TaggedTuple<
-    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                  tmpl::size_t<Dim>, Frame::Inertial>>
+    ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::System, DataType>,
+                  tmpl::size_t<Dim>, Frame::System>>
 Minkowski<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
     tmpl::list<
-        ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataType>,
-                      tmpl::size_t<Dim>, Frame::Inertial>> /*meta*/) const
+        ::Tags::deriv<gr::Tags::SpatialMetric<Dim, Frame::System, DataType>,
+                      tmpl::size_t<Dim>, Frame::System>> /*meta*/) const
     noexcept {
   return {make_with_value<tnsr::ijj<DataType, Dim>>(x, 0.)};
 }
@@ -120,10 +119,10 @@ Minkowski<Dim>::variables(
 template <size_t Dim>
 template <typename DataType>
 tuples::TaggedTuple<
-    gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataType>>
+    gr::Tags::InverseSpatialMetric<Dim, Frame::System, DataType>>
 Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
                           tmpl::list<gr::Tags::InverseSpatialMetric<
-                              Dim, Frame::Inertial, DataType>> /*meta*/) const
+                              Dim, Frame::System, DataType>> /*meta*/) const
     noexcept {
   tnsr::II<DataType, Dim> upper_metric(make_with_value<DataType>(x, 0.));
   for (size_t i = 0; i < Dim; ++i) {
@@ -134,11 +133,10 @@ Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    gr::Tags::ExtrinsicCurvature<Dim, Frame::Inertial, DataType>>
+tuples::TaggedTuple<gr::Tags::ExtrinsicCurvature<Dim, Frame::System, DataType>>
 Minkowski<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
                           tmpl::list<gr::Tags::ExtrinsicCurvature<
-                              Dim, Frame::Inertial, DataType>> /*meta*/) const
+                              Dim, Frame::System, DataType>> /*meta*/) const
     noexcept {
   return {make_with_value<tnsr::ii<DataType, Dim>>(x, 0.)};
 }
@@ -179,67 +177,68 @@ Minkowski<Dim>::variables(
       tmpl::list<::Tags::dt<gr::Tags::Lapse<DTYPE(data)>>> /*meta*/)           \
       const noexcept;                                                          \
   template tuples::TaggedTuple<::Tags::deriv<                                  \
-      gr::Tags::Lapse<DTYPE(data)>, tmpl::size_t<DIM(data)>, Frame::Inertial>> \
+      gr::Tags::Lapse<DTYPE(data)>, tmpl::size_t<DIM(data)>, Frame::System>>   \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
       tmpl::list<                                                              \
           ::Tags::deriv<gr::Tags::Lapse<DTYPE(data)>, tmpl::size_t<DIM(data)>, \
-                        Frame::Inertial>> /*meta*/) const noexcept;            \
+                        Frame::System>> /*meta*/) const noexcept;              \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>                \
+      gr::Tags::Shift<DIM(data), Frame::System, DTYPE(data)>>                  \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
       tmpl::list<                                                              \
-          gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>> /*meta*/)  \
+          gr::Tags::Shift<DIM(data), Frame::System, DTYPE(data)>> /*meta*/)    \
       const noexcept;                                                          \
   template tuples::TaggedTuple<                                                \
-      ::Tags::dt<gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>>    \
+      ::Tags::dt<gr::Tags::Shift<DIM(data), Frame::System, DTYPE(data)>>>      \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
       tmpl::list<::Tags::dt<                                                   \
-          gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>>> /*meta*/) \
+          gr::Tags::Shift<DIM(data), Frame::System, DTYPE(data)>>> /*meta*/)   \
       const noexcept;                                                          \
   template tuples::TaggedTuple<                                                \
-      ::Tags::deriv<gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>,  \
-                    tmpl::size_t<DIM(data)>, Frame::Inertial>>                 \
+      ::Tags::deriv<gr::Tags::Shift<DIM(data), Frame::System, DTYPE(data)>,    \
+                    tmpl::size_t<DIM(data)>, Frame::System>>                   \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
       tmpl::list<::Tags::deriv<                                                \
-          gr::Tags::Shift<DIM(data), Frame::Inertial, DTYPE(data)>,            \
-          tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/) const noexcept; \
+          gr::Tags::Shift<DIM(data), Frame::System, DTYPE(data)>,              \
+          tmpl::size_t<DIM(data)>, Frame::System>> /*meta*/) const noexcept;   \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>>        \
+      gr::Tags::SpatialMetric<DIM(data), Frame::System, DTYPE(data)>>          \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<gr::Tags::SpatialMetric<DIM(data), Frame::Inertial,           \
+      tmpl::list<gr::Tags::SpatialMetric<DIM(data), Frame::System,             \
                                          DTYPE(data)>> /*meta*/)               \
       const noexcept;                                                          \
   template tuples::TaggedTuple<::Tags::dt<                                     \
-      gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>>>       \
+      gr::Tags::SpatialMetric<DIM(data), Frame::System, DTYPE(data)>>>         \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<                           \
-          DIM(data), Frame::Inertial, DTYPE(data)>>> /*meta*/) const noexcept; \
+      tmpl::list<::Tags::dt<gr::Tags::SpatialMetric<DIM(data), Frame::System,  \
+                                                    DTYPE(data)>>> /*meta*/)   \
+      const noexcept;                                                          \
   template tuples::TaggedTuple<::Tags::deriv<                                  \
-      gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>,        \
-      tmpl::size_t<DIM(data)>, Frame::Inertial>>                               \
+      gr::Tags::SpatialMetric<DIM(data), Frame::System, DTYPE(data)>,          \
+      tmpl::size_t<DIM(data)>, Frame::System>>                                 \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
       tmpl::list<::Tags::deriv<                                                \
-          gr::Tags::SpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>,    \
-          tmpl::size_t<DIM(data)>, Frame::Inertial>> /*meta*/) const noexcept; \
+          gr::Tags::SpatialMetric<DIM(data), Frame::System, DTYPE(data)>,      \
+          tmpl::size_t<DIM(data)>, Frame::System>> /*meta*/) const noexcept;   \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::InverseSpatialMetric<DIM(data), Frame::Inertial, DTYPE(data)>> \
+      gr::Tags::InverseSpatialMetric<DIM(data), Frame::System, DTYPE(data)>>   \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<gr::Tags::InverseSpatialMetric<DIM(data), Frame::Inertial,    \
+      tmpl::list<gr::Tags::InverseSpatialMetric<DIM(data), Frame::System,      \
                                                 DTYPE(data)>> /*meta*/)        \
       const noexcept;                                                          \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::ExtrinsicCurvature<DIM(data), Frame::Inertial, DTYPE(data)>>   \
+      gr::Tags::ExtrinsicCurvature<DIM(data), Frame::System, DTYPE(data)>>     \
   gr::Solutions::Minkowski<DIM(data)>::variables(                              \
       const tnsr::I<DTYPE(data), DIM(data)>& x, double /*t*/,                  \
-      tmpl::list<gr::Tags::ExtrinsicCurvature<DIM(data), Frame::Inertial,      \
+      tmpl::list<gr::Tags::ExtrinsicCurvature<DIM(data), Frame::System,        \
                                               DTYPE(data)>> /*meta*/)          \
       const noexcept;                                                          \
   template tuples::TaggedTuple<gr::Tags::SqrtDetSpatialMetric<DTYPE(data)>>    \

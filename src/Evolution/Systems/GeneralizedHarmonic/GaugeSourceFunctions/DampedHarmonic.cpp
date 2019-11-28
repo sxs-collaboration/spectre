@@ -879,10 +879,10 @@ void spacetime_deriv_damped_harmonic_h(
       const double exponent) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (double, DataVector),
-                        (Frame::Inertial))
+                        (Frame::System))
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_DV_FUNC, (1, 2, 3), (DataVector),
-                        (Frame::Inertial))
+                        (Frame::System))
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALAR_FUNC, (double, DataVector))
 

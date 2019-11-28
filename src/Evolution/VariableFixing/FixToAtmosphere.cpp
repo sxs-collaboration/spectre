@@ -44,7 +44,7 @@ template <size_t Dim, size_t ThermodynamicDim>
 void FixToAtmosphere<Dim, ThermodynamicDim>::operator()(
     const gsl::not_null<Scalar<DataVector>*> rest_mass_density,
     const gsl::not_null<Scalar<DataVector>*> specific_internal_energy,
-    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+    const gsl::not_null<tnsr::I<DataVector, Dim, Frame::System>*>
         spatial_velocity,
     const gsl::not_null<Scalar<DataVector>*> lorentz_factor,
     const gsl::not_null<Scalar<DataVector>*> pressure,

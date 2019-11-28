@@ -24,7 +24,7 @@ namespace {
 void test_variable_fixer(const LimitLorentzFactor& variable_fixer) {
   const Scalar<DataVector> density{DataVector{1.0, 2.0, 1.0e-5, 1.0e-6}};
   auto spatial_metric =
-      make_with_value<tnsr::ii<DataVector, 3, Frame::Inertial>>(density, 1.0);
+      make_with_value<tnsr::ii<DataVector, 3, Frame::System>>(density, 1.0);
   get<0, 0>(spatial_metric) = 0.2;
   get<0, 1>(spatial_metric) = 0.3;
   get<0, 2>(spatial_metric) = 0.4;
@@ -32,7 +32,7 @@ void test_variable_fixer(const LimitLorentzFactor& variable_fixer) {
   get<1, 2>(spatial_metric) = 0.6;
   get<2, 2>(spatial_metric) = 0.7;
 
-  tnsr::I<DataVector, 3, Frame::Inertial> spatial_velocity{
+  tnsr::I<DataVector, 3, Frame::System> spatial_velocity{
       {{DataVector{0.4999, 0.4999, 0.4999, 0.4999},
         DataVector{1.3567, 1.3566, 1.3567, 1.3566},
         DataVector{-0.200, -0.200, -0.200, -0.200}}}};
@@ -45,7 +45,7 @@ void test_variable_fixer(const LimitLorentzFactor& variable_fixer) {
   const double rescale_velocity_factor =
       sqrt((1.0 - 1.0 / square(get(expected_lorentz_factor)[2])) /
            (1.0 - 1.0 / square(get(lorentz_factor)[2])));
-  const tnsr::I<DataVector, 3, Frame::Inertial> expected_spatial_velocity{
+  const tnsr::I<DataVector, 3, Frame::System> expected_spatial_velocity{
       {{DataVector{0.4999, 0.4999, 0.4999 * rescale_velocity_factor, 0.4999},
         DataVector{1.3567, 1.3566, 1.3567 * rescale_velocity_factor, 1.3566},
         DataVector{-0.200, -0.200, -0.200 * rescale_velocity_factor, -0.200}}}};

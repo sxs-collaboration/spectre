@@ -99,7 +99,7 @@ struct TestSchwarzschildHorizon {
                     const typename Metavariables::temporal_id::
                         type& /*temporal_id*/) noexcept {
     const auto& horizon_radius =
-        get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+        get<StrahlkorperTags::Radius<Frame::System>>(box);
     const auto expected_radius =
         make_with_value<DataVector>(horizon_radius, 2.0);
     // We don't choose many grid points (for speed of test), so we
@@ -112,9 +112,9 @@ struct TestSchwarzschildHorizon {
     // DataBox and that its number of grid points is the same
     // as that of the strahlkorper.
     const auto& strahlkorper =
-        get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
+        get<StrahlkorperTags::Strahlkorper<Frame::System>>(box);
     const auto& inv_metric =
-        get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(box);
+        get<gr::Tags::InverseSpatialMetric<3, Frame::System>>(box);
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
           get<0,0>(inv_metric).size());
 
@@ -132,14 +132,14 @@ struct TestKerrHorizon {
                     const typename Metavariables::temporal_id::
                         type& /*temporal_id*/) noexcept {
     const auto& strahlkorper =
-        get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
+        get<StrahlkorperTags::Strahlkorper<Frame::System>>(box);
     // Test actual horizon radius against analytic value at the same
     // theta,phi points.
     const auto expected_radius = gr::Solutions::kerr_horizon_radius(
         strahlkorper.ylm_spherepack().theta_phi_points(), 1.1,
         {{0.12, 0.23, 0.45}});
     const auto& horizon_radius =
-        get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+        get<StrahlkorperTags::Radius<Frame::System>>(box);
     // The accuracy is not great because I use only a few grid points
     // to speed up the test.
     Approx custom_approx = Approx::custom().epsilon(1.e-3).scale(1.0);
@@ -150,7 +150,7 @@ struct TestKerrHorizon {
     // DataBox and that its number of grid points is the same
     // as that of the strahlkorper.
     const auto& inv_metric =
-        get<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>>(box);
+        get<gr::Tags::InverseSpatialMetric<3, Frame::System>>(box);
     CHECK(strahlkorper.ylm_spherepack().physical_size() ==
           get<0,0>(inv_metric).size());
 
@@ -192,24 +192,24 @@ template <typename PostHorizonFindCallback>
 struct MockMetavariables {
   struct AhA {
     using compute_items_on_source = tmpl::list<
-        ah::Tags::InverseSpatialMetricCompute<3, Frame::Inertial>,
-        ah::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>,
-        ah::Tags::SpatialChristoffelSecondKindCompute<3, Frame::Inertial>>;
+        ah::Tags::InverseSpatialMetricCompute<3, Frame::System>,
+        ah::Tags::ExtrinsicCurvatureCompute<3, Frame::System>,
+        ah::Tags::SpatialChristoffelSecondKindCompute<3, Frame::System>>;
     using vars_to_interpolate_to_target =
-        tmpl::list<gr::Tags::InverseSpatialMetric<3, Frame::Inertial>,
-                   gr::Tags::ExtrinsicCurvature<3, Frame::Inertial>,
-                   gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial>>;
+        tmpl::list<gr::Tags::InverseSpatialMetric<3, Frame::System>,
+                   gr::Tags::ExtrinsicCurvature<3, Frame::System>,
+                   gr::Tags::SpatialChristoffelSecondKind<3, Frame::System>>;
     using compute_items_on_target = tmpl::list<>;
     using compute_target_points =
-        intrp::Actions::ApparentHorizon<AhA, ::Frame::Inertial>;
+        intrp::Actions::ApparentHorizon<AhA, ::Frame::System>;
     using post_interpolation_callback =
         intrp::callbacks::FindApparentHorizon<AhA>;
     using post_horizon_find_callback = PostHorizonFindCallback;
   };
   using interpolator_source_vars =
-      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>,
-                 GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>;
+      tmpl::list<gr::Tags::SpacetimeMetric<3, Frame::System>,
+                 GeneralizedHarmonic::Tags::Pi<3, Frame::System>,
+                 GeneralizedHarmonic::Tags::Phi<3, Frame::System>>;
   using interpolation_target_tags = tmpl::list<AhA>;
   using temporal_id  = ::Tags::TimeStepId;
   static constexpr size_t volume_dim = 3;
@@ -238,8 +238,8 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
   // Options for all InterpolationTargets.
   // The initial guess for the horizon search is a sphere of radius 2.8M.
-  intrp::OptionHolders::ApparentHorizon<Frame::Inertial> apparent_horizon_opts(
-      Strahlkorper<Frame::Inertial>{l_max, 2.8, {{0.0, 0.0, 0.0}}}, FastFlow{},
+  intrp::OptionHolders::ApparentHorizon<Frame::System> apparent_horizon_opts(
+      Strahlkorper<Frame::System>{l_max, 2.8, {{0.0, 0.0, 0.0}}}, FastFlow{},
       Verbosity::Verbose);
 
   // The test finds an apparent horizon for a Schwarzschild or Kerr
@@ -254,7 +254,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
   tuples::TaggedTuple<::Tags::Domain<3>,
                       typename ::intrp::Tags::ApparentHorizon<
-                          typename metavars::AhA, Frame::Inertial>>
+                          typename metavars::AhA, Frame::System>>
       tuple_of_opts{std::move(domain_creator.create_domain()),
                     std::move(apparent_horizon_opts)};
 
@@ -302,32 +302,31 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
     ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
                    Spectral::Basis::Legendre,
                    Spectral::Quadrature::GaussLobatto};
-    ElementMap<3, Frame::Inertial> map{element_id,
-                                       block.coordinate_map().get_clone()};
-    const auto inertial_coords = map(logical_coordinates(mesh));
+    ElementMap<3, Frame::System> map{element_id,
+                                     block.coordinate_map().get_clone()};
+    const auto system_coords = map(logical_coordinates(mesh));
 
     // Compute psi, pi, phi for KerrSchild.
     gr::Solutions::KerrSchild solution(mass, dimensionless_spin,
                                        {{0.0, 0.0, 0.0}});
     const auto solution_vars = solution.variables(
-        inertial_coords, 0.0, gr::Solutions::KerrSchild::tags<DataVector>{});
+        system_coords, 0.0, gr::Solutions::KerrSchild::tags<DataVector>{});
     const auto& lapse = get<gr::Tags::Lapse<DataVector>>(solution_vars);
     const auto& dt_lapse =
         get<Tags::dt<gr::Tags::Lapse<DataVector>>>(solution_vars);
     const auto& d_lapse =
         get<gr::Solutions::KerrSchild::DerivLapse<DataVector>>(solution_vars);
     const auto& shift =
-        get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(solution_vars);
+        get<gr::Tags::Shift<3, Frame::System, DataVector>>(solution_vars);
     const auto& d_shift =
         get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(solution_vars);
     const auto& dt_shift =
-        get<Tags::dt<gr::Tags::Shift<3, Frame::Inertial, DataVector>>>(
+        get<Tags::dt<gr::Tags::Shift<3, Frame::System, DataVector>>>(
             solution_vars);
-    const auto& g =
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
-            solution_vars);
+    const auto& g = get<gr::Tags::SpatialMetric<3, Frame::System, DataVector>>(
+        solution_vars);
     const auto& dt_g =
-        get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(
+        get<Tags::dt<gr::Tags::SpatialMetric<3, Frame::System, DataVector>>>(
             solution_vars);
     const auto& d_g =
         get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
@@ -337,14 +336,14 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
     db::item_type<
         ::Tags::Variables<typename metavars::interpolator_source_vars>>
         output_vars(mesh.number_of_grid_points());
-    get<::gr::Tags::SpacetimeMetric<3, Frame::Inertial>>(output_vars) =
+    get<::gr::Tags::SpacetimeMetric<3, Frame::System>>(output_vars) =
         gr::spacetime_metric(lapse, shift, g);
-    get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(output_vars) =
+    get<::GeneralizedHarmonic::Tags::Phi<3, Frame::System>>(output_vars) =
         GeneralizedHarmonic::phi(lapse, d_lapse, shift, d_shift, g, d_g);
-    get<::GeneralizedHarmonic::Tags::Pi<3, Frame::Inertial>>(output_vars) =
+    get<::GeneralizedHarmonic::Tags::Pi<3, Frame::System>>(output_vars) =
         GeneralizedHarmonic::pi(
             lapse, dt_lapse, shift, dt_shift, g, dt_g,
-            get<::GeneralizedHarmonic::Tags::Phi<3, Frame::Inertial>>(
+            get<::GeneralizedHarmonic::Tags::Phi<3, Frame::System>>(
                 output_vars));
 
     // Call the InterpolatorReceiveVolumeData action on each element_id.

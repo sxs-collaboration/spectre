@@ -126,21 +126,22 @@ bool minmod_limited_slopes(
 /// linearize) on elements where the slope is less than \f$m h^2\f$, where
 /// \f$m\f$ is the TVBM constant and \f$h\f$ is the size of the DG element.
 ///
-/// The limiter acts in the `Frame::Logical` coordinates, because in these
-/// coordinates it is straightforward to formulate the algorithm. This means the
-/// limiter can operate on generic deformed grids. However, if the grid is too
-/// strongly deformed, some things can start to break down:
-/// 1. When an element is deformed so that the Jacobian (from `Frame::Logical`
-///    to `Frame::Inertial`) varies across the element, then the limiter fails
+/// The limiter acts in the `Frame::ElementLogical` coordinates, because in
+/// these coordinates it is straightforward to formulate the algorithm. This
+/// means the limiter can operate on generic deformed grids. However, if the
+/// grid is too strongly deformed, some things can start to break down:
+/// 1. When an element is deformed so that the Jacobian (from
+/// `Frame::ElementLogical`
+///    to `Frame::System`) varies across the element, then the limiter fails
 ///    to be conservative. In other words, the integral of a tensor `u` over the
 ///    element will change after the limiter activates on `u`. This error is
 ///    typically small.
 /// 2. When there is a sudden change in the size of the elements (perhaps at an
 ///    h-refinement boundary, or at the boundary between two blocks with very
-///    different mappings), a smooth solution in `Frame::Inertial` can appear
-///    to have a kink in `Frame::Logical`. The Minmod implementation includes
-///    some (untested) tweaks that try to reduce spurious limiter activations
-///    near these fake kinks.
+///    different mappings), a smooth solution in `Frame::System` can appear
+///    to have a kink in `Frame::ElementLogical`. The Minmod implementation
+///    includes some (untested) tweaks that try to reduce spurious limiter
+///    activations near these fake kinks.
 ///
 /// When an element has multiple neighbors in any direction, an effective mean
 /// and neighbor size in this direction are computed by averaging over the
@@ -238,7 +239,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \param packaged_data The data package to fill with this element's values.
   /// \param tensors The tensors to be averaged and packaged.
   /// \param mesh The mesh on which the tensor values are measured.
-  /// \param element_size The size of the element in inertial coordinates, along
+  /// \param element_size The size of the element in system coordinates, along
   ///        each dimension of logical coordinates.
   /// \param orientation_map The orientation of the neighbor
   void package_data(gsl::not_null<PackagedData*> packaged_data,
@@ -251,7 +252,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   using limit_tags = tmpl::list<Tags...>;
   using limit_argument_tags =
       tmpl::list<::Tags::Element<VolumeDim>, ::Tags::Mesh<VolumeDim>,
-                 ::Tags::Coordinates<VolumeDim, Frame::Logical>,
+                 ::Tags::Coordinates<VolumeDim, Frame::ElementLogical>,
                  ::Tags::SizeOfElement<VolumeDim>>;
 
   /// \brief Limits the solution on the element.
@@ -264,7 +265,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \param element The element on which the tensors to limit live.
   /// \param mesh The mesh on which the tensor values are measured.
   /// \param logical_coords The logical coordinates of the mesh gridpoints.
-  /// \param element_size The size of the element, in the inertial coordinates.
+  /// \param element_size The size of the element, in the system coordinates.
   /// \param neighbor_data The data from each neighbor.
   ///
   /// \return whether the limiter modified the solution or not.
@@ -282,7 +283,8 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   bool operator()(
       const gsl::not_null<std::add_pointer_t<db::item_type<Tags>>>... tensors,
       const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
-      const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
+      const tnsr::I<DataVector, VolumeDim, Frame::ElementLogical>&
+          logical_coords,
       const std::array<double, VolumeDim>& element_size,
       const std::unordered_map<
           std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,

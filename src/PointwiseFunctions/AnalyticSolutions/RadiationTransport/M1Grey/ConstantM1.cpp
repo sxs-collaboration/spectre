@@ -41,10 +41,10 @@ void ConstantM1::pup(PUP::er& p) noexcept {
 // M1 variables.
 template <typename NeutrinoSpecies>
 tuples::TaggedTuple<
-    RadiationTransport::M1Grey::Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>
+    RadiationTransport::M1Grey::Tags::TildeE<Frame::System, NeutrinoSpecies>>
 ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
                       tmpl::list<RadiationTransport::M1Grey::Tags::TildeE<
-                          Frame::Inertial, NeutrinoSpecies>> /*meta*/) const
+                          Frame::System, NeutrinoSpecies>> /*meta*/) const
     noexcept {
   const double W_sqr =
       1. /
@@ -56,10 +56,10 @@ ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
 
 template <typename NeutrinoSpecies>
 tuples::TaggedTuple<
-    RadiationTransport::M1Grey::Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>
+    RadiationTransport::M1Grey::Tags::TildeS<Frame::System, NeutrinoSpecies>>
 ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
                       tmpl::list<RadiationTransport::M1Grey::Tags::TildeS<
-                          Frame::Inertial, NeutrinoSpecies>> /*meta*/) const
+                          Frame::System, NeutrinoSpecies>> /*meta*/) const
     noexcept {
   const double W_sqr =
       1. /
@@ -68,7 +68,7 @@ ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
   const double prefactor = 4. / 3. * comoving_energy_density_ * W_sqr;
   auto result =
       make_with_value<db::item_type<RadiationTransport::M1Grey::Tags::TildeS<
-          Frame::Inertial, NeutrinoSpecies>>>(x, mean_velocity_[0] * prefactor);
+          Frame::System, NeutrinoSpecies>>>(x, mean_velocity_[0] * prefactor);
   get<1>(result) = mean_velocity_[1] * prefactor;
   get<2>(result) = mean_velocity_[2] * prefactor;
   return {std::move(result)};
@@ -87,14 +87,13 @@ ConstantM1::variables(
   return {Scalar<DataVector>{DataVector(get<0>(x).size(), W)}};
 }
 
-tuples::TaggedTuple<
-    hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::System>>
 ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
                       tmpl::list<hydro::Tags::SpatialVelocity<
-                          DataVector, 3, Frame::Inertial>> /*meta*/) const
+                          DataVector, 3, Frame::System>> /*meta*/) const
     noexcept {
   auto result = make_with_value<db::item_type<
-      hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>>(
+      hydro::Tags::SpatialVelocity<DataVector, 3, Frame::System>>>(
       x, mean_velocity_[0]);
   get<1>(result) = mean_velocity_[1];
   get<2>(result) = mean_velocity_[2];
@@ -116,12 +115,12 @@ bool operator!=(const ConstantM1& lhs, const ConstantM1& rhs) noexcept {
 #define EBIN(data) BOOST_PP_TUPLE_ELEM(2, data)
 #define GENERATE_LIST(z, n, _) BOOST_PP_COMMA_IF(n) n
 
-#define INSTANTIATE_M1_FUNCTION(_, data)                                      \
-  template tuples::TaggedTuple<TAG(data) < Frame::Inertial,                   \
-                               NTYPE(data) < EBIN(data)>>>                    \
-      ConstantM1::variables(                                                  \
-          const tnsr::I<DataVector, 3>& x, double t,                          \
-          tmpl::list<TAG(data) < Frame::Inertial, NTYPE(data) < EBIN(data)>>> \
+#define INSTANTIATE_M1_FUNCTION(_, data)                                    \
+  template tuples::TaggedTuple<TAG(data) < Frame::System,                   \
+                               NTYPE(data) < EBIN(data)>>>                  \
+      ConstantM1::variables(                                                \
+          const tnsr::I<DataVector, 3>& x, double t,                        \
+          tmpl::list<TAG(data) < Frame::System, NTYPE(data) < EBIN(data)>>> \
           /*meta*/) const noexcept;
 
 #define temp_list \

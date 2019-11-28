@@ -43,15 +43,15 @@
 namespace GeneralizedHarmonic {
 namespace GeneralizedHarmonic_detail {
 template <size_t Dim>
-db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>
+db::const_item_type<Tags::CharacteristicFields<Dim, Frame::System>>
 weight_char_fields(
-    const db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicFields<Dim, Frame::System>>&
         char_fields_int,
-    const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::System>>&
         char_speeds_int,
-    const db::const_item_type<Tags::CharacteristicFields<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicFields<Dim, Frame::System>>&
         char_fields_ext,
-    const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::Inertial>>&
+    const db::const_item_type<Tags::CharacteristicSpeeds<Dim, Frame::System>>&
         char_speeds_ext) noexcept;
 }  // namespace GeneralizedHarmonic_detail
 }  // namespace GeneralizedHarmonic
@@ -80,17 +80,17 @@ void test_upwind_flux_random() noexcept {
   // Choose spacetime_metric randomly, but make sure the result is
   // still invertible. To do this, start with
   // Minkowski, and then add a 10% random perturbation.
-  auto spacetime_metric_int = make_with_random_values<
-      tnsr::aa<DataVector, spatial_dim, Frame::Inertial>>(
-      nn_generator, nn_dist_pert, used_for_size);
+  auto spacetime_metric_int =
+      make_with_random_values<tnsr::aa<DataVector, spatial_dim, Frame::System>>(
+          nn_generator, nn_dist_pert, used_for_size);
   get<0, 0>(spacetime_metric_int) += get(minus_one);
   get<1, 1>(spacetime_metric_int) += get(one);
   get<2, 2>(spacetime_metric_int) += get(one);
   get<3, 3>(spacetime_metric_int) += get(one);
 
-  auto spacetime_metric_ext = make_with_random_values<
-      tnsr::aa<DataVector, spatial_dim, Frame::Inertial>>(
-      nn_generator, nn_dist_pert, used_for_size);
+  auto spacetime_metric_ext =
+      make_with_random_values<tnsr::aa<DataVector, spatial_dim, Frame::System>>(
+          nn_generator, nn_dist_pert, used_for_size);
   get<0, 0>(spacetime_metric_ext) += get(minus_one);
   get<1, 1>(spacetime_metric_ext) += get(one);
   get<2, 2>(spacetime_metric_ext) += get(one);
@@ -99,26 +99,26 @@ void test_upwind_flux_random() noexcept {
   // Set pi, phi to be random (phi, pi should not need to be consistent with
   // spacetime_metric for the flux consistency tests to pass)
   const auto phi_int = make_with_random_values<
-      tnsr::iaa<DataVector, spatial_dim, Frame::Inertial>>(
+      tnsr::iaa<DataVector, spatial_dim, Frame::System>>(
       nn_generator, nn_dist_pert, used_for_size);
-  const auto pi_int = make_with_random_values<
-      tnsr::aa<DataVector, spatial_dim, Frame::Inertial>>(
-      nn_generator, nn_dist_pert, used_for_size);
+  const auto pi_int =
+      make_with_random_values<tnsr::aa<DataVector, spatial_dim, Frame::System>>(
+          nn_generator, nn_dist_pert, used_for_size);
   const auto phi_ext = make_with_random_values<
-      tnsr::iaa<DataVector, spatial_dim, Frame::Inertial>>(
+      tnsr::iaa<DataVector, spatial_dim, Frame::System>>(
       nn_generator, nn_dist_pert, used_for_size);
-  const auto pi_ext = make_with_random_values<
-      tnsr::aa<DataVector, spatial_dim, Frame::Inertial>>(
-      nn_generator, nn_dist_pert, used_for_size);
+  const auto pi_ext =
+      make_with_random_values<tnsr::aa<DataVector, spatial_dim, Frame::System>>(
+          nn_generator, nn_dist_pert, used_for_size);
 
   const auto spatial_metric_int = gr::spatial_metric(spacetime_metric_int);
   const auto inverse_spatial_metric_int =
       determinant_and_inverse(spatial_metric_int).second;
-  const tnsr::i<DataVector, spatial_dim, Frame::Inertial>
+  const tnsr::i<DataVector, spatial_dim, Frame::System>
       unit_normal_one_form_int = raise_or_lower_index(
           random_unit_normal(nn_generator, spatial_metric_int),
           spatial_metric_int);
-  tnsr::i<DataVector, spatial_dim, Frame::Inertial>
+  tnsr::i<DataVector, spatial_dim, Frame::System>
       minus_unit_normal_one_form_int = unit_normal_one_form_int;
   for (size_t i = 0; i < spatial_dim; ++i) {
     minus_unit_normal_one_form_int.get(i) *= -1.0;
@@ -209,17 +209,17 @@ void test_upwind_flux_random() noexcept {
   // Check that if the same fields are given for the interior and exterior
   // (except that the normal vector gets multiplied by -1.0) that the
   // numerical flux reduces to the flux
-  auto psi_normal_dot_numerical_flux = make_with_value<
-      db::item_type<::Tags::NormalDotNumericalFlux<gr::Tags::SpacetimeMetric<
-          spatial_dim, Frame::Inertial, DataVector>>>>(
-      used_for_size, std::numeric_limits<double>::signaling_NaN());
+  auto psi_normal_dot_numerical_flux =
+      make_with_value<db::item_type<::Tags::NormalDotNumericalFlux<
+          gr::Tags::SpacetimeMetric<spatial_dim, Frame::System, DataVector>>>>(
+          used_for_size, std::numeric_limits<double>::signaling_NaN());
   auto pi_normal_dot_numerical_flux =
       make_with_value<db::item_type<::Tags::NormalDotNumericalFlux<
-          GeneralizedHarmonic::Tags::Pi<spatial_dim, Frame::Inertial>>>>(
+          GeneralizedHarmonic::Tags::Pi<spatial_dim, Frame::System>>>>(
           used_for_size, std::numeric_limits<double>::signaling_NaN());
   auto phi_normal_dot_numerical_flux =
       make_with_value<db::item_type<::Tags::NormalDotNumericalFlux<
-          GeneralizedHarmonic::Tags::Phi<spatial_dim, Frame::Inertial>>>>(
+          GeneralizedHarmonic::Tags::Phi<spatial_dim, Frame::System>>>>(
           used_for_size, std::numeric_limits<double>::signaling_NaN());
   ::TestHelpers::NumericalFluxes::apply_numerical_flux(
       flux_computer, packaged_data_int, packaged_data_int_opposite_normal,
@@ -229,16 +229,16 @@ void test_upwind_flux_random() noexcept {
 
   ::GeneralizedHarmonic::ComputeNormalDotFluxes<spatial_dim>
       normal_dot_flux_computer{};
-  auto psi_normal_dot_flux = make_with_value<
-      db::item_type<::Tags::NormalDotFlux<gr::Tags::SpacetimeMetric<
-          spatial_dim, Frame::Inertial, DataVector>>>>(
-      used_for_size, std::numeric_limits<double>::signaling_NaN());
+  auto psi_normal_dot_flux =
+      make_with_value<db::item_type<::Tags::NormalDotFlux<
+          gr::Tags::SpacetimeMetric<spatial_dim, Frame::System, DataVector>>>>(
+          used_for_size, std::numeric_limits<double>::signaling_NaN());
   auto pi_normal_dot_flux = make_with_value<db::item_type<::Tags::NormalDotFlux<
-      GeneralizedHarmonic::Tags::Pi<spatial_dim, Frame::Inertial>>>>(
+      GeneralizedHarmonic::Tags::Pi<spatial_dim, Frame::System>>>>(
       used_for_size, std::numeric_limits<double>::signaling_NaN());
   auto phi_normal_dot_flux =
       make_with_value<db::item_type<::Tags::NormalDotFlux<
-          GeneralizedHarmonic::Tags::Phi<spatial_dim, Frame::Inertial>>>>(
+          GeneralizedHarmonic::Tags::Phi<spatial_dim, Frame::System>>>>(
           used_for_size, std::numeric_limits<double>::signaling_NaN());
   normal_dot_flux_computer.apply(
       make_not_null(&psi_normal_dot_flux), make_not_null(&pi_normal_dot_flux),

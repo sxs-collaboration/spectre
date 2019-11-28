@@ -256,7 +256,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   TimeStepId temporal_id(true, 0, Time(slab, Rational(11, 15)));
   auto vars_holders = [&domain, &temporal_id]() {
     const size_t n_pts = 15;
-    tnsr::I<DataVector, 3, Frame::Inertial> points(n_pts);
+    tnsr::I<DataVector, 3, Frame::System> points(n_pts);
     for (size_t d = 0; d < 3; ++d) {
       for (size_t i = 0; i < n_pts; ++i) {
         points.get(d)[i] = 1.0 + (0.1 + 0.02 * d) * i;  // Chosen by hand.
@@ -310,18 +310,17 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
     ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
                    Spectral::Basis::Legendre,
                    Spectral::Quadrature::GaussLobatto};
-    ElementMap<3, Frame::Inertial> map{element_id,
-                                       block.coordinate_map().get_clone()};
-    const auto inertial_coords = map(logical_coordinates(mesh));
+    ElementMap<3, Frame::System> map{element_id,
+                                     block.coordinate_map().get_clone()};
+    const auto system_coords = map(logical_coordinates(mesh));
     db::item_type<
         ::Tags::Variables<typename metavars::interpolator_source_vars>>
         output_vars(mesh.number_of_grid_points());
     auto& lapse = get<gr::Tags::Lapse<DataVector>>(output_vars);
 
     // Fill lapse with some analytic solution.
-    get<>(lapse) = 2.0 * get<0>(inertial_coords) +
-                   3.0 * get<1>(inertial_coords) +
-                   5.0 * get<2>(inertial_coords);
+    get<>(lapse) = 2.0 * get<0>(system_coords) + 3.0 * get<1>(system_coords) +
+                   5.0 * get<2>(system_coords);
 
     // Call the action on each element_id.
     runner.simple_action<interp_component,

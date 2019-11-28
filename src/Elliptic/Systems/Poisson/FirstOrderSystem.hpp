@@ -83,8 +83,7 @@ template <size_t Dim>
 struct FirstOrderSystem {
  private:
   using field = Tags::Field;
-  using field_gradient =
-      ::Tags::deriv<field, tmpl::size_t<Dim>, Frame::Inertial>;
+  using field_gradient = ::Tags::deriv<field, tmpl::size_t<Dim>, Frame::System>;
 
  public:
   static constexpr size_t volume_dim = Dim;

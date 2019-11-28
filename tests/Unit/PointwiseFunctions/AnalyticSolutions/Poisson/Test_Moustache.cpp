@@ -28,16 +28,16 @@ struct MoustacheProxy : Poisson::Solutions::Moustache<Dim> {
 
   using field_tags = tmpl::list<
       Poisson::Tags::Field,
-      ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
+      ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>, Frame::System>>;
   using source_tags = tmpl::list<Tags::FixedSource<Poisson::Tags::Field>>;
 
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, Dim, Frame::System>& x) const noexcept {
     return Poisson::Solutions::Moustache<Dim>::variables(x, field_tags{});
   }
 
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, Dim, Frame::System>& x) const noexcept {
     return Poisson::Solutions::Moustache<Dim>::variables(x, source_tags{});
   }
 };
@@ -48,7 +48,7 @@ void test_solution() {
   pypp::check_with_random_values<
       1, tmpl::list<Poisson::Tags::Field,
                     ::Tags::deriv<Poisson::Tags::Field, tmpl::size_t<Dim>,
-                                  Frame::Inertial>>>(
+                                  Frame::System>>>(
       &MoustacheProxy<Dim>::field_variables, solution, "Moustache",
       {"field", "field_gradient"}, {{{0., 1.}}}, std::make_tuple(),
       DataVector(5));

@@ -42,7 +42,7 @@ struct MagnetizedFmDiskProxy : grmhd::AnalyticData::MagnetizedFmDisk {
   template <typename DataType>
   using hydro_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::System>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
                  hydro::Tags::LorentzFactor<DataType>,
@@ -51,7 +51,7 @@ struct MagnetizedFmDiskProxy : grmhd::AnalyticData::MagnetizedFmDisk {
   template <typename DataType>
   using grmhd_variables_tags =
       tmpl::push_back<hydro_variables_tags<DataType>,
-                      hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
+                      hydro::Tags::MagneticField<DataType, 3, Frame::System>,
                       hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
@@ -142,13 +142,13 @@ void test_variables(const DataType& used_for_size) {
       get<gr::Tags::SqrtDetSpatialMetric<DataType>>(disk.variables(
           coords, tmpl::list<gr::Tags::SqrtDetSpatialMetric<DataType>>{})));
   const auto expected_spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(
+      get<gr::Tags::SpatialMetric<3, Frame::System, DataType>>(
           ks_soln.variables(coords, 0.0,
                             gr::Solutions::KerrSchild::tags<DataType>{}));
   const auto spatial_metric =
-      get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>(disk.variables(
+      get<gr::Tags::SpatialMetric<3, Frame::System, DataType>>(disk.variables(
           coords,
-          tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>{}));
+          tmpl::list<gr::Tags::SpatialMetric<3, Frame::System, DataType>>{}));
   CHECK_ITERABLE_APPROX(expected_spatial_metric, spatial_metric);
 
   // Check that when InversePlasmaBeta = 0, magnetic field vanishes and
@@ -165,11 +165,11 @@ void test_variables(const DataType& used_for_size) {
        "pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-20., 20.}}}, member_variables, used_for_size, 1.0e-8);
   const auto magnetic_field =
-      get<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>(
+      get<hydro::Tags::SpatialVelocity<DataType, 3, Frame::System>>(
           another_disk.variables(
               coords,
-              tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3,
-                                                      Frame::Inertial>>{}));
+              tmpl::list<
+                  hydro::Tags::SpatialVelocity<DataType, 3, Frame::System>>{}));
   const auto expected_magnetic_field =
       make_with_value<tnsr::I<DataType, 3>>(used_for_size, 0.0);
   CHECK_ITERABLE_APPROX(magnetic_field, expected_magnetic_field);

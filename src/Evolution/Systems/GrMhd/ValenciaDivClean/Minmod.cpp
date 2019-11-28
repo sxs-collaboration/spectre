@@ -8,12 +8,12 @@
 // IWYU pragma: no_include "Evolution/DiscontinuousGalerkin/Limiters/Minmod.hpp"
 
 namespace Frame {
-struct Inertial;
+struct System;
 }  // namespace Frame
 
 // Do not limit the divergence-cleaning field Phi
 template class Limiters::Minmod<
     3, tmpl::list<grmhd::ValenciaDivClean::Tags::TildeD,
                   grmhd::ValenciaDivClean::Tags::TildeTau,
-                  grmhd::ValenciaDivClean::Tags::TildeS<Frame::Inertial>,
-                  grmhd::ValenciaDivClean::Tags::TildeB<Frame::Inertial>>>;
+                  grmhd::ValenciaDivClean::Tags::TildeS<Frame::System>,
+                  grmhd::ValenciaDivClean::Tags::TildeB<Frame::System>>>;

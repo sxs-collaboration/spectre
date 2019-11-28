@@ -17,7 +17,7 @@ template <size_t Dim>
 struct CharacteristicSpeeds;
 struct TildeD;
 struct TildeTau;
-template <size_t Dim, typename Fr = Frame::Inertial>
+template <size_t Dim, typename Fr = Frame::System>
 struct TildeS;
 }  // namespace Tags
 }  // namespace Valencia

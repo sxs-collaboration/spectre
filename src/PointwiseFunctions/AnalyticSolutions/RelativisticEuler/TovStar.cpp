@@ -94,22 +94,21 @@ TovStar<RadialSolution>::variables(
 
 template <typename RadialSolution>
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3, Frame::System>>
 TovStar<RadialSolution>::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<
-        hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>> /*meta*/,
+        hydro::Tags::SpatialVelocity<DataType, 3, Frame::System>> /*meta*/,
     const RadialVariables<DataType>& /*radial_vars*/) const noexcept {
   return make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
 }
 
 template <typename RadialSolution>
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<hydro::Tags::MagneticField<DataType, 3, Frame::System>>
 TovStar<RadialSolution>::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<
-        hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>> /*meta*/,
+    tmpl::list<hydro::Tags::MagneticField<DataType, 3, Frame::System>> /*meta*/,
     const RadialVariables<DataType>& /*radial_vars*/) const noexcept {
   return make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
 }
@@ -143,7 +142,7 @@ TovStar<RadialSolution>::variables(
     tmpl::list<typename TovStar<RadialSolution>::template DerivLapse<
         DataType>> /*meta*/,
     const RadialVariables<DataType>& radial_vars) const noexcept {
-  tnsr::i<DataType, 3, Frame::Inertial> d_lapse{
+  tnsr::i<DataType, 3, Frame::System> d_lapse{
       exp(radial_vars.metric_time_potential) *
       radial_vars.dr_metric_time_potential / radial_vars.radial_coordinate};
   for (size_t i = 0; i < 3; ++i) {
@@ -154,10 +153,10 @@ TovStar<RadialSolution>::variables(
 
 template <typename RadialSolution>
 template <typename DataType>
-tuples::TaggedTuple<gr::Tags::Shift<3, Frame::Inertial, DataType>>
+tuples::TaggedTuple<gr::Tags::Shift<3, Frame::System, DataType>>
 TovStar<RadialSolution>::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<gr::Tags::Shift<3, Frame::Inertial, DataType>> /*meta*/,
+    tmpl::list<gr::Tags::Shift<3, Frame::System, DataType>> /*meta*/,
     const RadialVariables<DataType>& /*radial_vars*/) const noexcept {
   return make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
 }
@@ -176,12 +175,12 @@ TovStar<RadialSolution>::variables(
 
 template <typename RadialSolution>
 template <typename DataType>
-tuples::TaggedTuple<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>>
+tuples::TaggedTuple<gr::Tags::SpatialMetric<3, Frame::System, DataType>>
 TovStar<RadialSolution>::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataType>> /*meta*/,
+    tmpl::list<gr::Tags::SpatialMetric<3, Frame::System, DataType>> /*meta*/,
     const RadialVariables<DataType>& radial_vars) const noexcept {
-  tnsr::ii<DataType, 3, Frame::Inertial> spatial_metric{
+  tnsr::ii<DataType, 3, Frame::System> spatial_metric{
       (exp(2.0 * radial_vars.metric_radial_potential) -
        exp(2.0 * radial_vars.metric_angular_potential)) /
       square(radial_vars.radial_coordinate)};
@@ -203,7 +202,7 @@ TovStar<RadialSolution>::variables(
     tmpl::list<typename TovStar<RadialSolution>::template DerivSpatialMetric<
         DataType>> /*meta*/,
     const RadialVariables<DataType>& radial_vars) const noexcept {
-  tnsr::ijj<DataType, 3, Frame::Inertial> deriv_spatial_metric{
+  tnsr::ijj<DataType, 3, Frame::System> deriv_spatial_metric{
       2.0 *
       (exp(2.0 * radial_vars.metric_radial_potential) *
            (radial_vars.dr_metric_radial_potential -
@@ -253,14 +252,13 @@ TovStar<RadialSolution>::variables(
 
 template <typename RadialSolution>
 template <typename DataType>
-tuples::TaggedTuple<
-    gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>>
+tuples::TaggedTuple<gr::Tags::InverseSpatialMetric<3, Frame::System, DataType>>
 TovStar<RadialSolution>::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<
-        gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataType>> /*meta*/,
+        gr::Tags::InverseSpatialMetric<3, Frame::System, DataType>> /*meta*/,
     const RadialVariables<DataType>& radial_vars) const noexcept {
-  tnsr::II<DataType, 3, Frame::Inertial> g{
+  tnsr::II<DataType, 3, Frame::System> g{
       exp(-2.0 * radial_vars.metric_radial_potential) -
       exp(-2.0 * radial_vars.metric_angular_potential)};
   for (size_t d0 = 0; d0 < 3; ++d0) {
@@ -275,11 +273,11 @@ TovStar<RadialSolution>::variables(
 
 template <typename RadialSolution>
 template <typename DataType>
-tuples::TaggedTuple<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>>
+tuples::TaggedTuple<gr::Tags::ExtrinsicCurvature<3, Frame::System, DataType>>
 TovStar<RadialSolution>::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<
-        gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataType>> /*meta*/,
+        gr::Tags::ExtrinsicCurvature<3, Frame::System, DataType>> /*meta*/,
     const RadialVariables<DataType>& /*radial_vars*/) const noexcept {
   return make_with_value<tnsr::ii<DataType, 3>>(x, 0.0);
 }
@@ -330,18 +328,18 @@ bool operator!=(const TovStar<RadialSolution>& lhs,
       tmpl::list<hydro::Tags::LorentzFactor<DTYPE(data)>> /*meta*/,            \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
   template tuples::TaggedTuple<                                                \
-      hydro::Tags::SpatialVelocity<DTYPE(data), 3, Frame::Inertial>>           \
+      hydro::Tags::SpatialVelocity<DTYPE(data), 3, Frame::System>>             \
   TovStar<STYPE(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), 3>& x,                                        \
       tmpl::list<hydro::Tags::SpatialVelocity<DTYPE(data), 3,                  \
-                                              Frame::Inertial>> /*meta*/,      \
+                                              Frame::System>> /*meta*/,        \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
   template tuples::TaggedTuple<                                                \
-      hydro::Tags::MagneticField<DTYPE(data), 3, Frame::Inertial>>             \
+      hydro::Tags::MagneticField<DTYPE(data), 3, Frame::System>>               \
   TovStar<STYPE(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), 3>& x,                                        \
-      tmpl::list<hydro::Tags::MagneticField<DTYPE(data), 3,                    \
-                                            Frame::Inertial>> /*meta*/,        \
+      tmpl::list<                                                              \
+          hydro::Tags::MagneticField<DTYPE(data), 3, Frame::System>> /*meta*/, \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
   template tuples::TaggedTuple<                                                \
       hydro::Tags::DivergenceCleaningField<DTYPE(data)>>                       \
@@ -361,11 +359,10 @@ bool operator!=(const TovStar<RadialSolution>& lhs,
       tmpl::list<typename TovStar<STYPE(data)>::template DerivLapse<DTYPE(     \
           data)>> /*meta*/,                                                    \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
-  template tuples::TaggedTuple<                                                \
-      gr::Tags::Shift<3, Frame::Inertial, DTYPE(data)>>                        \
+  template tuples::TaggedTuple<gr::Tags::Shift<3, Frame::System, DTYPE(data)>> \
   TovStar<STYPE(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), 3>& /*x*/,                                    \
-      tmpl::list<gr::Tags::Shift<3, Frame::Inertial, DTYPE(data)>> /*meta*/,   \
+      tmpl::list<gr::Tags::Shift<3, Frame::System, DTYPE(data)>> /*meta*/,     \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
   template tuples::TaggedTuple<                                                \
       typename TovStar<STYPE(data)>::template DerivShift<DTYPE(data)>>         \
@@ -375,11 +372,11 @@ bool operator!=(const TovStar<RadialSolution>& lhs,
           data)>> /*meta*/,                                                    \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DTYPE(data)>>                \
+      gr::Tags::SpatialMetric<3, Frame::System, DTYPE(data)>>                  \
   TovStar<STYPE(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), 3>& /*x*/,                                    \
       tmpl::list<                                                              \
-          gr::Tags::SpatialMetric<3, Frame::Inertial, DTYPE(data)>> /*meta*/,  \
+          gr::Tags::SpatialMetric<3, Frame::System, DTYPE(data)>> /*meta*/,    \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
   template tuples::TaggedTuple<                                                \
       typename TovStar<STYPE(data)>::template DerivSpatialMetric<DTYPE(data)>> \
@@ -394,17 +391,17 @@ bool operator!=(const TovStar<RadialSolution>& lhs,
       tmpl::list<gr::Tags::SqrtDetSpatialMetric<DTYPE(data)>> /*meta*/,        \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DTYPE(data)>>         \
+      gr::Tags::InverseSpatialMetric<3, Frame::System, DTYPE(data)>>           \
   TovStar<STYPE(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), 3>& /*x*/,                                    \
-      tmpl::list<gr::Tags::InverseSpatialMetric<3, Frame::Inertial,            \
+      tmpl::list<gr::Tags::InverseSpatialMetric<3, Frame::System,              \
                                                 DTYPE(data)>> /*meta*/,        \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;         \
   template tuples::TaggedTuple<                                                \
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DTYPE(data)>>           \
+      gr::Tags::ExtrinsicCurvature<3, Frame::System, DTYPE(data)>>             \
   TovStar<STYPE(data)>::variables(                                             \
       const tnsr::I<DTYPE(data), 3>& /*x*/,                                    \
-      tmpl::list<gr::Tags::ExtrinsicCurvature<3, Frame::Inertial,              \
+      tmpl::list<gr::Tags::ExtrinsicCurvature<3, Frame::System,                \
                                               DTYPE(data)>> /*meta*/,          \
       const RadialVariables<DTYPE(data)>& radial_vars) const noexcept;
 

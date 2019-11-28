@@ -709,90 +709,87 @@ double christodoulou_mass(const double dimensionful_spin_magnitude,
 }
 }  // namespace StrahlkorperGr
 
-template tnsr::i<DataVector, 3, Frame::Inertial>
-StrahlkorperGr::unit_normal_one_form<Frame::Inertial>(
-    const tnsr::i<DataVector, 3, Frame::Inertial>& normal_one_form,
+template tnsr::i<DataVector, 3, Frame::System>
+StrahlkorperGr::unit_normal_one_form<Frame::System>(
+    const tnsr::i<DataVector, 3, Frame::System>& normal_one_form,
     const DataVector& one_over_one_form_magnitude) noexcept;
 
-template tnsr::ii<DataVector, 3, Frame::Inertial>
-StrahlkorperGr::grad_unit_normal_one_form<Frame::Inertial>(
-    const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat,
+template tnsr::ii<DataVector, 3, Frame::System>
+StrahlkorperGr::grad_unit_normal_one_form<Frame::System>(
+    const tnsr::i<DataVector, 3, Frame::System>& r_hat,
     const DataVector& radius,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& unit_normal_one_form,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& d2x_radius,
+    const tnsr::i<DataVector, 3, Frame::System>& unit_normal_one_form,
+    const tnsr::ii<DataVector, 3, Frame::System>& d2x_radius,
     const DataVector& one_over_one_form_magnitude,
-    const tnsr::Ijj<DataVector, 3, Frame::Inertial>&
+    const tnsr::Ijj<DataVector, 3, Frame::System>&
         christoffel_2nd_kind) noexcept;
 
-template tnsr::II<DataVector, 3, Frame::Inertial>
-StrahlkorperGr::inverse_surface_metric<Frame::Inertial>(
-    const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector,
-    const tnsr::II<DataVector, 3, Frame::Inertial>&
+template tnsr::II<DataVector, 3, Frame::System>
+StrahlkorperGr::inverse_surface_metric<Frame::System>(
+    const tnsr::I<DataVector, 3, Frame::System>& unit_normal_vector,
+    const tnsr::II<DataVector, 3, Frame::System>&
         upper_spatial_metric) noexcept;
 
-template Scalar<DataVector> StrahlkorperGr::expansion<Frame::Inertial>(
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& grad_normal,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inverse_surface_metric,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>&
-        extrinsic_curvature) noexcept;
+template Scalar<DataVector> StrahlkorperGr::expansion<Frame::System>(
+    const tnsr::ii<DataVector, 3, Frame::System>& grad_normal,
+    const tnsr::II<DataVector, 3, Frame::System>& inverse_surface_metric,
+    const tnsr::ii<DataVector, 3, Frame::System>& extrinsic_curvature) noexcept;
 
-template tnsr::ii<DataVector, 3, Frame::Inertial>
-StrahlkorperGr::extrinsic_curvature<Frame::Inertial>(
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& grad_normal,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& unit_normal_one_form,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector) noexcept;
+template tnsr::ii<DataVector, 3, Frame::System>
+StrahlkorperGr::extrinsic_curvature<Frame::System>(
+    const tnsr::ii<DataVector, 3, Frame::System>& grad_normal,
+    const tnsr::i<DataVector, 3, Frame::System>& unit_normal_one_form,
+    const tnsr::I<DataVector, 3, Frame::System>& unit_normal_vector) noexcept;
 
-template Scalar<DataVector> StrahlkorperGr::ricci_scalar<Frame::Inertial>(
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_ricci_tensor,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& extrinsic_curvature,
-    const tnsr::II<DataVector, 3, Frame::Inertial>&
+template Scalar<DataVector> StrahlkorperGr::ricci_scalar<Frame::System>(
+    const tnsr::ii<DataVector, 3, Frame::System>& spatial_ricci_tensor,
+    const tnsr::I<DataVector, 3, Frame::System>& unit_normal_vector,
+    const tnsr::ii<DataVector, 3, Frame::System>& extrinsic_curvature,
+    const tnsr::II<DataVector, 3, Frame::System>&
         upper_spatial_metric) noexcept;
 
-template Scalar<DataVector> StrahlkorperGr::area_element<Frame::Inertial>(
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const StrahlkorperTags::aliases::Jacobian<Frame::Inertial>& jacobian,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& normal_one_form,
+template Scalar<DataVector> StrahlkorperGr::area_element<Frame::System>(
+    const tnsr::ii<DataVector, 3, Frame::System>& spatial_metric,
+    const StrahlkorperTags::aliases::Jacobian<Frame::System>& jacobian,
+    const tnsr::i<DataVector, 3, Frame::System>& normal_one_form,
     const DataVector& radius,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat) noexcept;
+    const tnsr::i<DataVector, 3, Frame::System>& r_hat) noexcept;
 
 template Scalar<DataVector>
-StrahlkorperGr::euclidean_area_element<Frame::Inertial>(
-    const StrahlkorperTags::aliases::Jacobian<Frame::Inertial>& jacobian,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& normal_one_form,
+StrahlkorperGr::euclidean_area_element<Frame::System>(
+    const StrahlkorperTags::aliases::Jacobian<Frame::System>& jacobian,
+    const tnsr::i<DataVector, 3, Frame::System>& normal_one_form,
     const DataVector& radius,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat) noexcept;
+    const tnsr::i<DataVector, 3, Frame::System>& r_hat) noexcept;
 
 template double StrahlkorperGr::surface_integral_of_scalar(
     const Scalar<DataVector>& area_element, const Scalar<DataVector>& scalar,
-    const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept;
+    const Strahlkorper<Frame::System>& strahlkorper) noexcept;
 
-template
-double StrahlkorperGr::euclidean_surface_integral_of_vector(
+template double StrahlkorperGr::euclidean_surface_integral_of_vector(
     const Scalar<DataVector>& area_element,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& vector,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& normal_one_form,
-    const Strahlkorper<Frame::Inertial>& strahlkorper) noexcept;
+    const tnsr::I<DataVector, 3, Frame::System>& vector,
+    const tnsr::i<DataVector, 3, Frame::System>& normal_one_form,
+    const Strahlkorper<Frame::System>& strahlkorper) noexcept;
 
-template Scalar<DataVector> StrahlkorperGr::spin_function<Frame::Inertial>(
-    const StrahlkorperTags::aliases::Jacobian<Frame::Inertial>& tangents,
+template Scalar<DataVector> StrahlkorperGr::spin_function<Frame::System>(
+    const StrahlkorperTags::aliases::Jacobian<Frame::System>& tangents,
     const YlmSpherepack& ylm,
-    const tnsr::I<DataVector, 3, Frame::Inertial>& unit_normal_vector,
+    const tnsr::I<DataVector, 3, Frame::System>& unit_normal_vector,
     const Scalar<DataVector>& area_element,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>&
-        extrinsic_curvature) noexcept;
+    const tnsr::ii<DataVector, 3, Frame::System>& extrinsic_curvature) noexcept;
 
-template double StrahlkorperGr::dimensionful_spin_magnitude<Frame::Inertial>(
+template double StrahlkorperGr::dimensionful_spin_magnitude<Frame::System>(
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
-    const StrahlkorperTags::aliases::Jacobian<Frame::Inertial>& tangents,
+    const tnsr::ii<DataVector, 3, Frame::System>& spatial_metric,
+    const StrahlkorperTags::aliases::Jacobian<Frame::System>& tangents,
     const YlmSpherepack& ylm, const Scalar<DataVector>& area_element) noexcept;
 
-template std::array<double, 3> StrahlkorperGr::spin_vector<Frame::Inertial>(
+template std::array<double, 3> StrahlkorperGr::spin_vector<Frame::System>(
     const double spin_magnitude, const Scalar<DataVector>& area_element,
     const Scalar<DataVector>& radius,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& r_hat,
+    const tnsr::i<DataVector, 3, Frame::System>& r_hat,
     const Scalar<DataVector>& ricci_scalar,
     const Scalar<DataVector>& spin_function, const YlmSpherepack& ylm) noexcept;
 /// \endcond

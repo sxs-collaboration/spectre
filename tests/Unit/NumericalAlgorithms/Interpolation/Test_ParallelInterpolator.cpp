@@ -161,7 +161,7 @@ struct TestKerrHorizonIntegral {
                         type& /*temporal_id*/) noexcept {
     const auto& interpolation_result = get<Tags::Square>(box);
     const auto& strahlkorper =
-        get<StrahlkorperTags::Strahlkorper<Frame::Inertial>>(box);
+        get<StrahlkorperTags::Strahlkorper<Frame::System>>(box);
     const double integral = strahlkorper.ylm_spherepack().definite_integral(
         make_not_null(get(interpolation_result).data()));
     const double expected_integral = 608.0 * M_PI / 3.0;  // by hand
@@ -236,7 +236,7 @@ struct MockMetavariables {
     using vars_to_interpolate_to_target = tmpl::list<Tags::TestSolution>;
     using compute_items_on_target = tmpl::list<Tags::SquareComputeItem>;
     using compute_target_points =
-        intrp::Actions::KerrHorizon<InterpolationTargetC, ::Frame::Inertial>;
+        intrp::Actions::KerrHorizon<InterpolationTargetC, ::Frame::System>;
     using post_interpolation_callback = TestKerrHorizonIntegral;
   };
 
@@ -339,18 +339,18 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
     ::Mesh<3> mesh{domain_creator.initial_extents()[element_id.block_id()],
                    Spectral::Basis::Legendre,
                    Spectral::Quadrature::GaussLobatto};
-    ElementMap<3, Frame::Inertial> map{element_id,
-                                       block.coordinate_map().get_clone()};
-    const auto inertial_coords = map(logical_coordinates(mesh));
+    ElementMap<3, Frame::System> map{element_id,
+                                     block.coordinate_map().get_clone()};
+    const auto system_coords = map(logical_coordinates(mesh));
     db::item_type<
         ::Tags::Variables<typename metavars::interpolator_source_vars>>
         output_vars(mesh.number_of_grid_points());
     auto& test_solution = get<Tags::TestSolution>(output_vars);
 
     // Fill test_solution with some analytic solution.
-    get(test_solution) = 2.0 * get<0>(inertial_coords) +
-                         3.0 * get<1>(inertial_coords) +
-                         5.0 * get<2>(inertial_coords);
+    get(test_solution) = 2.0 * get<0>(system_coords) +
+                         3.0 * get<1>(system_coords) +
+                         5.0 * get<2>(system_coords);
 
     // Call the InterpolatorReceiveVolumeData action on each element_id.
     ActionTesting::simple_action<interp_component,

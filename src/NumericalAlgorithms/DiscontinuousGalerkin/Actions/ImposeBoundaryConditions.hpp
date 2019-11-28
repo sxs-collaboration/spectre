@@ -191,7 +191,7 @@ struct ImposeDirichletBoundaryConditions {
         make_not_null(&box), db::get<Tags::Time>(box),
         get<typename Metavariables::boundary_condition_tag>(cache),
         db::get<Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
-                                Tags::Coordinates<VolumeDim, Frame::Inertial>>>(
+                                Tags::Coordinates<VolumeDim, Frame::System>>>(
             box));
 
     contribute_data_to_mortar(make_not_null(&box), cache);
@@ -256,7 +256,7 @@ struct ImposeDirichletBoundaryConditions {
         make_not_null(&box), db::get<Tags::Time>(box),
         get<typename Metavariables::boundary_condition_tag>(cache),
         db::get<Tags::Interface<Tags::BoundaryDirectionsExterior<VolumeDim>,
-                                Tags::Coordinates<VolumeDim, Frame::Inertial>>>(
+                                Tags::Coordinates<VolumeDim, Frame::System>>>(
             box));
 
     contribute_data_to_mortar(make_not_null(&box), cache);

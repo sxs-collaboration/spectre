@@ -57,25 +57,26 @@ namespace CurvedScalarWave {
  */
 template <size_t Dim>
 struct ComputeDuDt {
-  using argument_tags = tmpl::list<
-      Pi, Phi<Dim>, Tags::deriv<Psi, tmpl::size_t<Dim>, Frame::Inertial>,
-      Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::Inertial>,
-      Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
-      gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
-                  Frame::Inertial>,
-      Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-                  tmpl::size_t<Dim>, Frame::Inertial>,
-      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
-      gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame::Inertial,
-                                                  DataVector>,
-      gr::Tags::TraceExtrinsicCurvature<DataVector>, ConstraintGamma1,
-      ConstraintGamma2>;
+  using argument_tags =
+      tmpl::list<Pi, Phi<Dim>,
+                 Tags::deriv<Psi, tmpl::size_t<Dim>, Frame::System>,
+                 Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::System>,
+                 Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::System>,
+                 gr::Tags::Lapse<DataVector>,
+                 gr::Tags::Shift<Dim, Frame::System, DataVector>,
+                 Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
+                             Frame::System>,
+                 Tags::deriv<gr::Tags::Shift<Dim, Frame::System, DataVector>,
+                             tmpl::size_t<Dim>, Frame::System>,
+                 gr::Tags::InverseSpatialMetric<Dim, Frame::System, DataVector>,
+                 gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame::System,
+                                                             DataVector>,
+                 gr::Tags::TraceExtrinsicCurvature<DataVector>,
+                 ConstraintGamma1, ConstraintGamma2>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> dt_pi,
-      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::System>*> dt_phi,
       gsl::not_null<Scalar<DataVector>*> dt_psi, const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, Dim>& phi,
       const tnsr::i<DataVector, Dim>& d_psi,

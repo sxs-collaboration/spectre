@@ -111,5 +111,5 @@ SPECTRE_TEST_CASE("Unit.ApparentHorizons.ComputeItems",
                   "[ApparentHorizons][Unit]") {
   const DataVector used_for_size(20);
   // Need only Dim=3 and DataVectors for apparent horizons.
-  test_strahlkorper_compute_items<3, Frame::Inertial>(used_for_size);
+  test_strahlkorper_compute_items<3, Frame::System>(used_for_size);
 }

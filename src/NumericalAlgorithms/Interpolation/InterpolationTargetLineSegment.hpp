@@ -38,7 +38,7 @@ namespace OptionHolders {
 /// A line segment extending from `Begin` to `End`,
 /// containing `NumberOfPoints` uniformly-spaced points including the endpoints.
 ///
-/// \note Input coordinates are interpreted in `Frame::Inertial`
+/// \note Input coordinates are interpreted in `Frame::System`
 template <size_t VolumeDim>
 struct LineSegment {
   struct Begin {
@@ -153,7 +153,7 @@ struct LineSegment {
 
     // Fill points on a line segment
     const double fractional_distance = 1.0 / (options.number_of_points - 1);
-    tnsr::I<DataVector, VolumeDim, Frame::Inertial> target_points(
+    tnsr::I<DataVector, VolumeDim, Frame::System> target_points(
         options.number_of_points);
     for (size_t n = 0; n < options.number_of_points; ++n) {
       for (size_t d = 0; d < VolumeDim; ++d) {

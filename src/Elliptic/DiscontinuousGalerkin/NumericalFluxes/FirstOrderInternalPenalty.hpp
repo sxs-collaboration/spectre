@@ -124,7 +124,7 @@ namespace NumericalFluxes {
  * chosen as \f$\sigma=C\frac{N_\mathrm{points}^2}{h}\f$ where
  * \f$N_\mathrm{points}\f$ is the number of collocation points (i.e. the
  * polynomial degree plus 1), \f$h\f$ is a measure of the element size in
- * inertial coordinates (both measured perpendicular to the interface under
+ * system coordinates (both measured perpendicular to the interface under
  * consideration) and \f$C\geq 1\f$ is a free parameter (see e.g.
  * \cite HesthavenWarburton, section 7.2).
  */
@@ -192,7 +192,7 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
   using argument_tags =
       tmpl::list<::Tags::NormalDotFlux<AuxiliaryFieldTags>...,
                  ::Tags::div<::Tags::Flux<AuxiliaryFieldTags, tmpl::size_t<Dim>,
-                                          Frame::Inertial>>...,
+                                          Frame::System>>...,
                  fluxes_computer_tag, FluxesArgs...,
                  ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
   using volume_tags = tmpl::list<fluxes_computer_tag>;
@@ -214,25 +214,24 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
           AuxiliaryFieldTags>>&... normal_dot_auxiliary_field_fluxes,
       const db::item_type<::Tags::div<
           ::Tags::Flux<AuxiliaryFieldTags, tmpl::size_t<Dim>,
-                       Frame::Inertial>>>&... div_auxiliary_field_fluxes,
+                       Frame::System>>>&... div_auxiliary_field_fluxes,
       const FluxesComputer& fluxes_computer,
       const db::item_type<FluxesArgs>&... fluxes_args,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
-      const noexcept {
+      const tnsr::i<DataVector, Dim>& interface_unit_normal) const noexcept {
     auto principal_div_aux_field_fluxes = make_with_value<Variables<tmpl::list<
-        ::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::Inertial>...>>>(
+        ::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::System>...>>>(
         interface_unit_normal, std::numeric_limits<double>::signaling_NaN());
     auto principal_ndot_aux_field_fluxes = make_with_value<Variables<tmpl::list<
-        ::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::Inertial>...>>>(
+        ::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::System>...>>>(
         interface_unit_normal, std::numeric_limits<double>::signaling_NaN());
     fluxes_computer.apply(
         make_not_null(
-            &get<::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::Inertial>>(
+            &get<::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::System>>(
                 principal_div_aux_field_fluxes))...,
         fluxes_args..., div_auxiliary_field_fluxes...);
     fluxes_computer.apply(
         make_not_null(
-            &get<::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::Inertial>>(
+            &get<::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::System>>(
                 principal_ndot_aux_field_fluxes))...,
         fluxes_args..., normal_dot_auxiliary_field_fluxes...);
     const auto apply_normal_dot =
@@ -251,13 +250,13 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
           make_not_null(
               &get<NormalDotDivFlux<auxiliary_field_tag>>(*packaged_data)),
           interface_unit_normal,
-          get<::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Inertial>>(
+          get<::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::System>>(
               principal_div_aux_field_fluxes));
       normal_dot_flux(
           make_not_null(&get<NormalDotNormalDotFlux<auxiliary_field_tag>>(
               *packaged_data)),
           interface_unit_normal,
-          get<::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Inertial>>(
+          get<::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::System>>(
               principal_ndot_aux_field_fluxes));
     };
     EXPAND_PACK_LEFT_TO_RIGHT(apply_normal_dot(
@@ -343,20 +342,19 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
       const db::item_type<FieldTags>&... dirichlet_fields,
       const FluxesComputer& fluxes_computer,
       const db::item_type<FluxesArgs>&... fluxes_args,
-      const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
-      const noexcept {
+      const tnsr::i<DataVector, Dim>& interface_unit_normal) const noexcept {
     // Need polynomial degrees and element size to compute this dynamically
     const double penalty = penalty_parameter_;
 
     // Compute n.F_v(u)
     auto dirichlet_auxiliary_field_fluxes =
         make_with_value<Variables<tmpl::list<::Tags::Flux<
-            AuxiliaryFieldTags, tmpl::size_t<Dim>, Frame::Inertial>...>>>(
+            AuxiliaryFieldTags, tmpl::size_t<Dim>, Frame::System>...>>>(
             interface_unit_normal,
             std::numeric_limits<double>::signaling_NaN());
     fluxes_computer.apply(
         make_not_null(&get<::Tags::Flux<AuxiliaryFieldTags, tmpl::size_t<Dim>,
-                                        Frame::Inertial>>(
+                                        Frame::System>>(
             dirichlet_auxiliary_field_fluxes))...,
         fluxes_args..., dirichlet_fields...);
     const auto apply_normal_dot_aux =
@@ -367,7 +365,7 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
       normal_dot_flux(
           numerical_flux_for_auxiliary_field, interface_unit_normal,
           get<::Tags::Flux<auxiliary_field_tag, tmpl::size_t<Dim>,
-                           Frame::Inertial>>(dirichlet_auxiliary_field_fluxes));
+                           Frame::System>>(dirichlet_auxiliary_field_fluxes));
     };
     EXPAND_PACK_LEFT_TO_RIGHT(apply_normal_dot_aux(
         AuxiliaryFieldTags{}, numerical_flux_for_auxiliary_fields));
@@ -375,12 +373,12 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
     // Compute 2 * sigma * n.F_u(n.F_v(u))
     auto principal_dirichlet_auxiliary_field_fluxes =
         make_with_value<Variables<tmpl::list<
-            ::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::Inertial>...>>>(
+            ::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::System>...>>>(
             interface_unit_normal,
             std::numeric_limits<double>::signaling_NaN());
     fluxes_computer.apply(
         make_not_null(
-            &get<::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::Inertial>>(
+            &get<::Tags::Flux<FieldTags, tmpl::size_t<Dim>, Frame::System>>(
                 principal_dirichlet_auxiliary_field_fluxes))...,
         fluxes_args..., *numerical_flux_for_auxiliary_fields...);
     const auto assemble_dirichlet_penalty = [
@@ -390,7 +388,7 @@ struct FirstOrderInternalPenalty<Dim, FluxesComputerTag,
       using field_tag = decltype(field_tag_v);
       normal_dot_flux(
           numerical_flux_for_field, interface_unit_normal,
-          get<::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::Inertial>>(
+          get<::Tags::Flux<field_tag, tmpl::size_t<Dim>, Frame::System>>(
               principal_dirichlet_auxiliary_field_fluxes));
       for (auto it = numerical_flux_for_field->begin();
            it != numerical_flux_for_field->end(); it++) {

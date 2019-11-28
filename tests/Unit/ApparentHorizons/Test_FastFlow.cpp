@@ -40,7 +40,7 @@
 namespace {
 
 FastFlow::Status do_iteration(
-    const gsl::not_null<Strahlkorper<Frame::Inertial>*> strahlkorper,
+    const gsl::not_null<Strahlkorper<Frame::System>*> strahlkorper,
     const gsl::not_null<FastFlow*> flow,
     const gr::Solutions::KerrSchild& solution) {
   FastFlow::Status status = FastFlow::Status::SuccessfulIteration;
@@ -48,36 +48,36 @@ FastFlow::Status do_iteration(
   while (status == FastFlow::Status::SuccessfulIteration) {
     const auto l_mesh = flow->current_l_mesh(*strahlkorper);
     const auto prolonged_strahlkorper =
-        Strahlkorper<Frame::Inertial>(l_mesh, l_mesh, *strahlkorper);
+        Strahlkorper<Frame::System>(l_mesh, l_mesh, *strahlkorper);
 
     const auto box = db::create<
-        db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+        db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::System>>,
         db::AddComputeTags<
-            StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
+            StrahlkorperTags::compute_items_tags<Frame::System>>>(
         prolonged_strahlkorper);
 
     const double t = 0.0;
     const auto& cart_coords =
-        db::get<StrahlkorperTags::CartesianCoords<Frame::Inertial>>(box);
+        db::get<StrahlkorperTags::CartesianCoords<Frame::System>>(box);
     const auto vars = solution.variables(
         cart_coords, t, gr::Solutions::KerrSchild::tags<DataVector>{});
 
     const auto& spatial_metric =
-        get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(vars);
+        get<gr::Tags::SpatialMetric<3, Frame::System, DataVector>>(vars);
     const auto& deriv_spatial_metric =
         get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(vars);
     const auto inverse_spatial_metric =
         determinant_and_inverse(spatial_metric).second;
 
-    const auto status_and_info = flow->iterate_horizon_finder<Frame::Inertial>(
+    const auto status_and_info = flow->iterate_horizon_finder<Frame::System>(
         strahlkorper, inverse_spatial_metric,
         gr::extrinsic_curvature(
             get<gr::Tags::Lapse<DataVector>>(vars),
-            get<gr::Tags::Shift<3, Frame::Inertial, DataVector>>(vars),
+            get<gr::Tags::Shift<3, Frame::System, DataVector>>(vars),
             get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(vars),
             spatial_metric,
             get<Tags::dt<
-                gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>>(vars),
+                gr::Tags::SpatialMetric<3, Frame::System, DataVector>>>(vars),
             deriv_spatial_metric),
         raise_or_lower_first_index(
             gr::christoffel_first_kind(deriv_spatial_metric),
@@ -175,7 +175,7 @@ void test_ostream() noexcept {
 void test_negative_radius_error() {
   // Set initial Strahlkorper radius to negative on purpose to get
   // error exit status.
-  Strahlkorper<Frame::Inertial> strahlkorper(5, 5, -1.0, {{0, 0, 0}});
+  Strahlkorper<Frame::System> strahlkorper(5, 5, -1.0, {{0, 0, 0}});
   FastFlow flow(FastFlow::FlowType::Fast, 1.0, 0.5, 1e-12, 1e-10, 1.2, 5, 100);
 
   const gr::Solutions::KerrSchild solution(1.0, {{0., 0., 0.}}, {{0., 0., 0.}});
@@ -185,7 +185,7 @@ void test_negative_radius_error() {
 }
 
 void test_too_many_iterations_error() {
-  Strahlkorper<Frame::Inertial> strahlkorper(5, 5, 3.0, {{0, 0, 0}});
+  Strahlkorper<Frame::System> strahlkorper(5, 5, 3.0, {{0, 0, 0}});
   // Set number of iterations to 1 on purpose to get error exit status.
   FastFlow flow(FastFlow::FlowType::Fast, 1.0, 0.5, 1e-12, 1e-10, 1.2, 5, 1);
 
@@ -197,7 +197,7 @@ void test_too_many_iterations_error() {
 
 void test_schwarzschild(FastFlow::Flow::type type_of_flow,
                         const size_t max_iterations) {
-  Strahlkorper<Frame::Inertial> strahlkorper(5, 5, 3.0, {{0, 0, 0}});
+  Strahlkorper<Frame::System> strahlkorper(5, 5, 3.0, {{0, 0, 0}});
   FastFlow flow(type_of_flow, 1.0, 0.5, 1e-12, 1e-10, 1.2, 5, max_iterations);
 
   const gr::Solutions::KerrSchild solution(1.0, {{0., 0., 0.}}, {{0., 0., 0.}});
@@ -207,11 +207,10 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
     CHECK(converged(status));
 
     const auto box = db::create<
-        db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::Inertial>>,
+        db::AddSimpleTags<StrahlkorperTags::items_tags<Frame::System>>,
         db::AddComputeTags<
-            StrahlkorperTags::compute_items_tags<Frame::Inertial>>>(
-        strahlkorper);
-    const auto& rad = db::get<StrahlkorperTags::Radius<Frame::Inertial>>(box);
+            StrahlkorperTags::compute_items_tags<Frame::System>>>(strahlkorper);
+    const auto& rad = db::get<StrahlkorperTags::Radius<Frame::System>>(box);
     const auto r_minmax = std::minmax_element(rad.begin(), rad.end());
     Approx custom_approx = Approx::custom().epsilon(1.e-11);
     CHECK(*r_minmax.first == custom_approx(2.0));
@@ -223,21 +222,21 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
   // We have found the horizon once.  Now perturb the strahlkorper
   // and find the horizon again. This checks that fastflow is reset
   // correctly.
-  strahlkorper = [](
-      const Strahlkorper<Frame::Inertial>& strahlkorper_l) noexcept {
-    MAKE_GENERATOR(generator);
-    std::uniform_real_distribution<> dist(0.0, 0.1);
-    auto coefs = strahlkorper_l.coefficients();
-    for (auto coef_iter =
-             SpherepackIterator(strahlkorper_l.l_max(), strahlkorper_l.l_max());
-         coef_iter; ++coef_iter) {
-      // Change all components randomly, but make smaller changes
-      // to higher-order coefficients.
-      coefs[coef_iter()] *= 1.0 + dist(generator) / square(coef_iter.l() + 1.0);
-    }
-    return Strahlkorper<Frame::Inertial>(coefs, strahlkorper_l);
-  }
-  (strahlkorper);
+  strahlkorper =
+      [](const Strahlkorper<Frame::System>& strahlkorper_l) noexcept {
+        MAKE_GENERATOR(generator);
+        std::uniform_real_distribution<> dist(0.0, 0.1);
+        auto coefs = strahlkorper_l.coefficients();
+        for (auto coef_iter = SpherepackIterator(strahlkorper_l.l_max(),
+                                                 strahlkorper_l.l_max());
+             coef_iter; ++coef_iter) {
+          // Change all components randomly, but make smaller changes
+          // to higher-order coefficients.
+          coefs[coef_iter()] *=
+              1.0 + dist(generator) / square(coef_iter.l() + 1.0);
+        }
+        return Strahlkorper<Frame::System>(coefs, strahlkorper_l);
+      }(strahlkorper);
 
   flow.reset_for_next_find();
   iterate_and_check();
@@ -245,7 +244,7 @@ void test_schwarzschild(FastFlow::Flow::type type_of_flow,
 
 void test_kerr(FastFlow::Flow::type type_of_flow, const double mass,
                const size_t max_iterations) {
-  Strahlkorper<Frame::Inertial> strahlkorper(8, 8, 2.0 * mass, {{0, 0, 0}});
+  Strahlkorper<Frame::System> strahlkorper(8, 8, 2.0 * mass, {{0, 0, 0}});
   FastFlow flow(type_of_flow, 1.0, 0.5, 1e-12, 1e-2, 1.2, 5, max_iterations);
 
   const std::array<double, 3> spin = {{0.1, 0.2, 0.3}};

@@ -40,7 +40,7 @@ void test_first_order_operator(const DataVector& used_for_size) {
   using vars_tag = Tags::Variables<tmpl::list<SomeField, AnotherField<Dim>>>;
   using step_tag = db::add_tag_prefix<Step, vars_tag>;
   using fluxes_tag = db::add_tag_prefix<::Tags::Flux, vars_tag,
-                                        tmpl::size_t<Dim>, Frame::Inertial>;
+                                        tmpl::size_t<Dim>, Frame::System>;
   using div_fluxes_tag = db::add_tag_prefix<::Tags::div, fluxes_tag>;
   using sources_tag = db::add_tag_prefix<::Tags::Source, vars_tag>;
   using first_order_operator =
@@ -68,13 +68,13 @@ void test_first_order_operator(const DataVector& used_for_size) {
   const auto& computed_step = get<step_tag>(box);
   CHECK(get(get<Step<SomeField>>(computed_step)) ==
         -get(get<::Tags::div<
-                 ::Tags::Flux<SomeField, tmpl::size_t<Dim>, Frame::Inertial>>>(
+                 ::Tags::Flux<SomeField, tmpl::size_t<Dim>, Frame::System>>>(
             div_fluxes)) +
             get(get<::Tags::Source<SomeField>>(sources)));
   for (size_t d = 0; d < Dim; d++) {
     CHECK(get<Step<AnotherField<Dim>>>(computed_step).get(d) ==
           -get<::Tags::div<::Tags::Flux<AnotherField<Dim>, tmpl::size_t<Dim>,
-                                        Frame::Inertial>>>(div_fluxes)
+                                        Frame::System>>>(div_fluxes)
                   .get(d) +
               get<::Tags::Source<AnotherField<Dim>>>(sources).get(d));
   }

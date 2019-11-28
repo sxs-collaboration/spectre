@@ -287,7 +287,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   constexpr size_t volume_dim = System::volume_dim;
   using element_component = ElementComponent<metavariables>;
   using observer_component = MockObserverComponent<metavariables>;
-  using coordinates_tag = Tags::Coordinates<volume_dim, Frame::Inertial>;
+  using coordinates_tag = Tags::Coordinates<volume_dim, Frame::System>;
 
   const ElementId<volume_dim> element_id(2);
   const typename element_component::array_index array_index(element_id);
@@ -369,7 +369,7 @@ void test_observe(const std::unique_ptr<ObserveEvent> observe) noexcept {
   };
   for (size_t i = 0; i < volume_dim; ++i) {
     check_component(
-        std::string("InertialCoordinates_") + gsl::at({'x', 'y', 'z'}, i),
+        std::string("SystemCoordinates_") + gsl::at({'x', 'y', 'z'}, i),
         get<coordinates_tag>(vars).get(i));
   }
   System::check_data([&check_component, &vars ](

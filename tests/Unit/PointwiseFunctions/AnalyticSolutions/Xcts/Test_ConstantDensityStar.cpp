@@ -25,7 +25,7 @@ namespace {
 
 using field_tags = tmpl::list<Xcts::Tags::ConformalFactor<DataVector>>;
 using auxiliary_field_tags = tmpl::list<
-    Xcts::Tags::ConformalFactorGradient<3, Frame::Inertial, DataVector>>;
+    Xcts::Tags::ConformalFactorGradient<3, Frame::System, DataVector>>;
 using initial_tags =
     db::wrap_tags_in<Tags::Initial,
                      tmpl::append<field_tags, auxiliary_field_tags>>;
@@ -34,15 +34,15 @@ using source_tags = db::wrap_tags_in<Tags::FixedSource, field_tags>;
 struct ConstantDensityStarProxy : Xcts::Solutions::ConstantDensityStar {
   using Xcts::Solutions::ConstantDensityStar::ConstantDensityStar;
   tuples::tagged_tuple_from_typelist<field_tags> field_variables(
-      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, 3, Frame::System>& x) const noexcept {
     return Xcts::Solutions::ConstantDensityStar::variables(x, field_tags{});
   }
   tuples::tagged_tuple_from_typelist<initial_tags> initial_variables(
-      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, 3, Frame::System>& x) const noexcept {
     return Xcts::Solutions::ConstantDensityStar::variables(x, initial_tags{});
   }
   tuples::tagged_tuple_from_typelist<source_tags> source_variables(
-      const tnsr::I<DataVector, 3, Frame::Inertial>& x) const noexcept {
+      const tnsr::I<DataVector, 3, Frame::System>& x) const noexcept {
     return Xcts::Solutions::ConstantDensityStar::variables(x, source_tags{});
   }
 };

@@ -54,21 +54,21 @@ struct System {
 
   using spacetime_variables_tag = ::Tags::Variables<tmpl::list<
       gr::Tags::Lapse<DataVector>,
-      gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-      gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>,
+      gr::Tags::Shift<3, Frame::System, DataVector>,
+      gr::Tags::SpatialMetric<3, Frame::System, DataVector>,
+      gr::Tags::InverseSpatialMetric<3, Frame::System, DataVector>,
       gr::Tags::SqrtDetSpatialMetric<DataVector>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
-                    Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-                    tmpl::size_t<3>, Frame::Inertial>,
-      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
+                    Frame::System>,
+      ::Tags::deriv<gr::Tags::Shift<3, Frame::System, DataVector>,
+                    tmpl::size_t<3>, Frame::System>,
+      ::Tags::deriv<gr::Tags::SpatialMetric<3, Frame::System, DataVector>,
+                    tmpl::size_t<3>, Frame::System>,
+      gr::Tags::ExtrinsicCurvature<3, Frame::System, DataVector>>>;
 
   template <typename Tag>
   using magnitude_tag = ::Tags::NonEuclideanMagnitude<
-      Tag, gr::Tags::InverseSpatialMetric<3, Frame::Inertial, DataVector>>;
+      Tag, gr::Tags::InverseSpatialMetric<3, Frame::System, DataVector>>;
 
   using char_speeds_tag =
       Tags::CharacteristicSpeedsCompute<EquationOfStateType>;

@@ -25,16 +25,16 @@ struct AnalyticCompute
   using base = db::add_tag_prefix<::Tags::Analytic,
                                   ::Tags::Variables<AnalyticFieldsTagList>>;
   using argument_tags =
-      tmpl::list<AnalyticSolutionTag, ::Tags::Coordinates<Dim, Frame::Inertial>,
+      tmpl::list<AnalyticSolutionTag, ::Tags::Coordinates<Dim, Frame::System>,
                  ::Tags::Time>;
   static db::const_item_type<base> function(
       const db::const_item_type<AnalyticSolutionTag>&
           analytic_solution_computer,
-      const tnsr::I<DataVector, Dim, Frame::Inertial>& inertial_coords,
+      const tnsr::I<DataVector, Dim, Frame::System>& system_coords,
       const double& time) noexcept {
     return db::const_item_type<base>(
         variables_from_tagged_tuple(analytic_solution_computer.variables(
-            inertial_coords, time, AnalyticFieldsTagList{})));
+            system_coords, time, AnalyticFieldsTagList{})));
   }
 };
 }  // namespace Tags

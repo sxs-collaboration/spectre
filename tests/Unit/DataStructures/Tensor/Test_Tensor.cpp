@@ -26,20 +26,22 @@
 // IWYU pragma: no_forward_declare Tensor
 
 /// [change_up_lo]
-using Index = SpatialIndex<3, UpLo::Lo, Frame::Grid>;
+using Index = SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>;
 using UpIndex = change_index_up_lo<Index>;
-static_assert(cpp17::is_same_v<UpIndex, SpatialIndex<3, UpLo::Up, Frame::Grid>>,
-              "Failed testing change_index_up_lo");
+static_assert(
+    cpp17::is_same_v<UpIndex,
+                     SpatialIndex<3, UpLo::Up, Frame::GlobalTimeIndependent>>,
+    "Failed testing change_index_up_lo");
 /// [change_up_lo]
 
 /// [is_frame_physical]
-static_assert(not Frame::is_frame_physical_v<Frame::Logical>,
+static_assert(not Frame::is_frame_physical_v<Frame::ElementLogical>,
               "Failed testing Frame::is_frame_physical");
 static_assert(not Frame::is_frame_physical_v<Frame::Distorted>,
               "Failed testing Frame::is_frame_physical");
-static_assert(not Frame::is_frame_physical_v<Frame::Grid>,
+static_assert(not Frame::is_frame_physical_v<Frame::GlobalTimeIndependent>,
               "Failed testing Frame::is_frame_physical");
-static_assert(Frame::is_frame_physical_v<Frame::Inertial>,
+static_assert(Frame::is_frame_physical_v<Frame::System>,
               "Failed testing Frame::is_frame_physical");
 /// [is_frame_physical]
 
@@ -55,139 +57,141 @@ static_assert(
     "Failed testing Symmetry");
 
 // Test prepend_spacetime_index and prepend_spatial_index
-static_assert(cpp17::is_same_v<tnsr::aB<double, 3, Frame::Grid>,
-                               TensorMetafunctions::prepend_spacetime_index<
-                                   tnsr::A<double, 3, Frame::Grid>, 3, UpLo::Lo,
-                                   Frame::Grid>>,
-              "Failed testing prepend_spacetime_index");
-static_assert(cpp17::is_same_v<tnsr::iJ<double, 3, Frame::Grid>,
-                               TensorMetafunctions::prepend_spatial_index<
-                                   tnsr::I<double, 3, Frame::Grid>, 3, UpLo::Lo,
-                                   Frame::Grid>>,
-              "Failed testing prepend_spatial_index");
+static_assert(
+    cpp17::is_same_v<tnsr::aB<double, 3, Frame::GlobalTimeIndependent>,
+                     TensorMetafunctions::prepend_spacetime_index<
+                         tnsr::A<double, 3, Frame::GlobalTimeIndependent>, 3,
+                         UpLo::Lo, Frame::GlobalTimeIndependent>>,
+    "Failed testing prepend_spacetime_index");
+static_assert(
+    cpp17::is_same_v<tnsr::iJ<double, 3, Frame::GlobalTimeIndependent>,
+                     TensorMetafunctions::prepend_spatial_index<
+                         tnsr::I<double, 3, Frame::GlobalTimeIndependent>, 3,
+                         UpLo::Lo, Frame::GlobalTimeIndependent>>,
+    "Failed testing prepend_spatial_index");
 
 // Test remove_first_index
 static_assert(
-    cpp17::is_same_v<Scalar<double>, TensorMetafunctions::remove_first_index<
-                                         tnsr::a<double, 3, Frame::Grid>>>,
+    cpp17::is_same_v<Scalar<double>,
+                     TensorMetafunctions::remove_first_index<
+                         tnsr::a<double, 3, Frame::GlobalTimeIndependent>>>,
     "Failed testing remove_first_index");
-static_assert(cpp17::is_same_v<tnsr::A<double, 3, Frame::Grid>,
-                               TensorMetafunctions::remove_first_index<
-                                   tnsr::aB<double, 3, Frame::Grid>>>,
-              "Failed testing remove_first_index");
-static_assert(cpp17::is_same_v<tnsr::ab<double, 3, Frame::Grid>,
-                               TensorMetafunctions::remove_first_index<
-                                   tnsr::abc<double, 3, Frame::Grid>>>,
-              "Failed testing remove_first_index");
+static_assert(
+    cpp17::is_same_v<tnsr::A<double, 3, Frame::GlobalTimeIndependent>,
+                     TensorMetafunctions::remove_first_index<
+                         tnsr::aB<double, 3, Frame::GlobalTimeIndependent>>>,
+    "Failed testing remove_first_index");
+static_assert(
+    cpp17::is_same_v<tnsr::ab<double, 3, Frame::GlobalTimeIndependent>,
+                     TensorMetafunctions::remove_first_index<
+                         tnsr::abc<double, 3, Frame::GlobalTimeIndependent>>>,
+    "Failed testing remove_first_index");
 static_assert(
     cpp17::is_same_v<
-        tnsr::ab<double, 3, Frame::Grid>,
-        TensorMetafunctions::remove_first_index<Tensor<
-            double, tmpl::integral_list<std::int32_t, 2, 2, 1>,
-            index_list<Tensor_detail::TensorIndexType<3, UpLo::Lo, Frame::Grid,
-                                                      IndexType::Spacetime>,
-                       Tensor_detail::TensorIndexType<3, UpLo::Lo, Frame::Grid,
-                                                      IndexType::Spacetime>,
-                       Tensor_detail::TensorIndexType<3, UpLo::Lo, Frame::Grid,
-                                                      IndexType::Spacetime>>>>>,
+        tnsr::ab<double, 3, Frame::GlobalTimeIndependent>,
+        TensorMetafunctions::remove_first_index<
+            Tensor<double, tmpl::integral_list<std::int32_t, 2, 2, 1>,
+                   index_list<Tensor_detail::TensorIndexType<
+                                  3, UpLo::Lo, Frame::GlobalTimeIndependent,
+                                  IndexType::Spacetime>,
+                              Tensor_detail::TensorIndexType<
+                                  3, UpLo::Lo, Frame::GlobalTimeIndependent,
+                                  IndexType::Spacetime>,
+                              Tensor_detail::TensorIndexType<
+                                  3, UpLo::Lo, Frame::GlobalTimeIndependent,
+                                  IndexType::Spacetime>>>>>,
     "Failed testing remove_first_index");
-static_assert(cpp17::is_same_v<tnsr::aa<double, 3, Frame::Grid>,
-                               TensorMetafunctions::remove_first_index<
-                                   tnsr::abb<double, 3, Frame::Grid>>>,
-              "Failed testing remove_first_index");
+static_assert(
+    cpp17::is_same_v<tnsr::aa<double, 3, Frame::GlobalTimeIndependent>,
+                     TensorMetafunctions::remove_first_index<
+                         tnsr::abb<double, 3, Frame::GlobalTimeIndependent>>>,
+    "Failed testing remove_first_index");
 
 // Test check_index_symmetry
 static_assert(TensorMetafunctions::check_index_symmetry_v<tmpl::list<>>,
               "Failed testing check_index_symmetry");
-static_assert(TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1>, SpatialIndex<3, UpLo::Lo, Frame::Grid>>,
-              "Failed testing check_index_symmetry");
-static_assert(TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1>, SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>,
-              "Failed testing check_index_symmetry");
-static_assert(TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1>, SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
-              "Failed testing check_index_symmetry");
-static_assert(TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
-              "Failed testing check_index_symmetry");
-static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-                  SpatialIndex<3, UpLo::Lo, Frame::Inertial>>,
-              "Failed testing check_index_symmetry");
-static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 1>, SpatialIndex<2, UpLo::Up, Frame::Inertial>,
-                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
-              "Failed testing check_index_symmetry");
-static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::Grid>,
-                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
-              "Failed testing check_index_symmetry");
-static_assert(not TensorMetafunctions::check_index_symmetry_v<
-                  Symmetry<1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-                  SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
-              "Failed testing check_index_symmetry");
 static_assert(
     TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<2, UpLo::Up, Frame::Inertial>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Lo, Frame::Inertial>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Distorted>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>,
+        Symmetry<1>, SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>,
     "Failed testing check_index_symmetry");
 static_assert(
     TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpacetimeIndex<3, UpLo::Up, Frame::Inertial>>,
+        Symmetry<1>, SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>,
     "Failed testing check_index_symmetry");
+static_assert(TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1>, SpatialIndex<3, UpLo::Up, Frame::System>>,
+              "Failed testing check_index_symmetry");
+static_assert(TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>>,
+              "Failed testing check_index_symmetry");
+static_assert(not TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Lo, Frame::System>>,
+              "Failed testing check_index_symmetry");
+static_assert(not TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1, 1>, SpatialIndex<2, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>>,
+              "Failed testing check_index_symmetry");
 static_assert(
     not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpacetimeIndex<2, UpLo::Up, Frame::Inertial>>,
+        Symmetry<1, 1>, SpatialIndex<3, UpLo::Up, Frame::GlobalTimeIndependent>,
+        SpatialIndex<3, UpLo::Up, Frame::System>>,
     "Failed testing check_index_symmetry");
-static_assert(
-    not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpacetimeIndex<3, UpLo::Lo, Frame::Inertial>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpacetimeIndex<3, UpLo::Up, Frame::Logical>>,
-    "Failed testing check_index_symmetry");
-static_assert(
-    not TensorMetafunctions::check_index_symmetry_v<
-        Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>,
-        SpatialIndex<3, UpLo::Up, Frame::Inertial>>,
-    "Failed testing check_index_symmetry");
+static_assert(not TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>>,
+              "Failed testing check_index_symmetry");
+static_assert(TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>>,
+              "Failed testing check_index_symmetry");
+static_assert(not TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<2, UpLo::Up, Frame::System>>,
+              "Failed testing check_index_symmetry");
+static_assert(not TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Lo, Frame::System>>,
+              "Failed testing check_index_symmetry");
+static_assert(not TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::Distorted>>,
+              "Failed testing check_index_symmetry");
+static_assert(not TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<2, 1, 1>, SpacetimeIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpacetimeIndex<3, UpLo::Up, Frame::System>>,
+              "Failed testing check_index_symmetry");
+static_assert(TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpacetimeIndex<3, UpLo::Up, Frame::System>>,
+              "Failed testing check_index_symmetry");
+static_assert(not TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpacetimeIndex<2, UpLo::Up, Frame::System>>,
+              "Failed testing check_index_symmetry");
+static_assert(not TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpacetimeIndex<3, UpLo::Lo, Frame::System>>,
+              "Failed testing check_index_symmetry");
+static_assert(not TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpacetimeIndex<3, UpLo::Up, Frame::ElementLogical>>,
+              "Failed testing check_index_symmetry");
+static_assert(not TensorMetafunctions::check_index_symmetry_v<
+                  Symmetry<1, 2, 1>, SpacetimeIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>,
+                  SpatialIndex<3, UpLo::Up, Frame::System>>,
+              "Failed testing check_index_symmetry");
 
 // Test swap_type
 static_assert(
@@ -203,7 +207,7 @@ static_assert(
     "Tensor construction failed to be SFINAE friendly");
 
 namespace {
-template <typename DataType, size_t SpatialDim, typename Fr = Frame::Inertial,
+template <typename DataType, size_t SpatialDim, typename Fr = Frame::System,
           IndexType Index = IndexType::Spacetime>
 using abcd = Tensor<
     DataType, tmpl::integral_list<std::int32_t, 4, 3, 2, 1>,
@@ -222,14 +226,14 @@ static_assert(check_construction.rank() == 4, "Wrong structure");
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
                   "[DataStructures][Unit]") {
   /// [spatial_vector]
-  tnsr::I<double, 3, Frame::Grid> spatial_vector3{};
+  tnsr::I<double, 3, Frame::GlobalTimeIndependent> spatial_vector3{};
   /// [spatial_vector]
   CHECK(spatial_vector3.component_name(std::array<size_t, 1>{{0}}) == "x");
   CHECK(spatial_vector3.component_name(std::array<size_t, 1>{{1}}) == "y");
   CHECK(spatial_vector3.component_name(std::array<size_t, 1>{{2}}) == "z");
 
   /// [spacetime_vector]
-  tnsr::A<double, 3, Frame::Grid> spacetime_vector3{};
+  tnsr::A<double, 3, Frame::GlobalTimeIndependent> spacetime_vector3{};
   /// [spacetime_vector]
   CHECK(spacetime_vector3.component_name(std::array<size_t, 1>{{0}}) == "t");
   CHECK(spacetime_vector3.component_name(std::array<size_t, 1>{{1}}) == "x");
@@ -243,18 +247,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
 
   /// [rank_3_122]
   Tensor<double, Symmetry<1, 2, 2>,
-         index_list<SpacetimeIndex<1, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<1, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<1, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<1, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<1, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<1, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor_1{};
   /// [rank_3_122]
   CHECK(tensor_1.component_name(std::array<size_t, 3>{{0, 0, 0}}) == "txx");
   CHECK(tensor_1.component_name(std::array<size_t, 3>{{1, 0, 0}}) == "xxx");
 
   Tensor<double, Symmetry<1, 2, 2>,
-         index_list<SpacetimeIndex<2, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<2, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<2, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<2, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<2, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<2, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor_2{};
 
   CHECK(tensor_2.component_name(std::array<size_t, 3>{{0, 0, 0}}) == "txx");
@@ -268,9 +272,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
   CHECK(tensor_2.component_name(std::array<size_t, 3>{{2, 1, 1}}) == "yyy");
 
   Tensor<double, Symmetry<1, 2, 2>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor_3{};
   CHECK(tensor_3.component_name(std::array<size_t, 3>{{0, 0, 0}}) == "xxx");
   CHECK(tensor_3.component_name(std::array<size_t, 3>{{1, 0, 0}}) == "yxx");
@@ -292,9 +296,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
   CHECK(tensor_3.component_name(std::array<size_t, 3>{{2, 2, 2}}) == "zzz");
 
   Tensor<double, Symmetry<1, 2, 2>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor_4{};
   CHECK(tensor_4.component_name(std::array<size_t, 3>{{0, 0, 0}}) == "ttt");
   CHECK(tensor_4.component_name(std::array<size_t, 3>{{1, 0, 0}}) == "xtt");
@@ -338,9 +342,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.ComponentNames",
   CHECK(tensor_4.component_name(std::array<size_t, 3>{{3, 3, 3}}) == "zzz");
 
   Tensor<double, Symmetry<1, 2, 2>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor_5{};
   CHECK(tensor_5.component_name(std::array<size_t, 3>{{0, 0, 0}},
                                 make_array<3>(std::string("abcd"))) == "aaa");
@@ -437,7 +441,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.BadDim1",
                   "[DataStructures][Unit]") {
   ERROR_TEST();
   Tensor<double, Symmetry<1>,
-         index_list<SpacetimeIndex<5, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<5, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor_5{3.0};
   std::stringstream os;
   os << tensor_5.component_name(std::array<size_t, 1>{{4}});
@@ -448,7 +452,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.BadDim2",
                   "[DataStructures][Unit]") {
   ERROR_TEST();
   Tensor<double, Symmetry<1>,
-         index_list<SpatialIndex<6, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<6, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor_6{3.0};
   std::stringstream os;
   os << tensor_6.component_name(std::array<size_t, 1>{{4}});
@@ -460,9 +464,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamBad",
                   "[DataStructures][Unit]") {
   ERROR_TEST();
   Tensor<double, Symmetry<1, 2, 2>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor_5{};
   CHECK(tensor_5.component_name(
             tensor_5.get_tensor_index(size_t{0}),  // 0 can be a pointer
@@ -480,7 +484,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
 
   {
     Tensor<double, Symmetry<3>,
-           index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+           index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
         spatial_vector3{std::array<double, 3>{{1, 8, 3}}};
     CHECK(index_dim<0>(spatial_vector3) == 3);
     CHECK(1 == spatial_vector3.rank());
@@ -495,8 +499,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
 
   {
     // test const functions
-    const Tensor<double, Symmetry<3>,
-                 index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+    const Tensor<
+        double, Symmetry<3>,
+        index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
         spatial_vector3{std::array<double, 3>{{1, 8, 3}}};
     CHECK(Scalar<double>{}.multiplicity(0_st) == 1);  // 0 can be a pointer
     CHECK(index_dim<0>(spatial_vector3) == 3);
@@ -513,9 +518,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
   {
     /// [index_dim]
     using T = Tensor<double, Symmetry<1, 2, 3>,
-                     index_list<SpacetimeIndex<2, UpLo::Up, Frame::Inertial>,
-                                SpatialIndex<1, UpLo::Up, Frame::Inertial>,
-                                SpatialIndex<2, UpLo::Up, Frame::Inertial>>>;
+                     index_list<SpacetimeIndex<2, UpLo::Up, Frame::System>,
+                                SpatialIndex<1, UpLo::Up, Frame::System>,
+                                SpatialIndex<2, UpLo::Up, Frame::System>>>;
     const T t{};
     CHECK(index_dim<0>(t) == 3);
     CHECK(index_dim<1>(t) == 1);
@@ -528,13 +533,13 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
   }
 
   Tensor<double, Symmetry<3>,
-         index_list<SpatialIndex<4, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<4, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       spatial_vector4{};
   CHECK(1 == spatial_vector4.rank());
   CHECK(4 == spatial_vector4.size());
   Tensor<double, Symmetry<1, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       symmetric_rank2_dim4{};
   CHECK(2 == symmetric_rank2_dim4.rank());
   CHECK(10 == symmetric_rank2_dim4.size());
@@ -549,15 +554,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<1, 2>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       rank2_4{};
   CHECK(2 == rank2_4.rank());
   CHECK(16 == rank2_4.size());
   Tensor<double, Symmetry<1, 2, 2>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       symmetric_rank3_dim4{};
   CHECK(3 == symmetric_rank3_dim4.rank());
   CHECK(40 == symmetric_rank3_dim4.size());
@@ -579,9 +584,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<1, 1, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       symmetric_all_rank3_dim4{};
   CHECK(3 == symmetric_all_rank3_dim4.rank());
   CHECK(20 == symmetric_all_rank3_dim4.size());
@@ -607,9 +612,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<1, 1, 1>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       iii{};
   CHECK(3 == iii.rank());
   CHECK(10 == iii.size());
@@ -630,10 +635,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<3, 2, 1, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       abcc{};
   CHECK(4 == abcc.rank());
   CHECK(160 == abcc.size());
@@ -652,10 +657,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<2, 3, 1, 3>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       abcb{};
   CHECK(4 == abcb.rank());
   CHECK(160 == abcb.size());
@@ -683,10 +688,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<3, 2, 1, 3>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       abca{};
   CHECK(4 == abca.rank());
   CHECK(160 == abca.size());
@@ -714,10 +719,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<3, 2, 3, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       abac{};
   CHECK(4 == abac.rank());
   CHECK(160 == abac.size());
@@ -745,10 +750,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<3, 3, 2, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       aabc{};
   CHECK(4 == aabc.rank());
   CHECK(160 == aabc.size());
@@ -776,10 +781,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<2, 2, 1, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       aabb{};
   CHECK(4 == aabb.rank());
   CHECK(100 == aabb.size());
@@ -803,10 +808,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<2, 1, 2, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       abab{};
   CHECK(4 == abab.rank());
   CHECK(100 == abab.size());
@@ -830,10 +835,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<2, 1, 1, 2>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       abba{};
   CHECK(4 == abba.rank());
   CHECK(100 == abba.size());
@@ -857,10 +862,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<2, 2, 2, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       aaab{};
   CHECK(4 == aaab.rank());
   CHECK(80 == aaab.size());
@@ -886,10 +891,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<2, 2, 1, 2>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       aaba{};
   CHECK(4 == aaba.rank());
   CHECK(80 == aaba.size());
@@ -915,10 +920,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<2, 1, 2, 2>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       abaa{};
   CHECK(4 == abaa.rank());
   CHECK(80 == abaa.size());
@@ -944,10 +949,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<2, 1, 1, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       abbb{};
   CHECK(4 == abbb.rank());
   CHECK(80 == abbb.size());
@@ -973,10 +978,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.RankAndSize",
     }
   }
   Tensor<double, Symmetry<1, 1, 1, 1>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       aaaa{};
   CHECK(4 == aaaa.rank());
   CHECK(35 == aaaa.size());
@@ -1027,9 +1032,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Indices",
   // Tests that iterators correctly handle the symmetries. However, as a result
   // the test is implementation defined
   Tensor<double, Symmetry<1, 2, 2>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor{};
   auto it = tensor.begin();
   for (size_t j = 0; j < 3; ++j) {
@@ -1049,14 +1054,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Iterating",
   // vector, which is iterating over all independent components.
   const int dim = 4;
   Tensor<DataVector, Symmetry<1, 2, 2>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor_a(1_st);
   Tensor<DataVector, Symmetry<1, 2, 2>,
-         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpacetimeIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpacetimeIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor_b(1_st);
 
   CHECK(dim * dim * (dim + 1) / 2 == tensor_a.size());
@@ -1108,9 +1113,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Iterating",
   // Check sum of components
   const int dim2 = 3;
   Tensor<DataVector, Symmetry<1, 2, 2>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor_c(1_st);
   for (size_t k = 0; k < dim2; k++) {
     for (size_t i = 0; i < dim2; i++) {
@@ -1133,9 +1138,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Iterating",
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexByVector",
                   "[DataStructures][Unit]") {
   Tensor<DataVector, Symmetry<1, 2, 2>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor(1_st);
   // These numbers are deliberately chosen to be obscure for debugging
   // purposes.
@@ -1152,9 +1157,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexByVector",
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Multiplicity",
                   "[DataStructures][Unit]") {
   Tensor<DataVector, Symmetry<1, 2, 2>,
-         index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>,
-                    SpatialIndex<3, UpLo::Lo, Frame::Grid>>>
+         index_list<SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>,
+                    SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>
       tensor;
 
   // Test multiplicity by iterator
@@ -1179,9 +1184,12 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamData",
       "T(1)=(2,2,2,2,2,2,2,2,2,2)\n"
       "T(2)=(2,2,2,2,2,2,2,2,2,2)";
 
-  CHECK(get_output(Tensor<DataVector, Symmetry<1>,
-                          index_list<SpatialIndex<3, UpLo::Lo, Frame::Grid>>>(
-            10_st, 2.0)) == compare_out);
+  CHECK(
+      get_output(
+          Tensor<DataVector, Symmetry<1>,
+                 index_list<
+                     SpatialIndex<3, UpLo::Lo, Frame::GlobalTimeIndependent>>>(
+              10_st, 2.0)) == compare_out);
 
   compare_out =
       "T()=(2,2,2,2,2,2,2,2,2,2)";
@@ -1208,7 +1216,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamData",
       "T(2,2,2)=17";
 
   CHECK(get_output([]() {
-          tnsr::abb<double, 2, Frame::Inertial> tensor{};
+          tnsr::abb<double, 2, Frame::System> tensor{};
           std::iota(tensor.begin(), tensor.end(), 0);
           return tensor;
         }()) == compare_out);
@@ -1225,11 +1233,11 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamStructure",
     CHECK(get_output(tensor.index_frames()) == "()");
   }
   {
-    using structure = Tensor_detail::Structure<Symmetry<1, 1, 3, 2>,
-                             SpatialIndex<2, UpLo::Lo, Frame::Inertial>,
-                             SpatialIndex<2, UpLo::Lo, Frame::Inertial>,
-                             SpacetimeIndex<3, UpLo::Lo, Frame::Logical>,
-                             SpacetimeIndex<2, UpLo::Up, Frame::Distorted>>;
+    using structure = Tensor_detail::Structure<
+        Symmetry<1, 1, 3, 2>, SpatialIndex<2, UpLo::Lo, Frame::System>,
+        SpatialIndex<2, UpLo::Lo, Frame::System>,
+        SpacetimeIndex<3, UpLo::Lo, Frame::ElementLogical>,
+        SpacetimeIndex<2, UpLo::Up, Frame::Distorted>>;
 
     CHECK(get_output(structure::symmetries()) == "(3,3,2,1)");
     CHECK(get_output(structure::index_types()) ==
@@ -1237,17 +1245,18 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.StreamStructure",
     CHECK(get_output(structure::dims()) == "(2,2,4,3)");
     CHECK(get_output(structure::index_valences()) == "(Lo,Lo,Lo,Up)");
     CHECK(get_output(structure::index_frames()) ==
-          "(Inertial,Inertial,Logical,Distorted)");
+          "(System,System,ElementLogical,Distorted)");
   }
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Structure.Indices",
                   "[DataStructures][Unit]") {
   const int dim = 3;
-  Tensor_detail::Structure<Symmetry<2, 1, 1>,
-                           SpatialIndex<dim, UpLo::Lo, Frame::Grid>,
-                           SpatialIndex<dim, UpLo::Lo, Frame::Grid>,
-                           SpatialIndex<dim, UpLo::Lo, Frame::Grid>>
+  Tensor_detail::Structure<
+      Symmetry<2, 1, 1>,
+      SpatialIndex<dim, UpLo::Lo, Frame::GlobalTimeIndependent>,
+      SpatialIndex<dim, UpLo::Lo, Frame::GlobalTimeIndependent>,
+      SpatialIndex<dim, UpLo::Lo, Frame::GlobalTimeIndependent>>
       tensor;
   for (size_t j = 0; j < dim; ++j) {
     for (size_t k = j; k < dim; ++k) {
@@ -1263,7 +1272,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Structure.Indices",
 SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
                   "[DataStructures][Unit][Serialization]") {
   constexpr size_t dim = 4;
-  tnsr::Abb<DataVector, dim - 1, Frame::Grid> tensor(1_st);
+  tnsr::Abb<DataVector, dim - 1, Frame::GlobalTimeIndependent> tensor(1_st);
   // Fill the tensors
   for (size_t i = 0; i < dim; i++) {
     for (size_t j = 0; j < dim; j++) {
@@ -1281,7 +1290,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
     "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
+  tnsr::Abb<double, 3, Frame::GlobalTimeIndependent> tensor(1_st);
   tensor[1000];
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -1293,7 +1302,7 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
     "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  const tnsr::Abb<double, 3, Frame::Grid> tensor(1_st);
+  const tnsr::Abb<double, 3, Frame::GlobalTimeIndependent> tensor(1_st);
   tensor[1000];
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
@@ -1317,18 +1326,10 @@ SPECTRE_TEST_CASE("Unit.Serialization.Tensor",
     "[DataStructures][Unit]") {
   ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
-  tnsr::I<double, 3, Frame::Grid> tensor(1_st);
+  tnsr::I<double, 3, Frame::GlobalTimeIndependent> tensor(1_st);
   tensor.get_tensor_index(1000);
   ERROR("Bad test end");
 #endif
-}
-
-SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.IndexType",
-                  "[Unit][DataStructures]") {
-  CHECK(get_output(Frame::Logical{}) == "Logical");
-  CHECK(get_output(Frame::Grid{}) == "Grid");
-  CHECK(get_output(Frame::Distorted{}) == "Distorted");
-  CHECK(get_output(Frame::Inertial{}) == "Inertial");
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
@@ -1336,7 +1337,7 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
   // NOTE: This test depends on the implementation of serialize and Tensor,
   // but that is inevitable without making the test more complicated.
   /// [init_vector]
-  tnsr::I<DataVector, 3, Frame::Grid> tensor_data_vector{
+  tnsr::I<DataVector, 3, Frame::GlobalTimeIndependent> tensor_data_vector{
       {{{1., 2., 3.}, {4., 5., 6.}, {7., 8., 9.}}}};
   Scalar<DataVector> scalar_data_vector{{{{1., 2., 3.}}}};
   /// [init_vector]
@@ -1348,7 +1349,8 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
                        std::vector<DataVector>{{1., 2., 3.}}) ==
         scalar_data_vector.get_vector_of_data());
 
-  tnsr::I<double, 3, Frame::Grid> tensor_double{{{1.0, 2.0, 3.0}}};
+  tnsr::I<double, 3, Frame::GlobalTimeIndependent> tensor_double{
+      {{1.0, 2.0, 3.0}}};
   CHECK(std::make_pair(std::vector<std::string>{"x", "y", "z"},
                        std::vector<double>{1.0, 2.0, 3.0}) ==
         tensor_double.get_vector_of_data());
@@ -1362,9 +1364,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.GetVectorOfData",
 /// [example_spectre_test_case]
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Frames",
                   "[Unit][DataStructures]") {
-  CHECK("Logical" == get_output(Frame::Logical{}));
-  CHECK("Grid" == get_output(Frame::Grid{}));
-  CHECK("Inertial" == get_output(Frame::Inertial{}));
+  CHECK("BlockLogical" == get_output(Frame::BlockLogical{}));
+  CHECK("ElementLogical" == get_output(Frame::ElementLogical{}));
+  CHECK("GlobalTimeIndependent" == get_output(Frame::GlobalTimeIndependent{}));
+  CHECK("System" == get_output(Frame::System{}));
   CHECK("Distorted" == get_output(Frame::Distorted{}));
   CHECK("NoFrame" == get_output(Frame::NoFrame{}));
 }

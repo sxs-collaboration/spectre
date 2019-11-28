@@ -40,12 +40,12 @@ void VortexPerturbation<3>::apply(
                  Tags::SpecificInternalEnergy<DataVector>,
                  Tags::Pressure<DataVector>>{});
   Variables<
-      tmpl::list<::Tags::TempScalar<0>, ::Tags::TempI<1, 3, Frame::Inertial>,
+      tmpl::list<::Tags::TempScalar<0>, ::Tags::TempI<1, 3, Frame::System>,
                  ::Tags::TempScalar<2>>>
       temp_buffer(number_of_grid_points);
   auto& vortex_mass_density_cons = get<::Tags::TempScalar<0>>(temp_buffer);
   auto& vortex_momentum_density =
-      get<::Tags::TempI<1, 3, Frame::Inertial>>(temp_buffer);
+      get<::Tags::TempI<1, 3, Frame::System>>(temp_buffer);
   auto& vortex_energy_density = get<::Tags::TempScalar<2>>(temp_buffer);
 
   NewtonianEuler::ConservativeFromPrimitive<3>::apply(
@@ -53,7 +53,7 @@ void VortexPerturbation<3>::apply(
       make_not_null(&vortex_momentum_density),
       make_not_null(&vortex_energy_density),
       get<Tags::MassDensity<DataVector>>(vortex_primitives),
-      get<Tags::Velocity<DataVector, 3, Frame::Inertial>>(vortex_primitives),
+      get<Tags::Velocity<DataVector, 3, Frame::System>>(vortex_primitives),
       get<Tags::SpecificInternalEnergy<DataVector>>(vortex_primitives));
 
   // We save the precomputed value of dv_z/dz in source_mass_density_cons
@@ -72,7 +72,7 @@ void VortexPerturbation<3>::apply(
       (get(vortex_energy_density) +
        get(get<Tags::Pressure<DataVector>>(vortex_primitives)) +
        vortex_momentum_density.get(2) *
-           get<2>(get<Tags::Velocity<DataVector, 3, Frame::Inertial>>(
+           get<2>(get<Tags::Velocity<DataVector, 3, Frame::System>>(
                vortex_primitives))) *
       get(*source_mass_density_cons);
 
