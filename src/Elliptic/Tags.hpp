@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Utilities/PrettyType.hpp"
 
+/// Functionality related to solving elliptic partial differential equations
 namespace elliptic {
 namespace Tags {
 
