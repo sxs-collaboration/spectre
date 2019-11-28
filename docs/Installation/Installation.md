@@ -155,7 +155,10 @@ Notes:
 ```
   * To compile the Python bindings, add the option
     `-D BUILD_PYTHON_BINDINGS=ON` to the `cmake` command (see
-    \ref spectre_writing_python_bindings).
+    \ref spectre_writing_python_bindings). You can specify the Python version,
+    interpreter and libraries used for compiling and testing the bindings by
+    setting the `-D PYTHON_EXECUTABLE` to an absolute path such as
+    `/usr/bin/python3`.
   * When the Docker container gets updated, you can stop it with
     `docker stop CONTAINER_NAME`, remove it with `docker rm CONTAINER_NAME`
     and then start at step 2 above to run it again.
