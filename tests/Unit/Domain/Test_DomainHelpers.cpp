@@ -1408,6 +1408,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
     CHECK(*equiangular_maps_2d[i] == *expected_equiangular_maps_2d[i]);
   }
 
+  /// [show_maps_for_rectilinear_domains]
   const std::vector<
       std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
       affine_maps_3d = maps_for_rectilinear_domains<Frame::Inertial>(
@@ -1415,6 +1416,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.MapsForRectilinearDomains",
           std::array<std::vector<double>, 3>{
               {{0.0, 0.5, 2.0}, {0.0, 1.0, 2.0}, {-0.4, 0.3}}},
           {Index<3>{}}, {}, false);
+  /// [show_maps_for_rectilinear_domains]
   const auto expected_affine_maps_3d =
       make_vector_coordinate_map_base<Frame::Logical, Frame::Inertial>(
           Affine3D{Affine{-1., 1., 0.0, 0.5}, Affine{-1., 1., 0.0, 1.0},
