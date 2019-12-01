@@ -9,6 +9,7 @@ namespace NewtonianEuler {
 namespace Solutions {
 template <size_t Dim>
 class IsentropicVortex;
+class LaneEmdenStar;
 template <size_t Dim>
 class RiemannProblem;
 }  // namespace Solutions
