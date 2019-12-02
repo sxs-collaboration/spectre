@@ -2,6 +2,6 @@
 # See LICENSE.txt for details.
 
 # Executable: SingletonHelloWorld
-# Check: execute
+# Check: parse;execute
 
 Name: Albert Einstein

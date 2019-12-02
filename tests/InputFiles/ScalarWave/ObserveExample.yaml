@@ -2,6 +2,7 @@
 # See LICENSE.txt for details.
 
 # Executable: EvolveScalarWave1D
+# Check: parse
 
 AnalyticSolution:
   PlaneWave:

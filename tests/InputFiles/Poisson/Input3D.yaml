@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 # Executable: SolvePoissonProblem3D
-# Check: execute
+# Check: parse;execute
 # ExpectedOutput:
 #   Poisson3DReductions.h5
 #   Poisson3DVolume0.h5
