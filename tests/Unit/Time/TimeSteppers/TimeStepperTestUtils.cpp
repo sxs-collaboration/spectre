@@ -1,6 +1,8 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include "tests/Unit/TestingFramework.hpp"
+
 #include "tests/Unit/Time/TimeSteppers/TimeStepperTestUtils.hpp"
 
 #include <algorithm>
@@ -68,6 +70,24 @@ void initialize_history(
   }
 }
 }  // namespace
+
+void check_multistep_properties(const TimeStepper& stepper) noexcept {
+  CHECK(stepper.number_of_substeps() == 1);
+}
+
+void check_substep_properties(const TimeStepper& stepper) noexcept {
+  CHECK(stepper.number_of_past_steps() == 0);
+
+  const Slab slab(0., 1.);
+  TimeStepId id(true, 3, slab.start() + slab.duration() / 2);
+  TimeSteppers::History<double, double> history;
+  CHECK(stepper.can_change_step_size(id, history));
+  id = stepper.next_time_id(id, slab.duration() / 2);
+  if (id.substep() != 0) {
+    history.insert(id.substep_time(), 0.0, 0.0);
+    CHECK(not stepper.can_change_step_size(id, history));
+  }
+}
 
 void integrate_test(const TimeStepper& stepper,
                     const size_t number_of_past_steps,

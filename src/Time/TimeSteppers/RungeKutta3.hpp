@@ -68,6 +68,14 @@ class RungeKutta3 : public TimeStepper::Inherit {
   TimeStepId next_time_id(const TimeStepId& current_id,
                           const TimeDelta& time_step) const noexcept override;
 
+  template <typename Vars, typename DerivVars>
+  bool can_change_step_size(
+      const TimeStepId& time_id,
+      const TimeSteppers::History<Vars, DerivVars>& /*history*/) const
+      noexcept {
+    return time_id.substep() == 0;
+  }
+
   WRAPPED_PUPable_decl_template(RungeKutta3);  // NOLINT
 
   explicit RungeKutta3(CkMigrateMessage* /*unused*/) noexcept {}

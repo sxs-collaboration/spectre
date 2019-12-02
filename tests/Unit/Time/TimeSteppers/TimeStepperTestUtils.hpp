@@ -3,21 +3,18 @@
 
 #pragma once
 
-#include "tests/Unit/TestingFramework.hpp"
-
 #include <cstddef>
 
-#include "Time/TimeSteppers/TimeStepper.hpp"
+/// \cond
+class LtsTimeStepper;
+class TimeStepper;
+/// \endcond
 
 namespace TimeStepperTestUtils {
 
-inline void check_multistep_properties(const TimeStepper& stepper) noexcept {
-  CHECK(stepper.number_of_substeps() == 1);
-}
+void check_multistep_properties(const TimeStepper& stepper) noexcept;
 
-inline void check_substep_properties(const TimeStepper& stepper) noexcept {
-  CHECK(stepper.number_of_past_steps() == 0);
-}
+void check_substep_properties(const TimeStepper& stepper) noexcept;
 
 void integrate_test(const TimeStepper& stepper, size_t number_of_past_steps,
                     double integration_time, double epsilon) noexcept;
