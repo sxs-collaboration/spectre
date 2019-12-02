@@ -19,7 +19,7 @@ on:
   # It also runs the jobs on forks if they have GitHub Actions enabled.
   push:
     branches-ignore:
-      - gh_pages
+      - gh-pages
 
 jobs:
   # Make sure no commits are prefixed with `fixup` or similar keywords. See
