@@ -20,3 +20,5 @@ target_link_libraries(
   INTERFACE GeneralRelativity
   INTERFACE Interpolation
   )
+
+add_subdirectory(Python)

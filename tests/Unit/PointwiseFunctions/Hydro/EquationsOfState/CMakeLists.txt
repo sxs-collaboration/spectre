@@ -15,3 +15,5 @@ add_test_library(
   "${LIBRARY_SOURCES}"
   "DataStructures;Hydro"
   )
+
+add_subdirectory(Python)
