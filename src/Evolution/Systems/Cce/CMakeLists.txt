@@ -6,6 +6,7 @@ set(LIBRARY Cce)
 set(LIBRARY_SOURCES
   BoundaryData.cpp
   Equations.cpp
+  GaugeTransformBoundaryData.cpp
   InitializeCce.cpp
   LinearOperators.cpp
   LinearSolve.cpp

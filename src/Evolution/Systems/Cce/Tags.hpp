@@ -179,7 +179,7 @@ struct EvolutionGaugeBoundaryValue : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
   static std::string name() noexcept {
-    return "EvolutionGaugeBoundaryValue(" + Tag::name() + ")";
+    return "EvolutionGaugeBoundaryValue(" + db::tag_name<Tag>() + ")";
   }
 };
 

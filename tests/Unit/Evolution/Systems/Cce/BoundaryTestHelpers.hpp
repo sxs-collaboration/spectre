@@ -20,8 +20,7 @@ namespace Cce {
 namespace TestHelpers {
 template <typename... Structure>
 Tensor<ComplexModalVector, Structure...> tensor_to_goldberg_coefficients(
-    const Tensor<DataVector, Structure...>& nodal_data,
-    const size_t l_max) noexcept {
+    const Tensor<DataVector, Structure...>& nodal_data, size_t l_max) noexcept {
   Tensor<ComplexModalVector, Structure...> goldberg_modal_data{
       square(l_max + 1)};
   SpinWeighted<ComplexDataVector, 0> transform_buffer{

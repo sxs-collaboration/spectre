@@ -146,7 +146,7 @@ struct Derivative : db::PrefixTag, db::SimpleTag {
   const static int spin = type::type::spin;
   static std::string name() noexcept {
     return detail::compose_spin_weighted_derivative_name<DerivativeKind>(
-        Tag::name());
+        db::tag_name<Tag>());
   }
 };
 
@@ -177,7 +177,7 @@ struct SwshTransform : db::PrefixTag, db::SimpleTag {
   using transform_of = Tag;
   const static int spin = type::type::spin;
   static std::string name() noexcept {
-    return "SwshTransform(" + Tag::name() + ")";
+    return "SwshTransform(" + db::tag_name<Tag>() + ")";
   }
 };
 
