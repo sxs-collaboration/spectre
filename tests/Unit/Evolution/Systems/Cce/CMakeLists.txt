@@ -12,6 +12,7 @@ set(LIBRARY_SOURCES
   Test_LinearSolve.cpp
   Test_PreSwshDerivatives.cpp
   Test_PrecomputeCceDependencies.cpp
+  Test_ReadBoundaryDataH5.cpp
   Test_SwshDerivatives.cpp
   Test_Tags.cpp
   )

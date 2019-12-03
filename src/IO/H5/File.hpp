@@ -59,6 +59,10 @@ namespace h5 {
 template <AccessType Access_t>
 class H5File {
  public:
+  // empty constructor for classes which store an H5File and need to be
+  // charm-compatible.
+  H5File() noexcept = default;
+
   /*!
    * \requires `file_name` is a valid path and ends in `.h5`.
    * \effects On object creation opens the HDF5 file at `file_name`
@@ -145,6 +149,12 @@ class H5File {
    * \effects Closes the current object, if there is none then has no effect
    */
   void close_current_object() const noexcept { current_object_ = nullptr; }
+
+  template <typename ObjectType>
+  bool exists(const std::string& path) noexcept {
+    auto exists_group_name = check_if_object_exists<ObjectType>(path);
+    return std::get<0>(exists_group_name);
+  }
 
  private:
   /// \cond HIDDEN_SYMBOLS
@@ -317,12 +327,12 @@ H5File<Access_t>::check_if_object_exists(const std::string& path) const {
                           Access_t);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wold-style-cast"
-  const bool exists =
+  const bool object_exists =
       name_with_extension == "/" or
       H5Lexists(group.id(), name_with_extension.c_str(), H5P_DEFAULT) or
       H5Aexists(group.id(), name_with_extension.c_str());
 #pragma GCC diagnostic pop
-  return std::make_tuple(exists, std::move(group), std::move(name_only));
+  return std::make_tuple(object_exists, std::move(group), std::move(name_only));
 }
 
 template <>

@@ -45,7 +45,9 @@ Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
          const std::string& name, std::vector<std::string> legend,
          const uint32_t version)
     : group_(std::move(group)),
-      name_(extension() == name.substr(name.size() - extension().size())
+      name_(extension() == name.substr(name.size() > extension().size()
+                                           ? name.size() - extension().size()
+                                           : 0)
                 ? name
                 : name + extension()),
       version_(version),
@@ -57,13 +59,21 @@ Dat::Dat(const bool exists, detail::OpenGroup&& group, const hid_t location,
     {
       // We treat this as an internal version for now. We'll need to deal with
       // proper versioning later.
-      const Version open_version(true, detail::OpenGroup{}, dataset_id_,
-                                 "version");
-      version_ = open_version.get_version();
+
+      // Check if the version exists before calling the open_version.
+      const htri_t version_exists = H5Aexists(dataset_id_, "version.ver");
+      if (version_exists != 0) {
+        const Version open_version(true, detail::OpenGroup{}, dataset_id_,
+                                   "version");
+        version_ = open_version.get_version();
+      }
     }
     {
-      const Header header(true, detail::OpenGroup{}, dataset_id_, "header");
-      header_ = header.get_header();
+      const htri_t header_exists = H5Aexists(dataset_id_, "header.hdr");
+      if (header_exists != 0) {
+        const Header header(true, detail::OpenGroup{}, dataset_id_, "header");
+        header_ = header.get_header();
+      }
     }
 
     hid_t space_id = H5Dget_space(dataset_id_);
