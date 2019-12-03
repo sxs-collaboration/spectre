@@ -17,12 +17,12 @@
 // IWYU pragma: no_include <array>
 
 // IWYU pragma: no_forward_declare Tensor
-// IWYU pragma: no_forward_declare VariableFixing::FixToAtmosphere
+// IWYU pragma: no_forward_declare grmhd::ValenciaDivClean::FixToAtmosphere
 
 namespace {
 
 void test_variable_fixer(
-    const VariableFixing::FixConservatives& variable_fixer) {
+    const grmhd::ValenciaDivClean::FixConservatives& variable_fixer) {
   // Call variable fixer at four points
   // [0]:  tilde_d is too small, should be raised to limit
   // [1]:  tilde_tau is too small, raise to level of needed, which also
@@ -70,12 +70,13 @@ void test_variable_fixer(
 
 SPECTRE_TEST_CASE("Unit.Evolution.GrMhd.ValenciaDivClean.FixConservatives",
                   "[VariableFixing][Unit]") {
-  VariableFixing::FixConservatives variable_fixer{1.e-12, 1.0e-11, 0.0, 0.0};
+  grmhd::ValenciaDivClean::FixConservatives variable_fixer{1.e-12, 1.0e-11, 0.0,
+                                                           0.0};
   test_variable_fixer(variable_fixer);
   test_serialization(variable_fixer);
 
   const auto fixer_from_options =
-      TestHelpers::test_creation<VariableFixing::FixConservatives>(
+      TestHelpers::test_creation<grmhd::ValenciaDivClean::FixConservatives>(
           "MinimumValueOfD: 1.0e-12\n"
           "CutoffD: 1.0e-11\n"
           "SafetyFactorForB: 0.0\n"

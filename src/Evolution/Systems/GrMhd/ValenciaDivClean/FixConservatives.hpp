@@ -29,7 +29,8 @@ class DataVector;
 // IWYU pragma: no_forward_declare gr::Tags::InverseSpatialMetric
 // IWYU pragma: no_forward_declare gr::Tags::SqrtDetSpatialMetric
 
-namespace VariableFixing {
+namespace grmhd {
+namespace ValenciaDivClean {
 
 /// \ingroup VariableFixingGroup
 /// \brief Fix conservative variables using method developed by Foucart.
@@ -143,4 +144,5 @@ class FixConservatives {
 bool operator!=(const FixConservatives& lhs,
                 const FixConservatives& rhs) noexcept;
 
-}  // namespace VariableFixing
+}  // namespace ValenciaDivClean
+}  // namespace grmhd
