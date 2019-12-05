@@ -14,6 +14,7 @@ add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 target_link_libraries(
   ${LIBRARY}
   INTERFACE ErrorHandling
+  INTERFACE ${YAMLCPP_LIBRARIES}
   )
 
 add_subdirectory(Python)
