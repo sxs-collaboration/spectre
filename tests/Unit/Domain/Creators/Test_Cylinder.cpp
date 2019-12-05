@@ -18,6 +18,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/Creators/Cylinder.hpp"
 #include "Domain/Creators/DomainCreator.hpp"

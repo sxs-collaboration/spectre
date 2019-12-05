@@ -23,6 +23,7 @@
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CoordinateMaps/SpecialMobius.hpp"
 #include "Domain/CoordinateMaps/Translation.hpp"

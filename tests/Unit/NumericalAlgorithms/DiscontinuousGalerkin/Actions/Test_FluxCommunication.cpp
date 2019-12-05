@@ -28,6 +28,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"
 #include "Domain/ElementId.hpp"

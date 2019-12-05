@@ -16,6 +16,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Creators/DomainCreator.hpp"
 #include "Domain/Creators/RotatedBricks.hpp"
 #include "Domain/Direction.hpp"

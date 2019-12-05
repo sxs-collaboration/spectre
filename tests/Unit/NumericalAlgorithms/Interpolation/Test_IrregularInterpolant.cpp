@@ -20,6 +20,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/Interpolation/IrregularInterpolant.hpp"

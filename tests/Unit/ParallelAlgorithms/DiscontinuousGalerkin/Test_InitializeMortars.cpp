@@ -14,6 +14,7 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
+#include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Creators/Brick.hpp"
 #include "Domain/Creators/Interval.hpp"
 #include "Domain/Creators/Rectangle.hpp"
