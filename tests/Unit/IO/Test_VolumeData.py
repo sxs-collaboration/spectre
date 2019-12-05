@@ -32,17 +32,19 @@ class TestIOH5VolumeData(unittest.TestCase):
 
     # Testing the VolumeData Insert Function
     def test_insert_vol(self):
-        h5_file = spectre_h5.H5File(self.file_name_w, 1)
-        h5_file.insert_vol("/element_data", 0)
-        vol_file = h5_file.get_vol("/element_data")
+        h5_file = spectre_h5.H5File(
+            file_name=self.file_name_w, append_to_file=True)
+        h5_file.insert_vol(path="/element_data", version=0)
+        vol_file = h5_file.get_vol(path="/element_data")
         self.assertEqual(vol_file.get_version(), 0)
         h5_file.close()
 
     # Test the header was generated correctly
     def test_vol_get_header(self):
-        h5_file = spectre_h5.H5File(self.file_name_w, 1)
-        h5_file.insert_vol("/element_data", 0)
-        vol_file = h5_file.get_vol("/element_data")
+        h5_file = spectre_h5.H5File(
+            file_name=self.file_name_w, append_to_file=True)
+        h5_file.insert_vol(path="/element_data", version=0)
+        vol_file = h5_file.get_vol(path="/element_data")
         self.assertEqual(vol_file.get_header()[0:20], "#\n# File created on ")
         h5_file.close()
 
@@ -50,8 +52,9 @@ class TestIOH5VolumeData(unittest.TestCase):
     # `VolTestData.h5` which contains spectre output data (see above).
     # Test the observation ids and values are correctly retrived
     def test_observation_id(self):
-        h5_file = spectre_h5.H5File(self.file_name_r, 1)
-        vol_file = h5_file.get_vol("/element_data")
+        h5_file = spectre_h5.H5File(
+            file_name=self.file_name_r, append_to_file=True)
+        vol_file = h5_file.get_vol(path="/element_data")
         obs_ids = vol_file.list_observation_ids()
         expected_obs_ids = [16436106908031328247,
                             17615288952477351885]
@@ -59,19 +62,21 @@ class TestIOH5VolumeData(unittest.TestCase):
                                17615288952477351885: 0.00}
         self.assertItemsEqual(obs_ids, expected_obs_ids)
         for obs_id in expected_obs_ids:
-            self.assertEqual(vol_file.get_observation_value(obs_id),
-                             expected_obs_values[obs_id])
+            self.assertEqual(
+                vol_file.get_observation_value(observation_id=obs_id),
+                expected_obs_values[obs_id])
         h5_file.close()
 
     # Test to make sure information about the computation elements was found
     def test_grids(self):
-        h5_file = spectre_h5.H5File(self.file_name_r, 1)
+        h5_file = spectre_h5.H5File(
+            file_name=self.file_name_r, append_to_file=True)
         vol_file = h5_file.get_vol("/element_data")
         obs_id = vol_file.list_observation_ids()[0]
-        grid_names =  vol_file.get_grid_names(obs_id)
+        grid_names = vol_file.get_grid_names(observation_id=obs_id)
         expected_grid_names  = ['[B0,(L0I0,L0I0,L0I0)]']
         self.assertEqual(grid_names, expected_grid_names)
-        extents = vol_file.get_extents(obs_id)
+        extents = vol_file.get_extents(observation_id=obs_id)
         expected_extents = [[2, 2, 2]]
         self.assertEqual(extents, expected_extents)
         h5_file.close()
@@ -79,10 +84,11 @@ class TestIOH5VolumeData(unittest.TestCase):
 
     # Test that the tensor components, and tensor data  are retrieved correctly
     def test_tensor_components(self):
-        h5_file = spectre_h5.H5File(self.file_name_r, 1)
-        vol_file = h5_file.get_vol("/element_data")
+        h5_file = spectre_h5.H5File(
+            file_name=self.file_name_r, append_to_file=True)
+        vol_file = h5_file.get_vol(path="/element_data")
         obs_id = vol_file.list_observation_ids()[0]
-        tensor_comps = vol_file.list_tensor_components(obs_id)
+        tensor_comps = vol_file.list_tensor_components(observation_id=obs_id)
         expected_tensor_comps = ['Psi', 'Error(Psi)',
                                  'InertialCoordinates_x',
                                  'InertialCoordinates_y',
@@ -127,23 +133,23 @@ class TestIOH5VolumeData(unittest.TestCase):
         # Checking whether two numpy arrays are "almost equal" is easy, so
         # we convert everything to numpy arrays for comparison.
         Psi_tensor_data = np.asarray(vol_file.get_tensor_component(
-            obs_id, 'Psi'))
+            observation_id=obs_id, tensor_component='Psi'))
         npt.assert_array_almost_equal(Psi_tensor_data,
                                       expected_Psi_tensor_data)
         Error_tensor_data = np.asarray(vol_file.get_tensor_component(
-                obs_id, 'Error(Psi)'))
+            observation_id=obs_id, tensor_component='Error(Psi)'))
         npt.assert_array_almost_equal(Error_tensor_data,
                                       expected_Error_tensor_data)
         xcoord_tensor_data = np.asarray(vol_file.get_tensor_component(
-                obs_id, 'InertialCoordinates_x'))
+            observation_id=obs_id, tensor_component='InertialCoordinates_x'))
         npt.assert_array_almost_equal(xcoord_tensor_data,
                                       expected_xcoord_tensor_data)
         ycoord_tensor_data = np.asarray(vol_file.get_tensor_component(
-                obs_id, 'InertialCoordinates_y'))
+            observation_id=obs_id, tensor_component='InertialCoordinates_y'))
         npt.assert_array_almost_equal(ycoord_tensor_data,
                                       expected_ycoord_tensor_data)
         zcoord_tensor_data = np.asarray(vol_file.get_tensor_component(
-                obs_id, 'InertialCoordinates_z'))
+            observation_id=obs_id, tensor_component='InertialCoordinates_z'))
         npt.assert_array_almost_equal(zcoord_tensor_data,
                                       expected_zcoord_tensor_data)
         h5_file.close()

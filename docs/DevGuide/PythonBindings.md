@@ -142,3 +142,8 @@ See \ref spectre_using_python "Using SpECTRE's Python"
 - Exceptions should be allowed to propagate through the bindings so that
   error handling via exceptions is possible from python rather than having the
   python interpreter being killed with a call to `abort`.
+- All function arguments in Python bindings should be named using `bp::arg`.
+  See the Python bindings in `IO/H5/` for examples. Using the named arguments in
+  Python code is optional, but preferred when it makes code more readable.
+  In particular, use the argument names in the tests for the Python bindings so
+  they are being tested as well.

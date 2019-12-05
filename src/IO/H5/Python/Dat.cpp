@@ -29,7 +29,8 @@ void bind_h5dat() {
       .def("append",
            +[](h5::Dat& D, const bp::list& data) {
              D.append(py_list_to_std_vector<double>(data));
-           }, "Requires a list as input")
+           },
+           "Requires a list as input", (bp::arg("data")))
       .def("get_legend",
            +[](h5::Dat& D) -> bp::list {
              return std_vector_to_py_list<std::string>(D.get_legend());
@@ -41,7 +42,8 @@ void bind_h5dat() {
                const size_t num_rows = 1) -> PyObject* {
              return to_numpy(D.get_data_subset(
                  py_list_to_std_vector<size_t>(columns), first_row, num_rows));
-           })
+           },
+           (bp::arg("columns"), bp::arg("first_row"), bp::arg("num_rows")))
       .def("get_dimensions",
            +[](h5::Dat& D) -> bp::list {
              std::array<hsize_t, 2> dimension = D.get_dimensions();

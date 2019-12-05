@@ -26,23 +26,28 @@ class TestIOH5File(unittest.TestCase):
 
     # Test whether an H5 file is created correctly,
     def test_name(self):
-        file_spec = spectre_h5.H5File(self.file_name, 1)
+        file_spec = spectre_h5.H5File(
+            file_name=self.file_name, append_to_file=True)
         self.assertEqual(self.file_name, file_spec.name())
         file_spec.close()
 
     # Test whether a dat file can be added correctly
     def test_insert_dat(self):
-        file_spec = spectre_h5.H5File(self.file_name, 1)
-        file_spec.insert_dat("/element_data", ["Time", "Value"], 0)
-        datfile = file_spec.get_dat("/element_data")
+        file_spec = spectre_h5.H5File(
+            file_name=self.file_name, append_to_file=True)
+        file_spec.insert_dat(
+            path="/element_data", legend=["Time", "Value"], version=0)
+        datfile = file_spec.get_dat(path="/element_data")
         self.assertEqual(datfile.get_version(), 0)
         file_spec.close()
 
     # Test whether data can be added to the dat file correctly
     def test_append(self):
-        file_spec = spectre_h5.H5File(self.file_name, 1)
-        file_spec.insert_dat("/element_data", ["Time", "Value"], 0)
-        datfile = file_spec.get_dat("/element_data")
+        file_spec = spectre_h5.H5File(
+            file_name=self.file_name, append_to_file=True)
+        file_spec.insert_dat(
+            path="/element_data", legend=["Time", "Value"], version=0)
+        datfile = file_spec.get_dat(path="/element_data")
         datfile.append(self.data_1)
         outdata_array = datfile.get_data()
         npt.assert_array_equal(outdata_array[0], self.data_1_array)
@@ -50,12 +55,15 @@ class TestIOH5File(unittest.TestCase):
 
     # More complicated test case for getting data subsets and dimensions
     def test_get_data_subset(self):
-        file_spec = spectre_h5.H5File(self.file_name, 1)
-        file_spec.insert_dat("/element_data", ["Time", "Value"], 0)
-        datfile = file_spec.get_dat("/element_data")
+        file_spec = spectre_h5.H5File(
+            file_name=self.file_name, append_to_file=True)
+        file_spec.insert_dat(
+            path="/element_data", legend=["Time", "Value"], version=0)
+        datfile = file_spec.get_dat(path="/element_data")
         datfile.append(self.data_1)
         datfile.append(self.data_2)
-        outdata_array = datfile.get_data_subset([1], 0, 2)
+        outdata_array = datfile.get_data_subset(
+            columns=[1], first_row=0, num_rows=2)
         npt.assert_array_equal(outdata_array,  np.array(
             [self.data_1[1:2], self.data_2[1:2]]))
         self.assertEqual(datfile.get_dimensions()[0], 2)
@@ -63,26 +71,34 @@ class TestIOH5File(unittest.TestCase):
 
     # Getting Attributes
     def test_get_legend(self):
-        file_spec = spectre_h5.H5File(self.file_name, 1)
-        file_spec.insert_dat("/element_data", ["Time", "Value"], 0)
-        datfile = file_spec.get_dat("/element_data")
+        file_spec = spectre_h5.H5File(
+            file_name=self.file_name, append_to_file=True)
+        file_spec.insert_dat(
+            path="/element_data", legend=["Time", "Value"], version=0)
+        datfile = file_spec.get_dat(path="/element_data")
         self.assertEqual(datfile.get_legend(), ["Time", "Value"])
         self.assertEqual(datfile.get_version(), 0)
         file_spec.close()
 
     # The header is not universal, just checking the part that is predictable
     def test_get_header(self):
-        file_spec = spectre_h5.H5File(self.file_name, 1)
-        file_spec.insert_dat("/element_data", ["Time", "Value"], 0)
-        datfile = file_spec.get_dat("/element_data")
+        file_spec = spectre_h5.H5File(
+            file_name=self.file_name, append_to_file=True)
+        file_spec.insert_dat(
+            path="/element_data", legend=["Time", "Value"], version=0)
+        datfile = file_spec.get_dat(path="/element_data")
         self.assertEqual(datfile.get_header()[0:16], "#\n# File created")
         file_spec.close()
 
     def test_groups(self):
-        file_spec = spectre_h5.H5File(self.file_name, 1)
-        file_spec.insert_dat("/element_data", ["Time", "Value"], 0)
-        file_spec.insert_dat("/element_position", ["x", "y", "z"], 0)
-        file_spec.insert_dat("/element_size", ["Time", "Size"], 0)
+        file_spec = spectre_h5.H5File(
+            file_name=self.file_name, append_to_file=True)
+        file_spec.insert_dat(
+            path="/element_data", legend=["Time", "Value"], version=0)
+        file_spec.insert_dat(
+            path="/element_position", legend=["x", "y", "z"], version=0)
+        file_spec.insert_dat(
+            path="/element_size", legend=["Time", "Size"], version=0)
         groups_spec = ["element_data.dat", "element_position.dat",
                        "element_size.dat", "src.tar.gz"]
         for group_name in groups_spec:
