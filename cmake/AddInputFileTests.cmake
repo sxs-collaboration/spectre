@@ -148,10 +148,11 @@ file(
   ${PROJECT_BINARY_DIR}/tmp/InputFileExecuteAndClean.sh
   "\
 #!/bin/sh\n\
-${CMAKE_BINARY_DIR}/bin/$1 --input-file $2\n\
-execute_exit=$?\n\
+${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v --force \
+--input-file $2 --output-dir ${CMAKE_BINARY_DIR}
+${CMAKE_BINARY_DIR}/bin/$1 --input-file $2 && \
 ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/CleanOutput.py -v \
---input-file $2 --output-dir ${CMAKE_BINARY_DIR} && exit \${execute_exit}\n"
+--input-file $2 --output-dir ${CMAKE_BINARY_DIR}\n"
 )
 
 add_input_file_tests("${CMAKE_SOURCE_DIR}/tests/InputFiles/")

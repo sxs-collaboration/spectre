@@ -14,7 +14,7 @@ class MissingExpectedOutputError(Exception):
             self.missing_files)
 
 
-def clean_output(input_file, output_dir):
+def clean_output(input_file, output_dir, force):
     """
     Deletes output files specified in the `input_file` from the `output_dir`,
     raising an error if the expected output files were not found.
@@ -53,7 +53,7 @@ def clean_output(input_file, output_dir):
                     os.remove(expected_output_file)
                     logging.info("Removed file {}.".format(
                         expected_output_file))
-                else:
+                elif not force:
                     missing_files.append(expected_output_file)
                     logging.error("Expected file {} was not found.".format(
                         expected_output_file))
@@ -84,6 +84,10 @@ def parse_args():
         action='count',
         default=0,
         help="Verbosity (-v, -vv, ...)")
+    parser.add_argument(
+        '--force',
+        action='store_true',
+        help="Suppress all errors")
     return parser.parse_args()
 
 
@@ -93,4 +97,4 @@ if __name__ == "__main__":
     # Set the log level
     logging.basicConfig(level=logging.WARNING - args.verbose * 10)
 
-    clean_output(args.input_file, args.output_dir)
+    clean_output(args.input_file, args.output_dir, args.force)
