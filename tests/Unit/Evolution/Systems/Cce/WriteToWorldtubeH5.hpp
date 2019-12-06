@@ -6,6 +6,7 @@
 #include "DataStructures/ComplexModalVector.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/H5/Version.hpp"
 
 namespace Cce {
 namespace TestHelpers {
@@ -16,6 +17,11 @@ struct WorldtubeModeRecorder {
   WorldtubeModeRecorder(const std::string& filename,
                         const size_t l_max) noexcept
       : output_file_{filename} {
+    // write the .ver that indicates that the derivatives are correctly
+    // normalized.
+    output_file_.insert<h5::Version>(
+        "/VersionHist", "Bugfix in CCE radial derivatives (ticket 1096).");
+    output_file_.close_current_object();
     file_legend_.emplace_back("time");
     for (int l = 0; l <= static_cast<int>(l_max); ++l) {
       for (int m = -l; m <= l; ++m) {

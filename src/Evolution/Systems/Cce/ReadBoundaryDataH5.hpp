@@ -15,8 +15,10 @@
 #include "DataStructures/Matrix.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
+#include "Evolution/Systems/Cce/SpecBoundaryData.hpp"
 #include "IO/H5/Dat.hpp"
 #include "IO/H5/File.hpp"
+#include "IO/H5/Version.hpp"
 #include "NumericalAlgorithms/Interpolation/SpanInterpolator.hpp"
 #include "Parallel/CharmPupable.hpp"
 
@@ -153,6 +155,8 @@ class WorldtubeBufferUpdater : public PUP::able {
 
   virtual double get_extraction_radius() const noexcept = 0;
 
+  virtual bool radial_derivatives_need_renormalization() const noexcept = 0;
+
   virtual DataVector& get_time_buffer() noexcept = 0;
 };
 
@@ -210,6 +214,10 @@ class SpecWorldtubeH5BufferUpdater : public WorldtubeBufferUpdater {
   /// type.
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
 
+  bool radial_derivatives_need_renormalization() const noexcept override {
+    return radial_derivatives_need_renormalization_;
+  }
+
   /// Serialization for Charm++.
   void pup(PUP::er& p) noexcept override;
 
@@ -218,6 +226,7 @@ class SpecWorldtubeH5BufferUpdater : public WorldtubeBufferUpdater {
                      const h5::Dat& read_data, size_t time_span_start,
                      size_t time_span_end) const noexcept;
 
+  bool radial_derivatives_need_renormalization_ = false;
   double extraction_radius_ = 1.0;
   size_t l_max_ = 0;
 
@@ -529,25 +538,49 @@ class WorldtubeDataManager {
                                         -static_cast<int>(libsharp_mode.m))));
       });
     }
-
     // At this point, we have a collection of 9 tensors of libsharp
     // coefficients. This is what the boundary data calculation utility takes
     // as an input, so we now hand off the control flow to the boundary and
     // gauge transform utility
-    create_bondi_boundary_data(
-        boundary_data_box,
-        get<Tags::detail::SpatialMetric>(interpolated_coefficients_),
-        get<::Tags::dt<Tags::detail::SpatialMetric>>(
-            interpolated_coefficients_),
-        get<Tags::detail::Dr<Tags::detail::SpatialMetric>>(
-            interpolated_coefficients_),
-        get<Tags::detail::Shift>(interpolated_coefficients_),
-        get<::Tags::dt<Tags::detail::Shift>>(interpolated_coefficients_),
-        get<Tags::detail::Dr<Tags::detail::Shift>>(interpolated_coefficients_),
-        get<Tags::detail::Lapse>(interpolated_coefficients_),
-        get<::Tags::dt<Tags::detail::Lapse>>(interpolated_coefficients_),
-        get<Tags::detail::Dr<Tags::detail::Lapse>>(interpolated_coefficients_),
-        buffer_updater_->get_extraction_radius(), l_max_);
+    if (buffer_updater_->radial_derivatives_need_renormalization()) {
+      create_bondi_boundary_data_from_unnormalized_spec_modes(
+          boundary_data_box,
+          get<Tags::detail::SpatialMetric>(interpolated_coefficients_),
+          get<::Tags::dt<Tags::detail::SpatialMetric>>(
+              interpolated_coefficients_),
+          get<Tags::detail::Dr<Tags::detail::SpatialMetric>>(
+              interpolated_coefficients_),
+          get<Tags::detail::Shift>(interpolated_coefficients_),
+          get<::Tags::dt<Tags::detail::Shift>>(
+              interpolated_coefficients_),
+          get<Tags::detail::Dr<Tags::detail::Shift>>(
+              interpolated_coefficients_),
+          get<Tags::detail::Lapse>(interpolated_coefficients_),
+          get<::Tags::dt<Tags::detail::Lapse>>(
+              interpolated_coefficients_),
+          get<Tags::detail::Dr<Tags::detail::Lapse>>(
+              interpolated_coefficients_),
+          buffer_updater_->get_extraction_radius(), l_max_);
+    } else {
+      create_bondi_boundary_data(
+          boundary_data_box,
+          get<Tags::detail::SpatialMetric>(interpolated_coefficients_),
+          get<::Tags::dt<Tags::detail::SpatialMetric>>(
+              interpolated_coefficients_),
+          get<Tags::detail::Dr<Tags::detail::SpatialMetric>>(
+              interpolated_coefficients_),
+          get<Tags::detail::Shift>(interpolated_coefficients_),
+          get<::Tags::dt<Tags::detail::Shift>>(
+              interpolated_coefficients_),
+          get<Tags::detail::Dr<Tags::detail::Shift>>(
+              interpolated_coefficients_),
+          get<Tags::detail::Lapse>(interpolated_coefficients_),
+          get<::Tags::dt<Tags::detail::Lapse>>(
+              interpolated_coefficients_),
+          get<Tags::detail::Dr<Tags::detail::Lapse>>(
+              interpolated_coefficients_),
+          buffer_updater_->get_extraction_radius(), l_max_);
+    }
     return true;
   }
 

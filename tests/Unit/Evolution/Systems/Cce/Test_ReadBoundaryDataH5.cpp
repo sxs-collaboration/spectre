@@ -45,7 +45,8 @@ void create_fake_time_varying_modal_data(
     const gsl::not_null<Scalar<ComplexModalVector>*> dr_lapse_coefficients,
     const AnalyticSolution& solution, const double extraction_radius,
     const double amplitude, const double frequency, const double time,
-    const size_t l_max, const bool convert_to_goldberg = true) noexcept {
+    const size_t l_max, const bool convert_to_goldberg = true,
+    const bool apply_normalization_bug = false) noexcept {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   // create the vector of collocation points that we want to interpolate to
@@ -93,17 +94,34 @@ void create_fake_time_varying_modal_data(
       get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
           kerr_schild_variables);
 
+  DataVector normalization_factor{number_of_angular_points, 1.0};
+  if (apply_normalization_bug) {
+    normalization_factor = 0.0;
+    const auto inverse_spatial_metric =
+        determinant_and_inverse(spatial_metric).second;
+    for (size_t i = 0; i < 3; ++i) {
+      for (size_t j = 0; j < 3; ++j) {
+        normalization_factor +=
+            inverse_spatial_metric.get(i, j) * collocation_points.get(i) *
+            collocation_points.get(j) /
+            square(extraction_radius *
+                   (1.0 + amplitude * sin(frequency * time)));
+      }
+    }
+    normalization_factor = sqrt(normalization_factor);
+  }
+
   Scalar<DataVector> dr_lapse{number_of_angular_points};
   get(dr_lapse) = (get<0>(collocation_points) * get<0>(d_lapse) +
                    get<1>(collocation_points) * get<1>(d_lapse) +
                    get<2>(collocation_points) * get<2>(d_lapse)) /
-                  extraction_radius;
+                  (extraction_radius * normalization_factor);
   tnsr::I<DataVector, 3> dr_shift{number_of_angular_points};
   for (size_t i = 0; i < 3; ++i) {
     dr_shift.get(i) = (get<0>(collocation_points) * d_shift.get(0, i) +
                        get<1>(collocation_points) * d_shift.get(1, i) +
                        get<2>(collocation_points) * d_shift.get(2, i)) /
-                      extraction_radius;
+                      (extraction_radius * normalization_factor);
   }
   tnsr::ii<DataVector, 3> dr_spatial_metric{number_of_angular_points};
   for (size_t i = 0; i < 3; ++i) {
@@ -112,7 +130,7 @@ void create_fake_time_varying_modal_data(
           (get<0>(collocation_points) * d_spatial_metric.get(0, i, j) +
            get<1>(collocation_points) * d_spatial_metric.get(1, i, j) +
            get<2>(collocation_points) * d_spatial_metric.get(2, i, j)) /
-          extraction_radius;
+          (extraction_radius * normalization_factor);
     }
   }
 
@@ -167,14 +185,15 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater {
   DummyBufferUpdater(DataVector time_buffer, const AnalyticSolution& solution,
                      const double extraction_radius,
                      const double coordinate_amplitude,
-                     const double coordinate_frequency,
-                     const size_t l_max) noexcept
+                     const double coordinate_frequency, const size_t l_max,
+                     const bool apply_normalization_bug = false) noexcept
       : time_buffer_{std::move(time_buffer)},
         solution_{solution},
         extraction_radius_{extraction_radius},
         coordinate_amplitude_{coordinate_amplitude},
         coordinate_frequency_{coordinate_frequency},
-        l_max_{l_max} {}
+        l_max_{l_max},
+        apply_normalization_bug_{apply_normalization_bug} {}
 
   WRAPPED_PUPable_decl_template(              // NOLINT
       DummyBufferUpdater<AnalyticSolution>);  // NOLINT
@@ -228,7 +247,8 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater {
           make_not_null(&dt_lapse_coefficients),
           make_not_null(&dr_lapse_coefficients), solution_, extraction_radius_,
           coordinate_amplitude_, coordinate_frequency_,
-          time_buffer_[time_index + *time_span_start], l_max_);
+          time_buffer_[time_index + *time_span_start], l_max_, true,
+          apply_normalization_bug_);
 
       update_tensor_buffer_with_tensor_at_time_index(
           make_not_null(&get<Tags::detail::SpatialMetric>(*buffers)),
@@ -283,8 +303,8 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater {
     return extraction_radius_;
   }
 
-  bool radial_derivatives_need_renormalization() const noexcept {
-    return false;
+  bool radial_derivatives_need_renormalization() const noexcept override {
+    return apply_normalization_bug_;
   }
 
   DataVector& get_time_buffer() noexcept override { return time_buffer_; }
@@ -310,6 +330,7 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater {
   double coordinate_amplitude_;
   double coordinate_frequency_;
   size_t l_max_;
+  bool apply_normalization_bug_ = false;
 };
 
 template <typename AnalyticSolution>
@@ -320,7 +341,8 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
                             const double extraction_radius,
                             const double coordinate_amplitude,
                             const double coordinate_frequency,
-                            const size_t l_max) noexcept
+                            const size_t l_max,
+                            const bool /*unused*/ = false) noexcept
       : time_buffer_{std::move(time_buffer)},
         solution_{solution},
         extraction_radius_{extraction_radius},
@@ -401,7 +423,7 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
         time_span_start
       ](auto tag_v) noexcept {
         using tag = typename decltype(tag_v)::type;
-        update_buffer_with_scalar_at_time_index(
+        this->update_buffer_with_scalar_at_time_index(
             make_not_null(
                 &get<Spectral::Swsh::Tags::SwshTransform<tag>>(*buffers)),
             Spectral::Swsh::libsharp_to_goldberg_modes(
@@ -464,7 +486,8 @@ PUP::able::PUP_ID
 template <typename DataManager, template <typename> class DummyUpdater,
           typename Generator>
 void test_data_manager_with_dummy_buffer_updater(
-    const gsl::not_null<Generator*> gen) noexcept {
+    const gsl::not_null<Generator*> gen,
+    const bool apply_normalization_bug = false) noexcept {
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
   // first prepare the input for the modal version
   const double mass = value_dist(*gen);
@@ -490,12 +513,22 @@ void test_data_manager_with_dummy_buffer_updater(
     time_buffer[i] = target_time - 1.55 + 0.1 * i;
   }
 
-  WorldtubeDataManager boundary_data_manager{
-      std::make_unique<DummyBufferUpdater<gr::Solutions::KerrSchild>>(
-          time_buffer, solution, extraction_radius, amplitude, frequency,
-          l_max),
-      l_max, buffer_size,
-      std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u)};
+  DataManager boundary_data_manager;
+  if (not apply_normalization_bug) {
+    boundary_data_manager = DataManager{
+        std::make_unique<DummyUpdater<gr::Solutions::KerrSchild>>(
+            time_buffer, solution, extraction_radius, amplitude, frequency,
+            l_max),
+        l_max, buffer_size,
+        std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u)};
+  } else {
+    boundary_data_manager = DataManager{
+        std::make_unique<DummyUpdater<gr::Solutions::KerrSchild>>(
+            time_buffer, solution, extraction_radius, amplitude, frequency,
+            l_max, true),
+        l_max, buffer_size,
+        std::make_unique<intrp::BarycentricRationalSpanInterpolator>(3u, 4u)};
+  }
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
@@ -858,6 +891,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
   test_data_manager_with_dummy_buffer_updater<WorldtubeDataManager,
                                               DummyBufferUpdater>(
       make_not_null(&gen));
+  // with normalization bug applied:
+  test_data_manager_with_dummy_buffer_updater<WorldtubeDataManager,
+                                              DummyBufferUpdater>(
+      make_not_null(&gen), true);
   test_data_manager_with_dummy_buffer_updater<ReducedWorldtubeDataManager,
                                               ReducedDummyBufferUpdater>(
       make_not_null(&gen));

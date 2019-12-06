@@ -80,6 +80,13 @@ SpecWorldtubeH5BufferUpdater::SpecWorldtubeH5BufferUpdater(
   get<Tags::detail::InputDataSet<::Tags::dt<Tags::detail::Lapse>>>(
       dataset_names_) = "/DtLapse";
 
+  // 'VersionHist' is a feature written by SpEC to indicate the details of the
+  // file format. This line determines whether or not the radial derivatives
+  // require renormalization based on whether the SpEC version that produced it
+  // was an old one that had a particular normalization bug
+  radial_derivatives_need_renormalization_ =
+      not cce_data_file_.exists<h5::Version>("/VersionHist");
+
   // We assume that the filename has the extraction radius encoded as an
   // integer between the first occurrence of 'R' and the first occurrence of
   // '.'. This is the format provided by SpEC.

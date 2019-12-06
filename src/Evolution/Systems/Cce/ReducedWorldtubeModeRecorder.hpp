@@ -59,8 +59,8 @@ SPECTRE_ALWAYS_INLINE std::string dataset_label_for_tag<
 }
 
 template <>
-std::string
-dataset_label_for_tag<Cce::Tags::BoundaryValue<Cce::Tags::BondiH>>() noexcept {
+SPECTRE_ALWAYS_INLINE std::string dataset_label_for_tag<
+    Cce::Tags::BoundaryValue<Cce::Tags::Du<Cce::Tags::BondiJ>>>() noexcept {
   return "H";
 }
 
