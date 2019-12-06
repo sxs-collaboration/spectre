@@ -87,8 +87,14 @@ SpecWorldtubeH5BufferUpdater::SpecWorldtubeH5BufferUpdater(
   const size_t dot_pos = cce_data_filename.find('.');
   const std::string text_radius =
       cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
+  try {
   extraction_radius_ = stod(text_radius);
-
+  } catch (const std::invalid_argument&) {
+    ERROR(
+        "The CCE filename must encode the extraction radius as an integer "
+        "between the first instance of 'R' and the first instance of '.' (SpEC "
+        "CCE filename format).");
+  }
   const auto& lapse_data = cce_data_file_.get<h5::Dat>("/Lapse");
   const auto data_table_dimensions = lapse_data.get_dimensions();
   const Matrix time_matrix = lapse_data.get_data_subset(
@@ -230,7 +236,190 @@ void SpecWorldtubeH5BufferUpdater::update_buffer(
   }
 }
 
+ReducedSpecWorldtubeH5BufferUpdater::ReducedSpecWorldtubeH5BufferUpdater(
+    const std::string& cce_data_filename) noexcept
+    : cce_data_file_{cce_data_filename}, filename_{cce_data_filename} {
+  get<Tags::detail::InputDataSet<
+      Spectral::Swsh::Tags::SwshTransform<Tags::BondiBeta>>>(dataset_names_) =
+      "Beta";
+  get<Tags::detail::InputDataSet<
+      Spectral::Swsh::Tags::SwshTransform<Tags::BondiU>>>(dataset_names_) = "U";
+  get<Tags::detail::InputDataSet<
+      Spectral::Swsh::Tags::SwshTransform<Tags::BondiQ>>>(dataset_names_) = "Q";
+  get<Tags::detail::InputDataSet<
+      Spectral::Swsh::Tags::SwshTransform<Tags::BondiW>>>(dataset_names_) = "W";
+  get<Tags::detail::InputDataSet<
+      Spectral::Swsh::Tags::SwshTransform<Tags::BondiJ>>>(dataset_names_) = "J";
+  get<Tags::detail::InputDataSet<
+      Spectral::Swsh::Tags::SwshTransform<Tags::Dr<Tags::BondiJ>>>>(
+      dataset_names_) = "DrJ";
+  get<Tags::detail::InputDataSet<
+      Spectral::Swsh::Tags::SwshTransform<Tags::BondiH>>>(dataset_names_) = "H";
+  get<Tags::detail::InputDataSet<
+      Spectral::Swsh::Tags::SwshTransform<Tags::BondiR>>>(dataset_names_) = "R";
+  get<Tags::detail::InputDataSet<
+      Spectral::Swsh::Tags::SwshTransform<Tags::DuRDividedByR>>>(
+      dataset_names_) = "DuRDividedByR";
+
+  // We assume that the filename has the extraction radius encoded as an
+  // integer between the first occurrence of 'R' and the first occurrence of
+  // '.'. This is the format provided by SpEC.
+  const size_t r_pos = cce_data_filename.find('R');
+  const size_t dot_pos = cce_data_filename.find('.');
+  const std::string text_radius =
+      cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
+  try {
+    extraction_radius_ = stod(text_radius);
+  } catch (const std::invalid_argument&) {
+    ERROR(
+        "The CCE filename must encode the extraction radius as an integer "
+        "between the first instance of 'R' and the first instance of '.' (SpEC "
+        "CCE filename format).");
+  }
+
+  const auto& lapse_data = cce_data_file_.get<h5::Dat>("/Lapse");
+  const auto data_table_dimensions = lapse_data.get_dimensions();
+  const Matrix time_matrix = lapse_data.get_data_subset(
+      std::vector<size_t>{0}, 0, data_table_dimensions[0]);
+  time_buffer_ = DataVector{data_table_dimensions[0]};
+  for (size_t i = 0; i < data_table_dimensions[0]; ++i) {
+    time_buffer_[i] = time_matrix(i, 0);
+  }
+  l_max_ = sqrt(data_table_dimensions[1] / 2) - 1;
+  cce_data_file_.close_current_object();
+}
+
+double ReducedSpecWorldtubeH5BufferUpdater::update_buffers_for_time(
+    const gsl::not_null<Variables<detail::reduced_cce_input_tags>*> buffers,
+    const gsl::not_null<size_t*> time_span_start,
+    const gsl::not_null<size_t*> time_span_end, const double time,
+    const size_t interpolator_length, const size_t buffer_depth) const
+    noexcept {
+  if (*time_span_end >= time_buffer_.size()) {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+  if (*time_span_end > interpolator_length and
+      time_buffer_[*time_span_end - interpolator_length] > time) {
+    // the next time an update will be required
+    return time_buffer_[*time_span_end - interpolator_length + 1];
+  }
+  // find the time spans that are needed
+  auto new_span_pair = detail::create_span_for_time_value(
+      time, buffer_depth, interpolator_length, 0, time_buffer_.size(),
+      time_buffer_);
+  *time_span_start = new_span_pair.first;
+  *time_span_end = new_span_pair.second;
+  // load the desired time spans into the buffers
+  tmpl::for_each<detail::reduced_cce_input_tags>([
+    this, &buffers, &time_span_start, &time_span_end
+  ](auto tag_v) noexcept {
+    using tag = typename decltype(tag_v)::type;
+    this->update_buffer(
+        make_not_null(&get(get<tag>(*buffers)).data()),
+        cce_data_file_.get<h5::Dat>(
+            get<Tags::detail::InputDataSet<tag>>(dataset_names_)),
+        *time_span_start, *time_span_end);
+    cce_data_file_.close_current_object();
+  });
+  // the next time an update will be required
+  return time_buffer_[std::min(*time_span_end - interpolator_length + 1,
+                               time_buffer_.size() - 1)];
+}
+
+void ReducedSpecWorldtubeH5BufferUpdater::update_buffer(
+    const gsl::not_null<ComplexModalVector*> buffer_to_update,
+    const h5::Dat& read_data, const size_t& time_span_start,
+    const size_t& time_span_end) const noexcept {
+  size_t number_of_columns = read_data.get_dimensions()[1];
+  if (UNLIKELY(buffer_to_update->size() != (time_span_end - time_span_start) *
+                                               (number_of_columns - 1) / 2)) {
+    ERROR("Incorrect storage size for the data to be loaded in.");
+  }
+  std::vector<size_t> cols(number_of_columns - 1);
+  std::iota(cols.begin(), cols.end(), 1);
+  Matrix data_matrix = read_data.get_data_subset(
+      cols, time_span_start, time_span_end - time_span_start);
+
+  for (size_t time_row = 0; time_row < time_span_end - time_span_start;
+       ++time_row) {
+    for (int l = 0; l <= static_cast<int>(l_max_); ++l) {
+      for (int m = -l; m <= l; ++m) {
+        (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                l_max_, static_cast<size_t>(l), m) *
+                                (time_span_end - time_span_start) +
+                            time_row] =
+            // -m because SpEC format is stored in decending m.
+            std::complex<double>(
+                data_matrix(time_row,
+                            2 * Spectral::Swsh::goldberg_mode_index(
+                                    l_max_, static_cast<size_t>(l), -m)),
+                data_matrix(time_row,
+                            2 * Spectral::Swsh::goldberg_mode_index(
+                                    l_max_, static_cast<size_t>(l), -m) +
+                                1));
+      }
+    }
+  }
+}
+
+void ReducedSpecWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
+  p | time_buffer_;
+  p | filename_;
+  p | l_max_;
+  p | extraction_radius_;
+  p | dataset_names_;
+  if (p.isUnpacking()) {
+    cce_data_file_ = h5::H5File<h5::AccessType::ReadOnly>{filename_};
+  }
+}
+
+ReducedWorldtubeDataManager::ReducedWorldtubeDataManager(
+    std::unique_ptr<ReducedWorldtubeBufferUpdater> buffer_updater,
+    const size_t l_max, const size_t buffer_depth,
+    std::unique_ptr<intrp::SpanInterpolator> interpolator) noexcept
+    : buffer_updater_{std::move(buffer_updater)},
+      l_max_{l_max},
+      interpolated_coefficients_{
+          Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)},
+      buffer_depth_{buffer_depth},
+      interpolator_{std::move(interpolator)} {
+  if (UNLIKELY(buffer_updater_->get_time_buffer().size() <
+               2 * interpolator_->required_number_of_points_before_and_after() +
+                   buffer_depth)) {
+    ERROR(
+        "The specified buffer updater doesn't have enough time points to "
+        "supply the requested interpolation buffer. This almost certainly "
+        "indicates that the corresponding file hasn't been created properly, "
+        "but might indicate that the `buffer_depth` template parameter is "
+        "too large or the specified SpanInterpolator requests too many "
+        "points");
+  }
+  coefficients_buffers_ = Variables<detail::reduced_cce_input_tags>{
+      square(l_max + 1) *
+      (buffer_depth +
+       2 * interpolator_->required_number_of_points_before_and_after())};
+}
+
+void ReducedWorldtubeDataManager::pup(PUP::er& p) noexcept {
+  p | time_span_start_;
+  p | time_span_end_;
+  p | l_max_;
+  p | buffer_depth_;
+  p | interpolator_;
+  if (p.isUnpacking()) {
+    const size_t size_of_buffer =
+        square(l_max_ + 1) *
+        (buffer_depth_ +
+         2 * interpolator_->required_number_of_points_before_and_after());
+    coefficients_buffers_ =
+        Variables<detail::reduced_cce_input_tags>{size_of_buffer};
+    interpolated_coefficients_ = Variables<detail::reduced_cce_input_tags>{
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_)};
+  }
+}
+
 /// \cond
 PUP::able::PUP_ID Cce::SpecWorldtubeH5BufferUpdater::my_PUP_ID = 0;
+PUP::able::PUP_ID Cce::ReducedSpecWorldtubeH5BufferUpdater::my_PUP_ID = 0;
 /// \endcond
 }  // namespace Cce
