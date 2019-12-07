@@ -168,6 +168,9 @@ jobs:
           # See issue https://github.com/sxs-collaboration/spectre/issues/1807
           - build_type: Debug
             EXTRA_CXX_FLAGS: "-DBLAZE_USE_VECTORIZATION=0"
+          - compiler: clang-8
+            build_type: Release
+            BUILD_PYTHON_BINDINGS: OFF
     container:
       image: sxscollaboration/spectrebuildenv:latest
       env:
@@ -225,6 +228,8 @@ jobs:
             fi
           fi
 
+          BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
+
           cmake
           -D CMAKE_C_COMPILER=${CC}
           -D CMAKE_CXX_COMPILER=${CXX}
@@ -234,7 +239,7 @@ jobs:
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF
           -D USE_CCACHE=ON
-          -D BUILD_PYTHON_BINDINGS=ON
+          -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
           $GITHUB_WORKSPACE
         # Make sure this runs in bash so the regex matching works
         shell: bash
