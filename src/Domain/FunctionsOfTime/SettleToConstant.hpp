@@ -8,10 +8,11 @@
 #include <limits>
 #include <pup.h>
 
-#include "ControlSystem/FunctionOfTime.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Parallel/CharmPupable.hpp"
 
+namespace domain {
 namespace FunctionsOfTime {
 /// \ingroup ControlSystemGroup
 /// Given an initial function \f$f(t)\f$ and its first two derivatives
@@ -73,3 +74,4 @@ class SettleToConstant : public FunctionOfTime {
   double inv_decay_time_{std::numeric_limits<double>::signaling_NaN()};
 };
 }  // namespace FunctionsOfTime
+}  // namespace domain

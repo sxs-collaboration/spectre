@@ -7,9 +7,9 @@
 #include <cstddef>
 #include <memory>
 
-#include "ControlSystem/FunctionOfTime.hpp"
-#include "ControlSystem/PiecewisePolynomial.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -93,8 +93,8 @@ void test_within_roundoff(const FunctionOfTime& f_of_t) noexcept {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial",
-                  "[ControlSystem][Unit]") {
+SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
+                  "[Domain][Unit]") {
   PUPable_reg(FunctionsOfTime::PiecewisePolynomial<2>);
   PUPable_reg(FunctionsOfTime::PiecewisePolynomial<3>);
 
@@ -201,8 +201,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial",
 // [[OutputRegex, t must be increasing from call to call. Attempted to update at
 // time 1, which precedes the previous update time of 2.]]
 SPECTRE_TEST_CASE(
-    "Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial.BadUpdateTime",
-    "[ControlSystem][Unit]") {
+    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadUpdateTime",
+    "[Domain][Unit]") {
   ERROR_TEST();
   // two component system (x**3 and x**2)
   constexpr size_t deriv_order = 3;
@@ -216,8 +216,8 @@ SPECTRE_TEST_CASE(
 // [[OutputRegex, the number of components trying to be updated \(3\) does not
 // match the number of components \(2\) in the PiecewisePolynomial.]]
 SPECTRE_TEST_CASE(
-    "Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial.BadUpdateSize",
-    "[ControlSystem][Unit]") {
+    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.BadUpdateSize",
+    "[Domain][Unit]") {
   ERROR_TEST();
   // two component system (x**3 and x**2)
   constexpr size_t deriv_order = 3;
@@ -229,8 +229,8 @@ SPECTRE_TEST_CASE(
 
 // [[OutputRegex, requested time 0.5 precedes earliest time 1 of times.]]
 SPECTRE_TEST_CASE(
-    "Unit.ControlSystem.FunctionsOfTime.PiecewisePolynomial.TimeOutOfRange",
-    "[ControlSystem][Unit]") {
+    "Unit.Domain.FunctionsOfTime.PiecewisePolynomial.TimeOutOfRange",
+    "[Domain][Unit]") {
   ERROR_TEST();
   // two component system (x**3 and x**2)
   constexpr size_t deriv_order = 3;

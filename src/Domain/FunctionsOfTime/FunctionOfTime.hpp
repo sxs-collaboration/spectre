@@ -10,7 +10,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "Parallel/CharmPupable.hpp"
 
-/// \ingroup ControlSystemGroup
+namespace domain {
+/// \ingroup ComputationalDomainGroup
+/// Contains functions of time to support the dual frame system.
+namespace FunctionsOfTime {
+/// \ingroup ComputationalDomainGroup
 /// Base class for FunctionsOfTime
 class FunctionOfTime : public PUP::able {
  public:
@@ -30,3 +34,5 @@ class FunctionOfTime : public PUP::able {
 
   WRAPPED_PUPable_abstract(FunctionOfTime);  // NOLINT
 };
+}  // namespace FunctionsOfTime
+}  // namespace domain

@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ControlSystem/PiecewisePolynomial.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 
 #include <algorithm>
 #include <iterator>
@@ -16,6 +16,7 @@
 #include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 
+namespace domain {
 namespace FunctionsOfTime {
 template <size_t MaxDeriv>
 PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
@@ -68,8 +69,9 @@ void PiecewisePolynomial<MaxDeriv>::update(
 
   if (updated_max_deriv.size() != func.back().size()) {
     ERROR("the number of components trying to be updated ("
-          << updated_max_deriv.size() << ") does "
-                                         "not match the number of components ("
+          << updated_max_deriv.size()
+          << ") does "
+             "not match the number of components ("
           << func.back().size() << ") in the PiecewisePolynomial.");
   }
 
@@ -155,3 +157,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (4), (0, 1, 2, 3, 4))
 #undef INSTANTIATE
 /// \endcond
 }  // namespace FunctionsOfTime
+}  // namespace domain

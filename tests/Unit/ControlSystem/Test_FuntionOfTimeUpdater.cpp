@@ -11,9 +11,9 @@
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/FunctionOfTimeUpdater.hpp"
-#include "ControlSystem/PiecewisePolynomial.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/ControlSystem/FoTUpdater_Helper.hpp"
 
@@ -53,7 +53,8 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionOfTimeUpdater.Translation",
   // initialize our FunctionOfTime to agree at t=0
   const std::array<DataVector, deriv_order + 1> init_func{
       {{0.0, 0.0}, {amp1 * omega1, amp2 * omega2}, {0.0, 0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(t, init_func);
+  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t(t,
+                                                                   init_func);
 
   Averager<deriv_order> averager(0.25, false);
   Controller<deriv_order> control_signal;

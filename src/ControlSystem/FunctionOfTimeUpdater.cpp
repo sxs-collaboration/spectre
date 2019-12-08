@@ -25,7 +25,8 @@ void FunctionOfTimeUpdater<DerivOrder>::measure(
 
 template <size_t DerivOrder>
 void FunctionOfTimeUpdater<DerivOrder>::modify(
-    const gsl::not_null<FunctionsOfTime::PiecewisePolynomial<DerivOrder>*>
+    const gsl::not_null<
+        domain::FunctionsOfTime::PiecewisePolynomial<DerivOrder>*>
         f_of_t,
     const double time) noexcept {
   if (averager_(time)) {

@@ -4,6 +4,7 @@
 add_subdirectory(Amr)
 add_subdirectory(CoordinateMaps)
 add_subdirectory(Creators)
+add_subdirectory(FunctionsOfTime)
 
 set(LIBRARY Domain)
 
@@ -41,6 +42,7 @@ target_link_libraries(
   INTERFACE CoordinateMaps
   INTERFACE DataStructures
   INTERFACE ErrorHandling
+  INTERFACE FunctionsOfTime
   INTERFACE LinearOperators
   INTERFACE Spectral
   )

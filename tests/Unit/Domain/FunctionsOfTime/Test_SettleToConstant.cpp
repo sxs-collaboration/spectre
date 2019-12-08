@@ -6,16 +6,16 @@
 #include <array>
 #include <memory>
 
-#include "ControlSystem/FunctionOfTime.hpp"
-#include "ControlSystem/SettleToConstant.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/SettleToConstant.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-void test(const FunctionOfTime& f_of_t, const double match_time,
-          const double f_t0, const double dtf_t0, const double d2tf_t0,
-          const double A) noexcept {
+void test(const domain::FunctionsOfTime::FunctionOfTime& f_of_t,
+          const double match_time, const double f_t0, const double dtf_t0,
+          const double d2tf_t0, const double A) noexcept {
   // check that values agree at the matching time
   const auto lambdas0 = f_of_t.func_and_2_derivs(match_time);
   CHECK(approx(lambdas0[0][0]) == f_t0);
@@ -48,9 +48,9 @@ void test(const FunctionOfTime& f_of_t, const double match_time,
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.SettleToConstant",
-                  "[ControlSystem][Unit]") {
-  PUPable_reg(FunctionsOfTime::SettleToConstant);
+SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.SettleToConstant",
+                  "[Domain][Unit]") {
+  PUPable_reg(domain::FunctionsOfTime::SettleToConstant);
 
   const double match_time = 10.0;
   const double decay_time = 5.0;
@@ -66,23 +66,23 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.FunctionsOfTime.SettleToConstant",
 
   {
     INFO("Test with simple construction.");
-    const FunctionsOfTime::SettleToConstant f_of_t_derived(
+    const domain::FunctionsOfTime::SettleToConstant f_of_t_derived(
         init_func, match_time, decay_time);
     test(f_of_t_derived, match_time, f_t0, dtf_t0, d2tf_t0, A);
 
-    const FunctionsOfTime::SettleToConstant f_of_t_derived2 =
+    const domain::FunctionsOfTime::SettleToConstant f_of_t_derived2 =
         serialize_and_deserialize(f_of_t_derived);
     test(f_of_t_derived2, match_time, f_t0, dtf_t0, d2tf_t0, A);
   }
 
   {
     INFO("Test with base class construction.");
-    const std::unique_ptr<FunctionOfTime> f_of_t =
-        std::make_unique<FunctionsOfTime::SettleToConstant>(
+    const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
+        std::make_unique<domain::FunctionsOfTime::SettleToConstant>(
             init_func, match_time, decay_time);
     test(*f_of_t, match_time, f_t0, dtf_t0, d2tf_t0, A);
 
-    const std::unique_ptr<FunctionOfTime> f_of_t2 =
+    const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t2 =
         serialize_and_deserialize(f_of_t);
     test(*f_of_t2, match_time, f_t0, dtf_t0, d2tf_t0, A);
   }
