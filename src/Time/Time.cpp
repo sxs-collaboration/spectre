@@ -4,15 +4,20 @@
 #include "Time/Time.hpp"
 
 #include <boost/functional/hash.hpp>
+#include <cmath>
 #include <ostream>
 #include <pup.h>
+#include <utility>
+
+#include "ErrorHandling/Assert.hpp"
 
 // Time implementations
 
-void Time::pup(PUP::er& p) noexcept {
-  p | slab_;
-  p | fraction_;
-  p | value_;
+Time::Time(Slab slab, rational_t fraction) noexcept
+    // clang-tidy: move trivially copyable type
+    : slab_(std::move(slab)), fraction_(std::move(fraction)) {  // NOLINT
+  range_check();
+  compute_value();
 }
 
 Time Time::with_slab(const Slab& new_slab) const noexcept {
@@ -41,6 +46,44 @@ Time Time::with_slab(const Slab& new_slab) const noexcept {
   }
 }
 
+Time& Time::operator+=(const TimeDelta& delta) noexcept {
+  *this = this->with_slab(delta.slab_);
+  fraction_ += delta.fraction_;
+  range_check();
+  compute_value();
+  return *this;
+}
+
+Time& Time::operator-=(const TimeDelta& delta) noexcept {
+  *this = this->with_slab(delta.slab_);
+  fraction_ -= delta.fraction_;
+  range_check();
+  compute_value();
+  return *this;
+}
+
+bool Time::is_at_slab_start() const noexcept { return fraction_ == 0; }
+bool Time::is_at_slab_end() const noexcept { return fraction_ == 1; }
+bool Time::is_at_slab_boundary() const noexcept {
+  return is_at_slab_start() or is_at_slab_end();
+}
+
+void Time::pup(PUP::er& p) noexcept {
+  p | slab_;
+  p | fraction_;
+  p | value_;
+}
+
+bool Time::StructuralCompare::operator()(const Time& a, const Time& b) const {
+  if (a.fraction().numerator() != b.fraction().numerator()) {
+    return a.fraction().numerator() < b.fraction().numerator();
+  }
+  if (a.fraction().denominator() != b.fraction().denominator()) {
+    return a.fraction().denominator() < b.fraction().denominator();
+  }
+  return a.slab() < b.slab();
+}
+
 void Time::compute_value() noexcept {
   if (is_at_slab_end()) {
     // Protection against rounding error.
@@ -49,6 +92,63 @@ void Time::compute_value() noexcept {
     value_ = slab_.start_ + (slab_.duration() * fraction_).value();
   }
 }
+
+void Time::range_check() const noexcept {
+  ASSERT(fraction_ >= 0 and fraction_ <= 1,
+         "Out of range slab fraction: " << fraction_);
+}
+
+// TimeDelta implementations
+
+TimeDelta::TimeDelta(Slab slab, rational_t fraction) noexcept
+    // clang-tidy: move trivially copyable type
+    : slab_(std::move(slab)), fraction_(std::move(fraction)) {}  // NOLINT
+
+TimeDelta TimeDelta::with_slab(const Slab& new_slab) const noexcept {
+  return {new_slab, fraction()};
+}
+
+double TimeDelta::value() const noexcept {
+  return (slab_.end_ - slab_.start_) * fraction_.value();
+}
+
+bool TimeDelta::is_positive() const noexcept { return fraction_ > 0; }
+
+TimeDelta& TimeDelta::operator+=(const TimeDelta& other) noexcept {
+  ASSERT(slab_ == other.slab_, "Can't add TimeDeltas from different slabs");
+  fraction_ += other.fraction_;
+  return *this;
+}
+
+TimeDelta& TimeDelta::operator-=(const TimeDelta& other) noexcept {
+  ASSERT(slab_ == other.slab_,
+         "Can't subtract TimeDeltas from different slabs");
+  fraction_ -= other.fraction_;
+  return *this;
+}
+
+TimeDelta TimeDelta::operator+() const noexcept { return *this; }
+
+TimeDelta TimeDelta::operator-() const noexcept { return {slab_, -fraction_}; }
+
+TimeDelta& TimeDelta::operator*=(const rational_t& mult) noexcept {
+  fraction_ *= mult;
+  return *this;
+}
+
+TimeDelta& TimeDelta::operator/=(const rational_t& div) noexcept {
+  fraction_ /= div;
+  return *this;
+}
+
+void TimeDelta::pup(PUP::er& p) noexcept {
+  p | slab_;
+  p | fraction_;
+}
+
+// Free function implementations
+
+// Time <cmp> Time
 
 bool operator==(const Time& a, const Time& b) noexcept {
   if (a.slab() == b.slab()) {
@@ -69,6 +169,50 @@ bool operator==(const Time& a, const Time& b) noexcept {
   }
 }
 
+bool operator!=(const Time& a, const Time& b) noexcept { return not(a == b); }
+
+bool operator<(const Time& a, const Time& b) noexcept {
+  // Non-equality test in second clause is required to avoid
+  // assertions in Slab.
+  return (a.slab() == b.slab() and a.fraction() < b.fraction()) or
+         (a != b and a.slab() < b.slab());
+}
+
+bool operator>(const Time& a, const Time& b) noexcept { return b < a; }
+
+bool operator<=(const Time& a, const Time& b) noexcept { return not(a > b); }
+
+bool operator>=(const Time& a, const Time& b) noexcept { return not(a < b); }
+
+// TimeDelta <cmp> TimeDelta
+
+bool operator==(const TimeDelta& a, const TimeDelta& b) noexcept {
+  return a.slab() == b.slab() and a.fraction() == b.fraction();
+}
+
+bool operator!=(const TimeDelta& a, const TimeDelta& b) noexcept {
+  return not(a == b);
+}
+
+bool operator<(const TimeDelta& a, const TimeDelta& b) noexcept {
+  ASSERT(a.slab() == b.slab(), "Can't check cross-slab TimeDelta inequalities");
+  return a.fraction() < b.fraction();
+}
+
+bool operator>(const TimeDelta& a, const TimeDelta& b) noexcept {
+  return b < a;
+}
+
+bool operator<=(const TimeDelta& a, const TimeDelta& b) noexcept {
+  return not(a > b);
+}
+
+bool operator>=(const TimeDelta& a, const TimeDelta& b) noexcept {
+  return not(a < b);
+}
+
+// Time <op> Time
+
 TimeDelta operator-(const Time& a, const Time& b) noexcept {
   if (a.slab() == b.slab()) {
     return {a.slab(), a.fraction() - b.fraction()};
@@ -77,31 +221,48 @@ TimeDelta operator-(const Time& a, const Time& b) noexcept {
       return {b.slab(), -b.fraction()};
     } else {
       ASSERT(b.is_at_slab_start(),
-             "Can't subtract times from different slabs");
+             "Can't subtract times from different slabs: " << a << " - " << b);
       return {a.slab(), a.fraction() - 1};
     }
   } else {
     ASSERT(a.slab().is_preceeded_by(b.slab()),
-           "Can't subtract times from different slabs");
+           "Can't subtract times from different slabs: " << a << " - " << b);
     if (a.is_at_slab_start()) {
       return {b.slab(), 1 - b.fraction()};
     } else {
       ASSERT(b.is_at_slab_end(),
-             "Can't subtract times from different slabs");
+             "Can't subtract times from different slabs: " << a << " - " << b);
       return {a.slab(), a.fraction()};
     }
   }
 }
 
-std::ostream& operator<<(std::ostream& os, const Time& t) noexcept {
-  return os << t.slab() << ":" << t.fraction();
+// Time <op> TimeDelta, TimeDelta <op> Time
+Time operator+(Time a, const TimeDelta& b) noexcept {
+  a += b;
+  return a;
 }
 
-// TimeDelta implementations
+Time operator+(const TimeDelta& a, Time b) noexcept {
+  b += a;
+  return b;
+}
 
-void TimeDelta::pup(PUP::er& p) noexcept {
-  p | slab_;
-  p | fraction_;
+Time operator-(Time a, const TimeDelta& b) noexcept {
+  a -= b;
+  return a;
+}
+
+// TimeDelta <op> TimeDelta
+
+TimeDelta operator+(TimeDelta a, const TimeDelta& b) noexcept {
+  a += b;
+  return a;
+}
+
+TimeDelta operator-(TimeDelta a, const TimeDelta& b) noexcept {
+  a -= b;
+  return a;
 }
 
 double operator/(const TimeDelta& a, const TimeDelta& b) noexcept {
@@ -111,8 +272,26 @@ double operator/(const TimeDelta& a, const TimeDelta& b) noexcept {
          (a.slab().duration().value() / b.slab().duration().value());
 }
 
-std::ostream& operator<<(std::ostream& os, const TimeDelta& dt) noexcept {
-  return os << dt.slab() << ":" << dt.fraction();
+// rational <op> TimeDelta, TimeDelta <op> rational
+TimeDelta operator*(TimeDelta a, const TimeDelta::rational_t& b) noexcept {
+  a *= b;
+  return a;
+}
+
+TimeDelta operator*(const TimeDelta::rational_t& a, TimeDelta b) noexcept {
+  b *= a;
+  return b;
+}
+
+TimeDelta operator/(TimeDelta a, const TimeDelta::rational_t& b) noexcept {
+  a /= b;
+  return a;
+}
+
+// Miscellaneous other functions for Time
+
+std::ostream& operator<<(std::ostream& os, const Time& t) noexcept {
+  return os << t.slab() << ":" << t.fraction();
 }
 
 size_t hash_value(const Time& t) noexcept {
@@ -135,3 +314,16 @@ size_t hash<Time>::operator()(const Time& t) const noexcept {
   return boost::hash<Time>{}(t);
 }
 }  // namespace std
+
+// Miscellaneous other functions for TimeDelta
+
+TimeDelta abs(TimeDelta t) noexcept {
+  if (not t.is_positive()) {
+    t *= -1;
+  }
+  return t;
+}
+
+std::ostream& operator<<(std::ostream& os, const TimeDelta& dt) noexcept {
+  return os << dt.slab() << ":" << dt.fraction();
+}
