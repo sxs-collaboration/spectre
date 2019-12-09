@@ -414,5 +414,41 @@ auto make_vector_coordinate_map_base(std::vector<Map> maps,
   }
   return return_vector;
 }
+
+template <typename NewMap, typename SourceFrame, typename TargetFrame,
+          typename... Maps, size_t... Is>
+CoordinateMap<SourceFrame, TargetFrame, Maps..., NewMap> push_back_impl(
+    CoordinateMap<SourceFrame, TargetFrame, Maps...>&& old_map, NewMap new_map,
+    std::index_sequence<Is...> /*meta*/) noexcept {
+  return CoordinateMap<SourceFrame, TargetFrame, Maps..., NewMap>{
+      std::move(std::get<Is>(old_map.maps_))..., std::move(new_map)};
+}
+
+template <typename NewMap, typename SourceFrame, typename TargetFrame,
+          typename... Maps, size_t... Is>
+CoordinateMap<SourceFrame, TargetFrame, NewMap, Maps...> push_front_impl(
+    CoordinateMap<SourceFrame, TargetFrame, Maps...>&& old_map, NewMap new_map,
+    std::index_sequence<Is...> /*meta*/) noexcept {
+  return CoordinateMap<SourceFrame, TargetFrame, Maps..., NewMap>{
+      std::move(new_map), std::move(std::get<Is>(old_map.maps_))...};
+}
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps,
+          typename NewMap>
+CoordinateMap<SourceFrame, TargetFrame, Maps..., NewMap> push_back(
+    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map,
+    NewMap new_map) noexcept {
+  return push_back_impl(std::move(old_map), std::move(new_map),
+                        std::make_index_sequence<sizeof...(Maps)>{});
+}
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps,
+          typename NewMap>
+CoordinateMap<SourceFrame, TargetFrame, NewMap, Maps...> push_front(
+    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map,
+    NewMap new_map) noexcept {
+  return push_front_impl(std::move(old_map), std::move(new_map),
+                         std::make_index_sequence<sizeof...(Maps)>{});
+}
 }  // namespace domain
 /// \endcond

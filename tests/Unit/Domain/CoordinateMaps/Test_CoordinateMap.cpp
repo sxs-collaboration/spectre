@@ -1011,6 +1011,45 @@ void test_time_dependent_map() {
           .get(0, 0),
       (DataVector{2. / 3., 2. / 3., 2. / 3.}));
 }
+
+void test_push_back() {
+  INFO("Coordinate map with affine map");
+  using affine_map = CoordinateMaps::Affine;
+  using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
+  using affine_map_3d =
+      CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
+
+  const auto check_coord_map_push = [](const auto& first_map,
+                                       const auto& second_map) noexcept {
+    const auto first_coord_map =
+        make_coordinate_map<Frame::Logical, Frame::Grid>(first_map);
+    const auto second_coord_map =
+        make_coordinate_map<Frame::Logical, Frame::Grid>(second_map);
+    const auto composed_map =
+        make_coordinate_map<Frame::Logical, Frame::Grid>(first_map, second_map);
+    const auto composed_push_back_map = push_back(first_coord_map, second_map);
+    const auto composed_push_front_map =
+        push_front(second_coord_map, first_map);
+    CHECK(composed_map == composed_push_back_map);
+    CHECK(composed_map == composed_push_front_map);
+  };
+
+  // Test 1d
+  check_coord_map_push(affine_map{-1.0, 1.0, 0.0, 2.3},
+                       affine_map{0.0, 2.3, -0.5, 0.5});
+  // Test 2d
+  check_coord_map_push(affine_map_2d{affine_map{-1.0, 1.0, 0.0, 2.0},
+                                     affine_map{0.0, 2.0, -0.5, 0.5}},
+                       affine_map_2d{affine_map{0.0, 2.0, 2.0, 6.0},
+                                     affine_map{-0.5, 0.5, 0.0, 8.0}});
+  // Test 3d
+  check_coord_map_push(affine_map_3d{affine_map{-1.0, 1.0, 0.0, 2.0},
+                                     affine_map{0.0, 2.0, -0.5, 0.5},
+                                     affine_map{5.0, 7.0, -7.0, 7.0}},
+                       affine_map_3d{affine_map{0.0, 2.0, 2.0, 6.0},
+                                     affine_map{-0.5, 0.5, 0.0, 8.0},
+                                     affine_map{-7.0, 7.0, 3.0, 23.0}});
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
@@ -1022,5 +1061,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
   test_make_vector_coordinate_map_base();
   test_coordinate_maps_are_identity();
   test_time_dependent_map();
+  test_push_back();
 }
 }  // namespace domain
