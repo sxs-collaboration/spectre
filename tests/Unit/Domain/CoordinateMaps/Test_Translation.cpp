@@ -31,13 +31,16 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
 
   const std::array<DataVector, deriv_order + 1> init_func{
       {{1.0}, {-2.0}, {2.0}, {0.0}}};
-  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(
-      t, init_func);
-  domain::FunctionsOfTime::FunctionOfTime& f_of_t = f_of_t_derived;
 
-  const std::unordered_map<std::string,
-                           domain::FunctionsOfTime::FunctionOfTime&>
-      f_of_t_list = {{"trans", f_of_t}};
+  using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
+  using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      f_of_t_list{};
+  f_of_t_list["trans"] = std::make_unique<Polynomial>(t, init_func);
+
+  const FoftPtr& f_of_t = f_of_t_list.at("trans");
+
   const CoordMapsTimeDependent::Translation trans_map{};
   // test serialized/deserialized map
   const auto trans_map_deserialized = serialize_and_deserialize(trans_map);
@@ -46,7 +49,7 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
 
   while (t < final_time) {
     const std::array<double, 1> trans_x{{square(t)}};
-    const std::array<double, 1> frame_vel{{f_of_t.func_and_deriv(t)[1][0]}};
+    const std::array<double, 1> frame_vel{{f_of_t->func_and_deriv(t)[1][0]}};
 
     CHECK_ITERABLE_APPROX(trans_map(point_xi, t, f_of_t_list),
                           point_xi + trans_x);

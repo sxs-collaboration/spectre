@@ -6,6 +6,7 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <memory>
 
 #include "ControlSystem/Controller.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
@@ -35,11 +36,16 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
   const double freq = 3.0;
 
   // properly initialize the function of time to match our target function
-  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(
-      t, {{{std::sin(freq * t)},
-           {freq * std::cos(freq * t)},
-           {-square(freq) * std::sin(freq * t)}}});
-  domain::FunctionsOfTime::FunctionOfTime& f_of_t = f_of_t_derived;
+  std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
+      std::make_unique<
+          domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
+          t, std::array<DataVector, deriv_order + 1>{
+                 {{std::sin(freq * t)},
+                  {freq * std::cos(freq * t)},
+                  {-square(freq) * std::sin(freq * t)}}});
+  auto& f_of_t_derived =
+      dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
+          *f_of_t);
 
   Controller<deriv_order> control_signal;
   const double t_offset = 0.0;
@@ -49,7 +55,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
         {{std::sin(freq * t)},
          {freq * std::cos(freq * t)},
          {-square(freq) * std::sin(freq * t)}}};
-    const auto lambda = f_of_t.func_and_2_derivs(t);
+    const auto lambda = f_of_t->func_and_2_derivs(t);
     // check that the error is within the specified tolerance, which is
     // maintained by the TimescaleTuner adjusting the damping time
     CHECK(fabs(target_func[0][0] - lambda[0][0]) <
@@ -99,11 +105,16 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets",
   double avg_time = 0.0;
 
   // properly initialize the function of time to match our target function
-  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(
-      t, {{{std::sin(freq * t)},
-           {freq * std::cos(freq * t)},
-           {-square(freq) * std::sin(freq * t)}}});
-  domain::FunctionsOfTime::FunctionOfTime& f_of_t = f_of_t_derived;
+  std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
+      std::make_unique<
+          domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
+          t, std::array<DataVector, deriv_order + 1>{
+                 {{std::sin(freq * t)},
+                  {freq * std::cos(freq * t)},
+                  {-square(freq) * std::sin(freq * t)}}});
+  auto& f_of_t_derived =
+      dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
+          *f_of_t);
 
   Controller<deriv_order> control_signal;
 
@@ -112,7 +123,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets",
         {{std::sin(freq * t)},
          {freq * std::cos(freq * t)},
          {-square(freq) * std::sin(freq * t)}}};
-    const auto lambda = f_of_t.func_and_2_derivs(t);
+    const auto lambda = f_of_t->func_and_2_derivs(t);
     // check that the error is within the specified tolerance, which is
     // maintained by the TimescaleTuner adjusting the damping time
     CHECK(fabs(target_func[0][0] - lambda[0][0]) <
@@ -176,11 +187,16 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets_DontAverageQ",
   double avg_time = 0.0;
 
   // properly initialize the function of time to match our target function
-  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(
-      t, {{{std::sin(freq * t)},
-           {freq * std::cos(freq * t)},
-           {-square(freq) * std::sin(freq * t)}}});
-  domain::FunctionsOfTime::FunctionOfTime& f_of_t = f_of_t_derived;
+  std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t =
+      std::make_unique<
+          domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
+          t, std::array<DataVector, deriv_order + 1>{
+                 {{std::sin(freq * t)},
+                  {freq * std::cos(freq * t)},
+                  {-square(freq) * std::sin(freq * t)}}});
+  auto& f_of_t_derived =
+      dynamic_cast<domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>&>(
+          *f_of_t);
 
   Controller<deriv_order> control_signal;
 
@@ -189,7 +205,7 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets_DontAverageQ",
         {{std::sin(freq * t)},
          {freq * std::cos(freq * t)},
          {-square(freq) * std::sin(freq * t)}}};
-    const auto lambda = f_of_t.func_and_2_derivs(t);
+    const auto lambda = f_of_t->func_and_2_derivs(t);
     // check that the error is within the specified tolerance, which is
     // maintained by the TimescaleTuner adjusting the damping time
     CHECK(fabs(target_func[0][0] - lambda[0][0]) <

@@ -13,7 +13,7 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
-void test(const domain::FunctionsOfTime::FunctionOfTime& f_of_t,
+void test(const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t,
           const double match_time, const double f_t0, const double dtf_t0,
           const double d2tf_t0, const double A) noexcept {
   // check that values agree at the matching time
