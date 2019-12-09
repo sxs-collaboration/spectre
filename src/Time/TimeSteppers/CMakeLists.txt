@@ -3,6 +3,7 @@
 
 set(MY_LIBRARY_SOURCES
   TimeSteppers/AdamsBashforthN.cpp
+  TimeSteppers/DormandPrince5.cpp
   TimeSteppers/RungeKutta3.cpp
   TimeSteppers/RungeKutta4.cpp
   )
