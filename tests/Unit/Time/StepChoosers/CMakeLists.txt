@@ -8,4 +8,5 @@ set(LIBRARY_SOURCES
   StepChoosers/Test_Constant.cpp
   StepChoosers/Test_Increase.cpp
   StepChoosers/Test_PreventRapidIncrease.cpp
+  StepChoosers/Test_StepToTimes.cpp
   PARENT_SCOPE)
