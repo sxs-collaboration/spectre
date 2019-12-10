@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "ControlSystem/SettleToConstant.hpp"
+#include "Domain/FunctionsOfTime/SettleToConstant.hpp"
 
 #include <cmath>
 
@@ -9,6 +9,7 @@
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 
+namespace domain {
 namespace FunctionsOfTime {
 SettleToConstant::SettleToConstant(
     const std::array<DataVector, 3>& initial_func_and_derivs,
@@ -75,3 +76,4 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (0, 1, 2))
 #undef INSTANTIATE
 /// \endcond
 }  // namespace FunctionsOfTime
+}  // namespace domain

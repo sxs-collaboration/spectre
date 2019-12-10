@@ -9,11 +9,11 @@
 #include <string>
 #include <unordered_map>
 
-#include "ControlSystem/FunctionOfTime.hpp"
-#include "ControlSystem/PiecewisePolynomial.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Translation.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -31,12 +31,13 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
 
   const std::array<DataVector, deriv_order + 1> init_func{
       {{1.0}, {-2.0}, {2.0}, {0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(t,
-                                                                   init_func);
-  FunctionOfTime& f_of_t = f_of_t_derived;
+  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(
+      t, init_func);
+  domain::FunctionsOfTime::FunctionOfTime& f_of_t = f_of_t_derived;
 
-  const std::unordered_map<std::string, FunctionOfTime&> f_of_t_list = {
-      {"trans", f_of_t}};
+  const std::unordered_map<std::string,
+                           domain::FunctionsOfTime::FunctionOfTime&>
+      f_of_t_list = {{"trans", f_of_t}};
   const CoordMapsTimeDependent::Translation trans_map{};
   // test serialized/deserialized map
   const auto trans_map_deserialized = serialize_and_deserialize(trans_map);

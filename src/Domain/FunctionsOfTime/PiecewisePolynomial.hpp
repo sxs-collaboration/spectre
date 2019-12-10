@@ -9,14 +9,13 @@
 #include <pup.h>
 #include <vector>
 
-#include "ControlSystem/FunctionOfTime.hpp"
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Parallel/CharmPupable.hpp"
 
-/// \ingroup ControlSystemGroup
-/// Contains functions of time to support the dual frame system.
+namespace domain {
 namespace FunctionsOfTime {
-/// \ingroup ControlSystemGroup
+/// \ingroup ComputationalDomainGroup
 /// A function that has a piecewise-constant `MaxDeriv`th derivative.
 template <size_t MaxDeriv>
 class PiecewisePolynomial : public FunctionOfTime {
@@ -108,3 +107,4 @@ template <size_t MaxDeriv>
 PUP::able::PUP_ID PiecewisePolynomial<MaxDeriv>::my_PUP_ID = 0;  // NOLINT
 /// \endcond
 }  // namespace FunctionsOfTime
+}  // namespace domain

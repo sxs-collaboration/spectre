@@ -26,4 +26,5 @@ target_link_libraries(
   INTERFACE DataStructures
   INTERFACE Domain
   INTERFACE ErrorHandling
+  INTERFACE FunctionsOfTime
   )

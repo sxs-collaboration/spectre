@@ -25,5 +25,5 @@ add_test_library(
   ${LIBRARY}
   "Domain/CoordinateMaps"
   "${LIBRARY_SOURCES}"
-  "CoordinateMaps;ControlSystem"
+  "CoordinateMaps;FunctionsOfTime"
   )

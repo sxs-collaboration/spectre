@@ -8,10 +8,10 @@
 #include <cstddef>
 
 #include "ControlSystem/Controller.hpp"
-#include "ControlSystem/FunctionOfTime.hpp"
-#include "ControlSystem/PiecewisePolynomial.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
 #include "DataStructures/DataVector.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 
 SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
@@ -35,11 +35,11 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller", "[ControlSystem][Unit]") {
   const double freq = 3.0;
 
   // properly initialize the function of time to match our target function
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(
+  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(
       t, {{{std::sin(freq * t)},
            {freq * std::cos(freq * t)},
            {-square(freq) * std::sin(freq * t)}}});
-  FunctionOfTime& f_of_t = f_of_t_derived;
+  domain::FunctionsOfTime::FunctionOfTime& f_of_t = f_of_t_derived;
 
   Controller<deriv_order> control_signal;
   const double t_offset = 0.0;
@@ -99,11 +99,11 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets",
   double avg_time = 0.0;
 
   // properly initialize the function of time to match our target function
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(
+  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(
       t, {{{std::sin(freq * t)},
            {freq * std::cos(freq * t)},
            {-square(freq) * std::sin(freq * t)}}});
-  FunctionOfTime& f_of_t = f_of_t_derived;
+  domain::FunctionsOfTime::FunctionOfTime& f_of_t = f_of_t_derived;
 
   Controller<deriv_order> control_signal;
 
@@ -176,11 +176,11 @@ SPECTRE_TEST_CASE("Unit.ControlSystem.Controller.TimeOffsets_DontAverageQ",
   double avg_time = 0.0;
 
   // properly initialize the function of time to match our target function
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(
+  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> f_of_t_derived(
       t, {{{std::sin(freq * t)},
            {freq * std::cos(freq * t)},
            {-square(freq) * std::sin(freq * t)}}});
-  FunctionOfTime& f_of_t = f_of_t_derived;
+  domain::FunctionsOfTime::FunctionOfTime& f_of_t = f_of_t_derived;
 
   Controller<deriv_order> control_signal;
 

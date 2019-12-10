@@ -7,8 +7,8 @@
 
 #include "ControlSystem/Averager.hpp"
 #include "ControlSystem/Controller.hpp"
-#include "ControlSystem/PiecewisePolynomial.hpp"
 #include "ControlSystem/TimescaleTuner.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 
 // IWYU pragma: no_forward_declare FunctionsOfTime::PiecewisePolynomial
 
@@ -54,7 +54,8 @@ class FunctionOfTimeUpdater {
   /// Computes the control signal, updates the FunctionOfTime and updates the
   /// TimescaleTuner
   void modify(
-      gsl::not_null<FunctionsOfTime::PiecewisePolynomial<DerivOrder>*> f_of_t,
+      gsl::not_null<domain::FunctionsOfTime::PiecewisePolynomial<DerivOrder>*>
+          f_of_t,
       double time) noexcept;
 
  private:

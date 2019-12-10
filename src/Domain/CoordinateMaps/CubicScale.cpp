@@ -10,9 +10,9 @@
 #include <pup_stl.h>
 #include <utility>
 
-#include "ControlSystem/FunctionOfTime.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
 #include "Utilities/ConstantExpressions.hpp"
@@ -33,7 +33,8 @@ CubicScale::CubicScale(const double outer_boundary) noexcept
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 1> CubicScale::operator()(
     const std::array<T, 1>& source_coords, const double time,
-    const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
+    const std::unordered_map<
+        std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list) const
     noexcept {
   const auto a_of_t = map_list.at(f_of_t_a_).func(time)[0][0];
   const auto b_of_t = map_list.at(f_of_t_b_).func(time)[0][0];
@@ -45,7 +46,8 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> CubicScale::operator()(
 template <typename T>
 boost::optional<std::array<tt::remove_cvref_wrap_t<T>, 1>> CubicScale::inverse(
     const std::array<T, 1>& target_coords, const double time,
-    const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
+    const std::unordered_map<
+        std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list) const
     noexcept {
   // the original coordinates are found by solving for the roots
   // of (b-a)/X^2*\xi^3 + a*\xi - x = 0, where a and b are the FunctionsOfTime,
@@ -107,7 +109,8 @@ boost::optional<std::array<tt::remove_cvref_wrap_t<T>, 1>> CubicScale::inverse(
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 1> CubicScale::frame_velocity(
     const std::array<T, 1>& source_coords, const double time,
-    const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
+    const std::unordered_map<
+        std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list) const
     noexcept {
   const auto dt_a_of_t = map_list.at(f_of_t_a_).func_and_deriv(time)[1][0];
   const auto dt_b_of_t = map_list.at(f_of_t_b_).func_and_deriv(time)[1][0];
@@ -122,7 +125,8 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> CubicScale::frame_velocity(
 template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> CubicScale::jacobian(
     const std::array<T, 1>& source_coords, const double time,
-    const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
+    const std::unordered_map<
+        std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list) const
     noexcept {
   const auto a_of_t = map_list.at(f_of_t_a_).func(time)[0][0];
   const auto b_of_t = map_list.at(f_of_t_b_).func(time)[0][0];
@@ -141,7 +145,8 @@ template <typename T>
 tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame>
 CubicScale::inv_jacobian(
     const std::array<T, 1>& source_coords, const double time,
-    const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
+    const std::unordered_map<
+        std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list) const
     noexcept {
   const auto a_of_t = map_list.at(f_of_t_a_).func(time)[0][0];
   const auto b_of_t = map_list.at(f_of_t_b_).func(time)[0][0];
@@ -159,7 +164,8 @@ CubicScale::inv_jacobian(
 template <typename T>
 tnsr::Iaa<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> CubicScale::hessian(
     const std::array<T, 1>& source_coords, const double time,
-    const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
+    const std::unordered_map<
+        std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list) const
     noexcept {
   const auto a_of_t_and_derivs = map_list.at(f_of_t_a_).func_and_2_derivs(time);
   const auto b_of_t_and_derivs = map_list.at(f_of_t_b_).func_and_2_derivs(time);
@@ -201,43 +207,50 @@ bool operator==(const CoordMapsTimeDependent::CubicScale& lhs,
 template boost::optional<std::array<tt::remove_cvref_wrap_t<double>, 1>>
 CubicScale::inverse(
     const std::array<double, 1>& target_coords, const double time,
-    const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
+    const std::unordered_map<
+        std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list) const
     noexcept;
 template boost::optional<std::array<
     tt::remove_cvref_wrap_t<std::reference_wrapper<const double>>, 1>>
 CubicScale::inverse(
     const std::array<std::reference_wrapper<const double>, 1>& target_coords,
     const double time,
-    const std::unordered_map<std::string, FunctionOfTime&>& map_list) const
+    const std::unordered_map<
+        std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list) const
     noexcept;
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                   \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1> CubicScale::    \
-  operator()(const std::array<DTYPE(data), 1>& source_coords,                  \
-             const double time,                                                \
-             const std::unordered_map<std::string, FunctionOfTime&>& map_list) \
-      const noexcept;                                                          \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                 \
-  CubicScale::frame_velocity(                                                  \
-      const std::array<DTYPE(data), 1>& source_coords, const double time,      \
-      const std::unordered_map<std::string, FunctionOfTime&>& map_list)        \
-      const noexcept;                                                          \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>   \
-  CubicScale::jacobian(                                                        \
-      const std::array<DTYPE(data), 1>& source_coords, const double time,      \
-      const std::unordered_map<std::string, FunctionOfTime&>& map_list)        \
-      const noexcept;                                                          \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>   \
-  CubicScale::inv_jacobian(                                                    \
-      const std::array<DTYPE(data), 1>& source_coords, const double time,      \
-      const std::unordered_map<std::string, FunctionOfTime&>& map_list)        \
-      const noexcept;                                                          \
-  template tnsr::Iaa<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
-  CubicScale::hessian(                                                         \
-      const std::array<DTYPE(data), 1>& source_coords, const double time,      \
-      const std::unordered_map<std::string, FunctionOfTime&>& map_list)        \
+#define INSTANTIATE(_, data)                                                  \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                \
+  CubicScale::operator()(                                                     \
+      const std::array<DTYPE(data), 1>& source_coords, const double time,     \
+      const std::unordered_map<                                               \
+          std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list)   \
+      const noexcept;                                                         \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                \
+  CubicScale::frame_velocity(                                                 \
+      const std::array<DTYPE(data), 1>& source_coords, const double time,     \
+      const std::unordered_map<                                               \
+          std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list)   \
+      const noexcept;                                                         \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
+  CubicScale::jacobian(                                                       \
+      const std::array<DTYPE(data), 1>& source_coords, const double time,     \
+      const std::unordered_map<                                               \
+          std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list)   \
+      const noexcept;                                                         \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>  \
+  CubicScale::inv_jacobian(                                                   \
+      const std::array<DTYPE(data), 1>& source_coords, const double time,     \
+      const std::unordered_map<                                               \
+          std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list)   \
+      const noexcept;                                                         \
+  template tnsr::Iaa<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
+  CubicScale::hessian(                                                        \
+      const std::array<DTYPE(data), 1>& source_coords, const double time,     \
+      const std::unordered_map<                                               \
+          std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list)   \
       const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,

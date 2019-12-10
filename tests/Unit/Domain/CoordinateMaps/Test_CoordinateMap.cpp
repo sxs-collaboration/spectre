@@ -13,7 +13,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ControlSystem/PiecewisePolynomial.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
@@ -30,14 +29,13 @@
 #include "Domain/CoordinateMaps/Wedge2D.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/Direction.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-
-// IWYU pragma: no_forward_declare Tensor
-class FunctionOfTime;
 
 namespace domain {
 namespace {
@@ -903,12 +901,14 @@ void test_time_dependent_map() {
 
   const std::array<DataVector, deriv_order + 1> init_func{
       {{1.0}, {-2.0}, {2.0}, {0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> function_of_time_derived(
-      initial_time, init_func);
-  FunctionOfTime& function_of_time = function_of_time_derived;
+  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>
+      function_of_time_derived(initial_time, init_func);
+  domain::FunctionsOfTime::FunctionOfTime& function_of_time =
+      function_of_time_derived;
 
-  const std::unordered_map<std::string, FunctionOfTime&> functions_of_time = {
-      {"trans", function_of_time}};
+  const std::unordered_map<std::string,
+                           domain::FunctionsOfTime::FunctionOfTime&>
+      functions_of_time = {{"trans", function_of_time}};
   const CoordMapsTimeDependent::Translation trans_map{};
 
   // affine(x) = 1.5 * x + 5.5

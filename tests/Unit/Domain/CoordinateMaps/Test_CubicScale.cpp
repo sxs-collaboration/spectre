@@ -9,11 +9,11 @@
 #include <string>
 #include <unordered_map>
 
-#include "ControlSystem/FunctionOfTime.hpp"
-#include "ControlSystem/PiecewisePolynomial.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Domain/CoordinateMaps/CubicScale.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TypeTraits.hpp"
@@ -31,16 +31,20 @@ void cubic_scale_non_invertible(const double a0, const double b0,
 
   const std::array<DataVector, deriv_order + 1> init_func_a{
       {{a0}, {0.0}, {0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(t, init_func_a);
-  FunctionOfTime& expansion_a_base = expansion_a;
+  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(
+      t, init_func_a);
+  domain::FunctionsOfTime::FunctionOfTime& expansion_a_base = expansion_a;
 
   const std::array<DataVector, deriv_order + 1> init_func_b{
       {{b0}, {0.0}, {0.0}}};
-  FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(t, init_func_b);
-  FunctionOfTime& expansions_b_base = expansion_b;
+  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(
+      t, init_func_b);
+  domain::FunctionsOfTime::FunctionOfTime& expansions_b_base = expansion_b;
 
-  const std::unordered_map<std::string, FunctionOfTime&> f_of_t_list = {
-      {"expansion_a", expansion_a_base}, {"expansion_b", expansions_b_base}};
+  const std::unordered_map<std::string,
+                           domain::FunctionsOfTime::FunctionOfTime&>
+      f_of_t_list = {{"expansion_a", expansion_a_base},
+                     {"expansion_b", expansions_b_base}};
 
   const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
   const std::array<double, 1> point_xi{{19.2}};
@@ -68,16 +72,18 @@ void test_map() {
     double t = -0.5;
     const double dt = 0.6;
 
-    FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(t,
-                                                                  init_func_a);
-    FunctionOfTime& expansion_a_base = expansion_a;
+    domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(
+        t, init_func_a);
+    domain::FunctionsOfTime::FunctionOfTime& expansion_a_base = expansion_a;
 
-    FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(t,
-                                                                  init_func_b);
-    FunctionOfTime& expansions_b_base = expansion_b;
+    domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(
+        t, init_func_b);
+    domain::FunctionsOfTime::FunctionOfTime& expansions_b_base = expansion_b;
 
-    const std::unordered_map<std::string, FunctionOfTime&> f_of_t_list = {
-        {"expansion_a", expansion_a_base}, {"expansion_b", expansions_b_base}};
+    const std::unordered_map<std::string,
+                             domain::FunctionsOfTime::FunctionOfTime&>
+        f_of_t_list = {{"expansion_a", expansion_a_base},
+                       {"expansion_b", expansions_b_base}};
 
     const double outer_boundary = outer_b;
     const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
@@ -202,16 +208,18 @@ void test_boundaries() {
     const std::array<DataVector, deriv_order + 1> init_func_b{
         {{0.99}, {0.0}, {0.0}}};
 
-    FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(t,
-                                                                  init_func_a);
-    FunctionOfTime& expansion_a_base = expansion_a;
+    domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(
+        t, init_func_a);
+    domain::FunctionsOfTime::FunctionOfTime& expansion_a_base = expansion_a;
 
-    FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(t,
-                                                                  init_func_b);
-    FunctionOfTime& expansions_b_base = expansion_b;
+    domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(
+        t, init_func_b);
+    domain::FunctionsOfTime::FunctionOfTime& expansions_b_base = expansion_b;
 
-    const std::unordered_map<std::string, FunctionOfTime&> f_of_t_list = {
-        {"expansion_a", expansion_a_base}, {"expansion_b", expansions_b_base}};
+    const std::unordered_map<std::string,
+                             domain::FunctionsOfTime::FunctionOfTime&>
+        f_of_t_list = {{"expansion_a", expansion_a_base},
+                       {"expansion_b", expansions_b_base}};
 
     const double outer_boundary = 20.0;
     const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);

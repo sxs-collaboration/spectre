@@ -11,10 +11,12 @@
 // IWYU pragma: no_forward_declare FunctionOfTimeUpdater
 
 /// \cond
+namespace domain {
 namespace FunctionsOfTime {
 template <size_t DerivOrder>
 class PiecewisePolynomial;
 }  // namespace FunctionsOfTime
+}  // namespace domain
 namespace gsl {
 template <class T>
 class not_null;
@@ -39,7 +41,7 @@ class Translation {
   // FunctionOfTimeUpdater
   void operator()(
       gsl::not_null<FunctionOfTimeUpdater<DerivOrder>*> updater,
-      const FunctionsOfTime::PiecewisePolynomial<DerivOrder>& f_of_t,
+      const domain::FunctionsOfTime::PiecewisePolynomial<DerivOrder>& f_of_t,
       double time, const DataVector& coords) noexcept;
 
  private:
