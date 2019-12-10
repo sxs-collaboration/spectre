@@ -202,6 +202,20 @@ void test_gij_deriv_functions(const DataVector& used_for_size) noexcept {
       {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
 }
 
+template <typename DataType, size_t SpatialDim, typename Frame>
+void test_spacetime_metric_deriv_functions(
+    const DataVector& used_for_size) noexcept {
+  pypp::check_with_random_values<1>(
+      static_cast<tnsr::aa<DataType, SpatialDim, Frame> (*)(
+          const Scalar<DataType>&, const tnsr::I<DataType, SpatialDim, Frame>&,
+          const tnsr::aa<DataType, SpatialDim, Frame>&,
+          const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
+          &::GeneralizedHarmonic::time_derivative_of_spacetime_metric<
+              SpatialDim, Frame, DataType>),
+      "GeneralRelativity.ComputeGhQuantities", "gh_dt_spacetime_metric",
+      {{{std::numeric_limits<double>::denorm_min(), 10.}}}, used_for_size);
+}
+
 // Test computation of derivs of lapse by comparing to Kerr-Schild
 template <typename Solution>
 void test_lapse_deriv_functions_analytic(
@@ -564,6 +578,19 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
   test_gij_deriv_functions<DataVector, 1, Frame::Inertial>(used_for_size);
   test_gij_deriv_functions<DataVector, 2, Frame::Inertial>(used_for_size);
   test_gij_deriv_functions<DataVector, 3, Frame::Inertial>(used_for_size);
+
+  test_spacetime_metric_deriv_functions<DataVector, 1, Frame::Grid>(
+      used_for_size);
+  test_spacetime_metric_deriv_functions<DataVector, 2, Frame::Grid>(
+      used_for_size);
+  test_spacetime_metric_deriv_functions<DataVector, 3, Frame::Grid>(
+      used_for_size);
+  test_spacetime_metric_deriv_functions<DataVector, 1, Frame::Inertial>(
+      used_for_size);
+  test_spacetime_metric_deriv_functions<DataVector, 2, Frame::Inertial>(
+      used_for_size);
+  test_spacetime_metric_deriv_functions<DataVector, 3, Frame::Inertial>(
+      used_for_size);
 
   test_shift_deriv_functions<DataVector, 1, Frame::Grid>(used_for_size);
   test_shift_deriv_functions<DataVector, 2, Frame::Grid>(used_for_size);
