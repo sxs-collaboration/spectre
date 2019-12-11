@@ -13,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_PreSwshDerivatives.cpp
   Test_PrecomputeCceDependencies.cpp
   Test_SwshDerivatives.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(

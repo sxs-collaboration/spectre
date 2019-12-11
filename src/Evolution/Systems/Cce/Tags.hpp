@@ -89,7 +89,9 @@ struct Dy : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
   static const size_t dimension_to_differentiate = 2;
-  static std::string name() noexcept { return "Dy(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "Dy(" + db::tag_name<Tag>() + ")";
+  }
 };
 
 /// The derivative with respect to Bondi \f$r\f$
@@ -97,14 +99,19 @@ template <typename Tag>
 struct Dr : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
-  static std::string name() noexcept { return "Dr(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "Dr(" + db::tag_name<Tag>() + ")";
+  }
 };
 
 /// The derivative with respect to Bondi retarded time \f$u\f$
 template <typename Tag>
 struct Du : db::PrefixTag, db::SimpleTag {
-    using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
-    using tag = Tag;
+  using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
+  using tag = Tag;
+  static std::string name() noexcept {
+    return "Du(" + db::tag_name<Tag>() + ")";
+  }
 };
 
 // prefix tags associated with the integrands which are used as input to solvers
@@ -117,7 +124,7 @@ struct Integrand : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
   static std::string name() noexcept {
-    return "Integrand(" + Tag::name() + ")";
+    return "Integrand(" + db::tag_name<Tag>() + ")";
   }
 };
 
@@ -128,7 +135,7 @@ struct BoundaryValue : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
   static std::string name() noexcept {
-    return "BoundaryValue(" + Tag::name() + ")";
+    return "BoundaryValue(" + db::tag_name<Tag>() + ")";
   }
 };
 
@@ -139,7 +146,7 @@ struct PoleOfIntegrand : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
   static std::string name() noexcept {
-    return "PoleOfIntegrand(" + Tag::name() + ")";
+    return "PoleOfIntegrand(" + db::tag_name<Tag>() + ")";
   }
 };
 
@@ -150,7 +157,7 @@ struct RegularIntegrand : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
   using tag = Tag;
   static std::string name() noexcept {
-    return "RegularIntegrand(" + Tag::name() + ")";
+    return "RegularIntegrand(" + db::tag_name<Tag>() + ")";
   }
 };
 
@@ -163,7 +170,7 @@ struct LinearFactor : db::PrefixTag, db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
   using tag = Tag;
   static std::string name() noexcept {
-    return "LinearFactor(" + Tag::name() + ")";
+    return "LinearFactor(" + db::tag_name<Tag>() + ")";
   }
 };
 
@@ -177,7 +184,7 @@ struct LinearFactorForConjugate : db::PrefixTag, db::SimpleTag {
       Scalar<SpinWeighted<ComplexDataVector, 2 * Tag::type::type::spin>>;
   using tag = Tag;
   static std::string name() noexcept {
-    return "LinearFactorForConjugate(" + Tag::name() + ")";
+    return "LinearFactorForConjugate(" + db::tag_name<Tag>() + ")";
   }
 };
 
