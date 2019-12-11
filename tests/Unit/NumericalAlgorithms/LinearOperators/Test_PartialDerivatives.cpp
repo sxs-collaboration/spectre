@@ -462,6 +462,12 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearOperators.PartialDerivs",
   CHECK(Tags::deriv<Tags::Variables<tmpl::list<Var1<3>>>, tmpl::size_t<3>,
                     Frame::Grid>::name() ==
         "deriv(" + Tags::Variables<tmpl::list<Var1<3>>>::name() + ")");
+  CHECK(Tags::spacetime_deriv<Var1<3>, tmpl::size_t<3>, Frame::Grid>::name() ==
+        "spacetime_deriv(" + Var1<3>::name() + ")");
+  CHECK(Tags::spacetime_deriv<Tags::Variables<tmpl::list<Var1<3>>>,
+                              tmpl::size_t<3>, Frame::Grid>::name() ==
+        "spacetime_deriv(" + Tags::Variables<tmpl::list<Var1<3>>>::name() +
+            ")");
 }
 
 namespace {
