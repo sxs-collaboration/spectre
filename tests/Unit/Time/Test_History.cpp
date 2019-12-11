@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <boost/iterator/transform_iterator.hpp>
+#include <cmath>
 #include <cstddef>
 #include <deque>
 #include <string>
@@ -20,10 +21,14 @@
 #include "tests/Unit/TestHelpers.hpp"
 
 namespace {
+
 Time make_time(const double t) noexcept { return Slab(t, t + 0.5).start(); }
 
 TimeStepId make_time_id(const double t) noexcept {
-  return {true, 0, make_time(t)};
+  constexpr size_t substeps = 2;
+  return {true, 0, make_time(substeps * std::floor(t / substeps)),
+          static_cast<size_t>(std::fmod(t, substeps) + substeps) % substeps,
+          make_time(t)};
 }
 
 // Requires `it` to point at 0. in the sequence of times -1., 0., 1., 2.
@@ -84,8 +89,9 @@ void check_history_state(const HistoryType& hist) noexcept {
   {
     auto it = hist.begin();
     for (size_t i = 0; i < hist.size(); ++i, ++it) {
-      CHECK(*it == hist[i]);
       const auto entry_num = static_cast<double>(i) - 1.0;
+      CHECK(*it == hist[i]);
+      CHECK(it.time_step_id() == make_time_id(entry_num));
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
       CHECK(it.value() == entry_num);
@@ -108,16 +114,16 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
   CHECK(history.begin() == history.cbegin());
   CHECK(history.end() == history.cend());
 
-  history.insert(make_time(0.), 0., get_output(0));
-  history.insert_initial(make_time(-1.), -1., get_output(-1));
+  history.insert(make_time_id(0.), 0., get_output(0));
+  history.insert_initial(make_time_id(-1.), -1., get_output(-1));
   {
     auto tmp = get_output(1);
-    history.insert(make_time(1.), 1., std::move(tmp));
+    history.insert(make_time_id(1.), 1., std::move(tmp));
     // clang-tidy: misc-use-after-move
     CHECK(tmp == get_output(1));  // NOLINT
   }
-  history.insert_initial(make_time(-2.), -2., get_output(-2));
-  history.insert_initial(make_time(-3.), -3., get_output(-3));
+  history.insert_initial(make_time_id(-2.), -2., get_output(-2));
+  history.insert_initial(make_time_id(-3.), -3., get_output(-3));
 
   history.mark_unneeded(history.begin());
   CHECK(history.size() == 5);
@@ -128,7 +134,7 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
 
   {
     auto tmp = get_output(2);
-    history.insert(make_time(2.), 2., std::move(tmp));
+    history.insert(make_time_id(2.), 2., std::move(tmp));
     // clang-tidy: misc-use-after-move
     CHECK(tmp == get_output(-3));  // NOLINT
   }
@@ -150,8 +156,9 @@ SPECTRE_TEST_CASE("Unit.Time.History", "[Unit][Time]") {
   {
     auto it = history.begin();
     for (size_t i = 0; i < 2; ++i, ++it) {
-      CHECK(*it == history[i]);
       const auto entry_num = static_cast<double>(i) + 1.0;
+      CHECK(*it == history[i]);
+      CHECK(it.time_step_id() == make_time_id(entry_num));
       CHECK((*it).value() == entry_num);
       CHECK(it->value() == entry_num);
       CHECK(it.value() == entry_num);

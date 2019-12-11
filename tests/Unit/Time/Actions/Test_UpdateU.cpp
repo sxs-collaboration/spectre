@@ -16,12 +16,11 @@
 #include "Time/Slab.hpp"
 #include "Time/Tags.hpp"
 #include "Time/Time.hpp"
+#include "Time/TimeStepId.hpp"
 #include "Time/TimeSteppers/RungeKutta3.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/ActionTesting.hpp"
-
-// IWYU pragma: no_include <unordered_map>
 
 // IWYU pragma: no_include "Time/History.hpp"
 
@@ -100,7 +99,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.UpdateU", "[Unit][Time][Actions]") {
             const gsl::not_null<db::item_type<history_tag>*> history,
             const double& vars) noexcept {
           const Time& time = gsl::at(substep_times, substep);
-          history->insert(time, vars, rhs(time.value(), vars));
+          history->insert(TimeStepId(true, 0, time), vars,
+                          rhs(time.value(), vars));
         },
         db::get<variables_tag>(before_box));
 

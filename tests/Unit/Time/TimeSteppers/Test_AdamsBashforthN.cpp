@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <deque>
+#include <initializer_list>
 
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/PupStlCpp11.hpp"
@@ -42,16 +43,16 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN", "[Unit][Time]") {
   }
 
   const Slab slab(0., 1.);
-  const Time start = slab.start();
-  const Time mid = start + slab.duration() / 2;
-  const Time end = slab.end();
-  const auto can_change = [](const Time& first, const Time& second,
-                             const Time& now) noexcept {
+  const TimeStepId start(true, 0, slab.start());
+  const TimeStepId mid(true, 0, slab.start() + slab.duration() / 2);
+  const TimeStepId end(true, 0, slab.end());
+  const auto can_change = [](const TimeStepId& first, const TimeStepId& second,
+                             const TimeStepId& now) noexcept {
     const TimeSteppers::AdamsBashforthN stepper(2);
     TimeSteppers::History<double, double> history;
     history.insert(first, 0., 0.);
     history.insert(second, 0., 0.);
-    return stepper.can_change_step_size(TimeStepId(true, 0, now), history);
+    return stepper.can_change_step_size(now, history);
   };
   CHECK(can_change(start, mid, end));
   CHECK_FALSE(can_change(start, end, mid));
@@ -103,16 +104,16 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Backwards",
   }
 
   const Slab slab(0., 1.);
-  const Time start = slab.start();
-  const Time mid = start + slab.duration() / 2;
-  const Time end = slab.end();
-  const auto can_change = [](const Time& first, const Time& second,
-                             const Time& now) noexcept {
+  const TimeStepId start(false, 0, slab.start());
+  const TimeStepId mid(false, 0, slab.start() + slab.duration() / 2);
+  const TimeStepId end(false, 0, slab.end());
+  const auto can_change = [](const TimeStepId& first, const TimeStepId& second,
+                             const TimeStepId& now) noexcept {
     const TimeSteppers::AdamsBashforthN stepper(2);
     TimeSteppers::History<double, double> history;
     history.insert(first, 0., 0.);
     history.insert(second, 0., 0.);
-    return stepper.can_change_step_size(TimeStepId(false, 0, now), history);
+    return stepper.can_change_step_size(now, history);
   };
   CHECK_FALSE(can_change(start, mid, end));
   CHECK_FALSE(can_change(start, end, mid));
@@ -383,7 +384,8 @@ SPECTRE_TEST_CASE("Unit.Time.TimeSteppers.AdamsBashforthN.Reversal",
   const Slab slab(0., 1.);
   TimeSteppers::History<double, double> history{};
   const auto add_history = [&df, &f, &history](const Time& time) noexcept {
-    history.insert(time, f(time.value()), df(time.value()));
+    history.insert(TimeStepId(true, 0, time), f(time.value()),
+                   df(time.value()));
   };
   add_history(slab.start());
   add_history(slab.end());
