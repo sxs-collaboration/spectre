@@ -294,7 +294,9 @@ template <typename BondiValueTag, typename Generator>
 void test_pole_integration_with_linear_operator(
     const gsl::not_null<Generator*> gen, size_t number_of_radial_grid_points,
     size_t l_max) noexcept {
-  UniformCustomDistribution<double> dist(0.1, 5.0);
+  // The typical linear solve performed during realistic CCE evolution involves
+  // fairly small wave amplitudes
+  UniformCustomDistribution<double> dist(0.01, 0.1);
   const size_t number_of_radial_polynomials = 6;
 
   auto box = create_box_for_bondi_integration<BondiValueTag>(
@@ -306,6 +308,28 @@ void test_pole_integration_with_linear_operator(
       tmpl::list<BondiValueTag, Tags::PoleOfIntegrand<BondiValueTag>,
                  Tags::LinearFactor<BondiValueTag>,
                  Tags::LinearFactorForConjugate<BondiValueTag>>{});
+
+  // In the full treatment of the CCE equations the linear factor is 1.0
+  // asymptotically (near y = 1.0) and the linear factor of the conjugate is 0.0
+  // asymptotically, with often small perturbation at linear and higher orders.
+  // Here we set that leading behavior explicitly.
+  db::mutate<
+      TestHelpers::RadialPolyCoefficientsFor<Tags::LinearFactor<BondiValueTag>>,
+      TestHelpers::RadialPolyCoefficientsFor<
+          Tags::LinearFactorForConjugate<BondiValueTag>>>(
+      make_not_null(&box),
+      [](const gsl::not_null<
+             db::item_type<TestHelpers::RadialPolyCoefficientsFor<
+                 Tags::LinearFactor<BondiValueTag>>>*>
+             linear_factor_modes,
+         const gsl::not_null<
+             db::item_type<TestHelpers::RadialPolyCoefficientsFor<
+                 Tags::LinearFactorForConjugate<BondiValueTag>>>*>
+             linear_factor_of_conjugate_modes) noexcept {
+        get(*linear_factor_modes)[0] = 1.0;
+        get(*linear_factor_of_conjugate_modes)[0] = 0.0;
+      });
+
   zero_top_modes<BondiValueTag>(make_not_null(&box), 2,
                                 number_of_radial_polynomials);
   zero_top_modes<Tags::LinearFactor<BondiValueTag>>(
@@ -319,9 +343,30 @@ void test_pole_integration_with_linear_operator(
                                           Spectral::Quadrature::GaussLobatto>(
                  number_of_radial_grid_points));
 
-  const auto random_angular_data = make_with_random_values<ComplexDataVector>(
+  // generate random modes rather than random collocation values to ensure
+  // representability, and to filter the last couple of l modes so that aliasing
+  // doesn't hurt precision in the nonlinear formulas below.
+  auto random_angular_data = make_with_random_values<ComplexDataVector>(
       gen, make_not_null(&dist),
       Spectral::Swsh::number_of_swsh_collocation_points(l_max));
+  SpinWeighted<ComplexModalVector, 0> random_angular_modes{
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
+  fill_with_random_values(make_not_null(&random_angular_modes), gen,
+                          make_not_null(&dist));
+  const auto& coefficients_metadata =
+      Spectral::Swsh::cached_coefficients_metadata(l_max);
+  for (const auto& mode : coefficients_metadata) {
+    if (mode.l > l_max - 2) {
+      random_angular_modes.data()[mode.transform_of_real_part_offset] = 0.0;
+      random_angular_modes.data()[mode.transform_of_imag_part_offset] = 0.0;
+    }
+  }
+  SpinWeighted<ComplexDataVector, 0> filter_buffer;
+  filter_buffer.set_data_ref(random_angular_data.data(),
+                             random_angular_data.size());
+  Spectral::Swsh::inverse_swsh_transform(
+      l_max, 1, make_not_null(&filter_buffer), random_angular_modes);
+
   generate_volume_data_from_separable(
       make_not_null(&box), random_angular_data, one_minus_y,
       tmpl::list<Tags::PoleOfIntegrand<BondiValueTag>,
@@ -418,7 +463,7 @@ void test_pole_integration_with_linear_operator(
       Approx::custom()
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e6)
           .scale(1.0);
-
+  INFO("number of radial grid points: " << number_of_radial_grid_points);
   CHECK_ITERABLE_CUSTOM_APPROX(expected,
                                get(db::get<BondiValueTag>(box)).data(),
                                numerical_differentiation_approximation);
@@ -429,7 +474,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearSolve",
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{3, 6};
   const size_t l_max = sdist(gen);
-  const size_t number_of_radial_grid_points = 2 * sdist(gen);
+  const size_t number_of_radial_grid_points = sdist(gen) + 4;
 
   test_regular_integration<Tags::BondiBeta>(
       make_not_null(&gen), number_of_radial_grid_points, l_max);
