@@ -172,10 +172,18 @@ bool operator==(const Time& a, const Time& b) noexcept {
 bool operator!=(const Time& a, const Time& b) noexcept { return not(a == b); }
 
 bool operator<(const Time& a, const Time& b) noexcept {
-  // Non-equality test in second clause is required to avoid
-  // assertions in Slab.
-  return (a.slab() == b.slab() and a.fraction() < b.fraction()) or
-         (a != b and a.slab() < b.slab());
+  if (a.slab() == b.slab()) {
+    return a.fraction() < b.fraction();
+  }
+  if (not a.slab().overlaps(b.slab())) {
+    return a != b and a.slab() < b.slab();
+  }
+  if ((a.slab().start() == b.slab().start() and a.is_at_slab_start()) or
+      (a.slab().end() == b.slab().end() and a.is_at_slab_end())) {
+    return a.with_slab(b.slab()) < b;
+  } else {
+    return a < b.with_slab(a.slab());
+  }
 }
 
 bool operator>(const Time& a, const Time& b) noexcept { return b < a; }

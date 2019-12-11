@@ -75,6 +75,22 @@ SPECTRE_TEST_CASE("Unit.Time.Slab", "[Unit][Time]") {
   CHECK(slab != Slab(tend2_d / 2., tend_d));
   CHECK(slab != Slab(tend_d, tend2_d));
 
+  {
+    const auto check_overlaps =
+        [](const Slab& a, const Slab& b, const bool expected) noexcept {
+      CAPTURE(a);
+      CAPTURE(b);
+      CHECK(a.overlaps(b) == expected);
+      CHECK(b.overlaps(a) == expected);
+    };
+    check_overlaps(slab, slab, true);
+    check_overlaps(slab, slab.advance(), false);
+    check_overlaps(slab, slab.advance().advance(), false);
+    check_overlaps(slab, Slab(tstart_d, tend_d + 1.0), true);
+    check_overlaps(slab, Slab(tstart_d - 1.0, tend_d), true);
+    check_overlaps(slab, Slab(tstart_d - 1.0, tend_d + 1.0), true);
+  }
+
   check_cmp(Slab(1, 2), Slab(3, 4));
   check_cmp(Slab(1, 2), Slab(2, 4));
 

@@ -70,6 +70,9 @@ class Slab {
   /// Check if this slab is immediately preceeded by the other slab.
   bool is_preceeded_by(const Slab& other) const noexcept;
 
+  /// Check if slabs overlap.  Abutting slabs do not overlap.
+  bool overlaps(const Slab& other) const noexcept;
+
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
