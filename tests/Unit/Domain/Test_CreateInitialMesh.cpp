@@ -5,7 +5,6 @@
 
 #include <cstddef>
 
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CreateInitialMesh.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/ElementId.hpp"

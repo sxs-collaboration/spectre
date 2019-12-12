@@ -15,6 +15,7 @@
 #include "Domain/Block.hpp"
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"
