@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(FunctionsOfTime)
+
 set(LIBRARY "Test_Domain")
 
 set(LIBRARY_SOURCES

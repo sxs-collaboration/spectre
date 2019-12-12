@@ -14,9 +14,10 @@
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
+namespace domain {
 namespace {
 template <size_t DerivOrder>
-void test(const gsl::not_null<FunctionOfTime*> f_of_t,
+void test(const gsl::not_null<FunctionsOfTime::FunctionOfTime*> f_of_t,
           const gsl::not_null<FunctionsOfTime::PiecewisePolynomial<DerivOrder>*>
               f_of_t_derived,
           double t, const double dt, const double final_time) noexcept {
@@ -50,7 +51,7 @@ void test(const gsl::not_null<FunctionOfTime*> f_of_t,
 
 template <size_t DerivOrder>
 void test_non_const_deriv(
-    const gsl::not_null<FunctionOfTime*> f_of_t,
+    const gsl::not_null<FunctionsOfTime::FunctionOfTime*> f_of_t,
     const gsl::not_null<FunctionsOfTime::PiecewisePolynomial<DerivOrder>*>
         f_of_t_derived,
     double t, const double dt, const double final_time) noexcept {
@@ -74,7 +75,8 @@ void test_non_const_deriv(
 }
 
 template <size_t DerivOrder>
-void test_within_roundoff(const FunctionOfTime& f_of_t) noexcept {
+void test_within_roundoff(
+    const FunctionsOfTime::FunctionOfTime& f_of_t) noexcept {
   const auto lambdas0 = f_of_t.func_and_2_derivs(1.0 - 5.0e-16);
   CHECK(approx(lambdas0[0][0]) == 1.0);
   CHECK(approx(lambdas0[1][0]) == 3.0);
@@ -119,10 +121,10 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
     }
     {
       INFO("Test with base class construction.");
-      std::unique_ptr<FunctionOfTime> f_of_t =
+      std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t =
           std::make_unique<FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
               t, init_func);
-      std::unique_ptr<FunctionOfTime> f_of_t2 =
+      std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t2 =
           serialize_and_deserialize(f_of_t);
 
       test(make_not_null(f_of_t.get()),
@@ -160,10 +162,10 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
     }
     {
       INFO("Test with base class construction.");
-      std::unique_ptr<FunctionOfTime> f_of_t =
+      std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t =
           std::make_unique<FunctionsOfTime::PiecewisePolynomial<deriv_order>>(
               t, init_func);
-      std::unique_ptr<FunctionOfTime> f_of_t2 =
+      std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t2 =
           serialize_and_deserialize(f_of_t);
 
       test_non_const_deriv(
@@ -240,3 +242,4 @@ SPECTRE_TEST_CASE(
   f_of_t.update(2.0, {6.0, 0.0});
   f_of_t.func(0.5);
 }
+}  // namespace domain
