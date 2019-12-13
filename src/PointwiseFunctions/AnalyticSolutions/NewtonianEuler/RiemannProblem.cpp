@@ -134,10 +134,10 @@ RiemannProblem<Dim>::RiemannProblem(
 
   // Compute bracket for root finder according to value of the function whose
   // root we want (Eqn. 4.39 of Toro.)
-  FunctionOfPressureAndData<Dim> f_of_p_left(left_initial_data_,
-                                             adiabatic_index_);
-  FunctionOfPressureAndData<Dim> f_of_p_right(right_initial_data_,
-                                              adiabatic_index_);
+  const FunctionOfPressureAndData<Dim> f_of_p_left(left_initial_data_,
+                                                   adiabatic_index_);
+  const FunctionOfPressureAndData<Dim> f_of_p_right(right_initial_data_,
+                                                    adiabatic_index_);
   const auto p_minmax =
       std::minmax(left_initial_data_.pressure_, right_initial_data_.pressure_);
   const double f_min =
