@@ -31,28 +31,25 @@ void cubic_scale_non_invertible(const double a0, const double b0,
 
   const std::array<DataVector, deriv_order + 1> init_func_a{
       {{a0}, {0.0}, {0.0}}};
-  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(
-      t, init_func_a);
-  domain::FunctionsOfTime::FunctionOfTime& expansion_a_base = expansion_a;
-
   const std::array<DataVector, deriv_order + 1> init_func_b{
       {{b0}, {0.0}, {0.0}}};
-  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(
-      t, init_func_b);
-  domain::FunctionsOfTime::FunctionOfTime& expansions_b_base = expansion_b;
 
-  const std::unordered_map<std::string,
-                           domain::FunctionsOfTime::FunctionOfTime&>
-      f_of_t_list = {{"expansion_a", expansion_a_base},
-                     {"expansion_b", expansions_b_base}};
+  using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
+  using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
+  std::unordered_map<std::string, FoftPtr> f_of_t_list{};
+  f_of_t_list["expansion_a"] = std::make_unique<Polynomial>(t, init_func_a);
+  f_of_t_list["expansion_b"] = std::make_unique<Polynomial>(t, init_func_b);
+
+  const FoftPtr& expansion_a_base = f_of_t_list.at("expansion_a");
+  const FoftPtr& expansion_b_base = f_of_t_list.at("expansion_b");
 
   const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
   const std::array<double, 1> point_xi{{19.2}};
 
   const std::array<double, 1> mapped_point{
       {point_xi[0] *
-       (expansion_a_base.func(t)[0][0] +
-        (expansions_b_base.func(t)[0][0] - expansion_a_base.func(t)[0][0]) *
+       (expansion_a_base->func(t)[0][0] +
+        (expansion_b_base->func(t)[0][0] - expansion_a_base->func(t)[0][0]) *
             square(point_xi[0] / outer_boundary))}};
 
   // this call should fail.
@@ -72,18 +69,15 @@ void test_map() {
     double t = -0.5;
     const double dt = 0.6;
 
-    domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(
-        t, init_func_a);
-    domain::FunctionsOfTime::FunctionOfTime& expansion_a_base = expansion_a;
+    using Polynomial =
+        domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
+    using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
+    std::unordered_map<std::string, FoftPtr> f_of_t_list{};
+    f_of_t_list["expansion_a"] = std::make_unique<Polynomial>(t, init_func_a);
+    f_of_t_list["expansion_b"] = std::make_unique<Polynomial>(t, init_func_b);
 
-    domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(
-        t, init_func_b);
-    domain::FunctionsOfTime::FunctionOfTime& expansions_b_base = expansion_b;
-
-    const std::unordered_map<std::string,
-                             domain::FunctionsOfTime::FunctionOfTime&>
-        f_of_t_list = {{"expansion_a", expansion_a_base},
-                       {"expansion_b", expansions_b_base}};
+    const FoftPtr& expansion_a_base = f_of_t_list.at("expansion_a");
+    const FoftPtr& expansion_b_base = f_of_t_list.at("expansion_b");
 
     const double outer_boundary = outer_b;
     const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
@@ -93,8 +87,8 @@ void test_map() {
     const auto scale_map_deserialized = serialize_and_deserialize(scale_map);
 
     while (t < final_time) {
-      const double a = expansion_a_base.func_and_deriv(t)[0][0];
-      const double b = expansions_b_base.func_and_deriv(t)[0][0];
+      const double a = expansion_a_base->func_and_deriv(t)[0][0];
+      const double b = expansion_b_base->func_and_deriv(t)[0][0];
 
       const std::array<double, 1> mapped_point{
           {point_xi[0] * (a + (b - a) * square(point_xi[0] / outer_boundary))}};
@@ -129,8 +123,8 @@ void test_map() {
       CHECK(scale_map_deserialized.inv_jacobian(point_xi, t, f_of_t_list)
                 .get(0, 0) == inv_jacobian);
 
-      const double a_dot = expansion_a_base.func_and_deriv(t)[1][0];
-      const double b_dot = expansions_b_base.func_and_deriv(t)[1][0];
+      const double a_dot = expansion_a_base->func_and_deriv(t)[1][0];
+      const double b_dot = expansion_b_base->func_and_deriv(t)[1][0];
       const std::array<double, 1> frame_vel =
           point_xi *
           (a_dot + (b_dot - a_dot) * square(point_xi[0] / outer_boundary));
@@ -141,8 +135,8 @@ void test_map() {
           scale_map_deserialized.frame_velocity(point_xi, t, f_of_t_list),
           frame_vel);
 
-      const double a_ddot = expansion_a_base.func_and_2_derivs(t)[2][0];
-      const double b_ddot = expansions_b_base.func_and_2_derivs(t)[2][0];
+      const double a_ddot = expansion_a_base->func_and_2_derivs(t)[2][0];
+      const double b_ddot = expansion_b_base->func_and_2_derivs(t)[2][0];
       const double time_time =
           a_ddot * point_xi[0] +
           (b_ddot - a_ddot) * cube(point_xi[0]) / square(outer_boundary);
@@ -208,26 +202,23 @@ void test_boundaries() {
     const std::array<DataVector, deriv_order + 1> init_func_b{
         {{0.99}, {0.0}, {0.0}}};
 
-    domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_a(
-        t, init_func_a);
-    domain::FunctionsOfTime::FunctionOfTime& expansion_a_base = expansion_a;
+    using Polynomial =
+        domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
+    using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
+    std::unordered_map<std::string, FoftPtr> f_of_t_list{};
+    f_of_t_list["expansion_a"] = std::make_unique<Polynomial>(t, init_func_a);
+    f_of_t_list["expansion_b"] = std::make_unique<Polynomial>(t, init_func_b);
 
-    domain::FunctionsOfTime::PiecewisePolynomial<deriv_order> expansion_b(
-        t, init_func_b);
-    domain::FunctionsOfTime::FunctionOfTime& expansions_b_base = expansion_b;
-
-    const std::unordered_map<std::string,
-                             domain::FunctionsOfTime::FunctionOfTime&>
-        f_of_t_list = {{"expansion_a", expansion_a_base},
-                       {"expansion_b", expansions_b_base}};
+    const FoftPtr& expansion_a_base = f_of_t_list.at("expansion_a");
+    const FoftPtr& expansion_b_base = f_of_t_list.at("expansion_b");
 
     const double outer_boundary = 20.0;
     const CoordMapsTimeDependent::CubicScale scale_map(outer_boundary);
     const std::array<double, 1> point_xi{{x0}};
 
     while (t < final_time) {
-      const double a = expansion_a_base.func_and_deriv(t)[0][0];
-      const double b = expansions_b_base.func_and_deriv(t)[0][0];
+      const double a = expansion_a_base->func_and_deriv(t)[0][0];
+      const double b = expansion_b_base->func_and_deriv(t)[0][0];
 
       const std::array<double, 1> mapped_point{
           {point_xi[0] * (a + (b - a) * square(point_xi[0] / outer_boundary))}};

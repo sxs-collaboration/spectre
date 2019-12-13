@@ -47,45 +47,51 @@ class CubicScale {
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 1> operator()(
       const std::array<T, 1>& source_coords, double time,
-      const std::unordered_map<std::string,
-                               domain::FunctionsOfTime::FunctionOfTime&>&
-          map_list) const noexcept;
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
+      const noexcept;
 
   /// Returns boost::none if the point is outside the range of the map.
   template <typename T>
   boost::optional<std::array<tt::remove_cvref_wrap_t<T>, 1>> inverse(
       const std::array<T, 1>& target_coords, double time,
-      const std::unordered_map<std::string,
-                               domain::FunctionsOfTime::FunctionOfTime&>&
-          map_list) const noexcept;
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
+      const noexcept;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 1> frame_velocity(
       const std::array<T, 1>& source_coords, double time,
-      const std::unordered_map<std::string,
-                               domain::FunctionsOfTime::FunctionOfTime&>&
-          map_list) const noexcept;
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
+      const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> inv_jacobian(
       const std::array<T, 1>& source_coords, double time,
-      const std::unordered_map<std::string,
-                               domain::FunctionsOfTime::FunctionOfTime&>&
-          map_list) const noexcept;
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
+      const noexcept;
 
   template <typename T>
   tnsr::Ij<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> jacobian(
       const std::array<T, 1>& source_coords, double time,
-      const std::unordered_map<std::string,
-                               domain::FunctionsOfTime::FunctionOfTime&>&
-          map_list) const noexcept;
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
+      const noexcept;
 
   template <typename T>
   tnsr::Iaa<tt::remove_cvref_wrap_t<T>, 1, Frame::NoFrame> hessian(
       const std::array<T, 1>& source_coords, double time,
-      const std::unordered_map<std::string,
-                               domain::FunctionsOfTime::FunctionOfTime&>&
-          map_list) const noexcept;
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list)
+      const noexcept;
 
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT

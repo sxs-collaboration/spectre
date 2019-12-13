@@ -902,14 +902,13 @@ void test_time_dependent_map() {
 
   const std::array<DataVector, deriv_order + 1> init_func{
       {{1.0}, {-2.0}, {2.0}, {0.0}}};
-  domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>
-      function_of_time_derived(initial_time, init_func);
-  domain::FunctionsOfTime::FunctionOfTime& function_of_time =
-      function_of_time_derived;
+  using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
+  functions_of_time["trans"] =
+      std::make_unique<Polynomial>(initial_time, init_func);
 
-  const std::unordered_map<std::string,
-                           domain::FunctionsOfTime::FunctionOfTime&>
-      functions_of_time = {{"trans", function_of_time}};
   const CoordMapsTimeDependent::Translation trans_map{};
 
   // affine(x) = 1.5 * x + 5.5

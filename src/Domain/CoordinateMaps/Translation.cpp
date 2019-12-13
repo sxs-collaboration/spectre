@@ -20,28 +20,28 @@ template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 1> Translation::operator()(
     const std::array<T, 1>& source_coords, const double time,
     const std::unordered_map<
-        std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list) const
-    noexcept {
-  return {{source_coords[0] + map_list.at(f_of_t_name_).func(time)[0][0]}};
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        map_list) const noexcept {
+  return {{source_coords[0] + map_list.at(f_of_t_name_)->func(time)[0][0]}};
 }
 
 boost::optional<std::array<double, 1>> Translation::inverse(
     const std::array<double, 1>& target_coords, const double time,
     const std::unordered_map<
-        std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list) const
-    noexcept {
-  return {{{target_coords[0] - map_list.at(f_of_t_name_).func(time)[0][0]}}};
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        map_list) const noexcept {
+  return {{{target_coords[0] - map_list.at(f_of_t_name_)->func(time)[0][0]}}};
 }
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 1> Translation::frame_velocity(
     const std::array<T, 1>& source_coords, const double time,
     const std::unordered_map<
-        std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list) const
-    noexcept {
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        map_list) const noexcept {
   return {{make_with_value<tt::remove_cvref_wrap_t<T>>(
       dereference_wrapper(source_coords[0]),
-      map_list.at(f_of_t_name_).func_and_deriv(time)[1][0])}};
+      map_list.at(f_of_t_name_)->func_and_deriv(time)[1][0])}};
 }
 
 template <typename T>
@@ -68,24 +68,26 @@ bool operator==(const CoordMapsTimeDependent::Translation& lhs,
 /// \cond
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                                                 \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>               \
-  Translation::operator()(                                                   \
-      const std::array<DTYPE(data), 1>& source_coords, const double time,    \
-      const std::unordered_map<                                              \
-          std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list)  \
-      const noexcept;                                                        \
-  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>               \
-  Translation::frame_velocity(                                               \
-      const std::array<DTYPE(data), 1>& source_coords, const double time,    \
-      const std::unordered_map<                                              \
-          std::string, domain::FunctionsOfTime::FunctionOfTime&>& map_list)  \
-      const noexcept;                                                        \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
-  Translation::jacobian(const std::array<DTYPE(data), 1>& source_coords)     \
-      const noexcept;                                                        \
-  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame> \
-  Translation::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords) \
+#define INSTANTIATE(_, data)                                                   \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                 \
+  Translation::operator()(                                                     \
+      const std::array<DTYPE(data), 1>& source_coords, const double time,      \
+      const std::unordered_map<                                                \
+          std::string,                                                         \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list) \
+      const noexcept;                                                          \
+  template std::array<tt::remove_cvref_wrap_t<DTYPE(data)>, 1>                 \
+  Translation::frame_velocity(                                                 \
+      const std::array<DTYPE(data), 1>& source_coords, const double time,      \
+      const std::unordered_map<                                                \
+          std::string,                                                         \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>& map_list) \
+      const noexcept;                                                          \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>   \
+  Translation::jacobian(const std::array<DTYPE(data), 1>& source_coords)       \
+      const noexcept;                                                          \
+  template tnsr::Ij<tt::remove_cvref_wrap_t<DTYPE(data)>, 1, Frame::NoFrame>   \
+  Translation::inv_jacobian(const std::array<DTYPE(data), 1>& source_coords)   \
       const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector,
