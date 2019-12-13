@@ -197,12 +197,12 @@ struct EvolutionMetavars {
 
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
-                  tmpl::flatten<tmpl::list<
+                  tmpl::list<
                       Actions::RunEventsAndTriggers,
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
-                      step_actions, Actions::AdvanceTime>>>>>>;
+                      step_actions, Actions::AdvanceTime>>>>>;
 
   static constexpr OptionString help{
       "Evolve a Scalar Wave in Dim spatial dimension.\n\n"
