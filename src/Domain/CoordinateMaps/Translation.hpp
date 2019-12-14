@@ -6,6 +6,7 @@
 #include <array>
 #include <boost/optional.hpp>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -35,6 +36,9 @@ namespace CoordMapsTimeDependent {
 class Translation {
  public:
   static constexpr size_t dim = 1;
+
+  Translation() = default;
+  explicit Translation(std::string function_of_time_name) noexcept;
 
   template <typename T>
   std::array<tt::remove_cvref_wrap_t<T>, 1> operator()(
