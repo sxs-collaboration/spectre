@@ -364,7 +364,7 @@ bool operator!=(
 }
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
-auto make_coordinate_map(Maps&&... maps)
+auto make_coordinate_map(Maps&&... maps) noexcept
     -> CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...> {
   return CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>(
       std::forward<Maps>(maps)...);

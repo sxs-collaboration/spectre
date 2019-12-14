@@ -382,7 +382,7 @@ class CoordinateMap
 /// \ingroup ComputationalDomainGroup
 /// \brief Creates a `CoordinateMap` of `maps...`
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
-auto make_coordinate_map(Maps&&... maps)
+auto make_coordinate_map(Maps&&... maps) noexcept
     -> CoordinateMap<SourceFrame, TargetFrame, std::decay_t<Maps>...>;
 
 /// \ingroup ComputationalDomainGroup
