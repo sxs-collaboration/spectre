@@ -9,7 +9,7 @@
 #include "Domain/Block.hpp"                         // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"                 // IWYU pragma: keep
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
-#include "Domain/Creators/DomainCreator.hpp"        // IWYU pragma: keep
+#include "Domain/Creators/DomainCreator.hpp"  // IWYU pragma: keep
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Utilities/Gsl.hpp"

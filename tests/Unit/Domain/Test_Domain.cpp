@@ -18,6 +18,7 @@
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"

@@ -20,6 +20,7 @@
 #include "Domain/BlockLogicalCoordinates.hpp"
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Wedge3D.hpp"
 #include "Domain/CreateInitialElement.hpp"

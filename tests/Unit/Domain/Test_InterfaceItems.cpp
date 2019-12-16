@@ -22,6 +22,7 @@
 #include "DataStructures/Variables.hpp"
 #include "DataStructures/VariablesHelpers.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Element.hpp"

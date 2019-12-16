@@ -16,6 +16,7 @@
 #include "Domain/BlockNeighbor.hpp"
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Equiangular.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
