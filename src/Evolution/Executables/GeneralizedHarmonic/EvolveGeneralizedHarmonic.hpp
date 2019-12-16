@@ -213,21 +213,22 @@ struct EvolutionMetavars {
           tmpl::list<
               Parallel::PhaseActions<Phase, Phase::Initialization,
                                      initialization_actions>,
+
               Parallel::PhaseActions<
                   Phase, Phase::InitializeTimeStepperHistory,
-                  tmpl::flatten<tmpl::list<SelfStart::self_start_procedure<
-                      step_actions>>>>,
+                  SelfStart::self_start_procedure<step_actions>>,
+
               Parallel::PhaseActions<
                   Phase, Phase::RegisterWithObserver,
                   tmpl::list<observers::Actions::RegisterWithObservers<
                                  observers::RegisterObservers<
                                      Tags::Time, element_observation_type>>,
                              Parallel::Actions::TerminatePhase>>,
+
               Parallel::PhaseActions<
                   Phase, Phase::Evolve,
-                  tmpl::flatten<
-                      tmpl::list<Actions::RunEventsAndTriggers, step_actions,
-                                 Actions::AdvanceTime>>>>>>;
+                  tmpl::list<Actions::RunEventsAndTriggers, step_actions,
+                             Actions::AdvanceTime>>>>>;
 
   static constexpr OptionString help{
       "Evolve a generalized harmonic analytic solution.\n\n"
