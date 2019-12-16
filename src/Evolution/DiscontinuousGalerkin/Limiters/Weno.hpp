@@ -216,8 +216,17 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
     const db::const_item_type<Tags>&... tensors, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const OrientationMap<VolumeDim>& orientation_map) const noexcept {
+  // By always initializing the PackagedData Variables member, we avoid an
+  // assertion that arises from having a default-constructed Variables in a
+  // disabled limiter. There is a performance cost, because the package_data()
+  // function does non-zero work even for a disabled limiter... but since the
+  // limiter should never be disabled in a production simulation, this cost
+  // should never matter.
+  (packaged_data->volume_data).initialize(mesh.number_of_grid_points());
+
   if (UNLIKELY(disable_for_debugging_)) {
     // Do not initialize packaged_data
+    // (except for the Variables member "volume_data", see above)
     return;
   }
 
@@ -235,7 +244,6 @@ void Weno<VolumeDim, tmpl::list<Tags...>>::package_data(
   packaged_data->element_size =
       orientation_map.permute_from_neighbor(element_size);
 
-  (packaged_data->volume_data).initialize(mesh.number_of_grid_points());
   const auto wrap_copy_tensor = [&packaged_data](auto tag,
                                                  const auto tensor) noexcept {
     get<decltype(tag)>(packaged_data->volume_data) = tensor;
