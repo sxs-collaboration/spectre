@@ -52,5 +52,5 @@ EventsAndTriggers:
   : - Completion
 
 Observers:
-  VolumeFileName: "./NewtonianEulerVolume"
-  ReductionFileName: "./NewtonianEulerReductions"
+  VolumeFileName: "./NewtonianEulerRiemannProblemVolume1D"
+  ReductionFileName: "./NewtonianEulerRiemannProblemReductions1D"

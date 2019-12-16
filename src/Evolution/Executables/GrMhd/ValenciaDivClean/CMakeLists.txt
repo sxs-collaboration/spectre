@@ -56,7 +56,7 @@ add_grmhd_executable(
   )
 
 add_grmhd_executable(
-  SmoothFlow
+  ValenciaDivCleanSmoothFlow
   grmhd::Solutions::SmoothFlow
   )
 

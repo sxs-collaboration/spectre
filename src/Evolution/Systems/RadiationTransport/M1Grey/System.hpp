@@ -49,6 +49,8 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
       tmpl::list<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
                  Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...>>;
 
+  // gr::tags_for_hydro contains all these tags plus SqrtDetSpatialMetric,
+  // so it can be used when adding M1 coupling to hydro
   using spacetime_variables_tag = ::Tags::Variables<tmpl::list<
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<3, Frame::Inertial, DataVector>,
