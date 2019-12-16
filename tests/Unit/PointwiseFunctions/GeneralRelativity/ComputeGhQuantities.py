@@ -111,6 +111,9 @@ def deriv_spatial_metric(phi):
 def dt_spatial_metric(lapse, shift, phi, pi):
     return (-lapse * pi + np.einsum('k,kab->ab', shift, phi))[1:, 1:]
 
+def gh_dt_spacetime_metric(lapse, shift, pi, phi):
+    return (-lapse * pi + np.einsum('k,kab', shift, phi))
+
 
 def spacetime_deriv_detg(sqrt_det_spatial_metric, inverse_spatial_metric,
                          dt_spatial_metric, phi):

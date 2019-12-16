@@ -63,9 +63,26 @@ struct convert_to_container_of_doubles<Container<DataVector, Ts...>> {
   using type = Container<double, Ts...>;
 };
 
+template <template <class, class...> class Container, class... Ts>
+struct convert_to_container_of_doubles<Container<ComplexDataVector, Ts...>> {
+  using type = Container<std::complex<double>, Ts...>;
+};
+
+// if it is spin-weighted, just strip off the SpinWeighted for the pypp tests
+template <template <class, class...> class Container, int Spin, class... Ts>
+struct convert_to_container_of_doubles<
+    Container<SpinWeighted<ComplexDataVector, Spin>, Ts...>> {
+  using type = Container<std::complex<double>, Ts...>;
+};
+
 template <size_t Dim>
 struct convert_to_container_of_doubles<std::array<DataVector, Dim>> {
   using type = std::array<double, Dim>;
+};
+
+template <size_t Dim>
+struct convert_to_container_of_doubles<std::array<ComplexDataVector, Dim>> {
+  using type = std::array<std::complex<double>, Dim>;
 };
 
 template <typename T>
@@ -90,6 +107,26 @@ struct SliceContainerImpl {
   }
 };
 
+// scalars are the only sort of spin-weighted type we support.
+template <typename ValueType, int Spin>
+struct SliceContainerImpl<Scalar<SpinWeighted<ValueType, Spin>>> {
+  static auto apply(
+      const Scalar<SpinWeighted<ValueType, Spin>>& spin_weighted_container,
+      const size_t slice_idx) noexcept {
+    convert_to_container_of_doubles_t<Scalar<ValueType>> container_complex{};
+    ASSERT(slice_idx < spin_weighted_container.begin()->size(),
+           "Trying to slice DataVector of size "
+               << spin_weighted_container.begin()->size() << "with slice_idx "
+               << slice_idx);
+    for (const auto& complex_and_datavector_components :
+         boost::combine(container_complex, spin_weighted_container)) {
+      boost::get<0>(complex_and_datavector_components) =
+          boost::get<1>(complex_and_datavector_components).data()[slice_idx];
+    }
+    return container_complex;
+  }
+};
+
 template <>
 struct SliceContainerImpl<double> {
   static double apply(const double& t, const size_t /*slice_index*/) noexcept {
@@ -105,22 +142,14 @@ decltype(auto) slice_container_of_datavectors_to_container_of_doubles(
 
 template <typename R>
 struct CallImpl<
-    R, Requires<(tt::is_a_v<Tensor, R> or tt::is_std_array_v<R>) and
-                 cpp17::is_same_v<typename R::value_type, DataVector>>> {
+    R, Requires<(tt::is_a_v<Tensor, R> or tt::is_std_array_v<R>)and cpp17::
+                    is_same_v<typename R::value_type, DataVector>>> {
   template <typename... Args>
   static R call(const std::string& module_name,
                 const std::string& function_name, const Args&... t) {
-
     static_assert(sizeof...(Args) > 0,
                   "Call to python which returns a Tensor of DataVectors must "
                   "pass at least one argument");
-
-    static_assert(
-        cpp17::is_same_v<typename std::decay_t<decltype(
-                             get_first_argument(t...))>::value_type,
-                         DataVector>,
-        "Call to python which returns a Tensor of DataVectors must "
-        "pass a Tensor or std::array of DataVectors as its first argument.");
 
     PyObject* module = PyImport_ImportModule(module_name.c_str());
     if (module == nullptr) {
@@ -136,9 +165,9 @@ struct CallImpl<
       throw std::runtime_error{"Could not find python function in module.\n"};
     }
 
-    const auto put_container_of_doubles_into_container_of_datavector = [](
-        auto& container_dv, const auto& container_double,
-        const size_t slice_idx) noexcept {
+    const auto put_container_of_doubles_into_container_of_datavector =
+        [](auto& container_dv, const auto& container_double,
+           const size_t slice_idx) noexcept {
       ASSERT(slice_idx < container_dv.begin()->size(),
              "Trying to slice DataVector of size "
                  << container_dv.begin()->size() << "with slice_idx "
@@ -171,6 +200,78 @@ struct CallImpl<
       Py_DECREF(value);  // NOLINT
       put_container_of_doubles_into_container_of_datavector(return_container,
                                                             ret, s);
+    }
+    Py_DECREF(func);    // NOLINT
+    Py_DECREF(module);  // NOLINT
+    return return_container;
+  }
+};
+
+template <typename ScalarSpinWeighted>
+struct CallImpl<
+    ScalarSpinWeighted,
+    Requires<(
+        tt::is_a_v<Tensor, ScalarSpinWeighted> or
+        tt::is_std_array_v<ScalarSpinWeighted>) and
+        is_any_spin_weighted_v<typename ScalarSpinWeighted::value_type>>> {
+  template <typename... Args>
+  static ScalarSpinWeighted call(const std::string& module_name,
+                                 const std::string& function_name,
+                                 const Args&... t) {
+    static_assert(sizeof...(Args) > 0,
+                  "Call to python which returns a "
+                  "Scalar<SpinWeighted<ComplexDataVector, N>> "
+                  "should pass at least one argument");
+
+    PyObject* module = PyImport_ImportModule(module_name.c_str());
+    if (module == nullptr) {
+      PyErr_Print();
+      throw std::runtime_error{std::string("Could not find python module.\n") +
+                               module_name};
+    }
+    PyObject* func = PyObject_GetAttrString(module, function_name.c_str());
+    if (func == nullptr or not PyCallable_Check(func)) {
+      if (PyErr_Occurred()) {
+        PyErr_Print();
+      }
+      throw std::runtime_error{"Could not find python function in module.\n"};
+    }
+
+    const auto put_container_of_elements_into_container_of_complexdatavector =
+        [](auto& container_vector, const auto& container_complex,
+           const size_t slice_idx) noexcept {
+      ASSERT(slice_idx < container_vector.begin()->size(),
+             "Trying to slice DataVector of size "
+                 << container_vector.begin()->size() << "with slice_idx "
+                 << slice_idx);
+      for (decltype(auto) vector_and_complex_components :
+           boost::combine(container_vector, container_complex)) {
+        boost::get<0>(vector_and_complex_components).data()[slice_idx] =
+            boost::get<1>(vector_and_complex_components);
+      }
+    };
+
+    const size_t npts = get_first_argument(t...).begin()->size();
+    auto return_container = ScalarSpinWeighted{npts};
+
+    for (size_t s = 0; s < npts; ++s) {
+      PyObject* args = pypp::make_py_tuple(
+          slice_container_of_datavectors_to_container_of_doubles(t, s)...);
+      PyObject* value = PyObject_CallObject(func, args);
+      Py_DECREF(args);  // NOLINT
+      if (value == nullptr) {
+        Py_DECREF(func);    // NOLINT
+        Py_DECREF(module);  // NOLINT
+        PyErr_Print();
+        throw std::runtime_error{"Function returned null"};
+      }
+
+      const auto ret =
+          from_py_object<convert_to_container_of_doubles_t<ScalarSpinWeighted>>(
+              value);
+      Py_DECREF(value);  // NOLINT
+      put_container_of_elements_into_container_of_complexdatavector(
+          return_container, ret, s);
     }
     Py_DECREF(func);    // NOLINT
     Py_DECREF(module);  // NOLINT

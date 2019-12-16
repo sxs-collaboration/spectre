@@ -63,6 +63,44 @@ struct deriv<Tag, Dim, Frame,
   static std::string name() noexcept { return "deriv(" + Tag::name() + ")"; }
 };
 
+/*!
+ * \ingroup DataBoxTagsGroup
+ * \brief Prefix indicating spacetime derivatives
+ *
+ * Prefix indicating the spacetime derivatives of a Tensor or that a Variables
+ * contains spatial derivatives of Tensors.
+ *
+ * \tparam Tag The tag to wrap
+ * \tparam Dim The volume dim as a type (e.g. `tmpl::size_t<Dim>`)
+ * \tparam Frame The frame of the derivative index
+ */
+template <typename Tag, typename Dim, typename Frame, typename = std::nullptr_t>
+struct spacetime_deriv;
+
+template <typename Tag, typename Dim, typename Frame>
+struct spacetime_deriv<Tag, Dim, Frame,
+                       Requires<tt::is_a_v<Tensor, db::const_item_type<Tag>>>>
+    : db::PrefixTag, db::SimpleTag {
+  using type =
+      TensorMetafunctions::prepend_spacetime_index<db::const_item_type<Tag>,
+                                                   Dim::value, UpLo::Lo, Frame>;
+  using tag = Tag;
+  static std::string name() noexcept {
+    return "spacetime_deriv(" + db::tag_name<Tag>() + ")";
+  }
+};
+template <typename Tag, typename Dim, typename Frame>
+struct spacetime_deriv<
+    Tag, Dim, Frame,
+    Requires<tt::is_a_v<::Variables, db::const_item_type<Tag>>>>
+    : db::PrefixTag, db::SimpleTag {
+  using type = db::const_item_type<Tag>;
+  using tag = Tag;
+  static std::string name() noexcept {
+    return "spacetime_deriv(" + db::tag_name<Tag>() + ")";
+  }
+};
+
 }  // namespace Tags
 
 // @{

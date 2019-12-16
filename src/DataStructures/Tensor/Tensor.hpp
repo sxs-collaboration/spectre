@@ -571,8 +571,7 @@ std::ostream& operator<<(
                 "operator<< is not defined for the type you are trying to "
                 "stream in Tensor");
   for (size_t i = 0; i < x.size() - 1; ++i) {
-    os << "T" << x.get_tensor_index(i) << "=" << x[i]
-       << "\n";
+    os << "T" << x.get_tensor_index(i) << "=" << x[i] << "\n";
   }
   size_t i = x.size() - 1;
   os << "T" << x.get_tensor_index(i) << "=" << x[i];
@@ -620,6 +619,65 @@ struct MakeWithValueImpl<Tensor<double, Structure...>, double> {
   static SPECTRE_ALWAYS_INLINE Tensor<double, Structure...> apply(
       const double& /*input*/, const double value) noexcept {
     return Tensor<double, Structure...>(value);
+  }
+};
+
+template <typename... Structure>
+struct MakeWithValueImpl<Tensor<ComplexDataVector, Structure...>, DataVector> {
+  /// \brief Returns a Tensor whose `ComplexDataVector`s are the same size as
+  /// `input`, with each element set to `value`.
+  ///
+  /// \details When setting complex from `double`s, the real part is set to
+  /// the `double` and  imaginary part is set to zero.
+  static SPECTRE_ALWAYS_INLINE Tensor<ComplexDataVector, Structure...> apply(
+      const DataVector& input, const double value) noexcept {
+    return Tensor<ComplexDataVector, Structure...>(
+        ComplexDataVector{input.size(), std::complex<double>(value, 0.0)});
+  }
+};
+
+template <int Spin, typename... Structure>
+struct MakeWithValueImpl<
+    Tensor<SpinWeighted<ComplexDataVector, Spin>, Structure...>, DataVector> {
+  /// \brief Returns a Tensor whose `ComplexDataVector`s are the same size as
+  /// `input`, with each element set to `value`.
+  ///
+  /// \details When setting complex from `double`s, the real part is set to
+  /// the `double` and  imaginary part is set to zero.
+  static SPECTRE_ALWAYS_INLINE
+      Tensor<SpinWeighted<ComplexDataVector, Spin>, Structure...>
+      apply(const DataVector& input, const double value) noexcept {
+    return Tensor<SpinWeighted<ComplexDataVector, Spin>, Structure...>(
+        ComplexDataVector{input.size(), std::complex<double>(value, 0.0)});
+  }
+};
+
+template <int Spin, typename... Structure>
+struct MakeWithValueImpl<
+    Tensor<SpinWeighted<ComplexDataVector, Spin>, Structure...>,
+    ComplexDataVector> {
+  /// \brief Returns a Tensor whose `ComplexDataVector`s are the same size as
+  /// `input`, with each element set to `value`.
+  ///
+  /// \details When setting complex from `double`s, the real part is set to
+  /// the `double` and  imaginary part is set to zero.
+  static SPECTRE_ALWAYS_INLINE
+      Tensor<SpinWeighted<ComplexDataVector, Spin>, Structure...>
+      apply(const ComplexDataVector& input, const double value) noexcept {
+    return Tensor<SpinWeighted<ComplexDataVector, Spin>, Structure...>(
+        ComplexDataVector{input.size(), std::complex<double>(value, 0.0)});
+  }
+};
+
+template <typename... Structure>
+struct MakeWithValueImpl<Tensor<std::complex<double>, Structure...>,
+                         std::complex<double>> {
+  /// \brief Returns a Tensor whose elements are set equal to `value` (`input`
+  /// is ignored).
+  static SPECTRE_ALWAYS_INLINE Tensor<std::complex<double>, Structure...> apply(
+      const std::complex<double>& /*input*/,
+      const std::complex<double> value) noexcept {
+    return Tensor<std::complex<double>, Structure...>(value);
   }
 };
 

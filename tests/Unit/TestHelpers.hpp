@@ -452,6 +452,17 @@ struct check_variables_approx<Variables<TagList>> {
   }
 };
 
+// an additional overload for SpinWeighted quantities that just forwards to
+// checking on the wrapped `data()` for the SpinWeighted
+template <typename T>
+struct check_iterable_approx<T, Requires<is_any_spin_weighted_v<T>>> {
+  // clang-tidy: non-const reference
+  static void apply(const T& a, const T& b, Approx& appx = approx) {  // NOLINT
+    check_iterable_approx<typename T::value_type>::apply(a.data(), b.data(),
+                                                         appx);
+  }
+};
+
 /*!
  * \ingroup TestingFrameworkGroup
  * \brief A test utility for verifying that an element-wise function, `function`
@@ -517,13 +528,14 @@ void test_element_wise_function_impl(
     Approx custom_approx) noexcept {
   const size_t size_value =
       std::max({get_size(std::get<Is>(*arguments), size)...});
-  tuple_fold(*arguments, [&size, &size_value ](const auto x) noexcept {
-    if (not(get_size(x, size) == size_value or get_size(x, size) == 1)) {
-      ERROR(
-          "inconsistent sized arguments passed "
-          "to test_element_wise_function");
-    }
-  });
+  tuple_fold(
+      *arguments, [&size, &size_value ](const auto x) noexcept {
+        if (not(get_size(x, size) == size_value or get_size(x, size) == 1)) {
+          ERROR(
+              "inconsistent sized arguments passed "
+              "to test_element_wise_function");
+        }
+      });
   // Some operators might modify the values of the arguments. We take care to
   // verify that the modifications (or lack thereof) are also as expected.
   auto original_arguments = std::make_tuple(std::get<Is>(*arguments)...);

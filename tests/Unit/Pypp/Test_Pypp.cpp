@@ -118,8 +118,8 @@ SPECTRE_TEST_CASE("Unit.Pypp.std::array", "[Pypp][Unit]") {
   CHECK(expected_array ==
         (pypp::call<std::array<DataVector, 3>>(
             "PyppPyTests", "permute_array",
-            tnsr::i<DataVector, 3>{{{DataVector{2, 1.}, DataVector{2, 2.},
-                                   DataVector{2, 3.}}}})));
+            tnsr::i<DataVector, 3>{
+                {{DataVector{2, 1.}, DataVector{2, 2.}, DataVector{2, 3.}}}})));
 
   CHECK(expected_array ==
         (pypp::call<std::array<DataVector, 3>>(
@@ -142,10 +142,10 @@ SPECTRE_TEST_CASE("Unit.Pypp.DataVector", "[Pypp][Unit]") {
 
 SPECTRE_TEST_CASE("Unit.Pypp.ComplexDataVector", "[Pypp][Unit]") {
   pypp::SetupLocalPythonEnvironment local_python_env{"Pypp/"};
-  std::complex<double> test_value_0{1.3, 2.2};
-  std::complex<double> test_value_1{4.0, 3.1};
-  std::complex<double> test_value_2{4.2, 5.7};
-  std::complex<double> test_value_3{6.8, 7.3};
+  const std::complex<double> test_value_0{1.3, 2.2};
+  const std::complex<double> test_value_1{4.0, 3.1};
+  const std::complex<double> test_value_2{4.2, 5.7};
+  const std::complex<double> test_value_3{6.8, 7.3};
   const auto ret = pypp::call<ComplexDataVector>(
       "numpy", "multiply", ComplexDataVector{test_value_0, test_value_1},
       ComplexDataVector{test_value_2, test_value_3});
@@ -157,6 +157,36 @@ SPECTRE_TEST_CASE("Unit.Pypp.ComplexDataVector", "[Pypp][Unit]") {
   CHECK_THROWS(pypp::call<ComplexDataVector>("PyppPyTests", "two_dim_ndarray"));
   CHECK_THROWS(
       pypp::call<ComplexDataVector>("PyppPyTests", "ndarray_of_floats"));
+
+  // test functionality of mixed complex and real values in tensors
+  const size_t vector_size = 1;
+  Scalar<SpinWeighted<ComplexDataVector, 1>> spin_weighted_argument{
+      vector_size};
+  get(spin_weighted_argument).data()[0] = test_value_1;
+  tnsr::i<ComplexDataVector, 2> complex_tensor_argument{vector_size};
+  get<0>(complex_tensor_argument)[0] = test_value_2;
+  get<1>(complex_tensor_argument)[0] = test_value_3;
+  tnsr::i<DataVector, 2> real_tensor_argument{vector_size};
+  get<0>(real_tensor_argument)[0] = 1.2;
+  get<1>(real_tensor_argument)[0] = 3.4;
+
+  const auto mixed_return_1 =
+      pypp::call<Scalar<SpinWeighted<ComplexDataVector, 1>>>(
+          "PyppPyTests", "mixed_complex_real_function_1",
+          spin_weighted_argument, complex_tensor_argument,
+          real_tensor_argument);
+  const auto mixed_return_2 = pypp::call<tnsr::i<DataVector, 2>>(
+      "PyppPyTests", "mixed_complex_real_function_2", spin_weighted_argument,
+      complex_tensor_argument, real_tensor_argument);
+  CHECK(real(get(mixed_return_1).data()[0]) ==
+        approx(real(test_value_1 * test_value_2 / 3.4)));
+  CHECK(imag(get(mixed_return_1).data()[0]) ==
+        approx(imag(test_value_1 * test_value_2 / 3.4)));
+
+  CHECK(get<0>(mixed_return_2)[0] ==
+        approx(real(test_value_1 * test_value_2 * 3.4)));
+  CHECK(get<1>(mixed_return_2)[0] ==
+        approx(imag(test_value_3 * 1.2 / test_value_1)));
 }
 
 SPECTRE_TEST_CASE("Unit.Pypp.Tensor.Double", "[Pypp][Unit]") {
@@ -958,10 +988,9 @@ SPECTRE_TEST_CASE("Unit.Pypp.CheckWithPython", "[Pypp][Unit]") {
       &RandomValuesTests::check_by_value1_scalar<Scalar<DataVector>>,
       test_class, "PyppPyTests", "check_by_value1_class", {{{-10.0, 10.0}}},
       std::make_tuple(a), scalar_dv);
-  pypp::check_with_random_values<1>(&RandomValuesTests::check_by_value2<double>,
-                                    test_class, "PyppPyTests",
-                                    "check_by_value2_class", {{{-10.0, 10.0}}},
-                                    std::make_tuple(a, b), doub);
+  pypp::check_with_random_values<1>(
+      &RandomValuesTests::check_by_value2<double>, test_class, "PyppPyTests",
+      "check_by_value2_class", {{{-10.0, 10.0}}}, std::make_tuple(a, b), doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check_by_value2<DataVector>, test_class,
       "PyppPyTests", "check_by_value2_class", {{{-10.0, 10.0}}},
@@ -1024,8 +1053,7 @@ SPECTRE_TEST_CASE("Unit.Pypp.CheckWithPython", "[Pypp][Unit]") {
       std::make_tuple(a), scalar_dv);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_value2<double>, test_class, "PyppPyTests",
-      "check2_by_value2_class", {{{-10.0, 10.0}}}, std::make_tuple(a, b),
-      doub);
+      "check2_by_value2_class", {{{-10.0, 10.0}}}, std::make_tuple(a, b), doub);
   pypp::check_with_random_values<1>(
       &RandomValuesTests::check2_by_value2<DataVector>, test_class,
       "PyppPyTests", "check2_by_value2_class", {{{-10.0, 10.0}}},
