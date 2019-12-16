@@ -165,8 +165,8 @@ class IsentropicVortex : public MarkAsAnalyticSolution {
     static_assert(sizeof...(Tags) > 1,
                   "The generic template will recurse infinitely if only one "
                   "tag is being retrieved.");
-    IntermediateVariables<DataType> vars(x, t, center_, mean_velocity_,
-                                         strength_);
+    const IntermediateVariables<DataType> vars(x, t, center_, mean_velocity_,
+                                               strength_);
     return {tuples::get<Tags>(variables(tmpl::list<Tags>{}, vars))...};
   }
 

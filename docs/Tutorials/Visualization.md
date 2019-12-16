@@ -46,18 +46,19 @@ will be described in the next section.
 A SpECTRE executable with observers produces volume and/or reduced data h5
 files. An XDMF file must be created from the volume data in order to do
 visualization using ParaView. To this end we provide the python executable
-`GenerateXdmf.py` in the `tools` directory. `GenerateXdmf.py` takes two
-arguments which are passed to `--file-prefix` and `--output`. The argument
-passed to `--file-prefix` is the name of the H5 volume data, leaving out the
-node number and extension. The argument passed to `--output` is the desired
-.xmf file name, also without filename extension. Use `--help` to see a further
-description of possible arguments. Open the .xmf file in ParaView and select
-the `Xdmf Reader`, *not* the version 3 readers. On the left hand side of the
-main ParaView window is a section named `Properties`, here you must click the
-highlighted `Apply` button. ParaView will now render your volume data. If you
-only wish to visualize a few datasets out of a large set, we recommended
-unchecking the boxes for the datasets you wish to ignore under `Point Arrays`
-before clicking `Apply`.
+`GenerateXdmf.py` in the `Visualization/Python` directory. `GenerateXdmf.py`
+takes two arguments which are passed to `--file-prefix` and `--output`. The
+argument passed to `--file-prefix` is the name of the H5 volume data, leaving
+out the node number and extension. The argument passed to `--output` is the
+desired .xmf file name, also without filename extension. Use `--help` to see a
+further description of possible arguments.
+
+Open the .xmf file in ParaView and select the `Xdmf Reader`, *not* the version 3
+readers. On the left hand side of the main ParaView window is a section named
+`Properties`, here you must click the highlighted `Apply` button. ParaView will
+now render your volume data. If you only wish to visualize a few datasets out of
+a large set, we recommended unchecking the boxes for the datasets you wish to
+ignore under `Point Arrays` before clicking `Apply`.
 
 ### Helpful ParaView Filters
 

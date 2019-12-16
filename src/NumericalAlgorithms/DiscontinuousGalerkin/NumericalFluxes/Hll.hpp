@@ -173,6 +173,13 @@ struct Hll {
         get(max_signal_speed)[s] = std::max(get(max_signal_speed_interior)[s],
                                             -get(min_signal_speed_exterior)[s]);
       }
+      ASSERT(min(get(max_signal_speed) - get(min_signal_speed)) > 0.0,
+             "Max, min speeds are the same:\n"
+             "  max_signal_speed = "
+                 << get(max_signal_speed)
+                 << "\n"
+                    "  min_signal_speed = "
+                 << get(min_signal_speed));
       const DataVector one_over_cp_minus_cm =
           1.0 / (get(max_signal_speed) - get(min_signal_speed));
       const auto assemble_numerical_flux =
