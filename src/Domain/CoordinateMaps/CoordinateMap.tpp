@@ -22,6 +22,7 @@
 
 #include "DataStructures/Tensor/Identity.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/CoordinateMapHelpers.hpp"
 #include "Domain/CoordinateMaps/TimeDependentHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Parallel/CharmPupable.hpp"
@@ -33,35 +34,6 @@
 
 /// \cond
 namespace domain {
-// define type-trait to check for time-dependent mapping
-namespace CoordinateMap_detail {
-
-template <typename T, size_t Dim, typename Map>
-void apply_map(
-    const gsl::not_null<std::array<T, Dim>*> t_map_point, const Map& the_map,
-    const double /*t*/,
-    const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-    /*functions_of_time*/,
-    const std::false_type /*is_time_independent*/) {
-  if (LIKELY(not the_map.is_identity())) {
-    *t_map_point = the_map(*t_map_point);
-  }
-}
-
-template <typename T, size_t Dim, typename Map>
-void apply_map(
-    const gsl::not_null<std::array<T, Dim>*> t_map_point, const Map& the_map,
-    const double t,
-    const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time,
-    const std::true_type
-    /*is_time_dependent*/) {
-  *t_map_point = the_map(*t_map_point, t, functions_of_time);
-}
-}  // namespace CoordinateMap_detail
-
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::CoordinateMap(Maps... maps)
     : maps_(std::move(maps)...) {}
