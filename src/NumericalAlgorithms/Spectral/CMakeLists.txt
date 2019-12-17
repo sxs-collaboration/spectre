@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
     SwshCollocation.cpp
     SwshDerivatives.cpp
     SwshFiltering.cpp
+    SwshInterpolation.cpp
     SwshTags.cpp
     SwshTransform.cpp
     )
