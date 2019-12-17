@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Characteristics.cpp
   Fluxes.cpp
   M1Closure.cpp
+  M1HydroCoupling.cpp
   Sources.cpp
   )
 

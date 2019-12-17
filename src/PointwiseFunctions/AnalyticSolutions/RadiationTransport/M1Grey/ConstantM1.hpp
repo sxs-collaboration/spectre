@@ -70,7 +70,7 @@ class ConstantM1 : public MarkAsAnalyticSolution {
   explicit ConstantM1(CkMigrateMessage* /*unused*/) noexcept {}
 
   // @{
-  /// Retrieve M1 variables at `(x, t)`
+  /// Retrieve fluid and neutrino variables at `(x, t)`
   template <typename NeutrinoSpecies>
   auto variables(const tnsr::I<DataVector, 3>& x, double t,
                  tmpl::list<RadiationTransport::M1Grey::Tags::TildeE<
@@ -84,10 +84,30 @@ class ConstantM1 : public MarkAsAnalyticSolution {
                      Frame::Inertial, NeutrinoSpecies>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::TildeS<
           Frame::Inertial, NeutrinoSpecies>>;
-  // @}
 
-  // @{
-  /// Retrieve hydro variable at `(x, t)`
+  template <typename NeutrinoSpecies>
+  auto variables(const tnsr::I<DataVector, 3>& x, double t,
+                 tmpl::list<RadiationTransport::M1Grey::Tags::GreyEmissivity<
+                     NeutrinoSpecies>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<
+          RadiationTransport::M1Grey::Tags::GreyEmissivity<NeutrinoSpecies>>;
+
+  template <typename NeutrinoSpecies>
+  auto variables(
+      const tnsr::I<DataVector, 3>& x, double t,
+      tmpl::list<RadiationTransport::M1Grey::Tags::GreyAbsorptionOpacity<
+          NeutrinoSpecies>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::
+                                 GreyAbsorptionOpacity<NeutrinoSpecies>>;
+
+  template <typename NeutrinoSpecies>
+  auto variables(
+      const tnsr::I<DataVector, 3>& x, double t,
+      tmpl::list<RadiationTransport::M1Grey::Tags::GreyScatteringOpacity<
+          NeutrinoSpecies>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<RadiationTransport::M1Grey::Tags::
+                                 GreyScatteringOpacity<NeutrinoSpecies>>;
+
   auto variables(
       const tnsr::I<DataVector, 3>& x, double t,
       tmpl::list<hydro::Tags::LorentzFactor<DataVector>> /*meta*/) const
@@ -100,7 +120,7 @@ class ConstantM1 : public MarkAsAnalyticSolution {
       -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataVector, 3>>;
   // @}
 
-  /// Retrieve a collection of hydro and/or M1 variables at `(x, t)`
+  /// Retrieve a collection of fluid and neutrino variables at `(x, t)`
   template <typename... Tags>
   tuples::TaggedTuple<Tags...> variables(const tnsr::I<DataVector, 3>& x,
                                          double t,

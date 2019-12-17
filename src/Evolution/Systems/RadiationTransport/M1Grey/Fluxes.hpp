@@ -73,10 +73,10 @@ struct ComputeFluxes {
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
 
   static void apply(
-      const gsl::not_null<db::item_type<
+      const gsl::not_null<db::const_item_type<
           ::Tags::Flux<Tags::TildeE<Frame::Inertial, NeutrinoSpecies>,
                        tmpl::size_t<3>, Frame::Inertial>>*>... tilde_e_flux,
-      const gsl::not_null<db::item_type<
+      const gsl::not_null<db::const_item_type<
           ::Tags::Flux<Tags::TildeS<Frame::Inertial, NeutrinoSpecies>,
                        tmpl::size_t<3>, Frame::Inertial>>*>... tilde_s_flux,
       const db::const_item_type<

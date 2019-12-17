@@ -29,17 +29,15 @@ namespace M1Grey {
 namespace detail {
 void compute_sources_impl(
     gsl::not_null<Scalar<DataVector>*> source_tilde_e,
-    gsl::not_null<tnsr::i<DataVector, 3, Frame::Inertial>*> source_tilde_s,
-    const Scalar<DataVector>& tilde_e,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& tilde_s,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& tilde_p,
-    const Scalar<DataVector>& lapse,
-    const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
-    const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
-    const tnsr::ijj<DataVector, 3, Frame::Inertial>& d_spatial_metric,
-    const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-    const tnsr::ii<DataVector, 3, Frame::Inertial>&
-        extrinsic_curvature) noexcept;
+    gsl::not_null<tnsr::i<DataVector, 3>*> source_tilde_s,
+    const Scalar<DataVector>& tilde_e, const tnsr::i<DataVector, 3>& tilde_s,
+    const tnsr::II<DataVector, 3>& tilde_p, const Scalar<DataVector>& source_n,
+    const tnsr::i<DataVector, 3>& source_i, const Scalar<DataVector>& lapse,
+    const tnsr::i<DataVector, 3>& d_lapse,
+    const tnsr::iJ<DataVector, 3>& d_shift,
+    const tnsr::ijj<DataVector, 3>& d_spatial_metric,
+    const tnsr::II<DataVector, 3>& inv_spatial_metric,
+    const tnsr::ii<DataVector, 3>& extrinsic_curvature) noexcept;
 }  // namespace detail
 
 /*!
@@ -80,7 +78,10 @@ struct ComputeSources {
   using argument_tags = tmpl::list<
       Tags::TildeE<Frame::Inertial, NeutrinoSpecies>...,
       Tags::TildeS<Frame::Inertial, NeutrinoSpecies>...,
-      Tags::TildeP<Frame::Inertial, NeutrinoSpecies>..., gr::Tags::Lapse<>,
+      Tags::TildeP<Frame::Inertial, NeutrinoSpecies>...,
+      Tags::M1HydroCouplingNormal<NeutrinoSpecies>...,
+      Tags::M1HydroCouplingSpatial<Frame::Inertial, NeutrinoSpecies>...,
+      gr::Tags::Lapse<>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                     Frame::Inertial>,
       ::Tags::deriv<gr::Tags::Shift<3, Frame::Inertial, DataVector>,
@@ -91,9 +92,9 @@ struct ComputeSources {
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>;
 
   static void apply(
-      const gsl::not_null<db::item_type<
+      const gsl::not_null<db::const_item_type<
           Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>*>... sources_tilde_e,
-      const gsl::not_null<db::item_type<
+      const gsl::not_null<db::const_item_type<
           Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>*>... sources_tilde_s,
       const db::const_item_type<
           Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
@@ -101,16 +102,18 @@ struct ComputeSources {
           Tags::TildeS<Frame::Inertial, NeutrinoSpecies>>&... tilde_s,
       const db::const_item_type<
           Tags::TildeP<Frame::Inertial, NeutrinoSpecies>>&... tilde_p,
-      const Scalar<DataVector>& lapse,
-      const tnsr::i<DataVector, 3, Frame::Inertial>& d_lapse,
-      const tnsr::iJ<DataVector, 3, Frame::Inertial>& d_shift,
-      const tnsr::ijj<DataVector, 3, Frame::Inertial>& d_spatial_metric,
-      const tnsr::II<DataVector, 3, Frame::Inertial>& inv_spatial_metric,
-      const tnsr::ii<DataVector, 3, Frame::Inertial>&
-          extrinsic_curvature) noexcept {
+      const db::const_item_type<
+          Tags::M1HydroCouplingNormal<NeutrinoSpecies>>&... source_n,
+      const db::const_item_type<Tags::M1HydroCouplingSpatial<
+          Frame::Inertial, NeutrinoSpecies>>&... source_i,
+      const Scalar<DataVector>& lapse, const tnsr::i<DataVector, 3>& d_lapse,
+      const tnsr::iJ<DataVector, 3>& d_shift,
+      const tnsr::ijj<DataVector, 3>& d_spatial_metric,
+      const tnsr::II<DataVector, 3>& inv_spatial_metric,
+      const tnsr::ii<DataVector, 3>& extrinsic_curvature) noexcept {
     EXPAND_PACK_LEFT_TO_RIGHT(detail::compute_sources_impl(
-        sources_tilde_e, sources_tilde_s, tilde_e, tilde_s, tilde_p, lapse,
-        d_lapse, d_shift, d_spatial_metric, inv_spatial_metric,
+        sources_tilde_e, sources_tilde_s, tilde_e, tilde_s, tilde_p, source_n,
+        source_i, lapse, d_lapse, d_shift, d_spatial_metric, inv_spatial_metric,
         extrinsic_curvature));
   }
 };

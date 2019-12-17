@@ -130,15 +130,15 @@ struct ComputeM1Closure<tmpl::list<NeutrinoSpecies...>> {
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>>;
 
   static void apply(
-      const gsl::not_null<db::item_type<
+      const gsl::not_null<db::const_item_type<
           Tags::ClosureFactor<NeutrinoSpecies>>*>... closure_factor,
-      const gsl::not_null<db::item_type<
+      const gsl::not_null<db::const_item_type<
           Tags::TildeP<Frame::Inertial, NeutrinoSpecies>>*>... tilde_p,
       const gsl::not_null<
-          db::item_type<Tags::TildeJ<NeutrinoSpecies>>*>... tilde_j,
-      const gsl::not_null<
-          db::item_type<Tags::TildeHNormal<NeutrinoSpecies>>*>... tilde_hn,
-      const gsl::not_null<db::item_type<
+          db::const_item_type<Tags::TildeJ<NeutrinoSpecies>>*>... tilde_j,
+      const gsl::not_null<db::const_item_type<
+          Tags::TildeHNormal<NeutrinoSpecies>>*>... tilde_hn,
+      const gsl::not_null<db::const_item_type<
           Tags::TildeHSpatial<Frame::Inertial, NeutrinoSpecies>>*>... tilde_hi,
       const db::const_item_type<
           Tags::TildeE<Frame::Inertial, NeutrinoSpecies>>&... tilde_e,
