@@ -336,6 +336,22 @@ class CoordinateMap
     return lhs.maps_ == rhs.maps_;
   }
 
+  template <typename NewMap, typename LocalSourceFrame,
+            typename LocalTargetFrame, typename... LocalMaps, size_t... Is>
+  friend CoordinateMap<LocalSourceFrame, LocalTargetFrame, LocalMaps..., NewMap>
+  // NOLINTNEXTLINE(readability-redundant-declaration,-warnings-as-errors)
+  push_back_impl(
+      CoordinateMap<LocalSourceFrame, LocalTargetFrame, LocalMaps...>&& old_map,
+      NewMap new_map, std::index_sequence<Is...> /*meta*/) noexcept;
+
+  template <typename NewMap, typename LocalSourceFrame,
+            typename LocalTargetFrame, typename... LocalMaps, size_t... Is>
+  friend CoordinateMap<LocalSourceFrame, LocalTargetFrame, NewMap, LocalMaps...>
+  // NOLINTNEXTLINE(readability-redundant-declaration,-warnings-as-errors)
+  push_front_impl(
+      CoordinateMap<LocalSourceFrame, LocalTargetFrame, LocalMaps...>&& old_map,
+      NewMap new_map, std::index_sequence<Is...> /*meta*/) noexcept;
+
   bool is_equal_to(const CoordinateMapBase<SourceFrame, TargetFrame, dim>&
                        other) const override {
     const auto& cast_of_other = dynamic_cast<const CoordinateMap&>(other);
@@ -415,6 +431,24 @@ auto make_vector_coordinate_map_base(std::vector<Map> maps,
                                      const Maps&... remaining_maps) noexcept
     -> std::vector<
         std::unique_ptr<CoordinateMapBase<SourceFrame, TargetFrame, Dim>>>;
+
+/// \ingroup ComputationalDomainGroup
+/// \brief Creates a `CoordinateMap` by appending the new map to the end of the
+/// old maps
+template <typename SourceFrame, typename TargetFrame, typename... Maps,
+          typename NewMap>
+CoordinateMap<SourceFrame, TargetFrame, Maps..., NewMap> push_back(
+    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map,
+    NewMap new_map) noexcept;
+
+/// \ingroup ComputationalDomainGroup
+/// \brief Creates a `CoordinateMap` by prepending the new map to the beginning
+/// of the old maps
+template <typename SourceFrame, typename TargetFrame, typename... Maps,
+          typename NewMap>
+CoordinateMap<SourceFrame, TargetFrame, NewMap, Maps...> push_front(
+    CoordinateMap<SourceFrame, TargetFrame, Maps...> old_map,
+    NewMap new_map) noexcept;
 
 /// \cond
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
