@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
 #include "Utilities/Gsl.hpp"
+#include "tests/Unit/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Utilities/MakeWithRandomValues.hpp"
@@ -379,22 +380,6 @@ void dispatch_to_gh_worldtube_computation_from_analytic(
   create_bondi_boundary_data(box, phi, pi, psi, extraction_radius, l_max);
 }
 
-template <typename... Structure>
-Tensor<ComplexModalVector, Structure...> tensor_to_libsharp_coefficients(
-    const Tensor<DataVector, Structure...>& nodal_data,
-    const size_t l_max) noexcept {
-  Tensor<ComplexModalVector, Structure...> libsharp_modal_data{
-      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
-  SpinWeighted<ComplexDataVector, 0> transform_buffer{
-      Spectral::Swsh::number_of_swsh_collocation_points(l_max)};
-  for (size_t i = 0; i < nodal_data.size(); ++i) {
-    transform_buffer.data() = std::complex<double>(1.0, 0.0) * nodal_data[i];
-    libsharp_modal_data[i] =
-        Spectral::Swsh::swsh_transform(l_max, 1, transform_buffer).data();
-  }
-  return libsharp_modal_data;
-}
-
 template <typename DataBoxTagList, typename AnalyticSolution>
 void dispatch_to_modal_worldtube_computation_from_analytic(
     const gsl::not_null<db::DataBox<DataBoxTagList>*> box,
@@ -470,24 +455,26 @@ void dispatch_to_modal_worldtube_computation_from_analytic(
     }
   }
 
-  const auto lapse_coefficients = tensor_to_libsharp_coefficients(lapse, l_max);
+  const auto lapse_coefficients =
+      TestHelpers::tensor_to_libsharp_coefficients(lapse, l_max);
   const auto dt_lapse_coefficients =
-      tensor_to_libsharp_coefficients(dt_lapse, l_max);
+      TestHelpers::tensor_to_libsharp_coefficients(dt_lapse, l_max);
   const auto dr_lapse_coefficients =
-      tensor_to_libsharp_coefficients(dr_lapse, l_max);
+      TestHelpers::tensor_to_libsharp_coefficients(dr_lapse, l_max);
 
-  const auto shift_coefficients = tensor_to_libsharp_coefficients(shift, l_max);
+  const auto shift_coefficients =
+      TestHelpers::tensor_to_libsharp_coefficients(shift, l_max);
   const auto dt_shift_coefficients =
-      tensor_to_libsharp_coefficients(dt_shift, l_max);
+      TestHelpers::tensor_to_libsharp_coefficients(dt_shift, l_max);
   const auto dr_shift_coefficients =
-      tensor_to_libsharp_coefficients(dr_shift, l_max);
+      TestHelpers::tensor_to_libsharp_coefficients(dr_shift, l_max);
 
   const auto spatial_metric_coefficients =
-      tensor_to_libsharp_coefficients(spatial_metric, l_max);
+      TestHelpers::tensor_to_libsharp_coefficients(spatial_metric, l_max);
   const auto dt_spatial_metric_coefficients =
-      tensor_to_libsharp_coefficients(dt_spatial_metric, l_max);
+      TestHelpers::tensor_to_libsharp_coefficients(dt_spatial_metric, l_max);
   const auto dr_spatial_metric_coefficients =
-      tensor_to_libsharp_coefficients(dr_spatial_metric, l_max);
+      TestHelpers::tensor_to_libsharp_coefficients(dr_spatial_metric, l_max);
 
   create_bondi_boundary_data(
       box, spatial_metric_coefficients, dt_spatial_metric_coefficients,
