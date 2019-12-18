@@ -113,6 +113,12 @@ struct SpinWeighted<T, Spin, true> {
     data_.set_data_ref(rhs);
   }
 
+  // needed for invoking the check in `Variables.hpp` that ensures that
+  // default-constructed `Variables` are never used.
+  void set_data_ref(const std::nullptr_t null, const size_t size) noexcept {
+    data_.set_data_ref(null, size);
+  }
+
   void set_data_ref(const gsl::not_null<SpinWeighted<T, spin>*> rhs) noexcept {
     data_.set_data_ref(make_not_null(&(rhs->data_)));
   }
