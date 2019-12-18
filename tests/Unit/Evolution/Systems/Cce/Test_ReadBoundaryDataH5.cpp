@@ -332,7 +332,6 @@ void test_data_manager_with_dummy_buffer_updater(
   const double target_time = 50.0 * value_dist(*gen);
 
   const size_t buffer_size = 8;
-  const size_t interpolator_length = 3;
   const size_t l_max = 8;
 
   DataVector time_buffer{30};
