@@ -16,7 +16,7 @@
 namespace domain {
 namespace FunctionsOfTime {
 /// \ingroup ComputationalDomainGroup
-/// A function that has a piecewise-constant `MaxDeriv`th derivative.
+/// \brief A function that has a piecewise-constant `MaxDeriv`th derivative.
 template <size_t MaxDeriv>
 class PiecewisePolynomial : public FunctionOfTime {
  public:

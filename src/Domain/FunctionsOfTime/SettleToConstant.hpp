@@ -15,6 +15,9 @@
 namespace domain {
 namespace FunctionsOfTime {
 /// \ingroup ControlSystemGroup
+/// \brief Given an initial function of time, transitions the map to a
+/// constant-in-time value.
+///
 /// Given an initial function \f$f(t)\f$ and its first two derivatives
 /// at the matching time \f$t_0\f$, the constant coefficients \f$A,B,C\f$
 /// are computed such that the resulting function of time

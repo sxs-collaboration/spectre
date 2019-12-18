@@ -12,10 +12,10 @@
 
 namespace domain {
 /// \ingroup ComputationalDomainGroup
-/// Contains functions of time to support the dual frame system.
+/// \brief Contains functions of time to support the dual frame system.
 namespace FunctionsOfTime {
 /// \ingroup ComputationalDomainGroup
-/// Base class for FunctionsOfTime
+/// \brief Base class for FunctionsOfTime
 class FunctionOfTime : public PUP::able {
  public:
   FunctionOfTime() = default;
