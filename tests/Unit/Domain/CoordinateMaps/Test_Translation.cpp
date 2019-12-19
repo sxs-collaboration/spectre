@@ -6,6 +6,7 @@
 #include <array>
 #include <boost/optional.hpp>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -35,11 +36,11 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordMapsTimeDependent.Translation",
   using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
   using FoftPtr = std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>;
   std::unordered_map<std::string, FoftPtr> f_of_t_list{};
-  f_of_t_list["trans"] = std::make_unique<Polynomial>(t, init_func);
+  f_of_t_list["translation"] = std::make_unique<Polynomial>(t, init_func);
 
-  const FoftPtr& f_of_t = f_of_t_list.at("trans");
+  const FoftPtr& f_of_t = f_of_t_list.at("translation");
 
-  const CoordMapsTimeDependent::Translation trans_map{};
+  const CoordMapsTimeDependent::Translation trans_map{"translation"};
   // test serialized/deserialized map
   const auto trans_map_deserialized = serialize_and_deserialize(trans_map);
 

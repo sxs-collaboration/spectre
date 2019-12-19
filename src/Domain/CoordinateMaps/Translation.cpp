@@ -5,6 +5,7 @@
 
 #include <pup.h>
 #include <pup_stl.h>
+#include <utility>
 
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Identity.hpp"
@@ -15,6 +16,9 @@
 
 namespace domain {
 namespace CoordMapsTimeDependent {
+
+Translation::Translation(std::string function_of_time_name) noexcept
+    : f_of_t_name_(std::move(function_of_time_name)) {}
 
 template <typename T>
 std::array<tt::remove_cvref_wrap_t<T>, 1> Translation::operator()(
