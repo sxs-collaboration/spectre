@@ -207,6 +207,11 @@ void vector_test_ref(tt::get_fundamental_type_t<ValueType> low =
     CHECK(not move_assignment_initialized.is_owning());
     const VectorType move_constructed{std::move(move_assignment_initialized)};
     CHECK(not move_constructed.is_owning());
+    // check the ability to make a const view
+    const VectorType const_view;
+    make_const_view(make_not_null(&const_view), move_constructed, 1, size - 1);
+    CHECK(const_view.size() == size - 1);
+    CHECK(const_view.data() == move_constructed.data() + 1);
   }
   {
     INFO("Check move acts appropriately on both source and target refs")
