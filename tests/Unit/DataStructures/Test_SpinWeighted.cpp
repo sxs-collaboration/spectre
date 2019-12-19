@@ -183,9 +183,15 @@ SPECTRE_TEST_CASE("Unit.DataStructures.SpinWeighted",
     test_spinweights<tmpl::front<type_pair>, tmpl::back<type_pair>>();
   });
 
-  SpinWeighted<ComplexDataVector, 1> size_created_spin_weight_1{5};
+  const SpinWeighted<ComplexDataVector, 1> size_created_spin_weight_1{5};
   CHECK(size_created_spin_weight_1.data().size() == 5);
   CHECK(size_created_spin_weight_1.size() == 5);
+
+  const SpinWeighted<ComplexDataVector, 1> const_view;
+  make_const_view(make_not_null(&const_view), size_created_spin_weight_1, 2, 2);
+  CHECK(const_view.size() == 2);
+  CHECK(const_view.data().data() ==
+        size_created_spin_weight_1.data().data() + 2);
 
   SpinWeighted<ComplexDataVector, -2> size_and_value_created_spin_weight_m2{
       5, 4.0};
