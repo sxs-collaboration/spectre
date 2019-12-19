@@ -228,6 +228,7 @@ class SpinWeightedSphericalHarmonic {
  */
 class SwshInterpolator {
  public:
+  // charm needs the empty constructor
   SwshInterpolator() = default;
 
   SwshInterpolator(const DataVector& theta, const DataVector& phi,

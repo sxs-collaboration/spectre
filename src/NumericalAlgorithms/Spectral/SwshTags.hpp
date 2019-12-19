@@ -18,6 +18,10 @@
 
 namespace Spectral {
 namespace Swsh {
+/// \cond
+class SwshInterpolator;
+/// \endcond
+
 namespace Tags {
 
 /// \ingroup SwshGroup
@@ -192,6 +196,24 @@ struct NumberOfRadialPoints : db::SimpleTag {
   using type = size_t;
   static std::string name() noexcept { return "NumberOfRadialPoints"; }
 };
+
+/// \ingroup SwshGroup
+/// \brief Tag for a SwshInterpolator associated with a particular set
+/// of angular coordinates.
+///
+/// \details It is recommended to use this to store a `SwshInterpolator` in the
+/// \ref DataBoxGroup of a parallel component, as interpolations can be
+/// significantly faster if they don't have to re-construct the
+/// `SwhsInterpolator` as frequently.
+template <typename Tag>
+struct SwshInterpolator : db::SimpleTag, db::PrefixTag {
+  using tag = Tag;
+  using type = ::Spectral::Swsh::SwshInterpolator;
+  static std::string name() noexcept {
+    return "SwshInterpolator(" + db::tag_name<Tag>() + ")";
+  }
+};
+
 }  // namespace Tags
 
 namespace detail {
