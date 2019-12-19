@@ -139,6 +139,17 @@ struct BoundaryValue : db::PrefixTag, db::SimpleTag {
   }
 };
 
+/// A prefix tag representing the gauge-transformed boundary data for a quantity
+/// on the extraction surface.
+template <typename Tag>
+struct EvolutionGaugeBoundaryValue : db::PrefixTag, db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
+  using tag = Tag;
+  static std::string name() noexcept {
+    return "EvolutionGaugeBoundaryValue(" + Tag::name() + ")";
+  }
+};
+
 /// A prefix tag representing the coefficient of a pole part of the right-hand
 /// side of a singular differential equation
 template <typename Tag>

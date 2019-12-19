@@ -533,8 +533,8 @@ void test_data_manager_with_dummy_buffer_updater(
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
   // populate the test box using the boundary data manager that performs
-  using boundary_variables_tag =
-      ::Tags::Variables<Tags::characteristic_worldtube_boundary_tags>;
+  using boundary_variables_tag = ::Tags::Variables<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>;
 
   auto expected_boundary_box =
       db::create<db::AddSimpleTags<boundary_variables_tag>>(
@@ -580,7 +580,8 @@ void test_data_manager_with_dummy_buffer_updater(
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
           .scale(1.0);
 
-  tmpl::for_each<Tags::characteristic_worldtube_boundary_tags>(
+  tmpl::for_each<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
       [&expected_boundary_box, &interpolated_boundary_box,
        &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;

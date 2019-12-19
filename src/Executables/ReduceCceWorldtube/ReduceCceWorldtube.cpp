@@ -169,7 +169,8 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
       Spectral::Swsh::size_of_libsharp_coefficient_vector(computation_l_max)};
 
   using boundary_variables_tag =
-      Tags::Variables<Cce::Tags::characteristic_worldtube_boundary_tags>;
+      Tags::Variables<Cce::Tags::characteristic_worldtube_boundary_tags<
+          Cce::Tags::BoundaryValue>>;
 
   auto boundary_data_box =
       db::create<db::AddSimpleTags<boundary_variables_tag>>(
