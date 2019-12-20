@@ -351,8 +351,8 @@ void create_bondi_boundary_data_from_unnormalized_spec_modes(
   // input strategies
   detail::create_bondi_boundary_data(
       bondi_boundary_data, make_not_null(&computation_variables),
-      make_not_null(&derivative_buffers),
-      dt_spacetime_metric, phi, spacetime_metric, null_l, du_null_l,
-      cartesian_to_spherical_jacobian, l_max);
+      make_not_null(&derivative_buffers), dt_spacetime_metric, phi,
+      spacetime_metric, null_l, du_null_l, cartesian_to_spherical_jacobian,
+      l_max, extraction_radius);
 }
 }  // namespace Cce

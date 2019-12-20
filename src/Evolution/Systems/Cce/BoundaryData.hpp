@@ -559,7 +559,7 @@ void create_bondi_boundary_data(
     const tnsr::A<DataVector, 3>& null_l,
     const tnsr::A<DataVector, 3>& du_null_l,
     const SphericaliCartesianJ& cartesian_to_spherical_jacobian,
-    const size_t l_max) noexcept {
+    const size_t l_max, const double extraction_radius) noexcept {
   const size_t size = Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
   // unfortunately, because the dyads are not themselves spin-weighted, they
@@ -580,8 +580,44 @@ void create_bondi_boundary_data(
   auto& inverse_null_metric =
       get<gr::Tags::InverseSpacetimeMetric<3, Frame::RadialNull, DataVector>>(
           *computation_variables);
+
+  // the below scaling process is used to reduce accumulation of numerical
+  // error in the determinant evaluation
+
+  // buffer reuse because the scaled null metric is only needed until the
+  // `determinant_and_inverse` call
+  auto& scaled_null_metric =
+      get<gr::Tags::InverseSpacetimeMetric<3, Frame::RadialNull, DataVector>>(
+          *computation_variables);
+  for (size_t i = 0; i < 4; ++i) {
+    for (size_t j = i; j < 4; ++j) {
+      if (i > 1 and j > 1) {
+        scaled_null_metric.get(i, j) =
+            null_metric.get(i, j) / square(extraction_radius);
+      } else if (i > 1 or j > 1) {
+        scaled_null_metric.get(i, j) =
+            null_metric.get(i, j) / extraction_radius;
+      } else {
+        scaled_null_metric.get(i, j) = null_metric.get(i, j);
+      }
+    }
+  }
   // Allocation
-  inverse_null_metric = determinant_and_inverse(null_metric).second;
+  const auto scaled_inverse_null_metric =
+      determinant_and_inverse(scaled_null_metric).second;
+  for (size_t i = 0; i < 4; ++i) {
+    for (size_t j = i; j < 4; ++j) {
+      if (i > 1 and j > 1) {
+        inverse_null_metric.get(i, j) =
+            scaled_inverse_null_metric.get(i, j) / square(extraction_radius);
+      } else if (i > 1 or j > 1) {
+        inverse_null_metric.get(i, j) =
+            scaled_inverse_null_metric.get(i, j) / extraction_radius;
+      } else {
+        inverse_null_metric.get(i, j) = scaled_inverse_null_metric.get(i, j);
+      }
+    }
+  }
 
   auto& angular_d_null_l =
       get<Tags::detail::AngularDNullL>(*computation_variables);
@@ -884,7 +920,7 @@ void create_bondi_boundary_data(
       bondi_boundary_data, make_not_null(&computation_variables),
       make_not_null(&derivative_buffers), dt_spacetime_metric, phi,
       spacetime_metric, null_l, du_null_l, cartesian_to_spherical_jacobian,
-      l_max);
+      l_max, extraction_radius);
 }
 
 /*!
@@ -1139,8 +1175,8 @@ void create_bondi_boundary_data(
   // input strategies
   detail::create_bondi_boundary_data(
       bondi_boundary_data, make_not_null(&computation_variables),
-      make_not_null(&derivative_buffers),
-      dt_spacetime_metric, phi, spacetime_metric, null_l, du_null_l,
-      cartesian_to_spherical_jacobian, l_max);
+      make_not_null(&derivative_buffers), dt_spacetime_metric, phi,
+      spacetime_metric, null_l, du_null_l, cartesian_to_spherical_jacobian,
+      l_max, extraction_radius);
 }
 }  // namespace Cce
