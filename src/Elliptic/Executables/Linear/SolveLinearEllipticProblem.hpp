@@ -45,31 +45,34 @@
 #include "ParallelAlgorithms/LinearSolver/Actions/TerminateIfConverged.hpp"
 #include "ParallelAlgorithms/LinearSolver/Gmres/Gmres.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Poisson/Lorentzian.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/Poisson/Moustache.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Poisson/ProductOfSinusoids.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-template <size_t Dim>
+template <typename System, typename InitialGuess, typename BoundaryConditions>
 struct Metavariables {
-  static constexpr size_t volume_dim = Dim;
+  using system = System;
+  static constexpr size_t volume_dim = system::volume_dim;
+  using initial_guess = InitialGuess;
+  using boundary_conditions = BoundaryConditions;
 
   static constexpr OptionString help{
-      "Find the solution to a Poisson problem in Dim spatial dimensions.\n"
-      "Analytic solution: ProductOfSinusoids\n"
+      "Find the solution to a linear elliptic problem.\n"
       "Linear solver: GMRES\n"
       "Numerical flux: FirstOrderInternalPenaltyFlux"};
 
-  // The system provides all equations specific to the problem.
-  using system = Poisson::FirstOrderSystem<Dim>;
   using fluxes_computer_tag =
       elliptic::Tags::FluxesComputer<typename system::fluxes>;
 
-  // The analytic solution and corresponding source to solve the Poisson
-  // equation for
-  using analytic_solution_tag =
-      Tags::AnalyticSolution<Poisson::Solutions::ProductOfSinusoids<Dim>>;
+  // Only Dirichlet boundary conditions are currently supported, and they are
+  // are all imposed by analytic solutions right now.
+  // This will be generalized ASAP. We will also support numeric initial guesses
+  // and analytic initial guesses that aren't solutions ("analytic data").
+  using analytic_solution_tag = Tags::AnalyticSolution<boundary_conditions>;
 
   // The linear solver algorithm. We must use GMRES since the operator is
   // not positive-definite for the first-order system.
@@ -83,7 +86,7 @@ struct Metavariables {
   // Parse numerical flux parameters from the input file to store in the cache.
   using normal_dot_numerical_flux = Tags::NumericalFlux<
       elliptic::dg::NumericalFluxes::FirstOrderInternalPenalty<
-          Dim, fluxes_computer_tag, typename system::primal_variables,
+          volume_dim, fluxes_computer_tag, typename system::primal_variables,
           typename system::auxiliary_variables>>;
 
   // Collect events and triggers
@@ -93,7 +96,7 @@ struct Metavariables {
   using analytic_solution_fields = observe_fields;
   using events = tmpl::list<
       dg::Events::Registrars::ObserveFields<
-          Dim, LinearSolver::Tags::IterationId, observe_fields,
+          volume_dim, LinearSolver::Tags::IterationId, observe_fields,
           analytic_solution_fields>,
       dg::Events::Registrars::ObserveErrorNorms<LinearSolver::Tags::IterationId,
                                                 analytic_solution_fields>>;
@@ -115,7 +118,8 @@ struct Metavariables {
   enum class Phase { Initialization, RegisterWithObserver, Solve, Exit };
 
   using initialization_actions = tmpl::list<
-      dg::Actions::InitializeDomain<Dim>, elliptic::Actions::InitializeSystem,
+      dg::Actions::InitializeDomain<volume_dim>,
+      elliptic::Actions::InitializeSystem,
       elliptic::Actions::InitializeAnalyticSolution<analytic_solution_tag,
                                                     analytic_solution_fields>,
       dg::Actions::InitializeInterfaces<
@@ -151,19 +155,20 @@ struct Metavariables {
 
               Parallel::PhaseActions<
                   Phase, Phase::Solve,
-                  tmpl::list<Actions::RunEventsAndTriggers,
-                             LinearSolver::Actions::TerminateIfConverged,
-                             dg::Actions::SendDataForFluxes<Metavariables>,
-                             Actions::MutateApply<elliptic::FirstOrderOperator<
-                                 Dim, LinearSolver::Tags::OperatorAppliedTo,
-                                 typename system::variables_tag>>,
-                             elliptic::dg::Actions::
-                                 ImposeHomogeneousDirichletBoundaryConditions<
-                                     Metavariables>,
-                             dg::Actions::ReceiveDataForFluxes<Metavariables>,
-                             dg::Actions::ApplyFluxes,
-                             typename linear_solver::perform_step,
-                             typename linear_solver::prepare_step>>>>>,
+                  tmpl::list<
+                      Actions::RunEventsAndTriggers,
+                      LinearSolver::Actions::TerminateIfConverged,
+                      dg::Actions::SendDataForFluxes<Metavariables>,
+                      Actions::MutateApply<elliptic::FirstOrderOperator<
+                          volume_dim, LinearSolver::Tags::OperatorAppliedTo,
+                          typename system::variables_tag>>,
+                      elliptic::dg::Actions::
+                          ImposeHomogeneousDirichletBoundaryConditions<
+                              Metavariables>,
+                      dg::Actions::ReceiveDataForFluxes<Metavariables>,
+                      dg::Actions::ApplyFluxes,
+                      typename linear_solver::perform_step,
+                      typename linear_solver::prepare_step>>>>>,
       typename linear_solver::component_list,
       tmpl::list<observers::Observer<Metavariables>,
                  observers::ObserverWriter<Metavariables>>>;
