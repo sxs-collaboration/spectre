@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(TimeDependence)
+
 set(LIBRARY DomainCreators)
 
 set(LIBRARY_SOURCES
