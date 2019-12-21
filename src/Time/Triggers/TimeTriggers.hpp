@@ -6,11 +6,13 @@
 #include "Time/Triggers/EveryNSlabs.hpp"
 #include "Time/Triggers/PastTime.hpp"
 #include "Time/Triggers/SpecifiedSlabs.hpp"
+#include "Time/Triggers/SpecifiedTimes.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Triggers {
 /// \ingroup EventsAndTriggersGroup
 /// Typelist of Time triggers
-using time_triggers = tmpl::list<Registrars::EveryNSlabs, Registrars::PastTime,
-                                 Registrars::SpecifiedSlabs>;
+using time_triggers =
+    tmpl::list<Registrars::EveryNSlabs, Registrars::PastTime,
+               Registrars::SpecifiedSlabs, Registrars::SpecifiedTimes>;
 }  // namespace Triggers
