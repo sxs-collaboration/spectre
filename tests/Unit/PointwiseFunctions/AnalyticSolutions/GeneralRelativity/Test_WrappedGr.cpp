@@ -14,6 +14,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/WrappedGr.hpp"
@@ -52,10 +53,12 @@ void test_generalized_harmonic_solution(const Args&... args) noexcept {
   const GeneralizedHarmonic::Solutions::WrappedGr<SolutionType>&
       wrapped_solution{args...};
 
-  const DataVector data_vector{5.0, 4.0};
+  const DataVector data_vector{3.0, 4.0};
   const tnsr::I<DataVector, SolutionType::volume_dim, Frame::Inertial> x{
       data_vector};
-  const double t = std::numeric_limits<double>::signaling_NaN();
+  // Don't set time to signaling NaN, since not all solutions tested here
+  // are static
+  const double t = 44.44;
 
   // Check that the wrapped solution returns the same variables as
   // the solution
@@ -154,6 +157,10 @@ void test_construct_from_options() {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.WrappedGr",
                   "[PointwiseFunctions][Unit]") {
+  const double amplitude = 0.24;
+  const double wavelength = 4.4;
+  test_generalized_harmonic_solution<gr::Solutions::GaugeWave>(amplitude,
+                                                               wavelength);
   test_generalized_harmonic_solution<gr::Solutions::Minkowski<1>>();
   test_generalized_harmonic_solution<gr::Solutions::Minkowski<2>>();
   test_generalized_harmonic_solution<gr::Solutions::Minkowski<3>>();

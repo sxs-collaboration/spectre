@@ -6,6 +6,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/DataVector.hpp"        // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"     // IWYU pragma: keep
+#include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/GaugeWave.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
@@ -293,7 +294,8 @@ WrappedGr<SolutionType>::variables(
           Frame::Inertial>> /*meta*/,                                          \
       const IntermediateVars& intermediate_vars) const noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::Minkowski<1>,
+GENERATE_INSTANTIATIONS(INSTANTIATE, (gr::Solutions::GaugeWave,
+                                      gr::Solutions::Minkowski<1>,
                                       gr::Solutions::Minkowski<2>,
                                       gr::Solutions::Minkowski<3>,
                                       gr::Solutions::KerrSchild))
