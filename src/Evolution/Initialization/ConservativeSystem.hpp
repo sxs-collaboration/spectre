@@ -152,33 +152,33 @@ struct ConservativeSystem {
         std::move(equation_of_state));
   }
 
-   template <typename DbTagsList, typename Metavariables,
-             Requires<not Metavariables::system::
-                          has_primitive_and_conservative_vars> = nullptr>
-   static auto initialize_vars(
-       db::DataBox<DbTagsList>&& box,
-       const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-     using system = typename Metavariables::system;
-     static constexpr size_t dim = system::volume_dim;
-     using variables_tag = typename system::variables_tag;
+  template <
+      typename DbTagsList, typename Metavariables,
+      Requires<not Metavariables::system::has_primitive_and_conservative_vars> =
+          nullptr>
+  static auto initialize_vars(
+      db::DataBox<DbTagsList>&& box,
+      const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+    using system = typename Metavariables::system;
+    static constexpr size_t dim = system::volume_dim;
+    using variables_tag = typename system::variables_tag;
 
-     const double initial_time =
-         db::get<Initialization::Tags::InitialTime>(box);
-     const auto& inertial_coords =
-         db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+    const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
+    const auto& inertial_coords =
+        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
 
-     // Set initial data from analytic solution
-     using Vars = typename variables_tag::type;
-     db::mutate<variables_tag>(
-         make_not_null(&box), [&cache, &inertial_coords, initial_time ](
-                                  const gsl::not_null<Vars*> vars) noexcept {
-           vars->assign_subset(evolution::initial_data(
-               Parallel::get<::Tags::AnalyticSolutionOrData>(cache),
-               inertial_coords, initial_time, typename Vars::tags_list{}));
-         });
+    // Set initial data from analytic solution
+    using Vars = typename variables_tag::type;
+    db::mutate<variables_tag>(
+        make_not_null(&box), [&cache, &inertial_coords, initial_time ](
+                                 const gsl::not_null<Vars*> vars) noexcept {
+          vars->assign_subset(evolution::initial_data(
+              Parallel::get<::Tags::AnalyticSolutionOrData>(cache),
+              inertial_coords, initial_time, typename Vars::tags_list{}));
+        });
 
-     return std::move(box);
-   }
+    return std::move(box);
+  }
 };
 }  // namespace Actions
 }  // namespace Initialization
