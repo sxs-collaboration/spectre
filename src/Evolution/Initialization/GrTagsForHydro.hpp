@@ -3,27 +3,35 @@
 
 #pragma once
 
-#include <array>
 #include <cstddef>
 #include <tuple>
-#include <utility>  // IWYU pragma: keep
-#include <vector>
+#include <utility>  // IWYU pragma: keep  // for move
 
 #include "DataStructures/DataBox/DataBox.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/Variables.hpp"  // IWYU pragma: keep
-#include "Domain/Mesh.hpp"
-#include "Domain/Tags.hpp"
-#include "Evolution/Initialization/Tags.hpp"
-#include "Evolution/TypeTraits.hpp"
+#include "Evolution/Initialization/InitialData.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
-#include "PointwiseFunctions/AnalyticData/Tags.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
-#include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
-#include "Utilities/TypeTraits.hpp"
+#include "Utilities/TaggedTuple.hpp"
+
+/// \cond
+namespace Frame {
+struct Inertial;
+}  // namespace Frame
+namespace Initialization {
+namespace Tags {
+struct InitialTime;
+}  // namespace Tags
+}  // namespace Initialization
+namespace Tags {
+struct AnalyticSolutionOrData;
+template <size_t Dim, typename Frame>
+struct Coordinates;
+template <size_t VolumeDim>
+struct Mesh;
+}  // namespace Tags
+// IWYU pragma: no_forward_declare db::DataBox
+/// \endcond
 
 namespace Initialization {
 namespace Actions {
@@ -68,27 +76,9 @@ struct GrTagsForHydro {
 
     // Set initial data from analytic solution
     GrVars gr_vars{num_grid_points};
-    make_overloader(
-        [ initial_time, &inertial_coords ](
-            std::true_type /*is_analytic_solution*/,
-            const gsl::not_null<GrVars*> local_gr_vars,
-            const auto& local_cache) noexcept {
-          using solution_tag = ::Tags::AnalyticSolutionBase;
-          local_gr_vars->assign_subset(
-              Parallel::get<solution_tag>(local_cache)
-                  .variables(inertial_coords, initial_time,
-                             typename GrVars::tags_list{}));
-        },
-        [&inertial_coords](std::false_type /*is_analytic_solution*/,
-                           const gsl::not_null<GrVars*> local_gr_vars,
-                           const auto& local_cache) noexcept {
-          using analytic_data_tag = ::Tags::AnalyticDataBase;
-          local_gr_vars->assign_subset(
-              Parallel::get<analytic_data_tag>(local_cache)
-                  .variables(inertial_coords, typename GrVars::tags_list{}));
-        })(
-        evolution::is_analytic_solution<typename Metavariables::initial_data>{},
-        make_not_null(&gr_vars), cache);
+    gr_vars.assign_subset(evolution::initial_data(
+        Parallel::get<::Tags::AnalyticSolutionOrData>(cache), inertial_coords,
+        initial_time, typename GrVars::tags_list{}));
 
     return std::make_tuple(
         Initialization::merge_into_databox<GrTagsForHydro, simple_tags,

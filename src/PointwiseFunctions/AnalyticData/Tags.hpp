@@ -28,9 +28,11 @@ struct AnalyticData {
 }  // namespace OptionTags
 
 namespace Tags {
+struct AnalyticSolutionOrData : db::BaseTag {};
+
 /// Can be used to retrieve the analytic solution from the cache without having
 /// to know the template parameters of AnalyticData.
-struct AnalyticDataBase : db::BaseTag {};
+struct AnalyticDataBase : AnalyticSolutionOrData {};
 
 /// The analytic data, with the type of the analytic data set as the
 /// template parameter
