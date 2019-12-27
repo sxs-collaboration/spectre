@@ -7,7 +7,6 @@ set(LIBRARY_SOURCES
   EquationsOfState/DarkEnergyFluid.cpp
   EquationsOfState/IdealFluid.cpp
   EquationsOfState/PolytropicFluid.cpp
-  LorentzFactor.cpp
   MassFlux.cpp
   SoundSpeedSquared.cpp
   SpecificEnthalpy.cpp
@@ -19,6 +18,7 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE DataStructures
   INTERFACE ErrorHandling
+  INTERFACE SpecialRelativity
   )
 
 if(BUILD_PYTHON_BINDINGS)

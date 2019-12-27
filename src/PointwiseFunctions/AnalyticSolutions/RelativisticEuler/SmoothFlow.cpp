@@ -96,14 +96,14 @@ tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> SmoothFlow<Dim>::variables(
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<
-    hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>
+tuples::TaggedTuple<sr::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>
 SmoothFlow<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                           tmpl::list<hydro::Tags::SpatialVelocity<
+                           tmpl::list<sr::Tags::SpatialVelocity<
                                DataType, Dim, Frame::Inertial>> /*meta*/) const
     noexcept {
-  auto result = make_with_value<db::item_type<
-      hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>>(x, 0.0);
+  auto result = make_with_value<
+      db::item_type<sr::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>>(
+      x, 0.0);
   for (size_t i = 0; i < Dim; ++i) {
     result.get(i) = gsl::at(mean_velocity_, i);
   }
@@ -112,11 +112,11 @@ SmoothFlow<Dim>::variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
 
 template <size_t Dim>
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
+tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>>
 SmoothFlow<Dim>::variables(
     const tnsr::I<DataType, Dim>& x, double /*t*/,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
-  return {make_with_value<db::item_type<hydro::Tags::LorentzFactor<DataType>>>(
+    tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+  return {make_with_value<db::item_type<sr::Tags::LorentzFactor<DataType>>>(
       x,
       1.0 / sqrt(1.0 - alg::accumulate(
                            mean_velocity_, 0.0,
@@ -180,7 +180,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_CLASS, (1, 2, 3))
 GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (double, DataVector),
                         (hydro::Tags::RestMassDensity,
                          hydro::Tags::SpecificInternalEnergy,
-                         hydro::Tags::Pressure, hydro::Tags::LorentzFactor,
+                         hydro::Tags::Pressure, sr::Tags::LorentzFactor,
                          hydro::Tags::SpecificEnthalpy))
 
 #define INSTANTIATE_VECTORS(_, data)                                       \
@@ -192,7 +192,7 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_SCALARS, (1, 2, 3), (double, DataVector),
           /*meta*/) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (1, 2, 3), (double, DataVector),
-                        (hydro::Tags::SpatialVelocity))
+                        (sr::Tags::SpatialVelocity))
 
 #undef DIM
 #undef DTYPE

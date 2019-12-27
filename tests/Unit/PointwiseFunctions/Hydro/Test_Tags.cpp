@@ -27,9 +27,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
         "DivergenceCleaningField");
   CHECK(hydro::Tags::EquationOfState<IdealFluid<true>>::name() ==
         "EquationOfState");
-  CHECK(hydro::Tags::LorentzFactor<DataVector>::name() == "LorentzFactor");
-  CHECK(hydro::Tags::LorentzFactorSquared<DataVector>::name() ==
-        "LorentzFactorSquared");
   CHECK(hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>::name() ==
         "MagneticField");
   CHECK(hydro::Tags::MagneticField<DataVector, 3, Frame::Distorted>::name() ==
@@ -47,22 +44,6 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.Tags", "[Unit][Hydro]") {
   CHECK(hydro::Tags::RestMassDensity<DataVector>::name() == "RestMassDensity");
   CHECK(hydro::Tags::SoundSpeedSquared<DataVector>::name() ==
         "SoundSpeedSquared");
-  /// [prefix_example]
-  CHECK(hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>::name() ==
-        "SpatialVelocity");
-  CHECK(hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Grid>::name() ==
-        "Grid_SpatialVelocity");
-  CHECK(hydro::Tags::SpatialVelocityOneForm<DataVector, 3,
-                                            Frame::Inertial>::name() ==
-        "SpatialVelocityOneForm");
-  CHECK(hydro::Tags::SpatialVelocityOneForm<DataVector, 3,
-                                            Frame::Logical>::name() ==
-        "Logical_SpatialVelocityOneForm");
-  /// [prefix_example]
-  CHECK(hydro::Tags::SpatialVelocitySquared<double>::name() ==
-        "SpatialVelocitySquared");
-  CHECK(hydro::Tags::SpatialVelocitySquared<DataVector>::name() ==
-        "SpatialVelocitySquared");
   CHECK(hydro::Tags::SpecificEnthalpy<double>::name() == "SpecificEnthalpy");
   CHECK(hydro::Tags::SpecificEnthalpy<DataVector>::name() ==
         "SpecificEnthalpy");

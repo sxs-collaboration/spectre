@@ -20,4 +20,5 @@ target_link_libraries(
   INTERFACE ErrorHandling
   INTERFACE Hydro
   INTERFACE RelativisticEulerSolutions
+  INTERFACE SpecialRelativity
   )

@@ -6,6 +6,7 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -17,8 +18,8 @@ class er;
 }  // namespace PUP
 /// \endcond
 
-// IWYU pragma: no_forward_declare hydro::Tags::SpatialVelocity
-// IWYU pragma: no_forward_declare hydro::Tags::LorentzFactor
+// IWYU pragma: no_forward_declare sr::Tags::SpatialVelocity
+// IWYU pragma: no_forward_declare sr::Tags::LorentzFactor
 // IWYU pragma: no_forward_declare hydro::Tags::RestMassDensity
 // IWYU pragma: no_forward_declare Tensor
 
@@ -73,8 +74,8 @@ class LimitLorentzFactor {
   // NOLINTNEXTLINE(google-runtime-references)
   void pup(PUP::er& p) noexcept;
 
-  using return_tags = tmpl::list<hydro::Tags::LorentzFactor<DataVector>,
-                                 hydro::Tags::SpatialVelocity<DataVector, 3>>;
+  using return_tags = tmpl::list<sr::Tags::LorentzFactor<DataVector>,
+                                 sr::Tags::SpatialVelocity<DataVector, 3>>;
 
   using argument_tags = tmpl::list<hydro::Tags::RestMassDensity<DataVector>>;
 

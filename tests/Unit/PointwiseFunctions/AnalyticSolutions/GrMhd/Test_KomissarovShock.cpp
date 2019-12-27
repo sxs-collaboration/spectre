@@ -18,6 +18,7 @@
 #include "Options/Options.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/AnalyticSolutions/GrMhd/KomissarovShock.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -39,10 +40,10 @@ struct KomissarovShockProxy : grmhd::Solutions::KomissarovShock {
   template <typename DataType>
   using hydro_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3>,
+                 sr::Tags::SpatialVelocity<DataType, 3>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
-                 hydro::Tags::LorentzFactor<DataType>,
+                 sr::Tags::LorentzFactor<DataType>,
                  hydro::Tags::SpecificEnthalpy<DataType>>;
 
   template <typename DataType>
@@ -141,21 +142,25 @@ void test_left_and_right_variables() noexcept {
   CHECK(get(get<hydro::Tags::Pressure<double>>(komissarov_shock.variables(
             right_x, 0., tmpl::list<hydro::Tags::Pressure<double>>{}))) ==
         55.36);
-  CHECK(get<0>(get<hydro::Tags::SpatialVelocity<double, 3, Frame::Inertial>>(
-            komissarov_shock.variables(left_x, 0.,
-                                       tmpl::list<hydro::Tags::SpatialVelocity<
-                                           double, 3, Frame::Inertial>>{}))) ==
-        0.8370659816473115);
-  CHECK(get<0>(get<hydro::Tags::SpatialVelocity<double, 3, Frame::Inertial>>(
-            komissarov_shock.variables(right_x, 0.,
-                                       tmpl::list<hydro::Tags::SpatialVelocity<
-                                           double, 3, Frame::Inertial>>{}))) ==
-        0.6202085442748952);
-  CHECK(get(get<hydro::Tags::LorentzFactor<double>>(komissarov_shock.variables(
-            left_x, 0., tmpl::list<hydro::Tags::LorentzFactor<double>>{}))) ==
+  CHECK(
+      get<0>(get<sr::Tags::SpatialVelocity<double, 3, Frame::Inertial>>(
+          komissarov_shock.variables(
+              left_x, 0.,
+              tmpl::list<
+                  sr::Tags::SpatialVelocity<double, 3, Frame::Inertial>>{}))) ==
+      0.8370659816473115);
+  CHECK(
+      get<0>(get<sr::Tags::SpatialVelocity<double, 3, Frame::Inertial>>(
+          komissarov_shock.variables(
+              right_x, 0.,
+              tmpl::list<
+                  sr::Tags::SpatialVelocity<double, 3, Frame::Inertial>>{}))) ==
+      0.6202085442748952);
+  CHECK(get(get<sr::Tags::LorentzFactor<double>>(komissarov_shock.variables(
+            left_x, 0., tmpl::list<sr::Tags::LorentzFactor<double>>{}))) ==
         approx(1.827812900709479));
-  CHECK(get(get<hydro::Tags::LorentzFactor<double>>(komissarov_shock.variables(
-            right_x, 0., tmpl::list<hydro::Tags::LorentzFactor<double>>{}))) ==
+  CHECK(get(get<sr::Tags::LorentzFactor<double>>(komissarov_shock.variables(
+            right_x, 0., tmpl::list<sr::Tags::LorentzFactor<double>>{}))) ==
         approx(1.5431906071513006));
 }
 

@@ -52,13 +52,13 @@ void BondiHoyleAccretion::pup(PUP::er& p) noexcept {
 }
 
 template <typename DataType>
-typename hydro::Tags::SpatialVelocity<DataType, 3, Frame::NoFrame>::type
+typename sr::Tags::SpatialVelocity<DataType, 3, Frame::NoFrame>::type
 BondiHoyleAccretion::spatial_velocity(const DataType& r_squared,
                                       const DataType& cos_theta,
                                       const DataType& sin_theta) const
     noexcept {
   auto result = make_with_value<
-      typename hydro::Tags::SpatialVelocity<DataType, 3, Frame::NoFrame>::type>(
+      typename sr::Tags::SpatialVelocity<DataType, 3, Frame::NoFrame>::type>(
       r_squared, 0.0);
 
   const DataType sigma = r_squared + square(bh_spin_a_) * square(cos_theta);
@@ -122,10 +122,10 @@ BondiHoyleAccretion::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
+tuples::TaggedTuple<sr::Tags::SpatialVelocity<DataType, 3>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
+    tmpl::list<sr::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
     noexcept {
   const DataType r_squared = get(kerr_schild_coords_.r_coord_squared(x));
   return kerr_schild_coords_.cartesian_from_spherical_ks(
@@ -181,11 +181,11 @@ BondiHoyleAccretion::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
+tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>>
 BondiHoyleAccretion::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
-  return {make_with_value<db::item_type<hydro::Tags::LorentzFactor<DataType>>>(
+    tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+  return {make_with_value<db::item_type<sr::Tags::LorentzFactor<DataType>>>(
       x, 1.0 / sqrt(1.0 - square(flow_speed_)))};
 }
 
@@ -232,7 +232,7 @@ GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
     (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
      hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
-     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
+     sr::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
 #define INSTANTIATE_VECTORS(_, data)                                         \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>                  \
@@ -242,8 +242,7 @@ GENERATE_INSTANTIATIONS(
           const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
-                        (hydro::Tags::SpatialVelocity,
-                         hydro::Tags::MagneticField))
+                        (sr::Tags::SpatialVelocity, hydro::Tags::MagneticField))
 
 #undef DTYPE
 #undef TAG

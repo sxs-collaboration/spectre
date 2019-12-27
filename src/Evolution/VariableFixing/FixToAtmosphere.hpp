@@ -10,6 +10,7 @@
 #include "Options/Options.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma:  keep
+#include "PointwiseFunctions/SpecialRelativity/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -24,8 +25,8 @@ class er;
 // IWYU pragma: no_forward_declare EquationsOfState::EquationOfState
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare hydro::Tags::EquationOfStateBase
-// IWYU pragma: no_forward_declare hydro::Tags::SpatialVelocity
-// IWYU pragma: no_forward_declare hydro::Tags::LorentzFactor
+// IWYU pragma: no_forward_declare sr::Tags::SpatialVelocity
+// IWYU pragma: no_forward_declare sr::Tags::LorentzFactor
 // IWYU pragma: no_forward_declare hydro::Tags::Pressure
 // IWYU pragma: no_forward_declare hydro::Tags::RestMassDensity
 // IWYU pragma: no_forward_declare hydro::Tags::SpecificEnthalpy
@@ -87,8 +88,8 @@ class FixToAtmosphere {
   using return_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
-                 hydro::Tags::LorentzFactor<DataVector>,
+                 sr::Tags::SpatialVelocity<DataVector, Dim>,
+                 sr::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>>;
   using argument_tags = tmpl::list<hydro::Tags::EquationOfStateBase>;

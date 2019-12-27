@@ -10,29 +10,29 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/LorentzFactor.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
-namespace hydro {
+namespace sr {
 namespace {
 template <size_t Dim, typename Frame, typename DataType>
 void test_lorentz_factor(const DataType& used_for_size) {
   pypp::check_with_random_values<1>(&lorentz_factor<DataType, Dim, Frame>,
-                                    "TestFunctions", "lorentz_factor",
+                                    "LorentzFactor", "lorentz_factor",
                                     {{{0.0, 1.0 / sqrt(Dim)}}}, used_for_size);
   pypp::check_with_random_values<1>(&lorentz_factor<DataType, Dim, Frame>,
-                                    "TestFunctions", "lorentz_factor",
+                                    "LorentzFactor", "lorentz_factor",
                                     {{{-1.0 / sqrt(Dim), 0.0}}}, used_for_size);
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.LorentzFactor",
-                  "[Unit][Hydro]") {
+SPECTRE_TEST_CASE("Unit.PointwiseFunctions.SpecialRelativity.LorentzFactor",
+                  "[Unit][SpecialRelativity]") {
   pypp::SetupLocalPythonEnvironment local_python_env(
-      "PointwiseFunctions/Hydro/");
+      "PointwiseFunctions/SpecialRelativity/");
   const DataVector dv(5);
   test_lorentz_factor<1, Frame::Inertial>(dv);
   test_lorentz_factor<1, Frame::Grid>(dv);
@@ -64,4 +64,4 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.LorentzFactor",
   CHECK(db::get<Tags::LorentzFactor<DataVector>>(box) ==
         lorentz_factor(velocity, velocity_one_form));
 }
-}  // namespace hydro
+}  // namespace sr

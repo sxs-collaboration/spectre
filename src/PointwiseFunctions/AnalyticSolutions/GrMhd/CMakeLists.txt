@@ -18,4 +18,5 @@ target_link_libraries(
   INTERFACE ErrorHandling
   INTERFACE GeneralRelativitySolutions
   INTERFACE Hydro
+  INTERFACE SpecialRelativity
   )

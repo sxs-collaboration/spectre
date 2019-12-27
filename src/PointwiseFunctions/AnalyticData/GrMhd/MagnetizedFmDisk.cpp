@@ -19,6 +19,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/ContainerHelpers.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
@@ -96,10 +97,9 @@ MagnetizedFmDisk::MagnetizedFmDisk(
   const auto b_field = unnormalized_magnetic_field(grid);
   const auto unmagnetized_vars = variables(
       grid,
-      tmpl::list<
-          gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
-          hydro::Tags::LorentzFactor<DataVector>,
-          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>{});
+      tmpl::list<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
+                 sr::Tags::LorentzFactor<DataVector>,
+                 sr::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>{});
   const auto& spatial_metric =
       get<gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>>(
           unmagnetized_vars);
@@ -109,11 +109,11 @@ MagnetizedFmDisk::MagnetizedFmDisk(
 
   const double b_squared_max =
       max(get(dot_product(b_field, b_field, spatial_metric)) /
-              square(get(get<hydro::Tags::LorentzFactor<DataVector>>(
+              square(get(get<sr::Tags::LorentzFactor<DataVector>>(
                   unmagnetized_vars))) +
           square(get(dot_product(
               b_field,
-              get<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>(
+              get<sr::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>(
                   unmagnetized_vars),
               spatial_metric))));
   ASSERT(b_squared_max > 0.0, "Max b squared is zero.");

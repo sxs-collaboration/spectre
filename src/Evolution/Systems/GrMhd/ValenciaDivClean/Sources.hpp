@@ -8,6 +8,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"  //  IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -94,11 +95,11 @@ struct ComputeSources {
       grmhd::ValenciaDivClean::Tags::TildeS<>,
       grmhd::ValenciaDivClean::Tags::TildeB<>,
       grmhd::ValenciaDivClean::Tags::TildePhi,
-      hydro::Tags::SpatialVelocity<DataVector, 3>,
+      sr::Tags::SpatialVelocity<DataVector, 3>,
       hydro::Tags::MagneticField<DataVector, 3>,
       hydro::Tags::RestMassDensity<DataVector>,
       hydro::Tags::SpecificEnthalpy<DataVector>,
-      hydro::Tags::LorentzFactor<DataVector>, hydro::Tags::Pressure<DataVector>,
+      sr::Tags::LorentzFactor<DataVector>, hydro::Tags::Pressure<DataVector>,
       gr::Tags::Lapse<>,
       ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<3>,
                     Frame::Inertial>,

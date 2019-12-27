@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
@@ -264,16 +265,15 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
     IntermediateVariables<
         DataType,
         tmpl2::flat_any_v<(
-            cpp17::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
-            cpp17::is_same_v<Tags, hydro::Tags::LorentzFactor<DataType>> or
+            cpp17::is_same_v<Tags, sr::Tags::SpatialVelocity<DataType, 3>> or
+            cpp17::is_same_v<Tags, sr::Tags::LorentzFactor<DataType>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>)...>>
         vars(bh_spin_a_, background_spacetime_, x, t,
              index_helper(
                  tmpl::index_of<tmpl::list<Tags...>,
-                                hydro::Tags::SpatialVelocity<DataType, 3>>{}),
-             index_helper(
-                 tmpl::index_of<tmpl::list<Tags...>,
-                                hydro::Tags::LorentzFactor<DataType>>{}));
+                                sr::Tags::SpatialVelocity<DataType, 3>>{}),
+             index_helper(tmpl::index_of<tmpl::list<Tags...>,
+                                         sr::Tags::LorentzFactor<DataType>>{}));
     return {std::move(get<Tags>(
         variables(x, tmpl::list<Tags>{}, vars,
                   tmpl::index_of<tmpl::list<Tags...>, Tags>::value)))...};
@@ -287,8 +287,8 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
     // be threadsafe.
     IntermediateVariables<
         DataType,
-        cpp17::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
-            cpp17::is_same_v<Tag, hydro::Tags::LorentzFactor<DataType>> or
+        cpp17::is_same_v<Tag, sr::Tags::SpatialVelocity<DataType, 3>> or
+            cpp17::is_same_v<Tag, sr::Tags::LorentzFactor<DataType>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>>
         intermediate_vars(bh_spin_a_, background_spacetime_, x, t,
                           std::numeric_limits<size_t>::max(),
@@ -337,17 +337,17 @@ class FishboneMoncriefDisk : public MarkAsAnalyticSolution {
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
+                 tmpl::list<sr::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
                  const IntermediateVariables<DataType, true>& vars,
                  size_t index) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>;
+      -> tuples::TaggedTuple<sr::Tags::SpatialVelocity<DataType, 3>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/,
+                 tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/,
                  const IntermediateVariables<DataType, true>& vars,
                  size_t index) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+      -> tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType, bool NeedSpacetime>
   auto variables(

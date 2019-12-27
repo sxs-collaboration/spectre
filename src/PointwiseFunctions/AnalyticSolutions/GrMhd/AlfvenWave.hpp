@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/MakeArray.hpp"            // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -179,10 +180,10 @@ class AlfvenWave : public MarkAsAnalyticSolution {
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
-                 tmpl::list<hydro::Tags::SpatialVelocity<
+                 tmpl::list<sr::Tags::SpatialVelocity<
                      DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+          sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
@@ -199,10 +200,9 @@ class AlfvenWave : public MarkAsAnalyticSolution {
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x, double /*t*/,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x, double /*t*/,
+                 tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
   auto variables(

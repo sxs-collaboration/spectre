@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"              // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -107,8 +108,8 @@ void characteristic_speeds(
   // - Pass temp pointer to Rel Euler: 1 allocation
   // - Return a DataVectorArray (not yet implemented): 9 allocations
   Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::SpatialVelocitySquared<DataVector>,
+      sr::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
+      sr::Tags::SpatialVelocitySquared<DataVector>,
       hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>,
       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
       hydro::Tags::MagneticFieldSquared<DataVector>,
@@ -117,11 +118,13 @@ void characteristic_speeds(
       temp_tensors{get<0>(shift).size()};
 
   const auto& spatial_velocity_one_form =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+      get<sr::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
           temp_tensors);
   raise_or_lower_index(
-      make_not_null(&get<hydro::Tags::SpatialVelocityOneForm<
-                        DataVector, 3, Frame::Inertial>>(temp_tensors)),
+      make_not_null(
+          &get<
+              sr::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+              temp_tensors)),
       spatial_velocity, spatial_metric);
   const auto& magnetic_field_one_form =
       get<hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>>(
@@ -139,11 +142,10 @@ void characteristic_speeds(
               temp_tensors)),
       magnetic_field, spatial_velocity_one_form);
   const auto& spatial_velocity_squared =
-      get<hydro::Tags::SpatialVelocitySquared<DataVector>>(temp_tensors);
-  dot_product(
-      make_not_null(
-          &get<hydro::Tags::SpatialVelocitySquared<DataVector>>(temp_tensors)),
-      spatial_velocity, spatial_velocity_one_form);
+      get<sr::Tags::SpatialVelocitySquared<DataVector>>(temp_tensors);
+  dot_product(make_not_null(&get<sr::Tags::SpatialVelocitySquared<DataVector>>(
+                  temp_tensors)),
+              spatial_velocity, spatial_velocity_one_form);
 
   const auto& magnetic_field_squared =
       get<hydro::Tags::MagneticFieldSquared<DataVector>>(temp_tensors);

@@ -23,6 +23,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/RelativisticEuler/FishboneMoncriefDisk.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
@@ -44,10 +45,10 @@ struct FishboneMoncriefDiskProxy
   template <typename DataType>
   using hydro_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
-                 hydro::Tags::LorentzFactor<DataType>,
+                 sr::Tags::LorentzFactor<DataType>,
                  hydro::Tags::SpecificEnthalpy<DataType>>;
 
   template <typename DataType>

@@ -224,10 +224,10 @@ FishboneMoncriefDisk::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
+tuples::TaggedTuple<sr::Tags::SpatialVelocity<DataType, 3>>
 FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
+    tmpl::list<sr::Tags::SpatialVelocity<DataType, 3>> /*meta*/,
     const IntermediateVariables<DataType, true>& vars,
     const size_t /*index*/) const noexcept {
   auto spatial_velocity = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
@@ -256,15 +256,15 @@ FishboneMoncriefDisk::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
+tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>>
 FishboneMoncriefDisk::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/,
+    tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/,
     const IntermediateVariables<DataType, true>& vars, const size_t index) const
     noexcept {
-  const auto spatial_velocity = get<hydro::Tags::SpatialVelocity<DataType, 3>>(
-      variables(x, tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>>{},
-                vars, index));
+  const auto spatial_velocity = get<sr::Tags::SpatialVelocity<DataType, 3>>(
+      variables(x, tmpl::list<sr::Tags::SpatialVelocity<DataType, 3>>{}, vars,
+                index));
   Scalar<DataType> lorentz_factor{
       1.0 /
       sqrt(1.0 - get(dot_product(
@@ -394,20 +394,20 @@ bool operator!=(const FishboneMoncriefDisk& lhs,
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector), (true, false))
 #undef INSTANTIATE
 
-#define INSTANTIATE(_, data)                                                 \
-  template tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DTYPE(data), 3>> \
-  FishboneMoncriefDisk::variables(                                           \
-      const tnsr::I<DTYPE(data), 3>& x,                                      \
-      tmpl::list<hydro::Tags::SpatialVelocity<DTYPE(data), 3>> /*meta*/,     \
-      const FishboneMoncriefDisk::IntermediateVariables<DTYPE(data), true>&  \
-          vars,                                                              \
-      const size_t) const noexcept;                                          \
-  template tuples::TaggedTuple<hydro::Tags::LorentzFactor<DTYPE(data)>>      \
-  FishboneMoncriefDisk::variables(                                           \
-      const tnsr::I<DTYPE(data), 3>& x,                                      \
-      tmpl::list<hydro::Tags::LorentzFactor<DTYPE(data)>> /*meta*/,          \
-      const FishboneMoncriefDisk::IntermediateVariables<DTYPE(data), true>&  \
-          vars,                                                              \
+#define INSTANTIATE(_, data)                                                \
+  template tuples::TaggedTuple<sr::Tags::SpatialVelocity<DTYPE(data), 3>>   \
+  FishboneMoncriefDisk::variables(                                          \
+      const tnsr::I<DTYPE(data), 3>& x,                                     \
+      tmpl::list<sr::Tags::SpatialVelocity<DTYPE(data), 3>> /*meta*/,       \
+      const FishboneMoncriefDisk::IntermediateVariables<DTYPE(data), true>& \
+          vars,                                                             \
+      const size_t) const noexcept;                                         \
+  template tuples::TaggedTuple<sr::Tags::LorentzFactor<DTYPE(data)>>        \
+  FishboneMoncriefDisk::variables(                                          \
+      const tnsr::I<DTYPE(data), 3>& x,                                     \
+      tmpl::list<sr::Tags::LorentzFactor<DTYPE(data)>> /*meta*/,            \
+      const FishboneMoncriefDisk::IntermediateVariables<DTYPE(data), true>& \
+          vars,                                                             \
       const size_t) const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))

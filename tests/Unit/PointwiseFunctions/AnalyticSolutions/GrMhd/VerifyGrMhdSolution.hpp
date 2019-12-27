@@ -20,6 +20,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -49,10 +50,10 @@ Variables<valencia_tags> numerical_dt(
   using solution_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+                 sr::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
                  hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>,
                  hydro::Tags::DivergenceCleaningField<DataVector>,
-                 hydro::Tags::LorentzFactor<DataVector>,
+                 sr::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>,
                  gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
@@ -67,13 +68,12 @@ Variables<valencia_tags> numerical_dt(
     const auto& specific_internal_energy =
         get<hydro::Tags::SpecificInternalEnergy<DataVector>>(vars);
     const auto& spatial_velocity =
-        get<hydro::Tags::SpatialVelocity<DataVector, 3>>(vars);
+        get<sr::Tags::SpatialVelocity<DataVector, 3>>(vars);
     const auto& magnetic_field =
         get<hydro::Tags::MagneticField<DataVector, 3>>(vars);
     const auto& divergence_cleaning_field =
         get<hydro::Tags::DivergenceCleaningField<DataVector>>(vars);
-    const auto& lorentz_factor =
-        get<hydro::Tags::LorentzFactor<DataVector>>(vars);
+    const auto& lorentz_factor = get<sr::Tags::LorentzFactor<DataVector>>(vars);
     const auto& pressure = get<hydro::Tags::Pressure<DataVector>>(vars);
     const auto& specific_enthalpy =
         get<hydro::Tags::SpecificEnthalpy<DataVector>>(vars);
@@ -130,10 +130,10 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   using solution_tags = tmpl::list<
       hydro::Tags::RestMassDensity<DataVector>,
       hydro::Tags::SpecificInternalEnergy<DataVector>,
-      hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+      sr::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
       hydro::Tags::MagneticField<DataVector, 3, Frame::Inertial>,
       hydro::Tags::DivergenceCleaningField<DataVector>,
-      hydro::Tags::LorentzFactor<DataVector>, hydro::Tags::Pressure<DataVector>,
+      sr::Tags::LorentzFactor<DataVector>, hydro::Tags::Pressure<DataVector>,
       hydro::Tags::SpecificEnthalpy<DataVector>, gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<3, Frame::Inertial, DataVector>,
       gr::Tags::SpatialMetric<3, Frame::Inertial, DataVector>,
@@ -153,13 +153,12 @@ void verify_grmhd_solution(const Solution& solution, const Block<3>& block,
   const auto& specific_internal_energy =
       get<hydro::Tags::SpecificInternalEnergy<DataVector>>(vars);
   const auto& spatial_velocity =
-      get<hydro::Tags::SpatialVelocity<DataVector, 3>>(vars);
+      get<sr::Tags::SpatialVelocity<DataVector, 3>>(vars);
   const auto& magnetic_field =
       get<hydro::Tags::MagneticField<DataVector, 3>>(vars);
   const auto& divergence_cleaning_field =
       get<hydro::Tags::DivergenceCleaningField<DataVector>>(vars);
-  const auto& lorentz_factor =
-      get<hydro::Tags::LorentzFactor<DataVector>>(vars);
+  const auto& lorentz_factor = get<sr::Tags::LorentzFactor<DataVector>>(vars);
   const auto& pressure = get<hydro::Tags::Pressure<DataVector>>(vars);
   const auto& specific_enthalpy =
       get<hydro::Tags::SpecificEnthalpy<DataVector>>(vars);

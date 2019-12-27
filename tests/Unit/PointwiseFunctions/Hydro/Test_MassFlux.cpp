@@ -12,6 +12,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/MassFlux.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
@@ -57,12 +58,12 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.MassFlux",
       {{DataVector{5, 0.1}, DataVector{5, 0.2}, DataVector{5, 0.3}}}};
   Scalar<DataVector> sqrt_det_g{{{DataVector{5, 0.25}}}};
   const auto box = db::create<
-      db::AddSimpleTags<Tags::RestMassDensity<DataVector>,
-                        Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
-                        Tags::LorentzFactor<DataVector>,
-                        ::gr::Tags::Lapse<DataVector>,
-                        ::gr::Tags::Shift<3, Frame::Inertial, DataVector>,
-                        ::gr::Tags::SqrtDetSpatialMetric<DataVector>>,
+      db::AddSimpleTags<
+          Tags::RestMassDensity<DataVector>,
+          ::sr::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+          ::sr::Tags::LorentzFactor<DataVector>, ::gr::Tags::Lapse<DataVector>,
+          ::gr::Tags::Shift<3, Frame::Inertial, DataVector>,
+          ::gr::Tags::SqrtDetSpatialMetric<DataVector>>,
       db::AddComputeTags<
           Tags::MassFluxCompute<DataVector, 3, Frame::Inertial>>>(
       rho, velocity, lorentz, lapse, shift, sqrt_det_g);

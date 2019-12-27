@@ -17,6 +17,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/RadiationTransport/M1Grey/ConstantM1.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -37,8 +38,8 @@ struct ConstantM1Proxy : RadiationTransport::M1Grey::Solutions::ConstantM1 {
   using RadiationTransport::M1Grey::Solutions::ConstantM1::ConstantM1;
 
   using hydro_variables_tags =
-      tmpl::list<hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
-                 hydro::Tags::LorentzFactor<DataVector>>;
+      tmpl::list<sr::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>,
+                 sr::Tags::LorentzFactor<DataVector>>;
 
   using m1_variables_tags =
       tmpl::list<RadiationTransport::M1Grey::Tags::TildeE<

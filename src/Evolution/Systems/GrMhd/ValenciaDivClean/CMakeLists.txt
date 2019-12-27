@@ -24,6 +24,7 @@ target_link_libraries(
   INTERFACE GeneralRelativity
   INTERFACE Hydro
   INTERFACE Limiters
+  INTERFACE SpecialRelativity
   INTERFACE Valencia
   INTERFACE VariableFixing
   )

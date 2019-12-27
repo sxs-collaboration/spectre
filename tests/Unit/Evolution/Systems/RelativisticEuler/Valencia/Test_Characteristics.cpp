@@ -20,6 +20,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
@@ -46,7 +47,7 @@ void test_compute_item_in_databox(
   const auto box = db::create<
       db::AddSimpleTags<
           gr::Tags::Lapse<>, gr::Tags::Shift<Dim>, gr::Tags::SpatialMetric<Dim>,
-          hydro::Tags::SpatialVelocity<DataVector, Dim>,
+          sr::Tags::SpatialVelocity<DataVector, Dim>,
           hydro::Tags::SoundSpeedSquared<DataVector>,
           ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>,
       db::AddComputeTags<

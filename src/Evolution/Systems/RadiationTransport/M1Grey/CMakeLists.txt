@@ -17,5 +17,6 @@ target_link_libraries(
   INTERFACE GeneralRelativity
   INTERFACE Hydro
   INTERFACE RootFinding
+  INTERFACE SpecialRelativity
   INTERFACE Utilities
   )

@@ -16,6 +16,7 @@
 #include "NumericalAlgorithms/RootFinding/NewtonRaphson.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
@@ -73,10 +74,9 @@ void compute_closure_impl(
   constexpr size_t root_find_number_of_digits = 6;
   constexpr double root_find_tolerance = 1.e-6;
   Variables<tmpl::list<
-      hydro::Tags::LorentzFactorSquared<DataVector>, MomentumSquared,
-      MomentumUp,
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::SpatialVelocitySquared<DataVector>>>
+      sr::Tags::LorentzFactorSquared<DataVector>, MomentumSquared, MomentumUp,
+      sr::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
+      sr::Tags::SpatialVelocitySquared<DataVector>>>
       temp_closure_tensors(get(energy_density).size());
 
   // The main calculation needed for the M1 closure is to find the
@@ -86,10 +86,10 @@ void compute_closure_impl(
   // We first compute various fluid quantities and contractions
   // with inertial moments needed even if v^2 is small
   auto& w_sqr =
-      get<hydro::Tags::LorentzFactorSquared<DataVector>>(temp_closure_tensors);
+      get<sr::Tags::LorentzFactorSquared<DataVector>>(temp_closure_tensors);
   get(w_sqr) = square(get(fluid_lorentz_factor));
-  auto& v_sqr = get<hydro::Tags::SpatialVelocitySquared<DataVector>>(
-      temp_closure_tensors);
+  auto& v_sqr =
+      get<sr::Tags::SpatialVelocitySquared<DataVector>>(temp_closure_tensors);
   get(v_sqr) = 1. - 1. / get(w_sqr);
   // S^i, the neutrino momentum tensor
   auto& s_M = get<MomentumUp>(temp_closure_tensors);
@@ -100,7 +100,7 @@ void compute_closure_impl(
   dot_product(make_not_null(&s_sqr), s_M, momentum_density);
   // v_i, the spatial velocity one-form of the fluid
   auto& v_m =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+      get<sr::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
           temp_closure_tensors);
   raise_or_lower_index(make_not_null(&v_m), fluid_velocity, spatial_metric);
 

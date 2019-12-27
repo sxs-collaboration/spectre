@@ -135,14 +135,16 @@ tuples::TaggedTuple<hydro::Tags::Pressure<DataType>> AlfvenWave::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>
-AlfvenWave::variables(const tnsr::I<DataType, 3>& x, double t,
-                      tmpl::list<hydro::Tags::SpatialVelocity<
-                          DataType, 3, Frame::Inertial>> /*meta*/) const
+tuples::TaggedTuple<sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>
+AlfvenWave::variables(
+    const tnsr::I<DataType, 3>& x, double t,
+    tmpl::list<
+        sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>> /*meta*/) const
     noexcept {
   const DataType phase = k_dot_x_minus_vt(x, t);
-  auto result = make_with_value<db::item_type<
-      hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(x, 0.0);
+  auto result = make_with_value<
+      db::item_type<sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(
+      x, 0.0);
   for (size_t d = 0; d < 3; d++) {
     result.get(d) =
         fluid_speed_ *
@@ -183,10 +185,10 @@ AlfvenWave::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>> AlfvenWave::variables(
+tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>> AlfvenWave::variables(
     const tnsr::I<DataType, 3>& x, double /*t*/,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
-  return {make_with_value<db::item_type<hydro::Tags::LorentzFactor<DataType>>>(
+    tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+  return {make_with_value<db::item_type<sr::Tags::LorentzFactor<DataType>>>(
       x, 1.0 / sqrt(1.0 - square(fluid_speed_)))};
 }
 
@@ -244,7 +246,7 @@ GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
     (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
      hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
-     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
+     sr::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
 #define INSTANTIATE_VECTORS(_, data)                                         \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3, Frame::Inertial>> \
@@ -254,8 +256,7 @@ GENERATE_INSTANTIATIONS(
           const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
-                        (hydro::Tags::SpatialVelocity,
-                         hydro::Tags::MagneticField))
+                        (sr::Tags::SpatialVelocity, hydro::Tags::MagneticField))
 
 #undef DTYPE
 #undef TAG

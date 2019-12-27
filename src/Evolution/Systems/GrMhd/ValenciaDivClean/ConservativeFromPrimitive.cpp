@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"              // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -41,14 +42,14 @@ void ConservativeFromPrimitive::apply(
     const tnsr::ii<DataVector, 3, Frame::Inertial>& spatial_metric,
     const Scalar<DataVector>& divergence_cleaning_field) noexcept {
   Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
-      hydro::Tags::SpatialVelocitySquared<DataVector>,
+      sr::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
+      sr::Tags::SpatialVelocitySquared<DataVector>,
       hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>,
       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
       hydro::Tags::MagneticFieldSquared<DataVector>>>
       temp_tensors{get(rest_mass_density).size()};
   auto& spatial_velocity_one_form =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+      get<sr::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
           temp_tensors);
   raise_or_lower_index(make_not_null(&spatial_velocity_one_form),
                        spatial_velocity, spatial_metric);
@@ -63,7 +64,7 @@ void ConservativeFromPrimitive::apply(
   dot_product(make_not_null(&magnetic_field_dot_spatial_velocity),
               magnetic_field, spatial_velocity_one_form);
   auto& spatial_velocity_squared =
-      get<hydro::Tags::SpatialVelocitySquared<DataVector>>(temp_tensors);
+      get<sr::Tags::SpatialVelocitySquared<DataVector>>(temp_tensors);
   dot_product(make_not_null(&spatial_velocity_squared), spatial_velocity,
               spatial_velocity_one_form);
 

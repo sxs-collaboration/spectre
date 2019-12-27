@@ -12,6 +12,7 @@
 #include "PointwiseFunctions/AnalyticData/GrMhd/OrszagTangVortex.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -28,10 +29,10 @@ using grmhd::AnalyticData::OrszagTangVortex;
 template <typename DataType>
 void test_variables(const DataType& used_for_size) noexcept {
   using tags = tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                          hydro::Tags::SpatialVelocity<DataType, 3>,
+                          sr::Tags::SpatialVelocity<DataType, 3>,
                           hydro::Tags::SpecificInternalEnergy<DataType>,
                           hydro::Tags::Pressure<DataType>,
-                          hydro::Tags::LorentzFactor<DataType>,
+                          sr::Tags::LorentzFactor<DataType>,
                           hydro::Tags::SpecificEnthalpy<DataType>,
                           hydro::Tags::MagneticField<DataType, 3>,
                           hydro::Tags::DivergenceCleaningField<DataType>>;

@@ -10,6 +10,7 @@
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/SpecialRelativity/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
@@ -77,7 +78,7 @@ struct ComputeSources {
       RelativisticEuler::Valencia::Tags::TildeD,
       RelativisticEuler::Valencia::Tags::TildeTau,
       RelativisticEuler::Valencia::Tags::TildeS<Dim>,
-      hydro::Tags::SpatialVelocity<DataVector, Dim>,
+      sr::Tags::SpatialVelocity<DataVector, Dim>,
       hydro::Tags::Pressure<DataVector>, gr::Tags::Lapse<>,
       ::Tags::deriv<gr::Tags::Lapse<>, tmpl::size_t<Dim>, Frame::Inertial>,
       ::Tags::deriv<gr::Tags::Shift<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,

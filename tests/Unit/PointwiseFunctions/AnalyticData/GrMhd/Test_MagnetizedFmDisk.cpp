@@ -19,6 +19,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -42,10 +43,10 @@ struct MagnetizedFmDiskProxy : grmhd::AnalyticData::MagnetizedFmDisk {
   template <typename DataType>
   using hydro_variables_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+                 sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
                  hydro::Tags::SpecificInternalEnergy<DataType>,
                  hydro::Tags::Pressure<DataType>,
-                 hydro::Tags::LorentzFactor<DataType>,
+                 sr::Tags::LorentzFactor<DataType>,
                  hydro::Tags::SpecificEnthalpy<DataType>>;
 
   template <typename DataType>
@@ -165,11 +166,11 @@ void test_variables(const DataType& used_for_size) {
        "pressure", "lorentz_factor", "specific_enthalpy"},
       {{{-20., 20.}}}, member_variables, used_for_size, 1.0e-8);
   const auto magnetic_field =
-      get<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>(
+      get<sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>(
           another_disk.variables(
               coords,
-              tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3,
-                                                      Frame::Inertial>>{}));
+              tmpl::list<
+                  sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>{}));
   const auto expected_magnetic_field =
       make_with_value<tnsr::I<DataType, 3>>(used_for_size, 0.0);
   CHECK_ITERABLE_APPROX(magnetic_field, expected_magnetic_field);

@@ -10,7 +10,7 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "Evolution/VariableFixing/LimitLorentzFactor.hpp"
-#include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
+#include "PointwiseFunctions/SpecialRelativity/LorentzFactor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
@@ -37,7 +37,7 @@ void test_variable_fixer(const LimitLorentzFactor& variable_fixer) {
         DataVector{1.3567, 1.3566, 1.3567, 1.3566},
         DataVector{-0.200, -0.200, -0.200, -0.200}}}};
 
-  auto lorentz_factor = hydro::lorentz_factor(
+  auto lorentz_factor = sr::lorentz_factor(
       dot_product(spatial_velocity, spatial_velocity, spatial_metric));
   const Scalar<DataVector> expected_lorentz_factor{
       DataVector{get(lorentz_factor)[0], get(lorentz_factor)[1], 50.0,
@@ -58,7 +58,7 @@ void test_variable_fixer(const LimitLorentzFactor& variable_fixer) {
   Approx custom_approx = Approx::custom().epsilon(6.0e-14).scale(1.0);
   CHECK_ITERABLE_CUSTOM_APPROX(
       expected_lorentz_factor,
-      hydro::lorentz_factor(
+      sr::lorentz_factor(
           dot_product(spatial_velocity, spatial_velocity, spatial_metric)),
       custom_approx);
 }

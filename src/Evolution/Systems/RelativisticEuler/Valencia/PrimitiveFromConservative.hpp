@@ -10,6 +10,7 @@
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/SpecialRelativity/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -61,13 +62,13 @@ namespace Valencia {
  */
 template <size_t ThermodynamicDim, size_t Dim>
 struct PrimitiveFromConservative {
-  using return_tags = tmpl::list<
-      hydro::Tags::RestMassDensity<DataVector>,
-      hydro::Tags::SpecificInternalEnergy<DataVector>,
-      hydro::Tags::LorentzFactor<DataVector>,
-      hydro::Tags::SpecificEnthalpy<DataVector>,
-      hydro::Tags::Pressure<DataVector>,
-      hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>>;
+  using return_tags =
+      tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
+                 hydro::Tags::SpecificInternalEnergy<DataVector>,
+                 sr::Tags::LorentzFactor<DataVector>,
+                 hydro::Tags::SpecificEnthalpy<DataVector>,
+                 hydro::Tags::Pressure<DataVector>,
+                 sr::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>>;
 
   using argument_tags =
       tmpl::list<RelativisticEuler::Valencia::Tags::TildeD,

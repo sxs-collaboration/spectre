@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -179,10 +180,10 @@ class BondiHoyleAccretion : public MarkAsAnalyticData {
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::SpatialVelocity<
+                 tmpl::list<sr::Tags::SpatialVelocity<
                      DataType, 3, Frame::Inertial>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+          sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
@@ -199,10 +200,9 @@ class BondiHoyleAccretion : public MarkAsAnalyticData {
       -> tuples::TaggedTuple<hydro::Tags::DivergenceCleaningField<DataType>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, 3>& x,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, 3>& x,
+                 tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
   auto variables(
@@ -247,7 +247,7 @@ class BondiHoyleAccretion : public MarkAsAnalyticData {
 
   // compute the spatial velocity in spherical Kerr-Schild coordinates
   template <typename DataType>
-  typename hydro::Tags::SpatialVelocity<DataType, 3, Frame::NoFrame>::type
+  typename sr::Tags::SpatialVelocity<DataType, 3, Frame::NoFrame>::type
   spatial_velocity(const DataType& r_squared, const DataType& cos_theta,
                    const DataType& sin_theta) const noexcept;
   // compute the magnetic field in spherical Kerr-Schild coordinates

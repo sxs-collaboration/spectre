@@ -15,6 +15,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -181,7 +182,7 @@ class TovStar : public MarkAsAnalyticSolution {
 
   template <typename DataType>
   using SpatialVelocity =
-      hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>;
+      sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>;
 
   template <typename DataType>
   using MagneticField =
@@ -228,7 +229,7 @@ class TovStar : public MarkAsAnalyticSolution {
            hydro::Tags::Pressure<DataType>, SpatialVelocity<DataType>,         \
            MagneticField<DataType>,                                            \
            hydro::Tags::DivergenceCleaningField<DataType>,                     \
-           hydro::Tags::LorentzFactor<DataType>,                               \
+           sr::Tags::LorentzFactor<DataType>,                                  \
            hydro::Tags::SpecificEnthalpy<DataType>, gr::Tags::Lapse<DataType>, \
            DerivLapse<DataType>, Shift<DataType>, DerivShift<DataType>,        \
            SpatialMetric<DataType>, DerivSpatialMetric<DataType>,              \

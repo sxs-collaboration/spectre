@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"              // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 
@@ -44,7 +45,7 @@ void ComputeFluxes::apply(
     const Scalar<DataVector>& lorentz_factor,
     const tnsr::I<DataVector, 3, Frame::Inertial>& magnetic_field) noexcept {
   Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
+      sr::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>,
       hydro::Tags::MagneticFieldOneForm<DataVector, 3, Frame::Inertial>,
       hydro::Tags::MagneticFieldDotSpatialVelocity<DataVector>,
       hydro::Tags::MagneticFieldSquared<DataVector>, ::Tags::TempScalar<0>,
@@ -52,7 +53,7 @@ void ComputeFluxes::apply(
       temp_tensors{get<0>(shift).size()};
 
   auto& spatial_velocity_one_form =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+      get<sr::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
           temp_tensors);
   raise_or_lower_index(make_not_null(&spatial_velocity_one_form),
                        spatial_velocity, spatial_metric);
@@ -84,7 +85,7 @@ void ComputeFluxes::apply(
 
   // lapse b_i / W = lapse (B_i / W^2 + v_i (B^m v_m)
   tnsr::i<DataVector, 3, Frame::Inertial>& lapse_b_over_w =
-      get<hydro::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
+      get<sr::Tags::SpatialVelocityOneForm<DataVector, 3, Frame::Inertial>>(
           temp_tensors);
   for (size_t i = 0; i < 3; ++i) {
     lapse_b_over_w.get(i) *= get(magnetic_field_dot_spatial_velocity);

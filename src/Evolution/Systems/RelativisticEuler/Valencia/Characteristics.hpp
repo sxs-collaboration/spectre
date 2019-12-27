@@ -12,6 +12,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/SpecialRelativity/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -82,7 +83,7 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
   using argument_tags =
       tmpl::list<gr::Tags::Lapse<>, gr::Tags::Shift<Dim>,
                  gr::Tags::SpatialMetric<Dim>,
-                 hydro::Tags::SpatialVelocity<DataVector, Dim>,
+                 sr::Tags::SpatialVelocity<DataVector, Dim>,
                  hydro::Tags::SoundSpeedSquared<DataVector>,
                  ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<Dim>>>;
 

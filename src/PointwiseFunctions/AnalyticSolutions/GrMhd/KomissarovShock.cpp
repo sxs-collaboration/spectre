@@ -9,7 +9,7 @@
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Parallel/PupStlCpp11.hpp"
-#include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
+#include "PointwiseFunctions/SpecialRelativity/LorentzFactor.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/Math.hpp"  // IWYU pragma: keep
@@ -93,10 +93,10 @@ KomissarovShock::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
+tuples::TaggedTuple<sr::Tags::SpatialVelocity<DataType, 3>>
 KomissarovShock::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x, const double t,
-    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
+    tmpl::list<sr::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
     noexcept {
   return compute_piecewise_vector(x, t * shock_speed_, left_spatial_velocity_,
                                   right_spatial_velocity_);
@@ -145,14 +145,13 @@ KomissarovShock::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
+tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>>
 KomissarovShock::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x, const double t,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
-  const auto spatial_velocity = get<hydro::Tags::SpatialVelocity<DataType, 3>>(
-      variables(x, t, tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>>{}));
-  return {
-      hydro::lorentz_factor(dot_product(spatial_velocity, spatial_velocity))};
+    tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+  const auto spatial_velocity = get<sr::Tags::SpatialVelocity<DataType, 3>>(
+      variables(x, t, tmpl::list<sr::Tags::SpatialVelocity<DataType, 3>>{}));
+  return {sr::lorentz_factor(dot_product(spatial_velocity, spatial_velocity))};
 }
 
 template <typename DataType>
@@ -200,7 +199,7 @@ GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
     (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
      hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
-     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
+     sr::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
 #define INSTANTIATE_VECTORS(_, data)                                \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>         \
@@ -210,8 +209,7 @@ GENERATE_INSTANTIATIONS(
           const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
-                        (hydro::Tags::SpatialVelocity,
-                         hydro::Tags::MagneticField))
+                        (sr::Tags::SpatialVelocity, hydro::Tags::MagneticField))
 
 #undef DTYPE
 #undef TAG

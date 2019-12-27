@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/AnalyticSolution.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/MakeArray.hpp"            // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -89,16 +90,15 @@ class ConstantM1 : public MarkAsAnalyticSolution {
 
   // @{
   /// Retrieve hydro variable at `(x, t)`
-  auto variables(
-      const tnsr::I<DataVector, 3>& x, double t,
-      tmpl::list<hydro::Tags::LorentzFactor<DataVector>> /*meta*/) const
-      noexcept -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataVector>>;
+  auto variables(const tnsr::I<DataVector, 3>& x, double t,
+                 tmpl::list<sr::Tags::LorentzFactor<DataVector>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<sr::Tags::LorentzFactor<DataVector>>;
 
   auto variables(const tnsr::I<DataVector, 3>& x, double t,
-                 tmpl::list<hydro::Tags::SpatialVelocity<
+                 tmpl::list<sr::Tags::SpatialVelocity<
                      DataVector, 3, Frame::Inertial>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>;
+          sr::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>;
   // @}
 
   /// Retrieve a collection of hydro and/or M1 variables at `(x, t)`

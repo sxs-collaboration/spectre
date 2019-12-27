@@ -16,4 +16,5 @@ target_link_libraries(
   INTERFACE GeneralRelativitySolutions
   INTERFACE Hydro
   INTERFACE M1Grey
+  INTERFACE SpecialRelativity
   )

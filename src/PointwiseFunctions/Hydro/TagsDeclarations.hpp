@@ -24,12 +24,6 @@ struct DivergenceCleaningField;
 struct EquationOfStateBase;
 template <typename EquationOfStateType>
 struct EquationOfState;
-template <typename DataType>
-struct LorentzFactor;
-template <typename DataType, size_t Dim, typename Fr>
-struct LorentzFactorCompute;
-template <typename DataType>
-struct LorentzFactorSquared;
 template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
 struct MagneticField;
 template <typename DataType>
@@ -46,12 +40,6 @@ template <typename DataType>
 struct RestMassDensity;
 template <typename DataType>
 struct SoundSpeedSquared;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
-struct SpatialVelocity;
-template <typename DataType, size_t Dim, typename Fr = Frame::Inertial>
-struct SpatialVelocityOneForm;
-template <typename DataType>
-struct SpatialVelocitySquared;
 template <typename DataType>
 struct SpecificEnthalpy;
 template <typename DataType>

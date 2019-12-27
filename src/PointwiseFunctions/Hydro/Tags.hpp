@@ -11,6 +11,7 @@
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 
 /// \ingroup EvolutionSystemsGroup
 /// \brief Items related to hydrodynamic systems.
@@ -61,21 +62,6 @@ template <typename EquationOfStateType>
 struct EquationOfState : EquationOfStateBase, db::SimpleTag {
   using type = EquationOfStateType;
   static std::string name() noexcept { return "EquationOfState"; }
-};
-
-/// The Lorentz factor \f$W = (1-v^iv_i)^{-1/2}\f$, where \f$v^i\f$ is
-/// the spatial velocity of the fluid.
-template <typename DataType>
-struct LorentzFactor : db::SimpleTag {
-  using type = Scalar<DataType>;
-  static std::string name() noexcept { return "LorentzFactor"; }
-};
-
-/// The square of the Lorentz factor \f$W^2\f$.
-template <typename DataType>
-struct LorentzFactorSquared {
-  using type = Scalar<DataType>;
-  static std::string name() noexcept { return "LorentzFactorSquared"; }
 };
 
 /// The magnetic field \f$B^i = n_\mu {}^\star\!F^{i \mu}\f$ measured by an
@@ -147,37 +133,6 @@ struct SoundSpeedSquared : db::SimpleTag {
   static std::string name() noexcept { return "SoundSpeedSquared"; }
 };
 
-/// The spatial velocity \f$v^i\f$ of the fluid,
-/// where \f$v^i=u^i/W + \beta^i/\alpha\f$.
-/// Here \f$u^i\f$ is the spatial part of the 4-velocity of the fluid,
-/// \f$W\f$ is the Lorentz factor, \f$\beta^i\f$ is the shift vector,
-/// and \f$\alpha\f$ is the lapse function. Note that \f$v^i\f$ is raised
-/// and lowered with the spatial metric.
-template <typename DataType, size_t Dim, typename Fr>
-struct SpatialVelocity : db::SimpleTag {
-  using type = tnsr::I<DataType, Dim, Fr>;
-  static std::string name() noexcept {
-    return Frame::prefix<Fr>() + "SpatialVelocity";
-  }
-};
-
-/// The spatial velocity one-form \f$v_i\f$, where \f$v_i\f$ is raised
-/// and lowered with the spatial metric.
-template <typename DataType, size_t Dim, typename Fr>
-struct SpatialVelocityOneForm : db::SimpleTag {
-  using type = tnsr::i<DataType, Dim, Fr>;
-  static std::string name() noexcept {
-    return Frame::prefix<Fr>() + "SpatialVelocityOneForm";
-  }
-};
-
-/// The spatial velocity squared \f$v^2 = v_i v^i\f$.
-template <typename DataType>
-struct SpatialVelocitySquared : db::SimpleTag {
-  using type = Scalar<DataType>;
-  static std::string name() noexcept { return "SpatialVelocitySquared"; }
-};
-
 /// The specific enthalpy \f$h\f$.
 template <typename DataType>
 struct SpecificEnthalpy : db::SimpleTag {
@@ -223,10 +178,10 @@ template <typename DataType>
 using grmhd_tags =
     tmpl::list<hydro::Tags::RestMassDensity<DataType>,
                hydro::Tags::SpecificInternalEnergy<DataType>,
-               hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
+               sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>,
                hydro::Tags::MagneticField<DataType, 3, Frame::Inertial>,
                hydro::Tags::DivergenceCleaningField<DataType>,
-               hydro::Tags::LorentzFactor<DataType>,
+               sr::Tags::LorentzFactor<DataType>,
                hydro::Tags::Pressure<DataType>,
                hydro::Tags::SpecificEnthalpy<DataType>>;
 }  // namespace hydro

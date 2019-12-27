@@ -16,6 +16,7 @@
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -304,10 +305,10 @@ class BondiMichel : public MarkAsAnalyticSolution {
   auto variables(
       const tnsr::I<DataType, 3>& x,
       tmpl::list<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>> /*meta*/,
+          sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>> /*meta*/,
       const IntermediateVars<DataType>& vars) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
+          sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>;
 
   template <typename DataType>
   auto variables(
@@ -327,9 +328,9 @@ class BondiMichel : public MarkAsAnalyticSolution {
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,
-                 tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/,
+                 tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/,
                  const IntermediateVars<DataType>& vars) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+      -> tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, 3>& x,

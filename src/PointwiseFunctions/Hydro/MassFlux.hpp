@@ -9,14 +9,15 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp" // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp" // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_forward_declare gr::Tags::Lapse
 // IWYU pragma: no_forward_declare gr::Tags::Shift
 // IWYU pragma: no_forward_declare gr::Tags::SqrtDetSpatialMetric
-// IWYU pragma: no_forward_declare hydro::Tags::LorentzFactor
+// IWYU pragma: no_forward_declare sr::Tags::LorentzFactor
 // IWYU pragma: no_forward_declare hydro::Tags::RestMassDensity
-// IWYU pragma: no_forward_declare hydro::Tags::SpatialVelocity
+// IWYU pragma: no_forward_declare sr::Tags::SpatialVelocity
 
 namespace hydro {
 /// Computes the vector \f$J^i\f$ in \f$\dot{M} = -\int J^i s_i d^2S\f$,
@@ -54,9 +55,8 @@ struct MassFluxCompute : MassFlux<DataType, Dim, Frame>,
   static constexpr auto function = &mass_flux<DataType, Dim, Frame>;
   using argument_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataType>,
-                 hydro::Tags::SpatialVelocity<DataType, Dim, Frame>,
-                 hydro::Tags::LorentzFactor<DataType>,
-                 ::gr::Tags::Lapse<DataType>,
+                 sr::Tags::SpatialVelocity<DataType, Dim, Frame>,
+                 sr::Tags::LorentzFactor<DataType>, ::gr::Tags::Lapse<DataType>,
                  ::gr::Tags::Shift<Dim, Frame, DataType>,
                  ::gr::Tags::SqrtDetSpatialMetric<DataType>>;
 };

@@ -11,7 +11,7 @@
 #include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "Parallel/PupStlCpp11.hpp"
-#include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
+#include "PointwiseFunctions/SpecialRelativity/LorentzFactor.hpp"
 #include "Utilities/ConstantExpressions.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -85,15 +85,16 @@ MagneticRotor::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3>>
+tuples::TaggedTuple<sr::Tags::SpatialVelocity<DataType, 3>>
 MagneticRotor::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<hydro::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
+    tmpl::list<sr::Tags::SpatialVelocity<DataType, 3>> /*meta*/) const
     noexcept {
   Scalar<DataType> angular_velocity =
       compute_piecewise(x, rotor_radius_, angular_velocity_, 0.0);
-  auto spatial_velocity = make_with_value<db::item_type<
-      hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(x, 0.0);
+  auto spatial_velocity = make_with_value<
+      db::item_type<sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>>(
+      x, 0.0);
   get<0>(spatial_velocity) = -get<1>(x) * get(angular_velocity);
   get<1>(spatial_velocity) = get<0>(x) * get(angular_velocity);
   return spatial_velocity;
@@ -146,14 +147,13 @@ MagneticRotor::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
-MagneticRotor::variables(
+tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>> MagneticRotor::variables(
     const tnsr::I<DataType, 3, Frame::Inertial>& x,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
-  using velocity_tag = hydro::Tags::SpatialVelocity<DataType, 3>;
+    tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept {
+  using velocity_tag = sr::Tags::SpatialVelocity<DataType, 3>;
   const auto velocity =
       get<velocity_tag>(variables(x, tmpl::list<velocity_tag>{}));
-  return {hydro::lorentz_factor(dot_product(velocity, velocity))};
+  return {sr::lorentz_factor(dot_product(velocity, velocity))};
 }
 
 template <typename DataType>
@@ -199,7 +199,7 @@ GENERATE_INSTANTIATIONS(
     INSTANTIATE_SCALARS, (double, DataVector),
     (hydro::Tags::RestMassDensity, hydro::Tags::SpecificInternalEnergy,
      hydro::Tags::Pressure, hydro::Tags::DivergenceCleaningField,
-     hydro::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
+     sr::Tags::LorentzFactor, hydro::Tags::SpecificEnthalpy))
 
 #define INSTANTIATE_VECTORS(_, data)                                         \
   template tuples::TaggedTuple<TAG(data) < DTYPE(data), 3>>                  \
@@ -209,8 +209,7 @@ GENERATE_INSTANTIATIONS(
           const noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_VECTORS, (double, DataVector),
-                        (hydro::Tags::SpatialVelocity,
-                         hydro::Tags::MagneticField))
+                        (sr::Tags::SpatialVelocity, hydro::Tags::MagneticField))
 
 #undef DTYPE
 #undef TAG

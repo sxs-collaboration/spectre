@@ -10,6 +10,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/TagsDeclarations.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/SpecialRelativity/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -60,7 +61,7 @@ struct ComputeFluxes {
                  gr::Tags::Lapse<>, gr::Tags::Shift<Dim>,
                  gr::Tags::SqrtDetSpatialMetric<>,
                  hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, Dim>>;
+                 sr::Tags::SpatialVelocity<DataVector, Dim>>;
 
   static void apply(
       gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> tilde_d_flux,

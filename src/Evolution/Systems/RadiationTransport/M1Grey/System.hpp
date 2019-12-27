@@ -14,6 +14,7 @@
 #include "Evolution/Systems/RadiationTransport/M1Grey/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Tags {
@@ -65,8 +66,8 @@ struct System<tmpl::list<NeutrinoSpecies...>> {
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, DataVector>>>;
 
   using hydro_variables_tag = ::Tags::Variables<
-      tmpl::list<hydro::Tags::LorentzFactor<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>>;
+      tmpl::list<sr::Tags::LorentzFactor<DataVector>,
+                 sr::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>>;
 
   using primitive_variables_tag = ::Tags::Variables<tmpl::list<
       Tags::ClosureFactor<NeutrinoSpecies>...,

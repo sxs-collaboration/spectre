@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/KerrSchildCoords.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -140,16 +141,15 @@ class MagnetizedFmDisk
     IntermediateVariables<
         DataType,
         tmpl2::flat_any_v<(
-            cpp17::is_same_v<Tags, hydro::Tags::SpatialVelocity<DataType, 3>> or
-            cpp17::is_same_v<Tags, hydro::Tags::LorentzFactor<DataType>> or
+            cpp17::is_same_v<Tags, sr::Tags::SpatialVelocity<DataType, 3>> or
+            cpp17::is_same_v<Tags, sr::Tags::LorentzFactor<DataType>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tags>)...>>
         vars(bh_spin_a_, background_spacetime_, x, dummy_time,
              index_helper(
                  tmpl::index_of<tmpl::list<Tags...>,
-                                hydro::Tags::SpatialVelocity<DataType, 3>>{}),
-             index_helper(
-                 tmpl::index_of<tmpl::list<Tags...>,
-                                hydro::Tags::LorentzFactor<DataType>>{}));
+                                sr::Tags::SpatialVelocity<DataType, 3>>{}),
+             index_helper(tmpl::index_of<tmpl::list<Tags...>,
+                                         sr::Tags::LorentzFactor<DataType>>{}));
     return {std::move(get<Tags>(
         variables(x, tmpl::list<Tags>{}, vars,
                   tmpl::index_of<tmpl::list<Tags...>, Tags>::value)))...};
@@ -163,8 +163,8 @@ class MagnetizedFmDisk
     constexpr double dummy_time = 0.0;
     IntermediateVariables<
         DataType,
-        cpp17::is_same_v<Tag, hydro::Tags::SpatialVelocity<DataType, 3>> or
-            cpp17::is_same_v<Tag, hydro::Tags::LorentzFactor<DataType>> or
+        cpp17::is_same_v<Tag, sr::Tags::SpatialVelocity<DataType, 3>> or
+            cpp17::is_same_v<Tag, sr::Tags::LorentzFactor<DataType>> or
             not tmpl::list_contains_v<hydro::grmhd_tags<DataType>, Tag>>
         intermediate_vars(bh_spin_a_, background_spacetime_, x, dummy_time,
                           std::numeric_limits<size_t>::max(),

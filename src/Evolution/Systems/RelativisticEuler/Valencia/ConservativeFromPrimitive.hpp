@@ -9,6 +9,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/TagsDeclarations.hpp"
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"
+#include "PointwiseFunctions/SpecialRelativity/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -58,8 +59,8 @@ struct ConservativeFromPrimitive {
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>,
-                 hydro::Tags::LorentzFactor<DataVector>,
+                 sr::Tags::SpatialVelocity<DataVector, Dim, Frame::Inertial>,
+                 sr::Tags::LorentzFactor<DataVector>,
                  gr::Tags::SqrtDetSpatialMetric<>,
                  gr::Tags::SpatialMetric<Dim>>;
 

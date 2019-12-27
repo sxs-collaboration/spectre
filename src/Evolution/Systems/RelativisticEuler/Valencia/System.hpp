@@ -16,6 +16,7 @@
 #include "Evolution/Systems/RelativisticEuler/Valencia/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/TMPL.hpp"
 
 namespace Tags {
@@ -42,10 +43,10 @@ struct System {
   using primitive_variables_tag = ::Tags::Variables<
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
-                 hydro::Tags::LorentzFactor<DataVector>,
+                 sr::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>,
                  hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, Dim>>>;
+                 sr::Tags::SpatialVelocity<DataVector, Dim>>>;
   using variables_tag = ::Tags::Variables<
       tmpl::list<Tags::TildeD, Tags::TildeTau, Tags::TildeS<Dim>>>;
 

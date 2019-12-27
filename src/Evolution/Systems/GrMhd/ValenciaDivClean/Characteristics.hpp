@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/TagsDeclarations.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -134,8 +135,8 @@ struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,
                  hydro::Tags::SpecificEnthalpy<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, 3>,
-                 hydro::Tags::LorentzFactor<DataVector>,
+                 sr::Tags::SpatialVelocity<DataVector, 3>,
+                 sr::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::MagneticField<DataVector, 3>, gr::Tags::Lapse<>,
                  gr::Tags::Shift<3>, gr::Tags::SpatialMetric<3>,
                  ::Tags::Normalized<::Tags::UnnormalizedFaceNormal<3>>,

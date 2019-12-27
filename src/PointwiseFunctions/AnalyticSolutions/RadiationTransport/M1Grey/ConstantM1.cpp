@@ -75,11 +75,9 @@ ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
 }
 
 // Hydro variables.
-tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataVector>>
-ConstantM1::variables(
+tuples::TaggedTuple<sr::Tags::LorentzFactor<DataVector>> ConstantM1::variables(
     const tnsr::I<DataVector, 3>& x, double /*t*/,
-    tmpl::list<hydro::Tags::LorentzFactor<DataVector>> /*meta*/) const
-    noexcept {
+    tmpl::list<sr::Tags::LorentzFactor<DataVector>> /*meta*/) const noexcept {
   const double W =
       1. /
       sqrt(1. - std::inner_product(mean_velocity_.begin(), mean_velocity_.end(),
@@ -87,14 +85,13 @@ ConstantM1::variables(
   return {Scalar<DataVector>{DataVector(get<0>(x).size(), W)}};
 }
 
-tuples::TaggedTuple<
-    hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>
+tuples::TaggedTuple<sr::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>
 ConstantM1::variables(const tnsr::I<DataVector, 3>& x, double /*t*/,
-                      tmpl::list<hydro::Tags::SpatialVelocity<
+                      tmpl::list<sr::Tags::SpatialVelocity<
                           DataVector, 3, Frame::Inertial>> /*meta*/) const
     noexcept {
-  auto result = make_with_value<db::item_type<
-      hydro::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>>(
+  auto result = make_with_value<
+      db::item_type<sr::Tags::SpatialVelocity<DataVector, 3, Frame::Inertial>>>(
       x, mean_velocity_[0]);
   get<1>(result) = mean_velocity_[1];
   get<2>(result) = mean_velocity_[2];

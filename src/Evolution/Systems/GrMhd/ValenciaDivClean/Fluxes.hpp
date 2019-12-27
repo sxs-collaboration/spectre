@@ -8,6 +8,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/Hydro/TagsDeclarations.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
 // IWYU pragma: no_include "Evolution/Systems/GrMhd/ValenciaDivClean/Tags.hpp"
@@ -78,8 +79,8 @@ struct ComputeFluxes {
                  gr::Tags::Shift<3>, gr::Tags::SqrtDetSpatialMetric<>,
                  gr::Tags::SpatialMetric<3>, gr::Tags::InverseSpatialMetric<3>,
                  hydro::Tags::Pressure<DataVector>,
-                 hydro::Tags::SpatialVelocity<DataVector, 3>,
-                 hydro::Tags::LorentzFactor<DataVector>,
+                 sr::Tags::SpatialVelocity<DataVector, 3>,
+                 sr::Tags::LorentzFactor<DataVector>,
                  hydro::Tags::MagneticField<DataVector, 3>>;
 
   static void apply(

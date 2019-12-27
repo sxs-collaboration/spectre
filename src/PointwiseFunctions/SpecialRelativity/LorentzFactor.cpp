@@ -1,17 +1,17 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
+#include "PointwiseFunctions/SpecialRelativity/LorentzFactor.hpp"
 
 #include <cmath>
 
 #include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
-#include "PointwiseFunctions/Hydro/Tags.hpp"  // IWYU pragma: keep
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
 
 /// \cond
-namespace hydro {
+namespace sr {
 template <typename DataType>
 Scalar<DataType> lorentz_factor(
     const Scalar<DataType>& spatial_velocity_squared) noexcept {
@@ -47,5 +47,5 @@ template Scalar<double> lorentz_factor(
 #undef DTYPE
 #undef FRAME
 #undef INSTANTIATE
-}  // namespace hydro
+}  // namespace sr
 /// \endcond

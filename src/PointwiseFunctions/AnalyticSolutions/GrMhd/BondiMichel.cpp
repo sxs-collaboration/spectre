@@ -217,10 +217,9 @@ BondiMichel::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>
-BondiMichel::variables(
+tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>> BondiMichel::variables(
     const tnsr::I<DataType, 3>& x,
-    tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/,
+    tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/,
     const IntermediateVars<DataType>& vars) const noexcept {
   // Rezzola and Zanotti (2013) Eq. 11.79
   const DataType abs_fluid_four_velocity_u_r =
@@ -243,11 +242,11 @@ BondiMichel::variables(
 }
 
 template <typename DataType>
-tuples::TaggedTuple<hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>
+tuples::TaggedTuple<sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>>
 BondiMichel::variables(
     const tnsr::I<DataType, 3>& x,
     tmpl::list<
-        hydro::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>> /*meta*/,
+        sr::Tags::SpatialVelocity<DataType, 3, Frame::Inertial>> /*meta*/,
     const IntermediateVars<DataType>& vars) const noexcept {
   auto result = make_with_value<tnsr::I<DataType, 3>>(x, 0.0);
   // Rezzola and Zanotti (2013) Eq. 11.79
@@ -342,17 +341,17 @@ bool operator!=(const BondiMichel& lhs, const BondiMichel& rhs) noexcept {
       const tnsr::I<DTYPE(data), 3>& x,                                       \
       tmpl::list<hydro::Tags::SpecificInternalEnergy<DTYPE(data)>> /*meta*/,  \
       const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
-  template tuples::TaggedTuple<hydro::Tags::LorentzFactor<DTYPE(data)>>       \
+  template tuples::TaggedTuple<sr::Tags::LorentzFactor<DTYPE(data)>>          \
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
-      tmpl::list<hydro::Tags::LorentzFactor<DTYPE(data)>> /*meta*/,           \
+      tmpl::list<sr::Tags::LorentzFactor<DTYPE(data)>> /*meta*/,              \
       const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
   template tuples::TaggedTuple<                                               \
-      hydro::Tags::SpatialVelocity<DTYPE(data), 3, Frame::Inertial>>          \
+      sr::Tags::SpatialVelocity<DTYPE(data), 3, Frame::Inertial>>             \
   BondiMichel::variables(                                                     \
       const tnsr::I<DTYPE(data), 3>& x,                                       \
-      tmpl::list<hydro::Tags::SpatialVelocity<DTYPE(data), 3,                 \
-                                              Frame::Inertial>> /*meta*/,     \
+      tmpl::list<sr::Tags::SpatialVelocity<DTYPE(data), 3,                    \
+                                           Frame::Inertial>> /*meta*/,        \
       const BondiMichel::IntermediateVars<DTYPE(data)>& vars) const noexcept; \
   template tuples::TaggedTuple<                                               \
       hydro::Tags::MagneticField<DTYPE(data), 3, Frame::Inertial>>            \

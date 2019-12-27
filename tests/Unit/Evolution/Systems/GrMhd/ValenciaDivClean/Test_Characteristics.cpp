@@ -13,7 +13,7 @@
 #include "Evolution/Systems/GrMhd/ValenciaDivClean/Characteristics.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/PolytropicFluid.hpp"  // IWYU pragma: keep
-#include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
+#include "PointwiseFunctions/SpecialRelativity/LorentzFactor.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
@@ -71,7 +71,7 @@ void test_with_normal_along_coordinate_axes(
       nn_generator, nn_distribution, used_for_size);
   const auto spatial_velocity_squared =
       dot_product(spatial_velocity, spatial_velocity, spatial_metric);
-  const auto lorentz_factor = hydro::lorentz_factor(spatial_velocity_squared);
+  const auto lorentz_factor = sr::lorentz_factor(spatial_velocity_squared);
 
   const auto magnetic_field = make_with_random_values<tnsr::I<DataVector, 3>>(
       nn_generator, nn_distribution, used_for_size);

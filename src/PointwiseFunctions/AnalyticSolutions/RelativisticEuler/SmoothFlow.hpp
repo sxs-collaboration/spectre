@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/Minkowski.hpp"
 #include "PointwiseFunctions/Hydro/EquationsOfState/EquationOfState.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -131,16 +132,15 @@ class SmoothFlow : virtual public MarkAsAnalyticSolution {
 
   template <typename DataType>
   auto variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
-                 tmpl::list<hydro::Tags::SpatialVelocity<
+                 tmpl::list<sr::Tags::SpatialVelocity<
                      DataType, Dim, Frame::Inertial>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<
-          hydro::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>;
+          sr::Tags::SpatialVelocity<DataType, Dim, Frame::Inertial>>;
 
   template <typename DataType>
-  auto variables(
-      const tnsr::I<DataType, Dim>& x, double /*t*/,
-      tmpl::list<hydro::Tags::LorentzFactor<DataType>> /*meta*/) const noexcept
-      -> tuples::TaggedTuple<hydro::Tags::LorentzFactor<DataType>>;
+  auto variables(const tnsr::I<DataType, Dim>& x, double /*t*/,
+                 tmpl::list<sr::Tags::LorentzFactor<DataType>> /*meta*/) const
+      noexcept -> tuples::TaggedTuple<sr::Tags::LorentzFactor<DataType>>;
 
   template <typename DataType>
   auto variables(

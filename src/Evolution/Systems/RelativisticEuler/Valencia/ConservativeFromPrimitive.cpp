@@ -9,6 +9,7 @@
 #include "DataStructures/Variables.hpp"
 #include "PointwiseFunctions/GeneralRelativity/IndexManipulation.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
+#include "PointwiseFunctions/SpecialRelativity/Tags.hpp"
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -31,16 +32,16 @@ void ConservativeFromPrimitive<Dim>::apply(
     const Scalar<DataVector>& sqrt_det_spatial_metric,
     const tnsr::ii<DataVector, Dim, Frame::Inertial>& spatial_metric) noexcept {
   Variables<tmpl::list<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, Dim, Frame::Inertial>,
-      hydro::Tags::SpatialVelocitySquared<DataVector>>>
+      sr::Tags::SpatialVelocityOneForm<DataVector, Dim, Frame::Inertial>,
+      sr::Tags::SpatialVelocitySquared<DataVector>>>
       temp_tensors{get(rest_mass_density).size()};
-  auto& spatial_velocity_oneform = get<
-      hydro::Tags::SpatialVelocityOneForm<DataVector, Dim, Frame::Inertial>>(
-      temp_tensors);
+  auto& spatial_velocity_oneform =
+      get<sr::Tags::SpatialVelocityOneForm<DataVector, Dim, Frame::Inertial>>(
+          temp_tensors);
   raise_or_lower_index(make_not_null(&spatial_velocity_oneform),
                        spatial_velocity, spatial_metric);
   auto& spatial_velocity_squared =
-      get<hydro::Tags::SpatialVelocitySquared<DataVector>>(temp_tensors);
+      get<sr::Tags::SpatialVelocitySquared<DataVector>>(temp_tensors);
   dot_product(make_not_null(&spatial_velocity_squared), spatial_velocity,
               spatial_velocity_oneform);
 
