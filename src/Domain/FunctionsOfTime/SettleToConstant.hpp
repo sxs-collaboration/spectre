@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <pup.h>
 
 #include "DataStructures/DataVector.hpp"
@@ -35,13 +36,15 @@ class SettleToConstant : public FunctionOfTime {
   ~SettleToConstant() override = default;
   SettleToConstant(SettleToConstant&&) noexcept = default;
   SettleToConstant& operator=(SettleToConstant&&) noexcept = default;
-  SettleToConstant(const SettleToConstant&) = delete;
-  SettleToConstant& operator=(const SettleToConstant&) = delete;
+  SettleToConstant(const SettleToConstant&) = default;
+  SettleToConstant& operator=(const SettleToConstant&) = default;
 
   // NOLINTNEXTLINE(google-runtime-references)
   WRAPPED_PUPable_decl_template(SettleToConstant);
 
   explicit SettleToConstant(CkMigrateMessage* /*unused*/) {}
+
+  auto get_clone() const noexcept -> std::unique_ptr<FunctionOfTime> override;
 
   /// Returns the function at an arbitrary time `t`.
   std::array<DataVector, 1> func(const double t) const noexcept override {

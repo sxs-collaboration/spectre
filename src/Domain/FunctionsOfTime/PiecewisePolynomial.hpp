@@ -6,6 +6,7 @@
 #include <array>
 #include <cstddef>
 #include <limits>
+#include <memory>
 #include <pup.h>
 #include <vector>
 
@@ -28,10 +29,12 @@ class PiecewisePolynomial : public FunctionOfTime {
   ~PiecewisePolynomial() override = default;
   PiecewisePolynomial(PiecewisePolynomial&&) noexcept = default;
   PiecewisePolynomial& operator=(PiecewisePolynomial&&) noexcept = default;
-  PiecewisePolynomial(const PiecewisePolynomial&) = delete;
-  PiecewisePolynomial& operator=(const PiecewisePolynomial&) = delete;
+  PiecewisePolynomial(const PiecewisePolynomial&) = default;
+  PiecewisePolynomial& operator=(const PiecewisePolynomial&) = default;
 
   explicit PiecewisePolynomial(CkMigrateMessage* /*unused*/) {}
+
+  auto get_clone() const noexcept -> std::unique_ptr<FunctionOfTime> override;
 
   // NOLINTNEXTLINE(google-runtime-references)
   WRAPPED_PUPable_decl_template(PiecewisePolynomial<MaxDeriv>);

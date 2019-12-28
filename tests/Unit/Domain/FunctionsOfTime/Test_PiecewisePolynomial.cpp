@@ -126,6 +126,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
               t, init_func);
       std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t2 =
           serialize_and_deserialize(f_of_t);
+      std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t3 =
+          f_of_t->get_clone();
 
       test(make_not_null(f_of_t.get()),
            make_not_null(
@@ -136,6 +138,11 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
            make_not_null(
                dynamic_cast<FunctionsOfTime::PiecewisePolynomial<deriv_order>*>(
                    f_of_t2.get())),
+           t, dt, final_time);
+      test(make_not_null(f_of_t3.get()),
+           make_not_null(
+               dynamic_cast<FunctionsOfTime::PiecewisePolynomial<deriv_order>*>(
+                   f_of_t3.get())),
            t, dt, final_time);
     }
   }
@@ -167,6 +174,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
               t, init_func);
       std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t2 =
           serialize_and_deserialize(f_of_t);
+      std::unique_ptr<FunctionsOfTime::FunctionOfTime> f_of_t3 =
+          f_of_t->get_clone();
 
       test_non_const_deriv(
           make_not_null(f_of_t.get()),
@@ -179,6 +188,12 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.PiecewisePolynomial",
           make_not_null(
               dynamic_cast<FunctionsOfTime::PiecewisePolynomial<deriv_order>*>(
                   f_of_t2.get())),
+          t, dt, final_time);
+      test_non_const_deriv(
+          make_not_null(f_of_t3.get()),
+          make_not_null(
+              dynamic_cast<FunctionsOfTime::PiecewisePolynomial<deriv_order>*>(
+                  f_of_t3.get())),
           t, dt, final_time);
     }
   }

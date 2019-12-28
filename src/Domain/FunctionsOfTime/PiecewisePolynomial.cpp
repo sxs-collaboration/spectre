@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <memory>
 #include <ostream>
 #include <utility>  // IWYU pragma: keep
 
@@ -22,6 +23,12 @@ template <size_t MaxDeriv>
 PiecewisePolynomial<MaxDeriv>::PiecewisePolynomial(
     const double t, value_type initial_func_and_derivs) noexcept
     : deriv_info_at_update_times_{{t, std::move(initial_func_and_derivs)}} {}
+
+template <size_t MaxDeriv>
+std::unique_ptr<FunctionOfTime> PiecewisePolynomial<MaxDeriv>::get_clone() const
+    noexcept {
+  return std::make_unique<PiecewisePolynomial>(*this);
+}
 
 template <size_t MaxDeriv>
 template <size_t MaxDerivReturned>

@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include <pup.h>
 #include <vector>
 
@@ -21,9 +22,12 @@ class FunctionOfTime : public PUP::able {
   FunctionOfTime() = default;
   FunctionOfTime(FunctionOfTime&&) noexcept = default;
   FunctionOfTime& operator=(FunctionOfTime&&) noexcept = default;
-  FunctionOfTime(const FunctionOfTime&) = delete;
-  FunctionOfTime& operator=(const FunctionOfTime&) = delete;
+  FunctionOfTime(const FunctionOfTime&) = default;
+  FunctionOfTime& operator=(const FunctionOfTime&) = default;
   ~FunctionOfTime() override = default;
+
+  virtual auto get_clone() const noexcept
+      -> std::unique_ptr<FunctionOfTime> = 0;
 
   virtual std::array<double, 2> time_bounds() const noexcept = 0;
 
