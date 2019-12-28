@@ -3,6 +3,7 @@
 
 #include "Domain/CoordinateMaps/Translation.hpp"
 
+#include <ostream>
 #include <pup.h>
 #include <pup_stl.h>
 #include <utility>
@@ -10,9 +11,11 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Identity.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "ErrorHandling/Assert.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/StdHelpers.hpp"
 
 namespace domain {
 namespace CoordMapsTimeDependent {
@@ -26,6 +29,11 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> Translation::operator()(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         map_list) const noexcept {
+  ASSERT(map_list.count(f_of_t_name_) == 1,
+         "The function of time '" << f_of_t_name_
+                                  << "' is not one of the known functions of "
+                                     "time. The known functions of time are: "
+                                  << keys_of(map_list));
   return {{source_coords[0] + map_list.at(f_of_t_name_)->func(time)[0][0]}};
 }
 
@@ -34,6 +42,11 @@ boost::optional<std::array<double, 1>> Translation::inverse(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         map_list) const noexcept {
+  ASSERT(map_list.count(f_of_t_name_) == 1,
+         "The function of time '" << f_of_t_name_
+                                  << "' is not one of the known functions of "
+                                     "time. The known functions of time are: "
+                                  << keys_of(map_list));
   return {{{target_coords[0] - map_list.at(f_of_t_name_)->func(time)[0][0]}}};
 }
 
@@ -43,6 +56,11 @@ std::array<tt::remove_cvref_wrap_t<T>, 1> Translation::frame_velocity(
     const std::unordered_map<
         std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
         map_list) const noexcept {
+  ASSERT(map_list.count(f_of_t_name_) == 1,
+         "The function of time '" << f_of_t_name_
+                                  << "' is not one of the known functions of "
+                                     "time. The known functions of time are: "
+                                  << keys_of(map_list));
   return {{make_with_value<tt::remove_cvref_wrap_t<T>>(
       dereference_wrapper(source_coords[0]),
       map_list.at(f_of_t_name_)->func_and_deriv(time)[1][0])}};
