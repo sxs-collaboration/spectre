@@ -28,6 +28,8 @@ namespace domain {
 namespace creators {
 namespace time_dependence {
 template <size_t MeshDim>
+class None;
+template <size_t MeshDim>
 class UniformTranslation;
 }  // namespace time_dependence
 }  // namespace creators
@@ -47,7 +49,8 @@ namespace time_dependence {
 /// communicate to the code that the domain is time-independent.
 template <size_t MeshDim>
 struct TimeDependence {
-  using creatable_classes = tmpl::list<UniformTranslation<MeshDim>>;
+  using creatable_classes =
+      tmpl::list<None<MeshDim>, UniformTranslation<MeshDim>>;
 
   TimeDependence() = default;
   virtual ~TimeDependence() = 0;
@@ -78,4 +81,5 @@ TimeDependence<MeshDim>::~TimeDependence() = default;
 }  // namespace creators
 }  // namespace domain
 
+#include "Domain/Creators/TimeDependence/None.hpp"
 #include "Domain/Creators/TimeDependence/UniformTranslation.hpp"

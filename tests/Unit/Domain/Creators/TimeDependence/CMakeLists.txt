@@ -5,6 +5,7 @@ set(LIBRARY "Test_DomainTimeDependence")
 
 set(LIBRARY_SOURCES
   Test_Composition.cpp
+  Test_None.cpp
   Test_UniformTranslation.cpp
   )
 

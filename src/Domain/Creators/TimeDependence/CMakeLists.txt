@@ -4,6 +4,7 @@
 set(LIBRARY DomainTimeDependence)
 
 set(LIBRARY_SOURCES
+  None.cpp
   UniformTranslation.cpp
   )
 
