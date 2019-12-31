@@ -8,6 +8,12 @@ This page details the installation procedure for SpECTRE on personal computers.
 For instructions on installing SpECTRE on clusters please refer to the \ref
 installation_on_clusters "Installation on clusters" page.
 
+### Quick Start Using Visual Studio Code and Docker
+
+If you're new to spectre, a good place to start is our \ref
+quick_start_docker_vscode "quick start guide" for setting up and using spectre
+with Visual Studio Code and Docker.
+
 ### Dependencies
 
 #### Required:
