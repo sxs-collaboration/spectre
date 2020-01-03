@@ -7,10 +7,10 @@
 
 #include <array>
 #include <cstddef>
-#include <memory>
-#include <pup.h>
 
-#include "DataStructures/DataVector.hpp"
+#include "DataStructures/DataBox/DataBoxTag.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataVector.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/EagerMath/DeterminantAndInverse.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Variables.hpp"
@@ -24,8 +24,8 @@
 #include "Evolution/Systems/GeneralizedHarmonic/Constraints.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Equations.hpp"
 #include "Evolution/Systems/GeneralizedHarmonic/Tags.hpp"
-#include "Evolution/TypeTraits.hpp"
-#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
+#include "Evolution/TypeTraits.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.tpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Christoffel.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
@@ -35,15 +35,21 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
+#include "Utilities/StdArrayHelpers.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TypeTraits.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 /// \cond
-template <typename X, typename Symm, typename IndexList>
-class Tensor;
+// IWYU pragma: no_forward_declare Tensor
+// IWYU pragma: no_forward_declare Tags::deriv
 /// \endcond
 
+namespace TestHelpers {
 /// \ingroup TestingFrameworkGroup
+/// Functions for testing GR analytic solutions
+namespace VerifyGrSolution {
+
 /// Determines if the given `solution` is a time-independent solution
 /// of the Einstein equations. Uses numerical derivatives to compute
 /// the solution, on a grid extending from `lower_bound` to `upper_bound`
@@ -242,3 +248,119 @@ void verify_time_independent_einstein_solution(
   CHECK_ITERABLE_CUSTOM_APPROX(
       dt_phi, make_with_value<decltype(dt_phi)>(x, 0.0), numerical_approx);
 }
+
+namespace detail {
+template <typename Tag>
+using deriv = Tags::deriv<Tag, tmpl::size_t<3>, Frame::Inertial>;
+
+template <typename Tag, typename Solution>
+db::const_item_type<Tag> time_derivative(const Solution& solution,
+                                         const tnsr::I<double, 3>& x,
+                                         const double time,
+                                         const double dt) noexcept {
+  db::const_item_type<Tag> result{};
+  for (auto it = result.begin(); it != result.end(); ++it) {
+    const auto index = result.get_tensor_index(it);
+    *it = numerical_derivative(
+        [&index, &solution, &x](const std::array<double, 1>& t_array) noexcept {
+          return std::array<double, 1>{
+              {get<Tag>(solution.variables(
+                            x, t_array[0],
+                            typename Solution::template tags<double>{}))
+                   .get(index)}};
+        },
+        std::array<double, 1>{{time}}, 0, dt)[0];
+  }
+  return result;
+}
+
+template <typename Tag, typename Solution>
+db::const_item_type<deriv<Tag>> space_derivative(const Solution& solution,
+                                                 const tnsr::I<double, 3>& x,
+                                                 const double time,
+                                                 const double dx) noexcept {
+  db::const_item_type<deriv<Tag>> result{};
+  for (auto it = result.begin(); it != result.end(); ++it) {
+    const auto index = result.get_tensor_index(it);
+    *it =
+        numerical_derivative([&index, &solution, &time, &x](
+                                 const std::array<double, 1>& offset) noexcept {
+          auto position = x;
+          position.get(index[0]) += offset[0];
+          return std::array<double, 1>{
+              {get<Tag>(solution.variables(
+                            position, time,
+                            typename Solution::template tags<double>{}))
+                   .get(all_but_specified_element_of(index, 0))}};
+        },
+                             std::array<double, 1>{{0.0}}, 0, dx)[0];
+  }
+  return result;
+}
+}  // namespace detail
+
+/// Check the consistency of dependent quantities returned by a
+/// solution.  This includes checking pointwise relations such as
+/// consistency of the metric and inverse and comparing returned and
+/// numerical derivatives.
+template <typename Solution>
+void verify_consistency(const Solution& solution, const double time,
+                        const tnsr::I<double, 3>& position,
+                        const double derivative_delta,
+                        const double derivative_tolerance) noexcept {
+  using Lapse = gr::Tags::Lapse<double>;
+  using Shift = gr::Tags::Shift<3, Frame::Inertial, double>;
+  using SpatialMetric = gr::Tags::SpatialMetric<3, Frame::Inertial, double>;
+  using SqrtDetSpatialMetric = gr::Tags::SqrtDetSpatialMetric<double>;
+  using InverseSpatialMetric =
+      gr::Tags::InverseSpatialMetric<3, Frame::Inertial, double>;
+  using ExtrinsicCurvature =
+      gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, double>;
+
+  auto derivative_approx = approx.epsilon(derivative_tolerance);
+
+  const auto vars = solution.variables(
+      position, time, typename Solution::template tags<double>{});
+
+  const auto numerical_metric_det_and_inverse =
+      determinant_and_inverse(get<SpatialMetric>(vars));
+  CHECK_ITERABLE_APPROX(get(get<SqrtDetSpatialMetric>(vars)),
+                        sqrt(get(numerical_metric_det_and_inverse.first)));
+  CHECK_ITERABLE_APPROX(get<InverseSpatialMetric>(vars),
+                        numerical_metric_det_and_inverse.second);
+
+  CHECK_ITERABLE_APPROX(
+      get<ExtrinsicCurvature>(vars),
+      gr::extrinsic_curvature(
+          get<Lapse>(vars), get<Shift>(vars), get<detail::deriv<Shift>>(vars),
+          get<SpatialMetric>(vars), get<Tags::dt<SpatialMetric>>(vars),
+          get<detail::deriv<SpatialMetric>>(vars)));
+
+  CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::dt<Lapse>>(vars),
+                               detail::time_derivative<Lapse>(
+                                   solution, position, time, derivative_delta),
+                               derivative_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::dt<Shift>>(vars),
+                               detail::time_derivative<Shift>(
+                                   solution, position, time, derivative_delta),
+                               derivative_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(get<Tags::dt<SpatialMetric>>(vars),
+                               detail::time_derivative<SpatialMetric>(
+                                   solution, position, time, derivative_delta),
+                               derivative_approx);
+
+  CHECK_ITERABLE_CUSTOM_APPROX(get<detail::deriv<Lapse>>(vars),
+                               detail::space_derivative<Lapse>(
+                                   solution, position, time, derivative_delta),
+                               derivative_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(get<detail::deriv<Shift>>(vars),
+                               detail::space_derivative<Shift>(
+                                   solution, position, time, derivative_delta),
+                               derivative_approx);
+  CHECK_ITERABLE_CUSTOM_APPROX(get<detail::deriv<SpatialMetric>>(vars),
+                               detail::space_derivative<SpatialMetric>(
+                                   solution, position, time, derivative_delta),
+                               derivative_approx);
+}
+}  // namespace VerifyGrSolution
+}  // namespace TestHelpers
