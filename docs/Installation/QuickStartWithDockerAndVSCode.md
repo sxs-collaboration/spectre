@@ -51,6 +51,7 @@ install the correct extension by the correct author:
   * Remote-ssh (by Microsoft)
   * Remote-ssh:editing config files (by Microsoft)
   * (Optional) LaTeX Workshop (by James Yu)
+  * (Optional) Git Lens (git log, git blame, etc.)
 
 Finally, we recommend, in Visual Studio Code, that you
 
@@ -172,29 +173,16 @@ After running this command, you'll get a command prompt inside the container,
 running as root. Enter the following commands:
 
 ~~~~
+# Create the directory where you will build spectre
 mkdir /work/spectre-build-clang
 
-cd /path/to/your/spectre/clone
-~~~~
-
-replacing `/path/to/your/spectre/clone` with the path to your SpECTRE clone
-(`/Users/geoffrey/Codes/spectre/spectre-alt` in the above example). Then do
-
-~~~~
-mkdir build
-
-cd build
-
-cmake -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_C_COMPILER=clang -D \
-CMAKE_Fortran_COMPILER=gfortran-8 \
--D CHARM_ROOT=/work/charm/multicore-linux64-clang \
-/Users/geoffrey/Codes/spectre/spectre-alt
+# Install extra python packages in your container
+apt-get install python3-pip
+pip3 install autopep8 pylint jupyter notebook scipy numpy matplotlib
+pip install autopep8 pylint jupyter notebook scipy numpy matplotlib
 
 exit
 ~~~~
-
-This will create, among other things, a file called `compile_commands.json`,
-which Visual Studio Code will read to provide code completion, etc.
 
 ## Configure a Visual Studio Code workspace for your container
 
@@ -254,7 +242,8 @@ left (the Explorer tab); another is to open a terminal in the container
 Add the following files to the `.vscode` folder:
 
 * `.vscode/c_cpp_properties.json` This file configures the C/C++
-intelligence features.
+intelligence features, which rely on a file called `compile_commands.json`
+that will be created when you configure spectre.
 ~~~~
 {
     "configurations": [
@@ -268,7 +257,7 @@ intelligence features.
             "cStandard": "c11",
             "cppStandard": "c++17",
             "intelliSenseMode": "clang-x64",
-            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+            "compileCommands": "/work/spectre-build-clang/compile_commands.json"
         }
     ],
     "version": 4
@@ -278,7 +267,9 @@ intelligence features.
 * `.vscode/tasks.json` This file sets up "tasks," essentially custom Visual
 Studio Code commands that will configure, compile, and test SpECTRE.
 ***NOTE: update the path `/Users/geoffrey/Codes/spectre/spectre-alt` in
-`command:` below to match your spectre clone's path.***
+`command:` below to match your spectre clone's path.*** *Also change `-j4`
+depending on the number of processors and amount of RAM available to
+docker on your system.*
 ~~~~
 {
     // See https://go.microsoft.com/fwlink/?LinkId=733558
@@ -321,7 +312,8 @@ Studio Code commands that will configure, compile, and test SpECTRE.
 * `.vscode/launch.json`. This file configures for using Visual Studio Code's
 debugger. Later on, you can change the `args:` option to choose a different
 test to debug, or change the `program` and `args` tags for whatever
-executable you would like to debug.
+executable you would like to debug. This example would debug the unit test
+`Unit.ApparentHorizons.StrahlkorperGr.RicciScalar`.
 ~~~~
 {
     "version": "0.2.0",
@@ -362,15 +354,6 @@ cmake -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_C_COMPILER=clang \
 
 ~~~~
 
-### Try out C++ intelligence features
-
-To try out the C++ intelligence features, click the Explorer icon (at the top
-left of the icon bar on the left side of the Visual Studio Code window). In the
-list of files on the left, browse to src/ApparentHorizons/StrahlkorperGr. Scroll
-down until you see `DataVector`. Mouse over `DataVector` and other symbols. If a
-pop-up window appears, asking if you'd like to use `build/compile_commands.json`
-for Intellisense, say yes.
-
 ## Edit git configuration
 
 Configure your git username and password. In the container (and, if you plan to
@@ -406,17 +389,26 @@ You can add these options to your `.gitconfig` outside the container as well
 These options configure Visual Studio Code to be your text editor for
 git.
 
-## Configure and compile SpECTRE
+## Configure SpECTRE
 
 `Shift+Command+P` and run the command `Tasks: Run Task`. Select `Configure
 spectre`. Select `Continue without checking for warnings or errors` (the default
 option). This will run cmake and configure spectre in
 `/work/spectre-build-clang` inside the Docker container.
 
-Then, run `Tasks: Run Task` again, the same as before, but choose the task
+### Try out C++ intelligence features
+
+To try out the C++ intelligence features, click the Explorer icon (at the top
+left of the icon bar on the left side of the Visual Studio Code window). In the
+list of files on the left, browse to src/ApparentHorizons/StrahlkorperGr. Scroll
+down until you see `DataVector`. Mouse over `DataVector` and other symbols.
+
+## Compile SpECTRE
+
+Run `Tasks: Run Task` again, the same as when configuring, but choose the task
 `Build spectre`. This will compile the SpECTRE libraries.
 
-Then, run `Tasks: Run Task` again, the same as before, but choose the task
+Run `Tasks: Run Task` again, the same as when compiling, but choose the task
 `Build spectre test-executables`. This will compile the SpECTRE test
 executables. *This step can take a long time. You can skip it, but then the
 tests with `InputFiles` in the test name will not run when you run the tests.*
@@ -518,10 +510,22 @@ Run `Debug: Stop Debugging` when you're done debugging.
 Microsoft's documentation includes [information on
 debugging](https://code.visualstudio.com/docs/editor/debugging).
 
-## Configure Visual Studio Code for running Jupyter notebooks
+## Running python in the container
+
+When editing a python source file (i.e., a `*.py` file) in the spectre
+docker container, select any code and press `Shift+Enter` to evaluate it.
+You can use this to test python code as you write or edit it.
+
+You can choose to evaluate it in the interactive python interpreter or in
+the terminal. We recommend using the interactive python interpreter. The
+setting can be found under `Settings` as
+`Python:Data Science:Send Selection to Interactive Window`.
+
+## Configure Visual Studio Code for running Jupyter notebooks on your system
 
 We suggest installing [Anaconda 3](https://www.anaconda.com) to get a python 3
-distribution with `scipy`, `numpy`, `matplotlib`, and Jupyter notebooks.
+distribution with `scipy`, `numpy`, `matplotlib`, and Jupyter notebooks on
+your system (i.e., not in the spectre container).
 
 Download a jupyter notebook, such as one from
 (https://github.com/catalog_tools/Examples). Open it in Visual Studio Code. As
