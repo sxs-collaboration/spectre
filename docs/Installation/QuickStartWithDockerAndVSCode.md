@@ -362,8 +362,9 @@ executable you would like to debug. This example would debug the unit test
 ~~~~
 
 Finally, add the shell script used to run `cmake`. Create a file
-`/work/cmake_spectre.sh` and put the following into it, replacing the
-last line with the path to your spectre clone.
+`/work/cmake_spectre.sh` and put the following into it, replacing the last line
+with the path to your spectre clone. One way to do this is to open a terminal
+and run `code /work/spectre-build-clang/cmake_spectre.sh`
 ~~~~
 #!/bin/bash
 cd /work/spectre-build-clang
@@ -408,6 +409,11 @@ You can add these options to your `.gitconfig` outside the container as well
 
 These options configure Visual Studio Code to be your text editor for
 git.
+
+## Restart Visual Studio Code
+
+For all of the above configurations to take effect, quit and reopen
+Visual Studio Code.
 
 ## Configure SpECTRE
 
