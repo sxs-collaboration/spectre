@@ -59,7 +59,7 @@ install the correct extension by the correct author:
   * Remote-ssh (by Microsoft)
   * Remote-ssh:editing config files (by Microsoft)
   * (Optional) LaTeX Workshop (by James Yu)
-  * (Optional) Git Lens (git log, git blame, etc.)
+  * (Optional) Git Lens (by Eric Amodio)
 
 These plugins should work with a reasonably new OS, but if your OS is more than
 a few years old, you might need to update your OS for all of the
