@@ -549,7 +549,8 @@ struct FromPyObject<Scalar<std::complex<double>>> {
       return Scalar<std::complex<double>>{std::complex<double>(
           PyComplex_RealAsDouble(p), PyComplex_ImagAsDouble(p))};
     } else {
-      return tensor_conversion_impl<Scalar<std::complex<double>>>(p);
+      return Scalar<std::complex<double>>{std::complex<double>{
+          get(tensor_conversion_impl<Scalar<double>>(p)), 0.0}};
     }
   }
 };
