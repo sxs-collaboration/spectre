@@ -9,6 +9,14 @@ SpECTRE on Mac, Linux, or Windows using [Docker](https://docker.com) and the
 [Visual Studio Code](https://code.visualstudio.com) editor. Both Docker and
 Visual Studio Code work on Mac, Windows, and Linux.
 
+Note: Visual Studio Code has different keyboard shortcuts on different
+platforms. You can find summaries of the shortcuts for different platforms
+here:
+
+* https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf
+* https://code.visualstudio.com/shortcuts/keyboard-shortcuts-linux.pdf
+* https://code.visualstudio.com/shortcuts/keyboard-shortcuts-windows.pdf
+
 ## Install Visual Studio Code
 
 [Download](https://code.visualstudio.com) and install Visual Studio Code from
@@ -53,9 +61,15 @@ install the correct extension by the correct author:
   * (Optional) LaTeX Workshop (by James Yu)
   * (Optional) Git Lens (git log, git blame, etc.)
 
+These plugins should work with a reasonably new OS, but if your OS is more than
+a few years old, you might need to update your OS for all of the
+plugins to work.
+
 Finally, we recommend, in Visual Studio Code, that you
 
-  1. Press `Shift+Command+P`
+  1. Press `Shift+Command+P` (`Shift+Control+P` on Linux and Windows) to open
+  the command pallete. *This is the most important keyboard shortcut. You
+  can search for and run all commands through the pallete.*
   2. Start typing the command `Shell Command: Install 'code' command in PATH`.
   3. Select that command and press enter.
 
@@ -226,18 +240,24 @@ example command above).
 
 ### Add a keyboard shortcut for git-clang-format
 
-The command `Format modified` runs git-clang-format. Choose `File->Keyboard
-shortcuts`, search for `Format Modified: Format modified sections`, click under
-keybinding", and press a keyboard shortcut (we suggest `control+command+x`).
+The command `Format modified` runs git-clang-format. Choose
+`Code->Preferences->Keyboard shortcuts` (macOS) or
+open the command pallete (`Shift+Command+P` on Mac, `Shift+Control+P`
+otherwise) and find the command to modify keyboard shortcuts
+or keybindings. Then, search for `Format Modified: Format modified sections`,
+click under keybinding", and press a keyboard shortcut
+(we suggest `control+command+x`).
+
 Then every time you are editing code, press this key command to format modified
 sections (before committing) with `git clang format`.
 
 ### Add .vscode configuration files
 
-If it doesn't already exist, create a directory named `.vscode`. One way to do
-this is clicking the New Folder Icon above the list of files and folders on the
-left (the Explorer tab); another is to open a terminal in the container
-(`Control + ~`, without `Shift`) and use `mkdir`.
+If it doesn't already exist, create a directory named `.vscode` in the top level
+directory of your clone of the SpECTRE code. One way to do this is clicking the
+New Folder Icon above the list of files and folders on the left (the Explorer
+tab); another is to open a terminal in the container (`Control + ~`, without
+`Shift`) and use `mkdir`.
 
 Add the following files to the `.vscode` folder:
 
@@ -391,10 +411,11 @@ git.
 
 ## Configure SpECTRE
 
-`Shift+Command+P` and run the command `Tasks: Run Task`. Select `Configure
-spectre`. Select `Continue without checking for warnings or errors` (the default
-option). This will run cmake and configure spectre in
-`/work/spectre-build-clang` inside the Docker container.
+Open the command pallete (`Shift+Command+P` on Mac, `Shift+Control+P` otherwise)
+and run the command `Tasks: Run Task`. Select `Configure spectre`. Select
+`Continue without checking for warnings or errors` (the default option). This
+will run cmake and configure spectre in `/work/spectre-build-clang` inside the
+Docker container.
 
 ### Try out C++ intelligence features
 
@@ -469,8 +490,9 @@ hangout, teamspeak, discord, ... for voice if you aren't all in the same place).
   menu has a back command to go back after you do this.
 
 * **Navigation** — `Control + G` asks for a line number in the current file,
-  then goes to it. `Command + P` lets you open to any file in spectre, by typing
-  the first few letters of the file.
+  then goes to it. `Command + P` (macOS) or `Control + P` (Windows and Linux)
+  lets you open to any file in spectre, by typing the first few letters of the
+  file.
 
 * **Editing files on remote servers over ssh** — The `remote-ssh` extension
   works just like `remote-container`, except instead of connecting to a running
@@ -483,10 +505,11 @@ hangout, teamspeak, discord, ... for voice if you aren't all in the same place).
 
 ## Interactively debug a SpECTRE test
 
-Visual Studio Code includes graphical debugging. Press `Shift+Command+P` and run
-`Debugging: Start Debugging` in Visual Studio Code. Then, wait for a little
-while as the debugger loads (this can take a few minutes). You can now debug,
-stepping into and over lines of code.
+Visual Studio Code includes graphical debugging. Press `Shift+Command+P` (Mac)
+or `Shift+Control+P` (Windows/Linux) and run `Debugging: Start Debugging` in
+Visual Studio Code. Then, wait for a little while as the debugger loads (this
+can take a few minutes). You can now debug, stepping into and over lines of
+code.
 
 The executable and arguments that will be debugged are set in
 `.vscode/launch.json`. To debug a specific test, use
