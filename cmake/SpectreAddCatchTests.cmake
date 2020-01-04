@@ -190,6 +190,11 @@ function(spectre_parse_file SOURCE_FILE TEST_TARGET)
         "for \"${NAME}\" in ${SOURCE_FILE}\n")
     endif ()
 
+    # Double timeout if address sanitizer is enabled.
+    if (ASAN)
+      math(EXPR TIMEOUT "2 * ${TIMEOUT}")
+    endif()
+
     # Add the test and set its properties
     add_test(NAME "\"${CTEST_NAME}\""
       COMMAND $<TARGET_FILE:${TEST_TARGET}>
