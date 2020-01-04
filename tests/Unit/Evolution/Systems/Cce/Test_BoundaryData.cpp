@@ -27,67 +27,70 @@ namespace {
 void pypp_test_worldtube_computation_steps() noexcept {
   pypp::SetupLocalPythonEnvironment local_python_env{"Evolution/Systems/Cce/"};
 
+  const size_t num_pts = 5;
+
   pypp::check_with_random_values<1>(
       &cartesian_to_spherical_coordinates_and_jacobians, "BoundaryData",
       {"cartesian_to_angular_coordinates", "cartesian_to_angular_jacobian",
        "cartesian_to_angular_inverse_jacobian"},
-      {{{0.1, 10.0}}}, DataVector{1});
+      {{{0.1, 10.0}}}, DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&null_metric_and_derivative, "BoundaryData",
                                     {"du_null_metric", "null_metric"},
-                                    {{{0.1, 10.0}}}, DataVector{1});
+                                    {{{0.1, 10.0}}}, DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&worldtube_normal_and_derivatives,
                                     "BoundaryData",
                                     {"worldtube_normal", "dt_worldtube_normal"},
-                                    {{{0.1, 10.0}}}, DataVector{1});
+                                    {{{0.1, 10.0}}}, DataVector{num_pts});
 
-  pypp::check_with_random_values<1>(
-      &null_vector_l_and_derivatives, "BoundaryData",
-      {"du_null_vector_l", "null_vector_l"}, {{{0.1, 10.0}}}, DataVector{1});
+  pypp::check_with_random_values<1>(&null_vector_l_and_derivatives,
+                                    "BoundaryData",
+                                    {"du_null_vector_l", "null_vector_l"},
+                                    {{{0.1, 10.0}}}, DataVector{num_pts});
 
   pypp::check_with_random_values<1>(
       &dlambda_null_metric_and_inverse, "BoundaryData",
       {"dlambda_null_metric", "inverse_dlambda_null_metric"}, {{{0.1, 10.0}}},
-      DataVector{1});
+      DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&beta_worldtube_data, "BoundaryData",
                                     {"bondi_beta_worldtube_data"},
-                                    {{{0.1, 10.0}}}, DataVector{1});
+                                    {{{0.1, 10.0}}}, DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&bondi_u_worldtube_data, "BoundaryData",
                                     {"bondi_u_worldtube_data"}, {{{0.1, 10.0}}},
-                                    DataVector{1});
+                                    DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&bondi_w_worldtube_data, "BoundaryData",
                                     {"bondi_w_worldtube_data"}, {{{0.1, 10.0}}},
-                                    DataVector{1});
+                                    DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&bondi_j_worldtube_data, "BoundaryData",
                                     {"bondi_j_worldtube_data"}, {{{0.1, 10.0}}},
-                                    DataVector{1});
+                                    DataVector{num_pts});
 
   pypp::check_with_random_values<1>(
       &dr_bondi_j, "BoundaryData",
       {"dr_bondi_j_worldtube_data", "dr_bondi_j_denominator"}, {{{0.1, 10.0}}},
-      DataVector{1});
+      DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&d2lambda_bondi_r, "BoundaryData",
                                     {"d2lambda_bondi_r"}, {{{0.1, 10.0}}},
-                                    DataVector{1});
+                                    DataVector{num_pts});
 
   pypp::check_with_random_values<1>(
       &bondi_q_worldtube_data, "BoundaryData",
       {"bondi_q_worldtube_data", "dr_bondi_u_worldtube_data"}, {{{0.1, 10.0}}},
-      DataVector{1});
+      DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&bondi_h_worldtube_data, "BoundaryData",
                                     {"bondi_h_worldtube_data"}, {{{0.1, 10.0}}},
-                                    DataVector{1});
+                                    DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&du_j_worldtube_data, "BoundaryData",
                                     {"du_j_worldtube_data"}, {{{0.1, 10.0}}},
-                                    DataVector{1});
+                                    DataVector{num_pts});
 }
 
 template <typename Generator>
