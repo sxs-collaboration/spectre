@@ -21,5 +21,5 @@ add_test_library(
   ${LIBRARY}
   "Evolution/Systems/Cce/"
   "${LIBRARY_SOURCES}"
-  "Cce"
+  "Cce;GeneralRelativitySolutions"
   )
