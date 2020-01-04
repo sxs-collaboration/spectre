@@ -498,8 +498,10 @@ T tensor_conversion_impl(PyObject* p) {
     throw std::runtime_error{
         "Cannot convert array of non-double type to Tensor."};
   } else if (PyArray_NDIM(npy_array) != static_cast<long>(T::rank())) {
-    throw std::runtime_error{
-        "Mismatch between ndim of numpy ndarray and rank of Tensor."};
+    throw std::runtime_error{"Mismatch between ndim of numpy ndarray (" +
+                             std::to_string(PyArray_NDIM(npy_array)) +
+                             ") and rank of Tensor (" +
+                             std::to_string(T::rank()) + ")"};
   }
 
   const auto npy_array_dims = PyArray_DIMS(npy_array);
