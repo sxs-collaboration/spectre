@@ -12,10 +12,10 @@ def gravitational_field(x, central_mass_density, polytropic_constant):
     if (radius < outer_radius):
         xi = radius / alpha
         enclosed_mass = mass_scale * (np.sin(xi) - xi * np.cos(xi))
-        return - x * enclosed_mass / radius**3
+        return -x * enclosed_mass / radius**3
     else:
         total_mass = mass_scale * np.pi
-        return - x * total_mass / radius**3
+        return -x * total_mass / radius**3
 
 
 def mass_density(x, t, central_mass_density, polytropic_constant):

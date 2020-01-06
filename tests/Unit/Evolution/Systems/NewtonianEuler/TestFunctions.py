@@ -35,12 +35,13 @@ def energy_density(mass_density, velocity, specific_internal_energy):
 
 
 # Functions for testing Fluxes.cpp
-def mass_density_cons_flux(momentum_density, energy_density,
-                           velocity, pressure):
+def mass_density_cons_flux(momentum_density, energy_density, velocity,
+                           pressure):
     return momentum_density
 
 
-def momentum_density_flux(momentum_density, energy_density, velocity, pressure):
+def momentum_density_flux(momentum_density, energy_density, velocity,
+                          pressure):
     result = np.outer(momentum_density, velocity)
     result += pressure * np.identity(velocity.size)
     return result
@@ -75,9 +76,8 @@ def pressure_1d(mass_density_cons, momentum_density, energy_density):
 
 # Hard-coded for IdealFluid (representative ThermoDim = 2 case)
 def pressure_2d(mass_density_cons, momentum_density, energy_density):
-    return ((2.0 / 3.0) * mass_density_cons *
-            specific_internal_energy(mass_density_cons, momentum_density,
-                                     energy_density))
+    return ((2.0 / 3.0) * mass_density_cons * specific_internal_energy(
+        mass_density_cons, momentum_density, energy_density))
 
 
 # End functions for testing PrimitiveFromConservative.cpp

@@ -6,17 +6,15 @@ import os
 import sys
 from PointwiseFunctions.GeneralRelativity.ComputeGhQuantities import (
     spacetime_deriv_detg, deriv_lapse, dt_lapse, deriv_spatial_metric,
-    dt_spatial_metric, deriv_shift, dt_shift
-)
+    dt_spatial_metric, deriv_shift, dt_shift)
 from PointwiseFunctions.GeneralRelativity.ComputeSpacetimeQuantities import (
     derivatives_of_spacetime_metric, inverse_spacetime_metric,
-    spacetime_normal_vector
-)
+    spacetime_normal_vector)
 
 
 def weight_function(coords, r_max):
     r2 = np.sum([coords[i]**2 for i in range(len(coords))])
-    return np.exp(- r2 / r_max / r_max)
+    return np.exp(-r2 / r_max / r_max)
 
 
 def spacetime_deriv_weight_function(coords, r_max):
@@ -29,14 +27,14 @@ def spacetime_deriv_weight_function(coords, r_max):
 def roll_on_function(time, t_start, sigma_t):
     if time < t_start:
         return 0.
-    return 1. - np.exp(- ((time - t_start) / sigma_t)**4)
+    return 1. - np.exp(-((time - t_start) / sigma_t)**4)
 
 
 def time_deriv_roll_on_function(time, t_start, sigma_t):
     if time < t_start:
         return 0.
     tnrm = (time - t_start) / sigma_t
-    return np.exp(- tnrm**4) * 4 * tnrm**3 / sigma_t
+    return np.exp(-tnrm**4) * 4 * tnrm**3 / sigma_t
 
 
 def log_fac(lapse, sqrt_det_spatial_metric, exponent):
@@ -49,9 +47,8 @@ def spacetime_deriv_log_fac(lapse, shift, spacetime_unit_normal,
                             dt_spatial_metric, pi, phi, exponent):
     spatial_dim = len(shift)
     detg = sqrt_det_spatial_metric**2
-    dg = spacetime_deriv_detg(sqrt_det_spatial_metric,
-                                   inverse_spatial_metric, dt_spatial_metric,
-                                   phi)
+    dg = spacetime_deriv_detg(sqrt_det_spatial_metric, inverse_spatial_metric,
+                              dt_spatial_metric, phi)
     d0N = dt_lapse(lapse, shift, spacetime_unit_normal, phi, pi)
     d3N = deriv_lapse(lapse, spacetime_unit_normal, phi)
     d4N = np.zeros(1 + spatial_dim)
@@ -63,15 +60,14 @@ def spacetime_deriv_log_fac(lapse, shift, spacetime_unit_normal,
 
 
 def spacetime_deriv_pow_log_fac(lapse, shift, spacetime_unit_normal,
-                                inverse_spatial_metric, sqrt_det_spatial_metric,
-                                dt_spatial_metric,
-                                pi, phi, g_exponent, exponent):
+                                inverse_spatial_metric,
+                                sqrt_det_spatial_metric, dt_spatial_metric, pi,
+                                phi, g_exponent, exponent):
     exponent = int(exponent)
     dlogfac = spacetime_deriv_log_fac(lapse, shift, spacetime_unit_normal,
                                       inverse_spatial_metric,
                                       sqrt_det_spatial_metric,
-                                      dt_spatial_metric,
-                                      pi, phi, g_exponent)
+                                      dt_spatial_metric, pi, phi, g_exponent)
     logfac = log_fac(lapse, sqrt_det_spatial_metric, g_exponent)
     return exponent * np.power(logfac, exponent - 1) * dlogfac
 
@@ -105,14 +101,10 @@ def damped_harmonic_gauge_source_function(gauge_h_init, lapse, shift,
         np.einsum('ai,i->a', spacetime_metric[:, 1:], shift)
 
 
-def spacetime_deriv_damped_harmonic_gauge_source_function(gauge_h_init,
-                                                dgauge_h_init, lapse, shift,
-                                                spacetime_unit_normal_one_form,
-                                                sqrt_det_spatial_metric,
-                                                inverse_spatial_metric,
-                                                spacetime_metric, pi, phi, time,
-                                                t_start, sigma_t, coords,
-                                                r_max):
+def spacetime_deriv_damped_harmonic_gauge_source_function(
+    gauge_h_init, dgauge_h_init, lapse, shift, spacetime_unit_normal_one_form,
+    sqrt_det_spatial_metric, inverse_spatial_metric, spacetime_metric, pi, phi,
+    time, t_start, sigma_t, coords, r_max):
     spatial_dim = len(shift)
     spacetime_unit_normal = spacetime_normal_vector(lapse, shift)
     spatial_metric = spatial_metric_from_spacetime_metric(spacetime_metric)
@@ -145,8 +137,8 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(gauge_h_init,
     d4_RW = R * d4_W
     d4_RW[0] += W * d0_R
 
-    d4_g = spacetime_deriv_detg(sqrt_det_spatial_metric, inverse_spatial_metric,
-                                d0_spatial_metric, phi)
+    d4_g = spacetime_deriv_detg(sqrt_det_spatial_metric,
+                                inverse_spatial_metric, d0_spatial_metric, phi)
 
     d0_N = dt_lapse(lapse, shift, spacetime_unit_normal, phi, pi)
     d3_N = deriv_lapse(lapse, spacetime_unit_normal, phi)
@@ -155,11 +147,11 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(gauge_h_init,
     d4_N[1:] = d3_N
 
     d0_shift = dt_shift(lapse, shift, inverse_spatial_metric,
-                             spacetime_unit_normal, phi, pi)
-    d3_shift = deriv_shift(lapse, inv_spacetime_metric,
-                                spacetime_unit_normal, phi)
-    d4_shift = np.einsum('a,b->ab',
-                         np.zeros(spatial_dim + 1), np.zeros(spatial_dim + 1))
+                        spacetime_unit_normal, phi, pi)
+    d3_shift = deriv_shift(lapse, inv_spacetime_metric, spacetime_unit_normal,
+                           phi)
+    d4_shift = np.einsum('a,b->ab', np.zeros(spatial_dim + 1),
+                         np.zeros(spatial_dim + 1))
     d4_shift[0, 1:] = d0_shift
     d4_shift[1:, 1:] = d3_shift
 
@@ -172,17 +164,15 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(gauge_h_init,
         prefac1 * (d4_g / det_spatial_metric - 2. * one_over_lapse * d4_N)
     d4_mu2 = log_one_over_lapse_pow5 * d4_RW + prefac2 * d4_N
 
-    d4_normal_one_form = np.einsum('a,b->ab',
-                                   np.zeros(spatial_dim + 1),
+    d4_normal_one_form = np.einsum('a,b->ab', np.zeros(spatial_dim + 1),
                                    np.zeros(spatial_dim + 1))
     d4_normal_one_form[:, 0] = -d4_N
 
     d4_muS_over_N = one_over_lapse * d4_muL1 - muL1 * one_over_lapse**2 * d4_N
 
-    d4_psi = derivatives_of_spacetime_metric(lapse, d0_N, d3_N,
-                                             shift, d0_shift, d3_shift,
-                                             spatial_metric,
-                                             d0_spatial_metric,
+    d4_psi = derivatives_of_spacetime_metric(lapse, d0_N, d3_N, shift,
+                                             d0_shift, d3_shift,
+                                             spatial_metric, d0_spatial_metric,
                                              d3_spatial_metric)
 
     dT1 = (1. - R) * dgauge_h_init
@@ -191,8 +181,8 @@ def spacetime_deriv_damped_harmonic_gauge_source_function(gauge_h_init,
     dT2 = (mu1 + mu2) * d4_normal_one_form +\
         np.einsum('a,b->ab', d4_mu1 + d4_mu2, spacetime_unit_normal_one_form)
 
-    dT3 = np.einsum('a,b->ab',
-                    np.zeros(spatial_dim + 1), np.zeros(spatial_dim + 1))
+    dT3 = np.einsum('a,b->ab', np.zeros(spatial_dim + 1),
+                    np.zeros(spatial_dim + 1))
     dT3 -= np.einsum('a,b->ab', d4_muS_over_N,
                      np.einsum('bi,i->b', spacetime_metric[:, 1:], shift))
     dT3 -= muS_over_N * np.einsum('abi,i->ab', d4_psi[:, :, 1:], shift)

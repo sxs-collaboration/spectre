@@ -20,27 +20,22 @@ def flux_for_auxiliary_field(field, fluxes_argument, dim):
     return np.diag(np.repeat(fluxes_argument * field, dim))
 
 
-def normal_dot_numerical_flux_for_field(
-        n_dot_aux_flux_int, n_dot_aux_flux_ext,
-        div_aux_flux_int, div_aux_flux_ext,
-        fluxes_argument, penalty_parameter,
-        face_normal_int):
+def normal_dot_numerical_flux_for_field(n_dot_aux_flux_int, n_dot_aux_flux_ext,
+                                        div_aux_flux_int, div_aux_flux_ext,
+                                        fluxes_argument, penalty_parameter,
+                                        face_normal_int):
     sigma = penalty_parameter
-    return np.dot(face_normal_int,
-                  average(
-                      flux_for_field(div_aux_flux_int, fluxes_argument),
-                      flux_for_field(div_aux_flux_ext, fluxes_argument)
-                  ) - sigma * jump(
-                      flux_for_field(n_dot_aux_flux_int, fluxes_argument),
-                      flux_for_field(-n_dot_aux_flux_ext, fluxes_argument)
-                  ))
+    return np.dot(
+        face_normal_int,
+        average(flux_for_field(div_aux_flux_int, fluxes_argument),
+                flux_for_field(div_aux_flux_ext, fluxes_argument)) -
+        sigma * jump(flux_for_field(n_dot_aux_flux_int, fluxes_argument),
+                     flux_for_field(-n_dot_aux_flux_ext, fluxes_argument)))
 
 
 def normal_dot_numerical_flux_for_auxiliary_field(
-        n_dot_aux_flux_int, minus_n_dot_aux_flux_ext,
-        div_aux_flux_int, div_aux_flux_ext,
-        fluxes_argument, penalty_parameter,
-        face_normal_int):
+    n_dot_aux_flux_int, minus_n_dot_aux_flux_ext, div_aux_flux_int,
+    div_aux_flux_ext, fluxes_argument, penalty_parameter, face_normal_int):
     # `minus_n_dot_aux_flux_ext` is from the element on the other side of the
     # interface, so it is _minus_ the same quantity if it was computed with the
     # normal from this element (assuming normals don't depend on the dynamic
@@ -49,16 +44,16 @@ def normal_dot_numerical_flux_for_auxiliary_field(
     return average(n_dot_aux_flux_int, -minus_n_dot_aux_flux_ext)
 
 
-def normal_dot_dirichlet_flux_for_field(
-        dirichlet_field, fluxes_argument, penalty_parameter, face_normal, dim):
+def normal_dot_dirichlet_flux_for_field(dirichlet_field, fluxes_argument,
+                                        penalty_parameter, face_normal, dim):
     sigma = penalty_parameter
     return 2. * sigma * np.dot(
         face_normal,
         flux_for_field(
             np.dot(
                 face_normal,
-                flux_for_auxiliary_field(dirichlet_field, fluxes_argument, dim)
-            ), fluxes_argument))
+                flux_for_auxiliary_field(dirichlet_field, fluxes_argument,
+                                         dim)), fluxes_argument))
 
 
 def normal_dot_dirichlet_flux_for_field_1d(*args, **kwargs):
@@ -73,20 +68,28 @@ def normal_dot_dirichlet_flux_for_field_3d(*args, **kwargs):
     return normal_dot_dirichlet_flux_for_field(*args, dim=3, **kwargs)
 
 
-def normal_dot_dirichlet_flux_for_auxiliary_field(
-        dirichlet_field, fluxes_argument, penalty_parameter, face_normal, dim):
+def normal_dot_dirichlet_flux_for_auxiliary_field(dirichlet_field,
+                                                  fluxes_argument,
+                                                  penalty_parameter,
+                                                  face_normal, dim):
     return np.dot(
         face_normal,
         flux_for_auxiliary_field(dirichlet_field, fluxes_argument, dim))
 
 
 def normal_dot_dirichlet_flux_for_auxiliary_field_1d(*args, **kwargs):
-    return normal_dot_dirichlet_flux_for_auxiliary_field(*args, dim=1, **kwargs)
+    return normal_dot_dirichlet_flux_for_auxiliary_field(*args,
+                                                         dim=1,
+                                                         **kwargs)
 
 
 def normal_dot_dirichlet_flux_for_auxiliary_field_2d(*args, **kwargs):
-    return normal_dot_dirichlet_flux_for_auxiliary_field(*args, dim=2, **kwargs)
+    return normal_dot_dirichlet_flux_for_auxiliary_field(*args,
+                                                         dim=2,
+                                                         **kwargs)
 
 
 def normal_dot_dirichlet_flux_for_auxiliary_field_3d(*args, **kwargs):
-    return normal_dot_dirichlet_flux_for_auxiliary_field(*args, dim=3, **kwargs)
+    return normal_dot_dirichlet_flux_for_auxiliary_field(*args,
+                                                         dim=3,
+                                                         **kwargs)

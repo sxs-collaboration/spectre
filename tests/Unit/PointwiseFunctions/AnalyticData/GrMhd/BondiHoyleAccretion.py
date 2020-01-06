@@ -24,8 +24,7 @@ def spatial_velocity(x, bh_mass, bh_dimless_spin, rest_mass_density,
     sigma = r_squared + a_squared * cos_theta_squared
 
     result[0] = (flow_speed * cos_theta /
-                 np.sqrt(1.0 + 2.0 * bh_mass * np.sqrt(r_squared) /
-                         sigma))
+                 np.sqrt(1.0 + 2.0 * bh_mass * np.sqrt(r_squared) / sigma))
     result[1] = - flow_speed * \
         np.sqrt(1.0 - cos_theta_squared) / np.sqrt(sigma)
 
@@ -61,13 +60,12 @@ def magnetic_field(x, bh_mass, bh_dimless_spin, rest_mass_density, flow_speed,
     result[0:] = mag_field_strength / np.sqrt(sigma * (sigma + two_m_r))
     result[0] *= (r_squared - two_m_r + a_squared + two_m_r *
                   (r_squared**2 - a_squared**2) / sigma**2) * cos_theta
-    result[1] *= -((np.sqrt(r_squared) +
-                    bh_mass * a_squared *
+    result[1] *= -((np.sqrt(r_squared) + bh_mass * a_squared *
                     (r_squared - a_squared * cos_theta_squared) *
                     (1.0 + cos_theta_squared) / sigma**2) *
                    np.sqrt(1.0 - cos_theta_squared))
-    result[2] *= spin_a * (1.0 + two_m_r * (r_squared - a_squared) /
-                           sigma**2) * cos_theta
+    result[2] *= spin_a * (1.0 + two_m_r *
+                           (r_squared - a_squared) / sigma**2) * cos_theta
     return ks_coords.cartesian_from_spherical_ks(result, x, bh_mass,
                                                  bh_dimless_spin)
 

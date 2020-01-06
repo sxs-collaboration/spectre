@@ -10,11 +10,10 @@ import re
 
 # List of all the clang-format versions we are willing to use
 # The general case is needed on a Mac
-clang_format_list = ["git-clang-format",
-                     "git-clang-format-6.0",
-                     "git-clang-format-4.0",
-                     "git-clang-format-3.9",
-                     "git-clang-format-3.8"]
+clang_format_list = [
+    "git-clang-format", "git-clang-format-6.0", "git-clang-format-4.0",
+    "git-clang-format-3.9", "git-clang-format-3.8"
+]
 
 git_executable = "@GIT_EXECUTABLE@"
 
@@ -37,6 +36,7 @@ def which(program):
 
     return None
 
+
 # Check each of the allowed versions
 clang_format = ""
 for version in clang_format_list:
@@ -56,17 +56,19 @@ clang_format_version = subprocess.check_output([clang_format, "--version"])
 clang_format_version = re.search("clang-format version ([0-9]+)\.([0-9]+)",
                                  str(clang_format_version))
 
-if (int(clang_format_version.group(1)) < 4 and
-        int(clang_format_version.group(2)) < 8):
+if (int(clang_format_version.group(1)) < 4
+        and int(clang_format_version.group(2)) < 8):
     print("clang-format version %s.%s is too low. Must have at least 3.8" %
-              (clang_format_version.group(1), clang_format_version.group(2)))
+          (clang_format_version.group(1), clang_format_version.group(2)))
     sys.exit(0)
 
-output = subprocess.check_output([git_executable, clang_format, "--diff"
-                                  ]).decode('ascii')
+output = subprocess.check_output([git_executable, clang_format,
+                                  "--diff"]).decode('ascii')
 
-if output not in ['\n', '', 'no modified files to format\n',
-                  'clang-format did not modify any files\n']:
+if output not in [
+        '\n', '', 'no modified files to format\n',
+        'clang-format did not modify any files\n'
+]:
     output_file_name = "@CMAKE_SOURCE_DIR@/.clang_format_diff.patch"
     output_file = open(output_file_name, 'w')
     output_file.write("%s" % (output))
@@ -78,8 +80,7 @@ if output not in ['\n', '', 'no modified files to format\n',
           "  cd @CMAKE_SOURCE_DIR@\n"
           "  git apply %s\n"
           "and then staging the modified files and amending your original "
-          "commit.\n" %
-          (output_file_name, output_file_name))
+          "commit.\n" % (output_file_name, output_file_name))
     sys.exit(1)
 
 sys.exit(0)

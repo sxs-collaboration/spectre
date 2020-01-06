@@ -3,8 +3,8 @@
 
 import numpy as np
 
-from .ComputeSpacetimeQuantities import (
-    spatial_deriv_spacetime_metric, dt_spacetime_metric)
+from .ComputeSpacetimeQuantities import (spatial_deriv_spacetime_metric,
+                                         dt_spacetime_metric)
 
 
 def phi(lapse, deriv_lapse, shift, deriv_shift, spatial_metric,
@@ -16,9 +16,9 @@ def phi(lapse, deriv_lapse, shift, deriv_shift, spatial_metric,
 
 def pi(lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric,
        phi):
-    return (np.einsum("iab,i", phi, shift) - dt_spacetime_metric(
-        lapse, dt_lapse, shift, dt_shift, spatial_metric, dt_spatial_metric)
-    ) / lapse
+    return (np.einsum("iab,i", phi, shift) -
+            dt_spacetime_metric(lapse, dt_lapse, shift, dt_shift,
+                                spatial_metric, dt_spatial_metric)) / lapse
 
 
 def gauge_source(lapse, dt_lapse, deriv_lapse, shift, dt_shift, deriv_shift,
@@ -62,8 +62,8 @@ def deriv_shift(lapse, inverse_spacetime_metric, spacetime_unit_normal, phi):
     return t1 + t2
 
 
-def dt_shift(lapse, shift, inverse_spatial_metric, spacetime_unit_normal,
-             phi, pi):
+def dt_shift(lapse, shift, inverse_spatial_metric, spacetime_unit_normal, phi,
+             pi):
     t1 = np.einsum('a,ja->j', spacetime_unit_normal, pi[1:, :])
     t1 = np.einsum('j,ij->i', t1, inverse_spatial_metric)
     t2 = np.einsum('jka,a->jk', phi[:, 1:, :], spacetime_unit_normal)
@@ -85,8 +85,9 @@ def dt_lower_shift(lapse, shift, spatial_metric, spacetime_unit_normal, phi,
 
 
 def spacetime_deriv_norm_shift(lapse, shift, spatial_metric,
-                               inverse_spatial_metric, inverse_spacetime_metric,
-                               spacetime_unit_normal, phi, pi):
+                               inverse_spatial_metric,
+                               inverse_spacetime_metric, spacetime_unit_normal,
+                               phi, pi):
     lower_shift = np.einsum('ij,j->i', spatial_metric, shift)
     deriv_shift_ = deriv_shift(lapse, inverse_spacetime_metric,
                                spacetime_unit_normal, phi)
@@ -110,6 +111,7 @@ def deriv_spatial_metric(phi):
 
 def dt_spatial_metric(lapse, shift, phi, pi):
     return (-lapse * pi + np.einsum('k,kab->ab', shift, phi))[1:, 1:]
+
 
 def gh_dt_spacetime_metric(lapse, shift, pi, phi):
     return (-lapse * pi + np.einsum('k,kab', shift, phi))

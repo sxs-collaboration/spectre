@@ -9,6 +9,7 @@ import numpy as np
 import os
 import numpy.testing as npt
 
+
 class TestIOH5VolumeData(unittest.TestCase):
     # Test Fixtures
     def setUp(self):
@@ -32,8 +33,8 @@ class TestIOH5VolumeData(unittest.TestCase):
 
     # Testing the VolumeData Insert Function
     def test_insert_vol(self):
-        h5_file = spectre_h5.H5File(
-            file_name=self.file_name_w, append_to_file=True)
+        h5_file = spectre_h5.H5File(file_name=self.file_name_w,
+                                    append_to_file=True)
         h5_file.insert_vol(path="/element_data", version=0)
         vol_file = h5_file.get_vol(path="/element_data")
         self.assertEqual(vol_file.get_version(), 0)
@@ -41,8 +42,8 @@ class TestIOH5VolumeData(unittest.TestCase):
 
     # Test the header was generated correctly
     def test_vol_get_header(self):
-        h5_file = spectre_h5.H5File(
-            file_name=self.file_name_w, append_to_file=True)
+        h5_file = spectre_h5.H5File(file_name=self.file_name_w,
+                                    append_to_file=True)
         h5_file.insert_vol(path="/element_data", version=0)
         vol_file = h5_file.get_vol(path="/element_data")
         self.assertEqual(vol_file.get_header()[0:20], "#\n# File created on ")
@@ -52,13 +53,15 @@ class TestIOH5VolumeData(unittest.TestCase):
     # `VolTestData.h5` which contains spectre output data (see above).
     # Test the observation ids and values are correctly retrived
     def test_observation_id(self):
-        h5_file = spectre_h5.H5File(
-            file_name=self.file_name_r, append_to_file=True)
+        h5_file = spectre_h5.H5File(file_name=self.file_name_r,
+                                    append_to_file=True)
         vol_file = h5_file.get_vol(path="/element_data")
         obs_ids = set(vol_file.list_observation_ids())
         expected_obs_ids = set([16436106908031328247, 17615288952477351885])
-        expected_obs_values = {16436106908031328247: 0.01,
-                               17615288952477351885: 0.00}
+        expected_obs_values = {
+            16436106908031328247: 0.01,
+            17615288952477351885: 0.00
+        }
         self.assertEqual(obs_ids, expected_obs_ids)
         for obs_id in expected_obs_ids:
             self.assertEqual(
@@ -68,23 +71,22 @@ class TestIOH5VolumeData(unittest.TestCase):
 
     # Test to make sure information about the computation elements was found
     def test_grids(self):
-        h5_file = spectre_h5.H5File(
-            file_name=self.file_name_r, append_to_file=True)
+        h5_file = spectre_h5.H5File(file_name=self.file_name_r,
+                                    append_to_file=True)
         vol_file = h5_file.get_vol("/element_data")
         obs_id = vol_file.list_observation_ids()[0]
         grid_names = vol_file.get_grid_names(observation_id=obs_id)
-        expected_grid_names  = ['[B0,(L0I0,L0I0,L0I0)]']
+        expected_grid_names = ['[B0,(L0I0,L0I0,L0I0)]']
         self.assertEqual(grid_names, expected_grid_names)
         extents = vol_file.get_extents(observation_id=obs_id)
         expected_extents = [[2, 2, 2]]
         self.assertEqual(extents, expected_extents)
         h5_file.close()
 
-
     # Test that the tensor components, and tensor data  are retrieved correctly
     def test_tensor_components(self):
-        h5_file = spectre_h5.H5File(
-            file_name=self.file_name_r, append_to_file=True)
+        h5_file = spectre_h5.H5File(file_name=self.file_name_r,
+                                    append_to_file=True)
         vol_file = h5_file.get_vol(path="/element_data")
         obs_id = vol_file.list_observation_ids()[0]
         tensor_comps = set(
@@ -94,62 +96,57 @@ class TestIOH5VolumeData(unittest.TestCase):
             'InertialCoordinates_y', 'InertialCoordinates_z'
         ])
         self.assertEqual(tensor_comps, expected_tensor_comps)
-        expected_Psi_tensor_data = np.array([-0.0173205080756888,
-                                             -0.0173205080756888,
-                                             -0.0173205080756888,
-                                             -0.0173205080756888,
-                                             -0.0173205080756888,
-                                             -0.0173205080756888,
-                                             -0.0173205080756888,
-                                             -0.0173205080756888
-                                         ])
-        expected_Error_tensor_data = np.array([-8.66012413502926e-07,
-                                               -8.66012413502926e-07,
-                                               -8.66012413502926e-07,
-                                               -8.66012413502926e-07,
-                                               -8.66012413502926e-07,
-                                               -8.66012413502926e-07,
-                                               -8.66012413502926e-07,
-                                               -8.66012413502926e-07
-                                           ])
-        expected_xcoord_tensor_data = np.array([0.0, 6.28318530717959,
-                                                0.0, 6.28318530717959,
-                                                0.0, 6.28318530717959,
-                                                0.0, 6.28318530717959
-                                            ])
-        expected_ycoord_tensor_data = np.array([0.0, 0.0,
-                                                6.28318530717959,
-                                                6.28318530717959,
-                                                0.0, 0.0,
-                                                6.28318530717959,
-                                                6.28318530717959
-                                            ])
-        expected_zcoord_tensor_data = np.array([0.0, 0.0, 0.0, 0.0,
-                                                 6.28318530717959,
-                                                 6.28318530717959,
-                                                 6.28318530717959,
-                                                 6.28318530717959
-                                            ])
+        expected_Psi_tensor_data = np.array([
+            -0.0173205080756888, -0.0173205080756888, -0.0173205080756888,
+            -0.0173205080756888, -0.0173205080756888, -0.0173205080756888,
+            -0.0173205080756888, -0.0173205080756888
+        ])
+        expected_Error_tensor_data = np.array([
+            -8.66012413502926e-07, -8.66012413502926e-07,
+            -8.66012413502926e-07, -8.66012413502926e-07,
+            -8.66012413502926e-07, -8.66012413502926e-07,
+            -8.66012413502926e-07, -8.66012413502926e-07
+        ])
+        expected_xcoord_tensor_data = np.array([
+            0.0, 6.28318530717959, 0.0, 6.28318530717959, 0.0,
+            6.28318530717959, 0.0, 6.28318530717959
+        ])
+        expected_ycoord_tensor_data = np.array([
+            0.0, 0.0, 6.28318530717959, 6.28318530717959, 0.0, 0.0,
+            6.28318530717959, 6.28318530717959
+        ])
+        expected_zcoord_tensor_data = np.array([
+            0.0, 0.0, 0.0, 0.0, 6.28318530717959, 6.28318530717959,
+            6.28318530717959, 6.28318530717959
+        ])
         # Checking whether two numpy arrays are "almost equal" is easy, so
         # we convert everything to numpy arrays for comparison.
-        Psi_tensor_data = np.asarray(vol_file.get_tensor_component(
-            observation_id=obs_id, tensor_component='Psi'))
+        Psi_tensor_data = np.asarray(
+            vol_file.get_tensor_component(observation_id=obs_id,
+                                          tensor_component='Psi'))
         npt.assert_array_almost_equal(Psi_tensor_data,
                                       expected_Psi_tensor_data)
-        Error_tensor_data = np.asarray(vol_file.get_tensor_component(
-            observation_id=obs_id, tensor_component='Error(Psi)'))
+        Error_tensor_data = np.asarray(
+            vol_file.get_tensor_component(observation_id=obs_id,
+                                          tensor_component='Error(Psi)'))
         npt.assert_array_almost_equal(Error_tensor_data,
                                       expected_Error_tensor_data)
-        xcoord_tensor_data = np.asarray(vol_file.get_tensor_component(
-            observation_id=obs_id, tensor_component='InertialCoordinates_x'))
+        xcoord_tensor_data = np.asarray(
+            vol_file.get_tensor_component(
+                observation_id=obs_id,
+                tensor_component='InertialCoordinates_x'))
         npt.assert_array_almost_equal(xcoord_tensor_data,
                                       expected_xcoord_tensor_data)
-        ycoord_tensor_data = np.asarray(vol_file.get_tensor_component(
-            observation_id=obs_id, tensor_component='InertialCoordinates_y'))
+        ycoord_tensor_data = np.asarray(
+            vol_file.get_tensor_component(
+                observation_id=obs_id,
+                tensor_component='InertialCoordinates_y'))
         npt.assert_array_almost_equal(ycoord_tensor_data,
                                       expected_ycoord_tensor_data)
-        zcoord_tensor_data = np.asarray(vol_file.get_tensor_component(
-            observation_id=obs_id, tensor_component='InertialCoordinates_z'))
+        zcoord_tensor_data = np.asarray(
+            vol_file.get_tensor_component(
+                observation_id=obs_id,
+                tensor_component='InertialCoordinates_z'))
         npt.assert_array_almost_equal(zcoord_tensor_data,
                                       expected_zcoord_tensor_data)
         h5_file.close()

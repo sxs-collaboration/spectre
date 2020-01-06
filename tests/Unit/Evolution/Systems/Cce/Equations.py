@@ -22,9 +22,9 @@ def integrand_for_q_pole_part(eth_beta):
     return -4.0 * eth_beta
 
 
-def integrand_for_q_regular_part(
-        _, dy_beta, dy_j, j, eth_dy_beta, eth_j_jbar, eth_jbar_dy_j,
-        ethbar_dy_j, ethbar_j, eth_r_divided_by_r, k):
+def integrand_for_q_regular_part(_, dy_beta, dy_j, j, eth_dy_beta, eth_j_jbar,
+                                 eth_jbar_dy_j, ethbar_dy_j, ethbar_j,
+                                 eth_r_divided_by_r, k):
     # script_aq input is unused, needed only to match function signature from
     # the C++
     eth_dy_jbar = np.conj(ethbar_dy_j)
@@ -59,10 +59,11 @@ def integrand_for_w_pole_part(ethbar_u):
     return eth_ubar + ethbar_u
 
 
-def integrand_for_w_regular_part(
-        _, dy_u, exp_2_beta, j, q, eth_beta, eth_eth_beta,
-        eth_ethbar_beta, eth_ethbar_j, eth_ethbar_j_jbar, eth_j_jbar,
-        ethbar_dy_u, ethbar_ethbar_j, ethbar_j, eth_r_divided_by_r, k, r):
+def integrand_for_w_regular_part(_, dy_u, exp_2_beta, j, q, eth_beta,
+                                 eth_eth_beta, eth_ethbar_beta, eth_ethbar_j,
+                                 eth_ethbar_j_jbar, eth_j_jbar, ethbar_dy_u,
+                                 ethbar_ethbar_j, ethbar_j, eth_r_divided_by_r,
+                                 k, r):
     # script_av input is unused, needed only to match function signature from
     # the C++
     dy_ubar = np.conj(dy_u)
@@ -95,7 +96,7 @@ def integrand_for_w_regular_part(
 
 
 def integrand_for_h_pole_part(j, u, w, eth_u, ethbar_j, ethbar_jbar_u,
-                                      ethbar_u, k):
+                              ethbar_u, k):
     eth_ubar = np.conj(ethbar_u)
     eth_j_ubar = np.conj(ethbar_jbar_u)
     return - 1.0 / 2.0 * eth_j_ubar - j * eth_ubar - 1.0 / 2.0 * j * ethbar_u \
@@ -103,12 +104,11 @@ def integrand_for_h_pole_part(j, u, w, eth_u, ethbar_j, ethbar_jbar_u,
 
 
 def integrand_for_h_regular_part(
-        _0, _1, _2, dy_dy_j, dy_j, dy_w, exp_2_beta, j, q,
-        u, w, eth_beta, eth_eth_beta, eth_ethbar_beta, eth_ethbar_j,
-        eth_ethbar_j_jbar, eth_j_jbar, eth_q, eth_u, eth_ubar_dy_j,
-        ethbar_dy_j, ethbar_ethbar_j, ethbar_j, ethbar_jbar_dy_j,
-        ethbar_jbar_q_minus_2_eth_beta, ethbar_q, ethbar_u, du_r_divided_by_r,
-        eth_r_divided_by_r, k, one_minus_y, r):
+    _0, _1, _2, dy_dy_j, dy_j, dy_w, exp_2_beta, j, q, u, w, eth_beta,
+    eth_eth_beta, eth_ethbar_beta, eth_ethbar_j, eth_ethbar_j_jbar, eth_j_jbar,
+    eth_q, eth_u, eth_ubar_dy_j, ethbar_dy_j, ethbar_ethbar_j, ethbar_j,
+    ethbar_jbar_dy_j, ethbar_jbar_q_minus_2_eth_beta, ethbar_q, ethbar_u,
+    du_r_divided_by_r, eth_r_divided_by_r, k, one_minus_y, r):
     # script_aj, script_bj, and script_cj input is unused, needed only to match
     # function signature from the C++
     jbar = np.conj(j)
