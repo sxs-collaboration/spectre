@@ -340,7 +340,7 @@ class WorldtubeDataManager {
     for (const auto& libsharp_mode :
          Spectral::Swsh::cached_coefficients_metadata(l_max_)) {
       for (size_t i = 0; i < 3; ++i) {
-        for (size_t j = 0; j < 3; ++j) {
+        for (size_t j = i; j < 3; ++j) {
           tmpl::for_each<
               tmpl::list<Tags::detail::SpatialMetric,
                          Tags::detail::Dr<Tags::detail::SpatialMetric>,
