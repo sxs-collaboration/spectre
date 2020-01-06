@@ -304,7 +304,8 @@ license() {
               '.h5' \
               '.png' \
               '.svg' \
-              '.clang-format$' && \
+              '.clang-format$' \
+              '.style.yapf' && \
         ! staged_grep -q "Distributed under the MIT License" "$1"
 }
 license_report() {
