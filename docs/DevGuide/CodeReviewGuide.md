@@ -52,6 +52,10 @@ Stylistic Items:
   `or`, `and`, and `not` instead of `||`, `&&`, and `!`.
 * Use C-style Doxygen comments (`/*! ... */`) when using multi-line math,
   otherwise C-style and C++ style comments are accepted.
+* Use the `align` environment instead of `eqnarray`. See the
+  [texfaq](https://texfaq.org/FAQ-eqnarray) for an explanation as to why.
+* Multi-line equations must have a blank Doxygen line before and after the
+  equation.
 * When addressing requests on a PR, the commit message must start with
   `fixup` followed by a descriptive message.
 
