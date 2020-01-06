@@ -32,32 +32,30 @@ class RootFunction {
         physical_r_squared_(physical_r_squared),
         x_sq_(x_sq),
         y_sq_(y_sq),
-        z_sq_(z_sq) {}
+        z_sq_(z_sq) {
+    ASSERT(physical_r_squared_ > 0.0,
+           "The RootFunction for the inverse map of BulgedCube is only valid "
+           "for a radius greater than zero. The zero-radius case should be "
+           "handled explicitly without call the root finder.");
+  }
 
   double operator()(const double rho) const noexcept {
-    if (LIKELY(physical_r_squared_ != 0.0)) {
-      const double x_sq_over_r_sq = x_sq_ / physical_r_squared_;
-      const double y_sq_over_r_sq = y_sq_ / physical_r_squared_;
-      const double z_sq_over_r_sq = z_sq_ / physical_r_squared_;
-      return sqrt(physical_r_squared_) -
-             radius_ * rho *
-                 (1.0 / sqrt(3.0) +
-                  sphericity_ *
-                      (1.0 / sqrt(1.0 +
-                                  square(rho) *
-                                      (x_sq_over_r_sq + y_sq_over_r_sq)) +
-                       1.0 / sqrt(1.0 +
-                                  square(rho) *
-                                      (x_sq_over_r_sq + z_sq_over_r_sq)) +
-                       1.0 / sqrt(1.0 +
-                                  square(rho) *
-                                      (y_sq_over_r_sq + z_sq_over_r_sq)) -
-                       1.0 / sqrt(2.0 + square(rho) * x_sq_over_r_sq) -
-                       1.0 / sqrt(2.0 + square(rho) * y_sq_over_r_sq) -
-                       1.0 / sqrt(2.0 + square(rho) * z_sq_over_r_sq)));
-    } else {
-      return 0.0;
-    }
+    const double x_sq_over_r_sq = x_sq_ / physical_r_squared_;
+    const double y_sq_over_r_sq = y_sq_ / physical_r_squared_;
+    const double z_sq_over_r_sq = z_sq_ / physical_r_squared_;
+    return sqrt(physical_r_squared_) -
+           radius_ * rho *
+               (1.0 / sqrt(3.0) +
+                sphericity_ *
+                    (1.0 / sqrt(1.0 + square(rho) *
+                                          (x_sq_over_r_sq + y_sq_over_r_sq)) +
+                     1.0 / sqrt(1.0 + square(rho) *
+                                          (x_sq_over_r_sq + z_sq_over_r_sq)) +
+                     1.0 / sqrt(1.0 + square(rho) *
+                                          (y_sq_over_r_sq + z_sq_over_r_sq)) -
+                     1.0 / sqrt(2.0 + square(rho) * x_sq_over_r_sq) -
+                     1.0 / sqrt(2.0 + square(rho) * y_sq_over_r_sq) -
+                     1.0 / sqrt(2.0 + square(rho) * z_sq_over_r_sq)));
   }
   const double& get_r_sq() noexcept { return physical_r_squared_; }
 
@@ -73,20 +71,16 @@ class RootFunction {
 boost::optional<double> scaling_factor(RootFunction&& rootfunction) noexcept {
   const double& physical_r_squared = rootfunction.get_r_sq();
   try {
-    const double tol = 10.0 * std::numeric_limits<double>::epsilon();
+    constexpr double tol = 10.0 * std::numeric_limits<double>::epsilon();
+    // Use a small nonzero number since the inverse map is singular at r==0 and
+    // that case is handled separately.
+    constexpr double lower_bound = std::numeric_limits<double>::min();
+    // upper_bound = sqrt(3) + tol
+    constexpr double upper_bound = 1.7320508075688772 + tol;
     double rho =
         // NOLINTNEXTLINE(clang-analyzer-core)
-        RootFinder::toms748(rootfunction, 0.0, sqrt(3.0) + tol, tol, tol);
-    if (LIKELY(physical_r_squared != 0.0)) {
-      rho /= sqrt(physical_r_squared);
-    }
-    // There is no 'else' covering the case physical_r_squared==0.
-    // This is because for physical_r_squared==0, we know that we
-    // are at the origin x=y=z=0, and we know analytically that this
-    // map maps the origin to itself.  In the inverse map function,
-    // rho appears only in the combination rho*(x,y,z), so we don't
-    // care what we return for rho because x,y,z are zero.  So we
-    // don't touch rho here for the case physical_r_squared==0.
+        RootFinder::toms748(rootfunction, lower_bound, upper_bound, tol, tol);
+    rho /= sqrt(physical_r_squared);
     return rho;
   } catch (std::exception& exception) {
     return boost::none;
@@ -157,6 +151,15 @@ boost::optional<std::array<double, 3>> BulgedCube::inverse(
   const double y_sq = square(physical_y);
   const double z_sq = square(physical_z);
   const double physical_r_squared = x_sq + y_sq + z_sq;
+  // For physical_r_squared==0 we know that we are at the origin x=y=z=0, and we
+  // know analytically that this map maps the origin to itself. Handling the
+  // case r==0 case separately simplifies the root finding procedure for the
+  // scaling_factor.
+  if (UNLIKELY(physical_r_squared == 0.0)) {
+    return {{{0.0, 0.0, 0.0}}};
+  }
+
+  // We are not at the origin, find the scaling factor (does a root-find)
   const auto scaling_factor =
       // NOLINTNEXTLINE(clang-analyzer-core)
       ::scaling_factor(
