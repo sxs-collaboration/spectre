@@ -107,8 +107,11 @@ double SpecWorldtubeH5BufferUpdater::update_buffers_for_time(
     const gsl::not_null<size_t*> time_span_end, const double time,
     const size_t interpolator_length, const size_t buffer_depth) const
     noexcept {
+  if (*time_span_end >= time_buffer_.size()) {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
   if (*time_span_end > interpolator_length and
-      time_buffer_[*time_span_end - interpolator_length + 1] > time) {
+      time_buffer_[*time_span_end - interpolator_length] > time) {
     // the next time an update will be required
     return time_buffer_[*time_span_end - interpolator_length + 1];
   }
@@ -166,7 +169,8 @@ double SpecWorldtubeH5BufferUpdater::update_buffers_for_time(
     cce_data_file_.close_current_object();
   });
   // the next time an update will be required
-  return time_buffer_[*time_span_end - interpolator_length + 1];
+  return time_buffer_[std::min(*time_span_end - interpolator_length + 1,
+                               time_buffer_.size() - 1)];
 }
 
 std::unique_ptr<WorldtubeBufferUpdater>
