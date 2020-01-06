@@ -40,10 +40,9 @@ Stylistic Items:
   5. SpECTRE includes (in alphabetical order)
 * Template definitions in header files are separated from the declaration of
   the class by the following line, which contains exactly 64 equal signs
-
-``` cpp
-// ================================================================
-```
+  ``` cpp
+  // ================================================================
+  ```
 
 * File lists in CMake are alphabetical.
 * No blank lines surrounding Doxygen group comments
