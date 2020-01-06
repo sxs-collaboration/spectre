@@ -49,14 +49,21 @@ jobs:
 
           ./tools/CheckCommits.sh
 
-  # Run simple textual checks over files in the repository, e.g. checking for
-  # a license, line length limits etc. See `tools/CheckFiles.sh` for details.
-  check_files:
-    name: Files
+  # - Run simple textual checks over files in the repository, e.g. checking for
+  #   a license, line length limits etc. See `tools/CheckFiles.sh` for details.
+  # - Run format checker for python to make sure the code is formatted correctly
+  check_files_and_formatting:
+    name: File and formatting checks
     runs-on: ubuntu-latest
+    container:
+      image: sxscollaboration/spectrebuildenv:latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
+      - name: Check python formatting
+        run: |
+          cd $GITHUB_WORKSPACE
+          ./tools/CheckPythonFormatting.sh
       - name: Test script
         run: |
           cd $GITHUB_WORKSPACE
