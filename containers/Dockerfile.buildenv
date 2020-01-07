@@ -40,8 +40,9 @@ RUN apt-get update -y \
 
 # Add clang 4 and 8
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
+    && add-apt-repository 'deb http://apt.llvm.org/bionic/ llvm-toolchain-bionic-9 main' \
     && apt-get update -y \
-    && apt-get install -y clang-4.0 clang-8
+    && apt-get install -y clang-4.0 clang-8 clang-9
 
 # Update is needed to get libc++ correctly
 # Install jemalloc

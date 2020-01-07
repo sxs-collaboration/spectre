@@ -48,6 +48,11 @@ function(add_single_input_file_test INPUT_FILE EXECUTABLE CHECK_TYPE TIMEOUT)
       "Known checks are: execute")
   endif()
 
+  # Double timeout if address sanitizer is enabled.
+  if (ASAN)
+    math(EXPR TIMEOUT "2 * ${TIMEOUT}")
+  endif()
+
   set_tests_properties(
     "${CTEST_NAME}"
     PROPERTIES

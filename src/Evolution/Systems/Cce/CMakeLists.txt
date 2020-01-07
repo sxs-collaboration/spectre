@@ -19,4 +19,8 @@ target_link_libraries(
   ${LIBRARY}
   INTERFACE DataStructures
   INTERFACE ErrorHandling
+  INTERFACE IO
+  INTERFACE LinearOperators
+  INTERFACE LinearSolver
+  INTERFACE Spectral
   )
