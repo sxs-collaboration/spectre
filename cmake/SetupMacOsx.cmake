@@ -2,7 +2,7 @@
 # See LICENSE.txt for details.
 
 if(APPLE)
-  set(SPECTRE_MACOSX_MIN "10.7")
+  set(SPECTRE_MACOSX_MIN "10.9")
   if(DEFINED MACOSX_MIN)
     set(SPECTRE_MACOSX_MIN "${MACOSX_MIN}")
   endif()
