@@ -24,6 +24,7 @@
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
 #include "tests/Unit/PointwiseFunctions/AnalyticSolutions/GeneralRelativity/VerifyGrSolution.hpp"
+#include "tests/Unit/PointwiseFunctions/AnalyticSolutions/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/GeneralRelativity/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -167,6 +168,21 @@ void test_schwarzschild(const DataType& used_for_size) noexcept {
   CHECK_ITERABLE_APPROX(d_g, expected_d_g);
 }
 
+template <typename DataType>
+void test_tag_retrieval(const DataType& used_for_size) noexcept {
+  // Parameters for KerrSchild solution
+  const double mass = 1.234;
+  const std::array<double, 3> spin{{0.1, -0.2, 0.3}};
+  const std::array<double, 3> center{{1.0, 2.0, 3.0}};
+  const auto x = spatial_coords(used_for_size);
+  const double t = 1.3;
+
+  // Evaluate solution
+  const gr::Solutions::KerrSchild solution(mass, spin, center);
+  TestHelpers::AnalyticSolutions::test_tag_retrieval(
+      solution, x, t, gr::Solutions::KerrSchild::tags<DataType>{});
+}
+
 void test_einstein_solution() noexcept {
   // Parameters
   //   ...for KerrSchild solution
@@ -215,8 +231,10 @@ void test_construct_from_options() {
 
 SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Gr.KerrSchild",
                   "[PointwiseFunctions][Unit]") {
-  test_schwarzschild<DataVector>(DataVector{0.0, 0.0, 0.0});
-  test_schwarzschild<double>(0.0);
+  test_schwarzschild(DataVector(5));
+  test_schwarzschild(0.0);
+  test_tag_retrieval(DataVector(5));
+  test_tag_retrieval(0.0);
   test_einstein_solution();
   test_copy_and_move();
   test_serialize();
