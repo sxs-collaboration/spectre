@@ -400,4 +400,44 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Strain>> {
       const Scalar<SpinWeighted<ComplexDataVector, 0>>& boundary_r,
       size_t l_max, size_t number_of_radial_points) noexcept;
 };
+
+/*!
+ * \brief Assign the time derivative of the asymptotically inertial time
+ * coordinate.
+ *
+ * \details The asymptotically inertial time coordinate \f$\mathring u\f$ obeys
+ * the differential equation:
+ *
+ * \f{align*}{
+ * \partial_u \mathring u = e^{2 \beta}.
+ * \f}
+ */
+template <>
+struct CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>> {
+  using return_tags = tmpl::list<::Tags::dt<Tags::InertialRetardedTime>>;
+  using argument_tags = tmpl::list<Tags::Exp2Beta>;
+
+  static void apply(
+      gsl::not_null<Scalar<DataVector>*> dt_inertial_time,
+      const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta) noexcept;
+};
+
+/// \cond
+template <typename Tag>
+struct InitializeScriPlusValue;
+/// \endcond
+
+/// Initialize the inertial retarded time to the value provided in the mutator
+/// arguments.
+template <>
+struct InitializeScriPlusValue<Tags::InertialRetardedTime> {
+  using argument_tags = tmpl::list<>;
+  using return_tags = tmpl::list<Tags::InertialRetardedTime>;
+
+  static void apply(const gsl::not_null<Scalar<DataVector>*> inertial_time,
+                    const double initial_time = 0.0) noexcept {
+    // this is arbitrary, and has to do with choosing a BMS frame.
+    get(*inertial_time) = initial_time;
+  }
+};
 }  // namespace Cce

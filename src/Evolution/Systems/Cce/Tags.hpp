@@ -155,6 +155,18 @@ struct CauchyCartesianCoords : db::SimpleTag {
   using type = tnsr::i<DataVector, 3>;
 };
 
+/// The asymptotically inertial retarded time in terms of the evolution time
+/// variable
+struct InertialRetardedTime : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/// Complex storage form for the asymptotically inertial retarded time, for
+/// taking spin-weighted derivatives
+struct ComplexInertialRetardedTime : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+};
+
 // prefix tags associated with the integrands which are used as input to solvers
 // for the CCE equations
 

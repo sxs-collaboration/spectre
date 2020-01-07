@@ -260,6 +260,25 @@ struct PreSwshDerivatives<Tags::Exp2Beta> {
   }
 };
 
+/// Copies the values of the inertial retarded time into a spin-weighted
+/// container so that spin-weighted derivatives can be taken
+template <>
+struct PreSwshDerivatives<Tags::ComplexInertialRetardedTime> {
+  using pre_swsh_derivative_tags = tmpl::list<>;
+  using swsh_derivative_tags = tmpl::list<>;
+  using integrand_tags = tmpl::list<>;
+
+  using return_tags = tmpl::list<Tags::ComplexInertialRetardedTime>;
+  using argument_tags = tmpl::list<Tags::InertialRetardedTime>;
+  static void apply(
+      const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+      complex_inertial_retarded_time,
+      const Scalar<DataVector>& inertial_retarded_time) noexcept {
+    get(*complex_inertial_retarded_time).data() =
+        std::complex<double>(1.0, 0.0) * get(inertial_retarded_time);
+  }
+};
+
 /// Compute the derivative of the quantity represented by `Tag` with respect to
 /// the numerical radial coordinate \f$y\f$.
 template <typename Tag>

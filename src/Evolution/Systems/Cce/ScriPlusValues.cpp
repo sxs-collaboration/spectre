@@ -361,4 +361,14 @@ void CalculateScriPlusValue<Tags::ScriPlus<Tags::Strain>>::apply(
   get(*strain) =
       conj(-2.0 * get(boundary_r) * dy_j_at_scri + get(eth_eth_retarded_time));
 }
+
+void CalculateScriPlusValue<::Tags::dt<Tags::InertialRetardedTime>>::apply(
+    const gsl::not_null<Scalar<DataVector>*> dt_inertial_time,
+    const Scalar<SpinWeighted<ComplexDataVector, 0>>& exp_2_beta) noexcept {
+  const SpinWeighted<ComplexDataVector, 0> exp_2_beta_at_scri;
+  make_const_view(make_not_null(&exp_2_beta_at_scri), get(exp_2_beta),
+                  get(exp_2_beta).size() - get(*dt_inertial_time).size(),
+                  get(*dt_inertial_time).size());
+  get(*dt_inertial_time) = real(exp_2_beta_at_scri.data());
+}
 }  // namespace Cce
