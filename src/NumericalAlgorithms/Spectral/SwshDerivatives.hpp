@@ -451,8 +451,8 @@ template <
     typename DerivativeKindList,
     ComplexRepresentation Representation = ComplexRepresentation::Interleaved,
     typename... ArgumentTypes>
-void angular_derivatives(const size_t l_max,
-                         const size_t number_of_radial_points,
+void angular_derivatives(const size_t l_max,                    // NOLINT
+                         const size_t number_of_radial_points,  // NOLINT
                          const ArgumentTypes&... arguments) noexcept {
   static_assert(
       tmpl::size<DerivativeKindList>::value * 2 == sizeof...(ArgumentTypes) or
