@@ -264,9 +264,7 @@ db::const_item_type<Tag> time_derivative(const Solution& solution,
     *it = numerical_derivative(
         [&index, &solution, &x](const std::array<double, 1>& t_array) noexcept {
           return std::array<double, 1>{
-              {get<Tag>(solution.variables(
-                            x, t_array[0],
-                            typename Solution::template tags<double>{}))
+              {get<Tag>(solution.variables(x, t_array[0], tmpl::list<Tag>{}))
                    .get(index)}};
         },
         std::array<double, 1>{{time}}, 0, dt)[0];
@@ -288,9 +286,7 @@ db::const_item_type<deriv<Tag>> space_derivative(const Solution& solution,
           auto position = x;
           position.get(index[0]) += offset[0];
           return std::array<double, 1>{
-              {get<Tag>(solution.variables(
-                            position, time,
-                            typename Solution::template tags<double>{}))
+              {get<Tag>(solution.variables(position, time, tmpl::list<Tag>{}))
                    .get(all_but_specified_element_of(index, 0))}};
         },
                              std::array<double, 1>{{0.0}}, 0, dx)[0];
@@ -316,11 +312,15 @@ void verify_consistency(const Solution& solution, const double time,
       gr::Tags::InverseSpatialMetric<3, Frame::Inertial, double>;
   using ExtrinsicCurvature =
       gr::Tags::ExtrinsicCurvature<3, Frame::Inertial, double>;
+  using tags =
+      tmpl::list<SpatialMetric, SqrtDetSpatialMetric, InverseSpatialMetric,
+                 ExtrinsicCurvature, Lapse, Shift, detail::deriv<Shift>,
+                 Tags::dt<SpatialMetric>, detail::deriv<SpatialMetric>,
+                 Tags::dt<Lapse>, Tags::dt<Shift>, detail::deriv<Lapse>>;
 
   auto derivative_approx = approx.epsilon(derivative_tolerance);
 
-  const auto vars = solution.variables(
-      position, time, typename Solution::template tags<double>{});
+  const auto vars = solution.variables(position, time, tags{});
 
   const auto numerical_metric_det_and_inverse =
       determinant_and_inverse(get<SpatialMetric>(vars));
