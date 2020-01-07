@@ -128,7 +128,31 @@ previous section. One can also use (within a Doxygen comment) the form
 \endverbatim
 
 to put the expression on its own line. We also encourage you to use the latex
-env `align` for formatting these multiple-line equations.
+env `align` for formatting these multiple-line equations. Please prefer the
+`align` environment over the `eqnarray` environment. See the
+[texfaq](https://texfaq.org/FAQ-eqnarray) for an explanation as to why. When
+using out-of-line equations it is important to have a blank Doxygen line above
+and below the equation so that ClangFormat does not merge the equation with
+other lines. For example,
+
+\verbatim
+ * word word word
+ *
+ * \f{align}{
+ *   a &= b \\
+ *   c &= d
+ * \f}
+ *
+ * word word word
+\endverbatim
+
+prevents ClangFormat from changing the code to
+
+\verbatim
+word word word \f{align}{ a &= b \\ c &= d \f}
+\endverbatim
+
+which may not render properly and makes the source code harder to read.
 
 ## Cite publications in your documentation {#writing_dox_citations}
 

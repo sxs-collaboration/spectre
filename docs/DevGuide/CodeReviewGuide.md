@@ -40,10 +40,9 @@ Stylistic Items:
   5. SpECTRE includes (in alphabetical order)
 * Template definitions in header files are separated from the declaration of
   the class by the following line, which contains exactly 64 equal signs
-
-``` cpp
-// ================================================================
-```
+  ``` cpp
+  // ================================================================
+  ```
 
 * File lists in CMake are alphabetical.
 * No blank lines surrounding Doxygen group comments
@@ -53,6 +52,10 @@ Stylistic Items:
   `or`, `and`, and `not` instead of `||`, `&&`, and `!`.
 * Use C-style Doxygen comments (`/*! ... */`) when using multi-line math,
   otherwise C-style and C++ style comments are accepted.
+* Use the `align` environment instead of `eqnarray`. See the
+  [texfaq](https://texfaq.org/FAQ-eqnarray) for an explanation as to why.
+* Multi-line equations must have a blank Doxygen line before and after the
+  equation.
 * When addressing requests on a PR, the commit message must start with
   `fixup` followed by a descriptive message.
 
