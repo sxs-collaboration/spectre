@@ -95,7 +95,7 @@ struct ElementArray {
               dg::Actions::InitializeDomain<Dim>,
               Initialization::Actions::AddComputeTags<tmpl::list<
                   elliptic::Tags::FirstOrderFluxesCompute<
-                      Dim, typename metavariables::system>,
+                      typename metavariables::system>,
                   ::Tags::DivCompute<fluxes_tag<Dim>, inv_jacobian_tag<Dim>>>>,
               dg::Actions::InitializeInterfaces<
                   typename Metavariables::system,

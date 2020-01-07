@@ -43,6 +43,7 @@ struct Fluxes {
   static void apply(
       const gsl::not_null<tnsr::Ij<DataVector, Dim>*> flux_for_aux_field,
       const double& an_argument, const Scalar<DataVector>& field) {
+    std::fill(flux_for_aux_field->begin(), flux_for_aux_field->end(), 0.);
     for (size_t d = 0; d < Dim; d++) {
       flux_for_aux_field->get(d, d) = get(field) * an_argument;
     }
@@ -60,6 +61,7 @@ struct Sources {
 
 template <size_t Dim>
 struct System {
+  static constexpr size_t volume_dim = Dim;
   using variables_tag =
       Tags::Variables<tmpl::list<FieldTag, AuxiliaryFieldTag<Dim>>>;
   using primal_variables = tmpl::list<FieldTag>;
@@ -75,7 +77,7 @@ void test_first_order_compute_tags() {
   using FluxesComputer = typename system::fluxes;
   using fluxes_computer_tag = elliptic::Tags::FluxesComputer<FluxesComputer>;
   using first_order_fluxes_compute_tag =
-      elliptic::Tags::FirstOrderFluxesCompute<Dim, system>;
+      elliptic::Tags::FirstOrderFluxesCompute<system>;
   using first_order_sources_compute_tag =
       elliptic::Tags::FirstOrderSourcesCompute<system>;
 

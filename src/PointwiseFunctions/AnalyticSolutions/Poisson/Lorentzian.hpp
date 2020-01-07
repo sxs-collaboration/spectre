@@ -8,6 +8,7 @@
 #include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep
 #include "DataStructures/Tensor/Tensor.hpp"     // IWYU pragma: keep
 #include "Elliptic/Systems/Poisson/Tags.hpp"    // IWYU pragma: keep
+#include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "Options/Options.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -57,6 +58,13 @@ class Lorentzian {
   static auto variables(const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
                         tmpl::list<Tags::Field> /*meta*/) noexcept
       -> tuples::TaggedTuple<Tags::Field>;
+
+  static auto variables(
+      const tnsr::I<DataVector, Dim, Frame::Inertial>& x,
+      tmpl::list<::Tags::deriv<Tags::Field, tmpl::size_t<Dim>,
+                               Frame::Inertial>> /*meta*/) noexcept
+      -> tuples::TaggedTuple<
+          ::Tags::deriv<Tags::Field, tmpl::size_t<Dim>, Frame::Inertial>>;
 
   static auto variables(
       const tnsr::I<DataVector, Dim, Frame::Inertial>& x,

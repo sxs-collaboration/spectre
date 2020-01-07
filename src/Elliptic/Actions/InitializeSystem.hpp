@@ -93,8 +93,7 @@ struct InitializeSystem {
         ::Tags::InverseJacobian<::Tags::ElementMap<Dim>,
                                 ::Tags::Coordinates<Dim, Frame::Logical>>;
 
-    using fluxes_compute_tag =
-        elliptic::Tags::FirstOrderFluxesCompute<Dim, system>;
+    using fluxes_compute_tag = elliptic::Tags::FirstOrderFluxesCompute<system>;
     using sources_compute_tag =
         elliptic::Tags::FirstOrderSourcesCompute<system>;
 
