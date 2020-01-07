@@ -5,6 +5,7 @@
 
 #include "Options/Options.hpp"
 #include "Parallel/Serialize.hpp"
+#include "PointwiseFunctions/AnalyticData/Tags.hpp"
 
 namespace OptionTags {
 /// \ingroup OptionGroupsGroup
@@ -37,7 +38,7 @@ struct BoundaryCondition {
 namespace Tags {
 /// Can be used to retrieve the analytic solution from the cache without having
 /// to know the template parameters of AnalyticSolution.
-struct AnalyticSolutionBase : db::BaseTag {};
+struct AnalyticSolutionBase : AnalyticSolutionOrData {};
 
 /// Base tag with which to retrieve the BoundaryConditionType
 struct BoundaryConditionBase : db::BaseTag {};

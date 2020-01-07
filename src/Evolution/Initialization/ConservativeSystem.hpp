@@ -5,30 +5,37 @@
 
 #include <cstddef>
 #include <tuple>
-#include <utility>
+#include <utility>  // IWYU pragma: keep  // for move
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "DataStructures/Variables.hpp"
-#include "Domain/Mesh.hpp"
-#include "Domain/Tags.hpp"
-#include "Evolution/Initialization/Tags.hpp"
-#include "Evolution/TypeTraits.hpp"
-#include "NumericalAlgorithms/LinearOperators/Divergence.tpp"
+#include "ErrorHandling/Error.hpp"
+#include "Evolution/Initialization/InitialData.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
-#include "PointwiseFunctions/AnalyticData/Tags.hpp"
-#include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
+#include "Utilities/Gsl.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
-#include "Utilities/TypeTraits.hpp"
 
 /// \cond
 namespace Frame {
 struct Inertial;
 }  // namespace Frame
+namespace Initialization {
+namespace Tags {
+struct InitialTime;
+}  // namespace Tags
+}  // namespace Initialization
+namespace Tags {
+struct AnalyticSolutionOrData;
+template <size_t VolumeDim, typename Frame>
+struct Coordinates;
+template <size_t VolumeDim>
+struct Mesh;
+}  // namespace Tags
+// IWYU pragma: no_forward_declare db::DataBox
 /// \endcond
 
 namespace Initialization {
@@ -131,34 +138,13 @@ struct ConservativeSystem {
         db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
 
     // Set initial data from analytic solution
+    const auto& solution_or_data =
+        Parallel::get<::Tags::AnalyticSolutionOrData>(cache);
     PrimitiveVars primitive_vars{num_grid_points};
-    auto equation_of_state = make_overloader(
-        [ initial_time, &
-          inertial_coords ](std::true_type /*is_analytic_solution*/,
-                            const gsl::not_null<PrimitiveVars*> prim_vars,
-                            const auto& local_cache) noexcept {
-          using solution_tag = ::Tags::AnalyticSolutionBase;
-          prim_vars->assign_subset(
-              Parallel::get<solution_tag>(local_cache)
-                  .variables(
-                      inertial_coords, initial_time,
-                      typename Metavariables::analytic_variables_tags{}));
-          return Parallel::get<solution_tag>(local_cache).equation_of_state();
-        },
-        [&inertial_coords](std::false_type /*is_analytic_solution*/,
-                           const gsl::not_null<PrimitiveVars*> prim_vars,
-                           const auto& local_cache) noexcept {
-          using analytic_data_tag = ::Tags::AnalyticDataBase;
-          prim_vars->assign_subset(
-              Parallel::get<analytic_data_tag>(local_cache)
-                  .variables(
-                      inertial_coords,
-                      typename Metavariables::analytic_variables_tags{}));
-          return Parallel::get<analytic_data_tag>(local_cache)
-              .equation_of_state();
-        })(
-        evolution::is_analytic_solution<typename Metavariables::initial_data>{},
-        make_not_null(&primitive_vars), cache);
+    primitive_vars.assign_subset(evolution::initial_data(
+        solution_or_data, inertial_coords, initial_time,
+        typename Metavariables::analytic_variables_tags{}));
+    auto equation_of_state = solution_or_data.equation_of_state();
 
     return Initialization::merge_into_databox<ConservativeSystem, simple_tags,
                                               compute_tags>(
@@ -166,33 +152,33 @@ struct ConservativeSystem {
         std::move(equation_of_state));
   }
 
-   template <typename DbTagsList, typename Metavariables,
-             Requires<not Metavariables::system::
-                          has_primitive_and_conservative_vars> = nullptr>
-   static auto initialize_vars(
-       db::DataBox<DbTagsList>&& box,
-       const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-     using system = typename Metavariables::system;
-     static constexpr size_t dim = system::volume_dim;
-     using variables_tag = typename system::variables_tag;
+  template <
+      typename DbTagsList, typename Metavariables,
+      Requires<not Metavariables::system::has_primitive_and_conservative_vars> =
+          nullptr>
+  static auto initialize_vars(
+      db::DataBox<DbTagsList>&& box,
+      const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
+    using system = typename Metavariables::system;
+    static constexpr size_t dim = system::volume_dim;
+    using variables_tag = typename system::variables_tag;
 
-     const double initial_time =
-         db::get<Initialization::Tags::InitialTime>(box);
-     const auto& inertial_coords =
-         db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
+    const double initial_time = db::get<Initialization::Tags::InitialTime>(box);
+    const auto& inertial_coords =
+        db::get<::Tags::Coordinates<dim, Frame::Inertial>>(box);
 
-     // Set initial data from analytic solution
-     using Vars = typename variables_tag::type;
-     using solution_tag = ::Tags::AnalyticSolutionBase;
-     db::mutate<variables_tag>(
-         make_not_null(&box), [&cache, &inertial_coords, initial_time ](
-                                  const gsl::not_null<Vars*> vars) noexcept {
-           vars->assign_subset(Parallel::get<solution_tag>(cache).variables(
-               inertial_coords, initial_time, typename Vars::tags_list{}));
-         });
+    // Set initial data from analytic solution
+    using Vars = typename variables_tag::type;
+    db::mutate<variables_tag>(
+        make_not_null(&box), [&cache, &inertial_coords, initial_time ](
+                                 const gsl::not_null<Vars*> vars) noexcept {
+          vars->assign_subset(evolution::initial_data(
+              Parallel::get<::Tags::AnalyticSolutionOrData>(cache),
+              inertial_coords, initial_time, typename Vars::tags_list{}));
+        });
 
-     return std::move(box);
-   }
+    return std::move(box);
+  }
 };
 }  // namespace Actions
 }  // namespace Initialization
