@@ -308,4 +308,39 @@ using all_pre_swsh_derivative_tags =
         tmpl::bind<tmpl::list,
                    pre_swsh_derivative_tags_to_compute_for<tmpl::_1>, tmpl::_1,
                    tmpl::bind<Tags::Dy, tmpl::_1>>>>>;
+
+/// Typelist of steps for `PreSwshDerivatives` mutations needed for scri+
+/// computations
+using all_pre_swsh_derivative_tags_for_scri =
+    tmpl::list<Tags::Dy<Tags::Du<Tags::BondiJ>>,
+               Tags::Dy<Tags::Dy<Tags::BondiW>>,
+               Tags::Dy<Tags::Dy<Tags::Dy<Tags::BondiJ>>>,
+               Tags::ComplexInertialRetardedTime>;
+
+/// Typelist of steps for `SwshDerivatives` mutations called on volume
+/// quantities needed for scri+ computations
+using all_swsh_derivative_tags_for_scri = tmpl::list<
+    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiU>,
+                                     Spectral::Swsh::Tags::Eth>,
+    Spectral::Swsh::Tags::Derivative<
+        Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                         Spectral::Swsh::Tags::EthEthbar>,
+        Spectral::Swsh::Tags::Ethbar>,
+    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::Du<Tags::BondiJ>>,
+                                     Spectral::Swsh::Tags::Ethbar>,
+    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::Dy<Tags::BondiU>>,
+                                     Spectral::Swsh::Tags::Ethbar>,
+    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiQ>,
+                                     Spectral::Swsh::Tags::Ethbar>,
+    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiU>,
+                                     Spectral::Swsh::Tags::Eth>,
+    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::Dy<Tags::BondiBeta>>,
+                                     Spectral::Swsh::Tags::Eth>>;
+
+/// Typelist of steps for `SwshDerivatives` mutations called on boundary
+/// (angular grid only) quantities needed for scri+ computations
+using all_boundary_swsh_derivative_tags_for_scri =
+    tmpl::list<Spectral::Swsh::Tags::Derivative<
+        Tags::ComplexInertialRetardedTime, Spectral::Swsh::Tags::EthEth>>;
+
 }  // namespace Cce
