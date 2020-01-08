@@ -56,7 +56,7 @@ TimeDelta get_initial_time_step(
 namespace Initialization {
 namespace Actions {
 /// \ingroup InitializationGroup
-/// \brief Initialize items related to time-evolution of the system
+/// \brief Initialize items related to time, such as the time step
 ///
 /// Since we have not started the evolution yet, we initialize the state
 /// _before_ the initial time. So `Tags::TimeStepId` is undefined at this point,
@@ -67,60 +67,37 @@ namespace Actions {
 ///   * Tags::TimeStepId
 ///   * `Tags::Next<Tags::TimeStepId>`
 ///   * Tags::TimeStep
-///   * `db::add_tag_prefix<Tags::dt, variables_tag>`
-///   * `Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>`
 ///   * Tags::Time
-///   * Tags::ComputeDeriv  (for non-conservative systems)
-///   * Tags::ComputeDiv (for conservative systems)
 /// - Removes: nothing
 /// - Modifies: nothing
 ///
 /// \note HistoryEvolvedVariables is allocated, but needs to be initialized
 template <typename Metavariables>
-struct Evolution {
+struct TimeAndTimeStep {
   using initialization_tags =
       tmpl::list<Tags::InitialTime, Tags::InitialTimeDelta,
                  Tags::InitialSlabSize<Metavariables::local_time_stepping>>;
 
-  static constexpr size_t dim = Metavariables::volume_dim;
-  using variables_tag = typename Metavariables::system::variables_tag;
-  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+  template <
+      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+      typename ActionList, typename ParallelComponent,
+      Requires<tmpl::list_contains_v<
+                   typename db::DataBox<DbTagsList>::simple_item_tags,
+                   Initialization::Tags::InitialTime> and
 
-  template <typename System, bool IsInFluxConservativeForm =
-                                 System::is_in_flux_conservative_form>
-  struct ComputeTags {
-    using type = db::AddComputeTags<
-        ::Tags::SubstepTimeCompute,
-        ::Tags::DerivCompute<
-            variables_tag,
-            ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
-                                    ::Tags::Coordinates<dim, Frame::Logical>>,
-            typename System::gradients_tags>>;
-  };
+               tmpl::list_contains_v<
+                   typename db::DataBox<DbTagsList>::simple_item_tags,
+                   Initialization::Tags::InitialTimeDelta> and
 
-  template <typename System>
-  struct ComputeTags<System, true> {
-    using type = db::AddComputeTags<
-        ::Tags::SubstepTimeCompute,
-        ::Tags::DivCompute<
-            db::add_tag_prefix<::Tags::Flux, variables_tag, tmpl::size_t<dim>,
-                               Frame::Inertial>,
-            ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
-                                    ::Tags::Coordinates<dim, Frame::Logical>>>>;
-  };
-
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<tmpl::list_contains_v<
-                typename db::DataBox<DbTagsList>::simple_item_tags,
-                Initialization::Tags::InitialTime>> = nullptr>
+               tmpl::list_contains_v<
+                   typename db::DataBox<DbTagsList>::simple_item_tags,
+                   Tags::InitialSlabSize<Metavariables::local_time_stepping>>> =
+          nullptr>
   static auto apply(db::DataBox<DbTagsList>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/, ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    using DtVars = typename dt_variables_tag::type;
-
     const double initial_time_value = db::get<Tags::InitialTime>(box);
     const double initial_dt_value = db::get<Tags::InitialTimeDelta>(box);
     const double initial_slab_size =
@@ -137,14 +114,6 @@ struct Evolution {
     const TimeDelta initial_dt = Evolution_detail::get_initial_time_step(
         initial_time, initial_dt_value, cache);
 
-    const size_t num_grid_points =
-        db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
-
-    // Will be overwritten before use
-    DtVars dt_vars{num_grid_points};
-    typename ::Tags::HistoryEvolvedVariables<variables_tag,
-                                             dt_variables_tag>::type history;
-
     // The slab number is increased in the self-start phase each
     // time one order of accuracy is obtained, and the evolution
     // proper starts with slab 0.
@@ -155,29 +124,37 @@ struct Evolution {
         -static_cast<int64_t>(time_stepper.number_of_past_steps()),
         initial_time);
 
-    using compute_tags =
-        typename ComputeTags<typename Metavariables::system>::type;
+    using compute_tags = db::AddComputeTags<::Tags::SubstepTimeCompute>;
+
     return std::make_tuple(
-        merge_into_databox<
-            Evolution,
-            db::AddSimpleTags<::Tags::TimeStepId,
-                              ::Tags::Next<::Tags::TimeStepId>, ::Tags::Time,
-                              ::Tags::TimeStep, dt_variables_tag,
-                              ::Tags::HistoryEvolvedVariables<
-                                  variables_tag, dt_variables_tag>>,
-            compute_tags>(
+        merge_into_databox<TimeAndTimeStep,
+                           db::AddSimpleTags<::Tags::TimeStepId,
+                                             ::Tags::Next<::Tags::TimeStepId>,
+                                             ::Tags::Time, ::Tags::TimeStep>,
+                           compute_tags>(
             std::move(box),
             // At this point we have not started evolution yet, so the current
             // time is undefined and _next_ is the initial time.
             TimeStepId{}, time_id, std::numeric_limits<double>::signaling_NaN(),
-            initial_dt, std::move(dt_vars), std::move(history)));
+            initial_dt));
   }
 
-  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                typename db::DataBox<DbTagsList>::simple_item_tags,
-                Initialization::Tags::InitialTime>> = nullptr>
+  template <
+      typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+      typename ActionList, typename ParallelComponent,
+      Requires<
+          not(tmpl::list_contains_v<
+                  typename db::DataBox<DbTagsList>::simple_item_tags,
+                  Initialization::Tags::InitialTime> and
+
+              tmpl::list_contains_v<
+                  typename db::DataBox<DbTagsList>::simple_item_tags,
+                  Initialization::Tags::InitialTimeDelta> and
+
+              tmpl::list_contains_v<
+                  typename db::DataBox<DbTagsList>::simple_item_tags,
+                  Tags::InitialSlabSize<Metavariables::local_time_stepping>>)> =
+          nullptr>
   static std::tuple<db::DataBox<DbTagsList>&&> apply(
       db::DataBox<DbTagsList>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -185,8 +162,107 @@ struct Evolution {
       const ArrayIndex& /*array_index*/, ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     ERROR(
-        "Could not find dependency 'Initialization::Tags::InitialTime' in "
+        "Could not find dependency 'Initialization::Tags::InitialTime', "
+        "'Initialization::Tags::InitialTimeDelta', or "
+        "'Tags::InitialSlabSize<Metavariables::local_time_stepping>' in "
         "DataBox.");
+  }
+};
+
+/// \ingroup InitializationGroup
+/// \brief Initialize time-stepper items
+///
+/// DataBox changes:
+/// - Adds:
+///   * `db::add_tag_prefix<Tags::dt, variables_tag>`
+///   * `Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>`
+///   * Tags::ComputeDeriv  (for non-conservative systems)
+///   * Tags::ComputeDiv (for conservative systems)
+/// - Removes: nothing
+/// - Modifies: nothing
+///
+/// \note HistoryEvolvedVariables is allocated, but needs to be initialized
+template <typename Metavariables>
+struct TimeStepperHistory {
+  using initialization_tags = tmpl::list<>;
+
+  static constexpr size_t dim = Metavariables::volume_dim;
+  using variables_tag = typename Metavariables::system::variables_tag;
+  using dt_variables_tag = db::add_tag_prefix<::Tags::dt, variables_tag>;
+
+  template <typename System, bool IsInFluxConservativeForm =
+                                 System::is_in_flux_conservative_form>
+  struct ComputeTags {
+    using type = db::AddComputeTags<::Tags::DerivCompute<
+        variables_tag,
+        ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
+                                ::Tags::Coordinates<dim, Frame::Logical>>,
+        typename System::gradients_tags>>;
+  };
+
+  template <typename System>
+  struct ComputeTags<System, true> {
+    using type = db::AddComputeTags<::Tags::DivCompute<
+        db::add_tag_prefix<::Tags::Flux, variables_tag, tmpl::size_t<dim>,
+                           Frame::Inertial>,
+        ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
+                                ::Tags::Coordinates<dim, Frame::Logical>>>>;
+  };
+
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent,
+            Requires<tmpl::list_contains_v<
+                         typename db::DataBox<DbTagsList>::simple_item_tags,
+                         ::Tags::Mesh<dim>> and
+
+                     tmpl::list_contains_v<
+                         typename db::DataBox<DbTagsList>::simple_item_tags,
+                         variables_tag>> = nullptr>
+  static auto apply(db::DataBox<DbTagsList>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    using DtVars = typename dt_variables_tag::type;
+
+    const size_t num_grid_points =
+        db::get<::Tags::Mesh<dim>>(box).number_of_grid_points();
+
+    // Will be overwritten before use
+    DtVars dt_vars{num_grid_points};
+    typename ::Tags::HistoryEvolvedVariables<variables_tag,
+                                             dt_variables_tag>::type history;
+
+    using compute_tags =
+        typename ComputeTags<typename Metavariables::system>::type;
+    return std::make_tuple(
+        merge_into_databox<
+            TimeStepperHistory,
+            db::AddSimpleTags<dt_variables_tag,
+                              ::Tags::HistoryEvolvedVariables<
+                                  variables_tag, dt_variables_tag>>,
+            compute_tags>(std::move(box), std::move(dt_vars),
+                          std::move(history)));
+  }
+
+  template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,
+            typename ActionList, typename ParallelComponent,
+            Requires<not(tmpl::list_contains_v<
+                             typename db::DataBox<DbTagsList>::simple_item_tags,
+                             ::Tags::Mesh<dim>> and
+
+                         tmpl::list_contains_v<
+                             typename db::DataBox<DbTagsList>::simple_item_tags,
+                             variables_tag>)> = nullptr>
+  static std::tuple<db::DataBox<DbTagsList>&&> apply(
+      db::DataBox<DbTagsList>& /*box*/,
+      const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
+      const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+      const ParallelComponent* const /*meta*/) noexcept {
+    ERROR(
+        "Could not find dependency '::Tags::Mesh<dim>' or "
+        "'Metavariables::system::variables_tag' in DataBox.");
   }
 };
 }  // namespace Actions

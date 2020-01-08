@@ -177,14 +177,15 @@ struct EvolutionMetavars {
   };
 
   using initialization_actions = tmpl::list<
+      Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       dg::Actions::InitializeDomain<system::volume_dim>,
       Initialization::Actions::NonconservativeSystem,
+      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       dg::Actions::InitializeInterfaces<
           system,
           dg::Initialization::slice_tags_to_face<
               typename system::variables_tag>,
           dg::Initialization::slice_tags_to_exterior<>>,
-      Initialization::Actions::Evolution<EvolutionMetavars>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<evolution::Tags::AnalyticCompute<
               Dim, initial_data_tag, analytic_solution_fields>>>,
