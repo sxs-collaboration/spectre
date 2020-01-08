@@ -37,4 +37,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
           Cce::WorldtubeDataManager{});
   CHECK(db::get<Cce::Tags::H5WorldtubeBoundaryDataManager>(box).get_l_max() ==
         0);
+
+  CHECK(db::tag_name<Cce::Tags::TimeIntegral<SomeTag>>() ==
+        "TimeIntegral(SomeTag)");
+  CHECK(db::tag_name<Cce::Tags::ScriPlus<SomeTag>>() == "ScriPlus(SomeTag)");
+  CHECK(db::tag_name<Cce::Tags::ScriPlusFactor<SomeTag>>() ==
+        "ScriPlusFactor(SomeTag)");
 }

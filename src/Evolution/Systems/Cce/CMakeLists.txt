@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   ReadBoundaryDataH5.cpp
   ReducedWorldtubeModeRecorder.cpp
   SpecBoundaryData.cpp
+  ScriPlusValues.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
