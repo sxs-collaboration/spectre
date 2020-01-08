@@ -25,6 +25,8 @@ include(CheckCompilerVersion)
 include(ProhibitInSourceBuild)
 include(SetupNinjaColors)
 include(SetOutputDirectory)
+# We need yapf before we set up the git hooks
+include(SetupYapf)
 include(SetupGitHooks)
 include(SetBuildType)
 include(SetupPic)

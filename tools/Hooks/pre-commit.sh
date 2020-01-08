@@ -35,6 +35,30 @@ printf '%s\0' "${commit_files[@]}" | run_checks "${standard_checks[@]}"
 # Use git-clang-format to check for any suspicious formatting of code.
 @PYTHON_EXECUTABLE@ @CMAKE_SOURCE_DIR@/.git/hooks/ClangFormat.py
 
+###############################################################################
+# Use yapf to check python file formatting, only if it is installed.
+if command -v @YAPF_EXECUTABLE@ >/dev/null 2>&1; then
+    python_files=()
+
+    for commit_file in ${commit_files[@]}
+    do
+        if [[ $commit_file =~ .*\.py$ ]]; then
+            python_files+=("${commit_file}")
+        fi
+    done
+
+    if [ ${#python_files[@]} -ne 0 ]; then
+        @YAPF_EXECUTABLE@ -q ${python_files[@]}
+        if [ $? -ne 0 ]; then
+            found_error=1
+            printf "Found python formatting errors. Please run the script\n"
+            printf "'tools/FormatPythonCode.sh' to format the whole repo\n"
+            printf "or run yapf on the files you've added directly.\n"
+        fi
+    fi
+fi
+
+###############################################################################
 if [ "$found_error" -eq "1" ]; then
     exit 1
 fi
