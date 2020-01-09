@@ -19,6 +19,7 @@
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
+#include "Domain/CoordinateMaps/TimeDependentHelpers.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DomainHelpers.hpp"
 #include "Domain/OrientationMap.hpp"
@@ -278,11 +279,9 @@ void test_coordinate_map_argument_types(
         return nullptr;
       });
 
-  jac_overloader(
-      make_array_data_vector, add_reference_wrapper, map, test_point,
-      domain::CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
-                                                                 double>{},
-      args...);
+  jac_overloader(make_array_data_vector, add_reference_wrapper, map, test_point,
+                 domain::is_jacobian_time_dependent_t<decltype(map), double>{},
+                 args...);
 }
 
 /*!

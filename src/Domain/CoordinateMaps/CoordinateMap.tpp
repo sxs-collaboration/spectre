@@ -22,6 +22,8 @@
 
 #include "DataStructures/Tensor/Identity.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/CoordinateMapHelpers.hpp"
+#include "Domain/CoordinateMaps/TimeDependentHelpers.hpp"
 #include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/PupStlCpp11.hpp"
@@ -32,40 +34,6 @@
 
 /// \cond
 namespace domain {
-// define type-trait to check for time-dependent mapping
-namespace CoordinateMap_detail {
-template <typename T>
-using is_map_time_dependent_t = tt::is_callable_t<
-    T, std::array<std::decay_t<T>, std::decay_t<T>::dim>, double,
-    std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>>;
-
-template <typename T, size_t Dim, typename Map>
-void apply_map(
-    const gsl::not_null<std::array<T, Dim>*> t_map_point, const Map& the_map,
-    const double /*t*/,
-    const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-    /*functions_of_time*/,
-    const std::false_type /*is_time_independent*/) {
-  if (LIKELY(not the_map.is_identity())) {
-    *t_map_point = the_map(*t_map_point);
-  }
-}
-
-template <typename T, size_t Dim, typename Map>
-void apply_map(
-    const gsl::not_null<std::array<T, Dim>*> t_map_point, const Map& the_map,
-    const double t,
-    const std::unordered_map<
-        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
-        functions_of_time,
-    const std::true_type
-    /*is_time_dependent*/) {
-  *t_map_point = the_map(*t_map_point, t, functions_of_time);
-}
-}  // namespace CoordinateMap_detail
-
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::CoordinateMap(Maps... maps)
     : maps_(std::move(maps)...) {}
@@ -100,7 +68,7 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::call_impl(
          const std::true_type /*is_time_dependent*/) noexcept {
         point = the_map(point, t, funcs_of_time);
       })(std::get<Is>(maps_), mapped_point, time, functions_of_time,
-         CoordinateMap_detail::is_map_time_dependent_t<Maps>{}));
+         domain::is_map_time_dependent_t<Maps>{}));
 
   return tnsr::I<T, dim, TargetFrame>(std::move(mapped_point));
 }
@@ -146,25 +114,13 @@ CoordinateMap<SourceFrame, TargetFrame, Maps...>::inverse_impl(
         // reversed
       })(std::get<sizeof...(Maps) - 1 - Is>(maps_), mapped_point, time,
          functions_of_time,
-         CoordinateMap_detail::is_map_time_dependent_t<decltype(
+         domain::is_map_time_dependent_t<decltype(
              std::get<sizeof...(Maps) - 1 - Is>(maps_))>{}));
 
   return mapped_point
              ? tnsr::I<T, dim, SourceFrame>(std::move(mapped_point.get()))
              : boost::optional<tnsr::I<T, dim, SourceFrame>>{};
 }
-
-// define type-trait to check for time-dependent jacobian
-namespace CoordinateMap_detail {
-CREATE_IS_CALLABLE(jacobian)
-template <typename Map, typename T>
-using is_jacobian_time_dependent_t =
-    CoordinateMap_detail::is_jacobian_callable_t<
-        Map, std::array<std::decay_t<T>, std::decay_t<Map>::dim>, double,
-        std::unordered_map<
-            std::string,
-            std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>>;
-}  // namespace CoordinateMap_detail
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T>
@@ -222,12 +178,10 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
             CoordinateMap_detail::apply_map(
                 make_not_null(&mapped_point), map_in_loop, time,
                 functions_of_time,
-                CoordinateMap_detail::is_map_time_dependent_t<decltype(
-                    map_in_loop)>{});
-            inv_jac_overload(&temp_inv_jac, map, mapped_point, time,
-                             functions_of_time,
-                             CoordinateMap_detail::is_jacobian_time_dependent_t<
-                                 decltype(map), T>{});
+                domain::is_map_time_dependent_t<decltype(map_in_loop)>{});
+            inv_jac_overload(
+                &temp_inv_jac, map, mapped_point, time, functions_of_time,
+                domain::is_jacobian_time_dependent_t<decltype(map), T>{});
             std::array<T, dim> temp{};
             for (size_t source = 0; source < dim; ++source) {
               for (size_t target = 0; target < dim; ++target) {
@@ -246,8 +200,7 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
         } else {
           inv_jac_overload(
               &temp_inv_jac, map, mapped_point, time, functions_of_time,
-              CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
-                                                                 T>{});
+              domain::is_jacobian_time_dependent_t<decltype(map), T>{});
           for (size_t source = 0; source < dim; ++source) {
             for (size_t target = 0; target < dim; ++target) {
               inv_jac.get(source, target) =
@@ -318,12 +271,10 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
             CoordinateMap_detail::apply_map(
                 make_not_null(&mapped_point), map_in_loop, time,
                 functions_of_time,
-                CoordinateMap_detail::is_map_time_dependent_t<decltype(
-                    map_in_loop)>{});
-            jac_overload(&noframe_jac, map, mapped_point, time,
-                         functions_of_time,
-                         CoordinateMap_detail::is_jacobian_time_dependent_t<
-                             decltype(map), T>{});
+                domain::is_map_time_dependent_t<decltype(map_in_loop)>{});
+            jac_overload(
+                &noframe_jac, map, mapped_point, time, functions_of_time,
+                domain::is_jacobian_time_dependent_t<decltype(map), T>{});
             std::array<T, dim> temp{};
             for (size_t source = 0; source < dim; ++source) {
               for (size_t target = 0; target < dim; ++target) {
@@ -342,8 +293,7 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
         } else {
           jac_overload(
               &noframe_jac, map, mapped_point, time, functions_of_time,
-              CoordinateMap_detail::is_jacobian_time_dependent_t<decltype(map),
-                                                                 T>{});
+              domain::is_jacobian_time_dependent_t<decltype(map), T>{});
           for (size_t target = 0; target < dim; ++target) {
             for (size_t source = 0; source < dim; ++source) {
               jac.get(target, source) =
