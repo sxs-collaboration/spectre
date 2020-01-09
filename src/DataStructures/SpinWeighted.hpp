@@ -445,10 +445,27 @@ operator/(const get_vector_element_type_t<T>& lhs,
 }
 // @}
 
+/// conjugate the spin-weighted quantity, inverting the spin
 template <typename T, int Spin>
 SPECTRE_ALWAYS_INLINE SpinWeighted<decltype(conj(std::declval<T>())), -Spin>
 conj(const SpinWeighted<T, Spin>& value) noexcept {
   return {conj(value.data())};
+}
+
+/// Take the exponential of the spin-weighted quantity; only valid for
+/// spin-weight = 0
+template <typename T>
+SPECTRE_ALWAYS_INLINE SpinWeighted<decltype(exp(std::declval<T>())), 0> exp(
+    const SpinWeighted<T, 0>& value) noexcept {
+  return {exp(value.data())};
+}
+
+/// Take the square-root of the spin-weighted quantity; only valid for
+/// spin-weight = 0
+template <typename T, int Spin>
+SPECTRE_ALWAYS_INLINE SpinWeighted<decltype(sqrt(std::declval<T>())), 0> sqrt(
+    const SpinWeighted<T, Spin>& value) noexcept {
+  return {sqrt(value.data())};
 }
 
 // @{

@@ -87,6 +87,11 @@ void test_spinweights() {
   const auto no_spin_weight = make_with_random_values<SpinWeightedType>(
       make_not_null(&gen), make_not_null(&spin_weighted_dist), size);
 
+  const auto exp_spin_weight_0 = exp(spin_weight_0);
+  const auto sqrt_spin_weight_0 = sqrt(spin_weight_0);
+  CHECK_ITERABLE_APPROX(exp_spin_weight_0.data(), exp(spin_weight_0.data()));
+  CHECK_ITERABLE_APPROX(sqrt_spin_weight_0.data(), sqrt(spin_weight_0.data()));
+
   const auto compatible_spin_weight_0 =
       make_with_random_values<SpinWeighted<CompatibleType, 0>>(
           make_not_null(&gen), make_not_null(&compatible_dist), size);
