@@ -3,7 +3,7 @@
 
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/sxs-collaboration/spectre/blob/develop/LICENSE.txt)
 [![Standard](https://img.shields.io/badge/c%2B%2B-14-blue.svg)](https://en.wikipedia.org/wiki/C%2B%2B#Standardization)
-[![Build Status](https://travis-ci.org/sxs-collaboration/spectre.svg?branch=develop)](https://travis-ci.org/sxs-collaboration/spectre)
+[![Build Status](https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop)](https://github.com/sxs-collaboration/spectre/actions)
 [![Coverage Status](https://coveralls.io/repos/github/sxs-collaboration/spectre/badge.svg?branch=develop)](https://coveralls.io/github/sxs-collaboration/spectre?branch=develop)
 [![codecov](https://codecov.io/gh/sxs-collaboration/spectre/branch/develop/graph/badge.svg)](https://codecov.io/gh/sxs-collaboration/spectre)
 

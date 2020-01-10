@@ -39,10 +39,10 @@ alt="Standard"
 data-canonical-src="https://img.shields.io/badge/c%2B%2B-14-blue.svg"
 style="max-width:100%;"></a>
 
-<a href="https://travis-ci.org/sxs-collaboration/spectre" rel="nofollow"><img
-src="https://camo.githubusercontent.com/3bd9cacc3b76fbedd84d71bd927a0e9c41e9bf2d/68747470733a2f2f7472617669732d63692e6f72672f7378732d636f6c6c61626f726174696f6e2f737065637472652e7376673f6272616e63683d646576656c6f70"
+<a href="https://github.com/sxs-collaboration/spectre/actions" rel="nofollow"><img
+src="https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop"
 alt="Build Status"
-data-canonical-src="https://travis-ci.org/sxs-collaboration/spectre.svg?branch=develop"
+data-canonical-src="https://github.com/sxs-collaboration/spectre/workflows/Tests/badge.svg?branch=develop"
 style="max-width:100%;"></a>
 
 <a href="https://coveralls.io/github/sxs-collaboration/spectre?branch=develop"
