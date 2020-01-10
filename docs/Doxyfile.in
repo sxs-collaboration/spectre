@@ -241,6 +241,7 @@ HTML_EXTRA_FILES       = @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.eot \
                          @PROJECT_SOURCE_DIR@/docs/config/js/bootstrap.min.js \
                          @PROJECT_SOURCE_DIR@/docs/config/js/jquery.js \
                          @PROJECT_SOURCE_DIR@/docs/config/js/spectre.js \
+                         @PROJECT_SOURCE_DIR@/docs/.nojekyll \
                          @PROJECT_SOURCE_DIR@/LICENSE.txt
 
 # This is not the recommended way of using a completely custom style sheet.

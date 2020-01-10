@@ -302,6 +302,7 @@ license() {
               '.github/ISSUE_TEMPLATE.md' \
               '.github/PULL_REQUEST_TEMPLATE.md' \
               '.h5' \
+              '.nojekyll' \
               '.png' \
               '.svg' \
               '.clang-format$' \
@@ -407,7 +408,7 @@ standard_checks+=(pragma_once)
 
 # Check for a newline at end of file
 final_newline() {
-    whitelist "$1" '.h5' '.png' '.svg' &&
+    whitelist "$1" '.h5' '.nojekyll' '.png' '.svg' &&
     # Bash strips trailing newlines from $() output
     [ "$(tail -c 1 "$1" ; echo x)" != $'\n'x ]
 }

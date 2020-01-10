@@ -92,7 +92,10 @@ if [ -z "${RUN_CLANG_TIDY}" ] \
 fi
 
 # Build documentation and doc coverage and deploy to GitHub pages.
+# Disabled since this is done with GitHub actions instead of Travis.
+DEPLOY_DOC=false
 if [ ${BUILD_DOC} ] \
+       && [ ${DEPLOY_DOC} = true ] \
        && [ ${TRAVIS_SECURE_ENV_VARS} = true ] \
        && [ ${TRAVIS_BRANCH} = ${GH_PAGES_SOURCE_BRANCH} ] \
        && [ ${TRAVIS_PULL_REQUEST} == false ]; then
