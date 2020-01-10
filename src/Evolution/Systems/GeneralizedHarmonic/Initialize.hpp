@@ -179,9 +179,8 @@ struct InitializeGauge {
 
     get<GeneralizedHarmonic::Tags::InitialGaugeH<Dim, frame>>(
         initial_gauge_h_vars) = initial_gauge_h;
-    const auto& inverse_jacobian = db::get<
-        ::Tags::InverseJacobian<::Tags::ElementMap<Dim, frame>,
-                                ::Tags::Coordinates<Dim, Frame::Logical>>>(box);
+    const auto& inverse_jacobian =
+        db::get<::Tags::InverseJacobian<Dim, Frame::Logical, frame>>(box);
     auto d_initial_gauge_source =
         get<::Tags::deriv<GeneralizedHarmonic::Tags::InitialGaugeH<Dim, frame>,
                           tmpl::size_t<Dim>, frame>>(

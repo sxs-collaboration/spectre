@@ -156,13 +156,36 @@ struct MappedCoordinates
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
+/// \brief The inverse Jacobian from the source frame to the target frame.
+///
+/// Specifically, \f$\partial x^{\bar{i}} / \partial x^i\f$, where \f$\bar{i}\f$
+/// denotes the source frame and \f$i\f$ denotes the target frame.
+template <size_t Dim, typename SourceFrame, typename TargetFrame>
+struct InverseJacobian : db::SimpleTag {
+  static std::string name() noexcept {
+    return "InverseJacobian(" + get_output(SourceFrame{}) + "," +
+           get_output(TargetFrame{}) + ")";
+  }
+  using type = ::InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// Computes the inverse Jacobian of the map held by `MapTag` at the coordinates
 /// held by `SourceCoordsTag`. The coordinates must be in the source frame of
 /// the map.
 template <typename MapTag, typename SourceCoordsTag>
-struct InverseJacobian : db::ComputeTag, db::PrefixTag {
+struct InverseJacobianCompute
+    : InverseJacobian<db::const_item_type<MapTag>::dim,
+                      typename db::const_item_type<MapTag>::source_frame,
+                      typename db::const_item_type<MapTag>::target_frame>,
+      db::ComputeTag,
+      db::PrefixTag {
+  using base =
+      InverseJacobian<db::const_item_type<MapTag>::dim,
+                      typename db::const_item_type<MapTag>::source_frame,
+                      typename db::const_item_type<MapTag>::target_frame>;
   using tag = MapTag;
-  static std::string name() noexcept { return "InverseJacobian"; }
   static constexpr auto function(
       const db::const_item_type<MapTag>& element_map,
       const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {

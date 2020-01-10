@@ -195,8 +195,7 @@ struct TimeStepperHistory {
   struct ComputeTags {
     using type = db::AddComputeTags<::Tags::DerivCompute<
         variables_tag,
-        ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
-                                ::Tags::Coordinates<dim, Frame::Logical>>,
+        ::Tags::InverseJacobian<dim, Frame::Logical, Frame::Inertial>,
         typename System::gradients_tags>>;
   };
 
@@ -205,8 +204,7 @@ struct TimeStepperHistory {
     using type = db::AddComputeTags<::Tags::DivCompute<
         db::add_tag_prefix<::Tags::Flux, variables_tag, tmpl::size_t<dim>,
                            Frame::Inertial>,
-        ::Tags::InverseJacobian<::Tags::ElementMap<dim>,
-                                ::Tags::Coordinates<dim, Frame::Logical>>>>;
+        ::Tags::InverseJacobian<dim, Frame::Logical, Frame::Inertial>>>;
   };
 
   template <typename DbTagsList, typename... InboxTags, typename ArrayIndex,

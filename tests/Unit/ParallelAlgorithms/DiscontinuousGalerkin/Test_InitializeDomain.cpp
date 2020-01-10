@@ -76,8 +76,7 @@ void check_compute_items(
   CHECK(tag_is_retrievable(::Tags::Coordinates<Dim, Frame::Logical>{}));
   CHECK(tag_is_retrievable(::Tags::Coordinates<Dim, Frame::Inertial>{}));
   CHECK(tag_is_retrievable(
-      ::Tags::InverseJacobian<::Tags::ElementMap<Dim>,
-                              ::Tags::Coordinates<Dim, Frame::Logical>>{}));
+      ::Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>{}));
   CHECK(tag_is_retrievable(::Tags::MinimumGridSpacing<Dim, Frame::Inertial>{}));
 }
 
@@ -139,10 +138,9 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     const auto& inertial_coords =
         get_tag(Tags::Coordinates<1, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    CHECK(get_tag(
-              Tags::InverseJacobian<Tags::ElementMap<1>,
-                                    Tags::Coordinates<1, Frame::Logical>>{}) ==
-          element_map.inv_jacobian(logical_coords));
+    CHECK(
+        get_tag(Tags::InverseJacobian<1, Frame::Logical, Frame::Inertial>{}) ==
+        element_map.inv_jacobian(logical_coords));
   }
   {
     INFO("2D");
@@ -207,10 +205,9 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     const auto& inertial_coords =
         get_tag(Tags::Coordinates<2, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    CHECK(get_tag(
-              Tags::InverseJacobian<Tags::ElementMap<2>,
-                                    Tags::Coordinates<2, Frame::Logical>>{}) ==
-          element_map.inv_jacobian(logical_coords));
+    CHECK(
+        get_tag(Tags::InverseJacobian<2, Frame::Logical, Frame::Inertial>{}) ==
+        element_map.inv_jacobian(logical_coords));
   }
   {
     INFO("3D");
@@ -288,9 +285,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
     const auto& inertial_coords =
         get_tag(Tags::Coordinates<3, Frame::Inertial>{});
     CHECK(inertial_coords == element_map(logical_coords));
-    CHECK(get_tag(
-              Tags::InverseJacobian<Tags::ElementMap<3>,
-                                    Tags::Coordinates<3, Frame::Logical>>{}) ==
-          element_map.inv_jacobian(logical_coords));
+    CHECK(
+        get_tag(Tags::InverseJacobian<3, Frame::Logical, Frame::Inertial>{}) ==
+        element_map.inv_jacobian(logical_coords));
   }
 }

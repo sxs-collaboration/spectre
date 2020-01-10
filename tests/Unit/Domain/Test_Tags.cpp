@@ -28,6 +28,12 @@ void test() noexcept {
       "LogicalCoordinates");
   TestHelpers::db::test_simple_tag<Tags::Coordinates<Dim, Frame::Inertial>>(
       "InertialCoordinates");
+  TestHelpers::db::test_simple_tag<
+      Tags::InverseJacobian<Dim, Frame::Logical, Frame::Inertial>>(
+      "InverseJacobian(Logical,Inertial)");
+  CHECK(db::tag_name<Tags::InverseJacobianCompute<
+            Tags::ElementMap<Dim>, Tags::Coordinates<Dim, Frame::Logical>>>() ==
+        "InverseJacobian(Logical,Inertial)");
 }
 
 SPECTRE_TEST_CASE("Unit.Domain.Tags", "[Unit][Domain]") {
