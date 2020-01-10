@@ -3,6 +3,7 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <initializer_list>
@@ -57,23 +58,25 @@ void check_case(const Frac& expected_frac,
                               ? std::numeric_limits<double>::infinity()
                               : (expected_frac * slab.duration()).value();
 
-  for (const auto& sign : {1, -1}) {
-    CAPTURE(sign);
-    const auto make_time_id = [&sign, &slab, &times](const size_t i) noexcept {
-      Frac frac = sign * times[i];
+  for (const auto& direction : {1, -1}) {
+    CAPTURE(direction);
+
+    const auto make_time_id =
+        [&direction, &slab, &times](const size_t i) noexcept {
+      Frac frac = -direction * times[i];
       int64_t slab_number = 0;
       Slab time_slab = slab;
       while (frac > 1) {
         time_slab = time_slab.advance();
         frac -= 1;
-        slab_number += sign;
+        slab_number += direction;
       }
       while (frac < 0) {
         time_slab = time_slab.retreat();
         frac += 1;
-        slab_number -= sign;
+        slab_number -= direction;
       }
-      return TimeStepId(sign > 0, slab_number, Time(time_slab, frac));
+      return TimeStepId(direction > 0, slab_number, Time(time_slab, frac));
     };
 
     // Silly type.  The step chooser should not care.
@@ -81,24 +84,50 @@ void check_case(const Frac& expected_frac,
       using type = std::nullptr_t;
     };
     using history_tag = Tags::HistoryEvolvedVariables<Tag, Tag>;
-    db::item_type<history_tag> history{};
+    db::item_type<history_tag> lts_history{};
+    db::item_type<history_tag> gts_history{};
+
+    const auto make_gts_time_id =
+        [&direction, &make_time_id](const size_t i) noexcept {
+      const double time = make_time_id(i).substep_time().value();
+      const double next_time =
+          i > 0 ? make_time_id(i - 1).substep_time().value() : time + direction;
+      const Slab gts_slab(std::min(time, next_time), std::max(time, next_time));
+      return TimeStepId(direction > 0, -static_cast<int64_t>(i),
+                        direction > 0 ? gts_slab.start() : gts_slab.end());
+    };
+
     for (size_t i = 1; i < times.size(); ++i) {
-      history.insert_initial(make_time_id(i), nullptr, nullptr);
+      lts_history.insert_initial(make_time_id(i), nullptr, nullptr);
+      gts_history.insert_initial(make_gts_time_id(i), nullptr, nullptr);
     }
-    CAPTURE(history);
 
-    const Time current_time = make_time_id(0).substep_time();
+    const auto check = [&cache, &expected, &relax, &relax_base](
+        const auto& box, const Time& current_time) noexcept {
+      const auto& history = db::get<history_tag>(box);
+      const double current_step =
+          history.size() > 0 ? abs(current_time - history.back()).value()
+                             : std::numeric_limits<double>::infinity();
 
-    const auto box =
-        db::create<db::AddSimpleTags<Tags::SubstepTime, history_tag>>(
-            current_time, std::move(history));
+      CHECK(relax(history, current_step, cache) == expected);
+      CHECK(relax_base->desired_step(current_step, box, cache) == expected);
+      CHECK(serialize_and_deserialize(relax)(history, current_step, cache) ==
+            expected);
+      CHECK(serialize_and_deserialize(relax_base)
+                ->desired_step(current_step, box, cache) == expected);
+    };
 
-    CHECK(relax(current_time, db::get<history_tag>(box), cache) == expected);
-    CHECK(relax_base->desired_step(box, cache) == expected);
-    CHECK(serialize_and_deserialize(relax)(
-              current_time, db::get<history_tag>(box), cache) == expected);
-    CHECK(serialize_and_deserialize(relax_base)->desired_step(box, cache) ==
-          expected);
+    {
+      CAPTURE(lts_history);
+      check(db::create<db::AddSimpleTags<history_tag>>(std::move(lts_history)),
+            make_time_id(0).substep_time());
+    }
+
+    {
+      CAPTURE(gts_history);
+      check(db::create<db::AddSimpleTags<history_tag>>(std::move(gts_history)),
+            make_gts_time_id(0).substep_time());
+    }
   }
 }
 }  // namespace
@@ -118,6 +147,9 @@ SPECTRE_TEST_CASE("Unit.Time.StepChoosers.PreventRapidIncrease",
   check_case(-1, {{1, 5}, {2, 5}, {3, 5}, {4, 5}});
   check_case({2, 5}, {{0, 5}, {2, 5}, {3, 5}, {4, 5}});
   check_case({1, 20}, {{1, 5}, {1, 4}, {3, 5}, {4, 5}});
+
+  // Cause roundoff errors
+  check_case(-1, {{1, 3}, {2, 3}, {3, 3}});
 
   TestHelpers::test_factory_creation<StepChooserType>("PreventRapidIncrease");
 }

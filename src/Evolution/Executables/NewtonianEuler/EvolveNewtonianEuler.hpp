@@ -58,6 +58,7 @@
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Time/Actions/AdvanceTime.hpp"
+#include "Time/Actions/ChangeSlabSize.hpp"
 #include "Time/Actions/ChangeStepSize.hpp"
 #include "Time/Actions/RecordTimeStepperData.hpp"
 #include "Time/Actions/SelfStartActions.hpp"
@@ -65,6 +66,7 @@
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/Constant.hpp"
 #include "Time/StepChoosers/Increase.hpp"
+#include "Time/StepChoosers/PreventRapidIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
@@ -127,6 +129,23 @@ struct EvolutionMetavars {
                                                             Frame::Inertial>,
                       NewtonianEuler::Tags::EnergyDensity<DataVector>>>>;
 
+  using step_choosers_common =
+      tmpl::list<StepChoosers::Registrars::Cfl<volume_dim, Frame::Inertial>,
+                 StepChoosers::Registrars::Constant,
+                 StepChoosers::Registrars::Increase>;
+  using step_choosers_for_step_only =
+      tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>;
+  using step_choosers_for_slab_only = tmpl::list<>;
+  using step_choosers = tmpl::conditional_t<
+      local_time_stepping,
+      tmpl::append<step_choosers_common, step_choosers_for_step_only>,
+      tmpl::list<>>;
+  using slab_choosers = tmpl::conditional_t<
+      local_time_stepping,
+      tmpl::append<step_choosers_common, step_choosers_for_slab_only>,
+      tmpl::append<step_choosers_common, step_choosers_for_step_only,
+                   step_choosers_for_slab_only>>;
+
   using events = tmpl::flatten<tmpl::list<
       tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
                           dg::Events::Registrars::ObserveErrorNorms<
@@ -139,13 +158,9 @@ struct EvolutionMetavars {
               db::get_variables_tags_list<
                   typename system::primitive_variables_tag>>,
           tmpl::conditional_t<evolution::is_analytic_solution_v<initial_data>,
-                              analytic_variables_tags, tmpl::list<>>>>>;
+                              analytic_variables_tags, tmpl::list<>>>,
+      Events::Registrars::ChangeSlabSize<slab_choosers>>>;
   using triggers = Triggers::time_triggers;
-
-  using step_choosers =
-      tmpl::list<StepChoosers::Registrars::Cfl<Dim, Frame::Inertial>,
-                 StepChoosers::Registrars::Constant,
-                 StepChoosers::Registrars::Increase>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
@@ -237,6 +252,7 @@ struct EvolutionMetavars {
                   tmpl::list<
                       Actions::UpdateConservatives,
                       Actions::RunEventsAndTriggers,
+                      Actions::ChangeSlabSize,
                       tmpl::conditional_t<
                           local_time_stepping,
                           Actions::ChangeStepSize<step_choosers>, tmpl::list<>>,
@@ -282,6 +298,8 @@ static const std::vector<void (*)()> charm_init_node_funcs{
     &domain::creators::register_derived_with_charm,
     &Parallel::register_derived_classes_with_charm<
         Event<metavariables::events>>,
+    &Parallel::register_derived_classes_with_charm<
+        StepChooser<metavariables::slab_choosers>>,
     &Parallel::register_derived_classes_with_charm<
         StepChooser<metavariables::step_choosers>>,
     &Parallel::register_derived_classes_with_charm<StepController>,

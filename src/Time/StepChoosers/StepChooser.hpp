@@ -4,14 +4,12 @@
 #pragma once
 
 #include <pup.h>
-#include <type_traits>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Utilities/FakeVirtual.hpp"
 #include "Utilities/Registration.hpp"
-#include "Utilities/TMPL.hpp"
 
 /// \cond
 namespace Parallel {
@@ -59,13 +57,20 @@ class StepChooser : public PUP::able {
 
   using creatable_classes = Registration::registrants<StepChooserRegistrars>;
 
+  /// The `last_step_magnitude` parameter describes the step size to be
+  /// adjusted.  It may be the step size or the slab size, or may be
+  /// infinite if the appropriate size cannot be determined.
   template <typename Metavariables, typename DbTags>
   double desired_step(
-      const db::DataBox<DbTags>& box,
+      const double last_step_magnitude, const db::DataBox<DbTags>& box,
       const Parallel::ConstGlobalCache<Metavariables>& cache) const noexcept {
+    ASSERT(last_step_magnitude > 0.,
+           "Passed non-positive step magnitude: " << last_step_magnitude);
     const auto result = call_with_dynamic_type<double, creatable_classes>(
-        this, [&box, &cache ](const auto* const chooser) noexcept {
-          return db::apply(*chooser, box, cache);
+        this,
+        [&last_step_magnitude, &box, &cache](
+            const auto* const chooser) noexcept {
+          return db::apply(*chooser, box, last_step_magnitude, cache);
         });
     ASSERT(
         result > 0.,

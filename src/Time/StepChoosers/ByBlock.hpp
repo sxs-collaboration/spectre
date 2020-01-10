@@ -67,9 +67,10 @@ class ByBlock : public StepChooser<StepChooserRegistrars> {
   using argument_tags = tmpl::list<Tags::Element<Dim>>;
 
   template <typename Metavariables>
-  double operator()(const Element<Dim>& element,
-                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/)
-      const noexcept {
+  double operator()(
+      const Element<Dim>& element, const double /*last_step_magnitude*/,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) const
+      noexcept {
     const size_t block = element.id().block_id();
     if (block >= sizes_.size()) {
       ERROR("Step size not specified for block " << block);

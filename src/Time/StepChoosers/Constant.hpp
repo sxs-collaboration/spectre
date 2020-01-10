@@ -48,7 +48,8 @@ class Constant : public StepChooser<StepChooserRegistrars> {
   using argument_tags = tmpl::list<>;
 
   template <typename Metavariables>
-  double operator()(const Parallel::ConstGlobalCache<Metavariables>& /*cache*/)
+  double operator()(const double /*last_step_magnitude*/,
+                    const Parallel::ConstGlobalCache<Metavariables>& /*cache*/)
       const noexcept {
     return value_;
   }

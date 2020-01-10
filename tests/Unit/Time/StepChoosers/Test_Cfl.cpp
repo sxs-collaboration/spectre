@@ -20,6 +20,7 @@
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
+#include "Time/Time.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestCreation.hpp"
@@ -72,11 +73,13 @@ double get_suggestion(const size_t stepper_order, const double safety_factor,
   const Cfl cfl{safety_factor};
   const std::unique_ptr<StepChooserType> cfl_base = std::make_unique<Cfl>(cfl);
 
-  const double result = cfl(grid_spacing, box, cache);
-  CHECK(cfl_base->desired_step(box, cache) == result);
-  CHECK(serialize_and_deserialize(cfl)(grid_spacing, box, cache) == result);
-  CHECK(serialize_and_deserialize(cfl_base)->desired_step(box, cache) ==
-        result);
+  const double current_step = std::numeric_limits<double>::infinity();
+  const double result = cfl(grid_spacing, box, current_step, cache);
+  CHECK(cfl_base->desired_step(current_step, box, cache) == result);
+  CHECK(serialize_and_deserialize(cfl)(grid_spacing, box, current_step,
+                                       cache) == result);
+  CHECK(serialize_and_deserialize(cfl_base)->desired_step(current_step, box,
+                                                          cache) == result);
   return result;
 }
 }  // namespace
