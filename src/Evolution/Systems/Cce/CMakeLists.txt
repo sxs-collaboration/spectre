@@ -11,6 +11,8 @@ set(LIBRARY_SOURCES
   LinearSolve.cpp
   PrecomputeCceDependencies.cpp
   ReadBoundaryDataH5.cpp
+  ReducedWorldtubeModeRecorder.cpp
+  SpecBoundaryData.cpp
   )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})

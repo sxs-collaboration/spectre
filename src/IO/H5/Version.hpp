@@ -36,6 +36,14 @@ class Version : public h5::Object {
   Version(bool exists, detail::OpenGroup&& group, hid_t location,
           std::string name, uint32_t version = 1);
 
+  // Write a single string as the version.
+  //
+  // This is used for fixing a bug in CCE data written by SpEC and
+  // will be removed once we no longer need to match that formatting. Do not
+  // use for SpECTRE versioning!
+  Version(bool exists, detail::OpenGroup&& group, hid_t location,
+          std::string name, std::string version);
+
   Version(const Version& /*rhs*/) = delete;
   Version& operator=(const Version& /*rhs*/) = delete;
 
