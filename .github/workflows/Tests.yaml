@@ -224,7 +224,7 @@ jobs:
         # - `-march=x86-64`: Make sure we are building on a consistent
         #   architecture so caching works. This is necessary because GitHub
         #   may run the job on different hardware.
-        CXXFLAGS: "-Werror -march=x86-64"
+        CXXFLAGS: "-Werror"
         # We make sure to use a fixed absolute path for the ccache directory
         CCACHE_DIR: /work/ccache
         # GitHub Actions currently limits the size of individual caches
@@ -283,6 +283,7 @@ jobs:
           -D CMAKE_CXX_COMPILER=${CXX}
           -D CMAKE_Fortran_COMPILER=${FC}
           -D CMAKE_CXX_FLAGS="${CXXFLAGS} ${{ matrix.EXTRA_CXX_FLAGS }}"
+          -D OVERRIDE_ARCH=x86-64
           -D CHARM_ROOT=/work/charm/multicore-linux64-${CHARM_CC}
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -D DEBUG_SYMBOLS=OFF

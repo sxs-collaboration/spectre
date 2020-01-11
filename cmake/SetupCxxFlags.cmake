@@ -3,6 +3,8 @@
 
 option(DEBUG_SYMBOLS "Add -g to CMAKE_CXX_FLAGS if ON, -g0 if OFF." ON)
 
+option(OVERRIDE_ARCH "The architecture to use. Default is native." OFF)
+
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSPECTRE_DEBUG")
 
 if(NOT ${DEBUG_SYMBOLS})
@@ -16,8 +18,12 @@ if(${DEBUG_SYMBOLS})
 endif(${DEBUG_SYMBOLS})
 
 # Always compile only for the current architecture. This can be overridden
-# by passing `-D CMAKE_CXX_FLAGS="-march=THE_ARCHITECTURE"` to CMake
-set(CMAKE_CXX_FLAGS "-march=native ${CMAKE_CXX_FLAGS}")
+# by passing `-D OVERRIDE_ARCH=THE_ARCHITECTURE` to CMake
+if(NOT "${OVERRIDE_ARCH}" STREQUAL "OFF")
+  set(CMAKE_CXX_FLAGS "-march=${OVERRIDE_ARCH} ${CMAKE_CXX_FLAGS}")
+else()
+  set(CMAKE_CXX_FLAGS "-march=native ${CMAKE_CXX_FLAGS}")
+endif()
 
 # We always want a detailed backtrace of template errors to make debugging them
 # easier
