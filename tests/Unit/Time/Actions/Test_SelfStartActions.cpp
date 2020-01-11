@@ -130,7 +130,8 @@ struct Component {
   static constexpr bool has_primitives = Metavariables::has_primitives;
 
   using step_actions =
-      tmpl::list<Actions::ComputeTimeDerivative, Actions::RecordTimeStepperData,
+      tmpl::list<Actions::ComputeTimeDerivative,
+                 Actions::RecordTimeStepperData<>,
                  tmpl::conditional_t<
                      has_primitives,
                      tmpl::list<Actions::UpdateU, Actions::UpdatePrimitives>,
