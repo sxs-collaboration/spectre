@@ -55,7 +55,7 @@ void test_three_index_constraint(const DataType& used_for_size) noexcept {
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &GeneralizedHarmonic::three_index_constraint<SpatialDim, Frame,
                                                        DataType>),
-      "numpy", "subtract", {{{-10.0, 10.0}}}, used_for_size);
+      "numpy", "subtract", {{{-1.0, 1.0}}}, used_for_size);
 }
 
 // Test the return-by-value gauge constraint function using random values
@@ -71,8 +71,7 @@ void test_gauge_constraint_random(const DataType& used_for_size) noexcept {
           const tnsr::aa<DataType, SpatialDim, Frame>&,
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &GeneralizedHarmonic::gauge_constraint<SpatialDim, Frame, DataType>),
-      "TestFunctions", "gauge_constraint", {{{-10.0, 10.0}}}, used_for_size,
-      1.0e-11);
+      "TestFunctions", "gauge_constraint", {{{-1.0, 1.0}}}, used_for_size);
 }
 
 // Test the return-by-reference gauge constraint by comparing to Kerr-Schild
@@ -169,11 +168,8 @@ void test_two_index_constraint_random(const DataType& used_for_size) noexcept {
           const tnsr::iaa<DataType, SpatialDim, Frame>&)>(
           &GeneralizedHarmonic::two_index_constraint<SpatialDim, Frame,
                                                      DataType>),
-      "TestFunctions", "two_index_constraint", {{{-10.0, 10.0}}}, used_for_size,
-      1.0e-10);  // last argument loosens tolerance from
-                 // default of 1.0e-12 to avoid occasional
-                 // failures of this test, suspected from
-                 // accumulated roundoff error
+      "TestFunctions", "two_index_constraint", {{{-1.0, 1.0}}},
+      used_for_size);
 }
 
 // Test the return-by-reference two-index constraint
@@ -304,7 +300,7 @@ void test_four_index_constraint_random(const DataType& used_for_size) noexcept {
           const tnsr::ijaa<DataType, SpatialDim, Frame>&)>(
           &GeneralizedHarmonic::four_index_constraint<SpatialDim, Frame,
                                                       DataType>),
-      "TestFunctions", "four_index_constraint", {{{-10.0, 10.0}}},
+      "TestFunctions", "four_index_constraint", {{{-1.0, 1.0}}},
       used_for_size);
 }
 
@@ -535,11 +531,8 @@ void test_constraint_energy_random(const DataType& used_for_size) noexcept {
           const tnsr::II<DataType, SpatialDim, Frame>&, const Scalar<DataType>&,
           double, double, double, double)>(
           &GeneralizedHarmonic::constraint_energy<SpatialDim, Frame, DataType>),
-      "TestFunctions", "constraint_energy", {{{-10.0, 10.0}}}, used_for_size,
-      1.0e-10);  // last argument loosens tolerance from
-                 // default of 1.0e-12 to avoid occasional
-                 // failures of this test, suspected from
-                 // accumulated roundoff error
+      "TestFunctions", "constraint_energy", {{{-1.0, 1.0}}},
+      used_for_size);
 }
 
 // Test the return-by-reference constraint energy
