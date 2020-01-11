@@ -623,6 +623,16 @@ struct MakeWithValueImpl<Tensor<double, Structure...>, double> {
 };
 
 template <typename... Structure>
+struct MakeWithValueImpl<Tensor<DataVector, Structure...>, size_t> {
+  /// \brief Returns a Tensor whose elements are set equal to `value` of size
+  /// `size`
+  static SPECTRE_ALWAYS_INLINE Tensor<DataVector, Structure...> apply(
+      const size_t size, const double value) noexcept {
+    return Tensor<DataVector, Structure...>(size, value);
+  }
+};
+
+template <typename... Structure>
 struct MakeWithValueImpl<Tensor<ComplexDataVector, Structure...>, DataVector> {
   /// \brief Returns a Tensor whose `ComplexDataVector`s are the same size as
   /// `input`, with each element set to `value`.
