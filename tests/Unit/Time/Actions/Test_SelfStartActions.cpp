@@ -17,8 +17,8 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Evolution/Actions/ComputeTimeDerivative.hpp"  // IWYU pragma: keep
 #include "Evolution/Conservative/UpdatePrimitives.hpp"  // IWYU pragma: keep
-#include "Parallel/PhaseDependentActionList.hpp"   // IWYU pragma: keep
-#include "Time/Actions/RecordTimeStepperData.hpp"  // IWYU pragma: keep
+#include "Parallel/PhaseDependentActionList.hpp"        // IWYU pragma: keep
+#include "Time/Actions/RecordTimeStepperData.hpp"       // IWYU pragma: keep
 #include "Time/Actions/SelfStartActions.hpp"
 #include "Time/Actions/UpdateU.hpp"  // IWYU pragma: keep
 #include "Time/Slab.hpp"
@@ -134,8 +134,8 @@ struct Component {
                  Actions::RecordTimeStepperData<>,
                  tmpl::conditional_t<
                      has_primitives,
-                     tmpl::list<Actions::UpdateU, Actions::UpdatePrimitives>,
-                     Actions::UpdateU>>;
+                     tmpl::list<Actions::UpdateU<>, Actions::UpdatePrimitives>,
+                     Actions::UpdateU<>>>;
   using action_list = tmpl::flatten<
       tmpl::list<SelfStart::self_start_procedure<step_actions>, step_actions>>;
   using phase_dependent_action_list = tmpl::list<
@@ -378,8 +378,8 @@ double error_in_step(const size_t order, const double step) noexcept {
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
            tmpl::bool_<true>>(make_not_null(&runner));
-  run_past<std::is_same<Actions::UpdateU, tmpl::_1>, tmpl::bool_<true>>(
-      make_not_null(&runner));
+  run_past<std::is_same<tmpl::pin<Actions::UpdateU<>>, tmpl::_1>,
+           tmpl::bool_<true>>(make_not_null(&runner));
 
   const double exact = -log(exp(-initial_value) - step);
   return ActionTesting::get_databox_tag<component, Var>(runner, 0) - exact;

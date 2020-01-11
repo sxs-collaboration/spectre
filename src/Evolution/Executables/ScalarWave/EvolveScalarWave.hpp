@@ -158,7 +158,7 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      Actions::UpdateU,
+      Actions::UpdateU<>,
       tmpl::conditional_t<
           use_filtering,
           dg::Actions::Filter<Filters::Exponential<0>,

@@ -168,7 +168,7 @@ struct EvolutionMetavars {
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      Actions::UpdateU, Limiters::Actions::SendData<EvolutionMetavars>,
+      Actions::UpdateU<>, Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>, Actions::UpdateM1Closure>>;
 
   enum class Phase {
