@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_InitializeCce.cpp
   Test_LinearOperators.cpp
   Test_LinearSolve.cpp
+  Test_OptionTags.cpp
   Test_PreSwshDerivatives.cpp
   Test_PrecomputeCceDependencies.cpp
   Test_ReadBoundaryDataH5.cpp
