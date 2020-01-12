@@ -11,6 +11,10 @@
 
 namespace Cce {
 
+/// \cond
+struct WorldtubeDataManager;
+/// \endcond
+
 /// Tags for Cauchy Characteristic Extraction routines
 namespace Tags {
 
@@ -300,6 +304,11 @@ struct JbarQMinus2EthBeta : db::SimpleTag {
 struct BondiR : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
   static std::string name() noexcept { return "R"; }
+};
+
+/// A simple tag for the `WorldtubeDataManager`
+struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
+  using type = WorldtubeDataManager;
 };
 }  // namespace Tags
 }  // namespace Cce
