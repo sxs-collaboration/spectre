@@ -288,8 +288,8 @@ template <typename DirectionsTag, typename Tag>
 struct Interface : virtual db::SimpleTag,
                    Interface_detail::GetBaseTagIfPresent<DirectionsTag, Tag> {
   static std::string name() noexcept {
-    return "Interface<" + DirectionsTag::name() + ", " + db::tag_name<Tag>() +
-           ">";
+    return "Interface<" + db::tag_name<DirectionsTag>() + ", " +
+           db::tag_name<Tag>() + ">";
   };
   using tag = Tag;
   // The use of db::const_item_type<Tag> assumes we will never store
