@@ -15,7 +15,6 @@
 #include "tests/Unit/ActionTesting.hpp"
 
 namespace Cce {
-
 template <typename Metavariables>
 struct mock_h5_worldtube_boundary {
   using component_being_mocked = H5WorldtubeBoundary<Metavariables>;
@@ -39,13 +38,5 @@ struct mock_h5_worldtube_boundary {
                              initialize_action_list>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Extraction, tmpl::list<>>>;
-};
-
-struct metavariables {
-  using cce_boundary_communication_tags =
-      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
-  using const_global_cache_tag_list = tmpl::list<Spectral::Swsh::Tags::LMax>;
-  using component_list = tmpl::list<mock_h5_worldtube_boundary<metavariables>>;
-  enum class Phase { Initialization, Extraction, Exit };
 };
 }  // namespace Cce

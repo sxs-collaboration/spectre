@@ -28,6 +28,17 @@
 
 namespace Cce {
 
+namespace {
+struct metavariables {
+  using cce_boundary_communication_tags =
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
+  using const_global_cache_tag_list =
+      tmpl::list< Spectral::Swsh::Tags::LMax>;
+  using component_list = tmpl::list<mock_h5_worldtube_boundary<metavariables>>;
+  enum class Phase { Initialization, Extraction, Exit };
+};
+}  // namespace
+
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.InitializeWorldtubeBoundary",
     "[Unit][Cce]") {
@@ -35,7 +46,9 @@ SPECTRE_TEST_CASE(
   // this probably needs to be adjusted for the const global tags and option
   // tags we need.
   const size_t l_max = 8;
-  ActionTesting::MockRuntimeSystem<metavariables> runner{{l_max}};
+  ActionTesting::MockRuntimeSystem<metavariables> runner{
+      tuples::tagged_tuple_from_typelist<
+          Parallel::get_const_global_cache_tags<metavariables>>{l_max}};
 
   const size_t buffer_size = 8;
   const std::string filename = "InitializeWorldtubeBoundaryTest_CceR0100.h5";
