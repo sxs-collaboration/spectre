@@ -242,7 +242,7 @@ To use modules with Spack, enable Spack's shell support by adding
 Once you have Spack installed and configured with OpenSSL and LMod, you can
 install the SpECTRE dependencies using
 ```
-spack install blaze
+spack install blaze@3.2
 spack install brigand@master
 spack install libsharp -openmp -mpi
 spack install catch
