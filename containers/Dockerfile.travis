@@ -54,18 +54,14 @@ ARG CORE_LIBS
 ENV SPECTRE_BUILD_DIR=/work/build_${BUILD_TYPE}_${CC}
 ENV SPECTRE_SOURCE_DIR=/work/spectre
 
-# In order to have ccache work on TravisCI with a precompiled header we need to:
-# - Hash the content of the compiler rather than the location and mtime
-# - Hash the header file in the repo that will generate the precompiled header
-# - Ignore the precompiled header in the build directory
 # ENV CCACHE_LOGFILE=/work/ccache_log.txt
 ENV CCACHE_COMPRESS=1
 # Default compression is 6
 ENV CCACHE_COMPRESSLEVEL=6
 ENV CCACHE_MAXSIZE=5G
+# We hash the content of the compiler rather than the location and mtime
+# to make sure the cache works across the different machines
 ENV CCACHE_COMPILERCHECK=content
-ENV CCACHE_EXTRAFILES="${SPECTRE_SOURCE_DIR}/tools/SpectrePch.hpp"
-ENV CCACHE_IGNOREHEADERS="${SPECTRE_BUILD_DIR}/SpectrePch.hpp:${SPECTRE_BUILD_DIR}/SpectrePch.hpp.gch"
 
 # Print the ccache configuration out
 RUN ccache -p
