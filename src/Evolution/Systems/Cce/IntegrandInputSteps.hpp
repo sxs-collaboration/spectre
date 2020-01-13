@@ -291,6 +291,23 @@ using all_transform_buffer_tags =
         tmpl::bind<Spectral::Swsh::coefficient_buffer_tags_for_derivative_tag,
                    tmpl::_1>>>>;
 
+namespace detail {
+template <typename Tag>
+struct additional_pre_swsh_derivative_tags_for {
+  using type = tmpl::conditional_t<cpp17::is_same_v<Tag, Tags::BondiH>,
+                                   tmpl::list<Tags::Dy<Tag>>,
+                                   tmpl::list<Tag, Tags::Dy<Tag>>>;
+};
+}  // namespace detail
+
+/// Typelist of steps for `PreSwshDerivatives` mutations needed for scri+
+/// computations
+using all_pre_swsh_derivative_tags_for_scri =
+    tmpl::list<Tags::Dy<Tags::Du<Tags::BondiJ>>,
+               Tags::Dy<Tags::Dy<Tags::BondiW>>,
+               Tags::Dy<Tags::Dy<Tags::Dy<Tags::BondiJ>>>,
+               Tags::ComplexInertialRetardedTime>;
+
 /*!
  * \brief A typelist for the full set of tags needed as direct or indirect
  * input to any `ComputeBondiIntegrand` that are computed any specialization of
@@ -303,19 +320,13 @@ using all_transform_buffer_tags =
  * Spectral::Swsh::number_of_swsh_collocation_points(l_max)`.
  */
 using all_pre_swsh_derivative_tags =
-    tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
-        bondi_hypersurface_step_tags,
-        tmpl::bind<tmpl::list,
-                   pre_swsh_derivative_tags_to_compute_for<tmpl::_1>, tmpl::_1,
-                   tmpl::bind<Tags::Dy, tmpl::_1>>>>>;
-
-/// Typelist of steps for `PreSwshDerivatives` mutations needed for scri+
-/// computations
-using all_pre_swsh_derivative_tags_for_scri =
-    tmpl::list<Tags::Dy<Tags::Du<Tags::BondiJ>>,
-               Tags::Dy<Tags::Dy<Tags::BondiW>>,
-               Tags::Dy<Tags::Dy<Tags::Dy<Tags::BondiJ>>>,
-               Tags::ComplexInertialRetardedTime>;
+    tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
+        tmpl::transform<
+            bondi_hypersurface_step_tags,
+            tmpl::bind<
+                tmpl::list, pre_swsh_derivative_tags_to_compute_for<tmpl::_1>,
+                detail::additional_pre_swsh_derivative_tags_for<tmpl::_1>>>,
+        all_pre_swsh_derivative_tags_for_scri>>>;
 
 /// Typelist of steps for `SwshDerivatives` mutations called on volume
 /// quantities needed for scri+ computations
