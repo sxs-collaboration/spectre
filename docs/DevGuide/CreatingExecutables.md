@@ -16,67 +16,24 @@ There are several different types of executables that can be built:
 
 ### Executable Using Charm++ for Parallelization
 
-A simple example of an executable using Charm++ for parallelization is in
-`src/Executables/Examples/HelloWorld`. To add an executable as a target, use
-the CMake function `add_spectre_parallel_executable` which takes as its four
-arguments
-- the name of the executable
-- the name of the path relative to src that contains the header file (which is
-  the name of the executable with extension `.hpp`) that will define structs and
-  functions to be described below
-- the name of the metavariables struct described below
-- the list of SpECTRE libraries needed for the executable to link
+\ref tutorial_minimal_parallel_executable tutorial describes how to
+add a new parallel executable.
 
-For example,
-
-```
-set(LIBS_TO_LINK
-  Informer
-  Utilities
-  )
-
-add_spectre_parallel_executable(
-  SingletonHelloWorld
-  Executables/Examples/HelloWorld
-  Metavars
-  "${LIBS_TO_LINK}"
-  )
-```
-will create the executable `SingletonHelloWorld` from
-SingletonHelloWorld.hpp which is found in the directory
-`src/Executables/Examples/HelloWorld`.  `Metavars` will be used as the
-metavariables struct, and `SingletonHelloWorld` will link against the
-`%Informer` and `Utilities` SpECTRE libraries.
-
-The header file from which an executable is generated must define a
-metavariables struct that can be thought of as a compile-time input file that
-defines what the executable will do.  The `Metavars` struct for
-`SingletonHelloWorld` is a minimal example of a metavariables struct.
-
-\snippet SingletonHelloWorld.hpp executable_example_metavariables
-
-Each metavariables must define an enum class `Phase` with the phases of the
-executable (which must include `Initialization` and `Exit`), and a static
-function `determine_next_phase`.  In the example, the only additional phase is
-`Execute`, and the phases are executed in order.  Charm++ will execute each
-phase until it detects that nothing is happening (quiescence detection).  As
-this represents a global synchronization point, the number of phases should be
-minimized in order to exploit the power of SpECTRE.
-
-Each metavariables must define a type alias `component_list` that is a
-`tmpl::list` of the parallel components used by the executable.
+Another simple example of an executable using Charm++ for
+parallelization is in `src/Executables/Examples/HelloWorld`.  In this
+example, the only additional phase (besides `Initialization` and
+`Exit`) is `Execute`, and the phases are executed in order.
 `SingletonHelloWorld` defines a single component `HelloWorld`
 
 \snippet SingletonHelloWorld.hpp executable_example_singleton
 
-which specifies via the `chare_type` type alias that it is a singleton parallel
-component which means that only one such object will exist across all processors
-used by the executable.  Each component must define the static functions
-`initialize`, which is executed during the `Initialization` phase, and
-`execute_next_phase` which is executed during the phases (other than
-`Initialization` and `Exit`) defined in the metavariables struct.  In
-`SingletonHelloWorld`, nothing is done during the initialization phase, while
-the `PrintMessage` action is called during the `Execute` phase.
+which specifies via the `chare_type` type alias that it is a singleton
+parallel component which means that only one such object will exist
+across all processors used by the executable.  Each component must
+define the static function `execute_next_phase` which is executed
+during the phases (other than `Initialization` and `Exit`) defined in
+the metavariables struct.  In `SingletonHelloWorld`, the
+`PrintMessage` action is called during the `Execute` phase.
 
 \snippet  SingletonHelloWorld.hpp executable_example_action
 
@@ -104,14 +61,6 @@ on. An example input file for `SingletonHelloWorld` can be found in
 `tests/InputFiles/ExampleExecutables/SingletonHelloWorld.yaml` and shows how to
 specify the options (lines beginning with a `#` are comments and can be
 ignored).
-
-In addition to defining the metavaribles and component structs, the header for
-an executable must define two lists of functions
-
-\snippet  SingletonHelloWorld.hpp executable_example_charm_init
-
-that are executed at startup by Charm++ on each node and processor the
-executable runs on.
 
 Furthermore among the included header files
 
