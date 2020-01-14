@@ -80,7 +80,7 @@ Code Quality Items:
 * Do not add anything to [the `std` namespace]
   (http://en.cppreference.com/w/cpp/language/extending_std).
 * Virtual functions are explicitly overridden using the `override` keyword.
-* `pragma once` is to be used for header guards
+* `#%pragma once` is to be used for header guards
 * Prefer range-based for loops
 * Use `size_t` for positive integers rather than `int`, specifically when
   looping over containers. This is in compliance with what the STL uses.

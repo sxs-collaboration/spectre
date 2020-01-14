@@ -54,7 +54,7 @@ true:
   - A file has white space at the end of the line
   - A file has a carriage return character
   - A file is missing the license line
-  - A `*.hpp` file is missing `pragma once`
+  - A `*.hpp` file is missing `#%pragma once`
   - A file does not end with a newline
   - A `c++` file includes any of the following headers
     * `<iostream>`  (useless when running in parallel)
