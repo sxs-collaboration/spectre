@@ -193,6 +193,7 @@ long_lines() {
               'CMakeLists.txt$' \
               'Doxyfile.in$' \
               'containers/Dockerfile.travis$' \
+              'docs/config/MathJax.js' \
               'docs/MainSite/Main.md' \
               'docs/DevGuide/Travis.md' \
               'tools/Iwyu/boost-all.imp$' && \
@@ -296,6 +297,7 @@ license() {
               'docs/config/footer.html' \
               'docs/config/header.html' \
               'docs/config/layout.xml' \
+              'docs/config/MathJax.js$' \
               'LICENSE' \
               'support/TeXLive/texlive.profile' \
               'tools/Iwyu/boost-all.imp$' \

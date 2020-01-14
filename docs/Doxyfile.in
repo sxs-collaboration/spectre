@@ -242,6 +242,7 @@ HTML_EXTRA_FILES       = @PROJECT_SOURCE_DIR@/docs/config/icons/octicons.eot \
                          @PROJECT_SOURCE_DIR@/docs/config/js/jquery.js \
                          @PROJECT_SOURCE_DIR@/docs/config/js/spectre.js \
                          @PROJECT_SOURCE_DIR@/docs/.nojekyll \
+                         @PROJECT_SOURCE_DIR@/docs/config/MathJax.js \
                          @PROJECT_SOURCE_DIR@/LICENSE.txt
 
 # This is not the recommended way of using a completely custom style sheet.
@@ -252,11 +253,15 @@ USE_MDFILE_AS_MAINPAGE = main.md
 
 USE_MATHJAX = YES
 
-MATHJAX_RELPATH = https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2
+# MATHJAX_RELPATH ultimately links to docs/config/MathJax.js, which is
+# copied to docs/html/MathJax.js with the HTML_EXTRA_FILES
+MATHJAX_RELPATH = ./
 
-MATHJAX_EXTENSIONS = TeX/AMSmath TeX/AMSsymbols color
+# Since Doxygen doesn't support MathJax 3 yet, we configure all the
+# extensions/packages through the docs/config/MathJax.js file.
+MATHJAX_EXTENSIONS =
 
-MATHJAX_CODEFILE = @PROJECT_SOURCE_DIR@/docs/config/js/mathjax_helper.js
+MATHJAX_CODEFILE =
 
 #---------------------------------------------------------------------------
 # Configuration::additions related to the search engine
