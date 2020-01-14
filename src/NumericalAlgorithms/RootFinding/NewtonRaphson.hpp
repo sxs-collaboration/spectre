@@ -20,7 +20,9 @@ namespace RootFinder {
  * \brief Finds the root of the function `f` with the Newton-Raphson method.
  *
  * `f` is a unary invokable that takes a `double` which is the current value at
- * which to evaluate `f`. An example is below.
+ * which to evaluate `f`. `f` must return a `std::pair<double, double>` where
+ * the first element is the function value and the second element is the
+ * derivative of the function.  An example is below.
  *
  * \snippet Test_NewtonRaphson.cpp double_newton_raphson_root_find
  *
@@ -67,6 +69,8 @@ double newton_raphson(const Function& f, const double initial_guess,
  * `f` is a binary invokable that takes a `double` as its first argument and a
  * `size_t` as its second. The `double` is the current value at which to
  * evaluate `f`, and the `size_t` is the current index into the `DataVector`s.
+ *  `f` must return a `std::pair<double, double>` where the first element is
+ * the function value and the second element is the derivative of the function.
  * Below is an example of how to root find different functions by indexing into
  * a lambda-captured `DataVector` using the `size_t` passed to `f`.
  *
