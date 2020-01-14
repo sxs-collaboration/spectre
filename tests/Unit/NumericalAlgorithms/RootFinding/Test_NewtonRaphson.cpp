@@ -26,10 +26,8 @@ struct FuncAndDeriv {
     return std::make_pair(2. - square(x), -2. * x);
   }
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson",
-                  "[NumericalAlgorithms][RootFinding][Unit]") {
+void test_simple() noexcept {
   /// [double_newton_raphson_root_find]
   const size_t digits = 8;
   const double correct = sqrt(2.);
@@ -52,8 +50,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson",
   CHECK(root_from_free == root_from_functor);
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson.Bounds",
-                  "[NumericalAlgorithms][RootFinding][Unit]") {
+void test_bounds() noexcept {
   const size_t digits = 8;
   const double guess = 1.5;
   double upper = 2.;
@@ -76,8 +73,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson.Bounds",
   CHECK(std::abs(root - correct) < 1.0 / std::pow(10, digits));
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson.DataVector",
-                  "[NumericalAlgorithms][RootFinding][Unit]") {
+void test_datavector() noexcept {
   /// [datavector_newton_raphson_root_find]
   const size_t digits = 8;
   const DataVector guess{1.6, 1.9, -1.6, -1.9};
@@ -101,52 +97,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson.DataVector",
   }
 }
 
-// [[OutputRegex, The desired accuracy of 100 base-10 digits must be smaller]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.NewtonRaphson.Digits.Double",
-    "[NumericalAlgorithms][RootFinding][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const size_t digits = 100;
-  const double guess = 1.5;
-  double lower = 1.;
-  double upper = 2.;
-  const auto func_and_deriv_lambda = [](double x) {
-    return std::make_pair(2. - square(x), -2. * x);
-  };
-
-  RootFinder::newton_raphson(func_and_deriv_lambda, guess, lower, upper,
-                             digits);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, The desired accuracy of 100 base-10 digits must be smaller]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.NewtonRaphson.Digits.DataVector",
-    "[NumericalAlgorithms][RootFinding][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  const size_t digits = 100;
-  const DataVector guess{1.6, 1.9, -1.6, -1.9};
-  const DataVector lower{sqrt(2.), sqrt(2.), -2., -3.};
-  const DataVector upper{2., 3., -sqrt(2.), -sqrt(2.)};
-  const DataVector constant{2., 4., 2., 4.};
-
-  const auto func_and_deriv_lambda = [&constant](const double x,
-                                                 const size_t i) noexcept {
-    return std::make_pair(constant[i] - square(x), -2. * x);
-  };
-
-  const auto root = RootFinder::newton_raphson(func_and_deriv_lambda, guess,
-                                               lower, upper, digits);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.NewtonRaphson.convergence_error.Double",
-    "[NumericalAlgorithms][RootFinding][Unit]") {
+void test_convergence_error_double() noexcept {
   const size_t max_iterations = 2;
   const size_t digits = 8;
   const double guess = 1.5;
@@ -179,9 +130,7 @@ SPECTRE_TEST_CASE(
                         << func_and_deriv(best_result).first));
 }
 
-SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.NewtonRaphson.convergence_error.DataVector",
-    "[NumericalAlgorithms][RootFinding][Unit]") {
+void test_convergence_error_datavector() noexcept {
   const size_t max_iterations = 2;
   const size_t digits = 8;
   const auto digits_binary = std::round(std::log2(std::pow(10, digits)));
@@ -232,3 +181,56 @@ SPECTRE_TEST_CASE(
     }
   }
 }
+
+SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.NewtonRaphson",
+                  "[NumericalAlgorithms][RootFinding][Unit]") {
+  test_simple();
+  test_bounds();
+  test_datavector();
+  test_convergence_error_double();
+  test_convergence_error_datavector();
+}
+
+// [[OutputRegex, The desired accuracy of 100 base-10 digits must be smaller]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Numerical.RootFinding.NewtonRaphson.Digits.Double",
+    "[NumericalAlgorithms][RootFinding][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const size_t digits = 100;
+  const double guess = 1.5;
+  double lower = 1.;
+  double upper = 2.;
+  const auto func_and_deriv_lambda = [](double x) {
+    return std::make_pair(2. - square(x), -2. * x);
+  };
+
+  RootFinder::newton_raphson(func_and_deriv_lambda, guess, lower, upper,
+                             digits);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, The desired accuracy of 100 base-10 digits must be smaller]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.Numerical.RootFinding.NewtonRaphson.Digits.DataVector",
+    "[NumericalAlgorithms][RootFinding][Unit]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  const size_t digits = 100;
+  const DataVector guess{1.6, 1.9, -1.6, -1.9};
+  const DataVector lower{sqrt(2.), sqrt(2.), -2., -3.};
+  const DataVector upper{2., 3., -sqrt(2.), -sqrt(2.)};
+  const DataVector constant{2., 4., 2., 4.};
+
+  const auto func_and_deriv_lambda = [&constant](const double x,
+                                                 const size_t i) noexcept {
+    return std::make_pair(constant[i] - square(x), -2. * x);
+  };
+
+  const auto root = RootFinder::newton_raphson(func_and_deriv_lambda, guess,
+                                               lower, upper, digits);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+}  // namespace
