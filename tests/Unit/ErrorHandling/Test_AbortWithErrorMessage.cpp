@@ -5,7 +5,6 @@
 
 #include "ErrorHandling/AbortWithErrorMessage.hpp"
 
-/// [error_test_example]
 // [[OutputRegex, 'a == b' violated!]]
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.ErrorHandling.AbortWithErrorMessage.Assert",
@@ -15,7 +14,6 @@
                            static_cast<const char*>(__PRETTY_FUNCTION__),
                            "Test Error");
 }
-/// [error_test_example]
 
 // [[OutputRegex, ############ ERROR]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.ErrorHandling.AbortWithErrorMessage.Error",

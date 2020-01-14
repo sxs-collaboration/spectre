@@ -40,9 +40,11 @@ std::ostream& operator<<(std::ostream& os, const TestEnum& t) noexcept {
 
 }  // namespace
 
+/// [output_test_example]
 // [[OutputRegex, -100 3000000000 1.0000000000000000000e\+00 \(0,4,8,-7\) test 1
 // 2 3 abf a o e u Value 2]]
 SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
+  OUTPUT_TEST();
   const char c_string0[40] = {"test 1 2 3"};
   auto* c_string1 = new char[80];
   // clang-tidy: do not use pointer arithmetic
@@ -54,10 +56,8 @@ SPECTRE_TEST_CASE("Unit.Parallel.printf", "[Unit][Parallel]") {
   Parallel::printf("%d %lld %s %s %s %s %s\n", -100, 3000000000, TestStream{},
                    c_string0, c_string1, c_string2, TestEnum::Value2);
   delete[] c_string1;
-  // Catch requires us to have at least one CHECK in each test
-  // The Unit.Parallel.printf does not need to check anything
-  CHECK(true);
 }
+/// [output_test_example]
 
 SPECTRE_TEST_CASE("Unit.Parallel.NodeAndPes", "[Unit][Parallel]") {
   CHECK(1 == Parallel::number_of_procs());

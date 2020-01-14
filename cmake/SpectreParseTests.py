@@ -65,9 +65,10 @@ allowed_test_attributes = [x.lower() for x in allowed_test_attributes]
 
 def parse_source_file(file_name):
     file_string = open(file_name, "r").read()
-    test_regex = re.compile("(\/\/ \[\[.*?)?SPECTRE_TEST_CASE\((.*?)\) {",
+    test_regex = re.compile("(\/\/ \[\[.*?)?SPECTRE_TEST_CASE\((.*?)\) {(.*?);",
                             re.DOTALL)
-    for (attributes, test_name) in re.findall(test_regex, file_string):
+    for (attributes, test_name, test_body_first_line) in \
+        re.findall(test_regex, file_string):
         # Capture the name of the test into the first group and the tags into
         # the second. For example,
         # "Unit.My.Test", "[Unit][My]"
@@ -98,6 +99,9 @@ def parse_source_file(file_name):
                 test_timeout = timeout
 
         # Parse the test attributes
+        should_have_output_regex = "ERROR_TEST()" in test_body_first_line \
+            or "ASSERTION_TEST()" in test_body_first_line \
+            or "OUTPUT_TEST()" in test_body_first_line
         output_regex = ''
 
         all_attributes_by_name = re.findall("\[\[([^,]+), (.*?)\]\]",
@@ -113,8 +117,23 @@ def parse_source_file(file_name):
                 test_timeout = attribute[1]
 
             if attribute[0].lower() == "outputregex":
+                if not should_have_output_regex:
+                    print("\nERROR: The test '%s' in the file '%s' has the "
+                          "attribute OutputRegEx, but does not contain the "
+                          "macro ERROR_TEST(), ASSERTION_TEST(), or "
+                          "OUTPUT_TEST() as its first line.\n" %
+                          (test_name, file_name))
+                    exit(1)
                 output_regex = attribute[1].replace("\n//", "")
 
+        if should_have_output_regex and output_regex == '':
+            print("\nERROR: The test '%s' in the file '%s' was marked as an "
+                  "ERROR_TEST(), ASSERTION_TEST(), or OUTPUT_TEST(), but "
+                  "failed to produce a parsable OutputRegex attribute! "
+                  "The syntax is // [[OutputRegex, <regular_expression>]] as "
+                  "a comment before the SPECTRE_TEST_CASE.\n" %
+                  (test_name, file_name))
+            exit(1)
         open("%s.timeout" % test_name, "w").write("%s" % test_timeout)
         open("%s.output_regex" % test_name, "w").write("%s" % output_regex)
 

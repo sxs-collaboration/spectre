@@ -34,10 +34,8 @@ SPECTRE_TEST_CASE("Unit.TestingFramework.Approx", "[Unit]") {
   /// [approx_new_custom]
 }
 
-/// [error_test]
 // [[OutputRegex, I failed]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.TestingFramework.Abort", "[Unit]") {
   ERROR_TEST();
-  /// [error_test]
   Parallel::abort("I failed");
 }
