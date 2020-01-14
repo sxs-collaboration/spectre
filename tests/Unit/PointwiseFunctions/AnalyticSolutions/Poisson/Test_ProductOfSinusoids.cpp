@@ -20,6 +20,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Mesh.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
+#include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -93,7 +94,7 @@ SPECTRE_TEST_CASE(
     INFO("1D");
     test_solution<1>({{0.5}}, "[0.5]");
 
-    using system = Poisson::FirstOrderSystem<1>;
+    using system = Poisson::FirstOrderSystem<1, Poisson::Geometry::Euclidean>;
     const Poisson::Solutions::ProductOfSinusoids<1> solution{{{0.5}}};
     const typename system::fluxes fluxes_computer{};
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>
@@ -105,7 +106,7 @@ SPECTRE_TEST_CASE(
     INFO("2D");
     test_solution<2>({{0.5, 1.}}, "[0.5, 1.]");
 
-    using system = Poisson::FirstOrderSystem<2>;
+    using system = Poisson::FirstOrderSystem<2, Poisson::Geometry::Euclidean>;
     const Poisson::Solutions::ProductOfSinusoids<2> solution{{{0.5, 0.5}}};
     const typename system::fluxes fluxes_computer{};
     using AffineMap2D =
@@ -119,7 +120,7 @@ SPECTRE_TEST_CASE(
     INFO("3D");
     test_solution<3>({{1., 0.5, 1.5}}, "[1., 0.5, 1.5]");
 
-    using system = Poisson::FirstOrderSystem<3>;
+    using system = Poisson::FirstOrderSystem<3, Poisson::Geometry::Euclidean>;
     const Poisson::Solutions::ProductOfSinusoids<3> solution{{{0.5, 0.5, 0.5}}};
     const typename system::fluxes fluxes_computer{};
     using AffineMap3D =

@@ -10,9 +10,11 @@
 
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "Elliptic/Systems/Poisson/Equations.hpp"
+#include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
+#include "PointwiseFunctions/GeneralRelativity/TagsDeclarations.hpp"
 #include "Utilities/TMPL.hpp"
 
 /// \cond
@@ -79,7 +81,7 @@ namespace Poisson {
  * property further increase the computational cost (see \ref LinearSolverGroup)
  * and is remedied in the second-order formulation.
  */
-template <size_t Dim>
+template <size_t Dim, Geometry BackgroundGeometry>
 struct FirstOrderSystem {
  private:
   using field = Tags::Field;
@@ -103,12 +105,18 @@ struct FirstOrderSystem {
   using auxiliary_variables =
       db::wrap_tags_in<LinearSolver::Tags::Operand, auxiliary_fields>;
 
-  using fluxes = EuclideanFluxes<Dim>;
+  using fluxes =
+      tmpl::conditional_t<BackgroundGeometry == Geometry::Euclidean,
+                          EuclideanFluxes<Dim>, NonEuclideanFluxes<Dim>>;
   using sources = Sources;
 
   // The tag of the operator to compute magnitudes on the manifold, e.g. to
   // normalize vectors on the faces of an element
   template <typename Tag>
-  using magnitude_tag = ::Tags::EuclideanMagnitude<Tag>;
+  using magnitude_tag = tmpl::conditional_t<
+      BackgroundGeometry == Geometry::Euclidean,
+      ::Tags::EuclideanMagnitude<Tag>,
+      ::Tags::NonEuclideanMagnitude<
+          Tag, gr::Tags::SpatialMetric<Dim, Frame::Inertial, DataVector>>>;
 };
 }  // namespace Poisson
