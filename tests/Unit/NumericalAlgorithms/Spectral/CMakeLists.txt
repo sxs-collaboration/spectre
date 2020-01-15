@@ -18,6 +18,7 @@ set(LIBRARY_SOURCES
   Test_SwshCollocation.cpp
   Test_SwshDerivatives.cpp
   Test_SwshFiltering.cpp
+  Test_SwshInterpolation.cpp
   Test_SwshTags.cpp
   Test_SwshTestHelpers.cpp
   Test_SwshTransform.cpp
