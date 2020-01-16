@@ -4,8 +4,9 @@
 set(LIBRARY CurvedScalarWave)
 
 set(LIBRARY_SOURCES
-    Equations.cpp
-    )
+  Characteristics.cpp
+  Equations.cpp
+  )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 

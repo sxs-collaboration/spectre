@@ -21,8 +21,10 @@ struct Psi;
 struct Pi;
 template <size_t Dim>
 struct Phi;
+namespace Tags {
 struct ConstraintGamma1;
 struct ConstraintGamma2;
+}  // namespace Tags
 }  // namespace CurvedScalarWave
 /// \endcond
 
@@ -58,20 +60,20 @@ namespace CurvedScalarWave {
 template <size_t Dim>
 struct ComputeDuDt {
   using argument_tags = tmpl::list<
-      Pi, Phi<Dim>, Tags::deriv<Psi, tmpl::size_t<Dim>, Frame::Inertial>,
-      Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::Inertial>,
-      Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
+      Pi, Phi<Dim>, ::Tags::deriv<Psi, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
       gr::Tags::Lapse<DataVector>,
       gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-      Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
-                  Frame::Inertial>,
-      Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
-                  tmpl::size_t<Dim>, Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::Lapse<DataVector>, tmpl::size_t<Dim>,
+                    Frame::Inertial>,
+      ::Tags::deriv<gr::Tags::Shift<Dim, Frame::Inertial, DataVector>,
+                    tmpl::size_t<Dim>, Frame::Inertial>,
       gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
       gr::Tags::TraceSpatialChristoffelSecondKind<Dim, Frame::Inertial,
                                                   DataVector>,
-      gr::Tags::TraceExtrinsicCurvature<DataVector>, ConstraintGamma1,
-      ConstraintGamma2>;
+      gr::Tags::TraceExtrinsicCurvature<DataVector>, Tags::ConstraintGamma1,
+      Tags::ConstraintGamma2>;
 
   static void apply(
       gsl::not_null<Scalar<DataVector>*> dt_pi,
