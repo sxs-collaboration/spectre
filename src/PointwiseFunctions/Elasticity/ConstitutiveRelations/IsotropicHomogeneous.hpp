@@ -80,9 +80,10 @@ namespace ConstitutiveRelations {
  * relation thus reduces to
  *
  * \f{align}
- * T^{ij}=&-\frac{2\lambda\mu}{\lambda + 2\mu}\mathrm{Tr}^{(2)}\delta^{ij} -
+ * T^{ij}=&-\frac{2\lambda\mu}{\lambda + 2\mu}\mathrm{Tr}^{(2)}(S)\delta^{ij} -
  * 2\mu S^{ij} \\
- * =&-\frac{E\nu}{1-\nu^2}\mathrm{Tr}^{(2)}\delta^{ij} - \frac{E}{1+\nu}S^{ij}
+ * =&-\frac{E\nu}{1-\nu^2}\mathrm{Tr}^{(2)}(S)\delta^{ij} -
+ * \frac{E}{1+\nu}S^{ij}
  * \f}
  *
  * which is non-zero only in the directions of the plane. Since the stresses
