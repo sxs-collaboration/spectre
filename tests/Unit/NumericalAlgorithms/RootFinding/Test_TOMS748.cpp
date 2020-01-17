@@ -21,10 +21,8 @@ double f_free(double x) { return 2.0 - square(x); }
 struct F {
   double operator()(double x) { return 2.0 - square(x); }
 };
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
-                  "[NumericalAlgorithms][RootFinding][Unit]") {
+void test_simple() noexcept {
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
   const double upper = 2.0;
@@ -43,8 +41,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
   CHECK(root_from_free == root_from_functor);
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.Bounds",
-                  "[NumericalAlgorithms][RootFinding][Unit]") {
+void test_bounds() noexcept {
   /// [double_root_find]
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
@@ -90,8 +87,7 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.Bounds",
       std::domain_error(prefix));
 }
 
-SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.DataVector",
-                  "[NumericalAlgorithms][RootFinding][Unit]") {
+void test_datavector() noexcept {
   /// [datavector_root_find]
   const double abs_tol = 1e-15;
   const double rel_tol = 1e-15;
@@ -115,6 +111,44 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.DataVector",
   CHECK(std::abs(root[2] + sqrt(2.0)) / sqrt(2.0) < rel_tol);
   CHECK(std::abs(root[3] + 2.0) < abs_tol);
   CHECK(std::abs(root[3] + 2.0) / 2.0 < rel_tol);
+}
+
+void test_convergence_error_double() noexcept {
+  test_throw_exception(
+      []() {
+        const double abs_tol = 1e-15;
+        const double rel_tol = 1e-15;
+        const double upper = 2.0;
+        const double lower = 0.0;
+        const auto f = [](double x) { return 2.0 - square(x); };
+        RootFinder::toms748(f, lower, upper, abs_tol, rel_tol, 2);
+      },
+      convergence_error("toms748 reached max iterations without converging"));
+}
+
+void test_convergence_error_datavector() noexcept {
+  test_throw_exception(
+      []() {
+        const double abs_tol = 1e-15;
+        const double rel_tol = 1e-15;
+        const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
+        const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
+        const DataVector constant{2.0, 4.0, 2.0, 4.0};
+        const auto f = [&constant](const double x, const size_t i) noexcept {
+          return constant[i] - square(x);
+        };
+        RootFinder::toms748(f, lower, upper, abs_tol, rel_tol, 2);
+      },
+      convergence_error("toms748 reached max iterations without converging"));
+}
+
+SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748",
+                  "[NumericalAlgorithms][RootFinding][Unit]") {
+  test_simple();
+  test_bounds();
+  test_datavector();
+  test_convergence_error_double();
+  test_convergence_error_datavector();
 }
 
 // [[OutputRegex, The relative tolerance is too small.]]
@@ -155,35 +189,4 @@ SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.DataVector",
   ERROR("Failed to trigger ASSERT in an assertion test");
 #endif
 }
-
-SPECTRE_TEST_CASE("Unit.Numerical.RootFinding.TOMS748.convergence_error.Double",
-                  "[NumericalAlgorithms][RootFinding][Unit]") {
-  test_throw_exception(
-      []() {
-        const double abs_tol = 1e-15;
-        const double rel_tol = 1e-15;
-        const double upper = 2.0;
-        const double lower = 0.0;
-        const auto f = [](double x) { return 2.0 - square(x); };
-        RootFinder::toms748(f, lower, upper, abs_tol, rel_tol, 2);
-      },
-      convergence_error("toms748 reached max iterations without converging"));
-}
-
-SPECTRE_TEST_CASE(
-    "Unit.Numerical.RootFinding.TOMS748.convergence_error.DataVector",
-    "[NumericalAlgorithms][RootFinding][Unit]") {
-  test_throw_exception(
-      []() {
-        const double abs_tol = 1e-15;
-        const double rel_tol = 1e-15;
-        const DataVector upper{2.0, 3.0, -sqrt(2.0) + abs_tol, -sqrt(2.0)};
-        const DataVector lower{sqrt(2.0) - abs_tol, sqrt(2.0), -2.0, -3.0};
-        const DataVector constant{2.0, 4.0, 2.0, 4.0};
-        const auto f = [&constant](const double x, const size_t i) noexcept {
-          return constant[i] - square(x);
-        };
-        RootFinder::toms748(f, lower, upper, abs_tol, rel_tol, 2);
-      },
-      convergence_error("toms748 reached max iterations without converging"));
-}
+}  // namespace
