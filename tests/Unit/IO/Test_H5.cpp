@@ -155,7 +155,7 @@ SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorNotH5", "[Unit][IO][H5]") {
   h5::H5File<h5::AccessType::ReadWrite> my_file(file_name);
 }
 
-// [[OutputRegex, Cannot create a file in ReadOnly mode,
+// [[OutputRegex, Trying to open the file
 // './Unit.IO.H5.FileErrorFileNotExist.h5']]
 SPECTRE_TEST_CASE("Unit.IO.H5.FileErrorFileNotExist", "[Unit][IO][H5]") {
   ERROR_TEST();

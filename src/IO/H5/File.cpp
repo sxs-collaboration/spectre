@@ -26,7 +26,10 @@ H5File<Access_t>::H5File(std::string file_name, bool append_to_file)
   }
   const bool file_exists = file_system::check_if_file_exists(file_name_);
   if (not file_exists and AccessType::ReadOnly == Access_t) {
-    ERROR("Cannot create a file in ReadOnly mode, '" << file_name_ << "'");
+    ERROR("Trying to open the file '"
+          << file_name_
+          << "' in ReadOnly mode but the file does not exist. If you want to "
+             "create the file you must switch to ReadWrite mode.");
   }
   if (append_to_file and AccessType::ReadOnly == Access_t) {
     ERROR("Cannot append to a file opened in read-only mode. File name is: "
