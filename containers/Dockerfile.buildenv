@@ -105,7 +105,7 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.2.tar.gz -O bla
     && sed -i 's/march=native/march=x86-64/' configure.ac \
     && autoconf \
     && ./configure --prefix=/usr/local --disable-openmp \
-    && make -j4 \
+    && make $PARALLEL_MAKE_ARG \
     && mv auto/bin/* /usr/local/bin \
     && mv auto/include/* /usr/local/include \
     && mv auto/lib/* /usr/local/lib \
@@ -128,7 +128,7 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.2.tar.gz -O bla
              -D YAML_CPP_BUILD_CONTRIB=OFF \
              -D YAML_CPP_BUILD_TOOLS=ON \
              -D CMAKE_INSTALL_PREFIX=/usr/local/ .. \
-    && make -j4 \
+    && make $PARALLEL_MAKE_ARG \
     && make install \
     && cd ../.. \
     && rm -rf yaml-cpp*
@@ -146,7 +146,7 @@ RUN wget https://github.com/include-what-you-use/include-what-you-use/archive/cl
     && cmake -D CMAKE_CXX_COMPILER=clang++-5.0 \
         -D CMAKE_C_COMPILER=clang-5.0 \
         -D IWYU_LLVM_ROOT_PATH=/usr/lib/llvm-5.0 .. \
-    && make -j2 \
+    && make $PARALLEL_MAKE_ARG \
     && make install \
     && cd /work \
     && rm -rf /work/include-what-you-use-clang_5.0
