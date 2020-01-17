@@ -121,6 +121,9 @@ void test_exponential_filter_action(const double alpha,
   CAPTURE(QuadratureType);
   CAPTURE(disable_for_debugging);
 
+  // Need to increase approx slightly on some hardware
+  Approx custom_approx = Approx::custom().epsilon(1.0e-13);
+
   using metavariables = Metavariables<Dim, FilterIndividually>;
   using component = Component<metavariables>;
 
@@ -181,14 +184,15 @@ void test_exponential_filter_action(const double alpha,
                      get<Tags::VectorVar<Dim>>(initial_vars).get(d),
                      mesh.extents());
     }
-    CHECK_ITERABLE_APPROX(
+    CHECK_ITERABLE_CUSTOM_APPROX(
         expected_scalar,
-        (ActionTesting::get_databox_tag<component, Tags::ScalarVar>(runner,
-                                                                    0)));
-    CHECK_ITERABLE_APPROX(
+        (ActionTesting::get_databox_tag<component, Tags::ScalarVar>(runner, 0)),
+        custom_approx);
+    CHECK_ITERABLE_CUSTOM_APPROX(
         expected_vector,
         (ActionTesting::get_databox_tag<component, Tags::VectorVar<Dim>>(runner,
-                                                                         0)));
+                                                                         0)),
+        custom_approx);
   }
 }
 
