@@ -24,6 +24,13 @@ RUN apt-get update -y \
     && add-apt-repository ppa:ubuntu-toolchain-r/test
 
 # Install required packages for SpECTRE
+#
+# We intentionally don't install libboost-all-dev because that installs
+# Boost.MPI, which installs OpenMPI into the container. When MPI is
+# installed inside the container it makes it very difficult to use
+# Singularity on HPC systems to interface with the system MPI library.
+# The system MPI libraries are usually configured to take advantage of
+# InfiniBand or various other networking layers.
 RUN apt-get update -y \
     && apt-get install -y gcc-6 g++-6 gfortran-6 \
                           gcc-7 g++-7 gfortran-7 \
@@ -36,7 +43,10 @@ RUN apt-get update -y \
                           clang-5.0 clang-format-5.0 clang-tidy-5.0 \
                           libclang-5.0-dev wget libncurses-dev \
                           lcov cppcheck \
-                          libboost-all-dev libssl-dev libbenchmark-dev
+                          libboost-dev libboost-program-options-dev \
+                          libboost-python-dev libboost-thread-dev \
+                          libboost-tools-dev libssl-dev \
+                          libbenchmark-dev
 
 # Add clang 4 and 8
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
