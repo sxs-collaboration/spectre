@@ -411,6 +411,19 @@ struct dispatch_storage_type<3> {
   using f = typename Tag::return_type;
 };
 
+template <typename TagList, typename Tag>
+struct get_first_derived_tag_for_base_tag {
+  static_assert(
+      not cpp17::is_same_v<TagList, NoSuchType>,
+      "Can't retrieve the storage type of a base tag without the full tag "
+      "list. If you're using 'item_type' or 'const_item_type' then make sure "
+      "you pass the DataBox's tag list as the second template parameter to "
+      "those metafunctions. The base tag for which the storage type is being"
+      "retrieved is listed as the second template argument to the "
+      "'get_first_derived_tag_for_base_tag' class below");
+  using type = first_matching_tag<TagList, Tag>;
+};
+
 template <>
 struct dispatch_storage_type<4> {
   // base tag item: retrieve the derived tag from the tag list then call
@@ -422,8 +435,9 @@ struct dispatch_storage_type<4> {
   // same, it is undefined behavior if they are not and the user's
   // responsibility.
   template <typename TagList, typename Tag>
-  using f = typename storage_type_impl<TagList,
-                                       first_matching_tag<TagList, Tag>>::type;
+  using f = typename storage_type_impl<
+      TagList,
+      tmpl::type_from<get_first_derived_tag_for_base_tag<TagList, Tag>>>::type;
 };
 
 // The type internally stored in a simple or compute item.  For
