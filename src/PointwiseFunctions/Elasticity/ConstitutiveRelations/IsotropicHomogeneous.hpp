@@ -24,28 +24,50 @@ namespace ConstitutiveRelations {
  * \brief An isotropic and homogeneous material
  *
  * \details For an isotropic and homogeneous material the linear constitutive
- * relation \f$T^{ij}=-Y^{ijkl}S_{kl}\f$ reduces to \f[
+ * relation \f$T^{ij}=-Y^{ijkl}S_{kl}\f$ reduces to
+ *
+ * \f[
  * Y^{ijkl} = \lambda \delta^{ij}\delta^{kl} + \mu
  * \left(\delta^{ik}\delta^{jl} + \delta^{il}\delta^{jk}\right) \\
  * \implies \quad T^{ij} = -\lambda \mathrm{Tr}(S) \delta^{ij} - 2\mu S^{ij}
- * \f] with the _Lamé parameter_ \f$\lambda\f$ and the _shear modulus_ (or
+ * \f]
+ *
+ * with the _Lamé parameter_ \f$\lambda\f$ and the _shear modulus_ (or
  * _rigidity_) \f$\mu\f$. In the parametrization chosen in this implementation
- * we use the _bulk modulus_ (or _incompressibility_) \f[
+ * we use the _bulk modulus_ (or _incompressibility_)
+ *
+ * \f[
  * K=\lambda + \frac{2}{3}\mu
- * \f] instead of the Lamé parameter. In this parametrization the
- * stress-strain relation \f[
+ * \f]
+ *
+ * instead of the Lamé parameter. In this parametrization the
+ * stress-strain relation
+ *
+ * \f[
  * T^{ij} = -K \mathrm{Tr}(S) \delta^{ij} - 2\mu\left(S^{ij} -
- * \frac{1}{3}\mathrm{Tr}(S)\delta^{ij}\right) \f]
+ * \frac{1}{3}\mathrm{Tr}(S)\delta^{ij}\right)
+ * \f]
+ *
  * decomposes into a scalar and a traceless part (Eq. 11.18 in
  * \cite ThorneBlandford2017). Parameters also often used in this context are
- * the _Young's modulus_ \f[
+ * the _Young's modulus_
+ *
+ * \f[
  * E=\frac{9K\mu}{3K+\mu}=\frac{\mu(3\lambda+2\mu)}{\lambda+\mu}
- * \f] and the _Poisson ratio_ \f[
- * \nu=\frac{3K-2\mu}{2(3K+\mu)}=\frac{\lambda}{2(\lambda+\mu)}
- * \f]. Inversely, these relations read: \f[
- * K &=\frac{E}{3(1-2\nu)} \\
- * \lambda &=\frac{E\nu}{(1+\nu)(1-2\nu)} \\
- * \mu &=\frac{E}{2(1+\nu)}
+ * \f]
+ *
+ * and the _Poisson ratio_
+ *
+ * \f[
+ * \nu=\frac{3K-2\mu}{2(3K+\mu)}=\frac{\lambda}{2(\lambda+\mu)}\text{.}
+ * \f]
+ *
+ * Inversely, these relations read:
+ *
+ * \f[
+ * K =\frac{E}{3(1-2\nu)}, \quad
+ * \lambda =\frac{E\nu}{(1+\nu)(1-2\nu)}, \quad
+ * \mu =\frac{E}{2(1+\nu)}
  * \f]
  *
  * **In two dimensions** this implementation reduces to the plane-stress
@@ -55,11 +77,16 @@ namespace ConstitutiveRelations {
  * \f$T^{i3}=0=T^{3i}\f$ we find \f$\mathrm{Tr}(S)=\frac{2\mu}{\lambda +
  * 2\mu}\mathrm{Tr}^{(2)}(S)\f$, where \f$\mathrm{Tr}^{(2)}\f$ denotes that the
  * trace only applies to the two dimensions within the plane. The constitutive
- * relation thus reduces to \f[
- * T^{ij}&=-\frac{2\lambda\mu}{\lambda + 2\mu}\mathrm{Tr}^{(2)}\delta^{ij} -
+ * relation thus reduces to
+ *
+ * \f{align}
+ * T^{ij}=&-\frac{2\lambda\mu}{\lambda + 2\mu}\mathrm{Tr}^{(2)}(S)\delta^{ij} -
  * 2\mu S^{ij} \\
- * &=-\frac{E\nu}{1-\nu^2}\mathrm{Tr}^{(2)}\delta^{ij} - \frac{E}{1+\nu}S^{ij}
- * \f] which is non-zero only in the directions of the plane. Since the stresses
+ * =&-\frac{E\nu}{1-\nu^2}\mathrm{Tr}^{(2)}(S)\delta^{ij} -
+ * \frac{E}{1+\nu}S^{ij}
+ * \f}
+ *
+ * which is non-zero only in the directions of the plane. Since the stresses
  * are also assumed to be constant along the thickness of the plane
  * \f$\partial_3T^{ij}=0\f$ the elasticity problem \f$-\partial_i T^{ij}=F^j\f$
  * reduces to two dimensions.
