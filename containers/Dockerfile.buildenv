@@ -55,7 +55,8 @@ RUN apt-get update -y \
 RUN apt-get install -y ccache doxygen
 
 # Install Python packages
-RUN apt-get install -y python-pip \
+RUN apt-get install -y python-pip python3-pip \
+    && pip3 install numpy scipy \
     && pip install autopep8 flake8 \
     && pip install numpy scipy matplotlib pandas h5py jupyterlab \
     && pip install coverxygen beautifulsoup4 pybtex
