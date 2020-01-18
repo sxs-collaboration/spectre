@@ -28,6 +28,31 @@ SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData", "[Unit][NumericalAlgorithms]") {
   CHECK(data.extract() == std::make_pair("string 2"s, 2.345));
 }
 
+// [[OutputRegex, Local data not available.]]
+[[noreturn]] SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData.no_local_data",
+                               "[Unit][NumericalAlgorithms]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  dg::SimpleMortarData<size_t, std::string, double> data;
+  data.remote_insert(0, 1.234);
+  data.local_data(0);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
+// [[OutputRegex, Only have local data at temporal_id]]
+[[noreturn]] SPECTRE_TEST_CASE(
+    "Unit.DG.SimpleMortarData.no_local_data_at_time",
+    "[Unit][NumericalAlgorithms]") {
+  ASSERTION_TEST();
+#ifdef SPECTRE_DEBUG
+  dg::SimpleMortarData<size_t, std::string, double> data;
+  data.local_insert(1, "");
+  data.local_data(0);
+  ERROR("Failed to trigger ASSERT in an assertion test");
+#endif
+}
+
 // [[OutputRegex, Received local data at 1, but already have remote
 // data at 0]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.DG.SimpleMortarData.wrong_time.local",

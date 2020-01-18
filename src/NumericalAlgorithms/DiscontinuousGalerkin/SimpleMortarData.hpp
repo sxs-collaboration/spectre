@@ -35,6 +35,15 @@ class SimpleMortarData {
   // clang-tidy: google-runtime-references
   void pup(PUP::er& p) noexcept;  // NOLINT
 
+  /// Retrieve the local data at `temporal_id`
+  const LocalVars& local_data(const TemporalId& temporal_id) const noexcept {
+    ASSERT(local_data_, "Local data not available.");
+    ASSERT(temporal_id == temporal_id_,
+           "Only have local data at temporal_id "
+               << temporal_id_ << ", but requesting at " << temporal_id);
+    return *local_data_;
+  };
+
  private:
   TemporalId temporal_id_{};
   boost::optional<LocalVars> local_data_{};

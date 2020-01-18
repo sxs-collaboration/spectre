@@ -255,6 +255,13 @@ SPECTRE_TEST_CASE("Unit.Time.BoundaryHistory", "[Unit][Time]") {
   history.local_insert_initial(make_time_id(-1.), get_output(-1));
   history.local_insert(make_time_id(2.), get_output(2));
 
+  {
+    INFO("Test `local_data` member function");
+    CHECK(history.local_data(make_time_id(0.)) == get_output(0));
+    CHECK(history.local_data(make_time_id(-1.)) == get_output(-1));
+    CHECK(history.local_data(make_time_id(2.)) == get_output(2));
+  }
+
   history.remote_insert(make_time_id(1.), std::vector<int>{1});
   history.remote_insert_initial(make_time_id(0.), std::vector<int>{0});
   history.remote_insert_initial(make_time_id(-1.), std::vector<int>{-1});
