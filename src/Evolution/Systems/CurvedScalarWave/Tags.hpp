@@ -13,7 +13,11 @@
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/CurvedScalarWave/TagsDeclarations.hpp"
 
+/// \cond
 class DataVector;
+template <class>
+class Variables;
+/// \endcond
 
 namespace CurvedScalarWave {
 struct Psi : db::SimpleTag {
@@ -26,21 +30,42 @@ struct Pi : db::SimpleTag {
   static std::string name() noexcept { return "Pi"; }
 };
 
-template <size_t Dim>
+template <size_t SpatialDim>
 struct Phi : db::SimpleTag {
-  using type = tnsr::i<DataVector, Dim>;
+  using type = tnsr::i<DataVector, SpatialDim>;
   static std::string name() noexcept { return "Phi"; }
 };
 
 namespace Tags {
 struct ConstraintGamma1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ConstraintGamma1"; }
 };
 
 struct ConstraintGamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ConstraintGamma2"; }
+};
+
+/*!
+ * \brief Tag for the one-index constraint of the scalar wave
+ * system in curved spacetime.
+ *
+ * For details on how this is defined and computed, see
+ * `OneIndexConstraintCompute`.
+ */
+template <size_t SpatialDim>
+struct OneIndexConstraint : db::SimpleTag {
+  using type = tnsr::i<DataVector, SpatialDim, Frame::Inertial>;
+};
+/*!
+ * \brief Tag for the two-index constraint of the scalar wave
+ * system in curved spacetime.
+ *
+ * For details on how this is defined and computed, see
+ * `TwoIndexConstraintCompute`.
+ */
+template <size_t SpatialDim>
+struct TwoIndexConstraint : db::SimpleTag {
+  using type = tnsr::ij<DataVector, SpatialDim, Frame::Inertial>;
 };
 
 // @{
