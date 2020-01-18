@@ -56,7 +56,8 @@ void SimpleMortarData<TemporalId, LocalVars, RemoteVars>::local_insert(
   ASSERT(not local_data_, "Already received local data.");
   ASSERT(not remote_data_ or temporal_id == temporal_id_,
          "Received local data at " << temporal_id
-         << ", but already have remote data at " << temporal_id_);
+                                   << ", but already have remote data at "
+                                   << temporal_id_);
   temporal_id_ = std::move(temporal_id);
   local_data_ = std::move(vars);
 }
@@ -67,7 +68,8 @@ void SimpleMortarData<TemporalId, LocalVars, RemoteVars>::remote_insert(
   ASSERT(not remote_data_, "Already received remote data.");
   ASSERT(not local_data_ or temporal_id == temporal_id_,
          "Received remote data at " << temporal_id
-         << ", but already have local data at " << temporal_id_);
+                                    << ", but already have local data at "
+                                    << temporal_id_);
   temporal_id_ = std::move(temporal_id);
   remote_data_ = std::move(vars);
 }
@@ -77,8 +79,8 @@ std::pair<LocalVars, RemoteVars>
 SimpleMortarData<TemporalId, LocalVars, RemoteVars>::extract() noexcept {
   ASSERT(local_data_ and remote_data_,
          "Tried to extract boundary data, but do not have "
-         << (local_data_ ? "remote" : remote_data_ ? "local" : "any")
-         << " data.");
+             << (local_data_ ? "remote" : remote_data_ ? "local" : "any")
+             << " data.");
   const auto result =
       std::make_pair(std::move(*local_data_), std::move(*remote_data_));
   local_data_ = boost::none;
