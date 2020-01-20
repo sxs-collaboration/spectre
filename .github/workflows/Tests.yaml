@@ -232,15 +232,9 @@ jobs:
         CCACHE_MAXSIZE: 400M
         CCACHE_COMPRESS: 1
         CCACHE_COMPRESSLEVEL: 6
-        # In order to make ccache work with precompiled headers we need to:
-        # - Hash the content of the compiler rather than the location and mtime
-        # - Hash the header file in the repo that will generate the precompiled
-        #   header
-        # - Ignore the precompiled header in the build directory
+        # We hash the content of the compiler rather than the location and mtime
+        # to make sure the cache works across the different machines
         CCACHE_COMPILERCHECK: content
-        CCACHE_EXTRAFILES: ${GITHUB_WORKSPACE}/tools/SpectrePch.hpp
-        CCACHE_IGNOREHEADERS:
-          /work/build/SpectrePch.hpp:/work/build/SpectrePch.hpp.gch
     steps:
       - name: Checkout repository
         uses: actions/checkout@v1
