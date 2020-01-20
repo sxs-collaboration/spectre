@@ -13,6 +13,7 @@
 #include "Domain/FaceNormal.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
+#include "Evolution/TypeTraits.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Invoke.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/Tags.hpp"
@@ -45,7 +46,6 @@ namespace Actions {
 /// Uses:
 /// - ConstGlobalCache:
 ///   - Metavariables::boundary_condition_tag
-///   - Metavariables::initial_data_tag
 /// - DataBox:
 ///   - Tags::Time
 ///   - External<Tags::BoundaryCoordinates<volume_dim>>,
@@ -107,8 +107,8 @@ struct ImposeDirichletBoundaryConditions {
 
     static_assert(
         system::is_in_flux_conservative_form or
-            std::is_same_v<typename Metavariables::initial_data_tag,
-                           typename Metavariables::boundary_condition_tag>,
+            evolution::is_analytic_solution_v<
+                typename Metavariables::boundary_condition_tag::type>,
         "Only analytic boundary conditions, or dirichlet boundary conditions "
         "for conservative systems are implemented");
 
@@ -165,8 +165,8 @@ struct ImposeDirichletBoundaryConditions {
     static_assert(
         system::is_in_flux_conservative_form and
             system::has_primitive_and_conservative_vars and
-            std::is_same_v<typename Metavariables::initial_data_tag,
-                           typename Metavariables::boundary_condition_tag>,
+            evolution::is_analytic_solution_v<
+                typename Metavariables::boundary_condition_tag::type>,
         "Only analytic boundary conditions, or dirichlet boundary conditions "
         "for conservative systems are implemented");
 
