@@ -118,15 +118,21 @@ class CProxy_ConstGlobalCache;
 }  // namespace Parallel
 /// \endcond
 
+template <typename InitialData, typename BoundaryConditions>
 struct EvolutionMetavars {
   static constexpr int volume_dim = 3;
   using frame = Frame::Inertial;
   using system = GeneralizedHarmonic::System<volume_dim>;
   using temporal_id = Tags::TimeStepId;
   static constexpr bool local_time_stepping = false;
-  using initial_data_tag = Tags::AnalyticSolution<
-      GeneralizedHarmonic::Solutions::WrappedGr<gr::Solutions::KerrSchild>>;
-  using boundary_condition_tag = initial_data_tag;
+  using initial_data = InitialData;
+  using boundary_conditions = BoundaryConditions;
+  // Only Dirichlet boundary conditions imposed by an analytic solution are
+  // supported right now.
+  using analytic_solution = boundary_conditions;
+  using analytic_solution_tag = Tags::AnalyticSolution<boundary_conditions>;
+  using boundary_condition_tag = analytic_solution_tag;
+
   using normal_dot_numerical_flux = Tags::NumericalFlux<
       GeneralizedHarmonic::UpwindPenaltyCorrection<volume_dim>>;
 
@@ -233,14 +239,14 @@ struct EvolutionMetavars {
   // A tmpl::list of tags to be added to the ConstGlobalCache by the
   // metavariables
   using const_global_cache_tags =
-      tmpl::list<initial_data_tag, normal_dot_numerical_flux, time_stepper_tag,
-                 Tags::EventsAndTriggers<events, triggers>>;
+      tmpl::list<analytic_solution_tag, normal_dot_numerical_flux,
+                 time_stepper_tag, Tags::EventsAndTriggers<events, triggers>>;
 
   struct ObservationType {};
   using element_observation_type = ObservationType;
 
   using observed_reduction_data_tags = observers::collect_reduction_data_tags<
-      tmpl::push_back<Event<observation_events>::creatable_classes,
+      tmpl::push_back<typename Event<observation_events>::creatable_classes,
                       typename AhA::post_horizon_find_callback>>;
 
   using step_actions = tmpl::flatten<tmpl::list<
@@ -319,7 +325,7 @@ struct EvolutionMetavars {
           true, true>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<evolution::Tags::AnalyticCompute<
-              volume_dim, initial_data_tag, analytic_solution_fields>>>,
+              volume_dim, analytic_solution_tag, analytic_solution_fields>>>,
       GeneralizedHarmonic::gauges::Actions::InitializeDampedHarmonic<
           volume_dim>,
       GeneralizedHarmonic::Actions::InitializeConstraints<volume_dim>,
