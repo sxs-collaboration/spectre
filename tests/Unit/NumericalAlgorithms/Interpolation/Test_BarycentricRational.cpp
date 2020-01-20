@@ -28,7 +28,7 @@ void test_barycentric_rational(const F& function, const double lower_bound,
   intrp::BarycentricRational interpolant{x_values, y_values, order};
 
   const auto deserialized_interpolant = serialize_and_deserialize(interpolant);
-  Approx custom_approx = Approx::custom().epsilon(1.e-12).scale(1.0);
+  Approx custom_approx = Approx::custom().epsilon(3.e-12).scale(1.0);
   for (size_t i = 0; i < 10 * size; ++i) {
     const double x_value = lower_bound + i * delta_x * 0.1 + 0.1 * dis(gen);
     CAPTURE(x_value);

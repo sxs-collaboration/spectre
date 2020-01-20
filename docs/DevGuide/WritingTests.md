@@ -173,6 +173,18 @@ The corresponding Python functions are:
 
 \snippet PyppPyTests.py python_two_not_null
 
+The random number generator is set up using:
+```cpp
+MAKE_GENERATOR(gen);
+```
+The generator `gen` can then be passed to distribution classes such as
+`std::uniform_real_distribution` or `UniformCustomDistribution`. Furthermore, if
+a test case fails with a particular seed, the seed can be played back by
+changing the `MAKE_GENERATOR(gen);` line in a test to
+```cpp
+MAKE_GENERATOR(gen, PROBLEMATIC_SEED_TO_DEBUG);
+```
+
 #### Testing Failure Cases
 
 Adding the "attribute" `// [[OutputRegex, Regular expression to match]]`
