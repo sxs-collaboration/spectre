@@ -122,7 +122,7 @@ void test_exponential_filter_action(const double alpha,
   CAPTURE(disable_for_debugging);
 
   // Need to increase approx slightly on some hardware
-  Approx custom_approx = Approx::custom().epsilon(1.0e-13);
+  Approx custom_approx = Approx::custom().epsilon(5.0e-13);
 
   using metavariables = Metavariables<Dim, FilterIndividually>;
   using component = Component<metavariables>;
