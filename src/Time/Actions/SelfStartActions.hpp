@@ -100,7 +100,7 @@ namespace Tags {
 template <typename Tag>
 struct InitialValue : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
-    return "InitialValue(" + Tag::name() + ")";
+    return "InitialValue(" + db::tag_name<Tag>() + ")";
   }
   using tag = Tag;
   using type = std::tuple<db::const_item_type<Tag>>;
