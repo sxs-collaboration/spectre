@@ -24,6 +24,13 @@ RUN apt-get update -y \
     && add-apt-repository ppa:ubuntu-toolchain-r/test
 
 # Install required packages for SpECTRE
+#
+# We intentionally don't install libboost-all-dev because that installs
+# Boost.MPI, which installs OpenMPI into the container. When MPI is
+# installed inside the container it makes it very difficult to use
+# Singularity on HPC systems to interface with the system MPI library.
+# The system MPI libraries are usually configured to take advantage of
+# InfiniBand or various other networking layers.
 RUN apt-get update -y \
     && apt-get install -y gcc-6 g++-6 gfortran-6 \
                           gcc-7 g++-7 gfortran-7 \
@@ -36,7 +43,10 @@ RUN apt-get update -y \
                           clang-5.0 clang-format-5.0 clang-tidy-5.0 \
                           libclang-5.0-dev wget libncurses-dev \
                           lcov cppcheck \
-                          libboost-all-dev libssl-dev libbenchmark-dev
+                          libboost-dev libboost-program-options-dev \
+                          libboost-python-dev libboost-thread-dev \
+                          libboost-tools-dev libssl-dev \
+                          libbenchmark-dev
 
 # Add clang 4 and 8
 RUN wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | apt-key add - \
@@ -55,7 +65,8 @@ RUN apt-get update -y \
 RUN apt-get install -y ccache doxygen
 
 # Install Python packages
-RUN apt-get install -y python-pip \
+RUN apt-get install -y python-pip python3-pip \
+    && pip3 install numpy scipy \
     && pip install autopep8 flake8 \
     && pip install numpy scipy matplotlib pandas h5py jupyterlab \
     && pip install coverxygen beautifulsoup4 pybtex
@@ -94,7 +105,7 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.2.tar.gz -O bla
     && sed -i 's/march=native/march=x86-64/' configure.ac \
     && autoconf \
     && ./configure --prefix=/usr/local --disable-openmp \
-    && make -j4 \
+    && make $PARALLEL_MAKE_ARG \
     && mv auto/bin/* /usr/local/bin \
     && mv auto/include/* /usr/local/include \
     && mv auto/lib/* /usr/local/lib \
@@ -117,7 +128,7 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.2.tar.gz -O bla
              -D YAML_CPP_BUILD_CONTRIB=OFF \
              -D YAML_CPP_BUILD_TOOLS=ON \
              -D CMAKE_INSTALL_PREFIX=/usr/local/ .. \
-    && make -j4 \
+    && make $PARALLEL_MAKE_ARG \
     && make install \
     && cd ../.. \
     && rm -rf yaml-cpp*
@@ -135,7 +146,7 @@ RUN wget https://github.com/include-what-you-use/include-what-you-use/archive/cl
     && cmake -D CMAKE_CXX_COMPILER=clang++-5.0 \
         -D CMAKE_C_COMPILER=clang-5.0 \
         -D IWYU_LLVM_ROOT_PATH=/usr/lib/llvm-5.0 .. \
-    && make -j2 \
+    && make $PARALLEL_MAKE_ARG \
     && make install \
     && cd /work \
     && rm -rf /work/include-what-you-use-clang_5.0
@@ -182,7 +193,6 @@ RUN wget http://mirror.ctan.org/systems/texlive/tlnet/install-tl-unx.tar.gz \
     && wget https://raw.githubusercontent.com/sxs-collaboration/spectre/develop/support/TeXLive/texlive.profile \
     && install-tl-*/install-tl -profile=texlive.profile \
     && rm -r install-tl-* texlive.profile install-tl.log \
-    && echo "export PATH=\$PATH:/work/texlive/bin/x86_64-linux" \
-            >> /root/.bashrc \
     && /work/texlive/bin/x86_64-linux/tlmgr install bibtex
+ENV PATH="${PATH}:/work/texlive/bin/x86_64-linux"
 WORKDIR /work
