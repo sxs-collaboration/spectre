@@ -4,9 +4,10 @@
 set(LIBRARY ScalarWave)
 
 set(LIBRARY_SOURCES
-    Constraints.cpp
-    Equations.cpp
-    )
+  Characteristics.cpp
+  Constraints.cpp
+  Equations.cpp
+  )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 

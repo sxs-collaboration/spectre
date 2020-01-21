@@ -20,7 +20,20 @@ class Variables;
 
 /*!
  * \ingroup EvolutionSystemsGroup
- * \brief Items related to evolving the scalar wave equation:
+ * \brief Items related to evolving the scalar wave equation.
+ *
+ * The equations of motion for the system augmented with constraint damping
+ * terms are given by Eq. (15), (23) and (24) of \cite Holst2004wt (setting
+ * background spacetime to Minkowskian):
+ *
+ * \f{align*}
+ * \partial_t \psi =& -\Pi \\
+ * \partial_t \Pi  =& -\partial^i \Phi_i \\
+ * \partial_t \Phi_i =& -\partial_i \Pi + \gamma_2 (\partial_i \psi - \Phi_i)
+ * \f}
+ *
+ * In our implementation here, to disable the constraint damping terms,
+ * set \f$\gamma_2 = 0\f$.
  */
 namespace ScalarWave {
 
