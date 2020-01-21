@@ -71,6 +71,7 @@ constexpr size_t number_of_elements = 2;
 template <>
 constexpr size_t number_of_elements<Grid::Coarse> = 1;
 
+/// [option_group]
 template <Grid TheGrid>
 struct VolumeDataOptions {
   using group = importers::OptionTags::Group;
@@ -79,6 +80,7 @@ struct VolumeDataOptions {
   }
   static constexpr OptionString help = "Numeric volume data";
 };
+/// [option_group]
 
 template <Grid TheGrid>
 struct TestVolumeData {
@@ -295,20 +297,23 @@ struct ElementArray {
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Initialization,
                              tmpl::list<InitializeElement<Dim>>>,
-
+      /// [register_action]
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Register,
           tmpl::list<importers::Actions::RegisterWithVolumeDataReader,
                      Parallel::Actions::TerminatePhase>>,
-
+      /// [register_action]
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::TestResult,
                              tmpl::list<TestResult<Dim, TheGrid>>>>;
 
+  /// [read_data_action]
   using import_fields = tmpl::list<ScalarFieldTag, VectorFieldTag<Dim>>;
+
   using read_element_data_action = importers::ThreadedActions::ReadVolumeData<
       VolumeDataOptions<TheGrid>, import_fields,
       ::Actions::SetData<import_fields>, ElementArray>;
+  /// [read_data_action]
 
   using const_global_cache_tags =
       typename read_element_data_action::const_global_cache_tags;
@@ -332,6 +337,7 @@ struct ElementArray {
     array_proxy.doneInserting();
   }
 
+  /// [invoke_readvoldata]
   static void execute_next_phase(
       const typename Metavariables::Phase next_phase,
       Parallel::CProxy_ConstGlobalCache<Metavariables>& global_cache) noexcept {
@@ -345,8 +351,10 @@ struct ElementArray {
               importers::VolumeDataReader<Metavariables>>(local_cache));
     }
   }
+  /// [invoke_readvoldata]
 };
 
+/// [metavars]
 template <size_t Dim>
 struct Metavariables {
   using component_list =
@@ -376,6 +384,7 @@ struct Metavariables {
     }
   }
 };
+/// [metavars]
 
 static const std::vector<void (*)()> charm_init_node_funcs{
     &setup_error_handling};
