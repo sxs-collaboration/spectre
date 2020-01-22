@@ -115,6 +115,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Spectral.Tags",
   CHECK(Derivative<SpinMinus1TestTag, NoDerivative>::name() ==
         "NoDerivative(SpinMinus1TestTag)");
   CHECK(SwshTransform<Spin2TestTag>::name() == "SwshTransform(Spin2TestTag)");
+  CHECK(SwshInterpolator<Spin2TestTag>::name() ==
+        "SwshInterpolator(Spin2TestTag)");
 }
 }  // namespace
 }  // namespace Tags

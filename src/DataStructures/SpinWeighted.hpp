@@ -445,10 +445,27 @@ operator/(const get_vector_element_type_t<T>& lhs,
 }
 // @}
 
+/// conjugate the spin-weighted quantity, inverting the spin
 template <typename T, int Spin>
 SPECTRE_ALWAYS_INLINE SpinWeighted<decltype(conj(std::declval<T>())), -Spin>
 conj(const SpinWeighted<T, Spin>& value) noexcept {
   return {conj(value.data())};
+}
+
+/// Take the exponential of the spin-weighted quantity; only valid for
+/// spin-weight = 0
+template <typename T>
+SPECTRE_ALWAYS_INLINE SpinWeighted<decltype(exp(std::declval<T>())), 0> exp(
+    const SpinWeighted<T, 0>& value) noexcept {
+  return {exp(value.data())};
+}
+
+/// Take the square-root of the spin-weighted quantity; only valid for
+/// spin-weight = 0
+template <typename T, int Spin>
+SPECTRE_ALWAYS_INLINE SpinWeighted<decltype(sqrt(std::declval<T>())), 0> sqrt(
+    const SpinWeighted<T, Spin>& value) noexcept {
+  return {sqrt(value.data())};
 }
 
 // @{
@@ -494,6 +511,31 @@ SPECTRE_ALWAYS_INLINE bool operator!=(const T& lhs,
   return not(lhs == rhs);
 }
 // @}
+
+/// \ingroup DataStructuresGroup
+/// Make the input `view` a `const` view of the const data `spin_weighted`, at
+/// offset `offset` and length `extent`.
+///
+/// \warning This DOES modify the (const) input `view`. The reason `view` is
+/// taken by const pointer is to try to insist that the object to be a `const`
+/// view is actually const. Of course, there are ways of subverting this
+/// intended functionality and editing the data pointed into by `view` after
+/// this function is called; doing so is highly discouraged and results in
+/// undefined behavior.
+template <typename SpinWeightedType,
+          Requires<is_any_spin_weighted_v<SpinWeightedType> and
+                   is_derived_of_vector_impl_v<
+                       typename SpinWeightedType::value_type>> = nullptr>
+void make_const_view(const gsl::not_null<const SpinWeightedType*> view,
+                     const SpinWeightedType& spin_weighted, const size_t offset,
+                     const size_t extent) noexcept {
+  const_cast<SpinWeightedType*>(view.get())  // NOLINT
+      ->set_data_ref(const_cast<             // NOLINT
+                         typename SpinWeightedType::value_type::value_type*>(
+                         spin_weighted.data().data()) +  // NOLINT
+                         offset,
+                     extent);
+}
 
 /// Stream operator simply forwards
 template <typename T, int Spin>

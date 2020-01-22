@@ -509,8 +509,8 @@ void test_kerr_schild_boundary_consistency(
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
-  using boundary_variables_tag =
-      ::Tags::Variables<Tags::characteristic_worldtube_boundary_tags>;
+  using boundary_variables_tag = ::Tags::Variables<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>;
 
   auto gh_boundary_box = db::create<db::AddSimpleTags<boundary_variables_tag>>(
       db::item_type<boundary_variables_tag>{number_of_angular_points});
@@ -529,7 +529,8 @@ void test_kerr_schild_boundary_consistency(
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
           .scale(1.0);
 
-  tmpl::for_each<Tags::characteristic_worldtube_boundary_tags>(
+  tmpl::for_each<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
       [&gh_boundary_box, &modal_boundary_box,
        &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
@@ -560,8 +561,8 @@ void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) noexcept {
   const size_t number_of_angular_points =
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
 
-  using boundary_variables_tag =
-      ::Tags::Variables<Tags::characteristic_worldtube_boundary_tags>;
+  using boundary_variables_tag = ::Tags::Variables<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>;
 
   auto gh_boundary_box = db::create<db::AddSimpleTags<boundary_variables_tag>>(
       db::item_type<boundary_variables_tag>{number_of_angular_points});
@@ -594,7 +595,8 @@ void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) noexcept {
           .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
           .scale(1.0);
 
-  tmpl::for_each<Tags::characteristic_worldtube_boundary_tags>(
+  tmpl::for_each<
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>(
       [&gh_boundary_box, &modal_boundary_box, &expected_box,
        &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;

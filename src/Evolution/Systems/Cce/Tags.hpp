@@ -70,6 +70,12 @@ struct BondiU : db::SimpleTag {
   static std::string name() noexcept { return "U"; }
 };
 
+/// The surface quantity of Bondi \f$U\f$ evaluated at the null spacetime
+/// boundary \f$\mathcal I^+\f$
+struct BondiUAtScri : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 1>>;
+};
+
 /// Bondi parameter \f$\bar{U}\f$
 struct BondiUbar : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, -1>>;
@@ -114,6 +120,33 @@ struct Du : db::PrefixTag, db::SimpleTag {
   }
 };
 
+/// The spin-weight 2 angular Jacobian factor
+struct GaugeC : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 2>>;
+};
+
+/// The spin-weight 0 angular Jacobian factor
+struct GaugeD : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+};
+
+/// The conformal factor associated with an angular transformation
+struct GaugeOmega : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+};
+
+// For expressing the Cauchy angular coordinates for the worldtube data in terms
+// of the evolution angular coordinates.
+struct CauchyAngularCoords : db::SimpleTag {
+  using type = tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>;
+};
+
+// For expressing the Cauchy Cartesian coordinates for the worldtube data in
+// terms of the evolution angular coordinates.
+struct CauchyCartesianCoords : db::SimpleTag {
+  using type = tnsr::i<DataVector, 3>;
+};
+
 // prefix tags associated with the integrands which are used as input to solvers
 // for the CCE equations
 
@@ -136,6 +169,17 @@ struct BoundaryValue : db::PrefixTag, db::SimpleTag {
   using tag = Tag;
   static std::string name() noexcept {
     return "BoundaryValue(" + db::tag_name<Tag>() + ")";
+  }
+};
+
+/// A prefix tag representing the gauge-transformed boundary data for a quantity
+/// on the extraction surface.
+template <typename Tag>
+struct EvolutionGaugeBoundaryValue : db::PrefixTag, db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
+  using tag = Tag;
+  static std::string name() noexcept {
+    return "EvolutionGaugeBoundaryValue(" + db::tag_name<Tag>() + ")";
   }
 };
 

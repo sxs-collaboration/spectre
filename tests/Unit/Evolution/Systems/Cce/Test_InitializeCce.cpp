@@ -27,7 +27,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ",
   const size_t l_max = sdist(generator);
   const size_t number_of_radial_points = sdist(generator);
 
-  using boundary_variables_tag = ::Tags::Variables<InitializeJ::boundary_tags>;
+  using boundary_variables_tag =
+      ::Tags::Variables<InitializeJ<Tags::BoundaryValue>::boundary_tags>;
   using pre_swsh_derivatives_variables_tag =
       ::Tags::Variables<tmpl::list<Tags::BondiJ>>;
 
@@ -66,7 +67,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ",
             Spectral::Swsh::number_of_swsh_collocation_points(l_max));
       });
 
-  db::mutate_apply<InitializeJ>(make_not_null(&box_to_initialize));
+  db::mutate_apply<InitializeJ<Tags::BoundaryValue>>(
+      make_not_null(&box_to_initialize));
 
   SpinWeighted<ComplexDataVector, 2> dy_j{
       number_of_radial_points *

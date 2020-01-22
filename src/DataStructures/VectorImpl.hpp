@@ -672,3 +672,25 @@ using is_derived_of_vector_impl =
 template <typename T>
 constexpr bool is_derived_of_vector_impl_v =
     is_derived_of_vector_impl<T>::value;
+
+/// \ingroup DataStructuresGroup
+/// Make the input `view` a `const` view of the const data `vector`, at
+/// offset `offset` and length `extent`.
+///
+/// \warning This DOES modify the (const) input `view`. The reason `view` is
+/// taken by const pointer is to try to insist that the object to be a `const`
+/// view is actually const. Of course, there are ways of subverting this
+/// intended functionality and editing the data pointed into by `view` after
+/// this function is called; doing so is highly discouraged and results in
+/// undefined behavior.
+template <typename VectorType,
+          Requires<is_derived_of_vector_impl_v<VectorType>> = nullptr>
+void make_const_view(const gsl::not_null<const VectorType*> view,
+                     const VectorType& vector, const size_t offset,
+                     const size_t extent) noexcept {
+  const_cast<VectorType*>(view.get())  // NOLINT
+      ->set_data_ref(
+          const_cast<typename VectorType::value_type*>(vector.data())  // NOLINT
+              + offset,                                                // NOLINT
+          extent);
+}

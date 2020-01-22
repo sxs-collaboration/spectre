@@ -228,7 +228,14 @@ class SpinWeightedSphericalHarmonic {
  */
 class SwshInterpolator {
  public:
+  // charm needs the empty constructor
   SwshInterpolator() = default;
+
+  SwshInterpolator(const SwshInterpolator&) = default;
+  SwshInterpolator(SwshInterpolator&&) = default;
+  SwshInterpolator& operator=(const SwshInterpolator&) = default;
+  SwshInterpolator& operator=(SwshInterpolator&&) = default;
+  ~SwshInterpolator() noexcept = default;
 
   SwshInterpolator(const DataVector& theta, const DataVector& phi,
                    size_t l_max) noexcept;
@@ -292,8 +299,8 @@ class SwshInterpolator {
   template <int Spin>
   void interpolate(
       gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> interpolated,
-      const SpinWeighted<ComplexDataVector, Spin>&
-          libsharp_collocation) noexcept;
+      const SpinWeighted<ComplexDataVector, Spin>& libsharp_collocation) const
+      noexcept;
 
   /// \brief Evaluate the SWSH function at the lowest \f$l\f$ value for a given
   /// \f$m\f$ at the target interpolation points.
@@ -356,8 +363,8 @@ class SwshInterpolator {
   DataVector sin_theta_over_two_;
   std::vector<DataVector> sin_m_phi_;
   std::vector<DataVector> cos_m_phi_;
-  ComplexModalVector raw_libsharp_coefficient_buffer_;
-  ComplexModalVector raw_goldberg_coefficient_buffer_;
+  mutable ComplexModalVector raw_libsharp_coefficient_buffer_;
+  mutable ComplexModalVector raw_goldberg_coefficient_buffer_;
 };
 }  // namespace Swsh
 }  // namespace Spectral

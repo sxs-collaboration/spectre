@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   CceComputationTestHelpers.cpp
   Test_BoundaryData.cpp
   Test_Equations.cpp
+  Test_GaugeTransformBoundaryData.cpp
   Test_InitializeCce.cpp
   Test_LinearOperators.cpp
   Test_LinearSolve.cpp

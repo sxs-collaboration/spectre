@@ -15,7 +15,8 @@
 
 namespace Cce {
 
-void InitializeJ::apply(
+template <template <typename> class BoundaryPrefix>
+void InitializeJ<BoundaryPrefix>::apply(
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_j,
     const Scalar<SpinWeighted<ComplexDataVector, 2>>& boundary_dr_j,
@@ -44,4 +45,7 @@ void InitializeJ::apply(
         pow<3>(one_minus_y_collocation[i]) * one_minus_y_cubed_coefficient;
   }
 }
+
+template struct InitializeJ<Tags::BoundaryValue>;
+template struct InitializeJ<Tags::EvolutionGaugeBoundaryValue>;
 }  // namespace Cce

@@ -411,9 +411,13 @@ void SwshInterpolator::interpolate(
 template <int Spin>
 void SwshInterpolator::interpolate(
     const gsl::not_null<SpinWeighted<ComplexDataVector, Spin>*> interpolated,
-    const SpinWeighted<ComplexDataVector, Spin>&
-        libsharp_collocation) noexcept {
+    const SpinWeighted<ComplexDataVector, Spin>& libsharp_collocation) const
+    noexcept {
   SpinWeighted<ComplexModalVector, Spin> libsharp_modes;
+  // this function is 'const', but modifies the internal buffer. The reason to
+  // allow it to be 'const' anyways is that no interface makes any assumption
+  // about the starting state of the internal buffer; it is kept exclusively to
+  // save allocations.
   libsharp_modes.set_data_ref(raw_libsharp_coefficient_buffer_.data(),
                               raw_libsharp_coefficient_buffer_.size());
   swsh_transform(l_max_, 1, make_not_null(&libsharp_modes),
@@ -593,7 +597,7 @@ void SwshInterpolator::pup(PUP::er& p) noexcept {
       const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*>   \
           interpolated,                                                       \
       const SpinWeighted<ComplexDataVector, GET_SPIN(data)>&                  \
-          libsharp_collocation) noexcept;                                     \
+          libsharp_collocation) const noexcept;                               \
   template void                                                               \
   SwshInterpolator::direct_evaluation_swsh_at_l_min<GET_SPIN(data)>(          \
       const gsl::not_null<SpinWeighted<ComplexDataVector, GET_SPIN(data)>*>   \

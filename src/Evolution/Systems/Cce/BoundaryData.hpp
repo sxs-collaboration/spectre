@@ -535,8 +535,9 @@ void du_j_worldtube_data(
 
 namespace Tags {
 /// The collection of tags mutated by `create_bondi_boundary_data`
+template <template <typename> class BoundaryPrefix>
 using characteristic_worldtube_boundary_tags = db::wrap_tags_in<
-    Tags::BoundaryValue,
+    BoundaryPrefix,
     tmpl::list<Tags::BondiBeta, Tags::BondiU, Tags::Dr<Tags::BondiU>,
                Tags::BondiQ, Tags::BondiW, Tags::BondiJ, Tags::Dr<Tags::BondiJ>,
                Tags::BondiH, Tags::Du<Tags::BondiJ>, Tags::BondiR,
