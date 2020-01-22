@@ -39,26 +39,32 @@ namespace Solutions {
  * \ref Elasticity equations reduce to \f$\nabla_i T^{ij}=0\f$, but the bending
  * moment \f$M\f$ generates the stress
  *
- * \f[
- * T^{xx} = \frac{12 M}{H^3} y \\
- * T^{xy} = 0 = T^{yy} \text{.}
- * \f]
+ * \f{align}
+ * T^{xx} &= \frac{12 M}{H^3} y \\
+ * T^{xy} &= 0 = T^{yy} \text{.}
+ * \f}
  *
  * By fixing the rigid-body motions to
  *
  * \f[
- * u^x(0,y)=0 \quad \text{and} \quad u^y\left(\pm \frac{L}{2},0\right)=0
+ * \xi^x(0,y)=0 \quad \text{and} \quad \xi^y\left(\pm \frac{L}{2},0\right)=0
  * \f]
  *
  * we find that this stress is produced by the displacement field
  *
  * \f{align}
- * u^x&=-\frac{12 M}{EH^3}xy \\
- * u^y&=\frac{6 M}{EH^3}\left(x^2+\nu y^2-\frac{L^2}{4}\right)
+ * \xi^x&=-\frac{12 M}{EH^3}xy \\
+ * \xi^y&=\frac{6 M}{EH^3}\left(x^2+\nu y^2-\frac{L^2}{4}\right)
  * \f}
  *
  * in terms of the Young's modulus \f$E\f$ and the Poisson ration \f$\nu\f$ of
- * the material.
+ * the material. The corresponding strain \f$S_{ij}=\partial_{(i}\xi_{j)}\f$ is
+ *
+ * \f{align}
+ * S_{xx} &= -\frac{12 M}{EH^3} y \\
+ * S_{yy} &= \frac{12 M}{EH^3} \nu y \\
+ * S_{xy} &= S_{yx} = 0 \text{.}
+ * \f}
  */
 class BentBeam {
  public:
@@ -112,6 +118,10 @@ class BentBeam {
   auto variables(const tnsr::I<DataVector, 2>& x,
                  tmpl::list<Tags::Displacement<2>> /*meta*/) const noexcept
       -> tuples::TaggedTuple<Tags::Displacement<2>>;
+
+  auto variables(const tnsr::I<DataVector, 2>& x,
+                 tmpl::list<Tags::Strain<2>> /*meta*/) const noexcept
+      -> tuples::TaggedTuple<Tags::Strain<2>>;
 
   auto variables(const tnsr::I<DataVector, 2>& x,
                  tmpl::list<Tags::Stress<2>> /*meta*/) const noexcept

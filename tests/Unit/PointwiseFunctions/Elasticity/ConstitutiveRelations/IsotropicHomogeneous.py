@@ -18,3 +18,13 @@ def stress(strain, x, bulk_modulus, shear_modulus):
         raise NotImplementedError
     return -trace_factor * strain_trace * krond \
         - 2 * shear_modulus * traceless_strain
+
+
+def youngs_modulus(bulk_modulus, shear_modulus):
+    return 9. * bulk_modulus * shear_modulus / \
+        (3. * bulk_modulus + shear_modulus)
+
+
+def poisson_ratio(bulk_modulus, shear_modulus):
+    return (3. * bulk_modulus - 2. * shear_modulus) / \
+        (6. * bulk_modulus + 2. * shear_modulus)
