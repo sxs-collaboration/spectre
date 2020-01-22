@@ -28,7 +28,6 @@ namespace {
 
 struct VectorTag : db::SimpleTag {
   using type = DenseVector<double>;
-  static std::string name() noexcept { return "VectorTag"; }
 };
 
 using fields_tag = VectorTag;

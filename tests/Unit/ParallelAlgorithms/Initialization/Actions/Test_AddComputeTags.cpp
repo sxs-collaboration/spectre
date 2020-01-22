@@ -18,12 +18,10 @@
 namespace {
 struct SomeNumber : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "SomeNumber"; }
 };
 
 struct SquareNumber : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "SquareNumber"; }
 };
 
 struct SquareNumberCompute : SquareNumber, db::ComputeTag {

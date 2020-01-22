@@ -59,7 +59,6 @@ struct ExpectedResult {
 }  // namespace OptionTags
 
 struct LinearOperator : db::SimpleTag {
-  static std::string name() noexcept { return "LinearOperator"; }
   using type = DenseMatrix<double>;
   using option_tags = tmpl::list<OptionTags::LinearOperator>;
 
@@ -71,7 +70,6 @@ struct LinearOperator : db::SimpleTag {
 };
 
 struct Source : db::SimpleTag {
-  static std::string name() noexcept { return "Source"; }
   using type = DenseVector<double>;
   using option_tags = tmpl::list<OptionTags::Source>;
 
@@ -83,7 +81,6 @@ struct Source : db::SimpleTag {
 };
 
 struct InitialGuess : db::SimpleTag {
-  static std::string name() noexcept { return "InitialGuess"; }
   using type = DenseVector<double>;
   using option_tags = tmpl::list<OptionTags::InitialGuess>;
 
@@ -95,7 +92,6 @@ struct InitialGuess : db::SimpleTag {
 };
 
 struct ExpectedResult : db::SimpleTag {
-  static std::string name() noexcept { return "ExpectedResult"; }
   using type = DenseVector<double>;
   using option_tags = tmpl::list<OptionTags::ExpectedResult>;
 
@@ -109,7 +105,6 @@ struct ExpectedResult : db::SimpleTag {
 // The vector `x` we want to solve for
 struct VectorTag : db::SimpleTag {
   using type = DenseVector<double>;
-  static std::string name() noexcept { return "VectorTag"; }
 };
 
 using fields_tag = VectorTag;

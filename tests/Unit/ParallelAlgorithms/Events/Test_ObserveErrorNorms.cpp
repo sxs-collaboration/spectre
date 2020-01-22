@@ -60,7 +60,6 @@ namespace {
 
 struct ObservationTimeTag : db::SimpleTag {
   using type = double;
-  static std::string name() { return "ObservationTimeTag"; };
 };
 
 struct MockContributeReductionData {

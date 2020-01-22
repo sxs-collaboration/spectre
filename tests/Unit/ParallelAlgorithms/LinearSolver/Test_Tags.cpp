@@ -13,10 +13,10 @@
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Literals.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
 struct Tag : db::SimpleTag {
-  static std::string name() noexcept { return "Tag"; }
   using type = int;
 };
 using magnitude_square_tag = LinearSolver::Tags::MagnitudeSquare<Tag>;
@@ -32,7 +32,10 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
   CHECK(LinearSolver::Tags::Operand<Tag>::name() == "LinearOperand(Tag)");
   CHECK(LinearSolver::Tags::OperatorAppliedTo<Tag>::name() ==
         "LinearOperatorAppliedTo(Tag)");
-  CHECK(LinearSolver::Tags::HasConverged::name() == "LinearSolverHasConverged");
+  TestHelpers::db::test_simple_tag<LinearSolver::Tags::IterationId>(
+      "LinearIterationId");
+  TestHelpers::db::test_simple_tag<LinearSolver::Tags::HasConverged>(
+      "LinearSolverHasConverged");
   CHECK(LinearSolver::Tags::Residual<Tag>::name() == "LinearResidual(Tag)");
   CHECK(LinearSolver::Tags::Initial<Tag>::name() == "Initial(Tag)");
   CHECK(LinearSolver::Tags::MagnitudeSquare<Tag>::name() ==
@@ -44,8 +47,9 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
         "LinearOrthogonalizationHistory(Tag)");
   CHECK(LinearSolver::Tags::KrylovSubspaceBasis<Tag>::name() ==
         "KrylovSubspaceBasis(Tag)");
-  CHECK(LinearSolver::Tags::ConvergenceCriteria::name() ==
-        "ConvergenceCriteria");
+  TestHelpers::db::test_simple_tag<LinearSolver::Tags::ConvergenceCriteria>(
+      "ConvergenceCriteria");
+  TestHelpers::db::test_simple_tag<LinearSolver::Tags::Verbosity>("Verbosity");
 
   {
     INFO("HasConvergedCompute");

@@ -25,22 +25,18 @@ namespace ResidualMonitorActionsTestHelpers {
 
 struct CheckObservationIdTag : db::SimpleTag {
   using type = observers::ObservationId;
-  static std::string name() noexcept { return "CheckObservationIdTag"; }
 };
 
 struct CheckSubfileNameTag : db::SimpleTag {
   using type = std::string;
-  static std::string name() noexcept { return "CheckSubfileNameTag"; }
 };
 
 struct CheckReductionNamesTag : db::SimpleTag {
   using type = std::vector<std::string>;
-  static std::string name() noexcept { return "CheckReductionNamesTag"; }
 };
 
 struct CheckReductionDataTag : db::SimpleTag {
   using type = std::tuple<size_t, double>;
-  static std::string name() noexcept { return "CheckReductionDataTag"; }
 };
 
 using observer_writer_tags =

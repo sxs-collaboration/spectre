@@ -57,7 +57,6 @@ struct NumberOfElements {
 namespace Initialization {
 namespace Tags {
 struct NumberOfElements : db::SimpleTag {
-  static std::string name() noexcept { return "NumberOfElements"; }
   using type = int;
   using option_tags = tmpl::list<OptionTags::NumberOfElements>;
 
@@ -93,7 +92,6 @@ struct ExpectedResult {
 }  // namespace OptionTags
 
 struct LinearOperator : db::SimpleTag {
-  static std::string name() noexcept { return "LinearOperator"; }
   using type = std::vector<DenseMatrix<double, blaze::columnMajor>>;
   using option_tags = tmpl::list<OptionTags::LinearOperator>;
 
@@ -107,7 +105,6 @@ struct LinearOperator : db::SimpleTag {
 };
 
 struct Source : db::SimpleTag {
-  static std::string name() noexcept { return "Source"; }
   using type = std::vector<DenseVector<double>>;
   using option_tags = tmpl::list<OptionTags::Source>;
 
@@ -119,7 +116,6 @@ struct Source : db::SimpleTag {
 };
 
 struct ExpectedResult : db::SimpleTag {
-  static std::string name() noexcept { return "ExpectedResult"; }
   using type = std::vector<DenseVector<double>>;
   using option_tags = tmpl::list<OptionTags::ExpectedResult>;
 

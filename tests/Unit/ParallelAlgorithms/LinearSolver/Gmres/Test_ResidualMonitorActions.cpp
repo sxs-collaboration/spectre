@@ -57,7 +57,6 @@ namespace {
 
 struct VectorTag : db::SimpleTag {
   using type = DenseVector<double>;
-  static std::string name() noexcept { return "VectorTag"; }
 };
 
 using fields_tag = VectorTag;
@@ -73,12 +72,10 @@ using orthogonalization_history_tag =
 
 struct CheckValueTag : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "CheckValueTag"; }
 };
 
 struct CheckVectorTag : db::SimpleTag {
   using type = DenseVector<double>;
-  static std::string name() noexcept { return "CheckVectorTag"; }
 };
 
 using CheckConvergedTag = LinearSolver::Tags::HasConverged;

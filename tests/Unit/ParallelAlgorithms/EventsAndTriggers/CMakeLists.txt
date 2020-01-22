@@ -5,6 +5,7 @@ set(LIBRARY "Test_EventsAndTriggers")
 
 set(LIBRARY_SOURCES
   Test_EventsAndTriggers.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(

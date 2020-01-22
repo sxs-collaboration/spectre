@@ -40,12 +40,10 @@
 namespace {
 
 struct TemporalId : db::SimpleTag {
-  static std::string name() noexcept { return "TemporalId"; };
   using type = int;
 };
 
 struct ScalarFieldTag : db::SimpleTag {
-  static std::string name() noexcept { return "ScalarFieldTag"; };
   using type = Scalar<DataVector>;
 };
 
