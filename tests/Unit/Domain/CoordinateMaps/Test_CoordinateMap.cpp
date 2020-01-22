@@ -130,6 +130,9 @@ void test_single_coordinate_map() {
     CHECK(inv_jac.get(0, 0) == expected_inv_jac.get(0, 0));
   }
 
+  CHECK_FALSE(affine1d.is_identity());
+  CHECK_FALSE(affine1d_base->is_identity());
+
   using rotate2d = CoordinateMaps::Rotation<2>;
 
   const auto first_rotated2d = rotate2d{M_PI_4};
@@ -186,6 +189,9 @@ void test_single_coordinate_map() {
       }
     }
   }
+
+  CHECK_FALSE(rotated2d.is_identity());
+  CHECK_FALSE(rotated2d_base->is_identity());
 
   using rotate3d = CoordinateMaps::Rotation<3>;
 
@@ -245,6 +251,9 @@ void test_single_coordinate_map() {
       }
     }
   }
+
+  CHECK_FALSE(rotated3d.is_identity());
+  CHECK_FALSE(rotated3d_base->is_identity());
 }
 
 void test_coordinate_map_with_affine_map() {
@@ -788,7 +797,15 @@ void test_coordinate_maps_are_identity() {
               CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0}},
           CoordinateMaps::Rotation<3>{0.0, 0.0, 0.0},
           CoordinateMaps::SpecialMobius{0.0});
+  const std::unique_ptr<CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>
+      giant_identity_map_base =
+          std::make_unique<std::decay_t<decltype(giant_identity_map)>>(
+              giant_identity_map);
   test_serialization(giant_identity_map);
+
+  CHECK(giant_identity_map.is_identity());
+  CHECK(giant_identity_map_base->is_identity());
+
 
   const auto wedge = make_coordinate_map<Frame::Logical, Frame::Inertial>(
       CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0, true));
@@ -812,6 +829,9 @@ void test_coordinate_maps_are_identity() {
               CoordinateMaps::Affine{-1.0, 1.0, -1.0, 1.0}},
           CoordinateMaps::Rotation<3>{0.0, 0.0, 0.0},
           CoordinateMaps::SpecialMobius{0.0});
+
+  CHECK_FALSE(wedge.is_identity());
+  CHECK_FALSE(wedge_composed_with_giant_identity.is_identity());
 
   for (size_t i = 1; i < 11; ++i) {
     const auto source_point = tnsr::I<double, 3, Frame::Logical>{

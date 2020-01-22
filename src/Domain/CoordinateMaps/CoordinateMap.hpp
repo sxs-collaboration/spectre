@@ -59,6 +59,9 @@ class CoordinateMapBase : public PUP::able {
   virtual std::unique_ptr<CoordinateMapBase<SourceFrame, TargetFrame, Dim>>
   get_clone() const = 0;
 
+  /// Returns `true` if the map is the identity
+  virtual bool is_identity() const noexcept = 0;
+
   // @{
   /// Apply the `Maps` to the point(s) `source_point`
   virtual tnsr::I<double, Dim, TargetFrame> operator()(
@@ -212,6 +215,9 @@ class CoordinateMap
       const override {
     return std::make_unique<CoordinateMap>(*this);
   }
+
+  /// Returns `true` if the map is the identity
+  bool is_identity() const noexcept override;
 
   // @{
   /// Apply the `Maps...` to the point(s) `source_point`

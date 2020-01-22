@@ -38,6 +38,31 @@ template <typename SourceFrame, typename TargetFrame, typename... Maps>
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::CoordinateMap(Maps... maps)
     : maps_(std::move(maps)...) {}
 
+namespace CoordinateMap_detail {
+template <typename... Maps, size_t... Is>
+bool is_identity_impl(const std::tuple<Maps...>& maps,
+                      std::index_sequence<Is...> /*meta*/) noexcept {
+  bool is_identity = true;
+  const auto check_map_is_identity = [&is_identity,
+                                      &maps](auto index) noexcept {
+    if (is_identity) {
+      is_identity = std::get<decltype(index)::value>(maps).is_identity();
+    }
+    return '0';
+  };
+  EXPAND_PACK_LEFT_TO_RIGHT(
+      check_map_is_identity(std::integral_constant<size_t, Is>{}));
+  return is_identity;
+}
+}  // namespace CoordinateMap_detail
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+bool CoordinateMap<SourceFrame, TargetFrame, Maps...>::is_identity() const
+    noexcept {
+  return CoordinateMap_detail::is_identity_impl(
+      maps_, std::make_index_sequence<sizeof...(Maps)>{});
+}
+
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T, size_t... Is>
 tnsr::I<T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim, TargetFrame>
