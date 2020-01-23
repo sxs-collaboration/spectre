@@ -30,7 +30,7 @@ namespace Cce {
 
 SPECTRE_TEST_CASE(
     "Unit.Evolution.Systems.Cce.Actions.InitializeWorldtubeBoundary",
-    "[Unit]") {
+    "[Unit][Cce]") {
   using component = mock_h5_worldtube_boundary<metavariables>;
   // this probably needs to be adjusted for the const global tags and option
   // tags we need.

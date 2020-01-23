@@ -16,7 +16,7 @@
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearOperators",
-                  "[Unit][Evolution]") {
+                  "[Unit][Cce]") {
   MAKE_GENERATOR(generator);
   const size_t l_max = 6;
   const size_t number_of_radial_points = 6;

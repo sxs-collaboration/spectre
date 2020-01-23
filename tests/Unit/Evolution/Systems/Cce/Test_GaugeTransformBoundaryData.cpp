@@ -531,7 +531,7 @@ void test_gauge_transforms_via_inverse_coordinate_map(
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.GaugeTransformBoundaryData",
-                  "[Unit][NumericalAlgorithms]") {
+                  "[Unit][Cce]") {
   MAKE_GENERATOR(gen);
   test_gauge_transforms_via_inverse_coordinate_map(make_not_null(&gen));
 }

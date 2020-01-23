@@ -21,7 +21,7 @@
 namespace Cce {
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.InitializeJ",
-                  "[Unit][Evolution]") {
+                  "[Unit][Cce]") {
   MAKE_GENERATOR(generator);
   UniformCustomDistribution<size_t> sdist{5, 8};
   const size_t l_max = sdist(generator);

@@ -118,7 +118,7 @@ void generate_boundary_values_and_expected(
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PrecomputeCceDependencies",
-                  "[Unit][Evolution]") {
+                  "[Unit][Cce]") {
   // Initialize the Variables that we need
   MAKE_GENERATOR(generator);
   UniformCustomDistribution<size_t> sdist{5, 8};

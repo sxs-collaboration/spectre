@@ -675,7 +675,7 @@ void test_reduced_spec_worldtube_buffer_updater(
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
-                  "[Unit][Evolution]") {
+                  "[Unit][Cce]") {
   MAKE_GENERATOR(gen);
   test_spec_worldtube_buffer_updater(make_not_null(&gen));
   test_data_manager_with_dummy_buffer_updater<WorldtubeDataManager,

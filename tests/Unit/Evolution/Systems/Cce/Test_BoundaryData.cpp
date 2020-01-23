@@ -614,7 +614,7 @@ void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) noexcept {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BoundaryData",
-                  "[Unit][Evolution]") {
+                  "[Unit][Cce]") {
   pypp_test_worldtube_computation_steps();
 
   MAKE_GENERATOR(gen);

@@ -152,7 +152,7 @@ struct python_function_for_bondi_integrand<
   }
 };
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Equations", "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Equations", "[Unit][Cce]") {
   pypp::SetupLocalPythonEnvironment local_python_env{"Evolution/Systems/Cce/"};
 
   using all_bondi_tags = tmpl::list<Tags::BondiBeta, Tags::BondiQ, Tags::BondiU,

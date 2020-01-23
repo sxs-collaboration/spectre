@@ -15,8 +15,7 @@
 #include "tests/Unit/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags",
-                  "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::LMax>("8") == 8_st);
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::ObservationLMax>(
             "6") == 6_st);
