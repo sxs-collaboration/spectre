@@ -380,7 +380,7 @@ ProductOf3Maps<Map1, Map2, Map3>::jacobian(
           {source_coords[1]}},
       time, functions_of_time,
       domain::is_jacobian_time_dependent_t<
-          Map1, std::reference_wrapper<const UnwrappedT>>{}
+          Map2, std::reference_wrapper<const UnwrappedT>>{}
 
       ));
   get<2, 2>(jacobian_matrix) = get<0, 0>(CoordinateMap_detail::apply_jacobian(
@@ -389,7 +389,7 @@ ProductOf3Maps<Map1, Map2, Map3>::jacobian(
           {source_coords[2]}},
       time, functions_of_time,
       domain::is_jacobian_time_dependent_t<
-          Map1, std::reference_wrapper<const UnwrappedT>>{}));
+          Map3, std::reference_wrapper<const UnwrappedT>>{}));
   return jacobian_matrix;
 }
 template <typename Map1, typename Map2, typename Map3>
