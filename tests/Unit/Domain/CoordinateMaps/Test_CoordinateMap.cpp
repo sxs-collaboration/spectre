@@ -19,12 +19,15 @@
 #include "Domain/CoordinateMaps/BulgedCube.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/CubicScale.hpp"
 #include "Domain/CoordinateMaps/DiscreteRotation.hpp"
 #include "Domain/CoordinateMaps/EquatorialCompression.hpp"
 #include "Domain/CoordinateMaps/Frustum.hpp"
 #include "Domain/CoordinateMaps/Identity.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
+#include "Domain/CoordinateMaps/ProductMapsTimeDep.hpp"
+#include "Domain/CoordinateMaps/ProductMapsTimeDep.tpp"
 #include "Domain/CoordinateMaps/Rotation.hpp"
 #include "Domain/CoordinateMaps/SpecialMobius.hpp"
 #include "Domain/CoordinateMaps/Translation.hpp"
@@ -133,6 +136,11 @@ void test_single_coordinate_map() {
   CHECK_FALSE(affine1d.is_identity());
   CHECK_FALSE(affine1d_base->is_identity());
 
+  CHECK_FALSE(affine1d.inv_jacobian_is_time_dependent());
+  CHECK_FALSE(affine1d.jacobian_is_time_dependent());
+  CHECK_FALSE(affine1d_base->jacobian_is_time_dependent());
+  CHECK_FALSE(affine1d_base->inv_jacobian_is_time_dependent());
+
   using rotate2d = CoordinateMaps::Rotation<2>;
 
   const auto first_rotated2d = rotate2d{M_PI_4};
@@ -192,6 +200,11 @@ void test_single_coordinate_map() {
 
   CHECK_FALSE(rotated2d.is_identity());
   CHECK_FALSE(rotated2d_base->is_identity());
+
+  CHECK_FALSE(rotated2d.inv_jacobian_is_time_dependent());
+  CHECK_FALSE(rotated2d.jacobian_is_time_dependent());
+  CHECK_FALSE(rotated2d_base->jacobian_is_time_dependent());
+  CHECK_FALSE(rotated2d_base->inv_jacobian_is_time_dependent());
 
   using rotate3d = CoordinateMaps::Rotation<3>;
 
@@ -254,6 +267,11 @@ void test_single_coordinate_map() {
 
   CHECK_FALSE(rotated3d.is_identity());
   CHECK_FALSE(rotated3d_base->is_identity());
+
+  CHECK_FALSE(rotated3d.inv_jacobian_is_time_dependent());
+  CHECK_FALSE(rotated3d.jacobian_is_time_dependent());
+  CHECK_FALSE(rotated3d_base->jacobian_is_time_dependent());
+  CHECK_FALSE(rotated3d_base->inv_jacobian_is_time_dependent());
 }
 
 void test_coordinate_map_with_affine_map() {
@@ -806,6 +824,10 @@ void test_coordinate_maps_are_identity() {
   CHECK(giant_identity_map.is_identity());
   CHECK(giant_identity_map_base->is_identity());
 
+  CHECK_FALSE(giant_identity_map.inv_jacobian_is_time_dependent());
+  CHECK_FALSE(giant_identity_map.jacobian_is_time_dependent());
+  CHECK_FALSE(giant_identity_map_base->inv_jacobian_is_time_dependent());
+  CHECK_FALSE(giant_identity_map_base->jacobian_is_time_dependent());
 
   const auto wedge = make_coordinate_map<Frame::Logical, Frame::Inertial>(
       CoordinateMaps::Wedge3D(0.2, 4.0, OrientationMap<3>{}, 0.0, 1.0, true));
@@ -832,6 +854,12 @@ void test_coordinate_maps_are_identity() {
 
   CHECK_FALSE(wedge.is_identity());
   CHECK_FALSE(wedge_composed_with_giant_identity.is_identity());
+
+  CHECK_FALSE(wedge.inv_jacobian_is_time_dependent());
+  CHECK_FALSE(wedge.jacobian_is_time_dependent());
+  CHECK_FALSE(
+      wedge_composed_with_giant_identity.inv_jacobian_is_time_dependent());
+  CHECK_FALSE(wedge_composed_with_giant_identity.jacobian_is_time_dependent());
 
   for (size_t i = 1; i < 11; ++i) {
     const auto source_point = tnsr::I<double, 3, Frame::Logical>{
@@ -941,6 +969,11 @@ void test_time_dependent_map() {
   const auto time_dependent_map_second =
       make_coordinate_map<Frame::Logical, Frame::Inertial>(affine_map,
                                                            trans_map);
+
+  CHECK_FALSE(time_dependent_map_first.inv_jacobian_is_time_dependent());
+  CHECK_FALSE(time_dependent_map_first.jacobian_is_time_dependent());
+  CHECK_FALSE(time_dependent_map_second.inv_jacobian_is_time_dependent());
+  CHECK_FALSE(time_dependent_map_second.jacobian_is_time_dependent());
 
   const tnsr::I<double, 1, Frame::Logical> tnsr_double_logical{{{3.2}}};
   const tnsr::I<DataVector, 1, Frame::Logical> tnsr_datavector_logical{
@@ -1073,6 +1106,51 @@ void test_push_back() {
                                      affine_map{-0.5, 0.5, 0.0, 8.0},
                                      affine_map{-7.0, 7.0, 3.0, 23.0}});
 }
+
+void test_jacobian_is_time_dependent() noexcept {
+  using affine_map = CoordinateMaps::Affine;
+  using cubic_scale_map = CoordMapsTimeDependent::CubicScale;
+  using map_2d =
+      CoordMapsTimeDependent::ProductOf2Maps<affine_map, cubic_scale_map>;
+  using map_3d = CoordMapsTimeDependent::ProductOf3Maps<affine_map, affine_map,
+                                                        cubic_scale_map>;
+
+  const auto coord_map_1 =
+      make_coordinate_map<Frame::Logical, Frame::Grid>(cubic_scale_map(10.0));
+  const auto coord_map_1_base =
+      make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+          cubic_scale_map(10.0));
+
+  const auto coord_map_2 = make_coordinate_map<Frame::Logical, Frame::Grid>(
+      map_2d(affine_map(-1.0, 1.0, 2.0, 3.0), cubic_scale_map(10.0)));
+  const auto coord_map_2_base =
+      make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+          map_2d(affine_map(-1.0, 1.0, 2.0, 3.0), cubic_scale_map(10.0)));
+
+  const auto coord_map_3 = make_coordinate_map<Frame::Logical, Frame::Grid>(
+      map_3d(affine_map(-1.0, 1.0, 2.0, 3.0), affine_map(-1.0, 1.0, 2.0, 3.0),
+             cubic_scale_map(10.0)));
+  const auto coord_map_3_base =
+      make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+          map_3d(affine_map(-1.0, 1.0, 2.0, 3.0),
+                 affine_map(-1.0, 1.0, 2.0, 3.0), cubic_scale_map(10.0)));
+
+  CHECK(coord_map_1.inv_jacobian_is_time_dependent());
+  CHECK(coord_map_1.jacobian_is_time_dependent());
+  CHECK(coord_map_1_base->inv_jacobian_is_time_dependent());
+  CHECK(coord_map_1_base->jacobian_is_time_dependent());
+
+  CHECK(coord_map_2.inv_jacobian_is_time_dependent());
+  CHECK(coord_map_2.jacobian_is_time_dependent());
+  CHECK(coord_map_2_base->inv_jacobian_is_time_dependent());
+  CHECK(coord_map_2_base->jacobian_is_time_dependent());
+
+  CHECK(coord_map_3.inv_jacobian_is_time_dependent());
+  CHECK(coord_map_3.jacobian_is_time_dependent());
+  CHECK(coord_map_3_base->inv_jacobian_is_time_dependent());
+  CHECK(coord_map_3_base->jacobian_is_time_dependent());
+}
+
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
@@ -1085,5 +1163,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
   test_coordinate_maps_are_identity();
   test_time_dependent_map();
   test_push_back();
+  test_jacobian_is_time_dependent();
 }
 }  // namespace domain

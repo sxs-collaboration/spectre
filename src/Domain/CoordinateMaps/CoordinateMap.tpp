@@ -64,6 +64,19 @@ bool CoordinateMap<SourceFrame, TargetFrame, Maps...>::is_identity() const
 }
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
+bool CoordinateMap<SourceFrame, TargetFrame,
+                   Maps...>::inv_jacobian_is_time_dependent() const noexcept {
+  return tmpl2::flat_any_v<
+      domain::is_jacobian_time_dependent_t<Maps, double>::value...>;
+}
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
+bool CoordinateMap<SourceFrame, TargetFrame,
+                   Maps...>::jacobian_is_time_dependent() const noexcept {
+  return inv_jacobian_is_time_dependent();
+}
+
+template <typename SourceFrame, typename TargetFrame, typename... Maps>
 template <typename T, size_t... Is>
 tnsr::I<T, CoordinateMap<SourceFrame, TargetFrame, Maps...>::dim, TargetFrame>
 CoordinateMap<SourceFrame, TargetFrame, Maps...>::call_impl(

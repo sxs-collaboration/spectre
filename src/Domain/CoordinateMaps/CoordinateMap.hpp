@@ -62,6 +62,12 @@ class CoordinateMapBase : public PUP::able {
   /// Returns `true` if the map is the identity
   virtual bool is_identity() const noexcept = 0;
 
+  /// Returns `true` if the inverse Jacobian depends on time.
+  virtual bool inv_jacobian_is_time_dependent() const noexcept = 0;
+
+  /// Returns `true` if the Jacobian depends on time.
+  virtual bool jacobian_is_time_dependent() const noexcept = 0;
+
   // @{
   /// Apply the `Maps` to the point(s) `source_point`
   virtual tnsr::I<double, Dim, TargetFrame> operator()(
@@ -218,6 +224,12 @@ class CoordinateMap
 
   /// Returns `true` if the map is the identity
   bool is_identity() const noexcept override;
+
+  /// Returns `true` if the inverse Jacobian depends on time.
+  bool inv_jacobian_is_time_dependent() const noexcept override;
+
+  /// Returns `true` if the Jacobian depends on time.
+  bool jacobian_is_time_dependent() const noexcept override;
 
   // @{
   /// Apply the `Maps...` to the point(s) `source_point`
