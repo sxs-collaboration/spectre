@@ -59,7 +59,7 @@ namespace detail {
 // it returns the dataset name "/gxy".
 template <typename... T>
 std::string dataset_name_for_component(std::string base_name,
-                                       const T... indices) noexcept {
+                                       const T... indices) noexcept {  // NOLINT
   const auto add_index = [&base_name](size_t index) noexcept {
     ASSERT(index < 3, "The character-arithmetic index must be less than 3.");
     base_name += static_cast<char>('x' + index);
