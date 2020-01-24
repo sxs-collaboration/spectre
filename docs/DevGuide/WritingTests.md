@@ -187,40 +187,34 @@ MAKE_GENERATOR(gen, PROBLEMATIC_SEED_TO_DEBUG);
 
 #### Testing Failure Cases
 
-Adding the "attribute" `// [[OutputRegex, Regular expression to match]]`
-before the `SPECTRE_TEST_CASE` macro will force ctest to only pass the
-particular test if the regular expression is found. This can be used to test
-error handling. When testing `ASSERT`s you must mark the `SPECTRE_TEST_CASE` as
-`[[noreturn]]`,
-add the macro `ASSERTION_TEST();` to the beginning of the test, and also have
-the test call `ERROR("Failed to trigger ASSERT in an assertion test");` at the
-end of the test body.
+Adding the "attribute" `// [[OutputRegex, Regular expression to
+match]]` before the `SPECTRE_TEST_CASE` macro will force ctest to only
+pass the particular test if the regular expression is found in the
+output of the test. This can be used to test error handling. When
+testing `ASSERT`s you must mark the `SPECTRE_TEST_CASE` as
+`[[noreturn]]`, add the macro `ASSERTION_TEST();` to the beginning of
+the test, and also have the test call `ERROR("Failed to trigger ASSERT
+in an assertion test");` at the end of the test body.  The test body
+should be enclosed between `#%ifdef SPECTRE_DEBUG` and an `#%endif`
 For example,
 
-```cpp
-// [[OutputRegex, Must copy into same size]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.DataStructures.DataVector.ref_diff_size",
-                               "[DataStructures][Unit]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  DataVector data{1.43, 2.83, 3.94, 7.85};
-  DataVector data_ref;
-  data_ref.set_data_ref(data);
-  DataVector data2{1.43, 2.83, 3.94};
-  data_ref = data2;
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-```
-If the `ifdef SPECTRE_DEBUG` is omitted then compilers will correctly flag
-the code as being unreachable which results in warnings.
+\snippet Test_AssertAndError.cpp assertion_test_example
 
-You can also test `ERROR`s inside your code. These tests need to have the
-`OutputRegex`, and also call `ERROR_TEST();` at the beginning. The do not need
-the `ifdef SPECTRE_DEBUG` block, they can just call have the code that triggers
-an `ERROR`. For example,
+If the `#%ifdef SPECTRE_DEBUG` block is omitted then compilers will
+correctly flag the code as being unreachable which results in
+warnings.
 
-\snippet Test_AbortWithErrorMessage.cpp error_test_example
+You can also test `ERROR`s inside your code. These tests need to have
+the `OutputRegex`, and also call `ERROR_TEST();` at the
+beginning. They do not need the `#%ifdef SPECTRE_DEBUG` block, they
+can just call have the code that triggers an `ERROR`. For example,
+
+\snippet Test_AssertAndError.cpp error_test_example
+
+Note that a `OutputRegex` can also be specified in a test that is
+supposed to succeed with output that matches the regular expression.
+In this case, the first line of the test should call the macro
+`OUTPUT_TEST();`.
 
 ### Building and Running A Single Test File
 

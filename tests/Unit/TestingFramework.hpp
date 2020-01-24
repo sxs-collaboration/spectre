@@ -320,7 +320,7 @@ struct check_matrix_approx {
  * the SPECTRE_TEST_CASE.
  *
  * \example
- * \snippet Test_TestingFramework.cpp error_test
+ * \snippet Test_AssertAndError.cpp error_test_example
  */
 #define ERROR_TEST()                                      \
   do {                                                    \
@@ -359,3 +359,20 @@ struct check_matrix_approx {
     Parallel::abort("### No ASSERT tests in release mode ###"); \
   } while (false)
 #endif
+
+/*!
+ * \ingroup TestingFrameworkGroup
+ * \brief Mark a test as checking the output with a regular expression
+ *
+ * \details
+ * The OUTPUT_TEST() macro should be the first line in the SPECTRE_TEST_CASE.
+ * Catch requires at least one CHECK in each test to pass, so we add one in
+ * case nothing but the output is checked.
+ *
+ * \example
+ * \snippet Test_Parallel.cpp output_test_example
+ */
+#define OUTPUT_TEST() \
+  do {                \
+    CHECK(true);      \
+  } while (false)

@@ -166,9 +166,9 @@ SPECTRE_TEST_CASE(
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.RiemannProblem.PositP",
     "[Unit][PointwiseFunctions]") {
+  ASSERTION_TEST();
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/NewtonianEuler"};
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   NewtonianEuler::Solutions::RiemannProblem<1> solution(
       1.4, 0.7, 1.0, {{0.0}}, 1.0, 0.125, {{30.0}}, 1.1);
@@ -181,10 +181,10 @@ SPECTRE_TEST_CASE(
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.RiemannProblem.Dens",
     "[Unit][PointwiseFunctions]") {
+  ASSERTION_TEST();
   // clang-format on
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/NewtonianEuler"};
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   NewtonianEuler::Solutions::RiemannProblem<2> solution(
       1.4, 0.7, -1.0, {{0.0}}, 1.0, 0.125, {{30.0}}, 1.1);
@@ -196,9 +196,9 @@ SPECTRE_TEST_CASE(
 [[noreturn]] SPECTRE_TEST_CASE(
     "Unit.PointwiseFunctions.AnalyticSolutions.NewtEuler.RiemannProblem.Pres",
     "[Unit][PointwiseFunctions]") {
+  ASSERTION_TEST();
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/AnalyticSolutions/NewtonianEuler"};
-  ASSERTION_TEST();
 #ifdef SPECTRE_DEBUG
   NewtonianEuler::Solutions::RiemannProblem<3> solution(
       1.4, 0.7, 1.0, {{0.0}}, -1.0, 0.125, {{30.0}}, 1.1);
