@@ -212,6 +212,45 @@ void get_inv_jacobian(
     std::true_type /*jacobian_is_time_dependent*/) noexcept {
   *no_frame_inv_jac = the_map.inv_jacobian(point, t, funcs_of_time);
 }
+
+template <typename T, size_t Dim, typename SourceFrame, typename TargetFrame>
+void multiply_jacobian(
+    const gsl::not_null<Jacobian<T, Dim, SourceFrame, TargetFrame>*> jac,
+    const tnsr::Ij<T, Dim, Frame::NoFrame>& noframe_jac) noexcept {
+  std::array<T, Dim> temp{};
+  for (size_t source = 0; source < Dim; ++source) {
+    for (size_t target = 0; target < Dim; ++target) {
+      gsl::at(temp, target) = noframe_jac.get(target, 0) * jac->get(0, source);
+      for (size_t dummy = 1; dummy < Dim; ++dummy) {
+        gsl::at(temp, target) +=
+            noframe_jac.get(target, dummy) * jac->get(dummy, source);
+      }
+    }
+    for (size_t target = 0; target < Dim; ++target) {
+      jac->get(target, source) = std::move(gsl::at(temp, target));
+    }
+  }
+}
+
+template <typename T, size_t Dim, typename SourceFrame, typename TargetFrame>
+void multiply_inv_jacobian(
+    const gsl::not_null<Jacobian<T, Dim, SourceFrame, TargetFrame>*> inv_jac,
+    const tnsr::Ij<T, Dim, Frame::NoFrame>& noframe_inv_jac) noexcept {
+  std::array<T, Dim> temp{};
+  for (size_t source = 0; source < Dim; ++source) {
+    for (size_t target = 0; target < Dim; ++target) {
+      gsl::at(temp, target) =
+          inv_jac->get(source, 0) * noframe_inv_jac.get(0, target);
+      for (size_t dummy = 1; dummy < Dim; ++dummy) {
+        gsl::at(temp, target) +=
+            inv_jac->get(source, dummy) * noframe_inv_jac.get(dummy, target);
+      }
+    }
+    for (size_t target = 0; target < Dim; ++target) {
+      inv_jac->get(source, target) = std::move(gsl::at(temp, target));
+    }
+  }
+}
 }  // namespace detail
 
 template <typename SourceFrame, typename TargetFrame, typename... Maps>
@@ -234,28 +273,7 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
 
         tnsr::Ij<T, dim, Frame::NoFrame> noframe_inv_jac{};
 
-        if (LIKELY(count != 0)) {
-          if (LIKELY(not map.is_identity())) {
-            detail::get_inv_jacobian(
-                make_not_null(&noframe_inv_jac), map, mapped_point, time,
-                functions_of_time,
-                domain::is_jacobian_time_dependent_t<Map, T>{});
-            std::array<T, dim> temp{};
-            for (size_t source = 0; source < dim; ++source) {
-              for (size_t target = 0; target < dim; ++target) {
-                gsl::at(temp, target) =
-                    inv_jac.get(source, 0) * noframe_inv_jac.get(0, target);
-                for (size_t dummy = 1; dummy < dim; ++dummy) {
-                  gsl::at(temp, target) += inv_jac.get(source, dummy) *
-                                           noframe_inv_jac.get(dummy, target);
-                }
-              }
-              for (size_t target = 0; target < dim; ++target) {
-                inv_jac.get(source, target) = std::move(gsl::at(temp, target));
-              }
-            }
-          }
-        } else {
+        if (UNLIKELY(count == 0)) {
           detail::get_inv_jacobian(
               make_not_null(&noframe_inv_jac), map, mapped_point, time,
               functions_of_time,
@@ -266,6 +284,13 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
                   std::move(noframe_inv_jac.get(source, target));
             }
           }
+        } else if (LIKELY(not map.is_identity())) {
+          detail::get_inv_jacobian(
+              make_not_null(&noframe_inv_jac), map, mapped_point, time,
+              functions_of_time,
+              domain::is_jacobian_time_dependent_t<Map, T>{});
+          detail::multiply_inv_jacobian(make_not_null(&inv_jac),
+                                        noframe_inv_jac);
         }
 
         // Compute the source coordinates for the next map, only if we are not
@@ -298,28 +323,7 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
 
         tnsr::Ij<T, dim, Frame::NoFrame> noframe_jac{};
 
-        if (LIKELY(count != 0)) {
-          if (LIKELY(not map.is_identity())) {
-            detail::get_jacobian(
-                make_not_null(&noframe_jac), map, mapped_point, time,
-                functions_of_time,
-                domain::is_jacobian_time_dependent_t<Map, T>{});
-            std::array<T, dim> temp{};
-            for (size_t source = 0; source < dim; ++source) {
-              for (size_t target = 0; target < dim; ++target) {
-                gsl::at(temp, target) =
-                    noframe_jac.get(target, 0) * jac.get(0, source);
-                for (size_t dummy = 1; dummy < dim; ++dummy) {
-                  gsl::at(temp, target) +=
-                      noframe_jac.get(target, dummy) * jac.get(dummy, source);
-                }
-              }
-              for (size_t target = 0; target < dim; ++target) {
-                jac.get(target, source) = std::move(gsl::at(temp, target));
-              }
-            }
-          }
-        } else {
+        if (UNLIKELY(count == 0)) {
           detail::get_jacobian(make_not_null(&noframe_jac), map, mapped_point,
                                time, functions_of_time,
                                domain::is_jacobian_time_dependent_t<Map, T>{});
@@ -329,6 +333,11 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
                   std::move(noframe_jac.get(target, source));
             }
           }
+        } else if (LIKELY(not map.is_identity())) {
+          detail::get_jacobian(make_not_null(&noframe_jac), map, mapped_point,
+                               time, functions_of_time,
+                               domain::is_jacobian_time_dependent_t<Map, T>{});
+          detail::multiply_jacobian(make_not_null(&jac), noframe_jac);
         }
 
         // Compute the source coordinates for the next map, only if we are not
