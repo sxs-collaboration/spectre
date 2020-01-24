@@ -227,22 +227,15 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
   InverseJacobian<T, dim, SourceFrame, TargetFrame> inv_jac{};
 
   tuple_transform(
-      maps_,
-      [&inv_jac, &mapped_point, time, &functions_of_time](
-          const auto& map, auto index, const std::tuple<Maps...>& maps) {
+      maps_, [&inv_jac, &mapped_point, time, &functions_of_time](
+                 const auto& map, auto index) noexcept {
         constexpr const size_t count = decltype(index)::value;
         using Map = std::decay_t<decltype(map)>;
 
         tnsr::Ij<T, dim, Frame::NoFrame> noframe_inv_jac{};
 
         if (LIKELY(count != 0)) {
-          const auto& map_in_loop =
-              std::get<(count != 0 ? count - 1 : 0)>(maps);
-          if (LIKELY(not map_in_loop.is_identity())) {
-            CoordinateMap_detail::apply_map(
-                make_not_null(&mapped_point), map_in_loop, time,
-                functions_of_time,
-                domain::is_map_time_dependent_t<decltype(map_in_loop)>{});
+          if (LIKELY(not map.is_identity())) {
             detail::get_inv_jacobian(
                 make_not_null(&noframe_inv_jac), map, mapped_point, time,
                 functions_of_time,
@@ -274,8 +267,15 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::inv_jacobian_impl(
             }
           }
         }
-      },
-      maps_);
+
+        // Compute the source coordinates for the next map, only if we are not
+        // the last map and the map is not the identity.
+        if (not map.is_identity() and count + 1 != sizeof...(Maps)) {
+          CoordinateMap_detail::apply_map(
+              make_not_null(&mapped_point), map, time, functions_of_time,
+              domain::is_map_time_dependent_t<decltype(map)>{});
+        }
+      });
   return inv_jac;
 }
 
@@ -291,23 +291,15 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
   Jacobian<T, dim, SourceFrame, TargetFrame> jac{};
 
   tuple_transform(
-      maps_,
-      [&jac, &mapped_point, time, &functions_of_time](
-          const auto& map, auto index,
-          const std::tuple<Maps...>& maps) noexcept {
+      maps_, [&jac, &mapped_point, time, &functions_of_time](
+                 const auto& map, auto index) noexcept {
         constexpr const size_t count = decltype(index)::value;
         using Map = std::decay_t<decltype(map)>;
 
         tnsr::Ij<T, dim, Frame::NoFrame> noframe_jac{};
 
         if (LIKELY(count != 0)) {
-          const auto& map_in_loop =
-              std::get<(count != 0 ? count - 1 : 0)>(maps);
-          if (LIKELY(not map_in_loop.is_identity())) {
-            CoordinateMap_detail::apply_map(
-                make_not_null(&mapped_point), map_in_loop, time,
-                functions_of_time,
-                domain::is_map_time_dependent_t<decltype(map_in_loop)>{});
+          if (LIKELY(not map.is_identity())) {
             detail::get_jacobian(
                 make_not_null(&noframe_jac), map, mapped_point, time,
                 functions_of_time,
@@ -338,8 +330,15 @@ auto CoordinateMap<SourceFrame, TargetFrame, Maps...>::jacobian_impl(
             }
           }
         }
-      },
-      maps_);
+
+        // Compute the source coordinates for the next map, only if we are not
+        // the last map and the map is not the identity.
+        if (not map.is_identity() and count + 1 != sizeof...(Maps)) {
+          CoordinateMap_detail::apply_map(
+              make_not_null(&mapped_point), map, time, functions_of_time,
+              domain::is_map_time_dependent_t<decltype(map)>{});
+        }
+      });
   return jac;
 }
 
