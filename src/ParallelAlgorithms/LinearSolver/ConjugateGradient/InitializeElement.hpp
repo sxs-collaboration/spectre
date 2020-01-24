@@ -9,7 +9,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
-#include "NumericalAlgorithms/LinearSolver/InnerProduct.hpp"
+#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "ParallelAlgorithms/LinearSolver/Tags.hpp"
@@ -24,7 +24,7 @@ class TaggedTuple;
 namespace LinearSolver {
 namespace cg_detail {
 
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct InitializeElement {
  private:
   using fields_tag = FieldsTag;
@@ -42,18 +42,19 @@ struct InitializeElement {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using compute_tags = db::AddComputeTags<
-        ::Tags::NextCompute<LinearSolver::Tags::IterationId>>;
+        ::Tags::NextCompute<LinearSolver::Tags::IterationId<OptionsGroup>>>;
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeElement,
-            db::AddSimpleTags<LinearSolver::Tags::IterationId, residual_tag,
-                              LinearSolver::Tags::HasConverged>,
+            db::AddSimpleTags<LinearSolver::Tags::IterationId<OptionsGroup>,
+                              residual_tag,
+                              LinearSolver::Tags::HasConverged<OptionsGroup>>,
             compute_tags>(std::move(box),
                           // The `PrepareSolve` action populates these tags with
                           // initial values
                           std::numeric_limits<size_t>::max(),
                           db::item_type<residual_tag>{},
-                          db::item_type<LinearSolver::Tags::HasConverged>{}));
+                          Convergence::HasConverged{}));
   }
 };
 

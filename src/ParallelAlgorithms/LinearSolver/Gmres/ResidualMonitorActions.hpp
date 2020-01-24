@@ -27,11 +27,11 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace gmres_detail {
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct NormalizeInitialOperand;
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct OrthogonalizeOperand;
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct NormalizeOperandAndUpdateField;
 }  // namespace gmres_detail
 }  // namespace LinearSolver
@@ -40,7 +40,7 @@ struct NormalizeOperandAndUpdateField;
 namespace LinearSolver {
 namespace gmres_detail {
 
-template <typename FieldsTag, typename BroadcastTarget>
+template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct InitializeResidualMagnitude {
  private:
   using fields_tag = FieldsTag;
@@ -51,7 +51,7 @@ struct InitializeResidualMagnitude {
       db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
   using orthogonalization_iteration_id_tag =
       db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                         LinearSolver::Tags::IterationId>;
+                         LinearSolver::Tags::IterationId<OptionsGroup>>;
   using orthogonalization_history_tag =
       db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
                          fields_tag>;
@@ -66,8 +66,8 @@ struct InitializeResidualMagnitude {
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double residual_magnitude) noexcept {
-    db::mutate<LinearSolver::Tags::IterationId, residual_magnitude_tag,
-               initial_residual_magnitude_tag,
+    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
+               residual_magnitude_tag, initial_residual_magnitude_tag,
                orthogonalization_iteration_id_tag,
                orthogonalization_history_tag>(
         make_not_null(&box),
@@ -85,35 +85,37 @@ struct InitializeResidualMagnitude {
           *orthogonalization_history = DenseMatrix<double>{2, 1, 0.};
         });
 
-    LinearSolver::observe_detail::contribute_to_reduction_observer<FieldsTag>(
-        box, cache);
+    LinearSolver::observe_detail::contribute_to_reduction_observer<
+        FieldsTag, OptionsGroup>(box, cache);
 
     // Determine whether the linear solver has already converged. This invokes
     // the compute item.
-    const auto& has_converged = db::get<LinearSolver::Tags::HasConverged>(box);
+    const auto& has_converged =
+        db::get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
 
     // Do some logging
     if (UNLIKELY(has_converged and
-                 static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+                 static_cast<int>(
+                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
-      Parallel::printf(
-          "The linear solver has converged without any iterations: %s\n",
-          has_converged);
+      Parallel::printf("The linear solver '" + option_name<OptionsGroup>() +
+                           "' has converged without any iterations: %s\n",
+                       has_converged);
     }
 
-    Parallel::simple_action<NormalizeInitialOperand<FieldsTag>>(
+    Parallel::simple_action<NormalizeInitialOperand<FieldsTag, OptionsGroup>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
         residual_magnitude, has_converged);
   }
 };
 
-template <typename FieldsTag, typename BroadcastTarget>
+template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct StoreOrthogonalization {
  private:
   using fields_tag = FieldsTag;
   using orthogonalization_iteration_id_tag =
       db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                         LinearSolver::Tags::IterationId>;
+                         LinearSolver::Tags::IterationId<OptionsGroup>>;
   using orthogonalization_history_tag =
       db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
                          fields_tag>;
@@ -134,24 +136,21 @@ struct StoreOrthogonalization {
         [orthogonalization](
             const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
                 orthogonalization_history,
-            const gsl::not_null<
-                db::item_type<orthogonalization_iteration_id_tag>*>
-                orthogonalization_iteration_id,
-            const db::const_item_type<LinearSolver::Tags::IterationId>&
-                iteration_id) noexcept {
+            const gsl::not_null<size_t*> orthogonalization_iteration_id,
+            const size_t& iteration_id) noexcept {
           (*orthogonalization_history)(*orthogonalization_iteration_id,
                                        iteration_id) = orthogonalization;
           (*orthogonalization_iteration_id)++;
         },
-        get<LinearSolver::Tags::IterationId>(box));
+        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box));
 
-    Parallel::simple_action<OrthogonalizeOperand<FieldsTag>>(
+    Parallel::simple_action<OrthogonalizeOperand<FieldsTag, OptionsGroup>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
         orthogonalization);
   }
 };
 
-template <typename FieldsTag, typename BroadcastTarget>
+template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct StoreFinalOrthogonalization {
  private:
   using fields_tag = FieldsTag;
@@ -162,7 +161,7 @@ struct StoreFinalOrthogonalization {
       db::add_tag_prefix<LinearSolver::Tags::Initial, residual_magnitude_tag>;
   using orthogonalization_iteration_id_tag =
       db::add_tag_prefix<LinearSolver::Tags::Orthogonalization,
-                         LinearSolver::Tags::IterationId>;
+                         LinearSolver::Tags::IterationId<OptionsGroup>>;
   using orthogonalization_history_tag =
       db::add_tag_prefix<LinearSolver::Tags::OrthogonalizationHistory,
                          fields_tag>;
@@ -182,14 +181,12 @@ struct StoreFinalOrthogonalization {
         [orthogonalization](
             const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
                 orthogonalization_history,
-            const db::const_item_type<LinearSolver::Tags::IterationId>&
-                iteration_id,
-            const db::const_item_type<orthogonalization_iteration_id_tag>&
-                orthogonalization_iteration_id) noexcept {
+            const size_t& iteration_id,
+            const size_t& orthogonalization_iteration_id) noexcept {
           (*orthogonalization_history)(orthogonalization_iteration_id,
                                        iteration_id) = sqrt(orthogonalization);
         },
-        get<LinearSolver::Tags::IterationId>(box),
+        get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
         get<orthogonalization_iteration_id_tag>(box));
 
     // Perform a QR decomposition of the Hessenberg matrix that was built during
@@ -209,17 +206,14 @@ struct StoreFinalOrthogonalization {
         blaze::length(beta - orthogonalization_history * minres);
 
     // Store residual magnitude and prepare for the next iteration
-    db::mutate<residual_magnitude_tag, LinearSolver::Tags::IterationId,
-               orthogonalization_iteration_id_tag,
-               orthogonalization_history_tag>(
+    db::mutate<
+        residual_magnitude_tag, LinearSolver::Tags::IterationId<OptionsGroup>,
+        orthogonalization_iteration_id_tag, orthogonalization_history_tag>(
         make_not_null(&box),
         [residual_magnitude](
             const gsl::not_null<double*> local_residual_magnitude,
-            const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
-                iteration_id,
-            const gsl::not_null<
-                db::item_type<orthogonalization_iteration_id_tag>*>
-                orthogonalization_iteration_id,
+            const gsl::not_null<size_t*> iteration_id,
+            const gsl::not_null<size_t*> orthogonalization_iteration_id,
             const gsl::not_null<db::item_type<orthogonalization_history_tag>*>
                 local_orthogonalization_history) noexcept {
           *local_residual_magnitude = residual_magnitude;
@@ -244,29 +238,35 @@ struct StoreFinalOrthogonalization {
     // logging and checking convergence before broadcasting back to the
     // elements.
 
-    LinearSolver::observe_detail::contribute_to_reduction_observer<FieldsTag>(
-        box, cache);
+    LinearSolver::observe_detail::contribute_to_reduction_observer<
+        FieldsTag, OptionsGroup>(box, cache);
 
     // Determine whether the linear solver has converged. This invokes the
     // compute item.
-    const auto& has_converged = db::get<LinearSolver::Tags::HasConverged>(box);
+    const auto& has_converged =
+        db::get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
 
     // Do some logging
-    if (UNLIKELY(static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+    if (UNLIKELY(static_cast<int>(
+                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                  static_cast<int>(::Verbosity::Verbose))) {
-      Parallel::printf(
-          "Linear solver iteration %zu done. Remaining residual: %e\n",
-          get<LinearSolver::Tags::IterationId>(box), residual_magnitude);
+      Parallel::printf("Linear solver '" + option_name<OptionsGroup>() +
+                           "' iteration %zu done. Remaining residual: %e\n",
+                       get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
+                       residual_magnitude);
     }
     if (UNLIKELY(has_converged and
-                 static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+                 static_cast<int>(
+                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
-      Parallel::printf(
-          "The linear solver has converged in %zu iterations: %s\n",
-          get<LinearSolver::Tags::IterationId>(box), has_converged);
+      Parallel::printf("The linear solver '" + option_name<OptionsGroup>() +
+                           "' has converged in %zu iterations: %s\n",
+                       get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
+                       has_converged);
     }
 
-    Parallel::simple_action<NormalizeOperandAndUpdateField<FieldsTag>>(
+    Parallel::simple_action<
+        NormalizeOperandAndUpdateField<FieldsTag, OptionsGroup>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
         sqrt(orthogonalization), minres, has_converged);
   }

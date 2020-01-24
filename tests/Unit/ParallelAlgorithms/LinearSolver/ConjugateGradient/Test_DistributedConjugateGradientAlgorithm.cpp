@@ -21,10 +21,14 @@ namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 
 namespace {
 
+struct ParallelCg {
+  static constexpr OptionString help =
+      "Options for the iterative linear solver";
+};
+
 struct Metavariables {
-  using linear_solver =
-      LinearSolver::ConjugateGradient<Metavariables,
-                                      typename helpers_distributed::fields_tag>;
+  using linear_solver = LinearSolver::ConjugateGradient<
+      Metavariables, typename helpers_distributed::fields_tag, ParallelCg>;
 
   using component_list =
       tmpl::append<tmpl::list<helpers_distributed::ElementArray<Metavariables>,

@@ -10,7 +10,7 @@ Observers:
   VolumeFileName: "Test_GmresAlgorithm_Volume"
   ReductionFileName: "Test_GmresAlgorithm_Reductions"
 
-LinearSolver:
+SerialGmres:
   ConvergenceCriteria:
     MaxIterations: 2
     AbsoluteResidual: 1e-14

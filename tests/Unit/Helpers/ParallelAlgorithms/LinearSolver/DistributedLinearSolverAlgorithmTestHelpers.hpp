@@ -220,6 +220,7 @@ struct CollectOperatorAction {
 };
 
 // Checks for the correct solution after the algorithm has terminated.
+template <typename OptionsGroup>
 struct TestResult {
   template <typename DbTagsList, typename... InboxTags, typename Metavariables,
             typename ActionList, typename ParallelComponent>
@@ -233,7 +234,8 @@ struct TestResult {
       const ActionList /*meta*/,
       // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
       const ParallelComponent* const /*meta*/) noexcept {
-    const auto& has_converged = get<LinearSolver::Tags::HasConverged>(box);
+    const auto& has_converged =
+        get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
     SPECTRE_PARALLEL_REQUIRE(has_converged);
     SPECTRE_PARALLEL_REQUIRE(has_converged.reason() ==
                              Convergence::Reason::AbsoluteResidual);
@@ -290,14 +292,15 @@ struct ElementArray {
       Parallel::PhaseActions<
           typename Metavariables::Phase,
           Metavariables::Phase::PerformLinearSolve,
-          tmpl::list<LinearSolver::Actions::TerminateIfConverged,
+          tmpl::list<LinearSolver::Actions::TerminateIfConverged<
+                         typename linear_solver::options_group>,
                      typename linear_solver::prepare_step,
                      ComputeOperatorAction,
                      typename linear_solver::perform_step>>,
 
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::TestResult,
-                             tmpl::list<TestResult>>>;
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::TestResult,
+          tmpl::list<TestResult<typename linear_solver::options_group>>>>;
   using array_allocation_tags =
       tmpl::list<Initialization::Tags::NumberOfElements>;
   using initialization_tags = Parallel::get_initialization_tags<

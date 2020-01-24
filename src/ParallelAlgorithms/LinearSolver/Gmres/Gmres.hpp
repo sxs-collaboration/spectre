@@ -61,13 +61,16 @@ namespace LinearSolver {
  * \see ConjugateGradient for a linear solver that is more efficient when the
  * linear operator \f$A\f$ is symmetric.
  */
-template <typename Metavariables, typename FieldsTag>
+template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct Gmres {
+  using fields_tag = FieldsTag;
+  using options_group = OptionsGroup;
+
   /*!
    * \brief The parallel components used by the GMRES linear solver
    */
-  using component_list =
-      tmpl::list<gmres_detail::ResidualMonitor<Metavariables, FieldsTag>>;
+  using component_list = tmpl::list<
+      gmres_detail::ResidualMonitor<Metavariables, FieldsTag, OptionsGroup>>;
 
   /*!
    * \brief Initialize the tags used by the GMRES linear solver.
@@ -113,7 +116,8 @@ struct Gmres {
    * not need to be initialized until it is computed for the first time in the
    * first step of the algorithm.
    */
-  using initialize_element = gmres_detail::InitializeElement<FieldsTag>;
+  using initialize_element =
+      gmres_detail::InitializeElement<FieldsTag, OptionsGroup>;
 
   /*!
    * \brief Reset the linear solver to its initial state.
@@ -146,7 +150,7 @@ struct Gmres {
    *
    * \see `initialize_element`
    */
-  using prepare_solve = gmres_detail::PrepareSolve<FieldsTag>;
+  using prepare_solve = gmres_detail::PrepareSolve<FieldsTag, OptionsGroup>;
 
   // Compile-time interface for observers
   using observed_reduction_data_tags = observers::make_reduction_data_tags<
@@ -163,7 +167,7 @@ struct Gmres {
    *   * `Tags::Next<LinearSolver::Tags::IterationId>`
    *   * `orthogonalization_iteration_id_tag`
    */
-  using prepare_step = gmres_detail::PrepareStep;
+  using prepare_step = gmres_detail::PrepareStep<FieldsTag, OptionsGroup>;
 
   /*!
    * \brief Perform an iteration of the GMRES linear solver.
@@ -190,7 +194,7 @@ struct Gmres {
    *   * `basis_history_tag`
    *   * `LinearSolver::Tags::HasConverged`
    */
-  using perform_step = gmres_detail::PerformStep<FieldsTag>;
+  using perform_step = gmres_detail::PerformStep<FieldsTag, OptionsGroup>;
 };
 
 }  // namespace LinearSolver

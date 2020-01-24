@@ -3,11 +3,14 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Informer/Tags.hpp"
 #include "Informer/Verbosity.hpp"
+#include "NumericalAlgorithms/Convergence/HasConverged.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/Invoke.hpp"
@@ -25,11 +28,11 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace cg_detail {
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct InitializeHasConverged;
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct UpdateFieldValues;
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct UpdateOperand;
 }  // namespace cg_detail
 }  // namespace LinearSolver
@@ -38,7 +41,7 @@ struct UpdateOperand;
 namespace LinearSolver {
 namespace cg_detail {
 
-template <typename FieldsTag, typename BroadcastTarget>
+template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct InitializeResidual {
  private:
   using fields_tag = FieldsTag;
@@ -61,11 +64,12 @@ struct InitializeResidual {
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double residual_square) noexcept {
-    db::mutate<LinearSolver::Tags::IterationId, residual_square_tag>(
-        make_not_null(&box), [residual_square](
-                                 const gsl::not_null<size_t*> iteration_id,
-                                 const gsl::not_null<double*>
-                                     local_residual_square) noexcept {
+    db::mutate<LinearSolver::Tags::IterationId<OptionsGroup>,
+               residual_square_tag>(
+        make_not_null(&box),
+        [residual_square](
+            const gsl::not_null<size_t*> iteration_id,
+            const gsl::not_null<double*> local_residual_square) noexcept {
           *local_residual_square = residual_square;
           *iteration_id = 0;
         });
@@ -79,28 +83,30 @@ struct InitializeResidual {
         },
         get<residual_magnitude_tag>(box));
 
-    LinearSolver::observe_detail::contribute_to_reduction_observer<FieldsTag>(
-        box, cache);
+    LinearSolver::observe_detail::contribute_to_reduction_observer<
+        FieldsTag, OptionsGroup>(box, cache);
 
     // Determine whether the linear solver has converged. This invokes the
     // compute item.
-    const auto& has_converged = db::get<LinearSolver::Tags::HasConverged>(box);
+    const auto& has_converged =
+        db::get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
 
     if (UNLIKELY(has_converged and
-                 static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+                 static_cast<int>(
+                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf(
           "The linear solver has converged without any iterations: %s\n",
           has_converged);
     }
 
-    Parallel::simple_action<InitializeHasConverged<FieldsTag>>(
+    Parallel::simple_action<InitializeHasConverged<FieldsTag, OptionsGroup>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
         has_converged);
   }
 };
 
-template <typename FieldsTag, typename BroadcastTarget>
+template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct ComputeAlpha {
  private:
   using fields_tag = FieldsTag;
@@ -118,13 +124,13 @@ struct ComputeAlpha {
                     Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const double conj_grad_inner_product) noexcept {
-    Parallel::simple_action<UpdateFieldValues<FieldsTag>>(
+    Parallel::simple_action<UpdateFieldValues<FieldsTag, OptionsGroup>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache),
         get<residual_square_tag>(box) / conj_grad_inner_product);
   }
 };
 
-template <typename FieldsTag, typename BroadcastTarget>
+template <typename FieldsTag, typename OptionsGroup, typename BroadcastTarget>
 struct UpdateResidual {
  private:
   using fields_tag = FieldsTag;
@@ -148,12 +154,11 @@ struct UpdateResidual {
     // Compute the residual ratio before mutating the DataBox
     const double res_ratio = residual_square / get<residual_square_tag>(box);
 
-    db::mutate<residual_square_tag, LinearSolver::Tags::IterationId>(
+    db::mutate<residual_square_tag,
+               LinearSolver::Tags::IterationId<OptionsGroup>>(
         make_not_null(&box),
-        [residual_square](
-            const gsl::not_null<double*> local_residual_square,
-            const gsl::not_null<db::item_type<LinearSolver::Tags::IterationId>*>
-                iteration_id) noexcept {
+        [residual_square](const gsl::not_null<double*> local_residual_square,
+                          const gsl::not_null<size_t*> iteration_id) noexcept {
           *local_residual_square = residual_square;
           // Prepare for the next iteration
           (*iteration_id)++;
@@ -163,30 +168,34 @@ struct UpdateResidual {
     // logging and checking convergence before broadcasting back to the
     // elements.
 
-    LinearSolver::observe_detail::contribute_to_reduction_observer<FieldsTag>(
-        box, cache);
+    LinearSolver::observe_detail::contribute_to_reduction_observer<
+        FieldsTag, OptionsGroup>(box, cache);
 
     // Determine whether the linear solver has converged. This invokes the
     // compute item.
-    const auto& has_converged = get<LinearSolver::Tags::HasConverged>(box);
+    const auto& has_converged =
+        get<LinearSolver::Tags::HasConverged<OptionsGroup>>(box);
 
     // Do some logging
-    if (UNLIKELY(static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+    if (UNLIKELY(static_cast<int>(
+                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                  static_cast<int>(::Verbosity::Verbose))) {
       Parallel::printf(
           "Linear solver iteration %zu done. Remaining residual: %e\n",
-          get<LinearSolver::Tags::IterationId>(box),
+          get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
           get<residual_magnitude_tag>(box));
     }
     if (UNLIKELY(has_converged and
-                 static_cast<int>(get<LinearSolver::Tags::Verbosity>(cache)) >=
+                 static_cast<int>(
+                     get<LinearSolver::Tags::Verbosity<OptionsGroup>>(cache)) >=
                      static_cast<int>(::Verbosity::Quiet))) {
       Parallel::printf(
           "The linear solver has converged in %zu iterations: %s\n",
-          get<LinearSolver::Tags::IterationId>(box), has_converged);
+          get<LinearSolver::Tags::IterationId<OptionsGroup>>(box),
+          has_converged);
     }
 
-    Parallel::simple_action<UpdateOperand<FieldsTag>>(
+    Parallel::simple_action<UpdateOperand<FieldsTag, OptionsGroup>>(
         Parallel::get_parallel_component<BroadcastTarget>(cache), res_ratio,
         has_converged);
   }

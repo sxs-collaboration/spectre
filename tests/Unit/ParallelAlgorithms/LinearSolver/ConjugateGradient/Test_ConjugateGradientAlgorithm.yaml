@@ -10,7 +10,7 @@ Observers:
   VolumeFileName: "Test_ConjugateGradientAlgorithm_Volume"
   ReductionFileName: "Test_ConjugateGradientAlgorithm_Reductions"
 
-LinearSolver:
+SerialCg:
   ConvergenceCriteria:
     MaxIterations: 2
     AbsoluteResidual: 1e-14

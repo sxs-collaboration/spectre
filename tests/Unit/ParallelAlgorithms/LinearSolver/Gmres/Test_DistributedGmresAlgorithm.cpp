@@ -21,9 +21,15 @@ namespace helpers_distributed = DistributedLinearSolverAlgorithmTestHelpers;
 
 namespace {
 
+struct ParallelGmres {
+  static constexpr OptionString help =
+      "Options for the iterative linear solver";
+};
+
 struct Metavariables {
   using linear_solver =
-      LinearSolver::Gmres<Metavariables, helpers_distributed::fields_tag>;
+      LinearSolver::Gmres<Metavariables, helpers_distributed::fields_tag,
+                          ParallelGmres>;
 
   using component_list =
       tmpl::append<tmpl::list<helpers_distributed::ElementArray<Metavariables>,

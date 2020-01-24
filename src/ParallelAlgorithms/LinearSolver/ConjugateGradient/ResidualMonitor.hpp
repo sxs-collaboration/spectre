@@ -3,6 +3,8 @@
 
 #pragma once
 
+#include <cstddef>
+
 #include "AlgorithmSingleton.hpp"
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/PrefixHelpers.hpp"
@@ -25,29 +27,26 @@ class TaggedTuple;
 }  // namespace tuples
 namespace LinearSolver {
 namespace cg_detail {
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct InitializeResidualMonitor;
 }  // namespace cg_detail
 }  // namespace LinearSolver
-namespace Convergence {
-struct Criteria;
-}  // namespace Convergence
 /// \endcond
 
 namespace LinearSolver {
 namespace cg_detail {
 
-template <typename Metavariables, typename FieldsTag>
+template <typename Metavariables, typename FieldsTag, typename OptionsGroup>
 struct ResidualMonitor {
   using chare_type = Parallel::Algorithms::Singleton;
   using const_global_cache_tags =
-      tmpl::list<LinearSolver::Tags::Verbosity,
-                 LinearSolver::Tags::ConvergenceCriteria>;
+      tmpl::list<LinearSolver::Tags::Verbosity<OptionsGroup>,
+                 LinearSolver::Tags::ConvergenceCriteria<OptionsGroup>>;
   using metavariables = Metavariables;
   using phase_dependent_action_list = tmpl::list<
-      Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Initialization,
-                             tmpl::list<InitializeResidualMonitor<FieldsTag>>>,
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<InitializeResidualMonitor<FieldsTag, OptionsGroup>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase,
@@ -66,7 +65,7 @@ struct ResidualMonitor {
   }
 };
 
-template <typename FieldsTag>
+template <typename FieldsTag, typename OptionsGroup>
 struct InitializeResidualMonitor {
  private:
   using fields_tag = FieldsTag;
@@ -91,11 +90,11 @@ struct InitializeResidualMonitor {
                     const ParallelComponent* const /*meta*/) noexcept {
     using compute_tags = db::AddComputeTags<
         LinearSolver::Tags::MagnitudeCompute<residual_square_tag>,
-        LinearSolver::Tags::HasConvergedCompute<fields_tag>>;
+        LinearSolver::Tags::HasConvergedCompute<fields_tag, OptionsGroup>>;
     return std::make_tuple(
         ::Initialization::merge_into_databox<
             InitializeResidualMonitor,
-            db::AddSimpleTags<LinearSolver::Tags::IterationId,
+            db::AddSimpleTags<LinearSolver::Tags::IterationId<OptionsGroup>,
                               residual_square_tag,
                               initial_residual_magnitude_tag>,
             compute_tags>(std::move(box),

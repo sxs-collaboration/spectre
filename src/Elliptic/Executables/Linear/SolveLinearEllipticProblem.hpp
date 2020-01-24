@@ -53,6 +53,16 @@
 #include "Utilities/Functional.hpp"
 #include "Utilities/TMPL.hpp"
 
+namespace SolveLinearEllipticProblem {
+namespace OptionTags {
+struct LinearSolverGroup {
+  static std::string name() noexcept { return "LinearSolver"; }
+  static constexpr OptionString help =
+      "Options for the iterative linear solver";
+};
+}  // namespace OptionTags
+}  // namespace SolveLinearEllipticProblem
+
 /// \cond
 template <typename System, typename InitialGuess, typename BoundaryConditions>
 struct Metavariables {
@@ -77,9 +87,13 @@ struct Metavariables {
 
   // The linear solver algorithm. We must use GMRES since the operator is
   // not positive-definite for the first-order system.
-  using linear_solver =
-      LinearSolver::Gmres<Metavariables, typename system::fields_tag>;
-  using temporal_id = LinearSolver::Tags::IterationId;
+  using linear_solver = LinearSolver::Gmres<
+      Metavariables, typename system::fields_tag,
+      SolveLinearEllipticProblem::OptionTags::LinearSolverGroup>;
+  using linear_solver_iteration_id =
+      LinearSolver::Tags::IterationId<typename linear_solver::options_group>;
+
+  using temporal_id = linear_solver_iteration_id;
 
   // This is needed for InitializeMortars and will be removed ASAP.
   static constexpr bool local_time_stepping = false;
@@ -95,14 +109,14 @@ struct Metavariables {
   using observe_fields =
       db::get_variables_tags_list<typename system::fields_tag>;
   using analytic_solution_fields = observe_fields;
-  using events = tmpl::list<
-      dg::Events::Registrars::ObserveFields<
-          volume_dim, LinearSolver::Tags::IterationId, observe_fields,
-          analytic_solution_fields>,
-      dg::Events::Registrars::ObserveErrorNorms<LinearSolver::Tags::IterationId,
-                                                analytic_solution_fields>>;
+  using events =
+      tmpl::list<dg::Events::Registrars::ObserveFields<
+                     volume_dim, linear_solver_iteration_id, observe_fields,
+                     analytic_solution_fields>,
+                 dg::Events::Registrars::ObserveErrorNorms<
+                     linear_solver_iteration_id, analytic_solution_fields>>;
   using triggers = tmpl::list<elliptic::Triggers::Registrars::EveryNIterations<
-      LinearSolver::Tags::IterationId>>;
+      linear_solver_iteration_id>>;
 
   // Collect all items to store in the cache.
   using const_global_cache_tags =
@@ -153,7 +167,7 @@ struct Metavariables {
                      Phase, Phase::RegisterWithObserver,
                      tmpl::list<observers::Actions::RegisterWithObservers<
                                     observers::RegisterObservers<
-                                        LinearSolver::Tags::IterationId,
+                                        linear_solver_iteration_id,
                                         element_observation_type>>,
                                 // We prepare the linear solve here to avoid
                                 // adding an extra phase. We can't do that
@@ -166,7 +180,8 @@ struct Metavariables {
                      Phase, Phase::Solve,
                      tmpl::list<typename linear_solver::prepare_step,
                                 Actions::RunEventsAndTriggers,
-                                LinearSolver::Actions::TerminateIfConverged,
+                                LinearSolver::Actions::TerminateIfConverged<
+                                    typename linear_solver::options_group>,
                                 build_linear_operator_actions,
                                 typename linear_solver::perform_step>>>>;
 

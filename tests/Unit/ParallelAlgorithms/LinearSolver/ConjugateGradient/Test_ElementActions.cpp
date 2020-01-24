@@ -26,6 +26,8 @@
 
 namespace {
 
+struct DummyOptionsGroup {};
+
 struct VectorTag : db::SimpleTag {
   using type = DenseVector<double>;
 };
@@ -44,14 +46,16 @@ struct ElementArray {
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
               tmpl::list<VectorTag, operand_tag,
-                         LinearSolver::Tags::IterationId, residual_tag,
-                         LinearSolver::Tags::HasConverged>,
-              tmpl::list<
-                  ::Tags::NextCompute<LinearSolver::Tags::IterationId>>>>>,
+                         LinearSolver::Tags::IterationId<DummyOptionsGroup>,
+                         residual_tag,
+                         LinearSolver::Tags::HasConverged<DummyOptionsGroup>>,
+              tmpl::list<::Tags::NextCompute<
+                  LinearSolver::Tags::IterationId<DummyOptionsGroup>>>>>>,
 
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Testing,
-                             tmpl::list<LinearSolver::cg_detail::PrepareStep>>>;
+                             tmpl::list<LinearSolver::cg_detail::PrepareStep<
+                                 fields_tag, DummyOptionsGroup>>>>;
 };
 
 struct Metavariables {
@@ -73,7 +77,7 @@ SPECTRE_TEST_CASE(
       make_not_null(&runner), 0,
       {DenseVector<double>(3, 0.), DenseVector<double>(3, 2.),
        std::numeric_limits<size_t>::max(), DenseVector<double>(3, 1.),
-       db::item_type<LinearSolver::Tags::HasConverged>{}});
+       db::item_type<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>{}});
 
   // DataBox shortcuts
   const auto get_tag = [&runner](auto tag_v) -> decltype(auto) {
@@ -91,27 +95,31 @@ SPECTRE_TEST_CASE(
 
   SECTION("InitializeHasConverged") {
     ActionTesting::simple_action<
-        element_array,
-        LinearSolver::cg_detail::InitializeHasConverged<fields_tag>>(
+        element_array, LinearSolver::cg_detail::InitializeHasConverged<
+                           fields_tag, DummyOptionsGroup>>(
         make_not_null(&runner), 0,
-        db::item_type<LinearSolver::Tags::HasConverged>{
+        db::item_type<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>{
             {1, 0., 0.}, 1, 0., 0.});
-    CHECK(get_tag(LinearSolver::Tags::HasConverged{}));
+    CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
   }
   SECTION("PrepareStep") {
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
-    CHECK(get_tag(LinearSolver::Tags::IterationId{}) == 0);
-    CHECK(get_tag(Tags::Next<LinearSolver::Tags::IterationId>{}) == 1);
+    CHECK(get_tag(LinearSolver::Tags::IterationId<DummyOptionsGroup>{}) == 0);
+    CHECK(
+        get_tag(
+            Tags::Next<LinearSolver::Tags::IterationId<DummyOptionsGroup>>{}) ==
+        1);
   }
   SECTION("UpdateOperand") {
     ActionTesting::next_action<element_array>(make_not_null(&runner), 0);
     ActionTesting::simple_action<
-        element_array, LinearSolver::cg_detail::UpdateOperand<fields_tag>>(
+        element_array,
+        LinearSolver::cg_detail::UpdateOperand<fields_tag, DummyOptionsGroup>>(
         make_not_null(&runner), 0, 2.,
-        db::item_type<LinearSolver::Tags::HasConverged>{
+        db::item_type<LinearSolver::Tags::HasConverged<DummyOptionsGroup>>{
             {1, 0., 0.}, 1, 0., 0.});
     CHECK(get_tag(LinearSolver::Tags::Operand<VectorTag>{}) ==
           DenseVector<double>(3, 5.));
-    CHECK(get_tag(LinearSolver::Tags::HasConverged{}));
+    CHECK(get_tag(LinearSolver::Tags::HasConverged<DummyOptionsGroup>{}));
   }
 }
