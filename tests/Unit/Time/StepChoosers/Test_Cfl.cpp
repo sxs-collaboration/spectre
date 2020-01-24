@@ -40,7 +40,6 @@ using StepChooserType =
 using Cfl = StepChoosers::Cfl<dim, frame>;
 
 struct CharacteristicSpeed : db::SimpleTag {
-  static std::string name() noexcept { return "CharacteristicSpeed"; }
   using type = double;
 };
 

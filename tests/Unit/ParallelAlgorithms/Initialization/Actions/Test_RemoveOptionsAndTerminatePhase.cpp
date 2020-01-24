@@ -25,12 +25,10 @@ struct TemporalId {};
 
 struct InitialTime : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "InitialTime"; }
 };
 
 struct InitialMass : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "InitialMass"; }
 };
 
 struct DummyTimeTag : db::SimpleTag {

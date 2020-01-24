@@ -47,7 +47,6 @@ struct EventsAndTriggersBase : db::BaseTag {};
 /// Contains the events and triggers
 template <typename EventRegistrars, typename TriggerRegistrars>
 struct EventsAndTriggers : EventsAndTriggersBase, db::SimpleTag {
-  static std::string name() noexcept { return "EventsAndTriggers"; }
   using type = ::EventsAndTriggers<EventRegistrars, TriggerRegistrars>;
   using option_tags = tmpl::list<
       ::OptionTags::EventsAndTriggers<EventRegistrars, TriggerRegistrars>>;

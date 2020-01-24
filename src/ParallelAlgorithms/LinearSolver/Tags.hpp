@@ -50,7 +50,7 @@ template <typename Tag>
 struct Operand : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
-    return "LinearOperand(" + Tag::name() + ")";
+    return "LinearOperand(" + db::tag_name<Tag>() + ")";
   }
   using type = typename Tag::type;
   using tag = Tag;
@@ -63,7 +63,7 @@ template <typename Tag>
 struct OperatorAppliedTo : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
-    return "LinearOperatorAppliedTo(" + Tag::name() + ")";
+    return "LinearOperatorAppliedTo(" + db::tag_name<Tag>() + ")";
   }
   using type = typename Tag::type;
   using tag = Tag;
@@ -90,7 +90,7 @@ template <typename Tag>
 struct Residual : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
-    return "LinearResidual(" + Tag::name() + ")";
+    return "LinearResidual(" + db::tag_name<Tag>() + ")";
   }
   using type = typename Tag::type;
   using tag = Tag;
@@ -98,7 +98,9 @@ struct Residual : db::PrefixTag, db::SimpleTag {
 
 template <typename Tag>
 struct Initial : db::PrefixTag, db::SimpleTag {
-  static std::string name() noexcept { return "Initial(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "Initial(" + db::tag_name<Tag>() + ")";
+  }
   using type = typename Tag::type;
   using tag = Tag;
 };
@@ -111,7 +113,7 @@ template <typename Tag>
 struct MagnitudeSquare : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
-    return "LinearMagnitudeSquare(" + Tag::name() + ")";
+    return "LinearMagnitudeSquare(" + db::tag_name<Tag>() + ")";
   }
   using type = double;
   using tag = Tag;
@@ -125,7 +127,7 @@ template <typename Tag>
 struct Magnitude : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
-    return "LinearMagnitude(" + Tag::name() + ")";
+    return "LinearMagnitude(" + db::tag_name<Tag>() + ")";
   }
   using type = double;
   using tag = Tag;
@@ -153,7 +155,7 @@ template <typename Tag>
 struct Orthogonalization : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
-    return "LinearOrthogonalization(" + Tag::name() + ")";
+    return "LinearOrthogonalization(" + db::tag_name<Tag>() + ")";
   }
   using type = typename Tag::type;
   using tag = Tag;
@@ -166,7 +168,7 @@ template <typename Tag>
 struct OrthogonalizationHistory : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
     // Add "Linear" prefix to abbreviate the namespace for uniqueness
-    return "LinearOrthogonalizationHistory(" + Tag::name() + ")";
+    return "LinearOrthogonalizationHistory(" + db::tag_name<Tag>() + ")";
   }
   using type = DenseMatrix<double>;
   using tag = Tag;
@@ -190,7 +192,7 @@ struct KrylovSubspaceBasis : db::PrefixTag, db::SimpleTag {
   static std::string name() noexcept {
     // No "Linear" prefix since a Krylov subspace always refers to a linear
     // operator
-    return "KrylovSubspaceBasis(" + Tag::name() + ")";
+    return "KrylovSubspaceBasis(" + db::tag_name<Tag>() + ")";
   }
   using type =
       std::vector<db::const_item_type<db::add_tag_prefix<Operand, Tag>>>;
@@ -292,7 +294,6 @@ namespace Tags {
  */
 struct ConvergenceCriteria : db::SimpleTag {
   using type = Convergence::Criteria;
-  static std::string name() noexcept { return "ConvergenceCriteria"; }
   using option_tags = tmpl::list<LinearSolver::OptionTags::ConvergenceCriteria>;
 
   template <typename Metavariables>
@@ -303,7 +304,6 @@ struct ConvergenceCriteria : db::SimpleTag {
 };
 
 struct Verbosity : db::SimpleTag {
-  static std::string name() noexcept { return "Verbosity"; }
   using type = ::Verbosity;
   using option_tags = tmpl::list<LinearSolver::OptionTags::Verbosity>;
 

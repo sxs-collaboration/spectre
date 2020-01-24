@@ -48,12 +48,10 @@ struct TemporalId {
 };
 
 struct Var : db::SimpleTag {
-  static std::string name() noexcept { return "Var"; }
   using type = double;
 };
 
 struct PrimitiveVar : db::SimpleTag {
-  static std::string name() noexcept { return "PrimitiveVar"; }
   using type = double;
 };
 

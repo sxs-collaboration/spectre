@@ -31,12 +31,10 @@ namespace {
 
 struct ScalarFieldTag : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ScalarFieldTag"; }
 };
 
 struct OtherDataTag : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "OtherDataTag"; }
 };
 
 template <typename VarsTag>

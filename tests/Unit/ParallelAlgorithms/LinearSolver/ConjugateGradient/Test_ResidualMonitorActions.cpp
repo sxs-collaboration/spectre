@@ -54,7 +54,6 @@ namespace {
 
 struct VectorTag : db::SimpleTag {
   using type = DenseVector<double>;
-  static std::string name() noexcept { return "VectorTag"; }
 };
 
 using fields_tag = VectorTag;
@@ -69,7 +68,6 @@ using initial_residual_magnitude_tag = db::add_tag_prefix<
 
 struct CheckValueTag : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "CheckValueTag"; }
 };
 
 using CheckConvergedTag = LinearSolver::Tags::HasConverged;

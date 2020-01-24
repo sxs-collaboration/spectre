@@ -37,7 +37,6 @@ using step_choosers = tmpl::list<StepChoosers::Registrars::Constant>;
 using change_step_size = Actions::ChangeStepSize<step_choosers>;
 
 struct Var : db::SimpleTag {
-  static std::string name() noexcept { return "Var"; }
   using type = double;
 };
 

@@ -7,6 +7,7 @@ set(LIBRARY_SOURCES
   Test_EvolutionOrdering.cpp
   Test_History.cpp
   Test_Slab.cpp
+  Test_Tags.cpp
   Test_Time.cpp
   Test_TimeStepId.cpp
   )

@@ -16,12 +16,10 @@ namespace {
 
 struct SomeNumber : db::SimpleTag {
   using type = int;
-  static std::string name() noexcept { return "SomeNumber"; }
 };
 
 struct TestValue : db::SimpleTag {
   using type = int;
-  static std::string name() noexcept { return "TestValue"; }
 };
 
 struct AddTheNumber {

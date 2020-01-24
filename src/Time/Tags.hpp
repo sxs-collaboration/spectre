@@ -30,7 +30,6 @@ namespace Tags {
 /// \ingroup TimeGroup
 /// \brief Tag for ::TimeStepId for the algorithm state
 struct TimeStepId : db::SimpleTag {
-  static std::string name() noexcept { return "TimeStepId"; }
   using type = ::TimeStepId;
   template <typename Tag>
   using step_prefix = typename Tags::dt<Tag>;
@@ -40,7 +39,6 @@ struct TimeStepId : db::SimpleTag {
 /// \ingroup TimeGroup
 /// \brief Tag for step size
 struct TimeStep : db::SimpleTag {
-  static std::string name() noexcept { return "TimeStep"; }
   using type = ::TimeDelta;
 };
 
@@ -70,7 +68,6 @@ struct SubstepTimeCompute : SubstepTime, db::ComputeTag {
 /// \ingroup TimeGroup
 /// \brief Tag for the current time as a double
 struct Time : db::SimpleTag {
-  static std::string name() noexcept { return "Time"; }
   using type = double;
 };
 
@@ -101,7 +98,6 @@ struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
 /// Tag for TimeStepper boundary history
 template <typename LocalVars, typename RemoteVars, typename CouplingResult>
 struct BoundaryHistory : db::SimpleTag {
-  static std::string name() noexcept { return "BoundaryHistory"; }
   using type =
       TimeSteppers::BoundaryHistory<LocalVars, RemoteVars, CouplingResult>;
 };
@@ -172,16 +168,16 @@ struct InitialSlabSize {
 }  // namespace OptionTags
 
 namespace Tags {
+/// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief The ::TimeStepper
+/// \brief Base tag for simple tag Tags::TimeStepper
 struct TimeStepperBase : db::BaseTag {};
 
+/// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief The ::TimeStepper, specifying a (base) type.  Can be
-/// retrieved through Tags::TimeStepper.
+/// \brief Tag for a ::TimeStepper of type `StepperType`.
 template <typename StepperType>
 struct TimeStepper : TimeStepperBase, db::SimpleTag {
-  static std::string name() noexcept { return "TimeStepper"; }
   using type = std::unique_ptr<StepperType>;
   using option_tags = tmpl::list<::OptionTags::TimeStepper<StepperType>>;
 
@@ -192,10 +188,11 @@ struct TimeStepper : TimeStepperBase, db::SimpleTag {
   }
 };
 
+/// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
+/// \brief Tag for a vector of ::StepChooser%s
 template <typename Registrars>
 struct StepChoosers : db::SimpleTag {
-  static std::string name() noexcept { return "StepChoosers"; }
   using type = std::vector<std::unique_ptr<::StepChooser<Registrars>>>;
   using option_tags = tmpl::list<::OptionTags::StepChoosers<Registrars>>;
 
@@ -205,9 +202,10 @@ struct StepChoosers : db::SimpleTag {
   }
 };
 
+/// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
+/// \brief Tag for a ::StepController
 struct StepController : db::SimpleTag {
-  static std::string name() noexcept { return "StepController"; }
   using type = std::unique_ptr<::StepController>;
   using option_tags = tmpl::list<::OptionTags::StepController>;
 
