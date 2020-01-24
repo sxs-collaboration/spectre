@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <memory>
 #include <pup.h>
+#include <random>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -38,9 +39,11 @@
 #include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "tests/Unit/TestHelpers.hpp"
+#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace domain {
 namespace {
@@ -128,6 +131,16 @@ void test_single_coordinate_map() {
     CHECK(affine1d_base->inv_jacobian(source_points).get(0, 0) ==
           expected_inv_jac.get(0, 0));
     CHECK(inv_jac.get(0, 0) == expected_inv_jac.get(0, 0));
+
+    const auto coords_jacs_velocity =
+        affine1d_base->coords_frame_velocity_jacobians(source_points);
+    CHECK(std::get<0>(coords_jacs_velocity) == affine1d(source_points));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          affine1d.inv_jacobian(source_points));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          affine1d.jacobian(source_points));
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<double, 1, Frame::Grid>{{{0.0}}});
   }
 
   CHECK_FALSE(affine1d.is_identity());
@@ -191,6 +204,16 @@ void test_single_coordinate_map() {
         CHECK(inv_jac2.get(j, k) == expected_inv_jac.get(j, k));
       }
     }
+
+    const auto coords_jacs_velocity =
+        rotated2d_base->coords_frame_velocity_jacobians(source_points);
+    CHECK(std::get<0>(coords_jacs_velocity) == rotated2d(source_points));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          rotated2d.inv_jacobian(source_points));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          rotated2d.jacobian(source_points));
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<double, 2, Frame::Grid>{0.0});
   }
 
   CHECK_FALSE(rotated2d.is_identity());
@@ -255,6 +278,16 @@ void test_single_coordinate_map() {
         CHECK(inv_jac2.get(j, k) == expected_inv_jac.get(j, k));
       }
     }
+
+    const auto coords_jacs_velocity =
+        rotated3d_base->coords_frame_velocity_jacobians(source_points);
+    CHECK(std::get<0>(coords_jacs_velocity) == rotated3d(source_points));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          rotated3d.inv_jacobian(source_points));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          rotated3d.jacobian(source_points));
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<double, 3, Frame::Grid>{0.0});
   }
 
   CHECK_FALSE(rotated3d.is_identity());
@@ -288,6 +321,14 @@ void test_coordinate_map_with_affine_map() {
 
     CHECK(approx(map.inv_jacobian(source_points).get(0, 0)) == 2.0);
     CHECK(approx(map.jacobian(source_points).get(0, 0)) == 0.5);
+
+    const auto coords_jacs_velocity =
+        map.coords_frame_velocity_jacobians(source_points);
+    CHECK(std::get<0>(coords_jacs_velocity) == map(source_points));
+    CHECK(std::get<1>(coords_jacs_velocity) == map.inv_jacobian(source_points));
+    CHECK(std::get<2>(coords_jacs_velocity) == map.jacobian(source_points));
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<double, 1, Frame::Grid>{0.0});
   }
 
   // Test 2D
@@ -327,6 +368,16 @@ void test_coordinate_map_with_affine_map() {
     CHECK(0.0 == approx(get<1, 0>(jac)));
     CHECK(0.0 == approx(get<0, 1>(jac)));
     CHECK(4.0 == approx(get<1, 1>(jac)));
+
+    const auto coords_jacs_velocity =
+        prod_map2d.coords_frame_velocity_jacobians(source_points);
+    CHECK(std::get<0>(coords_jacs_velocity) == prod_map2d(source_points));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          prod_map2d.inv_jacobian(source_points));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          prod_map2d.jacobian(source_points));
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<double, 2, Frame::Grid>{0.0});
   }
 
   // Test 3D
@@ -383,6 +434,16 @@ void test_coordinate_map_with_affine_map() {
     CHECK(0.0 == approx(get<2, 0>(jac)));
     CHECK(0.0 == approx(get<2, 1>(jac)));
     CHECK(10.0 == approx(get<2, 2>(jac)));
+
+    const auto coords_jacs_velocity =
+        prod_map3d.coords_frame_velocity_jacobians(source_points);
+    CHECK(std::get<0>(coords_jacs_velocity) == prod_map3d(source_points));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          prod_map3d.inv_jacobian(source_points));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          prod_map3d.jacobian(source_points));
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<double, 3, Frame::Grid>{0.0});
   }
 }
 
@@ -426,6 +487,16 @@ void test_coordinate_map_with_rotation_map() {
     const auto expected_inv_jac = compose_inv_jacobians(
         first_rotated2d, second_rotated2d, gsl::at(coords2d, i));
     CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
+
+    const auto coords_jacs_velocity =
+        double_rotated2d.coords_frame_velocity_jacobians(source_points);
+    CHECK(std::get<0>(coords_jacs_velocity) == double_rotated2d(source_points));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          double_rotated2d.inv_jacobian(source_points));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          double_rotated2d.jacobian(source_points));
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<double, 2, Frame::Grid>{0.0});
   }
 
   // Test 3D
@@ -463,6 +534,16 @@ void test_coordinate_map_with_rotation_map() {
     const auto expected_inv_jac = compose_inv_jacobians(
         first_rotated3d, second_rotated3d, gsl::at(coords3d, i));
     CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
+
+    const auto coords_jacs_velocity =
+        double_rotated3d.coords_frame_velocity_jacobians(source_points);
+    CHECK(std::get<0>(coords_jacs_velocity) == double_rotated3d(source_points));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          double_rotated3d.inv_jacobian(source_points));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          double_rotated3d.jacobian(source_points));
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<double, 3, Frame::Grid>{0.0});
   }
 
   // Check inequivalence operator
@@ -503,6 +584,17 @@ void test_coordinate_map_with_rotation_map_datavector() {
     const auto expected_inv_jac = compose_inv_jacobians(
         first_rotated2d, second_rotated2d, coords2d_array);
     CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
+
+    const auto coords_jacs_velocity =
+        double_rotated2d.coords_frame_velocity_jacobians(coords2d);
+    CHECK(std::get<0>(coords_jacs_velocity) == double_rotated2d(coords2d));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          double_rotated2d.inv_jacobian(coords2d));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          double_rotated2d.jacobian(coords2d));
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<DataVector, 2, Frame::Grid>{
+              DataVector{coords2d.get(0).size(), 0.0}});
   }
 
   // Test 3D
@@ -549,6 +641,17 @@ void test_coordinate_map_with_rotation_map_datavector() {
     // Check inequivalence operator
     CHECK_FALSE(double_rotated3d_full != double_rotated3d_full);
     test_serialization(double_rotated3d_full);
+
+    const auto coords_jacs_velocity =
+        double_rotated3d.coords_frame_velocity_jacobians(coords3d);
+    CHECK(std::get<0>(coords_jacs_velocity) == double_rotated3d(coords3d));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          double_rotated3d.inv_jacobian(coords3d));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          double_rotated3d.jacobian(coords3d));
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<DataVector, 3, Frame::Grid>{
+              DataVector{coords3d.get(0).size(), 0.0}});
   }
 }
 
@@ -583,6 +686,16 @@ void test_coordinate_map_with_rotation_wedge() {
   const auto expected_inv_jac =
       compose_inv_jacobians(first_map, second_map, test_point_array);
   CHECK_ITERABLE_APPROX(inv_jac, expected_inv_jac);
+
+  const auto coords_jacs_velocity =
+      composed_map.coords_frame_velocity_jacobians(test_point_vector);
+  CHECK(std::get<0>(coords_jacs_velocity) == composed_map(test_point_vector));
+  CHECK(std::get<1>(coords_jacs_velocity) ==
+        composed_map.inv_jacobian(test_point_vector));
+  CHECK(std::get<2>(coords_jacs_velocity) ==
+        composed_map.jacobian(test_point_vector));
+  CHECK(std::get<3>(coords_jacs_velocity) ==
+        tnsr::I<double, 2, Frame::Grid>{0.0});
 }
 
 void test_make_vector_coordinate_map_base() {
@@ -924,6 +1037,18 @@ void test_coordinate_maps_are_identity() {
     CHECK(get<0, 0>(wedge_1_jac_inv) == get<0, 0>(wedge_2_jac_inv));
     CHECK(get<1, 0>(wedge_1_jac_inv) == get<1, 0>(wedge_2_jac_inv));
     CHECK(get<2, 0>(wedge_1_jac_inv) == get<2, 0>(wedge_2_jac_inv));
+
+    const auto coords_jacs_velocity =
+        wedge_composed_with_giant_identity.coords_frame_velocity_jacobians(
+            source_point);
+    CHECK(std::get<0>(coords_jacs_velocity) ==
+          wedge_composed_with_giant_identity(source_point));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          wedge_composed_with_giant_identity.inv_jacobian(source_point));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          wedge_composed_with_giant_identity.jacobian(source_point));
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<double, 3, Frame::Inertial>{0.0});
   }
 }
 
@@ -1048,6 +1173,47 @@ void test_time_dependent_map() {
           .inv_jacobian(tnsr_datavector_logical, final_time, functions_of_time)
           .get(0, 0),
       (DataVector{2. / 3., 2. / 3., 2. / 3.}));
+
+  {
+    const auto coords_jacs_velocity =
+        serialized_map.coords_frame_velocity_jacobians(
+            tnsr_double_logical, final_time, functions_of_time);
+    CHECK(std::get<0>(coords_jacs_velocity) ==
+          serialized_map(tnsr_double_logical, final_time, functions_of_time));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          serialized_map.inv_jacobian(tnsr_double_logical, final_time,
+                                      functions_of_time));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          serialized_map.jacobian(tnsr_double_logical, final_time,
+                                  functions_of_time));
+    const auto velocity =
+        functions_of_time.at("trans")->func_and_deriv(final_time)[1];
+    // The 1.5 factor comes from the Jacobian
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<double, 1, Frame::Inertial>{1.5 *
+                                              velocity[velocity.size() - 1]});
+  }
+  {
+    const auto coords_jacs_velocity =
+        serialized_map.coords_frame_velocity_jacobians(
+            tnsr_datavector_logical, final_time, functions_of_time);
+    CHECK(
+        std::get<0>(coords_jacs_velocity) ==
+        serialized_map(tnsr_datavector_logical, final_time, functions_of_time));
+    CHECK(std::get<1>(coords_jacs_velocity) ==
+          serialized_map.inv_jacobian(tnsr_datavector_logical, final_time,
+                                      functions_of_time));
+    CHECK(std::get<2>(coords_jacs_velocity) ==
+          serialized_map.jacobian(tnsr_datavector_logical, final_time,
+                                  functions_of_time));
+    const auto velocity =
+        functions_of_time.at("trans")->func_and_deriv(final_time)[1];
+    // The 1.5 factor comes from the Jacobian
+    CHECK(std::get<3>(coords_jacs_velocity) ==
+          tnsr::I<DataVector, 1, Frame::Inertial>{
+              DataVector{tnsr_datavector_logical.get(0).size(),
+                         1.5 * velocity[velocity.size() - 1]}});
+  }
 }
 
 void test_push_back() {
@@ -1138,6 +1304,142 @@ void test_jacobian_is_time_dependent() noexcept {
   CHECK(coord_map_3_base->jacobian_is_time_dependent());
 }
 
+void test_coords_frame_velocity_jacobians() noexcept {
+  using affine_map = CoordinateMaps::Affine;
+  using trans_map = CoordMapsTimeDependent::Translation;
+  using affine_map_2d = CoordinateMaps::ProductOf2Maps<affine_map, affine_map>;
+  using trans_map_2d =
+      CoordMapsTimeDependent::ProductOf2Maps<trans_map, trans_map>;
+  using affine_map_3d =
+      CoordinateMaps::ProductOf3Maps<affine_map, affine_map, affine_map>;
+  using trans_map_3d =
+      CoordMapsTimeDependent::ProductOf3Maps<trans_map, trans_map, trans_map>;
+
+  const double initial_time = 0.0;
+  const double time = 2.0;
+  constexpr size_t deriv_order = 3;
+
+  using Polynomial = domain::FunctionsOfTime::PiecewisePolynomial<deriv_order>;
+  std::unordered_map<std::string,
+                     std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+      functions_of_time{};
+  functions_of_time["trans_x"] = std::make_unique<Polynomial>(
+      initial_time,
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {-2.0}, {0.0}, {0.0}}});
+  functions_of_time["trans_y"] = std::make_unique<Polynomial>(
+      initial_time,
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {3.0}, {0.0}, {0.0}}});
+  functions_of_time["trans_z"] = std::make_unique<Polynomial>(
+      initial_time,
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {4.5}, {0.0}, {0.0}}});
+  functions_of_time["ExpansionA"] = std::make_unique<Polynomial>(
+      initial_time,
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {-0.01}, {0.0}, {0.0}}});
+  functions_of_time["ExpansionB"] = std::make_unique<Polynomial>(
+      initial_time,
+      std::array<DataVector, deriv_order + 1>{{{1.0}, {0.0}, {0.0}, {0.0}}});
+
+  const auto composed_map_1d =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          trans_map{"trans_x"}, affine_map{-1.0, 1.0, 0.0, 2.3},
+          trans_map{"trans_x"});
+  CHECK(
+      std::get<3>(composed_map_1d.coords_frame_velocity_jacobians(
+          tnsr::I<double, 1, Frame::Logical>{0.5}, time, functions_of_time)) ==
+      tnsr::I<double, 1, Frame::Inertial>{-2.0 + 1.15 * -2.0});
+  CHECK(std::get<3>(composed_map_1d.coords_frame_velocity_jacobians(
+            tnsr::I<DataVector, 1, Frame::Logical>{DataVector{-0.5, 0.0, 0.5}},
+            time, functions_of_time)) ==
+        tnsr::I<DataVector, 1, Frame::Inertial>{3_st, -2.0 + 1.15 * -2.0});
+
+  const auto composed_map_2d =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          trans_map_2d{trans_map{"trans_x"}, trans_map{"trans_y"}},
+          affine_map_2d{affine_map{-1.0, 1.0, 0.0, 2.3},
+                        affine_map{-1.0, 1.0, 1.0, 7.2}},
+          trans_map_2d{trans_map{"trans_x"}, trans_map{"trans_y"}});
+  CHECK(
+      std::get<3>(composed_map_2d.coords_frame_velocity_jacobians(
+          tnsr::I<double, 2, Frame::Logical>{0.5}, time, functions_of_time)) ==
+      tnsr::I<double, 2, Frame::Inertial>{
+          {{-2.0 + 1.15 * -2.0, 3.0 + 3.1 * 3.0}}});
+  CHECK(std::get<3>(composed_map_2d.coords_frame_velocity_jacobians(
+            tnsr::I<DataVector, 2, Frame::Logical>{DataVector{-0.5, 0.0, 0.5}},
+            time, functions_of_time)) ==
+        tnsr::I<DataVector, 2, Frame::Inertial>{
+            {{DataVector{3_st, -2.0 + 1.15 * -2.0},
+              DataVector{3_st, 3.0 + 3.1 * 3.0}}}});
+
+  const trans_map_3d translation3d{trans_map{"trans_x"}, trans_map{"trans_y"},
+                                   trans_map{"trans_z"}};
+  const affine_map_3d affine3d{affine_map{-1.0, 1.0, 0.0, 2.3},
+                               affine_map{-1.0, 1.0, 1.0, 7.2},
+                               affine_map{-1.0, 1.0, -10.0, 7.2}};
+  const CoordMapsTimeDependent::CubicScale<3> cubic_scale{20.0, "ExpansionA",
+                                                          "ExpansionB"};
+  const auto composed_map_3d =
+      make_coordinate_map<Frame::Logical, Frame::Inertial>(
+          translation3d, affine3d, cubic_scale);
+  {
+    const std::array<double, 3> source_pt{{0.5, 0.25, -0.34}};
+    const std::array<double, 3> source_pt_cubic_scale =
+        affine3d(translation3d(source_pt, time, functions_of_time));
+    const std::array<double, 3> velocity_affine_map_frame{
+        {1.15 * -2.0, 3.1 * 3.0, 8.6 * 4.5}};
+    const auto cubic_scale_jac =
+        cubic_scale.jacobian(source_pt_cubic_scale, time, functions_of_time);
+    const auto cubic_scale_velocity = cubic_scale.frame_velocity(
+        source_pt_cubic_scale, time, functions_of_time);
+    const tnsr::I<double, 3, Frame::Inertial> expected_velocity{
+        {{cubic_scale_velocity[0] +
+              cubic_scale_jac.get(0, 0) * velocity_affine_map_frame[0] +
+              cubic_scale_jac.get(0, 1) * velocity_affine_map_frame[1] +
+              cubic_scale_jac.get(0, 2) * velocity_affine_map_frame[2],
+          cubic_scale_velocity[1] +
+              cubic_scale_jac.get(1, 0) * velocity_affine_map_frame[0] +
+              cubic_scale_jac.get(1, 1) * velocity_affine_map_frame[1] +
+              cubic_scale_jac.get(1, 2) * velocity_affine_map_frame[2],
+          cubic_scale_velocity[2] +
+              cubic_scale_jac.get(2, 0) * velocity_affine_map_frame[0] +
+              cubic_scale_jac.get(2, 1) * velocity_affine_map_frame[1] +
+              cubic_scale_jac.get(2, 2) * velocity_affine_map_frame[2]}}};
+
+    CHECK(std::get<3>(composed_map_3d.coords_frame_velocity_jacobians(
+              tnsr::I<double, 3, Frame::Logical>{source_pt}, time,
+              functions_of_time)) == expected_velocity);
+  }
+  {
+    MAKE_GENERATOR(generator);
+    std::uniform_real_distribution<> dist(-1.0, 1.0);
+    const auto source_pt = make_with_random_values<std::array<DataVector, 3>>(
+        make_not_null(&generator), make_not_null(&dist), DataVector{5});
+    const std::array<DataVector, 3> source_pt_cubic_scale =
+        affine3d(translation3d(source_pt, time, functions_of_time));
+    const std::array<DataVector, 3> velocity_affine_map_frame{
+        {DataVector{5, 1.15} * -2.0, DataVector{5, 3.1} * 3.0,
+         DataVector{5, 8.6} * 4.5}};
+    const auto cubic_scale_jac =
+        cubic_scale.jacobian(source_pt_cubic_scale, time, functions_of_time);
+    const auto cubic_scale_velocity = cubic_scale.frame_velocity(
+        source_pt_cubic_scale, time, functions_of_time);
+    const tnsr::I<DataVector, 3, Frame::Inertial> expected_velocity{
+        {{cubic_scale_velocity[0] +
+              cubic_scale_jac.get(0, 0) * velocity_affine_map_frame[0] +
+              cubic_scale_jac.get(0, 1) * velocity_affine_map_frame[1] +
+              cubic_scale_jac.get(0, 2) * velocity_affine_map_frame[2],
+          cubic_scale_velocity[1] +
+              cubic_scale_jac.get(1, 0) * velocity_affine_map_frame[0] +
+              cubic_scale_jac.get(1, 1) * velocity_affine_map_frame[1] +
+              cubic_scale_jac.get(1, 2) * velocity_affine_map_frame[2],
+          cubic_scale_velocity[2] +
+              cubic_scale_jac.get(2, 0) * velocity_affine_map_frame[0] +
+              cubic_scale_jac.get(2, 1) * velocity_affine_map_frame[1] +
+              cubic_scale_jac.get(2, 2) * velocity_affine_map_frame[2]}}};
+    CHECK(std::get<3>(composed_map_3d.coords_frame_velocity_jacobians(
+              tnsr::I<DataVector, 3, Frame::Logical>{source_pt}, time,
+              functions_of_time)) == expected_velocity);
+  }
+}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
@@ -1151,5 +1453,6 @@ SPECTRE_TEST_CASE("Unit.Domain.CoordinateMap", "[Domain][Unit]") {
   test_time_dependent_map();
   test_push_back();
   test_jacobian_is_time_dependent();
+  test_coords_frame_velocity_jacobians();
 }
 }  // namespace domain

@@ -159,6 +159,40 @@ class CoordinateMapBase : public PUP::able {
               std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
       noexcept = 0;
   // @}
+
+  // @{
+  /// Compute the mapped coordinates, frame velocity, Jacobian, and inverse
+  /// Jacobian
+  virtual std::tuple<tnsr::I<double, Dim, TargetFrame>,
+                     InverseJacobian<double, Dim, SourceFrame, TargetFrame>,
+                     Jacobian<double, Dim, SourceFrame, TargetFrame>,
+                     tnsr::I<double, Dim, TargetFrame>>
+  coords_frame_velocity_jacobians(
+      tnsr::I<double, Dim, SourceFrame> source_point,
+      double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
+      noexcept = 0;
+  virtual std::tuple<tnsr::I<DataVector, Dim, TargetFrame>,
+                     InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>,
+                     Jacobian<DataVector, Dim, SourceFrame, TargetFrame>,
+                     tnsr::I<DataVector, Dim, TargetFrame>>
+  coords_frame_velocity_jacobians(
+      tnsr::I<DataVector, Dim, SourceFrame> source_point,
+      double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
+      noexcept = 0;
+  // @}
+
  private:
   virtual bool is_equal_to(const CoordinateMapBase& other) const = 0;
   friend bool operator==(const CoordinateMapBase& lhs,
@@ -336,6 +370,45 @@ class CoordinateMap
   }
   // @}
 
+  // @{
+  /// Compute the mapped coordinates, frame velocity, Jacobian, and inverse
+  /// Jacobian
+  std::tuple<tnsr::I<double, dim, TargetFrame>,
+             InverseJacobian<double, dim, SourceFrame, TargetFrame>,
+             Jacobian<double, dim, SourceFrame, TargetFrame>,
+             tnsr::I<double, dim, TargetFrame>>
+  coords_frame_velocity_jacobians(
+      tnsr::I<double, dim, SourceFrame> source_point,
+      const double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
+      noexcept override {
+    return coords_frame_velocity_jacobians_impl(std::move(source_point), time,
+                                                functions_of_time);
+  }
+  std::tuple<tnsr::I<DataVector, dim, TargetFrame>,
+             InverseJacobian<DataVector, dim, SourceFrame, TargetFrame>,
+             Jacobian<DataVector, dim, SourceFrame, TargetFrame>,
+             tnsr::I<DataVector, dim, TargetFrame>>
+  coords_frame_velocity_jacobians(
+      tnsr::I<DataVector, dim, SourceFrame> source_point,
+      const double time = std::numeric_limits<double>::signaling_NaN(),
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time = std::unordered_map<
+              std::string,
+              std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>{}) const
+      noexcept override {
+    return coords_frame_velocity_jacobians_impl(std::move(source_point), time,
+                                                functions_of_time);
+  }
+  // @}
+
   WRAPPED_PUPable_decl_base_template(  // NOLINT
       SINGLE_ARG(CoordinateMapBase<SourceFrame, TargetFrame, dim>),
       CoordinateMap);
@@ -417,6 +490,18 @@ class CoordinateMap
   template <typename T>
   Jacobian<T, dim, SourceFrame, TargetFrame> jacobian_impl(
       tnsr::I<T, dim, SourceFrame>&& source_point, double time,
+      const std::unordered_map<
+          std::string,
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+          functions_of_time) const noexcept;
+
+  template <typename T>
+  std::tuple<tnsr::I<T, dim, TargetFrame>,
+             InverseJacobian<T, dim, SourceFrame, TargetFrame>,
+             Jacobian<T, dim, SourceFrame, TargetFrame>,
+             tnsr::I<T, dim, TargetFrame>>
+  coords_frame_velocity_jacobians_impl(
+      tnsr::I<T, dim, SourceFrame> source_point, double time,
       const std::unordered_map<
           std::string,
           std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
