@@ -16,7 +16,39 @@ namespace db {
 
 namespace detail {
 CREATE_IS_CALLABLE(name)
+
+template <typename Tag>
+void check_tag_name(const std::string& expected_name) {
+  CHECK(::db::tag_name<Tag>() == expected_name);
+  if (is_name_callable_v<Tag> and not ::db::is_compute_item_v<Tag>) {
+    INFO("Do not define name for Tag '" << ::db::tag_name<Tag>() << "',");
+    INFO("as it will automatically be generated with that name.");
+    CHECK(::db::tag_name<Tag>() != pretty_type::short_name<Tag>());
+  }
+}
 }  // namespace detail
+
+template <typename Tag>
+void test_base_tag(const std::string& expected_name) {
+  static_assert(::db::is_base_tag_v<Tag>,
+                "A base tag must be derived from db::BaseTag, but "
+                "not from db::SimpleTag nor db::ComputeTag");
+  detail::check_tag_name<Tag>(expected_name);
+}
+
+template <typename Tag>
+void test_compute_tag(const std::string& expected_name) {
+  static_assert(::db::is_compute_item_v<Tag>,
+                "A compute tag must be derived from db::ComputeTag");
+  detail::check_tag_name<Tag>(expected_name);
+}
+
+template <typename Tag>
+void test_prefix_tag(const std::string& expected_name) {
+  static_assert(cpp17::is_base_of_v<::db::PrefixTag, Tag>,
+                "A prefix tag must be derived from db::PrefixTag");
+  detail::check_tag_name<Tag>(expected_name);
+}
 
 template <typename Tag>
 void test_simple_tag(const std::string& expected_name) {
@@ -26,12 +58,7 @@ void test_simple_tag(const std::string& expected_name) {
                 "db::SimpleTag, but not db::ComputeTag");
   static_assert(not cpp17::is_same_v<Tag, typename Tag::type>,
                 "A type cannot be its own tag.");
-  CHECK(::db::tag_name<Tag>() == expected_name);
-  if (detail::is_name_callable_v<Tag>) {
-    INFO("Do not define name for Tag '" << ::db::tag_name<Tag>() << "',");
-    INFO("as it will automatically be generated with that name.");
-    CHECK(::db::tag_name<Tag>() != pretty_type::short_name<Tag>());
-  }
+  detail::check_tag_name<Tag>(expected_name);
 }
 
 }  // namespace db
