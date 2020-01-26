@@ -6,6 +6,7 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/DataBox/Tag.hpp"
 #include "Helpers/DataStructures/DataBox/TestHelpers.hpp"
 #include "NumericalAlgorithms/Convergence/Criteria.hpp"
@@ -97,6 +98,20 @@ SPECTRE_TEST_CASE("Unit.ParallelAlgorithms.LinearSolver.Tags",
     CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box));
     CHECK(db::get<LinearSolver::Tags::HasConverged<TestOptionsGroup>>(box)
               .reason() == Convergence::Reason::AbsoluteResidual);
+  }
+
+  {
+    INFO("ResidualCompute");
+    TestHelpers::db::test_compute_tag<
+        LinearSolver::Tags::ResidualCompute<Tag, ::Tags::Source<Tag>>>(
+        "LinearResidual(Tag)");
+    const auto box = db::create<
+        db::AddSimpleTags<::Tags::Source<Tag>,
+                          LinearSolver::Tags::OperatorAppliedTo<Tag>>,
+        db::AddComputeTags<
+            LinearSolver::Tags::ResidualCompute<Tag, ::Tags::Source<Tag>>>>(3,
+                                                                            2);
+    CHECK(db::get<LinearSolver::Tags::Residual<Tag>>(box) == 1);
   }
 
   {
