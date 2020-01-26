@@ -39,6 +39,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -676,28 +677,42 @@ void test_constraint_compute_items(
     const std::array<double, 3>& lower_bound,
     const std::array<double, 3>& upper_bound) noexcept {
   // Check that compute items are named correctly
-  CHECK(GeneralizedHarmonic::Tags::ConstraintGamma0Compute<
-            3, Frame::Inertial>::name() == "ConstraintGamma0");
-  CHECK(GeneralizedHarmonic::Tags::ConstraintGamma1Compute<
-            3, Frame::Inertial>::name() == "ConstraintGamma1");
-  CHECK(GeneralizedHarmonic::Tags::ConstraintGamma2Compute<
-            3, Frame::Inertial>::name() == "ConstraintGamma2");
-  CHECK(GeneralizedHarmonic::Tags::GaugeHImplicitFrom3p1QuantitiesCompute<
-            3, Frame::Inertial>::name() == "GaugeH");
-  CHECK(GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<
-            3, Frame::Inertial>::name() == "SpacetimeDerivGaugeH");
-  CHECK(GeneralizedHarmonic::Tags::GaugeConstraintCompute<
-            3, Frame::Inertial>::name() == "GaugeConstraint");
-  CHECK(GeneralizedHarmonic::Tags::FConstraintCompute<
-            3, Frame::Inertial>::name() == "FConstraint");
-  CHECK(GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<
-            3, Frame::Inertial>::name() == "TwoIndexConstraint");
-  CHECK(GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<
-            3, Frame::Inertial>::name() == "ThreeIndexConstraint");
-  CHECK(GeneralizedHarmonic::Tags::FourIndexConstraintCompute<
-            3, Frame::Inertial>::name() == "FourIndexConstraint");
-  CHECK(GeneralizedHarmonic::Tags::ConstraintEnergyCompute<
-            3, Frame::Inertial>::name() == "ConstraintEnergy");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::ConstraintGamma0Compute<3, Frame::Inertial>>(
+      "ConstraintGamma0");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::ConstraintGamma1Compute<3, Frame::Inertial>>(
+      "ConstraintGamma1");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::ConstraintGamma2Compute<3, Frame::Inertial>>(
+      "ConstraintGamma2");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::GaugeHImplicitFrom3p1QuantitiesCompute<
+          3, Frame::Inertial>>("GaugeH");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::SpacetimeDerivGaugeHCompute<3,
+                                                             Frame::Inertial>>(
+      "SpacetimeDerivGaugeH");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::GaugeConstraintCompute<3, Frame::Inertial>>(
+      "GaugeConstraint");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::FConstraintCompute<3, Frame::Inertial>>(
+      "FConstraint");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::TwoIndexConstraintCompute<3, Frame::Inertial>>(
+      "TwoIndexConstraint");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::ThreeIndexConstraintCompute<3,
+                                                             Frame::Inertial>>(
+      "ThreeIndexConstraint");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::FourIndexConstraintCompute<3,
+                                                            Frame::Inertial>>(
+      "FourIndexConstraint");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::ConstraintEnergyCompute<3, Frame::Inertial>>(
+      "ConstraintEnergy");
 
   // Check vs. time-independent analytic solution
   // Set up grid

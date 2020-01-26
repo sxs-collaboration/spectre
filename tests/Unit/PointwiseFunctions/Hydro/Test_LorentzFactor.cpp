@@ -13,6 +13,7 @@
 #include "PointwiseFunctions/Hydro/LorentzFactor.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -49,8 +50,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.LorentzFactor",
   test_lorentz_factor<3, Frame::Grid>(0.0);
 
   // Check compute item works correctly in DataBox
-  CHECK(Tags::LorentzFactorCompute<DataVector, 2, Frame::Inertial>::name() ==
-        "LorentzFactor");
+  TestHelpers::db::test_compute_tag<
+      Tags::LorentzFactorCompute<DataVector, 2, Frame::Inertial>>(
+      "LorentzFactor");
   tnsr::i<DataVector, 2> velocity_one_form{
       {{DataVector{5, 0.2}, DataVector{5, 0.3}}}};
   tnsr::I<DataVector, 2> velocity{{{DataVector{5, 0.25}, DataVector{5, 0.35}}}};

@@ -20,6 +20,7 @@
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -65,42 +66,34 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Christoffel",
 
   // Check that compute items work correctly in the DataBox
   // First, check that the names are correct
-  CHECK(gr::Tags::SpatialChristoffelFirstKind<3, Frame::Inertial,
-                                              DataVector>::name() ==
-        "SpatialChristoffelFirstKind");
-  CHECK(gr::Tags::TraceSpatialChristoffelFirstKind<3, Frame::Inertial,
-                                                   DataVector>::name() ==
-        "TraceSpatialChristoffelFirstKind");
-  CHECK(gr::Tags::SpatialChristoffelSecondKind<3, Frame::Inertial,
-                                               DataVector>::name() ==
-        "SpatialChristoffelSecondKind");
-  CHECK(gr::Tags::TraceSpatialChristoffelSecondKind<3, Frame::Inertial,
-                                                    DataVector>::name() ==
-        "TraceSpatialChristoffelSecondKind");
-
-  CHECK(gr::Tags::SpatialChristoffelFirstKindCompute<3, Frame::Inertial,
-                                                     DataVector>::name() ==
-        "SpatialChristoffelFirstKind");
-  CHECK(gr::Tags::TraceSpatialChristoffelFirstKindCompute<3, Frame::Inertial,
-                                                          DataVector>::name() ==
-        "TraceSpatialChristoffelFirstKind");
-  CHECK(gr::Tags::SpatialChristoffelSecondKindCompute<3, Frame::Inertial,
-                                                      DataVector>::name() ==
-        "SpatialChristoffelSecondKind");
-  CHECK(
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::SpatialChristoffelFirstKindCompute<3, Frame::Inertial,
+                                                   DataVector>>(
+      "SpatialChristoffelFirstKind");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::TraceSpatialChristoffelFirstKindCompute<3, Frame::Inertial,
+                                                        DataVector>>(
+      "TraceSpatialChristoffelFirstKind");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::SpatialChristoffelSecondKindCompute<3, Frame::Inertial,
+                                                    DataVector>>(
+      "SpatialChristoffelSecondKind");
+  TestHelpers::db::test_compute_tag<
       gr::Tags::TraceSpatialChristoffelSecondKindCompute<3, Frame::Inertial,
-                                                         DataVector>::name() ==
+                                                         DataVector>>(
       "TraceSpatialChristoffelSecondKind");
-  CHECK(gr::Tags::SpacetimeChristoffelFirstKindCompute<3, Frame::Inertial,
-                                                       DataVector>::name() ==
-        "SpacetimeChristoffelFirstKind");
-  CHECK(
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::SpacetimeChristoffelFirstKindCompute<3, Frame::Inertial,
+                                                     DataVector>>(
+      "SpacetimeChristoffelFirstKind");
+  TestHelpers::db::test_compute_tag<
       gr::Tags::TraceSpacetimeChristoffelFirstKindCompute<3, Frame::Inertial,
-                                                          DataVector>::name() ==
+                                                          DataVector>>(
       "TraceSpacetimeChristoffelFirstKind");
-  CHECK(gr::Tags::SpacetimeChristoffelSecondKindCompute<3, Frame::Inertial,
-                                                        DataVector>::name() ==
-        "SpacetimeChristoffelSecondKind");
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::SpacetimeChristoffelSecondKindCompute<3, Frame::Inertial,
+                                                      DataVector>>(
+      "SpacetimeChristoffelSecondKind");
 
   // Check that the compute items return correct values
   const DataVector used_for_size{3., 4., 5.};

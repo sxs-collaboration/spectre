@@ -32,6 +32,7 @@ struct SpecificEnthalpyCompute : SpecificEnthalpy<DataType>, db::ComputeTag {
   using argument_tags =
       tmpl::list<RestMassDensity<DataType>, SpecificInternalEnergy<DataType>,
                  Pressure<DataType>>;
+  using base = SpecificEnthalpy<DataType>;
 };
 }  // namespace Tags
 }  // namespace hydro

@@ -38,6 +38,7 @@ struct InverseSpatialMetricCompute : gr::Tags::InverseSpatialMetric<Dim, Frame>,
     return determinant_and_inverse(gr::spatial_metric(psi)).second;
   };
   using argument_tags = tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame>>;
+  using base = gr::Tags::InverseSpatialMetric<Dim, Frame>;
 };
 template <size_t Dim, typename Frame>
 struct ExtrinsicCurvatureCompute : gr::Tags::ExtrinsicCurvature<Dim, Frame>,
@@ -55,6 +56,7 @@ struct ExtrinsicCurvatureCompute : gr::Tags::ExtrinsicCurvature<Dim, Frame>,
                                    GeneralizedHarmonic::Tags::Pi<Dim, Frame>,
                                    GeneralizedHarmonic::Tags::Phi<Dim, Frame>,
                                    gr::Tags::InverseSpatialMetric<Dim, Frame>>;
+  using base = gr::Tags::ExtrinsicCurvature<Dim, Frame>;
 };
 template <size_t Dim, typename Frame>
 struct SpatialChristoffelSecondKindCompute
@@ -70,6 +72,7 @@ struct SpatialChristoffelSecondKindCompute
   }
   using argument_tags = tmpl::list<GeneralizedHarmonic::Tags::Phi<Dim, Frame>,
                                    gr::Tags::InverseSpatialMetric<Dim, Frame>>;
+  using base = ::gr::Tags::SpatialChristoffelSecondKind<Dim, Frame>;
 };
 // }@
 }  // namespace Tags

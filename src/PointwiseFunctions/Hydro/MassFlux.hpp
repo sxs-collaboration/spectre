@@ -59,6 +59,7 @@ struct MassFluxCompute : MassFlux<DataType, Dim, Frame>,
                  ::gr::Tags::Lapse<DataType>,
                  ::gr::Tags::Shift<Dim, Frame, DataType>,
                  ::gr::Tags::SqrtDetSpatialMetric<DataType>>;
+  using base = MassFlux<DataType, Dim, Frame>;
 };
 }  // namespace Tags
 }  // namespace hydro

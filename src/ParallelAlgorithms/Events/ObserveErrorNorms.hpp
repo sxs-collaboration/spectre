@@ -159,7 +159,7 @@ class ObserveErrorNorms<ObservationValueTag, tmpl::list<Tensors...>,
         std::string{"/element_data"},
         std::vector<std::string>{db::tag_name<ObservationValueTag>(),
                                  "NumberOfPoints",
-                                 ("Error(" + Tensors::name() + ")")...},
+                                 ("Error(" + db::tag_name<Tensors>() + ")")...},
         ReductionData{
             static_cast<double>(observation_value), num_points,
             std::move(get<LocalSquareError<Tensors>>(local_square_errors))...});

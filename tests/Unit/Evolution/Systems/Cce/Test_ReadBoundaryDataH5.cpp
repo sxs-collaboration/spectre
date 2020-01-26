@@ -435,7 +435,7 @@ void test_data_manager_with_dummy_buffer_updater(
       [&expected_boundary_box, &interpolated_boundary_box,
        &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
-        INFO(tag::name());
+        INFO(db::tag_name<tag>());
         const auto& test_lhs = db::get<tag>(expected_boundary_box);
         const auto& test_rhs = db::get<tag>(interpolated_boundary_box);
         CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
@@ -508,7 +508,7 @@ void test_spec_worldtube_buffer_updater(
     &expected_coefficients_buffers, &coefficients_buffers_from_file
   ](auto tag_v) noexcept {
     using tag = typename decltype(tag_v)::type;
-    INFO(tag::name());
+    INFO(db::tag_name<tag>());
     const auto& test_lhs = get<tag>(expected_coefficients_buffers);
     const auto& test_rhs = get<tag>(coefficients_buffers_from_file);
     CHECK_ITERABLE_APPROX(test_lhs, test_rhs);
@@ -680,8 +680,7 @@ void test_reduced_spec_worldtube_buffer_updater(
       [&expected_coefficients_buffers, &coefficients_buffers_from_file,
        &modal_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
-
-        INFO(tag::name());
+        INFO(db::tag_name<tag>());
         const auto& test_lhs = get<tag>(expected_coefficients_buffers);
         const auto& test_rhs = get<tag>(coefficients_buffers_from_file);
         CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs, modal_approx);

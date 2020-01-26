@@ -52,7 +52,9 @@ struct deriv<Tag, Dim, Frame,
       TensorMetafunctions::prepend_spatial_index<db::const_item_type<Tag>,
                                                  Dim::value, UpLo::Lo, Frame>;
   using tag = Tag;
-  static std::string name() noexcept { return "deriv(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "deriv(" + db::tag_name<Tag>() + ")";
+  }
 };
 template <typename Tag, typename Dim, typename Frame>
 struct deriv<Tag, Dim, Frame,
@@ -60,7 +62,9 @@ struct deriv<Tag, Dim, Frame,
     : db::PrefixTag, db::SimpleTag {
   using type = db::const_item_type<Tag>;
   using tag = Tag;
-  static std::string name() noexcept { return "deriv(" + Tag::name() + ")"; }
+  static std::string name() noexcept {
+    return "deriv(" + db::tag_name<Tag>() + ")";
+  }
 };
 
 /*!

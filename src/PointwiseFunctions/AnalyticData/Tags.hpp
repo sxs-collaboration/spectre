@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/Serialize.hpp"
 
@@ -38,7 +39,6 @@ struct AnalyticDataBase : AnalyticSolutionOrData {};
 /// template parameter
 template <typename DataType>
 struct AnalyticData : AnalyticDataBase, db::SimpleTag {
-  static std::string name() noexcept { return "AnalyticData"; }
   using type = DataType;
   using option_tags = tmpl::list<::OptionTags::AnalyticData<DataType>>;
 

@@ -14,6 +14,7 @@
 #include "PointwiseFunctions/Hydro/SoundSpeedSquared.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
@@ -25,8 +26,8 @@ void test_compute_item_in_databox(
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& specific_enthalpy,
     const EquationOfStateType& equation_of_state) noexcept {
-  CHECK(hydro::Tags::SoundSpeedSquaredCompute<DataType>::name() ==
-        "SoundSpeedSquared");
+  TestHelpers::db::test_compute_tag<
+      hydro::Tags::SoundSpeedSquaredCompute<DataType>>("SoundSpeedSquared");
   const auto box = db::create<
       db::AddSimpleTags<hydro::Tags::RestMassDensity<DataType>,
                         hydro::Tags::SpecificInternalEnergy<DataType>,

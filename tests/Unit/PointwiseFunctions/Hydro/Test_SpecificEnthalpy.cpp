@@ -12,6 +12,7 @@
 #include "PointwiseFunctions/Hydro/SpecificEnthalpy.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -37,8 +38,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.SpecificEnthalpy",
   test_relativistic_specific_enthalpy(DataVector(5));
 
   // Check compute item works correctly in DataBox
-  CHECK(Tags::SpecificEnthalpyCompute<DataVector>::name() ==
-        "SpecificEnthalpy");
+  TestHelpers::db::test_compute_tag<Tags::SpecificEnthalpyCompute<DataVector>>(
+      "SpecificEnthalpy");
   Scalar<DataVector> rest_mass_density{{{DataVector{5, 0.2}}}};
   Scalar<DataVector> specific_internal_energy{{{DataVector{5, 0.23}}}};
   Scalar<DataVector> pressure{{{DataVector{5, 0.234}}}};

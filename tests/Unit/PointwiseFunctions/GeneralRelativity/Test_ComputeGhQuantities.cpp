@@ -37,6 +37,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -619,28 +620,34 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.GhQuantities",
 
   // Check that compute items work correctly in the DataBox
   // First, check that the names are correct
-  CHECK(GeneralizedHarmonic::Tags::TimeDerivSpatialMetricCompute<
-            3, Frame::Inertial>::name() == "dt(SpatialMetric)");
-  CHECK(GeneralizedHarmonic::Tags::TimeDerivLapseCompute<
-            3, Frame::Inertial>::name() == "dt(Lapse)");
-  CHECK(GeneralizedHarmonic::Tags::TimeDerivShiftCompute<
-            3, Frame::Inertial>::name() == "dt(Shift)");
-  CHECK(GeneralizedHarmonic::Tags::DerivSpatialMetricCompute<
-            3, Frame::Inertial>::name() == "deriv(SpatialMetric)");
-  CHECK(GeneralizedHarmonic::Tags::DerivLapseCompute<3,
-                                                     Frame::Inertial>::name() ==
-        "deriv(Lapse)");
-  CHECK(GeneralizedHarmonic::Tags::DerivShiftCompute<3,
-                                                     Frame::Inertial>::name() ==
-        "deriv(Shift)");
-  CHECK(GeneralizedHarmonic::Tags::PhiCompute<3, Frame::Inertial>::name() ==
-        "Phi");
-  CHECK(GeneralizedHarmonic::Tags::PiCompute<3, Frame::Inertial>::name() ==
-        "Pi");
-  CHECK(GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<
-            3, Frame::Inertial>::name() == "ExtrinsicCurvature");
-  CHECK(GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<
-            3, Frame::Inertial>::name() == "TraceExtrinsicCurvature");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::TimeDerivSpatialMetricCompute<
+          3, Frame::Inertial>>("dt(SpatialMetric)");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::TimeDerivLapseCompute<3, Frame::Inertial>>(
+      "dt(Lapse)");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::TimeDerivShiftCompute<3, Frame::Inertial>>(
+      "dt(Shift)");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::DerivSpatialMetricCompute<3, Frame::Inertial>>(
+      "deriv(SpatialMetric)");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::DerivLapseCompute<3, Frame::Inertial>>(
+      "deriv(Lapse)");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::DerivShiftCompute<3, Frame::Inertial>>(
+      "deriv(Shift)");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::PhiCompute<3, Frame::Inertial>>("Phi");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::PiCompute<3, Frame::Inertial>>("Pi");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::ExtrinsicCurvatureCompute<3, Frame::Inertial>>(
+      "ExtrinsicCurvature");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::Tags::TraceExtrinsicCurvatureCompute<
+          3, Frame::Inertial>>("TraceExtrinsicCurvature");
 
   // Check that the compute items return the correct values
   MAKE_GENERATOR(generator);

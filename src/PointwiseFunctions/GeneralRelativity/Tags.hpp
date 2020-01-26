@@ -16,18 +16,15 @@ namespace Tags {
 template <size_t Dim, typename Frame, typename DataType>
 struct SpacetimeMetric : db::SimpleTag {
   using type = tnsr::aa<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "SpacetimeMetric"; }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct InverseSpacetimeMetric : db::SimpleTag {
   using type = tnsr::AA<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "InverseSpacetimeMetric"; }
 };
 
 template <size_t Dim, typename Frame, typename DataType>
 struct SpatialMetric : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "SpatialMetric"; }
 };
 /*!
  * \brief Inverse of the spatial metric.
@@ -35,7 +32,6 @@ struct SpatialMetric : db::SimpleTag {
 template <size_t Dim, typename Frame, typename DataType>
 struct InverseSpatialMetric : db::SimpleTag {
   using type = tnsr::II<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "InverseSpatialMetric"; }
 };
 /*!
  * \brief Determinant of the spatial metric.
@@ -43,22 +39,18 @@ struct InverseSpatialMetric : db::SimpleTag {
 template <typename DataType>
 struct DetSpatialMetric : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "DetSpatialMetric"; }
 };
 template <typename DataType>
 struct SqrtDetSpatialMetric : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "SqrtDetSpatialMetric"; }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct Shift : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "Shift"; }
 };
 template <typename DataType>
 struct Lapse : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "Lapse"; }
 };
 /*!
  * \brief Spacetime derivatives of the spacetime metric
@@ -70,7 +62,6 @@ struct Lapse : db::SimpleTag {
 template <size_t Dim, typename Frame, typename DataType>
 struct DerivSpacetimeMetric : db::SimpleTag {
   using type = tnsr::iaa<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "DerivSpacetimeMetric"; }
 };
 /*!
  * \brief Spacetime derivatives of the spacetime metric
@@ -82,46 +73,34 @@ struct DerivSpacetimeMetric : db::SimpleTag {
 template <size_t Dim, typename Frame, typename DataType>
 struct DerivativesOfSpacetimeMetric : db::SimpleTag {
   using type = tnsr::abb<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "DerivativesOfSpacetimeMetric"; }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct SpacetimeChristoffelFirstKind : db::SimpleTag {
   using type = tnsr::abb<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "SpacetimeChristoffelFirstKind"; }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct SpacetimeChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::Abb<DataType, Dim, Frame>;
-  static std::string name() noexcept {
-    return "SpacetimeChristoffelSecondKind";
-  }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct SpatialChristoffelFirstKind : db::SimpleTag {
   using type = tnsr::ijj<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "SpatialChristoffelFirstKind"; }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct SpatialChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::Ijj<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "SpatialChristoffelSecondKind"; }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct SpacetimeNormalOneForm : db::SimpleTag {
   using type = tnsr::a<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "SpacetimeNormalOneForm"; }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct SpacetimeNormalVector : db::SimpleTag {
   using type = tnsr::A<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "SpacetimeNormalVector"; }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct TraceSpacetimeChristoffelFirstKind : db::SimpleTag {
   using type = tnsr::a<DataType, Dim, Frame>;
-  static std::string name() noexcept {
-    return "TraceSpacetimeChristoffelFirstKind";
-  }
 };
 /*!
  * \brief Trace of the spatial Christoffel symbols of the first kind
@@ -132,27 +111,19 @@ struct TraceSpacetimeChristoffelFirstKind : db::SimpleTag {
 template <size_t Dim, typename Frame, typename DataType>
 struct TraceSpatialChristoffelFirstKind : db::SimpleTag {
   using type = tnsr::i<DataType, Dim, Frame>;
-  static std::string name() noexcept {
-    return "TraceSpatialChristoffelFirstKind";
-  }
 };
 template <size_t Dim, typename Frame, typename DataType>
 struct TraceSpatialChristoffelSecondKind : db::SimpleTag {
   using type = tnsr::I<DataType, Dim, Frame>;
-  static std::string name() noexcept {
-    return "TraceSpatialChristoffelSecondKind";
-  }
 };
 
 template <size_t Dim, typename Frame, typename DataType>
 struct ExtrinsicCurvature : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "ExtrinsicCurvature"; }
 };
 template <typename DataType>
 struct TraceExtrinsicCurvature : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "TraceExtrinsicCurvature"; }
 };
 
 /*!
@@ -163,7 +134,6 @@ struct TraceExtrinsicCurvature : db::SimpleTag {
 template <size_t Dim, typename Frame, typename DataType>
 struct RicciTensor : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "RicciTensor"; }
 };
 
 /*!
@@ -173,7 +143,6 @@ struct RicciTensor : db::SimpleTag {
 template <typename DataType>
 struct EnergyDensity : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "EnergyDensity"; }
 };
 
 /*!
@@ -185,7 +154,6 @@ struct EnergyDensity : db::SimpleTag {
 template <size_t Dim, typename Frame, typename DataType>
 struct WeylElectric : db::SimpleTag {
   using type = tnsr::ii<DataType, Dim, Frame>;
-  static std::string name() noexcept { return "WeylElectric"; }
 };
 }  // namespace Tags
 

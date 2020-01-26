@@ -122,7 +122,9 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
   struct VariablesToObserve {
     static constexpr OptionString help = "Subset of variables to observe";
     using type = std::vector<std::string>;
-    static type default_value() noexcept { return {Tensors::name()...}; }
+    static type default_value() noexcept {
+      return {db::tag_name<Tensors>()...};
+    }
     static size_t lower_bound_on_size() noexcept { return 1; }
   };
 
@@ -145,13 +147,14 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
                          const OptionContext& context = {})
       : variables_to_observe_(variables_to_observe.begin(),
                               variables_to_observe.end()) {
-    const std::unordered_set<std::string> valid_tensors{Tensors::name()...};
+    const std::unordered_set<std::string> valid_tensors{
+        db::tag_name<Tensors>()...};
     for (const auto& name : variables_to_observe_) {
       if (valid_tensors.count(name) != 1) {
         PARSE_ERROR(
             context,
             name << " is not an available variable.  Available variables:\n"
-                 << (std::vector<std::string>{Tensors::name()...}));
+                 << (std::vector<std::string>{db::tag_name<Tensors>()...}));
       }
       if (alg::count(variables_to_observe, name) != 1) {
         PARSE_ERROR(context, name << " specified multiple times");
@@ -197,11 +200,11 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
     const auto record_tensor_components = [ this, &components, &element_name ](
         const auto tensor_tag_v, const auto& tensor) noexcept {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
-      if (variables_to_observe_.count(tensor_tag::name()) == 1) {
+      if (variables_to_observe_.count(db::tag_name<tensor_tag>()) == 1) {
         for (size_t i = 0; i < tensor.size(); ++i) {
-          components.emplace_back(
-              element_name + tensor_tag::name() + component_suffix(tensor, i),
-              tensor[i]);
+          components.emplace_back(element_name + db::tag_name<tensor_tag>() +
+                                      component_suffix(tensor, i),
+                                  tensor[i]);
         }
       }
     };
@@ -216,11 +219,12 @@ class ObserveFields<VolumeDim, ObservationValueTag, tmpl::list<Tensors...>,
         const auto tensor_tag_v, const auto& tensor,
         const auto& analytic_tensor) noexcept {
       using tensor_tag = tmpl::type_from<decltype(tensor_tag_v)>;
-      if (variables_to_observe_.count(tensor_tag::name()) == 1) {
+      if (variables_to_observe_.count(db::tag_name<tensor_tag>()) == 1) {
         for (size_t i = 0; i < tensor.size(); ++i) {
           DataVector error = tensor[i] - analytic_tensor[i];
-          components.emplace_back(element_name + "Error(" + tensor_tag::name() +
-                                      ")" + component_suffix(tensor, i),
+          components.emplace_back(element_name + "Error(" +
+                                      db::tag_name<tensor_tag>() + ")" +
+                                      component_suffix(tensor, i),
                                   std::move(error));
         }
       }

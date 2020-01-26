@@ -6,12 +6,16 @@
 #include <string>
 
 #include "PointwiseFunctions/Elasticity/ConstitutiveRelations/Tags.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 namespace {
 struct SomeConstitutiveRelation;
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Elasticity.Tags", "[Unit][Elasticity]") {
-  CHECK(Elasticity::Tags::ConstitutiveRelation<
-            SomeConstitutiveRelation>::name() == "Material");
+  TestHelpers::db::test_base_tag<Elasticity::Tags::ConstitutiveRelationBase>(
+      "ConstitutiveRelationBase");
+  TestHelpers::db::test_simple_tag<
+      Elasticity::Tags::ConstitutiveRelation<SomeConstitutiveRelation>>(
+      "Material");
 }

@@ -172,7 +172,9 @@ struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
                     index_to_slice_at(mesh.extents(), direction));
     }
   }
-  static std::string name() { return "Interface<" + Tag::name() + ">"; };
+  static std::string name() {
+    return "Interface<" + db::tag_name<Tag>() + ">";
+  };
   using argument_tags = tmpl::list<Mesh<volume_dim>, DirectionsTag, Tag>;
   using volume_tags = tmpl::list<Mesh<volume_dim>, Tag>;
 };

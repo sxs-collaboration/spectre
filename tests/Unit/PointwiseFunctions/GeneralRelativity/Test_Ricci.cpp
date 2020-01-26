@@ -8,6 +8,7 @@
 #include "DataStructures/DataVector.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "PointwiseFunctions/GeneralRelativity/Ricci.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -33,4 +34,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.GeneralRelativity.Ricci.",
 
   CHECK_FOR_DOUBLES_AND_DATAVECTORS(test_ricci, (1, 2, 3),
                                     (IndexType::Spatial, IndexType::Spacetime));
+
+  TestHelpers::db::test_compute_tag<
+      gr::Tags::RicciTensorCompute<3, Frame::Inertial, DataVector>>(
+      "RicciTensor");
 }
