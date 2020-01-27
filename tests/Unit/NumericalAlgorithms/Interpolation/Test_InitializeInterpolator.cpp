@@ -78,11 +78,5 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Initialize",
   CHECK(holder.infos.empty());
   // Check that 'holders' has only one tag.
   CHECK(holders.size() == 1);
-
-  // check tag names
-  CHECK(::intrp::Tags::VolumeVarsInfo<metavars>::name() == "VolumeVarsInfo");
-  CHECK(::intrp::Tags::InterpolatedVarsHolders<metavars>::name() ==
-        "InterpolatedVarsHolders");
-  CHECK(::intrp::Tags::NumberOfElements::name() == "NumberOfElements");
 }
 }  // namespace

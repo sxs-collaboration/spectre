@@ -14,6 +14,7 @@
 #include "DataStructures/Variables.hpp"
 #include "Domain/Mesh.hpp"
 #include "NumericalAlgorithms/Interpolation/InterpolatedVars.hpp"
+#include "Options/Options.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
 /// \cond
@@ -40,7 +41,6 @@ namespace Tags {
 
 /// Keeps track of which points have been filled with interpolated data.
 struct IndicesOfFilledInterpPoints : db::SimpleTag {
-  static std::string name() noexcept { return "IndicesOfFilledInterpPoints"; }
   using type = std::unordered_set<size_t>;
 };
 
@@ -51,7 +51,6 @@ struct IndicesOfFilledInterpPoints : db::SimpleTag {
 /// cases one might wish to fill these points with a default value or
 /// take some other action.
 struct IndicesOfInvalidInterpPoints : db::SimpleTag {
-  static std::string name() noexcept { return "IndicesOfInvalidInterpPoints"; }
   using type = std::unordered_set<size_t>;
 };
 
@@ -59,7 +58,6 @@ struct IndicesOfInvalidInterpPoints : db::SimpleTag {
 template <typename Metavariables>
 struct TemporalIds : db::SimpleTag {
   using type = std::deque<typename Metavariables::temporal_id::type>;
-  static std::string name() noexcept { return "TemporalIds"; }
 };
 
 /// `temporal_id`s that we have already interpolated onto.
@@ -68,7 +66,6 @@ struct TemporalIds : db::SimpleTag {
 template <typename Metavariables>
 struct CompletedTemporalIds : db::SimpleTag {
   using type = std::deque<typename Metavariables::temporal_id::type>;
-  static std::string name() noexcept { return "CompletedTemporalIds"; }
 };
 
 /// Volume variables at all `temporal_id`s for all local `Element`s.
@@ -86,7 +83,6 @@ struct VolumeVarsInfo : db::SimpleTag {
   using type = std::unordered_map<
       typename Metavariables::temporal_id::type,
       std::unordered_map<ElementId<Metavariables::volume_dim>, Info>>;
-  static std::string name() noexcept { return "VolumeVarsInfo"; }
 };
 
 namespace holders_detail {
@@ -106,12 +102,10 @@ struct InterpolatedVarsHolders : db::SimpleTag {
   using type = tuples::tagged_tuple_from_typelist<db::wrap_tags_in<
       holders_detail::WrappedHolderTag,
       typename Metavariables::interpolation_target_tags, Metavariables>>;
-  static std::string name() noexcept { return "InterpolatedVarsHolders"; }
 };
 
 /// Number of local `Element`s.
 struct NumberOfElements : db::SimpleTag {
-  static std::string name() noexcept { return "NumberOfElements"; }
   using type = size_t;
 };
 

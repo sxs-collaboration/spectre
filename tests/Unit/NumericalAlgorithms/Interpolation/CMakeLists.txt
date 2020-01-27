@@ -25,6 +25,7 @@ set(LIBRARY_SOURCES
   Test_ParallelInterpolator.cpp
   Test_RegularGridInterpolant.cpp
   Test_SpanInterpolators.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(

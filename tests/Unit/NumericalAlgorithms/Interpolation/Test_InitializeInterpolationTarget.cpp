@@ -89,10 +89,6 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.InterpolationTarget.Initialize",
           component, ::Tags::Variables<typename metavars::InterpolationTargetA::
                                            vars_to_interpolate_to_target>>(
           runner, 0) == test_vars);
-
-  CHECK(::intrp::Tags::IndicesOfFilledInterpPoints::name() ==
-        "IndicesOfFilledInterpPoints");
-  CHECK(::intrp::Tags::TemporalIds<metavars>::name() == "TemporalIds");
 }
 
 }  // namespace

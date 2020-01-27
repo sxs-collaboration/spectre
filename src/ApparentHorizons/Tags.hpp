@@ -290,7 +290,7 @@ struct AreaElement : db::ComputeTag {
 template <typename IntegrandTag, typename Frame>
 struct SurfaceIntegral : db::ComputeTag {
   static std::string name() noexcept {
-    return "SurfaceIntegral" + IntegrandTag::name();
+    return "SurfaceIntegral" + db::tag_name<IntegrandTag>();
   }
   static constexpr auto function = surface_integral_of_scalar<Frame>;
   using argument_tags = tmpl::list<AreaElement<Frame>, IntegrandTag,

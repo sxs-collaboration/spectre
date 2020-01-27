@@ -143,17 +143,16 @@ struct MockComputeTargetPoints {
 // Simple DataBoxItems to test.
 namespace Tags {
 struct Square : db::SimpleTag {
-  static std::string name() noexcept { return "Square"; }
   using type = Scalar<DataVector>;
 };
 struct SquareComputeItem : Square, db::ComputeTag {
-  static std::string name() noexcept { return "Square"; }
   static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
     auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
     get<>(result) = square(get<>(x));
     return result;
   }
   using argument_tags = tmpl::list<gr::Tags::Lapse<DataVector>>;
+  using base = Square;
 };
 }  // namespace Tags
 

@@ -57,13 +57,11 @@ void test_with_random_values(
 }
 
 struct Var1 : db::SimpleTag {
-  static std::string name() noexcept { return "Var1"; }
   using type = Scalar<DataVector>;
 };
 
 template <size_t Dim, typename Frame>
 struct Var2 : db::SimpleTag {
-  static std::string name() noexcept { return "Var2"; }
   using type = tnsr::i<DataVector, Dim, Frame>;
 };
 

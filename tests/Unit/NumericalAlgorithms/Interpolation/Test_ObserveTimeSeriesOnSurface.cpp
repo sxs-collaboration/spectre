@@ -84,34 +84,31 @@ namespace {
 // Simple DataBoxItems for test.
 namespace Tags {
 struct TestSolution : db::SimpleTag {
-  static std::string name() noexcept { return "TestSolution"; }
   using type = Scalar<DataVector>;
 };
 struct Square : db::SimpleTag {
-  static std::string name() noexcept { return "Square"; }
   using type = Scalar<DataVector>;
 };
-struct SquareComputeItem : Square, db::ComputeTag {
-  static std::string name() noexcept { return "Square"; }
+struct SquareCompute : Square, db::ComputeTag {
   static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
     auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
     get(result) = square(get(x));
     return result;
   }
   using argument_tags = tmpl::list<TestSolution>;
+  using base = Square;
 };
 struct Negate : db::SimpleTag {
-  static std::string name() noexcept { return "Negate"; }
   using type = Scalar<DataVector>;
 };
-struct NegateComputeItem : Negate, db::ComputeTag {
-  static std::string name() noexcept { return "Negate"; }
+struct NegateCompute : Negate, db::ComputeTag {
   static Scalar<DataVector> function(const Scalar<DataVector>& x) noexcept {
     auto result = make_with_value<Scalar<DataVector>>(x, 0.0);
     get(result) = -get(x);
     return result;
   }
   using argument_tags = tmpl::list<Square>;
+  using base = Negate;
 };
 }  // namespace Tags
 
@@ -204,7 +201,7 @@ struct MockMetavariables {
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
     using compute_items_on_target = tmpl::list<
-        Tags::SquareComputeItem,
+        Tags::SquareCompute,
         StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
         StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, ::Frame::Inertial>>;
     using compute_target_points =
@@ -221,7 +218,7 @@ struct MockMetavariables {
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
     using compute_items_on_target = tmpl::list<
-        Tags::SquareComputeItem, Tags::NegateComputeItem,
+        Tags::SquareCompute, Tags::NegateCompute,
         StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
         StrahlkorperGr::Tags::SurfaceIntegral<Tags::Square, Frame::Inertial>,
         StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, Frame::Inertial>>;
@@ -241,7 +238,7 @@ struct MockMetavariables {
         tmpl::list<Tags::TestSolution,
                    gr::Tags::SpatialMetric<3, Frame::Inertial>>;
     using compute_items_on_target = tmpl::list<
-        Tags::SquareComputeItem, Tags::NegateComputeItem,
+        Tags::SquareCompute, Tags::NegateCompute,
         StrahlkorperGr::Tags::AreaElement<Frame::Inertial>,
         StrahlkorperGr::Tags::SurfaceIntegral<Tags::Negate, ::Frame::Inertial>>;
     using compute_target_points =

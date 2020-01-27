@@ -69,17 +69,14 @@
 
 namespace {
 struct TemporalId : db::SimpleTag {
-  static std::string name() noexcept { return "TemporalId"; }
   using type = int;
 };
 
 struct Var : db::SimpleTag {
-  static std::string name() noexcept { return "Var"; }
   using type = Scalar<DataVector>;
 };
 
 struct OtherData : db::SimpleTag {
-  static std::string name() noexcept { return "OtherData"; }
   using type = Scalar<DataVector>;
 };
 
@@ -87,7 +84,6 @@ template <size_t Dim>
 class NumericalFlux {
  public:
   struct ExtraData : db::SimpleTag {
-    static std::string name() noexcept { return "ExtraTag"; }
     using type = tnsr::I<DataVector, 1>;
   };
 
