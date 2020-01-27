@@ -6,6 +6,7 @@ set(LIBRARY "Test_Cce_Actions")
 set(LIBRARY_SOURCES
   Test_BoundaryCommunication.cpp
   Test_CharacteristicEvolutionBondiCalculations.cpp
+  Test_InsertInterpolationScriData.cpp
   Test_FilterSwshVolumeQuantity.cpp
   Test_InitializeCharacteristicEvolution.cpp
   Test_InitializeWorldtubeBoundary.cpp
