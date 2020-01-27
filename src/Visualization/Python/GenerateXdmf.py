@@ -10,7 +10,8 @@ import numpy as np
 import sys
 
 
-def generate_xdmf(file_prefix, output_filename, start_time, stop_time, stride):
+def generate_xdmf(file_prefix, output_filename, start_time, stop_time, stride,
+                  coordinates):
     """
     Generate one XDMF file that ParaView and VisIt can use to load the data
     out of the HDF5 files.
@@ -57,11 +58,24 @@ def generate_xdmf(file_prefix, output_filename, start_time, stop_time, stride):
         # loop over each h5 file
         for h5file in h5files:
             h5temporal = h5file[0].get('element_data.vol').get(id_and_value[0])
+            # Make sure the coordinates are found in the file. We assume there
+            # should always be an x-coordinate.
+            assert coordinates + '_x' in h5temporal, (
+                "No '{}_x' dataset found in file '{}'. Existing datasets with "
+                "'Coordinates' in their name: {}").format(
+                    coordinates, h5file[1],
+                    list(
+                        map(
+                            lambda coords_name: coords_name.strip('_x'),
+                            filter(
+                                lambda dataset_name: 'Coordinates' in
+                                dataset_name and '_x' in dataset_name,
+                                h5temporal.keys()))))
             dimensionality = 3
             # If there are no z-coordinates then assume the data is 2d. If
             # in the future this assumption is invalid on datasets we will
             # need an extra command line argument.
-            if 'InertialCoordinates_z' not in list(h5temporal.keys()):
+            if coordinates + '_z' not in list(h5temporal.keys()):
                 dimensionality = 2
 
             # Compute the extents in the x, y, (and z) logical directions
@@ -150,23 +164,22 @@ def generate_xdmf(file_prefix, output_filename, start_time, stop_time, stride):
                 xdmf_output += "      <Geometry Type=\"X_Y_Z\">\n"
             else:
                 xdmf_output += "      <Geometry Type=\"X_Y\">\n"
-            xdmf_output += (data_item + Grid_path +
-                            "/InertialCoordinates_x\n        </DataItem>\n")
-            xdmf_output += (data_item + Grid_path +
-                            "/InertialCoordinates_y\n        </DataItem>\n")
+            xdmf_output += (data_item + Grid_path + "/" + coordinates +
+                            "_x\n        </DataItem>\n")
+            xdmf_output += (data_item + Grid_path + "/" + coordinates +
+                            "_y\n        </DataItem>\n")
             if dimensionality == 3:
-                xdmf_output += (
-                    data_item + Grid_path +
-                    "/InertialCoordinates_z\n        </DataItem>\n")
+                xdmf_output += (data_item + Grid_path + "/" + coordinates +
+                                "_z\n        </DataItem>\n")
             xdmf_output += "      </Geometry>\n"
             # Everything that isn't a coordinate is a "component"
             components = list(h5temporal.keys())
-            components.remove('InertialCoordinates_x')
-            components.remove('InertialCoordinates_y')
+            components.remove(coordinates + '_x')
+            components.remove(coordinates + '_y')
             if dimensionality == 3:
                 # In 2d we cannot read any z-coordinates because they
                 # were never written.
-                components.remove('InertialCoordinates_z')
+                components.remove(coordinates + '_z')
             components.remove('connectivity')
             components.remove('total_extents')
             components.remove('grid_names')
@@ -250,6 +263,9 @@ def parse_args():
         type=float,
         help="The time at which to stop visualizing. The stop-time value is "
         "not included.")
+    parser.add_argument("--coordinates",
+                        default="InertialCoordinates",
+                        help="The coordinates to use for visualization")
     return parser.parse_args()
 
 
@@ -258,4 +274,4 @@ if __name__ == "__main__":
     input_args = parse_args()
     generate_xdmf(input_args.file_prefix, input_args.output,
                   input_args.start_time, input_args.stop_time,
-                  input_args.stride)
+                  input_args.stride, input_args.coordinates)

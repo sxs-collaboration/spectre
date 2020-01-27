@@ -20,10 +20,11 @@ class TestGenerateXdmf(unittest.TestCase):
                       output_filename=output_filename,
                       start_time=0.,
                       stop_time=1.,
-                      stride=1)
+                      stride=1,
+                      coordinates='InertialCoordinates')
 
         # The script is quite opaque right now, so we only test that we can run
-        # it and it produces output without raising and error. To test more
+        # it and it produces output without raising an error. To test more
         # details, we should refactor the script into smaller units.
         self.assertTrue(os.path.isfile(output_filename + '.xmf'))
         os.remove(output_filename + '.xmf')
