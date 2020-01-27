@@ -108,6 +108,11 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.2.tar.gz -O bla
     && rm -rf brigand \
     && wget https://github.com/catchorg/Catch2/releases/download/v2.2.1/catch.hpp -O catch.hpp \
     && mv catch.hpp /usr/local/include \
+    && wget https://github.com/pybind/pybind11/archive/v2.4.3.tar.gz -O pybind11.tar.gz \
+    && tar -xzf pybind11.tar.gz \
+    && mv pybind11-* pybind11 \
+    && mv pybind11/include/pybind11 /usr/local/include \
+    && rm -rf pybind11* \
     && wget https://github.com/Libsharp/libsharp/archive/v1.0.0.tar.gz -O libsharp.tar.gz \
     && tar -xzf libsharp.tar.gz \
     && mv libsharp-* libsharp_build \
