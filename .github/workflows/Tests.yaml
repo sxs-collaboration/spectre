@@ -103,6 +103,8 @@ jobs:
           -D CMAKE_Fortran_COMPILER=gfortran-8
           -D CHARM_ROOT=/work/charm/multicore-linux64-clang
           -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -D OVERRIDE_ARCH=x86-64
+          -D USE_CCACHE=OFF
           -D DEBUG_SYMBOLS=OFF
           -D BUILD_PYTHON_BINDINGS=ON
           $GITHUB_WORKSPACE
