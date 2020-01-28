@@ -8,9 +8,7 @@ See LICENSE.txt for details.
 
 To allow users to analyze output from simulations and take advantage of
 SpECTRE's data structures and functions in python, bindings must sometimes be
-written. SpECTRE uses
-[Boost.Python]
-(https://www.boost.org/doc/libs/1_68_0/libs/python/doc/html/index.html)
+written. SpECTRE uses [pybind11](https://pybind11.readthedocs.io/)
 to aid with generating the bindings. The C++ code for the bindings should
 generally go in a `Python` subdirectory. For example, the bindings for the
 DataStructures library would go in `src/DataStructures/Python/`. SpECTRE
@@ -81,34 +79,32 @@ inside `src/DataStructures/Python`. The functions that generate the bindings
 should be in the `py_bindings` namespace and have a reasonable name such as
 `bind_datavector`. There should be a file named `Bindings.cpp` which calls all
 the `bind_*` functions. The `Bindings.cpp` file is quite simple and should
-`include <boost/python.hpp>`, forward declare the `bind_*` functions, and then
-have `BOOST_PYTHON_MODULE` function. For example,
+`include <pybind11/pybind11.h>`, forward declare the `bind_*` functions, and
+then have a `PYBIND11_MODULE` function. For example,
 
 \code{.cpp}
-#include <boost/python.hpp>
+#include <pybind11/pybind11.h>
+
+namespace py = pybind11;
 
 namespace py_bindings {
-void bind_datavector();
+void bind_datavector(const py::module& m);
 }  // namespace py_bindings
 
-BOOST_PYTHON_MODULE(_PyDataStructures) {
-  Py_Initialize();
-  py_bindings::bind_datavector();
+PYBIND11_MODULE(_PyDataStructures, m) {
+  py_bindings::bind_datavector(m);
 }
 \endcode
 
-Note that the library name is passed to `BOOST_PYTHON_MODULE` and is prefixed
+Note that the library name is passed to `PYBIND11_MODULE` and is prefixed
 with an underscore. The underscore is important and the library name must be the
 same that is passed as `LIBRARY_NAME` to `spectre_python_add_module` (see
 above).
 
 The `DataVector` bindings serve as an example with code comments on how to write
 bindings for a class. There is also extensive documentation available directly
-from [Boost.Python]
-(https://www.boost.org/doc/libs/1_68_0/libs/python/doc/html/index.html)
-and [this GitHub repository](https://github.com/TNG/boost-python-examples) also
-has many helpful examples. SpECTRE currently aims to support both Python 2.7
-and Python 3 and as such all bindings must support both.
+from [pybind11](https://pybind11.readthedocs.io/). SpECTRE currently aims to
+support both Python 2.7 and Python 3 and as such all bindings must support both.
 
 \note Exceptions should be allowed to propagate through the bindings so that
 error handling via exceptions is possible from python rather than having the
@@ -145,7 +141,7 @@ See \ref spectre_using_python "Using SpECTRE's Python"
 - Exceptions should be allowed to propagate through the bindings so that
   error handling via exceptions is possible from python rather than having the
   python interpreter being killed with a call to `abort`.
-- All function arguments in Python bindings should be named using `bp::arg`.
+- All function arguments in Python bindings should be named using `py::arg`.
   See the Python bindings in `IO/H5/` for examples. Using the named arguments in
   Python code is optional, but preferred when it makes code more readable.
   In particular, use the argument names in the tests for the Python bindings so
