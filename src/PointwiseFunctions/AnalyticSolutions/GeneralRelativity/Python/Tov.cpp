@@ -1,6 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
+#include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <string>
 
@@ -22,9 +23,10 @@ void bind_tov(py::module& m) {  // NOLINT
            py::arg("absolute_tolerance") = 1.e-14,
            py::arg("relative_tolerance") = 1.e-14)
       .def("outer_radius", &TovSolution::outer_radius)
-      .def("mass_over_radius", &TovSolution::mass_over_radius)
-      .def("mass", &TovSolution::mass)
-      .def("log_specific_enthalpy", &TovSolution::log_specific_enthalpy);
+      .def("mass_over_radius", py::vectorize(&TovSolution::mass_over_radius))
+      .def("mass", py::vectorize(&TovSolution::mass))
+      .def("log_specific_enthalpy",
+           py::vectorize(&TovSolution::log_specific_enthalpy));
 }
 
 }  // namespace py_bindings
