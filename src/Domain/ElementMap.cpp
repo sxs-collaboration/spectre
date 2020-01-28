@@ -7,6 +7,7 @@
 #include "Domain/Side.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Utilities/GenerateInstantiations.hpp"
+#include "Utilities/OptimizerHacks.hpp"
 
 /// \cond
 template <size_t Dim, typename TargetFrame>
@@ -28,6 +29,9 @@ ElementMap<Dim, TargetFrame>::ElementMap(
       map_offset_{[](const ElementId<Dim>& id) {
         std::array<double, Dim> result{};
         for (size_t d = 0; d < Dim; ++d) {
+          // The clang optimizer appears to generate code to execute
+          // this loop extra times and then throw away the results.
+          VARIABLE_CAUSES_CLANG_FPE(d);
           gsl::at(result, d) =
               0.5 * (gsl::at(id.segment_ids(), d).endpoint(Side::Upper) +
                      gsl::at(id.segment_ids(), d).endpoint(Side::Lower));

@@ -45,4 +45,5 @@ target_link_libraries(
   INTERFACE FunctionsOfTime
   INTERFACE LinearOperators
   INTERFACE Spectral
+  INTERFACE Utilities
   )
