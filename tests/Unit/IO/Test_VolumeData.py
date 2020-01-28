@@ -55,12 +55,11 @@ class TestIOH5VolumeData(unittest.TestCase):
         h5_file = spectre_h5.H5File(
             file_name=self.file_name_r, append_to_file=True)
         vol_file = h5_file.get_vol(path="/element_data")
-        obs_ids = vol_file.list_observation_ids()
-        expected_obs_ids = [16436106908031328247,
-                            17615288952477351885]
+        obs_ids = set(vol_file.list_observation_ids())
+        expected_obs_ids = set([16436106908031328247, 17615288952477351885])
         expected_obs_values = {16436106908031328247: 0.01,
                                17615288952477351885: 0.00}
-        self.assertItemsEqual(obs_ids, expected_obs_ids)
+        self.assertEqual(obs_ids, expected_obs_ids)
         for obs_id in expected_obs_ids:
             self.assertEqual(
                 vol_file.get_observation_value(observation_id=obs_id),
@@ -88,12 +87,13 @@ class TestIOH5VolumeData(unittest.TestCase):
             file_name=self.file_name_r, append_to_file=True)
         vol_file = h5_file.get_vol(path="/element_data")
         obs_id = vol_file.list_observation_ids()[0]
-        tensor_comps = vol_file.list_tensor_components(observation_id=obs_id)
-        expected_tensor_comps = ['Psi', 'Error(Psi)',
-                                 'InertialCoordinates_x',
-                                 'InertialCoordinates_y',
-                                 'InertialCoordinates_z']
-        self.assertItemsEqual(tensor_comps, expected_tensor_comps)
+        tensor_comps = set(
+            vol_file.list_tensor_components(observation_id=obs_id))
+        expected_tensor_comps = set([
+            'Psi', 'Error(Psi)', 'InertialCoordinates_x',
+            'InertialCoordinates_y', 'InertialCoordinates_z'
+        ])
+        self.assertEqual(tensor_comps, expected_tensor_comps)
         expected_Psi_tensor_data = np.array([-0.0173205080756888,
                                              -0.0173205080756888,
                                              -0.0173205080756888,
