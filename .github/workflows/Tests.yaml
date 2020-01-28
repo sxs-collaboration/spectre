@@ -220,8 +220,16 @@ jobs:
             # When building with ASAN we also need python bindings to be
             # disabled because otherwise we get link errors. See issue:
             # https://github.com/sxs-collaboration/spectre/issues/1890
+            # So we are also using this build to test building without Python
+            # bindings enabled.
             ASAN: ON
             BUILD_PYTHON_BINDINGS: OFF
+          # Test with Python 2 so that we retain backwards compatibility. We
+          # keep track of Python versions on supercomputers in this issue:
+          # https://github.com/sxs-collaboration/spectre/issues/442
+          - compiler: gcc-8
+            build_type: Debug
+            PYTHON_EXECUTABLE: /usr/bin/python2
 
     container:
       image: sxscollaboration/spectrebuildenv:latest
@@ -275,6 +283,7 @@ jobs:
           fi
 
           BUILD_PYTHON_BINDINGS=${{ matrix.BUILD_PYTHON_BINDINGS }}
+          PYTHON_EXECUTABLE=${{ matrix.PYTHON_EXECUTABLE }}
           ASAN=${{ matrix.ASAN }}
           UBSAN_UNDEFINED=${{ matrix.UBSAN_UNDEFINED }}
           UBSAN_INTEGER=${{ matrix.UBSAN_INTEGER }}
@@ -290,6 +299,7 @@ jobs:
           -D DEBUG_SYMBOLS=OFF
           -D USE_CCACHE=ON
           -D BUILD_PYTHON_BINDINGS=${BUILD_PYTHON_BINDINGS:-'ON'}
+          -D PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE:-'/usr/bin/python3'}
           -D ASAN=${ASAN:-'OFF'}
           -D UBSAN_UNDEFINED=${UBSAN_UNDEFINED:-'OFF'}
           -D UBSAN_INTEGER=${UBSAN_INTEGER:-'OFF'}
