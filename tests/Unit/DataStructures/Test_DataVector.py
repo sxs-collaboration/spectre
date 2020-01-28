@@ -5,6 +5,8 @@ from spectre.DataStructures import DataVector
 import unittest
 import math
 import numpy as np
+import numpy.testing as npt
+
 
 class TestDataVector(unittest.TestCase):
     def test_len(self):
@@ -353,7 +355,26 @@ class TestDataVector(unittest.TestCase):
         c = DataVector([1.0, 2.0, 3.0])
         self.assertTrue(((b + c) == np.array([2.0, 4.0, 6.0])).all())
         x = np.linspace(0, 2 * np.pi, 10)
-        self.assertTrue((DataVector(list(x)).sin() ==  np.sin(x)).all())
+        self.assertTrue((DataVector(list(x)).sin() == np.sin(x)).all())
+        # Convert a DataVector to a Numpy array
+        c_array_copy = np.array(c)
+        npt.assert_equal(c_array_copy, b)
+        # Changing the copy shouldn't change the DataVector
+        c_array_copy[2] = 4.0
+        npt.assert_equal(c, b)
+        c_array_reference = np.array(c, copy=False)
+        npt.assert_equal(c_array_reference, b)
+        # Changing the reference should change the DataVector as well
+        c_array_reference[2] = 4.0
+        self.assertEqual(c[2], 4.0)
+        # Convert a Numpy array to a DataVector
+        b_dv_copy = DataVector(b)
+        self.assertEqual(b_dv_copy, DataVector([1.0, 2.0, 3.0]))
+        b_dv_copy[2] = 4.0
+        self.assertEqual(b[2], 3.0)
+        b_dv_reference = DataVector(b, copy=False)
+        b_dv_reference[2] = 4.0
+        self.assertEqual(b[2], 4.0)
 
 
     def test_iterator(self):

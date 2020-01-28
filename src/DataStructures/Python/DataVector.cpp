@@ -18,7 +18,7 @@ namespace py = pybind11;
 namespace py_bindings {
 void bind_datavector(py::module& m) {  // NOLINT
   // Wrapper for basic DataVector operations
-  py::class_<DataVector>(m, "DataVector")
+  py::class_<DataVector>(m, "DataVector", py::buffer_protocol())
       .def(py::init<size_t>(), py::arg("size"))
       .def(py::init<size_t, double>(), py::arg("size"), py::arg("fill"))
       .def(py::init([](const std::vector<double>& values) {
@@ -27,6 +27,41 @@ void bind_datavector(py::module& m) {  // NOLINT
              return result;
            }),
            py::arg("values"))
+      .def(py::init([](py::buffer buffer, const bool copy) {
+             py::buffer_info info = buffer.request();
+             // Sanity-check the buffer
+             if (info.format != py::format_descriptor<double>::format()) {
+               throw std::runtime_error(
+                   "Incompatible format: expected a double array.");
+             }
+             if (info.ndim != 1) {
+               throw std::runtime_error("Incompatible dimension.");
+             }
+             const auto size = static_cast<size_t>(info.shape[0]);
+             auto data = static_cast<double*>(info.ptr);
+             if (copy) {
+               DataVector result{size};
+               std::copy_n(data, result.size(), result.begin());
+               return result;
+             } else {
+               // Create a non-owning DataVector from the buffer
+               return DataVector{data, size};
+             }
+           }),
+           py::arg("buffer"), py::arg("copy") = true)
+      // Expose the data as a Python buffer so it can be cast into Numpy arrays
+      .def_buffer([](DataVector& data_vector) {
+        return py::buffer_info(data_vector.data(),
+                               // Size of one scalar
+                               sizeof(double),
+                               py::format_descriptor<double>::format(),
+                               // Number of dimensions
+                               1,
+                               // Size of the buffer
+                               {data_vector.size()},
+                               // Stride for each index (in bytes)
+                               {sizeof(double)});
+      })
       .def(
           "__iter__",
           [](const DataVector& t) {
