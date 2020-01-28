@@ -38,6 +38,7 @@ installation_on_clusters "Installation on clusters" page.
 * [SciPy](https://www.scipy.org)
 
 #### Optional:
+* [Pybind11](https://pybind11.readthedocs.io) for SpECTRE Python bindings
 * [Doxygen](http://www.stack.nl/~dimitri/doxygen/index.html) — to generate
   documentation
 * [Python](https://www.python.org/) with

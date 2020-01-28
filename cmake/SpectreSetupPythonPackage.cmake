@@ -93,7 +93,14 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       message(FATAL_ERROR "The LIBRARY_NAME for Python module "
           "'${MODULE_NAME}' must begin with 'Py' but is '${ARG_LIBRARY_NAME}'.")
     endif()
-    add_library(${ARG_LIBRARY_NAME} MODULE ${ARG_SOURCES})
+    # Use pybind11 wrapper around `add_library` to add the Python module.
+    # If we could rely on the pybind11 cmake files being installed with the
+    # headers (instead of bundling them in `external`), then we could use the
+    # plain `add_library` here and link it with the `pybind11::module` target.
+    # Instead, we use the wrapper but have to skip the visibility setting it
+    # performs to make this work with PCH. The corresponding lines are commented
+    # out in `external/pybind11/tools/pybind11Tools.cmake`.
+    pybind11_add_module(${ARG_LIBRARY_NAME} MODULE ${ARG_SOURCES})
     # We don't want the 'lib' prefix for python modules, so we set the output name
     SET_TARGET_PROPERTIES(
       ${ARG_LIBRARY_NAME}
