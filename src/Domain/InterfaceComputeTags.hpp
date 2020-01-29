@@ -123,7 +123,8 @@ struct InterfaceCompute : Interface<DirectionsTag, Tag>,
   // tags; Both Interface<Dirs, Tag> and Interface<Dirs, Tag::base> will have a
   // name function and so cannot be disambiguated.
   static std::string name() noexcept {
-    return "Interface<" + DirectionsTag::name() + ", " + Tag::name() + ">";
+    return "Interface<" + db::tag_name<DirectionsTag>() + ", " +
+           db::tag_name<Tag>() + ">";
   };
   using tag = Tag;
   using forwarded_argument_tags =
@@ -171,7 +172,9 @@ struct Slice : Interface<DirectionsTag, Tag>, db::ComputeTag {
                     index_to_slice_at(mesh.extents(), direction));
     }
   }
-  static std::string name() { return "Interface<" + Tag::name() + ">"; };
+  static std::string name() {
+    return "Interface<" + db::tag_name<Tag>() + ">";
+  };
   using argument_tags = tmpl::list<Mesh<volume_dim>, DirectionsTag, Tag>;
   using volume_tags = tmpl::list<Mesh<volume_dim>, Tag>;
 };
