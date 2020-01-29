@@ -2,9 +2,6 @@
 # See LICENSE.txt for details.
 
 if (${BUILD_PYTHON_BINDINGS})
-  # WARNING: This library should be linked as ${SPECTRE_LINK_PYBINDINGS}
-  #          for it to work properly. If you get errors such as CmiPrintf
-  #          is not defined, then you are not linking to it correctly.
   set(LIBRARY "PyBindings")
 
   set(LIBRARY_SOURCES
@@ -12,10 +9,4 @@ if (${BUILD_PYTHON_BINDINGS})
     )
 
   add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
-
-  target_link_libraries(
-    ${LIBRARY}
-    PUBLIC ${Boost_LIBRARIES}
-    PUBLIC Utilities
-    )
 endif()
