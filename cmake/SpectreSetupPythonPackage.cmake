@@ -1,18 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# In order to avoid runtime errors about missing CmiPrintf and other Cmi
-# (Charm++) functions, we need to link in the whole PyBindings archive.
-# In order to make it easier for users, we define the variable
-# SPECTRE_LINK_PYBINDINGS so that the target_link_libraries only needs to
-# specify ${SPECTRE_LINK_PYBINDINGS}. Note that ${SPECTRE_LINK_PYBINDINGS}
-# must be the last library to link.
-set(SPECTRE_LINK_PYBINDINGS
-  -Wl,--whole-archive
-  PUBLIC PyBindings
-  PUBLIC ${HDF5_LIBRARIES}
-  -Wl,--no-whole-archive)
-
 set(SPECTRE_PYTHON_PREFIX "${CMAKE_BINARY_DIR}/bin/python/spectre/")
 get_filename_component(
   SPECTRE_PYTHON_PREFIX
@@ -101,6 +89,23 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
     # performs to make this work with PCH. The corresponding lines are commented
     # out in `external/pybind11/tools/pybind11Tools.cmake`.
     pybind11_add_module(${ARG_LIBRARY_NAME} MODULE ${ARG_SOURCES})
+    # In order to avoid runtime errors about missing CmiPrintf and other Cmi
+    # (Charm++) functions, we need to link in the whole PyBindings archive.
+    # This is not needed on macOS.
+    if (APPLE)
+      target_link_libraries(
+        ${ARG_LIBRARY_NAME}
+        PUBLIC PyBindings
+        )
+    else()
+      target_link_libraries(
+        ${ARG_LIBRARY_NAME}
+        PUBLIC
+        -Wl,--whole-archive
+        PyBindings
+        -Wl,--no-whole-archive
+        )
+    endif()
     # We don't want the 'lib' prefix for python modules, so we set the output name
     SET_TARGET_PROPERTIES(
       ${ARG_LIBRARY_NAME}
@@ -231,7 +236,6 @@ function (spectre_python_link_libraries LIBRARY_NAME)
     ${LIBRARY_NAME}
     # Forward all remaining arguments
     ${ARGN}
-    ${SPECTRE_LINK_PYBINDINGS}
     )
 endfunction()
 
