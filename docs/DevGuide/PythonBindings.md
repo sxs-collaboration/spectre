@@ -88,7 +88,7 @@ then have a `PYBIND11_MODULE` function. For example,
 namespace py = pybind11;
 
 namespace py_bindings {
-void bind_datavector(const py::module& m);
+void bind_datavector(py::module& m);
 }  // namespace py_bindings
 
 PYBIND11_MODULE(_PyDataStructures, m) {
