@@ -494,8 +494,6 @@ void test_gauge_transforms_via_inverse_coordinate_map(
 
   const auto& inverse_c = db::get<Tags::GaugeC>(inverse_transform_box);
   const auto& inverse_d = db::get<Tags::GaugeD>(inverse_transform_box);
-  const auto& inverse_omega_cd =
-      db::get<Tags::GaugeOmega>(inverse_transform_box);
 
   SpinWeighted<ComplexDataVector, 1> eth_omega{number_of_angular_grid_points};
   Spectral::Swsh::angular_derivatives<tmpl::list<Spectral::Swsh::Tags::Eth>>(
