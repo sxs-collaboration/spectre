@@ -6,6 +6,7 @@ set(LIBRARY Utilities)
 set(LIBRARY_SOURCES
   FileSystem.cpp
   Formaline.cpp
+  OptimizerHacks.cpp
   PrettyType.cpp
   Rational.cpp
   )
