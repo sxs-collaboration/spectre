@@ -3,8 +3,10 @@
 
 #pragma once
 
+#include <string>
+
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
-#include "Utilities/PrettyType.hpp"
 
 namespace OptionTags {
 /*!
@@ -26,7 +28,7 @@ struct VariableFixer {
   static constexpr OptionString help = "Options for the variable fixer";
   using type = VariableFixerType;
   static std::string name() noexcept {
-    return pretty_type::short_name<VariableFixerType>();
+    return option_name<VariableFixerType>();
   }
   using group = VariableFixingGroup;
 };
