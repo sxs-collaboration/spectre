@@ -19,6 +19,10 @@ class Block;
 namespace domain {
 template <typename, typename, size_t>
 class CoordinateMapBase;
+
+namespace FunctionsOfTime {
+class FunctionOfTime;
+}  // namespace FunctionsOfTime
 }  // namespace domain
 template <size_t>
 class Domain;
@@ -98,6 +102,13 @@ class DomainCreator {
   /// Obtain the initial refinement levels of the blocks.
   virtual std::vector<std::array<size_t, VolumeDim>> initial_refinement_levels()
       const noexcept = 0;
+
+  /// Retrieve the functions of time used for moving meshes.
+  virtual std::unordered_map<
+      std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+  functions_of_time() const noexcept {
+    return {};
+  }
 };
 
 #include "Domain/Creators/AlignedLattice.hpp"
