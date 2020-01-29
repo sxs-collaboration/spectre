@@ -10,6 +10,7 @@ set(LIBRARY_SOURCES
   Test_Tags.cpp
   Test_Time.cpp
   Test_TimeStepId.cpp
+  Test_Utilities.cpp
   )
 
 add_subdirectory(Actions)

@@ -11,7 +11,7 @@
 #include "Parallel/CharmPupable.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"  // IWYU pragma: keep
 #include "Time/Tags.hpp"
-#include "Utilities/EqualWithinRoundoff.hpp"
+#include "Time/Utilities.hpp"
 #include "Utilities/Registration.hpp"
 #include "Utilities/TMPL.hpp"
 
@@ -67,12 +67,12 @@ class PreventRapidIncrease : public StepChooser<StepChooserRegistrars> {
       return std::numeric_limits<double>::infinity();
     }
 
+    const double sloppiness = slab_rounding_error(history[0]);
     for (auto step = history.begin(); step != history.end() - 1; ++step) {
       // Potential roundoff error comes from the inability to make
       // slabs exactly the same length.
-      if (not equal_within_roundoff(
-              abs(*(step + 1) - *step).value(), last_step_magnitude,
-              4.0 * std::numeric_limits<double>::epsilon(), 0.0)) {
+      if (abs(abs(*(step + 1) - *step).value() - last_step_magnitude) >
+          sloppiness) {
         return last_step_magnitude;
       }
     }
