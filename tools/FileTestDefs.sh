@@ -298,6 +298,7 @@ license() {
               'docs/config/header.html' \
               'docs/config/layout.xml' \
               'docs/config/MathJax.js$' \
+              'external/*' \
               'LICENSE' \
               'support/TeXLive/texlive.profile' \
               'tools/Iwyu/boost-all.imp$' \
