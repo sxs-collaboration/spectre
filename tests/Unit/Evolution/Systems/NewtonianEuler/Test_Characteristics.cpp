@@ -20,6 +20,7 @@
 #include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/DereferenceWrapper.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Overloader.hpp"
 #include "Utilities/StdHelpers.hpp"
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
@@ -88,21 +89,21 @@ void test_largest_characteristic_speed(
 
 template <size_t Dim>
 Matrix analytic_flux_jacobian(const tnsr::I<double, Dim>& velocity,
-                              double kappa_over_density, double theta,
+                              double kappa_over_density, double b_times_theta,
                               double specific_enthalpy,
                               const tnsr::i<double, Dim>& unit_normal) noexcept;
 
 template <>
 Matrix analytic_flux_jacobian<1>(
     const tnsr::I<double, 1>& velocity, const double kappa_over_density,
-    const double theta, const double specific_enthalpy,
+    const double b_times_theta, const double specific_enthalpy,
     const tnsr::i<double, 1>& unit_normal) noexcept {
   const double n_x = get<0>(unit_normal);
   const double u = get<0>(velocity);
   const Matrix a_x{{0., 1., 0.},
-                   {kappa_over_density * theta - square(u),
-                    u * (2. - kappa_over_density), kappa_over_density},
-                   {u * (kappa_over_density * theta - specific_enthalpy),
+                   {b_times_theta - square(u), u * (2. - kappa_over_density),
+                    kappa_over_density},
+                   {u * (b_times_theta - specific_enthalpy),
                     specific_enthalpy - kappa_over_density * square(u),
                     u * (kappa_over_density + 1.)}};
   return n_x * a_x;
@@ -111,7 +112,7 @@ Matrix analytic_flux_jacobian<1>(
 template <>
 Matrix analytic_flux_jacobian<2>(
     const tnsr::I<double, 2>& velocity, const double kappa_over_density,
-    const double theta, const double specific_enthalpy,
+    const double b_times_theta, const double specific_enthalpy,
     const tnsr::i<double, 2>& unit_normal) noexcept {
   const double n_x = get<0>(unit_normal);
   const double n_y = get<1>(unit_normal);
@@ -119,19 +120,18 @@ Matrix analytic_flux_jacobian<2>(
   const double v = get<1>(velocity);
   const Matrix a_x{
       {0., 1., 0., 0.},
-      {kappa_over_density * theta - square(u), u * (2. - kappa_over_density),
+      {b_times_theta - square(u), u * (2. - kappa_over_density),
        -v * kappa_over_density, kappa_over_density},
       {-u * v, v, u, 0.},
-      {u * (kappa_over_density * theta - specific_enthalpy),
+      {u * (b_times_theta - specific_enthalpy),
        specific_enthalpy - kappa_over_density * square(u),
        -u * v * kappa_over_density, u * (kappa_over_density + 1.)}};
   const Matrix a_y{
       {0., 0., 1., 0.},
       {-u * v, v, u, 0.},
-      {kappa_over_density * theta - square(v), -u * kappa_over_density,
+      {b_times_theta - square(v), -u * kappa_over_density,
        v * (2. - kappa_over_density), kappa_over_density},
-      {v * (kappa_over_density * theta - specific_enthalpy),
-       -u * v * kappa_over_density,
+      {v * (b_times_theta - specific_enthalpy), -u * v * kappa_over_density,
        specific_enthalpy - kappa_over_density * square(v),
        v * (kappa_over_density + 1.)}};
   return n_x * a_x + n_y * a_y;
@@ -140,7 +140,7 @@ Matrix analytic_flux_jacobian<2>(
 template <>
 Matrix analytic_flux_jacobian<3>(
     const tnsr::I<double, 3>& velocity, const double kappa_over_density,
-    const double theta, const double specific_enthalpy,
+    const double b_times_theta, const double specific_enthalpy,
     const tnsr::i<double, 3>& unit_normal) noexcept {
   const double n_x = get<0>(unit_normal);
   const double n_y = get<1>(unit_normal);
@@ -150,36 +150,122 @@ Matrix analytic_flux_jacobian<3>(
   const double w = get<2>(velocity);
   const Matrix a_x{
       {0., 1., 0., 0., 0.},
-      {kappa_over_density * theta - square(u), u * (2. - kappa_over_density),
+      {b_times_theta - square(u), u * (2. - kappa_over_density),
        -v * kappa_over_density, -w * kappa_over_density, kappa_over_density},
       {-u * v, v, u, 0., 0.},
       {-u * w, w, 0., u, 0.},
-      {u * (kappa_over_density * theta - specific_enthalpy),
+      {u * (b_times_theta - specific_enthalpy),
        specific_enthalpy - kappa_over_density * square(u),
        -u * v * kappa_over_density, -u * w * kappa_over_density,
        u * (kappa_over_density + 1.)}};
   const Matrix a_y{
       {0., 0., 1., 0., 0.},
       {-u * v, v, u, 0., 0.},
-      {kappa_over_density * theta - square(v), -u * kappa_over_density,
+      {b_times_theta - square(v), -u * kappa_over_density,
        v * (2. - kappa_over_density), -w * kappa_over_density,
        kappa_over_density},
       {-v * w, 0., w, v, 0.},
-      {v * (kappa_over_density * theta - specific_enthalpy),
-       -u * v * kappa_over_density,
+      {v * (b_times_theta - specific_enthalpy), -u * v * kappa_over_density,
        specific_enthalpy - kappa_over_density * square(v),
        -v * w * kappa_over_density, v * (kappa_over_density + 1.)}};
   const Matrix a_z{{0., 0., 0., 1., 0.},
                    {-u * w, w, 0., u, 0.},
                    {-v * w, 0., w, v, 0.},
-                   {kappa_over_density * theta - square(w),
-                    -u * kappa_over_density, -v * kappa_over_density,
-                    w * (2. - kappa_over_density), kappa_over_density},
-                   {w * (kappa_over_density * theta - specific_enthalpy),
+                   {b_times_theta - square(w), -u * kappa_over_density,
+                    -v * kappa_over_density, w * (2. - kappa_over_density),
+                    kappa_over_density},
+                   {w * (b_times_theta - specific_enthalpy),
                     -u * w * kappa_over_density, -v * w * kappa_over_density,
                     specific_enthalpy - kappa_over_density * square(w),
                     w * (kappa_over_density + 1.)}};
   return n_x * a_x + n_y * a_y + n_z * a_z;
+}
+
+template <size_t Dim, size_t ThermodynamicDim>
+void test_left_and_right_eigenvectors_impl(
+    const Scalar<double>& density, const tnsr::I<double, Dim>& velocity,
+    const Scalar<double>& specific_internal_energy,
+    const tnsr::i<double, Dim>& unit_normal,
+    const EquationsOfState::EquationOfState<false, ThermodynamicDim>&
+        equation_of_state) noexcept {
+  Scalar<double> pressure{};
+  Scalar<double> kappa_over_density{};
+  make_overloader(
+      [&density, &pressure, &
+       kappa_over_density ](const EquationsOfState::EquationOfState<false, 1>&
+                                the_equation_of_state) noexcept {
+        pressure = the_equation_of_state.pressure_from_density(density);
+        kappa_over_density = Scalar<double>{
+            {{get(the_equation_of_state
+                      .kappa_times_p_over_rho_squared_from_density(density)) *
+              get(density) / get(pressure)}}};
+      },
+      [&density, &specific_internal_energy, &pressure, &
+       kappa_over_density ](const EquationsOfState::EquationOfState<false, 2>&
+                                the_equation_of_state) noexcept {
+        pressure = the_equation_of_state.pressure_from_density_and_energy(
+            density, specific_internal_energy);
+        kappa_over_density = Scalar<double>{
+            {{get(the_equation_of_state
+                      .kappa_times_p_over_rho_squared_from_density_and_energy(
+                          density, specific_internal_energy)) *
+              get(density) / get(pressure)}}};
+      })(equation_of_state);
+
+  const Scalar<double> v_squared{{{get(dot_product(velocity, velocity))}}};
+
+  const auto sound_speed_squared = NewtonianEuler::sound_speed_squared(
+      density, specific_internal_energy, equation_of_state);
+  const Scalar<double> energy_density{
+      {{get(density) * get(specific_internal_energy) +
+        0.5 * get(density) * get(v_squared)}}};
+  const Scalar<double> specific_enthalpy{
+      {{(get(energy_density) + get(pressure)) / get(density)}}};
+
+  const Matrix right = NewtonianEuler::right_eigenvectors(
+      velocity, sound_speed_squared, specific_enthalpy, kappa_over_density,
+      unit_normal);
+  const Matrix left = NewtonianEuler::left_eigenvectors(
+      velocity, sound_speed_squared, specific_enthalpy, kappa_over_density,
+      unit_normal);
+
+  // Check that eigenvectors are inverses of each other
+  const auto id1 = left * right;
+  const auto id2 = right * left;
+
+  // For small values of specific_internal_energy, the relative error can
+  // increase from the default level
+  Approx local_approx = Approx::custom().epsilon(1e-12).scale(1.0);
+  for (size_t i = 0; i < Dim + 2; ++i) {
+    for (size_t j = 0; j < Dim + 2; ++j) {
+      const double delta_ij = (i == j) ? 1. : 0.;
+      CHECK(id1(i, j) == local_approx(delta_ij));
+      CHECK(id2(i, j) == local_approx(delta_ij));
+    }
+  }
+
+  // Check that eigenvectors give correct fluxes
+  const double v_n = get(dot_product(unit_normal, velocity));
+  Matrix eigenvalues(Dim + 2, Dim + 2, 0.);
+  for (size_t i = 0; i < Dim + 2; ++i) {
+    eigenvalues(i, i) = v_n;
+  }
+  eigenvalues(0, 0) -= sqrt(get(sound_speed_squared));
+  eigenvalues(Dim + 1, Dim + 1) += sqrt(get(sound_speed_squared));
+  const auto flux_jacobian = right * eigenvalues * left;
+
+  const double b_times_theta =
+      get(kappa_over_density) * (get(v_squared) - get(specific_enthalpy)) +
+      get(sound_speed_squared);
+  const auto expected_flux_jacobian =
+      analytic_flux_jacobian(velocity, get(kappa_over_density), b_times_theta,
+                             get(specific_enthalpy), unit_normal);
+
+  for (size_t i = 0; i < Dim + 2; ++i) {
+    for (size_t j = 0; j < Dim + 2; ++j) {
+      CHECK(flux_jacobian(i, j) == local_approx(expected_flux_jacobian(i, j)));
+    }
+  }
 }
 
 template <size_t Dim>
@@ -228,68 +314,13 @@ void test_right_and_left_eigenvectors() noexcept {
   const auto specific_internal_energy = make_with_random_values<Scalar<double>>(
       nn_generator, nn_distribution_positive, used_for_size);
 
-  const Scalar<double> v_squared{{{get(dot_product(velocity, velocity))}}};
-  const Scalar<double> energy_density{
-      {{get(density) * get(specific_internal_energy) +
-        0.5 * get(density) * get(v_squared)}}};
+  const EquationsOfState::IdealFluid<false> ideal_gas_eos{5. / 3.};
+  test_left_and_right_eigenvectors_impl(
+      density, velocity, specific_internal_energy, unit_normal, ideal_gas_eos);
 
-  const EquationsOfState::IdealFluid<false> equation_of_state{5. / 3.};
-  const auto pressure = equation_of_state.pressure_from_density_and_energy(
-      density, specific_internal_energy);
-  const Scalar<double> specific_enthalpy{
-      {{(get(energy_density) + get(pressure)) / get(density)}}};
-  const auto sound_speed_squared = NewtonianEuler::sound_speed_squared(
-      density, specific_internal_energy, equation_of_state);
-  const auto kappa_over_density = Scalar<double>{
-      {{get(equation_of_state
-                .kappa_times_p_over_rho_squared_from_density_and_energy(
-                    density, specific_internal_energy)) *
-        get(density) / get(pressure)}}};
-
-  const Matrix right = NewtonianEuler::right_eigenvectors(
-      velocity, sound_speed_squared, specific_enthalpy, kappa_over_density,
-      unit_normal);
-  const Matrix left = NewtonianEuler::left_eigenvectors(
-      velocity, sound_speed_squared, specific_enthalpy, kappa_over_density,
-      unit_normal);
-
-  // Check that eigenvectors are inverses of each other
-  const auto id1 = left * right;
-  const auto id2 = right * left;
-
-  // For small values of specific_internal_energy, the relative error can
-  // increase from the default level
-  Approx local_approx = Approx::custom().epsilon(1e-12).scale(1.0);
-  for (size_t i = 0; i < Dim + 2; ++i) {
-    for (size_t j = 0; j < Dim + 2; ++j) {
-      const double delta_ij = (i == j) ? 1. : 0.;
-      CHECK(id1(i, j) == local_approx(delta_ij));
-      CHECK(id2(i, j) == local_approx(delta_ij));
-    }
-  }
-
-  // Check that eigenvectors give correct fluxes
-  const double v_n = get(dot_product(unit_normal, velocity));
-  Matrix eigenvalues(Dim + 2, Dim + 2, 0.);
-  for (size_t i = 0; i < Dim + 2; ++i) {
-    eigenvalues(i, i) = v_n;
-  }
-  eigenvalues(0, 0) -= sqrt(get(sound_speed_squared));
-  eigenvalues(Dim + 1, Dim + 1) += sqrt(get(sound_speed_squared));
-  const auto flux_jacobian = right * eigenvalues * left;
-
-  const Scalar<double> theta{
-      {{get(v_squared) - get(specific_enthalpy) +
-        get(sound_speed_squared) / get(kappa_over_density)}}};
-  const auto expected_flux_jacobian =
-      analytic_flux_jacobian(velocity, get(kappa_over_density), get(theta),
-                             get(specific_enthalpy), unit_normal);
-
-  for (size_t i = 0; i < Dim + 2; ++i) {
-    for (size_t j = 0; j < Dim + 2; ++j) {
-      CHECK(flux_jacobian(i, j) == local_approx(expected_flux_jacobian(i, j)));
-    }
-  }
+  const EquationsOfState::PolytropicFluid<false> polytropic_eos{100., 2.};
+  test_left_and_right_eigenvectors_impl(
+      density, velocity, specific_internal_energy, unit_normal, polytropic_eos);
 }
 
 }  // namespace

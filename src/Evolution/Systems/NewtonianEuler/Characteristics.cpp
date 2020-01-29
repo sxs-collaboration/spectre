@@ -65,14 +65,14 @@ Matrix right_eigenvectors<1>(const tnsr::I<double, 1>& velocity,
 
   Matrix result(3, 3);
   result(0, 0) = 1.;
-  result(0, 1) = 1.;
+  result(0, 1) = get(kappa_over_density);
   result(0, 2) = 1.;
   result(1, 0) = u - n_x * c;
-  result(1, 1) = u;
+  result(1, 1) = get(kappa_over_density) * u;
   result(1, 2) = u + n_x * c;
   result(2, 0) = get(specific_enthalpy) - c * v_n;
-  result(2, 1) = get(specific_enthalpy) -
-                 get(sound_speed_squared) / get(kappa_over_density);
+  result(2, 1) = get(kappa_over_density) * get(specific_enthalpy) -
+                 get(sound_speed_squared);
   result(2, 2) = get(specific_enthalpy) + c * v_n;
   return result;
 }
@@ -96,20 +96,20 @@ Matrix right_eigenvectors<2>(const tnsr::I<double, 2>& velocity,
 
   Matrix result(4, 4);
   result(0, 0) = 1.;
-  result(0, 1) = 1.;
+  result(0, 1) = get(kappa_over_density);
   result(0, 2) = 0.;
   result(0, 3) = 1.;
   result(1, 0) = u - n_x * c;
-  result(1, 1) = u;
+  result(1, 1) = get(kappa_over_density) * u;
   result(1, 2) = -n_y;
   result(1, 3) = u + n_x * c;
   result(2, 0) = v - n_y * c;
-  result(2, 1) = v;
+  result(2, 1) = get(kappa_over_density) * v;
   result(2, 2) = n_x;
   result(2, 3) = v + n_y * c;
   result(3, 0) = get(specific_enthalpy) - c * v_n;
-  result(3, 1) = get(specific_enthalpy) -
-                 get(sound_speed_squared) / get(kappa_over_density);
+  result(3, 1) = get(kappa_over_density) * get(specific_enthalpy) -
+                 get(sound_speed_squared);
   result(3, 2) = -n_y * u + n_x * v;
   result(3, 3) = get(specific_enthalpy) + c * v_n;
   return result;
@@ -140,12 +140,12 @@ Matrix right_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
   result(2, 0) = v - n_y * c;
   result(3, 0) = w - n_z * c;
   result(4, 0) = get(specific_enthalpy) - v_n * c;
-  result(0, 1) = 1.;
-  result(1, 1) = u;
-  result(2, 1) = v;
-  result(3, 1) = w;
-  result(4, 1) = get(specific_enthalpy) -
-                 get(sound_speed_squared) / get(kappa_over_density);
+  result(0, 1) = get(kappa_over_density);
+  result(1, 1) = get(kappa_over_density) * u;
+  result(2, 1) = get(kappa_over_density) * v;
+  result(3, 1) = get(kappa_over_density) * w;
+  result(4, 1) = get(kappa_over_density) * get(specific_enthalpy) -
+                 get(sound_speed_squared);
   result(0, 4) = 1.;
   result(1, 4) = u + n_x * c;
   result(2, 4) = v + n_y * c;
@@ -211,28 +211,27 @@ Matrix left_eigenvectors<1>(const tnsr::I<double, 1>& velocity,
          "Expected unit normal, but got normal with magnitude "
              << get(magnitude(unit_normal)));
 
-  // Temporary with a useful combination, as per Kulikovskii Ch3
-  const double theta = get(dot_product(velocity, velocity)) -
-                       get(specific_enthalpy) +
-                       get(sound_speed_squared) / get(kappa_over_density);
-
+  const double velocity_squared = get(dot_product(velocity, velocity));
   const double u = get<0>(velocity);
   const double n_x = get<0>(unit_normal);
   const double c = sqrt(get(sound_speed_squared));
   const double v_n = get(dot_product(velocity, unit_normal));
 
+  // Temporary with a useful combination, as per Kulikovskii Ch3
+  const double b_times_theta =
+      get(kappa_over_density) * (velocity_squared - get(specific_enthalpy)) +
+      get(sound_speed_squared);
+
   Matrix result(3, 3);
-  result(0, 0) = 0.5 * (get(kappa_over_density) * theta + c * v_n) /
-                 get(sound_speed_squared);
+  result(0, 0) = 0.5 * (b_times_theta + c * v_n) / get(sound_speed_squared);
   result(0, 1) =
       -0.5 * (get(kappa_over_density) * u + n_x * c) / get(sound_speed_squared);
   result(0, 2) = 0.5 * get(kappa_over_density) / get(sound_speed_squared);
   result(1, 0) =
-      1. - get(kappa_over_density) * theta / get(sound_speed_squared);
-  result(1, 1) = get(kappa_over_density) * u / get(sound_speed_squared);
-  result(1, 2) = -get(kappa_over_density) / get(sound_speed_squared);
-  result(2, 0) = 0.5 * (get(kappa_over_density) * theta - c * v_n) /
-                 get(sound_speed_squared);
+      (get(specific_enthalpy) - velocity_squared) / get(sound_speed_squared);
+  result(1, 1) = u / get(sound_speed_squared);
+  result(1, 2) = -1. / get(sound_speed_squared);
+  result(2, 0) = 0.5 * (b_times_theta - c * v_n) / get(sound_speed_squared);
   result(2, 1) =
       -0.5 * (get(kappa_over_density) * u - n_x * c) / get(sound_speed_squared);
   result(2, 2) = 0.5 * get(kappa_over_density) / get(sound_speed_squared);
@@ -249,11 +248,7 @@ Matrix left_eigenvectors<2>(const tnsr::I<double, 2>& velocity,
          "Expected unit normal, but got normal with magnitude "
              << get(magnitude(unit_normal)));
 
-  // Temporary with a useful combination, as per Kulikovskii Ch3
-  const double theta = get(dot_product(velocity, velocity)) -
-                       get(specific_enthalpy) +
-                       get(sound_speed_squared) / get(kappa_over_density);
-
+  const double velocity_squared = get(dot_product(velocity, velocity));
   const double u = get<0>(velocity);
   const double v = get<1>(velocity);
   const double n_x = get<0>(unit_normal);
@@ -261,25 +256,28 @@ Matrix left_eigenvectors<2>(const tnsr::I<double, 2>& velocity,
   const double c = sqrt(get(sound_speed_squared));
   const double v_n = get(dot_product(velocity, unit_normal));
 
+  // Temporary with a useful combination, as per Kulikovskii Ch3
+  const double b_times_theta =
+      get(kappa_over_density) * (velocity_squared - get(specific_enthalpy)) +
+      get(sound_speed_squared);
+
   Matrix result(4, 4);
-  result(0, 0) = 0.5 * (get(kappa_over_density) * theta + c * v_n) /
-                 get(sound_speed_squared);
+  result(0, 0) = 0.5 * (b_times_theta + c * v_n) / get(sound_speed_squared);
   result(0, 1) =
       -0.5 * (get(kappa_over_density) * u + n_x * c) / get(sound_speed_squared);
   result(0, 2) =
       -0.5 * (get(kappa_over_density) * v + n_y * c) / get(sound_speed_squared);
   result(0, 3) = 0.5 * get(kappa_over_density) / get(sound_speed_squared);
   result(1, 0) =
-      1. - get(kappa_over_density) * theta / get(sound_speed_squared);
-  result(1, 1) = get(kappa_over_density) * u / get(sound_speed_squared);
-  result(1, 2) = get(kappa_over_density) * v / get(sound_speed_squared);
-  result(1, 3) = -get(kappa_over_density) / get(sound_speed_squared);
+      (get(specific_enthalpy) - velocity_squared) / get(sound_speed_squared);
+  result(1, 1) = u / get(sound_speed_squared);
+  result(1, 2) = v / get(sound_speed_squared);
+  result(1, 3) = -1. / get(sound_speed_squared);
   result(2, 0) = n_y * u - n_x * v;
   result(2, 1) = -n_y;
   result(2, 2) = n_x;
   result(2, 3) = 0.;
-  result(3, 0) = 0.5 * (get(kappa_over_density) * theta - c * v_n) /
-                 get(sound_speed_squared);
+  result(3, 0) = 0.5 * (b_times_theta - c * v_n) / get(sound_speed_squared);
   result(3, 1) =
       -0.5 * (get(kappa_over_density) * u - n_x * c) / get(sound_speed_squared);
   result(3, 2) =
@@ -298,11 +296,7 @@ Matrix left_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
          "Expected unit normal, but got normal with magnitude "
              << get(magnitude(unit_normal)));
 
-  // Temporary with a useful combination, as per Kulikovskii Ch3
-  const double theta = get(dot_product(velocity, velocity)) -
-                       get(specific_enthalpy) +
-                       get(sound_speed_squared) / get(kappa_over_density);
-
+  const double velocity_squared = get(dot_product(velocity, velocity));
   const double u = get<0>(velocity);
   const double v = get<1>(velocity);
   const double w = get<2>(velocity);
@@ -312,9 +306,13 @@ Matrix left_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
   const double c = sqrt(get(sound_speed_squared));
   const double v_n = get(dot_product(velocity, unit_normal));
 
+  // Temporary with a useful combination, as per Kulikovskii Ch3
+  const double b_times_theta =
+      get(kappa_over_density) * (velocity_squared - get(specific_enthalpy)) +
+      get(sound_speed_squared);
+
   Matrix result(5, 5);
-  result(0, 0) = 0.5 * (get(kappa_over_density) * theta + c * v_n) /
-                 get(sound_speed_squared);
+  result(0, 0) = 0.5 * (b_times_theta + c * v_n) / get(sound_speed_squared);
   result(0, 1) =
       -0.5 * (get(kappa_over_density) * u + n_x * c) / get(sound_speed_squared);
   result(0, 2) =
@@ -323,13 +321,12 @@ Matrix left_eigenvectors<3>(const tnsr::I<double, 3>& velocity,
       -0.5 * (get(kappa_over_density) * w + n_z * c) / get(sound_speed_squared);
   result(0, 4) = 0.5 * get(kappa_over_density) / get(sound_speed_squared);
   result(1, 0) =
-      1. - get(kappa_over_density) * theta / get(sound_speed_squared);
-  result(1, 1) = get(kappa_over_density) * u / get(sound_speed_squared);
-  result(1, 2) = get(kappa_over_density) * v / get(sound_speed_squared);
-  result(1, 3) = get(kappa_over_density) * w / get(sound_speed_squared);
-  result(1, 4) = -get(kappa_over_density) / get(sound_speed_squared);
-  result(4, 0) = 0.5 * (get(kappa_over_density) * theta - c * v_n) /
-                 get(sound_speed_squared);
+      (get(specific_enthalpy) - velocity_squared) / get(sound_speed_squared);
+  result(1, 1) = u / get(sound_speed_squared);
+  result(1, 2) = v / get(sound_speed_squared);
+  result(1, 3) = w / get(sound_speed_squared);
+  result(1, 4) = -1. / get(sound_speed_squared);
+  result(4, 0) = 0.5 * (b_times_theta - c * v_n) / get(sound_speed_squared);
   result(4, 1) =
       -0.5 * (get(kappa_over_density) * u - n_x * c) / get(sound_speed_squared);
   result(4, 2) =
