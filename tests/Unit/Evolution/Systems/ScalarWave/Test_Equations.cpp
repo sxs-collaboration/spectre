@@ -26,6 +26,9 @@
 #include "Utilities/MakeArray.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
+#include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
+#include "tests/Unit/TestHelpers.hpp"
 
 // IWYU pragma: no_forward_declare Tensor
 // IWYU pragma: no_forward_declare Variables
@@ -203,12 +206,11 @@ void check_upwind_flux(const size_t npts, const double t) {
   ScalarWave::UpwindFlux<Dim> flux_computer{};
   flux_computer.package_data(
       make_not_null(&packaged_data_int), solution.dpsi_dt(x, t + 1.0),
-      solution.dpsi_dx(x, t + 2.0),
-      solution.psi(x, t + 4.0), unit_normal);
-  flux_computer.package_data(
-      make_not_null(&packaged_data_ext), solution.dpsi_dt(x, 2.0 * t + 10.0),
-      solution.dpsi_dx(x, 2.0 * t + 9.0),
-      solution.psi(x, 2.0 * t + 7.0), unit_normal);
+      solution.dpsi_dx(x, t + 2.0), solution.psi(x, t + 4.0), unit_normal);
+  flux_computer.package_data(make_not_null(&packaged_data_ext),
+                             solution.dpsi_dt(x, 2.0 * t + 10.0),
+                             solution.dpsi_dx(x, 2.0 * t + 9.0),
+                             solution.psi(x, 2.0 * t + 7.0), unit_normal);
 
   Scalar<DataVector> normal_dot_numerical_flux_pi(pow<Dim>(npts), 0.0);
   Scalar<DataVector> normal_dot_numerical_flux_psi(pow<Dim>(npts), 0.0);
@@ -247,6 +249,72 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.UpwindFlux",
   check_upwind_flux<1>(3, time);
   check_upwind_flux<2>(3, time);
   check_upwind_flux<3>(3, time);
+}
+
+namespace {
+template <size_t Dim>
+void penalty_flux(
+    const gsl::not_null<Scalar<DataVector>*> normal_dot_numerical_flux_pi,
+    const gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+        normal_dot_numerical_flux_phi,
+    const gsl::not_null<Scalar<DataVector>*> normal_dot_numerical_flux_psi,
+    const Scalar<DataVector>& n_dot_flux_pi_int,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& n_dot_flux_phi_int,
+    const Scalar<DataVector>& v_plus_int, const Scalar<DataVector>& v_minus_int,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_int,
+    const Scalar<DataVector>& minus_n_dot_flux_pi_ext,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& minus_n_dot_flux_phi_ext,
+    const Scalar<DataVector>& v_plus_ext, const Scalar<DataVector>& v_minus_ext,
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& unit_normal_ext) noexcept {
+  const size_t num_pts = v_plus_int.begin()->size();
+
+  Variables<typename ScalarWave::PenaltyFlux<Dim>::package_tags>
+      packaged_data_int(num_pts, 0.0);
+  Variables<typename ScalarWave::PenaltyFlux<Dim>::package_tags>
+      packaged_data_ext(num_pts, 0.0);
+  ScalarWave::PenaltyFlux<Dim> flux_computer{};
+
+  flux_computer.package_data(make_not_null(&packaged_data_int),
+                             n_dot_flux_pi_int, n_dot_flux_phi_int, v_plus_int,
+                             v_minus_int, unit_normal_int);
+  flux_computer.package_data(make_not_null(&packaged_data_ext),
+                             minus_n_dot_flux_pi_ext, minus_n_dot_flux_phi_ext,
+                             v_plus_ext, v_minus_ext, unit_normal_ext);
+
+  apply_numerical_flux(flux_computer, packaged_data_int, packaged_data_ext,
+                       normal_dot_numerical_flux_pi,
+                       normal_dot_numerical_flux_phi,
+                       normal_dot_numerical_flux_psi);
+}
+
+template <size_t Dim>
+void check_penalty_flux(const size_t num_pts_per_dim) noexcept {
+  pypp::check_with_random_values<10>(
+      &penalty_flux<Dim>, "PenaltyFlux",
+      {"pi_penalty_flux", "phi_penalty_flux", "psi_penalty_flux"},
+      {{{-1.0, 1.0},
+        {-1.0, 1.0},
+        {-1.0, 1.0},
+        {-1.0, 1.0},
+        {-1.0, 1.0},
+        {-1.0, 1.0},
+        {-1.0, 1.0},
+        {-1.0, 1.0},
+        {-1.0, 1.0},
+        {-1.0, 1.0}}},
+      DataVector{pow<Dim>(num_pts_per_dim)});
+}
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.PenaltyFlux",
+                  "[Unit][Evolution]") {
+  pypp::SetupLocalPythonEnvironment local_python_env{
+      "Evolution/Systems/ScalarWave"};
+
+  constexpr size_t num_pts_per_dim = 5;
+  check_penalty_flux<1>(num_pts_per_dim);
+  check_penalty_flux<2>(num_pts_per_dim);
+  check_penalty_flux<3>(num_pts_per_dim);
 }
 
 static_assert(1.0 == ScalarWave::ComputeLargestCharacteristicSpeed::apply(),
