@@ -71,11 +71,11 @@ void test_minmod_option_parsing() noexcept {
   const auto lambda_pi1_m0 =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "Type: LambdaPi1\n"
-          "TvbmConstant: 0.0");
+          "TvbConstant: 0.0");
   const auto lambda_pi1_m1 =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "Type: LambdaPi1\n"
-          "TvbmConstant: 1.0");
+          "TvbConstant: 1.0");
   const auto muscl_default =
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "Type: Muscl");

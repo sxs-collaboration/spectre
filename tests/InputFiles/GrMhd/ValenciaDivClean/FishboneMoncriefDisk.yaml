@@ -51,7 +51,7 @@ Limiter:
     # DisableForDebugging: True
     Type: LambdaPiN
     # Recommended value from minmod papers:
-    TvbmConstant: 50.0
+    TvbConstant: 50.0
 
 VariableFixing:
   FixConservatives:
