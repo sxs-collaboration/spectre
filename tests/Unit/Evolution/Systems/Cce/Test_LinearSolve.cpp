@@ -470,7 +470,7 @@ void test_pole_integration_with_linear_operator(
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.LinearSolve",
-                  "[Unit][Evolution]") {
+                  "[Unit][Cce]") {
   MAKE_GENERATOR(gen);
   UniformCustomDistribution<size_t> sdist{3, 6};
   const size_t l_max = sdist(gen);

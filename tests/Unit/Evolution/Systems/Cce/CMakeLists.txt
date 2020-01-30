@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(Actions)
+
 set(LIBRARY "Test_Cce")
 
 set(LIBRARY_SOURCES
@@ -11,6 +13,7 @@ set(LIBRARY_SOURCES
   Test_InitializeCce.cpp
   Test_LinearOperators.cpp
   Test_LinearSolve.cpp
+  Test_OptionTags.cpp
   Test_PreSwshDerivatives.cpp
   Test_PrecomputeCceDependencies.cpp
   Test_ReadBoundaryDataH5.cpp

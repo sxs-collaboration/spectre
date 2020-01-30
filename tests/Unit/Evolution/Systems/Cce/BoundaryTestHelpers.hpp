@@ -11,10 +11,13 @@
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Evolution/Systems/Cce/BoundaryData.hpp"
+#include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeGhQuantities.hpp"
 #include "PointwiseFunctions/GeneralRelativity/ComputeSpacetimeQuantities.hpp"
+#include "Utilities/FileSystem.hpp"
 #include "Utilities/Gsl.hpp"
+#include "tests/Unit/Evolution/Systems/Cce/WriteToWorldtubeH5.hpp"
 
 namespace Cce {
 namespace TestHelpers {
@@ -198,6 +201,77 @@ void create_fake_time_varying_modal_data(
         TestHelpers::tensor_to_libsharp_coefficients(dt_spatial_metric, l_max);
     *dr_spatial_metric_coefficients =
         TestHelpers::tensor_to_libsharp_coefficients(dr_spatial_metric, l_max);
+  }
+}
+
+template <typename AnalyticSolution>
+void write_test_file(const AnalyticSolution& solution,
+                     const std::string& filename, const double target_time,
+                     const double extraction_radius, const double frequency,
+                     const double amplitude, const size_t l_max) noexcept {
+  const size_t goldberg_size = square(l_max + 1);
+  tnsr::ii<ComplexModalVector, 3> spatial_metric_coefficients{goldberg_size};
+  tnsr::ii<ComplexModalVector, 3> dt_spatial_metric_coefficients{goldberg_size};
+  tnsr::ii<ComplexModalVector, 3> dr_spatial_metric_coefficients{goldberg_size};
+  tnsr::I<ComplexModalVector, 3> shift_coefficients{goldberg_size};
+  tnsr::I<ComplexModalVector, 3> dt_shift_coefficients{goldberg_size};
+  tnsr::I<ComplexModalVector, 3> dr_shift_coefficients{goldberg_size};
+  Scalar<ComplexModalVector> lapse_coefficients{goldberg_size};
+  Scalar<ComplexModalVector> dt_lapse_coefficients{goldberg_size};
+  Scalar<ComplexModalVector> dr_lapse_coefficients{goldberg_size};
+
+  // write times to file for several steps before and after the target time
+  if (file_system::check_if_file_exists(filename)) {
+    file_system::rm(filename, true);
+  }
+  // scoped to close the file
+  {
+    TestHelpers::WorldtubeModeRecorder recorder{filename, l_max};
+    for (size_t t = 0; t < 30; ++t) {
+      const double time = 0.1 * t + target_time - 1.5;
+      TestHelpers::create_fake_time_varying_modal_data(
+          make_not_null(&spatial_metric_coefficients),
+          make_not_null(&dt_spatial_metric_coefficients),
+          make_not_null(&dr_spatial_metric_coefficients),
+          make_not_null(&shift_coefficients),
+          make_not_null(&dt_shift_coefficients),
+          make_not_null(&dr_shift_coefficients),
+          make_not_null(&lapse_coefficients),
+          make_not_null(&dt_lapse_coefficients),
+          make_not_null(&dr_lapse_coefficients), solution, extraction_radius,
+          amplitude, frequency, time, l_max);
+      for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = i; j < 3; ++j) {
+          recorder.append_worldtube_mode_data(
+              detail::dataset_name_for_component("/g", i, j), time,
+              spatial_metric_coefficients.get(i, j), l_max);
+          recorder.append_worldtube_mode_data(
+              detail::dataset_name_for_component("/Drg", i, j), time,
+              dr_spatial_metric_coefficients.get(i, j), l_max);
+          recorder.append_worldtube_mode_data(
+              detail::dataset_name_for_component("/Dtg", i, j), time,
+              dt_spatial_metric_coefficients.get(i, j), l_max);
+        }
+        recorder.append_worldtube_mode_data(
+            detail::dataset_name_for_component("/Shift", i), time,
+            shift_coefficients.get(i), l_max);
+        recorder.append_worldtube_mode_data(
+            detail::dataset_name_for_component("/DrShift", i), time,
+            dr_shift_coefficients.get(i), l_max);
+        recorder.append_worldtube_mode_data(
+            detail::dataset_name_for_component("/DtShift", i), time,
+            dt_shift_coefficients.get(i), l_max);
+      }
+      recorder.append_worldtube_mode_data(
+          detail::dataset_name_for_component("/Lapse"), time,
+          get(lapse_coefficients), l_max);
+      recorder.append_worldtube_mode_data(
+          detail::dataset_name_for_component("/DrLapse"), time,
+          get(dr_lapse_coefficients), l_max);
+      recorder.append_worldtube_mode_data(
+          detail::dataset_name_for_component("/DtLapse"), time,
+          get(dt_lapse_coefficients), l_max);
+    }
   }
 }
 }  // namespace TestHelpers

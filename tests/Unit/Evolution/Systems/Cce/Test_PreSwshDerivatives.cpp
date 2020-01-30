@@ -71,7 +71,7 @@ struct TagsToComputeForImpl<TestSpinWeightedScalar<1>> {
 }  // namespace detail
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PreSwshDerivatives",
-                  "[Unit][Evolution]") {
+                  "[Unit][Cce]") {
   MAKE_GENERATOR(generator);
   const size_t l_max = 8;
   const size_t number_of_radial_grid_points = 8;

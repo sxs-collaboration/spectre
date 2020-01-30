@@ -4,7 +4,10 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <string>
+#include <type_traits>
 
+#include "DataStructures/DataBox/DataBox.hpp"
+#include "Evolution/Systems/Cce/ReadBoundaryDataH5.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 
 namespace {
@@ -13,7 +16,7 @@ struct SomeTag {
 };
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Evolution]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Cce]") {
   CHECK(db::tag_name<Cce::Tags::Dy<SomeTag>>() == "Dy(SomeTag)");
   CHECK(db::tag_name<Cce::Tags::Du<SomeTag>>() == "Du(SomeTag)");
   CHECK(db::tag_name<Cce::Tags::Dr<SomeTag>>() == "Dr(SomeTag)");
@@ -26,4 +29,12 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Tags", "[Unit][Evolution]") {
         "LinearFactor(SomeTag)");
   CHECK(db::tag_name<Cce::Tags::LinearFactorForConjugate<SomeTag>>() ==
         "LinearFactorForConjugate(SomeTag)");
+
+  CHECK(db::tag_name<Cce::Tags::H5WorldtubeBoundaryDataManager>() ==
+        "H5WorldtubeBoundaryDataManager");
+  auto box =
+      db::create<db::AddSimpleTags<Cce::Tags::H5WorldtubeBoundaryDataManager>>(
+          Cce::WorldtubeDataManager{});
+  CHECK(db::get<Cce::Tags::H5WorldtubeBoundaryDataManager>(box).get_l_max() ==
+        0);
 }

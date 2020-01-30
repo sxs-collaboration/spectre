@@ -10,6 +10,7 @@ allowed_tags = [
                 "Actions",
                 "ApparentHorizons",
                 "Burgers",
+                "Cce",
                 "CompilationTest",
                 "ControlSystem",
                 "DataStructures",

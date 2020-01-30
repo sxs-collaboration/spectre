@@ -186,7 +186,7 @@ struct GenerateStartingData {
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives",
-                  "[Unit][Evolution]") {
+                  "[Unit][Cce]") {
   MAKE_GENERATOR(generator);
   const size_t l_max = 10;
   const size_t number_of_radial_grid_points = 7;
