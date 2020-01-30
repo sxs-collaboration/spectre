@@ -81,6 +81,8 @@ void test(const std::unique_ptr<TimeDependence<MeshDim>>& time_dep_unique_ptr,
   CAPTURE(initial_time);
   CAPTURE(f_of_t_names);
 
+  CHECK_FALSE(time_dep_unique_ptr->is_none());
+
   // We downcast to the expected derived class to make sure that factory
   // creation worked correctly. In order to maximize code reuse this check is
   // done here as opposed to separately elsewhere.

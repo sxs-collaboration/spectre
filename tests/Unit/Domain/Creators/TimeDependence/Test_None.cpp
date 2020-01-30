@@ -26,6 +26,7 @@ void test() noexcept {
   const std::unique_ptr<TimeDependence<MeshDim>> time_dep =
       std::make_unique<None<MeshDim>>();
   CHECK(time_dep != nullptr);
+  CHECK(time_dep->is_none());
 
   const std::unique_ptr<TimeDependence<MeshDim>> time_dep_clone =
       time_dep->get_clone();

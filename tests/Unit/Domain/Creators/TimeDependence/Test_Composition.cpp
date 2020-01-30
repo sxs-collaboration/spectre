@@ -40,6 +40,8 @@ void test_impl(
   const size_t num_blocks = dist_size_t(*gen);
   CAPTURE(num_blocks);
 
+  CHECK_FALSE(time_dep->is_none());
+
   const auto functions_of_time = time_dep->functions_of_time();
   REQUIRE(functions_of_time.size() == expected_f_of_t_names.size());
   for (const auto& f_of_t_name : expected_f_of_t_names) {

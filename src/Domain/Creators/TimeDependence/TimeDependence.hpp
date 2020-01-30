@@ -73,6 +73,11 @@ struct TimeDependence {
   virtual auto functions_of_time() const noexcept -> std::unordered_map<
       std::string,
       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> = 0;
+
+  /// Returns `true` if the instance is `None`, meaning no time dependence.
+  bool is_none() const noexcept {
+    return dynamic_cast<const None<MeshDim>*>(this) != nullptr;
+  }
 };
 
 template <size_t MeshDim>
