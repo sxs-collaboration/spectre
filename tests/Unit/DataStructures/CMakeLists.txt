@@ -4,6 +4,7 @@
 set(LIBRARY "Test_DataStructures")
 
 set(LIBRARY_SOURCES
+  Test_CachedTempBuffer.cpp
   Test_ComplexDataVector.cpp
   Test_ComplexDataVectorBinaryOperations.cpp
   Test_ComplexDiagonalModalOperator.cpp
