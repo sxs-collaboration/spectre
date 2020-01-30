@@ -77,7 +77,7 @@ bool minmod_limited_slopes(
     gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     gsl::not_null<DataVector*> u_lin_buffer,
     gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    Limiters::MinmodType minmod_type, double tvbm_constant, const DataVector& u,
+    Limiters::MinmodType minmod_type, double tvb_constant, const DataVector& u,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
@@ -191,10 +191,10 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   /// \brief Constuct a Minmod slope limiter
   ///
   /// \param minmod_type The type of Minmod slope limiter.
-  /// \param tvbm_constant The value of the TVBM constant (default: 0).
+  /// \param tvb_constant The value of the TVBM constant (default: 0).
   /// \param disable_for_debugging Switch to turn the limiter off (default:
   //         false).
-  explicit Minmod(MinmodType minmod_type, double tvbm_constant = 0.0,
+  explicit Minmod(MinmodType minmod_type, double tvb_constant = 0.0,
                   bool disable_for_debugging = false) noexcept;
 
   Minmod() noexcept = default;
@@ -296,7 +296,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
                          const Minmod<LocalDim, LocalTagList>& rhs) noexcept;
 
   MinmodType minmod_type_;
-  double tvbm_constant_;
+  double tvb_constant_;
   bool disable_for_debugging_;
 };
 

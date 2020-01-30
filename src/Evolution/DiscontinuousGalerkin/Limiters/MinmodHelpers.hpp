@@ -42,7 +42,7 @@ struct MinmodResult {
 
 // The TVBM-corrected minmod function, see e.g. Cockburn reference Eq. 2.26.
 MinmodResult tvb_corrected_minmod(double a, double b, double c,
-                                  double tvbm_scale) noexcept;
+                                  double tvb_scale) noexcept;
 
 // Allocate the buffer `boundary_buffer` to the correct sizes expected by
 // `troubled_cell_indicator` for its arguments

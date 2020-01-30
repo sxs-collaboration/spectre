@@ -41,8 +41,8 @@ namespace Minmod_detail {
 template <size_t VolumeDim>
 bool troubled_cell_indicator(
     gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    double tvbm_constant, const DataVector& u,
-    const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
+    double tvb_constant, const DataVector& u, const Element<VolumeDim>& element,
+    const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
     const DirectionMap<VolumeDim, double>& effective_neighbor_sizes,
@@ -66,7 +66,7 @@ bool troubled_cell_indicator(
         std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, PackagedData,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>&
         neighbor_data,
-    const double tvbm_constant, const Element<VolumeDim>& element,
+    const double tvb_constant, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size) noexcept {
   // Optimization: allocate a single buffer to avoid multiple allocations
@@ -105,7 +105,7 @@ bool troubled_cell_indicator(
 
       const DataVector& u = tensor[tensor_storage_index];
       const bool component_needs_limiting = troubled_cell_indicator(
-          make_not_null(&boundary_buffer), tvbm_constant, u, element, mesh,
+          make_not_null(&boundary_buffer), tvb_constant, u, element, mesh,
           element_size, effective_neighbor_means, effective_neighbor_sizes,
           volume_and_slice_indices);
 

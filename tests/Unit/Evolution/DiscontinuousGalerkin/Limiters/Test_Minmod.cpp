@@ -188,7 +188,7 @@ template <size_t VolumeDim>
 bool wrap_minmod_limited_slopes(
     const gsl::not_null<double*> u_mean,
     const gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
-    const Limiters::MinmodType& minmod_type, const double tvbm_constant,
+    const Limiters::MinmodType& minmod_type, const double tvb_constant,
     const DataVector& u, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
@@ -209,7 +209,7 @@ bool wrap_minmod_limited_slopes(
 
   return Limiters::Minmod_detail::minmod_limited_slopes(
       u_mean, u_limited_slopes, make_not_null(&u_lin_buffer),
-      make_not_null(&boundary_buffer), minmod_type, tvbm_constant, u, element,
+      make_not_null(&boundary_buffer), minmod_type, tvb_constant, u, element,
       mesh, element_size, effective_neighbor_means, effective_neighbor_sizes,
       volume_and_slice_indices);
 }
@@ -245,7 +245,7 @@ auto make_six_neighbors(const std::array<double, 6>& values) noexcept {
 // mean and reduced slopes.
 template <size_t VolumeDim>
 void test_minmod_activates(
-    const Limiters::MinmodType& minmod_type, const double tvbm_constant,
+    const Limiters::MinmodType& minmod_type, const double tvb_constant,
     const DataVector& input, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
@@ -256,7 +256,7 @@ void test_minmod_activates(
   std::array<double, VolumeDim> u_limited_slopes{};
   const bool reduce_slopes = wrap_minmod_limited_slopes(
       make_not_null(&u_mean), make_not_null(&u_limited_slopes), minmod_type,
-      tvbm_constant, input, element, mesh, element_size,
+      tvb_constant, input, element, mesh, element_size,
       effective_neighbor_means, effective_neighbor_sizes);
   CHECK(reduce_slopes);
   CHECK(u_mean == approx(mean_value(input, mesh)));
@@ -266,7 +266,7 @@ void test_minmod_activates(
 // Test that TCI does not detect a cell that is not troubled.
 template <size_t VolumeDim>
 void test_minmod_does_not_activate(
-    const Limiters::MinmodType& minmod_type, const double tvbm_constant,
+    const Limiters::MinmodType& minmod_type, const double tvb_constant,
     const DataVector& input, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
@@ -277,7 +277,7 @@ void test_minmod_does_not_activate(
   std::array<double, VolumeDim> u_limited_slopes{};
   const bool reduce_slopes = wrap_minmod_limited_slopes(
       make_not_null(&u_mean), make_not_null(&u_limited_slopes), minmod_type,
-      tvbm_constant, input, element, mesh, element_size,
+      tvb_constant, input, element, mesh, element_size,
       effective_neighbor_means, effective_neighbor_sizes);
   CHECK_FALSE(reduce_slopes);
   if (minmod_type != Limiters::MinmodType::LambdaPiN) {
@@ -292,28 +292,28 @@ void test_minmod_slopes_on_linear_function(
   INFO("Testing linear function...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
-  const double tvbm_constant = 0.0;
+  const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<1>(2.0);
 
   const auto test_activates =
-      [&minmod_type, &tvbm_constant, &element, &mesh, &element_size ](
+      [&minmod_type, &tvb_constant, &element, &mesh, &element_size ](
           const DataVector& local_input, const double left, const double right,
           const double expected_slope) noexcept {
     const auto expected_slopes = make_array<1>(expected_slope);
-    test_minmod_activates(minmod_type, tvbm_constant, local_input, element,
-                          mesh, element_size, make_two_neighbors(left, right),
+    test_minmod_activates(minmod_type, tvb_constant, local_input, element, mesh,
+                          element_size, make_two_neighbors(left, right),
                           make_two_neighbors(2.0, 2.0), expected_slopes);
   };
   const auto test_does_not_activate =
-      [&minmod_type, &tvbm_constant, &element, &mesh, &element_size ](
+      [&minmod_type, &tvb_constant, &element, &mesh, &element_size ](
           const DataVector& local_input, const double left, const double right,
           const double original_slope) noexcept {
     const auto original_slopes = make_array<1>(original_slope);
     test_minmod_does_not_activate(
-        minmod_type, tvbm_constant, local_input, element, mesh, element_size,
+        minmod_type, tvb_constant, local_input, element, mesh, element_size,
         make_two_neighbors(left, right), make_two_neighbors(2.0, 2.0),
         original_slopes);
   };
@@ -384,28 +384,28 @@ void test_minmod_slopes_on_quadratic_function(
   INFO("Testing quadratic function...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
-  const double tvbm_constant = 0.0;
+  const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<1>(2.0);
 
   const auto test_activates =
-      [&minmod_type, &tvbm_constant, &element, &mesh, &element_size ](
+      [&minmod_type, &tvb_constant, &element, &mesh, &element_size ](
           const DataVector& local_input, const double left, const double right,
           const double expected_slope) noexcept {
     const auto expected_slopes = make_array<1>(expected_slope);
-    test_minmod_activates(minmod_type, tvbm_constant, local_input, element,
-                          mesh, element_size, make_two_neighbors(left, right),
+    test_minmod_activates(minmod_type, tvb_constant, local_input, element, mesh,
+                          element_size, make_two_neighbors(left, right),
                           make_two_neighbors(2.0, 2.0), expected_slopes);
   };
   const auto test_does_not_activate =
-      [&minmod_type, &tvbm_constant, &element, &mesh, &element_size ](
+      [&minmod_type, &tvb_constant, &element, &mesh, &element_size ](
           const DataVector& local_input, const double left, const double right,
           const double original_slope) noexcept {
     const auto original_slopes = make_array<1>(original_slope);
     test_minmod_does_not_activate(
-        minmod_type, tvbm_constant, local_input, element, mesh, element_size,
+        minmod_type, tvb_constant, local_input, element, mesh, element_size,
         make_two_neighbors(left, right), make_two_neighbors(2.0, 2.0),
         original_slopes);
   };
@@ -441,7 +441,7 @@ void test_minmod_slopes_on_quadratic_function(
   test_activates(input, 14.0, 2.3, 0.0);
 }
 
-void test_minmod_slopes_with_tvbm_correction(
+void test_minmod_slopes_with_tvb_correction(
     const size_t number_of_grid_points,
     const Limiters::MinmodType& minmod_type) noexcept {
   INFO("Testing TVBM correction...");
@@ -453,30 +453,30 @@ void test_minmod_slopes_with_tvbm_correction(
   const auto element_size = make_array<1>(2.0);
 
   const auto test_activates = [&minmod_type, &element, &mesh, &element_size ](
-      const double tvbm_constant, const DataVector& local_input,
+      const double tvb_constant, const DataVector& local_input,
       const double left, const double right,
       const double expected_slope) noexcept {
     const auto expected_slopes = make_array<1>(expected_slope);
-    test_minmod_activates(minmod_type, tvbm_constant, local_input, element,
-                          mesh, element_size, make_two_neighbors(left, right),
+    test_minmod_activates(minmod_type, tvb_constant, local_input, element, mesh,
+                          element_size, make_two_neighbors(left, right),
                           make_two_neighbors(2.0, 2.0), expected_slopes);
   };
   const auto test_does_not_activate =
       [&minmod_type, &element, &mesh, &
-       element_size ](const double tvbm_constant, const DataVector& local_input,
+       element_size ](const double tvb_constant, const DataVector& local_input,
                       const double left, const double right,
                       const double original_slope) noexcept {
     const auto original_slopes = make_array<1>(original_slope);
     test_minmod_does_not_activate(
-        minmod_type, tvbm_constant, local_input, element, mesh, element_size,
+        minmod_type, tvb_constant, local_input, element, mesh, element_size,
         make_two_neighbors(left, right), make_two_neighbors(2.0, 2.0),
         original_slopes);
   };
 
   // Slopes will be compared to m * h^2, where here h = 2
-  const double tvbm_m0 = 0.0;
-  const double tvbm_m1 = 1.0;
-  const double tvbm_m2 = 2.0;
+  const double tvb_m0 = 0.0;
+  const double tvb_m1 = 1.0;
+  const double tvb_m2 = 2.0;
 
   const auto input = [&mesh]() noexcept {
     const auto coords = logical_coordinates(mesh);
@@ -490,14 +490,14 @@ void test_minmod_slopes_with_tvbm_correction(
   const double left = (minmod_type == Limiters::MinmodType::Muscl) ? 8.4 : 15.0;
   const double right =
       (minmod_type == Limiters::MinmodType::Muscl) ? 34.8 : 30.0;
-  test_activates(tvbm_m0, input, left, right, 6.6);
-  test_activates(tvbm_m1, input, left, right, 6.6);
-  test_does_not_activate(tvbm_m2, input, left, right, 7.2);
+  test_activates(tvb_m0, input, left, right, 6.6);
+  test_activates(tvb_m1, input, left, right, 6.6);
+  test_does_not_activate(tvb_m2, input, left, right, 7.2);
 }
 
 // Here we test the coupling of the LambdaPiN troubled cell detector with the
 // TVBM constant value.
-void test_lambda_pin_troubled_cell_tvbm_correction(
+void test_lambda_pin_troubled_cell_tvb_correction(
     const size_t number_of_grid_points) noexcept {
   INFO("Testing LambdaPiN-TVBM correction...");
   CAPTURE(number_of_grid_points);
@@ -508,24 +508,24 @@ void test_lambda_pin_troubled_cell_tvbm_correction(
   const auto element_size = make_array<1>(2.0);
 
   const auto test_activates = [&element, &mesh, &element_size ](
-      const double tvbm_constant, const DataVector& local_input,
+      const double tvb_constant, const DataVector& local_input,
       const double left, const double right,
       const double expected_slope) noexcept {
     const auto expected_slopes = make_array<1>(expected_slope);
-    test_minmod_activates(Limiters::MinmodType::LambdaPiN, tvbm_constant,
+    test_minmod_activates(Limiters::MinmodType::LambdaPiN, tvb_constant,
                           local_input, element, mesh, element_size,
                           make_two_neighbors(left, right),
                           make_two_neighbors(2.0, 2.0), expected_slopes);
   };
   const auto test_does_not_activate = [&element, &mesh, &element_size ](
-      const double tvbm_constant, const DataVector& local_input,
+      const double tvb_constant, const DataVector& local_input,
       const double left, const double right) noexcept {
     // Because in this test the limiter is LambdaPiN, no slopes are returned,
     // and no comparison is made. So set these to NaN
     const auto original_slopes =
         make_array<1>(std::numeric_limits<double>::signaling_NaN());
     test_minmod_does_not_activate(
-        Limiters::MinmodType::LambdaPiN, tvbm_constant, local_input, element,
+        Limiters::MinmodType::LambdaPiN, tvb_constant, local_input, element,
         mesh, element_size, make_two_neighbors(left, right),
         make_two_neighbors(2.0, 2.0), original_slopes);
   };
@@ -572,7 +572,7 @@ void test_minmod_slopes_at_boundary(
   INFO("Testing limiter at boundary...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
-  const double tvbm_constant = 0.0;
+  const double tvb_constant = 0.0;
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<1>(2.0);
@@ -590,7 +590,7 @@ void test_minmod_slopes_at_boundary(
       TestHelpers::Limiters::make_element<1>({{Direction<1>::lower_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
     test_minmod_activates(
-        minmod_type, tvbm_constant, input, element_at_lower_xi_boundary, mesh,
+        minmod_type, tvb_constant, input, element_at_lower_xi_boundary, mesh,
         element_size, {{std::make_pair(Direction<1>::upper_xi(), neighbor)}},
         {{std::make_pair(Direction<1>::upper_xi(), element_size[0])}},
         make_array<1>(0.0));
@@ -601,7 +601,7 @@ void test_minmod_slopes_at_boundary(
       TestHelpers::Limiters::make_element<1>({{Direction<1>::upper_xi()}});
   for (const double neighbor : {-1.3, 3.6, 4.8, 13.2}) {
     test_minmod_activates(
-        minmod_type, tvbm_constant, input, element_at_upper_xi_boundary, mesh,
+        minmod_type, tvb_constant, input, element_at_upper_xi_boundary, mesh,
         element_size, {{std::make_pair(Direction<1>::lower_xi(), neighbor)}},
         {{std::make_pair(Direction<1>::lower_xi(), element_size[0])}},
         make_array<1>(0.0));
@@ -614,7 +614,7 @@ void test_minmod_slopes_with_different_size_neighbor(
   INFO("Testing limiter with neighboring elements of different size...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
-  const double tvbm_constant = 0.0;
+  const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
@@ -622,24 +622,24 @@ void test_minmod_slopes_with_different_size_neighbor(
   const auto element_size = make_array<1>(dx);
 
   const auto test_activates =
-      [&minmod_type, &tvbm_constant, &element, &mesh, &element_size ](
+      [&minmod_type, &tvb_constant, &element, &mesh, &element_size ](
           const DataVector& local_input, const double left, const double right,
           const double left_size, const double right_size,
           const double expected_slope) noexcept {
     const auto expected_slopes = make_array<1>(expected_slope);
-    test_minmod_activates(minmod_type, tvbm_constant, local_input, element,
-                          mesh, element_size, make_two_neighbors(left, right),
+    test_minmod_activates(minmod_type, tvb_constant, local_input, element, mesh,
+                          element_size, make_two_neighbors(left, right),
                           make_two_neighbors(left_size, right_size),
                           expected_slopes);
   };
   const auto test_does_not_activate =
-      [&minmod_type, &tvbm_constant, &element, &mesh, &element_size ](
+      [&minmod_type, &tvb_constant, &element, &mesh, &element_size ](
           const DataVector& local_input, const double left, const double right,
           const double left_size, const double right_size,
           const double original_slope) noexcept {
     const auto original_slopes = make_array<1>(original_slope);
     test_minmod_does_not_activate(
-        minmod_type, tvbm_constant, local_input, element, mesh, element_size,
+        minmod_type, tvb_constant, local_input, element, mesh, element_size,
         make_two_neighbors(left, right),
         make_two_neighbors(left_size, right_size), original_slopes);
   };
@@ -693,7 +693,7 @@ void test_minmod_limited_slopes_1d() noexcept {
         Limiters::MinmodType::Muscl}) {
     for (const auto num_grid_points : std::array<size_t, 2>{{2, 4}}) {
       test_minmod_slopes_on_linear_function(num_grid_points, minmod_type);
-      test_minmod_slopes_with_tvbm_correction(num_grid_points, minmod_type);
+      test_minmod_slopes_with_tvb_correction(num_grid_points, minmod_type);
       test_minmod_slopes_at_boundary(num_grid_points, minmod_type);
       test_minmod_slopes_with_different_size_neighbor(num_grid_points,
                                                       minmod_type);
@@ -703,36 +703,36 @@ void test_minmod_limited_slopes_1d() noexcept {
     test_minmod_slopes_on_quadratic_function(4, minmod_type);
   }
   // This test only makes sense with LambdaPiN and more than 2 grid points
-  test_lambda_pin_troubled_cell_tvbm_correction(4);
+  test_lambda_pin_troubled_cell_tvb_correction(4);
 }
 
 // In 2D, test that the slopes are correctly reduced dimension-by-dimension.
 void test_minmod_limited_slopes_2d() noexcept {
   INFO("Testing Minmod minmod_limited_slopes in 2D");
   const auto minmod_type = Limiters::MinmodType::LambdaPi1;
-  const double tvbm_constant = 0.0;
+  const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<2>();
   const Mesh<2> mesh(3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<2>(2.0);
 
   const auto test_activates =
-      [&minmod_type, &tvbm_constant, &element, &mesh, &
+      [&minmod_type, &tvb_constant, &element, &mesh, &
        element_size ](const DataVector& local_input,
                       const std::array<double, 4>& neighbor_means,
                       const std::array<double, 2>& expected_slopes) noexcept {
-    test_minmod_activates(
-        minmod_type, tvbm_constant, local_input, element, mesh, element_size,
-        make_four_neighbors(neighbor_means),
-        make_four_neighbors(make_array<4>(2.0)), expected_slopes);
+    test_minmod_activates(minmod_type, tvb_constant, local_input, element, mesh,
+                          element_size, make_four_neighbors(neighbor_means),
+                          make_four_neighbors(make_array<4>(2.0)),
+                          expected_slopes);
   };
   const auto test_does_not_activate =
-      [&minmod_type, &tvbm_constant, &element, &mesh, &
+      [&minmod_type, &tvb_constant, &element, &mesh, &
        element_size ](const DataVector& local_input,
                       const std::array<double, 4>& neighbor_means,
                       const std::array<double, 2>& original_slopes) noexcept {
     test_minmod_does_not_activate(
-        minmod_type, tvbm_constant, local_input, element, mesh, element_size,
+        minmod_type, tvb_constant, local_input, element, mesh, element_size,
         make_four_neighbors(neighbor_means),
         make_four_neighbors(make_array<4>(2.0)), original_slopes);
   };
@@ -765,29 +765,29 @@ void test_minmod_limited_slopes_2d() noexcept {
 void test_minmod_limited_slopes_3d() noexcept {
   INFO("Testing Minmod minmod_limited_slopes in 3D");
   const auto minmod_type = Limiters::MinmodType::LambdaPi1;
-  const double tvbm_constant = 0.0;
+  const double tvb_constant = 0.0;
   const auto element = TestHelpers::Limiters::make_element<3>();
   const Mesh<3> mesh(3, Spectral::Basis::Legendre,
                      Spectral::Quadrature::GaussLobatto);
   const auto element_size = make_array<3>(2.0);
 
   const auto test_activates =
-      [&minmod_type, &tvbm_constant, &element, &mesh, &
+      [&minmod_type, &tvb_constant, &element, &mesh, &
        element_size ](const DataVector& local_input,
                       const std::array<double, 6>& neighbor_means,
                       const std::array<double, 3>& expected_slopes) noexcept {
-    test_minmod_activates(
-        minmod_type, tvbm_constant, local_input, element, mesh, element_size,
-        make_six_neighbors(neighbor_means),
-        make_six_neighbors(make_array<6>(2.0)), expected_slopes);
+    test_minmod_activates(minmod_type, tvb_constant, local_input, element, mesh,
+                          element_size, make_six_neighbors(neighbor_means),
+                          make_six_neighbors(make_array<6>(2.0)),
+                          expected_slopes);
   };
   const auto test_does_not_activate =
-      [&minmod_type, &tvbm_constant, &element, &mesh, &
+      [&minmod_type, &tvb_constant, &element, &mesh, &
        element_size ](const DataVector& local_input,
                       const std::array<double, 6>& neighbor_means,
                       const std::array<double, 3>& original_slopes) noexcept {
     test_minmod_does_not_activate(
-        minmod_type, tvbm_constant, local_input, element, mesh, element_size,
+        minmod_type, tvb_constant, local_input, element, mesh, element_size,
         make_six_neighbors(neighbor_means),
         make_six_neighbors(make_array<6>(2.0)), original_slopes);
   };
