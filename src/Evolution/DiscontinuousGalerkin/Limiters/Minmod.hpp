@@ -119,12 +119,16 @@ bool minmod_limited_slopes(
 /// \f$\Lambda\Pi^1\f$ in the case that the slopes must be reduced, but is the
 /// original (higher-order) data in the case that the slopes are acceptable.
 ///
-/// For all three types of minmod limiter the "total variation bound in the
-/// means" (TVB) correction is implemented, enabling the limiter to avoid
-/// limiting away smooth extrema in the solution that would otherwise look like
-/// spurious oscillations. The limiter will not reduce the slope (but may still
+/// For all three types of minmod limiter, the algorithm can be relaxed from
+/// TVD (total variation diminishing) in the means to TVB (total variation
+/// bound) in the means. This may avoid limiting away smooth extrema in the
+/// solution that would otherwise look like spurious oscillations. When this
+/// correction is enabled, the limiter will not reduce the slope (but may still
 /// linearize) on elements where the slope is less than \f$m h^2\f$, where
 /// \f$m\f$ is the TVB constant and \f$h\f$ is the size of the DG element.
+/// Note the "in the means" qualifier: the limiter controls the oscillation
+/// between the mean solution values across neighboring cells, but may not
+/// control oscillations within the cells.
 ///
 /// The limiter acts in the `Frame::Logical` coordinates, because in these
 /// coordinates it is straightforward to formulate the algorithm. This means the
