@@ -337,9 +337,6 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.ScalarWave.Characteristics",
   pypp::SetupLocalPythonEnvironment local_python_env{
       "Evolution/Systems/ScalarWave/"};
 
-  TestHelpers::db::test_compute_tag<ScalarWave::Tags::ConstraintGamma2Compute>(
-      "ConstraintGamma2");
-
   test_characteristic_speeds<1>();
   test_characteristic_speeds<2>();
   test_characteristic_speeds<3>();

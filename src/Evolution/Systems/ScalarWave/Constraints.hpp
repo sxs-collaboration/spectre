@@ -61,6 +61,14 @@ void two_index_constraint(
 // @}
 
 namespace Tags {
+struct ConstraintGamma2Compute : ConstraintGamma2, db::ComputeTag {
+  using argument_tags = tmpl::list<Psi>;
+  static auto function(const Scalar<DataVector>& psi) noexcept {
+    return make_with_value<type>(psi, 0.);
+  }
+  using base = ConstraintGamma2;
+};
+
 /*!
  * \brief Compute item to get the one-index constraint for the scalar-wave
  * evolution system.

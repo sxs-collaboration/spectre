@@ -38,6 +38,21 @@
 
 namespace {
 template <size_t Dim>
+auto add_scalar_to_tensor_components(
+    const tnsr::i<DataVector, Dim, Frame::Inertial>& input,
+    double constant) noexcept {
+  const tnsr::i<DataVector, Dim, Frame::Inertial> copy_of_input =
+      [&input, &constant ]() noexcept {
+    auto local_copy_of_input = input;
+    for (size_t i = 0; i < Dim; ++i) {
+      local_copy_of_input.get(i) += constant;
+    }
+    return local_copy_of_input;
+  }
+  ();
+  return copy_of_input;
+}
+template <size_t Dim>
 void check_du_dt(const size_t npts, const double time) {
   ScalarWave::Solutions::PlaneWave<Dim> solution(
       make_array<Dim>(0.1), make_array<Dim>(0.0),
@@ -53,48 +68,75 @@ void check_du_dt(const size_t npts, const double time) {
     return coords;
   }();
 
-  auto box = db::create<db::AddSimpleTags<
-      Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
-      Tags::dt<ScalarWave::Psi>, ScalarWave::Pi,
-      Tags::deriv<ScalarWave::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
-      Tags::deriv<ScalarWave::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>(
-      Scalar<DataVector>(pow<Dim>(npts), 0.0),
-      tnsr::i<DataVector, Dim, Frame::Inertial>(pow<Dim>(npts), 0.0),
-      Scalar<DataVector>(pow<Dim>(npts), 0.0),
-      Scalar<DataVector>(-1.0 * solution.dpsi_dt(x, time).get()),
-      [&x, &time, &solution ]() noexcept {
-        auto dpi_dx = solution.d2psi_dtdx(x, time);
-        for (size_t i = 0; i < Dim; ++i) {
-          dpi_dx.get(i) *= -1.0;
-        }
-        return dpi_dx;
-      }(),
-      [&npts, &x, &time, &solution ]() noexcept {
-        tnsr::ij<DataVector, Dim, Frame::Inertial> d2psi_dxdx{pow<Dim>(npts),
-                                                              0.0};
-        const tnsr::ii<DataVector, Dim, Frame::Inertial> ddpsi_soln =
-            solution.d2psi_dxdx(x, time);
-        for (size_t i = 0; i < Dim; ++i) {
-          for (size_t j = 0; j < Dim; ++j) {
-            d2psi_dxdx.get(i, j) = ddpsi_soln.get(i, j);
+  auto local_check_du_dt = [&npts, &time, &solution, &x](
+                               const double gamma2,
+                               const double constraint) {
+    auto box = db::create<db::AddSimpleTags<
+        ScalarWave::Tags::ConstraintGamma2, Tags::dt<ScalarWave::Pi>,
+        Tags::dt<ScalarWave::Phi<Dim>>, Tags::dt<ScalarWave::Psi>,
+        ScalarWave::Pi, ScalarWave::Phi<Dim>,
+        Tags::deriv<ScalarWave::Pi, tmpl::size_t<Dim>, Frame::Inertial>,
+        Tags::deriv<ScalarWave::Psi, tmpl::size_t<Dim>, Frame::Inertial>,
+        Tags::deriv<ScalarWave::Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>>(
+        Scalar<DataVector>(pow<Dim>(npts), gamma2),
+        Scalar<DataVector>(pow<Dim>(npts), 0.0),
+        tnsr::i<DataVector, Dim, Frame::Inertial>(pow<Dim>(npts), 0.0),
+        Scalar<DataVector>(pow<Dim>(npts), 0.0),
+        Scalar<DataVector>(-1.0 * solution.dpsi_dt(x, time).get()),
+        add_scalar_to_tensor_components(solution.dpsi_dx(x, time),
+                                        constraint),
+        [&x, &time, &solution ]() noexcept {
+          auto dpi_dx = solution.d2psi_dtdx(x, time);
+          for (size_t i = 0; i < Dim; ++i) {
+            dpi_dx.get(i) *= -1.0;
           }
-        }
-        return d2psi_dxdx;
-      }());
+          return dpi_dx;
+        }(),
+        solution.dpsi_dx(x, time), [&npts, &x, &time, &solution ]() noexcept {
+          tnsr::ij<DataVector, Dim, Frame::Inertial> d2psi_dxdx{pow<Dim>(npts),
+                                                                0.0};
+          const tnsr::ii<DataVector, Dim, Frame::Inertial> ddpsi_soln =
+              solution.d2psi_dxdx(x, time);
+          for (size_t i = 0; i < Dim; ++i) {
+            for (size_t j = 0; j < Dim; ++j) {
+              d2psi_dxdx.get(i, j) = ddpsi_soln.get(i, j);
+            }
+          }
+          return d2psi_dxdx;
+        }());
 
-  db::mutate_apply<
-      tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
-                 Tags::dt<ScalarWave::Psi>>,
-      typename ScalarWave::ComputeDuDt<Dim>::argument_tags>(
-      ScalarWave::ComputeDuDt<Dim>{}, make_not_null(&box));
+    db::mutate_apply<
+        tmpl::list<Tags::dt<ScalarWave::Pi>, Tags::dt<ScalarWave::Phi<Dim>>,
+                   Tags::dt<ScalarWave::Psi>>,
+        typename ScalarWave::ComputeDuDt<Dim>::argument_tags>(
+        ScalarWave::ComputeDuDt<Dim>{}, make_not_null(&box));
 
-  CHECK_ITERABLE_APPROX(
-      db::get<Tags::dt<ScalarWave::Pi>>(box),
-      Scalar<DataVector>(-1.0 * solution.d2psi_dt2(x, time).get()));
-  CHECK_ITERABLE_APPROX(db::get<Tags::dt<ScalarWave::Phi<Dim>>>(box),
-                        solution.d2psi_dtdx(x, time));
-  CHECK_ITERABLE_APPROX(db::get<Tags::dt<ScalarWave::Psi>>(box),
-                        solution.dpsi_dt(x, time));
+    CHECK_ITERABLE_APPROX(
+        db::get<Tags::dt<ScalarWave::Pi>>(box),
+        Scalar<DataVector>(-1.0 * solution.d2psi_dt2(x, time).get()));
+    CHECK_ITERABLE_APPROX(
+        db::get<Tags::dt<ScalarWave::Phi<Dim>>>(box),
+        add_scalar_to_tensor_components(solution.d2psi_dtdx(x, time),
+                                        -gamma2 * constraint));
+    CHECK_ITERABLE_APPROX(db::get<Tags::dt<ScalarWave::Psi>>(box),
+                          solution.dpsi_dt(x, time));
+  };
+
+  // Test with constraint damping parameter set to zero
+  local_check_du_dt(0.0, 0.0);
+  local_check_du_dt(0.0, 100.0);
+  local_check_du_dt(0.0, -998.0);
+
+  // Test with constraint satisfied but nonzero constraint damping parameter
+  local_check_du_dt(10.0, 0.0);
+  local_check_du_dt(-4.3, 0.0);
+
+  // Test with one-index constraint NOT satisfied and nonzero constraint
+  // damping parameter
+  local_check_du_dt(10.0, 10.9);
+  local_check_du_dt(1.2, -77.0);
+  local_check_du_dt(-10.9, 43.0);
+  local_check_du_dt(-90.0, -56.0);
 }
 }  // namespace
 
@@ -201,10 +243,13 @@ void check_upwind_flux(const size_t npts, const double t) {
 
   auto packaged_data_int = TestHelpers::NumericalFluxes::get_packaged_data(
       flux_computer, used_for_size, solution.dpsi_dt(x, t + 1.0),
-      solution.dpsi_dx(x, t + 2.0), solution.psi(x, t + 4.0), unit_normal);
+      solution.dpsi_dx(x, t + 2.0), solution.psi(x, t + 4.0),
+      solution.psi(x, t + 4.0), Scalar<DataVector>(pow<Dim>(npts), 0.0),
+      unit_normal);
   auto packaged_data_ext = TestHelpers::NumericalFluxes::get_packaged_data(
       flux_computer, used_for_size, solution.dpsi_dt(x, 2.0 * t + 10.0),
       solution.dpsi_dx(x, 2.0 * t + 9.0), solution.psi(x, 2.0 * t + 7.0),
+      solution.psi(x, t + 4.0), Scalar<DataVector>(pow<Dim>(npts), 0.0),
       unit_normal);
 
   Scalar<DataVector> normal_dot_numerical_flux_pi(pow<Dim>(npts), 0.0);

@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 
+#include "DataStructures/DataBox/Tag.hpp"
 #include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"
 #include "Domain/FaceNormal.hpp"
@@ -36,6 +37,7 @@ struct Normalized;
 }  // namespace Tags
 
 namespace ScalarWave {
+struct Psi;
 struct Pi;
 template <size_t Dim>
 struct Phi;
@@ -56,13 +58,14 @@ namespace ScalarWave {
  * The evolution equations for the first-order scalar wave system are given by:
  * \f{align}
  * \partial_t\Psi = & -\Pi \\
- * \partial_t\Phi_i = & -\partial_i \Pi \\
+ * \partial_t\Phi_i = & -\partial_i \Pi +
+ *                       \gamma_2 (\partial_i\Psi - \Phi_i) \\
  * \partial_t\Pi = & - \delta^{ij}\partial_i\Phi_j
  * \f}
  *
  * where \f$\Psi\f$ is the scalar field, \f$\Pi=-\partial_t\Psi\f$ is the
- * conjugate momentum to \f$\Psi\f$, and \f$\Phi_i=\partial_i\Psi\f$ is an
- * auxiliary variable.
+ * conjugate momentum to \f$\Psi\f$, \f$\Phi_i=\partial_i\Psi\f$ is an
+ * auxiliary variable, and \f$\gamma_2\f$ is the constraint damping parameter.
  */
 template <size_t Dim>
 struct ComputeDuDt {
@@ -72,14 +75,21 @@ struct ComputeDuDt {
                                  db::add_tag_prefix<StepPrefix, Psi>>;
 
   using argument_tags =
-      tmpl::list<Pi, ::Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::Inertial>,
-                 ::Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;
+      tmpl::list<::Tags::deriv<Psi, tmpl::size_t<Dim>, Frame::Inertial>, Pi,
+                 ::Tags::deriv<Pi, tmpl::size_t<Dim>, Frame::Inertial>,
+                 Phi<Dim>,
+                 ::Tags::deriv<Phi<Dim>, tmpl::size_t<Dim>, Frame::Inertial>,
+                 Tags::ConstraintGamma2>;
   static void apply(
       gsl::not_null<Scalar<DataVector>*> dt_pi,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*> dt_phi,
-      gsl::not_null<Scalar<DataVector>*> dt_psi, const Scalar<DataVector>& pi,
+      gsl::not_null<Scalar<DataVector>*> dt_psi,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& d_psi,
+      const Scalar<DataVector>& pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& d_pi,
-      const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi) noexcept;
+      const tnsr::i<DataVector, Dim, Frame::Inertial>& phi,
+      const tnsr::ij<DataVector, Dim, Frame::Inertial>& d_phi,
+      const Scalar<DataVector>& gamma2) noexcept;
 };
 
 /*!
@@ -211,14 +221,19 @@ struct PenaltyFlux : tt::ConformsTo<dg::protocols::NumericalFlux> {
  * \f{align}
  * G(\Psi) =& 0 \\
  * G(\Pi) =& \frac{1}{2}\left(F(\Pi)_{\mathrm{int}} + F(\Pi)_{\mathrm{ext}}
- *                    + \Pi_{\mathrm{int}} - \Pi_{\mathrm{ext}}\right) \\
+ *                    + \Pi_{\mathrm{int}} - \Pi_{\mathrm{ext}}
+ *                    + \gamma_2\left(\Psi_{\mathrm{ext}} -
+ *                                    \Psi_{\mathrm{int}}\right)\right) \\
  * G(\Phi_i) =& \frac{1}{2} \left(F(\Phi_i)_{\mathrm{int}}
  *                   + F(\Phi_i)_{\mathrm{ext}}
  *                   + (n_i)_{\mathrm{int}} F(\Pi)_{\mathrm{int}}
- *                   - (n_i)_{\mathrm{ext}} F(\Pi)_{\mathrm{ext}}\right)
+ *                   - (n_i)_{\mathrm{ext}} F(\Pi)_{\mathrm{ext}}
+ *                   - \gamma_2\left((n_i)_{\mathrm{int}}\Psi_{\mathrm{int}}
+ *                     - (n_i)_{\mathrm{ext}}\Psi_{\mathrm{ext}}\right)\right)
  * \f}
- * where \f$G\f$ is the normal dotted with the numerical flux and \f$F\f$ is
- * the normal dotted with the flux, which is computed in
+ * where \f$\gamma_2\f$ is the constraint damping parameter,  \f$G\f$ is
+ * the normal dotted with the numerical flux and \f$F\f$ is the normal
+ * dotted with the flux, which is computed in
  * ScalarWave::ComputeNormalDotFluxes
  */
 template <size_t Dim>
@@ -226,7 +241,12 @@ struct UpwindFlux : tt::ConformsTo<dg::protocols::NumericalFlux> {
  private:
   struct NormalTimesFluxPi : db::SimpleTag {
     using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
-    static std::string name() noexcept { return "NormalTimesFluxPi"; }
+  };
+  struct NormalTimesGamma2Psi : db::SimpleTag {
+    using type = tnsr::i<DataVector, Dim, Frame::Inertial>;
+  };
+  struct Gamma2Psi : db::SimpleTag {
+    using type = Scalar<DataVector>;
   };
 
  public:
@@ -243,11 +263,12 @@ struct UpwindFlux : tt::ConformsTo<dg::protocols::NumericalFlux> {
 
   using package_field_tags =
       tmpl::list<::Tags::NormalDotFlux<Pi>, ::Tags::NormalDotFlux<Phi<Dim>>, Pi,
-                 NormalTimesFluxPi>;
+                 NormalTimesFluxPi, Gamma2Psi, NormalTimesGamma2Psi>;
   using package_extra_tags = tmpl::list<>;
 
   using argument_tags =
       tmpl::list<::Tags::NormalDotFlux<Pi>, ::Tags::NormalDotFlux<Phi<Dim>>, Pi,
+                 Psi, Tags::ConstraintGamma2,
                  ::Tags::Normalized<domain::Tags::UnnormalizedFaceNormal<Dim>>>;
 
   void package_data(
@@ -257,9 +278,13 @@ struct UpwindFlux : tt::ConformsTo<dg::protocols::NumericalFlux> {
       gsl::not_null<Scalar<DataVector>*> packaged_pi,
       gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
           packaged_n_times_flux_pi,
+      gsl::not_null<Scalar<DataVector>*> packaged_gamma2_psi,
+      gsl::not_null<tnsr::i<DataVector, Dim, Frame::Inertial>*>
+          packaged_normal_times_gamma2_psi,
       const Scalar<DataVector>& normal_dot_flux_pi,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& normal_dot_flux_phi,
-      const Scalar<DataVector>& pi,
+      const Scalar<DataVector>& pi, const Scalar<DataVector>& psi,
+      const Scalar<DataVector>& constraint_gamma2,
       const tnsr::i<DataVector, Dim, Frame::Inertial>& interface_unit_normal)
       const noexcept;
 
@@ -274,12 +299,18 @@ struct UpwindFlux : tt::ConformsTo<dg::protocols::NumericalFlux> {
       const Scalar<DataVector>& pi_interior,
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
           normal_times_flux_pi_interior,
+      const Scalar<DataVector>& gamma2_psi_interior,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+          normal_times_gamma2_psi_interior,
       const Scalar<DataVector>& minus_normal_dot_flux_pi_exterior,
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
           minus_normal_dot_flux_phi_exterior,
       const Scalar<DataVector>& pi_exterior,
       const tnsr::i<DataVector, Dim, Frame::Inertial>&
-          normal_times_flux_pi_exterior) const noexcept;
+          normal_times_flux_pi_exterior,
+      const Scalar<DataVector>& gamma2_psi_exterior,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+          minus_normal_times_gamma2_psi_exterior) const noexcept;
 };
 
 /// Compute the maximum magnitude of the characteristic speeds.
