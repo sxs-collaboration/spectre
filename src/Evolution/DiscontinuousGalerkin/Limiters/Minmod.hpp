@@ -120,11 +120,11 @@ bool minmod_limited_slopes(
 /// original (higher-order) data in the case that the slopes are acceptable.
 ///
 /// For all three types of minmod limiter the "total variation bound in the
-/// means" (TVBM) correction is implemented, enabling the limiter to avoid
+/// means" (TVB) correction is implemented, enabling the limiter to avoid
 /// limiting away smooth extrema in the solution that would otherwise look like
 /// spurious oscillations. The limiter will not reduce the slope (but may still
 /// linearize) on elements where the slope is less than \f$m h^2\f$, where
-/// \f$m\f$ is the TVBM constant and \f$h\f$ is the size of the DG element.
+/// \f$m\f$ is the TVB constant and \f$h\f$ is the size of the DG element.
 ///
 /// The limiter acts in the `Frame::Logical` coordinates, because in these
 /// coordinates it is straightforward to formulate the algorithm. This means the
@@ -161,14 +161,14 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
     using type = MinmodType;
     static constexpr OptionString help = {"Type of minmod"};
   };
-  /// \brief The TVBM constant
+  /// \brief The TVB constant
   ///
   /// See `Limiters::Minmod` documentation for details.
   struct TvbConstant {
     using type = double;
     static type default_value() noexcept { return 0.0; }
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {"TVBM constant 'm'"};
+    static constexpr OptionString help = {"TVB constant 'm'"};
   };
   /// \brief Turn the limiter off
   ///
@@ -184,14 +184,14 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
   static constexpr OptionString help = {
       "A minmod-based slope limiter.\n"
       "The different types of minmod are more or less aggressive in trying\n"
-      "to reduce slopes. The TVBM correction allows the limiter to ignore\n"
+      "to reduce slopes. The TVB correction allows the limiter to ignore\n"
       "'small' slopes, and helps to avoid limiting of smooth extrema in the\n"
       "solution.\n"};
 
   /// \brief Constuct a Minmod slope limiter
   ///
   /// \param minmod_type The type of Minmod slope limiter.
-  /// \param tvb_constant The value of the TVBM constant (default: 0).
+  /// \param tvb_constant The value of the TVB constant (default: 0).
   /// \param disable_for_debugging Switch to turn the limiter off (default:
   //         false).
   explicit Minmod(MinmodType minmod_type, double tvb_constant = 0.0,

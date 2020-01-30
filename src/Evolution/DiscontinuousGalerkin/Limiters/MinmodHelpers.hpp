@@ -40,7 +40,7 @@ struct MinmodResult {
   const bool activated;
 };
 
-// The TVBM-corrected minmod function, see e.g. Cockburn reference Eq. 2.26.
+// The TVB-corrected minmod function, see e.g. Cockburn reference Eq. 2.26.
 MinmodResult tvb_corrected_minmod(double a, double b, double c,
                                   double tvb_scale) noexcept;
 

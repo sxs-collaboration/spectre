@@ -80,7 +80,7 @@ void test_minmod_option_parsing() noexcept {
       TestHelpers::test_creation<Limiters::Minmod<1, tmpl::list<ScalarTag>>>(
           "Type: Muscl");
 
-  // Test default TVBM value, operator==, and operator!=
+  // Test default TVB value, operator==, and operator!=
   CHECK(lambda_pi1_default == lambda_pi1_m0);
   CHECK(lambda_pi1_default != lambda_pi1_m1);
   CHECK(lambda_pi1_default != muscl_default);
@@ -444,7 +444,7 @@ void test_minmod_slopes_on_quadratic_function(
 void test_minmod_slopes_with_tvb_correction(
     const size_t number_of_grid_points,
     const Limiters::MinmodType& minmod_type) noexcept {
-  INFO("Testing TVBM correction...");
+  INFO("Testing TVB correction...");
   CAPTURE(number_of_grid_points);
   CAPTURE(get_output(minmod_type));
   const auto element = TestHelpers::Limiters::make_element<1>();
@@ -484,8 +484,8 @@ void test_minmod_slopes_with_tvb_correction(
   }
   ();
 
-  // The TVBM constant sets a threshold slope, below which the solution will not
-  // be limited. We test this by increasing the TVBM constant until the limiter
+  // The TVB constant sets a threshold slope, below which the solution will not
+  // be limited. We test this by increasing the TVB constant until the limiter
   // stops activating / stops changing the solution.
   const double left = (minmod_type == Limiters::MinmodType::Muscl) ? 8.4 : 15.0;
   const double right =
@@ -496,10 +496,10 @@ void test_minmod_slopes_with_tvb_correction(
 }
 
 // Here we test the coupling of the LambdaPiN troubled cell detector with the
-// TVBM constant value.
+// TVB constant value.
 void test_lambda_pin_troubled_cell_tvb_correction(
     const size_t number_of_grid_points) noexcept {
-  INFO("Testing LambdaPiN-TVBM correction...");
+  INFO("Testing LambdaPiN-TVB correction...");
   CAPTURE(number_of_grid_points);
   const auto element = TestHelpers::Limiters::make_element<1>();
   const Mesh<1> mesh(number_of_grid_points, Spectral::Basis::Legendre,
@@ -548,18 +548,18 @@ void test_lambda_pin_troubled_cell_tvb_correction(
   test_activates(m0, input, 0.02, 10.0, 4.98);
   test_activates(m0, input, 0.0, 9.99, 4.99);
 
-  // However, with a non-zero TVBM constant, LambdaPiN should additionally avoid
-  // limiting when max(edge - mean) < TVBM correction.
-  // We test first a case where the TVBM correction is too small to affect
+  // However, with a non-zero TVB constant, LambdaPiN should additionally avoid
+  // limiting when max(edge - mean) < TVB correction.
+  // We test first a case where the TVB correction is too small to affect
   // the limiter action,
   test_does_not_activate(m1, input, 0.0, 10.0);
   test_does_not_activate(m1, input, -0.3, 10.2);
   test_activates(m1, input, 0.02, 10.0, 4.98);
   test_activates(m1, input, 0.0, 9.99, 4.99);
 
-  // And a case where the TVBM correction enables LambdaPiN to avoid limiting
+  // And a case where the TVB correction enables LambdaPiN to avoid limiting
   // (Note that the slope here is still too large to avoid limiting through
-  // the normal TVBM tolerance.)
+  // the normal TVB tolerance.)
   test_does_not_activate(m2, input, 0.0, 10.0);
   test_does_not_activate(m2, input, -0.3, 10.2);
   test_does_not_activate(m2, input, 0.02, 10.0);
@@ -684,7 +684,7 @@ void test_minmod_slopes_with_different_size_neighbor(
                          1.2 * muscl_slope_factor);
 }
 
-// In 1D, test combinations of MinmodType, TVBM constant, polynomial order, etc.
+// In 1D, test combinations of MinmodType, TVB constant, polynomial order, etc.
 // Check that each combination reduces the slopes as expected.
 void test_minmod_limited_slopes_1d() noexcept {
   INFO("Testing Minmod minmod_limited_slopes in 1D");

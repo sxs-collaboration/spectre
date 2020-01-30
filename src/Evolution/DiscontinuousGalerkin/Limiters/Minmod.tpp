@@ -110,7 +110,7 @@ Minmod<VolumeDim, tmpl::list<Tags...>>::Minmod(
     : minmod_type_(minmod_type),
       tvb_constant_(tvb_constant),
       disable_for_debugging_(disable_for_debugging) {
-  ASSERT(tvb_constant >= 0.0, "The TVBM constant must be non-negative.");
+  ASSERT(tvb_constant >= 0.0, "The TVB constant must be non-negative.");
 }
 
 template <size_t VolumeDim, typename... Tags>

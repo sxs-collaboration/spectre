@@ -141,7 +141,7 @@ void test_tci_on_linear_function(const size_t number_of_grid_points) noexcept {
   test_tci(true, input, 1.7, 1.85, 0.0);
   test_tci(true, input, 1.45, 1.5, 0.0);
 
-  // Test TVBM can avoid the triggers
+  // Test TVB can avoid the triggers
   test_tci(true, input, 1.45, 1.75, 0.19);
   test_tci(true, input, 1.7, 1.85, 0.19);
   test_tci(true, input, 1.45, 1.5, 0.19);
@@ -186,7 +186,7 @@ void test_tci_on_quadratic_function(
   test_tci(true, input, 1.15, 1.75, 0.0);
   test_tci(true, input, 1.25, 1.75, 0.0);
 
-  // Test TVBM can avoid the trigger
+  // Test TVB can avoid the trigger
   test_tci(true, input, 1.25, 1.85, 0.11);
   test_tci(true, input, 1.25, 1.85, 0.29);
   test_tci(false, input, 1.25, 1.85, 0.31);
@@ -201,14 +201,14 @@ void test_tci_on_quadratic_function(
   ();
 
   // Because left-to-mean and mean-to-right slopes have different signs,
-  // any TCI call with TVBM=0 should trigger
+  // any TCI call with TVB=0 should trigger
   test_tci(true, input2, 1.7, 1.9, 0.0);
   test_tci(true, input2, 1.7, 1.3, 0.0);
   test_tci(true, input2, 1.3, 1.7, 0.0);
   test_tci(true, input2, 1.1, 1.9, 0.0);
 
   // Conversely, because left-to-mean and mean-to-right slopes have different
-  // signs, calls with TVBM>0 give results that depend on neighbor means
+  // signs, calls with TVB>0 give results that depend on neighbor means
   test_tci(true, input2, 1.7, 1.3, 0.11);
   test_tci(true, input2, 1.7, 1.3, 0.29);
   test_tci(false, input2, 1.7, 1.3, 0.31);
@@ -308,7 +308,7 @@ void test_tci_with_different_size_neighbor(
   test_tci(false, input, 1.1 - eps, 3.2 + eps, smaller, dx);
 }
 
-// In 1D, test combinations of TVBM constant, polynomial order, etc.
+// In 1D, test combinations of TVB constant, polynomial order, etc.
 // Check that each combination has the expected TCI behavior.
 void test_minmod_tci_1d() noexcept {
   INFO("Testing MinmodTci in 1D");
