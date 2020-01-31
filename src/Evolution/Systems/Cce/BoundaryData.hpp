@@ -541,7 +541,7 @@ using characteristic_worldtube_boundary_tags = db::wrap_tags_in<
     tmpl::list<Tags::BondiBeta, Tags::BondiU, Tags::Dr<Tags::BondiU>,
                Tags::BondiQ, Tags::BondiW, Tags::BondiJ, Tags::Dr<Tags::BondiJ>,
                Tags::BondiH, Tags::Du<Tags::BondiJ>, Tags::BondiR,
-               Tags::DuRDividedByR>>;
+               Tags::Du<Tags::BondiR>, Tags::DuRDividedByR>>;
 }  // namespace Tags
 
 namespace detail {
@@ -660,13 +660,17 @@ void create_bondi_boundary_data(
                                   Frame::RadialNull>>(*computation_variables);
   d_bondi_r(make_not_null(&d_r), r, dlambda_null_metric, du_null_metric,
             inverse_null_metric, l_max);
-  db::mutate<Tags::BoundaryValue<Tags::DuRDividedByR>>(
+  db::mutate<Tags::BoundaryValue<Tags::DuRDividedByR>,
+             Tags::BoundaryValue<Tags::Du<Tags::BondiR>>>(
       bondi_boundary_data,
       [&d_r, &
        r ](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-               du_r_divided_by_r) noexcept {
+               du_r_divided_by_r,
+           const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+               du_r) noexcept {
         get(*du_r_divided_by_r).data() =
             std::complex<double>{1.0, 0.0} * get<0>(d_r) / get(r).data();
+        get(*du_r).data() = std::complex<double>{1.0, 0.0} * get<0>(d_r);
       });
 
   auto& down_dyad = get<Tags::detail::DownDyad>(dyad_variables);

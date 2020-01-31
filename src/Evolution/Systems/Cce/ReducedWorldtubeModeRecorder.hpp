@@ -72,7 +72,7 @@ dataset_label_for_tag<Cce::Tags::BoundaryValue<Cce::Tags::BondiR>>() noexcept {
 
 template <>
 SPECTRE_ALWAYS_INLINE std::string dataset_label_for_tag<
-    Cce::Tags::BoundaryValue<Cce::Tags::DuRDividedByR>>() noexcept {
+    Cce::Tags::BoundaryValue<Cce::Tags::Du<Cce::Tags::BondiR>>>() noexcept {
   return "DuR";
 }
 
