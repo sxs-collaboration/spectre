@@ -18,10 +18,11 @@
 namespace {
 
 template <typename DataType>
-void test_specific_enthalpy(const DataType& used_for_size) noexcept {
-  pypp::check_with_random_values<1>(&hydro::specific_enthalpy<DataType>,
-                                    "TestFunctions", "specific_enthalpy",
-                                    {{{0.01, 1.0}}}, used_for_size);
+void test_relativistic_specific_enthalpy(
+    const DataType& used_for_size) noexcept {
+  pypp::check_with_random_values<1>(
+      &hydro::relativistic_specific_enthalpy<DataType>, "TestFunctions",
+      "relativistic_specific_enthalpy", {{{0.01, 1.0}}}, used_for_size);
 }
 }  // namespace
 
@@ -31,8 +32,9 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.SpecificEnthalpy",
   pypp::SetupLocalPythonEnvironment local_python_env{
       "PointwiseFunctions/Hydro"};
 
-  test_specific_enthalpy(std::numeric_limits<double>::signaling_NaN());
-  test_specific_enthalpy(DataVector(5));
+  test_relativistic_specific_enthalpy(
+      std::numeric_limits<double>::signaling_NaN());
+  test_relativistic_specific_enthalpy(DataVector(5));
 
   // Check compute item works correctly in DataBox
   CHECK(Tags::SpecificEnthalpyCompute<DataVector>::name() ==
@@ -47,8 +49,8 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.Hydro.SpecificEnthalpy",
                                    Tags::Pressure<DataVector>>,
                  db::AddComputeTags<Tags::SpecificEnthalpyCompute<DataVector>>>(
           rest_mass_density, specific_internal_energy, pressure);
-  CHECK(
-      db::get<Tags::SpecificEnthalpy<DataVector>>(box) ==
-      specific_enthalpy(rest_mass_density, specific_internal_energy, pressure));
+  CHECK(db::get<Tags::SpecificEnthalpy<DataVector>>(box) ==
+        relativistic_specific_enthalpy(rest_mass_density,
+                                       specific_internal_energy, pressure));
 }
 }  // namespace hydro

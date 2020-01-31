@@ -178,7 +178,7 @@ struct SpatialVelocitySquared : db::SimpleTag {
   static std::string name() noexcept { return "SpatialVelocitySquared"; }
 };
 
-/// The specific enthalpy \f$h\f$.
+/// The relativistic specific enthalpy \f$h\f$.
 template <typename DataType>
 struct SpecificEnthalpy : db::SimpleTag {
   using type = Scalar<DataType>;

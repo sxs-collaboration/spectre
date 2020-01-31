@@ -174,7 +174,7 @@ void PrimitiveFromConservative<OrderedListOfPrimitiveRecoverySchemes,
             .specific_internal_energy_from_density_and_pressure(
                 *rest_mass_density, *pressure);
       })(equation_of_state);
-  *specific_enthalpy = hydro::specific_enthalpy(
+  *specific_enthalpy = hydro::relativistic_specific_enthalpy(
       *rest_mass_density, *specific_internal_energy, *pressure);
 }
 }  // namespace ValenciaDivClean

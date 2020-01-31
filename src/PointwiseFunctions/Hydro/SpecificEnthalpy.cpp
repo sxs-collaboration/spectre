@@ -10,7 +10,7 @@
 /// \cond
 namespace hydro {
 template <typename DataType>
-Scalar<DataType> specific_enthalpy(
+Scalar<DataType> relativistic_specific_enthalpy(
     const Scalar<DataType>& rest_mass_density,
     const Scalar<DataType>& specific_internal_energy,
     const Scalar<DataType>& pressure) noexcept {
@@ -20,10 +20,10 @@ Scalar<DataType> specific_enthalpy(
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(0, data)
 
-#define INSTANTIATE(_, data)                               \
-  template Scalar<DTYPE(data)> specific_enthalpy(          \
-      const Scalar<DTYPE(data)>& rest_mass_density,        \
-      const Scalar<DTYPE(data)>& specific_internal_energy, \
+#define INSTANTIATE(_, data)                                   \
+  template Scalar<DTYPE(data)> relativistic_specific_enthalpy( \
+      const Scalar<DTYPE(data)>& rest_mass_density,            \
+      const Scalar<DTYPE(data)>& specific_internal_energy,     \
       const Scalar<DTYPE(data)>& pressure) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (double, DataVector))
