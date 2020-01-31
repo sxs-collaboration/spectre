@@ -65,7 +65,7 @@ void test_initial_domain(const Domain<VolumeDim>& domain,
 
 // Euclidean basis vector along the given `Direction` and in the given
 // `Frame::Inertial` frame.
-template <size_t SpatialDim>
-tnsr::i<DataVector, SpatialDim, Frame::Inertial> euclidean_basis_vector(
+template <typename DataType, size_t SpatialDim>
+tnsr::i<DataType, SpatialDim> euclidean_basis_vector(
     const Direction<SpatialDim>& direction,
-    const DataVector& used_for_size) noexcept;
+    const DataType& used_for_size) noexcept;

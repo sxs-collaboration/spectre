@@ -349,16 +349,15 @@ void test_initial_domain(const Domain<VolumeDim>& domain,
   domain::test_refinement_levels_of_neighbors<0>(elements);
 }
 
-template <size_t SpatialDim>
-tnsr::i<DataVector, SpatialDim, Frame::Inertial> euclidean_basis_vector(
+template <typename DataType, size_t SpatialDim>
+tnsr::i<DataType, SpatialDim> euclidean_basis_vector(
     const Direction<SpatialDim>& direction,
-    const DataVector& used_for_size) noexcept {
+    const DataType& used_for_size) noexcept {
   auto basis_vector =
-      make_with_value<tnsr::i<DataVector, SpatialDim, Frame::Inertial>>(
-          used_for_size, 0.0);
+      make_with_value<tnsr::i<DataType, SpatialDim>>(used_for_size, 0.0);
 
   basis_vector.get(direction.axis()) =
-      make_with_value<DataVector>(used_for_size, direction.sign());
+      make_with_value<DataType>(used_for_size, direction.sign());
 
   return basis_vector;
 }
@@ -383,13 +382,22 @@ tnsr::i<DataVector, SpatialDim, Frame::Inertial> euclidean_basis_vector(
       const std::vector<std::array<size_t, DIM(data)>>&                     \
           initial_refinement_levels) noexcept;                              \
   template void test_physical_separation(                                   \
-      const std::vector<Block<DIM(data)>>& blocks) noexcept;                \
-  template tnsr::i<DataVector, DIM(data), Frame::Inertial>                  \
-  euclidean_basis_vector(const Direction<DIM(data)>& direction,             \
-                         const DataVector& used_for_size) noexcept;
+      const std::vector<Block<DIM(data)>>& blocks) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 
+#define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATE_BASIS_VECTOR(_, data)                          \
+  template tnsr::i<DTYPE(data), DIM(data)> euclidean_basis_vector( \
+      const Direction<DIM(data)>& direction,                       \
+      const DTYPE(data) & used_for_size) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE_BASIS_VECTOR, (1, 2, 3),
+                        (double, DataVector))
+
 #undef DIM
+#undef DTYPE
 #undef INSTANTIATE
+#undef INSTANTIATE_BASIS_VECTOR
 /// \endcond
