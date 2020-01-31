@@ -38,7 +38,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::MockRuntimeSystem<metavariables> runner{{l_max}};
 
   const size_t buffer_size = 8;
-  const std::string filename = "test_CceR0100.h5";
+  const std::string filename = "InitializeWorldtubeBoundaryTest_CceR0100.h5";
 
   // create the test file, because on initialization the manager will need to
   // get basic data out of the file

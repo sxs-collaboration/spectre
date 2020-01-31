@@ -471,7 +471,7 @@ void test_spec_worldtube_buffer_updater(
       (buffer_size + 2 * interpolator_length) * square(l_max + 1)};
   Variables<detail::cce_input_tags> expected_coefficients_buffers{
       (buffer_size + 2 * interpolator_length) * square(l_max + 1)};
-  const std::string filename = "test_CceR0100.h5";
+  const std::string filename = "BoundaryDataH5Test_CceR0100.h5";
   TestHelpers::write_test_file(solution, filename, target_time,
                                extraction_radius, frequency, amplitude, l_max);
 
@@ -561,7 +561,7 @@ void test_reduced_spec_worldtube_buffer_updater(
           db::item_type<boundary_variables_tag>{number_of_angular_points});
 
   // write times to file for several steps before and after the target time
-  const std::string filename = "test_CceR0100.h5";
+  const std::string filename = "BoundaryDataH5Test_CceR0100.h5";
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }
