@@ -33,7 +33,26 @@ Limiter:
     Type: LambdaPi1
 
 EventsAndTriggers:
-  ? PastTime: 0.1
+  ? Always
+  : - ChangeSlabSize:
+        DelayChange: 5
+        StepChoosers:
+          - Cfl:
+              SafetyFactor: 0.5
+          - Increase:
+              Factor: 2.0
+  ? NearTimes:
+      Times: [0.123456]
+      Range: 4
+      Unit: Slab
+      Direction: Before
+  : - ChangeSlabSize:
+        DelayChange: 0
+        StepChoosers:
+          - StepToTimes:
+              Times: [0.123456]
+  ? SpecifiedTimes:
+      Times: [0.123456]
   : - Completion
 
 Observers:

@@ -68,6 +68,7 @@
 #include "Time/StepChoosers/Increase.hpp"
 #include "Time/StepChoosers/PreventRapidIncrease.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
+#include "Time/StepChoosers/StepToTimes.hpp"
 #include "Time/StepControllers/StepController.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -135,7 +136,8 @@ struct EvolutionMetavars {
                  StepChoosers::Registrars::Increase>;
   using step_choosers_for_step_only =
       tmpl::list<StepChoosers::Registrars::PreventRapidIncrease>;
-  using step_choosers_for_slab_only = tmpl::list<>;
+  using step_choosers_for_slab_only =
+      tmpl::list<StepChoosers::Registrars::StepToTimes>;
   using step_choosers = tmpl::conditional_t<
       local_time_stepping,
       tmpl::append<step_choosers_common, step_choosers_for_step_only>,
