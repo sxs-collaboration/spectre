@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/ElementId.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeArray.hpp"
@@ -16,12 +17,6 @@
 namespace PUP {
 class er;
 }  // namespace PUP
-/// \cond
-namespace domain {
-template <typename SourceFrame, typename TargetFrame, size_t Dim>
-class CoordinateMapBase;
-}  // namespace domain
-/// \endcond
 
 /*!
  * \ingroup ComputationalDomainGroup

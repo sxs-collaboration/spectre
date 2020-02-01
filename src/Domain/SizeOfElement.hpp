@@ -8,18 +8,15 @@
 #include <string>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/Tensor/TypeAliases.hpp"
+#include "DataStructures/Tensor/TypeAliases.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
 /// \cond
-class DataVector;
-template <size_t VolumeDim>
-class Mesh;
+template <size_t VolumeDim, typename Frame>
+class ElementMap;
 namespace Tags {
 template <size_t Dim, typename Frame>
-struct Coordinates;
-template <size_t VolumeDim>
-struct Mesh;
+struct ElementMap;
 }  // namespace Tags
 /// \endcond
 
@@ -28,11 +25,10 @@ struct Mesh;
  * \brief Compute the inertial-coordinate size of an element along each of its
  * logical directions.
  *
- * For each logical direction, compute the mean position (in inertial
- * coordinates) of the element's lower and upper faces in that direction.
- * This is done by simply averaging the coordinates of the face grid points.
- * The size of the element along this logical direction is then the distance
- * between the mean positions of the lower and upper faces.
+ * For each logical direction, compute the distance (in inertial coordinates)
+ * between the element's lower and upper faces in that logical direction.
+ * The distance is measured between centers of the faces, with the centers
+ * defined in the logical coordinates.
  * Note that for curved elements, this is an approximate measurement of size.
  *
  * \details
@@ -41,8 +37,7 @@ struct Mesh;
  */
 template <size_t VolumeDim>
 std::array<double, VolumeDim> size_of_element(
-    const Mesh<VolumeDim>& mesh,
-    const tnsr::I<DataVector, VolumeDim>& inertial_coords) noexcept;
+    const ElementMap<VolumeDim, Frame::Inertial>& element_map) noexcept;
 
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
@@ -53,8 +48,7 @@ template <size_t VolumeDim>
 struct SizeOfElement : db::ComputeTag {
   static std::string name() noexcept { return "SizeOfElement"; }
   using argument_tags =
-      tmpl::list<Tags::Mesh<VolumeDim>,
-                 Tags::Coordinates<VolumeDim, Frame::Inertial>>;
+      tmpl::list<Tags::ElementMap<VolumeDim, Frame::Inertial>>;
   static constexpr auto function = size_of_element<VolumeDim>;
 };
 }  // namespace Tags
