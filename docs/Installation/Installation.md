@@ -249,7 +249,7 @@ install the SpECTRE dependencies using
 spack install blaze@3.2
 spack install brigand@master
 spack install libsharp -openmp -mpi
-spack install catch
+spack install catch2
 spack install gsl
 spack install jemalloc # or from your package manager
 spack install libxsmm
