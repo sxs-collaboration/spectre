@@ -50,3 +50,13 @@ endfunction(add_isentropic_vortex_executable)
 
 add_isentropic_vortex_executable(2)
 add_isentropic_vortex_executable(3)
+
+function(add_lane_emden_executable)
+  add_newtonian_euler_executable(
+    LaneEmdenStar
+    3
+    NewtonianEuler::Solutions::LaneEmdenStar
+    )
+endfunction(add_lane_emden_executable)
+
+add_lane_emden_executable()
