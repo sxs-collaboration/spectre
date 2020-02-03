@@ -139,6 +139,10 @@ struct GaugeOmega : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
 };
 
+struct News : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, -2>>;
+};
+
 // For expressing the Cauchy angular coordinates for the worldtube data in terms
 // of the evolution angular coordinates.
 struct CauchyAngularCoords : db::SimpleTag {
@@ -149,6 +153,18 @@ struct CauchyAngularCoords : db::SimpleTag {
 // terms of the evolution angular coordinates.
 struct CauchyCartesianCoords : db::SimpleTag {
   using type = tnsr::i<DataVector, 3>;
+};
+
+/// The asymptotically inertial retarded time in terms of the evolution time
+/// variable
+struct InertialRetardedTime : db::SimpleTag {
+  using type = Scalar<DataVector>;
+};
+
+/// Complex storage form for the asymptotically inertial retarded time, for
+/// taking spin-weighted derivatives
+struct ComplexInertialRetardedTime : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
 };
 
 // prefix tags associated with the integrands which are used as input to solvers
@@ -309,6 +325,67 @@ struct BondiR : db::SimpleTag {
 /// A simple tag for the `WorldtubeDataManager`
 struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
   using type = WorldtubeDataManager;
+};
+
+/// The Weyl scalar \f$\Psi_0\f$
+struct Psi0 : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 2>>;
+};
+
+/// The Weyl scalar \f$\Psi_1\f$
+struct Psi1 : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 1>>;
+};
+
+/// The Weyl scalar \f$\Psi_2\f$
+struct Psi2 : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+};
+
+/// The Weyl scalar \f$\Psi_3\f$
+struct Psi3 : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, -1>>;
+};
+
+/// The Weyl scalar \f$\Psi_4\f$
+struct Psi4 : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, -2>>;
+};
+
+/// The gravitational wave strain \f$h\f$
+struct Strain : db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, -2>>;
+};
+
+/// A prefix tag representing the time integral of the value it prefixes
+template <typename Tag>
+struct TimeIntegral : db::PrefixTag, db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
+  using tag = Tag;
+  static std::string name() noexcept {
+    return "TimeIntegral(" + db::tag_name<Tag>() + ")";
+  }
+};
+
+/// A prefix tag representing the value at \f$\mathcal I^+\f$
+template <typename Tag>
+struct ScriPlus : db::PrefixTag, db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, Tag::type::type::spin>>;
+  using tag = Tag;
+  static std::string name() noexcept {
+    return "ScriPlus(" + db::tag_name<Tag>() + ")";
+  }
+};
+
+/// A prefix tag representing an additional correction factor necessary to
+/// compute the quantity at \f$\mathcal I^+\f$
+template <typename Tag>
+struct ScriPlusFactor : db::PrefixTag, db::SimpleTag {
+  using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
+  using tag = Tag;
+  static std::string name() noexcept {
+    return "ScriPlusFactor(" + db::tag_name<Tag>() + ")";
+  }
 };
 }  // namespace Tags
 }  // namespace Cce
