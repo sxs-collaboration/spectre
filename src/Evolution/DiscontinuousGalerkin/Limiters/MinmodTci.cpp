@@ -21,7 +21,7 @@ namespace Minmod_detail {
 template <size_t VolumeDim>
 bool troubled_cell_indicator(
     const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const double tvbm_constant, const DataVector& u,
+    const double tvb_constant, const DataVector& u,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
@@ -29,10 +29,10 @@ bool troubled_cell_indicator(
     const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                                gsl::span<std::pair<size_t, size_t>>>,
                      VolumeDim>& volume_and_slice_indices) noexcept {
-  const double tvbm_scale = [&tvbm_constant, &element_size ]() noexcept {
+  const double tvb_scale = [&tvb_constant, &element_size ]() noexcept {
     const double max_h =
         *std::max_element(element_size.begin(), element_size.end());
-    return tvbm_constant * square(max_h);
+    return tvb_constant * square(max_h);
   }
   ();
   const double u_mean = mean_value(u, mesh);
@@ -57,12 +57,15 @@ bool troubled_cell_indicator(
     const double diff_upper = difference_to_neighbor(d, Side::Upper);
 
     // Results from SpECTRE paper (https://arxiv.org/abs/1609.00098) used
-    // minmod_tvbm(..., 0.0), rather than minmod_tvbm(..., tvbm_scale)
+    // tvb_corrected_minmod(..., 0.0), rather than
+    // tvb_corrected_minmod(..., tvb_scale)
     const bool activated_lower =
-        minmod_tvbm(u_mean - u_lower, diff_lower, diff_upper, tvbm_scale)
+        tvb_corrected_minmod(u_mean - u_lower, diff_lower, diff_upper,
+                             tvb_scale)
             .activated;
     const bool activated_upper =
-        minmod_tvbm(u_upper - u_mean, diff_lower, diff_upper, tvbm_scale)
+        tvb_corrected_minmod(u_upper - u_mean, diff_lower, diff_upper,
+                             tvb_scale)
             .activated;
     if (activated_lower or activated_upper) {
       return true;

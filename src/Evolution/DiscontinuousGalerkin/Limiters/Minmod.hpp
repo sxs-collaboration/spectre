@@ -77,7 +77,7 @@ bool minmod_limited_slopes(
     gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     gsl::not_null<DataVector*> u_lin_buffer,
     gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    Limiters::MinmodType minmod_type, double tvbm_constant, const DataVector& u,
+    Limiters::MinmodType minmod_type, double tvb_constant, const DataVector& u,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
     const DirectionMap<VolumeDim, double>& effective_neighbor_means,
@@ -119,12 +119,16 @@ bool minmod_limited_slopes(
 /// \f$\Lambda\Pi^1\f$ in the case that the slopes must be reduced, but is the
 /// original (higher-order) data in the case that the slopes are acceptable.
 ///
-/// For all three types of minmod limiter the "total variation bound in the
-/// means" (TVBM) correction is implemented, enabling the limiter to avoid
-/// limiting away smooth extrema in the solution that would otherwise look like
-/// spurious oscillations. The limiter will not reduce the slope (but may still
+/// For all three types of minmod limiter, the algorithm can be relaxed from
+/// TVD (total variation diminishing) in the means to TVB (total variation
+/// bound) in the means. This may avoid limiting away smooth extrema in the
+/// solution that would otherwise look like spurious oscillations. When this
+/// correction is enabled, the limiter will not reduce the slope (but may still
 /// linearize) on elements where the slope is less than \f$m h^2\f$, where
-/// \f$m\f$ is the TVBM constant and \f$h\f$ is the size of the DG element.
+/// \f$m\f$ is the TVB constant and \f$h\f$ is the size of the DG element.
+/// Note the "in the means" qualifier: the limiter controls the oscillation
+/// between the mean solution values across neighboring cells, but may not
+/// control oscillations within the cells.
 ///
 /// The limiter acts in the `Frame::Logical` coordinates, because in these
 /// coordinates it is straightforward to formulate the algorithm. This means the
@@ -161,14 +165,14 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
     using type = MinmodType;
     static constexpr OptionString help = {"Type of minmod"};
   };
-  /// \brief The TVBM constant
+  /// \brief The TVB constant
   ///
   /// See `Limiters::Minmod` documentation for details.
-  struct TvbmConstant {
+  struct TvbConstant {
     using type = double;
     static type default_value() noexcept { return 0.0; }
     static type lower_bound() noexcept { return 0.0; }
-    static constexpr OptionString help = {"TVBM constant 'm'"};
+    static constexpr OptionString help = {"TVB constant 'm'"};
   };
   /// \brief Turn the limiter off
   ///
@@ -180,21 +184,21 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
     static type default_value() noexcept { return false; }
     static constexpr OptionString help = {"Disable the limiter"};
   };
-  using options = tmpl::list<Type, TvbmConstant, DisableForDebugging>;
+  using options = tmpl::list<Type, TvbConstant, DisableForDebugging>;
   static constexpr OptionString help = {
       "A minmod-based slope limiter.\n"
       "The different types of minmod are more or less aggressive in trying\n"
-      "to reduce slopes. The TVBM correction allows the limiter to ignore\n"
+      "to reduce slopes. The TVB correction allows the limiter to ignore\n"
       "'small' slopes, and helps to avoid limiting of smooth extrema in the\n"
       "solution.\n"};
 
   /// \brief Constuct a Minmod slope limiter
   ///
   /// \param minmod_type The type of Minmod slope limiter.
-  /// \param tvbm_constant The value of the TVBM constant (default: 0).
+  /// \param tvb_constant The value of the TVB constant (default: 0).
   /// \param disable_for_debugging Switch to turn the limiter off (default:
   //         false).
-  explicit Minmod(MinmodType minmod_type, double tvbm_constant = 0.0,
+  explicit Minmod(MinmodType minmod_type, double tvb_constant = 0.0,
                   bool disable_for_debugging = false) noexcept;
 
   Minmod() noexcept = default;
@@ -296,7 +300,7 @@ class Minmod<VolumeDim, tmpl::list<Tags...>> {
                          const Minmod<LocalDim, LocalTagList>& rhs) noexcept;
 
   MinmodType minmod_type_;
-  double tvbm_constant_;
+  double tvb_constant_;
   bool disable_for_debugging_;
 };
 

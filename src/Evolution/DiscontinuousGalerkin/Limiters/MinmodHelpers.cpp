@@ -19,9 +19,10 @@
 namespace Limiters {
 namespace Minmod_detail {
 
-MinmodResult minmod_tvbm(const double a, const double b, const double c,
-                         const double tvbm_scale) noexcept {
-  if (fabs(a) <= tvbm_scale) {
+MinmodResult tvb_corrected_minmod(const double a, const double b,
+                                  const double c,
+                                  const double tvb_scale) noexcept {
+  if (fabs(a) <= tvb_scale) {
     return {a, false};
   }
   if ((std::signbit(a) == std::signbit(b)) and

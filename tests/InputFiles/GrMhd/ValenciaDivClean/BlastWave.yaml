@@ -38,7 +38,7 @@ EvolutionSystem:
 Limiter:
   Minmod:
     Type: Muscl
-    TvbmConstant: 0
+    TvbConstant: 0
 
 VariableFixing:
   FixConservatives:

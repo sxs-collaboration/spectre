@@ -45,7 +45,7 @@ bool limit_one_tensor(
     const gsl::not_null<db::item_type<Tag>*> tensor,
     const gsl::not_null<DataVector*> u_lin_buffer,
     const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const Limiters::MinmodType minmod_type, const double tvbm_constant,
+    const Limiters::MinmodType minmod_type, const double tvb_constant,
     const Element<VolumeDim>& element, const Mesh<VolumeDim>& mesh,
     const tnsr::I<DataVector, VolumeDim, Frame::Logical>& logical_coords,
     const std::array<double, VolumeDim>& element_size,
@@ -85,7 +85,7 @@ bool limit_one_tensor(
     std::array<double, VolumeDim> u_limited_slopes{};
     const bool reduce_slopes = minmod_limited_slopes(
         make_not_null(&u_mean), make_not_null(&u_limited_slopes), u_lin_buffer,
-        boundary_buffer, minmod_type, tvbm_constant, u, element, mesh,
+        boundary_buffer, minmod_type, tvb_constant, u, element, mesh,
         element_size, effective_neighbor_means, effective_neighbor_sizes,
         volume_and_slice_indices);
 
@@ -105,18 +105,18 @@ bool limit_one_tensor(
 
 template <size_t VolumeDim, typename... Tags>
 Minmod<VolumeDim, tmpl::list<Tags...>>::Minmod(
-    const MinmodType minmod_type, const double tvbm_constant,
+    const MinmodType minmod_type, const double tvb_constant,
     const bool disable_for_debugging) noexcept
     : minmod_type_(minmod_type),
-      tvbm_constant_(tvbm_constant),
+      tvb_constant_(tvb_constant),
       disable_for_debugging_(disable_for_debugging) {
-  ASSERT(tvbm_constant >= 0.0, "The TVBM constant must be non-negative.");
+  ASSERT(tvb_constant >= 0.0, "The TVB constant must be non-negative.");
 }
 
 template <size_t VolumeDim, typename... Tags>
 void Minmod<VolumeDim, tmpl::list<Tags...>>::pup(PUP::er& p) noexcept {
   p | minmod_type_;
-  p | tvbm_constant_;
+  p | tvb_constant_;
   p | disable_for_debugging_;
 }
 
@@ -185,7 +185,7 @@ bool Minmod<VolumeDim, tmpl::list<Tags...>>::operator()(
     limiter_activated =
         Minmod_detail::limit_one_tensor<VolumeDim, decltype(tag)>(
             tensor, &u_lin_buffer, &boundary_buffer, minmod_type_,
-            tvbm_constant_, element, mesh, logical_coords, element_size,
+            tvb_constant_, element, mesh, logical_coords, element_size,
             neighbor_data, volume_and_slice_indices) or
         limiter_activated;
     return '0';
@@ -198,7 +198,7 @@ template <size_t LocalDim, typename LocalTagList>
 bool operator==(const Minmod<LocalDim, LocalTagList>& lhs,
                 const Minmod<LocalDim, LocalTagList>& rhs) noexcept {
   return lhs.minmod_type_ == rhs.minmod_type_ and
-         lhs.tvbm_constant_ == rhs.tvbm_constant_ and
+         lhs.tvb_constant_ == rhs.tvb_constant_ and
          lhs.disable_for_debugging_ == rhs.disable_for_debugging_;
 }
 

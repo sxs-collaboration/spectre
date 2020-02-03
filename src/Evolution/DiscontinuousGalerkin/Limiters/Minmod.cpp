@@ -28,7 +28,7 @@ bool minmod_limited_slopes(
     const gsl::not_null<std::array<double, VolumeDim>*> u_limited_slopes,
     const gsl::not_null<DataVector*> u_lin_buffer,
     const gsl::not_null<std::array<DataVector, VolumeDim>*> boundary_buffer,
-    const Limiters::MinmodType minmod_type, const double tvbm_constant,
+    const Limiters::MinmodType minmod_type, const double tvb_constant,
     const DataVector& u, const Element<VolumeDim>& element,
     const Mesh<VolumeDim>& mesh,
     const std::array<double, VolumeDim>& element_size,
@@ -37,10 +37,10 @@ bool minmod_limited_slopes(
     const std::array<std::pair<gsl::span<std::pair<size_t, size_t>>,
                                gsl::span<std::pair<size_t, size_t>>>,
                      VolumeDim>& volume_and_slice_indices) noexcept {
-  const double tvbm_scale = [&tvbm_constant, &element_size ]() noexcept {
+  const double tvb_scale = [&tvb_constant, &element_size ]() noexcept {
     const double max_h =
         *std::max_element(element_size.begin(), element_size.end());
-    return tvbm_constant * square(max_h);
+    return tvb_constant * square(max_h);
   }
   ();
 
@@ -65,7 +65,7 @@ bool minmod_limited_slopes(
   // limiting solutions that appear smooth:
   if (minmod_type == Limiters::MinmodType::LambdaPiN) {
     const bool u_needs_limiting = troubled_cell_indicator(
-        boundary_buffer, tvbm_constant, u, element, mesh, element_size,
+        boundary_buffer, tvb_constant, u, element, mesh, element_size,
         effective_neighbor_means, effective_neighbor_sizes,
         volume_and_slice_indices);
 
@@ -107,8 +107,8 @@ bool minmod_limited_slopes(
     const double lower_slope = 0.5 * difference_to_neighbor(d, Side::Lower);
 
     const MinmodResult result =
-        minmod_tvbm(local_slope, max_slope_factor * upper_slope,
-                    max_slope_factor * lower_slope, tvbm_scale);
+        tvb_corrected_minmod(local_slope, max_slope_factor * upper_slope,
+                             max_slope_factor * lower_slope, tvb_scale);
     gsl::at(*u_limited_slopes, d) = result.value;
     if (result.activated) {
       slopes_need_reducing = true;
