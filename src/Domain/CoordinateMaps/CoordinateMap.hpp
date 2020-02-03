@@ -344,6 +344,18 @@ class CoordinateMap
       CoordinateMap<LocalSourceFrame, LocalTargetFrame, LocalMaps...>&& old_map,
       NewMap new_map, std::index_sequence<Is...> /*meta*/) noexcept;
 
+  template <typename... NewMaps, typename LocalSourceFrame,
+            typename LocalTargetFrame, typename... LocalMaps, size_t... Is,
+            size_t... Js>
+  friend CoordinateMap<LocalSourceFrame, LocalTargetFrame, LocalMaps...,
+                       NewMaps...>
+  // NOLINTNEXTLINE(readability-redundant-declaration,-warnings-as-errors)
+  push_back_impl(
+      CoordinateMap<LocalSourceFrame, LocalTargetFrame, LocalMaps...>&& old_map,
+      CoordinateMap<LocalSourceFrame, LocalTargetFrame, NewMaps...> new_map,
+      std::index_sequence<Is...> /*meta*/,
+      std::index_sequence<Js...> /*meta*/) noexcept;
+
   template <typename NewMap, typename LocalSourceFrame,
             typename LocalTargetFrame, typename... LocalMaps, size_t... Is>
   friend CoordinateMap<LocalSourceFrame, LocalTargetFrame, NewMap, LocalMaps...>

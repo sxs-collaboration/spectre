@@ -4,6 +4,7 @@
 #pragma once
 
 #include <array>
+#include <memory>
 #include <pup.h>
 #include <vector>
 
@@ -12,18 +13,21 @@
 
 namespace domain {
 /// \ingroup ComputationalDomainGroup
-/// Contains functions of time to support the dual frame system.
+/// \brief Contains functions of time to support the dual frame system.
 namespace FunctionsOfTime {
 /// \ingroup ComputationalDomainGroup
-/// Base class for FunctionsOfTime
+/// \brief Base class for FunctionsOfTime
 class FunctionOfTime : public PUP::able {
  public:
   FunctionOfTime() = default;
   FunctionOfTime(FunctionOfTime&&) noexcept = default;
   FunctionOfTime& operator=(FunctionOfTime&&) noexcept = default;
-  FunctionOfTime(const FunctionOfTime&) = delete;
-  FunctionOfTime& operator=(const FunctionOfTime&) = delete;
+  FunctionOfTime(const FunctionOfTime&) = default;
+  FunctionOfTime& operator=(const FunctionOfTime&) = default;
   ~FunctionOfTime() override = default;
+
+  virtual auto get_clone() const noexcept
+      -> std::unique_ptr<FunctionOfTime> = 0;
 
   virtual std::array<double, 2> time_bounds() const noexcept = 0;
 

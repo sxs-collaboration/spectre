@@ -1032,6 +1032,9 @@ void test_push_back() {
         push_front(second_coord_map, first_map);
     CHECK(composed_map == composed_push_back_map);
     CHECK(composed_map == composed_push_front_map);
+
+    CHECK(composed_map == push_back(first_coord_map, second_coord_map));
+    CHECK(composed_map == push_front(second_coord_map, first_coord_map));
   };
 
   // Test 1d

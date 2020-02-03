@@ -76,4 +76,8 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.SettleToConstant",
   const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t2 =
       serialize_and_deserialize(f_of_t);
   test(f_of_t2, match_time, f_t0, dtf_t0, d2tf_t0, A);
+
+  const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t3 =
+      f_of_t->get_clone();
+  test(f_of_t3, match_time, f_t0, dtf_t0, d2tf_t0, A);
 }

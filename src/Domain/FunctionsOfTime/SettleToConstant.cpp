@@ -4,6 +4,7 @@
 #include "Domain/FunctionsOfTime/SettleToConstant.hpp"
 
 #include <cmath>
+#include <memory>
 
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
@@ -24,6 +25,10 @@ SettleToConstant::SettleToConstant(
       -initial_func_and_derivs[1] - initial_func_and_derivs[2] * decay_time;
   coef_b_ = (coef_c_ - initial_func_and_derivs[1]) * decay_time;
   coef_a_ = initial_func_and_derivs[0] - coef_b_;
+}
+
+std::unique_ptr<FunctionOfTime> SettleToConstant::get_clone() const noexcept {
+  return std::make_unique<SettleToConstant>(*this);
 }
 
 template <size_t MaxDerivReturned>
