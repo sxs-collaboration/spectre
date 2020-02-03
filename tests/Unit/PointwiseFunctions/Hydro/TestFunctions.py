@@ -27,7 +27,8 @@ def mass_flux(rest_mass_density, spatial_velocity,
 # Functions for testing SpecificEnthalpy.cpp
 
 
-def specific_enthalpy(rest_mass_density, specific_internal_energy, pressure):
+def relativistic_specific_enthalpy(rest_mass_density, specific_internal_energy,
+                                   pressure):
     return pressure / rest_mass_density + 1.0 + specific_internal_energy
 
 
