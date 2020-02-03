@@ -50,6 +50,21 @@ void RegularGrid<Dim>::pup(PUP::er& p) noexcept {
 }
 
 template <size_t Dim>
+void RegularGrid<Dim>::interpolate(const gsl::not_null<DataVector*> result,
+                                   const DataVector& input) const noexcept {
+  result->destructive_resize(number_of_target_points_);
+  apply_matrices(result, interpolation_matrices_, input, source_extents_);
+}
+
+template <size_t Dim>
+DataVector RegularGrid<Dim>::interpolate(const DataVector& input) const
+    noexcept {
+  DataVector result(number_of_target_points_);
+  interpolate(make_not_null(&result), input);
+  return result;
+}
+
+template <size_t Dim>
 const std::array<Matrix, Dim>& RegularGrid<Dim>::interpolation_matrices() const
     noexcept {
   return interpolation_matrices_;

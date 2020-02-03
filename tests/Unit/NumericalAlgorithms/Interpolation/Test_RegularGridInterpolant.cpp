@@ -17,7 +17,7 @@
 #include "DataStructures/Variables.hpp"         // IWYU pragma: keep
 #include "DataStructures/VariablesHelpers.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/Affine.hpp"
-#include "Domain/CoordinateMaps/CoordinateMap.hpp"
+#include "Domain/CoordinateMaps/CoordinateMap.hpp"  // IWYU pragma: keep
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
 #include "Domain/CoordinateMaps/ProductMaps.hpp"
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
@@ -72,10 +72,10 @@ auto make_affine_map<3>() noexcept {
 
 namespace TestTags {
 
-template <size_t Dim>
 struct ScalarTag : db::SimpleTag {
   using type = Scalar<DataVector>;
   static std::string name() noexcept { return "Scalar"; }
+  template <size_t Dim>
   static auto fill_values(const MathFunctions::TensorProduct<Dim>& f,
                           const tnsr::I<DataVector, Dim>& x) noexcept {
     return Scalar<DataVector>{{{get(f(x))}}};
@@ -110,7 +110,7 @@ void test_regular_interpolation(const Mesh<Dim>& source_mesh,
   const auto target_coords = map(logical_coordinates(target_mesh));
 
   // Set up variables
-  using tags = tmpl::list<TestTags::ScalarTag<Dim>, TestTags::Vector<Dim>>;
+  using tags = tmpl::list<TestTags::ScalarTag, TestTags::Vector<Dim>>;
   Variables<tags> source_vars(source_mesh.number_of_grid_points());
   Variables<tags> expected_result(target_mesh.number_of_grid_points());
 
@@ -150,6 +150,11 @@ void test_regular_interpolation(const Mesh<Dim>& source_mesh,
       using Tag = tmpl::type_from<decltype(tag)>;
       CHECK_ITERABLE_APPROX(get<Tag>(result), get<Tag>(expected_result));
     });
+
+    const DataVector result_dv = regular_grid_interpolant.interpolate(
+        get(get<TestTags::ScalarTag>(source_vars)));
+    CHECK_ITERABLE_APPROX(result_dv,
+                          get(get<TestTags::ScalarTag>(expected_result)));
   }
 }
 
@@ -195,7 +200,7 @@ void test_regular_interpolation_override(
     const auto target_coords = map(target_logical_coords);
 
     // Set up variables
-    using tags = tmpl::list<TestTags::ScalarTag<Dim>, TestTags::Vector<Dim>>;
+    using tags = tmpl::list<TestTags::ScalarTag, TestTags::Vector<Dim>>;
     Variables<tags> source_vars(source_mesh.number_of_grid_points());
     Variables<tags> expected_result(get<0>(target_coords).size());
 
@@ -235,6 +240,11 @@ void test_regular_interpolation_override(
       using Tag = tmpl::type_from<decltype(tag)>;
       CHECK_ITERABLE_APPROX(get<Tag>(result), get<Tag>(expected_result));
     });
+
+    const DataVector result_dv = regular_grid_interpolant.interpolate(
+        get(get<TestTags::ScalarTag>(source_vars)));
+    CHECK_ITERABLE_APPROX(result_dv,
+                          get(get<TestTags::ScalarTag>(expected_result)));
   }
 }
 
