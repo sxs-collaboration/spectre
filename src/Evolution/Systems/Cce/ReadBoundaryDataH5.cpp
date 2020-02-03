@@ -88,10 +88,10 @@ SpecWorldtubeH5BufferUpdater::SpecWorldtubeH5BufferUpdater(
       not cce_data_file_.exists<h5::Version>("/VersionHist");
 
   // We assume that the filename has the extraction radius encoded as an
-  // integer between the first occurrence of 'R' and the first occurrence of
+  // integer between the last occurrence of 'R' and the last occurrence of
   // '.'. This is the format provided by SpEC.
-  const size_t r_pos = cce_data_filename.find('R');
-  const size_t dot_pos = cce_data_filename.find('.');
+  const size_t r_pos = cce_data_filename.find_last_of('R');
+  const size_t dot_pos = cce_data_filename.find_last_of('.');
   const std::string text_radius =
       cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
   try {
@@ -100,7 +100,8 @@ SpecWorldtubeH5BufferUpdater::SpecWorldtubeH5BufferUpdater(
     ERROR(
         "The CCE filename must encode the extraction radius as an integer "
         "between the first instance of 'R' and the first instance of '.' (SpEC "
-        "CCE filename format).");
+        "CCE filename format). Provided filename : "
+        << cce_data_filename);
   }
   const auto& lapse_data = cce_data_file_.get<h5::Dat>("/Lapse");
   const auto data_table_dimensions = lapse_data.get_dimensions();
@@ -271,10 +272,10 @@ ReducedSpecWorldtubeH5BufferUpdater::ReducedSpecWorldtubeH5BufferUpdater(
       dataset_names_) = "DuR";
 
   // We assume that the filename has the extraction radius encoded as an
-  // integer between the first occurrence of 'R' and the first occurrence of
+  // integer between the last occurrence of 'R' and the last occurrence of
   // '.'. This is the format provided by SpEC.
-  const size_t r_pos = cce_data_filename.find('R');
-  const size_t dot_pos = cce_data_filename.find('.');
+  const size_t r_pos = cce_data_filename.find_last_of('R');
+  const size_t dot_pos = cce_data_filename.find_last_of('.');
   const std::string text_radius =
       cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
   try {
@@ -283,7 +284,8 @@ ReducedSpecWorldtubeH5BufferUpdater::ReducedSpecWorldtubeH5BufferUpdater(
     ERROR(
         "The CCE filename must encode the extraction radius as an integer "
         "between the first instance of 'R' and the first instance of '.' (SpEC "
-        "CCE filename format).");
+        "CCE filename format). Provided filename : "
+        << cce_data_filename);
   }
 
   const auto& u_data = cce_data_file_.get<h5::Dat>("/U");
