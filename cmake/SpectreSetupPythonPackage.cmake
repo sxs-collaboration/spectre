@@ -114,6 +114,11 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       LIBRARY_OUTPUT_NAME "_${ARG_LIBRARY_NAME}"
       LIBRARY_OUTPUT_DIRECTORY ${MODULE_LOCATION}
       )
+    set_target_properties(
+      ${ARG_LIBRARY_NAME}
+      PROPERTIES
+      LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS}
+      )
     set(SPECTRE_PYTHON_MODULE_IMPORT "from ._${ARG_LIBRARY_NAME} import *")
     add_dependencies(test-executables ${ARG_LIBRARY_NAME})
   endif(BUILD_PYTHON_BINDINGS AND NOT "${ARG_SOURCES}" STREQUAL "")
