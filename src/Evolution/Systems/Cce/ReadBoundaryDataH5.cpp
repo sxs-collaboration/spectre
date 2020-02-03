@@ -95,7 +95,7 @@ SpecWorldtubeH5BufferUpdater::SpecWorldtubeH5BufferUpdater(
   const std::string text_radius =
       cce_data_filename.substr(r_pos + 1, dot_pos - r_pos - 1);
   try {
-  extraction_radius_ = stod(text_radius);
+    extraction_radius_ = stod(text_radius);
   } catch (const std::invalid_argument&) {
     ERROR(
         "The CCE filename must encode the extraction radius as an integer "
@@ -118,8 +118,8 @@ double SpecWorldtubeH5BufferUpdater::update_buffers_for_time(
     const gsl::not_null<Variables<detail::cce_input_tags>*> buffers,
     const gsl::not_null<size_t*> time_span_start,
     const gsl::not_null<size_t*> time_span_end, const double time,
-    const size_t interpolator_length, const size_t buffer_depth) const
-    noexcept {
+    const size_t computation_l_max, const size_t interpolator_length,
+    const size_t buffer_depth) const noexcept {
   if (*time_span_end >= time_buffer_.size()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
@@ -141,14 +141,15 @@ double SpecWorldtubeH5BufferUpdater::update_buffers_for_time(
       tmpl::for_each<tmpl::list<Tags::detail::SpatialMetric,
                                 Tags::detail::Dr<Tags::detail::SpatialMetric>,
                                 ::Tags::dt<Tags::detail::SpatialMetric>>>([
-        this, &i, &j, &buffers, &time_span_start, &time_span_end
+        this, &i, &j, &buffers, &time_span_start, &time_span_end, &
+        computation_l_max
       ](auto tag_v) noexcept {
         using tag = typename decltype(tag_v)::type;
         this->update_buffer(
             make_not_null(&get<tag>(*buffers).get(i, j)),
             cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
                 get<Tags::detail::InputDataSet<tag>>(dataset_names_), i, j)),
-            *time_span_start, *time_span_end);
+            computation_l_max, *time_span_start, *time_span_end);
         cce_data_file_.close_current_object();
       });
     }
@@ -156,14 +157,14 @@ double SpecWorldtubeH5BufferUpdater::update_buffers_for_time(
     tmpl::for_each<
         tmpl::list<Tags::detail::Shift, Tags::detail::Dr<Tags::detail::Shift>,
                    ::Tags::dt<Tags::detail::Shift>>>([
-      this, &i, &buffers, &time_span_start, &time_span_end
+      this, &i, &buffers, &time_span_start, &time_span_end, &computation_l_max
     ](auto tag_v) noexcept {
       using tag = typename decltype(tag_v)::type;
       this->update_buffer(
           make_not_null(&get<tag>(*buffers).get(i)),
           cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
               get<Tags::detail::InputDataSet<tag>>(dataset_names_), i)),
-          *time_span_start, *time_span_end);
+          computation_l_max, *time_span_start, *time_span_end);
       cce_data_file_.close_current_object();
     });
   }
@@ -171,14 +172,14 @@ double SpecWorldtubeH5BufferUpdater::update_buffers_for_time(
   tmpl::for_each<
       tmpl::list<Tags::detail::Lapse, Tags::detail::Dr<Tags::detail::Lapse>,
                  ::Tags::dt<Tags::detail::Lapse>>>([
-    this, &buffers, &time_span_start, &time_span_end
+    this, &buffers, &time_span_start, &time_span_end, &computation_l_max
   ](auto tag_v) noexcept {
     using tag = typename decltype(tag_v)::type;
     this->update_buffer(
         make_not_null(&get(get<tag>(*buffers))),
         cce_data_file_.get<h5::Dat>(detail::dataset_name_for_component(
             get<Tags::detail::InputDataSet<tag>>(dataset_names_))),
-        *time_span_start, *time_span_end);
+        computation_l_max, *time_span_start, *time_span_end);
     cce_data_file_.close_current_object();
   });
   // the next time an update will be required
@@ -210,11 +211,11 @@ void SpecWorldtubeH5BufferUpdater::pup(PUP::er& p) noexcept {
 
 void SpecWorldtubeH5BufferUpdater::update_buffer(
     const gsl::not_null<ComplexModalVector*> buffer_to_update,
-    const h5::Dat& read_data, const size_t time_span_start,
-    const size_t time_span_end) const noexcept {
+    const h5::Dat& read_data, const size_t computation_l_max,
+    const size_t time_span_start, const size_t time_span_end) const noexcept {
   const size_t number_of_columns = read_data.get_dimensions()[1];
   if (UNLIKELY(buffer_to_update->size() != (time_span_end - time_span_start) *
-                                               (number_of_columns - 1) / 2)) {
+                                               square(computation_l_max + 1))) {
     ERROR("Incorrect storage size for the data to be loaded in.");
   }
   auto cols = alg::iota(std::vector<size_t>(number_of_columns - 1), 1u);
@@ -223,10 +224,10 @@ void SpecWorldtubeH5BufferUpdater::update_buffer(
 
   for (size_t time_row = 0; time_row < time_span_end - time_span_start;
        ++time_row) {
-    for (int l = 0; l <= static_cast<int>(l_max_); ++l) {
+    for (int l = 0; l <= static_cast<int>(computation_l_max); ++l) {
       for (int m = -l; m <= l; ++m) {
         (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
-                                l_max_, static_cast<size_t>(l), m) *
+                                computation_l_max, static_cast<size_t>(l), m) *
                                 (time_span_end - time_span_start) +
                             time_row] =
             // -m because SpEC format is stored in decending m.
@@ -261,12 +262,13 @@ ReducedSpecWorldtubeH5BufferUpdater::ReducedSpecWorldtubeH5BufferUpdater(
       Spectral::Swsh::Tags::SwshTransform<Tags::Dr<Tags::BondiJ>>>>(
       dataset_names_) = "DrJ";
   get<Tags::detail::InputDataSet<
-      Spectral::Swsh::Tags::SwshTransform<Tags::BondiH>>>(dataset_names_) = "H";
+      Spectral::Swsh::Tags::SwshTransform<Tags::Du<Tags::BondiJ>>>>(
+      dataset_names_) = "H";
   get<Tags::detail::InputDataSet<
       Spectral::Swsh::Tags::SwshTransform<Tags::BondiR>>>(dataset_names_) = "R";
   get<Tags::detail::InputDataSet<
-      Spectral::Swsh::Tags::SwshTransform<Tags::DuRDividedByR>>>(
-      dataset_names_) = "DuRDividedByR";
+      Spectral::Swsh::Tags::SwshTransform<Tags::Du<Tags::BondiR>>>>(
+      dataset_names_) = "DuR";
 
   // We assume that the filename has the extraction radius encoded as an
   // integer between the first occurrence of 'R' and the first occurrence of
@@ -284,10 +286,10 @@ ReducedSpecWorldtubeH5BufferUpdater::ReducedSpecWorldtubeH5BufferUpdater(
         "CCE filename format).");
   }
 
-  const auto& lapse_data = cce_data_file_.get<h5::Dat>("/Lapse");
-  const auto data_table_dimensions = lapse_data.get_dimensions();
-  const Matrix time_matrix = lapse_data.get_data_subset(
-      std::vector<size_t>{0}, 0, data_table_dimensions[0]);
+  const auto& u_data = cce_data_file_.get<h5::Dat>("/U");
+  const auto data_table_dimensions = u_data.get_dimensions();
+  const Matrix time_matrix = u_data.get_data_subset(std::vector<size_t>{0}, 0,
+                                                    data_table_dimensions[0]);
   time_buffer_ = DataVector{data_table_dimensions[0]};
   for (size_t i = 0; i < data_table_dimensions[0]; ++i) {
     time_buffer_[i] = time_matrix(i, 0);
@@ -300,8 +302,8 @@ double ReducedSpecWorldtubeH5BufferUpdater::update_buffers_for_time(
     const gsl::not_null<Variables<detail::reduced_cce_input_tags>*> buffers,
     const gsl::not_null<size_t*> time_span_start,
     const gsl::not_null<size_t*> time_span_end, const double time,
-    const size_t interpolator_length, const size_t buffer_depth) const
-    noexcept {
+    const size_t computation_l_max, const size_t interpolator_length,
+    const size_t buffer_depth) const noexcept {
   if (*time_span_end >= time_buffer_.size()) {
     return std::numeric_limits<double>::quiet_NaN();
   }
@@ -318,14 +320,15 @@ double ReducedSpecWorldtubeH5BufferUpdater::update_buffers_for_time(
   *time_span_end = new_span_pair.second;
   // load the desired time spans into the buffers
   tmpl::for_each<detail::reduced_cce_input_tags>([
-    this, &buffers, &time_span_start, &time_span_end
+    this, &buffers, &time_span_start, &time_span_end, &computation_l_max
   ](auto tag_v) noexcept {
     using tag = typename decltype(tag_v)::type;
     this->update_buffer(
         make_not_null(&get(get<tag>(*buffers)).data()),
         cce_data_file_.get<h5::Dat>(
-            get<Tags::detail::InputDataSet<tag>>(dataset_names_)),
-        *time_span_start, *time_span_end);
+            "/" + get<Tags::detail::InputDataSet<tag>>(dataset_names_)),
+        computation_l_max, *time_span_start, *time_span_end,
+        tag::type::type::spin == 0);
     cce_data_file_.close_current_object();
   });
   // the next time an update will be required
@@ -335,35 +338,75 @@ double ReducedSpecWorldtubeH5BufferUpdater::update_buffers_for_time(
 
 void ReducedSpecWorldtubeH5BufferUpdater::update_buffer(
     const gsl::not_null<ComplexModalVector*> buffer_to_update,
-    const h5::Dat& read_data, const size_t& time_span_start,
-    const size_t& time_span_end) const noexcept {
+    const h5::Dat& read_data, const size_t computation_l_max,
+    const size_t time_span_start, const size_t time_span_end,
+    const bool is_real) const noexcept {
   size_t number_of_columns = read_data.get_dimensions()[1];
-  if (UNLIKELY(buffer_to_update->size() != (time_span_end - time_span_start) *
-                                               (number_of_columns - 1) / 2)) {
+  if (UNLIKELY(buffer_to_update->size() !=
+               square(computation_l_max + 1) *
+                   (time_span_end - time_span_start))) {
     ERROR("Incorrect storage size for the data to be loaded in.");
   }
   std::vector<size_t> cols(number_of_columns - 1);
   std::iota(cols.begin(), cols.end(), 1);
   Matrix data_matrix = read_data.get_data_subset(
       cols, time_span_start, time_span_end - time_span_start);
-
+  *buffer_to_update = 0.0;
   for (size_t time_row = 0; time_row < time_span_end - time_span_start;
        ++time_row) {
-    for (int l = 0; l <= static_cast<int>(l_max_); ++l) {
+    for (int l = 0; l <= static_cast<int>(std::min(computation_l_max, l_max_));
+         ++l) {
       for (int m = -l; m <= l; ++m) {
-        (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
-                                l_max_, static_cast<size_t>(l), m) *
-                                (time_span_end - time_span_start) +
-                            time_row] =
-            // -m because SpEC format is stored in decending m.
-            std::complex<double>(
-                data_matrix(time_row,
-                            2 * Spectral::Swsh::goldberg_mode_index(
-                                    l_max_, static_cast<size_t>(l), -m)),
-                data_matrix(time_row,
-                            2 * Spectral::Swsh::goldberg_mode_index(
-                                    l_max_, static_cast<size_t>(l), -m) +
-                                1));
+        if (is_real) {
+          if (m == 0) {
+            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                    computation_l_max, static_cast<size_t>(l),
+                                    m) *
+                                    (time_span_end - time_span_start) +
+                                time_row] =
+                std::complex<double>(
+                    data_matrix(time_row, static_cast<size_t>(square(l))), 0.0);
+          } else if (m > 0) {
+            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                    computation_l_max, static_cast<size_t>(l),
+                                    m) *
+                                    (time_span_end - time_span_start) +
+                                time_row] =
+                std::complex<double>(
+                    data_matrix(time_row,
+                                static_cast<size_t>(square(l) + 2 * m - 1)),
+                    data_matrix(
+                        time_row,
+                        static_cast<size_t>(square(l) + 2 * m)));  // NOLINT
+          } else {
+            (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                    computation_l_max, static_cast<size_t>(l),
+                                    m) *
+                                    (time_span_end - time_span_start) +
+                                time_row] =
+                (-m % 2 == 0 ? 1.0 : -1.0) *
+                std::complex<double>(
+                    data_matrix(time_row,
+                                static_cast<size_t>(square(l) + 2 * -m - 1)),
+                    -data_matrix(
+                        time_row,
+                        static_cast<size_t>(square(l) + 2 * -m)));  // NOLINT
+          }
+        } else {
+          (*buffer_to_update)[Spectral::Swsh::goldberg_mode_index(
+                                  computation_l_max, static_cast<size_t>(l),
+                                  m) *
+                                  (time_span_end - time_span_start) +
+                              time_row] =
+              std::complex<double>(
+                  data_matrix(time_row,
+                              2 * Spectral::Swsh::goldberg_mode_index(
+                                      l_max_, static_cast<size_t>(l), m)),
+                  data_matrix(time_row,
+                              2 * Spectral::Swsh::goldberg_mode_index(
+                                      l_max_, static_cast<size_t>(l), m) +
+                                  1));
+        }
       }
     }
   }
@@ -408,12 +451,15 @@ ReducedWorldtubeDataManager::ReducedWorldtubeDataManager(
 }
 
 void ReducedWorldtubeDataManager::pup(PUP::er& p) noexcept {
+  p | buffer_updater_;
   p | time_span_start_;
   p | time_span_end_;
   p | l_max_;
   p | buffer_depth_;
   p | interpolator_;
   if (p.isUnpacking()) {
+    time_span_start_ = 0;
+    time_span_end_ = 0;
     const size_t size_of_buffer =
         square(l_max_ + 1) *
         (buffer_depth_ +
@@ -421,7 +467,7 @@ void ReducedWorldtubeDataManager::pup(PUP::er& p) noexcept {
     coefficients_buffers_ =
         Variables<detail::reduced_cce_input_tags>{size_of_buffer};
     interpolated_coefficients_ = Variables<detail::reduced_cce_input_tags>{
-      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_)};
+        Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_)};
   }
 }
 

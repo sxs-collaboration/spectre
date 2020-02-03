@@ -58,8 +58,8 @@ class DummyBufferUpdater : public WorldtubeBufferUpdater {
       const gsl::not_null<Variables<detail::cce_input_tags>*> buffers,
       const gsl::not_null<size_t*> time_span_start,
       const gsl::not_null<size_t*> time_span_end, const double time,
-      const size_t interpolator_length, const size_t buffer_depth) const
-      noexcept override {
+      const size_t /*l_max*/, const size_t interpolator_length,
+      const size_t buffer_depth) const noexcept override {
     if (*time_span_end > interpolator_length and
         time_buffer_[*time_span_end - interpolator_length + 1] > time) {
       // the next time an update will be required
@@ -209,8 +209,8 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
       const gsl::not_null<Variables<detail::reduced_cce_input_tags>*> buffers,
       const gsl::not_null<size_t*> time_span_start,
       const gsl::not_null<size_t*> time_span_end, const double time,
-      const size_t interpolator_length, const size_t buffer_depth) const
-      noexcept override {
+      const size_t l_max, const size_t interpolator_length,
+      const size_t buffer_depth) const noexcept override {
     if (*time_span_end > interpolator_length and
         time_buffer_[*time_span_end - interpolator_length + 1] > time) {
       // the next time an update will be required
@@ -224,7 +224,7 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
     *time_span_end = new_span_pair.second;
 
     const size_t libsharp_size =
-        Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max_);
+        Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
     tnsr::ii<ComplexModalVector, 3> spatial_metric_coefficients{libsharp_size};
     tnsr::ii<ComplexModalVector, 3> dt_spatial_metric_coefficients{
         libsharp_size};
@@ -241,7 +241,7 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
         Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>;
 
     const size_t number_of_angular_points =
-        Spectral::Swsh::number_of_swsh_collocation_points(l_max_);
+        Spectral::Swsh::number_of_swsh_collocation_points(l_max);
     auto boundary_box = db::create<db::AddSimpleTags<boundary_variables_tag>>(
         db::item_type<boundary_variables_tag>{number_of_angular_points});
 
@@ -265,12 +265,12 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
           dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
           shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
           lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
-          extraction_radius_, l_max_);
+          extraction_radius_, l_max);
       tmpl::for_each<
           tmpl::transform<detail::reduced_cce_input_tags,
                           tmpl::bind<db::remove_tag_prefix, tmpl::_1>>>([
-        this, &boundary_box, &buffers, &time_index, &time_span_end, &
-        time_span_start
+        this, &boundary_box, &buffers, &time_index, &time_span_end,
+        &time_span_start, &l_max
       ](auto tag_v) noexcept {
         using tag = typename decltype(tag_v)::type;
         this->update_buffer_with_scalar_at_time_index(
@@ -278,9 +278,9 @@ class ReducedDummyBufferUpdater : public ReducedWorldtubeBufferUpdater {
                 &get<Spectral::Swsh::Tags::SwshTransform<tag>>(*buffers)),
             Spectral::Swsh::libsharp_to_goldberg_modes(
                 Spectral::Swsh::swsh_transform(
-                    l_max_, 1,
+                    l_max, 1,
                     get(db::get<Tags::BoundaryValue<tag>>(boundary_box))),
-                l_max_),
+                l_max),
             time_index, *time_span_end - *time_span_start);
       });
     }
@@ -356,7 +356,7 @@ void test_data_manager_with_dummy_buffer_updater(
   const double target_time = 50.0 * value_dist(*gen);
 
   const size_t buffer_size = 8;
-  const size_t l_max = 8;
+  const size_t l_max = 12;
 
   DataVector time_buffer{30};
   for (size_t i = 0; i < time_buffer.size(); ++i) {
@@ -482,7 +482,7 @@ void test_spec_worldtube_buffer_updater(
   buffer_updater.update_buffers_for_time(
       make_not_null(&coefficients_buffers_from_file),
       make_not_null(&time_span_start), make_not_null(&time_span_end),
-      target_time, interpolator_length, buffer_size);
+      target_time, l_max, interpolator_length, buffer_size);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
@@ -499,7 +499,7 @@ void test_spec_worldtube_buffer_updater(
   dummy_buffer_updater.update_buffers_for_time(
       make_not_null(&expected_coefficients_buffers),
       make_not_null(&time_span_start), make_not_null(&time_span_end),
-      target_time, interpolator_length, buffer_size);
+      target_time, l_max, interpolator_length, buffer_size);
   // check that the data in the buffer matches the expected analytic data.
   tmpl::for_each<detail::cce_input_tags>([
     &expected_coefficients_buffers, &coefficients_buffers_from_file
@@ -534,14 +534,15 @@ void test_reduced_spec_worldtube_buffer_updater(
 
   const size_t buffer_size = 8;
   const size_t interpolator_length = 3;
-  const size_t l_max = 8;
+  const size_t file_l_max = 8;
+  const size_t computation_l_max = 10;
 
   Variables<detail::reduced_cce_input_tags> coefficients_buffers_from_file{
-      (buffer_size + 2 * interpolator_length) * square(l_max + 1)};
+      (buffer_size + 2 * interpolator_length) * square(computation_l_max + 1)};
   Variables<detail::reduced_cce_input_tags> expected_coefficients_buffers{
-      (buffer_size + 2 * interpolator_length) * square(l_max + 1)};
+      (buffer_size + 2 * interpolator_length) * square(computation_l_max + 1)};
   size_t libsharp_size =
-      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(file_l_max);
   tnsr::ii<ComplexModalVector, 3> spatial_metric_coefficients{libsharp_size};
   tnsr::ii<ComplexModalVector, 3> dt_spatial_metric_coefficients{libsharp_size};
   tnsr::ii<ComplexModalVector, 3> dr_spatial_metric_coefficients{libsharp_size};
@@ -555,7 +556,7 @@ void test_reduced_spec_worldtube_buffer_updater(
   using boundary_variables_tag = ::Tags::Variables<
       Cce::Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>>;
   const size_t number_of_angular_points =
-      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+      Spectral::Swsh::number_of_swsh_collocation_points(file_l_max);
   auto boundary_data_box =
       db::create<db::AddSimpleTags<boundary_variables_tag>>(
           db::item_type<boundary_variables_tag>{number_of_angular_points});
@@ -566,9 +567,9 @@ void test_reduced_spec_worldtube_buffer_updater(
     file_system::rm(filename, true);
   }
 
-  ComplexModalVector output_goldberg_mode_buffer{square(l_max + 1)};
+  ComplexModalVector output_goldberg_mode_buffer{square(file_l_max + 1)};
   ComplexModalVector output_libsharp_mode_buffer{
-      Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
+      Spectral::Swsh::size_of_libsharp_coefficient_vector(file_l_max)};
 
   // scoped to close the file
   {
@@ -585,30 +586,30 @@ void test_reduced_spec_worldtube_buffer_updater(
           make_not_null(&lapse_coefficients),
           make_not_null(&dt_lapse_coefficients),
           make_not_null(&dr_lapse_coefficients), solution, extraction_radius,
-          amplitude, frequency, time, l_max, false);
+          amplitude, frequency, time, file_l_max, false);
 
       create_bondi_boundary_data(
           make_not_null(&boundary_data_box), spatial_metric_coefficients,
           dt_spatial_metric_coefficients, dr_spatial_metric_coefficients,
           shift_coefficients, dt_shift_coefficients, dr_shift_coefficients,
           lapse_coefficients, dt_lapse_coefficients, dr_lapse_coefficients,
-          extraction_radius, l_max);
+          extraction_radius, file_l_max);
 
-      using reduced_boundary_tags =
-          tmpl::list<Cce::Tags::BoundaryValue<Cce::Tags::BondiBeta>,
-                     Cce::Tags::BoundaryValue<Cce::Tags::BondiU>,
-                     Cce::Tags::BoundaryValue<Cce::Tags::BondiQ>,
-                     Cce::Tags::BoundaryValue<Cce::Tags::BondiW>,
-                     Cce::Tags::BoundaryValue<Cce::Tags::BondiJ>,
-                     Cce::Tags::BoundaryValue<Cce::Tags::Dr<Cce::Tags::BondiJ>>,
-                     Cce::Tags::BoundaryValue<Cce::Tags::BondiH>,
-                     Cce::Tags::BoundaryValue<Cce::Tags::BondiR>,
-                     Cce::Tags::BoundaryValue<Cce::Tags::DuRDividedByR>>;
+      using reduced_boundary_tags = tmpl::list<
+          Cce::Tags::BoundaryValue<Cce::Tags::BondiBeta>,
+          Cce::Tags::BoundaryValue<Cce::Tags::BondiU>,
+          Cce::Tags::BoundaryValue<Cce::Tags::BondiQ>,
+          Cce::Tags::BoundaryValue<Cce::Tags::BondiW>,
+          Cce::Tags::BoundaryValue<Cce::Tags::BondiJ>,
+          Cce::Tags::BoundaryValue<Cce::Tags::Dr<Cce::Tags::BondiJ>>,
+          Cce::Tags::BoundaryValue<Cce::Tags::Du<Cce::Tags::BondiJ>>,
+          Cce::Tags::BoundaryValue<Cce::Tags::BondiR>,
+          Cce::Tags::BoundaryValue<Cce::Tags::Du<Cce::Tags::BondiR>>>;
 
       // loop over the tags that we want to dump.
       tmpl::for_each<reduced_boundary_tags>(
           [&recorder, &boundary_data_box, &output_goldberg_mode_buffer,
-           &output_libsharp_mode_buffer, &l_max, &time](auto tag_v) {
+           &output_libsharp_mode_buffer, &file_l_max, &time](auto tag_v) {
             using tag = typename decltype(tag_v)::type;
             SpinWeighted<ComplexModalVector, db::item_type<tag>::type::spin>
                 spin_weighted_libsharp_view;
@@ -616,7 +617,7 @@ void test_reduced_spec_worldtube_buffer_updater(
                 output_libsharp_mode_buffer.data(),
                 output_libsharp_mode_buffer.size());
             Spectral::Swsh::swsh_transform(
-                l_max, 1, make_not_null(&spin_weighted_libsharp_view),
+                file_l_max, 1, make_not_null(&spin_weighted_libsharp_view),
                 get(db::get<tag>(boundary_data_box)));
 
             SpinWeighted<ComplexModalVector, db::item_type<tag>::type::spin>
@@ -626,11 +627,11 @@ void test_reduced_spec_worldtube_buffer_updater(
                 output_goldberg_mode_buffer.size());
             Spectral::Swsh::libsharp_to_goldberg_modes(
                 make_not_null(&spin_weighted_goldberg_view),
-                spin_weighted_libsharp_view, l_max);
+                spin_weighted_libsharp_view, file_l_max);
 
             recorder.append_worldtube_mode_data(
                 "/" + dataset_label_for_tag<tag>(), time,
-                output_goldberg_mode_buffer, l_max,
+                output_goldberg_mode_buffer, file_l_max,
                 db::item_type<tag>::type::spin == 0);
           });
     }
@@ -642,7 +643,7 @@ void test_reduced_spec_worldtube_buffer_updater(
   buffer_updater.update_buffers_for_time(
       make_not_null(&coefficients_buffers_from_file),
       make_not_null(&time_span_start), make_not_null(&time_span_end),
-      target_time, interpolator_length, buffer_size);
+      target_time, computation_l_max, interpolator_length, buffer_size);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
@@ -656,20 +657,26 @@ void test_reduced_spec_worldtube_buffer_updater(
 
   const ReducedDummyBufferUpdater<gr::Solutions::KerrSchild>
       dummy_buffer_updater{time_buffer, solution,  extraction_radius,
-                           amplitude,   frequency, l_max};
+                           amplitude,   frequency, computation_l_max};
   dummy_buffer_updater.update_buffers_for_time(
       make_not_null(&expected_coefficients_buffers),
       make_not_null(&time_span_start), make_not_null(&time_span_end),
-      target_time, interpolator_length, buffer_size);
+      target_time, computation_l_max, interpolator_length, buffer_size);
+
+  Approx angular_derivative_approx =
+      Approx::custom()
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
+          .scale(1.0);
   // check that the data in the buffer matches the expected analytic data.
   tmpl::for_each<detail::reduced_cce_input_tags>(
-      [&expected_coefficients_buffers,
-       &coefficients_buffers_from_file](auto tag_v) {
+      [&expected_coefficients_buffers, &coefficients_buffers_from_file,
+       &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
         INFO(tag::name());
         const auto& test_lhs = get<tag>(expected_coefficients_buffers);
         const auto& test_rhs = get<tag>(coefficients_buffers_from_file);
-        CHECK_ITERABLE_APPROX(test_lhs, test_rhs);
+        CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
+                                     angular_derivative_approx);
       });
 }
 }  // namespace
@@ -678,6 +685,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.ReadBoundaryDataH5",
                   "[Unit][Cce]") {
   MAKE_GENERATOR(gen);
   test_spec_worldtube_buffer_updater(make_not_null(&gen));
+  test_reduced_spec_worldtube_buffer_updater(make_not_null(&gen));
   test_data_manager_with_dummy_buffer_updater<WorldtubeDataManager,
                                               DummyBufferUpdater>(
       make_not_null(&gen));

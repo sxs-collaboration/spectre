@@ -85,9 +85,9 @@ using reduced_cce_input_tags =
                Spectral::Swsh::Tags::SwshTransform<Tags::BondiW>,
                Spectral::Swsh::Tags::SwshTransform<Tags::BondiJ>,
                Spectral::Swsh::Tags::SwshTransform<Tags::Dr<Tags::BondiJ>>,
-               Spectral::Swsh::Tags::SwshTransform<Tags::BondiH>,
+               Spectral::Swsh::Tags::SwshTransform<Tags::Du<Tags::BondiJ>>,
                Spectral::Swsh::Tags::SwshTransform<Tags::BondiR>,
-               Spectral::Swsh::Tags::SwshTransform<Tags::DuRDividedByR>>;
+               Spectral::Swsh::Tags::SwshTransform<Tags::Du<Tags::BondiR>>>;
 
 // creates a pair of indices such that the difference is `2 *
 // interpolator_length + pad`, centered around `time`, and bounded by
@@ -136,6 +136,7 @@ class SpecWorldtubeH5BufferUpdater;
  *  times at each of the rows of the time-series data.
  */
 class WorldtubeBufferUpdater : public PUP::able {
+ public:
   using creatable_classes = tmpl::list<SpecWorldtubeH5BufferUpdater>;
 
   WRAPPED_PUPable_abstract(WorldtubeBufferUpdater);  // NOLINT
@@ -144,7 +145,8 @@ class WorldtubeBufferUpdater : public PUP::able {
       gsl::not_null<Variables<detail::cce_input_tags>*> buffers,
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
-      size_t interpolator_length, size_t buffer_depth) const noexcept = 0;
+      size_t computation_l_max, size_t interpolator_length,
+      size_t buffer_depth) const noexcept = 0;
 
   virtual std::unique_ptr<WorldtubeBufferUpdater> get_clone() const
       noexcept = 0;
@@ -189,7 +191,8 @@ class SpecWorldtubeH5BufferUpdater : public WorldtubeBufferUpdater {
       gsl::not_null<Variables<detail::cce_input_tags>*> buffers,
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
-      size_t interpolator_length, size_t buffer_depth) const noexcept override;
+      size_t computation_l_max, size_t interpolator_length,
+      size_t buffer_depth) const noexcept override;
 
   std::unique_ptr<WorldtubeBufferUpdater> get_clone() const noexcept override;
 
@@ -223,8 +226,9 @@ class SpecWorldtubeH5BufferUpdater : public WorldtubeBufferUpdater {
 
  private:
   void update_buffer(gsl::not_null<ComplexModalVector*> buffer_to_update,
-                     const h5::Dat& read_data, size_t time_span_start,
-                     size_t time_span_end) const noexcept;
+                     const h5::Dat& read_data, size_t computation_l_max,
+                     size_t time_span_start, size_t time_span_end) const
+      noexcept;
 
   bool radial_derivatives_need_renormalization_ = false;
   double extraction_radius_ = 1.0;
@@ -246,6 +250,7 @@ class ReducedSpecWorldtubeH5BufferUpdater;
 /// \endcond
 
 class ReducedWorldtubeBufferUpdater : public PUP::able {
+ public:
   using creatable_classes = tmpl::list<ReducedSpecWorldtubeH5BufferUpdater>;
 
   WRAPPED_PUPable_abstract(ReducedWorldtubeBufferUpdater);  // NOLINT
@@ -254,7 +259,8 @@ class ReducedWorldtubeBufferUpdater : public PUP::able {
       gsl::not_null<Variables<detail::reduced_cce_input_tags>*> buffers,
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
-      size_t interpolator_length, size_t buffer_depth) const noexcept = 0;
+      size_t computation_l_max, size_t interpolator_length,
+      size_t buffer_depth) const noexcept = 0;
 
   virtual std::unique_ptr<ReducedWorldtubeBufferUpdater> get_clone() const
       noexcept = 0;
@@ -295,7 +301,8 @@ class ReducedSpecWorldtubeH5BufferUpdater
       gsl::not_null<Variables<detail::reduced_cce_input_tags>*> buffers,
       gsl::not_null<size_t*> time_span_start,
       gsl::not_null<size_t*> time_span_end, double time,
-      size_t interpolator_length, size_t buffer_depth) const noexcept override;
+      size_t computation_l_max, size_t interpolator_length,
+      size_t buffer_depth) const noexcept override;
 
   std::unique_ptr<ReducedWorldtubeBufferUpdater> get_clone() const
       noexcept override {
@@ -331,8 +338,9 @@ class ReducedSpecWorldtubeH5BufferUpdater
 
  private:
   void update_buffer(gsl::not_null<ComplexModalVector*> buffer_to_update,
-                     const h5::Dat& read_data, const size_t& time_span_start,
-                     const size_t& time_span_end) const noexcept;
+                     const h5::Dat& read_data, size_t computation_l_max,
+                     size_t time_span_start, size_t time_span_end,
+                     bool is_real) const noexcept;
 
   double extraction_radius_ = 1.0;
   size_t l_max_ = 0;
@@ -415,13 +423,13 @@ class WorldtubeDataManager {
   template <typename TagList>
   bool populate_hypersurface_boundary_data(
       const gsl::not_null<db::DataBox<TagList>*> boundary_data_box,
-      const double time) noexcept {
+      const double time) const noexcept {
     if (buffer_updater_->time_is_outside_range(time)) {
       return false;
     }
     buffer_updater_->update_buffers_for_time(
         make_not_null(&coefficients_buffers_), make_not_null(&time_span_start_),
-        make_not_null(&time_span_end_), time,
+        make_not_null(&time_span_end_), time, l_max_,
         interpolator_->required_number_of_points_before_and_after(),
         buffer_depth_);
     const auto interpolation_time_span = detail::create_span_for_time_value(
@@ -551,13 +559,11 @@ class WorldtubeDataManager {
           get<Tags::detail::Dr<Tags::detail::SpatialMetric>>(
               interpolated_coefficients_),
           get<Tags::detail::Shift>(interpolated_coefficients_),
-          get<::Tags::dt<Tags::detail::Shift>>(
-              interpolated_coefficients_),
+          get<::Tags::dt<Tags::detail::Shift>>(interpolated_coefficients_),
           get<Tags::detail::Dr<Tags::detail::Shift>>(
               interpolated_coefficients_),
           get<Tags::detail::Lapse>(interpolated_coefficients_),
-          get<::Tags::dt<Tags::detail::Lapse>>(
-              interpolated_coefficients_),
+          get<::Tags::dt<Tags::detail::Lapse>>(interpolated_coefficients_),
           get<Tags::detail::Dr<Tags::detail::Lapse>>(
               interpolated_coefficients_),
           buffer_updater_->get_extraction_radius(), l_max_);
@@ -570,13 +576,11 @@ class WorldtubeDataManager {
           get<Tags::detail::Dr<Tags::detail::SpatialMetric>>(
               interpolated_coefficients_),
           get<Tags::detail::Shift>(interpolated_coefficients_),
-          get<::Tags::dt<Tags::detail::Shift>>(
-              interpolated_coefficients_),
+          get<::Tags::dt<Tags::detail::Shift>>(interpolated_coefficients_),
           get<Tags::detail::Dr<Tags::detail::Shift>>(
               interpolated_coefficients_),
           get<Tags::detail::Lapse>(interpolated_coefficients_),
-          get<::Tags::dt<Tags::detail::Lapse>>(
-              interpolated_coefficients_),
+          get<::Tags::dt<Tags::detail::Lapse>>(interpolated_coefficients_),
           get<Tags::detail::Dr<Tags::detail::Lapse>>(
               interpolated_coefficients_),
           buffer_updater_->get_extraction_radius(), l_max_);
@@ -596,12 +600,15 @@ class WorldtubeDataManager {
 
   /// Serialization for Charm++.
   void pup(PUP::er& p) noexcept {  // NOLINT
+    p | buffer_updater_;
     p | time_span_start_;
     p | time_span_end_;
     p | l_max_;
     p | buffer_depth_;
     p | interpolator_;
     if (p.isUnpacking()) {
+      time_span_start_ = 0;
+      time_span_end_ = 0;
       const size_t size_of_buffer =
           square(l_max_ + 1) *
           (buffer_depth_ +
@@ -614,16 +621,16 @@ class WorldtubeDataManager {
 
  private:
   std::unique_ptr<WorldtubeBufferUpdater> buffer_updater_;
-  size_t time_span_start_ = 0;
-  size_t time_span_end_ = 0;
+  mutable size_t time_span_start_ = 0;
+  mutable size_t time_span_end_ = 0;
   size_t l_max_ = 0;
 
   // These buffers are just kept around to avoid allocations; they're
   // updated every time a time is requested
-  Variables<detail::cce_input_tags> interpolated_coefficients_;
+  mutable Variables<detail::cce_input_tags> interpolated_coefficients_;
 
   // note: buffers store data in a 'time-varies-fastest' manner
-  Variables<detail::cce_input_tags> coefficients_buffers_;
+  mutable Variables<detail::cce_input_tags> coefficients_buffers_;
 
   size_t buffer_depth_ = 0;
 
@@ -675,8 +682,8 @@ class ReducedWorldtubeDataManager {
    */
   template <typename TagList>
   bool populate_hypersurface_boundary_data(
-      gsl::not_null<db::DataBox<TagList>*> boundary_data_box,
-      double time) noexcept;
+      gsl::not_null<db::DataBox<TagList>*> boundary_data_box, double time) const
+      noexcept;
 
   /// retrieves the l_max that will be supplied to the \ref DataBoxGroup in
   /// `populate_hypersurface_boundary_data()`
@@ -693,16 +700,16 @@ class ReducedWorldtubeDataManager {
 
  private:
   std::unique_ptr<ReducedWorldtubeBufferUpdater> buffer_updater_;
-  size_t time_span_start_ = 0;
-  size_t time_span_end_ = 0;
+  mutable size_t time_span_start_ = 0;
+  mutable size_t time_span_end_ = 0;
   size_t l_max_ = 0;
 
   // These buffers are just kept around to avoid allocations; they're
   // updated every time a time is requested
-  Variables<detail::reduced_cce_input_tags> interpolated_coefficients_;
+  mutable Variables<detail::reduced_cce_input_tags> interpolated_coefficients_;
 
   // note: buffers store data in an 'time-varies-fastest' manner
-  Variables<detail::reduced_cce_input_tags> coefficients_buffers_;
+  mutable Variables<detail::reduced_cce_input_tags> coefficients_buffers_;
 
   size_t buffer_depth_ = 0;
 
@@ -712,13 +719,13 @@ class ReducedWorldtubeDataManager {
 template <typename TagList>
 bool ReducedWorldtubeDataManager::populate_hypersurface_boundary_data(
     const gsl::not_null<db::DataBox<TagList>*> boundary_data_box,
-    const double time) noexcept {
+    const double time) const noexcept {
   if (buffer_updater_->time_is_outside_range(time)) {
     return false;
   }
   buffer_updater_->update_buffers_for_time(
       make_not_null(&coefficients_buffers_), make_not_null(&time_span_start_),
-      make_not_null(&time_span_end_), time,
+      make_not_null(&time_span_end_), time, l_max_,
       interpolator_->required_number_of_points_before_and_after(),
       buffer_depth_);
   auto interpolation_time_span = detail::create_span_for_time_value(
@@ -754,10 +761,6 @@ bool ReducedWorldtubeDataManager::populate_hypersurface_boundary_data(
   // the ComplexModalVectors should be provided from the buffer_updater_ in
   // 'Goldberg' format, so we iterate over modes and convert to libsharp
   // format.
-
-  // we'll just use this buffer to reference into the actual data to satisfy
-  // the swsh interface requirement that the spin-weight be labelled with
-  // `SpinWeighted`
   for (const auto& libsharp_mode :
        Spectral::Swsh::cached_coefficients_metadata(l_max_)) {
     tmpl::for_each<detail::reduced_cce_input_tags>([
@@ -778,7 +781,6 @@ bool ReducedWorldtubeDataManager::populate_hypersurface_boundary_data(
                   -static_cast<int>(libsharp_mode.m))));
     });
   }
-
   // just inverse transform the 'direct' tags
   tmpl::for_each<tmpl::transform<detail::reduced_cce_input_tags,
                                  tmpl::bind<db::remove_tag_prefix, tmpl::_1>>>(
@@ -800,25 +802,35 @@ bool ReducedWorldtubeDataManager::populate_hypersurface_boundary_data(
                 interpolated_coefficients_));
       });
 
+  db::mutate<Tags::BoundaryValue<Tags::DuRDividedByR>>(
+      boundary_data_box,
+      [](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
+             du_r_divided_by_r,
+         const Scalar<SpinWeighted<ComplexDataVector, 0>>& du_r,
+         const Scalar<SpinWeighted<ComplexDataVector, 0>>& r) noexcept {
+        get(*du_r_divided_by_r) = get(du_r) / get(r);
+      },
+      db::get<Tags::BoundaryValue<Tags::Du<Tags::BondiR>>>(*boundary_data_box),
+      db::get<Tags::BoundaryValue<Tags::BondiR>>(*boundary_data_box));
+
   // there's only a couple of tags desired by the core computation that aren't
   // stored in the 'reduced' format, so we perform the remaining computation
   // in-line here.
 
-  // \partial_u J:
-  db::mutate<Tags::BoundaryValue<Tags::Du<Tags::BondiJ>>>(
+  db::mutate<Tags::BoundaryValue<Tags::BondiH>>(
       boundary_data_box,
-      [](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> du_j,
-         const Scalar<SpinWeighted<ComplexDataVector, 2>>& h,
+      [](const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> h,
+         const Scalar<SpinWeighted<ComplexDataVector, 2>>& du_j,
          const Scalar<SpinWeighted<ComplexDataVector, 2>>& dr_j,
          const Scalar<SpinWeighted<ComplexDataVector, 0>>& r,
          const Scalar<SpinWeighted<ComplexDataVector, 0>>&
              du_r_divided_by_r) noexcept {
-        get(*du_j) = get(h) - get(r) * get(du_r_divided_by_r) * get(dr_j);
+        get(*h) = get(du_j) + get(r) * get(du_r_divided_by_r) * get(dr_j);
       },
-      db::get<Tags::BoundaryValue<Tags::BondiH>>(*boundary_data_box),
+      db::get<Tags::BoundaryValue<Tags::Du<Tags::BondiJ>>>(*boundary_data_box),
       db::get<Tags::BoundaryValue<Tags::Dr<Tags::BondiJ>>>(*boundary_data_box),
       db::get<Tags::BoundaryValue<Tags::BondiR>>(*boundary_data_box),
-      get<Tags::BoundaryValue<Tags::DuRDividedByR>>(*boundary_data_box));
+      db::get<Tags::BoundaryValue<Tags::DuRDividedByR>>(*boundary_data_box));
 
   // \partial_r U:
   db::mutate<Tags::BoundaryValue<Tags::Dr<Tags::BondiU>>>(
@@ -835,10 +847,10 @@ bool ReducedWorldtubeDataManager::populate_hypersurface_boundary_data(
             exp(2.0 * get(beta).data()) / square(get(r).data()) *
             (k.data() * get(q).data() - get(j).data() * conj(get(q).data()));
       },
-      get<Tags::BoundaryValue<Tags::BondiBeta>>(*boundary_data_box),
-      get<Tags::BoundaryValue<Tags::BondiR>>(*boundary_data_box),
-      get<Tags::BoundaryValue<Tags::BondiQ>>(*boundary_data_box),
-      get<Tags::BoundaryValue<Tags::BondiJ>>(*boundary_data_box));
+      db::get<Tags::BoundaryValue<Tags::BondiBeta>>(*boundary_data_box),
+      db::get<Tags::BoundaryValue<Tags::BondiR>>(*boundary_data_box),
+      db::get<Tags::BoundaryValue<Tags::BondiQ>>(*boundary_data_box),
+      db::get<Tags::BoundaryValue<Tags::BondiJ>>(*boundary_data_box));
   return true;
 }
 }  // namespace Cce

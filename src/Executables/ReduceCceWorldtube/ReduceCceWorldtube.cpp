@@ -187,7 +187,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
                  Cce::Tags::BoundaryValue<Cce::Tags::Dr<Cce::Tags::BondiJ>>,
                  Cce::Tags::BoundaryValue<Cce::Tags::Du<Cce::Tags::BondiJ>>,
                  Cce::Tags::BoundaryValue<Cce::Tags::BondiR>,
-                 Cce::Tags::BoundaryValue<Cce::Tags::DuRDividedByR>>;
+                 Cce::Tags::BoundaryValue<Cce::Tags::Du<Cce::Tags::BondiR>>>;
 
   size_t time_span_start = 0;
   size_t time_span_end = 0;
@@ -203,7 +203,7 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
                      time_buffer[time_buffer.size() - 1]);
     buffer_updater.update_buffers_for_time(
         make_not_null(&coefficients_buffers), make_not_null(&time_span_start),
-        make_not_null(&time_span_end), time, 0, buffer_depth);
+        make_not_null(&time_span_end), time, l_max, 0, buffer_depth);
 
     slice_buffers_to_libsharp_modes(
         make_not_null(&coefficients_set), coefficients_buffers,
@@ -254,18 +254,9 @@ void perform_cce_worldtube_reduction(const std::string& input_file,
       spin_weighted_libsharp_view.set_data_ref(
           output_libsharp_mode_buffer.data(),
           output_libsharp_mode_buffer.size());
-      if (cpp17::is_same_v<
-              tag, Cce::Tags::BoundaryValue<Cce::Tags::DuRDividedByR>>) {
-        Spectral::Swsh::swsh_transform(
-            computation_l_max, 1, make_not_null(&spin_weighted_libsharp_view),
-            get(db::get<tag>(boundary_data_box)) *
-                get(get<Cce::Tags::BoundaryValue<Cce::Tags::BondiR>>(
-                    boundary_data_box)));
-      } else {
-        Spectral::Swsh::swsh_transform(
-            computation_l_max, 1, make_not_null(&spin_weighted_libsharp_view),
-            get(db::get<tag>(boundary_data_box)));
-      }
+      Spectral::Swsh::swsh_transform(
+          computation_l_max, 1, make_not_null(&spin_weighted_libsharp_view),
+          get(db::get<tag>(boundary_data_box)));
       SpinWeighted<ComplexModalVector, db::item_type<tag>::type::spin>
           spin_weighted_goldberg_view;
       spin_weighted_goldberg_view.set_data_ref(
