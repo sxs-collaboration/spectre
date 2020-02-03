@@ -24,7 +24,6 @@ namespace Tags {
 /// Bondi parameter \f$\beta\f$
 struct BondiBeta : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
-  static std::string name() noexcept { return "BondiBeta"; }
 };
 
 /// \brief Bondi parameter \f$H = \partial_u J\f$.
@@ -260,7 +259,6 @@ struct LinearFactorForConjugate : db::PrefixTag, db::SimpleTag {
 /// implementing functions
 struct OneMinusY : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
-  static std::string name() noexcept { return "OneMinusY"; }
 };
 
 /// A tag for the first time derivative of the worldtube parameter
@@ -268,14 +266,12 @@ struct OneMinusY : db::SimpleTag {
 /// radius of the worldtube.
 struct DuR : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
-  static std::string name() noexcept { return "DuR"; }
 };
 
 /// The value \f$\partial_u R / R\f$, where \f$R(u, \theta, \phi)\f$ is Bondi
 /// radius of the worldtube.
 struct DuRDividedByR : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
-  static std::string name() noexcept { return "DuRDividedByR"; }
 };
 
 /// The value \f$\eth R / R\f$, where \f$R(u, \theta, \phi)\f$ is Bondi
@@ -284,7 +280,6 @@ struct EthRDividedByR : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 1>>;
   using derivative_kind = Spectral::Swsh::Tags::Eth;
   static constexpr int spin = 1;
-  static std::string name() noexcept { return "EthRDividedByR"; }
 };
 
 /// The value \f$\eth \eth R / R\f$, where \f$R(u, \theta, \phi)\f$ is Bondi
@@ -293,7 +288,6 @@ struct EthEthRDividedByR : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 2>>;
   using derivative_kind = Spectral::Swsh::Tags::EthEth;
   static constexpr int spin = 2;
-  static std::string name() noexcept { return "EthEthRDividedByR"; }
 };
 
 /// The value \f$\eth \bar{\eth} R / R\f$, where \f$R(u, \theta, \phi)\f$ is
@@ -302,19 +296,16 @@ struct EthEthbarRDividedByR : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
   using derivative_kind = Spectral::Swsh::Tags::EthEthbar;
   static constexpr int spin = 0;
-  static std::string name() noexcept { return "EthEthbarRDividedByR"; }
 };
 
 /// The value \f$\exp(2\beta)\f$.
 struct Exp2Beta : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;
-  static std::string name() noexcept { return "Exp2Beta"; }
 };
 
 /// The value \f$ \bar{J} (Q - 2 \eth \beta ) \f$.
 struct JbarQMinus2EthBeta : db::SimpleTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, -1>>;
-  static std::string name() noexcept { return "JbarQMinus2EthBeta"; }
 };
 
 /// The Bondi radius \f$R(u, \theta, \phi)\f$ is of the worldtube.

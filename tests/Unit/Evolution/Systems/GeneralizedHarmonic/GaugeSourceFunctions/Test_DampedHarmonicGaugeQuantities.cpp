@@ -39,6 +39,7 @@
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -2931,11 +2932,12 @@ void test_damped_harmonic_compute_tags(const size_t grid_size_each_dimension,
   // Check that compute items work correctly in the DataBox
   //
   // First, check that the names are correct
-  CHECK(
-      GeneralizedHarmonic::DampedHarmonicHCompute<3, Frame::Inertial>::name() ==
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::DampedHarmonicHCompute<3, Frame::Inertial>>(
       "GaugeH");
-  CHECK(GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<
-            3, Frame::Inertial>::name() == "SpacetimeDerivGaugeH");
+  TestHelpers::db::test_compute_tag<
+      GeneralizedHarmonic::SpacetimeDerivDampedHarmonicHCompute<
+          3, Frame::Inertial>>("SpacetimeDerivGaugeH");
 
   const auto box = db::create<
       db::AddSimpleTags<

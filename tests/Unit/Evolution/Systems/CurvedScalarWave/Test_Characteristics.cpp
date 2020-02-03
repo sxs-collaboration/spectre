@@ -15,6 +15,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Characteristics.hpp"
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 
@@ -111,6 +112,16 @@ void test_evolved_from_characteristic_fields() noexcept {
 
 template <size_t SpatialDim>
 void test_characteristics_compute_tags() noexcept {
+  TestHelpers::db::test_compute_tag<
+      CurvedScalarWave::CharacteristicSpeedsCompute<SpatialDim>>(
+      "CharacteristicSpeeds");
+  TestHelpers::db::test_compute_tag<
+      CurvedScalarWave::CharacteristicFieldsCompute<SpatialDim>>(
+      "CharacteristicFields");
+  TestHelpers::db::test_compute_tag<
+      CurvedScalarWave::EvolvedFieldsFromCharacteristicFieldsCompute<
+          SpatialDim>>("EvolvedFieldsFromCharacteristicFields");
+
   const DataVector used_for_size(5);
 
   MAKE_GENERATOR(generator);

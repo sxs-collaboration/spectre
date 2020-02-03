@@ -125,6 +125,7 @@ void damped_harmonic_h(
 template <size_t SpatialDim, typename Frame>
 struct DampedHarmonicHCompute : Tags::GaugeH<SpatialDim, Frame>,
                                 db::ComputeTag {
+  using base = Tags::GaugeH<SpatialDim, Frame>;
   using argument_tags = tmpl::list<
       Tags::InitialGaugeH<SpatialDim, Frame>, ::gr::Tags::Lapse<DataVector>,
       ::gr::Tags::Shift<SpatialDim, Frame, DataVector>,
@@ -267,6 +268,7 @@ template <size_t SpatialDim, typename Frame>
 struct SpacetimeDerivDampedHarmonicHCompute
     : Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>,
       db::ComputeTag {
+  using base = Tags::SpacetimeDerivGaugeH<SpatialDim, Frame>;
   using argument_tags = tmpl::list<
       Tags::InitialGaugeH<SpatialDim, Frame>,
       Tags::SpacetimeDerivInitialGaugeH<SpatialDim, Frame>,

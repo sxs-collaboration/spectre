@@ -52,6 +52,7 @@ namespace Tags {
 ///
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
                                      db::ComputeTag {
+  using base = Tags::CharacteristicSpeeds;
   using argument_tags = tmpl::list<gr::Tags::Lapse<>>;
 
   using return_type = std::array<DataVector, 4>;

@@ -22,18 +22,15 @@ class Variables;
 namespace CurvedScalarWave {
 struct Psi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Psi"; }
 };
 
 struct Pi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Pi"; }
 };
 
 template <size_t SpatialDim>
 struct Phi : db::SimpleTag {
   using type = tnsr::i<DataVector, SpatialDim>;
-  static std::string name() noexcept { return "Phi"; }
 };
 
 namespace Tags {

@@ -535,7 +535,7 @@ void test_kerr_schild_boundary_consistency(
       [&gh_boundary_box, &modal_boundary_box,
        &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
-        INFO(tag::name());
+        INFO(db::tag_name<tag>());
         const auto& test_lhs = db::get<tag>(gh_boundary_box);
         const auto& test_rhs = db::get<tag>(modal_boundary_box);
         CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
@@ -601,7 +601,7 @@ void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) noexcept {
       [&gh_boundary_box, &modal_boundary_box, &expected_box,
        &angular_derivative_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
-        INFO(tag::name());
+        INFO(db::tag_name<tag>());
         const auto& test_lhs_0 = db::get<tag>(gh_boundary_box);
         const auto& test_rhs_0 = db::get<tag>(expected_box);
         CHECK_ITERABLE_CUSTOM_APPROX(test_lhs_0, test_rhs_0,

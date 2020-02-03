@@ -21,24 +21,20 @@ namespace {
 
 struct FirstArg : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "FirstArg"; }
 };
 
 template <size_t Dim>
 struct SecondArg : db::SimpleTag {
   using type = tnsr::I<DataVector, Dim>;
-  static std::string name() noexcept { return "SecondArg"; }
 };
 
 struct ThirdArg : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ThirdArg"; }
 };
 
 template <size_t Dim>
 struct FourthArg : db::SimpleTag {
   using type = tnsr::i<DataVector, Dim>;
-  static std::string name() noexcept { return "FourthArg"; }
 };
 
 // Some source term where all three conservative quantities are sourced.

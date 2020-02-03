@@ -36,6 +36,7 @@ namespace Tags {
 /// Can be retrieved using `NewtonianEuler::Tags::SoundSpeedSquared`
 template <typename DataType>
 struct SoundSpeedSquaredCompute : SoundSpeedSquared<DataType>, db::ComputeTag {
+  using base = SoundSpeedSquared<DataType>;
   template <typename EquationOfStateType>
   static Scalar<DataType> function(
       const Scalar<DataType>& mass_density,
@@ -54,6 +55,7 @@ struct SoundSpeedSquaredCompute : SoundSpeedSquared<DataType>, db::ComputeTag {
 /// Can be retrieved using `NewtonianEuler::Tags::SoundSpeed`
 template <typename DataType>
 struct SoundSpeedCompute : SoundSpeed<DataType>, db::ComputeTag {
+  using base = SoundSpeed<DataType>;
   static Scalar<DataType> function(
       const Scalar<DataType>& sound_speed_squared) noexcept {
     return Scalar<DataType>{sqrt(get(sound_speed_squared))};

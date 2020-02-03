@@ -79,6 +79,7 @@ namespace Tags {
 template <size_t Dim>
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds<Dim>,
                                      db::ComputeTag {
+  using base = Tags::CharacteristicSpeeds<Dim>;
   using argument_tags =
       tmpl::list<gr::Tags::Lapse<>, gr::Tags::Shift<Dim>,
                  gr::Tags::SpatialMetric<Dim>,

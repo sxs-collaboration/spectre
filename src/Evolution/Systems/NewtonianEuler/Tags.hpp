@@ -21,21 +21,18 @@ namespace Tags {
 template <size_t Dim>
 struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, Dim + 2>;
-  static std::string name() noexcept { return "CharacteristicSpeeds"; }
 };
 
 /// The mass density of the fluid.
 template <typename DataType>
 struct MassDensity : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "MassDensity"; }
 };
 
 /// The mass density of the fluid (as a conservative variable).
 template <typename DataType>
 struct MassDensityCons : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "MassDensityCons"; }
 };
 
 /// The momentum density of the fluid.
@@ -51,7 +48,6 @@ struct MomentumDensity : db::SimpleTag {
 template <typename DataType>
 struct EnergyDensity : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "EnergyDensity"; }
 };
 
 /// The macroscopic or flow velocity of the fluid.
@@ -67,32 +63,28 @@ struct Velocity : db::SimpleTag {
 template <typename DataType>
 struct SpecificInternalEnergy : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "SpecificInternalEnergy"; }
 };
 
 /// The fluid pressure.
 template <typename DataType>
 struct Pressure : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "Pressure"; }
 };
 
 /// The sound speed.
 template <typename DataType>
 struct SoundSpeed : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "SoundSpeed"; }
 };
 
 /// The square of the sound speed.
 template <typename DataType>
 struct SoundSpeedSquared : db::SimpleTag {
   using type = Scalar<DataType>;
-  static std::string name() noexcept { return "SoundSpeedSquared"; }
 };
 
 /// Base tag for the source term
-struct SourceTermBase {};
+struct SourceTermBase : db::BaseTag {};
 
 /// The source term in the evolution equations
 template <typename InitialDataType>
@@ -102,7 +94,6 @@ struct SourceTerm : SourceTermBase, db::SimpleTag {
       tmpl::conditional_t<evolution::is_analytic_solution_v<InitialDataType>,
                           ::OptionTags::AnalyticSolution<InitialDataType>,
                           ::OptionTags::AnalyticData<InitialDataType>>>;
-  static std::string name() noexcept { return "SourceTerm"; }
 
   template <typename Metavariables>
   static type create_from_options(

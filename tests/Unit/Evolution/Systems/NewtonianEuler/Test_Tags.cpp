@@ -8,6 +8,7 @@
 
 #include "DataStructures/Tensor/IndexType.hpp"  // IWYU pragma: keep
 #include "Evolution/Systems/NewtonianEuler/Tags.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 class DataVector;
 struct SomeSourceType {};
@@ -18,30 +19,33 @@ struct SomeInitialDataType {
 namespace {
 template <size_t Dim>
 void test_tags() noexcept {
-  CHECK(NewtonianEuler::Tags::CharacteristicSpeeds<Dim>::name() ==
-        "CharacteristicSpeeds");
-  CHECK(NewtonianEuler::Tags::MassDensity<DataVector>::name() == "MassDensity");
-  CHECK(NewtonianEuler::Tags::MomentumDensity<DataVector, Dim,
-                                              Frame::Inertial>::name() ==
-        "MomentumDensity");
-  CHECK(NewtonianEuler::Tags::MomentumDensity<DataVector, Dim,
-                                              Frame::Grid>::name() ==
-        "Grid_MomentumDensity");
-  CHECK(NewtonianEuler::Tags::EnergyDensity<DataVector>::name() ==
-        "EnergyDensity");
-  CHECK(NewtonianEuler::Tags::Velocity<DataVector, Dim,
-                                       Frame::Inertial>::name() == "Velocity");
-  CHECK(
-      NewtonianEuler::Tags::Velocity<DataVector, Dim, Frame::Logical>::name() ==
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::CharacteristicSpeeds<Dim>>("CharacteristicSpeeds");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::MassDensityCons<DataVector>>("MassDensityCons");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::MassDensity<DataVector>>("MassDensity");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::MomentumDensity<DataVector, Dim, Frame::Grid>>(
+      "Grid_MomentumDensity");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::EnergyDensity<DataVector>>("EnergyDensity");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::Velocity<DataVector, Dim, Frame::Logical>>(
       "Logical_Velocity");
-  CHECK(NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>::name() ==
-        "SpecificInternalEnergy");
-  CHECK(NewtonianEuler::Tags::Pressure<DataVector>::name() == "Pressure");
-  CHECK(NewtonianEuler::Tags::SoundSpeed<DataVector>::name() == "SoundSpeed");
-  CHECK(NewtonianEuler::Tags::SoundSpeedSquared<DataVector>::name() ==
-        "SoundSpeedSquared");
-  CHECK(NewtonianEuler::Tags::SourceTerm<SomeInitialDataType>::name() ==
-        "SourceTerm");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::SpecificInternalEnergy<DataVector>>(
+      "SpecificInternalEnergy");
+  TestHelpers::db::test_simple_tag<NewtonianEuler::Tags::Pressure<DataVector>>(
+      "Pressure");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::SoundSpeed<DataVector>>("SoundSpeed");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::SoundSpeedSquared<DataVector>>("SoundSpeedSquared");
+  TestHelpers::db::test_base_tag<NewtonianEuler::Tags::SourceTermBase>(
+      "SourceTermBase");
+  TestHelpers::db::test_simple_tag<
+      NewtonianEuler::Tags::SourceTerm<SomeInitialDataType>>("SourceTerm");
 }
 }  // namespace
 

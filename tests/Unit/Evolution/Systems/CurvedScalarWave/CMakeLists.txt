@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   TestHelpers.cpp
   Test_Characteristics.cpp
   Test_DuDt.cpp
+  Test_Tags.cpp
   )
 
 add_test_library(

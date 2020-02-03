@@ -130,6 +130,7 @@ namespace Tags {
 template <typename EquationOfStateType>
 struct CharacteristicSpeedsCompute : Tags::CharacteristicSpeeds,
                                      db::ComputeTag {
+  using base = Tags::CharacteristicSpeeds;
   using argument_tags =
       tmpl::list<hydro::Tags::RestMassDensity<DataVector>,
                  hydro::Tags::SpecificInternalEnergy<DataVector>,

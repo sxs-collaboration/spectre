@@ -25,19 +25,16 @@ namespace Tags {
 /// The characteristic speeds
 struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, 9>;
-  static std::string name() noexcept { return "CharacteristicSpeeds"; }
 };
 
 /// The densitized rest-mass density \f${\tilde D}\f$
 struct TildeD : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "TildeD"; }
 };
 
 /// The densitized energy density \f${\tilde \tau}\f$
 struct TildeTau : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "TildeTau"; }
 };
 
 /// The densitized momentum density \f${\tilde S_i}\f$
@@ -57,7 +54,6 @@ struct TildeB : db::SimpleTag {
 /// The densitized divergence-cleaning field \f${\tilde \Phi}\f$
 struct TildePhi : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "TildePhi"; }
 };
 
 }  // namespace Tags
@@ -84,7 +80,6 @@ struct DampingParameter {
 namespace Tags {
 /// The constraint damping parameter for divergence cleaning
 struct ConstraintDampingParameter : db::SimpleTag {
-  static std::string name() noexcept { return "ConstraintDampingParameter"; }
   using type = double;
   using option_tags = tmpl::list<OptionTags::DampingParameter>;
 

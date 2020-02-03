@@ -14,6 +14,7 @@
 #include "Evolution/Systems/CurvedScalarWave/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Pypp/CheckWithRandomValues.hpp"
 #include "tests/Unit/Pypp/SetupLocalPythonEnvironment.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -78,6 +79,12 @@ void test_constraint_compute_items(const DataVector& used_for_size) noexcept {
         CurvedScalarWave::one_index_constraint(d_psi, phi));
   CHECK(db::get<CurvedScalarWave::Tags::TwoIndexConstraint<SpatialDim>>(box) ==
         CurvedScalarWave::two_index_constraint(d_phi));
+  TestHelpers::db::test_compute_tag<
+      CurvedScalarWave::Tags::OneIndexConstraintCompute<SpatialDim>>(
+      "OneIndexConstraint");
+  TestHelpers::db::test_compute_tag<
+      CurvedScalarWave::Tags::TwoIndexConstraintCompute<SpatialDim>>(
+      "TwoIndexConstraint");
 }
 }  // namespace
 

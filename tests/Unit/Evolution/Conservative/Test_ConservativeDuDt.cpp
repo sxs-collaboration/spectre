@@ -26,12 +26,10 @@ using frame = Frame::Inertial;
 constexpr size_t volume_dim = 2;
 
 struct Var1 : db::SimpleTag {
-  static std::string name() noexcept { return "Var1"; }
   using type = Scalar<DataVector>;
 };
 
 struct Var2 : db::SimpleTag {
-  static std::string name() noexcept { return "Var2"; }
   using type = tnsr::i<DataVector, volume_dim, frame>;
 };
 

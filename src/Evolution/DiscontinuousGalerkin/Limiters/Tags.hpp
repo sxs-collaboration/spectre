@@ -3,6 +3,9 @@
 
 #pragma once
 
+#include <string>
+
+#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Options/Options.hpp"
 
 namespace OptionTags {
@@ -35,7 +38,6 @@ namespace Tags {
  */
 template <typename LimiterType>
 struct Limiter : db::SimpleTag {
-  static std::string name() noexcept { return "Limiter"; }
   using type = LimiterType;
   using option_tags = tmpl::list<::OptionTags::Limiter<LimiterType>>;
 

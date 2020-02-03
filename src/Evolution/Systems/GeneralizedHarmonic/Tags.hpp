@@ -28,7 +28,6 @@ namespace Tags {
 template <size_t Dim, typename Frame>
 struct Pi : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "Pi"; }
 };
 
 /*!
@@ -40,20 +39,16 @@ struct Pi : db::SimpleTag {
 template <size_t Dim, typename Frame>
 struct Phi : db::SimpleTag {
   using type = tnsr::iaa<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "Phi"; }
 };
 
 struct ConstraintGamma0 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ConstraintGamma0"; }
 };
 struct ConstraintGamma1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ConstraintGamma1"; }
 };
 struct ConstraintGamma2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ConstraintGamma2"; }
 };
 
 /*!
@@ -66,7 +61,6 @@ struct ConstraintGamma2 : db::SimpleTag {
  */
 struct GaugeHRollOnStartTime : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "GaugeHRollOnStartTime"; }
   using option_tags = tmpl::list<OptionTags::GaugeHRollOnStart>;
 
   template <typename Metavariables>
@@ -86,7 +80,6 @@ struct GaugeHRollOnStartTime : db::SimpleTag {
  */
 struct GaugeHRollOnTimeWindow : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "GaugeHRollOnTimeWindow"; }
   using option_tags = tmpl::list<OptionTags::GaugeHRollOnWindow>;
 
   template <typename Metavariables>
@@ -111,7 +104,6 @@ struct GaugeHRollOnTimeWindow : db::SimpleTag {
 template <typename Frame>
 struct GaugeHSpatialWeightDecayWidth : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "GaugeHSpatialWeightDecayWidth"; }
   using option_tags = tmpl::list<OptionTags::GaugeHSpatialDecayWidth<Frame>>;
 
   template <typename Metavariables>
@@ -132,7 +124,6 @@ struct GaugeHSpatialWeightDecayWidth : db::SimpleTag {
 template <size_t Dim, typename Frame>
 struct GaugeH : db::SimpleTag {
   using type = tnsr::a<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "GaugeH"; }
 };
 
 /*!
@@ -147,7 +138,6 @@ struct GaugeH : db::SimpleTag {
 template <size_t Dim, typename Frame>
 struct SpacetimeDerivGaugeH : db::SimpleTag {
   using type = tnsr::ab<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "SpacetimeDerivGaugeH"; }
 };
 
 /*!
@@ -163,7 +153,6 @@ struct SpacetimeDerivGaugeH : db::SimpleTag {
 template <size_t Dim, typename Frame>
 struct InitialGaugeH : db::SimpleTag {
   using type = tnsr::a<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "InitialGaugeH"; }
 };
 
 /*!
@@ -179,7 +168,6 @@ struct InitialGaugeH : db::SimpleTag {
 template <size_t Dim, typename Frame>
 struct SpacetimeDerivInitialGaugeH : db::SimpleTag {
   using type = tnsr::ab<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "SpacetimeDerivInitialGaugeH"; }
 };
 
 // @{
@@ -191,36 +179,30 @@ struct SpacetimeDerivInitialGaugeH : db::SimpleTag {
 template <size_t Dim, typename Frame>
 struct UPsi : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "UPsi"; }
 };
 template <size_t Dim, typename Frame>
 struct UZero : db::SimpleTag {
   using type = tnsr::iaa<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "UZero"; }
 };
 template <size_t Dim, typename Frame>
 struct UPlus : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "UPlus"; }
 };
 template <size_t Dim, typename Frame>
 struct UMinus : db::SimpleTag {
   using type = tnsr::aa<DataVector, Dim, Frame>;
-  static std::string name() noexcept { return "UMinus"; }
 };
 // @}
 
 template <size_t Dim, typename Frame>
 struct CharacteristicSpeeds : db::SimpleTag {
   using type = std::array<DataVector, 4>;
-  static std::string name() noexcept { return "CharacteristicSpeeds"; }
 };
 
 template <size_t Dim, typename Frame>
 struct CharacteristicFields : db::SimpleTag {
   using type = Variables<tmpl::list<UPsi<Dim, Frame>, UZero<Dim, Frame>,
                                     UPlus<Dim, Frame>, UMinus<Dim, Frame>>>;
-  static std::string name() noexcept { return "CharacteristicFields"; }
 };
 
 template <size_t Dim, typename Frame>
@@ -228,9 +210,6 @@ struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
   using type =
       Variables<tmpl::list<gr::Tags::SpacetimeMetric<Dim, Frame, DataVector>,
                            Pi<Dim, Frame>, Phi<Dim, Frame>>>;
-  static std::string name() noexcept {
-    return "EvolvedFieldsFromCharacteristicFields";
-  }
 };
 
 /*!
@@ -244,37 +223,31 @@ struct EvolvedFieldsFromCharacteristicFields : db::SimpleTag {
 template <size_t SpatialDim, typename Frame>
 struct GaugeConstraint : db::SimpleTag {
   using type = tnsr::a<DataVector, SpatialDim, Frame>;
-  static std::string name() noexcept { return "GaugeConstraint"; }
 };
 /// \copydoc GaugeConstraint
 template <size_t SpatialDim, typename Frame>
 struct FConstraint : db::SimpleTag {
   using type = tnsr::a<DataVector, SpatialDim, Frame>;
-  static std::string name() noexcept { return "FConstraint"; }
 };
 /// \copydoc GaugeConstraint
 template <size_t SpatialDim, typename Frame>
 struct TwoIndexConstraint : db::SimpleTag {
   using type = tnsr::ia<DataVector, SpatialDim, Frame>;
-  static std::string name() noexcept { return "TwoIndexConstraint"; }
 };
 /// \copydoc GaugeConstraint
 template <size_t SpatialDim, typename Frame>
 struct ThreeIndexConstraint : db::SimpleTag {
   using type = tnsr::iaa<DataVector, SpatialDim, Frame>;
-  static std::string name() noexcept { return "ThreeIndexConstraint"; }
 };
 /// \copydoc GaugeConstraint
 template <size_t SpatialDim, typename Frame>
 struct FourIndexConstraint : db::SimpleTag {
   using type = tnsr::iaa<DataVector, SpatialDim, Frame>;
-  static std::string name() noexcept { return "FourIndexConstraint"; }
 };
 /// \copydoc GaugeConstraint
 template <size_t SpatialDim, typename Frame>
 struct ConstraintEnergy : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ConstraintEnergy"; }
 };
 }  // namespace Tags
 

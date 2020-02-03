@@ -12,7 +12,6 @@
 namespace Burgers {
 namespace Tags {
 struct U : db::SimpleTag {
-  static std::string name() noexcept { return "U"; }
   using type = Scalar<DataVector>;
 };
 }  // namespace Tags

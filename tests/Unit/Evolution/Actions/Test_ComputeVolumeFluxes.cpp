@@ -28,12 +28,10 @@ namespace {
 constexpr size_t dim = 2;
 
 struct Var1 : db::SimpleTag {
-  static std::string name() noexcept { return "Var1"; }
   using type = Scalar<double>;
 };
 
 struct Var2 : db::SimpleTag {
-  static std::string name() noexcept { return "Var2"; }
   using type = tnsr::I<double, dim, Frame::Inertial>;
 };
 
