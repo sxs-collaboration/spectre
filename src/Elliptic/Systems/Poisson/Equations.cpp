@@ -24,7 +24,7 @@ void euclidean_fluxes(
 }
 
 template <size_t Dim>
-void noneuclidean_fluxes(
+void non_euclidean_fluxes(
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
         flux_for_field,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
@@ -54,7 +54,7 @@ void auxiliary_fluxes(gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
   template void Poisson::euclidean_fluxes<DIM(data)>(                        \
       const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>, \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&) noexcept;      \
-  template void Poisson::noneuclidean_fluxes<DIM(data)>(                     \
+  template void Poisson::non_euclidean_fluxes<DIM(data)>(                    \
       const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>, \
       const tnsr::II<DataVector, DIM(data), Frame::Inertial>&,               \
       const Scalar<DataVector>&,                                             \

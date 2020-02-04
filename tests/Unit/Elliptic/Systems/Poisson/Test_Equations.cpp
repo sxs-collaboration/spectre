@@ -32,8 +32,8 @@ void test_equations(const DataVector& used_for_size) {
   pypp::check_with_random_values<1>(&Poisson::euclidean_fluxes<Dim>,
                                     "Equations", {"euclidean_fluxes"},
                                     {{{0., 1.}}}, used_for_size);
-  pypp::check_with_random_values<1>(&Poisson::noneuclidean_fluxes<Dim>,
-                                    "Equations", {"noneuclidean_fluxes"},
+  pypp::check_with_random_values<1>(&Poisson::non_euclidean_fluxes<Dim>,
+                                    "Equations", {"non_euclidean_fluxes"},
                                     {{{0., 1.}}}, used_for_size);
   pypp::check_with_random_values<1>(
       &Poisson::auxiliary_fluxes<Dim>, "Equations",
@@ -115,7 +115,7 @@ void test_computers(const DataVector& used_for_size) {
         fluxes_computer, make_not_null(&box), get<auxiliary_field_tag>(box));
     auto expected_field_flux = make_with_value<tnsr::I<DataVector, Dim>>(
         used_for_size, std::numeric_limits<double>::signaling_NaN());
-    Poisson::noneuclidean_fluxes(
+    Poisson::non_euclidean_fluxes(
         make_not_null(&expected_field_flux),
         get<gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>>(
             box),
