@@ -135,10 +135,15 @@ SPECTRE_TEST_CASE("Unit.Serialization.PupStlCpp11", "[Serialization][Unit]") {
   /// [example_serialize_derived]
 
   {
-    INFO("unique_ptr.nullptr");
+    INFO("unique_ptr.double.nullptr");
     std::unique_ptr<double> derived_ptr = nullptr;
     auto blah = serialize_and_deserialize(derived_ptr);
     CHECK(nullptr == blah);
+  }
+  {
+    INFO("unique_ptr.abstract_base.nullptr");
+    std::unique_ptr<Test_Classes::Base> base{nullptr};
+    CHECK(serialize_and_deserialize(base) == nullptr);
   }
 }
 
