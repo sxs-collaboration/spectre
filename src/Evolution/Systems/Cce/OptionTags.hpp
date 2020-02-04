@@ -17,9 +17,15 @@ class Interpolator;
 
 namespace OptionTags {
 
-/// Option group
+/// %Option group
 struct Cce {
   static constexpr OptionString help = {"Options for the Cce evolution system"};
+};
+
+/// %Option group
+struct Filtering {
+  static constexpr OptionString help = {"Options for the filtering in Cce"};
+  using group = Cce;
 };
 
 struct LMax {
@@ -27,6 +33,26 @@ struct LMax {
   static constexpr OptionString help{
       "Maximum l value for spin-weighted spherical harmonics"};
   using group = Cce;
+};
+
+struct FilterLMax {
+  using type = size_t;
+  static constexpr OptionString help{"l mode cutoff for angular filtering"};
+  using group = Filtering;
+};
+
+struct RadialFilterAlpha {
+  using type = double;
+  static constexpr OptionString help{
+      "alpha parameter in exponential radial filter"};
+  using group = Filtering;
+};
+
+struct RadialFilterHalfPower {
+  using type = size_t;
+  static constexpr OptionString help{
+      "Half-power of the exponential radial filter argument"};
+  using group = Filtering;
 };
 
 struct ObservationLMax {
@@ -176,4 +202,34 @@ struct EndTime : db::SimpleTag {
   }
 };
 }  // namespace InitializationTags
+
+namespace Tags {
+struct FilterLMax : db::SimpleTag {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::FilterLMax>;
+
+  static size_t create_from_options(const size_t filter_l_max) noexcept {
+    return filter_l_max;
+  }
+};
+
+struct RadialFilterAlpha : db::SimpleTag {
+  using type = double;
+  using option_tags = tmpl::list<OptionTags::RadialFilterAlpha>;
+
+  static double create_from_options(const double radial_filter_alpha) noexcept {
+    return radial_filter_alpha;
+  }
+};
+
+struct RadialFilterHalfPower : db::SimpleTag {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::RadialFilterHalfPower>;
+
+  static size_t create_from_options(
+      const size_t radial_filter_half_power) noexcept {
+    return radial_filter_half_power;
+  }
+};
+}  // namespace Tags
 }  // namespace Cce

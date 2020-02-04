@@ -18,6 +18,13 @@
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::LMax>("8") == 8_st);
+  CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::FilterLMax>("7") ==
+        7_st);
+  CHECK(TestHelpers::test_creation<double, Cce::OptionTags::RadialFilterAlpha>(
+            "32.5") == 32.5);
+  CHECK(TestHelpers::test_creation<size_t,
+                                   Cce::OptionTags::RadialFilterHalfPower>(
+            "20") == 20_st);
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::ObservationLMax>(
             "6") == 6_st);
   CHECK(
