@@ -32,10 +32,9 @@ namespace {
 struct metavariables {
   using cce_boundary_communication_tags =
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
-  using const_global_cache_tag_list =
-      tmpl::list< Spectral::Swsh::Tags::LMax>;
+  using const_global_cache_tag_list = tmpl::list<Spectral::Swsh::Tags::LMax>;
   using component_list = tmpl::list<mock_h5_worldtube_boundary<metavariables>>;
-  enum class Phase { Initialization, Extraction, Exit };
+  enum class Phase { Initialization, Evolve, Exit };
 };
 }  // namespace
 
@@ -83,7 +82,7 @@ SPECTRE_TEST_CASE(
   // this should run the initialization
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  runner.set_phase(metavariables::Phase::Extraction);
+  runner.set_phase(metavariables::Phase::Evolve);
   // check that the h5 data manager copied out of the databox has the correct
   // properties that we can examine without running the other actions
   const auto& data_manager =

@@ -37,6 +37,6 @@ struct mock_h5_worldtube_boundary {
                              Metavariables::Phase::Initialization,
                              initialize_action_list>,
       Parallel::PhaseActions<typename Metavariables::Phase,
-                             Metavariables::Phase::Extraction, tmpl::list<>>>;
+                             Metavariables::Phase::Evolve, tmpl::list<>>>;
 };
 }  // namespace Cce
