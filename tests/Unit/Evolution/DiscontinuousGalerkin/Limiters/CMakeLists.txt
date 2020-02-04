@@ -11,6 +11,7 @@ set(LIBRARY_SOURCES
   Test_Minmod.cpp
   Test_MinmodTci.cpp
   Test_MinmodType.cpp
+  Test_SimpleWenoImpl.cpp
   Test_Tags.cpp
   Test_Weno.cpp
   Test_WenoGridHelpers.cpp
