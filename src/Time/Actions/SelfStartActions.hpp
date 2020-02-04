@@ -427,7 +427,7 @@ template <typename StepActions>
 struct self_start_procedure_impl {
   using flat_actions = tmpl::flatten<tmpl::list<StepActions>>;
   static_assert(
-      tmpl::list_contains_v<flat_actions, ::Actions::RecordTimeStepperData>,
+      tmpl::list_contains_v<flat_actions, ::Actions::RecordTimeStepperData<>>,
       "Self-start action loop must call Actions::RecordTimeStepperData to "
       "update the history.");
   // clang-format off
@@ -437,8 +437,8 @@ struct self_start_procedure_impl {
       SelfStart::Actions::CheckForCompletion<detail::PhaseEnd>,
       ::Actions::AdvanceTime,
       SelfStart::Actions::CheckForOrderIncrease,
-      tmpl::replace<flat_actions, ::Actions::RecordTimeStepperData,
-                    tmpl::list<::Actions::RecordTimeStepperData,
+      tmpl::replace<flat_actions, ::Actions::RecordTimeStepperData<>,
+                    tmpl::list<::Actions::RecordTimeStepperData<>,
                                SelfStart::Actions::StartNextOrderIfReady<
                                    detail::PhaseStart>>>,
       ::Actions::Goto<detail::PhaseStart>,

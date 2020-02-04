@@ -229,8 +229,8 @@ struct EvolutionMetavars {
           Tags::BoundaryDirectionsInterior<volume_dim>>,
       dg::Actions::ImposeDirichletBoundaryConditions<EvolutionMetavars>,
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
-      dg::Actions::ApplyFluxes, Actions::RecordTimeStepperData,
-      Actions::UpdateU>>;
+      dg::Actions::ApplyFluxes, Actions::RecordTimeStepperData<>,
+      Actions::UpdateU<>>>;
 
   enum class Phase {
     Initialization,

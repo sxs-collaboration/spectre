@@ -184,11 +184,11 @@ struct EvolutionMetavars {
       dg::Actions::ReceiveDataForFluxes<EvolutionMetavars>,
       tmpl::conditional_t<local_time_stepping, tmpl::list<>,
                           dg::Actions::ApplyFluxes>,
-      Actions::RecordTimeStepperData,
+      Actions::RecordTimeStepperData<>,
       tmpl::conditional_t<local_time_stepping,
                           dg::Actions::ApplyBoundaryFluxesLocalTimeStepping,
                           tmpl::list<>>,
-      Actions::UpdateU, Limiters::Actions::SendData<EvolutionMetavars>,
+      Actions::UpdateU<>, Limiters::Actions::SendData<EvolutionMetavars>,
       Limiters::Actions::Limit<EvolutionMetavars>,
       // Conservative `UpdatePrimitives` expects system to possess
       // list of recovery schemes so we use `MutateApply` instead.
