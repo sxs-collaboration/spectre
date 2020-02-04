@@ -127,8 +127,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PrecomputeCceDependencies",
 
   using boundary_variables_tag =
       ::Tags::Variables<pre_computation_boundary_tags<Tags::BoundaryValue>>;
-  using independent_of_integration_variables_tag =
-      ::Tags::Variables<pre_computation_tags>;
+  using independent_of_integration_variables_tag = ::Tags::Variables<
+      tmpl::push_back<pre_computation_tags, Tags::DuRDividedByR>>;
   using pre_swsh_derivatives_variables_tag =
       ::Tags::Variables<tmpl::list<Tags::BondiJ>>;
 
@@ -162,6 +162,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PrecomputeCceDependencies",
       make_not_null(&expected_box), l_max, number_of_radial_grid_points);
 
   mutate_all_precompute_cce_dependencies<Tags::BoundaryValue>(
+      make_not_null(&precomputation_box));
+  db::mutate_apply<
+      PrecomputeCceDependencies<Tags::BoundaryValue, Tags::DuRDividedByR>>(
       make_not_null(&precomputation_box));
 
   Approx angular_derivative_approx =
