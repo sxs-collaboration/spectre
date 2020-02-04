@@ -15,11 +15,31 @@
 #include "tests/Unit/ActionTesting.hpp"
 
 namespace Cce {
+/// \cond
+namespace {  // NOLINT
+struct test_metavariables;
+template <typename Metavariables>
+struct mock_characteristic_evolution;
+}  // namespace
+namespace Actions {
+namespace {  // NOLINT
+template <typename EvolutionComponent>
+struct MockBoundaryComputeAndSendToEvolution;
+}  // namespace
+template <typename EvolutionComponent>
+struct BoundaryComputeAndSendToEvolution;
+}  // namespace Actions
+/// \endocond
+
 template <typename Metavariables>
 struct mock_h5_worldtube_boundary {
   using component_being_mocked = H5WorldtubeBoundary<Metavariables>;
-  using replace_these_simple_actions = tmpl::list<>;
-  using with_these_simple_actions = tmpl::list<>;
+  using replace_these_simple_actions =
+      tmpl::list<Actions::BoundaryComputeAndSendToEvolution<
+          mock_characteristic_evolution<test_metavariables>>>;
+  using with_these_simple_actions =
+      tmpl::list<Actions::MockBoundaryComputeAndSendToEvolution<
+          mock_characteristic_evolution<test_metavariables>>>;
 
   using initialize_action_list =
       tmpl::list<InitializeH5WorldtubeBoundary,
