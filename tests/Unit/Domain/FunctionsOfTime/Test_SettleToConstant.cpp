@@ -80,4 +80,52 @@ SPECTRE_TEST_CASE("Unit.Domain.FunctionsOfTime.SettleToConstant",
   const std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime> f_of_t3 =
       f_of_t->get_clone();
   test(f_of_t3, match_time, f_t0, dtf_t0, d2tf_t0, A);
+
+  {
+    INFO("Test operator==");
+    CHECK(SettleToConstant{init_func, match_time, decay_time} ==
+          SettleToConstant{init_func, match_time, decay_time});
+    CHECK_FALSE(SettleToConstant{init_func, match_time, decay_time} !=
+                SettleToConstant{init_func, match_time, decay_time});
+
+    CHECK(SettleToConstant{init_func, match_time, decay_time} !=
+          SettleToConstant{init_func, match_time, 2.0 * decay_time});
+    CHECK_FALSE(SettleToConstant{init_func, match_time, decay_time} ==
+                SettleToConstant{init_func, match_time, 2.0 * decay_time});
+
+    CHECK(SettleToConstant{init_func, match_time, decay_time} !=
+          SettleToConstant{init_func, 2.0 * match_time, decay_time});
+    CHECK_FALSE(SettleToConstant{init_func, match_time, decay_time} ==
+                SettleToConstant{init_func, 2.0 * match_time, decay_time});
+
+    CHECK(SettleToConstant{init_func, match_time, decay_time} !=
+          SettleToConstant{{{init_func[0] + 1.0, init_func[1], init_func[2]}},
+                           match_time,
+                           decay_time});
+    CHECK_FALSE(
+        SettleToConstant{init_func, match_time, decay_time} ==
+        SettleToConstant{{{init_func[0] + 1.0, init_func[1], init_func[2]}},
+                         match_time,
+                         decay_time});
+
+    CHECK(SettleToConstant{init_func, match_time, decay_time} !=
+          SettleToConstant{{{init_func[0], init_func[1] + 1.0, init_func[2]}},
+                           match_time,
+                           decay_time});
+    CHECK_FALSE(
+        SettleToConstant{init_func, match_time, decay_time} ==
+        SettleToConstant{{{init_func[0], init_func[1] + 1.0, init_func[2]}},
+                         match_time,
+                         decay_time});
+
+    CHECK(SettleToConstant{init_func, match_time, decay_time} !=
+          SettleToConstant{{{init_func[0], init_func[1], init_func[2] + 1.0}},
+                           match_time,
+                           decay_time});
+    CHECK_FALSE(
+        SettleToConstant{init_func, match_time, decay_time} ==
+        SettleToConstant{{{init_func[0], init_func[1], init_func[2] + 1.0}},
+                         match_time,
+                         decay_time});
+  }
 }

@@ -66,6 +66,18 @@ void SettleToConstant::pup(PUP::er& p) {
   p | inv_decay_time_;
 }
 
+bool operator==(const SettleToConstant& lhs,
+                const SettleToConstant& rhs) noexcept {
+  return lhs.coef_a_ == rhs.coef_a_ and lhs.coef_b_ == rhs.coef_b_ and
+         lhs.coef_c_ == rhs.coef_c_ and lhs.match_time_ == rhs.match_time_ and
+         lhs.inv_decay_time_ == rhs.inv_decay_time_;
+}
+
+bool operator!=(const SettleToConstant& lhs,
+                const SettleToConstant& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
 /// \cond
 PUP::able::PUP_ID SettleToConstant::my_PUP_ID = 0;  // NOLINT
 
