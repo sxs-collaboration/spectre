@@ -15,7 +15,6 @@
 #include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
-#include "ParallelAlgorithms/LinearSolver/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/TMPL.hpp"
 #include "Utilities/TaggedTuple.hpp"
@@ -30,23 +29,56 @@ struct Magnitude;
 
 namespace elliptic {
 namespace dg {
+
+/*!
+ * \brief Set the `exterior_vars` so that they represent homogeneous (zero)
+ * Dirichlet boundary conditions.
+ *
+ * To impose homogeneous Dirichlet boundary conditions we mirror the
+ * `interior_vars` and invert their sign. Variables that are not in the
+ * `DirichletTags` list are mirrored without changing their sign, so no boundary
+ * conditions are imposed on them.
+ */
+template <typename DirichletTags, typename TagsList>
+void homogeneous_dirichlet_boundary_conditions(
+    const gsl::not_null<Variables<TagsList>*> exterior_vars,
+    const Variables<TagsList>& interior_vars) noexcept {
+  // By default, use the variables on the external boundary for the
+  // exterior
+  *exterior_vars = interior_vars;
+  // For those variables where we have boundary conditions, impose
+  // zero Dirichlet b.c. here. The non-zero boundary conditions are
+  // handled as contributions to the source in InitializeElement.
+  // Imposing them here would not work because we are working with the
+  // linear solver operand.
+  tmpl::for_each<DirichletTags>(
+      [&exterior_vars](auto dirichlet_tag_val) noexcept {
+        using dirichlet_tag = tmpl::type_from<decltype(dirichlet_tag_val)>;
+        // Use mirror principle
+        auto& exterior_dirichlet_field = get<dirichlet_tag>(*exterior_vars);
+        for (size_t i = 0; i < exterior_dirichlet_field.size(); i++) {
+          exterior_dirichlet_field[i] *= -1.;
+        }
+      });
+}
+
 namespace Actions {
 
 /*!
- * \brief Packages data on external boundaries so that they represent
+ * \brief Set field data on external boundaries so that they represent
  * homogeneous (zero) Dirichlet boundary conditions.
  *
  * This action imposes homogeneous boundary conditions on all fields in
- * `system::primal_fields`. The fields are wrapped in
- * `LinearSolver::Tags::Operand`. The result should be a subset of the
- * `system::variables`. Because we are working with the linear solver operand,
- * we cannot impose non-zero boundary conditions here. Instead, non-zero
- * boundary conditions are handled as contributions to the linear solver source
- * during initialization.
+ * `system::primal_variables`.
  *
- * \warning This actions works only for scalar fields right now. It should be
- * considered a temporary solution and will have to be reworked for more
- * involved boundary conditions.
+ * \see `elliptic::dg::homogeneous_dirichlet_boundary_conditions`
+ *
+ * \note We cannot impose inhomogeneous boundary conditions here because it
+ * would break linearity of the DG operator: If in the system of equations
+ * \f$A(x)=b\f$ the DG operator \f$A\f$ had non-zero boundary contributions then
+ * \f$A(x=0)\neq 0\f$, which breaks linearity. Instead, inhomogeneous
+ * boundary conditions are handled as contributions to the source \f$b\f$
+ * during initialization.
  *
  * With:
  * - `interior<Tag> =
@@ -61,7 +93,7 @@ namespace Actions {
  * - System:
  *   - `volume_dim`
  *   - `variables_tag`
- *   - `primal_fields`
+ *   - `primal_variables`
  * - ConstGlobalCache:
  *   - `normal_dot_numerical_flux`
  * - DataBox:
@@ -93,7 +125,7 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
     using system = typename Metavariables::system;
-    using dirichlet_tags = typename system::primal_fields;
+    using dirichlet_tags = typename system::primal_variables;
     constexpr size_t volume_dim = system::volume_dim;
 
     // Set the data on exterior (ghost) faces to impose the boundary conditions
@@ -111,30 +143,9 @@ struct ImposeHomogeneousDirichletBoundaryConditions {
                typename system::variables_tag>>& interior_vars) noexcept {
           for (auto& exterior_direction_and_vars : *exterior_boundary_vars) {
             auto& direction = exterior_direction_and_vars.first;
-            auto& exterior_vars = exterior_direction_and_vars.second;
-
-            // By default, use the variables on the external boundary for the
-            // exterior
-            exterior_vars = interior_vars.at(direction);
-
-            // For those variables where we have boundary conditions, impose
-            // zero Dirichlet b.c. here. The non-zero boundary conditions are
-            // handled as contributions to the source in InitializeElement.
-            // Imposing them here would not work because we are working with the
-            // linear solver operand.
-            tmpl::for_each<dirichlet_tags>([&exterior_vars](
-                auto dirichlet_tag_val) noexcept {
-              using dirichlet_tag =
-                  tmpl::type_from<decltype(dirichlet_tag_val)>;
-              using dirichlet_operand_tag =
-                  LinearSolver::Tags::Operand<dirichlet_tag>;
-              // Use mirror principle
-              auto& exterior_dirichlet_field =
-                  get<dirichlet_operand_tag>(exterior_vars);
-              for (size_t i = 0; i < exterior_dirichlet_field.size(); i++) {
-                exterior_dirichlet_field[i] *= -1.;
-              }
-            });
+            homogeneous_dirichlet_boundary_conditions<dirichlet_tags>(
+                make_not_null(&exterior_direction_and_vars.second),
+                interior_vars.at(direction));
           }
         },
         get<::Tags::Interface<::Tags::BoundaryDirectionsInterior<volume_dim>,
