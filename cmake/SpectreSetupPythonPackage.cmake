@@ -1,18 +1,6 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
-# In order to avoid runtime errors about missing CmiPrintf and other Cmi
-# (Charm++) functions, we need to link in the whole PyBindings archive.
-# In order to make it easier for users, we define the variable
-# SPECTRE_LINK_PYBINDINGS so that the target_link_libraries only needs to
-# specify ${SPECTRE_LINK_PYBINDINGS}. Note that ${SPECTRE_LINK_PYBINDINGS}
-# must be the last library to link.
-set(SPECTRE_LINK_PYBINDINGS
-  -Wl,--whole-archive
-  PUBLIC PyBindings
-  PUBLIC ${HDF5_LIBRARIES}
-  -Wl,--no-whole-archive)
-
 set(SPECTRE_PYTHON_PREFIX "${CMAKE_BINARY_DIR}/bin/python/spectre/")
 get_filename_component(
   SPECTRE_PYTHON_PREFIX
@@ -93,7 +81,31 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       message(FATAL_ERROR "The LIBRARY_NAME for Python module "
           "'${MODULE_NAME}' must begin with 'Py' but is '${ARG_LIBRARY_NAME}'.")
     endif()
-    add_library(${ARG_LIBRARY_NAME} MODULE ${ARG_SOURCES})
+    # Use pybind11 wrapper around `add_library` to add the Python module.
+    # If we could rely on the pybind11 cmake files being installed with the
+    # headers (instead of bundling them in `external`), then we could use the
+    # plain `add_library` here and link it with the `pybind11::module` target.
+    # Instead, we use the wrapper but have to skip the visibility setting it
+    # performs to make this work with PCH. The corresponding lines are commented
+    # out in `external/pybind11/tools/pybind11Tools.cmake`.
+    pybind11_add_module(${ARG_LIBRARY_NAME} MODULE ${ARG_SOURCES})
+    # In order to avoid runtime errors about missing CmiPrintf and other Cmi
+    # (Charm++) functions, we need to link in the whole PyBindings archive.
+    # This is not needed on macOS.
+    if (APPLE)
+      target_link_libraries(
+        ${ARG_LIBRARY_NAME}
+        PUBLIC PyBindings
+        )
+    else()
+      target_link_libraries(
+        ${ARG_LIBRARY_NAME}
+        PUBLIC
+        -Wl,--whole-archive
+        PyBindings
+        -Wl,--no-whole-archive
+        )
+    endif()
     # We don't want the 'lib' prefix for python modules, so we set the output name
     SET_TARGET_PROPERTIES(
       ${ARG_LIBRARY_NAME}
@@ -101,6 +113,11 @@ function(SPECTRE_PYTHON_ADD_MODULE MODULE_NAME)
       PREFIX ""
       LIBRARY_OUTPUT_NAME "_${ARG_LIBRARY_NAME}"
       LIBRARY_OUTPUT_DIRECTORY ${MODULE_LOCATION}
+      )
+    set_target_properties(
+      ${ARG_LIBRARY_NAME}
+      PROPERTIES
+      LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS}
       )
     set(SPECTRE_PYTHON_MODULE_IMPORT "from ._${ARG_LIBRARY_NAME} import *")
     add_dependencies(test-executables ${ARG_LIBRARY_NAME})
@@ -224,7 +241,6 @@ function (spectre_python_link_libraries LIBRARY_NAME)
     ${LIBRARY_NAME}
     # Forward all remaining arguments
     ${ARGN}
-    ${SPECTRE_LINK_PYBINDINGS}
     )
 endfunction()
 
@@ -284,7 +300,7 @@ function(SPECTRE_ADD_PYTHON_TEST TEST_NAME FILE TAGS)
     PROPERTIES
     FAIL_REGULAR_EXPRESSION "Ran 0 test"
     TIMEOUT 2
-    LABELS "${TAGS}"
+    LABELS "${TAGS};Python"
     ENVIRONMENT "PYTHONPATH=${SPECTRE_PYTHON_PREFIX_PARENT}:\$PYTHONPATH"
     )
 endfunction()

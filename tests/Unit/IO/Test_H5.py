@@ -49,7 +49,7 @@ class TestIOH5File(unittest.TestCase):
             path="/element_data", legend=["Time", "Value"], version=0)
         datfile = file_spec.get_dat(path="/element_data")
         datfile.append(self.data_1)
-        outdata_array = datfile.get_data()
+        outdata_array = np.asarray(datfile.get_data())
         npt.assert_array_equal(outdata_array[0], self.data_1_array)
         file_spec.close()
 

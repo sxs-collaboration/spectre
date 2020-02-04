@@ -1,8 +1,10 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include <boost/python.hpp>
 #include <memory>
+#include <pybind11/operators.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -11,27 +13,64 @@
 #include "PythonBindings/BoundChecks.hpp"
 #include "Utilities/GetOutput.hpp"
 
-namespace bp = boost::python;
+namespace py = pybind11;
 
-namespace {
-std::shared_ptr<DataVector> make_datavector_from_list(bp::list l) {
-  DataVector t = DataVector(static_cast<size_t>(bp::len(l)));
-  for (size_t i = 0; i < static_cast<size_t>(bp::len(l)); i++) {
-    t[i] = bp::extract<double>(l[i]);
-  }
-  return std::make_shared<DataVector>(std::move(t));
-}
-}  // namespace
 namespace py_bindings {
-void bind_datavector() {
+void bind_datavector(py::module& m) {  // NOLINT
   // Wrapper for basic DataVector operations
-  bp::class_<DataVector>("DataVector", bp::init<size_t>())
-      // Each "make" function gets its own constructor
-      .def("__init__", bp::make_constructor(&make_datavector_from_list))
-      .def(bp::init<size_t, double>())
-      .def("__iter__", bp::iterator<DataVector>())
+  py::class_<DataVector>(m, "DataVector", py::buffer_protocol())
+      .def(py::init<size_t>(), py::arg("size"))
+      .def(py::init<size_t, double>(), py::arg("size"), py::arg("fill"))
+      .def(py::init([](const std::vector<double>& values) {
+             DataVector result{values.size()};
+             std::copy(values.begin(), values.end(), result.begin());
+             return result;
+           }),
+           py::arg("values"))
+      .def(py::init([](py::buffer buffer, const bool copy) {
+             py::buffer_info info = buffer.request();
+             // Sanity-check the buffer
+             if (info.format != py::format_descriptor<double>::format()) {
+               throw std::runtime_error(
+                   "Incompatible format: expected a double array.");
+             }
+             if (info.ndim != 1) {
+               throw std::runtime_error("Incompatible dimension.");
+             }
+             const auto size = static_cast<size_t>(info.shape[0]);
+             auto data = static_cast<double*>(info.ptr);
+             if (copy) {
+               DataVector result{size};
+               std::copy_n(data, result.size(), result.begin());
+               return result;
+             } else {
+               // Create a non-owning DataVector from the buffer
+               return DataVector{data, size};
+             }
+           }),
+           py::arg("buffer"), py::arg("copy") = true)
+      // Expose the data as a Python buffer so it can be cast into Numpy arrays
+      .def_buffer([](DataVector& data_vector) {
+        return py::buffer_info(data_vector.data(),
+                               // Size of one scalar
+                               sizeof(double),
+                               py::format_descriptor<double>::format(),
+                               // Number of dimensions
+                               1,
+                               // Size of the buffer
+                               {data_vector.size()},
+                               // Stride for each index (in bytes)
+                               {sizeof(double)});
+      })
+      .def(
+          "__iter__",
+          [](const DataVector& t) {
+            return py::make_iterator(t.begin(), t.end());
+          },
+          // Keep object alive while iterator exists
+          py::keep_alive<0, 1>())
       // __len__ is for being able to write len(my_data_vector) in python
-      .def("__len__", +[](const DataVector& t) { return t.size(); })
+      .def("__len__", &DataVector::size)
       // __getitem__ and __setitem__ are the subscript operators (operator[]).
       // To define (and overload) operator() use __call__
       .def("__getitem__",
@@ -49,8 +88,7 @@ void bind_datavector() {
       // repr allows you to output the object in an interactive python terminal
       // using obj to get the "string REPResenting the object".
       .def("__repr__", +[](const DataVector& t) { return get_output(t); })
-      .def(bp::self += bp::self)
-      .def(bp::self += bp::other<double>{})
+      .def(py::self += py::self)
       // Need to do math explicitly converting to DataVector because we don't
       // want to represent all the possible expression template types
       .def("abs", +[](const DataVector& t) { return DataVector{abs(t)}; })
@@ -163,9 +201,9 @@ void bind_datavector() {
              return DataVector{self / other};
            })
       // NOLINTNEXTLINE(misc-redundant-expression)
-      .def(bp::self == bp::self)
+      .def(py::self == py::self)
       // NOLINTNEXTLINE(misc-redundant-expression)
-      .def(bp::self != bp::self)
+      .def(py::self != py::self)
       .def("__neg__", +[](const DataVector& t) { return DataVector{-t}; });
 }
 }  // namespace py_bindings

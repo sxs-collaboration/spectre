@@ -18,7 +18,7 @@ spectre_python_link_libraries(
   ${LIBRARY}
   PUBLIC IO
   PUBLIC DataStructures
-  PUBLIC Informer
+  PUBLIC ${HDF5_LIBRARIES}
   )
 
 spectre_python_add_dependencies(

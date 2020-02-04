@@ -27,6 +27,7 @@ spectre_unload_modules() {
     module unload llvm/5.0.1
     module unload charm/6.8.0-smp
     module unload python/anaconda2-4.1.1
+    module unload pybind11/2.4.3
 }
 
 spectre_load_modules() {
@@ -49,6 +50,7 @@ spectre_load_modules() {
     module load llvm/5.0.1
     module load charm/6.8.0-smp
     module load python/anaconda2-4.1.1
+    module load pybind11/2.4.3
 }
 
 spectre_run_cmake() {
@@ -64,5 +66,6 @@ spectre_run_cmake() {
           -D CMAKE_Fortran_COMPILER=gfortran \
           -D MEMORY_ALLOCATOR=SYSTEM \
           -D BUILD_PYTHON_BINDINGS=on \
+          -D CMAKE_CXX_LINK_FLAGS=-lstdc++ \
           $SPECTRE_HOME
 }

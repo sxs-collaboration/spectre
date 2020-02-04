@@ -15,4 +15,5 @@ spectre_python_add_module(
 spectre_python_link_libraries(
   ${LIBRARY}
   PUBLIC DataStructures
+  PUBLIC Utilities
   )

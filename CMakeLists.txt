@@ -67,12 +67,13 @@ include(SetupLIBXSMM)
 include(SetupLapack)
 include(SetupNumPy)
 include(SetupPapi)
+include(SetupPybind11)
 include(SetupSciPy)
 include(SetupLibsharp)
 include(SetupYamlCpp)
 
 include(SetupLIBCXXCharm)
-include(SpectreSetupPython)
+include(SpectreSetupPythonPackage)
 # The precompiled header must be setup after all libraries have been found
 include(SetupPch)
 
