@@ -81,9 +81,7 @@ namespace Actions {
  */
 struct InitializeCharacteristicEvolution {
   using initialization_tags =
-      tmpl::list<InitializationTags::LMax,
-                 InitializationTags::NumberOfRadialPoints,
-                 InitializationTags::StartTime, InitializationTags::EndTime,
+      tmpl::list<InitializationTags::StartTime, InitializationTags::EndTime,
                  InitializationTags::TargetStepSize>;
   using const_global_cache_tags = tmpl::list<::Tags::TimeStepper<TimeStepper>>;
 
@@ -210,45 +208,41 @@ struct InitializeCharacteristicEvolution {
       typename EvolutionTags<Metavariables>::evolution_simple_tags,
       typename EvolutionTags<Metavariables>::evolution_compute_tags>;
 
-  template <typename DbTags, typename... InboxTags, typename Metavariables,
-            typename ArrayIndex, typename ActionList,
-            typename ParallelComponent,
-            Requires<tmpl::list_contains_v<DbTags, InitializationTags::LMax>> =
-                nullptr>
+  template <
+      typename DbTags, typename... InboxTags, typename Metavariables,
+      typename ArrayIndex, typename ActionList, typename ParallelComponent,
+      Requires<tmpl::list_contains_v<DbTags, InitializationTags::StartTime>> =
+          nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& cache,
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    auto initialize_box = Initialization::merge_into_databox<
-        InitializeCharacteristicEvolution,
-        db::AddSimpleTags<Tags::BoundaryTime>, db::AddComputeTags<>>(
-        std::move(box), std::numeric_limits<double>::quiet_NaN());
+    const double initial_time_value =
+        db::get<InitializationTags::StartTime>(box);
+    const double step_size = db::get<InitializationTags::TargetStepSize>(box);
 
-    auto evolution_box = EvolutionTags<Metavariables>::initialize(
-        std::move(initialize_box), cache);
+    auto evolution_box =
+        EvolutionTags<Metavariables>::initialize(std::move(box), cache);
     auto characteristic_evolution_box =
         CharacteristicTags<Metavariables>::initialize(std::move(evolution_box),
                                                       cache);
-    auto initialization_moved_box = Initialization::merge_into_databox<
-        InitializeCharacteristicEvolution,
-        db::AddSimpleTags<Spectral::Swsh::Tags::NumberOfRadialPoints,
-                          Tags::EndTime>,
-        db::AddComputeTags<>>(
-        std::move(characteristic_evolution_box),
-        db::get<InitializationTags::NumberOfRadialPoints>(
-            characteristic_evolution_box),
-        db::get<InitializationTags::EndTime>(characteristic_evolution_box));
+    auto initialization_moved_box =
+        Initialization::merge_into_databox<InitializeCharacteristicEvolution,
+                                           db::AddSimpleTags<Tags::EndTime>,
+                                           db::AddComputeTags<>>(
+            std::move(characteristic_evolution_box),
+            db::get<InitializationTags::EndTime>(characteristic_evolution_box));
 
     return std::make_tuple(std::move(initialization_moved_box));
   }
 
-  template <
-      typename DbTags, typename... InboxTags, typename Metavariables,
-      typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<not tmpl::list_contains_v<DbTags, InitializationTags::LMax>> =
-          nullptr>
+  template <typename DbTags, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent,
+            Requires<not tmpl::list_contains_v<
+                DbTags, InitializationTags::StartTime>> = nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
