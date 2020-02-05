@@ -241,8 +241,10 @@ struct EvolutionMetavars {
   };
 
   using initialization_actions = tmpl::list<
+      Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       dg::Actions::InitializeDomain<volume_dim>,
       Initialization::Actions::NonconservativeSystem,
+      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       GeneralizedHarmonic::Actions::InitializeGhAnd3Plus1Variables<volume_dim>,
       dg::Actions::InitializeInterfaces<
           system,
@@ -282,7 +284,6 @@ struct EvolutionMetavars {
                                                                frame>,
               GeneralizedHarmonic::CharacteristicSpeedsCompute<volume_dim,
                                                                frame>>>,
-      Initialization::Actions::Evolution<EvolutionMetavars>,
       Initialization::Actions::AddComputeTags<
           tmpl::list<evolution::Tags::AnalyticCompute<
               volume_dim, initial_data_tag, analytic_solution_fields>>>,

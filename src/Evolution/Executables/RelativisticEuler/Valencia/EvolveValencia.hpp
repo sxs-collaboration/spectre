@@ -200,9 +200,11 @@ struct EvolutionMetavars {
   };
 
   using initialization_actions = tmpl::list<
+      Initialization::Actions::TimeAndTimeStep<EvolutionMetavars>,
       dg::Actions::InitializeDomain<Dim>,
       Initialization::Actions::GrTagsForHydro,
       Initialization::Actions::ConservativeSystem,
+      Initialization::Actions::TimeStepperHistory<EvolutionMetavars>,
       VariableFixing::Actions::FixVariables<
           VariableFixing::FixToAtmosphere<volume_dim, thermodynamic_dim>>,
       Initialization::Actions::AddComputeTags<
@@ -219,7 +221,6 @@ struct EvolutionMetavars {
               typename system::spacetime_variables_tag,
               typename system::primitive_variables_tag,
               hydro::Tags::SoundSpeedSquared<DataVector>>>,
-      Initialization::Actions::Evolution<EvolutionMetavars>,
       tmpl::conditional_t<
           evolution::is_analytic_solution_v<initial_data>,
           Initialization::Actions::AddComputeTags<
