@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cstddef>
+#include <limits>
 #include <string>
 
 #include "Evolution/Systems/Cce/OptionTags.hpp"
@@ -30,7 +31,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
             "0.5") == 0.5);
   CHECK(TestHelpers::test_creation<std::string,
                                    Cce::OptionTags::BoundaryDataFilename>(
-            "CceR0100.h5") == "CceR0100.h5");
+            "OptionTagsCceR0100.h5") == "OptionTagsCceR0100.h5");
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::H5LookaheadTimes>(
             "5") == 5_st);
   CHECK(TestHelpers::test_creation<size_t,
@@ -49,6 +50,25 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
           create_from_options(8, filename, 3,
                               std::make_unique<intrp::CubicSpanInterpolator>())
               .get_l_max() == 8);
+
+  CHECK(Cce::InitializationTags::LMax::create_from_options(8u) == 8u);
+  CHECK(Cce::InitializationTags::NumberOfRadialPoints::create_from_options(
+            6u) == 6u);
+
+  CHECK(Cce::InitializationTags::StartTime::create_from_options(
+            -std::numeric_limits<double>::infinity(),
+            "OptionTagsTestCceR0100.h5") == 2.5);
+  CHECK(Cce::InitializationTags::StartTime::create_from_options(
+            3.3, "OptionTagsTestCceR0100.h5") == 3.3);
+
+  CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==
+        0.2);
+
+  CHECK(Cce::InitializationTags::EndTime::create_from_options(
+            std::numeric_limits<double>::infinity(),
+            "OptionTagsTestCceR0100.h5") == 5.4);
+  CHECK(Cce::InitializationTags::EndTime::create_from_options(
+            2.2, "OptionTagsTestCceR0100.h5") == 2.2);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);

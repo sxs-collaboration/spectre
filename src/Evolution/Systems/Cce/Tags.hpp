@@ -387,5 +387,16 @@ struct ScriPlusFactor : db::PrefixTag, db::SimpleTag {
     return "ScriPlusFactor(" + db::tag_name<Tag>() + ")";
   }
 };
+
+/// The current time associated with the data copied from the worldtube
+/// computation
+struct BoundaryTime : db::SimpleTag {
+  using type = double;
+};
+
+/// The final time of the Cce evolution
+struct EndTime : db::SimpleTag {
+  using type = double;
+};
 }  // namespace Tags
 }  // namespace Cce
