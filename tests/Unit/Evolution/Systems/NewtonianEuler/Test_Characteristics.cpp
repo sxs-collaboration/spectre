@@ -321,6 +321,17 @@ void test_right_and_left_eigenvectors() noexcept {
   const EquationsOfState::PolytropicFluid<false> polytropic_eos{100., 2.};
   test_left_and_right_eigenvectors_impl(
       density, velocity, specific_internal_energy, unit_normal, polytropic_eos);
+
+  // Test also in cases where unit normal is aligned to coordinate axes
+  for (const auto& direction : Direction<Dim>::all_directions()) {
+    const auto aligned = euclidean_basis_vector(direction, used_for_size);
+
+    test_left_and_right_eigenvectors_impl(
+        density, velocity, specific_internal_energy, aligned, ideal_gas_eos);
+
+    test_left_and_right_eigenvectors_impl(
+        density, velocity, specific_internal_energy, aligned, polytropic_eos);
+  }
 }
 
 }  // namespace
