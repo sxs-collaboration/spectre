@@ -32,7 +32,6 @@
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace Cce {
-
 namespace {
 template <typename Metavariables>
 struct mock_characteristic_evolution {
@@ -83,7 +82,8 @@ struct metavariables {
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
       bondi_hypersurface_step_tags,
       tmpl::bind<integrand_terms_to_compute_for_bondi_variable, tmpl::_1>>>;
-  using cce_integration_independent_tags = pre_computation_tags;
+  using cce_integration_independent_tags =
+      tmpl::append<pre_computation_tags, tmpl::list<Tags::DuRDividedByR>>;
   using cce_temporary_equations_tags =
       tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
           cce_integrand_tags, tmpl::bind<integrand_temporary_tags, tmpl::_1>>>>;
@@ -100,9 +100,6 @@ struct metavariables {
                  Cce::Tags::TimeIntegral<Cce::Tags::ScriPlus<Cce::Tags::Psi4>>,
                  Cce::Tags::ScriPlusFactor<Cce::Tags::Psi4>>;
 
-  using const_global_cache_tags =
-      tmpl::list<::Tags::TimeStepper<TimeStepper>, Spectral::Swsh::Tags::LMax,
-                 Spectral::Swsh::Tags::NumberOfRadialPoints>;
   using component_list =
       tmpl::list<mock_characteristic_evolution<metavariables>>;
   enum class Phase { Initialization, Evolve, Exit };

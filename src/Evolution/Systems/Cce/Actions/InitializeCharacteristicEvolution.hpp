@@ -14,6 +14,7 @@
 #include "Evolution/Systems/Cce/InitializeCce.hpp"
 #include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
+#include "NumericalAlgorithms/Spectral/SwshInterpolation.hpp"
 #include "Parallel/Info.hpp"
 #include "ParallelAlgorithms/Initialization/MergeIntoDataBox.hpp"
 #include "Time/Tags.hpp"
@@ -77,13 +78,16 @@ namespace Actions {
  *  - `Tags::Variables<metavariables::cce_swsh_derivative_tags>`
  *  - `Spectral::Swsh::Tags::NumberOfRadialPoints`
  *  - `Tags::EndTime`
+ *  - `Spectral::Swsh::Tags::SwshInterpolator<Tags::CauchyAngularCoords>`
  * - Removes: nothing
  */
 struct InitializeCharacteristicEvolution {
   using initialization_tags =
       tmpl::list<InitializationTags::StartTime, InitializationTags::EndTime,
                  InitializationTags::TargetStepSize>;
-  using const_global_cache_tags = tmpl::list<::Tags::TimeStepper<TimeStepper>>;
+  using const_global_cache_tags =
+      tmpl::list<::Tags::TimeStepper<TimeStepper>, Spectral::Swsh::Tags::LMax,
+                 Spectral::Swsh::Tags::NumberOfRadialPoints>;
 
   template <typename Metavariables>
   struct EvolutionTags {
@@ -176,7 +180,6 @@ struct InitializeCharacteristicEvolution {
       const size_t transform_buffer_size =
           number_of_radial_points *
           Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max);
-
       return Initialization::merge_into_databox<
           InitializeCharacteristicEvolution,
           db::AddSimpleTags<
@@ -185,8 +188,10 @@ struct InitializeCharacteristicEvolution {
               evolved_swsh_dt_variables_tag, angular_coordinates_variables_tag,
               scri_variables_tag, volume_variables_tag,
               pre_swsh_derivatives_variables_tag,
-              transform_buffer_variables_tag, swsh_derivative_variables_tag>,
-          db::AddComputeTags<>>(
+              transform_buffer_variables_tag, swsh_derivative_variables_tag,
+              Spectral::Swsh::Tags::SwshInterpolator<
+                  Tags::CauchyAngularCoords>>,
+          db::AddComputeTags<>, Initialization::MergePolicy::Overwrite>(
           std::move(box),
           db::item_type<boundary_value_variables_tag>{boundary_size},
           db::item_type<coordinate_variables_tag>{boundary_size},
@@ -199,7 +204,8 @@ struct InitializeCharacteristicEvolution {
           db::item_type<pre_swsh_derivatives_variables_tag>{volume_size, 0.0},
           db::item_type<transform_buffer_variables_tag>{transform_buffer_size,
                                                         0.0},
-          db::item_type<swsh_derivative_variables_tag>{volume_size, 0.0});
+          db::item_type<swsh_derivative_variables_tag>{volume_size, 0.0},
+          Spectral::Swsh::SwshInterpolator{});
     }
   };
 
@@ -234,7 +240,6 @@ struct InitializeCharacteristicEvolution {
                                            db::AddComputeTags<>>(
             std::move(characteristic_evolution_box),
             db::get<InitializationTags::EndTime>(characteristic_evolution_box));
-
     return std::make_tuple(std::move(initialization_moved_box));
   }
 

@@ -109,7 +109,8 @@ struct test_metavariables {
   using cce_integrand_tags = tmpl::flatten<tmpl::transform<
       bondi_hypersurface_step_tags,
       tmpl::bind<integrand_terms_to_compute_for_bondi_variable, tmpl::_1>>>;
-  using cce_integration_independent_tags = pre_computation_tags;
+  using cce_integration_independent_tags =
+      tmpl::append<pre_computation_tags, tmpl::list<Tags::DuRDividedByR>>;
   using cce_temporary_equations_tags =
       tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
           cce_integrand_tags, tmpl::bind<integrand_temporary_tags, tmpl::_1>>>>;
@@ -126,9 +127,6 @@ struct test_metavariables {
                  Cce::Tags::TimeIntegral<Cce::Tags::ScriPlus<Cce::Tags::Psi4>>,
                  Cce::Tags::ScriPlusFactor<Cce::Tags::Psi4>>;
 
-  using const_global_cache_tags =
-      tmpl::list<::Tags::TimeStepper<TimeStepper>, Spectral::Swsh::Tags::LMax,
-                 Spectral::Swsh::Tags::NumberOfRadialPoints>;
   using component_list =
       tmpl::list<mock_h5_worldtube_boundary<test_metavariables>,
                  mock_characteristic_evolution<test_metavariables>>;
@@ -145,7 +143,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<test_metavariables>>{
-          std::make_unique<::TimeSteppers::RungeKutta3>(), l_max,
+          l_max, std::make_unique<::TimeSteppers::RungeKutta3>(),
           number_of_radial_points}};
 
   const std::string filename = "BoundaryDataTest_CceR0100.h5";
@@ -218,5 +216,4 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
     file_system::rm(filename, true);
   }
 }
-
 }  // namespace Cce

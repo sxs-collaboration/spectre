@@ -58,5 +58,8 @@ struct mock_h5_worldtube_boundary {
                              initialize_action_list>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Evolve, tmpl::list<>>>;
+  using const_global_cache_tags =
+      Parallel::get_const_global_cache_tags_from_actions<
+    phase_dependent_action_list>;
 };
 }  // namespace Cce
