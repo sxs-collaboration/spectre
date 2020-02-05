@@ -18,7 +18,10 @@ void test() noexcept {
       "InitialRefinementLevels");
   TestHelpers::db::test_simple_tag<Tags::Element<Dim>>("Element");
   TestHelpers::db::test_simple_tag<Tags::Mesh<Dim>>("Mesh");
-  TestHelpers::db::test_simple_tag<Tags::ElementMap<Dim>>("ElementMap");
+  TestHelpers::db::test_simple_tag<Tags::ElementMap<Dim>>(
+      "ElementMap(Inertial)");
+  TestHelpers::db::test_simple_tag<Tags::ElementMap<Dim, Frame::Grid>>(
+      "ElementMap(Grid)");
   TestHelpers::db::test_simple_tag<Tags::Coordinates<Dim, Frame::Grid>>(
       "GridCoordinates");
   TestHelpers::db::test_simple_tag<Tags::Coordinates<Dim, Frame::Logical>>(

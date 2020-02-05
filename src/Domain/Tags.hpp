@@ -120,6 +120,9 @@ struct Mesh : db::SimpleTag {
 /// The coordinate map from logical to grid coordinate
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct ElementMap : db::SimpleTag {
+  static std::string name() noexcept {
+    return "ElementMap(" + get_output(Frame{}) + ")";
+  }
   using type = ::ElementMap<VolumeDim, Frame>;
 };
 
