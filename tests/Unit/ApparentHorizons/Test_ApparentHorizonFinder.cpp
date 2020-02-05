@@ -305,7 +305,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                    Spectral::Basis::Legendre,
                    Spectral::Quadrature::GaussLobatto};
     ElementMap<3, Frame::Inertial> map{element_id,
-                                       block.coordinate_map().get_clone()};
+                                       block.stationary_map().get_clone()};
     const auto inertial_coords = map(logical_coordinates(mesh));
 
     // Compute psi, pi, phi for KerrSchild.

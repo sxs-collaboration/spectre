@@ -38,11 +38,26 @@ std::vector<block_logical_coord_holder<Dim>> block_logical_coordinates(
     // case, choose the first matching block (and this block will have
     // the smallest block_id).
     for (const auto& block : domain.blocks()) {
-      const auto inv = block.coordinate_map().inverse(x_frame);
-      if(inv) {
-        x_logical = inv.get();
+      if (block.is_time_dependent()) {
+        const auto moving_inv =
+            block.moving_mesh_grid_to_inertial_map().inverse(x_frame);
+        if (not moving_inv) {
+          continue;
+        }
+        const auto inv =
+            block.moving_mesh_logical_to_grid_map().inverse(moving_inv.get());
+        if (inv) {
+          x_logical = inv.get();
+        } else {
+          continue;  // Not in this block
+        }
       } else {
-        continue; // Not in this block
+        const auto inv = block.stationary_map().inverse(x_frame);
+        if (inv) {
+          x_logical = inv.get();
+        } else {
+          continue;  // Not in this block
+        }
       }
       bool is_contained = true;
       for (size_t d = 0; d < Dim; ++d) {

@@ -123,8 +123,11 @@ void fuzzy_test_block_and_element_logical_coordinates(
     tnsr::I<DataVector, Dim, Frame::Inertial> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
       const auto& my_block = domain.blocks()[element_ids[s].block_id()];
+      if (my_block.is_time_dependent()) {
+        ERROR("Only support time-independent blocks in this test.");
+      }
       ElementMap<Dim, Frame::Inertial> map{
-          element_ids[s], my_block.coordinate_map().get_clone()};
+          element_ids[s], my_block.stationary_map().get_clone()};
       const auto coord_one_point = map(element_coords[s]);
       for (size_t d = 0; d < Dim; ++d) {
         coords.get(d)[s] = coord_one_point.get(d);
@@ -206,8 +209,16 @@ void fuzzy_test_block_and_element_logical_coordinates_unrefined(
                                 &block_coords]() noexcept {
     tnsr::I<DataVector, Dim, Frame::Inertial> coords(n_pts);
     for (size_t s = 0; s < n_pts; ++s) {
-      const auto coord_one_point =
-          domain.blocks()[block_ids[s]].coordinate_map()(block_coords[s]);
+      tnsr::I<double, Dim, Frame::Inertial> coord_one_point{};
+      if (domain.blocks()[block_ids[s]].is_time_dependent()) {
+        coord_one_point =
+            domain.blocks()[block_ids[s]].moving_mesh_grid_to_inertial_map()(
+                domain.blocks()[block_ids[s]].moving_mesh_logical_to_grid_map()(
+                    block_coords[s]));
+      } else {
+        coord_one_point =
+            domain.blocks()[block_ids[s]].stationary_map()(block_coords[s]);
+      }
       for (size_t d = 0; d < Dim; ++d) {
         coords.get(d)[s] = coord_one_point.get(d);
       }

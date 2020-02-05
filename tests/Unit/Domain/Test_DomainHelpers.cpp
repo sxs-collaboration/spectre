@@ -1518,7 +1518,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries1",
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
-    CHECK(domain.blocks()[i].coordinate_map() == *expected_coordinate_maps[i]);
+    CHECK(domain.blocks()[i].stationary_map() == *expected_coordinate_maps[i]);
   }
 }
 
@@ -1552,7 +1552,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries2",
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
-    CHECK(domain.blocks()[i].coordinate_map() == *expected_coordinate_maps[i]);
+    CHECK(domain.blocks()[i].stationary_map() == *expected_coordinate_maps[i]);
   }
 }
 
@@ -1606,7 +1606,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers.SetCartesianPeriodicBoundaries3",
     INFO(i);
     CHECK(domain.blocks()[i].external_boundaries() ==
           expected_external_boundaries[i]);
-    CHECK(domain.blocks()[i].coordinate_map() == *expected_coordinate_maps[i]);
+    CHECK(domain.blocks()[i].stationary_map() == *expected_coordinate_maps[i]);
     CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
   }
 }

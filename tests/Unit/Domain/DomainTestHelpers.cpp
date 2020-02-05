@@ -6,6 +6,7 @@
 #include "tests/Unit/Domain/DomainTestHelpers.hpp"
 
 #include <algorithm>
+#include <ios>
 #include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
@@ -268,8 +269,21 @@ double physical_separation(const Block<VolumeDim>& block1,
     gsl::at(shared_points2, fci.face_index()) =
         point_in_neighbor_frame(orientation, fci());
   }
-  const auto& map1 = block1.coordinate_map();
-  const auto& map2 = block2.coordinate_map();
+  if (block1.is_time_dependent() != block2.is_time_dependent()) {
+    ERROR(
+        "Both block1 and block2 must have the same time dependence, but block1 "
+        "has time-dependence status: "
+        << std::boolalpha << block1.is_time_dependent()
+        << " and block2 has: " << block2.is_time_dependent());
+  }
+  if (block1.is_time_dependent()) {
+    ERROR(
+        "Time-dependent maps are currently not supported in "
+        "physical_separation function.");
+  }
+
+  const auto& map1 = block1.stationary_map();
+  const auto& map2 = block2.stationary_map();
   for (size_t i = 0; i < two_to_the(VolumeDim - 1); i++) {
     for (size_t j = 0; j < VolumeDim; j++) {
       max_separation = std::max(
@@ -301,7 +315,7 @@ void test_domain_construction(
     CHECK(block.id() == i);
     CHECK(block.neighbors() == expected_block_neighbors[i]);
     CHECK(block.external_boundaries() == expected_external_boundaries[i]);
-    check_if_maps_are_equal(*expected_maps[i], block.coordinate_map());
+    check_if_maps_are_equal(*expected_maps[i], block.stationary_map());
   }
   domain::creators::register_derived_with_charm();
   test_serialization(domain);
