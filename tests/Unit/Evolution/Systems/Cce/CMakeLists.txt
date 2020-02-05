@@ -17,6 +17,7 @@ set(LIBRARY_SOURCES
   Test_PreSwshDerivatives.cpp
   Test_PrecomputeCceDependencies.cpp
   Test_ReadBoundaryDataH5.cpp
+  Test_ScriPlusInterpolationManager.cpp
   Test_ScriPlusValues.cpp
   Test_SwshDerivatives.cpp
   Test_Tags.cpp
