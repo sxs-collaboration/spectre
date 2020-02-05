@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataVector.hpp"
+#include "DataStructures/Tensor/EagerMath/DotProduct.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"
 #include "PointwiseFunctions/AnalyticSolutions/NewtonianEuler/LaneEmdenStar.hpp"
 #include "Utilities/Gsl.hpp"
@@ -29,9 +30,8 @@ void LaneEmdenGravitationalField::apply(
   for (size_t i = 0; i < 3; ++i) {
     source_momentum_density->get(i) =
         get(mass_density_cons) * gravitational_field.get(i);
-    get(*source_energy_density) +=
-        momentum_density.get(i) * gravitational_field.get(i);
   }
+  *source_energy_density = dot_product(momentum_density, gravitational_field);
 }
 
 }  // Namespace Sources
