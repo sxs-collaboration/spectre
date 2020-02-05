@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_InitializeCharacteristicEvolution.cpp
   Test_InitializeWorldtubeBoundary.cpp
   Test_RequestBoundaryData.cpp
+  Test_TimeManagement.cpp
   )
 
 add_test_library(
