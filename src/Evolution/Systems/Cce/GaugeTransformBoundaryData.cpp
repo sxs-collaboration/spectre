@@ -662,7 +662,9 @@ void GaugeUpdateOmega::apply(
 }
 
 void InitializeGauge::apply(
-    const gsl::not_null<tnsr::i<DataVector, 2>*> angular_cauchy_coordinates,
+    const gsl::not_null<
+        tnsr::i<DataVector, 2, ::Frame::Spherical<::Frame::Inertial>>*>
+        angular_cauchy_coordinates,
     const gsl::not_null<tnsr::i<DataVector, 3>*> cartesian_cauchy_coordinates,
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> gauge_c,
     const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> gauge_d,
