@@ -239,13 +239,6 @@ void test_serialization() noexcept {
               {{Spectral::Quadrature::GaussLobatto, Spectral::Quadrature::Gauss,
                 Spectral::Quadrature::GaussLobatto}}});
 }
-
-void test_tags() noexcept {
-  INFO("Tags");
-  CHECK(Tags::Mesh<1>::name() == "Mesh");
-  CHECK(Tags::Mesh<2>::name() == "Mesh");
-  CHECK(Tags::Mesh<3>::name() == "Mesh");
-}
 }  // namespace
 
 SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
@@ -253,7 +246,6 @@ SPECTRE_TEST_CASE("Unit.Domain.Mesh", "[Domain][Unit]") {
   test_explicit_choices_per_dimension();
   test_equality();
   test_serialization();
-  test_tags();
 }
 
 // [[OutputRegex, Tried to slice through non-existing dimension]]

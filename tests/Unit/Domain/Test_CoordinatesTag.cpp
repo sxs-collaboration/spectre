@@ -41,12 +41,6 @@ void test_coordinates_compute_item(const Mesh<Dim>& mesh, T map) noexcept {
       (db::get<Tags::Coordinates<Dim, Frame::Grid>>(box)),
       (make_coordinate_map<Frame::Logical, Frame::Grid>(map)(
           db::get<Tags::Coordinates<Dim, Frame::Logical>>(box))));
-
-  /// [coordinates_name]
-  CHECK(Tags::Coordinates<Dim, Frame::Logical>::name() == "LogicalCoordinates");
-  CHECK(Tags::Coordinates<Dim, Frame::Inertial>::name() ==
-        "InertialCoordinates");
-  /// [coordinates_name]
 }
 }  // namespace
 

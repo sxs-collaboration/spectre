@@ -123,7 +123,8 @@ struct InterfaceCompute : Interface<DirectionsTag, Tag>,
   // tags; Both Interface<Dirs, Tag> and Interface<Dirs, Tag::base> will have a
   // name function and so cannot be disambiguated.
   static std::string name() noexcept {
-    return "Interface<" + DirectionsTag::name() + ", " + Tag::name() + ">";
+    return "Interface<" + db::tag_name<DirectionsTag>() + ", " +
+           db::tag_name<Tag>() + ">";
   };
   using tag = Tag;
   using forwarded_argument_tags =

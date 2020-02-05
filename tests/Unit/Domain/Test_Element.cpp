@@ -57,8 +57,6 @@ void check_element_work(const typename Element<VolumeDim>::Neighbors_t&
         "\n");
 
   test_serialization(element);
-
-  CHECK(Tags::Element<VolumeDim>::name() == "Element");
 }
 
 void check_element_1d() {

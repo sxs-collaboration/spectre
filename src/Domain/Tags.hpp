@@ -54,7 +54,6 @@ namespace Tags {
 /// The ::Domain.
 template <size_t VolumeDim>
 struct Domain : db::SimpleTag {
-  static std::string name() noexcept { return "Domain"; }
   using type = ::Domain<VolumeDim>;
   using option_tags = tmpl::list<::OptionTags::DomainCreator<VolumeDim>>;
 
@@ -72,7 +71,6 @@ struct Domain : db::SimpleTag {
 /// the initial computational domain
 template <size_t Dim>
 struct InitialExtents : db::SimpleTag {
-  static std::string name() noexcept { return "InitialExtents"; }
   using type = std::vector<std::array<size_t, Dim>>;
   using option_tags = tmpl::list<::OptionTags::DomainCreator<Dim>>;
 
@@ -89,7 +87,6 @@ struct InitialExtents : db::SimpleTag {
 /// the initial computational domain
 template <size_t Dim>
 struct InitialRefinementLevels : db::SimpleTag {
-  static std::string name() noexcept { return "InitialRefinementLevels"; }
   using type = std::vector<std::array<size_t, Dim>>;
   using option_tags = tmpl::list<::OptionTags::DomainCreator<Dim>>;
 
@@ -105,7 +102,6 @@ struct InitialRefinementLevels : db::SimpleTag {
 /// The ::Element associated with the DataBox
 template <size_t VolumeDim>
 struct Element : db::SimpleTag {
-  static std::string name() noexcept { return "Element"; }
   using type = ::Element<VolumeDim>;
 };
 
@@ -116,7 +112,6 @@ struct Element : db::SimpleTag {
 /// the mesh on the face of the element.
 template <size_t VolumeDim>
 struct Mesh : db::SimpleTag {
-  static std::string name() noexcept { return "Mesh"; }
   using type = ::Mesh<VolumeDim>;
 };
 
@@ -125,15 +120,12 @@ struct Mesh : db::SimpleTag {
 /// The coordinate map from logical to grid coordinate
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct ElementMap : db::SimpleTag {
-  static std::string name() noexcept { return "ElementMap"; }
   using type = ::ElementMap<VolumeDim, Frame>;
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The coordinates in a given frame.
-///
-/// \snippet Test_CoordinatesTag.cpp coordinates_name
 template <size_t Dim, typename Frame>
 struct Coordinates : db::SimpleTag {
   static std::string name() noexcept {
