@@ -57,6 +57,68 @@ Tensor<ComplexModalVector, Structure...> tensor_to_libsharp_coefficients(
 }
 
 template <typename AnalyticSolution>
+void create_fake_time_varying_gh_nodal_data(
+    const gsl::not_null<tnsr::aa<DataVector, 3>*> spacetime_metric,
+    const gsl::not_null<tnsr::iaa<DataVector, 3>*> phi,
+    const gsl::not_null<tnsr::aa<DataVector, 3>*> pi,
+    const AnalyticSolution& solution, const double extraction_radius,
+    const double amplitude, const double frequency, const double time,
+    const size_t l_max) noexcept {
+  const size_t number_of_angular_points =
+      Spectral::Swsh::number_of_swsh_collocation_points(l_max);
+  // create the vector of collocation points that we want to interpolate to
+
+  tnsr::I<DataVector, 3> collocation_points{number_of_angular_points};
+  const auto& collocation = Spectral::Swsh::cached_collocation_metadata<
+      Spectral::Swsh::ComplexRepresentation::Interleaved>(l_max);
+  for (const auto& collocation_point : collocation) {
+    get<0>(collocation_points)[collocation_point.offset] =
+        extraction_radius * (1.0 + amplitude * sin(frequency * time)) *
+        sin(collocation_point.theta) * cos(collocation_point.phi);
+    get<1>(collocation_points)[collocation_point.offset] =
+        extraction_radius * (1.0 + amplitude * sin(frequency * time)) *
+        sin(collocation_point.theta) * sin(collocation_point.phi);
+    get<2>(collocation_points)[collocation_point.offset] =
+        extraction_radius * (1.0 + amplitude * sin(frequency * time)) *
+        cos(collocation_point.theta);
+  }
+
+  const auto kerr_schild_variables = solution.variables(
+      collocation_points, 0.0, gr::Solutions::KerrSchild::tags<DataVector>{});
+
+  const Scalar<DataVector>& lapse =
+      get<gr::Tags::Lapse<DataVector>>(kerr_schild_variables);
+  const Scalar<DataVector>& dt_lapse =
+      get<::Tags::dt<gr::Tags::Lapse<DataVector>>>(kerr_schild_variables);
+  const auto& d_lapse = get<gr::Solutions::KerrSchild::DerivLapse<DataVector>>(
+      kerr_schild_variables);
+
+  const auto& shift = get<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>(
+      kerr_schild_variables);
+  const auto& dt_shift =
+      get<::Tags::dt<gr::Tags::Shift<3, ::Frame::Inertial, DataVector>>>(
+          kerr_schild_variables);
+  const auto& d_shift = get<gr::Solutions::KerrSchild::DerivShift<DataVector>>(
+      kerr_schild_variables);
+
+  const auto& spatial_metric =
+      get<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>(
+          kerr_schild_variables);
+  const auto& dt_spatial_metric = get<
+      ::Tags::dt<gr::Tags::SpatialMetric<3, ::Frame::Inertial, DataVector>>>(
+      kerr_schild_variables);
+  const auto& d_spatial_metric =
+      get<gr::Solutions::KerrSchild::DerivSpatialMetric<DataVector>>(
+          kerr_schild_variables);
+
+  gr::spacetime_metric(spacetime_metric, lapse, shift, spatial_metric);
+  GeneralizedHarmonic::phi(phi, lapse, d_lapse, shift, d_shift, spatial_metric,
+                           d_spatial_metric);
+  GeneralizedHarmonic::pi(pi, lapse, dt_lapse, shift, dt_shift, spatial_metric,
+                           dt_spatial_metric, *phi);
+}
+
+template <typename AnalyticSolution>
 void create_fake_time_varying_modal_data(
     const gsl::not_null<tnsr::ii<ComplexModalVector, 3>*>
         spatial_metric_coefficients,

@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_InitializeFirstHypersurface.cpp
   Test_InsertInterpolationScriData.cpp
   Test_FilterSwshVolumeQuantity.cpp
+  Test_GhBoundaryCommunication.cpp
   Test_H5BoundaryCommunication.cpp
   Test_InitializeCharacteristicEvolution.cpp
   Test_InitializeWorldtubeBoundary.cpp

@@ -93,4 +93,4 @@ class GhLockstepInterfaceManager : public GhWorldtubeInterfaceManager {
       provided_data_;
 };
 
-}
+}  // namespace Cce

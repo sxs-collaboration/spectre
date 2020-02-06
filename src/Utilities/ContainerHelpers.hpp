@@ -175,6 +175,7 @@ SPECTRE_ALWAYS_INLINE decltype(auto) get_size(
 template <typename Container,
           typename DestructiveResizeFunction = ContainerDestructiveResize>
 void SPECTRE_ALWAYS_INLINE destructive_resize_components(
+    // NOLINTNEXTLINE(readability-avoid-const-params-in-decls)
     const gsl::not_null<Container*> container, const size_t new_size,
     DestructiveResizeFunction destructive_resize =
         ContainerDestructiveResize{}) noexcept {
