@@ -42,7 +42,36 @@ struct mock_h5_worldtube_boundary {
           mock_characteristic_evolution<test_metavariables>>>;
 
   using initialize_action_list =
-      tmpl::list<InitializeH5WorldtubeBoundary,
+      tmpl::list<Actions::InitializeH5WorldtubeBoundary,
+                 Initialization::Actions::RemoveOptionsAndTerminatePhase>;
+  using initialization_tags =
+      Parallel::get_initialization_tags<initialize_action_list>;
+
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+
+  using simple_tags = tmpl::list<>;
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Initialization,
+                             initialize_action_list>,
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Evolve, tmpl::list<>>>;
+};
+
+template <typename Metavariables>
+struct mock_gh_worldtube_boundary {
+  using component_being_mocked = GhWorldtubeBoundary<Metavariables>;
+  using replace_these_simple_actions =
+      tmpl::list<Actions::BoundaryComputeAndSendToEvolution<
+          mock_characteristic_evolution<test_metavariables>>>;
+  using with_these_simple_actions =
+      tmpl::list<Actions::MockBoundaryComputeAndSendToEvolution<
+          mock_characteristic_evolution<test_metavariables>>>;
+
+  using initialize_action_list =
+      tmpl::list<Actions::InitializeGhWorldtubeBoundary,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
   using initialization_tags =
       Parallel::get_initialization_tags<initialize_action_list>;

@@ -29,50 +29,53 @@
 namespace Cce {
 
 namespace {
-struct metavariables {
+struct H5Metavariables {
   using cce_boundary_communication_tags =
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
-  using const_global_cache_tag_list = tmpl::list<Tags::LMax>;
-  using component_list = tmpl::list<mock_h5_worldtube_boundary<metavariables>>;
+  using component_list =
+      tmpl::list<mock_h5_worldtube_boundary<H5Metavariables>>;
   enum class Phase { Initialization, Evolve, Exit };
 };
-}  // namespace
 
-SPECTRE_TEST_CASE(
-    "Unit.Evolution.Systems.Cce.Actions.InitializeWorldtubeBoundary",
-    "[Unit][Cce]") {
-  using component = mock_h5_worldtube_boundary<metavariables>;
-  // this probably needs to be adjusted for the const global tags and option
-  // tags we need.
+struct GhMetavariables {
+  using cce_boundary_communication_tags =
+      Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
+  using component_list =
+      tmpl::list<mock_gh_worldtube_boundary<GhMetavariables>>;
+  enum class Phase { Initialization, Evolve, Exit };
+};
+
+template <typename Generator>
+void test_h5_initialization(const gsl::not_null<Generator*> gen) noexcept {
+  using component = mock_h5_worldtube_boundary<H5Metavariables>;
   const size_t l_max = 8;
-  ActionTesting::MockRuntimeSystem<metavariables> runner{
+  ActionTesting::MockRuntimeSystem<H5Metavariables> runner{
       tuples::tagged_tuple_from_typelist<
-          Parallel::get_const_global_cache_tags<metavariables>>{l_max}};
+          Parallel::get_const_global_cache_tags<H5Metavariables>>{l_max}};
 
   const size_t buffer_size = 8;
   const std::string filename = "InitializeWorldtubeBoundaryTest_CceR0100.h5";
 
   // create the test file, because on initialization the manager will need to
   // get basic data out of the file
-  MAKE_GENERATOR(gen);
   UniformCustomDistribution<double> value_dist{0.1, 0.5};
   // first prepare the input for the modal version
-  const double mass = value_dist(gen);
+  const double mass = value_dist(*gen);
   const std::array<double, 3> spin{
-      {value_dist(gen), value_dist(gen), value_dist(gen)}};
+      {value_dist(*gen), value_dist(*gen), value_dist(*gen)}};
   const std::array<double, 3> center{
-      {value_dist(gen), value_dist(gen), value_dist(gen)}};
+      {value_dist(*gen), value_dist(*gen), value_dist(*gen)}};
   gr::Solutions::KerrSchild solution{mass, spin, center};
 
   const double extraction_radius = 100.0;
-  const double frequency = 0.1 * value_dist(gen);
-  const double amplitude = 0.1 * value_dist(gen);
-  const double target_time = 50.0 * value_dist(gen);
+  const double frequency = 0.1 * value_dist(*gen);
+  const double amplitude = 0.1 * value_dist(*gen);
+  const double target_time = 50.0 * value_dist(*gen);
   TestHelpers::write_test_file(solution, filename, target_time,
                                extraction_radius, frequency, amplitude, l_max);
 
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Initialization);
+                           H5Metavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
       InitializationTags::H5WorldtubeBoundaryDataManager::create_from_options(
@@ -84,7 +87,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::set_phase(make_not_null(&runner),
-                           metavariables::Phase::Evolve);
+                           H5Metavariables::Phase::Evolve);
   // check that the h5 data manager copied out of the databox has the correct
   // properties that we can examine without running the other actions
   const auto& data_manager =
@@ -99,9 +102,10 @@ SPECTRE_TEST_CASE(
   // check that the Variables is in the expected state (here we just make sure
   // it has the right size - it shouldn't have been written to yet)
   const auto& variables = ActionTesting::get_databox_tag<
-      component, ::Tags::Variables<
-                     typename metavariables::cce_boundary_communication_tags>>(
-      runner, 0);
+      component,
+      ::Tags::Variables<
+          typename H5Metavariables::cce_boundary_communication_tags>>(runner,
+                                                                      0);
 
   CHECK(get(get<Tags::BoundaryValue<Tags::BondiBeta>>(variables)).size() ==
         Spectral::Swsh::number_of_swsh_collocation_points(l_max));
@@ -109,5 +113,52 @@ SPECTRE_TEST_CASE(
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
   }
+}
+
+void test_gh_initialization() noexcept {
+  using component = mock_gh_worldtube_boundary<GhMetavariables>;
+  const size_t l_max = 8;
+  const double extraction_radius = 100.0;
+  ActionTesting::MockRuntimeSystem<GhMetavariables> runner{
+      tuples::tagged_tuple_from_typelist<
+          Parallel::get_const_global_cache_tags<GhMetavariables>>{
+          l_max, extraction_radius}};
+
+  runner.set_phase(GhMetavariables::Phase::Initialization);
+  ActionTesting::emplace_component<component>(
+      &runner, 0,
+      Tags::GhInterfaceManager::create_from_options<GhMetavariables>(
+          std::make_unique<GhLockstepInterfaceManager>()));
+
+  // this should run the initialization
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  runner.set_phase(GhMetavariables::Phase::Evolve);
+  // check that the GH data manager copied out of the databox has the correct
+  // properties that we can examine without running the other actions
+  const auto& interface_manager =
+      ActionTesting::get_databox_tag<component, Tags::GhInterfaceManager>(
+          runner, 0);
+  CHECK(cpp17::is_same_v<decltype(interface_manager),
+                         const GhWorldtubeInterfaceManager&>);
+
+  // check that the Variables is in the expected state (here we just make sure
+  // it has the right size - it shouldn't have been written to yet)
+  const auto& variables = ActionTesting::get_databox_tag<
+      component,
+      ::Tags::Variables<
+          typename GhMetavariables::cce_boundary_communication_tags>>(runner,
+                                                                      0);
+  CHECK(get(get<Tags::BoundaryValue<Tags::BondiBeta>>(variables)).size() ==
+        Spectral::Swsh::number_of_swsh_collocation_points(l_max));
+}
+}  // namespace
+
+SPECTRE_TEST_CASE(
+    "Unit.Evolution.Systems.Cce.Actions.InitializeWorldtubeBoundary",
+    "[Unit][Cce]") {
+  MAKE_GENERATOR(gen);
+  test_h5_initialization(make_not_null(&gen));
+  test_gh_initialization();
 }
 }  // namespace Cce
