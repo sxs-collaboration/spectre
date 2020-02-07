@@ -6,7 +6,8 @@
 #include <string>
 
 #include "Elliptic/Systems/Poisson/Tags.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Poisson.Tags", "[Unit][Elliptic]") {
-  CHECK(db::tag_name<Poisson::Tags::Field>() == "Field");
+  TestHelpers::db::test_simple_tag<Poisson::Tags::Field> ("Field");
 }

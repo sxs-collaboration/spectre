@@ -6,6 +6,7 @@
 #include <string>
 
 #include "Elliptic/Systems/Xcts/Tags.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
 struct DataVector;
 namespace Frame {
@@ -13,8 +14,9 @@ struct Inertial;
 }  // namespace Frame
 
 SPECTRE_TEST_CASE("Unit.Elliptic.Systems.Xcts.Tags", "[Unit][Elliptic]") {
-  CHECK(Xcts::Tags::ConformalFactor<DataVector>::name() == "ConformalFactor");
-  CHECK(Xcts::Tags::ConformalFactorGradient<3, Frame::Inertial,
-                                            DataVector>::name() ==
-        "ConformalFactorGradient");
+  TestHelpers::db::test_simple_tag<Xcts::Tags::ConformalFactor<DataVector>>(
+      "ConformalFactor");
+  TestHelpers::db::test_simple_tag<
+      Xcts::Tags::ConformalFactorGradient<3, Frame::Inertial, DataVector>>(
+      "ConformalFactorGradient");
 }

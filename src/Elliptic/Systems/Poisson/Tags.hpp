@@ -27,7 +27,6 @@ namespace Tags {
  */
 struct Field : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Field"; }
 };
 
 }  // namespace Tags

@@ -66,14 +66,12 @@ namespace {
 constexpr size_t Dim = 2;
 
 struct TemporalId : db::SimpleTag {
-  static std::string name() noexcept { return "TemporalId"; }
   using type = int;
   template <typename Tag>
   using step_prefix = Tags::dt<Tag>;
 };
 
 struct ScalarField : db::SimpleTag {
-  static std::string name() noexcept { return "ScalarField"; }
   using type = Scalar<DataVector>;
 };
 
@@ -81,14 +79,12 @@ using field_tag = ScalarField;
 using vars_tag = Tags::Variables<tmpl::list<field_tag>>;
 
 struct OtherData : db::SimpleTag {
-  static std::string name() noexcept { return "OtherData"; }
   using type = Scalar<DataVector>;
 };
 
 class NumericalFlux {
  public:
   struct ExtraData : db::SimpleTag {
-    static std::string name() noexcept { return "ExtraTag"; }
     using type = tnsr::I<DataVector, 1>;
   };
 
