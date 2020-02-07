@@ -251,9 +251,10 @@ void check_cmp(const T& less, const U& greater) {
  * \requires direction be between 0 and VolumeDim
  */
 template <typename Invocable, size_t VolumeDim>
-std::array<double, VolumeDim> numerical_derivative(
-    const Invocable& map, const std::array<double, VolumeDim>& x,
-    const size_t direction, const double delta) {
+std::result_of_t<const Invocable&(const std::array<double, VolumeDim>&)>
+numerical_derivative(const Invocable& map,
+                     const std::array<double, VolumeDim>& x,
+                     const size_t direction, const double delta) noexcept {
   ASSERT(0 <= direction and direction < VolumeDim,
          "Trying to take derivative along axis " << direction);
 
