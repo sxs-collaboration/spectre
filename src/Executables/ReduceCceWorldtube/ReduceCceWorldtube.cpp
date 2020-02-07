@@ -152,12 +152,13 @@ void slice_buffers_to_libsharp_modes(
 // smaller) dataset associated with the spin-weighted scalars to `output_file`.
 void perform_cce_worldtube_reduction(const std::string& input_file,
                                      const std::string& output_file,
-                                     const size_t buffer_depth) noexcept {
+                                     const size_t buffer_depth,
+                                     const size_t l_max_factor) noexcept {
   Cce::SpecWorldtubeH5BufferUpdater buffer_updater{input_file};
   const size_t l_max = buffer_updater.get_l_max();
   // Perform the boundary computation to scalars at twice the input l_max to be
   // absolutely certain that there are no problems associated with aliasing.
-  const size_t computation_l_max = 2 * l_max;
+  const size_t computation_l_max = l_max_factor * l_max;
 
   // we're not interpolating, this is just a reasonable number of rows to ingest
   // at a time.
@@ -297,7 +298,10 @@ int main(int argc, char** argv) {
       "buffer_depth",
       boost::program_options::value<size_t>()->default_value(2000),
       "number of time steps to load during each call to the file-accessing "
-      "routines. Higher values mean fewer, larger loads from file into RAM.");
+      "routines. Higher values mean fewer, larger loads from file into RAM.")(
+      "lmax_factor", boost::program_options::value<size_t>()->default_value(2),
+      "the boundary computations will be performed at a resolution that is "
+      "lmax_factor times the input file lmax to avoid aliasing");
 
   boost::program_options::variables_map vars;
 
@@ -315,5 +319,6 @@ int main(int argc, char** argv) {
 
   perform_cce_worldtube_reduction(vars["input_file"].as<std::string>(),
                                   vars["output_file"].as<std::string>(),
-                                  vars["buffer_depth"].as<size_t>());
+                                  vars["buffer_depth"].as<size_t>(),
+                                  vars["lmax_factor"].as<size_t>());
 }
