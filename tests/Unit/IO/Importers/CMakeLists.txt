@@ -4,6 +4,7 @@
 set(LIBRARY "Test_DataImporter")
 
 set(LIBRARY_SOURCES
+  Test_ReadSpecThirdOrderPiecewisePolynomial.cpp
   Test_Tags.cpp
   Test_VolumeDataReaderActions.cpp
   )
