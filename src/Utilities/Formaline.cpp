@@ -26,7 +26,7 @@ void write_to_file(const std::string& filename_without_extension) noexcept {
   std::fclose(outfile);
 }
 
-#ifdef __APPLE__
+#ifdef SPECTRE_NO_FORMALINE
 std::vector<char> get_archive() noexcept {
   return {'N', 'o', 't', ' ', 's', 'u', 'p', 'p', 'o', 'r', 't', 'e', 'd'};
 }
