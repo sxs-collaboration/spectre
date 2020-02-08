@@ -104,9 +104,8 @@ class DomainCreator {
       const noexcept = 0;
 
   /// Retrieve the functions of time used for moving meshes.
-  virtual std::unordered_map<
-      std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
-  functions_of_time() const noexcept {
+  virtual auto functions_of_time() const noexcept -> std::unordered_map<
+      std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>> {
     return {};
   }
 };
