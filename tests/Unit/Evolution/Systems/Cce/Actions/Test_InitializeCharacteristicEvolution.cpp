@@ -140,6 +140,9 @@ SPECTRE_TEST_CASE(
   const double frequency = 0.1 * value_dist(gen);
   const double amplitude = 0.1 * value_dist(gen);
   const double target_time = 50.0 * value_dist(gen);
+  if (file_system::check_if_file_exists(filename)) {
+    file_system::rm(filename, true);
+  }
   TestHelpers::write_test_file(solution, filename, target_time,
                                extraction_radius, frequency, amplitude, l_max);
 
