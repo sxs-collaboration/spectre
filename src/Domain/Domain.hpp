@@ -70,6 +70,12 @@ class Domain {
   Domain<VolumeDim>& operator=(const Domain<VolumeDim>&) = delete;
   Domain<VolumeDim>& operator=(Domain<VolumeDim>&&) = default;
 
+  void inject_time_dependent_map_for_block(
+      size_t block_id,
+      std::unique_ptr<
+          domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>
+          moving_mesh_inertial_map) noexcept;
+
   const std::vector<Block<VolumeDim>>& blocks() const noexcept {
     return blocks_;
   }

@@ -296,16 +296,64 @@ double physical_separation(const Block<VolumeDim>& block1,
 }  // namespace
 }  // namespace domain
 
-template <size_t VolumeDim>
+namespace {
+template <size_t Dim>
+void dispatch_check_if_maps_are_equal(
+    const Block<Dim>& block,
+    const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, Dim>&
+        expected_map,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) noexcept {
+  check_if_maps_are_equal(expected_map, block.stationary_map(), time,
+                          functions_of_time);
+}
+
+template <size_t Dim>
+void dispatch_check_if_maps_are_equal(
+    const Block<Dim>& block,
+    const domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, Dim>&
+        expected_map,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) noexcept {
+  check_if_maps_are_equal(expected_map,
+                          block.moving_mesh_grid_to_inertial_map(), time,
+                          functions_of_time);
+}
+
+template <size_t Dim>
+void dispatch_check_if_maps_are_equal(
+    const Block<Dim>& block,
+    const domain::CoordinateMapBase<Frame::Logical, Frame::Grid, Dim>&
+        expected_map,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time) noexcept {
+  check_if_maps_are_equal(expected_map, block.moving_mesh_logical_to_grid_map(),
+                          time, functions_of_time);
+}
+}  // namespace
+
+template <size_t VolumeDim, typename TargetFrameGridOrInertial>
 void test_domain_construction(
     const Domain<VolumeDim>& domain,
     const std::vector<DirectionMap<VolumeDim, BlockNeighbor<VolumeDim>>>&
         expected_block_neighbors,
     const std::vector<std::unordered_set<Direction<VolumeDim>>>&
         expected_external_boundaries,
+    const std::vector<std::unique_ptr<domain::CoordinateMapBase<
+        Frame::Logical, TargetFrameGridOrInertial, VolumeDim>>>& expected_maps,
+    const double time,
+    const std::unordered_map<
+        std::string, std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&
+        functions_of_time,
     const std::vector<std::unique_ptr<
-        domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, VolumeDim>>>&
-        expected_maps) noexcept {
+        domain::CoordinateMapBase<Frame::Grid, Frame::Inertial, VolumeDim>>>&
+        expected_grid_to_inertial_maps) noexcept {
   const auto& blocks = domain.blocks();
   CHECK(blocks.size() == expected_external_boundaries.size());
   CHECK(blocks.size() == expected_block_neighbors.size());
@@ -315,7 +363,17 @@ void test_domain_construction(
     CHECK(block.id() == i);
     CHECK(block.neighbors() == expected_block_neighbors[i]);
     CHECK(block.external_boundaries() == expected_external_boundaries[i]);
-    check_if_maps_are_equal(*expected_maps[i], block.stationary_map());
+    dispatch_check_if_maps_are_equal(block, *expected_maps[i], time,
+                                     functions_of_time);
+    if (std::is_same<TargetFrameGridOrInertial, Frame::Grid>::value) {
+      if (expected_grid_to_inertial_maps.size() != blocks.size()) {
+        ERROR("Need at least one grid to inertial map for each block ("
+              << blocks.size() << " blocks in total) but received "
+              << expected_grid_to_inertial_maps.size() << " instead.");
+      }
+      dispatch_check_if_maps_are_equal(
+          block, *expected_grid_to_inertial_maps[i], time, functions_of_time);
+    }
   }
   domain::creators::register_derived_with_charm();
   test_serialization(domain);
@@ -394,26 +452,44 @@ tnsr::i<DataType, SpatialDim> unit_basis_form(
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
+#define INSTANTIATE(_, data)                                 \
+  template boost::rational<size_t> fraction_of_block_volume( \
+      const ElementId<DIM(data)>& element_id) noexcept;      \
+  template void test_initial_domain(                         \
+      const Domain<DIM(data)>& domain,                       \
+      const std::vector<std::array<size_t, DIM(data)>>&      \
+          initial_refinement_levels) noexcept;               \
+  template void test_physical_separation(                    \
+      const std::vector<Block<DIM(data)>>& blocks) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+
+#undef INSTANTIATE
+
+#define GET_FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
+
 #define INSTANTIATE(_, data)                                                \
-  template boost::rational<size_t> fraction_of_block_volume(                \
-      const ElementId<DIM(data)>& element_id) noexcept;                     \
-  template void test_domain_construction<DIM(data)>(                        \
+  template void test_domain_construction<DIM(data), GET_FRAME(data)>(       \
       const Domain<DIM(data)>& domain,                                      \
       const std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>& \
           expected_block_neighbors,                                         \
       const std::vector<std::unordered_set<Direction<DIM(data)>>>&          \
           expected_external_boundaries,                                     \
       const std::vector<std::unique_ptr<domain::CoordinateMapBase<          \
-          Frame::Logical, Frame::Inertial, DIM(data)>>>&                    \
-          expected_maps) noexcept;                                          \
-  template void test_initial_domain(                                        \
-      const Domain<DIM(data)>& domain,                                      \
-      const std::vector<std::array<size_t, DIM(data)>>&                     \
-          initial_refinement_levels) noexcept;                              \
-  template void test_physical_separation(                                   \
-      const std::vector<Block<DIM(data)>>& blocks) noexcept;
+          Frame::Logical, GET_FRAME(data), DIM(data)>>>& expected_maps,     \
+      const double time,                                                    \
+      const std::unordered_map<                                             \
+          std::string,                                                      \
+          std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>&        \
+          functions_of_time,                                                \
+      const std::vector<std::unique_ptr<domain::CoordinateMapBase<          \
+          Frame::Grid, Frame::Inertial, DIM(data)>>>&                       \
+          expected_logical_to_grid_maps) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3), (Frame::Grid, Frame::Inertial))
+
+#undef INSTANTIATE
+#undef GET_FRAME
 
 #define DTYPE(data) BOOST_PP_TUPLE_ELEM(1, data)
 
@@ -430,6 +506,5 @@ GENERATE_INSTANTIATIONS(INSTANTIATE_BASIS_VECTOR, (1, 2, 3),
 
 #undef DIM
 #undef DTYPE
-#undef INSTANTIATE
 #undef INSTANTIATE_BASIS_VECTOR
 /// \endcond

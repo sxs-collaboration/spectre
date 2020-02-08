@@ -8,6 +8,7 @@
 #include <memory>
 #include <pup.h>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -19,10 +20,13 @@
 #include "Domain/CoordinateMaps/Affine.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.hpp"
 #include "Domain/CoordinateMaps/CoordinateMap.tpp"
+#include "Domain/CoordinateMaps/Translation.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/DirectionMap.hpp"
 #include "Domain/Domain.hpp"
 #include "Domain/DomainHelpers.hpp"
+#include "Domain/FunctionsOfTime/FunctionOfTime.hpp"
+#include "Domain/FunctionsOfTime/PiecewisePolynomial.hpp"
 #include "Domain/OrientationMap.hpp"
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Error.hpp"
@@ -35,12 +39,17 @@
 namespace domain {
 namespace {
 void test_1d_domains() {
+  using Translation = domain::CoordMapsTimeDependent::Translation;
   {
     PUPable_reg(SINGLE_ARG(CoordinateMap<Frame::Logical, Frame::Inertial,
                                          CoordinateMaps::Affine>));
+    PUPable_reg(SINGLE_ARG(
+        CoordinateMap<Frame::Logical, Frame::Grid, CoordinateMaps::Affine>));
+    PUPable_reg(
+        SINGLE_ARG(CoordinateMap<Frame::Grid, Frame::Inertial, Translation>));
 
     // Test construction of two intervals which have anti-aligned logical axes.
-    const Domain<1> domain(
+    Domain<1> domain(
         make_vector<std::unique_ptr<
             CoordinateMapBase<Frame::Logical, Frame::Inertial, 1>>>(
             std::make_unique<CoordinateMap<Frame::Logical, Frame::Inertial,
@@ -65,19 +74,56 @@ void test_1d_domains() {
     const std::vector<std::unordered_set<Direction<1>>> expected_boundaries{
         {Direction<1>::lower_xi()}, {Direction<1>::lower_xi()}};
 
-    const auto expected_maps =
+    const auto expected_stationary_maps =
         make_vector(make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                         CoordinateMaps::Affine{-1., 1., -2., 0.}),
                     make_coordinate_map_base<Frame::Logical, Frame::Inertial>(
                         CoordinateMaps::Affine{-1., 1., 0., 2.}));
 
     test_domain_construction(domain, expected_neighbors, expected_boundaries,
-                             expected_maps);
+                             expected_stationary_maps);
 
     test_domain_construction(serialize_and_deserialize(domain),
                              expected_neighbors, expected_boundaries,
-                             expected_maps);
+                             expected_stationary_maps);
 
+    // Test injection of a translation map.
+    REQUIRE(domain.blocks().size() == 2);
+    domain.inject_time_dependent_map_for_block(
+        0, make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+               Translation{"Translation0"}));
+    domain.inject_time_dependent_map_for_block(
+        1, make_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+               Translation{"Translation1"}));
+
+    const auto expected_logical_to_grid_maps =
+        make_vector(make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                        CoordinateMaps::Affine{-1., 1., -2., 0.}),
+                    make_coordinate_map_base<Frame::Logical, Frame::Grid>(
+                        CoordinateMaps::Affine{-1., 1., 0., 2.}));
+    const auto expected_grid_to_inertial_maps =
+        make_vector_coordinate_map_base<Frame::Grid, Frame::Inertial>(
+            Translation{"Translation0"}, Translation{"Translation1"});
+
+    std::unordered_map<std::string,
+                       std::unique_ptr<domain::FunctionsOfTime::FunctionOfTime>>
+        functions_of_time{};
+    functions_of_time["Translation0"] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+            1.0, std::array<DataVector, 3>{{{0.0}, {2.3}, {0.0}}});
+    functions_of_time["Translation1"] =
+        std::make_unique<domain::FunctionsOfTime::PiecewisePolynomial<2>>(
+            1.0, std::array<DataVector, 3>{{{0.0}, {5.3}, {0.0}}});
+
+    test_domain_construction(domain, expected_neighbors, expected_boundaries,
+                             expected_logical_to_grid_maps, 10.0,
+                             functions_of_time, expected_grid_to_inertial_maps);
+    test_domain_construction(serialize_and_deserialize(domain),
+                             expected_neighbors, expected_boundaries,
+                             expected_logical_to_grid_maps, 10.0,
+                             functions_of_time, expected_grid_to_inertial_maps);
+
+    // Test construction from a vector of blocks
     auto vector_of_blocks = [&expected_neighbors]() {
       std::vector<Block<1>> vec;
       vec.emplace_back(Block<1>{
@@ -97,7 +143,7 @@ void test_1d_domains() {
 
     test_domain_construction(Domain<1>{std::move(vector_of_blocks)},
                              expected_neighbors, expected_boundaries,
-                             expected_maps);
+                             expected_stationary_maps);
 
     CHECK(get_output(domain) == "Domain with 2 blocks:\n" +
                                     get_output(domain.blocks()[0]) + "\n" +
