@@ -253,6 +253,35 @@ using second_swsh_derivative_tags_to_compute_for_t =
     typename single_swsh_derivative_tags_to_compute_for<Tag>::type;
 // @}
 
+/// Typelist of steps for `SwshDerivatives` mutations called on volume
+/// quantities needed for scri+ computations
+using all_swsh_derivative_tags_for_scri = tmpl::list<
+    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiU>,
+                                     Spectral::Swsh::Tags::Eth>,
+    Spectral::Swsh::Tags::Derivative<
+        Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
+                                         Spectral::Swsh::Tags::EthEthbar>,
+        Spectral::Swsh::Tags::Ethbar>,
+    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::Du<Tags::BondiJ>>,
+                                     Spectral::Swsh::Tags::Ethbar>,
+    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::Dy<Tags::BondiU>>,
+                                     Spectral::Swsh::Tags::Ethbar>,
+    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiQ>,
+                                     Spectral::Swsh::Tags::Ethbar>,
+    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::Dy<Tags::BondiBeta>>,
+                                     Spectral::Swsh::Tags::Eth>>;
+
+/// Typelist of steps for `PreSwshDerivatives` mutations called on boundary
+/// (angular grid only) quantities needed for scri+ computations
+using all_boundary_pre_swsh_derivative_tags_for_scri =
+    tmpl::list<Tags::ComplexInertialRetardedTime>;
+
+/// Typelist of steps for `SwshDerivatives` mutations called on boundary
+/// (angular grid only) quantities needed for scri+ computations
+using all_boundary_swsh_derivative_tags_for_scri =
+    tmpl::list<Spectral::Swsh::Tags::Derivative<
+        Tags::ComplexInertialRetardedTime, Spectral::Swsh::Tags::EthEth>>;
+
 /*!
  * \brief A typelist for the set of tags computed by spin-weighted
  * differentiation using utilities from the `Swsh` namespace.
@@ -270,11 +299,13 @@ using second_swsh_derivative_tags_to_compute_for_t =
  * typelist `bondi_hypersurface_step_tags`.
  */
 using all_swsh_derivative_tags =
-    tmpl::remove_duplicates<tmpl::flatten<tmpl::transform<
-        bondi_hypersurface_step_tags,
-        tmpl::bind<tmpl::list,
-                   single_swsh_derivative_tags_to_compute_for<tmpl::_1>,
-                   second_swsh_derivative_tags_to_compute_for<tmpl::_1>>>>>;
+    tmpl::remove_duplicates<tmpl::flatten<tmpl::list<
+        tmpl::transform<
+            bondi_hypersurface_step_tags,
+            tmpl::bind<tmpl::list,
+                       single_swsh_derivative_tags_to_compute_for<tmpl::_1>,
+                       second_swsh_derivative_tags_to_compute_for<tmpl::_1>>>,
+        all_swsh_derivative_tags_for_scri>>>;
 
 /*!
  * \brief A typelist for the full set of coefficient buffers needed to process
@@ -307,10 +338,16 @@ struct additional_pre_swsh_derivative_tags_for {
 /// Typelist of steps for `PreSwshDerivatives` mutations needed for scri+
 /// computations
 using all_pre_swsh_derivative_tags_for_scri =
-    tmpl::list<Tags::Dy<Tags::Du<Tags::BondiJ>>,
+    tmpl::list<Tags::Du<Tags::BondiJ>, Tags::Dy<Tags::Du<Tags::BondiJ>>,
+               Tags::Dy<Tags::Dy<Tags::Du<Tags::BondiJ>>>,
                Tags::Dy<Tags::Dy<Tags::BondiW>>,
+               Tags::Dy<Tags::Dy<Tags::BondiQ>>,
+               Tags::Dy<Tags::Dy<Tags::BondiU>>,
                Tags::Dy<Tags::Dy<Tags::Dy<Tags::BondiJ>>>,
-               Tags::ComplexInertialRetardedTime>;
+               Tags::Dy<Tags::Dy<Tags::Dy<Tags::BondiU>>>,
+               Tags::Dy<Tags::Dy<Tags::Dy<Tags::BondiBeta>>>,
+               Tags::Dy<Spectral::Swsh::Tags::Derivative<
+                   Tags::BondiBeta, Spectral::Swsh::Tags::EthEthbar>>>;
 
 /*!
  * \brief A typelist for the full set of tags needed as direct or indirect
@@ -332,30 +369,5 @@ using all_pre_swsh_derivative_tags =
                 detail::additional_pre_swsh_derivative_tags_for<tmpl::_1>>>,
         all_pre_swsh_derivative_tags_for_scri>>>;
 
-/// Typelist of steps for `SwshDerivatives` mutations called on volume
-/// quantities needed for scri+ computations
-using all_swsh_derivative_tags_for_scri = tmpl::list<
-    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiU>,
-                                     Spectral::Swsh::Tags::Eth>,
-    Spectral::Swsh::Tags::Derivative<
-        Spectral::Swsh::Tags::Derivative<Tags::BondiBeta,
-                                         Spectral::Swsh::Tags::EthEthbar>,
-        Spectral::Swsh::Tags::Ethbar>,
-    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::Du<Tags::BondiJ>>,
-                                     Spectral::Swsh::Tags::Ethbar>,
-    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::Dy<Tags::BondiU>>,
-                                     Spectral::Swsh::Tags::Ethbar>,
-    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiQ>,
-                                     Spectral::Swsh::Tags::Ethbar>,
-    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::BondiU>,
-                                     Spectral::Swsh::Tags::Eth>,
-    Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::Dy<Tags::BondiBeta>>,
-                                     Spectral::Swsh::Tags::Eth>>;
-
-/// Typelist of steps for `SwshDerivatives` mutations called on boundary
-/// (angular grid only) quantities needed for scri+ computations
-using all_boundary_swsh_derivative_tags_for_scri =
-    tmpl::list<Spectral::Swsh::Tags::Derivative<
-        Tags::ComplexInertialRetardedTime, Spectral::Swsh::Tags::EthEth>>;
 
 }  // namespace Cce
