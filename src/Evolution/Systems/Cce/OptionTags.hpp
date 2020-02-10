@@ -11,10 +11,6 @@
 #include "Options/Options.hpp"
 
 namespace Cce {
-/// \cond
-class Interpolator;
-/// \endcond
-
 namespace OptionTags {
 
 /// %Option group
@@ -109,7 +105,7 @@ struct H5LookaheadTimes {
 };
 
 struct H5Interpolator {
-  using type = std::unique_ptr<Interpolator>;
+  using type = std::unique_ptr<intrp::SpanInterpolator>;
   static constexpr OptionString help{
       "The interpolator for imported h5 worldtube data."};
   using group = Cce;
@@ -211,6 +207,7 @@ struct ObservationLMax : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::ObservationLMax>;
 
+  static constexpr bool pass_metavariables = false;
   static size_t create_from_options(const size_t observation_l_max) noexcept {
     return observation_l_max;
   }
@@ -264,6 +261,13 @@ struct StartTime : db::SimpleTag {
   }
 };
 
+/// \brief Represents the final time of a bounded CCE evolution, determined
+/// either from option specification or from the file
+///
+/// \details If the option `OptionTags::EndTime` is set to
+/// `std::numeric_limits<double>::%infinity()`, this will find the end time from
+/// the provided H5 file. If `OptionTags::EndTime` takes any other value, it
+/// will be used directly as the end time for the CCE evolution instead.
 struct EndTime : db::SimpleTag {
   using type = double;
   using option_tags =
