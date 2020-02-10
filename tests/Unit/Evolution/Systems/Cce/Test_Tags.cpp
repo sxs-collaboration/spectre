@@ -11,6 +11,9 @@
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 
+/// \cond
+class ComplexDataVector;
+/// \endcond
 namespace {
 struct SomeTag {
   using type = Scalar<SpinWeighted<ComplexDataVector, 0>>;

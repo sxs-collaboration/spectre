@@ -14,6 +14,8 @@ namespace Cce {
 
 /// \cond
 struct WorldtubeDataManager;
+template <typename ToInterpolate, typename Tag>
+struct ScriPlusInterpolationManager;
 /// \endcond
 
 /// Tags for Cauchy Characteristic Extraction routines
@@ -383,6 +385,14 @@ struct ScriPlusFactor : db::PrefixTag, db::SimpleTag {
 /// The final time of the Cce evolution
 struct EndTime : db::SimpleTag {
   using type = double;
+};
+
+template <typename ToInterpolate, typename ObservationTag>
+struct InterpolationManager : db::SimpleTag {
+  using type = ScriPlusInterpolationManager<ToInterpolate, ObservationTag>;
+  static std::string name() noexcept {
+    return "InterpolationManager(" + db::tag_name<ObservationTag>() + ")";
+  }
 };
 }  // namespace Tags
 }  // namespace Cce

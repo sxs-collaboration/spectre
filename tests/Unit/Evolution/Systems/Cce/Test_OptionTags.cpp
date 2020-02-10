@@ -13,10 +13,17 @@
 #include "PointwiseFunctions/AnalyticSolutions/GeneralRelativity/KerrSchild.hpp"
 #include "Utilities/FileSystem.hpp"
 #include "Utilities/Literals.hpp"
+#include "tests/Unit/DataStructures/DataBox/TestHelpers.hpp"
 #include "tests/Unit/Evolution/Systems/Cce/BoundaryTestHelpers.hpp"
 #include "tests/Unit/TestCreation.hpp"
 
 SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
+  TestHelpers::db::test_simple_tag<
+      Cce::InitializationTags::ScriInterpolationOrder>(
+      "ScriInterpolationOrder");
+  TestHelpers::db::test_simple_tag<Cce::InitializationTags::ScriOutputDensity>(
+      "ScriOutputDensity");
+
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::LMax>("8") == 8_st);
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::FilterLMax>("7") ==
         7_st);
@@ -44,6 +51,10 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(TestHelpers::test_creation<size_t,
                                    Cce::OptionTags::ScriInterpolationOrder>(
             "4") == 4_st);
+
+  CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::ScriOutputDensity>(
+            "6") == 6_st);
+
   const std::string filename = "OptionTagsTestCceR0100.h5";
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
@@ -68,14 +79,20 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(Cce::InitializationTags::StartTime::create_from_options(
             3.3, "OptionTagsTestCceR0100.h5") == 3.3);
 
-  CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==
-        0.2);
-
   CHECK(Cce::InitializationTags::EndTime::create_from_options(
             std::numeric_limits<double>::infinity(),
             "OptionTagsTestCceR0100.h5") == 5.4);
   CHECK(Cce::InitializationTags::EndTime::create_from_options(
             2.2, "OptionTagsTestCceR0100.h5") == 2.2);
+
+  CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==
+        0.2);
+
+  CHECK(Cce::InitializationTags::ScriInterpolationOrder::create_from_options(
+            6_st) == 6_st);
+
+  CHECK(Cce::InitializationTags::ScriOutputDensity::create_from_options(4_st) ==
+        4_st);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);

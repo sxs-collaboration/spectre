@@ -122,6 +122,15 @@ struct ScriInterpolationOrder {
   static size_t default_value() noexcept { return 5; }
   using group = Cce;
 };
+
+struct ScriOutputDensity {
+  using type = size_t;
+  static constexpr OptionString help{
+      "Number of scri output points per timestep."};
+  static size_t default_value() noexcept { return 1; }
+  using group = Cce;
+};
+
 }  // namespace OptionTags
 
 namespace InitializationTags {
@@ -177,6 +186,16 @@ struct StartTime : db::SimpleTag {
   }
 };
 
+struct ScriInterpolationOrder : db::SimpleTag {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::ScriInterpolationOrder>;
+
+  static size_t create_from_options(
+      const size_t scri_plus_interpolation_order) noexcept {
+    return scri_plus_interpolation_order;
+  }
+};
+
 struct TargetStepSize : db::SimpleTag {
   using type = double;
   using option_tags = tmpl::list<OptionTags::TargetStepSize>;
@@ -199,6 +218,15 @@ struct EndTime : db::SimpleTag {
       end_time = time_buffer[time_buffer.size() - 1];
     }
     return end_time;
+  }
+};
+
+struct ScriOutputDensity : db::SimpleTag {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::ScriOutputDensity>;
+
+  static size_t create_from_options(const size_t scri_output_density) noexcept {
+    return scri_output_density;
   }
 };
 }  // namespace InitializationTags
