@@ -95,8 +95,8 @@ struct InitializeCharacteristicEvolutionVariables {
         db::add_tag_prefix<::Tags::dt, coordinate_variables_tag>;
     using evolved_swsh_variables_tag =
         ::Tags::Variables<tmpl::list<typename Metavariables::evolved_swsh_tag>>;
-    using evolved_swsh_dt_variables_tag = ::Tags::Variables<
-        tmpl::list<typename Metavariables::evolved_swsh_dt_tag>>;
+    using evolved_swsh_dt_variables_tag =
+        db::add_tag_prefix<::Tags::dt, evolved_swsh_variables_tag>;
 
     const size_t l_max = db::get<Spectral::Swsh::Tags::LMaxBase>(box);
     const size_t number_of_radial_points =

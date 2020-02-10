@@ -36,6 +36,7 @@ namespace Actions {
  *  - `Tags::TimeStepId`
  *  - `Tags::Next<Tags::TimeStepId>`
  *  - `Tags::TimeStep`
+ *  - `Tags::Time`
  *  -
  * ```
  * Tags::HistoryEvolvedVariables<
@@ -69,11 +70,12 @@ struct InitializeCharacteristicEvolutionTime {
                     const ParallelComponent* const /*meta*/) noexcept {
     using coordinate_variables_tag =
         typename Metavariables::evolved_coordinates_variables_tag;
+    using evolved_swsh_variables_tag =
+        ::Tags::Variables<tmpl::list<typename Metavariables::evolved_swsh_tag>>;
     using evolution_simple_tags = db::AddSimpleTags<
         ::Tags::TimeStepId, ::Tags::Next<::Tags::TimeStepId>, ::Tags::TimeStep,
-        ::Tags::HistoryEvolvedVariables<coordinate_variables_tag>,
-        ::Tags::HistoryEvolvedVariables<::Tags::Variables<
-            tmpl::list<typename Metavariables::evolved_swsh_tag>>>>;
+        ::Tags::Time, ::Tags::HistoryEvolvedVariables<coordinate_variables_tag>,
+        ::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>;
     using evolution_compute_tags =
         db::AddComputeTags<::Tags::SubstepTimeCompute>;
 
@@ -93,8 +95,7 @@ struct InitializeCharacteristicEvolutionTime {
     db::item_type<::Tags::HistoryEvolvedVariables<coordinate_variables_tag>>
         coordinate_history;
 
-    db::item_type<::Tags::HistoryEvolvedVariables<::Tags::Variables<
-        tmpl::list<typename Metavariables::evolved_swsh_tag>>>>
+    db::item_type<::Tags::HistoryEvolvedVariables<evolved_swsh_variables_tag>>
         swsh_history;
     return std::make_tuple(
         Initialization::merge_into_databox<
@@ -102,7 +103,8 @@ struct InitializeCharacteristicEvolutionTime {
             evolution_compute_tags, Initialization::MergePolicy::Overwrite>(
             std::move(box), std::move(initial_time_id),  // NOLINT
             std::move(second_time_id), fixed_time_step,  // NOLINT
-            std::move(coordinate_history), std::move(swsh_history)));
+            initial_time_value, std::move(coordinate_history),
+            std::move(swsh_history)));
   }
 
   template <typename DbTags, typename... InboxTags, typename Metavariables,
