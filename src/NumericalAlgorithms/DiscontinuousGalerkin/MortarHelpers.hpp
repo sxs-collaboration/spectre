@@ -5,8 +5,10 @@
 
 #include <algorithm>
 #include <array>
+#include <boost/functional/hash.hpp>
 #include <cstddef>
 #include <functional>
+#include <tuple>
 #include <type_traits>
 #include <utility>  // IWYU pragma: keep // for std::forward
 
@@ -14,6 +16,8 @@
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "DataStructures/Matrix.hpp"
 #include "DataStructures/Variables.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/ElementId.hpp"
 #include "Domain/Mesh.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/LiftFlux.hpp"
@@ -32,6 +36,15 @@ class OrientationMap;
 /// \endcond
 
 namespace dg {
+
+template <size_t VolumeDim>
+using MortarId = std::pair<::Direction<VolumeDim>, ElementId<VolumeDim>>;
+template <size_t MortarDim>
+using MortarSize = std::array<Spectral::MortarSize, MortarDim>;
+template <size_t VolumeDim, typename ValueType>
+using MortarMap = std::unordered_map<MortarId<VolumeDim>, ValueType,
+                                     boost::hash<MortarId<VolumeDim>>>;
+
 /// \ingroup DiscontinuousGalerkinGroup
 /// Find a mesh for a mortar capable of representing data from either
 /// of two faces.
@@ -45,18 +58,17 @@ Mesh<Dim> mortar_mesh(const Mesh<Dim>& face_mesh1,
 /// relative to the size of \p self, and will not generally agree with
 /// that determined by \p neighbor.
 template <size_t Dim>
-std::array<Spectral::MortarSize, Dim - 1> mortar_size(
+MortarSize<Dim - 1> mortar_size(
     const ElementId<Dim>& self, const ElementId<Dim>& neighbor,
     size_t dimension, const OrientationMap<Dim>& orientation) noexcept;
 
 /// \ingroup DiscontinuousGalerkinGroup
 /// Project variables from a face to a mortar.
 template <typename Tags, size_t Dim>
-Variables<Tags> project_to_mortar(
-    const Variables<Tags>& vars,
-    const Mesh<Dim>& face_mesh,
-    const Mesh<Dim>& mortar_mesh,
-    const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept {
+Variables<Tags> project_to_mortar(const Variables<Tags>& vars,
+                                  const Mesh<Dim>& face_mesh,
+                                  const Mesh<Dim>& mortar_mesh,
+                                  const MortarSize<Dim>& mortar_size) noexcept {
   const Matrix identity{};
   auto projection_matrices = make_array<Dim>(std::cref(identity));
 
@@ -79,10 +91,8 @@ Variables<Tags> project_to_mortar(
 /// Project variables from a mortar to a face.
 template <typename Tags, size_t Dim>
 Variables<Tags> project_from_mortar(
-    const Variables<Tags>& vars,
-    const Mesh<Dim>& face_mesh,
-    const Mesh<Dim>& mortar_mesh,
-    const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept {
+    const Variables<Tags>& vars, const Mesh<Dim>& face_mesh,
+    const Mesh<Dim>& mortar_mesh, const MortarSize<Dim>& mortar_size) noexcept {
   ASSERT(face_mesh != mortar_mesh or
              alg::any_of(mortar_size,
                          [](const Spectral::MortarSize& size) noexcept {
@@ -150,7 +160,7 @@ auto compute_boundary_flux_contribution(
     const typename FluxCommTypes::PackagedData& remote_data,
     const Mesh<Dim>& face_mesh, const Mesh<Dim>& mortar_mesh,
     const size_t extent_perpendicular_to_boundary,
-    const std::array<Spectral::MortarSize, Dim>& mortar_size) noexcept
+    const MortarSize<Dim>& mortar_size) noexcept
     -> db::const_item_type<
         db::remove_tag_prefix<typename FluxCommTypes::normal_dot_fluxes_tag>> {
   static_assert(cpp17::is_same_v<std::decay_t<LocalData>,
