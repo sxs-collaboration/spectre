@@ -41,13 +41,15 @@ struct ReceiveWorldtubeData {
   using inbox_tags = tmpl::list<Cce::ReceiveTags::BoundaryData<
       typename Metavariables::cce_boundary_communication_tags>>;
 
-  template <typename DbTags, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<tmpl::list_contains_v<
-                tmpl::list<InboxTags...>,
-                Cce::ReceiveTags::BoundaryData<
-                    typename Metavariables::cce_boundary_communication_tags>>> =
-                nullptr>
+  template <
+      typename DbTags, typename... InboxTags, typename ArrayIndex,
+      typename ActionList, typename ParallelComponent,
+      Requires<
+          tmpl::list_contains_v<
+              tmpl::list<InboxTags...>,
+              Cce::ReceiveTags::BoundaryData<
+                  typename Metavariables::cce_boundary_communication_tags>> and
+          tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     tuples::TaggedTuple<InboxTags...>& inboxes,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -70,13 +72,15 @@ struct ReceiveWorldtubeData {
     inbox.erase(db::get<::Tags::TimeStepId>(box));
     return std::forward_as_tuple(std::move(box));
   }
-  template <typename DbTags, typename... InboxTags, typename ArrayIndex,
-            typename ActionList, typename ParallelComponent,
-            Requires<not tmpl::list_contains_v<
-                tmpl::list<InboxTags...>,
-                Cce::ReceiveTags::BoundaryData<
-                    typename Metavariables::cce_boundary_communication_tags>>> =
-                nullptr>
+  template <
+      typename DbTags, typename... InboxTags, typename ArrayIndex,
+      typename ActionList, typename ParallelComponent,
+      Requires<
+          not tmpl::list_contains_v<
+              tmpl::list<InboxTags...>,
+              Cce::ReceiveTags::BoundaryData<
+                  typename Metavariables::cce_boundary_communication_tags>> or
+          not tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -90,12 +94,14 @@ struct ReceiveWorldtubeData {
     return std::forward_as_tuple(std::move(box));
   }
 
-  template <typename DbTags, typename... InboxTags, typename ArrayIndex,
-            Requires<tmpl::list_contains_v<
-                tmpl::list<InboxTags...>,
-                Cce::ReceiveTags::BoundaryData<
-                    typename Metavariables::cce_boundary_communication_tags>>> =
-                nullptr>
+  template <
+      typename DbTags, typename... InboxTags, typename ArrayIndex,
+      Requires<
+          tmpl::list_contains_v<
+              tmpl::list<InboxTags...>,
+              Cce::ReceiveTags::BoundaryData<
+                  typename Metavariables::cce_boundary_communication_tags>> and
+          tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
   static bool is_ready(
       const db::DataBox<DbTags>& box,
       const tuples::TaggedTuple<InboxTags...>& inboxes,
@@ -107,12 +113,14 @@ struct ReceiveWorldtubeData {
                .count(db::get<::Tags::TimeStepId>(box)) == 1;
   }
 
-  template <typename DbTags, typename... InboxTags, typename ArrayIndex,
-            Requires<not tmpl::list_contains_v<
-                tmpl::list<InboxTags...>,
-                Cce::ReceiveTags::BoundaryData<
-                    typename Metavariables::cce_boundary_communication_tags>>> =
-                nullptr>
+  template <
+      typename DbTags, typename... InboxTags, typename ArrayIndex,
+      Requires<
+          not tmpl::list_contains_v<
+              tmpl::list<InboxTags...>,
+              Cce::ReceiveTags::BoundaryData<
+                  typename Metavariables::cce_boundary_communication_tags>> or
+          not tmpl::list_contains_v<DbTags, ::Tags::TimeStepId>> = nullptr>
   static bool is_ready(
       const db::DataBox<DbTags>& /*box*/,
       const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,

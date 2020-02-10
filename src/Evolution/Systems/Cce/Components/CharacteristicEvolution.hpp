@@ -5,7 +5,9 @@
 
 #include <type_traits>
 
-#include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolution.hpp"
+#include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionScri.hpp"
+#include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionTime.hpp"
+#include "Evolution/Systems/Cce/Actions/InitializeCharacteristicEvolutionVariables.hpp"
 #include "Parallel/Actions/TerminatePhase.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
 #include "ParallelAlgorithms/Initialization/Actions/RemoveOptionsAndTerminatePhase.hpp"
@@ -68,7 +70,9 @@ struct CharacteristicEvolution {
   using metavariables = Metavariables;
 
   using initialize_action_list =
-      tmpl::list<Actions::InitializeCharacteristicEvolution,
+      tmpl::list<Actions::InitializeCharacteristicEvolutionVariables,
+                 Actions::InitializeCharacteristicEvolutionTime,
+                 Actions::InitializeCharacteristicEvolutionScri,
                  Initialization::Actions::RemoveOptionsAndTerminatePhase>;
 
   using initialization_tags =
