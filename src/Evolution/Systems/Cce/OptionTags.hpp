@@ -201,6 +201,15 @@ struct NumberOfRadialPoints : db::SimpleTag,
   }
 };
 
+struct ObservationLMax : db::SimpleTag {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::ObservationLMax>;
+
+  static size_t create_from_options(const size_t observation_l_max) noexcept {
+    return observation_l_max;
+  }
+};
+
 struct FilterLMax : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::FilterLMax>;

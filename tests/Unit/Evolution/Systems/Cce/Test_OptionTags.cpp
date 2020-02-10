@@ -86,15 +86,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
             "OptionTagsTestCceR0100.h5") == 5.4);
   CHECK(Cce::Tags::EndTime::create_from_options(
             2.2, "OptionTagsTestCceR0100.h5") == 2.2);
-
-  CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==
-        0.2);
+  CHECK(Cce::Tags::ObservationLMax::create_from_options(5_st) == 5_st);
 
   CHECK(Cce::InitializationTags::ScriInterpolationOrder::create_from_options(
             6_st) == 6_st);
 
   CHECK(Cce::InitializationTags::ScriOutputDensity::create_from_options(4_st) ==
         4_st);
+
+  CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==
+        0.2);
 
   if (file_system::check_if_file_exists(filename)) {
     file_system::rm(filename, true);
