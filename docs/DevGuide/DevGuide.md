@@ -9,6 +9,7 @@ See LICENSE.txt for details.
   unit tests, and executables.
 - \ref dev_guide_creating_executables "Executables and how to add them"
 - \ref dev_guide_option_parsing "Option parsing" to get options from input files
+- \ref dev_guide_importing "Importing" data from files
 - \ref profiling_with_projections "Profiling With Charm++ Projections" and PAPI
   for optimizing performance
 - \ref spectre_writing_python_bindings "Writing Python Bindings" to use

@@ -1,6 +1,8 @@
 # Distributed under the MIT License.
 # See LICENSE.txt for details.
 
+add_subdirectory(Importers)
+
 set(LIBRARY "Test_IO")
 
 set(LIBRARY_SOURCES

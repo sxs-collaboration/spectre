@@ -1,0 +1,14 @@
+# Distributed under the MIT License.
+# See LICENSE.txt for details.
+
+# [importer_options]
+Importers:
+  FineVolumeData:
+    FileName: "Test_DataImporterAlgorithm2D_shared.h5"
+    Subgroup: "fine_data"
+    ObservationValue: 3.
+  CoarseVolumeData:
+    FileName: "Test_DataImporterAlgorithm2D_shared.h5"
+    Subgroup: "coarse_data"
+    ObservationValue: 2.
+# [importer_options]
