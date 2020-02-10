@@ -121,9 +121,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PrecomputeCceDependencies",
                   "[Unit][Cce]") {
   // Initialize the Variables that we need
   MAKE_GENERATOR(generator);
-  UniformCustomDistribution<size_t> sdist{5, 8};
+  UniformCustomDistribution<size_t> sdist{10, 14};
   const size_t l_max = sdist(generator);
-  const size_t number_of_radial_grid_points = sdist(generator);
+  const size_t number_of_radial_grid_points = sdist(generator) / 2;
 
   using boundary_variables_tag =
       ::Tags::Variables<pre_computation_boundary_tags<Tags::BoundaryValue>>;
@@ -164,15 +164,23 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PrecomputeCceDependencies",
   mutate_all_precompute_cce_dependencies<Tags::BoundaryValue>(
       make_not_null(&precomputation_box));
 
-  CHECK_VARIABLES_APPROX(db::get<boundary_variables_tag>(precomputation_box),
-                         db::get<boundary_variables_tag>(expected_box));
+  Approx angular_derivative_approx =
+      Approx::custom()
+      .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
+      .scale(1.0);
 
-  CHECK_VARIABLES_APPROX(
+  CHECK_VARIABLES_CUSTOM_APPROX(
+      db::get<boundary_variables_tag>(precomputation_box),
+      db::get<boundary_variables_tag>(expected_box), angular_derivative_approx);
+
+  CHECK_VARIABLES_CUSTOM_APPROX(
       db::get<pre_swsh_derivatives_variables_tag>(precomputation_box),
-      db::get<pre_swsh_derivatives_variables_tag>(expected_box));
+      db::get<pre_swsh_derivatives_variables_tag>(expected_box),
+      angular_derivative_approx);
 
-  CHECK_VARIABLES_APPROX(
+  CHECK_VARIABLES_CUSTOM_APPROX(
       db::get<independent_of_integration_variables_tag>(precomputation_box),
-      db::get<independent_of_integration_variables_tag>(expected_box));
-}
+      db::get<independent_of_integration_variables_tag>(expected_box),
+      angular_derivative_approx);}
+
 }  // namespace Cce
