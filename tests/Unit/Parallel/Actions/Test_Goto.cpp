@@ -44,6 +44,7 @@ struct Increment {
   }
 };
 
+/// [component]
 template <typename Metavariables>
 struct Component {
   using metavariables = Metavariables;
@@ -53,11 +54,12 @@ struct Component {
   using repeat_until_phase_action_list = tmpl::flatten<
       tmpl::list<Actions::RepeatUntil<HasConverged, tmpl::list<Increment>>,
                  Parallel::Actions::TerminatePhase>>;
+
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
           tmpl::list<ActionTesting::InitializeDataBox<
-              tmpl::list<Counter>, tmpl::list<HasConverged>>>>,
+              db::AddSimpleTags<Counter>, db::AddComputeTags<HasConverged>>>>,
 
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::TestGoto,
@@ -68,14 +70,18 @@ struct Component {
                              Metavariables::Phase::TestRepeatUntil,
                              repeat_until_phase_action_list>>;
 };
+/// [component]
 
+/// [metavariables]
 struct Metavariables {
   using component_list = tmpl::list<Component<Metavariables>>;
 
   enum class Phase { Initialization, TestGoto, TestRepeatUntil, Exit };
 };
+/// [metavariables]
 }  // namespace
 
+/// [test case]
 SPECTRE_TEST_CASE("Unit.Parallel.GotoAction", "[Unit][Parallel][Actions]") {
   using component = Component<Metavariables>;
   using MockRuntimeSystem = ActionTesting::MockRuntimeSystem<Metavariables>;
@@ -113,3 +119,4 @@ SPECTRE_TEST_CASE("Unit.Parallel.GotoAction", "[Unit][Parallel][Actions]") {
   // condition is already fulfilled at the start.
   CHECK(ActionTesting::get_databox_tag<component, Counter>(runner, 0) == 2);
 }
+/// [test case]
