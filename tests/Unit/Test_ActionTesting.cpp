@@ -408,4 +408,99 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.GetInboxTags", "[Unit]") {
             .empty());
 }
 }  // namespace InboxTags
+
+namespace TestComponentMocking {
+struct ValueTag : db::SimpleTag {
+  using type = int;
+  static std::string name() noexcept { return "ValueTag"; }
+};
+
+template <typename Metavariables>
+struct ComponentA {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+
+  using component_being_mocked = void;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
+};
+
+template <typename Metavariables>
+struct ComponentB;
+
+template <typename Metavariables>
+struct ComponentBMock {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = size_t;
+
+  using component_being_mocked = ComponentB<Metavariables>;
+
+  using phase_dependent_action_list = tmpl::list<
+      Parallel::PhaseActions<
+          typename Metavariables::Phase, Metavariables::Phase::Initialization,
+          tmpl::list<
+              ActionTesting::InitializeDataBox<db::AddSimpleTags<ValueTag>>>>,
+
+      Parallel::PhaseActions<typename Metavariables::Phase,
+                             Metavariables::Phase::Testing, tmpl::list<>>>;
+};
+
+struct ActionCalledOnComponentB {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex,
+            Requires<tmpl::list_contains_v<DbTagsList, ValueTag>> = nullptr>
+  static void apply(
+      db::DataBox<DbTagsList>& box,                          // NOLINT
+      Parallel::ConstGlobalCache<Metavariables>& /*cache*/,  // NOLINT
+      const ArrayIndex& /*array_index*/) noexcept {
+    db::mutate<ValueTag>(make_not_null(&box), [
+    ](const gsl::not_null<int*> value) noexcept { *value = 5; });
+  }
+};
+
+struct CallActionOnComponentB {
+  template <typename ParallelComponent, typename DbTagsList,
+            typename Metavariables, typename ArrayIndex>
+  static void apply(db::DataBox<DbTagsList>& /*box*/,                  // NOLINT
+                    Parallel::ConstGlobalCache<Metavariables>& cache,  // NOLINT
+                    const ArrayIndex& /*array_index*/) noexcept {
+    Parallel::simple_action<ActionCalledOnComponentB>(
+        Parallel::get_parallel_component<ComponentB<Metavariables>>(cache));
+  }
+};
+
+struct Metavariables {
+  using component_list =
+      tmpl::list<ComponentA<Metavariables>, ComponentBMock<Metavariables>>;
+
+  enum class Phase { Initialization, Testing, Exit };
+};
+
+SPECTRE_TEST_CASE("Unit.ActionTesting.MockComponent", "[Unit]") {
+  using metavars = Metavariables;
+  using component_a = ComponentA<metavars>;
+  using component_b_mock = ComponentBMock<metavars>;
+
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  ActionTesting::emplace_component<component_a>(&runner, 0);
+  ActionTesting::emplace_component_and_initialize<component_b_mock>(&runner, 0,
+                                                                    {0});
+
+  runner.set_phase(metavars::Phase::Testing);
+  CHECK(ActionTesting::get_databox_tag<component_b_mock, ValueTag>(runner, 0) ==
+        0);
+  ActionTesting::simple_action<component_a, CallActionOnComponentB>(
+      make_not_null(&runner), 0);
+  CHECK(not ActionTesting::is_simple_action_queue_empty<component_b_mock>(
+      runner, 0));
+  ActionTesting::invoke_queued_simple_action<component_b_mock>(
+      make_not_null(&runner), 0);
+  CHECK(ActionTesting::get_databox_tag<component_b_mock, ValueTag>(runner, 0) ==
+        5);
+}
+}  // namespace TestComponentMocking
 }  // namespace
