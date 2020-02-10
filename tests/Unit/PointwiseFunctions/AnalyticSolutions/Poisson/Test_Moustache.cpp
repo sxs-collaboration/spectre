@@ -17,6 +17,7 @@
 #include "Domain/CoordinateMaps/ProductMaps.tpp"
 #include "Domain/Mesh.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
+#include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/PartialDerivatives.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
@@ -84,7 +85,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Moustache",
     INFO("1D");
     test_solution<1>();
 
-    using system = Poisson::FirstOrderSystem<1>;
+    using system = Poisson::FirstOrderSystem<1, Poisson::Geometry::Euclidean>;
     const Poisson::Solutions::Moustache<1> solution{};
     const typename system::fluxes fluxes_computer{};
     const domain::CoordinateMap<Frame::Logical, Frame::Inertial, AffineMap>
@@ -97,7 +98,7 @@ SPECTRE_TEST_CASE("Unit.PointwiseFunctions.AnalyticSolutions.Poisson.Moustache",
     INFO("2D");
     test_solution<2>();
 
-    using system = Poisson::FirstOrderSystem<2>;
+    using system = Poisson::FirstOrderSystem<2, Poisson::Geometry::Euclidean>;
     const Poisson::Solutions::Moustache<2> solution{};
     const typename system::fluxes fluxes_computer{};
     using AffineMap2D =

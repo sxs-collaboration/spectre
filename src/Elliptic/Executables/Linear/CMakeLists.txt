@@ -29,7 +29,7 @@ endfunction(add_linear_elliptic_executable)
 # The solution is only implemented in 3D so far
 add_linear_elliptic_executable(
   PoissonLorentzian3D
-  Poisson::FirstOrderSystem<3>
+  "Poisson::FirstOrderSystem<3, Poisson::Geometry::Euclidean>"
   Poisson::Solutions::Lorentzian<3>
   Poisson::Solutions::Lorentzian<3>
   "Poisson;PoissonSolutions"
@@ -40,7 +40,7 @@ add_linear_elliptic_executable(
 function(add_poisson_moustache_executable DIM)
   add_linear_elliptic_executable(
     PoissonMoustache${DIM}D
-    Poisson::FirstOrderSystem<${DIM}>
+    "Poisson::FirstOrderSystem<${DIM}, Poisson::Geometry::Euclidean>"
     Poisson::Solutions::Moustache<${DIM}>
     Poisson::Solutions::Moustache<${DIM}>
     "Poisson;PoissonSolutions"
@@ -53,7 +53,7 @@ add_poisson_moustache_executable(2)
 function(add_poisson_product_of_sinusoids_executable DIM)
   add_linear_elliptic_executable(
     PoissonProductOfSinusoids${DIM}D
-    Poisson::FirstOrderSystem<${DIM}>
+    "Poisson::FirstOrderSystem<${DIM}, Poisson::Geometry::Euclidean>"
     Poisson::Solutions::ProductOfSinusoids<${DIM}>
     Poisson::Solutions::ProductOfSinusoids<${DIM}>
     "Poisson;PoissonSolutions"

@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/Tensor/Tensor.hpp"
+#include "PointwiseFunctions/GeneralRelativity/Tags.hpp"
 #include "Utilities/Gsl.hpp"
 #include "Utilities/MakeWithValue.hpp"
 #include "Utilities/TMPL.hpp"
@@ -33,7 +34,7 @@ void euclidean_fluxes(
  * for the curved-space Poisson equation on a spatial metric \f$\gamma_{ij}\f$.
  */
 template <size_t Dim>
-void noneuclidean_fluxes(
+void non_euclidean_fluxes(
     gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*> flux_for_field,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
     const Scalar<DataVector>& det_spatial_metric,
@@ -69,6 +70,39 @@ struct EuclideanFluxes {
   static void apply(
       const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
           flux_for_gradient,
+      const Scalar<DataVector>& field) noexcept {
+    auxiliary_fluxes(flux_for_gradient, field);
+  }
+  // clang-tidy: no runtime references
+  void pup(PUP::er& /*p*/) noexcept {}  // NOLINT
+};
+
+/*!
+ * \brief Compute the fluxes \f$F^i_A\f$ for the curved-space Poisson equation
+ * on a spatial metric \f$\gamma_{ij}\f$.
+ *
+ * \see Poisson::FirstOrderSystem
+ */
+template <size_t Dim>
+struct NonEuclideanFluxes {
+  using argument_tags = tmpl::list<
+      gr::Tags::InverseSpatialMetric<Dim, Frame::Inertial, DataVector>,
+      gr::Tags::DetSpatialMetric<DataVector>>;
+  static void apply(
+      const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
+          flux_for_field,
+      const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
+      const Scalar<DataVector>& det_spatial_metric,
+      const tnsr::i<DataVector, Dim, Frame::Inertial>&
+          field_gradient) noexcept {
+    non_euclidean_fluxes(flux_for_field, inv_spatial_metric, det_spatial_metric,
+                         field_gradient);
+  }
+  static void apply(
+      const gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
+          flux_for_gradient,
+      const tnsr::II<DataVector, Dim, Frame::Inertial>& /*inv_spatial_metric*/,
+      const Scalar<DataVector>& /*det_spatial_metric*/,
       const Scalar<DataVector>& field) noexcept {
     auxiliary_fluxes(flux_for_gradient, field);
   }

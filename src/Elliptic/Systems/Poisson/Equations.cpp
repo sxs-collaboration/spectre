@@ -24,7 +24,7 @@ void euclidean_fluxes(
 }
 
 template <size_t Dim>
-void noneuclidean_fluxes(
+void non_euclidean_fluxes(
     const gsl::not_null<tnsr::I<DataVector, Dim, Frame::Inertial>*>
         flux_for_field,
     const tnsr::II<DataVector, Dim, Frame::Inertial>& inv_spatial_metric,
@@ -54,7 +54,7 @@ void auxiliary_fluxes(gsl::not_null<tnsr::Ij<DataVector, Dim, Frame::Inertial>*>
   template void Poisson::euclidean_fluxes<DIM(data)>(                        \
       const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>, \
       const tnsr::i<DataVector, DIM(data), Frame::Inertial>&) noexcept;      \
-  template void Poisson::noneuclidean_fluxes<DIM(data)>(                     \
+  template void Poisson::non_euclidean_fluxes<DIM(data)>(                    \
       const gsl::not_null<tnsr::I<DataVector, DIM(data), Frame::Inertial>*>, \
       const tnsr::II<DataVector, DIM(data), Frame::Inertial>&,               \
       const Scalar<DataVector>&,                                             \
@@ -68,12 +68,14 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 // Instantiate derivative templates
 #include "DataStructures/DataBox/Prefixes.hpp"
 #include "Elliptic/Systems/Poisson/FirstOrderSystem.hpp"
+#include "Elliptic/Systems/Poisson/Geometry.hpp"
 #include "Elliptic/Systems/Poisson/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/LinearOperators/Divergence.tpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
 template <size_t Dim>
-using variables_tag = typename Poisson::FirstOrderSystem<Dim>::variables_tag;
+using variables_tag = typename Poisson::FirstOrderSystem<
+    Dim, Poisson::Geometry::Euclidean>::variables_tag;
 template <size_t Dim>
 using fluxes_tags_list = db::get_variables_tags_list<db::add_tag_prefix<
     ::Tags::Flux, variables_tag<Dim>, tmpl::size_t<Dim>, Frame::Inertial>>;

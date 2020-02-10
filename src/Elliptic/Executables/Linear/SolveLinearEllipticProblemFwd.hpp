@@ -5,9 +5,11 @@
 
 #include <cstddef>
 
+#include "Elliptic/Systems/Poisson/Geometry.hpp"
+
 /// \cond
 namespace Poisson {
-template <size_t Dim>
+template <size_t Dim, Geometry BackgroundGeometry>
 struct FirstOrderSystem;
 namespace Solutions {
 template <size_t Dim>
