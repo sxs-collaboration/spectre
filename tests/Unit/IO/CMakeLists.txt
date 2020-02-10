@@ -14,6 +14,7 @@ set(LIBRARY_SOURCES
   Observers/Test_ReductionObserver.cpp
   Observers/Test_TypeOfObservation.cpp
   Observers/Test_VolumeObserver.cpp
+  Observers/Test_WriteSimpleData.cpp
   Test_H5.cpp
   Test_StellarCollapseEos.cpp
   Test_VolumeData.cpp
