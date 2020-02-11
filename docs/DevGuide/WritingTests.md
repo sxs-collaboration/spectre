@@ -159,6 +159,8 @@ guidelines:
   PointwiseFunction.GeneralRelativity.Christoffel as christoffel`) or use
   relative imports like `from . import Christoffel as christoffel`. Don't assume
   the Python environment is set up in a subdirectory of `tests/Unit/`.
+- The python code is formatted according to the `.style.yapf` file in the root
+  of the repository.
 
 It is possible to test C++ functions that return by value and ones that return
 by `gsl::not_null`. In the latter case, since it is possible to return multiple

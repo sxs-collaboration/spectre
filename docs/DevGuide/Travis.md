@@ -46,8 +46,8 @@ indicate that a pull request should not be merged in its current state.
   - testing
   - rebase
 * CHECK_FILES runs the script `tools/CheckFiles.sh` (which also runs the script
-`tools/FileTestDefs.sh`) and fails the build if any of the following checks are
-true:
+`tools/FileTestDefs.sh`), and `tools/CheckPythonFormatting.sh`. The checks fail
+if any of the following are true:
   - A `c++` file (i.e. `*.hpp`, `*.cpp`, or `*.tpp` file) contains a
   line over 80 characters
   - A file contains a tab character
@@ -68,6 +68,8 @@ true:
   - A `c++` test uses either:
     * `TEST_CASE` (use `SPECTRE_TEST_CASE` instead)
     * `Approx` (use `approx` instead)
+  - A python file is not formatted according to the `.style.yapf` file in the
+    root of the repository.
 * RUN_CLANG_TIDY runs the script `.travis/RunClangTidy.sh` which runs
 `clang-tidy` on all files which were modified.  This is done for both `Release`
 and `Debug` builds.

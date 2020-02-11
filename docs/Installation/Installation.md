@@ -56,6 +56,7 @@ installation_on_clusters "Installation on clusters" page.
   code in a clear and consistent fashion
 * [Clang-Tidy](http://clang.llvm.org/extra/clang-tidy/) — to "lint" C++ code
 * [Cppcheck](http://cppcheck.sourceforge.net/) — to analyze C++ code
+* [yapf](https://github.com/google/yapf) 0.29.0 - to format python code
 
 ## Using Docker to obtain a SpECTRE environment
 
