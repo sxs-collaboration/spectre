@@ -355,7 +355,7 @@ void test_data_manager_with_dummy_buffer_updater(
   const double amplitude = 0.1 * value_dist(*gen);
   const double target_time = 50.0 * value_dist(*gen);
 
-  const size_t buffer_size = 8;
+  const size_t buffer_size = 4;
   const size_t l_max = 12;
 
   DataVector time_buffer{30};
@@ -463,8 +463,8 @@ void test_spec_worldtube_buffer_updater(
   const double amplitude = 0.1 * value_dist(*gen);
   const double target_time = 50.0 * value_dist(*gen);
 
-  const size_t buffer_size = 8;
-  const size_t interpolator_length = 3;
+  const size_t buffer_size = 4;
+  const size_t interpolator_length = 2;
   const size_t l_max = 8;
 
   Variables<detail::cce_input_tags> coefficients_buffers_from_file{
@@ -472,6 +472,9 @@ void test_spec_worldtube_buffer_updater(
   Variables<detail::cce_input_tags> expected_coefficients_buffers{
       (buffer_size + 2 * interpolator_length) * square(l_max + 1)};
   const std::string filename = "BoundaryDataH5Test_CceR0100.h5";
+  if (file_system::check_if_file_exists(filename)) {
+    file_system::rm(filename, true);
+  }
   TestHelpers::write_test_file(solution, filename, target_time,
                                extraction_radius, frequency, amplitude, l_max);
 
@@ -524,7 +527,7 @@ void test_reduced_spec_worldtube_buffer_updater(
       {value_dist(*gen), value_dist(*gen), value_dist(*gen)}};
   gr::Solutions::KerrSchild solution{mass, spin, center};
 
-  const double extraction_radius = 100.0;
+  const double extraction_radius = 10.0;
 
   // acceptable parameters for the fake sinusoid variation in the input
   // parameters
@@ -532,10 +535,10 @@ void test_reduced_spec_worldtube_buffer_updater(
   const double amplitude = 0.1 * value_dist(*gen);
   const double target_time = 50.0 * value_dist(*gen);
 
-  const size_t buffer_size = 8;
+  const size_t buffer_size = 4;
   const size_t interpolator_length = 3;
-  const size_t file_l_max = 8;
-  const size_t computation_l_max = 10;
+  const size_t file_l_max = 12;
+  const size_t computation_l_max = 14;
 
   Variables<detail::reduced_cce_input_tags> coefficients_buffers_from_file{
       (buffer_size + 2 * interpolator_length) * square(computation_l_max + 1)};
@@ -575,7 +578,7 @@ void test_reduced_spec_worldtube_buffer_updater(
   {
     Cce::ReducedWorldtubeModeRecorder recorder{filename};
     for (size_t t = 0; t < 30; ++t) {
-      const double time = 0.1 * t + target_time - 1.5;
+      const double time = 0.01 * t + target_time - .15;
       TestHelpers::create_fake_time_varying_modal_data(
           make_not_null(&spatial_metric_coefficients),
           make_not_null(&dt_spatial_metric_coefficients),
@@ -652,7 +655,7 @@ void test_reduced_spec_worldtube_buffer_updater(
   time_span_end = 0;
   const auto& time_buffer = buffer_updater.get_time_buffer();
   for (size_t i = 0; i < time_buffer.size(); ++i) {
-    CHECK(time_buffer[i] == approx(target_time - 1.5 + 0.1 * i));
+    CHECK(time_buffer[i] == approx(target_time - .15 + 0.01 * i));
   }
 
   const ReducedDummyBufferUpdater<gr::Solutions::KerrSchild>
@@ -663,20 +666,25 @@ void test_reduced_spec_worldtube_buffer_updater(
       make_not_null(&time_span_start), make_not_null(&time_span_end),
       target_time, computation_l_max, interpolator_length, buffer_size);
 
-  Approx angular_derivative_approx =
+  // this approximation needs to be comparatively loose because it is comparing
+  // modes, which tend to have the error set by the scale of the original
+  // collocation errors (so, the dominant modes), rather than the scale of the
+  // individual mode being examined.
+  Approx modal_approx =
       Approx::custom()
-          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e5)
           .scale(1.0);
+
   // check that the data in the buffer matches the expected analytic data.
   tmpl::for_each<detail::reduced_cce_input_tags>(
       [&expected_coefficients_buffers, &coefficients_buffers_from_file,
-       &angular_derivative_approx](auto tag_v) {
+       &modal_approx](auto tag_v) {
         using tag = typename decltype(tag_v)::type;
+
         INFO(tag::name());
         const auto& test_lhs = get<tag>(expected_coefficients_buffers);
         const auto& test_rhs = get<tag>(coefficients_buffers_from_file);
-        CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs,
-                                     angular_derivative_approx);
+        CHECK_ITERABLE_CUSTOM_APPROX(test_lhs, test_rhs, modal_approx);
       });
 }
 }  // namespace

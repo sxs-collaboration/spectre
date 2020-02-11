@@ -33,63 +33,63 @@ void pypp_test_worldtube_computation_steps() noexcept {
       &cartesian_to_spherical_coordinates_and_jacobians, "BoundaryData",
       {"cartesian_to_angular_coordinates", "cartesian_to_angular_jacobian",
        "cartesian_to_angular_inverse_jacobian"},
-      {{{0.1, 10.0}}}, DataVector{num_pts});
+      {{{1.0, 5.0}}}, DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&null_metric_and_derivative, "BoundaryData",
                                     {"du_null_metric", "null_metric"},
-                                    {{{0.1, 10.0}}}, DataVector{num_pts});
+                                    {{{1.0, 5.0}}}, DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&worldtube_normal_and_derivatives,
                                     "BoundaryData",
                                     {"worldtube_normal", "dt_worldtube_normal"},
-                                    {{{0.1, 10.0}}}, DataVector{num_pts});
+                                    {{{1.0, 5.0}}}, DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&null_vector_l_and_derivatives,
                                     "BoundaryData",
                                     {"du_null_vector_l", "null_vector_l"},
-                                    {{{0.1, 10.0}}}, DataVector{num_pts});
+                                    {{{1.0, 5.0}}}, DataVector{num_pts});
 
   pypp::check_with_random_values<1>(
       &dlambda_null_metric_and_inverse, "BoundaryData",
-      {"dlambda_null_metric", "inverse_dlambda_null_metric"}, {{{0.1, 10.0}}},
+      {"dlambda_null_metric", "inverse_dlambda_null_metric"}, {{{1.0, 5.0}}},
       DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&beta_worldtube_data, "BoundaryData",
                                     {"bondi_beta_worldtube_data"},
-                                    {{{0.1, 10.0}}}, DataVector{num_pts});
+                                    {{{1.0, 5.0}}}, DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&bondi_u_worldtube_data, "BoundaryData",
-                                    {"bondi_u_worldtube_data"}, {{{0.1, 10.0}}},
-                                    DataVector{num_pts});
+                                    {"bondi_u_worldtube_data"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts}, 1.0e-11);
 
   pypp::check_with_random_values<1>(&bondi_w_worldtube_data, "BoundaryData",
-                                    {"bondi_w_worldtube_data"}, {{{0.1, 10.0}}},
-                                    DataVector{num_pts});
+                                    {"bondi_w_worldtube_data"}, {{{1.0, 5.0}}},
+                                    DataVector{num_pts}, 1.0e-11);
 
   pypp::check_with_random_values<1>(&bondi_j_worldtube_data, "BoundaryData",
-                                    {"bondi_j_worldtube_data"}, {{{0.1, 10.0}}},
+                                    {"bondi_j_worldtube_data"}, {{{1.0, 5.0}}},
                                     DataVector{num_pts});
 
   pypp::check_with_random_values<1>(
       &dr_bondi_j, "BoundaryData",
-      {"dr_bondi_j_worldtube_data", "dr_bondi_j_denominator"}, {{{0.1, 10.0}}},
+      {"dr_bondi_j_worldtube_data", "dr_bondi_j_denominator"}, {{{1.0, 5.0}}},
       DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&d2lambda_bondi_r, "BoundaryData",
-                                    {"d2lambda_bondi_r"}, {{{0.1, 10.0}}},
+                                    {"d2lambda_bondi_r"}, {{{1.0, 5.0}}},
                                     DataVector{num_pts});
 
   pypp::check_with_random_values<1>(
       &bondi_q_worldtube_data, "BoundaryData",
-      {"bondi_q_worldtube_data", "dr_bondi_u_worldtube_data"}, {{{0.1, 10.0}}},
-      DataVector{num_pts});
+      {"bondi_q_worldtube_data", "dr_bondi_u_worldtube_data"}, {{{1.0, 5.0}}},
+      DataVector{num_pts}, 1.0e-10);
 
   pypp::check_with_random_values<1>(&bondi_h_worldtube_data, "BoundaryData",
-                                    {"bondi_h_worldtube_data"}, {{{0.1, 10.0}}},
+                                    {"bondi_h_worldtube_data"}, {{{1.0, 5.0}}},
                                     DataVector{num_pts});
 
   pypp::check_with_random_values<1>(&du_j_worldtube_data, "BoundaryData",
-                                    {"du_j_worldtube_data"}, {{{0.1, 10.0}}},
+                                    {"du_j_worldtube_data"}, {{{1.0, 5.0}}},
                                     DataVector{num_pts});
 }
 
@@ -220,7 +220,7 @@ void test_d_bondi_r_identities(const gsl::not_null<Generator*> gen) noexcept {
   fill_with_random_values(make_not_null(&null_metric), gen,
                           make_not_null(&value_dist));
   // to make the inverse more well-behaved.
-  for(size_t a = 0; a < 4; ++a) {
+  for (size_t a = 0; a < 4; ++a) {
     null_metric.get(a, a) += 1.0;
   }
   const auto inverse_null_metric = determinant_and_inverse(null_metric).second;
@@ -523,10 +523,11 @@ void test_kerr_schild_boundary_consistency(
   dispatch_to_modal_worldtube_computation_from_analytic(
       make_not_null(&modal_boundary_box), solution, extraction_radius, l_max);
 
-  // This can be tightened further with higher l_max above.
+  // This can be tightened further with higher l_max above. Q, for instance, has
+  // aliasing trouble
   Approx angular_derivative_approx =
       Approx::custom()
-          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e5)
           .scale(1.0);
 
   tmpl::for_each<
@@ -613,8 +614,7 @@ void test_schwarzschild_solution(const gsl::not_null<Generator*> gen) noexcept {
 }
 }  // namespace
 
-SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BoundaryData",
-                  "[Unit][Cce]") {
+SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.BoundaryData", "[Unit][Cce]") {
   pypp_test_worldtube_computation_steps();
 
   MAKE_GENERATOR(gen);
