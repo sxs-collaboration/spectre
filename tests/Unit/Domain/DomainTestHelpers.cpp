@@ -9,6 +9,7 @@
 #include <unordered_map>
 
 #include "DataStructures/DataVector.hpp"     // IWYU pragma: keep
+#include "DataStructures/Tensor/EagerMath/Magnitude.hpp"
 #include "DataStructures/Tensor/Tensor.hpp"  // IWYU pragma: keep
 #include "Domain/Block.hpp"                  // IWYU pragma: keep
 #include "Domain/BlockNeighbor.hpp"          // IWYU pragma: keep
@@ -362,6 +363,20 @@ tnsr::i<DataType, SpatialDim> euclidean_basis_vector(
   return basis_vector;
 }
 
+template <typename DataType, size_t SpatialDim>
+tnsr::i<DataType, SpatialDim> unit_basis_form(
+    const Direction<SpatialDim>& direction,
+    const tnsr::II<DataType, SpatialDim>& inv_spatial_metric) noexcept {
+  auto basis_form =
+      euclidean_basis_vector(direction, get<0, 0>(inv_spatial_metric));
+  const DataType inv_norm =
+      1.0 / get(magnitude(basis_form, inv_spatial_metric));
+  for (size_t i = 0; i < SpatialDim; ++i) {
+    basis_form.get(i) *= inv_norm;
+  }
+  return basis_form;
+}
+
 /// \cond
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 
@@ -391,7 +406,10 @@ GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
 #define INSTANTIATE_BASIS_VECTOR(_, data)                          \
   template tnsr::i<DTYPE(data), DIM(data)> euclidean_basis_vector( \
       const Direction<DIM(data)>& direction,                       \
-      const DTYPE(data) & used_for_size) noexcept;
+      const DTYPE(data) & used_for_size) noexcept;                 \
+  template tnsr::i<DTYPE(data), DIM(data)> unit_basis_form(        \
+      const Direction<DIM(data)>& direction,                       \
+      const tnsr::II<DTYPE(data), DIM(data)>& inv_spatial_metric) noexcept;
 
 GENERATE_INSTANTIATIONS(INSTANTIATE_BASIS_VECTOR, (1, 2, 3),
                         (double, DataVector))
