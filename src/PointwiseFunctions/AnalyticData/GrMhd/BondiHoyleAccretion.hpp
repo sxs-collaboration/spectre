@@ -33,10 +33,9 @@ namespace AnalyticData {
  *
  * In the context of studying Bondi-Hoyle accretion, i.e. non-spherical
  * accretion on to a Kerr black hole moving relative to a gas cloud, this class
- * implements the method proposed by Font & Ibáñez (1998) \ref font_98 "[1]" to
- * initialize the GRMHD variables. The fluid quantities are initialized with
- * their (constant) values far from the black hole, e.g.
- * \f$\rho = \rho_\infty\f$. Here we assume a
+ * implements the method proposed by \cite Font1998 to initialize the GRMHD
+ * variables. The fluid quantities are initialized with their (constant) values
+ * far from the black hole, e.g. \f$\rho = \rho_\infty\f$. Here we assume a
  * polytropic equation of state, so only the rest mass density, as well as the
  * polytropic constant and the polytropic exponent, are provided as inputs.
  * The spatial velocity is initialized using a field that ensures that the
@@ -52,8 +51,7 @@ namespace AnalyticData {
  *
  * where \f$\gamma_{ij} = g_{ij}\f$ is the spatial metric, and \f$v_\infty\f$
  * is the flow speed far from the black hole. Note that
- * \f$v_\infty^2 = v_i v^i\f$. Finally, following the work by
- * Penner (2011) \ref penner_11 "[2]",
+ * \f$v_\infty^2 = v_i v^i\f$. Finally, following the work by \cite Penner2011,
  * the magnetic field is initialized using Wald's solution to Maxwell's
  * equations in Kerr black hole spacetime. In Kerr ("spherical
  * Kerr-Schild") coordinates, the spatial components of the Faraday tensor read
@@ -78,12 +76,6 @@ namespace AnalyticData {
  *
  * where \f$\gamma = \text{det}(\gamma_{ij})\f$. Wald's solution reproduces a
  * uniform magnetic field far from the black hole.
- *
- * \anchor font_98 [1] J.A. Font & J.M. Ibáñez, ApJ
- * [494 (1998) 297](http://esoads.eso.org/abs/1998ApJ...494..297F)
- *
- * \anchor penner_11 [2] A.J. Penner, MNRAS
- * [414 (2011) 1467](http://cdsads.u-strasbg.fr/abs/2011MNRAS.414.1467P)
  */
 class BondiHoyleAccretion : public MarkAsAnalyticData {
  public:
