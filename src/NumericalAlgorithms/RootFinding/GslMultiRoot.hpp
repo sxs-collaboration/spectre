@@ -124,6 +124,7 @@ int gsl_multirootfunctionfdf_wrapper_fdf(const gsl_vector* const x,
 }
 
 CREATE_IS_CALLABLE(jacobian)
+CREATE_IS_CALLABLE_V(jacobian)
 }  // namespace gsl_multiroot_detail
 
 /*!

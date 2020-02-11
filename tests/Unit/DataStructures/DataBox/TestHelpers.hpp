@@ -16,6 +16,7 @@ namespace db {
 
 namespace detail {
 CREATE_IS_CALLABLE(name)
+CREATE_IS_CALLABLE_V(name)
 
 template <typename Tag>
 void check_tag_name(const std::string& expected_name) {

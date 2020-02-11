@@ -858,9 +858,12 @@ using is_callable_t = typename is_callable<T, Args...>::type;
  * `is_METHOD_NAME_callable` and is not placed in
  * the `tt` namespace. To avoid collisions it is highly recommended that type
  * traits generated with this macro are generated into `_detail` namespaces.
- * This will reduce redefinition compilation errors. Note that a variable
- * template `is_METHOD_NAME_callable_v`, and a `is_METHOD_NAME_callable_t` that
- * is either `std::true_type` or `std::false_type` is also generated.
+ * This will reduce redefinition compilation errors.
+ *
+ * Note that variable templates with `_r` and `_t` suffixes that follow the
+ * standard library's naming convention are also generated. To generate
+ * corresponding `_v` metafunctions, call `CREATE_IS_CALLABLE` first and then
+ * `CREATE_IS_CALLABLE_V` and/or `CREATE_IS_CALLABLE_R_V`.
  *
  * \example
  * \snippet Utilities/Test_TypeTraits.cpp CREATE_IS_CALLABLE_EXAMPLE
@@ -889,27 +892,36 @@ using is_callable_t = typename is_callable<T, Args...>::type;
                          ReturnType>;                                          \
     using type = std::integral_constant<bool, value>;                          \
   };                                                                           \
-                                                                               \
-  template <typename ReturnType, typename T, typename... Args>                 \
-  static constexpr const bool is_##METHOD_NAME##_callable_r_v =                \
-      is_##METHOD_NAME##_callable_r<ReturnType, T, Args...>::value;            \
-                                                                               \
   template <typename ReturnType, typename T, typename... Args>                 \
   using is_##METHOD_NAME##_callable_r_t =                                      \
       typename is_##METHOD_NAME##_callable_r<ReturnType, T, Args...>::type;    \
-                                                                               \
-  template <typename T, typename... Args>                                      \
-  static constexpr const bool is_##METHOD_NAME##_callable_v =                  \
-      is_##METHOD_NAME##_callable_r_v<AnyReturnType##METHOD_NAME, T, Args...>; \
-                                                                               \
-  template <typename T, typename... Args>                                      \
+  template <typename TT, typename... TArgs>                                    \
+  using is_##METHOD_NAME##_callable =                                          \
+      is_##METHOD_NAME##_callable_r<AnyReturnType##METHOD_NAME, TT, TArgs...>; \
+  template <typename TT, typename... TArgs>                                    \
   using is_##METHOD_NAME##_callable_t =                                        \
-      is_##METHOD_NAME##_callable_r_t<AnyReturnType##METHOD_NAME, T, Args...>;
+      is_##METHOD_NAME##_callable_r_t<AnyReturnType##METHOD_NAME, TT,          \
+                                      TArgs...>;
+// Separate macros to avoid compiler warnings about unused variables
+#define CREATE_IS_CALLABLE_R_V(METHOD_NAME)                     \
+  template <typename ReturnType, typename T, typename... Args>  \
+  static constexpr const bool is_##METHOD_NAME##_callable_r_v = \
+      is_##METHOD_NAME##_callable_r<ReturnType, T, Args...>::value;
+#define CREATE_IS_CALLABLE_V(METHOD_NAME)                     \
+  template <typename T, typename... Args>                     \
+  static constexpr const bool is_##METHOD_NAME##_callable_v = \
+      is_##METHOD_NAME##_callable<T, Args...>::value;
+// @}
 
+// @{
 /*!
  * \ingroup TypeTraitsGroup
  * \brief Generate a type trait to check if a class has a `static constexpr`
  * variable, optionally also checking its type.
+ *
+ * To generate the corresponding `_v` metafunction, call
+ * `CREATE_HAS_STATIC_MEMBER_VARIABLE` first and then
+ * `CREATE_HAS_STATIC_MEMBER_VARIABLE_V`.
  *
  * \example
  * \snippet Utilities/Test_TypeTraits.cpp CREATE_HAS_EXAMPLE
@@ -932,11 +944,13 @@ using is_callable_t = typename is_callable<T, Args...>::type;
             cpp17::is_same_v<VariableType, NoSuchType*****> or               \
             cpp17::is_same_v<                                                \
                 std::remove_const_t<decltype(CheckingType::CONSTEXPR_NAME)>, \
-                VariableType>> {};                                           \
-                                                                             \
-  template <typename CheckingType, typename VariableType = NoSuchType*****>  \
-  static constexpr const bool has_##CONSTEXPR_NAME##_v =                     \
+                VariableType>> {};
+// Separate macros to avoid compiler warnings about unused variables
+#define CREATE_HAS_STATIC_MEMBER_VARIABLE_V(CONSTEXPR_NAME)                 \
+  template <typename CheckingType, typename VariableType = NoSuchType*****> \
+  static constexpr const bool has_##CONSTEXPR_NAME##_v =                    \
       has_##CONSTEXPR_NAME<CheckingType, VariableType>::value;
+// @}
 
 // @{
 /// \ingroup TypeTraitsGroup
