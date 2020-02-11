@@ -52,17 +52,14 @@ namespace test_databox_tags {
 /// [databox_tag_example]
 struct Tag0 : db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "Tag0"; }
 };
 /// [databox_tag_example]
 struct Tag1 : db::SimpleTag {
   using type = std::vector<double>;
-  static std::string name() noexcept { return "Tag1"; }
 };
 struct Tag2Base : db::BaseTag {};
 struct Tag2 : db::SimpleTag, Tag2Base {
   using type = std::string;
-  static std::string name() noexcept { return "Tag2"; }
 };
 struct Tag3 : db::SimpleTag {
   using type = std::string;
@@ -116,7 +113,7 @@ struct TagPrefix : db::PrefixTag, db::SimpleTag {
   using type = typename Tag::type;
   using tag = Tag;
   static std::string name() noexcept {
-    return "TagPrefix(" + Tag::name() + ")";
+    return "TagPrefix(" + db::tag_name<Tag>() + ")";
   }
 };
 /// [databox_prefix_tag_example]
@@ -381,12 +378,10 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox", "[Unit][DataStructures]") {
 
 namespace ArgumentTypeTags {
 struct NonCopyable : db::SimpleTag {
-  static std::string name() noexcept { return "NonCopyable"; }
   using type = ::NonCopyable;
 };
 template <size_t N>
 struct String : db::SimpleTag {
-  static std::string name() noexcept { return "String"; }
   using type = std::string;
 };
 }  // namespace ArgumentTypeTags
@@ -773,14 +768,12 @@ namespace {
 auto get_vector() { return tnsr::I<DataVector, 3, Frame::Grid>(5_st, 2.0); }
 
 struct Var1 : db::ComputeTag {
-  static std::string name() noexcept { return "Var1"; }
   static constexpr auto function = get_vector;
   using argument_tags = tmpl::list<>;
 };
 
 struct Var2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Var2"; }
 };
 
 template <class Tag, class VolumeDim, class Frame>
@@ -830,35 +823,27 @@ namespace test_databox_tags {
 struct ScalarTagBase : db::BaseTag {};
 struct ScalarTag : db::SimpleTag, ScalarTagBase {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ScalarTag"; }
 };
 struct VectorTag : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
-  static std::string name() noexcept { return "VectorTag"; }
 };
 struct ScalarTag2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ScalarTag2"; }
 };
 struct VectorTag2 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
-  static std::string name() noexcept { return "VectorTag2"; }
 };
 struct ScalarTag3 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ScalarTag3"; }
 };
 struct VectorTag3 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
-  static std::string name() noexcept { return "VectorTag3"; }
 };
 struct ScalarTag4 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "ScalarTag4"; }
 };
 struct VectorTag4 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3>;
-  static std::string name() noexcept { return "VectorTag4"; }
 };
 }  // namespace test_databox_tags
 
@@ -1148,11 +1133,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.Variables",
 namespace {
 struct Tag1 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Tag1"; }
 };
 struct Tag2 : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Tag2"; }
 };
 }  // namespace
 
@@ -1209,11 +1192,9 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.reset_compute_items",
 namespace ExtraResetTags {
 struct Var : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "Var"; }
 };
 struct Int : db::SimpleTag {
   using type = int;
-  static std::string name() noexcept { return "Int"; }
 };
 struct CheckReset : db::ComputeTag {
   static std::string name() noexcept { return "CheckReset"; }
@@ -1668,17 +1649,14 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.mutating_compute_item",
 namespace DataBoxTest_detail {
 struct vector : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
-  static std::string name() noexcept { return "vector"; }
 };
 
 struct scalar : db::SimpleTag {
   using type = Scalar<DataVector>;
-  static std::string name() noexcept { return "scalar"; }
 };
 
 struct vector2 : db::SimpleTag {
   using type = tnsr::I<DataVector, 3, Frame::Grid>;
-  static std::string name() noexcept { return "vector2"; }
 };
 }  // namespace DataBoxTest_detail
 
@@ -1890,7 +1868,6 @@ class Boxed {
 
 template <size_t N, bool Compute = false, bool DependsOnComputeItem = false>
 struct Parent : db::SimpleTag {
-  static std::string name() noexcept { return "Parent"; }
   using type = std::pair<Boxed<int>, Boxed<double>>;
 };
 template <size_t N, bool DependsOnComputeItem>
@@ -1912,14 +1889,12 @@ int Parent<N, true, DependsOnComputeItem>::count = 0;
 
 template <size_t N>
 struct First : db::SimpleTag {
-  static std::string name() noexcept { return "First"; }
   using type = Boxed<int>;
 
   static constexpr size_t index = 0;
 };
 template <size_t N>
 struct Second : db::SimpleTag {
-  static std::string name() noexcept { return "Second"; }
   using type = Boxed<double>;
 
   static constexpr size_t index = 1;
@@ -2194,7 +2169,6 @@ SPECTRE_TEST_CASE("Unit.DataStructures.DataBox.create_copy_error",
 namespace test_databox_tags {
 struct Tag0Int : db::SimpleTag {
   using type = int;
-  static std::string name() noexcept { return "Tag0Int"; }
 };
 /// [overload_compute_tag_type]
 template <typename ArgumentTag>
@@ -2283,7 +2257,6 @@ struct MyTag1 {
 };
 
 struct TupleTag : db::SimpleTag {
-  static std::string name() noexcept { return "TupleTag"; }
   using type = tuples::TaggedTuple<MyTag0, MyTag1>;
 };
 }  // namespace
@@ -2890,12 +2863,10 @@ struct PureBaseTag : db::BaseTag {};
 
 struct SimpleTag : PureBaseTag, db::SimpleTag {
   using type = double;
-  static std::string name() noexcept { return "SimpleTag"; }
 };
 
 struct DummyTag : db::SimpleTag {
   using type = int;
-  static std::string name() noexcept { return "DummyTag"; }
 };
 }  // namespace tags_types
 

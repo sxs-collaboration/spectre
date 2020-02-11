@@ -27,7 +27,6 @@ struct VectorBase : db::BaseTag {};
 template <int I>
 struct Vector : db::SimpleTag, VectorBase<I> {
   using type = std::vector<double>;
-  static std::string name() noexcept { return "Vector"; }
 };
 /// [vector_base_definitions]
 
@@ -38,7 +37,6 @@ struct ArrayBase : db::BaseTag {};
 template <int I>
 struct Array : virtual db::SimpleTag, ArrayBase<I> {
   using type = std::array<int, 3>;
-  static std::string name() noexcept { return "Array"; }
 };
 /// [array_base_definitions]
 
@@ -215,7 +213,6 @@ struct ParentBase : db::BaseTag {};
 
 template <size_t N, bool Compute = false, bool DependsOnComputeItem = false>
 struct Parent : ParentBase<N>, db::SimpleTag {
-  static std::string name() noexcept { return "Parent"; }
   using type = std::pair<Boxed<int>, Boxed<double>>;
 };
 template <size_t N, bool DependsOnComputeItem>
@@ -232,14 +229,12 @@ struct Parent<N, true, DependsOnComputeItem> : ParentBase<N>, db::ComputeTag {
 
 template <size_t N>
 struct First : FirstBase<N>, db::SimpleTag {
-  static std::string name() noexcept { return "First"; }
   using type = Boxed<int>;
 
   static constexpr size_t index = 0;
 };
 template <size_t N>
 struct Second : SecondBase<N>, db::SimpleTag {
-  static std::string name() noexcept { return "Second"; }
   using type = Boxed<double>;
 
   static constexpr size_t index = 1;
