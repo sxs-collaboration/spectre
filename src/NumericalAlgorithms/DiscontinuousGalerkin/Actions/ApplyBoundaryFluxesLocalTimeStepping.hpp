@@ -39,13 +39,13 @@ namespace Actions {
 ///
 /// Uses:
 /// - ConstGlobalCache:
-///   - Tags::TimeStepperBase
 ///   - Metavariables::normal_dot_numerical_flux
 /// - DataBox:
 ///   - Tags::Mesh<volume_dim>
 ///   - Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>
 ///   - Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>
 ///   - Tags::TimeStep
+///   - Tags::TimeStepper<>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -85,17 +85,16 @@ struct ApplyBoundaryFluxesLocalTimeStepping {
                                                     volume_dim>>& mortar_meshes,
             const db::const_item_type<Tags::Mortars<
                 Tags::MortarSize<volume_dim - 1>, volume_dim>>& mortar_sizes,
-            const db::const_item_type<Tags::TimeStep>& time_step) noexcept {
+            const db::const_item_type<Tags::TimeStep>& time_step,
+            const LtsTimeStepper& time_stepper) noexcept {
           // Having the lambda just wrap another lambda works around a
           // gcc 6.4.0 segfault.
           [
             &cache, &vars, &mortar_data, &mesh, &mortar_meshes, &mortar_sizes,
-            &time_step
+            &time_step, &time_stepper
           ]() noexcept {
             const auto& normal_dot_numerical_flux_computer =
                 get<typename Metavariables::normal_dot_numerical_flux>(cache);
-            const LtsTimeStepper& time_stepper =
-                get<Tags::TimeStepperBase>(cache);
 
             for (auto& mortar_id_and_data : *mortar_data) {
               const auto& mortar_id = mortar_id_and_data.first;
@@ -134,7 +133,7 @@ struct ApplyBoundaryFluxesLocalTimeStepping {
         db::get<Tags::Mortars<Tags::Mesh<volume_dim - 1>, volume_dim>>(box),
         db::get<Tags::Mortars<Tags::MortarSize<volume_dim - 1>, volume_dim>>(
             box),
-        db::get<Tags::TimeStep>(box));
+        db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepper<>>(box));
 
     return std::forward_as_tuple(std::move(box));
   }

@@ -7,6 +7,7 @@
 #include <tuple>
 
 #include "DataStructures/DataBox/DataBox.hpp"
+#include "DataStructures/DataBox/Prefixes.hpp"  // IWYU pragma: keep  // for Tags::Next
 #include "Parallel/ConstGlobalCache.hpp"
 #include "Time/Tags.hpp"
 #include "Time/TimeSteppers/TimeStepper.hpp"
@@ -33,11 +34,11 @@ namespace Actions {
 /// - ConstGlobalCache:
 ///   - Tags::StepChoosers<StepChooserRegistrars>
 ///   - Tags::StepController
-///   - Tags::TimeStepperBase
 /// - DataBox:
 ///   - Tags::HistoryEvolvedVariables
-///   - Tags::TimeStepId
 ///   - Tags::TimeStep
+///   - Tags::TimeStepId
+///   - Tags::TimeStepper<>
 ///
 /// DataBox changes:
 /// - Adds: nothing
@@ -60,8 +61,7 @@ struct ChangeStepSize {
     static_assert(Metavariables::local_time_stepping,
                   "ChangeStepSize can only be used with local time-stepping.");
 
-    const LtsTimeStepper& time_stepper =
-        Parallel::get<Tags::TimeStepperBase>(cache);
+    const LtsTimeStepper& time_stepper = db::get<Tags::TimeStepper<>>(box);
     const auto& step_choosers = Parallel::get<step_choosers_tag>(cache);
     const auto& step_controller = Parallel::get<Tags::StepController>(cache);
 

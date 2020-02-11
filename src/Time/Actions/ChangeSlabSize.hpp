@@ -110,7 +110,7 @@ struct ChangeSlabSize {
             typename ParallelComponent>
   static std::tuple<db::DataBox<DbTags>&&> apply(
       db::DataBox<DbTags>& box, tuples::TaggedTuple<InboxTags...>& inboxes,
-      const Parallel::ConstGlobalCache<Metavariables>& cache,
+      const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
       const ArrayIndex& /*array_index*/, const ActionList /*meta*/,
       const ParallelComponent* const /*meta*/) noexcept {
     const auto& time_step_id = db::get<Tags::TimeStepId>(box);
@@ -134,8 +134,7 @@ struct ChangeSlabSize {
         *alg::min_element(new_slab_size_inbox.begin()->second);
     new_slab_size_inbox.erase(new_slab_size_inbox.begin());
 
-    const TimeStepper& time_stepper =
-        Parallel::get<Tags::TimeStepperBase>(cache);
+    const TimeStepper& time_stepper = db::get<Tags::TimeStepper<>>(box);
 
     // Sometimes time steppers need to run with a fixed step size.
     // This is generally at the start of an evolution when the history

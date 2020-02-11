@@ -96,7 +96,7 @@ struct System<true> : SystemBase<true> {
   };
 };
 
-using history_tag = Tags::HistoryEvolvedVariables<Var, Tags::dt<Var>>;
+using history_tag = Tags::HistoryEvolvedVariables<Var>;
 
 template <typename Metavariables>
 struct Component;  // IWYU pragma: keep
@@ -238,10 +238,10 @@ bool run_past(
   }
 }
 
-void test_actions(const size_t order, const bool forward_in_time) noexcept {
+void test_actions(const size_t order, const int step_denominator) noexcept {
+  const bool forward_in_time = step_denominator > 0;
   const Slab slab(1., 3.);
-  const TimeDelta initial_time_step =
-      (forward_in_time ? 1 : -1) * slab.duration() / 2;
+  const TimeDelta initial_time_step = slab.duration() / step_denominator;
   const Time initial_time = forward_in_time ? slab.start() : slab.end();
   const double initial_value = -1.;
 
@@ -297,9 +297,6 @@ void test_actions(const size_t order, const bool forward_in_time) noexcept {
             std::is_same<SelfStart::Actions::CheckForOrderIncrease, tmpl::_1>,
             not_self_start_action>(make_not_null(&runner));
         CHECK(not jumped);
-        CHECK(abs(ActionTesting::get_databox_tag<Component<Metavariables<>>,
-                                                 Tags::SubstepTime>(runner, 0) -
-                  initial_time) < abs(initial_time_step));
         const auto next_time =
             ActionTesting::get_databox_tag<Component<Metavariables<>>,
                                            Tags::Next<Tags::TimeStepId>>(runner,
@@ -403,9 +400,12 @@ void test_convergence(const size_t order, const bool forward_in_time) noexcept {
 SPECTRE_TEST_CASE("Unit.Time.Actions.SelfStart", "[Unit][Time][Actions]") {
   for (size_t order = 1; order < 5; ++order) {
     CAPTURE(order);
-    for (bool forward_in_time : {true, false}) {
+    for (const int step_denominator : {1, -1, 2, -2, 20, -20}) {
+      CAPTURE(step_denominator);
+      test_actions(order, step_denominator);
+    }
+    for (const bool forward_in_time : {true, false}) {
       CAPTURE(forward_in_time);
-      test_actions(order, forward_in_time);
       test_convergence<false>(order, forward_in_time);
       test_convergence<true>(order, forward_in_time);
     }

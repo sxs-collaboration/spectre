@@ -75,21 +75,21 @@ struct Time : db::SimpleTag {
 /// \ingroup TimeGroup
 /// Tag for the TimeStepper history
 ///
-/// Leaving both template parameters unspecified gives a base tag.
+/// Leaving the template parameter unspecified gives a base tag.
 ///
 /// \tparam Tag tag for the variables
-/// \tparam DtTag tag for the time derivative of the variables
-template <typename Tag = void, typename DtTag = void>
+template <typename Tag = void>
 struct HistoryEvolvedVariables;
 
 /// \cond
 template <>
 struct HistoryEvolvedVariables<> : db::BaseTag {};
 
-template <typename Tag, typename DtTag>
+template <typename Tag>
 struct HistoryEvolvedVariables : HistoryEvolvedVariables<>, db::SimpleTag {
-  using type = TimeSteppers::History<db::const_item_type<Tag>,
-                                     db::const_item_type<DtTag>>;
+  using type = TimeSteppers::History<
+      db::const_item_type<Tag>,
+      db::const_item_type<db::add_tag_prefix<Tags::dt, Tag>>>;
 };
 /// \endcond
 
@@ -170,14 +170,18 @@ struct InitialSlabSize {
 namespace Tags {
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup
-/// \brief Base tag for simple tag Tags::TimeStepper
-struct TimeStepperBase : db::BaseTag {};
-
-/// \ingroup DataBoxTagsGroup
-/// \ingroup TimeGroup
 /// \brief Tag for a ::TimeStepper of type `StepperType`.
+///
+/// Leaving the template parameter unspecified gives a base tag.
+template <typename StepperType = void>
+struct TimeStepper;
+
+/// \cond
+template <>
+struct TimeStepper<> : db::BaseTag {};
+
 template <typename StepperType>
-struct TimeStepper : TimeStepperBase, db::SimpleTag {
+struct TimeStepper : TimeStepper<>, db::SimpleTag {
   using type = std::unique_ptr<StepperType>;
   using option_tags = tmpl::list<::OptionTags::TimeStepper<StepperType>>;
 
@@ -187,6 +191,7 @@ struct TimeStepper : TimeStepperBase, db::SimpleTag {
     return deserialize<type>(serialize<type>(time_stepper).data());
   }
 };
+/// \endcond
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup TimeGroup

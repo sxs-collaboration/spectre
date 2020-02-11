@@ -4,6 +4,7 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <cstddef>
+#include <limits>
 #include <memory>
 #include <string>
 
@@ -20,8 +21,8 @@
 #include "Time/StepChoosers/Cfl.hpp"
 #include "Time/StepChoosers/StepChooser.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
-#include "Time/Time.hpp"
 #include "Time/TimeSteppers/AdamsBashforthN.hpp"
+#include "Time/TimeSteppers/TimeStepper.hpp"
 #include "Utilities/TMPL.hpp"
 #include "tests/Unit/TestCreation.hpp"
 #include "tests/Unit/TestHelpers.hpp"
@@ -29,8 +30,6 @@
 // IWYU pragma: no_include <pup.h>
 
 // IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
-
-class TimeStepper;
 
 namespace {
 constexpr size_t dim = 1;
@@ -45,7 +44,7 @@ struct CharacteristicSpeed : db::SimpleTag {
 
 struct Metavariables {
   using component_list = tmpl::list<>;
-  using const_global_cache_tags = tmpl::list<Tags::TimeStepper<TimeStepper>>;
+  using const_global_cache_tags = tmpl::list<>;
   struct system {
     struct compute_largest_characteristic_speed {
       using argument_tags = tmpl::list<CharacteristicSpeed>;
@@ -57,26 +56,29 @@ struct Metavariables {
 double get_suggestion(const size_t stepper_order, const double safety_factor,
                       const double characteristic_speed,
                       const DataVector& coordinates) noexcept {
-  const Parallel::ConstGlobalCache<Metavariables> cache{
-      {std::make_unique<TimeSteppers::AdamsBashforthN>(stepper_order)}};
+  const Parallel::ConstGlobalCache<Metavariables> cache{{}};
   const auto box = db::create<
       db::AddSimpleTags<CharacteristicSpeed, Tags::Coordinates<dim, frame>,
-                        Tags::Mesh<dim>>,
+                        Tags::Mesh<dim>, Tags::TimeStepper<TimeStepper>>,
       db::AddComputeTags<Tags::MinimumGridSpacing<dim, frame>>>(
       characteristic_speed, tnsr::I<DataVector, dim, frame>{{{coordinates}}},
       Mesh<dim>(coordinates.size(), Spectral::Basis::Legendre,
-                Spectral::Quadrature::GaussLobatto));
+                Spectral::Quadrature::GaussLobatto),
+      db::item_type<Tags::TimeStepper<TimeStepper>>{
+          std::make_unique<TimeSteppers::AdamsBashforthN>(stepper_order)});
 
   const double grid_spacing = get<Tags::MinimumGridSpacing<dim, frame>>(box);
+  const auto& time_stepper = get<Tags::TimeStepper<TimeStepper>>(box);
 
   const Cfl cfl{safety_factor};
   const std::unique_ptr<StepChooserType> cfl_base = std::make_unique<Cfl>(cfl);
 
   const double current_step = std::numeric_limits<double>::infinity();
-  const double result = cfl(grid_spacing, box, current_step, cache);
+  const double result =
+      cfl(grid_spacing, box, time_stepper, current_step, cache);
   CHECK(cfl_base->desired_step(current_step, box, cache) == result);
-  CHECK(serialize_and_deserialize(cfl)(grid_spacing, box, current_step,
-                                       cache) == result);
+  CHECK(serialize_and_deserialize(cfl)(grid_spacing, box, time_stepper,
+                                       current_step, cache) == result);
   CHECK(serialize_and_deserialize(cfl_base)->desired_step(current_step, box,
                                                           cache) == result);
   return result;

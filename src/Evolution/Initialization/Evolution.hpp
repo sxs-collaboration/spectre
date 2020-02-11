@@ -117,7 +117,7 @@ struct TimeAndTimeStep {
     // The slab number is increased in the self-start phase each
     // time one order of accuracy is obtained, and the evolution
     // proper starts with slab 0.
-    const auto& time_stepper = Parallel::get<::Tags::TimeStepperBase>(cache);
+    const auto& time_stepper = db::get<::Tags::TimeStepper<>>(box);
 
     const TimeStepId time_id(
         time_runs_forward,
@@ -230,8 +230,7 @@ struct TimeStepperHistory {
 
     // Will be overwritten before use
     DtVars dt_vars{num_grid_points};
-    typename ::Tags::HistoryEvolvedVariables<variables_tag,
-                                             dt_variables_tag>::type history;
+    typename ::Tags::HistoryEvolvedVariables<variables_tag>::type history;
 
     using compute_tags =
         typename ComputeTags<typename Metavariables::system>::type;
@@ -239,8 +238,7 @@ struct TimeStepperHistory {
         merge_into_databox<
             TimeStepperHistory,
             db::AddSimpleTags<dt_variables_tag,
-                              ::Tags::HistoryEvolvedVariables<
-                                  variables_tag, dt_variables_tag>>,
+                              ::Tags::HistoryEvolvedVariables<variables_tag>>,
             compute_tags>(std::move(box), std::move(dt_vars),
                           std::move(history)));
   }

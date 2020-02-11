@@ -45,16 +45,13 @@ struct System {
 };
 
 using variables_tag = Var;
-using dt_variables_tag = Tags::dt<Var>;
-using history_tag =
-    Tags::HistoryEvolvedVariables<variables_tag, dt_variables_tag>;
+using history_tag = Tags::HistoryEvolvedVariables<variables_tag>;
 
 
 using alternative_variables_tag = AlternativeVar;
 using dt_alternative_variables_tag = Tags::dt<AlternativeVar>;
 using alternative_history_tag =
-    Tags::HistoryEvolvedVariables<alternative_variables_tag,
-                                  dt_alternative_variables_tag>;
+    Tags::HistoryEvolvedVariables<alternative_variables_tag>;
 
 template <typename Metavariables>
 struct Component {

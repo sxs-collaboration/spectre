@@ -58,7 +58,7 @@ struct Component {
 
   using simple_tags =
       tmpl::list<Tags::TimeStepId, Tags::Next<Tags::TimeStepId>, Tags::TimeStep,
-                 Tags::HistoryEvolvedVariables<Var, Tags::dt<Var>>>;
+                 Tags::HistoryEvolvedVariables<Var>>;
   using phase_dependent_action_list = tmpl::list<
       Parallel::PhaseActions<
           typename Metavariables::Phase, Metavariables::Phase::Initialization,
@@ -112,7 +112,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
           *step = get_step(*id);
           *next_id = stepper.next_time_id(*id, *step);
         },
-        db::get<Tags::TimeStepperBase>(box));
+        db::get<Tags::TimeStepper<>>(box));
 
     using ExpectedMessages =
         ChangeSlabSize_detail::NumberOfExpectedMessagesInbox;
@@ -123,7 +123,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
       CHECK(db::get<Tags::TimeStepId>(box) == id);
       CHECK(db::get<Tags::TimeStep>(box) == get_step(id));
       CHECK(db::get<Tags::Next<Tags::TimeStepId>>(box) ==
-            db::get<Tags::TimeStepperBase>(box).next_time_id(
+            db::get<Tags::TimeStepper<>>(box).next_time_id(
                 db::get<Tags::TimeStepId>(box), db::get<Tags::TimeStep>(box)));
     };
 
@@ -184,7 +184,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
             *id = TimeStepId(time_runs_forward, 3, start_time + step);
             *next_id = stepper.next_time_id(*id, step);
           },
-          db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepperBase>(box));
+          db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepper<>>(box));
       const TimeStepId initial_id = db::get<Tags::TimeStepId>(box);
       CHECK(ActionTesting::is_ready<Component>(runner, 0));
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
@@ -218,7 +218,7 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.ChangeSlabSize", "[Unit][Time][Actions]") {
               *next_id = stepper.next_time_id(*id, step);
             }
           },
-          db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepperBase>(box));
+          db::get<Tags::TimeStep>(box), db::get<Tags::TimeStepper<>>(box));
       const TimeStepId initial_id = db::get<Tags::TimeStepId>(box);
       CHECK(ActionTesting::is_ready<Component>(runner, 0));
       get<ExpectedMessages>(inboxes)[3].insert(ExpectedMessages::NoData{});
