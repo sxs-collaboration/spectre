@@ -133,7 +133,7 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.2.tar.gz -O bla
     && make $PARALLEL_MAKE_ARG PREFIX=/usr/local/ install \
     && cd .. \
     && rm -rf libxsmm libxsmm.tar.gz \
-    && wget https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-0.6.2.tar.gz -O yaml-cpp.tar.gz \
+    && wget https://github.com/jbeder/yaml-cpp/archive/yaml-cpp-0.6.3.tar.gz -O yaml-cpp.tar.gz \
     && tar -xzf yaml-cpp.tar.gz \
     && mv yaml-cpp-* yaml-cpp-build \
     && cd yaml-cpp-build \
@@ -142,7 +142,8 @@ RUN wget https://bitbucket.org/blaze-lib/blaze/downloads/blaze-3.2.tar.gz -O bla
     && cmake -D CMAKE_BUILD_TYPE=Release -D YAML_CPP_BUILD_TESTS=OFF \
              -D YAML_CPP_BUILD_CONTRIB=OFF \
              -D YAML_CPP_BUILD_TOOLS=ON \
-             -D CMAKE_INSTALL_PREFIX=/usr/local/ .. \
+             -D CMAKE_INSTALL_PREFIX=/usr/local/ \
+             -D YAML_BUILD_SHARED_LIBS=ON .. \
     && make $PARALLEL_MAKE_ARG \
     && make install \
     && cd ../.. \
