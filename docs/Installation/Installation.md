@@ -179,8 +179,20 @@ To use Singularity you must:
    Singularity instructions on setting up additional [bind
    points](http://singularity.lbl.gov/docs-mount). Once inside the WORKDIR,
    clone SpECTRE into `WORKDIR/SPECTRE_ROOT`.
-3. Run `singularity build spectre.img
+3. Run `sudo singularity build spectre.img
    docker://sxscollaboration/spectrebuildenv:latest`.
+
+   If you get the error message that `makesquashfs` did not have enough space to
+   create the image you need to set a different `SINGULARITY_TMPDIR`. This can
+   be done by running: `sudo SINGULARITY_TMPDIR=/path/to/new/tmp singularity
+   build spectre.img docker://sxscollaboration/spectrebuildenv:latest`. Normally
+   `SINGULARITY_TMPDIR` is `/tmp`, but building the image will temporarily need
+   almost 8GB of space.
+
+   You can control where Singularity stores the downloaded image files from
+   DockerHub by specifying the `SINGULARITY_CACHEDIR` environment variable. The
+   default is `$HOME/.singularity/`. Note that `$HOME` is `/root` when running
+   using `sudo`.
 4. To start the container run `singularity shell spectre.img` and you
    will be dropped into a bash shell.
 5. Run `cd SPECTRE_HOME && mkdir build && cd build` to set up a build
