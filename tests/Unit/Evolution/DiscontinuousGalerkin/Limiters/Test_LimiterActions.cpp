@@ -260,7 +260,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
         const double expected_mean_data,
         const Mesh<2>& expected_mesh) noexcept {
       const auto received_package =
-          tuples::get<limiter_comm_tag>(runner.inboxes<my_component>()[self_id])
+          tuples::get<limiter_comm_tag>(
+              runner.inboxes<my_component>().at(self_id))
               .at(0)
               .at(std::make_pair(direction, id));
       CHECK(received_package.mean_ == approx(expected_mean_data));
@@ -291,8 +292,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.Generic",
   // Check that data for this time (t=0) was deleted from the inbox after the
   // limiter call. Note that we only put in t=0 data, so the whole inbox should
   // be empty.
-  CHECK(tuples::get<limiter_comm_tag>(runner.inboxes<my_component>()[self_id])
-            .empty());
+  CHECK(
+      tuples::get<limiter_comm_tag>(runner.inboxes<my_component>().at(self_id))
+          .empty());
 }
 
 SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.NoNeighbors",
@@ -333,8 +335,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.DG.Limiters.LimiterActions.NoNeighbors",
 
   CHECK(runner.nonempty_inboxes<my_component, limiter_comm_tag>().empty());
   CHECK(runner.is_ready<my_component>(self_id));
-  CHECK(tuples::get<limiter_comm_tag>(runner.inboxes<my_component>()[self_id])
-            .empty());
+  CHECK(
+      tuples::get<limiter_comm_tag>(runner.inboxes<my_component>().at(self_id))
+          .empty());
 
   // Now we run the ApplyLimiter action, checking pre and post values.
   const auto& var_to_limit =

@@ -637,13 +637,15 @@ class MockDistributedObject {
   }
 
   template <typename InboxTag, typename Data>
-  void receive_data(const typename InboxTag::temporal_id& id, const Data& data,
+  void receive_data(const typename InboxTag::temporal_id& id, Data&& data,
                     const bool enable_if_disabled = false) {
     // The variable `enable_if_disabled` might be useful in the future but is
     // not needed now. However, it is required by the interface to be compliant
     // with the Algorithm invocations.
     (void)enable_if_disabled;
-    tuples::get<InboxTag>(*inboxes_)[id].emplace(data);
+    InboxTag::insert_into_inbox(
+        make_not_null(&tuples::get<InboxTag>(*inboxes_)), id,
+        std::forward<Data>(data));
   }
 
  private:
@@ -1144,13 +1146,14 @@ class MockArrayElementProxy {
       : local_algorithm_(local_algorithm), inbox_(inbox) {}
 
   template <typename InboxTag, typename Data>
-  void receive_data(const typename InboxTag::temporal_id& id, const Data& data,
+  void receive_data(const typename InboxTag::temporal_id& id, Data&& data,
                     const bool enable_if_disabled = false) {
     // The variable `enable_if_disabled` might be useful in the future but is
     // not needed now. However, it is required by the interface to be compliant
     // with the Algorithm invocations.
     (void)enable_if_disabled;
-    tuples::get<InboxTag>(inbox_)[id].emplace(data);
+    InboxTag::insert_into_inbox(make_not_null(&tuples::get<InboxTag>(inbox_)),
+                                id, std::forward<Data>(data));
   }
 
   template <typename Action, typename... Args>
@@ -1547,6 +1550,7 @@ class MockRuntimeSystem {
     return algorithms<Component>().at(array_index).is_ready();
   }
 
+  // @{
   /// Access the inboxes for a given component.
   template <typename Component>
   auto inboxes() noexcept -> std::unordered_map<
@@ -1555,6 +1559,15 @@ class MockRuntimeSystem {
           typename MockDistributedObject<Component>::all_actions_list>>>& {
     return tuples::get<InboxesTag<Component>>(inboxes_);
   }
+
+  template <typename Component>
+  auto inboxes() const noexcept -> const std::unordered_map<
+      typename Component::array_index,
+      tuples::tagged_tuple_from_typelist<Parallel::get_inbox_tags<
+          typename MockDistributedObject<Component>::all_actions_list>>>& {
+    return tuples::get<InboxesTag<Component>>(inboxes_);
+  }
+  // @}
 
   /// Find the set of array indices on Component where the specified
   /// inbox is not empty.
@@ -1599,6 +1612,13 @@ class MockRuntimeSystem {
   Inboxes inboxes_;
   TupleOfMockDistributedObjects local_algorithms_;
 };
+
+/// Set the phase of all parallel components to `phase`
+template <typename Metavariables>
+void set_phase(const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
+               const typename Metavariables::Phase& phase) noexcept {
+  runner->set_phase(phase);
+}
 
 /// Emplaces a distributed object with index `array_index` into the parallel
 /// component `Component`. The options `opts` are forwarded to be used in a call
@@ -1672,6 +1692,26 @@ const auto& get_databox_tag(
       .at(array_index)
       .template get_databox_tag<Tag>();
 }
+
+// @{
+/// Returns the `InboxTag` from the parallel component `Component` with array
+/// index `array_index`.
+template <typename Component, typename InboxTag, typename Metavariables>
+const auto& get_inbox_tag(
+    const MockRuntimeSystem<Metavariables>& runner,
+    const typename Component::array_index& array_index) noexcept {
+  return tuples::get<InboxTag>(
+      runner.template inboxes<Component>().at(array_index));
+}
+
+template <typename Component, typename InboxTag, typename Metavariables>
+auto& get_inbox_tag(
+    const gsl::not_null<MockRuntimeSystem<Metavariables>*> runner,
+    const typename Component::array_index& array_index) noexcept {
+  return tuples::get<InboxTag>(
+      runner->template inboxes<Component>().at(array_index));
+}
+// @}
 
 /// Returns `true` if the current DataBox of `Component` with index
 /// `array_index` contains the tag `Tag`. If the tag is not contained, returns

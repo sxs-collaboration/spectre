@@ -420,7 +420,7 @@ SPECTRE_TEST_CASE("Unit.DiscontinuousGalerkin.Actions.FluxCommunication",
           make_not_null(&runner), self_id);
 
   CHECK(tuples::get<fluxes_tag<flux_comm_types<2>>>(
-            runner.inboxes<my_component>()[self_id])
+            runner.inboxes<my_component>().at(self_id))
             .empty());
 
   for (const auto& mortar_id : neighbor_mortar_ids) {

@@ -20,6 +20,7 @@
 #include "Options/Options.hpp"
 #include "Parallel/CharmPupable.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Reduction.hpp"
 #include "ParallelAlgorithms/EventsAndTriggers/Event.hpp"
@@ -47,7 +48,8 @@ struct Next;
 /// \endcond
 
 namespace ChangeSlabSize_detail {
-struct NewSlabSizeInbox {
+struct NewSlabSizeInbox
+    : public Parallel::InboxInserters::MemberInsert<NewSlabSizeInbox> {
   using temporal_id = int64_t;
   using type = std::map<temporal_id, std::unordered_multiset<double>>;
 };
@@ -57,7 +59,9 @@ struct NewSlabSizeInbox {
 // NewSlabSizeInbox, another message is sent here synchronously, so
 // the count here is the number of messages we expect in the
 // NewSlabSizeInbox.
-struct NumberOfExpectedMessagesInbox {
+struct NumberOfExpectedMessagesInbox
+    : public Parallel::InboxInserters::MemberInsert<
+          NumberOfExpectedMessagesInbox> {
   using temporal_id = int64_t;
   using NoData = std::tuple<>;
   using type = std::map<temporal_id,

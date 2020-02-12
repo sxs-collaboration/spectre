@@ -22,6 +22,7 @@
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Options/Options.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/InboxInserters.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/Main.hpp"
@@ -395,10 +396,13 @@ struct MutateComponent {
 //////////////////////////////////////////////////////////////////////
 
 namespace receive_data_test {
-struct IntReceiveTag {
+/// [int receive tag insert]
+struct IntReceiveTag
+    : public Parallel::InboxInserters::MemberInsert<IntReceiveTag> {
   using temporal_id = TestAlgorithmArrayInstance;
   using type = std::unordered_map<temporal_id, std::unordered_multiset<int>>;
 };
+/// [int receive tag insert]
 
 struct add_int0_from_receive {
   using inbox_tags = tmpl::list<IntReceiveTag>;

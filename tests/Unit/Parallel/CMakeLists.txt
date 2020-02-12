@@ -125,6 +125,7 @@ set(LIBRARY "Test_Parallel")
 
 set(LIBRARY_SOURCES
   Test_ConstGlobalCacheDataBox.cpp
+  Test_InboxInserters.cpp
   Test_Parallel.cpp
   Test_ParallelComponentHelpers.cpp
   Test_PupStlCpp11.cpp
