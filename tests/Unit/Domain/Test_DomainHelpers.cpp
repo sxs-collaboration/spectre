@@ -1200,6 +1200,55 @@ void test_face_corner_iterator() noexcept {
   test_fci_3d();
 }
 
+void test_indices_for_rectilinear_domains() noexcept {
+  std::vector<Index<1>> indices_for_a_1d_road{Index<1>{0}, Index<1>{1},
+                                              Index<1>{2}};
+  std::vector<Index<2>> indices_for_a_2d_vertical_tower{
+      Index<2>{0, 0}, Index<2>{0, 1}, Index<2>{0, 2}};
+  std::vector<Index<2>> indices_for_a_2d_horizontal_wall{
+      Index<2>{0, 0}, Index<2>{1, 0}, Index<2>{2, 0}};
+  std::vector<Index<2>> indices_for_a_2d_field{Index<2>{0, 0}, Index<2>{1, 0},
+                                               Index<2>{0, 1}, Index<2>{1, 1}};
+  std::vector<Index<2>> indices_for_a_2d_net_of_a_cube{
+      Index<2>{1, 0}, Index<2>{1, 1}, Index<2>{0, 2},
+      Index<2>{1, 2}, Index<2>{2, 2}, Index<2>{1, 3}};
+  std::vector<Index<3>> indices_for_a_3d_cube{
+      Index<3>{0, 0, 0}, Index<3>{1, 0, 0}, Index<3>{0, 1, 0},
+      Index<3>{1, 1, 0}, Index<3>{0, 0, 1}, Index<3>{1, 0, 1},
+      Index<3>{0, 1, 1}, Index<3>{1, 1, 1}};
+  std::vector<Index<3>> indices_for_a_rubiks_cube_with_hole{
+      Index<3>{0, 0, 0}, Index<3>{1, 0, 0}, Index<3>{2, 0, 0},
+      Index<3>{0, 1, 0}, Index<3>{1, 1, 0}, Index<3>{2, 1, 0},
+      Index<3>{0, 2, 0}, Index<3>{1, 2, 0}, Index<3>{2, 2, 0},
+      Index<3>{0, 0, 1}, Index<3>{1, 0, 1}, Index<3>{2, 0, 1},
+      Index<3>{0, 1, 1},
+      /*central block is skipped!*/
+      Index<3>{2, 1, 1}, Index<3>{0, 2, 1}, Index<3>{1, 2, 1},
+      Index<3>{2, 2, 1}, Index<3>{0, 0, 2}, Index<3>{1, 0, 2},
+      Index<3>{2, 0, 2}, Index<3>{0, 1, 2}, Index<3>{1, 1, 2},
+      Index<3>{2, 1, 2}, Index<3>{0, 2, 2}, Index<3>{1, 2, 2},
+      Index<3>{2, 2, 2}};
+
+  CHECK(indices_for_rectilinear_domains(Index<1>{3}) == indices_for_a_1d_road);
+  CHECK(indices_for_rectilinear_domains(Index<2>{1, 3}) ==
+        indices_for_a_2d_vertical_tower);
+  CHECK(indices_for_rectilinear_domains(Index<2>{3, 1}) ==
+        indices_for_a_2d_horizontal_wall);
+  CHECK(indices_for_rectilinear_domains(Index<2>{2, 2}) ==
+        indices_for_a_2d_field);
+  CHECK(indices_for_rectilinear_domains(
+            Index<2>{3, 4},
+            std::vector<Index<2>>{Index<2>{0, 0}, Index<2>{2, 0},
+                                  Index<2>{0, 1}, Index<2>{2, 1},
+                                  Index<2>{0, 3}, Index<2>{2, 3}}) ==
+        indices_for_a_2d_net_of_a_cube);
+  CHECK(indices_for_rectilinear_domains(Index<3>{2, 2, 2}) ==
+        indices_for_a_3d_cube);
+  CHECK(indices_for_rectilinear_domains(
+            Index<3>{3, 3, 3}, std::vector<Index<3>>{Index<3>{1, 1, 1}}) ==
+        indices_for_a_rubiks_cube_with_hole);
+}
+
 void test_corners_for_rectilinear_domains() noexcept {
   std::vector<std::array<size_t, 2>> corners_for_a_1d_road{
       {{0, 1}}, {{1, 2}}, {{2, 3}}};
@@ -1611,6 +1660,7 @@ SPECTRE_TEST_CASE("Unit.Domain.DomainHelpers", "[Domain][Unit]") {
   test_bns_corners();
   test_volume_corner_iterator();
   test_face_corner_iterator();
+  test_indices_for_rectilinear_domains();
   test_corners_for_rectilinear_domains();
   test_discrete_rotation_corner_numbers();
   test_maps_for_rectilinear_domains();

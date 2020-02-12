@@ -821,6 +821,22 @@ std::vector<std::array<size_t, 8>> corners_for_biradially_layered_domains(
 }
 
 template <size_t VolumeDim>
+auto indices_for_rectilinear_domains(
+    const Index<VolumeDim>& domain_extents,
+    const std::vector<Index<VolumeDim>>& block_indices_to_exclude) noexcept
+    -> std::vector<Index<VolumeDim>> {
+  std::vector<Index<VolumeDim>> block_indices;
+  for (IndexIterator<VolumeDim> ii(domain_extents); ii; ++ii) {
+    if (std::find(block_indices_to_exclude.begin(),
+                  block_indices_to_exclude.end(),
+                  *ii) == block_indices_to_exclude.end()) {
+      block_indices.push_back(*ii);
+    }
+  }
+  return block_indices;
+}
+
+template <size_t VolumeDim>
 std::vector<std::array<size_t, two_to_the(VolumeDim)>>
 corners_for_rectilinear_domains(
     const Index<VolumeDim>& domain_extents,
@@ -835,18 +851,16 @@ corners_for_rectilinear_domains(
   }
 
   Index<VolumeDim> global_corner_extents{number_of_corners};
-  for (IndexIterator<VolumeDim> ii(domain_extents); ii; ++ii) {
+  for (const auto& block_index : indices_for_rectilinear_domains(
+           domain_extents, block_indices_to_exclude)) {
     std::array<size_t, two_to_the(VolumeDim)> corners_for_single_block{};
-    for (VolumeCornerIterator<VolumeDim> vci(*ii, global_corner_extents); vci;
-         ++vci) {
+    for (VolumeCornerIterator<VolumeDim> vci(block_index,
+                                             global_corner_extents);
+         vci; ++vci) {
       gsl::at(corners_for_single_block, vci.local_corner_number()) =
           vci.global_corner_number();
     }
-    if (std::find(block_indices_to_exclude.begin(),
-                  block_indices_to_exclude.end(),
-                  *ii) == block_indices_to_exclude.end()) {
-      corners.push_back(corners_for_single_block);
-    }
+    corners.push_back(corners_for_single_block);
   }
   return corners;
 }
@@ -907,59 +921,48 @@ maps_for_rectilinear_domains(
   std::vector<std::unique_ptr<
       domain::CoordinateMapBase<Frame::Logical, TargetFrame, VolumeDim>>>
       maps{};
-  // block_orientation_index is the index into orientation_of_all_blocks,
-  // and is equal to IndexIterator.collapsed_index()
-  // except in the case where block_indices_to_exclude.size() != 0. That is,
-  // orientation_of_all_blocks does not get incremented if a block is excluded.
-  // (ii.collapsed_index() is incremented in both case, and if used as the
-  // index into orientation_of_all_blocks would lead to
-  // out-of-bounds indexing into the orientations_of_all_blocks array.
   size_t block_orientation_index = 0;
-  for (IndexIterator<VolumeDim> ii(domain_extents); ii; ++ii) {
-    if (std::find(block_indices_to_exclude.begin(),
-                  block_indices_to_exclude.end(),
-                  *ii) == block_indices_to_exclude.end()) {
-      std::array<double, VolumeDim> lower_bounds{};
-      std::array<double, VolumeDim> upper_bounds{};
-      for (size_t d = 0; d < VolumeDim; d++) {
-        gsl::at(lower_bounds, d) =
-            gsl::at(gsl::at(block_demarcations, d), (*ii)[d]);
-        gsl::at(upper_bounds, d) =
-            gsl::at(gsl::at(block_demarcations, d), (*ii)[d] + 1);
-        ASSERT(gsl::at(upper_bounds, d) > gsl::at(lower_bounds, d),
-               "The block demarcations must be strictly increasing.");
-      }
-      if (not use_equiangular_map) {
-        using Affine = domain::CoordinateMaps::Affine;
-        std::array<Affine, VolumeDim> affine_maps{};
-        for (size_t d = 0; d < VolumeDim; d++) {
-          gsl::at(affine_maps, d) = Affine{-1.0, 1.0, gsl::at(lower_bounds, d),
-                                           gsl::at(upper_bounds, d)};
-        }
-        if (not orientations_of_all_blocks.empty()) {
-          maps.push_back(product_of_1d_maps<TargetFrame>(
-              affine_maps,
-              orientations_of_all_blocks[block_orientation_index]));
-        } else {
-          maps.push_back(product_of_1d_maps<TargetFrame>(affine_maps));
-        }
-      } else {
-        using Equiangular = domain::CoordinateMaps::Equiangular;
-        std::array<Equiangular, VolumeDim> equiangular_maps{};
-        for (size_t d = 0; d < VolumeDim; d++) {
-          gsl::at(equiangular_maps, d) = Equiangular{
-              -1.0, 1.0, gsl::at(lower_bounds, d), gsl::at(upper_bounds, d)};
-        }
-        if (not orientations_of_all_blocks.empty()) {
-          maps.push_back(product_of_1d_maps<TargetFrame>(
-              equiangular_maps,
-              orientations_of_all_blocks[block_orientation_index]));
-        } else {
-          maps.push_back(product_of_1d_maps<TargetFrame>(equiangular_maps));
-        }
-      }
-      block_orientation_index++;
+  for (const auto& block_index : indices_for_rectilinear_domains(
+           domain_extents, block_indices_to_exclude)) {
+    std::array<double, VolumeDim> lower_bounds{};
+    std::array<double, VolumeDim> upper_bounds{};
+    for (size_t d = 0; d < VolumeDim; d++) {
+      gsl::at(lower_bounds, d) =
+          gsl::at(gsl::at(block_demarcations, d), block_index[d]);
+      gsl::at(upper_bounds, d) =
+          gsl::at(gsl::at(block_demarcations, d), block_index[d] + 1);
+      ASSERT(gsl::at(upper_bounds, d) > gsl::at(lower_bounds, d),
+             "The block demarcations must be strictly increasing.");
     }
+    if (not use_equiangular_map) {
+      using Affine = domain::CoordinateMaps::Affine;
+      std::array<Affine, VolumeDim> affine_maps{};
+      for (size_t d = 0; d < VolumeDim; d++) {
+        gsl::at(affine_maps, d) = Affine{-1.0, 1.0, gsl::at(lower_bounds, d),
+                                         gsl::at(upper_bounds, d)};
+      }
+      if (not orientations_of_all_blocks.empty()) {
+        maps.push_back(product_of_1d_maps<TargetFrame>(
+            affine_maps, orientations_of_all_blocks[block_orientation_index]));
+      } else {
+        maps.push_back(product_of_1d_maps<TargetFrame>(affine_maps));
+      }
+    } else {
+      using Equiangular = domain::CoordinateMaps::Equiangular;
+      std::array<Equiangular, VolumeDim> equiangular_maps{};
+      for (size_t d = 0; d < VolumeDim; d++) {
+        gsl::at(equiangular_maps, d) = Equiangular{
+            -1.0, 1.0, gsl::at(lower_bounds, d), gsl::at(upper_bounds, d)};
+      }
+      if (not orientations_of_all_blocks.empty()) {
+        maps.push_back(product_of_1d_maps<TargetFrame>(
+            equiangular_maps,
+            orientations_of_all_blocks[block_orientation_index]));
+      } else {
+        maps.push_back(product_of_1d_maps<TargetFrame>(equiangular_maps));
+      }
+    }
+    block_orientation_index++;
   }
   return maps;
 }
@@ -1163,6 +1166,10 @@ INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
       const gsl::not_null<                                                     \
           std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>     \
           neighbors_of_all_blocks) noexcept;                                   \
+  template auto indices_for_rectilinear_domains(                               \
+      const Index<DIM(data)>& domain_extents,                                  \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude) noexcept  \
+      ->std::vector<Index<DIM(data)>>;                                         \
   template std::vector<std::array<size_t, two_to_the(DIM(data))>>              \
   corners_for_rectilinear_domains(                                             \
       const Index<DIM(data)>& domain_extents,                                  \
