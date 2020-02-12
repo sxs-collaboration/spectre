@@ -306,57 +306,18 @@ bool Weno<VolumeDim, tmpl::list<Tags...>>::operator()(
     }
 
     std::unordered_map<
-        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>,
-        Variables<tmpl::list<Tags...>>,
+        std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
         boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
-        modified_neighbor_solutions;
-
-    // For each neighbor, the HWENO fits are done one tensor at a time.
+        modified_neighbor_solution_buffer{};
     for (const auto& neighbor_and_data : neighbor_data) {
-      modified_neighbor_solutions[neighbor_and_data.first].initialize(
-          mesh.number_of_grid_points());
+      const auto& neighbor = neighbor_and_data.first;
+      modified_neighbor_solution_buffer.insert(
+          make_pair(neighbor, DataVector(mesh.number_of_grid_points())));
     }
-    const auto wrap_hweno_neighbor_solution_one_tensor =
-        [&element, &mesh, &neighbor_data, &
-         modified_neighbor_solutions ](auto tag, const auto tensor) noexcept {
-      for (const auto& neighbor_and_data : neighbor_data) {
-        const auto& primary_neighbor = neighbor_and_data.first;
-        auto& modified_tensor = get<decltype(tag)>(
-            modified_neighbor_solutions.at(primary_neighbor));
-        Weno_detail::hweno_modified_neighbor_solution<decltype(tag)>(
-            make_not_null(&modified_tensor), *tensor, element, mesh,
-            neighbor_data, primary_neighbor);
-      }
-      return '0';
-    };
-    expand_pack(wrap_hweno_neighbor_solution_one_tensor(Tags{}, tensors)...);
 
-    // Reconstruct WENO solution from local solution and modified neighbor
-    // solutions.
-    const auto wrap_reconstruct_one_tensor =
-        [ this, &mesh, &
-          modified_neighbor_solutions ](auto tag, const auto tensor) noexcept {
-      // This is an inefficient copying of data. This is only done as a
-      // temporary intermediate step during a larger refactor that will later
-      // delete this code block.
-      std::unordered_map<
-          std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>, DataVector,
-          boost::hash<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>>
-          neighbor_polynomials;
-      for (size_t i = 0; i < tensor->size(); ++i) {
-        neighbor_polynomials.clear();
-        for (const auto& neighbor_and_vars : modified_neighbor_solutions) {
-          const auto& neighbor = neighbor_and_vars.first;
-          const auto& vars = neighbor_and_vars.second;
-          neighbor_polynomials[neighbor] = get<decltype(tag)>(vars)[i];
-        }
-        Weno_detail::reconstruct_from_weighted_sum(
-            make_not_null(&(*tensor)[i]), mesh, neighbor_linear_weight_,
-            neighbor_polynomials, Weno_detail::DerivativeWeight::Unity);
-      }
-      return '0';
-    };
-    expand_pack(wrap_reconstruct_one_tensor(Tags{}, tensors)...);
+    EXPAND_PACK_LEFT_TO_RIGHT(Weno_detail::hweno_impl<Tags>(
+        make_not_null(&modified_neighbor_solution_buffer), tensors,
+        neighbor_linear_weight_, mesh, element, neighbor_data));
     return true;  // cell_is_troubled
 
   } else if (weno_type_ == WenoType::SimpleWeno) {
