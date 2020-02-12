@@ -129,6 +129,41 @@ Scalar<double> generate_f_dot_n(const size_t normal_seed,
   return Scalar<double>(unnormalized_f_dot_n / magnitude_normal);
 }
 
+template <size_t Dim>
+void test_with_variables() {
+  using Fr = Frame::Inertial;
+  constexpr size_t num_points = 5;
+  tnsr::i<DataVector, Dim, Fr> normal(num_points);
+  db::item_type<flux_tag<Dim, Fr>> fluxes(num_points);
+  Var1::type expected1(num_points);
+  typename Var2<Dim, Fr>::type expected2(num_points);
+  for (size_t i = 0; i < num_points; ++i) {
+    copy_into(make_not_null(&normal), generate_normal<Dim, Fr>(i), {}, i);
+    copy_into(make_not_null(&get<flux1<Dim, Fr>>(fluxes)),
+              generate_flux<Dim, Fr>(i), {}, i);
+    copy_into(make_not_null(&expected1), generate_f_dot_n<Dim>(i, i), {}, i);
+    for (size_t j = 0; j < Dim; ++j) {
+      copy_into(make_not_null(&get<flux2<Dim, Fr>>(fluxes)),
+                generate_flux<Dim, Fr>(i + 10 * j), {{j}}, i);
+      copy_into(make_not_null(&expected2), generate_f_dot_n<Dim>(i, i + 10 * j),
+                {{j}}, i);
+    }
+  }
+
+  const auto magnitude_normal = magnitude(normal);
+  for (size_t d = 0; d < Dim; d++) {
+    normal.get(d) /= get(magnitude_normal);
+  }
+
+  const auto result =
+      normal_dot_flux<db::get_variables_tags_list<variables_tag<Dim, Fr>>>(
+          normal, fluxes);
+
+  CHECK_ITERABLE_APPROX(get<Tags::NormalDotFlux<Var1>>(result), expected1);
+  CHECK_ITERABLE_APPROX((get<Tags::NormalDotFlux<Var2<Dim, Fr>>>(result)),
+                        expected2);
+}
+
 template <size_t Dim, typename Frame>
 void check_compute_item() {
   constexpr size_t num_points = 5;
@@ -338,6 +373,13 @@ SPECTRE_TEST_CASE("Unit.Evolution.NormalDotFluxCompute", "[Unit][Evolution]") {
     test_with_random_values(dv, tnsr::Ijaa<DataVector, 1>{});
     test_with_random_values(dv, tnsr::Ijaa<DataVector, 2>{});
     test_with_random_values(dv, tnsr::Ijaa<DataVector, 3>{});
+  }
+  {
+    INFO("Variables");
+    GENERATE_UNINITIALIZED_DATAVECTOR;
+    test_with_variables<1>();
+    test_with_variables<2>();
+    test_with_variables<3>();
   }
   {
     INFO("Compute item");

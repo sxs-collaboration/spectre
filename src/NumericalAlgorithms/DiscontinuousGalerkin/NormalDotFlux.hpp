@@ -20,9 +20,10 @@
 // IWYU pragma: no_forward_declare Tags::Flux
 /// \endcond
 
+// @{
 /*!
  * \brief Contract a surface normal covector with the first index of a flux
- * tensor
+ * tensor or variables
  *
  * \details
  * Returns \f$n_i F^i_{j\ldots}\f$, where the flux tensor \f$F\f$ must have an
@@ -47,6 +48,25 @@ void normal_dot_flux(
   }
 }
 
+template <typename TagsList, size_t VolumeDim, typename Fr>
+auto normal_dot_flux(
+    const tnsr::i<DataVector, VolumeDim, Fr>& normal,
+    const Variables<
+        db::wrap_tags_in<::Tags::Flux, TagsList, tmpl::size_t<VolumeDim>, Fr>>&
+        fluxes) noexcept {
+  auto result = make_with_value<
+      Variables<db::wrap_tags_in<::Tags::NormalDotFlux, TagsList>>>(fluxes, 0.);
+  tmpl::for_each<TagsList>([&result, &fluxes,
+                            &normal](auto local_tag) noexcept {
+    using tensor_tag = tmpl::type_from<decltype(local_tag)>;
+    normal_dot_flux(
+        make_not_null(&get<::Tags::NormalDotFlux<tensor_tag>>(result)), normal,
+        get<::Tags::Flux<tensor_tag, tmpl::size_t<VolumeDim>, Fr>>(fluxes));
+  });
+  return result;
+}
+// @}
+
 namespace Tags {
 
 /// \ingroup ConservativeGroup
@@ -67,17 +87,7 @@ struct NormalDotFluxCompute : db::add_tag_prefix<NormalDotFlux, Tag>,
   static auto function(const db::const_item_type<flux_tag>& flux,
                        const db::const_item_type<normal_tag>& normal) noexcept {
     using tags_list = typename db::const_item_type<Tag>::tags_list;
-    auto result = make_with_value<
-        ::Variables<db::wrap_tags_in<NormalDotFlux, tags_list>>>(flux, 0.);
-
-    tmpl::for_each<tags_list>([&result, &flux,
-                               &normal ](auto local_tag) noexcept {
-      using tensor_tag = tmpl::type_from<decltype(local_tag)>;
-      normal_dot_flux(make_not_null(&get<NormalDotFlux<tensor_tag>>(result)),
-                      normal,
-                      get<Flux<tensor_tag, tmpl::size_t<VolumeDim>, Fr>>(flux));
-    });
-    return result;
+    return normal_dot_flux<tags_list>(normal, flux);
   }
   using argument_tags = tmpl::list<flux_tag, normal_tag>;
 };
