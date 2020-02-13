@@ -5,6 +5,7 @@
 
 #include <array>
 #include <cstddef>
+#include <iosfwd>
 #include <limits>
 #include <vector>
 
@@ -32,6 +33,51 @@ class CoordinateMap;
 
 namespace domain {
 namespace creators {
+
+template <size_t VolumeDim>
+struct RefinementRegion {
+  std::array<size_t, VolumeDim> lower_corner_index;
+  std::array<size_t, VolumeDim> upper_corner_index;
+  std::array<size_t, VolumeDim> refinement;
+
+  struct LowerCornerIndex {
+    using type = std::array<size_t, VolumeDim>;
+    static constexpr OptionString help = {"Lower bound of refined region."};
+  };
+
+  struct UpperCornerIndex {
+    using type = std::array<size_t, VolumeDim>;
+    static constexpr OptionString help = {"Upper bound of refined region."};
+  };
+
+  struct Refinement {
+    using type = std::array<size_t, VolumeDim>;
+    static constexpr OptionString help = {"Refinement inside region."};
+  };
+
+  static constexpr OptionString help = {
+      "A region to be refined differently from the default for the lattice.\n"
+      "The region is a box between the block boundaries indexed by the bound\n"
+      "options."};
+  using options = tmpl::list<LowerCornerIndex, UpperCornerIndex, Refinement>;
+  RefinementRegion(const std::array<size_t, VolumeDim>& lower_corner_index_in,
+                   const std::array<size_t, VolumeDim>& upper_corner_index_in,
+                   const std::array<size_t, VolumeDim>& refinement_in) noexcept
+      : lower_corner_index(lower_corner_index_in),
+        upper_corner_index(upper_corner_index_in),
+        refinement(refinement_in) {}
+  RefinementRegion() = default;
+};
+
+/// \cond
+// This is needed to print the default value for the RefinedGridPoints
+// option.  Since the default value is an empty vector, this function
+// is never actually called.
+template <size_t VolumeDim>
+[[noreturn]] std::ostream& operator<<(
+    std::ostream& /*s*/,
+    const RefinementRegion<VolumeDim>& /*unused*/) noexcept;
+/// \endcond
 
 /// \brief Create a Domain consisting of multiple aligned Blocks arrayed in a
 /// lattice.
@@ -85,6 +131,13 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
         "Initial number of grid points in each dimension."};
   };
 
+  struct RefinedGridPoints {
+    using type = std::vector<RefinementRegion<VolumeDim>>;
+    static constexpr OptionString help = {
+        "Refined regions.  Later entries take priority."};
+    static type default_value() noexcept { return {}; }
+  };
+
   struct BlocksToExclude {
     using type = std::vector<std::array<size_t, VolumeDim>>;
     static constexpr OptionString help = {
@@ -94,8 +147,9 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
     }
   };
 
-  using options = tmpl::list<BlockBounds, IsPeriodicIn, InitialRefinement,
-                             InitialGridPoints, BlocksToExclude>;
+  using options =
+      tmpl::list<BlockBounds, IsPeriodicIn, InitialRefinement,
+                 InitialGridPoints, RefinedGridPoints, BlocksToExclude>;
 
   static constexpr OptionString help = {
       "AlignedLattice creates a regular lattice of blocks whose corners are\n"
@@ -113,6 +167,7 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
                  typename IsPeriodicIn::type is_periodic_in,
                  typename InitialRefinement::type initial_refinement_levels,
                  typename InitialGridPoints::type initial_number_of_grid_points,
+                 typename RefinedGridPoints::type refined_grid_points,
                  typename BlocksToExclude::type blocks_to_exclude) noexcept;
 
   AlignedLattice() = default;
@@ -138,6 +193,7 @@ class AlignedLattice : public DomainCreator<VolumeDim> {
       make_array<VolumeDim>(std::numeric_limits<size_t>::max())};
   typename InitialGridPoints::type initial_number_of_grid_points_{
       make_array<VolumeDim>(std::numeric_limits<size_t>::max())};
+  typename RefinedGridPoints::type refined_grid_points_{};
   typename BlocksToExclude::type blocks_to_exclude_{};
   Index<VolumeDim> number_of_blocks_by_dim_{};
 };
