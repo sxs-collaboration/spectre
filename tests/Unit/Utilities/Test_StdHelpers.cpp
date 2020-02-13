@@ -88,6 +88,8 @@ SPECTRE_TEST_CASE("Unit.Utilities.StdHelpers.Output", "[Utilities][Unit]") {
 
   std::unordered_set<int> my_unordered_set{1, 3, 4, 5};
   CHECK(get_output(my_unordered_set) == "(1,3,4,5)");
+  std::unordered_set<int, boost::hash<int>> my_boost_unordered_set{1, 3, 4, 5};
+  CHECK(get_output(my_boost_unordered_set) == "(1,3,4,5)");
 
   std::set<int> my_set{1, 3, 4, 5};
   CHECK(get_output(my_set) == "(1,3,4,5)");

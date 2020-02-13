@@ -56,9 +56,9 @@ template <typename K, typename V, typename C>
 inline std::ostream& operator<<(std::ostream& os,
                                 const std::map<K, V, C>& m) noexcept;
 
-template <typename T>
+template <typename T, typename H>
 std::ostream& operator<<(std::ostream& os,
-                         const std::unordered_set<T>& v) noexcept;
+                         const std::unordered_set<T, H>& v) noexcept;
 
 template <typename T, typename C>
 inline std::ostream& operator<<(std::ostream& os,
