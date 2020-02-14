@@ -78,7 +78,7 @@ struct FluxCommunicationTypes {
   /// stepping.
   using simple_mortar_data_tag =
       BasedMortars<Tags::VariablesBoundaryData,
-                   Tags::SimpleBoundaryData<
+                   Tags::SimpleMortarData<
                        db::const_item_type<typename Metavariables::temporal_id>,
                        LocalData, PackagedData>,
                    volume_dim>;

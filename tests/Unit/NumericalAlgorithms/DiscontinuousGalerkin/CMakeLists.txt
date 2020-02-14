@@ -8,6 +8,7 @@ set(LIBRARY_SOURCES
   Test_MortarHelpers.cpp
   Test_NormalDotFlux.cpp
   Test_SimpleBoundaryData.cpp
+  Test_SimpleMortarData.cpp
   Test_Tags.cpp
   )
 

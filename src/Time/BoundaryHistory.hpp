@@ -14,6 +14,7 @@
 #include <utility>
 
 #include "ErrorHandling/Assert.hpp"
+#include "ErrorHandling/Error.hpp"
 #include "Parallel/PupStlCpp11.hpp"  // IWYU pragma: keep
 #include "Time/Time.hpp"  // IWYU pragma: keep
 #include "Time/TimeStepId.hpp"
@@ -102,6 +103,20 @@ class BoundaryHistory {
   size_t local_size() const noexcept { return local_data_.size(); }
   size_t remote_size() const noexcept { return remote_data_.size(); }
   //@}
+
+  /// Look up the stored local data at the `time_id`. It is an error to request
+  /// data at a `time_id` that has not been inserted yet.
+  const LocalVars& local_data(const TimeStepId& time_id) const noexcept {
+    const Time& time = time_id.substep_time();
+    // Look up the data for this time, starting at the end of the `std::deque`,
+    // i.e. the most-recently inserted data.
+    for (auto it = local_data_.rbegin(); it != local_data_.rend(); it++) {
+      if (std::get<0>(*it) == time) {
+        return std::get<1>(*it);
+      }
+    }
+    ERROR("No local data was found at time " << time << ".");
+  }
 
   /// Evaluate the coupling function at the given local and remote
   /// history entries.  The coupling function will be passed the local

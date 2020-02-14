@@ -51,7 +51,7 @@
 // IWYU pragma: no_include <boost/functional/hash/extensions.hpp>
 
 // IWYU pragma: no_include "DataStructures/VariablesHelpers.hpp"  // for Variables
-// IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
+// IWYU pragma: no_include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleMortarData.hpp"
 // IWYU pragma: no_include "Parallel/PupStlCpp11.hpp"
 
 // IWYU pragma: no_forward_declare ActionTesting::InitializeDataBox

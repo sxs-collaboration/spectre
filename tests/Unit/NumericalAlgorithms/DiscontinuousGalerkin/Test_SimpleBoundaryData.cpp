@@ -3,112 +3,70 @@
 
 #include "tests/Unit/TestingFramework.hpp"
 
+#include <array>
 #include <cstddef>
-#include <string>
-#include <utility>
 
-#include "ErrorHandling/Error.hpp"
+#include "DataStructures/Tensor/Tensor.hpp"
+#include "Domain/Direction.hpp"
+#include "Domain/Mesh.hpp"
+#include "Domain/OrientationMap.hpp"
+#include "Domain/OrientationMapHelpers.hpp"
+#include "NumericalAlgorithms/DiscontinuousGalerkin/MortarHelpers.hpp"
 #include "NumericalAlgorithms/DiscontinuousGalerkin/SimpleBoundaryData.hpp"
-#include "Utilities/Literals.hpp"  // IWYU pragma: keep
+#include "NumericalAlgorithms/Spectral/Projection.hpp"
+#include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "tests/Unit/TestHelpers.hpp"
 
-// IWYU pragma: no_include <type_traits>  // for __decay_and_strip<>::__type
+namespace {
 
-SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData", "[Unit][Time]") {
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
+struct SomeField {
+  using type = Scalar<DataVector>;
+};
+
+struct ExtraData {
+  using type = int;
+};
+
+}  // namespace
+
+SPECTRE_TEST_CASE("Unit.DG.SimpleBoundaryData", "[Unit][NumericalAlgorithms]") {
+  const size_t num_points = 5;
+  dg::SimpleBoundaryData<tmpl::list<SomeField>, tmpl::list<ExtraData>> data{
+      num_points};
+  const Scalar<DataVector> field{num_points, 1.};
+  get<SomeField>(data.field_data) = field;
+  get<ExtraData>(data.extra_data) = 2;
+
+  // Test serialization
   data = serialize_and_deserialize(data);
-  data.local_insert(0, "string 1");
-  data = serialize_and_deserialize(data);
-  data.remote_insert(0, 1.234);
-  CHECK(data.extract() == std::make_pair("string 1"s, 1.234));
-  data = serialize_and_deserialize(data);
-  data.remote_insert(1, 2.345);
-  data = serialize_and_deserialize(data);
-  data.local_insert(1, "string 2");
-  CHECK(data.extract() == std::make_pair("string 2"s, 2.345));
-}
+  CHECK(get<SomeField>(data.field_data) == field);
+  CHECK(get<ExtraData>(data.extra_data) == 2);
 
-// [[OutputRegex, Received local data at 1, but already have remote
-// data at 0]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData.wrong_time.local",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
-  data.remote_insert(0, 0.);
-  data.local_insert(1, "");
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
+  // Test projections
+  const Mesh<1> face_mesh{num_points, Spectral::Basis::Legendre,
+                          Spectral::Quadrature::GaussLobatto};
+  const Mesh<1> mortar_mesh{num_points + 1, Spectral::Basis::Legendre,
+                            Spectral::Quadrature::GaussLobatto};
+  const std::array<Spectral::MortarSize, 1> mortar_size{
+      {Spectral::MortarSize::UpperHalf}};
+  const auto projected_data =
+      data.project_to_mortar(face_mesh, mortar_mesh, mortar_size);
+  CHECK(projected_data.field_data ==
+        dg::project_to_mortar(data.field_data, face_mesh, mortar_mesh,
+                              mortar_size));
+  CHECK(projected_data.extra_data == data.extra_data);
 
-// [[OutputRegex, Received remote data at 0, but already have local
-// data at 1]]
-[[noreturn]] SPECTRE_TEST_CASE("Unit.Time.SimpleBoundaryData.wrong_time.remote",
-                               "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
-  data.local_insert(1, "");
-  data.remote_insert(0, 0.);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Already received local data]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Time.SimpleBoundaryData.double_insert.local", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
-  data.local_insert(1, "");
-  data.local_insert(1, "");
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Already received remote data]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Time.SimpleBoundaryData.double_insert.remote", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
-  data.remote_insert(0, 0.);
-  data.remote_insert(0, 0.);
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Tried to extract boundary data, but do not have any data]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Time.SimpleBoundaryData.bad_extract.none", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
-  data.extract();
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Tried to extract boundary data, but do not have remote data]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Time.SimpleBoundaryData.bad_extract.no_remote", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
-  data.local_insert(1, "");
-  data.extract();
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
-}
-
-// [[OutputRegex, Tried to extract boundary data, but do not have local data]]
-[[noreturn]] SPECTRE_TEST_CASE(
-    "Unit.Time.SimpleBoundaryData.bad_extract.no_local", "[Unit][Time]") {
-  ASSERTION_TEST();
-#ifdef SPECTRE_DEBUG
-  dg::SimpleBoundaryData<size_t, std::string, double> data;
-  data.remote_insert(0, 0.);
-  data.extract();
-  ERROR("Failed to trigger ASSERT in an assertion test");
-#endif
+  // Test orientation
+  const size_t sliced_dim = 1;
+  const auto slice_extents = face_mesh.extents();
+  const OrientationMap<2> orientation_of_neighbor{
+      {{Direction<2>::lower_xi(), Direction<2>::lower_eta()}},
+      {{Direction<2>::upper_eta(), Direction<2>::lower_xi()}}};
+  auto oriented_data = data;
+  oriented_data.orient_on_slice(slice_extents, sliced_dim,
+                                orientation_of_neighbor);
+  CHECK(oriented_data.field_data ==
+        orient_variables_on_slice(data.field_data, slice_extents, sliced_dim,
+                                  orientation_of_neighbor));
+  CHECK(oriented_data.extra_data == data.extra_data);
 }
