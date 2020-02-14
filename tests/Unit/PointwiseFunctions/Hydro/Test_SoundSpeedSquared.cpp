@@ -4,7 +4,6 @@
 #include "tests/Unit/TestingFramework.hpp"
 
 #include <limits>
-#include <random>
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataVector.hpp"
@@ -15,8 +14,8 @@
 #include "PointwiseFunctions/Hydro/SoundSpeedSquared.hpp"
 #include "PointwiseFunctions/Hydro/Tags.hpp"
 #include "Utilities/Gsl.hpp"
+#include "tests/Unit/PointwiseFunctions/Hydro/TestHelpers.hpp"
 #include "tests/Unit/TestHelpers.hpp"
-#include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace {
 
@@ -47,12 +46,9 @@ void test_compute_item_in_databox(
 template <typename DataType>
 void test_sound_speed_squared(const DataType& used_for_size) noexcept {
   MAKE_GENERATOR(generator);
-  std::uniform_real_distribution<> distribution(0.0, 1.0);
-  const auto nn_generator = make_not_null(&generator);
-  const auto nn_distribution = make_not_null(&distribution);
 
-  const auto rest_mass_density = make_with_random_values<Scalar<DataType>>(
-      nn_generator, nn_distribution, used_for_size);
+  const auto rest_mass_density = hydro::TestHelpers::random_density(
+      make_not_null(&generator), used_for_size);
   Scalar<DataType> specific_internal_energy{};
   Scalar<DataType> specific_enthalpy{};
 
@@ -73,8 +69,9 @@ void test_sound_speed_squared(const DataType& used_for_size) noexcept {
 
   // check with representative equation of state of two independent variables
   const EquationsOfState::IdealFluid<true> eos_2d(5.0 / 3.0);
-  specific_internal_energy = make_with_random_values<Scalar<DataType>>(
-      nn_generator, nn_distribution, used_for_size);
+  specific_internal_energy =
+      hydro::TestHelpers::random_specific_internal_energy(
+          make_not_null(&generator), used_for_size);
   specific_enthalpy = eos_2d.specific_enthalpy_from_density_and_energy(
       rest_mass_density, specific_internal_energy);
   CHECK(Scalar<DataType>{

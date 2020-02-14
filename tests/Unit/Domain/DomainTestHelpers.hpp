@@ -69,3 +69,8 @@ template <typename DataType, size_t SpatialDim>
 tnsr::i<DataType, SpatialDim> euclidean_basis_vector(
     const Direction<SpatialDim>& direction,
     const DataType& used_for_size) noexcept;
+
+template <typename DataType, size_t SpatialDim>
+tnsr::i<DataType, SpatialDim> unit_basis_form(
+    const Direction<SpatialDim>& direction,
+    const tnsr::II<DataType, SpatialDim>& inv_spatial_metric) noexcept;
