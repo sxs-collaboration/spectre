@@ -36,8 +36,10 @@
 #include "Options/Options.hpp"
 #include "Options/ParseOptions.hpp"
 #include "Utilities/Algorithm.hpp"
+#include "Utilities/ConstantExpressions.hpp"
 #include "Utilities/GenerateInstantiations.hpp"
 #include "Utilities/Gsl.hpp"
+#include "Utilities/Literals.hpp"
 #include "Utilities/Numeric.hpp"
 
 namespace {
@@ -1074,52 +1076,6 @@ ShellWedges create_from_yaml<ShellWedges>::create<void>(const Option& options) {
               "WhichWedges must be 'All', 'FourOnEquator' or 'OneAlongMinusX'");
 }
 
-template void set_internal_boundaries(
-    const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
-    const gsl::not_null<std::vector<DirectionMap<1, BlockNeighbor<1>>>*>
-        neighbors_of_all_blocks) noexcept;
-template void set_internal_boundaries(
-    const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
-    const gsl::not_null<std::vector<DirectionMap<2, BlockNeighbor<2>>>*>
-        neighbors_of_all_blocks) noexcept;
-template void set_internal_boundaries(
-    const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
-    const gsl::not_null<std::vector<DirectionMap<3, BlockNeighbor<3>>>*>
-        neighbors_of_all_blocks) noexcept;
-
-template void set_identified_boundaries(
-    const std::vector<PairOfFaces>& identifications,
-    const std::vector<std::array<size_t, 2>>& corners_of_all_blocks,
-    const gsl::not_null<std::vector<DirectionMap<1, BlockNeighbor<1>>>*>
-        neighbors_of_all_blocks) noexcept;
-template void set_identified_boundaries(
-    const std::vector<PairOfFaces>& identifications,
-    const std::vector<std::array<size_t, 4>>& corners_of_all_blocks,
-    const gsl::not_null<std::vector<DirectionMap<2, BlockNeighbor<2>>>*>
-        neighbors_of_all_blocks) noexcept;
-template void set_identified_boundaries(
-    const std::vector<PairOfFaces>& identifications,
-    const std::vector<std::array<size_t, 8>>& corners_of_all_blocks,
-    const gsl::not_null<std::vector<DirectionMap<3, BlockNeighbor<3>>>*>
-        neighbors_of_all_blocks) noexcept;
-template std::vector<std::array<size_t, 2>> corners_for_rectilinear_domains(
-    const Index<1>& domain_extents,
-    const std::vector<Index<1>>& block_indices_to_exclude) noexcept;
-template std::vector<std::array<size_t, 4>> corners_for_rectilinear_domains(
-    const Index<2>& domain_extents,
-    const std::vector<Index<2>>& block_indices_to_exclude) noexcept;
-template std::vector<std::array<size_t, 8>> corners_for_rectilinear_domains(
-    const Index<3>& domain_extents,
-    const std::vector<Index<3>>& block_indices_to_exclude) noexcept;
-template std::array<size_t, 2> discrete_rotation(
-    const OrientationMap<1>& orientation,
-    const std::array<size_t, 2>& corners_of_aligned) noexcept;
-template std::array<size_t, 4> discrete_rotation(
-    const OrientationMap<2>& orientation,
-    const std::array<size_t, 4>& corners_of_aligned) noexcept;
-template std::array<size_t, 8> discrete_rotation(
-    const OrientationMap<3>& orientation,
-    const std::array<size_t, 8>& corners_of_aligned) noexcept;
 template std::vector<std::unique_ptr<
     domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, 3>>>
 wedge_coordinate_maps(const double inner_radius, const double outer_radius,
@@ -1193,27 +1149,48 @@ INSTANTIATE_MAPS_FUNCTIONS(((Affine2d), (Affine3d), (Equiangular3d),
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define FRAME(data) BOOST_PP_TUPLE_ELEM(1, data)
 
-#define INSTANTIATE(_, data)                                                  \
-  template std::vector<std::unique_ptr<                                       \
-      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, DIM(data)>>> \
-  maps_for_rectilinear_domains(                                               \
-      const Index<DIM(data)>& domain_extents,                                 \
-      const std::array<std::vector<double>, DIM(data)>& block_demarcations,   \
-      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,          \
-      const std::vector<OrientationMap<DIM(data)>>&                           \
-          orientations_of_all_blocks,                                         \
-      const bool use_equiangular_map) noexcept;                               \
-  template Domain<DIM(data)> rectilinear_domain(                              \
-      const Index<DIM(data)>& domain_extents,                                 \
-      const std::array<std::vector<double>, DIM(data)>& block_demarcations,   \
-      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,          \
-      const std::vector<OrientationMap<DIM(data)>>&                           \
-          orientations_of_all_blocks,                                         \
-      const std::array<bool, DIM(data)>& dimension_is_periodic,               \
-      const std::vector<PairOfFaces>& identifications,                        \
+#define INSTANTIATE(_, data)                                                   \
+  template void set_internal_boundaries(                                       \
+      const std::vector<std::array<size_t, two_to_the(DIM(data))>>&            \
+          corners_of_all_blocks,                                               \
+      const gsl::not_null<                                                     \
+          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>     \
+          neighbors_of_all_blocks) noexcept;                                   \
+  template void set_identified_boundaries(                                     \
+      const std::vector<PairOfFaces>& identifications,                         \
+      const std::vector<std::array<size_t, two_to_the(DIM(data))>>&            \
+          corners_of_all_blocks,                                               \
+      const gsl::not_null<                                                     \
+          std::vector<DirectionMap<DIM(data), BlockNeighbor<DIM(data)>>>*>     \
+          neighbors_of_all_blocks) noexcept;                                   \
+  template std::vector<std::array<size_t, two_to_the(DIM(data))>>              \
+  corners_for_rectilinear_domains(                                             \
+      const Index<DIM(data)>& domain_extents,                                  \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude) noexcept; \
+  template std::vector<std::unique_ptr<                                        \
+      domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, DIM(data)>>>  \
+  maps_for_rectilinear_domains(                                                \
+      const Index<DIM(data)>& domain_extents,                                  \
+      const std::array<std::vector<double>, DIM(data)>& block_demarcations,    \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,           \
+      const std::vector<OrientationMap<DIM(data)>>&                            \
+          orientations_of_all_blocks,                                          \
+      const bool use_equiangular_map) noexcept;                                \
+  template std::array<size_t, two_to_the(DIM(data))> discrete_rotation(        \
+      const OrientationMap<DIM(data)>& orientation,                            \
+      const std::array<size_t, two_to_the(DIM(data))>&                         \
+          corners_of_aligned) noexcept;                                        \
+  template Domain<DIM(data)> rectilinear_domain(                               \
+      const Index<DIM(data)>& domain_extents,                                  \
+      const std::array<std::vector<double>, DIM(data)>& block_demarcations,    \
+      const std::vector<Index<DIM(data)>>& block_indices_to_exclude,           \
+      const std::vector<OrientationMap<DIM(data)>>&                            \
+          orientations_of_all_blocks,                                          \
+      const std::array<bool, DIM(data)>& dimension_is_periodic,                \
+      const std::vector<PairOfFaces>& identifications,                         \
       const bool use_equiangular_map) noexcept;
 
-GENERATE_INSTANTIATIONS(INSTANTIATE, (1, 2, 3))
+GENERATE_INSTANTIATIONS(INSTANTIATE, (1_st, 2_st, 3_st))
 
 #undef DIM
 #undef DTYPE
