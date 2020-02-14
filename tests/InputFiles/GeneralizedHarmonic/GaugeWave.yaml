@@ -5,8 +5,8 @@
 # Check: parse;execute
 # Timeout: 8
 # ExpectedOutput:
-#   GhKerrSchildReductionData.h5
-#   GhKerrSchildVolumeData0.h5
+#   GhGaugeWaveReductionData.h5
+#   GhGaugeWaveVolumeData0.h5
 
 Evolution:
   InitialTime: 0.0
@@ -16,21 +16,17 @@ Evolution:
       Order: 1
 
 DomainCreator:
-    Shell:
-      InnerRadius: 1.9
-      OuterRadius: 2.3
-      InitialRefinement: 0
-      InitialGridPoints: [5, 5]
-      UseEquiangularMap: true
-      AspectRatio: 1.0
-      UseLogarithmicMap: true
-      RadialBlockLayers: 1
+  Brick:
+    LowerBound: [-2.0, -2.0, -2.0]
+    UpperBound: [2.0, 2.0, 2.0]
+    InitialRefinement: [0, 0, 0]
+    InitialGridPoints: [5, 5, 5]
+    IsPeriodicIn: [true, true, true]
 
 AnalyticSolution:
-  KerrSchild:
-    Mass: 1.0
-    Spin: [0.0, 0.0, 0.0]
-    Center: [0.0, 0.0, 0.0]
+  GaugeWave:
+    Amplitude: 0.01
+    Wavelength: 1.0
 
 EvolutionSystem:
   GeneralizedHarmonic:
@@ -54,21 +50,8 @@ EventsAndTriggers:
   ? EveryNSlabs:
       N: 5
       Offset: 2
-  : - Interpolate
-  ? SpecifiedSlabs:
-      Slabs: [3]
   : - Completion
 
 Observers:
-  VolumeFileName: "GhKerrSchildVolumeData"
-  ReductionFileName: "GhKerrSchildReductionData"
-
-ApparentHorizons:
-  Horizon:
-    InitialGuess:
-      Lmax: 4
-      Radius: 2.2
-      Center: [0.0, 0.0, 0.0]
-    FastFlow:
-      Flow: Fast
-    Verbosity: Verbose
+  VolumeFileName: "GhGaugeWaveVolumeData"
+  ReductionFileName: "GhGaugeWaveReductionData"
