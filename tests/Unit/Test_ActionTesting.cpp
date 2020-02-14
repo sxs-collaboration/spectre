@@ -10,6 +10,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/Error.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Parallel/NodeLock.hpp"
 #include "Parallel/PhaseDependentActionList.hpp"  // IWYU pragma: keep
@@ -324,7 +325,8 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.IsRetrievable", "[Unit]") {
 
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component<component>(&runner, 0);
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
   CHECK(not ActionTesting::tag_is_retrievable<component, DummyTimeTag>(runner,
                                                                        0));
   // Runs Action0
@@ -334,4 +336,76 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.IsRetrievable", "[Unit]") {
         6);
 }
 }  // namespace TestIsRetrievable
+
+namespace InboxTags {
+namespace Tags {
+struct ValueTag : public Parallel::InboxInserters::Value<ValueTag> {
+  using temporal_id = size_t;
+  using type = std::unordered_map<temporal_id, int>;
+};
+}  // namespace Tags
+
+namespace Actions {
+struct SendValue {
+  // Put inbox_tags in the send action instead of the receive action since all
+  // we want to do is test the `ActionTesting::get_inbox_tag` function.
+  using inbox_tags = tmpl::list<Tags::ValueTag>;
+
+  template <typename DbTagsList, typename... InboxTags, typename Metavariables,
+            typename ArrayIndex, typename ActionList,
+            typename ParallelComponent>
+  static auto apply(db::DataBox<DbTagsList>& box,
+                    const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
+                    Parallel::ConstGlobalCache<Metavariables>& cache,
+                    const ArrayIndex& /*array_index*/, ActionList /*meta*/,
+                    const ParallelComponent* const /*meta*/) noexcept {
+    Parallel::receive_data<Tags::ValueTag>(
+        Parallel::get_parallel_component<ParallelComponent>(cache)[0], 1_st,
+        23);
+    return std::forward_as_tuple(std::move(box));
+  }
+};
+}  // namespace Actions
+
+template <typename Metavariables>
+struct Component {
+  using metavariables = Metavariables;
+  using chare_type = ActionTesting::MockArrayChare;
+  using array_index = int;
+
+  using phase_dependent_action_list = tmpl::list<Parallel::PhaseActions<
+      typename Metavariables::Phase, Metavariables::Phase::Testing,
+      tmpl::list<Actions::SendValue>>>;
+};
+
+struct Metavariables {
+  using component_list = tmpl::list<Component<Metavariables>>;
+
+  enum class Phase { Testing, Exit };
+};
+
+SPECTRE_TEST_CASE("Unit.ActionTesting.GetInboxTags", "[Unit]") {
+  using metavars = Metavariables;
+  using component = Component<metavars>;
+
+  ActionTesting::MockRuntimeSystem<metavars> runner{{}};
+  ActionTesting::emplace_component<component>(&runner, 0);
+
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
+
+  CHECK(ActionTesting::get_inbox_tag<component, Tags::ValueTag>(
+            make_not_null(&runner), 0)
+            .empty());
+  ActionTesting::next_action<component>(make_not_null(&runner), 0);
+  CHECK(ActionTesting::get_inbox_tag<component, Tags::ValueTag>(runner, 0).at(
+            1) == 23);
+  ActionTesting::get_inbox_tag<component, Tags::ValueTag>(
+      make_not_null(&runner), 0)
+      .clear();
+  CHECK(ActionTesting::get_inbox_tag<component, Tags::ValueTag>(
+            make_not_null(&runner), 0)
+            .empty());
+}
+}  // namespace InboxTags
 }  // namespace

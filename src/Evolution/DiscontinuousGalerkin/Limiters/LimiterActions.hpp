@@ -16,6 +16,7 @@
 #include "Domain/Tags.hpp"
 #include "ErrorHandling/Assert.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/InboxInserters.hpp"
 #include "Parallel/Invoke.hpp"
 #include "Utilities/TaggedTuple.hpp"
 
@@ -25,7 +26,8 @@ namespace Tags {
 /// \ingroup LimitersGroup
 /// \brief The inbox tag for limiter communication.
 template <typename Metavariables>
-struct LimiterCommunicationTag {
+struct LimiterCommunicationTag : public Parallel::InboxInserters::Map<
+                                     LimiterCommunicationTag<Metavariables>> {
   static constexpr size_t volume_dim = Metavariables::system::volume_dim;
   using packaged_data_t = typename Metavariables::limiter::type::PackagedData;
   using temporal_id = db::const_item_type<typename Metavariables::temporal_id>;

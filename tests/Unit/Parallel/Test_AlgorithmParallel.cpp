@@ -19,6 +19,7 @@
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "ErrorHandling/FloatingPointExceptions.hpp"
 #include "Parallel/ConstGlobalCache.hpp"
+#include "Parallel/InboxInserters.hpp"
 #include "Parallel/Info.hpp"
 #include "Parallel/InitializationFunctions.hpp"
 #include "Parallel/Invoke.hpp"
@@ -58,6 +59,13 @@ struct CountActionsCalled : db::SimpleTag {
 struct IntReceiveTag {
   using temporal_id = int;
   using type = std::unordered_map<temporal_id, std::unordered_multiset<int>>;
+
+  template <typename Inbox, typename ReceiveDataType>
+  static void insert_into_inbox(const gsl::not_null<Inbox*> inbox,
+                                const temporal_id& temporal_id_v,
+                                ReceiveDataType&& data) noexcept {
+    (*inbox)[temporal_id_v].insert(std::forward<ReceiveDataType>(data));
+  }
 };
 /// [int_receive_tag]
 }  // namespace Tags

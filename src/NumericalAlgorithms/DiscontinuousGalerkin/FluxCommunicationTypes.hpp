@@ -20,6 +20,7 @@
 #include "Domain/MaxNumberOfNeighbors.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "NumericalAlgorithms/DiscontinuousGalerkin/Tags.hpp"
+#include "Parallel/InboxInserters.hpp"
 #include "Time/Tags.hpp"  // IWYU pragma: keep
 #include "Utilities/TMPL.hpp"
 
@@ -93,7 +94,7 @@ struct FluxCommunicationTypes {
                    volume_dim>;
 
   /// The inbox tag for flux communication.
-  struct FluxesTag {
+  struct FluxesTag : public Parallel::InboxInserters::Map<FluxesTag> {
     using temporal_id =
         db::const_item_type<typename Metavariables::temporal_id>;
     using type = std::map<
