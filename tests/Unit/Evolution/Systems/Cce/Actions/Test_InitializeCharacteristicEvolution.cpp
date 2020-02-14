@@ -140,6 +140,9 @@ SPECTRE_TEST_CASE(
   const double frequency = 0.1 * value_dist(gen);
   const double amplitude = 0.1 * value_dist(gen);
   const double target_time = 50.0 * value_dist(gen);
+  if (file_system::check_if_file_exists(filename)) {
+    file_system::rm(filename, true);
+  }
   TestHelpers::write_test_file(solution, filename, target_time,
                                extraction_radius, frequency, amplitude, l_max);
 
@@ -151,7 +154,7 @@ SPECTRE_TEST_CASE(
 
   runner.set_phase(metavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
-      &runner, 0, l_max, number_of_radial_points, start_time,
+      &runner, 0, start_time,
       InitializationTags::EndTime::create_from_options(end_time, filename),
       target_step_size);
 
@@ -159,10 +162,6 @@ SPECTRE_TEST_CASE(
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   runner.set_phase(metavariables::Phase::Evolve);
-
-  const auto& boundary_time =
-      ActionTesting::get_databox_tag<component, Tags::BoundaryTime>(runner, 0);
-  CHECK(isnan(boundary_time));
 
   // the tags inserted in the `EvolutionTags` step
   const auto& time_step_id =

@@ -1203,6 +1203,17 @@ class MockProxy {
 
   MockProxy() : inboxes_(nullptr) {}
 
+  template <typename InboxTag, typename Data>
+  void receive_data(const typename InboxTag::temporal_id& id, const Data& data,
+                    const bool enable_if_disabled = false) {
+    for (const auto& key_value_pair : *local_algorithms_) {
+      MockArrayElementProxy<Component, InboxTagList>(
+          local_algorithms_->at(key_value_pair.first),
+          inboxes_->operator[](key_value_pair.first))
+          .template receive_data<InboxTag>(id, data, enable_if_disabled);
+    }
+  }
+
   void set_data(TupleOfMockDistributedObjects* local_algorithms,
                 Inboxes* inboxes) {
     local_algorithms_ = local_algorithms;
