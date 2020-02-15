@@ -47,7 +47,7 @@ struct LocalLaxFriedrichs {
   using variables_tag = typename System::variables_tag;
 
  public:
-  // The maximum characteristic speed modulus on one side of the interface.
+  /// The maximum characteristic speed modulus on one side of the interface.
   struct MaxAbsCharSpeed : db::SimpleTag {
     using type = Scalar<DataVector>;
     static std::string name() noexcept { return "MaxAbsCharSpeed"; }
