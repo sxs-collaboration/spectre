@@ -24,8 +24,7 @@ namespace NumericalFluxes {
  *
  * Let \f$U\f$ be the state vector of the system and \f$F^i\f$ the corresponding
  * volume fluxes. Let \f$n_i\f$ be the unit normal to
- * the interface. Denoting \f$F := n_i F^i\f$, the  HLL flux \ref hll_ref
- * "[1]" is
+ * the interface. Denoting \f$F := n_i F^i\f$, the  HLL flux is \cite Harten1983
  *
  * \f{align*}
  * G_\text{HLL} = \frac{S_\text{max} F_\text{int} -
@@ -38,7 +37,7 @@ namespace NumericalFluxes {
  * \f$S_\text{min}\f$ and \f$S_\text{max}\f$ are estimates on the minimum
  * and maximum signal velocities bounding the interior-moving and
  * exterior-moving wavespeeds that arise when solving the Riemann problem.
- * Here we use the simple estimates \ref estimates_ref "[2]"
+ * Here we use the simple estimates \cite Davis1988
  *
  * \f{align*}
  * S_\text{min} &=
@@ -51,14 +50,6 @@ namespace NumericalFluxes {
  * given normal. Note that for either \f$S_\text{min} = 0\f$ or
  * \f$S_\text{max} = 0\f$ (i.e. all characteristics move in the same direction)
  * the HLL flux reduces to pure upwinding.
- *
- * \anchor hll_ref [1] A. Harten, P. D. Lax, B. van Leer, On Upstream
- * Differencing and Godunov-Type Schemes for Hyperbolic Conservation Laws,
- * SIAM Rev. [25 (1983) 35](https://doi.org/10.1137/1025002)
- *
- * \anchor estimates_ref [2] S. F. Davis, Simplified Second-Order Godunov-Type
- * Methods, SIAM J. Sci. Stat. Comput.
- * [9 (1988) 445](https://doi.org/10.1137/0909030)
  */
 template <typename System>
 struct Hll {
