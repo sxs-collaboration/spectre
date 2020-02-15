@@ -41,7 +41,8 @@ Tensor<ComplexModalVector, Structure...> tensor_to_goldberg_coefficients(
 template <typename... Structure>
 Tensor<ComplexModalVector, Structure...> tensor_to_libsharp_coefficients(
     const Tensor<DataVector, Structure...>& nodal_data,
-    const size_t l_max) noexcept {
+    const size_t l_max)  // NOLINT(readability-avoid-const-params-in-decls)
+    noexcept {
   Tensor<ComplexModalVector, Structure...> libsharp_modal_data{
       Spectral::Swsh::size_of_libsharp_coefficient_vector(l_max)};
   SpinWeighted<ComplexDataVector, 0> transform_buffer{

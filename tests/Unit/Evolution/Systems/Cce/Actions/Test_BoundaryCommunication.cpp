@@ -41,6 +41,7 @@
 #include "tests/Utilities/MakeWithRandomValues.hpp"
 
 namespace Cce {
+namespace {
 template <typename Metavariables>
 struct mock_h5_worldtube_boundary {
   using component_being_mocked = H5WorldtubeBoundary<Metavariables>;
@@ -62,9 +63,11 @@ struct mock_h5_worldtube_boundary {
                              initialize_action_list>,
       Parallel::PhaseActions<typename Metavariables::Phase,
                              Metavariables::Phase::Evolve, tmpl::list<>>>;
+  using const_global_cache_tags =
+      Parallel::get_const_global_cache_tags_from_actions<
+          phase_dependent_action_list>;
 };
 
-namespace {
 template <typename Metavariables>
 struct mock_characteristic_evolution {
   using component_being_mocked = CharacteristicEvolution<Metavariables>;
@@ -137,9 +140,6 @@ struct test_metavariables {
                  Cce::Tags::TimeIntegral<Cce::Tags::ScriPlus<Cce::Tags::Psi4>>,
                  Cce::Tags::ScriPlusFactor<Cce::Tags::Psi4>>;
 
-  using const_global_cache_tags =
-      tmpl::list<::Tags::TimeStepper<TimeStepper>, Spectral::Swsh::Tags::LMax,
-                 Spectral::Swsh::Tags::NumberOfRadialPoints>;
   using component_list =
       tmpl::list<mock_h5_worldtube_boundary<test_metavariables>,
                  mock_characteristic_evolution<test_metavariables>>;
@@ -156,7 +156,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.BoundaryCommunication",
   ActionTesting::MockRuntimeSystem<test_metavariables> runner{
       tuples::tagged_tuple_from_typelist<
           Parallel::get_const_global_cache_tags<test_metavariables>>{
-          std::make_unique<::TimeSteppers::RungeKutta3>(), l_max,
+          l_max, std::make_unique<::TimeSteppers::RungeKutta3>(),
           number_of_radial_points}};
 
   const std::string filename = "BoundaryCommunicationTestCceR0100.h5";

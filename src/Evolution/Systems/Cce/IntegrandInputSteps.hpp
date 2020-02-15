@@ -184,11 +184,15 @@ using pre_computation_boundary_tags =
  * may be computed at once if using a \ref DataBoxGroup using the template
  * `mutate_all_precompute_cce_dependencies` or individually using
  * the template specializations `PrecomputeCceDependencies`.
+ *
+ * \note the tag `Tags::DuRDividedByR` is omitted from this list because in the
+ * case where a gauge transformation must be applied, the time derivative
+ * quantities must wait until later in the computation.
  */
 using pre_computation_tags =
-    tmpl::list<Tags::DuRDividedByR, Tags::EthRDividedByR,
-               Tags::EthEthRDividedByR, Tags::EthEthbarRDividedByR,
-               Tags::BondiK, Tags::OneMinusY, Tags::BondiR>;
+    tmpl::list<Tags::EthRDividedByR, Tags::EthEthRDividedByR,
+               Tags::EthEthbarRDividedByR, Tags::BondiK, Tags::OneMinusY,
+               Tags::BondiR>;
 
 // @{
 /*!

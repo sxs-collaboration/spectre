@@ -207,8 +207,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.SwshDerivatives",
 
   using boundary_value_variables_tag =
       ::Tags::Variables<pre_computation_boundary_tags<Tags::BoundaryValue>>;
-  using integration_independent_variables_tag =
-      ::Tags::Variables<pre_computation_tags>;
+  using integration_independent_variables_tag = ::Tags::Variables<
+      tmpl::push_back<pre_computation_tags, Tags::DuRDividedByR>>;
   using pre_swsh_derivatives_variables_tag =
       ::Tags::Variables<pre_swsh_derivative_tag_list>;
   using swsh_derivatives_variables_tag =
