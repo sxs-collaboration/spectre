@@ -9,6 +9,7 @@ set(LIBRARY_SOURCES
   Test_Blas.cpp
   Test_BoostHelpers.cpp
   Test_CachedFunction.cpp
+  Test_CloneUniquePtrs.cpp
   Test_ConstantExpressions.cpp
   Test_ContainerHelpers.cpp
   Test_DereferenceWrapper.cpp
