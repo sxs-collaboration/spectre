@@ -446,11 +446,11 @@ SPECTRE_TEST_CASE(
   // minus sign for "Negate".
   const std::vector<double> expected_integral_c{-5.0625 * 2432.0 * M_PI / 3.0};
   const std::vector<std::string> expected_legend_a{"Time",
-                                                   "SurfaceIntegralSquare"};
+                                                   "SurfaceIntegral(Square)"};
   const std::vector<std::string> expected_legend_b{
-      "Time", "SurfaceIntegralSquare", "SurfaceIntegralNegate"};
+      "Time", "SurfaceIntegral(Square)", "SurfaceIntegral(Negate)"};
   const std::vector<std::string> expected_legend_c{"Time",
-                                                   "SurfaceIntegralNegate"};
+                                                   "SurfaceIntegral(Negate)"};
 
   // Check that the H5 file was written correctly.
   const auto file = h5::H5File<h5::AccessType::ReadOnly>(h5_file_name);
