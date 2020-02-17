@@ -4,6 +4,7 @@
 set(LIBRARY M1Grey)
 
 set(LIBRARY_SOURCES
+  Characteristics.cpp
   Fluxes.cpp
   M1Closure.cpp
   Sources.cpp
