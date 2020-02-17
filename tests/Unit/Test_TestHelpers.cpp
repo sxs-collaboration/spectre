@@ -134,6 +134,19 @@ SPECTRE_TEST_CASE("Unit.TestHelpers.Derivative", "[Unit]") {
             approx(gsl::at(dfunc(x), i)));
     }
   }
+  {  // Non-array return type
+    const std::array<double, 1> x{{1.2}};
+    const double delta = 1.e-2;
+
+    const auto func = [](const std::array<double, 1>& y) {
+      return sin(y[0]);
+    };
+    const auto dfunc = [](const std::array<double, 1>& y) {
+      return cos(y[0]);
+    };
+
+    CHECK(numerical_derivative(func, x, 0, delta) == approx(dfunc(x)));
+  }
 }
 
 SPECTRE_TEST_CASE("Unit.TestHelpers.MAKE_GENERATOR", "[Unit]") {
