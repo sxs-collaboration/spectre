@@ -225,10 +225,6 @@ struct InitializeCharacteristicEvolution {
                     const ArrayIndex& /*array_index*/,
                     const ActionList /*meta*/,
                     const ParallelComponent* const /*meta*/) noexcept {
-    const double initial_time_value =
-        db::get<InitializationTags::StartTime>(box);
-    const double step_size = db::get<InitializationTags::TargetStepSize>(box);
-
     auto evolution_box =
         EvolutionTags<Metavariables>::initialize(std::move(box), cache);
     auto characteristic_evolution_box =

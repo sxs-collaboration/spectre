@@ -174,7 +174,6 @@ SPECTRE_TEST_CASE(
   // create the test file, because on initialization the manager will need
   // to get basic data out of the file
   const double start_time = target_time;
-  const double end_time = std::numeric_limits<double>::quiet_NaN();
   const double target_step_size = 0.01 * value_dist(gen);
 
   runner.set_phase(metavariables::Phase::Initialization);
