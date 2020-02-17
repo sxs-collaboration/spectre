@@ -179,13 +179,11 @@ struct InverseJacobianCompute
     : InverseJacobian<db::const_item_type<MapTag>::dim,
                       typename db::const_item_type<MapTag>::source_frame,
                       typename db::const_item_type<MapTag>::target_frame>,
-      db::ComputeTag,
-      db::PrefixTag {
+      db::ComputeTag {
   using base =
       InverseJacobian<db::const_item_type<MapTag>::dim,
                       typename db::const_item_type<MapTag>::source_frame,
                       typename db::const_item_type<MapTag>::target_frame>;
-  using tag = MapTag;
   static constexpr auto function(
       const db::const_item_type<MapTag>& element_map,
       const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {
