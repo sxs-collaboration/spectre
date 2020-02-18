@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/ComplexDataVector.hpp"
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"

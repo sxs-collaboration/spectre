@@ -5,6 +5,7 @@
 
 #include <cstddef>
 
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DirectionMap.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/Tags.hpp"
