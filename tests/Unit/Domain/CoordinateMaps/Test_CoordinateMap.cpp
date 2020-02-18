@@ -1094,31 +1094,33 @@ void test_push_back() {
 
 void test_jacobian_is_time_dependent() noexcept {
   using affine_map = CoordinateMaps::Affine;
-  using cubic_scale_map = CoordMapsTimeDependent::CubicScale;
+  using cubic_scale_map = CoordMapsTimeDependent::CubicScale<1>;
   using map_2d =
       CoordMapsTimeDependent::ProductOf2Maps<affine_map, cubic_scale_map>;
   using map_3d = CoordMapsTimeDependent::ProductOf3Maps<affine_map, affine_map,
                                                         cubic_scale_map>;
 
-  const auto coord_map_1 =
-      make_coordinate_map<Frame::Logical, Frame::Grid>(cubic_scale_map(10.0));
+  const auto coord_map_1 = make_coordinate_map<Frame::Logical, Frame::Grid>(
+      cubic_scale_map(10.0, "ExpansionA", "ExpansionB"));
   const auto coord_map_1_base =
       make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-          cubic_scale_map(10.0));
+          cubic_scale_map(10.0, "ExpansionA", "ExpansionB"));
 
   const auto coord_map_2 = make_coordinate_map<Frame::Logical, Frame::Grid>(
-      map_2d(affine_map(-1.0, 1.0, 2.0, 3.0), cubic_scale_map(10.0)));
+      map_2d(affine_map(-1.0, 1.0, 2.0, 3.0),
+             cubic_scale_map(10.0, "ExpansionA", "ExpansionB")));
   const auto coord_map_2_base =
       make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-          map_2d(affine_map(-1.0, 1.0, 2.0, 3.0), cubic_scale_map(10.0)));
+          map_2d(affine_map(-1.0, 1.0, 2.0, 3.0),
+                 cubic_scale_map(10.0, "ExpansionA", "ExpansionB")));
 
   const auto coord_map_3 = make_coordinate_map<Frame::Logical, Frame::Grid>(
       map_3d(affine_map(-1.0, 1.0, 2.0, 3.0), affine_map(-1.0, 1.0, 2.0, 3.0),
-             cubic_scale_map(10.0)));
+             cubic_scale_map(10.0, "ExpansionA", "ExpansionB")));
   const auto coord_map_3_base =
-      make_coordinate_map_base<Frame::Logical, Frame::Grid>(
-          map_3d(affine_map(-1.0, 1.0, 2.0, 3.0),
-                 affine_map(-1.0, 1.0, 2.0, 3.0), cubic_scale_map(10.0)));
+      make_coordinate_map_base<Frame::Logical, Frame::Grid>(map_3d(
+          affine_map(-1.0, 1.0, 2.0, 3.0), affine_map(-1.0, 1.0, 2.0, 3.0),
+          cubic_scale_map(10.0, "ExpansionA", "ExpansionB")));
 
   CHECK(coord_map_1.inv_jacobian_is_time_dependent());
   CHECK(coord_map_1.jacobian_is_time_dependent());
