@@ -253,7 +253,7 @@ void check_cmp(const T& less, const U& greater) {
  */
 template <typename Invocable, size_t VolumeDim>
 std::result_of_t<const Invocable&(const std::array<double, VolumeDim>&)>
-numerical_derivative(const Invocable& map,
+numerical_derivative(const Invocable& function,
                      const std::array<double, VolumeDim>& x,
                      const size_t direction, const double delta) noexcept {
   ASSERT(0 <= direction and direction < VolumeDim,
@@ -271,11 +271,12 @@ numerical_derivative(const Invocable& map,
   const std::array<double, VolumeDim> x_1behind = x - dx;
   const std::array<double, VolumeDim> x_2behind = x_1behind - dx;
   const std::array<double, VolumeDim> x_3behind = x_2behind - dx;
-  return (1.0 / (60.0 * delta)) * map(x_3ahead) +
-         (-3.0 / (20.0 * delta)) * map(x_2ahead) +
-         (0.75 / delta) * map(x_1ahead) + (-0.75 / delta) * map(x_1behind) +
-         (3.0 / (20.0 * delta)) * map(x_2behind) +
-         (-1.0 / (60.0 * delta)) * map(x_3behind);
+  return (1.0 / (60.0 * delta)) * function(x_3ahead) +
+         (-3.0 / (20.0 * delta)) * function(x_2ahead) +
+         (0.75 / delta) * function(x_1ahead) +
+         (-0.75 / delta) * function(x_1behind) +
+         (3.0 / (20.0 * delta)) * function(x_2behind) +
+         (-1.0 / (60.0 * delta)) * function(x_3behind);
 }
 
 struct NonCopyable {
