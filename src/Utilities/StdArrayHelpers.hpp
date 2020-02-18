@@ -150,22 +150,18 @@ inline constexpr std::array<T, Dim + 1> prepend(const std::array<T, Dim>& a,
 /// abs(), sqrt(), and element-wise addition and multiplication.  In addition,
 /// each T in the array must have the same size.
 template <typename T>
-inline T magnitude(const std::array<T, 1>& a) noexcept {
+decltype(auto) magnitude(const std::array<T, 1>& a) noexcept {
+  using std::abs;
   return abs(a[0]);
 }
 
-template <>
-inline double magnitude(const std::array<double, 1>& a) noexcept {
-  return std::abs(a[0]);
-}
-
 template <typename T>
-inline T magnitude(const std::array<T, 2>& a) noexcept {
+decltype(auto) magnitude(const std::array<T, 2>& a) noexcept {
   return sqrt(a[0] * a[0] + a[1] * a[1]);
 }
 
 template <typename T>
-inline T magnitude(const std::array<T, 3>& a) noexcept {
+decltype(auto) magnitude(const std::array<T, 3>& a) noexcept {
   return sqrt(a[0] * a[0] + a[1] * a[1] + a[2] * a[2]);
 }
 //@}
