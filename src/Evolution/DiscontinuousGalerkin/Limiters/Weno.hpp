@@ -23,7 +23,7 @@
 #include "Domain/SizeOfElement.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep
 #include "ErrorHandling/Assert.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/HwenoModifiedSolution.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/HwenoImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodTci.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/MinmodType.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/SimpleWenoImpl.hpp"

@@ -23,7 +23,7 @@
 #include "Domain/LogicalCoordinates.hpp"
 #include "Domain/Mesh.hpp"
 #include "Domain/Neighbors.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/HwenoModifiedSolution.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/HwenoImpl.hpp"
 #include "NumericalAlgorithms/LinearOperators/MeanValue.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "Utilities/ConstantExpressions.hpp"

@@ -4,7 +4,7 @@
 set(LIBRARY Limiters)
 
 set(LIBRARY_SOURCES
-  HwenoModifiedSolution.cpp
+  HwenoImpl.cpp
   Minmod.cpp
   MinmodHelpers.cpp
   MinmodTci.cpp

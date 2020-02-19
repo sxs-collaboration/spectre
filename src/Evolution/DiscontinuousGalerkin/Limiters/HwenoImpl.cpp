@@ -1,7 +1,7 @@
 // Distributed under the MIT License.
 // See LICENSE.txt for details.
 
-#include "Evolution/DiscontinuousGalerkin/Limiters/HwenoModifiedSolution.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/HwenoImpl.hpp"
 
 #include <array>
 #include <bitset>

@@ -27,7 +27,7 @@
 #include "Domain/OrientationMapHelpers.hpp"
 #include "Domain/Side.hpp"
 #include "ErrorHandling/Error.hpp"
-#include "Evolution/DiscontinuousGalerkin/Limiters/HwenoModifiedSolution.hpp"
+#include "Evolution/DiscontinuousGalerkin/Limiters/HwenoImpl.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/Weno.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoHelpers.hpp"
 #include "Evolution/DiscontinuousGalerkin/Limiters/WenoOscillationIndicator.hpp"
