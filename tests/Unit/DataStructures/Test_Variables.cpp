@@ -41,18 +41,15 @@ namespace VariablesTestTags_detail {
 /// [simple_variables_tag]
 template <typename VectorType>
 struct tensor : db::SimpleTag {
-  static std::string name() noexcept { return "tensor name"; }
   using type = tnsr::I<VectorType, 3, Frame::Grid>;
 };
 /// [simple_variables_tag]
 template <typename VectorType>
 struct scalar : db::SimpleTag {
-  static std::string name() noexcept { return "scalar name"; }
   using type = Scalar<VectorType>;
 };
 template <typename VectorType>
 struct scalar2 : db::SimpleTag {
-  static std::string name() noexcept { return "scalar2 name"; }
   using type = Scalar<VectorType>;
 };
 
@@ -61,7 +58,6 @@ template <class Tag>
 struct Prefix0 : db::PrefixTag, db::SimpleTag {
   using type = db::const_item_type<Tag>;
   using tag = Tag;
-  static std::string name() noexcept { return "Prefix0"; }
 };
 /// [prefix_variables_tag]
 
@@ -69,21 +65,18 @@ template <class Tag>
 struct Prefix1 : db::PrefixTag, db::SimpleTag {
   using type = db::const_item_type<Tag>;
   using tag = Tag;
-  static std::string name() noexcept { return "Prefix1"; }
 };
 
 template <class Tag>
 struct Prefix2 : db::PrefixTag, db::SimpleTag {
   using type = db::const_item_type<Tag>;
   using tag = Tag;
-  static std::string name() noexcept { return "Prefix2"; }
 };
 
 template <class Tag>
 struct Prefix3 : db::PrefixTag, db::SimpleTag {
   using type = db::const_item_type<Tag>;
   using tag = Tag;
-  static std::string name() noexcept { return "Prefix3"; }
 };
 }  // namespace VariablesTestTags_detail
 
@@ -221,7 +214,7 @@ void test_variables_construction_and_access() noexcept {
 
   // Test stream operator
   const std::string expected_output =
-      "tensor name:\n"
+      "tensor:\n"
       "T(0)=(" +
       expected_output_tensor +
       ")\n"
@@ -231,11 +224,11 @@ void test_variables_construction_and_access() noexcept {
       "T(2)=(" +
       expected_output_tensor +
       ")\n\n"
-      "scalar name:\n"
+      "scalar:\n"
       "T()=(" +
       expected_output_initial +
       ")\n\n"
-      "scalar2 name:\n"
+      "scalar2:\n"
       "T()=(" +
       expected_output_initial + ")";
   CHECK(get_output(filled_variables) == expected_output);
@@ -255,7 +248,7 @@ void test_variables_construction_and_access() noexcept {
       tmpl::list<VariablesTestTags_detail::tensor<VectorType>,
                  VariablesTestTags_detail::scalar<VectorType>,
                  VariablesTestTags_detail::scalar2<VectorType>>>>(
-      "Variables(tensor name,scalar name,scalar2 name)");
+      "Variables(tensor,scalar,scalar2)");
 }
 
 template <typename VectorType>
