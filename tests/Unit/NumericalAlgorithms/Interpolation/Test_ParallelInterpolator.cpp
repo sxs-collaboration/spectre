@@ -283,7 +283,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
                     std::move(line_segment_opts_B), kerr_horizon_opts_C);
 
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
-  runner.set_phase(metavars::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<target_a_component>(&runner, 0);
@@ -292,7 +293,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Integration",
   ActionTesting::next_action<target_b_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<target_c_component>(&runner, 0);
   ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
-  runner.set_phase(metavars::Phase::Registration);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavars::Phase::Registration);
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));

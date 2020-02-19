@@ -260,12 +260,14 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
 
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
 
-  runner.set_phase(metavars::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<target_component>(&runner, 0);
   ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
-  runner.set_phase(metavars::Phase::Registration);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavars::Phase::Registration);
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));
@@ -287,7 +289,7 @@ void test_apparent_horizon(const gsl::not_null<size_t*> test_horizon_called,
                                  intrp::Actions::RegisterElement>(
         make_not_null(&runner), fake_array_index);
   }
-  runner.set_phase(metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   // Tell the InterpolationTargets that we want to interpolate at
   // temporal_id.

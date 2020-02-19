@@ -102,7 +102,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
         {domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_extents()});
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
@@ -166,7 +167,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
         {domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_extents()});
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
@@ -233,7 +235,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeDomain", "[Unit][Actions]") {
         {domain_creator.create_domain()}};
     ActionTesting::emplace_component_and_initialize<element_array>(
         &runner, element_id, {domain_creator.initial_extents()});
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {

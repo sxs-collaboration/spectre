@@ -186,7 +186,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         &runner, element_id, {domain_creator.initial_extents()});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
@@ -236,7 +237,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         &runner, element_id, {domain_creator.initial_extents()});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
@@ -290,7 +292,8 @@ SPECTRE_TEST_CASE("Unit.Elliptic.Actions.InitializeSystem",
         &runner, element_id, {domain_creator.initial_extents()});
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {

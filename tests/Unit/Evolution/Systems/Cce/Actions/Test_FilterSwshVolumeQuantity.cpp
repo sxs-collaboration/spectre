@@ -119,7 +119,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.FilterSwshVolumeQuantity",
 
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0, {l_max, std::move(component_variables)});
-  runner.set_phase(metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Evolve);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
 
   Spectral::Swsh::filter_swsh_volume_quantity(make_not_null(&get(to_filter)),

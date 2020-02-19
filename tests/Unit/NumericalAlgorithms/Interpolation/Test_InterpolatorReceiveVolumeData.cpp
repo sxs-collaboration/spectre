@@ -285,7 +285,8 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
            vars_holders}});
   ActionTesting::emplace_component<target_component>(&runner, 0);
   ActionTesting::next_action<target_component>(make_not_null(&runner), 0);
-  runner.set_phase(metavars::Phase::Registration);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavars::Phase::Registration);
 
   // Create Element_ids.
   std::vector<ElementId<3>> element_ids{};
@@ -301,7 +302,7 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.ReceiveVolumeData",
   for (size_t i = 0; i < element_ids.size(); ++i) {
     runner.simple_action<interp_component, intrp::Actions::RegisterElement>(0);
   }
-  runner.set_phase(metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {

@@ -71,7 +71,8 @@ SPECTRE_TEST_CASE(
   TestHelpers::write_test_file(solution, filename, target_time,
                                extraction_radius, frequency, amplitude, l_max);
 
-  runner.set_phase(metavariables::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(
       &runner, 0,
       InitializationTags::H5WorldtubeBoundaryDataManager::create_from_options(
@@ -82,7 +83,8 @@ SPECTRE_TEST_CASE(
   // this should run the initialization
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  runner.set_phase(metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Evolve);
   // check that the h5 data manager copied out of the databox has the correct
   // properties that we can examine without running the other actions
   const auto& data_manager =

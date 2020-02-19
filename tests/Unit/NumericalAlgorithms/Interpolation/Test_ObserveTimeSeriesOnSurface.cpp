@@ -307,7 +307,8 @@ SPECTRE_TEST_CASE(
                     kerr_horizon_opts_C};
 
   ActionTesting::MockRuntimeSystem<metavars> runner{std::move(tuple_of_opts)};
-  runner.set_phase(metavars::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<target_a_component>(&runner, 0);
@@ -318,7 +319,8 @@ SPECTRE_TEST_CASE(
   ActionTesting::next_action<target_c_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<obs_writer>(&runner, 0);
   ActionTesting::next_action<obs_writer>(make_not_null(&runner), 0);
-  runner.set_phase(metavars::Phase::Registration);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavars::Phase::Registration);
 
   Slab slab(0.0, 1.0);
   TimeStepId temporal_id(true, 0, Time(slab, 0));
@@ -370,7 +372,7 @@ SPECTRE_TEST_CASE(
   ActionTesting::invoke_queued_simple_action<obs_writer>(make_not_null(&runner),
                                                          0);
   CHECK(ActionTesting::is_simple_action_queue_empty<obs_writer>(runner, 0));
-  runner.set_phase(metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   // Create volume data and send it to the interpolator.
   for (const auto& element_id : element_ids) {

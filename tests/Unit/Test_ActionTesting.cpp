@@ -216,7 +216,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockSimpleAction", "[Unit]") {
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
   ActionTesting::emplace_component_and_initialize<
       component_for_simple_action_mock<metavars>>(&runner, 0, {0, -1});
-  runner.set_phase(metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   /// [get databox]
   const auto& box =
@@ -526,7 +526,7 @@ SPECTRE_TEST_CASE("Unit.ActionTesting.MockComponent", "[Unit]") {
       ComponentBMock<Metavariables>>(&runner, 0, {0});
   /// [initialize component b]
 
-  runner.set_phase(metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
   CHECK(ActionTesting::get_databox_tag<component_b_mock, ValueTag>(runner, 0) ==
         0);
   ActionTesting::simple_action<component_a, CallActionOnComponentB>(

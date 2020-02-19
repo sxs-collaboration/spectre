@@ -63,7 +63,8 @@ void run_events_and_triggers(const EventsAndTriggersType& events_and_triggers,
   ActionTesting::MockRuntimeSystem<Metavariables> runner{
       {serialize_and_deserialize(events_and_triggers)}};
   ActionTesting::emplace_component<my_component>(&runner, 0);
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   runner.next_action<my_component>(0);
 

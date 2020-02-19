@@ -297,7 +297,7 @@ void test_interpolation_target_receive_vars() noexcept {
        db::item_type<::Tags::Variables<typename metavars::InterpolationTargetA::
                                            vars_to_interpolate_to_target>>{
            num_points + NumberOfInvalidPointsToAdd}});
-  runner.set_phase(metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   // Now set up the vars.
   std::vector<db::item_type<::Tags::Variables<

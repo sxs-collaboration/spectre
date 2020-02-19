@@ -80,7 +80,8 @@ SPECTRE_TEST_CASE(
     return ActionTesting::get_databox_tag<element_array, tag>(runner, 0);
   };
 
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   // Can't test the other element actions because reductions are not yet
   // supported. The full algorithm is tested in

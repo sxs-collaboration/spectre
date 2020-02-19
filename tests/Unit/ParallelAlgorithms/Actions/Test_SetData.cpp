@@ -41,7 +41,8 @@ SPECTRE_TEST_CASE("Unit.Actions.SetData", "[Unit][Actions]") {
   ActionTesting::MockRuntimeSystem<Metavariables> runner{{}};
   ActionTesting::emplace_component_and_initialize<component>(&runner, 0, {0});
 
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   ActionTesting::simple_action<component,
                                Actions::SetData<tmpl::list<SomeNumber>>>(

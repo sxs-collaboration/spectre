@@ -221,7 +221,8 @@ SPECTRE_TEST_CASE(
     return ActionTesting::get_databox_tag<observer_writer, tag>(runner, 0);
   };
 
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   SECTION("InitializeResidual") {
     ActionTesting::simple_action<

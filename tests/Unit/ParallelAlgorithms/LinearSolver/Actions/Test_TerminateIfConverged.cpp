@@ -52,7 +52,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Actions.TerminateIfConverged",
     MockRuntimeSystem runner{{}};
     ActionTesting::emplace_component_and_initialize<component>(
         &runner, self_id, {db::item_type<LinearSolver::Tags::HasConverged>{}});
-    runner.set_phase(Metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             Metavariables::Phase::Testing);
 
     CHECK_FALSE(ActionTesting::get_databox_tag<
                 component, LinearSolver::Tags::HasConverged>(runner, self_id));
@@ -71,7 +72,8 @@ SPECTRE_TEST_CASE("Unit.Numerical.LinearSolver.Actions.TerminateIfConverged",
         &runner, self_id,
         {db::item_type<LinearSolver::Tags::HasConverged>{
             {1, 0., 0.}, 1, 0., 0.}});
-    runner.set_phase(Metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             Metavariables::Phase::Testing);
 
     CHECK(ActionTesting::get_databox_tag<component,
                                          LinearSolver::Tags::HasConverged>(

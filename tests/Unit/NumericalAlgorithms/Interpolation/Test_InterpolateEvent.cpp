@@ -145,13 +145,14 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.InterpolateEvent",
   using interp_component = mock_interpolator<metavars>;
   using elem_component = mock_element<metavars>;
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
-  runner.set_phase(metavars::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavars::Phase::Initialization);
   ActionTesting::emplace_component<interp_component>(&runner, 0);
   ActionTesting::next_action<interp_component>(make_not_null(&runner), 0);
   ActionTesting::emplace_component<elem_component>(&runner, array_index);
   ActionTesting::next_action<elem_component>(make_not_null(&runner),
                                              array_index);
-  runner.set_phase(metavars::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner), metavars::Phase::Testing);
 
   const Mesh<metavars::volume_dim> mesh(5, Spectral::Basis::Legendre,
                                         Spectral::Quadrature::GaussLobatto);

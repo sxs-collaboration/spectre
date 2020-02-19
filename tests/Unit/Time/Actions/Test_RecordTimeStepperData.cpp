@@ -123,7 +123,8 @@ SPECTRE_TEST_CASE("Unit.Time.Actions.RecordTimeStepperData",
       &runner, 0,
       {TimeStepId(true, 0, slab.start()), 4., 5.,
        std::move(alternative_history)});
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
   runner.next_action<component>(0);
   runner.next_action<component_with_template_specified_variables>(0);
   auto& box =

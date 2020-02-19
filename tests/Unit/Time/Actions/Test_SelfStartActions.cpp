@@ -254,7 +254,8 @@ void test_actions(const size_t order, const int step_denominator) noexcept {
                                    initial_time, initial_time_step, order,
                                    initial_value);
 
-  runner.set_phase(Metavariables<>::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables<>::Phase::Testing);
 
   {
     INFO("Initialize");
@@ -371,7 +372,8 @@ double error_in_step(const size_t order, const double step) noexcept {
   emplace_component_and_initialize<TestPrimitives>(
       make_not_null(&runner), forward_in_time, initial_time, initial_time_step,
       order, initial_value);
-  runner.set_phase(Metavariables<TestPrimitives>::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables<TestPrimitives>::Phase::Testing);
 
   run_past<std::is_same<SelfStart::Actions::Cleanup, tmpl::_1>,
            tmpl::bool_<true>>(make_not_null(&runner));

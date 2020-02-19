@@ -55,10 +55,12 @@ SPECTRE_TEST_CASE("Unit.NumericalAlgorithms.Interpolator.Initialize",
   using metavars = Metavariables;
   using component = mock_interpolator<metavars>;
   ActionTesting::MockRuntimeSystem<metavars> runner{{}};
-  runner.set_phase(Metavariables::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(&runner, 0);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
-  runner.set_phase(Metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           Metavariables::Phase::Testing);
 
   CHECK(ActionTesting::get_databox_tag<component,
                                        ::intrp::Tags::NumberOfElements>(

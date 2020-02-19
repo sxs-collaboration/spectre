@@ -364,7 +364,8 @@ void run_test() {
          std::move(external_bdry_other_data), std::move(external_bdry_vars),
          std::move(mortar_history)});
   }
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
 
   CHECK(ActionTesting::is_ready<my_component>(runner, self_id));
   ActionTesting::next_action<my_component>(make_not_null(&runner), self_id);

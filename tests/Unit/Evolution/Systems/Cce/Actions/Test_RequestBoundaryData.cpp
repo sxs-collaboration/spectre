@@ -179,7 +179,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
        std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
        Tags::EndTime::create_from_options(end_time, filename)}};
 
-  runner.set_phase(test_metavariables::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(&runner, 0,
                                                         target_step_size);
   ActionTesting::emplace_component<worldtube_component>(
@@ -195,7 +196,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
   ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
-  runner.set_phase(test_metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           test_metavariables::Phase::Evolve);
 
   // the first request
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);

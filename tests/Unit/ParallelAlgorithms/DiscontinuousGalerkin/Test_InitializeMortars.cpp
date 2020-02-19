@@ -137,7 +137,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
                                               element_id);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
@@ -196,7 +197,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
                                               element_id);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {
@@ -276,7 +278,8 @@ SPECTRE_TEST_CASE("Unit.ParallelDG.InitializeMortars", "[Unit][Actions]") {
                                               element_id);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
-    runner.set_phase(metavariables::Phase::Testing);
+    ActionTesting::set_phase(make_not_null(&runner),
+                             metavariables::Phase::Testing);
     ActionTesting::next_action<element_array>(make_not_null(&runner),
                                               element_id);
     const auto get_tag = [&runner, &element_id](auto tag_v) -> decltype(auto) {

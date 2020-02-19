@@ -73,7 +73,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.TimeManagement",
 
   ActionTesting::emplace_component_and_initialize<component>(
       &runner, 0, {std::move(current_id), end_time});  // NOLINT
-  runner.set_phase(metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Evolve);
   ActionTesting::next_action<component>(make_not_null(&runner), 0);
   CHECK_FALSE(ActionTesting::get_terminate<component>(runner, 0));
 

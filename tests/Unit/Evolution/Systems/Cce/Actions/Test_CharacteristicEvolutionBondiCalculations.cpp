@@ -180,7 +180,8 @@ SPECTRE_TEST_CASE(
        std::make_unique<::TimeSteppers::RungeKutta3>(), start_time,
        start_time + target_step_size}};
 
-  runner.set_phase(metavariables::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Initialization);
   ActionTesting::emplace_component<component>(&runner, 0, target_step_size);
 
   // this should run the initialization
@@ -255,7 +256,8 @@ SPECTRE_TEST_CASE(
   for (size_t i = 0; i < 8; ++i) {
     ActionTesting::next_action<component>(make_not_null(&runner), 0);
   }
-  runner.set_phase(metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Evolve);
 
   // this should run the computation actions
   ActionTesting::next_action<component>(make_not_null(&runner), 0);

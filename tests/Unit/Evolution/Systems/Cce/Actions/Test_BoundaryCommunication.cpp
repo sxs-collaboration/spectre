@@ -194,7 +194,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.BoundaryCommunication",
   // to get basic data out of the file
   const size_t buffer_size = 5;
 
-  runner.set_phase(test_metavariables::Phase::Initialization);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(&runner, 0,
                                                         target_step_size);
   ActionTesting::emplace_component<worldtube_component>(
@@ -209,7 +210,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.BoundaryCommunication",
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);
   ActionTesting::next_action<worldtube_component>(make_not_null(&runner), 0);
-  runner.set_phase(test_metavariables::Phase::Evolve);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           test_metavariables::Phase::Evolve);
 
   // the first request
   ActionTesting::next_action<evolution_component>(make_not_null(&runner), 0);

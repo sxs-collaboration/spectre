@@ -163,7 +163,8 @@ void test_initialize_fluxes(const DomainCreator<Dim>& domain_creator,
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
-  runner.set_phase(metavariables::Phase::Testing);
+  ActionTesting::set_phase(make_not_null(&runner),
+                           metavariables::Phase::Testing);
   ActionTesting::next_action<element_array>(make_not_null(&runner), element_id);
 
   check_compute_items(runner, element_id);
