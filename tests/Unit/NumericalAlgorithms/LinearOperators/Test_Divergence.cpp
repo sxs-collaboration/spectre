@@ -212,7 +212,7 @@ void test_divergence_compute_item(
   const auto coordinate_map = make_affine_map<Dim>();
   using map_tag = MapTag<std::decay_t<decltype(coordinate_map)>>;
   using inv_jac_tag =
-      Tags::InverseJacobian<map_tag, Tags::LogicalCoordinates<Dim>>;
+      Tags::InverseJacobianCompute<map_tag, Tags::LogicalCoordinates<Dim>>;
   using flux_tags = two_fluxes<Dim, Frame>;
   using flux_tag = Tags::Variables<flux_tags>;
   using div_tags = db::wrap_tags_in<Tags::div, flux_tags>;

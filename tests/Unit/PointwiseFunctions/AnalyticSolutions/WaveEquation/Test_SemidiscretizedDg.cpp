@@ -73,8 +73,8 @@ struct Component {
       Tags::Mortars<Tags::Mesh<0>, 1>, Tags::Mortars<Tags::MortarSize<0>, 1>>;
 
   using inverse_jacobian =
-      Tags::InverseJacobian<Tags::ElementMap<1>,
-                            Tags::Coordinates<1, Frame::Logical>>;
+      Tags::InverseJacobianCompute<Tags::ElementMap<1>,
+                                   Tags::Coordinates<1, Frame::Logical>>;
 
   template <typename Tag>
   using interface_compute_tag =

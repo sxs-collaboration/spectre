@@ -54,7 +54,6 @@ namespace Tags {
 /// The ::Domain.
 template <size_t VolumeDim>
 struct Domain : db::SimpleTag {
-  static std::string name() noexcept { return "Domain"; }
   using type = ::Domain<VolumeDim>;
   using option_tags = tmpl::list<::OptionTags::DomainCreator<VolumeDim>>;
 
@@ -72,7 +71,6 @@ struct Domain : db::SimpleTag {
 /// the initial computational domain
 template <size_t Dim>
 struct InitialExtents : db::SimpleTag {
-  static std::string name() noexcept { return "InitialExtents"; }
   using type = std::vector<std::array<size_t, Dim>>;
   using option_tags = tmpl::list<::OptionTags::DomainCreator<Dim>>;
 
@@ -89,7 +87,6 @@ struct InitialExtents : db::SimpleTag {
 /// the initial computational domain
 template <size_t Dim>
 struct InitialRefinementLevels : db::SimpleTag {
-  static std::string name() noexcept { return "InitialRefinementLevels"; }
   using type = std::vector<std::array<size_t, Dim>>;
   using option_tags = tmpl::list<::OptionTags::DomainCreator<Dim>>;
 
@@ -105,7 +102,6 @@ struct InitialRefinementLevels : db::SimpleTag {
 /// The ::Element associated with the DataBox
 template <size_t VolumeDim>
 struct Element : db::SimpleTag {
-  static std::string name() noexcept { return "Element"; }
   using type = ::Element<VolumeDim>;
 };
 
@@ -116,7 +112,6 @@ struct Element : db::SimpleTag {
 /// the mesh on the face of the element.
 template <size_t VolumeDim>
 struct Mesh : db::SimpleTag {
-  static std::string name() noexcept { return "Mesh"; }
   using type = ::Mesh<VolumeDim>;
 };
 
@@ -125,15 +120,15 @@ struct Mesh : db::SimpleTag {
 /// The coordinate map from logical to grid coordinate
 template <size_t VolumeDim, typename Frame = ::Frame::Inertial>
 struct ElementMap : db::SimpleTag {
-  static std::string name() noexcept { return "ElementMap"; }
+  static std::string name() noexcept {
+    return "ElementMap(" + get_output(Frame{}) + ")";
+  }
   using type = ::ElementMap<VolumeDim, Frame>;
 };
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
 /// The coordinates in a given frame.
-///
-/// \snippet Test_CoordinatesTag.cpp coordinates_name
 template <size_t Dim, typename Frame>
 struct Coordinates : db::SimpleTag {
   static std::string name() noexcept {
@@ -161,13 +156,34 @@ struct MappedCoordinates
 
 /// \ingroup DataBoxTagsGroup
 /// \ingroup ComputationalDomainGroup
+/// \brief The inverse Jacobian from the source frame to the target frame.
+///
+/// Specifically, \f$\partial x^{\bar{i}} / \partial x^i\f$, where \f$\bar{i}\f$
+/// denotes the source frame and \f$i\f$ denotes the target frame.
+template <size_t Dim, typename SourceFrame, typename TargetFrame>
+struct InverseJacobian : db::SimpleTag {
+  static std::string name() noexcept {
+    return "InverseJacobian(" + get_output(SourceFrame{}) + "," +
+           get_output(TargetFrame{}) + ")";
+  }
+  using type = ::InverseJacobian<DataVector, Dim, SourceFrame, TargetFrame>;
+};
+
+/// \ingroup DataBoxTagsGroup
+/// \ingroup ComputationalDomainGroup
 /// Computes the inverse Jacobian of the map held by `MapTag` at the coordinates
 /// held by `SourceCoordsTag`. The coordinates must be in the source frame of
 /// the map.
 template <typename MapTag, typename SourceCoordsTag>
-struct InverseJacobian : db::ComputeTag, db::PrefixTag {
-  using tag = MapTag;
-  static std::string name() noexcept { return "InverseJacobian"; }
+struct InverseJacobianCompute
+    : InverseJacobian<db::const_item_type<MapTag>::dim,
+                      typename db::const_item_type<MapTag>::source_frame,
+                      typename db::const_item_type<MapTag>::target_frame>,
+      db::ComputeTag {
+  using base =
+      InverseJacobian<db::const_item_type<MapTag>::dim,
+                      typename db::const_item_type<MapTag>::source_frame,
+                      typename db::const_item_type<MapTag>::target_frame>;
   static constexpr auto function(
       const db::const_item_type<MapTag>& element_map,
       const db::const_item_type<SourceCoordsTag>& source_coords) noexcept {

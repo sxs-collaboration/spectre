@@ -494,7 +494,7 @@ void test_partial_derivatives_compute_item(
   using vars_tags = tmpl::list<Var1<Dim>, Var2>;
   using map_tag = MapTag<std::decay_t<decltype(map)>>;
   using inv_jac_tag =
-      Tags::InverseJacobian<map_tag, Tags::LogicalCoordinates<Dim>>;
+      Tags::InverseJacobianCompute<map_tag, Tags::LogicalCoordinates<Dim>>;
   using deriv_tag = Tags::DerivCompute<Tags::Variables<vars_tags>, inv_jac_tag>;
   using prefixed_variables_tag =
       db::add_tag_prefix<SomePrefix, Tags::Variables<vars_tags>>;
