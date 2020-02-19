@@ -25,6 +25,8 @@ set(LIBRARY_SOURCES
   Test_MoreComplexDiagonalModalOperatorMath.cpp
   Test_MoreDiagonalModalOperatorMath.cpp
   Test_SliceIterator.cpp
+  Test_SliceTensorToVariables.cpp
+  Test_SliceVariables.cpp
   Test_SpinWeighted.cpp
   Test_StripeIterator.cpp
   Test_Tags.cpp

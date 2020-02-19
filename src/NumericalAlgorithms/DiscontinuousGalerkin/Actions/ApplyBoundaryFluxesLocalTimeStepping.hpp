@@ -8,7 +8,7 @@
 
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/VariablesHelpers.hpp"
+#include "DataStructures/SliceVariables.hpp"
 #include "Domain/IndexToSliceAt.hpp"
 #include "Domain/Tags.hpp"  // IWYU pragma: keep // for db::item_type<Tags::Mesh<...>>
 #include "NumericalAlgorithms/DiscontinuousGalerkin/FluxCommunicationTypes.hpp"

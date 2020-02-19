@@ -6,7 +6,8 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/DataBoxTag.hpp"
-#include "DataStructures/VariablesHelpers.hpp"
+#include "DataStructures/SliceVariables.hpp"
+#include "DataStructures/Tensor/Slice.hpp"
 #include "Domain/Direction.hpp"
 #include "Domain/ElementMap.hpp"
 #include "Domain/IndexToSliceAt.hpp"
