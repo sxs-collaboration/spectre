@@ -4,13 +4,14 @@
 set(LIBRARY DataStructures)
 
 set(LIBRARY_SOURCES
-    Index.cpp
-    IndexIterator.cpp
-    LeviCivitaIterator.cpp
-    SliceIterator.cpp
-    StripeIterator.cpp
-    Tensor/TensorData.cpp
-    )
+  Index.cpp
+  IndexIterator.cpp
+  LeviCivitaIterator.cpp
+  SliceIterator.cpp
+  StripeIterator.cpp
+  Tensor/EagerMath/OrthonormalOneform.cpp
+  Tensor/TensorData.cpp
+  )
 
 add_spectre_library(${LIBRARY} ${LIBRARY_SOURCES})
 
