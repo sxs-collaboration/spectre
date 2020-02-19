@@ -62,4 +62,38 @@ Tensor<VectorType, Structure...> data_on_slice(
                 element_extents, sliced_dim, fixed_index);
   return interface_tensor;
 }
+
+template <std::size_t VolumeDim, typename VectorType, typename... Structure>
+void data_on_slice(
+    const gsl::not_null<boost::optional<Tensor<VectorType, Structure...>>*>
+        interface_tensor,
+    const boost::optional<Tensor<VectorType, Structure...>>& volume_tensor,
+    const Index<VolumeDim>& element_extents, const size_t sliced_dim,
+    const size_t fixed_index) noexcept {
+  if (volume_tensor) {
+    if (not(*interface_tensor)) {
+      *interface_tensor = Tensor<VectorType, Structure...>{
+          element_extents.slice_away(sliced_dim).product()};
+    }
+    data_on_slice(make_not_null(&**interface_tensor), *volume_tensor,
+                  element_extents, sliced_dim, fixed_index);
+  } else {
+    *interface_tensor = boost::none;
+  }
+}
+
+template <std::size_t VolumeDim, typename VectorType, typename... Structure>
+boost::optional<Tensor<VectorType, Structure...>> data_on_slice(
+    const boost::optional<Tensor<VectorType, Structure...>>& volume_tensor,
+    const Index<VolumeDim>& element_extents, const size_t sliced_dim,
+    const size_t fixed_index) noexcept {
+  if (volume_tensor) {
+    Tensor<VectorType, Structure...> interface_tensor(
+        element_extents.slice_away(sliced_dim).product());
+    data_on_slice(make_not_null(&interface_tensor), *volume_tensor,
+                  element_extents, sliced_dim, fixed_index);
+    return interface_tensor;
+  }
+  return boost::none;
+}
 // @}

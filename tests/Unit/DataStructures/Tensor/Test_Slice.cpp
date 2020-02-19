@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <array>
+#include <boost/optional/optional_io.hpp>
 #include <cstddef>
 #include <string>
 
@@ -76,6 +77,7 @@ void test_variables_slice() noexcept {
     }
   }
 
+  INFO("Test simple slice");
   CHECK(data_on_slice(get<VariablesTestTags_detail::tensor<VectorType>>(vars),
                       extents, 0, x_offset) ==
         get<VariablesTestTags_detail::tensor<VectorType>>(
@@ -88,6 +90,66 @@ void test_variables_slice() noexcept {
                       extents, 2, z_offset) ==
         get<VariablesTestTags_detail::tensor<VectorType>>(
             expected_vars_sliced_in_z));
+
+  INFO("Test slice of a boost::optional<Tensor>");
+  REQUIRE(data_on_slice(
+      boost::make_optional(
+          get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
+      extents, 0, x_offset));
+  CHECK(data_on_slice(
+            boost::make_optional(
+                get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
+            extents, 0, x_offset)
+            .get() == get<VariablesTestTags_detail::tensor<VectorType>>(
+                          expected_vars_sliced_in_x));
+  REQUIRE(data_on_slice(
+      boost::make_optional(
+          get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
+      extents, 1, y_offset));
+  CHECK(data_on_slice(
+            boost::make_optional(
+                get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
+            extents, 1, y_offset)
+            .get() == get<VariablesTestTags_detail::tensor<VectorType>>(
+                          expected_vars_sliced_in_y));
+  REQUIRE(data_on_slice(
+      boost::make_optional(
+          get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
+      extents, 2, z_offset));
+  CHECK(data_on_slice(
+            boost::make_optional(
+                get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
+            extents, 2, z_offset)
+            .get() == get<VariablesTestTags_detail::tensor<VectorType>>(
+                          expected_vars_sliced_in_z));
+
+  CHECK_FALSE(
+      data_on_slice(boost::optional<tnsr::I<VectorType, 3, Frame::Inertial>>{},
+                    extents, 0, x_offset));
+
+  // Test not_null<boost::option<Tensor>>
+  using TensorType =
+      db::item_type<VariablesTestTags_detail::tensor<VectorType>>;
+  auto optional_tensor = boost::make_optional(TensorType{});
+  CHECK(optional_tensor);
+  data_on_slice(make_not_null(&optional_tensor), boost::optional<TensorType>{},
+                extents, 0, x_offset);
+  CHECK_FALSE(optional_tensor);
+
+  data_on_slice(make_not_null(&optional_tensor),
+                boost::make_optional(
+                    get<VariablesTestTags_detail::tensor<VectorType>>(vars)),
+                extents, 0, x_offset);
+  REQUIRE(optional_tensor);
+  CHECK(optional_tensor.get() ==
+        get<VariablesTestTags_detail::tensor<VectorType>>(
+            expected_vars_sliced_in_x));
+
+  optional_tensor = boost::none;
+  CHECK_FALSE(optional_tensor);
+  data_on_slice(make_not_null(&optional_tensor), boost::optional<TensorType>{},
+                extents, 0, x_offset);
+  CHECK_FALSE(optional_tensor);
 }
 
 SPECTRE_TEST_CASE("Unit.DataStructures.Tensor.Slice",
