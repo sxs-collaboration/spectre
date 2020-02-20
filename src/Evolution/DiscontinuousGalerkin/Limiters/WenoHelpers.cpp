@@ -44,6 +44,9 @@ void reconstruct_from_weighted_sum(
         neighbor_polynomials,
     const DerivativeWeight derivative_weight) noexcept {
 #ifdef SPECTRE_DEBUG
+  ASSERT(local_polynomial->size() > 0,
+         "The local_polynomial values are missing - was the input correctly\n"
+         "initialized before calling reconstruct_from_weighted_sum?");
   // Check inputs match requirements
   const double local_mean = mean_value(*local_polynomial, mesh);
   for (const auto& kv : neighbor_polynomials) {

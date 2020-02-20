@@ -292,6 +292,13 @@ void solve_constrained_fit(
         primary_neighbor,
     const std::vector<std::pair<Direction<VolumeDim>, ElementId<VolumeDim>>>&
         neighbors_to_exclude) noexcept {
+  ASSERT(not alg::found(neighbors_to_exclude, primary_neighbor),
+         "Logical inconsistency: trying to exclude the primary neighbor.");
+  ASSERT(not neighbors_to_exclude.empty() or neighbor_data.size() == 1,
+         "The HWENO constrained fit algorithm expects at least one neighbor \n"
+         "to exclude from the fit (unless if the element has a single \n"
+         "neighbor, which would automatically be the primary neighbor).");
+
   // Get the cache of linear algebra quantities for this element
   const ConstrainedFitCache<VolumeDim>& cache =
       constrained_fit_cache(element, mesh);
