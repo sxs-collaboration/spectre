@@ -183,17 +183,17 @@ void test_equivalence() noexcept {
     CHECK_FALSE(ut0 == ut3);
   }
   {
-    UniformTranslation<3> ut0{
+    UniformTranslation<2> ut0{
         1.0, {{2.0, 4.0}}, {{"TranslationX", "TranslationY"}}};
-    UniformTranslation<3> ut1{
+    UniformTranslation<2> ut1{
         1.2, {{2.0, 4.0}}, {{"TranslationX", "TranslationY"}}};
-    UniformTranslation<3> ut2{
+    UniformTranslation<2> ut2{
         1.0, {{3.0, 4.0}}, {{"TranslationX", "TranslationY"}}};
-    UniformTranslation<3> ut3{
+    UniformTranslation<2> ut3{
         1.0, {{2.0, 5.0}}, {{"TranslationX", "TranslationY"}}};
-    UniformTranslation<3> ut4{
+    UniformTranslation<2> ut4{
         1.0, {{2.0, 4.0}}, {{"TranslationZ", "TranslationY"}}};
-    UniformTranslation<3> ut5{
+    UniformTranslation<2> ut5{
         1.0, {{2.0, 4.0}}, {{"TranslationX", "TranslationZ"}}};
     CHECK(ut0 == ut0);
     CHECK_FALSE(ut0 != ut0);
