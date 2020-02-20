@@ -185,13 +185,17 @@ inline void pup(PUP::er& p, std::unique_ptr<T>& t) {  // NOLINT
 
 template <typename T, Requires<std::is_base_of<PUP::able, T>::value> = nullptr>
 inline void pup(PUP::er& p, std::unique_ptr<T>& t) {  // NOLINT
-  T* t1 = nullptr;
-  if (p.isUnpacking()) {
-    p | t1;
-    t = std::unique_ptr<T>(t1);
-  } else {
-    t1 = t.get();
-    p | t1;
+  bool is_nullptr = (nullptr == t);
+  p | is_nullptr;
+  if (not is_nullptr) {
+    T* t1 = nullptr;
+    if (p.isUnpacking()) {
+      p | t1;
+      t = std::unique_ptr<T>(t1);
+    } else {
+      t1 = t.get();
+      p | t1;
+    }
   }
 }
 // @}

@@ -37,7 +37,7 @@ template <typename Map>
 bool are_maps_equal(
     const Map& map,
     const domain::CoordinateMapBase<Frame::Logical, Frame::Inertial, Map::dim>&
-        map_base) {
+        map_base) noexcept {
   const auto* map_derived = dynamic_cast<const Map*>(&map_base);
   return map_derived == nullptr ? false : (*map_derived == map);
 }
@@ -50,7 +50,7 @@ void check_if_maps_are_equal(
     const domain::CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>&
         map_one,
     const domain::CoordinateMapBase<SourceFrame, TargetFrame, VolumeDim>&
-        map_two) {
+        map_two) noexcept {
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1, 1);
 
@@ -72,7 +72,7 @@ void check_if_maps_are_equal(
 /// \brief Given a coordinate map, check that this map is equal to the identity
 /// by evaluating the map at a random set of points.
 template <typename Map>
-void check_if_map_is_identity(const Map& map) {
+void check_if_map_is_identity(const Map& map) noexcept {
   using IdentityMap = domain::CoordinateMaps::Identity<Map::dim>;
   check_if_maps_are_equal(
       domain::make_coordinate_map<Frame::Inertial, Frame::Grid>(IdentityMap{}),
@@ -87,7 +87,7 @@ void check_if_map_is_identity(const Map& map) {
  */
 template <typename Map>
 void test_jacobian(const Map& map,
-                   const std::array<double, Map::dim>& test_point) {
+                   const std::array<double, Map::dim>& test_point) noexcept {
   // Our default approx value is too stringent for this test
   Approx local_approx = Approx::custom().epsilon(1e-10).scale(1.0);
   const double dx = 1e-4;
@@ -107,8 +107,8 @@ void test_jacobian(const Map& map,
  * multiply together to produce the identity matrix
  */
 template <typename Map>
-void test_inv_jacobian(const Map& map,
-                       const std::array<double, Map::dim>& test_point) {
+void test_inv_jacobian(
+    const Map& map, const std::array<double, Map::dim>& test_point) noexcept {
   const auto jacobian = map.jacobian(test_point);
   const auto inv_jacobian = map.inv_jacobian(test_point);
 
@@ -140,7 +140,7 @@ void test_inv_jacobian(const Map& map,
  * the template parameter to the `CoordinateMap` type.
  */
 template <typename Map, typename... Args>
-void test_coordinate_map_implementation(const Map& map) {
+void test_coordinate_map_implementation(const Map& map) noexcept {
   const auto coord_map =
       domain::make_coordinate_map<Frame::Logical, Frame::Grid>(map);
   MAKE_GENERATOR(gen);
@@ -290,7 +290,7 @@ void test_coordinate_map_argument_types(
  */
 template <typename Map, typename T>
 void test_inverse_map(const Map& map,
-                      const std::array<T, Map::dim>& test_point) {
+                      const std::array<T, Map::dim>& test_point) noexcept {
   CHECK_ITERABLE_APPROX(test_point, map.inverse(map(test_point)).get());
 }
 
@@ -302,7 +302,7 @@ void test_inverse_map(const Map& map,
  * the origin.  The map is expected to be valid on the boundaries of the cube.
  */
 template <typename Map>
-void test_suite_for_map_on_unit_cube(const Map& map) {
+void test_suite_for_map_on_unit_cube(const Map& map) noexcept {
   // Set up random number generator
   MAKE_GENERATOR(gen);
   std::uniform_real_distribution<> real_dis(-1.0, 1.0);
@@ -353,9 +353,9 @@ void test_suite_for_map_on_unit_cube(const Map& map) {
  * This test works only in 3 dimensions.
  */
 template <typename Map>
-void test_suite_for_map_on_sphere(const Map& map,
-                                  const bool include_origin = true,
-                                  const double radius_of_sphere = 1.0) {
+void test_suite_for_map_on_sphere(
+    const Map& map, const bool include_origin = true,
+    const double radius_of_sphere = 1.0) noexcept {
   static_assert(Map::dim == 3, "Works only for a 3d map");
 
   // Set up random number generator
@@ -467,7 +467,7 @@ class OrientationMapIterator {
  * \brief Wedge OrientationMap in each of the six directions used in the
  * Shell and Sphere domain creators.
  */
-inline std::array<OrientationMap<3>, 6> all_wedge_directions() {
+inline std::array<OrientationMap<3>, 6> all_wedge_directions() noexcept {
   const OrientationMap<3> upper_zeta_rotation{};
   const OrientationMap<3> lower_zeta_rotation(std::array<Direction<3>, 3>{
       {Direction<3>::upper_xi(), Direction<3>::lower_eta(),

@@ -67,6 +67,11 @@ class PiecewisePolynomial : public FunctionOfTime {
   void pup(PUP::er& p) override;
 
  private:
+  template <size_t LocalMaxDeriv>
+  friend bool operator==(  // NOLINT(readability-redundant-declaration)
+      const PiecewisePolynomial<LocalMaxDeriv>& lhs,
+      const PiecewisePolynomial<LocalMaxDeriv>& rhs) noexcept;
+
   /// Returns the function and `MaxDerivReturned` derivatives at
   /// an arbitrary time `t`.
   /// The function has multiple components.
@@ -93,6 +98,8 @@ class PiecewisePolynomial : public FunctionOfTime {
 
     // NOLINTNEXTLINE(google-runtime-references)
     void pup(PUP::er& p) noexcept;
+
+    bool operator==(const DerivInfo& rhs) const noexcept;
   };
 
   /// Returns a DerivInfo corresponding to the closest element in the range of
@@ -104,6 +111,10 @@ class PiecewisePolynomial : public FunctionOfTime {
 
   std::vector<DerivInfo> deriv_info_at_update_times_;
 };
+
+template <size_t MaxDeriv>
+bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
+                const PiecewisePolynomial<MaxDeriv>& rhs) noexcept;
 
 /// \cond
 template <size_t MaxDeriv>

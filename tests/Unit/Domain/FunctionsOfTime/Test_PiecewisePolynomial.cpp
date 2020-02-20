@@ -21,6 +21,9 @@ void test(const gsl::not_null<FunctionsOfTime::FunctionOfTime*> f_of_t,
           const gsl::not_null<FunctionsOfTime::PiecewisePolynomial<DerivOrder>*>
               f_of_t_derived,
           double t, const double dt, const double final_time) noexcept {
+  const FunctionsOfTime::PiecewisePolynomial<DerivOrder> f_of_t_derived_copy =
+      *f_of_t_derived;
+  CHECK(*f_of_t_derived == f_of_t_derived_copy);
   while (t < final_time) {
     const auto lambdas0 = f_of_t->func_and_2_derivs(t);
     CHECK(approx(lambdas0[0][0]) == cube(t));
@@ -42,6 +45,7 @@ void test(const gsl::not_null<FunctionsOfTime::FunctionOfTime*> f_of_t,
 
     t += dt;
     f_of_t_derived->update(t, {6.0, 0.0});
+    CHECK(*f_of_t_derived != f_of_t_derived_copy);
   }
   // test time_bounds function
   const auto t_bounds = f_of_t->time_bounds();
@@ -55,9 +59,13 @@ void test_non_const_deriv(
     const gsl::not_null<FunctionsOfTime::PiecewisePolynomial<DerivOrder>*>
         f_of_t_derived,
     double t, const double dt, const double final_time) noexcept {
+  const FunctionsOfTime::PiecewisePolynomial<DerivOrder> f_of_t_derived_copy =
+      *f_of_t_derived;
+  CHECK(*f_of_t_derived == f_of_t_derived_copy);
   while (t < final_time) {
     t += dt;
     f_of_t_derived->update(t, {3.0 + t});
+    CHECK(*f_of_t_derived != f_of_t_derived_copy);
   }
   const auto lambdas0 = f_of_t->func_and_2_derivs(t);
   CHECK(approx(lambdas0[0][0]) == 33.948);

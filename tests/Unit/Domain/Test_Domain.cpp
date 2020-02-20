@@ -133,11 +133,9 @@ void test_1d_domains() {
                              expected_maps);
   }
 }
-}  // namespace
 
-SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") { test_1d_domains(); }
-SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
-  SECTION("Aligned domain.") {
+void test_1d_rectilinear_domains() {
+  INFO("Aligned domain.") {
     const auto domain = rectilinear_domain<1>(
         Index<1>{3}, std::array<std::vector<double>, 1>{{{0.0, 1.0, 2.0, 3.0}}},
         {}, {}, {{false}}, {}, true);
@@ -160,7 +158,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
       CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
     }
   }
-  SECTION("Antialigned domain.") {
+  INFO("Antialigned domain.") {
     const OrientationMap<1> aligned{};
     const OrientationMap<1> antialigned{
         std::array<Direction<1>, 1>{{Direction<1>::lower_xi()}}};
@@ -188,7 +186,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear1D1", "[Domain][Unit]") {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear2D", "[Domain][Unit]") {
+void test_2d_rectilinear_domains() {
   const OrientationMap<2> half_turn{std::array<Direction<2>, 2>{
       {Direction<2>::lower_xi(), Direction<2>::lower_eta()}}};
   const OrientationMap<2> quarter_turn_cw{std::array<Direction<2>, 2>{
@@ -231,7 +229,7 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear2D", "[Domain][Unit]") {
   }
 }
 
-SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear3D", "[Domain][Unit]") {
+void test_3d_rectilinear_domains() {
   const OrientationMap<3> aligned{};
   const OrientationMap<3> quarter_turn_cw_xi{std::array<Direction<3>, 3>{
       {Direction<3>::upper_xi(), Direction<3>::upper_zeta(),
@@ -265,7 +263,14 @@ SPECTRE_TEST_CASE("Unit.Domain.Domain.Rectilinear3D", "[Domain][Unit]") {
     CHECK(domain.blocks()[i].neighbors() == expected_block_neighbors[i]);
   }
 }
+}  // namespace
 
+SPECTRE_TEST_CASE("Unit.Domain.Domain", "[Domain][Unit]") {
+  test_1d_domains();
+  test_1d_rectilinear_domains();
+  test_2d_rectilinear_domains();
+  test_3d_rectilinear_domains();
+}
 // [[OutputRegex, Must pass same number of maps as block corner sets]]
 [[noreturn]] SPECTRE_TEST_CASE("Unit.Domain.Domain.BadArgs", "[Domain][Unit]") {
   ASSERTION_TEST();

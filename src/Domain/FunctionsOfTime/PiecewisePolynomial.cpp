@@ -106,6 +106,12 @@ void PiecewisePolynomial<MaxDeriv>::DerivInfo::pup(PUP::er& p) noexcept {
 }
 
 template <size_t MaxDeriv>
+bool PiecewisePolynomial<MaxDeriv>::DerivInfo::operator==(
+    const PiecewisePolynomial<MaxDeriv>::DerivInfo& rhs) const noexcept {
+  return time == rhs.time and derivs_coefs == rhs.derivs_coefs;
+}
+
+template <size_t MaxDeriv>
 const typename PiecewisePolynomial<MaxDeriv>::DerivInfo&
 PiecewisePolynomial<MaxDeriv>::deriv_info_from_upper_bound(const double t) const
     noexcept {
@@ -140,15 +146,36 @@ void PiecewisePolynomial<MaxDeriv>::pup(PUP::er& p) {
   p | deriv_info_at_update_times_;
 }
 
+template <size_t MaxDeriv>
+bool operator==(const PiecewisePolynomial<MaxDeriv>& lhs,
+                const PiecewisePolynomial<MaxDeriv>& rhs) noexcept {
+  return lhs.deriv_info_at_update_times_ == rhs.deriv_info_at_update_times_;
+}
+
+template <size_t MaxDeriv>
+bool operator!=(const PiecewisePolynomial<MaxDeriv>& lhs,
+                const PiecewisePolynomial<MaxDeriv>& rhs) noexcept {
+  return not(lhs == rhs);
+}
+
 // do explicit instantiation of MaxDeriv = {2,3,4}
 // along with all combinations of MaxDerivReturned = {0,...,MaxDeriv}
 /// \cond
-template class PiecewisePolynomial<2_st>;
-template class PiecewisePolynomial<3_st>;
-template class PiecewisePolynomial<4_st>;
-
 #define DIM(data) BOOST_PP_TUPLE_ELEM(0, data)
 #define DIMRETURNED(data) BOOST_PP_TUPLE_ELEM(1, data)
+
+#define INSTANTIATE(_, data)                                       \
+  template bool operator==                                         \
+      <DIM(data)>(const PiecewisePolynomial<DIM(data)>&,           \
+                  const PiecewisePolynomial<DIM(data)>&) noexcept; \
+  template class PiecewisePolynomial<DIM(data)>;                   \
+  template bool operator!=                                         \
+      <DIM(data)>(const PiecewisePolynomial<DIM(data)>&,           \
+                  const PiecewisePolynomial<DIM(data)>&) noexcept;
+
+GENERATE_INSTANTIATIONS(INSTANTIATE, (2, 3, 4))
+
+#undef INSTANTIATE
 
 #define INSTANTIATE(_, data)                                          \
   template std::array<DataVector, DIMRETURNED(data) + 1>              \

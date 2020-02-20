@@ -71,6 +71,9 @@ class SettleToConstant : public FunctionOfTime {
   void pup(PUP::er& p) override;
 
  private:
+  friend bool operator==(const SettleToConstant& lhs,
+                         const SettleToConstant& rhs) noexcept;
+
   template <size_t MaxDerivReturned = 2>
   std::array<DataVector, MaxDerivReturned + 1> func_and_derivs(double t) const
       noexcept;
@@ -79,5 +82,8 @@ class SettleToConstant : public FunctionOfTime {
   double match_time_{std::numeric_limits<double>::signaling_NaN()};
   double inv_decay_time_{std::numeric_limits<double>::signaling_NaN()};
 };
+
+bool operator!=(const SettleToConstant& lhs,
+                const SettleToConstant& rhs) noexcept;
 }  // namespace FunctionsOfTime
 }  // namespace domain
