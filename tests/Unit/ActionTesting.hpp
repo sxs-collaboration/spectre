@@ -1080,9 +1080,15 @@ bool MockDistributedObject<Component>::is_ready_impl(
     constexpr size_t iter = decltype(iteration)::value;
     using actions_list = typename PhaseDepActions::action_list;
     using this_action = tmpl::at_c<actions_list, iter>;
+
+    constexpr size_t phase_index =
+        tmpl::index_of<phase_dependent_action_lists, PhaseDepActions>::value;
+    using databox_phase_type = tmpl::at_c<databox_phase_types, phase_index>;
+    using databox_types_this_phase = typename databox_phase_type::databox_types;
     using this_databox =
-        tmpl::at_c<databox_types,
-                   iter == 0 ? tmpl::size<databox_types>::value - 1 : iter>;
+        tmpl::at_c<databox_types_this_phase,
+                   iter == 0 ? tmpl::size<databox_types_this_phase>::value - 1
+                             : iter>;
     if (iter != algorithm_step_) {
       return;
     }
