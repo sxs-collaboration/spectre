@@ -10,6 +10,7 @@
 
 #include "DataStructures/ComplexDataVector.hpp"   // IWYU pragma: keep
 #include "DataStructures/ComplexModalVector.hpp"  // IWYU pragma: keep
+#include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "DataStructures/Tensor/TypeAliases.hpp"

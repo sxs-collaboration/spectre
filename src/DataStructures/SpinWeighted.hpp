@@ -4,7 +4,6 @@
 #pragma once
 
 #include "DataStructures/ComplexDataVector.hpp"
-#include "DataStructures/DataBox/DataBoxTag.hpp"
 #include "Utilities/ForceInline.hpp"
 #include "Utilities/Requires.hpp"
 #include "Utilities/TypeTraits.hpp"
