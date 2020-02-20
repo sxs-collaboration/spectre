@@ -188,8 +188,9 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
   using return_tags =
       tmpl::list<DerivativeTags..., Tags::SwshTransform<DerivativeTags>...,
                  Tags::SwshTransform<DeDuplicatedDifferentiatedFromTags>...>;
-  using argument_tags = tmpl::list<DeDuplicatedDifferentiatedFromTags...,
-                                   Tags::LMax, Tags::NumberOfRadialPoints>;
+  using argument_tags =
+      tmpl::list<DeDuplicatedDifferentiatedFromTags..., Tags::LMaxBase,
+                 Tags::NumberOfRadialPointsBase>;
 
   static void apply(
       const gsl::not_null<db::item_type<DerivativeTags>*>... derivative_scalars,
@@ -197,8 +198,8 @@ struct AngularDerivativesImpl<tmpl::list<DerivativeTags...>,
           DerivativeTags>>*>... transform_of_derivative_scalars,
       const gsl::not_null<db::item_type<Tags::SwshTransform<
           DeDuplicatedDifferentiatedFromTags>>*>... transform_of_input_scalars,
-      const db::const_item_type<DeDuplicatedDifferentiatedFromTags>&...
-          input_scalars,
+      const db::const_item_type<
+          DeDuplicatedDifferentiatedFromTags>&... input_scalars,
       const size_t l_max, const size_t number_of_radial_points) noexcept {
     apply_to_vectors(make_not_null(&get(*transform_of_derivative_scalars))...,
                      make_not_null(&get(*transform_of_input_scalars))...,

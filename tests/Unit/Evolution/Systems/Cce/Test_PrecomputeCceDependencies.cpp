@@ -136,16 +136,17 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PrecomputeCceDependencies",
       Spectral::Swsh::number_of_swsh_collocation_points(l_max);
   const size_t number_of_volume_points =
       number_of_boundary_points * number_of_radial_grid_points;
-  auto precomputation_box = db::create<db::AddSimpleTags<
-      boundary_variables_tag, independent_of_integration_variables_tag,
-      pre_swsh_derivatives_variables_tag, Spectral::Swsh::Tags::LMax,
-      Spectral::Swsh::Tags::NumberOfRadialPoints>>(
-      typename boundary_variables_tag::type{number_of_boundary_points},
-      typename independent_of_integration_variables_tag::type{
-          number_of_volume_points},
-      typename pre_swsh_derivatives_variables_tag::type{
-          number_of_volume_points},
-      l_max, number_of_radial_grid_points);
+  auto precomputation_box =
+      db::create<db::AddSimpleTags<boundary_variables_tag,
+                                   independent_of_integration_variables_tag,
+                                   pre_swsh_derivatives_variables_tag,
+                                   Tags::LMax, Tags::NumberOfRadialPoints>>(
+          typename boundary_variables_tag::type{number_of_boundary_points},
+          typename independent_of_integration_variables_tag::type{
+              number_of_volume_points},
+          typename pre_swsh_derivatives_variables_tag::type{
+              number_of_volume_points},
+          l_max, number_of_radial_grid_points);
 
   auto expected_box =
       db::create<db::AddSimpleTags<boundary_variables_tag,
@@ -169,8 +170,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PrecomputeCceDependencies",
 
   Approx angular_derivative_approx =
       Approx::custom()
-      .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
-      .scale(1.0);
+          .epsilon(std::numeric_limits<double>::epsilon() * 1.0e4)
+          .scale(1.0);
 
   CHECK_VARIABLES_CUSTOM_APPROX(
       db::get<boundary_variables_tag>(precomputation_box),
@@ -184,6 +185,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.PrecomputeCceDependencies",
   CHECK_VARIABLES_CUSTOM_APPROX(
       db::get<independent_of_integration_variables_tag>(precomputation_box),
       db::get<independent_of_integration_variables_tag>(expected_box),
-      angular_derivative_approx);}
+      angular_derivative_approx);
+}
 
 }  // namespace Cce

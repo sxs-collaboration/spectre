@@ -13,6 +13,7 @@
 #include "Domain/Mesh.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
 #include "Evolution/Systems/Cce/LinearOperators.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
@@ -272,7 +273,7 @@ struct PreSwshDerivatives<Tags::ComplexInertialRetardedTime> {
   using argument_tags = tmpl::list<Tags::InertialRetardedTime>;
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
-      complex_inertial_retarded_time,
+          complex_inertial_retarded_time,
       const Scalar<DataVector>& inertial_retarded_time) noexcept {
     get(*complex_inertial_retarded_time).data() =
         std::complex<double>(1.0, 0.0) * get(inertial_retarded_time);
@@ -288,8 +289,8 @@ struct PreSwshDerivatives<Tags::Dy<Tag>> {
   using integrand_tags = tmpl::list<>;
 
   using return_tags = tmpl::list<Tags::Dy<Tag>>;
-  using argument_tags = tmpl::append<pre_swsh_derivative_tags,
-                                     tmpl::list<Spectral::Swsh::Tags::LMax>>;
+  using argument_tags =
+      tmpl::append<pre_swsh_derivative_tags, tmpl::list<Tags::LMax>>;
 
   static void apply(
       const gsl::not_null<
@@ -376,8 +377,8 @@ struct PreSwshDerivatives<
 
   using return_tags =
       tmpl::list<Tags::Dy<Spectral::Swsh::Tags::Derivative<Tag, DerivKind>>>;
-  using argument_tags = tmpl::append<swsh_derivative_tags,
-                                     tmpl::list<Spectral::Swsh::Tags::LMax>>;
+  using argument_tags =
+      tmpl::append<swsh_derivative_tags, tmpl::list<Tags::LMax>>;
 
   static constexpr int spin =
       Spectral::Swsh::Tags::Derivative<Tag, DerivKind>::spin;
@@ -410,7 +411,7 @@ struct PreSwshDerivatives<
  * spin-weighted derivatives needed for the same CCE integrand. Provided a
  * `DataBox` with the appropriate tags (including
  * `all_pre_swsh_derivative_tags`, `all_swsh_derivative_tags` and
- * `Spectral::Swsh::Tags::LMax`), this function will apply all of the necessary
+ * `Tags::LMax`), this function will apply all of the necessary
  * mutations to update `all_pre_swsh_derivatives_for_tag<BondiValueTag>` to
  * their correct values for the current values for the remaining (input) tags.
  */

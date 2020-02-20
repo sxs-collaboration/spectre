@@ -9,6 +9,7 @@
 #include "DataStructures/DataBox/DataBox.hpp"
 #include "DataStructures/SpinWeighted.hpp"
 #include "Evolution/Systems/Cce/IntegrandInputSteps.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/Spectral.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
@@ -67,8 +68,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::OneMinusY> {
   using integration_independent_tags = tmpl::list<>;
 
   using return_tags = tmpl::list<Tags::OneMinusY>;
-  using argument_tags = tmpl::list<Spectral::Swsh::Tags::LMax,
-                                   Spectral::Swsh::Tags::NumberOfRadialPoints>;
+  using argument_tags = tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>;
 
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
@@ -100,8 +100,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::BondiR> {
 
   using return_tags = tmpl::list<Tags::BondiR>;
   using argument_tags =
-      tmpl::append<boundary_tags,
-                   tmpl::list<Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+      tmpl::append<boundary_tags, tmpl::list<Tags::NumberOfRadialPoints>>;
 
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> r,
@@ -122,8 +121,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::DuRDividedByR> {
 
   using return_tags = tmpl::list<Tags::DuRDividedByR>;
   using argument_tags =
-      tmpl::append<boundary_tags,
-                   tmpl::list<Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+      tmpl::append<boundary_tags, tmpl::list<Tags::NumberOfRadialPoints>>;
 
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
@@ -148,8 +146,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::EthRDividedByR> {
   using return_tags = tmpl::list<Tags::EthRDividedByR>;
   using argument_tags =
       tmpl::append<boundary_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+                   tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
 
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*>
@@ -174,8 +171,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::EthEthRDividedByR> {
   using return_tags = tmpl::list<Tags::EthEthRDividedByR>;
   using argument_tags =
       tmpl::append<boundary_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+                   tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
 
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*>
@@ -200,8 +196,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::EthEthbarRDividedByR> {
   using return_tags = tmpl::list<Tags::EthEthbarRDividedByR>;
   using argument_tags =
       tmpl::append<boundary_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+                   tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
 
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
@@ -223,8 +218,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::BondiK> {
   using integration_independent_tags = tmpl::list<>;
 
   using return_tags = tmpl::list<Tags::BondiK>;
-  using argument_tags = tmpl::append<tmpl::list<Spectral::Swsh::Tags::LMax>,
-                                     pre_swsh_derivative_tags>;
+  using argument_tags = tmpl::push_front<pre_swsh_derivative_tags, Tags::LMax>;
 
   static void apply(
       const gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> k,
@@ -241,7 +235,7 @@ struct PrecomputeCceDependencies<BoundaryPrefix, Tags::BondiK> {
  *
  * \details Provided a \ref DataBoxGroup with the appropriate tags (including
  * `Cce::pre_computation_boundary_tags`, `Cce::pre_computation_tags`,
- * `Cce::Tags::BondiJ` and `Spectral::Swsh::Tags::LMax`), this function will
+ * `Cce::Tags::BondiJ` and `Tags::LMax`), this function will
  * apply all of the necessary mutations to update the
  * `Cce::pre_computation_tags` to their correct values for the current values
  * for the remaining (input) tags.

@@ -86,8 +86,8 @@ struct InitializeCharacteristicEvolution {
       tmpl::list<Tags::StartTime, Tags::EndTime,
                  InitializationTags::TargetStepSize>;
   using const_global_cache_tags =
-      tmpl::list<::Tags::TimeStepper<TimeStepper>, Spectral::Swsh::Tags::LMax,
-                 Spectral::Swsh::Tags::NumberOfRadialPoints>;
+      tmpl::list<::Tags::TimeStepper<TimeStepper>, Tags::LMax,
+                 Tags::NumberOfRadialPoints>;
 
   template <typename Metavariables>
   struct EvolutionTags {
@@ -171,9 +171,9 @@ struct InitializeCharacteristicEvolution {
     static auto initialize(
         db::DataBox<TagList>&& box,
         const Parallel::ConstGlobalCache<Metavariables>& cache) noexcept {
-      const size_t l_max = Parallel::get<Spectral::Swsh::Tags::LMax>(cache);
+      const size_t l_max = Parallel::get<Tags::LMax>(cache);
       const size_t number_of_radial_points =
-          Parallel::get<Spectral::Swsh::Tags::NumberOfRadialPoints>(cache);
+          Parallel::get<Tags::NumberOfRadialPoints>(cache);
       const size_t boundary_size =
           Spectral::Swsh::number_of_swsh_collocation_points(l_max);
       const size_t volume_size = boundary_size * number_of_radial_points;

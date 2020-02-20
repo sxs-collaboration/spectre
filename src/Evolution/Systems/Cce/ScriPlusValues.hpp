@@ -6,6 +6,7 @@
 #include <cstddef>
 
 #include "DataStructures/DataBox/Prefixes.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 
 namespace Cce {
@@ -40,8 +41,7 @@ struct CalculateScriPlusValue<Tags::News> {
                  Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>>;
   using argument_tags =
       tmpl::append<tensor_argument_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+                   tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
 
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> news,
@@ -85,8 +85,7 @@ struct CalculateScriPlusValue<Tags::TimeIntegral<Tags::ScriPlus<Tags::Psi4>>> {
                  Tags::EthRDividedByR>;
   using argument_tags =
       tmpl::append<tensor_argument_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+                   tmpl::list<Tags::LMax, Tags::NumberOfRadialPoints>>;
 
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*>
@@ -123,10 +122,8 @@ struct CalculateScriPlusValue<Tags::ScriPlusFactor<Tags::Psi4>> {
   using return_tags = tmpl::list<Tags::ScriPlusFactor<Tags::Psi4>>;
   // extra typelist for more convenient testing
   using tensor_argument_tags = tmpl::list<Tags::Exp2Beta>;
-  using argument_tags =
-      tmpl::append<tensor_argument_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+  using argument_tags = tmpl::push_back<tensor_argument_tags, Tags::LMax,
+                                        Tags::NumberOfRadialPoints>;
 
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*>
@@ -177,10 +174,8 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi3>> {
       Spectral::Swsh::Tags::Derivative<Tags::Dy<Tags::Du<Tags::BondiJ>>,
                                        Spectral::Swsh::Tags::Ethbar>,
       Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>, Tags::EthRDividedByR>;
-  using argument_tags =
-      tmpl::append<tensor_argument_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+  using argument_tags = tmpl::push_back<tensor_argument_tags, Tags::LMax,
+                                        Tags::NumberOfRadialPoints>;
 
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -1>>*> psi_3,
@@ -240,10 +235,8 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi2>> {
       Tags::Dy<Tags::Dy<Tags::BondiW>>, Tags::Dy<Tags::BondiJ>,
       Tags::Dy<Tags::Du<Tags::BondiJ>>,
       Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>, Tags::EthRDividedByR>;
-  using argument_tags =
-      tmpl::append<tensor_argument_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+  using argument_tags = tmpl::push_back<tensor_argument_tags, Tags::LMax,
+                                        Tags::NumberOfRadialPoints>;
 
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 0>>*> psi_2,
@@ -297,10 +290,8 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi1>> {
       Tags::Dy<Tags::BondiJ>, Tags::Dy<Tags::BondiQ>,
       Tags::Dy<Tags::Dy<Tags::BondiQ>>,
       Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>, Tags::EthRDividedByR>;
-  using argument_tags =
-      tmpl::append<tensor_argument_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+  using argument_tags = tmpl::push_back<tensor_argument_tags, Tags::LMax,
+                                        Tags::NumberOfRadialPoints>;
 
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 1>>*> psi_1,
@@ -344,10 +335,8 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Psi0>> {
       tmpl::list<Tags::Dy<Tags::BondiJ>,
                  Tags::Dy<Tags::Dy<Tags::Dy<Tags::BondiJ>>>,
                  Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>>;
-  using argument_tags =
-      tmpl::append<tensor_argument_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+  using argument_tags = tmpl::push_back<tensor_argument_tags, Tags::LMax,
+                                        Tags::NumberOfRadialPoints>;
 
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, 2>>*> psi_0,
@@ -388,10 +377,8 @@ struct CalculateScriPlusValue<Tags::ScriPlus<Tags::Strain>> {
       Spectral::Swsh::Tags::Derivative<Tags::ComplexInertialRetardedTime,
                                        Spectral::Swsh::Tags::EthEth>,
       Tags::EvolutionGaugeBoundaryValue<Tags::BondiR>>;
-  using argument_tags =
-      tmpl::append<tensor_argument_tags,
-                   tmpl::list<Spectral::Swsh::Tags::LMax,
-                              Spectral::Swsh::Tags::NumberOfRadialPoints>>;
+  using argument_tags = tmpl::push_back<tensor_argument_tags, Tags::LMax,
+                                        Tags::NumberOfRadialPoints>;
 
   static void apply(
       gsl::not_null<Scalar<SpinWeighted<ComplexDataVector, -2>>*> strain,

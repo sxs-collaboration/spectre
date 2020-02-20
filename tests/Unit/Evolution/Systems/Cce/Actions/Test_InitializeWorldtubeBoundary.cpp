@@ -32,7 +32,7 @@ namespace {
 struct metavariables {
   using cce_boundary_communication_tags =
       Tags::characteristic_worldtube_boundary_tags<Tags::BoundaryValue>;
-  using const_global_cache_tag_list = tmpl::list<Spectral::Swsh::Tags::LMax>;
+  using const_global_cache_tag_list = tmpl::list<Tags::LMax>;
   using component_list = tmpl::list<mock_h5_worldtube_boundary<metavariables>>;
   enum class Phase { Initialization, Evolve, Exit };
 };

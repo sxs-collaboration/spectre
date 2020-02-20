@@ -72,9 +72,8 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
                               std::make_unique<intrp::CubicSpanInterpolator>())
               .get_l_max() == 8);
 
-  CHECK(Cce::InitializationTags::LMax::create_from_options(8u) == 8u);
-  CHECK(Cce::InitializationTags::NumberOfRadialPoints::create_from_options(
-            6u) == 6u);
+  CHECK(Cce::Tags::LMax::create_from_options(8u) == 8u);
+  CHECK(Cce::Tags::NumberOfRadialPoints::create_from_options(6u) == 6u);
 
   CHECK(Cce::Tags::StartTime::create_from_options(
             -std::numeric_limits<double>::infinity(),

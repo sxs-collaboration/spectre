@@ -8,6 +8,7 @@
 #include "DataStructures/ComplexDataVector.hpp"
 #include "DataStructures/ComplexModalVector.hpp"
 #include "Evolution/Systems/Cce/LinearSolve.hpp"
+#include "Evolution/Systems/Cce/OptionTags.hpp"
 #include "Evolution/Systems/Cce/Tags.hpp"
 #include "NumericalAlgorithms/Spectral/SwshCollocation.hpp"
 #include "Utilities/VectorAlgebra.hpp"
@@ -122,8 +123,8 @@ auto create_box_for_bondi_integration(
 
   return db::create<db::AddSimpleTags<
       integration_variables_tag, Tags::BoundaryValue<BondiValueTag>,
-      integration_modes_variables_tag, Spectral::Swsh::Tags::LMax,
-      Spectral::Swsh::Tags::NumberOfRadialPoints, Tags::OneMinusY>>(
+      integration_modes_variables_tag, Tags::LMax, Tags::NumberOfRadialPoints,
+      Tags::OneMinusY>>(
       db::item_type<integration_variables_tag>{number_of_grid_points},
       db::item_type<Tags::BoundaryValue<BondiValueTag>>{
           Spectral::Swsh::number_of_swsh_collocation_points(l_max)},

@@ -151,25 +151,6 @@ struct H5WorldtubeBoundaryDataManager : db::SimpleTag {
   }
 };
 
-struct LMax : db::SimpleTag {
-  using type = size_t;
-  using option_tags = tmpl::list<OptionTags::LMax>;
-
-  static size_t create_from_options(const size_t l_max) noexcept {
-    return l_max;
-  }
-};
-
-struct NumberOfRadialPoints : db::SimpleTag {
-  using type = size_t;
-  using option_tags = tmpl::list<OptionTags::NumberOfRadialPoints>;
-
-  static size_t create_from_options(
-      const size_t number_of_radial_points) noexcept {
-    return number_of_radial_points;
-  }
-};
-
 struct ScriInterpolationOrder : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::ScriInterpolationOrder>;
@@ -200,6 +181,26 @@ struct ScriOutputDensity : db::SimpleTag {
 }  // namespace InitializationTags
 
 namespace Tags {
+struct LMax : db::SimpleTag, Spectral::Swsh::Tags::LMaxBase {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::LMax>;
+
+  static size_t create_from_options(const size_t l_max) noexcept {
+    return l_max;
+  }
+};
+
+struct NumberOfRadialPoints : db::SimpleTag,
+                              Spectral::Swsh::Tags::NumberOfRadialPointsBase {
+  using type = size_t;
+  using option_tags = tmpl::list<OptionTags::NumberOfRadialPoints>;
+
+  static size_t create_from_options(
+      const size_t number_of_radial_points) noexcept {
+    return number_of_radial_points;
+  }
+};
+
 struct FilterLMax : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::FilterLMax>;
@@ -259,5 +260,6 @@ struct EndTime : db::SimpleTag {
     return end_time;
   }
 };
+
 }  // namespace Tags
 }  // namespace Cce
