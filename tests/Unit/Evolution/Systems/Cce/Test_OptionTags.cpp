@@ -24,6 +24,9 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   TestHelpers::db::test_simple_tag<Cce::InitializationTags::ScriOutputDensity>(
       "ScriOutputDensity");
 
+  TestHelpers::db::test_simple_tag<Cce::Tags::StartTime>("StartTime");
+  TestHelpers::db::test_simple_tag<Cce::Tags::EndTime>("EndTime");
+
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::LMax>("8") == 8_st);
   CHECK(TestHelpers::test_creation<size_t, Cce::OptionTags::FilterLMax>("7") ==
         7_st);
@@ -73,16 +76,16 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.OptionTags", "[Unit][Cce]") {
   CHECK(Cce::InitializationTags::NumberOfRadialPoints::create_from_options(
             6u) == 6u);
 
-  CHECK(Cce::InitializationTags::StartTime::create_from_options(
+  CHECK(Cce::Tags::StartTime::create_from_options(
             -std::numeric_limits<double>::infinity(),
             "OptionTagsTestCceR0100.h5") == 2.5);
-  CHECK(Cce::InitializationTags::StartTime::create_from_options(
+  CHECK(Cce::Tags::StartTime::create_from_options(
             3.3, "OptionTagsTestCceR0100.h5") == 3.3);
 
-  CHECK(Cce::InitializationTags::EndTime::create_from_options(
+  CHECK(Cce::Tags::EndTime::create_from_options(
             std::numeric_limits<double>::infinity(),
             "OptionTagsTestCceR0100.h5") == 5.4);
-  CHECK(Cce::InitializationTags::EndTime::create_from_options(
+  CHECK(Cce::Tags::EndTime::create_from_options(
             2.2, "OptionTagsTestCceR0100.h5") == 2.2);
 
   CHECK(Cce::InitializationTags::TargetStepSize::create_from_options(0.2) ==

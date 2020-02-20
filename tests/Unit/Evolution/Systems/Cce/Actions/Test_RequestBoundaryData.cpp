@@ -181,8 +181,7 @@ SPECTRE_TEST_CASE("Unit.Evolution.Systems.Cce.Actions.RequestBoundaryData",
   runner.set_phase(test_metavariables::Phase::Initialization);
   ActionTesting::emplace_component<evolution_component>(
       &runner, 0, start_time,
-      InitializationTags::EndTime::create_from_options(end_time, filename),
-      target_step_size);
+      Tags::EndTime::create_from_options(end_time, filename), target_step_size);
   ActionTesting::emplace_component<worldtube_component>(
       &runner, 0,
       InitializationTags::H5WorldtubeBoundaryDataManager::create_from_options(

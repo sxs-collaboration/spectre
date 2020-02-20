@@ -170,22 +170,6 @@ struct NumberOfRadialPoints : db::SimpleTag {
   }
 };
 
-struct StartTime : db::SimpleTag {
-  using type = double;
-  using option_tags =
-      tmpl::list<OptionTags::StartTime, OptionTags::BoundaryDataFilename>;
-
-  static double create_from_options(double start_time,
-                                    const std::string& filename) noexcept {
-    if (start_time == -std::numeric_limits<double>::infinity()) {
-      SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
-      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-      start_time = time_buffer[0];
-    }
-    return start_time;
-  }
-};
-
 struct ScriInterpolationOrder : db::SimpleTag {
   using type = size_t;
   using option_tags = tmpl::list<OptionTags::ScriInterpolationOrder>;
@@ -202,22 +186,6 @@ struct TargetStepSize : db::SimpleTag {
 
   static double create_from_options(const double target_step_size) noexcept {
     return target_step_size;
-  }
-};
-
-struct EndTime : db::SimpleTag {
-  using type = double;
-  using option_tags =
-      tmpl::list<OptionTags::EndTime, OptionTags::BoundaryDataFilename>;
-
-  static double create_from_options(double end_time,
-                                    const std::string& filename) {
-    if (end_time == std::numeric_limits<double>::infinity()) {
-      SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
-      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
-      end_time = time_buffer[time_buffer.size() - 1];
-    }
-    return end_time;
   }
 };
 
@@ -257,6 +225,38 @@ struct RadialFilterHalfPower : db::SimpleTag {
   static size_t create_from_options(
       const size_t radial_filter_half_power) noexcept {
     return radial_filter_half_power;
+  }
+};
+
+struct StartTime : db::SimpleTag {
+  using type = double;
+  using option_tags =
+      tmpl::list<OptionTags::StartTime, OptionTags::BoundaryDataFilename>;
+
+  static double create_from_options(double start_time,
+                                    const std::string& filename) noexcept {
+    if (start_time == -std::numeric_limits<double>::infinity()) {
+      SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+      start_time = time_buffer[0];
+    }
+    return start_time;
+  }
+};
+
+struct EndTime : db::SimpleTag {
+  using type = double;
+  using option_tags =
+      tmpl::list<OptionTags::EndTime, OptionTags::BoundaryDataFilename>;
+
+  static double create_from_options(double end_time,
+                                    const std::string& filename) {
+    if (end_time == std::numeric_limits<double>::infinity()) {
+      SpecWorldtubeH5BufferUpdater h5_boundary_updater{filename};
+      const auto& time_buffer = h5_boundary_updater.get_time_buffer();
+      end_time = time_buffer[time_buffer.size() - 1];
+    }
+    return end_time;
   }
 };
 }  // namespace Tags

@@ -83,7 +83,7 @@ namespace Actions {
  */
 struct InitializeCharacteristicEvolution {
   using initialization_tags =
-      tmpl::list<InitializationTags::StartTime, InitializationTags::EndTime,
+      tmpl::list<Tags::StartTime, Tags::EndTime,
                  InitializationTags::TargetStepSize>;
   using const_global_cache_tags =
       tmpl::list<::Tags::TimeStepper<TimeStepper>, Spectral::Swsh::Tags::LMax,
@@ -109,7 +109,7 @@ struct InitializeCharacteristicEvolution {
         db::DataBox<TagList>&& box,
         const Parallel::ConstGlobalCache<Metavariables>& /*cache*/) noexcept {
       const double initial_time_value =
-          db::get<InitializationTags::StartTime>(box);
+          db::get<Tags::StartTime>(box);
       const double step_size = db::get<InitializationTags::TargetStepSize>(box);
 
       const Slab single_step_slab{initial_time_value,
@@ -217,7 +217,7 @@ struct InitializeCharacteristicEvolution {
   template <
       typename DbTags, typename... InboxTags, typename Metavariables,
       typename ArrayIndex, typename ActionList, typename ParallelComponent,
-      Requires<tmpl::list_contains_v<DbTags, InitializationTags::StartTime>> =
+      Requires<tmpl::list_contains_v<DbTags, Tags::StartTime>> =
           nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
@@ -235,7 +235,7 @@ struct InitializeCharacteristicEvolution {
                                            db::AddSimpleTags<Tags::EndTime>,
                                            db::AddComputeTags<>>(
             std::move(characteristic_evolution_box),
-            db::get<InitializationTags::EndTime>(characteristic_evolution_box));
+            db::get<Tags::EndTime>(characteristic_evolution_box));
     return std::make_tuple(std::move(initialization_moved_box));
   }
 
@@ -243,7 +243,7 @@ struct InitializeCharacteristicEvolution {
             typename ArrayIndex, typename ActionList,
             typename ParallelComponent,
             Requires<not tmpl::list_contains_v<
-                DbTags, InitializationTags::StartTime>> = nullptr>
+                DbTags, Tags::StartTime>> = nullptr>
   static auto apply(db::DataBox<DbTags>& box,
                     const tuples::TaggedTuple<InboxTags...>& /*inboxes*/,
                     const Parallel::ConstGlobalCache<Metavariables>& /*cache*/,
@@ -252,7 +252,7 @@ struct InitializeCharacteristicEvolution {
                     const ParallelComponent* const /*meta*/) noexcept {
     ERROR(
         "The DataBox is missing required dependency "
-        "`Cce::InitializationTags::LMax.`");
+        "`Cce::Tags::StartTime.`");
     // return required for type inference, this code should be unreachable due
     // to the `ERROR` on the previous line
     return std::make_tuple(std::move(box));
